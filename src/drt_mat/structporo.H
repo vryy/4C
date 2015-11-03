@@ -289,14 +289,15 @@ namespace MAT
                         ) const;
 
       //! evaluate constitutive relation for porosity and compute derivatives
-     virtual void ConstitutiveDerivatives(Teuchos::ParameterList& params,       ///< (i) parameter list
-                                                    double     press,   ///< (i) fluid pressure at gauss point
-                                                    double     J,       ///< (i) Jacobian determinant at gauss point
-                                                    double     porosity,///< (i) porosity at gauss point
-                                                    double*    dW_dp,   ///< (o) derivative of potential w.r.t. pressure
-                                                    double*    dW_dphi, ///< (o) derivative of potential w.r.t. porosity
-                                                    double*    dW_dJ,   ///< (o) derivative of potential w.r.t. jacobian
-                                                    double*    W        ///< (o) inner potential
+     virtual void ConstitutiveDerivatives(Teuchos::ParameterList& params,     ///< (i) parameter list
+                                                    double     press,         ///< (i) fluid pressure at gauss point
+                                                    double     J,             ///< (i) Jacobian determinant at gauss point
+                                                    double     porosity,      ///< (i) porosity at gauss point
+                                                    double*    dW_dp,         ///< (o) derivative of potential w.r.t. pressure
+                                                    double*    dW_dphi,       ///< (o) derivative of potential w.r.t. porosity
+                                                    double*    dW_dJ,         ///< (o) derivative of potential w.r.t. jacobian
+                                                    double*    dW_dphiref,    ///< (o) derivative of potential w.r.t. reference porosity
+                                                    double*    W              ///< (o) inner potential
                                                     );
 
      //! evaluate constitutive relation for porosity and compute derivatives using reference porosity
@@ -308,6 +309,7 @@ namespace MAT
                                                    double*    dW_dp,   ///< (o) derivative of potential w.r.t. pressure
                                                    double*    dW_dphi, ///< (o) derivative of potential w.r.t. porosity
                                                    double*    dW_dJ,   ///< (o) derivative of potential w.r.t. jacobian
+                                                   double*    dW_dphiref,    ///< (o) derivative of potential w.r.t. reference porosity
                                                    double*    W        ///< (o) inner potential
                                                    );
 
@@ -330,8 +332,8 @@ namespace MAT
 
       /// Evaluate strain energy function (for hyperelastic materials only)
       virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,  ///< (i) green lagrange strain
-                                double& psi,                           ///< (o) strain energy
-                                int EleID                            ///< (i) element GID
+                                double& psi,                          ///< (o) strain energy
+                                int EleID                             ///< (i) element GID
                                 )
       {mat_->StrainEnergy(glstrain,psi,EleID);};
 

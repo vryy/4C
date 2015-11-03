@@ -67,7 +67,8 @@ namespace ADAPTER
                std::vector<int>* coupleddof21 = NULL,
                std::pair<int,int>* dofsets12 = NULL,
                std::pair<int,int>* dofsets21 = NULL,
-               Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null
+               Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null,
+               bool redistribute=true
                );
 
     /*!

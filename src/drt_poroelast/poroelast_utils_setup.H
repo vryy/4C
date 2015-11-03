@@ -24,6 +24,9 @@
 
 #include "../drt_scatra_ele/scatra_ele.H"
 
+#include "../drt_particle/binning_strategy.H"
+
+
 namespace POROELAST
 {
 /// POROELAST::UTILS: Random stuff that might be helpful when dealing with poroelasticity problems
@@ -32,7 +35,7 @@ namespace UTILS
 
 /// setup poro discretization,i.e. clone the structural discretization
 template<class PoroCloneStrategy>
-void SetupPoro()
+void SetupPoro(bool setmaterialpointers=true)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -68,7 +71,8 @@ void SetupPoro()
     DRT::UTILS::CloneDiscretization<PoroCloneStrategy>(structdis,fluiddis);
 
     //set material pointers
-    POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,fluiddis);
+    if(setmaterialpointers)
+      POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,fluiddis);
 
     // if one discretization is a subset of the other, they will differ in node number (and element number)
     // we assume matching grids for the overlapping part here
@@ -139,7 +143,7 @@ void SetupPoro()
 
 //! setup discretization, includes cloning the structure discretization
 template<class PoroCloneStrategy, class PoroScatraCloneStrategy>
-void SetupPoroScatraDiscretizations(const Epetra_Comm& comm)
+void SetupPoroScatraDiscretizations(bool setmaterialpointers=true)
 {
   // Scheme    : the structure discretization is received from the input. Then, an ale-fluid disc.is cloned from the struct. one.
   //  After that, an ale-scatra disc. is cloned from the structure discretization.
@@ -151,8 +155,8 @@ void SetupPoroScatraDiscretizations(const Epetra_Comm& comm)
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("porofluid");
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
 
-  // setup of the discretizations, including clone strategy
-  POROELAST::UTILS::SetupPoro<PoroCloneStrategy>();
+  // setup of the discretizations, including clone strategy (do not set material pointers, this will be done here)
+  POROELAST::UTILS::SetupPoro<PoroCloneStrategy>(false);
 
   //3.-Access the scatra discretization, make sure it's empty, and fill it by cloning the structural one.
   if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
@@ -176,6 +180,7 @@ void SetupPoroScatraDiscretizations(const Epetra_Comm& comm)
     }
 
     // assign materials. Order is important here!
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,fluiddis);
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,scatradis);
     POROELAST::UTILS::SetMaterialPointersMatchingGrid(fluiddis,scatradis);
 
@@ -203,6 +208,25 @@ void SetupPoroScatraDiscretizations(const Epetra_Comm& comm)
   }
   else
   {
+    // create vector of discr.
+    std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+    dis.push_back(structdis);
+    dis.push_back(fluiddis);
+    dis.push_back(scatradis);
+
+    std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
+    std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
+
+    // redistribute discr. with help of binning strategy
+    if(structdis->Comm().NumProc()>1)
+    {
+      /// binning strategy is created and parallel redistribution is performed
+      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
+          Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
+    }
+    //set material pointers
+    POROELAST::UTILS::SetMaterialPointersMatchingGrid(structdis,fluiddis);
+
     //first call FillComplete for single discretizations.
     //This way the physical dofs are numbered successively
     structdis->FillComplete();

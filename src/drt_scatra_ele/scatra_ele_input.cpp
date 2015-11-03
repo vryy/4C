@@ -67,6 +67,8 @@ bool DRT::ELEMENTS::Transport::ReadElement(
     impltype_ = INPAR::SCATRA::impltype_poro;
   else if(impltype == "PoroReac")
     impltype_ = INPAR::SCATRA::impltype_pororeac;
+  else if(impltype == "PoroReacECM")
+    impltype_ = INPAR::SCATRA::impltype_pororeacECM;
   else
     dserror("Transport element received invalid implementation type!");
 

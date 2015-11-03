@@ -658,6 +658,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP2<distype>::EvaluatePressureEquation(
                                     &dW_dp,
                                     NULL, // not needed
                                     &dW_dJ_,
+                                    NULL, // not needed
                                     &W_
                                     );
   //--------------------------------------------------------

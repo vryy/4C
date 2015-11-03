@@ -140,7 +140,7 @@ SUGRVEL                         no
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_StructPoroReaction MATID 2 POROLAWID 10 INITPOROSITY 0.3
+MAT 1 MAT_StructPoroReaction MATID 2 POROLAWID 10 INITPOROSITY 0.3 DOFIDREACSCALAR 0
 MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e1 PENALTYPARAMETER 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 1.1
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3

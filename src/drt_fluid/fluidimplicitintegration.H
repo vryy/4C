@@ -755,7 +755,8 @@ public:
   virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
                          Teuchos::RCP<const Epetra_Vector> scalaram,
                          Teuchos::RCP<const Epetra_Vector> scalardtam,
-                         Teuchos::RCP<DRT::Discretization> scatradis);
+                         Teuchos::RCP<DRT::Discretization> scatradis,
+                         int dofset);
 
   /*!
   \brief set scalar fields

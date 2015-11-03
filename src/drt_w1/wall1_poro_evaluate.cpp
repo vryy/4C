@@ -60,8 +60,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& par
         std::vector<double> myscalar (la[2].lm_.size());
         DRT::UTILS::ExtractMyValues(*scalarnp,myscalar,la[2].lm_);
 
-        if(NumMaterial()<2)
-          dserror("no second material defined for Wall poro element!");
+        if(NumMaterial()<3)
+          dserror("no third material defined for Wall poro element!");
         Teuchos::RCP<MAT::Material> scatramat = Material(2);
 
         int numscal=1;
@@ -86,23 +86,34 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& par
     }
     else
     {
-      const double time = params.get("total time",0.0);
-    // find out whether we will use a time curve and get the factor
-      int num = 0; // TO BE READ FROM INPUTFILE AT EACH ELEMENT!!!
-      std::vector<double> xrefe; xrefe.resize(3);
-      DRT::Node** nodes = Nodes();
-      // get displacements of this element
-    //  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-     for (int i=0; i<numnod_; ++i){
-        const double* x = nodes[i]->X();
-        xrefe [0] +=  x[0]/numnod_;
-        xrefe [1] +=  x[1]/numnod_;
-        xrefe [2] +=  x[2]/numnod_;
+//      const double time = params.get("total time",0.0);
+//    // find out whether we will use a time curve and get the factor
+//      int num = 0; // TO BE READ FROM INPUTFILE AT EACH ELEMENT!!!
+//      std::vector<double> xrefe; xrefe.resize(3);
+//      DRT::Node** nodes = Nodes();
+//      // get displacements of this element
+//    //  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+//     for (int i=0; i<numnod_; ++i){
+//        const double* x = nodes[i]->X();
+//        xrefe [0] +=  x[0]/numnod_;
+//        xrefe [1] +=  x[1]/numnod_;
+//        xrefe [2] +=  x[2]/numnod_;
+//
+//      }
+//      const double* coordgpref = &xrefe[0];
+//      double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0,coordgpref,time,NULL);
+//      params.set<double>("scalar",functfac);
 
-      }
-      const double* coordgpref = &xrefe[0];
-      double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0,coordgpref,time,NULL);
-      params.set<double>("scalar",functfac);
+//      Teuchos::RCP<std::vector<double> > scalar = Teuchos::rcp( new std::vector<double>(4,0.0) );
+//      for(int i=0; i<numnod_; i++)
+//      {
+//          scalar->at(0) = 0.0;
+//          scalar->at(1) = 17.6;
+//          scalar->at(2) = 0.0;
+//          scalar->at(3) = 0.0;
+//      }
+//
+//      params.set("scalar",scalar);
     }
   }
 

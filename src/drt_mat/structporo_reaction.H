@@ -49,6 +49,7 @@ namespace MAT
         /// @name material parameters
         //@{
 
+        int dofIDReacScalar_;
         //@}
 
     }; // class StructPoro
@@ -159,14 +160,15 @@ namespace MAT
                              ) ;
 
       //! evaluate constitutive relation for porosity and compute derivatives
-     virtual void ConstitutiveDerivatives(Teuchos::ParameterList& params,       ///< (i) parameter list
-                                                    double     press,   ///< (i) fluid pressure at gauss point
-                                                    double     J,       ///< (i) Jacobian determinant at gauss point
-                                                    double     porosity,///< (i) porosity at gauss point
-                                                    double*    dW_dp,   ///< (o) derivative of potential w.r.t. pressure
-                                                    double*    dW_dphi, ///< (o) derivative of potential w.r.t. porosity
-                                                    double*    dW_dJ,   ///< (o) derivative of potential w.r.t. jacobian
-                                                    double*    W        ///< (o) inner potential
+     virtual void ConstitutiveDerivatives(Teuchos::ParameterList& params,   ///< (i) parameter list
+                                                    double     press,       ///< (i) fluid pressure at gauss point
+                                                    double     J,           ///< (i) Jacobian determinant at gauss point
+                                                    double     porosity,    ///< (i) porosity at gauss point
+                                                    double*    dW_dp,       ///< (o) derivative of potential w.r.t. pressure
+                                                    double*    dW_dphi,     ///< (o) derivative of potential w.r.t. porosity
+                                                    double*    dW_dJ,       ///< (o) derivative of potential w.r.t. jacobian
+                                                    double*    dW_dphiref,  ///< (o) derivative of potential w.r.t. jacobian
+                                                    double*    W            ///< (o) inner potential
                                                     );
 
       /// return copy of this material object
@@ -215,7 +217,9 @@ namespace MAT
 
     protected:
 
-      virtual void Reaction(double porosity,
+      virtual void Reaction(const double porosity,
+                            const double J,
+                            Teuchos::RCP<std::vector<double> > scalars,
                             Teuchos::ParameterList& params);
 
       /// my material parameters

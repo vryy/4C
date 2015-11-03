@@ -238,7 +238,8 @@ namespace ADAPTER {
     virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
                                    Teuchos::RCP<const Epetra_Vector> scalaram,
                                    Teuchos::RCP<const Epetra_Vector> scalardtam,
-                                   Teuchos::RCP<DRT::Discretization> scatradis) = 0;
+                                   Teuchos::RCP<DRT::Discretization> scatradis,
+                                   int dofset=0) = 0;
 
     /// set scalar fields
     virtual void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,

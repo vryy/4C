@@ -441,7 +441,6 @@ void POROELAST::PoroBase::SetupCoupling()
     porositysplitter_ = POROELAST::UTILS::BuildPoroSplitter(StructureField()->Discretization());
   }
 
-
   coupfs_ = Teuchos::rcp(new ADAPTER::Coupling());
   int ndof = ndim;
 
@@ -459,7 +458,7 @@ void POROELAST::PoroBase::SetupCoupling()
                              *fluidnoderowmap,
                              *fluidnoderowmap,
                              ndof,
-                             not submeshes_);
+                             false);
     }
     else
     {
@@ -468,7 +467,7 @@ void POROELAST::PoroBase::SetupCoupling()
                              *structnoderowmap,
                              *fluidnoderowmap,
                              ndof,
-                             not submeshes_);
+                             true);
     }
 
     FluidField()->SetMeshMap(coupfs_->SlaveDofMap());

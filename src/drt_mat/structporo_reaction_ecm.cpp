@@ -16,13 +16,16 @@
 
 #include <vector>
 #include "structporo_reaction_ecm.H"
+#include "poro_law.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::StructPoroReactionECM::StructPoroReactionECM(Teuchos::RCP<MAT::PAR::Material> matdata) :
-  StructPoroReaction(matdata)
+  StructPoroReaction(matdata),
+  densCollagen_(matdata->GetDouble("DENSCOLLAGEN"))
 {
 }
 
@@ -47,6 +50,10 @@ DRT::ParObject* MAT::StructPoroReactionECMType::Create(const std::vector<char> &
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::StructPoroReactionECM::StructPoroReactionECM() :
+  refporosity_old_(-1.0),
+  refporositydot_old_(0.0),
+  chempot_(0.0),
+  chempot_init_(0.0),
   params_(NULL)
 {
 }
@@ -57,6 +64,8 @@ MAT::StructPoroReactionECM::StructPoroReactionECM(MAT::PAR::StructPoroReactionEC
   StructPoroReaction(params),
   refporosity_old_(-1.0),
   refporositydot_old_(0.0),
+  chempot_(0.0),
+  chempot_init_(0.0),
   params_(params)
 {
 }
@@ -67,6 +76,25 @@ void MAT::StructPoroReactionECM::Setup(int numgp,DRT::INPUT::LineDefinition* lin
 {
   StructPoroReaction::Setup(numgp,linedef);
   refporosity_old_ = params_->initporosity_;
+
+  double dpsidphiref = 0.0;
+  Teuchos::ParameterList params;
+  params_->porolaw_->ConstitutiveDerivatives(
+      params,
+      0.0,
+      1.0,
+      params_->initporosity_,
+      refporosity_,
+      NULL,
+      NULL,
+      NULL,
+      &dpsidphiref,
+      NULL);
+
+  const double initphi = params_->initporosity_;
+  const double deltaphi = refporosity_ - initphi;
+
+  chempot_init_=-(1.0-deltaphi/(1.0-initphi))/mat_->Density()*dpsidphiref;
 }
 
 /*----------------------------------------------------------------------*/
@@ -90,6 +118,8 @@ void MAT::StructPoroReactionECM::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, refporosity_old_);
   // refporositydot_old_
   AddtoPack(data, refporositydot_old_);
+  // chempot_init_
+  AddtoPack(data, chempot_init_);
 
   // add base class material
   StructPoroReaction::Pack(data);
@@ -124,6 +154,7 @@ void MAT::StructPoroReactionECM::Unpack(const std::vector<char>& data)
 
   ExtractfromPack(position,data,refporosity_old_);
   ExtractfromPack(position,data,refporositydot_old_);
+  ExtractfromPack(position,data,chempot_init_);
 
   // extract base class material
   std::vector<char> basedata(0);
@@ -136,31 +167,23 @@ void MAT::StructPoroReactionECM::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MAT::StructPoroReactionECM::Reaction(
-      double porosity,
-      Teuchos::ParameterList& params)
+    const double porosity,
+    const double J,
+    Teuchos::RCP<std::vector<double> > scalars,
+    Teuchos::ParameterList& params)
 {
-  if(params.getEntryRCP("scalar")==Teuchos::null)
-   return;
-
-  Teuchos::RCP<std::vector<double> > scalars = params.get<Teuchos::RCP<std::vector<double> > >("scalar");
 
   double dt = params.get<double>("delta time",-1.0);
   //double time = params.get<double>("total time",-1.0);
 
-  //concentration MMP2
-  //double mmp2 = scalars->at(0);
   //concentration C1
-  double c1 = scalars->at(3);
+  double c1 = scalars->at(params_->dofIDReacScalar_);
 
   if(dt < 0.0)
     dserror("time step not available");
 
-  double c1_init = 1.0;
-
-  //Todo: multiply by J!
-  refporosity_ = params_->initporosity_ * exp( 0.1*(c1_init-c1) );
+  refporosity_ = 1.0-J*c1/params_->densCollagen_;
   refporositydot_ = (refporosity_ - refporosity_old_)/dt;
-
 
 }
 
@@ -180,6 +203,9 @@ void MAT::StructPoroReactionECM::VisNames(std::map<std::string,int>& names)
 {
   //call base class
   StructPoroReaction::VisNames(names);
+
+  std::string name = "chemical_potential";
+  names[name] = 1; // scalar
 }
 
 /*----------------------------------------------------------------------*
@@ -189,7 +215,53 @@ bool MAT::StructPoroReactionECM::VisData(const std::string& name, std::vector<do
   //call base class
   if (StructPoroReaction::VisData(name,data,numgp,eleID))
     return true;
+  if (name=="chemical_potential")
+  {
+    if ((int)data.size()!=1) dserror("size mismatch");
+    data[0] = chempot_;
+    return true;
+  }
   return false;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoroReactionECM::ChemPotential(
+    const LINALG::Matrix<6,1>& glstrain,    ///< (i) green lagrange strain
+    const double porosity,                  ///< (i) porosity
+    const double press,                     ///< (i) pressure at gauss point
+    const double J,                         ///< (i) determinant of jacobian at gauss point
+    int EleID,                              ///< (i) element GID
+    double& pot                             ///< (o) chemical potential
+  )
+{
 
+  Teuchos::ParameterList params;
+
+  double psi = 0.0;
+  //evaluate strain energy
+  mat_->StrainEnergy(glstrain,psi,EleID);
+
+  double dpsidphiref = 0.0;
+
+  params_->porolaw_->ConstitutiveDerivatives(
+      params,
+      press,
+      J,
+      porosity,
+      refporosity_,
+      NULL,
+      NULL,
+      NULL,
+      &dpsidphiref,
+      NULL);
+
+  const double initphi = params_->initporosity_;
+  const double deltaphi = refporosity_ - initphi;
+
+  pot=1.0/Density()*psi-(1.0-deltaphi/(1.0-initphi))/mat_->Density()*dpsidphiref-chempot_init_;
+
+  chempot_=pot;
+
+  return;
+}

@@ -619,6 +619,23 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(
       return psi;
     }
     break;
+    case INPAR::MAT::m_structporo:
+    case INPAR::MAT::m_structpororeaction:
+    case INPAR::MAT::m_structpororeactionECM:
+    {
+      // transform the 2d Green-Lagrange strains into 3d notation
+      LINALG::Matrix<6,1> glstrain(true);
+      GreenLagrangePlane3d(Ev, glstrain);
+
+      // strain energy
+      double psi = 0.0;
+
+      // call material for evaluation of strain energy function
+      SolidMaterial()->StrainEnergy(glstrain, psi,Id());
+
+      return psi;
+    }
+    break;
     default:
     {
       dserror("Illegal type of material for this element");

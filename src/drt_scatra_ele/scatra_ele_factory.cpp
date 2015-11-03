@@ -243,7 +243,8 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
 {
   if(DRT::UTILS::DisTypeToDim<distype>::dim != probdim)
     if( problem != INPAR::SCATRA::impltype_std and
-        problem != INPAR::SCATRA::impltype_cardiac_monodomain)
+        problem != INPAR::SCATRA::impltype_cardiac_monodomain and
+        problem != INPAR::SCATRA::impltype_advreac)
       dserror("ImplType '%s' not implemented for transport on manifolds!",SCATRA::ImplTypeToString(problem).c_str());
 
   switch(problem)
@@ -314,7 +315,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   }
   case INPAR::SCATRA::impltype_advreac:
   {
-    return DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype>::Instance(numdofpernode,numscal,disname);
+    return DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_chemo:

@@ -86,7 +86,7 @@ void poro_scatra_drt()
   //2.- Parameter reading
   const Teuchos::ParameterList& poroscatradynparams = problem->PoroScatraControlParams();
 
-  POROELAST::UTILS::SetupPoroScatraDiscretizations<POROELAST::UTILS::PoroelastCloneStrategy,POROELAST::UTILS::PoroScatraCloneStrategy>(comm);
+  POROELAST::UTILS::SetupPoroScatraDiscretizations<POROELAST::UTILS::PoroelastCloneStrategy,POROELAST::UTILS::PoroScatraCloneStrategy>();
 
   //3.- Creation of Poroelastic + Scalar_Transport problem. (Discretization called inside)
   Teuchos::RCP<POROELAST::PoroScatraBase> poro_scatra = POROELAST::UTILS::CreatePoroScatraAlgorithm(poroscatradynparams, comm);

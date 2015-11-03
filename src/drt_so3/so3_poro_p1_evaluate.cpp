@@ -671,6 +671,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
                                       &dW_dp, //dW_dp not needed
                                       &dW_dphi,
                                       &dW_dJ,
+                                      NULL,
                                       &W);
     //--------------------------------------------------------
 
@@ -988,6 +989,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1OD(
                                       &dW_dp,
                                       NULL, // not needed
                                       NULL, // not needed
+                                      NULL,  // not needed
                                       NULL  // not needed
                                       );
     //--------------------------------------------------------

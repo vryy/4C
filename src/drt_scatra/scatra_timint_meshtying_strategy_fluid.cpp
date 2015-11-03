@@ -41,9 +41,6 @@ type_(INPAR::FLUID::no_meshtying)
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyFluid::EvaluateMeshtying() const
 {
-  // safety check
-  if(scatratimint_->IsALE())
-    dserror("ALE case for mesh tying not yet supported in SCATRA!");
 
   // need to complete system matrix due to subsequent matrix-matrix multiplications
   scatratimint_->SystemMatrixOperator()->Complete();

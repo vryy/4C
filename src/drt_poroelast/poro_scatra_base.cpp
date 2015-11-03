@@ -153,8 +153,9 @@ void POROELAST::PoroScatraBase::SetScatraSolution()
                                             phinp_f,
                                             phin_f,
                                             phidtnp,
-                                            scatra_->ScaTraField()->Discretization()
-                                            //poro_->FluidField()->Discretization()
+                                            //scatra_->ScaTraField()->Discretization()
+                                            poro_->FluidField()->Discretization(),
+                                            2
                                             );
 }
 
@@ -294,13 +295,15 @@ void POROELAST::PoroScatraBase::SetupCoupling(
                                       NULL,
                                       &dofsets12_structurescatra,
                                       &dofsets21_structurescatra,
-                                      Teuchos::null);
+                                      Teuchos::null,
+                                      false);
     volcoupl_fluidscatra_->Setup( fluiddis,
                                   scatradis,
                                   NULL,
                                   NULL,
                                   &dofsets12_fluidscatra,
                                   &dofsets21_fluidscatra,
-                                  Teuchos::null);
+                                  Teuchos::null,
+                                  false);
   }
 }

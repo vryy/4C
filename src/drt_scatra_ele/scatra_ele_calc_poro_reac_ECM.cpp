@@ -156,19 +156,22 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetAdvancedReactionCoeffi
     const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
     if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
 
-    Teuchos::RCP<MAT::So3Material> structmat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(my::ele_->Material(1));
-    if(structmat == Teuchos::null)
-      dserror("cast to MAT::So3Material failed!");
-    double structenergy = ComputeStructureEnergy(structmat);
-
     for (int k = 0;k<advreac::numcond_;++k)
     {
       int matid = actmat->ReacID(k);
       Teuchos::RCP< MAT::Material> singlemat = actmat->MaterialById(matid);
 
       Teuchos::RCP<MAT::ScatraMatPoroECM> scatramat = Teuchos::rcp_dynamic_cast<MAT::ScatraMatPoroECM>(singlemat);
+
       if(scatramat != Teuchos::null)
-        scatramat->ComputeReacCoeff(structenergy);
+      {
+        Teuchos::RCP<MAT::StructPoroReactionECM> structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoroReactionECM>(my::ele_->Material(1));
+        if(structmat == Teuchos::null)
+          dserror("cast to MAT::StructPoroReactionECM failed!");
+        double structpot = ComputeStructChemPotential(structmat);
+
+        scatramat->ComputeReacCoeff(structpot);
+      }
     }
   }
 
@@ -189,8 +192,8 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetAdvancedReactionCoeffi
  |  evaluate single material  (protected)                    vuong 19/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ComputeStructureEnergy(
-    Teuchos::RCP<MAT::So3Material> structmat
+double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ComputeStructChemPotential(
+    Teuchos::RCP<MAT::StructPoroReactionECM>& structmat
   )
 {
 
@@ -206,7 +209,14 @@ double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ComputeStructureEnergy(
   LINALG::Matrix<my::nsd_,my::nsd_> xji0(true);
   xji0.Invert(xjm0);
 
+  // inverse of transposed jacobian "ds/dX"
+  const double det0= xjm0.Determinant();
+
   my::xjm_.MultiplyNT(my::deriv_,my::xyze_);
+  const double det = my::xjm_.Determinant();
+
+  // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
+  const double J = det/det0;
 
   // ----------------------compute derivatives N_XYZ_ at gp w.r.t. material coordinates
   ///first derivatives of shape functions w.r.t. material coordinates
@@ -247,10 +257,14 @@ double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ComputeStructureEnergy(
     }
   }
 
-  double psi = 0.0;
-  structmat->StrainEnergy(glstrain,psi,my::eid_);
+  //fluid pressure at gauss point
+  const double pres = my::eprenp_.Dot(my::funct_);
 
-  return psi;
+  double pot = 0.0;
+
+  structmat->ChemPotential(glstrain,poro::DiffManager()->GetPorosity(0),pres,J,my::eid_,pot);
+
+  return pot;
 }
 
 

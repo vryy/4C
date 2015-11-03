@@ -522,6 +522,7 @@ void MAT::StructPoro::ConstitutiveDerivatives(Teuchos::ParameterList& params,
                                               double*    dW_dp,
                                               double*    dW_dphi,
                                               double*    dW_dJ,
+                                              double*    dW_dphiref,
                                               double*    W)
 {
   if(porosity == 0.0)
@@ -535,6 +536,7 @@ void MAT::StructPoro::ConstitutiveDerivatives(Teuchos::ParameterList& params,
                          dW_dp,
                          dW_dphi,
                          dW_dJ,
+                         dW_dphiref,
                          W);
 
   return;
@@ -551,6 +553,7 @@ void MAT::StructPoro::ConstitutiveDerivatives(Teuchos::ParameterList& params,
                                               double*    dW_dp,
                                               double*    dW_dphi,
                                               double*    dW_dJ,
+                                              double*    dW_dphiref,
                                               double*    W)
 {
   params_->porolaw_->ConstitutiveDerivatives(
@@ -562,6 +565,7 @@ void MAT::StructPoro::ConstitutiveDerivatives(Teuchos::ParameterList& params,
     dW_dp,
     dW_dphi,
     dW_dJ,
+    dW_dphiref,
     W);
 
   return;

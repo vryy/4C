@@ -276,7 +276,8 @@ DRT::ELEMENTS::Transport::Transport(const DRT::ELEMENTS::Transport& old) :
 DRT::Element(old),
 data_(old.data_),
 numdofpernode_(old.numdofpernode_),
-distype_(old.distype_)
+distype_(old.distype_),
+impltype_(old.impltype_)
 {
     return;
 }

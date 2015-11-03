@@ -20,7 +20,8 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::StructPoroReaction::StructPoroReaction(Teuchos::RCP<MAT::PAR::Material> matdata) :
-  StructPoro(matdata)
+  StructPoro(matdata),
+  dofIDReacScalar_(matdata->GetInt("DOFIDREACSCALAR"))
 {
 }
 
@@ -148,7 +149,13 @@ void MAT::StructPoroReaction::ComputePorosity( Teuchos::ParameterList& params,
                                        bool save)
 {
   //evaluate change of reference porosity due to reaction
-  Reaction(porosity,params);
+
+  //TODO: do not read from parameter list!
+  if(params.isParameter("scalar"))
+  {
+    Teuchos::RCP<std::vector<double> > scalars = params.get<Teuchos::RCP<std::vector<double> > >("scalar");
+    Reaction(porosity,J,scalars,params);
+  }
 
   //call base class to compute porosity
   StructPoro::ComputePorosity(
@@ -176,13 +183,20 @@ void MAT::StructPoroReaction::ConstitutiveDerivatives(Teuchos::ParameterList& pa
                                               double*    dW_dp,
                                               double*    dW_dphi,
                                               double*    dW_dJ,
+                                              double*    dW_dphiref,
                                               double*    W)
 {
   if(porosity == 0.0)
-    dserror("porosity equals zero!! Wrong initial porosity?");
+    dserror("porosity equals zero!! Wrong initial porosity? (or wrong collagen density for ecm material)");
 
   //evaluate change of reference porosity due to reaction
-  Reaction(porosity,params);
+
+  //TODO: do not read from parameter list!
+  if(params.isParameter("scalar"))
+  {
+    Teuchos::RCP<std::vector<double> > scalars = params.get<Teuchos::RCP<std::vector<double> > >("scalar");
+    Reaction(porosity,J,scalars,params);
+  }
 
   //call base class
   StructPoro::ConstitutiveDerivatives(params,
@@ -193,6 +207,7 @@ void MAT::StructPoroReaction::ConstitutiveDerivatives(Teuchos::ParameterList& pa
                          dW_dp,
                          dW_dphi,
                          dW_dJ,
+                         dW_dphiref,
                          W);
 
   return;
@@ -200,19 +215,17 @@ void MAT::StructPoroReaction::ConstitutiveDerivatives(Teuchos::ParameterList& pa
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::StructPoroReaction::Reaction(double porosity,
+void MAT::StructPoroReaction::Reaction(const double porosity,
+                                       const double J,
+                                       Teuchos::RCP<std::vector<double> > scalars,
                                        Teuchos::ParameterList& params)
 {
-  if(params.getEntryRCP("scalar")==Teuchos::null)
-   return;
-
-  Teuchos::RCP<std::vector<double> > scalars = params.get<Teuchos::RCP<std::vector<double> > >("scalar");
 
   //double dt = params.get<double>("delta time",-1.0);
   double time = params.get<double>("total time",-1.0);
 
-  //only use first scalar for this type of reaction
-  double cnp = scalars->at(0);
+  // use scalar for this type of reaction
+  double cnp = scalars->at(params_->dofIDReacScalar_);
 
   if(time!=-1.0)
   {

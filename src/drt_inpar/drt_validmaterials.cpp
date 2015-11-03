@@ -227,6 +227,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"NUMSCAL","number of reactions for these elements");
     AddNamedIntVector(m,"STOICH","advanced reaction list","NUMSCAL");
     AddNamedReal(m,"REACCOEFF","reaction coefficient");
+    AddNamedReal(m,"REACSCALE","scaling for reaction coefficient");
     AddNamedString(m,"COUPLING","type of coupling", "no_coupling",false);
     AddNamedRealVector(m,"ROLE","role in michaelis-menten like reactions","NUMSCAL",-1.0,true);
     AddNamedReal(m,"REACSTART","starting point of reaction",-1.0,true);
@@ -1920,6 +1921,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"MATID","ID of structure material");
     AddNamedInt(m,"POROLAWID","ID of porosity law");
     AddNamedReal(m,"INITPOROSITY","initial porosity of porous medium");
+    AddNamedInt(m,"DOFIDREACSCALAR","Id of DOF within scalar transport problem, which controls the reaction");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1934,6 +1936,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"MATID","ID of structure material");
     AddNamedInt(m,"POROLAWID","ID of porosity law");
     AddNamedReal(m,"INITPOROSITY","initial porosity of porous medium");
+    AddNamedReal(m,"DENSCOLLAGEN","density of collagen");
+    AddNamedInt(m,"DOFIDREACSCALAR","Id of DOF within scalar transport problem, which controls the reaction");
     AppendMaterialDefinition(matlist,m);
   }
   /*----------------------------------------------------------------------*/

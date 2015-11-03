@@ -4587,7 +4587,8 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(
    Teuchos::RCP<const Epetra_Vector> scalaraf,
    Teuchos::RCP<const Epetra_Vector> scalaram,
    Teuchos::RCP<const Epetra_Vector> scalardtam,
-   Teuchos::RCP<DRT::Discretization> scatradis)
+   Teuchos::RCP<DRT::Discretization> scatradis,
+   int dofset)
 {
   // initializations
   int err(0);
@@ -4613,8 +4614,8 @@ void FLD::FluidImplicitTimeInt::SetIterScalarFields(
       DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
 
       // find out the global dof id of the last(!) dof at the scatra node
-      const int numscatradof = scatradis->NumDof(0,lscatranode);
-      const int globalscatradofid = scatradis->Dof(0,lscatranode,numscatradof-1);
+      const int numscatradof = scatradis->NumDof(dofset,lscatranode);
+      const int globalscatradofid = scatradis->Dof(dofset,lscatranode,numscatradof-1);
       const int localscatradofid = scalaraf->Map().LID(globalscatradofid);
       if (localscatradofid < 0)
         dserror("localdofid not found in map for given globaldofid");

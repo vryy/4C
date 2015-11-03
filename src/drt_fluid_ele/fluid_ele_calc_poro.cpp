@@ -1630,9 +1630,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
                        &dphi_dpp,
                        false);
 
-     if(porosity_ < 1e-15 or porosity_ > 1.0)
-        dserror("invalid porosity: %f",porosity_);
-
      double dphi_dp_old=0.0;
      double dphi_dJ_old=0.0;
      double dphi_dJdp_old=0.0;

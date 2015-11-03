@@ -25,7 +25,8 @@
 MAT::PAR::ScatraMatPoroECM::ScatraMatPoroECM(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
-: ScatraReactionMat(matdata)
+: ScatraReactionMat(matdata),
+  reacscale_(matdata->GetDouble("REACSCALE"))
 {
 }
 
@@ -58,7 +59,8 @@ MAT::ScatraMatPoroECM::ScatraMatPoroECM()
 /*----------------------------------------------------------------------*/
 MAT::ScatraMatPoroECM::ScatraMatPoroECM(MAT::PAR::ScatraMatPoroECM* params)
   :   ScatraReactionMat(params),
-      params_(params)
+      params_(params),
+      reaccoeff_(0.0)
 {
 }
 
@@ -125,8 +127,8 @@ void MAT::ScatraMatPoroECM::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ScatraMatPoroECM::ComputeReacCoeff(double structenergy)
+void MAT::ScatraMatPoroECM::ComputeReacCoeff(double chempot)
 {
-  reaccoeff_ = params_->reaccoeff_*exp(-1.0*structenergy);
+  reaccoeff_ = params_->reaccoeff_*exp( params_->reacscale_*chempot);
   return;
 }

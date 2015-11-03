@@ -43,7 +43,8 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> dis1, // o
                                     std::vector<int>* coupleddof21,
                                     std::pair<int,int>* dofsets12,
                                     std::pair<int,int>* dofsets21,
-                                    Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy)
+                                    Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy,
+                                    bool redistribute)
 {
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   const int dim = DRT::Problem::Instance()->NDim();
@@ -70,7 +71,7 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> dis1, // o
   std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
 
   // redistribute discr. with help of binning strategy
-  if(dis1->Comm().NumProc()>1)
+  if(dis1->Comm().NumProc()>1 and redistribute)
   {
     /// binning strategy is created and parallel redistribution is performed
     binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
@@ -100,7 +101,7 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> dis1, // o
   P12_ = coupdis->GetPMatrix12();
   P21_ = coupdis->GetPMatrix21();
 
-  if(dis1->Comm().NumProc()>1)
+  if(dis1->Comm().NumProc()>1 and redistribute)
   {
     /// revert extended ghosting
     if (not DRT::INPUT::IntegralValue<int>(params, "KEEP_EXTENDEDGHOSTING"))

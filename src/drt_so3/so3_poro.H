@@ -167,6 +167,13 @@ public:
 
   //@}
 
+  /*!
+  \brief Return value how expensive it is to evaluate this element
+
+  \param double (out): cost to evaluate this element
+  */
+  virtual double EvaluationCost() { return 10000.0; }
+
   //! @name Evaluation
 
   /*!

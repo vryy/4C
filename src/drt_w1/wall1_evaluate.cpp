@@ -269,6 +269,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
         Epetra_BLAS blas;  // BLAS front-end dummy
         blas.COPY((*alphao).M()*(*alphao).N(), (*alpha).A(), (*alphao).A());  // alphao := alpha
       }
+      SolidMaterial()->Update();
     }
     break;
     case calc_struct_reset_istep:
@@ -1363,6 +1364,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
    }
    else
    {
+     params.set<int>("gp",ip);
      w1_call_matgeononl(strain,stress,C,numeps,material,params);
 
      // return gp strains (only in case of strain output)

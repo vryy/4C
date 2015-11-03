@@ -163,7 +163,7 @@ void immersed_problem_drt()
     {
       //use PoroelastImmersedCloneStrategy to build FluidPoroImmersed elements
       POROELAST::UTILS::SetupPoroScatraDiscretizations
-        <POROELAST::UTILS::PoroelastImmersedCloneStrategy,POROELAST::UTILS::PoroScatraCloneStrategy>(comm);
+        <POROELAST::UTILS::PoroelastImmersedCloneStrategy,POROELAST::UTILS::PoroScatraCloneStrategy>();
 
       problem->GetDis("cell")->FillComplete(true,true,true);
 

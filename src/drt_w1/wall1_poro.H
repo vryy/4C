@@ -315,7 +315,8 @@ namespace ELEMENTS
       calc_struct_nlnstiffmass,
       calc_struct_stress,
       calc_struct_multidofsetcoupling,//!< structure-fluid coupling: internal force, stiffness for poroelasticity (structural part)
-      calc_struct_poroscatra_coupling
+      calc_struct_poroscatra_coupling,
+      calc_struct_energy
     };
 
     //! vector of inverses of the jacobian in material frame

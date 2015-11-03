@@ -97,8 +97,9 @@ public:
   virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
       Teuchos::RCP<const Epetra_Vector> scalaram,
       Teuchos::RCP<const Epetra_Vector> scalardtam,
-      Teuchos::RCP<DRT::Discretization> scatradis)
-  { return fluid_->SetIterScalarFields(scalaraf, scalaram, scalardtam, scatradis); }
+      Teuchos::RCP<DRT::Discretization> scatradis,
+      int dofset=0)
+  { return fluid_->SetIterScalarFields(scalaraf, scalaram, scalardtam, scatradis, dofset); }
   virtual void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
       const double             thermpressnp,
       Teuchos::RCP<const Epetra_Vector> scatraresidual,

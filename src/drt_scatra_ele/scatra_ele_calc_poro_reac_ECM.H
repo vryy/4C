@@ -20,7 +20,7 @@
 
 namespace MAT
 {
-class So3Material;
+class StructPoroReactionECM;
 }
 
 
@@ -80,7 +80,9 @@ public:
     const int                               iquad=-1   //!< id of current gauss point (default = -1)
   );
 
-  double ComputeStructureEnergy(Teuchos::RCP<MAT::So3Material> structmat);
+  //! ComputeStructChemPotential
+  double ComputeStructChemPotential(
+      Teuchos::RCP<MAT::StructPoroReactionECM>& structmat);
 };
 
 /// Scatra reaction manager for Advanced_Reaction

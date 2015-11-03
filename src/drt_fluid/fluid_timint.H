@@ -306,7 +306,8 @@ public:
       Teuchos::RCP<const Epetra_Vector> scalaraf,
       Teuchos::RCP<const Epetra_Vector> scalaram,
       Teuchos::RCP<const Epetra_Vector> scalardtam,
-      Teuchos::RCP<DRT::Discretization> scatradis)
+      Teuchos::RCP<DRT::Discretization> scatradis,
+      int dofset)
   { dserror("Not implemented in the base class, may be overridden by a subclass."); }
 
   /// set scalar fields

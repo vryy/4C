@@ -82,12 +82,14 @@ void MAT::PAR::PoroLawLinear::ConstitutiveDerivatives(
     double*    dW_dp,
     double*    dW_dphi,
     double*    dW_dJ,
+    double*    dW_dphiref,
     double*    W)
 {
-  if(W)       *W       = bulkmodulus_ * (porosity - refporosity - (1.0-refporosity) * (J-1.0))-press;
-  if(dW_dp)   *dW_dp   = -1.0;
-  if(dW_dphi) *dW_dphi = bulkmodulus_;
-  if(dW_dJ)   *dW_dJ   = -bulkmodulus_*(1.0-refporosity);
+  if(W)            *W            = bulkmodulus_ * (porosity - refporosity - (1.0-refporosity) * (J-1.0))-press;
+  if(dW_dp)        *dW_dp        = -1.0;
+  if(dW_dphi)      *dW_dphi      = bulkmodulus_;
+  if(dW_dJ)        *dW_dJ        = -bulkmodulus_*(1.0-refporosity);
+  if(dW_dphiref)   *dW_dphiref   = bulkmodulus_*(-2.0+J);
 
   return;
 }
@@ -149,8 +151,6 @@ void MAT::PAR::PoroLawNeoHooke::ComputePorosity(
 
   const double phi = 1 / (2 * a) * (-b + d);
 
-  if (phi >= 1.0 or phi < 0.0)
-    dserror("invalid porosity: %f", porosity);
 
   const double d_p = J * (-b+2.0*penalty) * d_inv;
   const double d_p_p = ( d * J + d_p * (b - 2.0*penalty) ) * d_inv * d_inv * J;
@@ -198,6 +198,7 @@ void MAT::PAR::PoroLawNeoHooke::ConstitutiveDerivatives(
     double*    dW_dp,
     double*    dW_dphi,
     double*    dW_dJ,
+    double*    dW_dphiref,
     double*    W)
 {
   //some intermediate values
@@ -211,6 +212,14 @@ void MAT::PAR::PoroLawNeoHooke::ConstitutiveDerivatives(
   if(dW_dp)   *dW_dp   = (-1.0*J*porosity *(1.0-porosity)) * scale;
   if(dW_dphi) *dW_dphi = (2.0*J*a*porosity + b) * scale;
   if(dW_dJ)   *dW_dJ   = (a*porosity*porosity - porosity*a) * scale;
+
+  if(dW_dphiref)
+  {
+    const double dadphiref = J*(bulkmodulus_ / ((1 - refporosity)*(1 - refporosity)) + penaltyparameter_ / (refporosity*refporosity));
+    const double dbdphiref = -1.0*J*dadphiref;
+
+    *dW_dphiref = (J*dadphiref*porosity*porosity + porosity* dbdphiref ) * scale;
+  }
 
   return;
 }
@@ -270,12 +279,14 @@ void MAT::PAR::PoroLawConstant::ConstitutiveDerivatives(
     double*    dW_dp,
     double*    dW_dphi,
     double*    dW_dJ,
+    double*    dW_dphiref,
     double*    W)
 {
-  if(W)       *W       = porosity-refporosity;
-  if(dW_dp)   *dW_dp   = 0.0;
-  if(dW_dphi) *dW_dphi = 1.0;
-  if(dW_dJ)   *dW_dJ   = 0.0;
+  if(W)           *W            = porosity-refporosity;
+  if(dW_dp)       *dW_dp        = 0.0;
+  if(dW_dphi)     *dW_dphi      = 1.0;
+  if(dW_dJ)       *dW_dJ        = 0.0;
+  if(dW_dphiref)  *dW_dphiref   = -1.0;
 
   return;
 }

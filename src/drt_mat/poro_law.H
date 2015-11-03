@@ -46,6 +46,7 @@ namespace PAR
        double*                 dW_dp,        ///< (o) derivative of potential w.r.t. pressure
        double*                 dW_dphi,      ///< (o) derivative of potential w.r.t. porosity
        double*                 dW_dJ,        ///< (o) derivative of potential w.r.t. jacobian
+       double*                 dW_dphiref,   ///< (o) derivative of potential w.r.t. reference porosity
        double*                 W             ///< (o) inner potential
          )=0;
 
@@ -63,6 +64,7 @@ namespace PAR
        double*       dphi_dpp,        ///< (o) second derivative of porosity w.r.t. pressure at gauss point
        double*       dphi_dphiref     ///< (o) derivative of porosity w.r.t. reference porosity (only nonzero with reaction)
        )=0;
+
 
   };
 
@@ -100,6 +102,7 @@ namespace PAR
         double*                 dW_dp,        ///< (o) derivative of potential w.r.t. pressure
         double*                 dW_dphi,      ///< (o) derivative of potential w.r.t. porosity
         double*                 dW_dJ,        ///< (o) derivative of potential w.r.t. jacobian
+        double*                 dW_dphiref,   ///< (o) derivative of potential w.r.t. reference porosity
         double*                 W             ///< (o) inner potential
           );
 
@@ -158,6 +161,7 @@ namespace PAR
        double*                 dW_dp,        ///< (o) derivative of potential w.r.t. pressure
        double*                 dW_dphi,      ///< (o) derivative of potential w.r.t. porosity
        double*                 dW_dJ,        ///< (o) derivative of potential w.r.t. jacobian
+       double*                 dW_dphiref,   ///< (o) derivative of potential w.r.t. reference porosity
        double*                 W             ///< (o) inner potential
          );
 
@@ -205,6 +209,7 @@ namespace PAR
        double*                 dW_dp,        ///< (o) derivative of potential w.r.t. pressure
        double*                 dW_dphi,      ///< (o) derivative of potential w.r.t. porosity
        double*                 dW_dJ,        ///< (o) derivative of potential w.r.t. jacobian
+       double*                 dW_dphiref,   ///< (o) derivative of potential w.r.t. reference porosity
        double*                 W             ///< (o) inner potential
          );
 

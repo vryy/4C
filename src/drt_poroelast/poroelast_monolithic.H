@@ -427,7 +427,6 @@ namespace POROELAST
       Teuchos::RCP<Epetra_Vector> delhist_;
       //! Aitken factor
       double mu_;
-
       //@}
 
       //! @name matrix equilibration
@@ -437,8 +436,8 @@ namespace POROELAST
 
       //! flag for row equilibration of global system of equations
       bool rowequilibration_;
-
       //@}
+
   }; // Monolithic
 
 } // namespace POROELAST

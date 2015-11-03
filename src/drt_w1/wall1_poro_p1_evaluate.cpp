@@ -94,6 +94,7 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::Evaluate(Teuchos::ParameterList& param
   std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_multidofsetcoupling")   act = my::calc_struct_multidofsetcoupling;
+  else if (action=="calc_struct_energy")        act = my::calc_struct_energy;
 
   // what should the element do
   switch(act)
@@ -115,6 +116,25 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::Evaluate(Teuchos::ParameterList& param
                       elevec1_epetra,
                       elevec2_epetra,
                       elevec3_epetra);
+  }
+  break;
+  //==================================================================================
+  case my::calc_struct_energy:
+  {
+    //in some cases we need to write/change some data before evaluating
+    my::PreEvaluate(params,
+                discretization,
+                la);
+
+    //evaluate parent solid element
+    Wall1::Evaluate(params,
+        discretization,
+        la[0].lm_,
+        elemat1_epetra,
+        elemat2_epetra,
+        elevec1_epetra,
+        elevec2_epetra,
+        elevec3_epetra);
   }
   break;
   //==================================================================================
@@ -617,6 +637,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1(
                                       &dW_dp, //dW_dp not needed
                                       &dW_dphi,
                                       &dW_dJ,
+                                      NULL,
                                       &W);
 
     //--------------------------------------------------------
@@ -927,6 +948,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::GaussPointLoopP1OD(
                                       J,
                                       porosity,
                                       &dW_dp,
+                                      NULL, // not needed
                                       NULL, // not needed
                                       NULL, // not needed
                                       NULL  // not needed
