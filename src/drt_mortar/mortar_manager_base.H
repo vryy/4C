@@ -100,8 +100,8 @@ public:
   /*!
   \brief Prepare mortar element for nurbs case
 
-  store knot vector, zerosized information and normal factor
 
+  store knot vector, zerosized information and normal factor
   */
   void PrepareNURBSElement(
       DRT::Discretization& discret,

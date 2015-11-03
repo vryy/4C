@@ -43,9 +43,8 @@ ADAPTER::CouplingNonLinMortar::CouplingNonLinMortar()
   //empty...
 }
 
-
 /*----------------------------------------------------------------------*
- |  setup for nonlinear mortar framework                     farah 10/14|
+ |  initialize nonlinear mortar framework                    farah 10/14|
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingNonLinMortar::Setup(
     Teuchos::RCP<DRT::Discretization>   masterdis,
@@ -53,19 +52,11 @@ void ADAPTER::CouplingNonLinMortar::Setup(
     std::vector<int>                    coupleddof,
     const std::string&                  couplingcond)
 {
-  //TODO: extend this to sliding ale + ALE-dis
-  // vector coupleddof defines degree of freedom which are coupled (1: coupled; 0: not coupled), e.g.:
-  // - fluid 3D meshtying: coupleddof = [1, 1, 1, 1] -> all degrees of freedom (velocity and pressure) are coupled
-  // - fluid 3D meshtying: coupleddof = [1, 1, 1, 0] -> only velocity degrees of freedom are coupled
-  // - fsi 3D: coupleddof = [1, 1, 1] -> at the interface only displacements are coupled
-  // - ....
-
   myrank_= masterdis->Comm().MyPID();
   comm_  = Teuchos::rcp(masterdis->Comm().Clone());
 
-  // initialize maps for row nodes
-  std::map<int, DRT::Node*> masternodes;
-  std::map<int, DRT::Node*> slavenodes;
+  //ParameterList
+  Teuchos::ParameterList input;
 
   // initialize maps for column nodes
   std::map<int, DRT::Node*> mastergnodes;
@@ -74,6 +65,53 @@ void ADAPTER::CouplingNonLinMortar::Setup(
   //initialize maps for elements
   std::map<int, Teuchos::RCP<DRT::Element> > masterelements;
   std::map<int, Teuchos::RCP<DRT::Element> > slaveelements;
+
+  Teuchos::RCP<CONTACT::CoInterface> interface;
+
+  // number of dofs per node based on the coupling vector coupleddof
+  int dof = coupleddof.size();
+
+  // number of coupled dofs (defined in coupleddof by a 1)
+  int numcoupleddof = 0;
+  for(int ii=0; ii<dof; ++ii)
+    if(coupleddof[ii]==1) numcoupleddof+=1;
+
+  ReadMortarCondition(masterdis, slavedis, coupleddof, couplingcond, input, mastergnodes, slavegnodes, masterelements, slaveelements);
+
+  AddMortarNodes(masterdis,slavedis,coupleddof,input,mastergnodes,slavegnodes,masterelements,slaveelements,interface,numcoupleddof);
+
+  AddMortarElements(masterdis,slavedis,input,masterelements,slaveelements,interface,numcoupleddof);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  read mortar condition                                    farah 10/14|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(
+    Teuchos::RCP<DRT::Discretization>   masterdis,
+    Teuchos::RCP<DRT::Discretization>   slavedis,
+    std::vector<int>                    coupleddof,
+    const std::string&                  couplingcond,
+    Teuchos::ParameterList&             input,
+    std::map<int, DRT::Node*>& mastergnodes,
+    std::map<int, DRT::Node*>& slavegnodes,
+    std::map<int, Teuchos::RCP<DRT::Element> >& masterelements,
+    std::map<int, Teuchos::RCP<DRT::Element> >& slaveelements
+    )
+{
+  //TODO: extend this to sliding ale + ALE-dis
+  // vector coupleddof defines degree of freedom which are coupled (1: coupled; 0: not coupled), e.g.:
+  // - fluid 3D meshtying: coupleddof = [1, 1, 1, 1] -> all degrees of freedom (velocity and pressure) are coupled
+  // - fluid 3D meshtying: coupleddof = [1, 1, 1, 0] -> only velocity degrees of freedom are coupled
+  // - fsi 3D: coupleddof = [1, 1, 1] -> at the interface only displacements are coupled
+  // - ....
+
+  // initialize maps for row nodes
+  std::map<int, DRT::Node*> masternodes;
+  std::map<int, DRT::Node*> slavenodes;
+
+
 
   // Coupling condition is defined by "MORTAR COUPLING CONDITIONS"
   // There is only one discretization (masterdis == slavedis). Therefore, the node set have to be
@@ -121,12 +159,11 @@ void ADAPTER::CouplingNonLinMortar::Setup(
   const Teuchos::ParameterList& meshtying = DRT::Problem::Instance()->ContactDynamicParams();
   const Teuchos::ParameterList& wearlist  = DRT::Problem::Instance()->WearParams();
 
-  Teuchos::ParameterList input;
   input.setParameters(inputmortar);
   input.setParameters(meshtying);
   input.setParameters(wearlist);
 
-  input.set<int>("PROBTYPE", INPAR::CONTACT::other);
+  input.set<int>("PROBTYPE", INPAR::CONTACT::other); //if other probtypes, this will be overwritten in overloaded function
 
   bool isnurbs=false;
   // is this a nurbs problem?
@@ -148,6 +185,25 @@ void ADAPTER::CouplingNonLinMortar::Setup(
 //  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST")
 //      != INPAR::MORTAR::parredist_none)
 //    if (comm_->NumProc()>1) parredist = true;
+}
+
+/*----------------------------------------------------------------------*
+ |  add mortar nodes                                         farah 10/14|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::AddMortarNodes(
+    Teuchos::RCP<DRT::Discretization>   masterdis,
+    Teuchos::RCP<DRT::Discretization>   slavedis,
+    std::vector<int>                    coupleddof,
+    Teuchos::ParameterList&             input,
+    std::map<int, DRT::Node*>& mastergnodes,
+    std::map<int, DRT::Node*>& slavegnodes,
+    std::map<int, Teuchos::RCP<DRT::Element> >& masterelements,
+    std::map<int, Teuchos::RCP<DRT::Element> >& slaveelements,
+    Teuchos::RCP<CONTACT::CoInterface>& interface,
+    int numcoupleddof
+    )
+{
+  bool isnurbs = input.get<bool>("NURBS");
 
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   const int dim = DRT::Problem::Instance()->NDim();
@@ -159,11 +215,8 @@ void ADAPTER::CouplingNonLinMortar::Setup(
   INPAR::MORTAR::RedundantStorage redundant =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::RedundantStorage>(input,"REDUNDANT_STORAGE");
 
-  Teuchos::RCP<CONTACT::CoInterface> interface =
-      Teuchos::rcp(new CONTACT::CoInterface(0, *comm_, dim, input,false, redundant));
+  interface = Teuchos::rcp(new CONTACT::CoInterface(0, *comm_, dim, input,false, redundant));
 
-  // number of dofs per node based on the coupling vector coupleddof
-  int dof = coupleddof.size();
 //  if((masterdis->NumDof(masterdis->lRowNode(0))!=dof and slavewithale==true and slidingale==false) or
 //      (slavedis->NumDof(slavedis->lRowNode(0))!=dof and slavewithale==false and slidingale==false))
 //  {
@@ -172,22 +225,20 @@ void ADAPTER::CouplingNonLinMortar::Setup(
 //            "length of coupleddof: %i",masterdis->NumDof(masterdis->lRowNode(0)), dof);
 //  }
 
+  //########## CHECK for a better implementation of this ###################
+  //If this option is used, check functionality ... not sure if this is correct!
   // special case: sliding ale
   // In the sliding ale framework two mortar discretizations are generated from identical
   // masterelement and slaveelement sets. Since node-, dof- and element ids of the original elements are
   // the same, an offset have to be defined
-  int nodeoffset=0;
+  //int nodeoffset=0;
   int dofoffset=0;
-//  if(slidingale==true)
-//  {
-//    nodeoffset = masterdis->NodeRowMap()->MaxAllGID()+1;
-//    dofoffset = masterdis->DofRowMap()->MaxAllGID()+1;
-//  }
-
-  // number of coupled dofs (defined in coupleddof by a 1)
-  int numcoupleddof = 0;
-  for(int ii=0; ii<dof; ++ii)
-    if(coupleddof[ii]==1) numcoupleddof+=1;
+  //  if(slidingale==true)
+  //  {
+  //    nodeoffset = masterdis->NodeRowMap()->MaxAllGID()+1;
+  //    dofoffset = masterdis->DofRowMap()->MaxAllGID()+1;
+  //  }
+  //########## CHECK for a better implementation of this ###################
 
   // feeding master nodes to the interface including ghosted nodes
   std::map<int, DRT::Node*>::const_iterator nodeiter;
@@ -197,7 +248,7 @@ void ADAPTER::CouplingNonLinMortar::Setup(
     // vector containing only the gids of the coupled dofs (size numcoupleddof)
     std::vector<int> dofids(numcoupleddof);
     int ii=0;
-    for (int k=0;k<dof;++k)
+    for (unsigned int k=0;k < coupleddof.size();++k)
     {
       // Should this dof be coupled? (==1),
       if (coupleddof[k]==1)
@@ -230,7 +281,7 @@ void ADAPTER::CouplingNonLinMortar::Setup(
     // vector containing only the gids of the coupled dofs (size numcoupleddof)
     std::vector<int> dofids(numcoupleddof);
     int ii=0;
-    for (int k=0;k<dof;++k)
+    for (unsigned int k=0;k < coupleddof.size();++k)
     {
       // Should this dof be coupled? (==1)
       if (coupleddof[k]==1)
@@ -255,6 +306,44 @@ void ADAPTER::CouplingNonLinMortar::Setup(
 
     interface->AddCoNode(cnode);
   }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  add mortar elements                                      farah 10/14|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::AddMortarElements(
+    Teuchos::RCP<DRT::Discretization>   masterdis,
+    Teuchos::RCP<DRT::Discretization>   slavedis,
+    Teuchos::ParameterList&             input,
+    std::map<int, Teuchos::RCP<DRT::Element> >& masterelements,
+    std::map<int, Teuchos::RCP<DRT::Element> >& slaveelements,
+    Teuchos::RCP<CONTACT::CoInterface>& interface,
+    int numcoupleddof
+    )
+{
+  bool isnurbs = input.get<bool>("NURBS");
+
+  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  const int dim = DRT::Problem::Instance()->NDim();
+
+  //########## CHECK for a better implementation of this ###################
+  //If this option is used, check functionality ... not sure if this is correct!
+  // special case: sliding ale
+  // In the sliding ale framework two mortar discretizations are generated from identical
+  // masterelement and slaveelement sets. Since node-, dof- and element ids of the original elements are
+  // the same, an offset have to be defined
+  int nodeoffset=0;
+  //int dofoffset=0;
+  //  if(slidingale==true)
+  //  {
+  //    nodeoffset = masterdis->NodeRowMap()->MaxAllGID()+1;
+  //    dofoffset = masterdis->DofRowMap()->MaxAllGID()+1;
+  //  }
+  //########## CHECK for a better implementation of this ###################
+
 
   // We need to determine an element offset to start the numbering of the slave
   // mortar elements AFTER the master mortar elements in order to ensure unique

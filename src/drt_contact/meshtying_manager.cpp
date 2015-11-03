@@ -19,6 +19,7 @@ Maintainer: Alexander Popp
 #include "meshtying_lagrange_strategy.H"
 #include "meshtying_penalty_strategy.H"
 #include "meshtying_defines.H"
+#include "meshtying_poro_lagrange_strategy.H"
 
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
@@ -339,9 +340,15 @@ discret_(discret)
     fflush(stdout);
   }
 
+  const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
+
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mtparams,"STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
+  {
+    //finally we should use another criteria to decide which strategy
+    if (problemtype != prb_poroelast && problemtype != prb_fpsi && problemtype != prb_fpsi_xfem && problemtype != prb_fps3i)
+    {
     strategy_ = Teuchos::rcp(new MtLagrangeStrategy(
         Discret().DofRowMap(),
         Discret().NodeRowMap(),
@@ -351,6 +358,20 @@ discret_(discret)
         comm_,
         alphaf,
         maxdof));
+    }
+    else
+    {
+      strategy_ = Teuchos::rcp(new PoroMtLagrangeStrategy(
+          Discret().DofRowMap(),
+          Discret().NodeRowMap(),
+          mtparams,
+          interfaces,
+          dim,
+          comm_,
+          alphaf,
+          maxdof));
+    }
+  }
   else if (stype == INPAR::CONTACT::solution_penalty or stype == INPAR::CONTACT::solution_uzawa)
     strategy_ = Teuchos::rcp(new MtPenaltyStrategy(
         Discret().DofRowMap(),
@@ -459,7 +480,8 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_standard &&
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying,"SYSTEM") == INPAR::CONTACT::system_condensed)
+      (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying,"SYSTEM") == INPAR::CONTACT::system_condensed ||
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying,"SYSTEM") == INPAR::CONTACT::system_condensed_lagmult ))
     dserror("ERROR: Condensation of linear system only possible for dual Lagrange multipliers");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic and
@@ -577,6 +599,37 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 
   if (DRT::INPUT::IntegralValue<int>(mtparams,"HERMITE_SMOOTHING") == true)
     dserror("ERROR: Hermite smoothing only for mortar contact!");
+
+  // *********************************************************************
+  // poroelastic meshtying
+  // *********************************************************************
+  if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
+      (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") != INPAR::MORTAR::shape_petrovgalerkin))
+    dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
+
+  if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+    dserror("POROCONTACT: Parallel Redistribution not implemented yet!"); //Since we use Pointers to Parent Elements, which are not copied to other procs!
+
+  if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
+    dserror("POROCONTACT: Use Lagrangean Strategy for poro meshtying!");
+
+  if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
+      DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true)
+    dserror("POROCONTACT: Nodal scaling not yet implemented for poro meshtying problems");
+
+  if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying,"SYSTEM") != INPAR::CONTACT::system_condensed_lagmult)
+    dserror("POROCONTACT: Just lagrange multiplier should be condensed for poro meshtying!");
+
+  if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) && (dim != 3) && (dim != 2))
+  {
+    const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+    if (DRT::INPUT::IntegralValue<int>(porodyn,"CONTACTNOPEN"))
+      dserror("POROCONTACT: PoroMeshtying with no penetration just tested for 3d (and 2d)!");
+  }
 
   mtparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
 

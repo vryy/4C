@@ -452,6 +452,15 @@ public:
   virtual std::map<int,double>& GetVelDerivnCoup() { return velderivncoup_; }
 
   /*!
+  \brief Return the 'PresDerivnCoup' map of this node
+
+  This map contains the derivatives of the node's
+  normal coupling condition with respect to the pressures. (for one sided contact just slave!)
+  //h.Willmann
+  */
+  virtual std::map<int,double>& GetPresDerivnCoup() { return presderivncoup_; }
+
+  /*!
   \brief Return current nodal fluid pressure (porous media!) (length 3)
   */
   virtual double* fpres() { return &fpres_; }
@@ -481,6 +490,7 @@ protected:
   double          ncouprow_;           // nodal entry of n-coupling vector
   std::map<int,double>                    derivncoup_;    // directional derivative of nodal weighted n-coupling vector
   std::map<int,double>                    velderivncoup_; // velocity derivative of nodal weighted n-coupling vector
+  std::map<int,double>                    presderivncoup_; // pressure derivative of nodal weighted n-coupling vector //h.Willmann
 
   double           fvel_[3];        //fluid velocity for porous problem
   double           fpres_;       //fluid pressure for porous problem

@@ -139,6 +139,10 @@ CONTACT::CoManager::CoManager(
       || (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi))
     friplus = true;
 
+  //only for poro
+  bool poromaster = false; bool poroslave = false; bool structmaster = false; bool structslave = false;
+  int slavetype = -1; int mastertype = -1; //1 poro, 0 struct, -1 default
+
   for (int i = 0; i < (int) contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
@@ -547,13 +551,8 @@ CONTACT::CoManager::CoManager(
                 isslave[j],
                 nurbs));
 
-        //store information about parent for porous contact (required for calculation of deformation gradient!)
         if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
-        {
-          Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
-          if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
-          cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
-        }
+          SetPoroParentElement(slavetype, mastertype, cele, ele);
 
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
@@ -576,6 +575,9 @@ CONTACT::CoManager::CoManager(
 
     //-------------------- finalize the contact interface construction
     interface->FillComplete(maxdof);
+
+    if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
+      FindPoroInterfaceTypes(poromaster, poroslave, structmaster, structslave, slavetype, mastertype);
 
   } // for (int i=0; i<(int)contactconditions.size(); ++i)
   if (Comm().MyPID() == 0)
@@ -630,7 +632,9 @@ CONTACT::CoManager::CoManager(
           dim,
           comm_,
           alphaf,
-          maxdof));
+          maxdof,
+          poroslave,
+          poromaster));
     }
   }
   else if (stype == INPAR::CONTACT::solution_penalty)
@@ -733,6 +737,10 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   const PROBLEM_TYP problemtype = DRT::Problem::Instance()->ProblemType();
   std::string distype = DRT::Problem::Instance()->SpatialApproximation();
   const int dim       = DRT::Problem::Instance()->NDim();
+
+  // in case just System type system_condensed_lagmult
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") == INPAR::CONTACT::system_condensed_lagmult)
+    dserror("For Contact anyway just the lagrange multiplier can be condensed, choose SYSTEM = Condensed.");
 
   // *********************************************************************
   // invalid parallel strategies
@@ -1058,11 +1066,11 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact,"SYSTEM") != INPAR::CONTACT::system_condensed)
       dserror("POROCONTACT: System has to be condensed for poro contact!");
 
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) && dim != 3)
+    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) && (dim != 3) && (dim != 2))
     {
       const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
       if (DRT::INPUT::IntegralValue<int>(porodyn,"CONTACTNOPEN"))
-        dserror("POROCONTACT: PoroContact with no penetration just tested for 3d!");
+        dserror("POROCONTACT: PoroContact with no penetration just tested for 3d (and 2d)!");
     }
 
   #ifdef MORTARTRAFO
@@ -1137,10 +1145,12 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   }
   else if (problemtype == prb_poroelast or problemtype == prb_fpsi or problemtype == prb_fpsi_xfem)
   {
+    const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
     cparams.set<int> ("PROBTYPE",INPAR::CONTACT::poro);
     //porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
     double porotimefac = 1/(stru.sublist("ONESTEPTHETA").get<double>("THETA") * stru.get<double>("TIMESTEP"));
     cparams.set<double> ("porotimefac", porotimefac);
+    cparams.set<bool>("CONTACTNOPEN", DRT::INPUT::IntegralValue<int>(porodyn,"CONTACTNOPEN")); //used in the integrator
   }
   else
   {
@@ -1464,4 +1474,140 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
     output.WriteVector("poronopen_lambda",lambdaoutexp);
   }
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Set Parent Elements for Poro Face Elements                ager 11/15|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoManager::SetPoroParentElement(int& slavetype,int& mastertype,
+    Teuchos::RCP<CONTACT::CoElement>& cele, Teuchos::RCP<DRT::Element>& ele)
+{
+  // ints to communicate decision over poro bools between processors on every interface
+  // safety check - because there may not be mixed interfaces and structural slave elements
+  // slavetype ... 1 poro, 0 struct, -1 default
+  // mastertype ... 1 poro, 0 struct, -1 default
+  Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
+  if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
+  cele->PhysType() = MORTAR::MortarElement::other;
+  std::vector<Teuchos::RCP<DRT::Condition> > porocondvec;
+  discret_.GetCondition("PoroCoupling",porocondvec);
+  if (!cele->IsSlave())//treat an element as a master element if it is no slave element
+  {
+    for(unsigned int i=0;i<porocondvec.size();++i)
+    {
+      std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator eleitergeometry;
+      for (eleitergeometry = porocondvec[i]->Geometry().begin();
+          eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
+      {
+        if(faceele->ParentElement()->Id() == eleitergeometry->second->Id())
+        {
+          if (mastertype==0)
+            dserror("struct and poro master elements on the same processor - no mixed interface supported");
+          cele->PhysType() = MORTAR::MortarElement::poro;
+          mastertype=1;
+          break;
+        }
+      }
+    }
+    if(cele->PhysType()==MORTAR::MortarElement::other)
+    {
+      if (mastertype==1)
+        dserror("struct and poro master elements on the same processor - no mixed interface supported");
+      cele->PhysType() = MORTAR::MortarElement::structure;
+      mastertype=0;
+    }
+  }
+  else if (cele->IsSlave()) // treat an element as slave element if it is one
+  {
+    for(unsigned int i=0;i<porocondvec.size();++i)
+    {
+      std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator eleitergeometry;
+      for (eleitergeometry = porocondvec[i]->Geometry().begin();
+          eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
+      {
+        if(faceele->ParentElement()->Id() == eleitergeometry->second->Id())
+        {
+          if (slavetype==0)
+            dserror("struct and poro master elements on the same processor - no mixed interface supported");
+          cele->PhysType() = MORTAR::MortarElement::poro;
+          slavetype=1;
+          break;
+        }
+      }
+    }
+    if(cele->PhysType()==MORTAR::MortarElement::other)
+    {
+      if (slavetype==1)
+        dserror("struct and poro master elements on the same processor - no mixed interface supported");
+      cele->PhysType() = MORTAR::MortarElement::structure;
+      slavetype=0;
+    }
+  }
+  //store information about parent for porous contact (required for calculation of deformation gradient!)
+  //in every contact element although only really needed for phystype poro
+  cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Find Physical Type (Poro or Structure) of Poro Interface  ager 11/15|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoManager::FindPoroInterfaceTypes(bool& poromaster, bool& poroslave,
+    bool& structmaster, bool& structslave, int& slavetype, int& mastertype)
+{
+  //find poro and structure elements when a poro coupling condition is applied on an element
+  //and restrict to pure poroelastic or pure structural interfaces' sides.
+  //(only poro slave elements AND (only poro master elements or only structure master elements)
+  //Tell the contact element which physical type it is to extract PhysType in contact integrator
+  //bools to decide which side is structural and which side is poroelastic to manage all 4 constellations
+  // s-s, p-s, s-p, p-p
+  //wait for all processors to determine if they have poro or structural master or slave elements
+  comm_->Barrier();
+  int slaveTypeList[comm_->NumProc()];
+  int masterTypeList[comm_->NumProc()];
+  comm_->GatherAll(&slavetype,&slaveTypeList[0],1);
+  comm_->GatherAll(&mastertype,&masterTypeList[0],1);
+  comm_->Barrier();
+
+  for(int i=0; i<comm_->NumProc();++i)
+  {
+    switch (slaveTypeList[i])
+    {
+      case -1:
+        break;
+      case 1:
+        if(structslave) dserror("struct and poro slave elements in the same problem - no mixed interface constellations supported");
+        //adjust dserror text, when more than one interface is supported
+        poroslave=true;
+        break;
+      case 0:
+        if(poroslave) dserror("struct and poro slave elements in the same problem - no mixed interface constellations supported");
+        structslave=true;
+        break;
+      default:
+        dserror("this cannot happen");
+        break;
+    }
+  }
+
+  for(int i=0; i<comm_->NumProc();++i)
+  {
+    switch (masterTypeList[i])
+    {
+      case -1:
+        break;
+      case 1:
+        if(structmaster) dserror("struct and poro master elements in the same problem - no mixed interface constellations supported");
+        //adjust dserror text, when more than one interface is supported
+        poromaster=true;
+        break;
+      case 0:
+        if(poromaster) dserror("struct and poro master elements in the same problem - no mixed interface constellations supported");
+        structmaster=true;
+        break;
+      default:
+        dserror("this cannot happen");
+        break;
+    }
+  }
 }

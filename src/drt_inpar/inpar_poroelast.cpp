@@ -44,14 +44,16 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
                                  "poro_monolithic",
                                  "poro_monolithicstructuresplit",
                                  "poro_monolithicfluidsplit",
-                                 "poro_monolithicnopenetrationsplit"
+                                 "poro_monolithicnopenetrationsplit",
+                                 "poro_monolithicmeshtying"
                                 ),
                               tuple<int>(
                                 Partitioned,
                                 Monolithic,
                                 Monolithic_structuresplit,
                                 Monolithic_fluidsplit,
-                                Monolithic_nopenetrationsplit
+                                Monolithic_nopenetrationsplit,
+                                Monolithic_meshtying
                                 ),
                               &poroelastdyn);
 
@@ -104,6 +106,7 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
   DoubleParameter("TOLINC_VEL",1e-8,"tolerance in the increment norm for the Newton iteration",&poroelastdyn);
   DoubleParameter("TOLRES_PRES",1e-8,"tolerance in the residual norm for the Newton iteration",&poroelastdyn);
   DoubleParameter("TOLINC_PRES",1e-8,"tolerance in the increment norm for the Newton iteration",&poroelastdyn);
+  DoubleParameter("TOLRES_NCOUP",1e-8,"tolerance in the residual norm for the Newton iteration",&poroelastdyn);
 
   setStringToIntegralParameter<int>("NORM_INC","AbsSingleFields","type of norm for primary variables convergence check",
                                tuple<std::string>(

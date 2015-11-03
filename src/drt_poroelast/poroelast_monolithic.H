@@ -158,7 +158,7 @@ namespace POROELAST
       void CreateLinearSolver();
 
       //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-      void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc, //!< increment between iteration i and i+1
+      virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc, //!< increment between iteration i and i+1
                     bool firstiter = false
       );
 
@@ -175,7 +175,7 @@ namespace POROELAST
       //! is convergence reached of iterative solution technique?
       //! keep your fingers crossed...
       //! \author lw  \date 12/07
-      bool Converged();
+      virtual bool Converged();
 
       //! inner newton iteration
       virtual void Solve();
@@ -346,8 +346,8 @@ namespace POROELAST
       /// apply current velocity of fluid  to ContactMangager if contact problem
       void SetPoroContactStates(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx);
 
-      // assemble relevant matrixes for porocontact
-      void EvalPoroContact();
+      // assemble relevant matrixes for porocontact and meshtying
+      void EvalPoroMortar();
 
       // flag activation poro contact no penetration condition
       bool no_penetration_;

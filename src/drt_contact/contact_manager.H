@@ -25,6 +25,7 @@ namespace CONTACT
 {
 
 // forward declarations
+  class CoElement;
 
 /*!
 \brief BACI implementation of main class to control all contact
@@ -123,6 +124,28 @@ public:
 
   */
   void PostprocessTractions(IO::DiscretizationWriter& output);
+
+  /*!
+  \brief Set Parent Elements for Poro Face Elements
+
+  \param output (in): int& type of slave/master elements --> = (-1; //1 poro, 0 struct, -1 default)
+                      Teuchos::RCP<CONTACT::CoElement>& Reference to pointer of contact face element!
+                      Teuchos::RCP<DRT::Element>& Reference to pointer of contact parent element!
+
+  */
+  void SetPoroParentElement(int& slavetype,int& mastertype,
+      Teuchos::RCP<CONTACT::CoElement>& cele, Teuchos::RCP<DRT::Element>& ele);
+
+  /*!
+  \brief Find Physical Type (Poro or Structure) of Poro Interface
+
+  \param output (in): bool& poromaster, bool& poroslave,
+      bool& structmaster, bool& structslave, int& slavetype, int& mastertype
+
+  */
+  void FindPoroInterfaceTypes(bool& poromaster, bool& poroslave,
+      bool& structmaster, bool& structslave, int& slavetype, int& mastertype);
+
   //@}
 
 

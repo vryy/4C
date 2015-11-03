@@ -20,7 +20,6 @@
  | headers                                                  vuong 01/12 |
  *----------------------------------------------------------------------*/
 #include "poroelast_monolithic.H"
-
 #include <Teuchos_TimeMonitor.hpp>
 // needed for PrintNewton
 #include <sstream>
@@ -37,6 +36,7 @@
 
 //contact
 #include "../drt_contact/contact_poro_lagrange_strategy.H"
+#include "../drt_contact/meshtying_poro_lagrange_strategy.H"
 #include "../drt_contact/meshtying_contact_bridge.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
@@ -193,8 +193,8 @@ void POROELAST::Monolithic::Solve()
     // 3.) PrepareSystemForNewtonSolve()
     Evaluate(iterinc_,iter_==1);
 
-    //Modify System for Contact!
-    EvalPoroContact();
+    //Modify System for Contact or Meshtying!
+    EvalPoroMortar();
 
     //std::cout << "  time for Evaluate : " << timer.ElapsedTime() << "\n";
     //timer.ResetStartTime();
@@ -225,6 +225,7 @@ void POROELAST::Monolithic::Solve()
     //Aitken();
 
     //Recover Lagrangean Multiplier in Newton Iteration (for contact & contact no penetration!)
+    //adjust LM Recovery for the meshtying case
     RecoverLagrangeMultiplierAfterNewtonStep(iterinc_);
 
     // increment equilibrium loop index
@@ -610,8 +611,10 @@ void POROELAST::Monolithic::LinearSolve()
                     iter_ == 1
                     );
   }
-  else
+  else // use bgs2x2_operator
   {
+    // in case of inclined boundary conditions
+    // rotate systemmatrix_ using GetLocSysTrafo()!=Teuchos::null
     LINALG::ApplyDirichlettoSystem(
       systemmatrix_,
       iterinc_,
@@ -834,6 +837,18 @@ bool POROELAST::Monolithic::Converged()
     conv = convinc or convfres;
   else
     dserror("Something went terribly wrong with binary operator!");
+
+  if (conv)
+  {
+    if (StructureField()->MeshtyingContactBridge()!= Teuchos::null)
+//assume dual mortar lagmult contact!!! ... for general case store member into algo!
+    {
+      if (StructureField()->MeshtyingContactBridge()->HaveContact())
+      {
+       conv = StructureField()->MeshtyingContactBridge()->GetStrategy().ActiveSetSemiSmoothConverged();
+      }
+    }
+  }
 
   // return things
   return conv;
@@ -1950,9 +1965,25 @@ void POROELAST::Monolithic::RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RC
         costrategy.RecoverCoupled(tmpsx,tmpfx);
         if (no_penetration_)
           costrategy.RecoverPoroNoPen(tmpsx,tmpfx);
-        return;
+     }
+     else if (StructureField()->MeshtyingContactBridge()->HaveMeshtying())
+     { //if meshtying  //h.Willmann
+
+       CONTACT::PoroMtLagrangeStrategy& costrategy = static_cast<CONTACT::PoroMtLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->MtManager()->GetStrategy());
+
+       // displacement and fluid velocity & pressure incremental vector
+       Teuchos::RCP<const Epetra_Vector> sx;
+       Teuchos::RCP<const Epetra_Vector> fx;
+       ExtractFieldVectors(x,sx,fx);
+
+       Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*fx));
+
+       //Recover part of LM stemming from offdiagonal coupling matrix
+       costrategy.RecoverCouplingMatrixPartofLMP(tmpfx);
+
      }
    }
+  return;
 }
 
 /*-----------------------------------------------------------------------/
@@ -1976,9 +2007,10 @@ void POROELAST::Monolithic::SetPoroContactStates(Teuchos::RCP<const Epetra_Vecto
 
       int* mygids = fpres->Map().MyGlobalElements();
       double* val = fpres->Values();
+      const int ndim = DRT::Problem::Instance()->NDim();
       for (int i = 0; i < fpres->MyLength() ; ++i)
       {
-        int gid = mygids[i]-3;
+        int gid = mygids[i]-ndim;
         modfpres->ReplaceGlobalValues(1, &val[i], &gid);
       }
 
@@ -1997,7 +2029,7 @@ void POROELAST::Monolithic::SetPoroContactStates(Teuchos::RCP<const Epetra_Vecto
 /*-----------------------------------------------------------------------/
 |  assemble relevant matrixes for porocontact            ager 07/14      |
 /-----------------------------------------------------------------------*/
-void POROELAST::Monolithic::EvalPoroContact()
+void POROELAST::Monolithic::EvalPoroMortar()
 {
   if (StructureField()->MeshtyingContactBridge()!= Teuchos::null)
    {
@@ -2039,6 +2071,26 @@ void POROELAST::Monolithic::EvalPoroContact()
 
           Extractor()->InsertVector(*frhs, 1, *rhs_);
         }
+     }
+     else if (StructureField()->MeshtyingContactBridge()->HaveMeshtying())
+     { //if meshtying  //h.Willmann
+
+       CONTACT::PoroMtLagrangeStrategy& costrategy = static_cast<CONTACT::PoroMtLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->MtManager()->GetStrategy());
+
+
+       ///---Modifiy coupling matrix k_sf
+
+       //Get matrix block!
+       Teuchos::RCP<LINALG::SparseMatrix> k_sf = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(systemmatrix_->Matrix(0,1)));
+
+       //initialize poro meshtying
+       costrategy.InitializePoroMt(k_sf);
+
+       //Evaluate Poro Meshtying Condensation for K_sf
+       costrategy.EvaluateMeshtyingPoroOffDiag(k_sf);
+
+       //Assign modified matrix
+       systemmatrix_->Assign(0,1,LINALG::Copy,*k_sf);
      }
   }
 }

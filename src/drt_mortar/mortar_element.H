@@ -157,6 +157,12 @@ public:
   */
   virtual std::vector<double>& ParentDisp() {return parentdisp_; }
 
+  /*!
+  \brief Return Parent element degrees of freedom
+
+  */
+  virtual std::vector<int>& ParentDof() {return parentdofs_; }
+
   //@}
 
 protected:
@@ -177,6 +183,8 @@ protected:
   // Displacement of Parent Element
   std::vector<double> parentdisp_;
 
+  // Displacement Parent element degrees of freedom
+  std::vector<int> parentdofs_;
 
 }; // class MortarEleDataContainer
 
@@ -251,6 +259,14 @@ public:
     quad2D_hierarchical,        // displacement modification for quad->lin dual LM quadratic 2D
     serendipity2D_hierarchical, // displacement modification for quad->lin dual LM serendipity 2D
     biquad2D_hierarchical       // displacement modification for quad->lin dual LM biquadratic 2D
+  };
+
+  //physical type of mortar element
+  enum PhysicalType
+  {
+    poro = 0,       //poroelatic: (porofluid exists and must be considered in contact/meshtying)
+    structure = 1,  //structure
+    other = 2       //this shouldnt happen
   };
 
   //@}
@@ -823,6 +839,9 @@ public:
   virtual void NodeLinearization(
       std::vector<std::vector<GEN::pairedvector<int, double> > >& nodelin);
 
+  //h.Willmann return physical type of the mortar element
+  PhysicalType& PhysType(){return physicaltype_;};
+
   //@}
 
 protected:
@@ -842,6 +861,8 @@ protected:
   double                                        normalfac_;    // factor for normal orientation
   bool                                          zero_sized_;   // zero-sized element: if true: no integration for this element
 
+  //h.Willmann
+  PhysicalType                                  physicaltype_; //physical type
 
   /*!
   \brief Protected constructor for use in derived classes that expect standard element constructors

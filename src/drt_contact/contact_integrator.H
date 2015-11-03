@@ -749,7 +749,7 @@ public:
   \brief evaluate scalar normal coupling condition for poro no penetration entries at GP (poro-contact)
 
   */
-  void inline GP_3D_NCOUP_DERIV(
+  void inline GP_NCOUP_DERIV(
        MORTAR::MortarElement& sele,
        MORTAR::MortarElement& mele,
        LINALG::SerialDenseVector& sval,
@@ -765,6 +765,7 @@ public:
        const std::vector<GEN::pairedvector<int,double> >& dmxigp,
        std::map<int,double> & dncoupgp,
        std::map<int,double> & dvelncoupgp,
+       std::map<int,double> & dpresncoupgp,
        std::vector<GEN::pairedvector<int,double> >& dnmap_unit, bool quadratic,
        int nintrow=0);
 
@@ -772,7 +773,7 @@ public:
   \brief evaluate weighted normal coupling entries at GP
 
   */
-  void inline GP_3D_NCOUP_LIN(
+  void inline GP_NCOUP_LIN(
        int& iter,
        MORTAR::MortarElement& sele,
        MORTAR::MortarElement& mele,
@@ -785,6 +786,7 @@ public:
        double& wgt, bool& duallin,
        const std::map<int,double>& dncoupgp,
        const std::map<int,double>& dvelncoupgp,
+       const std::map<int,double> & dpresncoupgp,
        const GEN::pairedvector<int,double>& jacintcellmap,
        const std::vector<GEN::pairedvector<int,double> >& dsxigp,
        const std::vector<GEN::pairedvector<int,double> >& dmxigp,
@@ -1026,20 +1028,22 @@ protected:
   \brief Calculate Determinate of the Deformation Gradient at GP
 
   */
-  double inline DetDeformationGradient3D(
+  double inline DetDeformationGradient(
       MORTAR::MortarElement& sele,
       double& wgt,
-      double* gpcoord);
+      double* gpcoord,
+      std::map<int,double> & JLin);
 
   /*!
   \brief Templated Calculate Determinate of the Deformation Gradient at GP
 
   */
   template <DRT::Element::DiscretizationType parentdistype, int dim>
-  double inline TDetDeformationGradient3D(
+  double inline TDetDeformationGradient(
       MORTAR::MortarElement& sele,
       double& wgt,
-      double* gpcoord);
+      double* gpcoord,
+      std::map<int,double> & JLin);
 
     // don't want = operator and cctor
     CoIntegrator operator = (const CoIntegrator& old);

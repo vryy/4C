@@ -603,6 +603,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_coupling.cpp
   src/drt_adapter/adapter_coupling_mortar.cpp
   src/drt_adapter/adapter_coupling_nonlin_mortar.cpp
+  src/drt_adapter/adapter_coupling_poro_mortar.cpp
   src/drt_adapter/adapter_coupling_volmortar.cpp
   src/drt_adapter/ad_fld_fluid.cpp
   src/drt_adapter/ad_fld_fluid_ale.cpp
@@ -1943,6 +1944,7 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/meshtying_abstract_strategy.cpp
   src/drt_contact/meshtying_contact_bridge.cpp
   src/drt_contact/meshtying_lagrange_strategy.cpp
+  src/drt_contact/meshtying_poro_lagrange_strategy.cpp
   src/drt_contact/meshtying_manager.cpp
   src/drt_contact/meshtying_penalty_strategy.cpp
   src/drt_contact/selfcontact_binarytree.cpp
@@ -2098,6 +2100,7 @@ set(OBJS_DRT_POROELAST
   src/drt_poroelast/poro_monolithicstructuresplit.cpp
   src/drt_poroelast/poro_monolithicfluidsplit.cpp
   src/drt_poroelast/poro_monolithicsplit_nopenetration.cpp
+  src/drt_poroelast/poro_monolithicmeshtying.cpp
   src/drt_poroelast/poro_scatra_base.cpp
   src/drt_poroelast/poro_scatra_part.cpp
   src/drt_poroelast/poro_scatra_part_1wc.cpp

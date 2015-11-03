@@ -37,11 +37,17 @@ CONTACT::PoroLagrangeStrategy::PoroLagrangeStrategy(
     int dim,
     Teuchos::RCP<Epetra_Comm> comm,
     double alphaf,
-    int maxdof):
+    int maxdof,
+    bool poroslave,
+    bool poromaster):
     MonoCoupledLagrangeStrategy(DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
-no_penetration_(false),
-nopenalpha_(0.0)
+    no_penetration_(false),
+    nopenalpha_(0.0),
+    poroslave_(poroslave),
+    poromaster_(poromaster)
 {
+  if(!poroslave_ and !poromaster_)
+    dserror("you called a poroelastic meshtying method without participating poroelastic domains on your interface");
   return;
 }
 
@@ -53,47 +59,98 @@ void CONTACT::PoroLagrangeStrategy::SetupNoPenetrationCondition()
   no_penetration_ = true;
   lambda_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
   lambdaold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
+  if(!poroslave_ and poromaster_)
+    dserror("poroelastic meshtying/contact method needs the slave side to be poroelastic");
+  /*
+   *  The first error may also occur when there is no single element on the interface (it is empty) but
+   *  POROELASTICITY DYNAMIC coupling algorithmus (COUPALGO) is chosen as poro_monolithicmeshtying
+   *  that means that the method creates an interface but has nothing to fill in
+   *
+   *  the second error shows that there are no elements with PoroCoupling on the slave side of the interface
+   *  and the master side is fully poroelastic
+   *
+   *  having the condition with structure slave and poro master the problem is that there is no diagonal D Matrix,
+   *  from the porofluid lagrange multiplier equality condition,
+   *  that can be inverted easily to condense out the respective lagrange multipliers
+   *
+   *  there are two alternatives:
+   *  1. do not condense out the lagrange multiplier for the porofluid meshtying condition in
+   *  this constellation (master/slave) and solve the saddlepoint system
+   *
+   *  2. Invert the M Matrix to condense out the Lagrange multiplier
+   *  - which is only applicable with adequate costs for small problems as the M Matrix is not at all diagonal,
+   *  except for matching meshes - for matching meshes it doesn't hurt to chose the poro side as the slave side.
+   *  Being applicable only for small problems this alternative is too restricted in its application overall
+   *  to be implemented.
+ */
 }
 
 /*----------------------------------------------------------------------*
  | initialize global poro contact variables                             |
  |                            for next Newton step (public)   ager 08/14|
  *----------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Teuchos::RCP<const Epetra_Map> fluiddofs)
+void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs,
+    Teuchos::RCP<const Epetra_Map> fluiddofs, bool fullinit)
 {
-    //  (1)                                                          //
-   //      Get required fluid maps from structural maps             //
-  //                                                               //
-  fgsdofrowmap_ = coupfs.MasterToSlaveMap(gsdofrowmap_);
-  fgmdofrowmap_ = coupfs.MasterToSlaveMap(gmdofrowmap_);
-  fgsmdofrowmap_ = coupfs.MasterToSlaveMap(gsmdofrowmap_);
-  fgndofrowmap_  = LINALG::SplitMap(*fluiddofs,*fgsmdofrowmap_); //Not equal to transforming gndofrowmap_ (pressure dofs missing!)
-  fgactivedofs_ = coupfs.MasterToSlaveMap(gactivedofs_);
-  falldofrowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(*fluiddofs));
-  fgactiven_ = coupfs.MasterToSlaveMap(gactiven_);
-  fgactivet_ = coupfs.MasterToSlaveMap(gactivet_);
-
+  if (fullinit) //fullinit is true by default, but needed when this method is called for meshtying, as the maps
+                //and matrix mapping stay the same for meshtying. would work without this but would do things
+                //repeatedly unnecessarily
+  {
+    if (no_penetration_ && (IsInContact() || WasInContact() || WasInContactLastTimeStep()))
+      {
+          //  (1)                                                          //
+         //      Get required fluid maps from structural maps             //
+        //                                                               //
+        fgsdofrowmap_ = coupfs.MasterToSlaveMap(gsdofrowmap_);
+        fgmdofrowmap_ = coupfs.MasterToSlaveMap(gmdofrowmap_);
+        fgsmdofrowmap_ = coupfs.MasterToSlaveMap(gsmdofrowmap_);
+        fgndofrowmap_  = LINALG::SplitMap(*fluiddofs,*fgsmdofrowmap_); //Not equal to transforming gndofrowmap_ (pressure dofs missing!)
+        fgactivedofs_ = coupfs.MasterToSlaveMap(gactivedofs_);
+        falldofrowmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(*fluiddofs));
+        fgactiven_ = coupfs.MasterToSlaveMap(gactiven_);
+        fgactivet_ = coupfs.MasterToSlaveMap(gactivet_);
+      }
+  }
     //  (2)                                                          //
    //      Initialize Matrices                                      //
   //                                                               //
-  if (no_penetration_ && (IsInContact() || WasInContact() || WasInContactLastTimeStep()))
+  if (fullinit)
   {
-    // (re)setup global nCoup Vector
-    NCoup_ = Teuchos::rcp(new Epetra_Vector(*gactiven_));
+    if (no_penetration_ && (IsInContact() || WasInContact() || WasInContactLastTimeStep()))
+    {
+      // (re)setup global nCoup Vector
+      NCoup_ = Teuchos::rcp(new Epetra_Vector(*gactiven_));
+
+      // (re)setup global linearisation matrices of nCoup
+      NCoup_lindisp_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_, 10));
+      NCoup_linvel_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_, 10));
+
+      // (re)setup global tangential and lin(tangential)*lambda matrices
+      Tangential_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_, 10));
+      linTangentiallambda_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_, 10));
+
+      // (re)setup global lin of D & M * lambda - Matrix
+      porolindmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+      porolinmmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+    }
+  }
+  else
+  {
+    //In the case of meshtying resetting the matrices is sufficient as they retain their size
+    NCoup_->PutScalar(0.0);
 
     // (re)setup global linearisation matrices of nCoup
-    NCoup_lindisp_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_, 10));
-    NCoup_linvel_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_, 10));
+    NCoup_lindisp_->Zero();
+    NCoup_linvel_->Zero();
 
     // (re)setup global tangential and lin(tangential)*lambda matrices
-    Tangential_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_, 10));
-    linTangentiallambda_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_, 10));
+    Tangential_->Zero();
+    linTangentiallambda_->Zero();
 
     // (re)setup global lin of D & M * lambda - Matrix
-    porolindmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
-    porolinmmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+    porolindmatrix_->Zero();
+    porolinmmatrix_->Zero();
   }
-
     //  (3)                                                          //
    //      Assemble Matrices                                        //
   //                                                               //
@@ -103,13 +160,13 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
     {
      interface_[i]->AssembleNCoup(*NCoup_);
 
-     interface_[i]->AssembleNCoupLin(*NCoup_lindisp_);
-     interface_[i]->AssembleNCoupLin(*NCoup_linvel_,true);
+     interface_[i]->AssembleNCoupLin(*NCoup_lindisp_,coupfs);
+     interface_[i]->AssembleNCoupLin(*NCoup_linvel_,coupfs,true);
 
      interface_[i]->AssembleTN(Tangential_,Teuchos::null);
      interface_[i]->AssembleTNderiv(linTangentiallambda_,Teuchos::null,true); //use lambda(n +1) for tangential condition!!!
 
-     interface_[i]->AssembleLinDM(*porolindmatrix_,*porolinmmatrix_);
+     interface_[i]->AssembleLinDM(*porolindmatrix_,*porolinmmatrix_,true,false);
     }
   }
 
@@ -118,8 +175,8 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
   //                                                               //
   if (no_penetration_ && (IsInContact() || WasInContact() || WasInContactLastTimeStep()))
   {
-    NCoup_lindisp_->Complete(*gsmdofrowmap_, *gactiven_);
-    NCoup_linvel_->Complete(*gsdofrowmap_, *gactiven_);
+    NCoup_lindisp_->Complete(*ProblemDofs(), *gactiven_);
+    NCoup_linvel_->Complete(*fluiddofs, *gactiven_);
 
     Tangential_->Complete(*gactivedofs_,*gactivet_ );
     linTangentiallambda_->Complete(*gsmdofrowmap_, *gactivet_);
@@ -133,12 +190,13 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
   //                                                               //
   if (no_penetration_ && (IsInContact() || WasInContact() || WasInContactLastTimeStep()))
   {
-  linncoupveltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
+  linncoupveltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
   linncoupdisptransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
   tanginvtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
   lintangentlambdatransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
   porolindmatrixtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-  mhataamtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+  porolinmmatrixtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+  mhataamtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform); //h.Willmann
   dhattransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
   doldtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
   moldtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
@@ -176,17 +234,20 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
                            ADAPTER::CouplingMasterConverter(coupfs),
                            *fdoldtransp_,
                            false);
-    fdoldtransp_->Complete(dold_->DomainMap(),*fgsdofrowmap_);
+    fdoldtransp_->Complete(dold_->RowMap(),*fgsdofrowmap_);
     //
     //************************************************************************************************
     //
-    fmoldtransp_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_,1,true,false));
-    (*moldtransform_)(*mold_->Transpose(),
-                           1.0,
-                           ADAPTER::CouplingMasterConverter(coupfs),
-                           *fmoldtransp_,
-                           false);
-    fmoldtransp_->Complete(mold_->DomainMap(),*fgmdofrowmap_);
+    if(poromaster_)
+    {
+      fmoldtransp_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_,1,true,false));
+      (*moldtransform_)(*mold_->Transpose(),
+                             1.0,
+                             ADAPTER::CouplingMasterConverter(coupfs),
+                             *fmoldtransp_,
+                             false);
+      fmoldtransp_->Complete(mold_->RowMap(),*fgmdofrowmap_);
+    }
     //
     //************************************************************************************************
     //
@@ -200,17 +261,44 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
     //
     //************************************************************************************************
     //
-    //porolinmmatrixtransform_ is missing as atm just onesided porocontact is done!!!
+    if(poromaster_)
+    {
+      fporolinmmatrix_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_,1,true,false));
+      (*porolinmmatrixtransform_)(*porolinmmatrix_,
+                             1.0,
+                             ADAPTER::CouplingMasterConverter(coupfs),
+                             *fporolinmmatrix_,
+                             false);
+      fporolinmmatrix_->Complete(porolinmmatrix_->DomainMap(),*fgmdofrowmap_);
+    }
+    //porolinmmatrixtransform_ is no longer missing as twosided poro meshtying is considered!
     //
     //************************************************************************************************
+    if(poromaster_)
     //
-    fmhataam_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_,1,true,false));
-    (*mhataamtransform_)(*mhataam_,
-                           1.0,
-                           ADAPTER::CouplingMasterConverter(coupfs),
-                           *fmhataam_,
-                           false);
-    fmhataam_->Complete(mhataam_->DomainMap(),*fgactivedofs_);
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> tmpfmhataam = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*falldofrowmap_,1,true,false));
+
+      fmhataam_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*fgmdofrowmap_,1,true,false));
+      (*mhataamtransform_)(*mhataam_,
+                              1.0,
+                              ADAPTER::CouplingMasterConverter(coupfs),
+                              ADAPTER::CouplingMasterConverter(coupfs),
+                              *tmpfmhataam,
+                              false,
+                              false);
+
+      tmpfmhataam->Complete(*fgmdofrowmap_,*falldofrowmap_);
+
+      //better solution to get maps as wanted? -- for this matrix map as important as there will be a matrix-matrix multiplication
+
+      Teuchos::RCP<Epetra_Map> restfgmdofrowmap, restfgactivedofs;
+      Teuchos::RCP<LINALG::SparseMatrix> tmpm1, tmpm2, tmpm3;
+
+      //This should just be a temporary solution to change the row map of the matrix ...
+      LINALG::SplitMatrix2x2(tmpfmhataam,fgactivedofs_,restfgactivedofs,fgmdofrowmap_,restfgmdofrowmap,fmhataam_,tmpm1,tmpm2,tmpm3);
+      fmhataam_->Complete(*fgmdofrowmap_,*fgactivedofs_);
+    }
     //
     //************************************************************************************************
     //
@@ -221,6 +309,7 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
                            *fdhat_,
                            false);
     fdhat_->Complete(dhat_->DomainMap(),*fgactivedofs_);
+    //fdhat is expected to be zero in this method but still used for condensation
     //
     //************************************************************************************************
     //
@@ -264,9 +353,7 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
       (*linncoupveltransform_)(*NCoup_linvel_,
                               1.0,
                               ADAPTER::CouplingMasterConverter(coupfs),
-                              ADAPTER::CouplingMasterConverter(coupfs),
                               *fNCoup_linvel_,
-                              false,
                               false);
       fNCoup_linvel_->Complete(*falldofrowmap_,*fgactiven_);
     //
@@ -288,7 +375,7 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
                                     ADAPTER::CouplingMasterConverter(coupfs),
                                     *flinTangentiallambda_,
                                     false);
-      flinTangentiallambda_->Complete(*gsdofrowmap_,*fgactivedofs_);
+      flinTangentiallambda_->Complete(*gsdofrowmap_,*fgactivet_);
 
 #if(0) //just in case
      // only for parallel redistribution case
@@ -331,7 +418,7 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs, Te
     }
   }
   return;
-}
+}//CONTACT::PoroLagrangeStrategy::PoroInitialize
 
 /*-------------------------------------------------------------------------*
  |  evaluate poro coupling contact matrices for no penetration             |
@@ -375,12 +462,10 @@ void CONTACT::PoroLagrangeStrategy::EvaluateMatPoroNoPen(Teuchos::RCP<LINALG::Sp
     // check if contact contributions are present,
     // if not we can skip this routine to speed things up
     if (!no_penetration_ || (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())) return;
+  //h.Willmann this method should be renamed as it handles twosided poro meshtying now aswell and is
+  //able to handle fluid coupling for twosided contact
 
     nopenalpha_ = alphaf_; //to use different alpha for nopen condition (not used at the moment)
-
-    // complete stiffness matrix
-    // (this is a prerequisite for the Split2x2 methods to be called later)
-    k_fseff->Complete();
 
        // shape function
     INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
@@ -409,7 +494,10 @@ void CONTACT::PoroLagrangeStrategy::EvaluateMatPoroNoPen(Teuchos::RCP<LINALG::Sp
 
       k_fseff->UnComplete();
       k_fseff->Add(*fporolindmatrix_,false,(1.0-nopenalpha_)*1.0,1.0);
-      //k_fseff->Add(*fporolinmmatrix_,false,1.0-alphaf_,1.0); will be needed for twosided poro contact
+
+      if(poromaster_)
+        k_fseff->Add(*fporolinmmatrix_,false,(1.0-nopenalpha_)*1.0,1.0); // is needed only for twosided poro contact or meshtying
+
       k_fseff->Complete(*ProblemDofs(), *falldofrowmap_); //gets bigger because of linearisation w.r.t. to pure structural displacements!
       /**********************************************************************/
       /* (3) Split k_fseff and Feff into 3x3 matrix blocks                             */
@@ -424,10 +512,9 @@ void CONTACT::PoroLagrangeStrategy::EvaluateMatPoroNoPen(Teuchos::RCP<LINALG::Sp
 
       // some temporary Teuchos::RCPs
       Teuchos::RCP<Epetra_Map> tempmap;
-      Teuchos::RCP<Epetra_Map> ftempmap;
+      Teuchos::RCP<Epetra_Map> ftempmap1, ftempmap2, ftempmap3;
       Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
       Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
-      Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
 
       // split into slave/master part + structure part
       Teuchos::RCP<LINALG::SparseMatrix> k_fseffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(k_fseff);
@@ -449,7 +536,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluateMatPoroNoPen(Teuchos::RCP<LINALG::Sp
       // further splits into slave part + master part
       LINALG::SplitMatrix2x2(k_fs_smsm,fgsdofrowmap_,fgmdofrowmap_,gsdofrowmap_,gmdofrowmap_,k_fs_ss,k_fs_sm,k_fs_ms,k_fs_mm);
       LINALG::SplitMatrix2x2(k_fs_smn,fgsdofrowmap_,fgmdofrowmap_,gndofrowmap_,tempmap,k_fs_sn,tempmtx1,k_fs_mn,tempmtx2);
-      LINALG::SplitMatrix2x2(k_fs_nsm,fgndofrowmap_,ftempmap,gsdofrowmap_,gmdofrowmap_,k_fs_ns,k_fs_nm,tempmtx1,tempmtx2);
+      LINALG::SplitMatrix2x2(k_fs_nsm,fgndofrowmap_,ftempmap1,gsdofrowmap_,gmdofrowmap_,k_fs_ns,k_fs_nm,tempmtx1,tempmtx2);
 
       /**********************************************************************/
       /* (4) Split feff into 3 subvectors                                   */
@@ -510,11 +597,15 @@ void CONTACT::PoroLagrangeStrategy::EvaluateMatPoroNoPen(Teuchos::RCP<LINALG::Sp
       Teuchos::RCP<Epetra_Map> gidofs;
       Teuchos::RCP<Epetra_Map> fgidofs;
 
+      // some more temporary Teuchos::RCPs
+      Teuchos::RCP<Epetra_Map> tempmap1, tempmap2;
+      Teuchos::RCP<Epetra_Map> ftempmap4, ftempmap5, ftempmap6, ftempmap7;
+
       // do the splitting
       LINALG::SplitMatrix2x2(k_fs_ss,fgactivedofs_,fgidofs,gactivedofs_,gidofs,k_fs_aa,k_fs_ai,k_fs_ia,k_fs_ii);
-      LINALG::SplitMatrix2x2(k_fs_sn,fgactivedofs_,fgidofs,gndofrowmap_,tempmap,k_fs_an,tempmtx1,k_fs_in,tempmtx2);
-      LINALG::SplitMatrix2x2(k_fs_sm,fgactivedofs_,fgidofs,gmdofrowmap_,tempmap,k_fs_am,tempmtx1,k_fs_im,tempmtx2);
-      LINALG::SplitMatrix2x2(k_fs_ms,fgmdofrowmap_,tempmap,gactivedofs_,gidofs,k_fs_ma,k_fs_mi,tempmtx1,tempmtx2);
+      LINALG::SplitMatrix2x2(k_fs_sn,fgactivedofs_,fgidofs,gndofrowmap_,tempmap1,k_fs_an,tempmtx1,k_fs_in,tempmtx2);
+      LINALG::SplitMatrix2x2(k_fs_sm,fgactivedofs_,fgidofs,gmdofrowmap_,tempmap2,k_fs_am,tempmtx1,k_fs_im,tempmtx2);
+      LINALG::SplitMatrix2x2(k_fs_ms,fgmdofrowmap_,ftempmap4,gactivedofs_,gidofs,k_fs_ma,k_fs_mi,tempmtx1,tempmtx2);
 
       // abbreviations for active and inactive set
       int aset = fgactivedofs_->NumGlobalElements();
@@ -566,10 +657,10 @@ void CONTACT::PoroLagrangeStrategy::EvaluateMatPoroNoPen(Teuchos::RCP<LINALG::Sp
         if (iset)
         {
           k_fs_mimod = Teuchos::rcp(new LINALG::SparseMatrix(*fgmdofrowmap_,100));
-          k_fs_mmmod->Add(*k_fs_mm,false,1.0,1.0);
-          Teuchos::RCP<LINALG::SparseMatrix> k_fs_mmadd = LINALG::MLMultiply(*fmhataam_,true,*k_fs_am,false,false,false,true);
-          k_fs_mmmod->Add(*k_fs_mmadd,false,1.0,1.0);
-          k_fs_mmmod->Complete(k_fs_mm->DomainMap(),k_fs_mm->RowMap());
+          k_fs_mimod->Add(*k_fs_mi,false,1.0,1.0);
+          Teuchos::RCP<LINALG::SparseMatrix> k_fs_miadd = LINALG::MLMultiply(*fmhataam_,true,*k_fs_ai,false,false,false,true);
+          k_fs_mimod->Add(*k_fs_miadd,false,1.0,1.0);
+          k_fs_mimod->Complete(k_fs_mi->DomainMap(),k_fs_mi->RowMap());
         }
 
         // kma: add T(mhataam)*kaa
@@ -585,6 +676,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluateMatPoroNoPen(Teuchos::RCP<LINALG::Sp
 
       //----------------------------------------------------------- THIRD LINE
       //------------------- FOR 3D QUADRATIC CASE ----------------------------
+      //fdhat is expected to be zero here but still used for condensation
       // kin: subtract T(dhat)*kan --
       Teuchos::RCP<LINALG::SparseMatrix> k_fs_inmod = Teuchos::rcp(new LINALG::SparseMatrix(*fgidofs,100));
       k_fs_inmod->Add(*k_fs_in,false,1.0,1.0);
@@ -663,7 +755,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluateMatPoroNoPen(Teuchos::RCP<LINALG::Sp
 //        fm->Update(alphaf_,*tempvecm,1.0);
       }
       // if there is no self contact everything is ok
-      else
+      else if(poromaster_)
       {
         Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*fgmdofrowmap_));
         fmoldtransp_->Multiply(false,*lambdaold_,*tempvecm);
@@ -797,15 +889,18 @@ void CONTACT::PoroLagrangeStrategy::EvaluateMatPoroNoPen(Teuchos::RCP<LINALG::Sp
         if (iset) k_fs_effnew->Add(*k_fs_mimod,false,1.0,1.0);
         if (aset) k_fs_effnew->Add(*k_fs_mamod,false,1.0,1.0);
       }
+
       //----------------------------------------------------------- THIRD LINE
       // add i submatrices to kteffnew
       if (iset) k_fs_effnew->Add(*k_fs_inmod,false,1.0,1.0);
       if (iset) k_fs_effnew->Add(*k_fs_immod,false,1.0,1.0);
       if (iset) k_fs_effnew->Add(*k_fs_iimod,false,1.0,1.0);
       if (iset && aset) k_fs_effnew->Add(*k_fs_iamod,false,1.0,1.0);
+
       //---------------------------------------------------------- FOURTH LINE
       // add a submatrices to kteffnew
       if (aset) k_fs_effnew->Add(*fNCoup_lindisp_,false,1.0,1.0);
+
       //----------------------------------------------------------- FIFTH LINE
       // add a submatrices to kteffnew
       if (aset) k_fs_effnew->Add(*k_fs_anmod,false,-1.0,1.0);
@@ -868,7 +963,8 @@ void CONTACT::PoroLagrangeStrategy::EvaluateMatPoroNoPen(Teuchos::RCP<LINALG::Sp
       // finally do the replacement
       k_fseff = k_fs_effnew;
       feff = feffnew;
-}
+      return;
+}//CONTACT::PoroLagrangeStrategy::EvaluatePoroNoPen
 
 /*----------------------------------------------------------------------*
  |  evaluate poro coupling contact matrices for no penetration          |
@@ -881,6 +977,8 @@ void CONTACT::PoroLagrangeStrategy::EvaluateOtherMatPoroNoPen(Teuchos::RCP<LINAL
     // check if contact contributions are present,
     // if not we can skip this routine to speed things up
     if (!no_penetration_ || (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())) return;
+  //this method should be renamed as it handles twosided poro meshtying now aswell and is
+  //able to handle fluid coupling for twosided contact
 
     nopenalpha_ = alphaf_; //to use different alpha for nopen condition (not used at the moment)
 
@@ -980,7 +1078,6 @@ void CONTACT::PoroLagrangeStrategy::EvaluateOtherMatPoroNoPen(Teuchos::RCP<LINAL
       // km: add T(mhataam)*kan
       Teuchos::RCP<LINALG::SparseMatrix> F_mmod = Teuchos::rcp(new LINALG::SparseMatrix(*fgmdofrowmap_,100));
       F_mmod->Add(*F_m,false,1.0,1.0);
-      std::cout<<__FILE__<<__LINE__<<std::endl;
       if (aset && mset)
       {
         Teuchos::RCP<LINALG::SparseMatrix> F_madd = LINALG::MLMultiply(*fmhataam_,true,*F_a,false,false,false,true);
@@ -1053,7 +1150,7 @@ void CONTACT::PoroLagrangeStrategy::EvaluateOtherMatPoroNoPen(Teuchos::RCP<LINAL
 //          kammod = MORTAR::MatrixRowTransform(kammod,pgsdofrowmap_);
 //          kaamod = MORTAR::MatrixRowTransform(kaamod,pgsdofrowmap_);
 //          if (iset) kaimod = MORTAR::MatrixRowTransform(kaimod,pgsdofrowmap_);
-//          pmatrix_ = MORTAR::MatrixRowTransform(pmatrix_,pgsdofrowmap_);
+//          pmatrix_ = MORTAR::MatrixRowTransform(tderivmatrix_,pgsdofrowmap_);
 //        }
       }
       /**********************************************************************/
@@ -1061,9 +1158,11 @@ void CONTACT::PoroLagrangeStrategy::EvaluateOtherMatPoroNoPen(Teuchos::RCP<LINAL
       /**********************************************************************/
 
       Teuchos::RCP<LINALG::SparseMatrix> F_effnew = Teuchos::rcp(new LINALG::SparseMatrix(*falldofrowmap_,108,true,false,Feff->GetMatrixtype()));
+
       //----------------------------------------------------------- FIRST LINE
       // add n submatrices to kteffnew
       F_effnew->Add(*F_n,false,1.0,1.0);
+
       //---------------------------------------------------------- SECOND LINE
       // add m submatrices to kteffnew
       if (mset) F_effnew->Add(*F_mmod,false,1.0,1.0);
@@ -1082,7 +1181,8 @@ void CONTACT::PoroLagrangeStrategy::EvaluateOtherMatPoroNoPen(Teuchos::RCP<LINAL
 
       // finally do the replacement
       Feff = F_effnew;
-}
+      return;
+}//CONTACT::PoroLagrangeStrategy::EvaluateOtherMatPoroNoPen
 
 /*----------------------------------------------------------------------------*
  | Poro Recovery method for no penetration LM (pure porous problem) ager 08/14|
@@ -1097,7 +1197,7 @@ void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(Teuchos::RCP<Epetra_Vector>
 }
 
 /*----------------------------------------------------------------------*
- | Poro Recovery method for no penetration LM                 ager 07/15|
+ | Poro Recovery method for no penetration LM                 ager 08/14|
  *----------------------------------------------------------------------*/
 void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(Teuchos::RCP<Epetra_Vector> disi,
                                                      std::map<int , Teuchos::RCP<Epetra_Vector> > inc)
@@ -1183,7 +1283,7 @@ void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(Teuchos::RCP<Epetra_Vector>
 
       finvdmod->Multiply(true,*lambdacopy,*lambda_); // should be lambda_ at the end!!!
 
-     lambda_->Scale((1-alphaf_)/(1-nopenalpha_)); //-- is already scaled by this factor!!! --- scale it back to with nopenalpha_...
+     lambda_->Scale((1-alphaf_)/(1-nopenalpha_)); //-- is already scaled by this factor by scaling invda_!!! --- scale it back to with nopenalpha_...
     }
   }
    // store updated LM into nodes
@@ -1284,13 +1384,16 @@ void CONTACT::PoroLagrangeStrategy::SetState(const std::string& statename, const
            if (mylm.size()<3)
              mylm.resize(3);
            // set current configuration
-           for (int j=0;j<3;++j)
+           if(node->IsSlave())
            {
-             node->CoPoroData().poroLM()[j] = mylm[j];
+             for (int j=0;j<3;++j)
+             {
+               node->CoPoroData().poroLM()[j] = mylm[j];
+             }
            }
          }
        }
-       if (statename=="fpres")
+       if (statename=="fpressure")
        {
          // alternative method to get vec to full overlap
          Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*idiscret_.DofColMap(),true));
@@ -1305,7 +1408,7 @@ void CONTACT::PoroLagrangeStrategy::SetState(const std::string& statename, const
            double myfpres;
            int fpres;
 
-           fpres=node->Dofs()[0]; //here gets id of first component of node
+           fpres=node->Dofs()[0]; //here get ids of first component of node
 
            myfpres = global->Values()[global->Map().LID(fpres)];
 
@@ -1319,6 +1422,7 @@ void CONTACT::PoroLagrangeStrategy::SetState(const std::string& statename, const
 
 
 //this should add the displacement of the parent element to the contact element into the datacontainer...
+//...and it should additionally add the dof IDs to its Data container
 /*------------------------------------------------------------------------*
  | Assign generell poro contact state!                          ager 10/14|
  *------------------------------------------------------------------------*/
@@ -1336,31 +1440,184 @@ void CONTACT::PoroLagrangeStrategy::SetParentState(const std::string& statename,
     {
       DRT::Discretization& idiscret_ = interface_[i]->Discret();
 
-    //  interface_[i]->SlaveColElements()->Print(std::cout);
-    //  interface_[i]->SlaveRowElements()->Print(std::cout);
-      for (int j=0; j < interface_[i]->SlaveColElements()->NumMyElements(); ++j) //will just work for onesided poro contact as the porosity is just on slave side!!!
+      if(poroslave_)
       {
-        int gid = interface_[i]->SlaveColElements()->GID(j);
+        for (int j=0; j < interface_[i]->SlaveColElements()->NumMyElements(); ++j) //will just work for onesided poro contact as the porosity is just on slave side!!!
+        {
+          int gid = interface_[i]->SlaveColElements()->GID(j);
 
+          MORTAR::MortarElement* ele = dynamic_cast<MORTAR::MortarElement*>(idiscret_.gElement(gid));
 
-        MORTAR::MortarElement* ele = dynamic_cast<MORTAR::MortarElement*>(idiscret_.gElement(gid));
+          std::vector<int> lm;
+          std::vector<int> lmowner;
+          std::vector<int> lmstride;
 
-        std::vector<int> lm;
-        std::vector<int> lmowner;
-        std::vector<int> lmstride;
+          //this gets values in local order
+          ele->ParentElement()->LocationVector(*dis,lm,lmowner,lmstride);
 
-        ele->ParentElement()->LocationVector(*dis,lm,lmowner,lmstride);
-        ele->MoData().ParentDisp() = std::vector<double>(ele->ParentElement()->NumNode()); //initialize here!
+          std::vector<double> myval;
+          DRT::UTILS::ExtractMyValues(*global,myval,lm);
 
-        std::vector<double> myval;
-        DRT::UTILS::ExtractMyValues(*global,myval,lm);
+          ele->MoData().ParentDisp() = myval;
+          ele->MoData().ParentDof() = lm;
 
-        for (unsigned int i = 0; i < myval.size(); ++i)
-          ele->MoData().ParentDisp()[i] = myval[i];
+        }
+      }
+      if(poromaster_)//add master parent element displacements
+      {
+        for (int j=0; j < interface_[i]->MasterColElements()->NumMyElements(); ++j)
+        {
+          int gid = interface_[i]->MasterColElements()->GID(j);
 
+          MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(idiscret_.gElement(gid));
 
+          std::vector<int> lm;
+          std::vector<int> lmowner;
+          std::vector<int> lmstride;
+
+          //this gets values in local order
+          mele->ParentElement()->LocationVector(*dis,lm,lmowner,lmstride);
+
+          std::vector<double> myval;
+          DRT::UTILS::ExtractMyValues(*global,myval,lm);
+
+          mele->MoData().ParentDisp() = myval;
+          mele->MoData().ParentDof() = lm;
+        }
       }
     }
   }
   return;
 }
+
+/*------------------------------------------------------------------------*
+ | Initialize poro meshtying matrices with corresponding maps  h.Willmann |
+ *------------------------------------------------------------------------*/
+void CONTACT::PoroLagrangeStrategy::PoroMtInitialize()
+{
+
+  // (re)setup global lin of D & M * lambda - Matrix
+  porolindmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  porolinmmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+
+  // (re)setup global Mortar LINALG::SparseMatrices and Epetra_Vectors
+  dmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 10));
+  mmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100));
+
+  //this is needed because on the mesh tying way to build this strategy it is not done elsewhere
+  SetupNoPenetrationCondition();
+
+  isincontact_ = true;        // simply set true for meshtying
+  wasincontact_ = true;       // as meshtying interfaces stay the same and are fully in contact
+  wasincontactlts_ = true;    // this is necessary for other methods in this strategy
+  return;
+}//CONTACT::PoroLagrangeStrategy::PoroLinkDM
+
+/*------------------------------------------------------------------------*
+ | assemble porofluid meshtying matrices                       h.Willmann |
+ *------------------------------------------------------------------------*/
+void CONTACT::PoroLagrangeStrategy::PoroMtPrepareFluidCoupling()
+{
+  //reset D and M matrices for new Newton iteration
+
+  dmatrix_->Zero();
+  mmatrix_->Zero();
+
+  //Assemble D and M matrices
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+   interface_[i]->AssembleDM(*dmatrix_,*mmatrix_,false);
+  }
+
+  // complete D and M matrices
+  dmatrix_->Complete();
+  mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
+
+  //as mhataam-, dhat_ and invda_ are not computed in poro - meshtying before this point it is necessary here
+  PoroMtSetCouplingMatrices();
+
+  return;
+}// CONTACT::PoroLagrangeStrategy::PoroAssembleFluidCoupling()
+
+/*------------------------------------------------------------------------*
+ | assemble porofluid meshtying matrices                       h.Willmann |
+ *------------------------------------------------------------------------*/
+void CONTACT::PoroLagrangeStrategy::PoroMtSetCouplingMatrices()
+{
+  // some temporary Teuchos::RCPs
+  Teuchos::RCP<Epetra_Map> tempmap;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
+  Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
+
+  Teuchos::RCP<Epetra_Map> gidofs;
+
+  int aset = gactivedofs_->NumGlobalElements();
+
+  //invert dmatrix to invd
+  invd_ = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix_));
+  Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*gsdofrowmap_, true);
+  int err = 0;
+
+  // extract diagonal of invd into diag
+  invd_->ExtractDiagonalCopy(*diag);
+
+  // set zero diagonal values to dummy 1.0
+//  for (int i = 0; i < diag->MyLength(); ++i)
+//    if ((*diag)[i] == 0.0)
+//      (*diag)[i] = 1.0;
+
+  // scalar inversion of diagonal values
+  err = diag->Reciprocal(*diag);
+  if (err > 0)
+    dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+  // re-insert inverted diagonal into invd
+  err = invd_->ReplaceDiagonalValues(*diag);
+  //inversion end
+
+  // active part of invd
+  Teuchos::RCP<LINALG::SparseMatrix> invda;
+  LINALG::SplitMatrix2x2(invd_,gactivedofs_,gidofs,gactivedofs_,gidofs,invda,tempmtx1,tempmtx2,tempmtx3);
+
+  // coupling part of dmatrix (only nonzero for 3D quadratic case!)(not considered for poro mt/contact yet-> ==0)
+  Teuchos::RCP<LINALG::SparseMatrix> dai;
+  LINALG::SplitMatrix2x2(dmatrix_,gactivedofs_,gidofs,gactivedofs_,gidofs,tempmtx1,dai,tempmtx2,tempmtx3);
+
+  int iset = gidofs->NumGlobalElements();
+   // do the multiplication dhat = invda * dai
+  Teuchos::RCP<LINALG::SparseMatrix> dhat = Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_,10));
+  if (aset && iset) dhat = LINALG::MLMultiply(*invda,false,*dai,false,false,false,true);
+  dhat->Complete(*gidofs,*gactivedofs_);
+
+  // active part of mmatrix
+  Teuchos::RCP<LINALG::SparseMatrix> mmatrixa;
+  LINALG::SplitMatrix2x2(mmatrix_,gactivedofs_,gidofs,gmdofrowmap_,tempmap,mmatrixa,tempmtx1,tempmtx2,tempmtx3);
+
+  // do the multiplication mhataam = invda * mmatrixa
+  // (this is only different from mhata for 3D quadratic case!)
+  Teuchos::RCP<LINALG::SparseMatrix> mhataam = Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_,10));
+  if (aset) mhataam = LINALG::MLMultiply(*invda,false,*mmatrixa,false,false,false,true);
+  mhataam->Complete(*gmdofrowmap_,*gactivedofs_);
+
+  // scaling of invd and dai
+  invda->Scale(1/(1-alphaf_));
+
+  SaveCouplingMatrices(dhat, mhataam, invda);
+
+  return;
+}//CONTACT::PoroLagrangeStrategy::PoroMtPrepareFluidCoupling
+
+/*------------------------------------------------------------------------*
+ | update old meshtying matrices and LMP                       h.Willmann |
+ *------------------------------------------------------------------------*/
+void CONTACT::PoroLagrangeStrategy::PoroMtUpdate()
+{
+  //set dold_ mold_ and lambdaold_ after every time step
+  dold_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*dmatrix_));
+  mold_ = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(*mmatrix_));
+  dold_->Complete(dmatrix_->DomainMap(),dmatrix_->RangeMap());
+  mold_->Complete(mmatrix_->DomainMap(),mmatrix_->RangeMap());
+  UpdatePoroContact();
+  return;
+}//CONTACT::PoroLagrangeStrategy::PoroMtUpdate()

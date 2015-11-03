@@ -54,6 +54,7 @@ namespace INPAR
     enum SystemType
     {
       system_condensed,   ///< condensed system
+      system_condensed_lagmult,   ///< system with condensed lagrange multiplier (differs just in meshtying case)
       system_saddlepoint  ///< saddle point system
     };
 

@@ -29,6 +29,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_adapter/adapter_coupling.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -1246,6 +1247,7 @@ void CONTACT::CoInterface::Initialize()
       cnode->CoPoroData().GetnCoup() = 0.0;
       cnode->CoPoroData().GetDerivnCoup().clear();
       cnode->CoPoroData().GetVelDerivnCoup().clear();
+      cnode->CoPoroData().GetPresDerivnCoup().clear();
     }
   }
 
@@ -7699,7 +7701,8 @@ void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
  |  Assemble linearisation of normal coupling                          |
  |          weighted condition for poro contact              ager 07/14|
  *--------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleNCoupLin(LINALG::SparseMatrix& sglobal, bool AssembleVelocityLin)
+void CONTACT::CoInterface::AssembleNCoupLin(LINALG::SparseMatrix& sglobal, ADAPTER::Coupling& coupfs,
+    bool AssembleVelocityLin)
 {
   // get out of here if not participating in interface
   if (!lComm())
@@ -7708,6 +7711,16 @@ void CONTACT::CoInterface::AssembleNCoupLin(LINALG::SparseMatrix& sglobal, bool 
   // nothing to do if no active nodes
   if (activenodes_==Teuchos::null)
     return;
+
+  Teuchos::RCP<const Epetra_Map> MasterDofMap_full;
+  Teuchos::RCP<const Epetra_Map> PermSlaveDofMap_full;
+
+  if (AssembleVelocityLin)
+  {
+    //store map on all processors, simple but expensive
+    MasterDofMap_full = LINALG::AllreduceEMap(*coupfs.MasterDofMap());
+    PermSlaveDofMap_full = LINALG::AllreduceEMap(*coupfs.PermSlaveDofMap());
+  }
 
   for (int i=0;i<activenodes_->NumMyElements();++i)
   {
@@ -7724,17 +7737,39 @@ void CONTACT::CoInterface::AssembleNCoupLin(LINALG::SparseMatrix& sglobal, bool 
 
     std::map<int,double>& dgmap = cnode->CoPoroData().GetDerivnCoup();
     if (AssembleVelocityLin)
+    {//Assign fluid velocity linearization to matrix
+
       dgmap = cnode->CoPoroData().GetVelDerivnCoup();
+        for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
+        {
+          int col = PermSlaveDofMap_full->GID(MasterDofMap_full->LID(colcurr->first));
+          double val = colcurr->second;
 
-    for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
-    {
-      int col = colcurr->first;
-      double val = colcurr->second;
+          // do not assemble zeros into s matrix
+          if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+        }
+      //Assign pressure linearization to matrix
+      dgmap = cnode->CoPoroData().GetPresDerivnCoup();
+        for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
+        {
+          int col = PermSlaveDofMap_full->GID(MasterDofMap_full->LID(colcurr->first))+Dim();
+          double val = colcurr->second;
 
-      // do not assemble zeros into s matrix
-      if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+          // do not assemble zeros into s matrix
+          if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+        }
+    }
+    else
+    {//Assign skeleton displacement linearization to matrix
+      for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
+      {
+        int col = colcurr->first;
+        double val = colcurr->second;
+
+        // do not assemble zeros into s matrix
+        if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+      }
     }
   }
-
   return;
 }

@@ -224,6 +224,9 @@ void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,hasdata);
   if (hasdata) modata_->Pack(data);
 
+  // add physicaltype
+  AddtoPack(data,physicaltype_);
+
   return;
 }
 
@@ -280,6 +283,9 @@ void MORTAR::MortarElement::Unpack(const std::vector<char>& data)
   {
     modata_ = Teuchos::null;
   }
+
+  // physical type
+  physicaltype_ = (PhysicalType)(ExtractInt(position,data));
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

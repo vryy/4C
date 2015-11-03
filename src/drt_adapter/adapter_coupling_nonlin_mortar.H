@@ -19,6 +19,7 @@ Maintainer: Philipp Farah
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
+#include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/14 |
@@ -27,6 +28,8 @@ namespace DRT
 {
   class Condition;
   class Discretization;
+  class Node;
+  class Element;
 }
 
 namespace CONTACT
@@ -58,13 +61,58 @@ namespace ADAPTER
     virtual ~CouplingNonLinMortar(){};
 
     /*!
-    \brief setup routine
+    \brief initialize routine
 
     */
-    void Setup(Teuchos::RCP<DRT::Discretization>   masterdis,
+    void Setup(
+               Teuchos::RCP<DRT::Discretization>   masterdis,
                Teuchos::RCP<DRT::Discretization>   slavedis,
                std::vector<int>                    coupleddof,
                const std::string&                  couplingcond);
+
+    /*!
+    \brief Read Mortar Condition
+
+    */
+    virtual void ReadMortarCondition(
+        Teuchos::RCP<DRT::Discretization>   masterdis,
+        Teuchos::RCP<DRT::Discretization>   slavedis,
+        std::vector<int>                    coupleddof,
+        const std::string&                  couplingcond,
+        Teuchos::ParameterList&             input,
+        std::map<int, DRT::Node*>& mastergnodes,
+        std::map<int, DRT::Node*>& slavegnodes,
+        std::map<int, Teuchos::RCP<DRT::Element> >& masterelements,
+        std::map<int, Teuchos::RCP<DRT::Element> >& slaveelements);
+
+    /*!
+    \brief Add Mortar Nodes
+
+    */
+    virtual void AddMortarNodes(
+              Teuchos::RCP<DRT::Discretization>   masterdis,
+              Teuchos::RCP<DRT::Discretization>   slavedis,
+              std::vector<int>                    coupleddof,
+              Teuchos::ParameterList&             input,
+              std::map<int, DRT::Node*>& mastergnodes,
+              std::map<int, DRT::Node*>& slavegnodes,
+              std::map<int, Teuchos::RCP<DRT::Element> >& masterelements,
+              std::map<int, Teuchos::RCP<DRT::Element> >& slaveelements,
+              Teuchos::RCP<CONTACT::CoInterface>& interface,
+              int numcoupleddof);
+
+    /*!
+    \brief Add Mortar Elements
+
+    */
+    virtual void AddMortarElements(
+              Teuchos::RCP<DRT::Discretization>   masterdis,
+              Teuchos::RCP<DRT::Discretization>   slavedis,
+              Teuchos::ParameterList&             input,
+              std::map<int, Teuchos::RCP<DRT::Element> >& masterelements,
+              std::map<int, Teuchos::RCP<DRT::Element> >& slaveelements,
+              Teuchos::RCP<CONTACT::CoInterface>& interface,
+              int numcoupleddof);
 
     virtual void Evaluate(const std::string& statename,
                           const Teuchos::RCP<Epetra_Vector> vec,
@@ -91,8 +139,8 @@ namespace ADAPTER
 
     /// the mortar interface itself
     Teuchos::RCP<CONTACT::CoInterface> Interface() const { return interface_;}
-  private:
 
+  protected:
     // communicator
     Teuchos::RCP<Epetra_Comm>          comm_;            /// communicator
     int                                myrank_;          /// my proc id
@@ -106,7 +154,6 @@ namespace ADAPTER
     Teuchos::RCP<LINALG::SparseMatrix> MLin_;
 
     Teuchos::RCP<CONTACT::CoInterface> interface_;       ///< interface
-
   };
 }
 

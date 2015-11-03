@@ -24,7 +24,6 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_solver.H"  // mesh initialization :-(
 #include "../linalg/linalg_utils.H"
-
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/
@@ -179,7 +178,7 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(
   bool setup = true;
   INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<
       INPAR::CONTACT::SystemType>(Params(), "SYSTEM");
-  if (systype == INPAR::CONTACT::system_condensed)
+  if (systype == INPAR::CONTACT::system_condensed || systype == INPAR::CONTACT::system_condensed_lagmult)
     setup = false;
 
   // build constraint matrix only if necessary
@@ -390,22 +389,22 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(
   // CASE A: CONDENSED SYSTEM (DUAL)
   //**********************************************************************
   //**********************************************************************
-  if (systype == INPAR::CONTACT::system_condensed)
+  if (systype == INPAR::CONTACT::system_condensed || systype == INPAR::CONTACT::system_condensed_lagmult)
   {
     // double-check if this is a dual LM system
     if (shapefcn != INPAR::MORTAR::shape_dual)
       dserror("Condensation only for dual LM");
 
-      // complete stiffness matrix
-      // (this is a prerequisite for the Split2x2 methods to be called later)
-      kteff->Complete();
+    // complete stiffness matrix
+    // (this is a prerequisite for the Split2x2 methods to be called later)
+    kteff->Complete();
 
-      /**********************************************************************/
-      /* Split kteff into 3x3 block matrix                                  */
-      /**********************************************************************/
-      // we want to split k into 3 groups s,m,n = 9 blocks
-      Teuchos::RCP<LINALG::SparseMatrix> kss,
-ksm,    ksn, kms, kmm, kmn, kns, knm, knn;
+    /**********************************************************************/
+    /* Split kteff into 3x3 block matrix                                  */
+    /**********************************************************************/
+    // we want to split k into 3 groups s,m,n = 9 blocks
+    Teuchos::RCP<LINALG::SparseMatrix> kss,
+    ksm, ksn, kms, kmm, kmn, kns, knm, knn;
 
     // temporarily we need the blocks ksmsm, ksmn, knsm
     // (FIXME: because a direct SplitMatrix3x3 is still missing!)
@@ -515,14 +514,18 @@ ksm,    ksn, kms, kmm, kmn, kns, knm, knn;
     /**********************************************************************/
     // knn: nothing to do
 
-    // knm: add kns*mbar
-    Teuchos::RCP<LINALG::SparseMatrix> knmmod = Teuchos::rcp(
-        new LINALG::SparseMatrix(*gndofrowmap_, 100));
-    knmmod->Add(*knm, false, 1.0, 1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> knmadd = LINALG::MLMultiply(*kns, false,
+    // knm:
+    Teuchos::RCP<LINALG::SparseMatrix> knmmod;
+    if (systype == INPAR::CONTACT::system_condensed)
+    {
+      // knm: add kns*mbar
+      knmmod=Teuchos::rcp(new LINALG::SparseMatrix(*gndofrowmap_, 100));
+      knmmod->Add(*knm, false, 1.0, 1.0);
+      Teuchos::RCP<LINALG::SparseMatrix> knmadd = LINALG::MLMultiply(*kns, false,
         *mhatmatrix_, false, false, false, true);
-    knmmod->Add(*knmadd, false, 1.0, 1.0);
-    knmmod->Complete(knm->DomainMap(), knm->RowMap());
+      knmmod->Add(*knmadd, false, 1.0, 1.0);
+      knmmod->Complete(knm->DomainMap(), knm->RowMap());
+    }
 
     // kmn: add T(mbar)*ksn
     Teuchos::RCP<LINALG::SparseMatrix> kmnmod = Teuchos::rcp(
@@ -533,22 +536,62 @@ ksm,    ksn, kms, kmm, kmn, kns, knm, knn;
     kmnmod->Add(*kmnadd, false, 1.0, 1.0);
     kmnmod->Complete(kmn->DomainMap(), kmn->RowMap());
 
-    // kmm: add T(mbar)*ksm + kms*mbar + T(mbar)*kss*mbar
+    // kmm: add T(mbar)*ksm
     Teuchos::RCP<LINALG::SparseMatrix> kmmmod = Teuchos::rcp(
         new LINALG::SparseMatrix(*gmdofrowmap_, 100));
     kmmmod->Add(*kmm, false, 1.0, 1.0);
     Teuchos::RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhatmatrix_,
         true, *ksm, false, false, false, true);
     kmmmod->Add(*kmmadd, false, 1.0, 1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> kmmadd2 = LINALG::MLMultiply(*kms,
-        false, *mhatmatrix_, false, false, false, true);
-    kmmmod->Add(*kmmadd2, false, 1.0, 1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> kmmtemp = LINALG::MLMultiply(*kss,
-        false, *mhatmatrix_, false, false, false, true);
-    Teuchos::RCP<LINALG::SparseMatrix> kmmadd3 = LINALG::MLMultiply(*mhatmatrix_,
-        true, *kmmtemp, false, false, false, true);
-    kmmmod->Add(*kmmadd3, false, 1.0, 1.0);
+    if (systype == INPAR::CONTACT::system_condensed)
+    {
+      // kmm: add kms*mbar + T(mbar)*kss*mbar - additionally
+      Teuchos::RCP<LINALG::SparseMatrix> kmmadd2 = LINALG::MLMultiply(*kms,
+          false, *mhatmatrix_, false, false, false, true);
+      kmmmod->Add(*kmmadd2, false, 1.0, 1.0);
+      Teuchos::RCP<LINALG::SparseMatrix> kmmtemp = LINALG::MLMultiply(*kss,
+          false, *mhatmatrix_, false, false, false, true);
+      Teuchos::RCP<LINALG::SparseMatrix> kmmadd3 = LINALG::MLMultiply(*mhatmatrix_,
+          true, *kmmtemp, false, false, false, true);
+      kmmmod->Add(*kmmadd3, false, 1.0, 1.0);
+    }
     kmmmod->Complete(kmm->DomainMap(), kmm->RowMap());
+
+    //some modifications for kns, kms, (,ksn) ksm, kss if slave displacement increment is not condensed
+
+    // kns: nothing to do
+
+    // kms: add T(mbar)*kss
+    Teuchos::RCP<LINALG::SparseMatrix> kmsmod;
+    if (systype == INPAR::CONTACT::system_condensed_lagmult)
+    {
+      kmsmod = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_, 100));
+      kmsmod->Add(*kms, false, 1.0, 1.0);
+      Teuchos::RCP<LINALG::SparseMatrix> kmsadd = LINALG::MLMultiply(*mhatmatrix_,
+         true, *kss, false, false, false, true);
+      kmsmod->Add(*kmsadd, false, 1.0, 1.0);
+      kmsmod->Complete(kms->DomainMap(), kms->RowMap());
+    }
+
+    // (ksn: do nothing as block is supposed to remain zero)
+
+    // ksm: subtract mmatrix
+    Teuchos::RCP<LINALG::SparseMatrix> ksmmod;
+    if (systype == INPAR::CONTACT::system_condensed_lagmult)
+    {
+      ksmmod = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100));
+      ksmmod->Add(*mmatrix_, false, -1.0, 1.0); //<---- causes problems in parallel
+      ksmmod->Complete(ksm->DomainMap(), ksm->RowMap());
+    }
+
+    // kss: add dmatrix
+    Teuchos::RCP<LINALG::SparseMatrix> kssmod;
+    if (systype == INPAR::CONTACT::system_condensed_lagmult)
+    {
+      kssmod = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100));
+      kssmod->Add(*dmatrix_, false, 1.0, 1.0); //<---- causes problems in parallel
+      kssmod->Complete(kss->DomainMap(), kss->RowMap());
+    }
 
     // fn: subtract kns*inv(D)*g
     // (nothing needs to be done, since the right hand side g is ALWAYS zero)
@@ -574,6 +617,7 @@ ksm,    ksn, kms, kmm, kmn, kns, knm, knn;
     // fm: subtract kmsmod*inv(D)*g
     // (nothing needs to be done, since the right hand side g is ALWAYS zero)
 
+    // RHS can remain unchanged, if slave displacement increments are not condensed
     // build identity matrix for slave dofs
     Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(
         new Epetra_Vector(*gsdofrowmap_));
@@ -607,14 +651,33 @@ ksm,    ksn, kms, kmm, kmn, kns, knm, knn;
 
     // add n submatrices to kteffnew
     kteffnew->Add(*knn, false, 1.0, 1.0);
-    kteffnew->Add(*knmmod, false, 1.0, 1.0);
+    if (systype == INPAR::CONTACT::system_condensed)
+    {
+      kteffnew->Add(*knmmod, false, 1.0, 1.0);
+    }
+    else if (systype == INPAR::CONTACT::system_condensed_lagmult)
+    {
+      kteffnew->Add(*knm, false, 1.0, 1.0);
+      kteffnew->Add(*kns, false, 1.0, 1.0);
+    }
 
     // add m submatrices to kteffnew
     kteffnew->Add(*kmnmod, false, 1.0, 1.0);
     kteffnew->Add(*kmmmod, false, 1.0, 1.0);
+    if (systype == INPAR::CONTACT::system_condensed_lagmult)
+      kteffnew->Add(*kmsmod, false, 1.0, 1.0);
 
-    // add identitiy for slave increments
-    kteffnew->Add(*onesdiag, false, 1.0, 1.0);
+    // add s submatrices to kteffnew
+    if (systype == INPAR::CONTACT::system_condensed)
+    {
+      // add identitiy for slave increments
+      kteffnew->Add(*onesdiag, false, 1.0, 1.0);
+    }
+    else
+    {
+      kteffnew->Add(*ksmmod, false, 1.0, 1.0);
+      kteffnew->Add(*kssmod, false, 1.0, 1.0);
+    }
 
     // FillComplete kteffnew (square)
     kteffnew->Complete();
@@ -849,7 +912,7 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
   // CASE A: CONDENSED SYSTEM (DUAL)
   //**********************************************************************
   //**********************************************************************
-  if (systype == INPAR::CONTACT::system_condensed)
+  if (systype == INPAR::CONTACT::system_condensed || systype == INPAR::CONTACT::system_condensed_lagmult)
   {
     // double-check if this is a dual LM system
     if (shapefcn != INPAR::MORTAR::shape_dual)
@@ -876,11 +939,15 @@ void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
     /**********************************************************************/
     /* Update slave increment \Delta d_s                                  */
     /**********************************************************************/
-    mhatmatrix_->Multiply(false, *disim, *disis);
-    Teuchos::RCP<Epetra_Vector> disisexp = Teuchos::rcp(
-        new Epetra_Vector(*ProblemDofs()));
-    LINALG::Export(*disis, *disisexp);
-    disi->Update(1.0, *disisexp, 1.0);
+
+    if(systype == INPAR::CONTACT::system_condensed)
+    {
+      mhatmatrix_->Multiply(false, *disim, *disis);
+      Teuchos::RCP<Epetra_Vector> disisexp = Teuchos::rcp(
+          new Epetra_Vector(*ProblemDofs()));
+      LINALG::Export(*disis, *disisexp);
+      disi->Update(1.0, *disisexp, 1.0);
+    }
 
     /**********************************************************************/
     /* Undo basis transformation to solution                              */

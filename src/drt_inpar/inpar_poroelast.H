@@ -37,7 +37,8 @@ namespace POROELAST
     Monolithic,
     Monolithic_structuresplit,
     Monolithic_fluidsplit,
-    Monolithic_nopenetrationsplit
+    Monolithic_nopenetrationsplit,
+    Monolithic_meshtying
   };
 
   /// type of time discretization for continuity equation

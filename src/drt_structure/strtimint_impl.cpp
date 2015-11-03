@@ -691,7 +691,8 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
   bool bPressure = pressure_ != Teuchos::null;
   bool bContactSP = (HaveContactMeshtying() &&
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed);
+      (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed ||
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed_lagmult));
 
   if( bPressure && bContactSP) dserror("We only support either contact/meshtying in saddlepoint formulation or structure with pressure DOFs");
   if( bPressure == false && bContactSP == false)
@@ -1441,7 +1442,8 @@ bool STR::TimIntImpl::Converged()
     // use separate convergence checks for contact constraints and
     // LM increments
     INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM");
-    if ((stype==INPAR::CONTACT::solution_lagmult || stype==INPAR::CONTACT::solution_augmented) && systype!=INPAR::CONTACT::system_condensed) {
+    if ((stype==INPAR::CONTACT::solution_lagmult || stype==INPAR::CONTACT::solution_augmented) && (systype!=INPAR::CONTACT::system_condensed ||
+        systype!=INPAR::CONTACT::system_condensed_lagmult)) {
       bool convDispLagrIncr = false;
       bool convDispWIncr = false;
       bool convDispWMIncr = false;
@@ -1818,8 +1820,9 @@ int STR::TimIntImpl::NewtonFull()
     bool bPressure = pressure_ != Teuchos::null;
     bool bContactSP = (HaveContactMeshtying() &&
         ((DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-          DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed) ||
-         (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_augmented)));
+        (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed ||
+         DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed_lagmult)) ||
+        (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_augmented)));
 
     if( bPressure && bContactSP) dserror("We only support either contact/meshtying in saddlepoint formulation or structure with pressure DOFs");
     if( bPressure == false && bContactSP == false)
@@ -3336,7 +3339,7 @@ void STR::TimIntImpl::CmtLinearSolve()
   // (2) Direct Augmented Lagrange strategy
   //**********************************************************************
   if ((soltype==INPAR::CONTACT::solution_lagmult || soltype==INPAR::CONTACT::solution_augmented)
-      && systype!=INPAR::CONTACT::system_condensed)
+      && (systype!=INPAR::CONTACT::system_condensed && systype!=INPAR::CONTACT::system_condensed_lagmult))
   {
     // check if contact contributions are present,
     // if not we make a standard solver call to speed things up
@@ -3647,7 +3650,8 @@ int STR::TimIntImpl::PTC()
     bool bPressure = pressure_ != Teuchos::null;
     bool bContactSP = (HaveContactMeshtying() &&
         DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtbridge_->GetStrategy().Params(),"STRATEGY") == INPAR::CONTACT::solution_lagmult &&
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed);
+        (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed ||
+        DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtbridge_->GetStrategy().Params(),"SYSTEM") != INPAR::CONTACT::system_condensed));
 
     if( bPressure && bContactSP) dserror("We only support either contact/meshtying in saddlepoint formulation or structure with pressure DOFs");
     if( bPressure == false && bContactSP == false)
@@ -3922,7 +3926,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
     INPAR::WEAR::WearSide wside   = DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(cmtbridge_->GetStrategy().Params(),"WEAR_SIDE");
 
     if ((soltype==INPAR::CONTACT::solution_lagmult || soltype==INPAR::CONTACT::solution_augmented)
-        && systype!=INPAR::CONTACT::system_condensed)
+        && (systype!=INPAR::CONTACT::system_condensed && systype!=INPAR::CONTACT::system_condensed_lagmult))
     {
       switch ( normtypecontconstr_ )
       {
@@ -4111,7 +4115,7 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
     INPAR::WEAR::WearSide        wside   = DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(cmtbridge_->GetStrategy().Params(),"WEAR_SIDE");
 
     if ((soltype==INPAR::CONTACT::solution_lagmult || soltype==INPAR::CONTACT::solution_augmented)
-        && systype!=INPAR::CONTACT::system_condensed)
+        && (systype!=INPAR::CONTACT::system_condensed && systype!=INPAR::CONTACT::system_condensed_lagmult))
     {
       // we only support abs norms
       oss << std::setw(20) << std::setprecision(5) << std::scientific << normcontconstr_; // RHS for contact constraints
@@ -4837,7 +4841,8 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
   // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
   // (2) Standard / Dual Lagrange multipliers -> SaddlePointSimpler
   //**********************************************************************
-  if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
+  if (soltype==INPAR::CONTACT::solution_lagmult &&
+      (systype!=INPAR::CONTACT::system_condensed && systype!=INPAR::CONTACT::system_condensed_lagmult))
   {
     dserror("Constraints / Windkessel bcs together with saddle point contact system does not work (yet)!");
   }

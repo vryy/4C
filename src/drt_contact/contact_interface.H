@@ -20,6 +20,12 @@ Maintainer: Alexander Popp
 \brief CONTACT: namespace of the BACI contact and meshtying algorithms
 
 */
+namespace ADAPTER
+{
+// forward declarations
+  class Coupling;
+}
+
 namespace CONTACT
 {
 
@@ -74,7 +80,7 @@ public:
   \brief Get self contact status of this interface
 
   */
-  virtual const bool& SelfContact() { return selfcontact_;}
+  virtual const bool& SelfContact() {return selfcontact_;}
 
   /*!
   \brief Get row map of active nodes (Filled()==true is prerequisite)
@@ -528,6 +534,7 @@ public:
 
   */
   virtual void AssembleNCoupLin(LINALG::SparseMatrix& sglobal,
+      ADAPTER::Coupling& coupfs,
       bool AssembleVelocityLin = false //if true velocity linearisation will be assembled into sglobal, otherwise lin. w.r.t. displacements!
       );
 

@@ -32,19 +32,8 @@ namespace FSI
 
 namespace CONTACT
 {
-
-// forward declaration
-//class WearInterface;
-/*!
- \brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
-
- This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
- For a more general documentation of the involved functions refer to CoAbstract Strategy.
-
- \author popp (popp@lnm.mw.tum.de)
- */
-class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
-{
+  class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
+  {
   public:
 
     /*!
@@ -59,7 +48,9 @@ class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
         int dim,
         Teuchos::RCP<Epetra_Comm> comm,
         double alphaf,
-        int maxdof);
+        int maxdof,
+        bool poroslave,
+        bool poromaster);
 
     /*!
     \brief Destructor
@@ -83,9 +74,30 @@ class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
 
     For a poro lagrangian strategy this includes the global normal / tangent matrices N and T, //Todo to be updated
     the global derivative matrices S and P and Tresca friction matrix L + vector r.
-
     */
-   void PoroInitialize(ADAPTER::Coupling& coupfs , Teuchos::RCP<const Epetra_Map> fluiddofs);
+    void PoroInitialize(ADAPTER::Coupling& coupfs , Teuchos::RCP<const Epetra_Map> fluiddofs, bool fullinit = true);
+
+    /*!
+    \brief as D and M Matrices are initialized here
+    */
+    void PoroMtInitialize();
+
+    /*!
+    \brief Prepare Matrices D and M, that are not Computed coming from the mortar adapter
+    */
+    void PoroMtPrepareFluidCoupling();
+
+    /*!
+    \brief
+    set some coupling matrices for the proro meshtying case mhataam-, dhat_ and invda_
+    */
+    void PoroMtSetCouplingMatrices();
+
+    /*!
+    \brief
+    set old matrices dold_ mold_ and the old lagrange multiplier in case of poro meshtying
+    */
+    void PoroMtUpdate();
 
     /*!
     \brief Evaluate poro no penetration contact
@@ -159,6 +171,9 @@ class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
     //Return Lagrange Multiplier for No Penetration Condition!
     Teuchos::RCP<Epetra_Vector> LambdaNoPen(){return lambda_;}
 
+    //Return all active fluid slave dofs
+    Teuchos::RCP<Epetra_Map> FluidActiveNDofMap(){return fgactiven_;};
+
     protected:
 
     // don't want = operator and cctor
@@ -166,6 +181,7 @@ class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
     PoroLagrangeStrategy(const PoroLagrangeStrategy& old);
 
     // flag activation poro contact no penetration condition
+    //h.Willmann the name is misleading as the bool is also used for other cases to access some methods
     bool no_penetration_;
 
     //time integration
@@ -208,7 +224,7 @@ class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
 
     /// @name matrix transformation
     //! transform object for linearized ncoup matrix \f$linncoup\f$
-    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> linncoupveltransform_;
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> linncoupveltransform_;
     //! transform object for linearized ncoup matrix \f$linncoup\f$
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> linncoupdisptransform_;
     //! transform object for tangential times Dinv matrix \f$T*D^-1\f$
@@ -217,8 +233,10 @@ class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> lintangentlambdatransform_;
     //! transform object for linearized Dlambda matrix \f$linDlambda\f$
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> porolindmatrixtransform_;
+    //! transform object for linearized Mlambda matrix \f$linMlambda\f$
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> porolinmmatrixtransform_;//h.Willmann
     //! transform object for mhataam = invda * mmatrixa
-    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> mhataamtransform_;
+    Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> mhataamtransform_;
     //! transform object for dhat
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> dhattransform_;
     //! transform object for mold
@@ -253,7 +271,11 @@ class PoroLagrangeStrategy : public MonoCoupledLagrangeStrategy
     Teuchos::RCP<LINALG::SparseMatrix> fporolindmatrix_; // global Matrix LinD containing slave fc derivatives (with lm from poro no penetration) -- transformed to fluid dofs
     Teuchos::RCP<LINALG::SparseMatrix> fporolinmmatrix_; // global Matrix LinM containing master fc derivatives (with lm from poro no penetration) -- transformed to fluid dofs
 
-}; // class POROLagrangeStrategy
+    bool poroslave_;   //true if interface slave side is purely poroelastic
+    bool poromaster_;  //true if interface master sided is purely poroelastic
+    //it must be assured that these two are previously set correctly and that there is no mixed master or slave interface
+    //with both structural and poroelastic elements
+  }; // class POROLagrangeStrategy
 } // namespace CONTACT
 
 

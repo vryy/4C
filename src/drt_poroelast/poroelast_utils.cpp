@@ -28,6 +28,8 @@
 #include "poro_monolithicstructuresplit.H"
 #include "poro_monolithicfluidsplit.H"
 #include "poro_monolithicsplit_nopenetration.H"
+#include "poro_monolithicmeshtying.H"
+#include "poro_utils_clonestrategy.H"
 #include "../drt_inpar/inpar_poroelast.H"
 
 #include "poro_scatra_base.H"
@@ -127,6 +129,7 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
   // access the problem-specific parameter list
   const Teuchos::ParameterList& poroelastdyn  = problem->PoroelastDynamicParams();
 
+  //  problem->MortarCouplingParams()
   const INPAR::POROELAST::SolutionSchemeOverFields coupling =
       DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(
           poroelastdyn, "COUPALGO");
@@ -165,7 +168,13 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
       // create an POROELAST::Partitioned instance
       poroalgo = Teuchos::rcp(new POROELAST::Partitioned(comm, timeparams));
       break;
-    } // partitioned case
+    }
+    case INPAR::POROELAST::Monolithic_meshtying:
+    {
+      // create an POROELAST::MonolithicMeshtying instance
+      poroalgo = Teuchos::rcp(new POROELAST::MonolithicMeshtying(comm, timeparams));
+      break;
+    }
     default:
       dserror("Unknown solutiontype for poroelasticity: %d",coupling);
       break;

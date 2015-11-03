@@ -609,6 +609,14 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   if(imortar_.get<double>("WEARCOEFF")!= 0.0)
     wear = true;
 
+  // poro contact
+  bool poroprob = false;
+  if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
+  {
+    if (imortar_.get<bool>("CONTACTNOPEN")) //evaluate additional terms just in case of no penectration condition
+      poroprob=true;
+  }
+
   // decide whether boundary modification has to be considered or not
   // this is element-specific (is there a boundary node in this element?)
   bool bound = false;
@@ -871,6 +879,20 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
         WearType() == INPAR::WEAR::wear_primvar)
       GP_TE_Master(sele,mele,lmval,lm2val,mval,jac,wgt,jumpval,comm);
 
+
+    std::vector<GEN::pairedvector<int,double> > auxdsxigp;
+    auxdsxigp.push_back(dsxigp);
+    std::vector<GEN::pairedvector<int,double> > auxdmxigp;
+    auxdmxigp.push_back(dmxigp);
+    double ncoup[1]      = {0.0};
+    std::map<int,double> dncoupgp;         // ncoup lin. without lm and jac.
+    std::map<int,double> dvelncoupgp;      // velocity ncoup lin. without lm and jac.
+    std::map<int,double> dpresncoupgp;     // pressure ncoup lin. without lm and jac.
+    if(poroprob) //access poro contact integration for 2D
+    {
+      GP_NCOUP_DERIV(sele, mele, sval, mval,lmval, sderiv,mderiv,ncoup, gpn, lengthn,jac, wgt, &eta[0],
+          auxdsxigp, auxdmxigp, dncoupgp, dvelncoupgp, dpresncoupgp, dnmap_unit, false);
+    }
     //**********************************************************************
     // compute segment LINEARIZATION
     //**********************************************************************
@@ -910,6 +932,12 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
         GP_2D_TE_Lin(iter,sele,sval,lmval,sderiv,lmderiv,dsxideta,dxdsxi,dxdsxidsxi,wgt,jumpval,
              dsxigp,derivjac,dsliptmatrixgp,ximaps,dualmap);
 
+      if (poroprob)
+      {
+        // Lin ncoup condition
+        GP_NCOUP_LIN(iter,sele,mele,sval,mval,lmval,sderiv,lmderiv,*ncoup,gpn,jac,wgt,duallin,dncoupgp,
+            dvelncoupgp,dpresncoupgp,derivjac,auxdsxigp,auxdmxigp,dualmap);
+      }
     }// nrow loop
 
     // lin for master nodes
@@ -1666,9 +1694,13 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   bool tsiprob = false;
   if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::tsi) tsiprob=true;
 
-  // flag for poro-structure with contact
+  // poro contact
   bool poroprob = false;
-  if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::poro) poroprob=true;
+  if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
+  {
+    if (imortar_.get<bool>("CONTACTNOPEN")) //evaluate additional terms just in case of no penectration condition
+      poroprob=true;
+  }
 
   bool friction = false;     // friction
   bool thermolagmult = true; // thermal contact with or without LM
@@ -1968,10 +2000,11 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     double ncoup[1]      = {0.0};
     std::map<int,double> dncoupgp;         // ncoup lin. without lm and jac.
     std::map<int,double> dvelncoupgp;      // velocity ncoup lin. without lm and jac.
+    std::map<int,double> dpresncoupgp;     // pressure ncoup lin. without lm and jac.
     if (poroprob)
     {
-      GP_3D_NCOUP_DERIV(sele, mele, sval, mval,lmval, sderiv,mderiv,ncoup, gpn, lengthn,jac, wgt, &eta[0],
-          dsxigp, dmxigp, dncoupgp, dvelncoupgp, dnmap_unit, false);
+      GP_NCOUP_DERIV(sele, mele, sval, mval,lmval, sderiv,mderiv,ncoup, gpn, lengthn,jac, wgt, &eta[0],
+          dsxigp, dmxigp, dncoupgp, dvelncoupgp, dpresncoupgp, dnmap_unit, false);
     }
 
     // compute segment D/M linearization
@@ -2016,8 +2049,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       if (poroprob)
       {
         // Lin ncoup condition
-        GP_3D_NCOUP_LIN(iter,sele,mele,sval,mval,lmval,sderiv,lmderiv,*ncoup,gpn,jac,wgt,duallin,dncoupgp,dvelncoupgp,jacintcellmap,
-                dsxigp,dmxigp,dualmap);
+        GP_NCOUP_LIN(iter,sele,mele,sval,mval,lmval,sderiv,lmderiv,*ncoup,gpn,jac,wgt,duallin,dncoupgp,
+            dvelncoupgp,dpresncoupgp,jacintcellmap,dsxigp,dmxigp,dualmap);
       }
 
     }// end lin
@@ -10676,7 +10709,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear_Lin(
 /*----------------------------------------------------------------------*
  |  Compute entries for poro normal coupling condition      07/14 ager  |
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
+void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(
      MORTAR::MortarElement& sele,
      MORTAR::MortarElement& mele,
      LINALG::SerialDenseVector& sval,
@@ -10692,6 +10725,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
      const std::vector<GEN::pairedvector<int,double> >& dmxigp,
      std::map<int,double> & dncoupgp,
      std::map<int,double> & dvelncoupgp,
+     std::map<int,double> & dpresncoupgp,
      std::vector<GEN::pairedvector<int,double> >& dnmap_unit,
      bool quadratic,
      int nintrow)
@@ -10705,87 +10739,156 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
   if(!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
   if(!mnodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
+  //bool to decide if fluid quantities and structural velocities
+  //exist for slave side on CoNode level and contribute to porofluid meshtying
+  bool slaveporo = (sele.PhysType() == MORTAR::MortarElement::poro);
+  //bool to decide if fluid quantities and structural velocities
+  //exist for master side on CoNode level and contribute to porofluid meshtying
+  bool masterporo = (mele.PhysType() == MORTAR::MortarElement::poro);
+
+  if(!slaveporo and masterporo)
+    dserror("poroelastic mesh tying method needs the slave side to be poroelastic (invert master/slave definition)");
+  //see CONTACT::PoroLagrangeStrategy::PoroLagrangeStrategy for comment
+
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
-  //int ncol = mele.NumNode(); not used for onesided porocontact!!!
-
-  for (int i=0;i<nrow;++i)
-  {
-    CoNode* mymrtrnode = dynamic_cast<CoNode*> (snodes[i]);
-    gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
-    gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
-    gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
-
-  }
+  //if(twosided) //needed only for master side
+  int ncol = mele.NumNode(); //not used for onesided porocontact!!!
 
   // get fluid velocities in GP
   double sgpfvel[3] = {0.0, 0.0, 0.0};
   double sgpsvel[3] = {0.0, 0.0, 0.0};
-  //double mgpfvel[3] = {0.0, 0.0, 0.0};
-  for (int i=0;i<nrow;++i)
+
+  double mgpfvel[3] = {0.0, 0.0, 0.0};
+  double mgpsvel[3] = {0.0, 0.0, 0.0};
+
+  //fill local vectors for corresponding problem dimension
+  for (int k=0;k<Dim();++k)
   {
-    CoNode* mymrtrnode = dynamic_cast<CoNode*> (snodes[i]);
-    sgpfvel[0]+=sval[i]*mymrtrnode->CoPoroData().fvel()[0];
-    sgpfvel[1]+=sval[i]*mymrtrnode->CoPoroData().fvel()[1];
-    sgpfvel[2]+=sval[i]*mymrtrnode->CoPoroData().fvel()[2];
+    for (int i=0;i<nrow;++i)
+    {
+      CoNode* mymrtrnode = dynamic_cast<CoNode*> (snodes[i]);
+      gpn[k]+=sval[i]*mymrtrnode->MoData().n()[k];
+    }
+
+    if(slaveporo)
+      for (int i=0;i<nrow;++i)
+      {
+        CoNode* mymrtrnode = dynamic_cast<CoNode*> (snodes[i]);
+        sgpfvel[k]+=sval[i]*mymrtrnode->CoPoroData().fvel()[k];
+        sgpsvel[k]+=sval[i]*mymrtrnode->CoPoroData().svel()[k];
+      }
+
+    if(masterporo)
+    {
+      for (int i=0;i<ncol;++i)
+      {
+        CoNode* mymrtrnode = dynamic_cast<CoNode*> (mnodes[i]);
+        mgpfvel[k]+=mval[i]*mymrtrnode->CoPoroData().fvel()[k];
+        mgpsvel[k]+=mval[i]*mymrtrnode->CoPoroData().svel()[k];
+      }
+    }
   }
 
-  for (int i=0;i<nrow;++i)
-  {
-    CoNode* mymrtrnode = dynamic_cast<CoNode*> (snodes[i]);
-    sgpsvel[0]+=sval[i]*mymrtrnode->CoPoroData().svel()[0];
-    sgpsvel[1]+=sval[i]*mymrtrnode->CoPoroData().svel()[1];
-    sgpsvel[2]+=sval[i]*mymrtrnode->CoPoroData().svel()[2];
-  }
-//  for (int i=0;i<ncol;++i) --- waiting for twosided poro contact !!!
-//  {
-//    CoNode* mymrtrnode = dynamic_cast<CoNode*> (mnodes[i]);
-//    mgpfvel[0]+=mval[i]*mymrtrnode->normalMoData().fvel()[0];
-//    mgpfvel[1]+=mval[i]*mymrtrnode->normalMoData().fvel()[1];
-//    mgpfvel[2]+=mval[i]*mymrtrnode->normalMoData().fvel()[2];
-//  }
   // normalize interpolated GP normal back to length 1.0 !!!
   lengthn[0] = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
   if (lengthn[0]<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
   for (int i=0;i<3;++i)
     gpn[i]/=lengthn[0];
 
-  ////////////////////////////////!!!Calculate Porosity!!!////////////////////////////
+  ////////////////////////////////!!!Calculate slave side Porosity!!!////////////////////////////
   // get J
-  const double J = DetDeformationGradient3D(sele,wgt,gpcoord);
-
+  std::map<int,double> sJLin; //slave map for linearizations of the Deformation Gradient Determinant
   // get fluid pressure in GP
   double sgpfpres = 0.0;
-  for (int i=0;i<nrow;++i)
-  {
-    CoNode* mymrtrnode = dynamic_cast<CoNode*> (snodes[i]);
-    sgpfpres += sval[i] * (*mymrtrnode->CoPoroData().fpres());
-  }
+  //porosity to be written into
+  double sporosity;
+  double sdphi_dp; //linearization terms to be written into
+  double sdphi_dJ;  //linearization terms to be written into
 
-  double porosity;
-  Teuchos::ParameterList params; //empty parameter list;
-    Teuchos::RCP< MAT::StructPoro > structmat =
+  if(slaveporo)
+  {
+    const double sJ = DetDeformationGradient(sele,wgt,gpcoord,sJLin);
+
+    for (int i=0;i<nrow;++i)
+    {
+      CoNode* mymrtrnode = dynamic_cast<CoNode*> (snodes[i]);
+      sgpfpres += sval[i] * mymrtrnode->CoPoroData().fpres()[0];
+    }
+    Teuchos::ParameterList sparams; //empty parameter list;
+
+    Teuchos::RCP< MAT::StructPoro > sstructmat =
         Teuchos::rcp_dynamic_cast<MAT::StructPoro>(sele.ParentElement()->Material(0));
-    structmat->ComputeSurfPorosity(params,
+    if (sstructmat == Teuchos::null)
+      sstructmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(sele.ParentElement()->Material(1));
+    if (sstructmat == Teuchos::null)
+      dserror("Cast to StructPoro failed!");
+    sstructmat->ComputeSurfPorosity(sparams,
                                    sgpfpres,
-                                   J,
+                                   sJ,
                                    sele.FaceParentNumber(),
                                    1, //finally check what to do here Todo:
-                                   porosity,
-                                   NULL,
-                                   NULL,
+                                   sporosity,
+                                   &sdphi_dp,              //linearization of phi w.r.t. pressure
+                                   &sdphi_dJ,              //linearization of phi w.r.t. defo-grad determinant
                                    NULL,                  //dphi_dJdp not needed
                                    NULL,                  //dphi_dJJ not needed
                                    NULL,                   //dphi_dpp not needed
                                    false
                                    );
-    ////////////////////////////////!!!Calculate Porosity done!!!////////////////////////////
+  }
 
+  ////////////////////////////////!!!Calculate master side Porosity!!!////////////////////////////
+  // get J
+
+  std::map<int,double> mJLin; //master map for linearizations of the Deformation Gradient Determinant
+  // get fluid pressure in GP
+  double mgpfpres = 0.0;
+  //porosity to be written into
+  double mporosity;
+  double mdphi_dp; //linearization terms to be written into
+  double mdphi_dJ;  //linearization terms to be written into
+
+  if(masterporo)
+  {
+    const double mJ = DetDeformationGradient(mele,wgt,gpcoord,mJLin);
+
+    for (int i=0;i<ncol;++i)
+      {
+        CoNode* mymrtrnode = dynamic_cast<CoNode*> (mnodes[i]);
+        mgpfpres += mval[i] * mymrtrnode->CoPoroData().fpres()[0];
+      }
+    Teuchos::ParameterList mparams; //empty parameter list;
+
+    Teuchos::RCP< MAT::StructPoro > mstructmat =
+        Teuchos::rcp_dynamic_cast<MAT::StructPoro>(mele.ParentElement()->Material(0));
+    if (mstructmat == Teuchos::null)
+      mstructmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(mele.ParentElement()->Material(1));
+    if (mstructmat == Teuchos::null)
+      dserror("Cast to StructPoro failed!");
+
+    mstructmat->ComputeSurfPorosity(mparams,
+                                   mgpfpres,
+                                   mJ,
+                                   mele.FaceParentNumber(),   //may not work
+                                   1, //finally check what to do here Todo:
+                                   mporosity,
+                                   &mdphi_dp,              //linearization of phi w.r.t. pressure
+                                   &mdphi_dJ,              //linearization of phi w.r.t. defo-grad determinant
+                                   NULL,                  //dphi_dJdp not needed
+                                   NULL,                  //dphi_dJJ not needed
+                                   NULL,                   //dphi_dpp not needed
+                                   false
+                                   );
+  }
+    ////////////////////////////////!!!Calculate Porosity done!!!////////////////////////////
   // build normal coupling term at current GP
   for (int i=0;i<Dim();++i)
   {
-    //std::cout << "ncoup (" << i << ") : " << (sgpsvel[i]-sgpfvel[i])*gpn[i] << " n: " << gpn[i] << " / " << sgpsvel[i] << " / " << sgpfvel[i] << std::endl;
-    ncoup[0]+=(sgpsvel[i]-sgpfvel[i])*gpn[i]*porosity;
+    if(slaveporo)
+      ncoup[0]+=(sgpsvel[i]-sgpfvel[i])*gpn[i]*sporosity;
+    if(masterporo)
+      ncoup[0]-=(mgpsvel[i]-mgpfvel[i])*gpn[i]*mporosity;
   }
   // **************************
   // add to node
@@ -10797,7 +10900,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
       CONTACT::CoNode* mrtrnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
 
       double prod = 0.0;
-      // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
+      // Petrov-Galerkin approach (dual LM for D/M but standard LM for normal coupling)
       if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
         prod = sval[j]*ncoup[0]*jac*wgt;
       // usual standard or dual LM approach
@@ -10806,7 +10909,12 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
 
       // do not process slave side boundary nodes
       // (their row entries would be zero anyway!)
-      if (mrtrnode->IsOnBound()) continue;
+      if (mrtrnode->IsOnBound())
+      {
+        dserror("CHECKME: isonbound_ active; should not happen here");
+        continue;
+      }
+
       //if (cnode->Owner()!=Comm_.MyPID()) continue;
 
       // add current Gauss point's contribution to gseg
@@ -10864,25 +10972,26 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
       dmap_nxsl_gp[p->first] += sval[i]*(p->second);
     for (_CI p=dmap_nysl_i.begin();p!=dmap_nysl_i.end();++p)
       dmap_nysl_gp[p->first] += sval[i]*(p->second);
+    if (Dim()==3)
+    {
     for (_CI p=dmap_nzsl_i.begin();p!=dmap_nzsl_i.end();++p)
       dmap_nzsl_gp[p->first] += sval[i]*(p->second);
-    for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-    {
-      double valx =  sderiv(i,0)*mrtrnode->MoData().n()[0];
-      dmap_nxsl_gp[p->first] += valx*(p->second);
-      double valy =  sderiv(i,0)*mrtrnode->MoData().n()[1];
-      dmap_nysl_gp[p->first] += valy*(p->second);
-      double valz =  sderiv(i,0)*mrtrnode->MoData().n()[2];
-      dmap_nzsl_gp[p->first] += valz*(p->second);
     }
-    for (_CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+
+    for (unsigned int d=0;d<dsxigp.size();++d)
     {
-      double valx =  sderiv(i,1)*mrtrnode->MoData().n()[0];
-      dmap_nxsl_gp[p->first] += valx*(p->second);
-      double valy =  sderiv(i,1)*mrtrnode->MoData().n()[1];
-      dmap_nysl_gp[p->first] += valy*(p->second);
-      double valz =  sderiv(i,1)*mrtrnode->MoData().n()[2];
-      dmap_nzsl_gp[p->first] += valz*(p->second);
+      for (_CI p=dsxigp[d].begin();p!=dsxigp[d].end();++p)
+      {
+        double valx =  sderiv(i,0)*mrtrnode->MoData().n()[0];
+        dmap_nxsl_gp[p->first] += valx*(p->second);
+        double valy =  sderiv(i,0)*mrtrnode->MoData().n()[1];
+        dmap_nysl_gp[p->first] += valy*(p->second);
+        if (Dim()==3)
+        {
+          double valz =  sderiv(i,0)*mrtrnode->MoData().n()[2];
+          dmap_nzsl_gp[p->first] += valz*(p->second);
+        }
+      }
     }
   }
   // INFO: dnmap_unit(x,y,z)sl_gp ... delta (n/|n|)
@@ -10899,7 +11008,9 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
     dnmap_unit[0][p->first] += 1/lengthn[0]*(p->second);
     dnmap_unit[0][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sxsx*(p->second);
     dnmap_unit[1][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sxsy*(p->second);
-    dnmap_unit[2][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sxsz*(p->second);
+
+    if (Dim()==3)
+      dnmap_unit[2][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sxsz*(p->second);
   }
 
   for (_CI p=dmap_nysl_gp.begin();p!=dmap_nysl_gp.end();++p)
@@ -10907,101 +11018,156 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_DERIV(
     dnmap_unit[1][p->first] += 1/lengthn[0]*(p->second);
     dnmap_unit[1][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sysy*(p->second);
     dnmap_unit[0][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sxsy*(p->second);
-    dnmap_unit[2][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sysz*(p->second);
+
+    if (Dim()==3)
+      dnmap_unit[2][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sysz*(p->second);
   }
 
-  for (_CI p=dmap_nzsl_gp.begin();p!=dmap_nzsl_gp.end();++p)
+  if (Dim()==3)
   {
-    dnmap_unit[2][p->first] += 1/lengthn[0]*(p->second);
-    dnmap_unit[2][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*szsz*(p->second);
-    dnmap_unit[0][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sxsz*(p->second);
-    dnmap_unit[1][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sysz*(p->second);
+    for (_CI p=dmap_nzsl_gp.begin();p!=dmap_nzsl_gp.end();++p)
+    {
+      dnmap_unit[2][p->first] += 1/lengthn[0]*(p->second);
+      dnmap_unit[2][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*szsz*(p->second);
+      dnmap_unit[0][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sxsz*(p->second);
+      dnmap_unit[1][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sysz*(p->second);
+    }
   }
   // add everything to dncoupgp
   // dncoupgp ... (v(struct)-v(fluid)) * delta n
-  for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+  for (int k=0; k<Dim();++k)
   {
-    dncoupgp[p->first] += porosity * (sgpsvel[0]-sgpfvel[0]) * (p->second);
-  }
+    for (_CI p=dnmap_unit[k].begin();p!=dnmap_unit[k].end();++p)
+    {
+      double slaveside = 0.0;
+      if(slaveporo)
+        slaveside = sporosity * (sgpsvel[k]-sgpfvel[k]);//h.Willmann slave terms preparation
 
-  for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
-  {
-    dncoupgp[p->first] += porosity * (sgpsvel[1]-sgpfvel[1]) * (p->second);
-  }
+      double masterside = 0.0;
+      if(masterporo)
+        masterside = mporosity * (mgpsvel[k]-mgpfvel[k]);//h.Willmann master terms preparation
 
-  for (_CI p=dnmap_unit[2].begin();p!=dnmap_unit[2].end();++p)
-  {
-    dncoupgp[p->first] += porosity * (sgpsvel[2]-sgpfvel[2]) *(p->second);
+      dncoupgp[p->first] += (slaveside-masterside) * (p->second); //linearization of n,
+    }
   }
-
 
   double timefac = imortar_.get<double>("porotimefac"); //TODO: move in final version to other place ChrAg
-  for (int z=0;z<nrow;++z)
+
+  if(slaveporo)
   {
-    CoNode* mrtrnode = dynamic_cast<CoNode*> (snodes[z]);
-
-    for (int k=0;k<3;++k)
+    for (int i=0;i<nrow;++i)
     {
-      dncoupgp[mrtrnode->Dofs()[k]] += porosity * sval[z] * gpn[k] * timefac;
-      for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-        {
-          dncoupgp[p->first] -= porosity * gpn[k] * sderiv(z,0) * mrtrnode->CoPoroData().fvel()[k] * (p->second);
-          dncoupgp[p->first] += porosity * gpn[k] * sderiv(z,0) * mrtrnode->CoPoroData().svel()[k] * (p->second);
-        }
+      CoNode* mrtrnode = dynamic_cast<CoNode*> (snodes[i]);
 
-      for (_CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
+      for (int k=0;k<Dim();++k)
       {
-        dncoupgp[p->first] -= porosity * gpn[k] * sderiv(z,1) * mrtrnode->CoPoroData().fvel()[k] * (p->second);
-        dncoupgp[p->first] += porosity * gpn[k] * sderiv(z,1) * mrtrnode->CoPoroData().svel()[k] * (p->second);
+        dncoupgp[mrtrnode->Dofs()[k]] += sporosity * sval[i] * gpn[k] * timefac; //linearisation of vs add for master side
+        for (unsigned int d=0; d<dsxigp.size(); ++d)
+        {
+          for (_CI p=dsxigp[d].begin();p!=dsxigp[d].end();++p) //linearization of shape function N
+            {
+              dncoupgp[p->first] -= sporosity * gpn[k] * sderiv(i,d) * mrtrnode->CoPoroData().fvel()[k] * (p->second);
+              dncoupgp[p->first] += sporosity * gpn[k] * sderiv(i,d) * mrtrnode->CoPoroData().svel()[k] * (p->second);
+            }
+        }
+      }
+    }
+  }//if(slaveporo)
+
+  //h.Willmann master side is considered now
+  //MASTER
+  if(masterporo)
+  {
+    // lin master nodes
+    for (int i=0;i<ncol;++i)
+    {
+      CoNode* mrtrnode = dynamic_cast<CoNode*> (mnodes[i]);
+
+      for (int k=0;k<Dim();++k)
+      {
+        dncoupgp[mrtrnode->Dofs()[k]] -= mporosity * mval[i] * gpn[k] * timefac;
+        for (unsigned int d=0; d<dmxigp.size(); ++d)
+        {
+          for (_CI p=dmxigp[d].begin();p!=dmxigp[d].end();++p)
+          {
+            dncoupgp[p->first] += mporosity * gpn[k] * mderiv(i,d) * mrtrnode->CoPoroData().fvel()[k] * (p->second);
+            dncoupgp[p->first] -= mporosity * gpn[k] * mderiv(i,d) * mrtrnode->CoPoroData().svel()[k] * (p->second);
+          }
+        }
       }
     }
   }
-  //linearisation of master is skipped as atm moment just onesided poro is considered
 
-//  //        MASTER
-//   {
-//    // lin master nodes
-//    for (int z=0;z<ncol;++z)
-//    {
-//      CoNode* mrtrnode = dynamic_cast<CoNode*> (mnodes[z]);
-//
-//      for (int k=0;k<3;++k)
-//      {
-//        dncoupgp[mrtrnode->dofs2_[k]] += mval[z] * gpn[k] * timefac; //<-- Because Master Discretisation should be the Structural dis! (matching grid ... to get index of slave side slave node dof is & sval is used ... equal to the master side for matching grid!)
-//
-//        for (_CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
-//        { //use dsxigp as we have matching grid!!! (to avoid master indices)
-//          dncoupgp[p->first] -= gpn[k] * mderiv(z,0) * mrtrnode->normalMoData().fvel()[k] * (p->second);// std::cout << "3: p->first: " << p->first << std::endl;}
-//        }
-//
-//        for (_CI p=dmxigp[1].begin();p!=dmxigp[1].end();++p)
-//        {
-//          dncoupgp[p->first] -= gpn[k] * mderiv(z,1) * mrtrnode->normalMoData().fvel()[k] * (p->second);
-//        }
-//
-//      }
-//    }
-//  }
-   // **************************
-   // Linearization w.r.t. fluid velocities
-   // **************************
+  //h.Willmann Write Deformation Gradient Determinant Linearization to map
+  typedef std::map<int,double>::iterator I;
 
-   for (int z=0;z<nrow;++z)
-   {
+  if(slaveporo)
+  {
+    for (I p=sJLin.begin();p!=sJLin.end();++p)
+    {
+      for (int i=0;i<Dim();++i)
+      {
+        dncoupgp[p->first]+=(sgpsvel[i]-sgpfvel[i])*sdphi_dJ*gpn[i]*p->second;
+      }
+    }
+  }
+  if(masterporo)
+  {
+    for (I p=mJLin.begin();p!=mJLin.end();++p)
+    {
+      for (int i=0;i<Dim();++i)
+      {
+        dncoupgp[p->first]-=(mgpsvel[i]-mgpfvel[i])*mdphi_dJ*gpn[i]*p->second;
+      }
+    }
+  }
+
+  // **************************
+  // Linearization w.r.t. fluid velocities
+  // **************************
+
+  if(slaveporo)
+  {
+    for (int z=0;z<nrow;++z)
+    {
      CoNode* mrtrnode = dynamic_cast<CoNode*> (snodes[z]);
 
-     for (int k=0;k<3;++k)
-     {
-       dvelncoupgp[mrtrnode->Dofs()[k]] -= porosity * sval[z] * gpn[k]; //Because Slave Discretisation should be the poro dis!!!  --- add master for two sided poro contact!!!
-     }
-   }
+      for (int k=0;k<Dim();++k)
+      {
+        dvelncoupgp[mrtrnode->Dofs()[k]] -= sporosity * sval[z] * gpn[k];
+        //Because Slave Discretisation should be the poro dis!!!  --- add master for two sided poro contact!!!
+
+        //h.Willmann linearization w.r.t. fluid pressure:
+        dpresncoupgp[mrtrnode->Dofs()[0]] += sdphi_dp * sval[z] * (sgpsvel[k]-sgpfvel[k])*gpn[k];
+  //      std::cout<<mrtrnode->Dofs()[0]<<"mrtrnode->Dofs()[0]"<<std::endl;
+      }
+    }
+  }
+//h.Willmann terms added for master side
+  if(masterporo)
+  {
+    for (int z=0;z<ncol;++z)
+    {
+      CoNode* mrtrnode = dynamic_cast<CoNode*> (mnodes[z]);
+
+      for (int k=0;k<Dim();++k)
+      {
+       dvelncoupgp[mrtrnode->Dofs()[k]] += mporosity * mval[z] * gpn[k];
+
+       //h.Willmann linearization w.r.t. fluid pressure:
+       dpresncoupgp[mrtrnode->Dofs()[0]] -= mdphi_dp * mval[z] * (mgpsvel[k]-mgpfvel[k])*gpn[k];
+//       std::cout<<mrtrnode->Dofs()[0]<<"mrtrnode->Dofs()[0]"<<std::endl;
+      }
+    }
+  }
   return;
 }
 
 /*-----------------------------------------------------------------------------*
  |  Do lin. entries for weighted normal coupling condition at GP     ager 06/14|
+ |  modified by h.Willmann 2015                                                |
  *----------------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_NCOUP_LIN(
+void inline CONTACT::CoIntegrator::GP_NCOUP_LIN(
      int& iter,
      MORTAR::MortarElement& sele,
      MORTAR::MortarElement& mele,
@@ -11010,17 +11176,19 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_LIN(
      LINALG::SerialDenseVector& lmval,
      LINALG::SerialDenseMatrix& sderiv,
      LINALG::SerialDenseMatrix& lmderiv,
-     double& gap, double *gpn,double& jac,
+     double& ncoup, double *gpn,double& jac,
      double& wgt, bool& duallin,
      const std::map<int,double>& dncoupgp,
      const std::map<int,double>& dvelncoupgp,
+     const std::map<int,double> & dpresncoupgp,
      const GEN::pairedvector<int,double>& jacintcellmap,
      const std::vector<GEN::pairedvector<int,double> >& dsxigp,
      const std::vector<GEN::pairedvector<int,double> >& dmxigp,
      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
 {
   int nrow = sele.NumNode();
-  //int ncol = mele.NumNode();
+  //only sele.NumNode() is needed because the integration of the interface constraint is
+  //evaluated on the slave side interface surface
 
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
@@ -11031,34 +11199,35 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_LIN(
   //DRT::Node** mnodes = mele.Nodes();
 
   CONTACT::CoNode* mymrtrnode = dynamic_cast<CONTACT::CoNode*>(snodes[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+  if (!mymrtrnode) dserror("ERROR: CONTACT::CoIntegrator::GP_NCOUP_LIN: mymrtnode: Null pointer!");
 
   double fac = 0.0;
 
   // get the corresponding map as a reference
   std::map<int,double>& dgmap = mymrtrnode->CoPoroData().GetDerivnCoup();
-
   // switch if Petrov-Galerkin approach for LM is applied
+  //for meshtying shape_dual is the only allowed case as long as porofluid and skeleton
+  //meshtying conditions share the same input lines
+  //(for contact they still share the input lines but shape_petrovgalerkin is allowed for skeleton/structural contact)
+  //shape_petrovgalerkin
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
     // (1) Lin(Phi) - does not exist here for Petrov-Galerkin approach
 
     // (2) Lin(N) - slave GP coordinates
-    fac = wgt*sderiv(iter,0)*gap*jac;
-    for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-      dgmap[p->first] += fac*(p->second);
-
-    fac = wgt*sderiv(iter,1)*gap*jac;
-    for (_CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-      dgmap[p->first] += fac*(p->second);
-
-    // (3) Lin(g) - gap function
+    for (unsigned int k=0;k<dsxigp.size();++k)
+    {
+      fac = wgt*sderiv(iter,k)*ncoup*jac;
+      for (_CI p=dsxigp[k].begin();p!=dsxigp[k].end();++p)
+        dgmap[p->first] += fac*(p->second);
+    }
+    // (3) Lin(g) - normal coupling condition ncoup function
     fac = wgt*sval[iter]*jac;
     for (CI p=dncoupgp.begin();p!=dncoupgp.end();++p)
       dgmap[p->first] += fac*(p->second);
 
     // (4) Lin(dsxideta) - intcell GP Jacobian
-    fac = wgt*sval[iter]*gap;
+    fac = wgt*sval[iter]*ncoup;
     for (_CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
       dgmap[p->first] += fac*(p->second);
   }
@@ -11070,7 +11239,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_LIN(
     if (duallin)
       for (int m=0;m<nrow;++m)
       {
-        fac = wgt*sval[m]*gap*jac;
+        fac = wgt*sval[m]*ncoup*jac;
         for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
             p!=dualmap.end();++p)
         {
@@ -11079,18 +11248,16 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_LIN(
       }
 
     // (2) Lin(Phi) - slave GP coordinates
-    fac = wgt*lmderiv(iter,0)*gap*jac;
-    for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+    for (unsigned int k=0; k<dsxigp.size();++k)
     {
-      dgmap[p->first] += fac*(p->second);
+      fac = wgt*lmderiv(iter,k)*ncoup*jac;
+      for (_CI p=dsxigp[k].begin();p!=dsxigp[k].end();++p)
+      {
+        dgmap[p->first] += fac*(p->second);
+      }
     }
 
-    fac = wgt*lmderiv(iter,1)*gap*jac;
-    for (_CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-      dgmap[p->first] += fac*(p->second);
-
-
-    // (3) Lin(g) - gap function
+    // (3) Lin(g) - normal coupling condition ncoup function
     fac = wgt*lmval[iter]*jac;
     for (CI p=dncoupgp.begin();p!=dncoupgp.end();++p)
     {
@@ -11098,7 +11265,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_LIN(
     }
 
     // (4) Lin(dsxideta) - intcell GP Jacobian
-    fac = wgt*lmval[iter]*gap;
+    fac = wgt*lmval[iter]*ncoup;
     for (_CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
     {
       dgmap[p->first] += fac*(p->second);
@@ -11111,7 +11278,7 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_LIN(
   // switch if Petrov-Galerkin approach for LM is applied
     if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
-      // (3) Lin(g) - gap function
+      // (3) Lin(g) - normal coupling condition function
       fac = wgt*sval[iter]*jac;
       for (CI p=dvelncoupgp.begin();p!=dvelncoupgp.end();++p)
         dvelncoupmap[p->first] += fac*(p->second);
@@ -11119,30 +11286,57 @@ void inline CONTACT::CoIntegrator::GP_3D_NCOUP_LIN(
     // the usual standard or dual LM approach
     else
     {
-      // (3) Lin(g) - gap function
+      // (3) Lin(g) - normal coupling condition function
       fac = wgt*lmval[iter]*jac;
       for (CI p=dvelncoupgp.begin();p!=dvelncoupgp.end();++p)
       {
         dvelncoupmap[p->first] += fac*(p->second);
       }
     }
+
+    //h.Willmann
+    //pressure linearisation of the ncoupling condition!
+    // get the corresponding map as a reference
+    std::map<int,double>& dpresncoupmap = mymrtrnode->CoPoroData().GetPresDerivnCoup();
+    // switch if Petrov-Galerkin approach for LM is applied
+      if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
+      {
+        // (3) Lin(g) - normal coupling condition function
+        fac = wgt*sval[iter]*jac;
+        for (CI p=dpresncoupgp.begin();p!=dpresncoupgp.end();++p)
+          dpresncoupmap[p->first] += fac*(p->second);
+      }
+      // the usual standard or dual LM approach
+      else
+      {
+        // (3) Lin(g) - normal coupling condition function
+        fac = wgt*lmval[iter]*jac;
+        for (CI p=dpresncoupgp.begin();p!=dpresncoupgp.end();++p)
+        {
+          dpresncoupmap[p->first] += fac*(p->second);
+        }
+      }
   return;
 }
 
 /*-----------------------------------------------------------------------------*
  |  Calculate Determinate of the Deformation Gradient at GP          ager 10/14|
  *----------------------------------------------------------------------------*/
-double inline CONTACT::CoIntegrator::DetDeformationGradient3D(
+double inline CONTACT::CoIntegrator::DetDeformationGradient(
     MORTAR::MortarElement& sele,
     double& wgt,
-    double* gpcoord)
+    double* gpcoord,
+    std::map<int,double> & JLin)
 {
   double J;
   DRT::Element::DiscretizationType distype = sele.ParentElement()->Shape();
   switch (distype)
   {
   case DRT::Element::hex8:
-    J = TDetDeformationGradient3D<DRT::Element::hex8,3>(sele,wgt,gpcoord);
+    J = TDetDeformationGradient<DRT::Element::hex8,3>(sele,wgt,gpcoord,JLin);
+    break;
+  case DRT::Element::quad4:
+    J = TDetDeformationGradient<DRT::Element::quad4,2>(sele,wgt,gpcoord,JLin);
     break;
   default:
     dserror("DetDeformationGradient3D: Parent Element Type not templated yet, just add it here!");
@@ -11153,87 +11347,106 @@ double inline CONTACT::CoIntegrator::DetDeformationGradient3D(
   return J;
 }
 /*-------------------------------------------------------------------------------*
- |  Templated Calculate Determinate of the Deformation Gradient at GP  ager 10/14|
- *------------------------------------------------------------------------------*/
+ |  Templated Calculate Determinant of the Deformation Gradient at GP  ager 10/14|
+ |  modified by h.Willmann 2015                                                  |
+ *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType parentdistype, int dim>
-double inline CONTACT::CoIntegrator::TDetDeformationGradient3D(
+double inline CONTACT::CoIntegrator::TDetDeformationGradient(
     MORTAR::MortarElement& sele,
     double& wgt,
-    double* gpcoord)
+    double* gpcoord,
+    std::map<int,double> & JLin)
 {
 
   //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
   static const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<parentdistype>::numNodePerElement;
 
-    DRT::UTILS::CollectedGaussPoints intpoints = DRT::UTILS::CollectedGaussPoints(1); //reserve just for 1 entry ...
-    intpoints.Append(gpcoord[0], gpcoord[1],0.0, wgt);
+  DRT::UTILS::CollectedGaussPoints intpoints = DRT::UTILS::CollectedGaussPoints(1); //reserve just for 1 entry ...
+  intpoints.Append(gpcoord[0], gpcoord[1],0.0, wgt);
 
-    // get coordinates of gauss points w.r.t. local parent coordinate system
-    LINALG::SerialDenseMatrix pqxg(1,dim);
-    LINALG::Matrix<dim,dim>  derivtrafo(true);
+  // get coordinates of gauss point w.r.t. local parent coordinate system
+  LINALG::SerialDenseMatrix pqxg(1,dim);
+  LINALG::Matrix<dim,dim>  derivtrafo(true);
 
-    DRT::UTILS::BoundaryGPToParentGP<dim>( pqxg,
-        derivtrafo,
-        intpoints ,
-        sele.ParentElement()->Shape(),
-        sele.Shape(),
-        sele.FaceParentNumber());
+  DRT::UTILS::BoundaryGPToParentGP<dim>( pqxg,
+      derivtrafo,
+      intpoints ,
+      sele.ParentElement()->Shape(),
+      sele.Shape(),
+      sele.FaceParentNumber());
 
+  LINALG::Matrix<dim,1> pxsi        (true);
 
-    LINALG::Matrix<dim,1> pxsi        (true);
+  // coordinates of the current integration point in parent coordinate system
+    for (int idim=0;idim<dim ;idim++)
+  {
+    pxsi(idim) = pqxg(0,idim);
+  }
 
-    // coordinates of the current integration point in parent coordinate system
-    for (int idim=0;idim<3 ;idim++)
-    {
-      pxsi(idim) = pqxg(0,idim);
-    }
+  LINALG::Matrix<dim,numnodes> pderiv_loc(true); // derivatives of parent element shape functions in parent element coordinate system
 
-    LINALG::Matrix<dim,numnodes> pderiv_loc(true); // derivatives of parent element shape functions in parent element coordinate system
-
-    // evaluate derivatives of parent element shape functions at current integration point in parent coordinate system
-    DRT::UTILS::shape_function_deriv1<parentdistype>(pxsi,pderiv_loc);
+  // evaluate derivatives of parent element shape functions at current integration point in parent coordinate system
+  DRT::UTILS::shape_function_deriv1<parentdistype>(pxsi,pderiv_loc);
   //
-    // get Jacobian matrix and determinant w.r.t. spatial configuration
-    //
-    // |J| = det(xjm) * det(Jmat^-1) = det(xjm) * 1/det(Jmat)
-    //
-    //    _                     _
-    //   |  x_1,1  x_2,1  x_3,1  |           d x_i
-    //   |  x_1,2  x_2,2  x_3,2  | = xjm  = --------
-    //   |_ x_1,3  x_2,3  x_3,3 _|           d s_j
-    //    _
-    //   |  X_1,1  X_2,1  X_3,1  |           d X_i
-    //   |  X_1,2  X_2,2  X_3,2  | = Jmat = --------
-    //   |_ X_1,3  X_2,3  X_3,3 _|           d s_j
-    //
-    LINALG::Matrix<dim,dim>    xjm;
-    LINALG::Matrix<dim,dim>   Jmat;
+  // get Jacobian matrix and determinant w.r.t. spatial configuration
+  //
+  // |J| = det(xjm) * det(Jmat^-1) = det(xjm) * 1/det(Jmat)
+  //
+  //    _                     _
+  //   |  x_1,1  x_2,1  x_3,1  |           d x_i
+  //   |  x_1,2  x_2,2  x_3,2  | = xjm  = --------
+  //   |_ x_1,3  x_2,3  x_3,3 _|           d s_j
+  //    _                     _
+  //   |  X_1,1  X_2,1  X_3,1  |           d X_i
+  //   |  X_1,2  X_2,2  X_3,2  | = Jmat = --------
+  //   |_ X_1,3  X_2,3  X_3,3 _|           d s_j
+  //
+  LINALG::Matrix<dim,dim>    xjm;
+  LINALG::Matrix<dim,dim>   Jmat;
 
-    LINALG::Matrix<dim,numnodes>  xrefe (true);   // material coord. of parent element
-    LINALG::Matrix<dim,numnodes>  xcurr (true);   // current  coord. of parent element
+  LINALG::Matrix<dim,numnodes>  xrefe (true);   // material coord. of parent element
+  LINALG::Matrix<dim,numnodes>  xcurr (true);   // current  coord. of parent element
 
-    // update element geometry of parent element
+  // update element geometry of parent element
+  {
+    DRT::Node** nodes = sele.ParentElement()->Nodes();
+    for (int inode=0;inode<numnodes;++inode)
     {
-      DRT::Node** nodes = sele.ParentElement()->Nodes();
-      for (int inode=0;inode<numnodes;++inode)
+      for (unsigned int idof=0;idof<dim;++idof)
       {
-        for (unsigned int idof=0;idof<dim;++idof)
+        const double* x = nodes[inode]->X();
+        xrefe(idof,inode)   = x[idof];
+        xcurr(idof,inode)   = xrefe(idof,inode) + sele.MoData().ParentDisp()[inode*dim+idof];
+//          std::cout<< sele.MoData().ParentDisp()[inode*dim+idof] <<", sele.MoData().ParentDisp()[inode*dim+idof]"<<std::endl;
+      }
+    }
+  }
+//std::cout<<xcurr<<"xcurr, "<<xrefe<<"xrefe"<<std::endl;
+  xjm.MultiplyNT (pderiv_loc,xcurr);
+  Jmat.MultiplyNT(pderiv_loc,xrefe);
+  double det  = xjm.Determinant();
+  double detJ = Jmat.Determinant();
+  const double J = det/detJ;
+
+  //Linearisation of Jacobian (atm missing!)
+  // D J[d] = J div(d) = J div(N_i d_i) = J dN_i/dx_j d_ij = J dN_i/dzeta_k dzeta_k/dx_j d_ij
+
+  // linearization of jacobian determinant //h.Willmann
+//  LINALG::Matrix<dim,numnodes>  auxJLin (true);   // matrix to be filled with linearization scalars
+  xjm.Invert();
+  {
+//    DRT::Node** nodes = sele.ParentElement()->Nodes();
+    for (int inode=0;inode<numnodes;++inode)
+    {
+      for (unsigned int i=0;i<dim;++i)
+      {
+        for (unsigned int j=0;j<dim;++j)
         {
-          const double* x = nodes[inode]->X();
-          xrefe(idof,inode)   = x[idof];
-          xcurr(idof,inode)   = xrefe(idof,inode) + sele.MoData().ParentDisp()[inode*3+idof];
+          JLin[sele.MoData().ParentDof()[inode*dim+i]] += J*pderiv_loc(j,inode)*xjm(i,j);
+//          auxJLin(idof,inode)+=J*pderiv_loc(j,inode)*xjm(i,j); //matrix that could be filled with linearizations
         }
       }
     }
-
-    xjm.MultiplyNT (pderiv_loc,xcurr);
-    Jmat.MultiplyNT(pderiv_loc,xrefe);
-    double det  = xjm.Determinant();
-    double detJ = Jmat.Determinant();
-    const double J = det/detJ;
-
-    //Linearisation of Jacobian (atm missing!)
-    // D J[d] = J div(d) = J div(N_i d_i) = J dN_i/dx_j d_ij = J dN_i/dzeta_k dzeta_k/dx_j d_ij
-
+  }
   return J;
 }

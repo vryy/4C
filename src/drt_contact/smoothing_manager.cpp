@@ -923,6 +923,10 @@ bool CONTACT::SmoothingManager::ReadAndCheckInput(Teuchos::ParameterList& cparam
   std::string distype = DRT::Problem::Instance()->SpatialApproximation();
   const int dim       = DRT::Problem::Instance()->NDim();
 
+  // in case just System type system_condensed_lagmult
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") == INPAR::CONTACT::system_condensed_lagmult)
+    dserror("For Contact anyway just the lagrange multiplier can be condensed, choose SYSTEM = CondensedLagMult.");
+
   // *********************************************************************
   // invalid parallel strategies
   // *********************************************************************
