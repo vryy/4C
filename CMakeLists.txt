@@ -627,6 +627,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_scatra_base_algorithm.cpp
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
+  src/drt_adapter/adapter_reynolds.cpp
   src/drt_adapter/ad_str_structure.cpp
 #  src/drt_adapter/ad_str_structure_new.cpp
   src/drt_adapter/ad_str_constr_merged.cpp
@@ -2303,6 +2304,7 @@ set(MULTIFIELD_LIBRARIES
   alg_fs3i
   alg_topopt
   alg_ssi
+  alg_reynolds
   )
 
 # the adapter layer
@@ -2343,7 +2345,6 @@ set(SINGLEFIELD_LIBRARIES
   alg_fluid
   alg_xfluid
   alg_redairways
-  alg_reynolds
   alg_scatra
   alg_structure
   alg_statmech

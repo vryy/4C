@@ -13,13 +13,14 @@ Maintainer: Andy Wirtz
 */
 /*--------------------------------------------------------------------------*/
 
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "reynolds_dyn.H"
+
+#include "../drt_adapter/adapter_reynolds.H"
 
 #include "../drt_lib/drt_utils_createdis.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 
-#include "reynolds_dyn.H"
 
 /*----------------------------------------------------------------------*
  * Main control routine for Reynolds problems
@@ -52,14 +53,14 @@ void reynolds_dyn(int restart)
 
   reynoldsdis->FillComplete();
 
-  // we directly use the elements from the scalar transport elements section
+  // we directly use the elements from the Reynolds elements section
   if (reynoldsdis->NumGlobalNodes() == 0)
     dserror("No elements in the ---REYNOLDS ELEMENTS section");
 
-  // add proxy of velocity related degrees of freedom to scatra discretization
+  // add proxy of velocity related degrees of freedom to Reynolds discretization
   if (reynoldsdis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim() + 1, 0, 0,
       true) != 1)
-    dserror("Scatra discretization has illegal number of dofsets!");
+    dserror("Reynolds discretization has illegal number of dofsets!");
 
   // finalize discretization
   reynoldsdis->FillComplete(true, false, false);
@@ -70,25 +71,28 @@ void reynolds_dyn(int restart)
     dserror(
         "no linear solver defined for REYNOLDS problem. Please set LINEAR_SOLVER in REYNOLDS DYNAMIC to a valid number!");
 
-  // create instance of scalar transport basis algorithm (empty fluid discretization)
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatraonly = Teuchos::rcp(
-      new ADAPTER::ScaTraBaseAlgorithm(reynoldsdyn, scatradyn,
-          DRT::Problem::Instance()->SolverParams(linsolvernumber),"reynolds"));
+  // create instance of Reynolds basis algorithm
+  Teuchos::RCP<ADAPTER::ReynoldsBaseAlgorithm> reynoldsonly = Teuchos::rcp(
+      new ADAPTER::ReynoldsBaseAlgorithm());
+
+  // setup Reynolds basis algorithm
+  reynoldsonly->Setup(reynoldsdyn, scatradyn,
+          DRT::Problem::Instance()->SolverParams(linsolvernumber));
 
   // set initial velocity field
   // note: The order ReadRestart() before SetVelocityField() is important here!!
   // for time-dependent velocity fields, SetVelocityField() is additionally called in each PrepareTimeStep()-call
-  (scatraonly->ScaTraField())->SetVelocityField(1);
+  (reynoldsonly->ReynoldsField())->SetVelocityField(1);
 
   // read the restart information, set vectors and variables
   if (restart)
-    scatraonly->ScaTraField()->ReadRestart(restart);
+    reynoldsonly->ReynoldsField()->ReadRestart(restart);
 
   // enter time loop to solve problem
-  (scatraonly->ScaTraField())->TimeLoop();
+  (reynoldsonly->ReynoldsField())->TimeLoop();
 
   // perform the result test if required
-  DRT::Problem::Instance()->AddFieldTest(scatraonly->CreateScaTraFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(reynoldsonly->CreateReynoldsFieldTest());
   DRT::Problem::Instance()->TestAll(comm);
 
 return;
