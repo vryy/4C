@@ -16,7 +16,7 @@
 #endif
 
 // EpetraExt headers
-#include <EpetraExt_Reindex_LinearProblem.h>
+#include <EpetraExt_Reindex_LinearProblem2.h>
 
 // BACI headers
 #include "solver_directsolver.H"
@@ -134,11 +134,18 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
   lp_->SetLHS(x_.get());
   lp_->SetOperator(A_.get());
 
+  /* update reindexing of vectors: Doing so, we don't need to reset the solver
+   * to enforce reindexing of the entire Epetra_LinearProblem. This allows for
+   * reuse of the factorization.
+   */
+  if (not reindexer_.is_null())
+    reindexer_->fwd();
+
   if (reset or refactor or not IsFactored())
   {
     amesos_ = Teuchos::null;
 
-    reindexer_ = Teuchos::rcp(new EpetraExt::LinearProblem_Reindex(NULL));
+    reindexer_ = Teuchos::rcp(new EpetraExt::LinearProblem_Reindex2(NULL));
 
     if ( solvertype_=="klu" )
     {

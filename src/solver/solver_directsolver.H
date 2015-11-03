@@ -17,7 +17,7 @@ Created on: Jul 4, 2011
 // forward declarations
 class Amesos_BaseSolver;
 namespace EpetraExt {
-  class LinearProblem_Reindex;
+  class LinearProblem_Reindex2;
 }
 
 namespace LINALG
@@ -31,17 +31,22 @@ namespace LINALG
     {
     public:
 
+      //! Constructor
       explicit DirectSolver( std::string solvertype );
 
+      //! Desctructor
       virtual ~DirectSolver();
 
-      virtual void Setup( Teuchos::RCP<Epetra_Operator>         matrix        ,
-                          Teuchos::RCP<Epetra_MultiVector>      x             ,
-                          Teuchos::RCP<Epetra_MultiVector>      b             ,
-                          bool                                  refactor      ,
-                          bool                                  reset         ,
-                          Teuchos::RCP<LINALG::KrylovProjector> projector = Teuchos::null);
+      //! Setup
+      virtual void Setup(Teuchos::RCP<Epetra_Operator> matrix, ///< matrix
+          Teuchos::RCP<Epetra_MultiVector> x, ///< solution vector
+          Teuchos::RCP<Epetra_MultiVector> b, ///< right hand side
+          bool refactor, ///< Enforce refactorization?
+          bool reset, ///< Enforce re-setup of solver?
+          Teuchos::RCP<LINALG::KrylovProjector> projector = Teuchos::null ///< Krylov projector
+          );
 
+      //! Actual call to the underlying amesos solver
       virtual int Solve();
 
       virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
@@ -52,28 +57,29 @@ namespace LINALG
 
     private:
 
-      std::string solvertype_;
+      //! type/implementation of Amesos solver to be used
+      const std::string solvertype_;
 
-      //! flag indicating whether matrix was factored before
-      bool                                  factored_;
+      //! flag indicating whether a valid factorization is stored
+      bool factored_;
 
       //! a linear problem wrapper class used by Trilinos and for scaling of the system
-      Teuchos::RCP<Epetra_LinearProblem>             lp_;
+      Teuchos::RCP<Epetra_LinearProblem> lp_;
 
       //! initial guess and solution
-      Teuchos::RCP<Epetra_MultiVector>               x_;
+      Teuchos::RCP<Epetra_MultiVector> x_;
 
       //! right hand side vector
-      Teuchos::RCP<Epetra_MultiVector>               b_;
+      Teuchos::RCP<Epetra_MultiVector> b_;
 
       //! system of equations
-      Teuchos::RCP<Epetra_Operator>  A_;
+      Teuchos::RCP<Epetra_Operator> A_;
 
       //! an abstract amesos solver that can be any of the amesos concrete implementations
-      Teuchos::RCP<Amesos_BaseSolver>                amesos_;
+      Teuchos::RCP<Amesos_BaseSolver> amesos_;
 
       //! reindex linear problem for amesos
-      Teuchos::RCP<EpetraExt::LinearProblem_Reindex> reindexer_;
+      Teuchos::RCP<EpetraExt::LinearProblem_Reindex2> reindexer_;
 
       //! Krylov projector if necessary
       Teuchos::RCP<LINALG::KrylovProjector> projector_;
