@@ -871,11 +871,6 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
 
   matrix->Complete();
 
-  double scaling = 1.0/ResidualScaling();
-
-  rhs->Scale(scaling);
-  matrix->Scale(scaling);
-
   return;
 } // SCATRA::ScaTraTimIntImpl::SurfacePermeability
 
