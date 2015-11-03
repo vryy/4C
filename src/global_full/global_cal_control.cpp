@@ -29,6 +29,7 @@ Maintainer: Michael Gee
 #include "../drt_particle/particle_dyn.H"
 #include "../drt_poroelast/poro_dyn.H"
 #include "../drt_red_airways/red_airways_dyn_drt.H"
+#include "../drt_reynolds/reynolds_dyn.H"
 #include "../drt_scatra/scatra_dyn.H"
 #include "../drt_ssi/ssi_dyn.H"
 #include "../drt_sti/sti_dyn.H"
@@ -62,8 +63,10 @@ void ntacal()
     case prb_fluid_redmodels:
       dyn_fluid_drt(restart);
       break;
-    case prb_cardiac_monodomain:
     case prb_reynolds:
+      reynolds_dyn(restart);
+      break;
+    case prb_cardiac_monodomain:
     case prb_scatra:
       scatra_dyn(restart);
       break;

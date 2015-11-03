@@ -974,6 +974,9 @@ set(OBJS_DRT_UTILS
   src/pss_full/pss_table.c
   src/pss_full/pss_table_iter.c
 )
+set(OBJS_DRT_REYNOLDS
+  src/drt_reynolds/reynolds_dyn.cpp
+)
 set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_algorithm.cpp
   src/drt_scatra/scatra_dyn.cpp
@@ -2316,6 +2319,7 @@ add_library(alg_invanalysis ${OBJS_INV_ANALYSIS})
 add_library(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 add_library(alg_mlmc ${OBJS_MLMC})
 add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
+add_library(alg_reynolds ${OBJS_DRT_REYNOLDS})
 add_library(alg_scatra ${OBJS_DRT_SCATRA})
 add_library(alg_statmech ${OBJS_DRT_STATMECH})
 add_library(alg_plastic_ssn ${OBJS_DRT_PLASTIC_SSN})
@@ -2335,6 +2339,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_fluid
   alg_xfluid
   alg_redairways
+  alg_reynolds
   alg_scatra
   alg_structure
   alg_statmech
