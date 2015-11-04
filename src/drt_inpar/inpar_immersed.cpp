@@ -100,8 +100,8 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  &immersedmethod);
 
   setStringToIntegralParameter<int>(
-                               "DETECT_VEL_SIGNIFICANCE","no",
-                               "set projected velocity to veln if not of significant magnitude",
+                               "OUTPUT_EVRY_NLNITER","no",
+                               "write output after every solution step of the nonlin. part. iter. scheme",
                                tuple<std::string>(
                                  "yes",
                                  "no"),

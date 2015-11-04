@@ -106,7 +106,7 @@ PROJECTION                      shapefunctions
 APPLY_FORCE_RELAX               globally
 APPLY_VEL_RELAX                 globally
 DIVERCONT                       stop
-DETECT_VEL_SIGNIFICANCE         no
+OUTPUT_EVRY_NLNITER             no
 CORRECT_BOUNDARY_VELOCITIES     no
 FORCE_RELAX                     1
 VEL_RELAX                       1

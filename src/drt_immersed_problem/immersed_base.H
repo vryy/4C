@@ -1409,9 +1409,22 @@ public:
             double dist = sqrt(pow(xvec[0]-sourceeleposition1[0],2)+pow(xvec[1]-sourceeleposition1[1],2)+pow(xvec[2]-sourceeleposition1[2],2));
 
             // only try to match given target point and sourceele if sourceele is in vicinity of target point
-            if(dist < 1.6*diagonaltargetelelength)
+            if(dist < 1.5*diagonaltargetelelength)
             {
               MORTAR::UTILS::GlobalToCurrentLocal<sourcedistype>(*sourceele,&mydispnp[0],&xvec[0],&xi(0),converged,residual);
+
+//              //DEBUG output
+//              bool check = false;
+//              for(int nn=0;nn<8;nn++)
+//              {
+//                if(targetele.NodeIds()[nn]==83274)
+//                  check = true;
+//              }
+//              if(check == true)
+//              {
+//                std::cout<<"xi for ele "<<targetele.Id()<<" ["<<xi(0)<<" "<<xi(1)<<" "<<xi(2)<<"]"<<std::endl;
+//              }
+
               if(converged==false)
               {
                 xi(0) = 2.0; xi(1) = 2.0; xi(2) = 2.0;

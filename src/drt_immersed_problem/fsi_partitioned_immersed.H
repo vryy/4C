@@ -19,7 +19,7 @@ namespace NOX
 {
   namespace FSI
   {
-    class AitkenRelaxation;
+    class AitkenRelaxationImmersedAle;
   }
 }
 

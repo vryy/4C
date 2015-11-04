@@ -139,6 +139,8 @@ public:
   virtual void StatisticsOutput() { dserror("not implemented!"); return; }
   virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter()
   { return fluid_->DiscWriter();}
+  virtual const Teuchos::RCP<LINALG::MapExtractor> GetVelPressSplitter()
+  {return fluid_->GetVelPressSplitter();}
   virtual void ReadRestart(int step)
   { return fluid_->ReadRestart(step); }
   virtual void SetRestart(const int step,

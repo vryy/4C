@@ -319,6 +319,9 @@ namespace ADAPTER {
     /// access to output
     virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() = 0;
 
+    /// access to map extractor for velocity and pressure
+   virtual const Teuchos::RCP<LINALG::MapExtractor> GetVelPressSplitter()=0;
+
     /// read restart information for given time step
     virtual void ReadRestart(int step) = 0;
 

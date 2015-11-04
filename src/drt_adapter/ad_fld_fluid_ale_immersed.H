@@ -34,6 +34,8 @@ public:
 
   void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
+  void Output(const int step = -1, const double time = -1.0);
+
 };
 
 }

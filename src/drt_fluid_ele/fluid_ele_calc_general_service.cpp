@@ -3431,6 +3431,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
     match = true;
   }
 
+//  // DEBUG output
+//  if(ele->Nodes()[node]->Id()==83274)
+//  {
+//    std::cout<<"Node "<<ele->Nodes()[node]->Id()<< "at pos. ["<<ele->Nodes()[node]->X()[0]+targeteledisp[node*nsd_+0]<<" "<<ele->Nodes()[node]->X()[1]+targeteledisp[node*nsd_+1]<<" "<<ele->Nodes()[node]->X()[2]+targeteledisp[node*nsd_+2]<<"]"<<std::endl;
+//    std::cout<<"Belongs to Ele "<<ele->Id()<<" and is matched="<<static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->IsMatched()<<" before InterpolateToBackgrdPoint."<<std::endl;
+//  }
+
   IMMERSED::InterpolateToBackgrdPoint  <DRT::Element::hex8,                       // source/structure
                                         DRT::Element::hex8>                       // target/fluid
                                                        (curr_subset_of_structdis,
@@ -3445,6 +3452,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
                                                         vel_calculation,
                                                         false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element to
                                                        );                         // interpolate to its backgrd nodes.
+
+//  // DEBUG output
+//  if(ele->Nodes()[node]->Id()==83274)
+//  {
+//    std::cout<<"After InterpolateToBackgrdPoint match="<<match<<std::endl;
+//  }
+
   // under fsi structure NOT under immersed structure !
   if(vel[0]==-12345.0 and vel[1]==-12345.0)
     match=false;
@@ -4784,8 +4798,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
      )
   {
   DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
+  //int noisimmersed = params.get<int>("NoIsImmersed",0);
 
   // reset element information
+  //if(not noisimmersed)
   immersedele->SetIsImmersed(0);
   immersedele->SetBoundaryIsImmersed(0);
   immersedele->SetHasProjectedDirichlet(0);

@@ -76,6 +76,13 @@ public:
   /// calc the fsi residual
   virtual int CalcResidual(Epetra_Vector &F, const Teuchos::RCP<Epetra_Vector> newstate , const Teuchos::RCP<Epetra_Vector> oldstate);
 
+  /// calc the current fluid tractions interpolated to the structural surface
+  virtual void CalcFluidTractionsOnStructure();
+
+  /// setup list with default parameters
+  virtual void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
+
+
   Teuchos::RCP<Epetra_Vector> combined_newstate_;
 
   Teuchos::RCP<Epetra_Vector> idispnp_;

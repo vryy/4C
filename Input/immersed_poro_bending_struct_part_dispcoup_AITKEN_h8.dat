@@ -121,7 +121,7 @@ PROJECTION                      shapefunctions
 APPLY_FORCE_RELAX               globally
 APPLY_VEL_RELAX                 globally
 DIVERCONT                       stop
-DETECT_VEL_SIGNIFICANCE         no
+OUTPUT_EVRY_NLNITER             no
 FORCE_RELAX                     1
 VEL_RELAX                       1
 FLD_SRCHRADIUS_FAC              1

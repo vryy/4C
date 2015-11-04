@@ -118,6 +118,7 @@ public:
   virtual void Output()              { dserror("Not implemented in the base class, may be overridden by a subclass."); }
   virtual void StatisticsOutput()    { dserror("Not implemented in the base class, may be overridden by a subclass."); }
   virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() { return output_; }
+  virtual const Teuchos::RCP<LINALG::MapExtractor> GetVelPressSplitter() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null;}
 
 
   virtual void Solve() = 0;

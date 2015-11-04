@@ -100,6 +100,7 @@ private:
     \warning This variable is only valid during when the time loop runs.
   */
   Teuchos::RCP<NOX::Utils> utils_;
+
   //! counters on how many times the residuum was called in a time step
   /*!
     NOX knows different types of residuum calls depending on

@@ -107,6 +107,9 @@ protected:
   /// calc the fsi residual
   virtual int CalcResidual(Epetra_Vector &F, const Teuchos::RCP<Epetra_Vector> newstate , const Teuchos::RCP<Epetra_Vector> oldstate);
 
+  /// calc the current fluid tractions interpolated to the structural surface
+  virtual void CalcFluidTractionsOnStructure();
+
 
   //! @name Various global forces
   //@{
@@ -151,6 +154,7 @@ protected:
   int coupalgo_;
   int correct_boundary_velocities_;
   int degree_gp_fluid_bound_;
+  bool output_evry_nlniter_;
 
 
   Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpltimeint_;

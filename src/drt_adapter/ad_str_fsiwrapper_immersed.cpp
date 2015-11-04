@@ -20,6 +20,7 @@ Maintainer: Georg Hammerl
 #include "../drt_structure/stru_aux.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_io/io.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -222,3 +223,29 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::PredictFullInt
   return idis;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FSIStructureWrapperImmersed::Output(bool forced_writerestart, const int step, const double time)
+{
+  bool writevelacc_=true;
+
+  if(step == -1 and time == -1.0)
+    structure_->Output(forced_writerestart);
+  else
+  {
+    if(structure_->Discretization()->Comm().MyPID()==0)
+      std::cout<<"\n   Write EXTRA Fluid Output Step="<<step<<" Time="<<time<<" ...   \n"<<std::endl;
+
+
+      structure_->DiscWriter()->NewStep(step, time);
+      structure_->DiscWriter()->WriteVector("displacement", structure_->Dispnp());
+
+    // for visualization of vel and acc do not forget to comment in corresponding lines in StructureEnsightWriter
+    if(writevelacc_)
+    {
+      structure_->DiscWriter()->WriteVector("velocity", structure_->Velnp());
+      structure_->DiscWriter()->WriteVector("acceleration", structure_->Accnp());
+    }
+
+  }
+}

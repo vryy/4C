@@ -526,6 +526,12 @@ public:
   virtual void OutputExternalForces();
 
   /*!
+  \brief get access to map extractor for velocity and pressure
+
+  */
+ virtual const Teuchos::RCP<LINALG::MapExtractor> GetVelPressSplitter(){return velpressplitter_;};
+
+  /*!
   \brief set initial flow field for analytical test problems
 
   */

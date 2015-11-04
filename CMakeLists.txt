@@ -2130,6 +2130,7 @@ src/drt_ssi/ssi_utils.cpp
 )
 
 set(OBJS_DRT_IMMERSED_LIB
+src/drt_fsi/fsi_nox_aitken_immersed_ale.cpp
 src/drt_immersed_problem/immersed_node.cpp
 src/drt_immersed_problem/immersed_field_exchange_manager.cpp
 )
@@ -2275,8 +2276,8 @@ set(ELEMENT_LIBRARIES
 
 # algorithm libraries that depend on adapters
 add_library(alg_elch ${OBJS_DRT_ELCH})
-add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
 add_library(alg_fsi ${OBJS_DRT_FSI})
+add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
 add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
 add_library(alg_loma ${OBJS_DRT_LOMA})
 add_library(alg_two_phase ${OBJS_DRT_TWO_PHASE})

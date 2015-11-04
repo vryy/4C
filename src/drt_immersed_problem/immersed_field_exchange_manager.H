@@ -26,6 +26,11 @@ namespace GEO
 class SearchTree;
 }
 
+namespace ADAPTER
+{
+class FSIStructureWrapperImmersed;
+}
+
 namespace DRT
 {
 
@@ -63,6 +68,8 @@ public:
   LINALG::Matrix<3,1> max_gap_spacepoint_;
   LINALG::Matrix<3,1> min_gap_searchdirection_;
   LINALG::Matrix<3,1> min_gap_spacepoint_;
+
+  Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> FSIStructureWrapperImmersed_;
 
   bool isinitialized_;
 
@@ -170,6 +177,9 @@ public:
 
    double GetSimpleECMInteractionConstant(){return simple_ecm_interaction_constant;};
 
+   void SetAdapter(Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> adapter){FSIStructureWrapperImmersed_ = adapter; return;};
+
+   Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> GetAdapter(){return FSIStructureWrapperImmersed_;};
 
 private:
 

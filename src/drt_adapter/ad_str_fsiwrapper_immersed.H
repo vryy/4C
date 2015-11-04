@@ -67,6 +67,9 @@ namespace ADAPTER
     void ApplyImmersedInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce_fsi,
                                       Teuchos::RCP<Epetra_Vector> iforce_immersed);
 
+    /// output results
+    virtual void Output(bool forced_writerestart = false, const int step = -1, const double time = -1.0);
+
   protected:
 
     /// the interface map setup for immersed interface <-> fsi interface distinction
