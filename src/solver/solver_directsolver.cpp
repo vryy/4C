@@ -138,7 +138,7 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
    * to enforce reindexing of the entire Epetra_LinearProblem. This allows for
    * reuse of the factorization.
    */
-  if (not reindexer_.is_null())
+  if (not reindexer_.is_null() and not (reset or refactor))
     reindexer_->fwd();
 
   if (reset or refactor or not IsFactored())
