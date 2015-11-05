@@ -25,8 +25,10 @@
 SSI::SSI_Part::SSI_Part(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams)
-  : SSI_Base(comm, globaltimeparams,scatraparams,structparams)
+    const Teuchos::ParameterList& structparams,
+    const std::string struct_disname,
+    const std::string scatra_disname)
+  : SSI_Base(comm, globaltimeparams,scatraparams,structparams,struct_disname, scatra_disname)
 {
 }
 

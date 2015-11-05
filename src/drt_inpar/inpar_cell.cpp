@@ -115,6 +115,17 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                                1),
                                     &celldyn);
 
+  setStringToIntegralParameter<int>(
+                                    "SSI_CELL","no",
+                                    "build cell as ssi problem to enable intracellular and membrane transport",
+                                    tuple<std::string>(
+                                                       "no",
+                                                       "yes"),
+                                    tuple<int>(
+                                               0,
+                                               1),
+                                    &celldyn);
+
   DoubleParameter("SEGREGATION_CONST",0.0,"basic constant for segregation equation",&celldyn);
 
   IntParameter("NUMSTEP",200,"Total number of Timesteps",&celldyn);

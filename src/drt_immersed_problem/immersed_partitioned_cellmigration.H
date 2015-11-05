@@ -31,6 +31,11 @@ namespace ADAPTER
   class FSIStructureWrapperImmersed;
 }
 
+namespace SSI
+{
+  class SSI_Base;
+}
+
 /*----------------------------------------------------------------------*/
 
 namespace IMMERSED {
@@ -123,6 +128,12 @@ protected:
   /// extract the pressure part
   virtual void SetFieldDt();
 
+  /// calc the current fluid tractions interpolated to the structural surface
+  void CalcFluidTractionOnStructure();
+
+  /// calc the current fluid tractions interpolated to the structural surface
+  void CalcECMTractionOnStructure();
+
   /// check input vector for negatives and set them zero
   //void PreventInterfacePullingTraction(Teuchos::RCP<Epetra_Vector> increment_vector,
   //                                     Teuchos::RCP<Epetra_Vector> total_vector);
@@ -136,7 +147,6 @@ protected:
   Teuchos::RCP<Epetra_Vector> cell_penalty_traction_;        //!< boundary traction rhs on immersed cell from cell-ecm interaction
   Teuchos::RCP<Epetra_Vector> cell_delta_penalty_traction_;  //!< boundary traction rhs on immersed cell from cell-ecm interaction
   Teuchos::RCP<Epetra_Vector> cell_delta_penalty_traction_old_;  //!< boundary traction rhs on immersed cell from cell-ecm interaction of previous iteration
-  Teuchos::RCP<Epetra_Vector> cell_bdry_traction_old_;       //!< old boundary traction rhs on immersed cell
   Teuchos::RCP<Epetra_Vector> penalty_gap_;
   Teuchos::RCP<Epetra_Vector> curr_nodal_normals_;
   //@}
@@ -166,7 +176,7 @@ protected:
   Teuchos::RCP< ::ADAPTER::FPSIStructureWrapper>            porostructure_;
 
   /// poroelast subproblem
-  //Teuchos::RCP<POROELAST::Monolithic>       poroelast_subproblem_;
+  Teuchos::RCP<SSI::SSI_Base> cell_subproblem_;
   Teuchos::RCP<POROELAST::PoroScatraBase> poroelast_subproblem_;
 
   /// basic information for parallelism
@@ -191,8 +201,9 @@ protected:
   int initialization_steps_;
   bool ecm_interaction_;
   int continued_steps_;
-  double nu_; //<- AITKEN relaxation parameter
-  int degree_gp_fluid_bound_; //<- number of integration points in fluid elements cut by structural boundary
+  double nu_; //!< AITKEN relaxation parameter
+  int degree_gp_fluid_bound_; //!< number of integration points in fluid elements cut by structural boundary
+  bool ssi_cell_; //!< tells if cell subproblem is ssi problem or not
 
 
   DRT::ImmersedFieldExchangeManager* exchange_manager_ ;

@@ -54,27 +54,27 @@ void ssi_drt()
   switch(coupling)
   {
   case INPAR::SSI::ssi_OneWay_ScatraToSolid:
-    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_ScatraToSolid(comm, ssiparams, scatradyn, sdyn));
+    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_ScatraToSolid(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
     break;
   case INPAR::SSI::ssi_OneWay_SolidToScatra:
-    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_SolidToScatra(comm, ssiparams, scatradyn, sdyn));
+    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_SolidToScatra(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
     break;
   //case INPAR::SSI::ssi_SequStagg_ScatraToSolid:
   //case INPAR::SSI::ssi_SequStagg_SolidToScatra:
   case INPAR::SSI::ssi_IterStagg:
-    ssi = Teuchos::rcp(new SSI::SSI_Part2WC(comm, ssiparams, scatradyn, sdyn));
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
     break;
   case INPAR::SSI::ssi_IterStaggFixedRel_ScatraToSolid:
-    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax(comm, ssiparams, scatradyn, sdyn));
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
     break;
   case INPAR::SSI::ssi_IterStaggFixedRel_SolidToScatra:
-    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax(comm, ssiparams, scatradyn, sdyn));
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
     break;
   case INPAR::SSI::ssi_IterStaggAitken_ScatraToSolid:
-    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken(comm, ssiparams, scatradyn, sdyn));
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
         break;
   case INPAR::SSI::ssi_IterStaggAitken_SolidToScatra:
-    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken(comm, ssiparams, scatradyn, sdyn));
+    ssi = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken(comm, ssiparams, scatradyn, sdyn, "structure", "scatra"));
     break;
   default:
     dserror("unknown coupling algorithm for SSI!");

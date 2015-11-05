@@ -23,8 +23,10 @@
 SSI::SSI_Part1WC::SSI_Part1WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams)
-  : SSI_Part(comm, globaltimeparams,scatraparams,structparams),
+    const Teuchos::ParameterList& structparams,
+    const std::string struct_disname,
+    const std::string scatra_disname)
+  : SSI_Part(comm, globaltimeparams,scatraparams,structparams,struct_disname, scatra_disname),
     isscatrafromfile_(false)
 {
 
@@ -123,8 +125,10 @@ void SSI::SSI_Part1WC_SolidToScatra::PrepareTimeStep()
 SSI::SSI_Part1WC_SolidToScatra::SSI_Part1WC_SolidToScatra(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams)
-  : SSI_Part1WC(comm, globaltimeparams, scatraparams, structparams)
+    const Teuchos::ParameterList& structparams,
+    const std::string struct_disname,
+    const std::string scatra_disname)
+  : SSI_Part1WC(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname)
 {
 
   if(matchinggrid_)
@@ -164,7 +168,7 @@ SSI::SSI_Part1WC_SolidToScatra::SSI_Part1WC_SolidToScatra(const Epetra_Comm& com
     scatra_->ScaTraField()->Discretization()->FillComplete(true, false,false);
   }
 
-  SetupBoundaryScatra();
+  SetupBoundaryScatra(struct_disname, scatra_disname);
 
   //do some checks
   {
@@ -209,8 +213,10 @@ void SSI::SSI_Part1WC_SolidToScatra::Timeloop()
 SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams)
-  : SSI_Part1WC(comm, globaltimeparams, scatraparams, structparams)
+    const Teuchos::ParameterList& structparams,
+    const std::string struct_disname,
+    const std::string scatra_disname)
+  : SSI_Part1WC(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname)
 {
   // Flag for reading scatra result from restart file instead of computing it
   isscatrafromfile_ = DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->SSIControlParams(),"SCATRA_FROM_RESTART_FILE");
@@ -259,7 +265,7 @@ SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& com
     scatra_->ScaTraField()->Discretization()->FillComplete(true, false,false);
   }
 
-  SetupBoundaryScatra();
+  SetupBoundaryScatra(struct_disname, scatra_disname);
   if(boundarytransport_ and matchinggrid_)
     dserror("Transport on domain boundary and matching discretizations is not supported. "
         "Set MATCHINGGRID to 'no' in SSI CONTROL section or remove SSI Coupling Condition");

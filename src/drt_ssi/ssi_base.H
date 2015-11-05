@@ -42,7 +42,9 @@ namespace SSI
     explicit SSI_Base(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams);// Problem builder
+        const Teuchos::ParameterList& structparams,
+        const std::string struct_disname,
+        const std::string scatra_disname);// Problem builder
 
     /// virtual destructor
     virtual ~SSI_Base(){};
@@ -63,7 +65,7 @@ namespace SSI
     void ReadRestartfromTime( double restarttime );
 
     //! access to structural field
-    //const Teuchos::RCP<ADAPTER::Structure>& StructureField(){return structure_;}
+    const Teuchos::RCP<ADAPTER::Structure>& StructureField(){return structure_;}
 
     //! access to scatra field
     //const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>&  ScaTraField(){return scatra_;}
@@ -98,11 +100,11 @@ namespace SSI
     bool boundarytransport_;
 
     /// setup adapters for transport on boundary if necessary
-    void SetupBoundaryScatra();
+    void SetupBoundaryScatra(const std::string struct_disname, const std::string scatra_disname);
 
   private:
     /// clone scatra discretization form structure discretization
-    void SetupDiscretizations(const Epetra_Comm& comm);
+    void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname);
 
     /// set structure mesh displacement on scatra field
     void SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp ) ;

@@ -28,7 +28,9 @@ namespace SSI
     explicit SSI_Part2WC(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams);
+        const Teuchos::ParameterList& structparams,
+        const std::string struct_disname,
+        const std::string scatra_disname);
 
     //!virtual destructor
     virtual ~SSI_Part2WC(){};
@@ -78,7 +80,9 @@ namespace SSI
     explicit SSI_Part2WC_SolidToScatra_Relax(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams);
+        const Teuchos::ParameterList& structparams,
+        const std::string struct_disname,
+        const std::string scatra_disname);
 
     //!virtual destructor
     virtual ~SSI_Part2WC_SolidToScatra_Relax(){};
@@ -103,7 +107,9 @@ namespace SSI
     explicit SSI_Part2WC_SolidToScatra_Relax_Aitken(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams);
+        const Teuchos::ParameterList& structparams,
+        const std::string struct_disname,
+        const std::string scatra_disname);
 
     //!virtual destructor
     virtual ~SSI_Part2WC_SolidToScatra_Relax_Aitken(){};
@@ -135,7 +141,9 @@ namespace SSI
     explicit SSI_Part2WC_ScatraToSolid_Relax(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams);
+        const Teuchos::ParameterList& structparams,
+        const std::string struct_disname,
+        const std::string scatra_disname);
 
     //!virtual destructor
     virtual ~SSI_Part2WC_ScatraToSolid_Relax(){};
@@ -160,7 +168,9 @@ namespace SSI
     explicit SSI_Part2WC_ScatraToSolid_Relax_Aitken(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& structparams);
+        const Teuchos::ParameterList& structparams,
+        const std::string struct_disname,
+        const std::string scatra_disname);
 
     //!virtual destructor
     virtual ~SSI_Part2WC_ScatraToSolid_Relax_Aitken(){};

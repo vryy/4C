@@ -17,6 +17,9 @@ Maintainers: Andreas Rauch
 #include "../drt_poroelast/poro_scatra_base.H"
 #include "../drt_poroelast/poroelast_utils_setup.H"
 
+#include "../drt_ssi/ssi_partitioned_2wc.H"
+#include "../drt_inpar/inpar_ssi.H"
+
 #include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
@@ -88,17 +91,61 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
   SetupRelaxation();
 
   // build field  cell structure
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> cellstructure =
-        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(globalproblem_->CellMigrationParams(), const_cast<Teuchos::ParameterList&>(globalproblem_->StructuralDynamicParams()), immerseddis_));
-    cellstructure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(cellstructure->StructureField());
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> cellstructure;
+
+  ssi_cell_ = DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"SSI_CELL");
+  if(ssi_cell_)
+  {
+    const INPAR::SSI::SolutionSchemeOverFields coupling
+      = DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(globalproblem_->SSIControlParams(),"COUPALGO");
+
+    switch(coupling)
+    {
+    case INPAR::SSI::ssi_IterStagg:
+      cell_subproblem_ = Teuchos::rcp(new SSI::SSI_Part2WC(comm, globalproblem_->CellMigrationParams(), globalproblem_->ScalarTransportDynamicParams(), globalproblem_->StructuralDynamicParams(), "cell", "cellscatra"));
+      break;
+    case INPAR::SSI::ssi_IterStaggFixedRel_ScatraToSolid:
+      cell_subproblem_ = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax(comm, globalproblem_->CellMigrationParams(), globalproblem_->ScalarTransportDynamicParams(), globalproblem_->StructuralDynamicParams(), "cell", "cellscatra"));
+      break;
+    case INPAR::SSI::ssi_IterStaggFixedRel_SolidToScatra:
+      cell_subproblem_ = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax(comm, globalproblem_->CellMigrationParams(), globalproblem_->ScalarTransportDynamicParams(), globalproblem_->StructuralDynamicParams(), "cell", "cellscatra"));
+      break;
+    case INPAR::SSI::ssi_IterStaggAitken_ScatraToSolid:
+      cell_subproblem_ = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken(comm, globalproblem_->CellMigrationParams(), globalproblem_->ScalarTransportDynamicParams(), globalproblem_->StructuralDynamicParams(), "cell", "cellscatra"));
+          break;
+    case INPAR::SSI::ssi_IterStaggAitken_SolidToScatra:
+      cell_subproblem_ = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken(comm, globalproblem_->CellMigrationParams(), globalproblem_->ScalarTransportDynamicParams(), globalproblem_->StructuralDynamicParams(), "cell", "cellscatra"));
+      break;
+    default:
+      dserror("unknown coupling algorithm for SSI!");
+      break;
+    }
+
+    cellstructure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(cell_subproblem_->StructureField());
+
     if(cellstructure_==Teuchos::null)
       dserror("dynamic cast from Structure to FSIStructureWrapperImmersed failed");
+
     if(myrank_==0)
-      std::cout<<"Created Field Cell Structure ..."<<std::endl;
+      std::cout<<"\n Created Field Cell Structure with intracellular signaling capabilitiy...\n \n"<<std::endl;
+  }
+  else
+  {
+    cellstructure =
+        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(globalproblem_->CellMigrationParams(), const_cast<Teuchos::ParameterList&>(globalproblem_->StructuralDynamicParams()), immerseddis_));
+    cellstructure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(cellstructure->StructureField());
+
+    if(cellstructure_==Teuchos::null)
+      dserror("dynamic cast from Structure to FSIStructureWrapperImmersed failed");
+
+    if(myrank_==0)
+      std::cout<<"\n Created Field Cell Structure without intracellular signaling capabilitiy... \n \n"<<std::endl;
+  }
+
 
   // create instance of poroelast subproblem
   //poroelast_subproblem_ = Teuchos::rcp(new POROELAST::Monolithic(comm, globalproblem_->PoroelastDynamicParams()));
-  poroelast_subproblem_ = POROELAST::UTILS::CreatePoroScatraAlgorithm(globalproblem_->PoroScatraControlParams(),Comm());
+  poroelast_subproblem_ = POROELAST::UTILS::CreatePoroScatraAlgorithm(globalproblem_->CellMigrationParams(),Comm());
   // set pointer to poro fpsi structure
   porostructure_ = poroelast_subproblem_->PoroField()->StructureField();
   // setup of poro monolithic algorithm
@@ -113,7 +160,7 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
   // vector of DELTA of penalty traction on cell bdry int points integrated over cell surface
   cell_delta_penalty_traction_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
   // vector of DELTA of penalty traction on cell bdry int points integrated over cell surface of previous iteration
-  cell_delta_penalty_traction_old_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
+  //cell_delta_penalty_traction_old_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
   // gap integrated over surface
   penalty_gap_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
   // current nodal normals
@@ -179,7 +226,8 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
   else if (num_gp_fluid_bound == 1000)
     degree_gp_fluid_bound_ = 19;
   else
-    dserror("Invalid value for parameter NUM_GP_FLUID_BOUND (valid parameters are 8, 64, 125, 343, 729 and 1000).");
+    dserror("Invalid value for parameter NUM_GP_FLUID_BOUND (valid parameters are 8, 64, 125, 343, 729 and 1000). \n"
+            "Fix your Input File.");
 
 }
 
@@ -211,22 +259,14 @@ void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector 
     // CALL BackgroundOp
     ////////////////////
     PrepareBackgroundOp();
-    if(!initialize_cell_ or Step()>initialization_steps_)
-    {
-      BackgroundOp(porofluid_artificial_velocity_, fillFlag);
-
-    // reset element and node information about immersed method
-    params.set<int>("action",FLD::reset_immersed_ele);
-    poroelast_subproblem_->FluidField()->Discretization()->Evaluate(params);
-
-    }
+    BackgroundOp(porofluid_artificial_velocity_, fillFlag);
 
     ////////////////////
     // CALL ImmersedOp
     ////////////////////
     PrepareImmersedOp();
     Teuchos::RCP<Epetra_Vector> idispnp =
-    ImmersedOp(cell_bdry_traction_, fillFlag);
+    ImmersedOp(cellstructure_->Interface()->ExtractIMMERSEDCondVector(cell_bdry_traction_), fillFlag);
 
     int err = F.Update(1.0, *idispnp, -1.0, *idispn, 0.0);
     if(err != 0)
@@ -239,34 +279,19 @@ void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector 
     // get the initial guess
     const Teuchos::RCP<Epetra_Vector> iforcen = Teuchos::rcp(new Epetra_Vector(x));
 
-
     ////////////////////
     // CALL ImmersedOp
     ////////////////////
     PrepareImmersedOp();
-    ImmersedOp(cell_bdry_traction_, fillFlag);
+    ImmersedOp(iforcen, fillFlag);
 
     ////////////////////
     // CALL BackgroundOp
     ////////////////////
     PrepareBackgroundOp(); // determine elements cut by the boundary
-    if(!initialize_cell_ or Step()>initialization_steps_)
-    {
-      BackgroundOp(porofluid_artificial_velocity_, fillFlag);
+    BackgroundOp(porofluid_artificial_velocity_, fillFlag);
 
-      // reset element and node information about immersed method
-      params.set<int>("action",FLD::reset_immersed_ele);
-      params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
-      backgroundfluiddis_->Evaluate(params);
-    }
-
-    ///////////////////////////////////////////////////
-    // CALL ImmersedOp again to recalculate tractions (only tractions due to ImmersedOp( , User))
-    //////////////////////////////////////////////////
-    const Teuchos::RCP<Epetra_Vector> iforcenp = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
-    ImmersedOp(iforcenp, User);
-
-    int err = F.Update(1.0, *(cellstructure_->Interface()->ExtractIMMERSEDCondVector(iforcenp)), -1.0, *iforcen, 0.0);
+    int err = F.Update(1.0, *(cellstructure_->Interface()->ExtractIMMERSEDCondVector(cell_bdry_traction_)), -1.0, *iforcen, 0.0);
 
     if(err != 0)
       dserror("Vector update of FSI-residual returned err=%d",err);
@@ -308,194 +333,170 @@ void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector 
 void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetra_Vector> backgrd_dirichlet_values,
                                                               const FillType fillFlag)
 {
-  // print
-  IMMERSED::ImmersedPartitioned::BackgroundOp(backgrd_dirichlet_values,fillFlag);
-  Teuchos::ParameterList params;
-  params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
-
-  if (fillFlag==User)
+  if(!initialize_cell_ or Step()>initialization_steps_)
   {
-    dserror("fillFlag == User : not yet implemented");
-  }
-  else
-  {
-    // calc the fluid velocity from the cell displacements
-    DRT::AssembleStrategy fluid_vol_strategy(
-        0,              // struct dofset for row
-        0,              // struct dofset for column
-        Teuchos::null,  // matrix 1
-        Teuchos::null,  //
-        backgrd_dirichlet_values ,  // vector 1
-        Teuchos::null,  //
-        Teuchos::null   //
-    );
+    // print
+    IMMERSED::ImmersedPartitioned::BackgroundOp(backgrd_dirichlet_values,fillFlag);
+    Teuchos::ParameterList params;
+    params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
 
-
-    // relaxation
-    if(displacementcoupling_ and abs(velrelax_-1.0)>1e-13 and relaxvelglobally_ and coupalgo_ == INPAR::IMMERSED::fixed)
+    if (fillFlag==User)
     {
-      std::cout<<"Apply relaxation parameter omega = "<<velrelax_<<" on full artificial velocity field."<<std::endl;
-      backgrd_dirichlet_values->Scale(velrelax_);
+      dserror("fillFlag == User : not yet implemented");
     }
-    else if(displacementcoupling_ and abs(velrelax_-1.0)>1e-13 and relaxvelglobally_ and coupalgo_ == INPAR::IMMERSED::aitken)
+    else
     {
-      double omega_aitken = Teuchos::rcp_dynamic_cast<NOX::FSI::AitkenFactory>(aitkenfactory_)->GetAitken()->getOmega();
-      std::cout<<"Apply AITKEN relaxation parameter omega = "<<omega_aitken<<" on full artificial velocity field."<<std::endl;
-
-      backgrd_dirichlet_values->Scale(omega_aitken);
-    }
-    else if(displacementcoupling_ and relaxvelglobally_ == false)
-      std::cout<<"Selective velocity relaxation not implemented yet. Parameter VEL_RELAX = "<<velrelax_<<" has no effect."<<std::endl;
-
-
-    if(myrank_ == 0)
-    {
-      std::cout<<"################################################################################################"<<std::endl;
-      std::cout<<"###   Interpolate transfer quantities from immersed elements which overlap the "<<backgroundfluiddis_->Name()<<" nodes ..."<<std::endl;
-    }
-
-    if(curr_subset_of_backgrounddis_.empty()==false)
-      EvaluateWithInternalCommunication(params,
-                                        backgroundfluiddis_,
-                                        &fluid_vol_strategy,
-                                        curr_subset_of_backgrounddis_,
-                                        cell_SearchTree_, currpositions_cell_,
-                                        (int)FLD::interpolate_velocity_to_given_point,
-                                        false);
-
-    /////////////////////////////////////////////////////////////////////////////////////
-    //  Apply Dirichlet values to background fluid
-    //
-    // dofsetnum of backgroundfluid is 0 for backgroundfluiddis in poroelast_subproblem_
-    BuildImmersedDirichMap(backgroundfluiddis_, dbcmap_immersed_, poroelast_subproblem_->FluidField()->GetDBCMapExtractor()->CondMap(),0);
-    poroelast_subproblem_->FluidField()->AddDirichCond(dbcmap_immersed_);
-    // apply immersed dirichlets to porofluid field
-    DoImmersedDirichletCond(poroelast_subproblem_->FluidField()->WriteAccessVelnp(),backgrd_dirichlet_values, dbcmap_immersed_);
-
-//    /////////////////////////////////////////////////////////////////////////////////////
-//    //  Apply Source values to rhs of background fluid
-//    //
-//    backgroundstructuredis_->SetState(0,"dispnp",porostructure_->Dispnp());
-//    backgroundfluiddis_->SetState(0,"velnp",poroelast_subproblem_->FluidField()->Velnp());
-//
-//    if(curr_subset_of_backgrounddis_.empty()==false)
-//      EvaluateWithInternalCommunication(backgroundfluiddis_,
-//                                        &fluid_vol_strategy,
-//                                        curr_subset_of_backgrounddis_,
-//                                        cell_SearchTree_, currpositions_cell_,
-//                                        (int)FLD::calc_artificial_velocity_divergence,
-//                                        false);
-//
-//    ExtractPressurePart();
-//    double normofsource=-1234.0;
-//    porofluid_artificial_source_->Norm2(&normofsource);
-//    poroelast_subproblem_->FluidField()->AddContributionToExternalLoads(porofluid_artificial_source_);
-
-    /////////////////////////////////////////////////////////////////////////////////////
-    //  Apply Dirichlet values to background scatra field
-    //
-    if(migrationtype_==INPAR::CELL::cell_migration_proteolytic and segregationby_==INPAR::CELL::segregation_by_dirichlet and segregationtype_==INPAR::CELL::segregation_volumetric)
-    {
-      // only constant segregation so far
-      poroscatra_segregated_phi_->PutScalar(segregationconstant_);
-      BuildImmersedScaTraDirichMap(backgroundfluiddis_, scatradis_, dbcmap_immersed_scatra_, poroelast_subproblem_->ScaTraField()->DirichMaps()->CondMap(),0);
-      poroelast_subproblem_->ScaTraField()->AddDirichCond(dbcmap_immersed_scatra_);
-      DoImmersedDirichletCond(poroelast_subproblem_->ScaTraField()->Phinp(),poroscatra_segregated_phi_, dbcmap_immersed_scatra_);
-    }
-    /////////////////////////////////////////////////////////////////////////////////////
-    //  Apply Source values to rhs of background scatra field
-    //
-    else if(migrationtype_==INPAR::CELL::cell_migration_proteolytic and segregationby_==INPAR::CELL::segregation_by_neumann)
-    {
-      bool evaluateonlyboundary = false;
-      if(segregationtype_==INPAR::CELL::segregation_volumetric)
-        evaluateonlyboundary = false;
-      else if(segregationtype_==INPAR::CELL::segregation_surface)
-        evaluateonlyboundary = true;
-      else
-      {
-        if(myrank_==0)
-          std::cout<<"WARNING! Undefined SEGREGATION type! "
-                     "Volumetric Segregation is assumed by default."<<std::endl;
-      }
-
-      // set poro solution in scatra
-      poroelast_subproblem_->SetPoroSolution();
-
-      Teuchos::ParameterList sparams_struct;
-
-      // provide element parameter list with number of dofset associated with displacement dofs on scatra discretization
-      sparams_struct.set<int>("ndsdisp",poroelast_subproblem_->ScaTraField()->NdsDisp());
-
-      sparams_struct.set<int>("action",(int)SCATRA::calc_immersed_element_source);
-      sparams_struct.set<double>("segregation_constant",segregationconstant_);
-
       // calc the fluid velocity from the cell displacements
-      DRT::AssembleStrategy scatra_vol_strategy(
+      DRT::AssembleStrategy fluid_vol_strategy(
           0,              // struct dofset for row
           0,              // struct dofset for column
           Teuchos::null,  // matrix 1
           Teuchos::null,  //
-          poroscatra_segregated_phi_ ,  // vector 1
+          backgrd_dirichlet_values ,  // vector 1
           Teuchos::null,  //
           Teuchos::null   //
-                            );
-      if(curr_subset_of_backgrounddis_.empty()==false)
-        EvaluateScaTraWithInternalCommunication(scatradis_,
-                                                backgroundfluiddis_,
-                                                &scatra_vol_strategy,
-                                                curr_subset_of_backgrounddis_,
-                                                cell_SearchTree_,
-                                                currpositions_cell_,
-                                                sparams_struct,
-                                                evaluateonlyboundary);
+      );
 
-      poroelast_subproblem_->ScaTraField()->AddContributionToRHS(poroscatra_segregated_phi_);
-
-    }
-    else
-    {
-      if(migrationtype_==INPAR::CELL::cell_migration_proteolytic)
-        dserror("combination of SEGREGATION parameters is not implemented. Fix your input file.");
-    }
-
-
-    // rebuild the combined dbcmap
-    poroelast_subproblem_->BuildCombinedDBCMap();
-
-    double normofvelocities = -1234.0;
-    poroelast_subproblem_->FluidField()->ExtractVelocityPart(backgrd_dirichlet_values)->Norm2(&normofvelocities);
-
-    double normofconcentrations = -1234.0;
-    poroscatra_segregated_phi_->Norm2(&normofconcentrations);
-
-    if(myrank_ == 0)
-    {
-      std::cout<<"###   Norm of Fluid Velocity Dirichlet values:           "<<std::setprecision(7)<<normofvelocities<<std::endl;
-      if(migrationtype_==INPAR::CELL::cell_migration_proteolytic)
+      if(myrank_ == 0)
       {
-        std::cout<<"###   Norm of Segregated Species Dirichlet values:     "<<std::setprecision(10)<<normofconcentrations<<std::endl;
+        std::cout<<"################################################################################################"<<std::endl;
+        std::cout<<"###   Interpolate transfer quantities from immersed elements which overlap the "<<backgroundfluiddis_->Name()<<" nodes ..."<<std::endl;
       }
+
+      if(curr_subset_of_backgrounddis_.empty()==false)
+        EvaluateWithInternalCommunication(params,
+            backgroundfluiddis_,
+            &fluid_vol_strategy,
+            curr_subset_of_backgrounddis_,
+            cell_SearchTree_, currpositions_cell_,
+            (int)FLD::interpolate_velocity_to_given_point,
+            false);
+
+      /////////////////////////////////////////////////////////////////////////////////////
+      //  Apply Dirichlet values to background fluid
+      //
+      // dofsetnum of backgroundfluid is 0 for backgroundfluiddis in poroelast_subproblem_
+      BuildImmersedDirichMap(backgroundfluiddis_, dbcmap_immersed_, poroelast_subproblem_->FluidField()->GetDBCMapExtractor()->CondMap(),0);
+      poroelast_subproblem_->FluidField()->AddDirichCond(dbcmap_immersed_);
+      // apply immersed dirichlets to porofluid field
+      DoImmersedDirichletCond(poroelast_subproblem_->FluidField()->WriteAccessVelnp(),backgrd_dirichlet_values, dbcmap_immersed_);
+
+      /////////////////////////////////////////////////////////////////////////////////////
+      //  Apply Dirichlet values to background scatra field
+      //
+      if(migrationtype_==INPAR::CELL::cell_migration_proteolytic and segregationby_==INPAR::CELL::segregation_by_dirichlet and segregationtype_==INPAR::CELL::segregation_volumetric)
+      {
+        // only constant segregation so far
+        poroscatra_segregated_phi_->PutScalar(segregationconstant_);
+        BuildImmersedScaTraDirichMap(backgroundfluiddis_, scatradis_, dbcmap_immersed_scatra_, poroelast_subproblem_->ScaTraField()->DirichMaps()->CondMap(),0);
+        poroelast_subproblem_->ScaTraField()->AddDirichCond(dbcmap_immersed_scatra_);
+        DoImmersedDirichletCond(poroelast_subproblem_->ScaTraField()->Phinp(),poroscatra_segregated_phi_, dbcmap_immersed_scatra_);
+      }
+      /////////////////////////////////////////////////////////////////////////////////////
+      //  Apply Source values to rhs of background scatra field
+      //
+      else if(migrationtype_==INPAR::CELL::cell_migration_proteolytic and segregationby_==INPAR::CELL::segregation_by_neumann)
+      {
+        bool evaluateonlyboundary = false;
+        if(segregationtype_==INPAR::CELL::segregation_volumetric)
+          evaluateonlyboundary = false;
+        else if(segregationtype_==INPAR::CELL::segregation_surface)
+          evaluateonlyboundary = true;
+        else
+        {
+          if(myrank_==0)
+            std::cout<<"WARNING! Undefined SEGREGATION type! "
+            "Volumetric Segregation is assumed by default."<<std::endl;
+        }
+
+        // set poro solution in scatra
+        poroelast_subproblem_->SetPoroSolution();
+
+        Teuchos::ParameterList sparams_struct;
+
+        // provide element parameter list with number of dofset associated with displacement dofs on scatra discretization
+        sparams_struct.set<int>("ndsdisp",poroelast_subproblem_->ScaTraField()->NdsDisp());
+
+        sparams_struct.set<int>("action",(int)SCATRA::calc_immersed_element_source);
+        sparams_struct.set<double>("segregation_constant",segregationconstant_);
+
+        // calc the fluid velocity from the cell displacements
+        DRT::AssembleStrategy scatra_vol_strategy(
+            0,              // struct dofset for row
+            0,              // struct dofset for column
+            Teuchos::null,  // matrix 1
+            Teuchos::null,  //
+            poroscatra_segregated_phi_ ,  // vector 1
+            Teuchos::null,  //
+            Teuchos::null   //
+        );
+        if(curr_subset_of_backgrounddis_.empty()==false)
+          EvaluateScaTraWithInternalCommunication(scatradis_,
+              backgroundfluiddis_,
+              &scatra_vol_strategy,
+              curr_subset_of_backgrounddis_,
+              cell_SearchTree_,
+              currpositions_cell_,
+              sparams_struct,
+              evaluateonlyboundary);
+
+        poroelast_subproblem_->ScaTraField()->AddContributionToRHS(poroscatra_segregated_phi_);
+
+      }
+      else
+      {
+        if(migrationtype_==INPAR::CELL::cell_migration_proteolytic)
+          dserror("combination of SEGREGATION parameters is not implemented. Fix your input file.");
+      }
+
+      // rebuild the combined dbcmap
+      poroelast_subproblem_->BuildCombinedDBCMap();
+
+      double normofvelocities = -1234.0;
+      poroelast_subproblem_->FluidField()->ExtractVelocityPart(backgrd_dirichlet_values)->Norm2(&normofvelocities);
+
+      double normofconcentrations = -1234.0;
+      poroscatra_segregated_phi_->Norm2(&normofconcentrations);
+
+      if(myrank_ == 0)
+      {
+        std::cout<<"###   Norm of Fluid Velocity Dirichlet values:           "<<std::setprecision(7)<<normofvelocities<<std::endl;
+        if(migrationtype_==INPAR::CELL::cell_migration_proteolytic)
+        {
+          std::cout<<"###   Norm of Segregated Species Dirichlet values:     "<<std::setprecision(10)<<normofconcentrations<<std::endl;
+        }
         std::cout<<"###   Norm of transferred source/sink:                 "<<std::setprecision(10)<<"not available"<<std::endl;
-      std::cout<<"################################################################################################"<<std::endl;
+        std::cout<<"################################################################################################"<<std::endl;
+      }
+
+      exchange_manager_->SetImmersedSearchTree(cell_SearchTree_);
+      exchange_manager_->SetCurrentPositionsImmersedDis(currpositions_cell_);
+      exchange_manager_->SetCheckCounter(0);
+      //exchange_manager_->SetNumIsImmersedBoundary(0);
+
+      // solve poro
+      poroelast_subproblem_->Solve();
+
+      //std::cout<<"Matched "<<exchange_manager_->GetCheckCounter()<<" integration points in "<<exchange_manager_->GetNumIsImmersedBoundary()<<" IsImmersedBoundary() elements on PROC "<<myrank_<<". "<<std::endl;
+
+      // remove immersed dirichlets from dbcmap of fluid (and scatra) (may be different in next iteration)
+      poroelast_subproblem_->FluidField() ->RemoveDirichCond(dbcmap_immersed_);
+      if(migrationtype_==INPAR::CELL::cell_migration_proteolytic and segregationby_==INPAR::CELL::segregation_by_dirichlet)
+        poroelast_subproblem_->ScaTraField()->RemoveDirichCond(dbcmap_immersed_scatra_);
+
+      // rebuild the combined dbcmap
+      poroelast_subproblem_->BuildCombinedDBCMap();
+
     }
 
-    exchange_manager_->SetImmersedSearchTree(cell_SearchTree_);
-    exchange_manager_->SetCurrentPositionsImmersedDis(currpositions_cell_);
-    exchange_manager_->SetCheckCounter(0);
-    //exchange_manager_->SetNumIsImmersedBoundary(0);
-    poroelast_subproblem_->Solve();
-    //std::cout<<"Matched "<<exchange_manager_->GetCheckCounter()<<" integration points in "<<exchange_manager_->GetNumIsImmersedBoundary()<<" IsImmersedBoundary() elements on PROC "<<myrank_<<". "<<std::endl;
+    // calculate new fluid traction interpolated to structural surface
+    CalcFluidTractionOnStructure();
 
-    // remove immersed dirichlets from dbcmap of fluid (and scatra) (may be different in next iteration)
-    poroelast_subproblem_->FluidField() ->RemoveDirichCond(dbcmap_immersed_);
-    if(migrationtype_==INPAR::CELL::cell_migration_proteolytic and segregationby_==INPAR::CELL::segregation_by_dirichlet)
-      poroelast_subproblem_->ScaTraField()->RemoveDirichCond(dbcmap_immersed_scatra_);
+  } // not during cell initialization
 
-    // rebuild the combined dbcmap
-    poroelast_subproblem_->BuildCombinedDBCMap();
-
-  }
+  // calculate new ecm traction interpolated to structural surface
+  // this also needs to be done during cell initialization.
+  CalcECMTractionOnStructure();
 
   return;
 }
@@ -511,219 +512,15 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedOp(Teuchos::RCP<Epetra_Vecto
 
   if(fillFlag==User)
   {
-    Teuchos::ParameterList params;
-    params.set<std::string>("action","calc_fluid_traction");
-    params.set<std::string>("backgrddisname","porofluid");
-    params.set<std::string>("immerseddisname","cell");
-
-    backgroundfluiddis_->SetState(0,"velnp",poroelast_subproblem_->FluidField()->Velnp());
-    backgroundfluiddis_->SetState(0,"veln", poroelast_subproblem_->FluidField()->Veln());
-
-    DRT::AssembleStrategy struct_bdry_strategy(
-        0,              // struct dofset for row
-        0,              // struct dofset for column
-        Teuchos::null,  // matrix 1
-        Teuchos::null,  //
-        bdry_traction , // vector 1
-        Teuchos::null,  //
-        Teuchos::null   //
-    );
-    if(myrank_ == 0)
-    {
-      std::cout<<"################################################################################################"<<std::endl;
-      std::cout<<"###   Calculate Boundary Tractions on Cell for Initial Guess or Convergence Check ...      "<<std::endl;
-
-    }
-    EvaluateInterpolationCondition( immerseddis_, params, struct_bdry_strategy,"IMMERSEDCoupling", -1 );
-    bdry_traction->Update(1.0,*cell_penalty_traction_,1.0);
-
-    double normorstructbdrytraction;
-    bdry_traction->Norm2(&normorstructbdrytraction);
-    if(myrank_ == 0 and ecm_interaction_)
-    {
-      std::cout<<"###   Norm of Boundary Fluid+ECM Traction:   "<<std::setprecision(10)<<normorstructbdrytraction<<std::endl;
-      std::cout<<"################################################################################################"<<std::endl;
-    }
-    else if(myrank_ == 0 and !ecm_interaction_)
-    {
-      std::cout<<"###   Norm of Boundary Fluid Traction:   "<<std::setprecision(10)<<normorstructbdrytraction<<std::endl;
-      std::cout<<"################################################################################################"<<std::endl;
-    }
-
+    dserror("fillFlag == User : not yet implemented");
     return Teuchos::null;
   }
   else
   {
-      Teuchos::ParameterList params;
-      params.set<std::string>("action","calc_fluid_traction");
-      params.set<std::string>("backgrddisname","porofluid");
-      params.set<std::string>("immerseddisname","cell");
-
-      backgroundfluiddis_->SetState(0,"velnp",poroelast_subproblem_->FluidField()->Velnp());
-      backgroundfluiddis_->SetState(0,"veln", poroelast_subproblem_->FluidField()->Veln());
-
-      double normofstructbdrytraction=-1234.0;
-      double normofdeltastructbdrytraction=-1234.0;
-
-
-      if(!initialize_cell_) // not during cell initialization
-      {
-
-        DRT::AssembleStrategy cell_fld_bdry_strategy(
-            0,              // struct dofset for row
-            0,              // struct dofset for column
-            Teuchos::null,  // matrix 1
-            Teuchos::null,  //
-            bdry_traction, // vector 1
-            Teuchos::null,  //
-            Teuchos::null   //
-        );
-
-        if(myrank_ == 0)
-        {
-          std::cout<<"################################################################################################"<<std::endl;
-          std::cout<<"###   Interpolate fluid stresses to structural surface and calculate tractions                  "<<std::endl;
-
-        }
-        EvaluateInterpolationCondition( immerseddis_, params, cell_fld_bdry_strategy, "IMMERSEDCoupling", -1 );
-
-        bdry_traction->Norm2(&normofstructbdrytraction);
-        if(myrank_ == 0)
-        {
-          std::cout<<"###   Norm of Boundary Fluid Traction:   "<<std::setprecision(10)<<normofstructbdrytraction<<std::endl;
-          std::cout<<"################################################################################################"<<std::endl;
-        }
-      } // if not during cell initialization
-
-
-    ///////////////////////////////////////////7
-    //  Cell - ECM Interaction Part
-    ////////////////////////////////////////////
-    if(ecm_interaction_)
-    {
-//      DRT::AssembleStrategy cell_str_nodal_normal_strategy(
-//          0,              // struct dofset for row
-//          0,              // struct dofset for column
-//          Teuchos::null,  // matrix 1
-//          Teuchos::null,  //
-//          curr_nodal_normals_, // vector 1
-//          Teuchos::null,  // vector 2
-//          Teuchos::null   //
-//      );
-//
-//      params.set<std::string>("action","calc_cur_nodal_normals");
-//      EvaluateInterpolationCondition( immerseddis_, params, cell_str_nodal_normal_strategy, "IMMERSEDCoupling", -1 );
-
-      DRT::AssembleStrategy cell_str_bdry_strategy(
-          0,              // struct dofset for row
-          0,              // struct dofset for column
-          Teuchos::null,  // matrix 1
-          Teuchos::null,  //
-          cell_delta_penalty_traction_ , // vector 1
-          penalty_gap_,                  // vector 2
-          Teuchos::null   //
-      );
-      if(myrank_ == 0)
-      {
-        std::cout<<"################################################################################################"<<std::endl;
-        std::cout<<"###   Calculate ECM stresses on structural surface and calculate tractions                  "<<std::endl;
-
-      }
-
-      exchange_manager_->SetGapMax(-1234.0);
-      exchange_manager_->SetVoidMax(-1234.0);
-      exchange_manager_->SetGapMin(1234.0);
-      exchange_manager_->SetVoidMin(1234.0);
-      exchange_manager_->SetDeltaPorosityMax(0.0);
-
-      double penalty=penalty_start_;
-      params.set<std::string>("action","calc_ecm_traction");
-      params.set<std::string>("backgrddisname","structure");
-
-      if(!initialize_cell_)
-        penalty=penalty_start_;//*sqrt(((IterationCounter())[0]));
-      else
-        penalty=penalty_init_;
-
-      params.set<double>("penalty",penalty);
-      params.set<int>("during_init",initialize_cell_);
-      EvaluateInterpolationCondition( immerseddis_, params, cell_str_bdry_strategy, "IMMERSEDCoupling", -1 );
-
-//      if(!initialize_cell_ and (IterationCounter()[0])>1)
-//      {
-//        // AITKEN relaxation for ecm interaction force
-//        double top = 1.0;
-//        double den = 1.0;
-//        Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*cell_delta_penalty_traction_old_));
-//        int err = temp->Update(-1.0,*cell_delta_penalty_traction_,1.0);
-//        if(err != 0)
-//          dserror("Epetra Update returned error code err=%d",err);
-//
-//          temp->Norm2(&den);
-//
-//        err = cell_delta_penalty_traction_old_->Dot(*temp,&top);
-//        if(err != 0)
-//          dserror("Epetra Dot Product returned error code err=%d",err);
-//
-//        if(abs(den)<1.0e-12)
-//          dserror("denominator too small den=%f",den);
-//        nu_ = nu_ + (nu_ - 1.0)*top/(den*den);
-//
-//        cell_delta_penalty_traction_old_->Update(1.0,*cell_delta_penalty_traction_,0.0);
-//      }
-
-      if(!initialize_cell_)
-      {
-          //DeleteForceAtLeadingEdge(cell_delta_penalty_traction_);
-          //DeleteForceAtLeadingEdge(penalty_gap_);
-      }
-
-      // Apply relaxed ecm force increment
-      //PreventInterfacePullingTraction(cell_delta_penalty_traction_,cell_penalty_traction_);
-      cell_penalty_traction_->Update((1.0-nu_),*cell_delta_penalty_traction_,0.0); // cell_delta_penalty_traction contains now full force, thus this*0.0
-      cell_delta_penalty_traction_->Norm2(&normofdeltastructbdrytraction);
-
-      bdry_traction->Update(1.0,*cell_penalty_traction_,1.0);
-      normofstructbdrytraction = 0.0;
-      cell_penalty_traction_->Norm2(&normofstructbdrytraction);
-      if(myrank_ == 0)
-      {
-        std::cout<<"###   Penalty Parameter:  "<<penalty<<std::endl;
-        //std::cout<<"###   AITKEN Step Parameter:  "<<std::setprecision(6)<<1.0-nu_<<std::endl;
-        std::cout<<"###   Max delta_phi:  "<<std::setprecision(6)<<exchange_manager_->GetDeltaPorosityMax()<<std::endl;
-        std::cout<<"###   MAX gap  = "<<std::setprecision(6)<<exchange_manager_->GetGapMax()<<"   MIN gap  = "<<std::setprecision(6)<<exchange_manager_->GetGapMin()<<std::endl;
-        std::cout<<"###   Max gap origin:  "<<std::setprecision(6)<<*(exchange_manager_->GetMaxGapSpacePoint())<<std::endl;
-        std::cout<<"###   Max gap end point:  "<<*(exchange_manager_->GetMaxGapSearchDirection())<<std::endl;
-        std::cout<<"###   Min gap origin:  "<<std::setprecision(6)<<*(exchange_manager_->GetMinGapSpacePoint())<<std::endl;
-        std::cout<<"###   Min gap end point:  "<<*(exchange_manager_->GetMinGapSearchDirection())<<std::endl;
-        std::cout<<"###   MAX void = "<<std::setprecision(6)<<exchange_manager_->GetVoidMax()<<"   MIN void = "<<std::setprecision(6)<<exchange_manager_->GetVoidMin()<<std::endl;
-        std::cout<<"###   Norm of Boundary ECM interaction force vector:    "<<std::setprecision(13)<<normofstructbdrytraction<<std::endl;
-        std::cout<<"###   Norm of Boundary ECM interaction force increment: "<<std::setprecision(13)<<normofdeltastructbdrytraction<<std::endl;
-        std::cout<<"################################################################################################"<<std::endl;
-      }
-    } // if cell-ecm interaction is turned on
-
-
-    // relaxation
-    if(!displacementcoupling_ and abs(velrelax_-1.0)>1e-13 and relaxvelglobally_ and coupalgo_ == INPAR::IMMERSED::fixed)
-    {
-      std::cout<<"Apply relaxation parameter omega = "<<velrelax_<<" on whole structural force interface."<<std::endl;
-      bdry_traction->Scale(velrelax_);
-    }
-    else if(!displacementcoupling_ and abs(velrelax_-1.0)>1e-13 and relaxvelglobally_ and coupalgo_ == INPAR::IMMERSED::aitken)
-    {
-      double omega_aitken = Teuchos::rcp_dynamic_cast<NOX::FSI::AitkenFactory>(aitkenfactory_)->GetAitken()->getOmega();
-      std::cout<<"Apply AITKEN relaxation parameter omega = "<<omega_aitken<<" on whole structural force interface."<<std::endl;
-
-      bdry_traction->Scale(omega_aitken);
-    }
-    else if(!displacementcoupling_ and relaxvelglobally_ == false)
-      std::cout<<"Selective velocity relaxation not implemented yet. Parameter VEL_RELAX = "<<velrelax_<<" has no effect."<<std::endl;
-
     // prescribe neumann values at structural boundary dofs
-    cellstructure_->ApplyImmersedInterfaceForces(Teuchos::null,cellstructure_->Interface()->ExtractIMMERSEDCondVector(*bdry_traction));
+    cellstructure_->ApplyImmersedInterfaceForces(Teuchos::null,bdry_traction);
 
-    // solve
+    // solve cell
     cellstructure_->Solve();
 
     return cellstructure_->ExtractImmersedInterfaceDispnp();
@@ -758,11 +555,7 @@ IMMERSED::ImmersedPartitionedCellMigration::InitialGuess()
     return cellstructure_->PredictImmersedInterfaceDispnp();
   else // FORCE COUPLING
   {
-    immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
-    cell_bdry_traction_old_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
-    ImmersedOp(cell_bdry_traction_old_, User);
-
-    return cellstructure_->Interface()->ExtractIMMERSEDCondVector(cell_bdry_traction_old_);
+    return cellstructure_->Interface()->ExtractIMMERSEDCondVector(cell_bdry_traction_);
   }
 }
 
@@ -959,7 +752,6 @@ void IMMERSED::ImmersedPartitionedCellMigration::SetupBackgroundDiscretization()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedCellMigration::PrepareImmersedOp()
 {
-  backgroundstructuredis_->SetState(0,"displacement",porostructure_->Dispnp());
   immerseddis_->SetState(0,"velnp",cellstructure_->Velnp());
 
   return;
@@ -973,9 +765,8 @@ void IMMERSED::ImmersedPartitionedCellMigration::PrepareBackgroundOp()
   TEUCHOS_FUNC_TIME_MONITOR("IMMERSED::PrepareBackgroundOp()");
 
   immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
-  immerseddis_->SetState(0,"displacement_old",cellstructure_->Dispn());
-  immerseddis_->SetState(0,"velocity_old",cellstructure_->Veln());
   immerseddis_->SetState(0,"velocity",cellstructure_->Velnp());
+  backgroundstructuredis_->SetState(0,"displacement",porostructure_->Dispnp());
   backgroundfluiddis_->SetState(0,"veln",poroelast_subproblem_->FluidField()->Veln());
 
   double structsearchradiusfac = DRT::Problem::Instance()->ImmersedMethodParams().get<double>("STRCT_SRCHRADIUS_FAC");
@@ -1207,99 +998,148 @@ void IMMERSED::ImmersedPartitionedCellMigration::ReadRestart(int step)
 
   return;
 }
-///*----------------------------------------------------------------------*/
-///*----------------------------------------------------------------------*/
-//void IMMERSED::ImmersedPartitionedCellMigration::DeleteForceAtLeadingEdge(Teuchos::RCP<Epetra_Vector> force)
-//{
-//
-//  std::multimap<std::string,Teuchos::RCP<DRT::Condition> >::iterator condition_iterator;
-//  //DRT::Condition* condition = immerseddis_->GetCondition("SurfaceNeumann");
-//  std::multimap<std::string,Teuchos::RCP<DRT::Condition> > conditions = immerseddis_->GetAllConditions();
-//
-//  for (condition_iterator=conditions.begin(); condition_iterator!=conditions.end(); ++condition_iterator)
-//  {
-//    if(condition_iterator->first == (std::string)"SurfaceNeumann")
-//    {
-//      const std::vector<int>* conditioned_nodes = condition_iterator->second->Nodes();
-//      int num_conditioned_nodes = conditioned_nodes->size();
-//      for(int i=0; i<num_conditioned_nodes; ++i)
-//      {
-//        DRT::Node*  node = immerseddis_->gNode((*conditioned_nodes)[i]);
-//        std::vector<int> dofs = immerseddis_->Dof(node);
-//        for(int numdof=0;numdof<(int)dofs.size();numdof++)
-//        {
-//          int err = force-> ReplaceGlobalValue(dofs[numdof],0,0.0);
-//          if(err != 0)
-//            dserror("ReplaceGlobalValue returned %d for node ID",err,(*conditioned_nodes)[i]);
-//        }
-//      }
-//    } // if surfaceneumann condition
-//  } // loop over all conditions
-//
-//  deleted_force_leading_edge_ = true;
-//  return;
-//}
-//
-//
-///*----------------------------------------------------------------------*/
-///*----------------------------------------------------------------------*/
-//void IMMERSED::ImmersedPartitionedCellMigration::PreventInterfacePullingTraction(Teuchos::RCP<Epetra_Vector> increment_vector,
-//                                                                                 Teuchos::RCP<Epetra_Vector> total_vector)
-//{
-//
-//  int mylength=increment_vector->MyLength();
-//  const Epetra_BlockMap& map = increment_vector->Map();
-//  int gid = -1234;
-//  int numdofpernode = 3;
-//  int numnodes = mylength/numdofpernode;
-//
-//  LINALG::Matrix<3,1> total_traction(true);
-//  LINALG::Matrix<3,1> increment_traction(true);
-//
-//  double* increment_values = increment_vector->Values();
-//  double* total_values = total_vector->Values();
-//
-//  double same_direction          = 1234.0;
-//  double norm_increment_traction =-1234.0;
-//  double norm_total_traction     =-1234.0;
-//
-//  // loop over all nodes
-//  for(int node=0;node<numnodes;node++)
-//  {
-//
-//    // loop over dofs
-//    for(int dof=0;dof<numdofpernode;++dof)
-//    {
-//      increment_traction(dof)=increment_values[node*numdofpernode+dof];
-//      total_traction(dof)=total_values[node*numdofpernode+dof];
-//    } // dof loop
-//
-//
-//    norm_increment_traction = increment_traction.Norm2();
-//    norm_total_traction = total_traction.Norm2();
-//
-//    if(norm_total_traction>1.0e-09 and norm_increment_traction>1.0e-09)
-//    {
-//      same_direction = total_traction.Dot(increment_traction);
-//
-//      // only if increment is pointing in opposite direction of the total traction
-//      if(same_direction < 0.0)
-//      {
-//        // only if the considered increment vector is additionally larger than the total traction
-//        if(norm_increment_traction>norm_total_traction)
-//        { std::cout<<"WARNING! PreventInterfacePullingTraction() had to zero interaction force and increment ... "<<std::endl;
-//          // 2nd loop over dofs
-//          for(int dof=0;dof<numdofpernode;++dof)
-//          {
-//            gid = map.GID(node*numdofpernode+dof);
-//            total_vector->ReplaceGlobalValue(gid,0,0.0);
-//            increment_vector->ReplaceGlobalValue(gid,0,0.0);
-//          }
-//        }
-//      }
-//
-//    }
-//  } // node loop
-//
-//  return;
-//}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedCellMigration::CalcFluidTractionOnStructure()
+{
+  if(!initialize_cell_) // not during cell initialization
+  {
+
+    Teuchos::ParameterList params;
+    params.set<std::string>("action","calc_fluid_traction");
+    params.set<std::string>("backgrddisname","porofluid");
+    params.set<std::string>("immerseddisname","cell");
+
+    backgroundfluiddis_->SetState(0,"velnp",poroelast_subproblem_->FluidField()->Velnp());
+    backgroundfluiddis_->SetState(0,"veln", poroelast_subproblem_->FluidField()->Veln());
+
+    double normofstructbdrytraction=-1234.0;
+
+    DRT::AssembleStrategy cell_fld_bdry_strategy(
+        0,              // struct dofset for row
+        0,              // struct dofset for column
+        Teuchos::null,  // matrix 1
+        Teuchos::null,  //
+        cell_bdry_traction_, // vector 1
+        Teuchos::null,  //
+        Teuchos::null   //
+    );
+
+    if(myrank_ == 0)
+    {
+      std::cout<<"################################################################################################"<<std::endl;
+      std::cout<<"###   Interpolate fluid stresses to structural surface and calculate tractions                  "<<std::endl;
+
+    }
+    EvaluateInterpolationCondition( immerseddis_, params, cell_fld_bdry_strategy, "IMMERSEDCoupling", -1 );
+
+    cell_bdry_traction_->Norm2(&normofstructbdrytraction);
+    if(myrank_ == 0)
+    {
+      std::cout<<"###   Norm of Boundary Fluid Traction:   "<<std::setprecision(10)<<normofstructbdrytraction<<std::endl;
+      std::cout<<"################################################################################################"<<std::endl;
+    }
+  } // if not during cell initialization
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedCellMigration::CalcECMTractionOnStructure()
+{
+  if(ecm_interaction_)
+  {
+    double penalty=penalty_start_;
+
+    Teuchos::ParameterList params;
+    params.set<std::string>("action","calc_ecm_traction");
+    params.set<std::string>("backgrddisname","structure");
+    params.set<std::string>("immerseddisname","cell");
+
+    double normofstructbdrytraction=-1234.0;
+    double normofdeltastructbdrytraction=-1234.0;
+
+    DRT::AssembleStrategy cell_str_bdry_strategy(
+        0,              // struct dofset for row
+        0,              // struct dofset for column
+        Teuchos::null,  // matrix 1
+        Teuchos::null,  //
+        cell_delta_penalty_traction_ , // vector 1
+        penalty_gap_,                  // vector 2
+        Teuchos::null   //
+    );
+    if(myrank_ == 0)
+    {
+      std::cout<<"################################################################################################"<<std::endl;
+      std::cout<<"###   Calculate ECM stresses on structural surface and calculate tractions                  "<<std::endl;
+
+    }
+
+    exchange_manager_->SetGapMax(-1234.0);
+    exchange_manager_->SetVoidMax(-1234.0);
+    exchange_manager_->SetGapMin(1234.0);
+    exchange_manager_->SetVoidMin(1234.0);
+    exchange_manager_->SetDeltaPorosityMax(0.0);
+
+    if(!initialize_cell_)
+      penalty=penalty_start_;//*sqrt(((IterationCounter())[0]));
+    else
+      penalty=penalty_init_;
+
+    params.set<double>("penalty",penalty);
+    params.set<int>("during_init",initialize_cell_);
+    EvaluateInterpolationCondition( immerseddis_, params, cell_str_bdry_strategy, "IMMERSEDCoupling", -1 );
+
+    //      if(!initialize_cell_ and (IterationCounter()[0])>1)
+    //      {
+    //        // AITKEN relaxation for ecm interaction force
+    //        double top = 1.0;
+    //        double den = 1.0;
+    //        Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*cell_delta_penalty_traction_old_));
+    //        int err = temp->Update(-1.0,*cell_delta_penalty_traction_,1.0);
+    //        if(err != 0)
+    //          dserror("Epetra Update returned error code err=%d",err);
+    //
+    //          temp->Norm2(&den);
+    //
+    //        err = cell_delta_penalty_traction_old_->Dot(*temp,&top);
+    //        if(err != 0)
+    //          dserror("Epetra Dot Product returned error code err=%d",err);
+    //
+    //        if(abs(den)<1.0e-12)
+    //          dserror("denominator too small den=%f",den);
+    //        nu_ = nu_ + (nu_ - 1.0)*top/(den*den);
+    //
+    //        cell_delta_penalty_traction_old_->Update(1.0,*cell_delta_penalty_traction_,0.0);
+    //      }
+
+    // Apply relaxed ecm force increment
+    //PreventInterfacePullingTraction(cell_delta_penalty_traction_,cell_penalty_traction_);
+    cell_penalty_traction_->Update((1.0-nu_),*cell_delta_penalty_traction_,0.0); // cell_delta_penalty_traction contains now full force, thus this*0.0
+    cell_delta_penalty_traction_->Norm2(&normofdeltastructbdrytraction);
+
+    cell_bdry_traction_->Update(1.0,*cell_penalty_traction_,1.0);
+    normofstructbdrytraction = 0.0;
+    cell_penalty_traction_->Norm2(&normofstructbdrytraction);
+    if(myrank_ == 0)
+    {
+      std::cout<<"###   Penalty Parameter:  "<<penalty<<std::endl;
+      //std::cout<<"###   AITKEN Step Parameter:  "<<std::setprecision(6)<<1.0-nu_<<std::endl;
+      std::cout<<"###   Max delta_phi:  "<<std::setprecision(6)<<exchange_manager_->GetDeltaPorosityMax()<<std::endl;
+      std::cout<<"###   MAX gap  = "<<std::setprecision(6)<<exchange_manager_->GetGapMax()<<"   MIN gap  = "<<std::setprecision(6)<<exchange_manager_->GetGapMin()<<std::endl;
+      std::cout<<"###   Max gap origin:  "<<std::setprecision(6)<<*(exchange_manager_->GetMaxGapSpacePoint())<<std::endl;
+      std::cout<<"###   Max gap end point:  "<<*(exchange_manager_->GetMaxGapSearchDirection())<<std::endl;
+      std::cout<<"###   Min gap origin:  "<<std::setprecision(6)<<*(exchange_manager_->GetMinGapSpacePoint())<<std::endl;
+      std::cout<<"###   Min gap end point:  "<<*(exchange_manager_->GetMinGapSearchDirection())<<std::endl;
+      std::cout<<"###   MAX void = "<<std::setprecision(6)<<exchange_manager_->GetVoidMax()<<"   MIN void = "<<std::setprecision(6)<<exchange_manager_->GetVoidMin()<<std::endl;
+      std::cout<<"###   Norm of Boundary ECM interaction force vector:    "<<std::setprecision(13)<<normofstructbdrytraction<<std::endl;
+      std::cout<<"###   Norm of Boundary ECM interaction force increment: "<<std::setprecision(13)<<normofdeltastructbdrytraction<<std::endl;
+      std::cout<<"################################################################################################"<<std::endl;
+    }
+  } // if cell-ecm interaction is turned on
+
+  return;
+}
+

@@ -26,8 +26,10 @@
 SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams)
-  : SSI_Part(comm, globaltimeparams, scatraparams, structparams),
+    const Teuchos::ParameterList& structparams,
+    const std::string struct_disname,
+    const std::string scatra_disname)
+  : SSI_Part(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname),
     scaincnp_(LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true)),
     dispincnp_(LINALG::CreateVector(*structure_->DofRowMap(0),true))
 {
@@ -74,7 +76,7 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
     scatra_->ScaTraField()->Discretization()->FillComplete(true, false,false);
   }
 
-  SetupBoundaryScatra();
+  SetupBoundaryScatra(struct_disname, scatra_disname);
 
   if (DRT::INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE")){
     dserror("Different time stepping for two way coupling not implemented yet.");
@@ -335,8 +337,10 @@ Teuchos::RCP<Epetra_Vector> SSI::SSI_Part2WC::CalcVelocity(
 SSI::SSI_Part2WC_SolidToScatra_Relax::SSI_Part2WC_SolidToScatra_Relax(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams)
-  : SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams)
+    const Teuchos::ParameterList& structparams,
+    const std::string struct_disname,
+    const std::string scatra_disname)
+  : SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname)
 {
   const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
 
@@ -436,8 +440,10 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::CalcOmega(double& omega, const int it
 SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::SSI_Part2WC_SolidToScatra_Relax_Aitken(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams)
-  : SSI_Part2WC_SolidToScatra_Relax(comm, globaltimeparams, scatraparams, structparams),
+    const Teuchos::ParameterList& structparams,
+    const std::string struct_disname,
+    const std::string scatra_disname)
+  : SSI_Part2WC_SolidToScatra_Relax(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname),
     del_(LINALG::CreateVector(*structure_->DofRowMap(0),true)),
     delhist_(LINALG::CreateVector(*structure_->DofRowMap(0),true))
 {
@@ -508,8 +514,10 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::CalcOmega(double& omega, const
 SSI::SSI_Part2WC_ScatraToSolid_Relax::SSI_Part2WC_ScatraToSolid_Relax(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams)
-  : SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams)
+    const Teuchos::ParameterList& structparams,
+    const std::string struct_disname,
+    const std::string scatra_disname)
+  : SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname)
 {
   const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
 
@@ -606,8 +614,10 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::CalcOmega(double& omega, const int it
 SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::SSI_Part2WC_ScatraToSolid_Relax_Aitken(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams)
-  : SSI_Part2WC_ScatraToSolid_Relax(comm, globaltimeparams, scatraparams, structparams),
+    const Teuchos::ParameterList& structparams,
+    const std::string struct_disname,
+    const std::string scatra_disname)
+  : SSI_Part2WC_ScatraToSolid_Relax(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname),
     del_(LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true)),
     delhist_(LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true))
 {

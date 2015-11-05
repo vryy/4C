@@ -967,6 +967,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> thermdis        = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> lubricationdis  = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> scatradis       = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> cellscatradis   = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> fluidscatradis  = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> structscatradis = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> arterydis       = Teuchos::null; //_1D_ARTERY_
@@ -1712,17 +1713,20 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     porofluiddis = Teuchos::rcp(new DRT::Discretization("porofluid"   ,reader.Comm()));
     celldis      = Teuchos::rcp(new DRT::Discretization("cell",reader.Comm()));
     scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
+    cellscatradis = Teuchos::rcp(new DRT::Discretization("cellscatra",reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
     porofluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(porofluiddis)));
     celldis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(celldis)));
     scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
+    cellscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(cellscatradis)));
 
     AddDis("structure", structdis);
     AddDis("porofluid", porofluiddis);
     AddDis("cell", celldis);
     AddDis("scatra", scatradis);
+    AddDis("cellscatra", cellscatradis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(celldis, reader, "--CELL ELEMENTS")));

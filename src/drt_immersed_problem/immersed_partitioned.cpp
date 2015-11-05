@@ -31,7 +31,7 @@ IMMERSED::ImmersedPartitioned::ImmersedPartitioned(const Epetra_Comm& comm)
 {
   const Teuchos::ParameterList& immerseddyn   = DRT::Problem::Instance()->ImmersedMethodParams();
   SetDefaultParameters(immerseddyn,noxparameterlist_);
-  noxparameterlist_.print();
+  //noxparameterlist_.print();
 
 }// ImmersedPartitioned constructor
 

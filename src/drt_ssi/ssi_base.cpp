@@ -42,7 +42,9 @@
 SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams):
+    const Teuchos::ParameterList& structparams,
+    const std::string struct_disname,
+    const std::string scatra_disname):
     AlgorithmBase(comm, globaltimeparams),
     structure_(Teuchos::null),
     scatra_(Teuchos::null),
@@ -58,11 +60,11 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
 
   //2.- Setup discretizations.
-  SetupDiscretizations(comm);
+  SetupDiscretizations(comm,struct_disname, scatra_disname);
 
   //3.- Create the two uncoupled subproblems.
   // access the structural discretization
-  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis(struct_disname);
 
   // Set isale to false what should be the case in scatratosolid algorithm
   const INPAR::SSI::SolutionSchemeOverFields coupling
@@ -72,9 +74,9 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
   if(coupling == INPAR::SSI::ssi_OneWay_ScatraToSolid) isale = false;
 
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(structparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
+      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(globaltimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureField());
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatraparams,scatraparams,problem->SolverParams(linsolvernumber),"scatra",isale));
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatraparams,scatraparams,problem->SolverParams(linsolvernumber),scatra_disname,isale));
   zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
 
 }
@@ -129,15 +131,15 @@ void SSI::SSI_Base::TestResults(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm)
+void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname)
 {
   // Scheme   : the structure discretization is received from the input. Then, an ale-scatra disc. is cloned.
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
   //1.-Initialization.
-  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
-  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
   if(!structdis->Filled())
     structdis->FillComplete();
   if(!scatradis->Filled())
@@ -254,11 +256,11 @@ void SSI::SSI_Base::SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp )
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Base::SetupBoundaryScatra()
+void SSI::SSI_Base::SetupBoundaryScatra(const std::string struct_disname, const std::string scatra_disname)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
-  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
-  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis("scatra");
+  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
+  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
 
   //check for ssi coupling condition
   std::vector<DRT::Condition*> ssicoupling;

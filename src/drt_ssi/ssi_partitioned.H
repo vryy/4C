@@ -26,7 +26,9 @@ public:
   explicit SSI_Part(const Epetra_Comm& comm,
       const Teuchos::ParameterList& globaltimeparams,
       const Teuchos::ParameterList& scatraparams,
-      const Teuchos::ParameterList& structparams);// Problem builder
+      const Teuchos::ParameterList& structparams,
+      const std::string struct_disname,
+      const std::string scatra_disname);// Problem builder
 
   /// virtual destructor
   virtual ~SSI_Part(){};
