@@ -1,8 +1,8 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file reynolds_ele_interface.H
+\file lubrication_ele_interface.H
 
-\brief Interface of Reynolds element evaluation routine
+\brief Interface of Lubrication element evaluation routine
 
 <pre>
 Maintainer: Andy Wirtz
@@ -13,8 +13,8 @@ Maintainer: Andy Wirtz
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SRC_DRT_REYNOLDS_ELE_REYNOLDS_ELE_INTERFACE_H_
-#define SRC_DRT_REYNOLDS_ELE_REYNOLDS_ELE_INTERFACE_H_
+#ifndef SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_INTERFACE_H_
+#define SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_INTERFACE_H_
 
 #include <vector>
 #include "Teuchos_ParameterList.hpp"
@@ -31,17 +31,17 @@ namespace DRT
 namespace ELEMENTS
 {
 
-  /// Interface base class for ReynoldsEleCalc
+  /// Interface base class for LubricationEleCalc
   /*!
     This class exists to provide a common interface for all template
-    versions of ReynoldsEleCalc.
+    versions of LubricationEleCalc.
    */
-  class ReynoldsEleInterface : public DRT::SingletonDestruction
+  class LubricationEleInterface : public DRT::SingletonDestruction
   {
   public:
 
     /// Empty constructor
-    ReynoldsEleInterface(){return;};
+    LubricationEleInterface(){return;};
 
     /// Setup element evaluation
     virtual int SetupCalc(
@@ -52,7 +52,7 @@ namespace ELEMENTS
     /// Evaluate the element
     /*!
       This class does not provide a definition for this function; it
-      must be defined in ReynoldsEleCalc.
+      must be defined in LubricationEleCalc.
       The Evaluate() method is meant only for the assembling of the
       linearized matrix and the right hand side
      */
@@ -68,7 +68,7 @@ namespace ELEMENTS
 
     /*!
       This class does not provide a definition for this function; it
-      must be defined in ReynoldsEleCalc.
+      must be defined in LubricationEleCalc.
       The EvaluateService() method is meant for everything not related to
       the assembling of the linearized matrix and the right hand side
     */
@@ -86,4 +86,4 @@ namespace ELEMENTS
 } // namespace Elements
 } // namespace DRT
 
-#endif /* SRC_DRT_REYNOLDS_ELE_REYNOLDS_ELE_INTERFACE_H_ */
+#endif /* SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_INTERFACE_H_ */

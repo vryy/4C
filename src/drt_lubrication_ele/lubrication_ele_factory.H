@@ -1,8 +1,8 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file reynolds_ele_factory.H
+\file lubrication_ele_factory.H
 
-\brief Factory of Reynolds elements
+\brief Factory of Lubrication elements
 
 <pre>
 Maintainer: Andy Wirtz
@@ -13,8 +13,8 @@ Maintainer: Andy Wirtz
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SRC_DRT_REYNOLDS_ELE_REYNOLDS_ELE_FACTORY_H_
-#define SRC_DRT_REYNOLDS_ELE_REYNOLDS_ELE_FACTORY_H_
+#ifndef SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_FACTORY_H_
+#define SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_FACTORY_H_
 
 #include "../drt_lib/drt_element.H"
 
@@ -25,34 +25,34 @@ namespace ELEMENTS
 {
 
 // forward declaration
-class ReynoldsEleInterface;
+class LubricationEleInterface;
 
-class ReynoldsFactory
+class LubricationFactory
 {
 public:
   //! ctor
-  ReynoldsFactory(){ return; }
+  LubricationFactory(){ return; }
 
   //! dtor
-  virtual ~ReynoldsFactory(){ return; }
+  virtual ~LubricationFactory(){ return; }
 
   //! ProvideImpl
-  static ReynoldsEleInterface* ProvideImpl(
+  static LubricationEleInterface* ProvideImpl(
     DRT::Element::DiscretizationType distype,
     const std::string& disname);
 
 private:
-  //! define ReynoldsEle instances dependent on problem
+  //! define LubricationEle instances dependent on problem
   template<DRT::Element::DiscretizationType distype,int probdim>
-  static ReynoldsEleInterface* DefineProblemType(
+  static LubricationEleInterface* DefineProblemType(
     const std::string& disname);
 
 
-}; // end class ReynoldsFactory
+}; // end class LubricationFactory
 
 } // end ELEMENTS
 
 } // end DRT
 
 
-#endif /* SRC_DRT_REYNOLDS_ELE_REYNOLDS_ELE_FACTORY_H_ */
+#endif /* SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_FACTORY_H_ */

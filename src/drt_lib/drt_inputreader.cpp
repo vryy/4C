@@ -954,8 +954,8 @@ void DatFileReader::ReadDat()
   exclude.push_back("--ALE DOMAIN");
   exclude.push_back("--ARTERY ELEMENTS");
   exclude.push_back("--REDUCED D AIRWAYS ELEMENTS");
-  exclude.push_back("--REYNOLDS ELEMENTS");
-  exclude.push_back("--REYNOLDS DOMAIN");
+  exclude.push_back("--LUBRICATION ELEMENTS");
+  exclude.push_back("--LUBRICATION DOMAIN");
   exclude.push_back("--TRANSPORT ELEMENTS");
   exclude.push_back("--TRANSPORT DOMAIN");
   exclude.push_back("--THERMO ELEMENTS");

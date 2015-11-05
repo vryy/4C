@@ -627,7 +627,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_scatra_base_algorithm.cpp
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
-  src/drt_adapter/adapter_reynolds.cpp
+  src/drt_adapter/adapter_lubrication.cpp
   src/drt_adapter/ad_str_structure.cpp
 #  src/drt_adapter/ad_str_structure_new.cpp
   src/drt_adapter/ad_str_constr_merged.cpp
@@ -709,7 +709,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_poroscatra.cpp
   src/drt_inpar/inpar_potential.cpp
   src/drt_inpar/inpar_problemtype.cpp
-  src/drt_inpar/inpar_reynolds.cpp
+  src/drt_inpar/inpar_lubrication.cpp
   src/drt_inpar/inpar_s2i.cpp
   src/drt_inpar/inpar_scatra.cpp
   src/drt_inpar/inpar_searchtree.cpp
@@ -977,8 +977,8 @@ set(OBJS_DRT_UTILS
   src/pss_full/pss_table.c
   src/pss_full/pss_table_iter.c
 )
-set(OBJS_DRT_REYNOLDS
-  src/drt_reynolds/reynolds_dyn.cpp
+set(OBJS_DRT_LUBRICATION
+  src/drt_lubrication/lubrication_dyn.cpp
 )
 set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_algorithm.cpp
@@ -1127,12 +1127,12 @@ set(OBJS_DRT_THERMO_LIB
 set(OBJS_DRT_REGISTER
   src/drt_lib/drt_parobjectregister.cpp
 )
-set(OBJS_DRT_REYNOLDS_LIB
-  src/drt_reynolds_ele/reynolds_ele.cpp
-  src/drt_reynolds_ele/reynolds_ele_evaluate.cpp
-  src/drt_reynolds_ele/reynolds_ele_factory.cpp
-  src/drt_reynolds_ele/reynolds_ele_calc.cpp
-  src/drt_reynolds_ele/reynolds_ele_parameter.cpp
+set(OBJS_DRT_LUBRICATION_LIB
+  src/drt_lubrication_ele/lubrication_ele.cpp
+  src/drt_lubrication_ele/lubrication_ele_evaluate.cpp
+  src/drt_lubrication_ele/lubrication_ele_factory.cpp
+  src/drt_lubrication_ele/lubrication_ele_calc.cpp
+  src/drt_lubrication_ele/lubrication_ele_parameter.cpp
   
 )
 set(OBJS_DRT_SCATRA_LIB
@@ -2228,7 +2228,7 @@ add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
 add_library(ele_opti ${OBJS_DRT_TOPOPT_LIB})
 add_library(ele_s8 ${OBJS_DRT_S8_LIB})
-add_library(ele_reynolds ${OBJS_DRT_REYNOLDS_LIB})
+add_library(ele_lubrication ${OBJS_DRT_LUBRICATION_LIB})
 add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
 add_library(ele_sp3 ${OBJS_DRT_SP3_LIB})
 add_library(ele_meshfree_scatra ${OBJS_DRT_MESHFREE_SCATRA_LIB})
@@ -2259,7 +2259,7 @@ set(ELEMENT_LIBRARIES
   ele_meshfree_fluid
   ele_opti
   ele_s8
-  ele_reynolds
+  ele_lubrication
   ele_scatra
   ele_sp3
   ele_meshfree_scatra
@@ -2305,7 +2305,7 @@ set(MULTIFIELD_LIBRARIES
   alg_fs3i
   alg_topopt
   alg_ssi
-  alg_reynolds
+  alg_lubrication
   )
 
 # the adapter layer
@@ -2326,7 +2326,7 @@ add_library(alg_invanalysis ${OBJS_INV_ANALYSIS})
 add_library(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 add_library(alg_mlmc ${OBJS_MLMC})
 add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
-add_library(alg_reynolds ${OBJS_DRT_REYNOLDS})
+add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
 add_library(alg_scatra ${OBJS_DRT_SCATRA})
 add_library(alg_statmech ${OBJS_DRT_STATMECH})
 add_library(alg_plastic_ssn ${OBJS_DRT_PLASTIC_SSN})

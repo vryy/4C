@@ -1,13 +1,13 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file reynolds_ele_parameter.cpp
+\file lubrication_ele_parameter.cpp
 
-\brief singleton class holding all static parameters required for Reynolds element evaluation
+\brief singleton class holding all static parameters required for Lubrication element evaluation
 
-This singleton class holds all static parameters required for Reynolds element evaluation. All
+This singleton class holds all static parameters required for Lubrication element evaluation. All
 parameters are usually set only once at the beginning of a simulation, namely during initialization of the global
 time integrator, and then never touched again throughout the simulation. This parameter class needs to coexist with
-the general parameter class holding all general static parameters required for Reynolds element evaluation.
+the general parameter class holding all general static parameters required for Lubrication element evaluation.
 
 <pre>
 Maintainer: Andy Wirtz
@@ -18,32 +18,32 @@ Maintainer: Andy Wirtz
 */
 /*--------------------------------------------------------------------------*/
 
-#include "reynolds_ele_parameter.H"
+#include "../drt_lubrication_ele/lubrication_ele_parameter.H"
 
 #include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*
  | singleton access method                                  wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ReynoldsEleParameter* DRT::ELEMENTS::ReynoldsEleParameter::Instance(
+DRT::ELEMENTS::LubricationEleParameter* DRT::ELEMENTS::LubricationEleParameter::Instance(
     const std::string&           disname,   //!< name of discretization
-    const ReynoldsEleParameter* delete_me  //!< creation/destruction indication
+    const LubricationEleParameter* delete_me  //!< creation/destruction indication
     )
 {
   // each discretization is associated with exactly one instance of this class according to a static map
-  static std::map<std::string,ReynoldsEleParameter*> instances;
+  static std::map<std::string,LubricationEleParameter*> instances;
 
   // check whether instance already exists for current discretization, and perform instantiation if not
   if(delete_me == NULL)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ReynoldsEleParameter(disname);
+      instances[disname] = new LubricationEleParameter(disname);
   }
 
   // destruct instance given to the destructor
   else
   {
-    for(std::map<std::string,ReynoldsEleParameter*>::iterator i=instances.begin(); i!=instances.end(); ++i)
+    for(std::map<std::string,LubricationEleParameter*>::iterator i=instances.begin(); i!=instances.end(); ++i)
       if ( i->second == delete_me )
       {
         delete i->second;
@@ -60,7 +60,7 @@ DRT::ELEMENTS::ReynoldsEleParameter* DRT::ELEMENTS::ReynoldsEleParameter::Instan
 /*----------------------------------------------------------------------*
  | singleton destruction                                    wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ReynoldsEleParameter::Done()
+void DRT::ELEMENTS::LubricationEleParameter::Done()
 {
   // delete singleton
   Instance("",this);
@@ -71,7 +71,7 @@ void DRT::ELEMENTS::ReynoldsEleParameter::Done()
 /*----------------------------------------------------------------------*
  | private constructor for singletons                       wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ReynoldsEleParameter::ReynoldsEleParameter(
+DRT::ELEMENTS::LubricationEleParameter::LubricationEleParameter(
     const std::string& disname   //!< name of discretization
     ) :
     time_(-1.0)
@@ -82,7 +82,7 @@ DRT::ELEMENTS::ReynoldsEleParameter::ReynoldsEleParameter(
 //----------------------------------------------------------------------*/
 // set parameters which are equal for every fluid           wirtz 10/15 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ReynoldsEleParameter::SetTimeParameters(
+void DRT::ELEMENTS::LubricationEleParameter::SetTimeParameters(
     Teuchos::ParameterList& parameters   //!< parameter list
     )
 {
@@ -93,7 +93,7 @@ void DRT::ELEMENTS::ReynoldsEleParameter::SetTimeParameters(
 //----------------------------------------------------------------------*/
 // set parameters which are equal for every fluid           wirtz 10/15 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ReynoldsEleParameter::SetGeneralParameters(
+void DRT::ELEMENTS::LubricationEleParameter::SetGeneralParameters(
     Teuchos::ParameterList& parameters   //!< parameter list
     )
 {

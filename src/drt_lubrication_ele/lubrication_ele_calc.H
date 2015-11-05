@@ -1,8 +1,8 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file reynolds_ele_calc.H
+\file lubrication_ele_calc.H
 
-\brief main file containing routines for calculation of reynolds element
+\brief main file containing routines for calculation of lubrication element
 
 <pre>
 Maintainer: Andy Wirtz
@@ -12,11 +12,9 @@ Maintainer: Andy Wirtz
 </pre>
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_DRT_REYNOLDS_ELE_REYNOLDS_ELE_CALC_H_
-#define SRC_DRT_REYNOLDS_ELE_REYNOLDS_ELE_CALC_H_
+#ifndef SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_CALC_H_
+#define SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_CALC_H_
 
-
-#include "reynolds_ele_interface.H"
 
 #include "../drt_lib/drt_element.H"
 
@@ -24,6 +22,7 @@ Maintainer: Andy Wirtz
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "../drt_lubrication_ele/lubrication_ele_interface.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
@@ -36,26 +35,26 @@ namespace ELEMENTS
 {
 
   // forward declaration
-  class ReynoldsEleParameter;
+  class LubricationEleParameter;
 
-  class ReynoldsEleDiffManager;
-  template<int NSD,int NEN> class ReynoldsEleInternalVariableManager;
+  class LubricationEleDiffManager;
+  template<int NSD,int NEN> class LubricationEleInternalVariableManager;
 
-  /// Reynolds element implementation
+  /// Lubrication element implementation
   /*!
     This internal class keeps all the working arrays needed to
-    calculate the Reynolds element. Additionally, the method Sysmat()
+    calculate the Lubrication element. Additionally, the method Sysmat()
     provides a clean and fast element implementation.
 
     <h3>Purpose</h3>
 
-    The idea is to separate the element maintenance (class Reynolds) from the
+    The idea is to separate the element maintenance (class Lubrication) from the
     mathematical contents (this class). There are different
-    implementations of the Reynolds element, this is just one such
+    implementations of the Lubrication element, this is just one such
     implementation.
 
-    The Reynolds element will allocate exactly one object of this class for all
-    Reynolds elements with the same number of nodes in the mesh. This
+    The Lubrication element will allocate exactly one object of this class for all
+    Lubrication elements with the same number of nodes in the mesh. This
     allows us to use exactly matching working arrays (and keep them
     around.)
 
@@ -67,36 +66,36 @@ namespace ELEMENTS
     <h3>Usability</h3>
 
     The calculations are done by the Evaluate() method. There are two
-    version. The virtual method that is inherited from ReynoldsEleInterface
-    (and called from Reynolds) and the non-virtual one that does the actual
+    version. The virtual method that is inherited from LubricationEleInterface
+    (and called from Lubrication) and the non-virtual one that does the actual
     work. The non-virtual Evaluate() method must be callable without an actual
-    Reynolds object.
+    Lubrication object.
   */
 
   template<DRT::Element::DiscretizationType distype,int probdim=DRT::UTILS::DisTypeToDim<distype>::dim>
-  class ReynoldsEleCalc : public ReynoldsEleInterface
+  class LubricationEleCalc : public LubricationEleInterface
   {
   protected:
 
     /// (private) protected constructor, since we are a Singleton.
     /// this constructor is called from a derived class
     /// -> therefore, it has to be protected instead of private
-    ReynoldsEleCalc(const std::string& disname);
+    LubricationEleCalc(const std::string& disname);
 
   public:
 
-    virtual ~ReynoldsEleCalc() {};
+    virtual ~LubricationEleCalc() {};
 
     //! singleton access method
-    static ReynoldsEleCalc<distype,probdim> * Instance(
+    static LubricationEleCalc<distype,probdim> * Instance(
         const std::string& disname,
-        const ReynoldsEleCalc* delete_me = NULL
+        const LubricationEleCalc* delete_me = NULL
         );
 
     /// called upon destruction
     virtual void Done();
 
-    /// In this class we do not define a static ReynoldsEle...* Instance
+    /// In this class we do not define a static LubricationEle...* Instance
     /// since only derived child classes are free to be allocated!!
 
     /// Setup element evaluation
@@ -155,7 +154,7 @@ namespace ELEMENTS
 
      //! number of space dimensions
      static const int nsd_ = probdim;
-     //! space dimension of Reynolds element (only for flat domains nsd_ele_ = nsd_)
+     //! space dimension of Lubrication element (only for flat domains nsd_ele_ = nsd_)
      static const int nsd_ele_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
   protected:
@@ -310,8 +309,8 @@ namespace ELEMENTS
     //! @name parameter lists
     /*========================================================================*/
 
-    //! pointer to general reynolds parameter class
-    DRT::ELEMENTS::ReynoldsEleParameter* reynoldspara_;
+    //! pointer to general lubrication parameter class
+    DRT::ELEMENTS::LubricationEleParameter* lubricationpara_;
 
     /*========================================================================*/
     //! @name pressure degrees of freedom and related
@@ -348,10 +347,10 @@ namespace ELEMENTS
     /*========================================================================*/
 
     //! manager for diffusion
-    Teuchos::RCP<ReynoldsEleDiffManager> diffmanager_;
+    Teuchos::RCP<LubricationEleDiffManager> diffmanager_;
 
     //! variable manager for Gauss point values
-    Teuchos::RCP<ReynoldsEleInternalVariableManager<nsd_,nen_> > reynoldsvarmanager_;
+    Teuchos::RCP<LubricationEleInternalVariableManager<nsd_,nen_> > lubricationvarmanager_;
 
     /*========================================================================*/
     //! @name can be very useful
@@ -365,23 +364,23 @@ namespace ELEMENTS
 
   };
 
-  /// ReynoldsEleInternalVariableManager implementation
+  /// LubricationEleInternalVariableManager implementation
   /*!
     This class manages all internal variables needed for the evaluation of an element.
 
     All formulation-specific internal variables are stored and managed by a class derived from this class.
   */
   template<int NSD, int NEN>
-  class ReynoldsEleInternalVariableManager
+  class LubricationEleInternalVariableManager
   {
     public:
 
-    ReynoldsEleInternalVariableManager():
+    LubricationEleInternalVariableManager():
       prenp_(0.0),
       gradpre_(true)
       {return;}
 
-    virtual ~ReynoldsEleInternalVariableManager(){};
+    virtual ~LubricationEleInternalVariableManager(){};
 
     // compute and set internal variables
     void SetInternalVariables(
@@ -420,7 +419,7 @@ namespace ELEMENTS
 
   };
 
-  /// Reynolds diffusion manager
+  /// Lubrication diffusion manager
   /*!
       This is a basic class to handle diffusion. It exclusively contains
       the isotropic diffusion coefficient. For anisotropic diffusion or
@@ -428,15 +427,15 @@ namespace ELEMENTS
       has to be constructed in the problem-dependent subclass for element
       evaluation.
   */
-  class ReynoldsEleDiffManager
+  class LubricationEleDiffManager
   {
   public:
 
-    ReynoldsEleDiffManager():
+    LubricationEleDiffManager():
       diff_(0.0)
       {return;}
 
-    virtual ~ReynoldsEleDiffManager(){};
+    virtual ~LubricationEleDiffManager(){};
 
     //! Set the isotropic diffusion coefficient
     virtual void SetIsotropicDiff(const double diff)
@@ -460,4 +459,4 @@ namespace ELEMENTS
 }
 }
 
-#endif /* SRC_DRT_REYNOLDS_ELE_REYNOLDS_ELE_CALC_H_ */
+#endif /* SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_CALC_H_ */

@@ -1,8 +1,8 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file inpar_reynolds.H
+\file inpar_lubrication.H
 
-\brief Reynolds dynamic parameters
+\brief Lubrication dynamic parameters
 
 <pre>
 Maintainer: Andy Wirtz
@@ -12,22 +12,22 @@ Maintainer: Andy Wirtz
 </pre>
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_DRT_INPAR_INPAR_REYNOLDS_H_
-#define SRC_DRT_INPAR_INPAR_REYNOLDS_H_
+#ifndef SRC_DRT_INPAR_INPAR_LUBRICATION_H_
+#define SRC_DRT_INPAR_INPAR_LUBRICATION_H_
 
 #include "inpar_parameterlist_utils.H"
 
 namespace INPAR
 {
 
-  /// Input parameters for REYNOLDS
-  namespace REYNOLDS
+  /// Input parameters for LUBRICATION
+  namespace LUBRICATION
   {
 
-    /// set the reynolds parameters
+    /// set the lubrication parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-  }  // namespace REYNOLDS
+  }  // namespace LUBRICATION
 }  // namespace INPAR
 
-#endif /* SRC_DRT_INPAR_INPAR_REYNOLDS_H_ */
+#endif /* SRC_DRT_INPAR_INPAR_LUBRICATION_H_ */

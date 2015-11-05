@@ -1,8 +1,8 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file reynolds_dyn.H
+\file lubrication_dyn.H
 
-\brief entry point for the solution of Reynolds problems
+\brief entry point for the solution of Lubrication problems
 
 <pre>
 Maintainer: Andy Wirtz
@@ -12,14 +12,14 @@ Maintainer: Andy Wirtz
 </pre>
 */
 /*--------------------------------------------------------------------------*/
-#ifndef SRC_DRT_REYNOLDS_REYNOLDS_DYN_H_
-#define SRC_DRT_REYNOLDS_REYNOLDS_DYN_H_
+#ifndef SRC_DRT_LUBRICATION_LUBRICATION_DYN_H_
+#define SRC_DRT_LUBRICATION_LUBRICATION_DYN_H_
 
 
-/*! entry point for the solution of Reynolds problems */
-void reynolds_dyn(
+/*! entry point for the solution of Lubrication problems */
+void lubrication_dyn(
     int restart        /* do we have to perform a restart?  */
     );
 
 
-#endif /* SRC_DRT_REYNOLDS_REYNOLDS_DYN_H_ */
+#endif /* SRC_DRT_LUBRICATION_LUBRICATION_DYN_H_ */

@@ -62,7 +62,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Poroelasticity"]                                   = prb_poroelast;
     string2prbtype["RedAirways_Tissue"]                                = prb_redairways_tissue;
     string2prbtype["ReducedDimensionalAirWays"]                        = prb_red_airways;
-    string2prbtype["Reynolds"]                                         = prb_reynolds;
+    string2prbtype["Lubrication"]                                         = prb_lubrication;
     string2prbtype["Scalar_Thermo_Interaction"]                        = prb_sti;
     string2prbtype["Scalar_Transport"]                                 = prb_scatra;
     string2prbtype["StatMech"]                                         = prb_statmech;

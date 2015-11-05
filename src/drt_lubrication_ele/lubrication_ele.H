@@ -1,7 +1,7 @@
 /*!
-\file reynolds_ele.H
+\file lubrication_ele.H
 
-\brief The reynolds element
+\brief The lubrication element
 
 This file contains the element specific service routines like
 Pack, Unpack, NumDofPerNode etc.
@@ -14,8 +14,8 @@ Maintainer: Andy Wirtz
 </pre>
 */
 
-#ifndef SRC_DRT_REYNOLDS_ELE_REYNOLDS_ELE_H_
-#define SRC_DRT_REYNOLDS_ELE_REYNOLDS_ELE_H_
+#ifndef SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_H_
+#define SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_H_
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
@@ -26,13 +26,13 @@ namespace DRT
 namespace ELEMENTS
 {
 
-class ReynoldsType : public DRT::ElementType
+class LubricationType : public DRT::ElementType
 {
 public:
 
-  std::string Name() const { return "ReynoldsType"; }
+  std::string Name() const { return "LubricationType"; }
 
-  static ReynoldsType & Instance();
+  static LubricationType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -60,13 +60,13 @@ public:
 
 private:
 
-  static ReynoldsType instance_;
+  static LubricationType instance_;
 };
 
 /*!
-\brief The Reynolds element
+\brief The Lubrication element
 */
-class Reynolds : public DRT::Element
+class Lubrication : public DRT::Element
 {
 public:
 
@@ -76,7 +76,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  Reynolds(
+  Lubrication(
     int id,    ///< A unique global id of this element
     int owner  ///< processor id who owns a certain instance of this class
     );
@@ -87,10 +87,10 @@ public:
   Makes a deep copy of a Element
 
   */
-  Reynolds(const Reynolds& old);
+  Lubrication(const Lubrication& old);
 
   /*!
-  \brief Deep copy this instance of Reynolds and return pointer to the copy
+  \brief Deep copy this instance of Lubrication and return pointer to the copy
 
   The Clone() method is used from the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
@@ -148,7 +148,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  virtual int UniqueParObjectId() const { return ReynoldsType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return LubricationType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -169,7 +169,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~Reynolds();
+  virtual ~Lubrication();
 
   //@}
 
@@ -212,7 +212,7 @@ public:
   \brief Return ElementType
   */
   virtual DRT::ElementType & ElementType() const
-  { return ReynoldsType::Instance(); }
+  { return LubricationType::Instance(); }
 
   //@}
 
@@ -297,8 +297,8 @@ private:
   DRT::Element::DiscretizationType distype_;
 
   //! don't want = operator
-  Reynolds& operator = (const Reynolds& old);
-}; // class Reynolds
+  Lubrication& operator = (const Lubrication& old);
+}; // class Lubrication
 
 
 //=======================================================================
@@ -306,13 +306,13 @@ private:
 //=======================================================================
 //=======================================================================
 
-class ReynoldsBoundaryType : public DRT::ElementType
+class LubricationBoundaryType : public DRT::ElementType
 {
 public:
 
-  std::string Name() const { return "ReynoldsBoundaryType"; }
+  std::string Name() const { return "LubricationBoundaryType"; }
 
-  static ReynoldsBoundaryType & Instance();
+  static LubricationBoundaryType & Instance();
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
 
@@ -322,18 +322,18 @@ public:
 
 private:
 
-  static ReynoldsBoundaryType instance_;
+  static LubricationBoundaryType instance_;
 };
 
 
 /*!
-\brief An element representing a boundary element of a Reynolds element
+\brief An element representing a boundary element of a Lubrication element
 
 \note This is a pure boundary condition element. Its only
       purpose is to evaluate certain boundary conditions that might be
-      adjacent to a parent Reynolds element.
+      adjacent to a parent Lubrication element.
 */
-class ReynoldsBoundary : public DRT::FaceElement
+class LubricationBoundary : public DRT::FaceElement
 {
 public:
 
@@ -350,13 +350,13 @@ public:
   \param parent: The parent fluid element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
-  ReynoldsBoundary(
+  LubricationBoundary(
       int id,
       int owner,
       int nnode,
       const int* nodeids,
       DRT::Node** nodes,
-      DRT::ELEMENTS::Reynolds* parent,
+      DRT::ELEMENTS::Lubrication* parent,
       const int lsurface
     );
 
@@ -366,7 +366,7 @@ public:
   Makes a deep copy of a Element
 
   */
-  ReynoldsBoundary(const ReynoldsBoundary& old);
+  LubricationBoundary(const LubricationBoundary& old);
 
   /*!
   \brief Deep copy this instance of an element and return pointer to the copy
@@ -409,7 +409,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of the drt_parobject.H file.
   */
-  virtual int UniqueParObjectId() const { return ReynoldsBoundaryType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return LubricationBoundaryType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -431,7 +431,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~ReynoldsBoundary();
+  virtual ~LubricationBoundary();
 
   //@}
 
@@ -451,12 +451,12 @@ public:
   {return ParentElement()->NumDofPerNode(node);}
 
   //! Return a pointer to the parent element of this boundary element
-  virtual DRT::ELEMENTS::Reynolds* ParentElement() const
+  virtual DRT::ELEMENTS::Lubrication* ParentElement() const
   {
     DRT::Element* parent = DRT::FaceElement::ParentElement();
     // make sure the static cast below is really valid
-    dsassert(dynamic_cast<DRT::ELEMENTS::Reynolds*>(parent) != NULL, "Master element is no Reynolds element");
-    return static_cast<DRT::ELEMENTS::Reynolds*>(parent);
+    dsassert(dynamic_cast<DRT::ELEMENTS::Lubrication*>(parent) != NULL, "Master element is no Lubrication element");
+    return static_cast<DRT::ELEMENTS::Lubrication*>(parent);
   }
 
 
@@ -482,7 +482,7 @@ public:
   \brief Return ElementType
   */
   virtual DRT::ElementType & ElementType() const
-  { return ReynoldsBoundaryType::Instance(); }
+  { return LubricationBoundaryType::Instance(); }
 
   //@}
 
@@ -491,7 +491,7 @@ public:
   /*!
   \brief Evaluate an element
 
-  Evaluate Reynolds element stiffness, mass, internal forces etc
+  Evaluate Lubrication element stiffness, mass, internal forces etc
 
   \param params (in/out): ParameterList for communication between control routine
                           and elements
@@ -523,7 +523,7 @@ public:
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3)
   {
-    dserror("Evaluate() method for Reynolds boundary element not yet implemented");
+    dserror("Evaluate() method for Lubrication boundary element not yet implemented");
     return 0;
   };
 
@@ -534,7 +534,7 @@ public:
   /*!
   \brief Evaluate a Neumann boundary condition
 
-  this method evaluates a surface Neumann condition on the Reynolds element
+  this method evaluates a surface Neumann condition on the Lubrication element
 
   \param params (in/out)    : ParameterList for communication between control routine
                               and elements
@@ -552,7 +552,7 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL)
   {
-    dserror("EvaluateNeumann() method for Reynolds boundary element not yet implemented");
+    dserror("EvaluateNeumann() method for Lubrication boundary element not yet implemented");
     return 0;
   };
 
@@ -561,9 +561,9 @@ public:
 private:
 
   // don't want = operator
-  ReynoldsBoundary& operator = (const ReynoldsBoundary& old);
+  LubricationBoundary& operator = (const LubricationBoundary& old);
 
-}; // class ReynoldsBoundary
+}; // class LubricationBoundary
 
 
 } // namespace ELEMENTS
@@ -571,4 +571,4 @@ private:
 
 
 
-#endif /* SRC_DRT_REYNOLDS_ELE_REYNOLDS_ELE_H_ */
+#endif /* SRC_DRT_LUBRICATION_ELE_LUBRICATION_ELE_H_ */

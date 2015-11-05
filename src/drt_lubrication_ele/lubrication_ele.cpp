@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file reynolds_ele.cpp
+\file lubrication_ele.cpp
 
-\brief Reynolds elements
+\brief Lubrication elements
 
 <pre>
 Maintainer: Andy Wirtz
@@ -13,7 +13,7 @@ Maintainer: Andy Wirtz
  */
 /*----------------------------------------------------------------------*/
 
-#include "reynolds_ele.H"
+#include "../drt_lubrication_ele/lubrication_ele.H"
 
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -21,44 +21,44 @@ Maintainer: Andy Wirtz
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
-DRT::ELEMENTS::ReynoldsType DRT::ELEMENTS::ReynoldsType::instance_;
+DRT::ELEMENTS::LubricationType DRT::ELEMENTS::LubricationType::instance_;
 
-DRT::ELEMENTS::ReynoldsType& DRT::ELEMENTS::ReynoldsType::Instance()
+DRT::ELEMENTS::LubricationType& DRT::ELEMENTS::LubricationType::Instance()
 {
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::ReynoldsType::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::LubricationType::Create( const std::vector<char> & data )
 {
-  DRT::ELEMENTS::Reynolds* object =
-    new DRT::ELEMENTS::Reynolds(-1,-1);
+  DRT::ELEMENTS::Lubrication* object =
+    new DRT::ELEMENTS::Lubrication(-1,-1);
   object->Unpack(data);
   return object;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ReynoldsType::Create( const std::string eletype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationType::Create( const std::string eletype,
                                                             const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {
-  if ( eletype=="REYNOLDS" )
+  if ( eletype=="LUBRICATION" )
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Reynolds(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Lubrication(id,owner));
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ReynoldsType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Reynolds(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Lubrication(id,owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::ReynoldsType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+void DRT::ELEMENTS::LubricationType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
@@ -66,14 +66,14 @@ void DRT::ELEMENTS::ReynoldsType::NodalBlockInformation( DRT::Element * dwele, i
 
 }
 
-void DRT::ELEMENTS::ReynoldsType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+void DRT::ELEMENTS::LubricationType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeFluidDNullSpace( dis, ns, x0, numdf, dimns );
 }
 
-void DRT::ELEMENTS::ReynoldsType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+void DRT::ELEMENTS::LubricationType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["REYNOLDS"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["LUBRICATION"];
 
   defs["QUAD4"]
     .AddIntVector("QUAD4",4)
@@ -116,16 +116,16 @@ void DRT::ELEMENTS::ReynoldsType::SetupElementDefinition( std::map<std::string,s
  *----------------------------------------------------------------------*/
 
 
-DRT::ELEMENTS::ReynoldsBoundaryType DRT::ELEMENTS::ReynoldsBoundaryType::instance_;
+DRT::ELEMENTS::LubricationBoundaryType DRT::ELEMENTS::LubricationBoundaryType::instance_;
 
-DRT::ELEMENTS::ReynoldsBoundaryType& DRT::ELEMENTS::ReynoldsBoundaryType::Instance()
+DRT::ELEMENTS::LubricationBoundaryType& DRT::ELEMENTS::LubricationBoundaryType::Instance()
 {
   return instance_;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ReynoldsBoundaryType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationBoundaryType::Create( const int id, const int owner )
 {
-  //return Teuchos::rcp( new ReynoldsBoundary( id, owner ) );
+  //return Teuchos::rcp( new LubricationBoundary( id, owner ) );
   return Teuchos::null;
 }
 
@@ -133,7 +133,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ReynoldsBoundaryType::Create( const in
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Reynolds::Reynolds(int id, int owner) :
+DRT::ELEMENTS::Lubrication::Lubrication(int id, int owner) :
 DRT::Element(id,owner),
 distype_(dis_none)
 {
@@ -143,7 +143,7 @@ distype_(dis_none)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Reynolds::Reynolds(const DRT::ELEMENTS::Reynolds& old) :
+DRT::ELEMENTS::Lubrication::Lubrication(const DRT::ELEMENTS::Lubrication& old) :
 DRT::Element(old),
 distype_(old.distype_)
 {
@@ -151,20 +151,20 @@ distype_(old.distype_)
 }
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of Reynolds and return pointer to it        |
+ |  Deep copy this instance of Lubrication and return pointer to it        |
  |                                                 (public) wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Reynolds::Clone() const
+DRT::Element* DRT::ELEMENTS::Lubrication::Clone() const
 {
-  DRT::ELEMENTS::Reynolds* newelement = new DRT::ELEMENTS::Reynolds(*this);
+  DRT::ELEMENTS::Lubrication* newelement = new DRT::ELEMENTS::Lubrication(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
- |  Return the shape of a Reynolds element                     (public) |
+ |  Return the shape of a Lubrication element                     (public) |
  |                                                          wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Reynolds::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Lubrication::Shape() const
 {
   return distype_;
 }
@@ -173,7 +173,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Reynolds::Shape() const
  |  Pack data                                                  (public) |
  |                                                          wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Reynolds::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Lubrication::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
@@ -196,7 +196,7 @@ void DRT::ELEMENTS::Reynolds::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                          wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Reynolds::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::Lubrication::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type
@@ -221,7 +221,7 @@ void DRT::ELEMENTS::Reynolds::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Return number of lines of this element (public)         wirtz 10/15 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Reynolds::NumLine() const
+int DRT::ELEMENTS::Lubrication::NumLine() const
 {
   return DRT::UTILS::getNumberOfElementLines(distype_);
 }
@@ -230,7 +230,7 @@ int DRT::ELEMENTS::Reynolds::NumLine() const
 /*----------------------------------------------------------------------*
  |  Return number of surfaces of this element (public)      wirtz 10/15 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Reynolds::NumSurface() const
+int DRT::ELEMENTS::Lubrication::NumSurface() const
 {
   return DRT::UTILS::getNumberOfElementSurfaces(distype_);
 }
@@ -239,7 +239,7 @@ int DRT::ELEMENTS::Reynolds::NumSurface() const
 /*----------------------------------------------------------------------*
  | Return number of volumes of this element (public)        wirtz 10/15 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Reynolds::NumVolume() const
+int DRT::ELEMENTS::Lubrication::NumVolume() const
 {
   return DRT::UTILS::getNumberOfElementVolumes(distype_);
 }
@@ -248,7 +248,7 @@ int DRT::ELEMENTS::Reynolds::NumVolume() const
 /*----------------------------------------------------------------------*
  |  dtor (public)                                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Reynolds::~Reynolds()
+DRT::ELEMENTS::Lubrication::~Lubrication()
 {
   return;
 }
@@ -257,9 +257,9 @@ DRT::ELEMENTS::Reynolds::~Reynolds()
 /*----------------------------------------------------------------------*
  |  print this element (public)                             wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Reynolds::Print(std::ostream& os) const
+void DRT::ELEMENTS::Lubrication::Print(std::ostream& os) const
 {
-  os << "Reynolds element";
+  os << "Lubrication element";
   Element::Print(os);
   std::cout << std::endl;
   std::cout << "DiscretizationType:  " << DRT::DistypeToString(distype_) << std::endl;
@@ -271,7 +271,7 @@ void DRT::ELEMENTS::Reynolds::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                 wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Reynolds::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Lubrication::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -281,7 +281,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Reynolds::Lines()
 
   // so we have to allocate new line elements:
   if (NumLine() > 1) // 3D and 2D
-    return DRT::UTILS::ElementBoundaryFactory<ReynoldsBoundary,Reynolds>(DRT::UTILS::buildLines,this);
+    return DRT::UTILS::ElementBoundaryFactory<LubricationBoundary,Lubrication>(DRT::UTILS::buildLines,this);
   else
   {
     // 1D (we return the element itself)
@@ -296,7 +296,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Reynolds::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                         wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Reynolds::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Lubrication::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -306,7 +306,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Reynolds::Surfaces()
 
   // so we have to allocate new surface elements:
   if (NumSurface() > 1) // 3D
-    return DRT::UTILS::ElementBoundaryFactory<ReynoldsBoundary,Reynolds>(DRT::UTILS::buildSurfaces,this);
+    return DRT::UTILS::ElementBoundaryFactory<LubricationBoundary,Lubrication>(DRT::UTILS::buildSurfaces,this);
   else if (NumSurface() == 1)
   {
     // 2D (we return the element itself)
@@ -317,7 +317,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Reynolds::Surfaces()
   else
   {
     // 1D
-    dserror("Surfaces() for 1D-Reynolds element not implemented");
+    dserror("Surfaces() for 1D-Lubrication element not implemented");
     return DRT::Element::Surfaces();
   }
 }
@@ -326,9 +326,9 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Reynolds::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)               wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Reynolds::Volumes()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Lubrication::Volumes()
 {
-  dserror("Volumes() for 1D-/2D-Reynolds element not implemented");
+  dserror("Volumes() for 1D-/2D-Lubrication element not implemented");
   return DRT::Element::Volumes();
 }
 
@@ -336,7 +336,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Reynolds::Volumes()
 /*----------------------------------------------------------------------*
  | read element input                                       wirtz 10/15 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Reynolds::ReadElement(
+bool DRT::ELEMENTS::Lubrication::ReadElement(
     const std::string& eletype,
     const std::string& distype,
     DRT::INPUT::LineDefinition* linedef
@@ -363,10 +363,10 @@ bool DRT::ELEMENTS::Reynolds::ReadElement(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ReynoldsBoundary::ReynoldsBoundary(int id, int owner,
+DRT::ELEMENTS::LubricationBoundary::LubricationBoundary(int id, int owner,
                               int nnode, const int* nodeids,
                               DRT::Node** nodes,
-                              DRT::ELEMENTS::Reynolds* parent,
+                              DRT::ELEMENTS::Lubrication* parent,
                               const int lbeleid) :
 DRT::FaceElement(id,owner)
 {
@@ -379,7 +379,7 @@ DRT::FaceElement(id,owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ReynoldsBoundary::ReynoldsBoundary(const DRT::ELEMENTS::ReynoldsBoundary& old) :
+DRT::ELEMENTS::LubricationBoundary::LubricationBoundary(const DRT::ELEMENTS::LubricationBoundary& old) :
 DRT::FaceElement(old)
 {
   return;
@@ -388,16 +388,16 @@ DRT::FaceElement(old)
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it   (public) wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::ReynoldsBoundary::Clone() const
+DRT::Element* DRT::ELEMENTS::LubricationBoundary::Clone() const
 {
-  DRT::ELEMENTS::ReynoldsBoundary* newelement = new DRT::ELEMENTS::ReynoldsBoundary(*this);
+  DRT::ELEMENTS::LubricationBoundary* newelement = new DRT::ELEMENTS::LubricationBoundary(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |  Return shape of this element                   (public) wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::ReynoldsBoundary::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::LubricationBoundary::Shape() const
 {
   return DRT::UTILS::getShapeOfBoundaryElement(NumNode(), ParentElement()->Shape());
 }
@@ -405,9 +405,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::ReynoldsBoundary::Shape() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                      wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ReynoldsBoundary::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::LubricationBoundary::Pack(DRT::PackBuffer& data) const
 {
-  dserror("This ReynoldsBoundary element does not support communication");
+  dserror("This LubricationBoundary element does not support communication");
 
   return;
 }
@@ -415,16 +415,16 @@ void DRT::ELEMENTS::ReynoldsBoundary::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                                    wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ReynoldsBoundary::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::LubricationBoundary::Unpack(const std::vector<char>& data)
 {
-  dserror("This ReynoldsBoundary element does not support communication");
+  dserror("This LubricationBoundary element does not support communication");
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ReynoldsBoundary::~ReynoldsBoundary()
+DRT::ELEMENTS::LubricationBoundary::~LubricationBoundary()
 {
   return;
 }
@@ -433,9 +433,9 @@ DRT::ELEMENTS::ReynoldsBoundary::~ReynoldsBoundary()
 /*----------------------------------------------------------------------*
  |  print this element (public)                             wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ReynoldsBoundary::Print(std::ostream& os) const
+void DRT::ELEMENTS::LubricationBoundary::Print(std::ostream& os) const
 {
-  os << "ReynoldsBoundary element";
+  os << "LubricationBoundary element";
   Element::Print(os);
   std::cout << std::endl;
   std::cout << "DiscretizationType:  "<<Shape()<< std::endl;
@@ -446,7 +446,7 @@ void DRT::ELEMENTS::ReynoldsBoundary::Print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | Return number of lines of boundary element (public)      wirtz 10/15 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ReynoldsBoundary::NumLine() const
+int DRT::ELEMENTS::LubricationBoundary::NumLine() const
 {
   return DRT::UTILS::getNumberOfElementLines(Shape());
 }
@@ -454,7 +454,7 @@ int DRT::ELEMENTS::ReynoldsBoundary::NumLine() const
 /*----------------------------------------------------------------------*
  |  Return number of surfaces of boundary element (public)  wirtz 10/15 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ReynoldsBoundary::NumSurface() const
+int DRT::ELEMENTS::LubricationBoundary::NumSurface() const
 {
   return DRT::UTILS::getNumberOfElementSurfaces(Shape());
 }
@@ -462,7 +462,7 @@ int DRT::ELEMENTS::ReynoldsBoundary::NumSurface() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::ReynoldsBoundary::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::LubricationBoundary::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -471,7 +471,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::ReynoldsBoundary::Lines(
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new line elements:
-  dserror("Lines of ReynoldsBoundary not implemented");
+  dserror("Lines of LubricationBoundary not implemented");
   std::vector<Teuchos::RCP<DRT::Element> > lines(0);
   return lines;
 }
@@ -479,7 +479,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::ReynoldsBoundary::Lines(
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::ReynoldsBoundary::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::LubricationBoundary::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -488,7 +488,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::ReynoldsBoundary::Surfac
   // have become illegal and you will get a nice segmentation fault ;-)
 
   // so we have to allocate new surface elements:
-  dserror("Surfaces of ReynoldsBoundary not implemented");
+  dserror("Surfaces of LubricationBoundary not implemented");
   std::vector<Teuchos::RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }

@@ -1,8 +1,8 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file inpar_reynolds.cpp
+\file inpar_lubrication.cpp
 
-\brief Reynolds dynamic parameters
+\brief Lubrication dynamic parameters
 
 <pre>
 Maintainer: Andy Wirtz
@@ -16,18 +16,18 @@ Maintainer: Andy Wirtz
 
 #include "drt_validparameters.H"
 
-#include "inpar_reynolds.H"
+#include "inpar_lubrication.H"
 
-void INPAR::REYNOLDS::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
 //  using Teuchos::tuple;
 //  using Teuchos::setStringToIntegralParameter;
 
   Teuchos::ParameterList& reynolsdyn = list->sublist(
-      "REYNOLDS DYNAMIC",
+      "LUBRICATION DYNAMIC",
       false,
-      "control parameters for Reynolds problems\n");
+      "control parameters for Lubrication problems\n");
 
 //  setStringToIntegralParameter<int>("SOLVERTYPE","linear_full",
 //                               "type of scalar transport solver",
@@ -221,7 +221,7 @@ void INPAR::REYNOLDS::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 //                                    &reynolsdyn);
 
   // linear solver id used for scalar transport/elch problems
-  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for the Reynolds problem",&reynolsdyn);
+  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for the Lubrication problem",&reynolsdyn);
   //IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved with SIMPLER)...",&reynolsdyn);
 
   // parameters for natural convection effects

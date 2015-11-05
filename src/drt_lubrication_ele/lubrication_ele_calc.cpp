@@ -1,8 +1,8 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file reynolds_ele_calc.cpp
+\file lubrication_ele_calc.cpp
 
-\brief main file containing routines for calculation of reynolds element
+\brief main file containing routines for calculation of lubrication element
 
 <pre>
 Maintainer: Andy Wirtz
@@ -13,7 +13,7 @@ Maintainer: Andy Wirtz
 */
 /*--------------------------------------------------------------------------*/
 
-#include "reynolds_ele_calc.H"
+#include "../drt_lubrication_ele/lubrication_ele_calc.H"
 
 #include "../drt_geometry/position_array.H"
 
@@ -23,6 +23,7 @@ Maintainer: Andy Wirtz
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_lubrication_ele/lubrication_ele_parameter.H"
 
 #include "../drt_scatra_ele/scatra_ele_calc_utils.H"
 #include "../drt_scatra_ele/scatra_ele_action.H"
@@ -30,14 +31,13 @@ Maintainer: Andy Wirtz
 #include "../drt_mat/material.H"
 #include "../drt_mat/scatra_mat.H"
 
-#include "reynolds_ele_parameter.H"
 
 /*----------------------------------------------------------------------*
  * Constructor
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::ReynoldsEleCalc(const std::string& disname)
-  : reynoldspara_(DRT::ELEMENTS::ReynoldsEleParameter::Instance(disname)),            // standard parameter list
+DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::LubricationEleCalc(const std::string& disname)
+  : lubricationpara_(DRT::ELEMENTS::LubricationEleParameter::Instance(disname)),            // standard parameter list
     eprenp_(true),  // initialized to zero
     xsi_(true),     // initialized to zero
     xyze_(true),    // initialized to zero
@@ -47,8 +47,8 @@ DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::ReynoldsEleCalc(const std::stri
     xjm_(true),     // initialized to zero
     xij_(true),     // initialized to zero
     bodyforce_(true), // size of vector
-    diffmanager_(Teuchos::rcp(new ReynoldsEleDiffManager())),           // diffusion manager for diffusivity
-    reynoldsvarmanager_(Teuchos::rcp(new ReynoldsEleInternalVariableManager<nsd_,nen_>())),   // internal variable manager
+    diffmanager_(Teuchos::rcp(new LubricationEleDiffManager())),           // diffusion manager for diffusivity
+    lubricationvarmanager_(Teuchos::rcp(new LubricationEleInternalVariableManager<nsd_,nen_>())),   // internal variable manager
     eid_(0),
     ele_(NULL)
 {
@@ -61,17 +61,17 @@ DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::ReynoldsEleCalc(const std::stri
  | singleton access method                                  wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype,int probdim>
-DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>* DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::Instance(
+DRT::ELEMENTS::LubricationEleCalc<distype,probdim>* DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Instance(
     const std::string& disname,
-    const ReynoldsEleCalc* delete_me
+    const LubricationEleCalc* delete_me
     )
 {
-  static std::map<std::string,ReynoldsEleCalc<distype,probdim>* >  instances;
+  static std::map<std::string,LubricationEleCalc<distype,probdim>* >  instances;
 
   if(delete_me == NULL)
   {
     if(instances.find(disname) == instances.end())
-      instances[disname] = new ReynoldsEleCalc<distype,probdim>(disname);
+      instances[disname] = new LubricationEleCalc<distype,probdim>(disname);
   }
   else
   {
@@ -79,7 +79,7 @@ DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>* DRT::ELEMENTS::ReynoldsEleCalc<
     // find which of the instances to delete with this call. This is done by
     // letting the object to be deleted hand over the 'this' pointer, which is
     // located in the map and deleted
-    for( typename std::map<std::string,ReynoldsEleCalc<distype,probdim>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+    for( typename std::map<std::string,LubricationEleCalc<distype,probdim>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
       if ( i->second == delete_me )
       {
         delete i->second;
@@ -97,7 +97,7 @@ DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>* DRT::ELEMENTS::ReynoldsEleCalc<
  | singleton destruction                                    wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::Done()
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Done()
 {
   // delete instance
   Instance("",this);
@@ -109,7 +109,7 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::Done()
  * Action type: Evaluate                                    wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-int DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::Evaluate(
+int DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Evaluate(
   DRT::Element*                 ele,
   Teuchos::ParameterList&       params,
   DRT::Discretization&          discretization,
@@ -147,7 +147,7 @@ int DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::Evaluate(
  | setup element evaluation                                 wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype,int probdim>
-int DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::SetupCalc(
+int DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::SetupCalc(
     DRT::Element*               ele,
     DRT::Discretization&        discretization
     )
@@ -167,7 +167,7 @@ int DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::SetupCalc(
  | read element coordinates                                 wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::ReadElementCoordinates(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::ReadElementCoordinates(
     const DRT::Element*     ele
     )
 {
@@ -175,13 +175,13 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::ReadElementCoordinates(
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   return;
-} //ReynoldsEleCalc::ReadElementCoordinates
+} //LubricationEleCalc::ReadElementCoordinates
 
 /*----------------------------------------------------------------------*
  | extract element based or nodal values                    wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::ExtractElementAndNodeValues(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::ExtractElementAndNodeValues(
     DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
@@ -210,7 +210,7 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::ExtractElementAndNodeValue
 |  calculate system matrix and rhs (public)                 wirtz 10/15 |
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::Sysmat(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Sysmat(
   DRT::Element*                         ele,        ///< the element whose matrix is calculated
   Epetra_SerialDenseMatrix&             emat,       ///< element matrix to calculate
   Epetra_SerialDenseVector&             erhs        ///< element rhs to calculate
@@ -301,9 +301,9 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::Sysmat(
  | set internal variables                                           wirtz 10/15 |
  *------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::SetInternalVariablesForMatAndRHS()
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::SetInternalVariablesForMatAndRHS()
 {
-  reynoldsvarmanager_->SetInternalVariables(funct_,derxy_,eprenp_);
+  lubricationvarmanager_->SetInternalVariables(funct_,derxy_,eprenp_);
   return;
 }
 
@@ -311,7 +311,7 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::SetInternalVariablesForMat
  |  get the material constants  (private)                     wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::GetMaterialParams(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::GetMaterialParams(
   const DRT::Element* ele,       //!< the element we are dealing with
   double&             densn,     //!< density at t_(n)
   double&             densnp,    //!< density at t_(n+1) or t_(n+alpha_F)
@@ -326,13 +326,13 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::GetMaterialParams(
   Materials(material,densn,densnp,densam,visc,iquad);
 
   return;
-} //ReynoldsEleCalc::GetMaterialParams
+} //LubricationEleCalc::GetMaterialParams
 
 /*----------------------------------------------------------------------*
  |  evaluate single material  (protected)                   wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::Materials(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Materials(
   const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
@@ -343,7 +343,7 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::Materials(
   )
 {
 
-  // todo: reynolds material
+  // todo: lubrication material
   switch(material->MaterialType())
   {
   case INPAR::MAT::m_scatra:
@@ -360,7 +360,7 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::Materials(
  |  Material ScaTra                                         wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::MatScaTra(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::MatScaTra(
   const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
@@ -377,13 +377,13 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::MatScaTra(
   diffmanager_->SetIsotropicDiff(actmat->Diffusivity());
 
   return;
-} // ReynoldsEleCalc<distype>::MatScaTra
+} // LubricationEleCalc<distype>::MatScaTra
 
 /*-----------------------------------------------------------------------------*
  | compute rhs containing bodyforce                                wirtz 10/15 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::GetRhsInt(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::GetRhsInt(
   double&      rhsint,  //!< rhs containing bodyforce at Gauss point
   const double densnp  //!< density at t_(n+1)
   )
@@ -401,7 +401,7 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::GetRhsInt(
  |  calculation of diffusive element matrix               wirtz 10/15 |
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::CalcMatDiff(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcMatDiff(
   Epetra_SerialDenseMatrix&     emat,
   const double                  timefacfac
   )
@@ -424,7 +424,7 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::CalcMatDiff(
  |  standard Galerkin transient, old part of rhs and source term             wirtz 10/15 |
  *---------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::CalcRHSHistAndSource(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcRHSHistAndSource(
   Epetra_SerialDenseVector&     erhs,
   const double                  fac,
   const double                  rhsint
@@ -443,12 +443,12 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::CalcRHSHistAndSource(
  |  standard Galerkin diffusive term on right hand side    wirtz 10/15 |
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::CalcRHSDiff(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcRHSDiff(
   Epetra_SerialDenseVector&     erhs,
   const double                  rhsfac
   )
 {
-  const LINALG::Matrix<nsd_,1>& gradpre = reynoldsvarmanager_->GradPre();
+  const LINALG::Matrix<nsd_,1>& gradpre = lubricationvarmanager_->GradPre();
 
   double vrhs = rhsfac*diffmanager_->GetIsotropicDiff();
 
@@ -466,7 +466,7 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::CalcRHSDiff(
  | evaluate shape functions and derivatives at int. point   wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-double DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::EvalShapeFuncAndDerivsAtIntPoint(
+double DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::EvalShapeFuncAndDerivsAtIntPoint(
   const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,  ///< integration points
   const int                                           iquad       ///< id of current Gauss point
   )
@@ -490,13 +490,13 @@ double DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::EvalShapeFuncAndDerivsAt
   // return integration factor for current GP: fac = Gauss weight * det(J)
   return fac;
 
-} //ReynoldsImpl::EvalShapeFuncAndDerivsAtIntPoint
+} //LubricationImpl::EvalShapeFuncAndDerivsAtIntPoint
 
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives in parameter space wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-double DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::EvalShapeFuncAndDerivsInParameterSpace()
+double DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::EvalShapeFuncAndDerivsInParameterSpace()
 {
   double det=0.0;
 
@@ -594,7 +594,7 @@ double DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::EvalShapeFuncAndDerivsIn
   |  get the body force  (private)                           wirtz 10/15 |
   *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::BodyForce(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::BodyForce(
   const DRT::Element*    ele
   )
 {
@@ -633,7 +633,7 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::BodyForce(
 
     // initialization of time-curve factor
     double curvefac(0.0);
-    const double time = reynoldspara_->Time();
+    const double time = lubricationpara_->Time();
 
     // compute potential time curve or set time-curve factor to one
     if (curvenum >= 0)
@@ -670,13 +670,13 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::BodyForce(
 
   return;
 
-} //ReynoldsEleCalc::BodyForce
+} //LubricationEleCalc::BodyForce
 
 /*----------------------------------------------------------------------*
  | evaluate service routine                                 wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype,int probdim>
-int DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::EvaluateService(
+int DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::EvaluateService(
     DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
@@ -716,7 +716,7 @@ int DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::EvaluateService(
  | evaluate action                                          wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-int DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::EvaluateAction(
+int DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::EvaluateAction(
     DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
@@ -766,7 +766,7 @@ int DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::EvaluateAction(
   |  calculate error compared to analytical solution        wirtz 10/15 |
   *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::CalErrorComparedToAnalytSolution(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnalytSolution(
   const DRT::Element*                   ele,
   Teuchos::ParameterList&               params,
   Epetra_SerialDenseVector&             errors
@@ -777,7 +777,7 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::CalErrorComparedToAnalytSo
 
   // -------------- prepare common things first ! -----------------------
   // set constants for analytical solution
-  const double t = reynoldspara_->Time();
+  const double t = lubricationpara_->Time();
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
@@ -881,27 +881,27 @@ void DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::CalErrorComparedToAnalytSo
   } //switch(errortype)
 
   return;
-} // DRT::ELEMENTS::ReynoldsEleCalc<distype,probdim>::CalErrorComparedToAnalytSolution
+} // DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnalytSolution
 
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::line2,1>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::line2,2>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::line2,3>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::line3,1>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::line3,2>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::line3,3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::line2,1>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::line2,2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::line2,3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::line3,1>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::line3,2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::line3,3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::tri3,2>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::tri3,3>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::tri6,2>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::quad4,2>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::quad4,3>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::quad8,2>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::quad8,3>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::quad9,2>;
-template class DRT::ELEMENTS::ReynoldsEleCalc<DRT::Element::quad9,3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::tri3,2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::tri3,3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::tri6,2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::tri6,3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::quad4,2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::quad4,3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::quad8,2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::quad8,3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::quad9,2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::quad9,3>;
 

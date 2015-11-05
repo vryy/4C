@@ -264,7 +264,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--COMBUSTION CONTROL", *list);
   reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION FLUID", *list);
   reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION GFUNCTION", *list);
-  reader.ReadGidSection("--REYNOLDS DYNAMIC", *list);
+  reader.ReadGidSection("--LUBRICATION DYNAMIC", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/NONLINEAR", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);
@@ -965,7 +965,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   Teuchos::RCP<DRT::Discretization> aledis          = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> structaledis    = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> thermdis        = Teuchos::null;
-  Teuchos::RCP<DRT::Discretization> reynoldsdis       = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> lubricationdis  = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> scatradis       = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> fluidscatradis  = Teuchos::null;
   Teuchos::RCP<DRT::Discretization> structscatradis = Teuchos::null;
@@ -1256,17 +1256,17 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
-  case prb_reynolds:
+  case prb_lubrication:
   {
     // create empty discretizations
-    reynoldsdis = Teuchos::rcp(new DRT::Discretization("reynolds",reader.Comm()));
+    lubricationdis = Teuchos::rcp(new DRT::Discretization("lubrication",reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
-    reynoldsdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(reynoldsdis)));
+    lubricationdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(lubricationdis)));
 
-    AddDis("reynolds", reynoldsdis);
+    AddDis("lubrication", lubricationdis);
 
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(reynoldsdis, reader, "--REYNOLDS ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS")));
 
     break;
   }

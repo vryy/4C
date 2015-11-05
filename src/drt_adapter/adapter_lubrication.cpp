@@ -1,8 +1,8 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file adapter_reynolds.cpp
+\file adapter_lubrication.cpp
 
-\brief Reynolds field base algorithm
+\brief Lubrication field base algorithm
 
 <pre>
 Maintainer: Andy Wirtz
@@ -13,7 +13,7 @@ Maintainer: Andy Wirtz
 */
 /*--------------------------------------------------------------------------*/
 
-#include "adapter_reynolds.H"
+#include "adapter_lubrication.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -29,15 +29,15 @@ Maintainer: Andy Wirtz
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::ReynoldsBaseAlgorithm::Setup(
+void ADAPTER::LubricationBaseAlgorithm::Setup(
     const Teuchos::ParameterList&   prbdyn,         ///< parameter list for global problem
-    const Teuchos::ParameterList&   reynoldsdyn,    ///< parameter list for Reynolds subproblem
-    const Teuchos::ParameterList&   solverparams,   ///< parameter list for Reynolds solver
-    const std::string&              disname,        ///< name of Reynolds discretization
+    const Teuchos::ParameterList&   lubricationdyn,    ///< parameter list for Lubrication subproblem
+    const Teuchos::ParameterList&   solverparams,   ///< parameter list for Lubrication solver
+    const std::string&              disname,        ///< name of Lubrication discretization
     const bool                      isale           ///< ALE flag
     )
 {
-  // setup Reynolds algorithm (overriding some dynamic parameters
+  // setup Lubrication algorithm (overriding some dynamic parameters
   // with values specified in given problem-dependent ParameterList prbdyn)
 
   // -------------------------------------------------------------------
@@ -71,25 +71,25 @@ void ADAPTER::ReynoldsBaseAlgorithm::Setup(
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
   // make a copy (inside an Teuchos::rcp) containing also all sublists
-  Teuchos::RCP<Teuchos::ParameterList> reynoldstimeparams = Teuchos::rcp(new Teuchos::ParameterList(reynoldsdyn));
+  Teuchos::RCP<Teuchos::ParameterList> lubricationtimeparams = Teuchos::rcp(new Teuchos::ParameterList(lubricationdyn));
 
   // -------------------------------------------------------------------
   // overrule certain parameters for coupled problems
   // -------------------------------------------------------------------
   // the default time step size
-  reynoldstimeparams->set<double>   ("TIMESTEP"    ,prbdyn.get<double>("TIMESTEP"));
+  lubricationtimeparams->set<double>   ("TIMESTEP"    ,prbdyn.get<double>("TIMESTEP"));
   // maximum simulation time
-  reynoldstimeparams->set<double>   ("MAXTIME"     ,prbdyn.get<double>("MAXTIME"));
+  lubricationtimeparams->set<double>   ("MAXTIME"     ,prbdyn.get<double>("MAXTIME"));
   // maximum number of timesteps
-  reynoldstimeparams->set<int>      ("NUMSTEP"     ,prbdyn.get<int>("NUMSTEP"));
+  lubricationtimeparams->set<int>      ("NUMSTEP"     ,prbdyn.get<int>("NUMSTEP"));
   // restart
-  reynoldstimeparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
+  lubricationtimeparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
   // solution output
-  reynoldstimeparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
+  lubricationtimeparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
 
   // -------------------------------------------------------------------
   // list for extra parameters
-  // (put here everything that is not available in reynoldsdyn or its sublists)
+  // (put here everything that is not available in lubricationdyn or its sublists)
   // -------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> extraparams
     = Teuchos::rcp(new Teuchos::ParameterList());
@@ -106,11 +106,11 @@ void ADAPTER::ReynoldsBaseAlgorithm::Setup(
   extraparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
 
     // create instance of time integration class (call the constructor)
-  reynolds_ = Teuchos::rcp(
-      new SCATRA::TimIntStationary(actdis, solver, reynoldstimeparams,
+  lubrication_ = Teuchos::rcp(
+      new SCATRA::TimIntStationary(actdis, solver, lubricationtimeparams,
           extraparams, output));
 
-  reynolds_->Init();
+  lubrication_->Init();
   // initialize algorithm for specific time-integration scheme
 
   return;
@@ -118,7 +118,7 @@ void ADAPTER::ReynoldsBaseAlgorithm::Setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::ResultTest> ADAPTER::ReynoldsBaseAlgorithm::CreateReynoldsFieldTest()
+Teuchos::RCP<DRT::ResultTest> ADAPTER::LubricationBaseAlgorithm::CreateLubricationFieldTest()
 {
-  return Teuchos::rcp(new SCATRA::ScaTraResultTest(reynolds_));
+  return Teuchos::rcp(new SCATRA::ScaTraResultTest(lubrication_));
 }
