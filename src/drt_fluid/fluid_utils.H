@@ -360,21 +360,6 @@ namespace UTILS
     /// return flag if StressManager has already been initialized
     bool IsInit() {return isinit_;};
 
-    ///reset history vectors for mean stresses and wss
-    void ResetHistoryVectors()
-    {
-      SumStresses_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true)),
-      SumWss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true)),
-      SumDtStresses_=0.0;
-      SumDtWss_=0.0;
-    };
-
-    ///Set SumWss
-    const double GetSumDtWss() { return SumDtWss_;};
-
-    ///Set SumWss and SumDtWss
-    void RestartWss( Teuchos::RCP<Epetra_Vector> sumwss, double sumdtwss ) { SumWss_ = sumwss; SumDtWss_ = sumdtwss; };
-
 private:
 
     ///return stress vector

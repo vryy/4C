@@ -405,6 +405,10 @@ void FS3I::PartFPS3I::SetupSystem()
       Teuchos::RCP<LINALG::SparseMatrix> scatracoupmat =
         Teuchos::rcp(new LINALG::SparseMatrix(*(scatraglobalex_->Map(i)),27,false,true));
       scatracoupmat_.push_back(scatracoupmat);
+
+      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->DofRowMap();
+      Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
+      scatrazeros_.push_back(zeros);
     }
   }
   // create scatra block matrix
@@ -502,8 +506,6 @@ void FS3I::PartFPS3I::SetFPSISolution()
   SetWallShearStresses();
   SetPressureFields();
   SetMeanConcentration();
-
-
 }
 
 /*----------------------------------------------------------------------*
@@ -578,11 +580,6 @@ void FS3I::PartFPS3I::SetWallShearStresses()
   std::vector<Teuchos::RCP<const Epetra_Vector> > wss;
   ExtractWSS(wss);
 
-  std::vector<Teuchos::RCP<DRT::Discretization> > discret;
-
-  discret.push_back(fpsi_->FluidField()->Discretization());
-  discret.push_back(fpsi_->PoroField()->FluidField()->Discretization());
-
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
@@ -597,11 +594,6 @@ void FS3I::PartFPS3I::SetPressureFields()
 {
   std::vector<Teuchos::RCP<const Epetra_Vector> > pressure;
   ExtractPressure(pressure);
-
-  std::vector<Teuchos::RCP<DRT::Discretization> > discret;
-
-  discret.push_back(fpsi_->FluidField()->Discretization());
-  discret.push_back(fpsi_->PoroField()->FluidField()->Discretization());
 
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
@@ -654,13 +646,9 @@ void FS3I::PartFPS3I::EvaluateScatraFields()
       scatra->KedemKatchalsky(coupmat,coupforce);
 
       // apply Dirichlet boundary conditions to coupling matrix and vector
-      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->DofRowMap();
-      Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
-
-      const Teuchos::RCP<const LINALG::MapExtractor> dbcmapex = scatra->DirichMaps();
-      const Teuchos::RCP< const Epetra_Map > dbcmap = dbcmapex->CondMap();
+      const Teuchos::RCP< const Epetra_Map > dbcmap = scatra->DirichMaps()->CondMap();
       coupmat->ApplyDirichlet(*dbcmap,false);
-      LINALG::ApplyDirichlettoSystem(coupforce,zeros,*dbcmap);
+      LINALG::ApplyDirichlettoSystem(coupforce,scatrazeros_[i],*dbcmap);
     }
   }
 }

@@ -164,6 +164,9 @@ namespace FS3I
     /// coupling matrices (in case of surface permeability)
     std::vector<Teuchos::RCP<LINALG::SparseMatrix> > scatracoupmat_;
 
+    /// zero vector (needed for application of Dirichlet BC on coupling vector)
+    std::vector<Teuchos::RCP<Epetra_Vector> > scatrazeros_;
+
     /// scatra solver
     Teuchos::RCP<LINALG::Solver> scatrasolver_;
 

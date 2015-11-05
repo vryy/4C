@@ -359,9 +359,7 @@ void FS3I::FS3I_Base::EvaluateScatraFields()
       scatra->SurfacePermeability(coupmat,coupforce);
 
       // apply Dirichlet boundary conditions to coupling matrix and vector
-      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->DofRowMap();
-      Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
-
+      Teuchos::RCP<Epetra_Vector> zeros = scatrazeros_[i];
       const Teuchos::RCP<const LINALG::MapExtractor> dbcmapex = scatra->DirichMaps();
       const Teuchos::RCP< const Epetra_Map > dbcmap = dbcmapex->CondMap();
       coupmat->ApplyDirichlet(*dbcmap,false);

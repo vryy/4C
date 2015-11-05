@@ -1115,15 +1115,15 @@ double FLD::UTILS::FluidImpedanceBc::OutflowBoundary(const double time, const do
     {
       const int gid    =  dofrowmap->GID(lid);
       const double val = (*dQdu)[lid];
-      if (abs(val)>1e-12)
+      if (abs(val)>1e-15)
       {
         for (int lid2 = 0; lid2 <dQdu_full->MyLength();lid2++)
         {
           const int gid2    =  dofrowmapred->GID(lid2);
           const double val2 = (*dQdu_full)[lid2];
-
-          if (abs(val2)>1e-12)
-            impedancetbcsysmat_->Assemble(tfaclhs_wkfac*val*val2,gid,gid2);
+          const double actmatentry = tfaclhs_wkfac*val*val2;
+          if (abs(actmatentry)>1e-15)
+            impedancetbcsysmat_->Assemble(actmatentry,gid,gid2);
         }
       }
     }

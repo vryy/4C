@@ -17,19 +17,19 @@
 
 
 #include "ac_fsi.H"
-#include "../drt_io/io.H"
-#include "../drt_io/io_control.H"
 
-#include "../drt_fsi/fsi_monolithic.H"
+#include "../drt_io/io_control.H"
 #include "../drt_inpar/inpar_fsi.H"
-#include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_utils.H"
+
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid_ac_fsi.H"
 #include "../drt_adapter/ad_ale_fsi.H"
-#include "../linalg/linalg_utils.H"
+#include "../drt_fsi/fsi_monolithic.H"
+#include "../drt_scatra/scatra_algorithm.H"
 
 //FOR WSS CALCULATIONS
 #include "../drt_fluid/fluid_utils_mapextractor.H"
@@ -68,7 +68,8 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
    fsiisperiodic_(false),
    scatraisperiodic_(false),
    fsineedsupdate_(false),
-   extractjthscalar_(BuildMapExtractor())
+   extractjthscalar_(BuildMapExtractor()),
+   meanmanager_(Teuchos::rcp( new FS3I::MeanManager(*fsi_->FluidField()->DofRowMap(0),*scatravec_[0]->ScaTraField()->DofRowMap(),*fsi_->FluidField()->PressureRowMap() )))
 {
   //Some AC FSI specific testings:
 
@@ -86,11 +87,6 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
 
   if ( (dt_large_+1e-14) <= dt_ )
     dserror("You need to specify a LARGE_TIMESCALE_TIMESTEP and it must be larger than the 'normal' fs3i TIMESTEP!");
-
-  if ( (bool)DRT::INPUT::IntegralValue<int>( DRT::Problem::Instance()->IOParams(),"FLUID_WALL_SHEAR_STRESS") )
-    dserror("You need FLUID_WALL_SHEAR_STRESS in section IO to be NO,"
-            " otherwise GetWallShearStresses() will be called twice, which is bad if you use WSS_TYPE Mean."
-            " Nevertheless we do write the wss output!");
 
   std::vector<DRT::Condition*> ImpCond;
   DRT::Problem::Instance()->GetDis("fluid")->GetCondition("ImpedanceCond",ImpCond);
@@ -133,6 +129,9 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
     dserror("Your fluid scatra time step does not match!");
   if ( not IsRealtiveEqualTo(dt_,scatravec_[1]->ScaTraField()->Dt(),1.0) )
     dserror("Your structure scatra time step does not match!");
+
+  if ( not (INPAR::FLUID::wss_standard == DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>( DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE")) )
+    dserror("WSS_TYPE must be 'Standard', we will mean the WSS by using the fs3i mean manager!");
 }
 
 /*----------------------------------------------------------------------*
@@ -160,9 +159,10 @@ void FS3I::ACFSI::ReadRestart()
         currscatra->ScaTraField()->ReadRestart(restart);
       }
 
-      //AC-FSI specific input
-      IO::DiscretizationReader reader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),restart);
-      reader.ReadVector(WallShearStress_lp_, "wss");
+      IO::DiscretizationReader fluidreader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),restart);
+      meanmanager_->ReadRestart(fluidreader);
+
+      fluidreader.ReadVector(WallShearStress_lp_, "wss_lp");
     }
     else //we do not want to read the scatras values and the lagrange multiplyer, since we start from a partitioned FSI
     {
@@ -207,15 +207,10 @@ void FS3I::ACFSI::ReadRestart()
     time_ = fsi_->FluidField()->Time();
     step_ = fsi_->FluidField()->Step();
 
-    //AC-FSI specific input
-    IO::DiscretizationReader reader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),restart);
-
-    reader.ReadVector(WallShearStress_lp_, "wss");
-
     //recover IsPeriodic flags by recalculating them
     IsFsiPeriodic();
     //Note: this does not work for the scatra test  since we don't save phinp_lp for the sake of less storage
-    //IsScatraSteady();
+    //IsScatraPeriodic();
   }
 }
 
@@ -332,7 +327,7 @@ void FS3I::ACFSI::SmallTimeScaleOuterLoopSequStagg()
 
   DoFSIStep();
 
-  SetFSISolution();
+  SmallTimeScaleSetFSISolution();
 
   SmallTimeScaleDoScatraStep();
 }
@@ -401,7 +396,7 @@ void FS3I::ACFSI::DoFSIStep()
 
 void FS3I::ACFSI::IsSmallTimeScalePeriodic()
 {
-  if ( step_>1 and ModuloIsRealtiveZero(time_,fsiperiod_,time_) )
+  if ( ModuloIsRealtiveZero(time_,fsiperiod_,time_) ) //iff a new period is about to begin
   {
     // Check fsi periodicity
     IsFsiPeriodic();
@@ -685,6 +680,10 @@ void FS3I::ACFSI::IsScatraPeriodic( )
  *----------------------------------------------------------------------*/
 void FS3I::ACFSI::SmallTimeScaleUpdateAndOutput()
 {
+  //Update mean manager
+  meanmanager_->AddValue("phi", scatravec_[0]->ScaTraField()->Phinp(),dt_);
+  meanmanager_->AddValue("pressure",fsi_->FluidField()->ExtractPressurePart(fsi_->FluidField()->Velnp()),dt_);
+
   //It is important to first update the fluid field (including the impedance BC)
   //before checking the fsi periodicity. So be careful with the order here!!
 
@@ -707,7 +706,6 @@ void FS3I::ACFSI::FsiOutput()
 
   const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
   const int uprestart = fs3idyn.get<int>("RESTARTEVRY");
-  const int upres = fs3idyn.get<int>("UPRES");
 
   //    /* Note: The order is important here! In here control file entries are
   //     * written. And these entries define the order in which the filters handle
@@ -723,10 +721,12 @@ void FS3I::ACFSI::FsiOutput()
   fsi_->FluidField()->    Output();
   if (coupling == fsi_iter_monolithicfluidsplit)
     fsi_->OutputLambda();
-  //AC specific fluid output
-  if ((uprestart != 0 && step_ % uprestart == 0) || step_ % upres == 0)
+  //AC specific fluid output iff it is a restart step or we are at the end of a fsi circle
+  if ((uprestart != 0 && step_ % uprestart == 0) or ModuloIsRealtiveZero(time_,fsiperiod_,time_) )
   {
-    fsi_->FluidField()->DiscWriter()->WriteVector("wss", WallShearStress_lp_); //TODO: is it enough to this vector only at the beginning of a new fsi period?
+    Teuchos::RCP<IO::DiscretizationWriter> fluiddiskwriter = fsi_->FluidField()->DiscWriter();
+    meanmanager_->WriteRestart(fluiddiskwriter);
+    fluiddiskwriter->WriteVector("wss_lp", WallShearStress_lp_); //TODO: is it enough to save this vector only at the beginning of a new fsi period?
   }
 
   //ale output
@@ -807,7 +807,7 @@ bool FS3I::ACFSI::ScatraConvergenceCheck(const int itnum)
       printf("+---------------------------------------------------------------+\n");
     }
     // yes, we stop!
-    dserror("Scatra not converged in itemax steps!");
+//    dserror("Scatra not converged in itemax steps!");
     return true;
   }
   else
@@ -903,61 +903,61 @@ bool FS3I::ACFSI::PartFs3iConvergenceCkeck( const int itnum)
   return stopnonliniter;
 }
 
-/*----------------------------------------------------------------------*
- |  Extract wall shear stresses                              Thon 03/15 |
- *----------------------------------------------------------------------*/
-void FS3I::ACFSI::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss)
+/*----------------------------------------------------------------------------------*
+ |  Handle WSS in mean manager and set FSI solution in scatra fields     Thon 10/15 |
+ *----------------------------------------------------------------------------------*/
+void FS3I::ACFSI::SmallTimeScaleSetFSISolution()
 {
-  Teuchos::RCP<Epetra_Vector> WallShearStress;
+  //TODO: (thon) this is really ugly, give it beauty!!
 
-  //############ Fluid Field ###############
+  if ( step_>1 and ModuloIsRealtiveZero(time_-dt_,fsiperiod_,time_) )
+  {
+    meanmanager_->Reset(); //Reset mean Manager
+    if (Comm().MyPID()==0)
+    {
+    std::cout<<"\nReseting mean manager"<<std::endl;
+    }
+  }
+
   if ( not fsiisperiodic_ )
   {
     Teuchos::RCP<ADAPTER::FluidACFSI> fluid = Teuchos::rcp_dynamic_cast<ADAPTER::FluidACFSI>( fsi_->FluidField() );
     if (fluid == Teuchos::null)
       dserror("Dynamic cast to ADAPTER::FluidFSI failed!");
 
-    if ( step_>1 and ModuloIsRealtiveZero(time_-dt_,fsiperiod_,time_) )
-      {
-        fluid->ResetHistoryVectors( ); //Reset StressManager
-        if (Comm().MyPID()==0)
-        {
-        std::cout<<"\nReseting stress manager"<<std::endl;
-        }
-      }
+    meanmanager_->AddValue("wss",fluid->CalculateWallShearStresses(),dt_); //add instantaneous wss vector
 
-    WallShearStress = fluid->CalculateWallShearStresses(); //Instantaneous wss vector
-
-    switch ( DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>( DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE") )
+    if ( step_>1 and ModuloIsRealtiveZero(time_,fsiperiod_,time_) )
     {
-    case INPAR::FLUID::wss_standard: //we simply use the instantaneous WSS
-      WallShearStress_lp_->Update(1.0,*WallShearStress,0.0); //Update
-      break;
-    case INPAR::FLUID::wss_mean: //we use the mean WSS from the last period..
-      if ( step_>1 and ModuloIsRealtiveZero(time_,fsiperiod_,time_) )
+      WallShearStress_lp_->Update(1.0,*(meanmanager_->GetMeanValue("mean_wss")),0.0); //Update
+      if (Comm().MyPID()==0)
       {
-        WallShearStress_lp_->Update(1.0,*WallShearStress,0.0); //Update
-        if (Comm().MyPID()==0)
-        {
-          std::cout<<"\nUpdating mean wss vector in ac-fs3i"<<std::endl;
-        }
-        //Note: we can not reset the stress manager here, since we first need to write its data, to be able to restart.
-        //Hence the correct order is: 1. Calculate WSS; 2. Write fluid output; 3. Reset stress Manager(in next time step)
+        std::cout<<"\nUpdating mean wss vector in ac-fs3i"<<std::endl;
       }
-      break;
-    default:
-      dserror("WSS_TYPE not supported for AC-FS3I!");
-      break;
+      //Note: we can not reset the stress manager here, since we first need to write its data, to be able to restart.
+      //Hence the correct order is: 1. Calculate WSS; 2. Write fluid output; 3. Reset stress Manager(in next time step)
     }
   }
-  //else //nothing to do in this case since the WallShearStress_ vector has been read from on period before
+  else
+  {
+    //fsi is periodic, hence wss do not change any more. But to satisfy the manager we have to add something..
+    meanmanager_->AddValue("wss",WallShearStress_lp_,dt_);
+  }
 
+  SetFSISolution();
+}
+/*----------------------------------------------------------------------*
+ |  Extract wall shear stresses                              Thon 03/15 |
+ *----------------------------------------------------------------------*/
+void FS3I::ACFSI::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss)
+{
+  //############ Fluid Field ###############
   wss.push_back(WallShearStress_lp_);
 
   //############ Structure Field ###############
 
   // extract FSI-Interface from fluid field
-  WallShearStress = fsi_->FluidField()->Interface()->ExtractFSICondVector(WallShearStress_lp_);
+  Teuchos::RCP<Epetra_Vector> WallShearStress = fsi_->FluidField()->Interface()->ExtractFSICondVector(WallShearStress_lp_);
 
   // replace global fluid interface dofs through structure interface dofs
   WallShearStress = fsi_->FluidToStruct(WallShearStress);

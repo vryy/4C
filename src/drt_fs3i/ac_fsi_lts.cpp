@@ -66,24 +66,67 @@ void FS3I::ACFSI::PrepareLargeTimeScaleLoop()
                "\n                         LARGE TIME SCALE LOOP"
                "\n************************************************************************"<<std::endl;
   }
+  //we clear every state, including the states of the secondary dof sets
+  scatravec_[0]->ScaTraField()->Discretization()->ClearState(true);
+  scatravec_[1]->ScaTraField()->Discretization()->ClearState(true);
 
-  //Set large time scale time step in the struct scatra field
-  scatravec_[1]->ScaTraField()->SetDt( dt_large_ );
-
+  //Set mesh displacement and mean wss
+  SetMeshDisp();
+  SetWallShearStresses();
   //Set zeros velocities since we assume that the large time scale can not see the deformation of the small time scale
-  Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(fsi_->StructureField()->Velnp()->Map(),true));
-  scatravec_[1]->ScaTraField()->SetVelocityField(zeros,
+  Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(fsi_->FluidField()->Velnp()->Map(),true));
+  scatravec_[0]->ScaTraField()->SetVelocityField(zeros,
                                          Teuchos::null,
                                          zeros,
                                          Teuchos::null,
                                          1);
+  Teuchos::RCP<Epetra_Vector> zeros2 = Teuchos::rcp(new Epetra_Vector(fsi_->StructureField()->Velnp()->Map(),true));
+  scatravec_[1]->ScaTraField()->SetVelocityField(zeros2,
+                                         Teuchos::null,
+                                         zeros2,
+                                         Teuchos::null,
+                                         1);
 
+  //Set large time scale time step in the struct scatra field
+  scatravec_[0]->ScaTraField()->SetDt( dt_large_ );
+  scatravec_[1]->ScaTraField()->SetDt( dt_large_ );
+
+  //----------------------------------------------------------------------
+  // recalculate fluid scatra contributions due to changes time step size
+  //----------------------------------------------------------------------
+  EvaluateithScatraSurfacePermeability(0);
+
+
+  // set back large time scale flags
   fsineedsupdate_=false;
   growth_updates_counter_ = 0;
 
   // Save the phinp vector at the beginning of the large time scale loop in
   // in order to estimate the so far induced growth
   *structurephinp_blts_ = *scatravec_[1]->ScaTraField()->Phinp();
+
+
+}
+
+/*-------------------------------------------------------------------------------*
+ | Evaluate surface permeability condition for struct scatra field    Thon 08/15 |
+ *-------------------------------------------------------------------------------*/
+void FS3I::ACFSI::EvaluateithScatraSurfacePermeability(
+    const int i //id of scalar
+)
+{
+  Teuchos::RCP<Epetra_Vector> rhs_scal = scatracoupforce_[i];
+  Teuchos::RCP<LINALG::SparseMatrix> mat_scal = scatracoupmat_[i];
+
+  rhs_scal->PutScalar(0.0);
+  mat_scal->Zero();
+
+  scatravec_[i]->ScaTraField()->SurfacePermeability(mat_scal,rhs_scal);
+
+  // apply Dirichlet boundary conditions to coupling matrix and vector
+  const Teuchos::RCP< const Epetra_Map > dbcmap = scatravec_[i]->ScaTraField()->DirichMaps()->CondMap();
+  mat_scal->ApplyDirichlet(*dbcmap,false);
+  LINALG::ApplyDirichlettoSystem(rhs_scal,scatrazeros_[i],*dbcmap);
 }
 
 /*----------------------------------------------------------------------*
@@ -92,6 +135,7 @@ void FS3I::ACFSI::PrepareLargeTimeScaleLoop()
 void FS3I::ACFSI::FinishLargeTimeScaleLoop()
 {
   //Set small time scale time step size
+  scatravec_[0]->ScaTraField()->SetDt( dt_ );
   scatravec_[1]->ScaTraField()->SetDt( dt_ );
 
   // Fix time and step in fsi and fluid scatra field
@@ -111,6 +155,7 @@ void FS3I::ACFSI::FinishLargeTimeScaleLoop()
   scatravec_[0]->ScaTraField()->SetTimeStep(time_,step_);
 
   //we start with a clean small time scale loop
+  meanmanager_->Reset();
   fsiisperiodic_ = false;
   scatraisperiodic_ = false;
 }
@@ -191,7 +236,7 @@ void FS3I::ACFSI::DoStructScatraStep()
 void FS3I::ACFSI::StructScatraEvaluateSolveIterUpdate()
 {
   if (infperm_)
-      dserror("This not a valid option!"); //just for safety
+    dserror("This not a valid option!"); //just for safety
 
   const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra = scatravec_[1]->ScaTraField(); //structure scatra
 
@@ -203,33 +248,20 @@ void FS3I::ACFSI::StructScatraEvaluateSolveIterUpdate()
   //----------------------------------------------------------------------
   // calculate contributions due to finite interface permeability
   //----------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector> rhs_struct_scal = scatracoupforce_[1];
-  Teuchos::RCP<LINALG::SparseMatrix> mat_struct_scal = scatracoupmat_[1];
-
-  rhs_struct_scal->PutScalar(0.0);
-  mat_struct_scal->Zero();
-
-  scatra->SurfacePermeability(mat_struct_scal,rhs_struct_scal);
-
-  // apply Dirichlet boundary conditions to coupling matrix and vector
-  const Epetra_Map* dofrowmap = scatra->Discretization()->DofRowMap();
-  Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
-
-  const Teuchos::RCP< const Epetra_Map > dbcmap = scatra->DirichMaps()->CondMap();
-  mat_struct_scal->ApplyDirichlet(*dbcmap,false);
-  LINALG::ApplyDirichlettoSystem(rhs_struct_scal,zeros,*dbcmap);
+  EvaluateithScatraSurfacePermeability(1);
 
   //----------------------------------------------------------------------
   // add coupling to the resiudal
   //----------------------------------------------------------------------
+  const Teuchos::RCP<Epetra_Vector> rhs_struct_scal = scatracoupforce_[1];
+  const Teuchos::RCP<LINALG::SparseMatrix> mat_struct_scal = scatracoupmat_[1];
   const Teuchos::RCP<Epetra_Vector> residual = scatra->Residual();
+
   residual->Update(1.0,*rhs_struct_scal,1.0);
 
   // add contribution of the fluid field
   Teuchos::RCP<Epetra_Vector> rhs_fluid_scal_boundary = scatrafieldexvec_[0]->ExtractVector(scatracoupforce_[0],1);
   Teuchos::RCP<Epetra_Vector> rhs_fluid_scal = scatrafieldexvec_[1]->InsertVector(Scatra1ToScatra2(rhs_fluid_scal_boundary),1);
-  //Note: we have to care for the fact that scatracoupforce_[0] has been evaluatet with the small time step:
-  rhs_fluid_scal->Scale(dt_large_/dt_);
 
   residual->Update(-1.0,*rhs_fluid_scal,1.0);
 
@@ -498,7 +530,7 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   if ( not fsiisperiodic_)
     dserror("Here fsiisperiodic_ must be true to not mess up the WSS in ExtractWSS()");
 
-  //the actuall calculations
+  //the actual calculations
   SmallTimeScaleOuterLoopIterStagg();
 
   //----------------------------------------------------------------------
@@ -513,20 +545,30 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   fluidscatra->Update(0);
 
   //----------------------------------------------------------------------
-  // Switch back time step and velocity field
+  // Switch back time steps and remove velocity fields
   //----------------------------------------------------------------------
   //Now set the time step back:
-  fluidscatra->SetDt( dt_ );
+  fluidscatra->SetDt( dt_large_ );
   structurescatra->SetDt( dt_large_ );
 
   //Set zeros velocities since we assume that the large time scale can not see the deformation of the small time scale
-  Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(fsi_->StructureField()->Velnp()->Map(),true));
+  Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(fsi_->FluidField()->Velnp()->Map(),true));
+  scatravec_[0]->ScaTraField()->SetVelocityField(zeros,
+                                         Teuchos::null,
+                                         zeros,
+                                         Teuchos::null,
+                                         1);
+  Teuchos::RCP<Epetra_Vector> zeros2 = Teuchos::rcp(new Epetra_Vector(fsi_->StructureField()->Velnp()->Map(),true));
+  scatravec_[1]->ScaTraField()->SetVelocityField(zeros2,
+                                         Teuchos::null,
+                                         zeros2,
+                                         Teuchos::null,
+                                         1);
 
-  structurescatra->SetVelocityField(zeros,
-                                    Teuchos::null,
-                                    zeros,
-                                    Teuchos::null,
-                                    1);
+  //----------------------------------------------------------------------
+  // recalculate fluid scatra contributions due to finite interface permeability
+  //----------------------------------------------------------------------
+  EvaluateithScatraSurfacePermeability(0);
 
   //----------------------------------------------------------------------
   // higher growth counter
@@ -640,4 +682,168 @@ bool FS3I::ACFSI::IsRealtiveEqualTo(const double A, const double B, const double
 bool FS3I::ACFSI::ModuloIsRealtiveZero(const double value, const double modulo, const double Ref)
 {
   return IsRealtiveEqualTo(fmod(value+modulo/2,modulo)-modulo/2,0.0,Ref);
+}
+
+/*----------------------------------------------------------------------*
+ | Compare if A mod B is relatively equal to zero            Thon 10/15 |
+ *----------------------------------------------------------------------*/
+FS3I::MeanManager::MeanManager(const Epetra_Map& wssmap, const Epetra_Map& phimap, const Epetra_Map& pressuremap):
+    SumWss_(LINALG::CreateVector(wssmap,true)),
+    SumPhi_(LINALG::CreateVector(phimap,true)),
+    SumPres_(LINALG::CreateVector(pressuremap,true)),
+    SumDtWss_(0.0),
+    SumDtPhi_(0.0),
+    SumDtPres_(0.0)
+{
+}
+
+
+/*----------------------------------------------------------------------*
+ | add value into the mean manager                           Thon 10/15 |
+ *----------------------------------------------------------------------*/
+void FS3I::MeanManager::AddValue(const std::string type, const Teuchos::RCP<const Epetra_Vector> value, const double dt)
+{
+  if( type == "wss")
+  {
+    #ifdef DEBUG
+      // check, whether maps are the same
+      if (not value->Map().PointSameAs(SumWss_->Map()))  { dserror("Maps do not match, but they have to."); }
+    #endif
+
+    SumWss_->Update(dt, *value, 1.0); //weighted sum of all prior stresses
+    SumDtWss_+=dt;
+  }
+  else if ( type == "phi")
+  {
+    #ifdef DEBUG
+      // check, whether maps are the same
+      if (not value->Map().PointSameAs(SumPhi_->Map()))  { dserror("Maps do not match, but they have to."); }
+    #endif
+
+    SumPhi_->Update(dt, *value, 1.0); //weighted sum of all prior stresses
+    SumDtPhi_+=dt;
+  }
+  else if ( type == "pressure")
+  {
+    #ifdef DEBUG
+      // check, whether maps are the same
+      if (not value->Map().PointSameAs(SumPres_->Map()))  { dserror("Maps do not match, but they have to."); }
+    #endif
+
+    SumPres_->Update(dt, *value, 1.0); //weighted sum of all prior stresses
+    SumDtPres_+=dt;
+  }
+  else
+    dserror("Mean Manager does not support the given value '%s'.",type.c_str());
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | reset mean manager                                        Thon 10/15 |
+ *----------------------------------------------------------------------*/
+void FS3I::MeanManager::Reset()
+{
+  //first some checking
+  if ( abs(SumDtWss_-SumDtPhi_)>1e-14 or abs(SumDtWss_-SumDtPres_)>1e-14)
+    dserror("The time ranges you did mean over do not match!");
+
+  SumWss_->PutScalar(0.0);
+  SumDtWss_=0.0;
+  SumPhi_->PutScalar(0.0);
+  SumDtPhi_=0.0;
+  SumPres_->PutScalar(0.0);
+  SumDtPres_=0.0;
+}
+
+/*----------------------------------------------------------------------*
+ | get some mean value                                       Thon 10/15 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> FS3I::MeanManager::GetMeanValue(const std::string type)
+{
+  Teuchos::RCP<Epetra_Vector> meanvector;
+
+  if( type == "mean_wss")
+  {
+    meanvector = Teuchos::rcp(new Epetra_Vector(SumWss_->Map(),true));
+
+    if (SumDtWss_ > 1e-12) //iff we have actually calculated some mean wss
+      meanvector->Update(1.0/SumDtWss_, *SumWss_, 0.0); //weighted sum of all prior stresses
+    else
+    {
+      double norm=0.0;
+      meanvector->NormInf(&norm);
+      if ( norm > 1e-12)
+        dserror("SumDtWss_ is zero, but SumWss_ not.. Something is terribly wrong!");
+    }
+  }
+  else if( type == "osi")
+  {
+    dserror("Oscillatory shear index is yet not supported!");
+  }
+  else if ( type == "mean_phi")
+  {
+    meanvector = Teuchos::rcp(new Epetra_Vector(SumPhi_->Map(),true));
+
+    if (SumDtPhi_ > 1e-12) //iff we have actually calculated some mean wss
+      meanvector->Update(1.0/SumDtPhi_, *SumPhi_, 0.0); //weighted sum of all prior stresses
+    else
+    {
+      double norm=0.0;
+      meanvector->NormInf(&norm);
+      if ( norm > 1e-12)
+        dserror("SumDtPhi_ is zero, but SumPhi_ not.. Something is terribly wrong!");
+    }
+  }
+  else if ( type == "mean_pressure")
+  {
+    meanvector = Teuchos::rcp(new Epetra_Vector(SumPres_->Map(),true));
+
+    if (SumDtPres_ > 1e-12) //iff we have actually calculated some mean wss
+      meanvector->Update(1.0/SumDtPres_, *SumPres_, 0.0); //weighted sum of all prior stresses
+    else
+    {
+      double norm=0.0;
+      meanvector->NormInf(&norm);
+      if ( norm > 1e-12)
+        dserror("SumDtPres_ is zero, but SumPres_ not.. Something is terribly wrong!");
+    }
+  }
+  else
+    dserror("Mean Manager does not support the given value '%s'.",type.c_str());
+
+  return meanvector;
+}
+
+/*----------------------------------------------------------------------*
+ | Write restart of mean manager                             Thon 10/15 |
+ *----------------------------------------------------------------------*/
+void FS3I::MeanManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> fluidwriter)
+{
+  //first some checking
+  if ( abs(SumDtWss_-SumDtPhi_)>1e-14 or abs(SumDtWss_-SumDtPres_)>1e-14)
+    dserror("The time ranges you did mean over do not match!");
+
+  //write all values
+  fluidwriter->WriteVector("SumWss", SumWss_);
+  fluidwriter->WriteVector("SumPhi", SumPhi_);
+  fluidwriter->WriteVector("SumPres", SumPres_);
+  //we need only one SumDt since they are all the same
+  fluidwriter->WriteDouble("SumWss_", SumDtWss_);
+}
+
+/*----------------------------------------------------------------------*
+ | Read restart of mean manager                             Thon 10/15 |
+ *----------------------------------------------------------------------*/
+void FS3I::MeanManager::ReadRestart(IO::DiscretizationReader& fluidreader)
+{
+  //read all values...
+  fluidreader.ReadVector(SumWss_, "SumWss");
+  fluidreader.ReadVector(SumPhi_, "SumPhi");
+  fluidreader.ReadVector(SumPres_, "SumPres");
+  SumDtWss_ = fluidreader.ReadDouble("SumWss_");
+  //...and recover the rest
+  SumDtPhi_ = SumDtWss_;
+  SumDtPres_ = SumDtWss_;
+
 }

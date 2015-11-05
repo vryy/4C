@@ -33,9 +33,6 @@ namespace ADAPTER {
         bool isale,
         bool dirichletcond);
 
-    ///Reset mean WSS vector in StressManager
-    void ResetHistoryVectors( );
-
     ///Get vector of current relative pressures errors from the Windkessels
     std::vector<double> GetWindkesselErrors( );
 

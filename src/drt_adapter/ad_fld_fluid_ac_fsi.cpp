@@ -32,11 +32,6 @@ ADAPTER::FluidACFSI::FluidACFSI(Teuchos::RCP<Fluid> fluid,
   return;
 }
 
-void ADAPTER::FluidACFSI::ResetHistoryVectors( )
-{
-  fluidimpl_->StressManager()->ResetHistoryVectors( );
-}
-
 std::vector<double> ADAPTER::FluidACFSI::GetWindkesselErrors( )
 {
   if (fluidimpl_->ImpedanceBC_() == Teuchos::null ) //iff there is no windkessel condition

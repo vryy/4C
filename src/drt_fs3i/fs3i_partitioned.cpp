@@ -168,7 +168,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
   int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
 
-  const Teuchos::ParameterList& fsitimeparams = ManipulateDt(fs3idyn);
+  const Teuchos::ParameterList& fsitimeparams = ManipulateFsiTimeParams(fs3idyn);
 
   switch (coupling)
   {
@@ -247,8 +247,11 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::ParameterList& FS3I::PartFS3I::ManipulateDt(const Teuchos::ParameterList& fs3idyn)
+Teuchos::ParameterList& FS3I::PartFS3I::ManipulateFsiTimeParams(const Teuchos::ParameterList& fs3idyn)
 {
+  // NOTE: we can not do this in the AC-fs3i class were it would belong,
+  // since overloading a function inside the constructor does not work :(
+
   Teuchos::ParameterList& timeparams= *( new Teuchos::ParameterList(fs3idyn));
 
   const int fsisubcycles = fs3idyn.sublist("AC").get<int>("FSI_STEPS_PER_SCATRA_STEP");
@@ -350,6 +353,10 @@ void FS3I::PartFS3I::SetupSystem()
       Teuchos::RCP<LINALG::SparseMatrix> scatracoupmat =
         Teuchos::rcp(new LINALG::SparseMatrix(*(scatraglobalex_->Map(i)),27,false,true));
       scatracoupmat_.push_back(scatracoupmat);
+
+      const Epetra_Map* dofrowmap = scatravec_[i]->ScaTraField()->Discretization()->DofRowMap();
+      Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*dofrowmap,true);
+      scatrazeros_.push_back(zeros);
     }
   }
 
@@ -523,11 +530,6 @@ void FS3I::PartFS3I::SetWallShearStresses()
   std::vector<Teuchos::RCP<const Epetra_Vector> > wss;
   ExtractWSS(wss);
 
-  std::vector<Teuchos::RCP<DRT::Discretization> > discret;
-
-  discret.push_back(fsi_->FluidField()->Discretization());
-  discret.push_back(fsi_->StructureField()->Discretization());
-
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
@@ -568,5 +570,3 @@ void FS3I::PartFS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >&
   fsi_->StructureField()->Interface()->InsertVector(WallShearStress,1,structure);
   wss.push_back(structure);
 }
-
-

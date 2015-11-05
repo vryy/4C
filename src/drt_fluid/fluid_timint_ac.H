@@ -40,9 +40,6 @@ public:
   /// write output
   virtual void Output();
 
-  /// time update of stresses
-  virtual void TimeUpdateStresses();
-
 protected:
 
 private:

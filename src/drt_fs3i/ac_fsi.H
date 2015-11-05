@@ -19,12 +19,16 @@
 #define AC_FSI_H
 
 #include "fs3i_partitioned_1wc.H"
+
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_inpar/inpar_fs3i.H"
+#include "../drt_io/io.H"
 
 
 namespace FS3I
 {
+  class MeanManager;
+
   class ACFSI : public PartFS3I
   {
   public:
@@ -32,6 +36,7 @@ namespace FS3I
     ///constructor
     ACFSI(const Epetra_Comm& comm);
 
+    ///destructor
     virtual ~ACFSI(){};
 
     ///Read restart
@@ -105,6 +110,9 @@ namespace FS3I
     ///Convergence check for iterative staggered FS3I scheme
     bool PartFs3iConvergenceCkeck( const int itnum);
 
+    //! Handle WSS in mean manager and set FSI solution in scatra fields
+    void SmallTimeScaleSetFSISolution();
+
     /// extract Wall Shear Stresses at the interface
     void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss);
 
@@ -117,6 +125,11 @@ namespace FS3I
 
     ///Prepare the large time scale loop
     void PrepareLargeTimeScaleLoop();
+
+    ///Evaluate surface permeability condition for structure scatra field
+    void EvaluateithScatraSurfacePermeability(
+        const int i ///<id of scalar
+        );
 
     ///Finish the large time scale loop
     void FinishLargeTimeScaleLoop();
@@ -137,7 +150,9 @@ namespace FS3I
     void StructScatraEvaluateSolveIterUpdate();
 
     ///check convergence of structure scatra field
-    bool StructScatraConvergenceCheck(const int itnum);
+    bool StructScatraConvergenceCheck(
+        const int itnum ///< current iteration number
+        );
 
     ///Do the structure scatra displacments need to update
     bool DoesGrowthNeedsUpdate();
@@ -153,10 +168,18 @@ namespace FS3I
     std::vector<Teuchos::RCP<LINALG::MapExtractor> > BuildMapExtractor();
 
     ///Compare if two doubles are relatively zero
-    bool IsRealtiveEqualTo(const double A, const double B, const double Ref=1.0);
+    bool IsRealtiveEqualTo(
+        const double A,        ///< first value
+        const double B,        ///< second value
+        const double Ref=1.0   ///< reference value
+        );
 
     ///Compare if A mod B is relatively equal to zero
-    bool ModuloIsRealtiveZero(const double A, const double B, const double Ref=1.0);
+    bool ModuloIsRealtiveZero(
+        const double A,        ///< value to mod
+        const double B,        ///< mod value
+        const double Ref=1.0   ///< reference value
+        );
 
   private:
 
@@ -166,14 +189,14 @@ namespace FS3I
     const Teuchos::RCP<Epetra_Vector> fluidincrement_;
     /// ale increment vector
     const Teuchos::RCP<Epetra_Vector> aleincrement_;
-    /// fluid phinp vector of the last period
+    /// mean fluid phinp vector of the last period
     const Teuchos::RCP<Epetra_Vector> fluidphinp_lp_;
     /// structurephinp vector at the beginning of the large time scale loop
     const Teuchos::RCP<Epetra_Vector> structurephinp_blts_;
     /// growth update counter
     int growth_updates_counter_;
 
-    ///WSS vector of the last period
+    ///mean WSS vector of the last period
     const Teuchos::RCP<Epetra_Vector> WallShearStress_lp_;
 
     ///time of one fsi period, e.g. time of a heart cycle
@@ -193,8 +216,49 @@ namespace FS3I
 
     ///Extract the j-th out of numscal_ dof
     const std::vector<Teuchos::RCP<LINALG::MapExtractor> > extractjthscalar_;
+
+    ///
+    Teuchos::RCP<FS3I::MeanManager> meanmanager_;
   };
 
+  class MeanManager
+  {
+  public:
+
+    /// constructor
+    MeanManager(const Epetra_Map& wssmap, const Epetra_Map& phimap, const Epetra_Map& pressuremap);
+
+    /// destructor
+    virtual ~MeanManager(){};
+
+    /// add value into the mean manager
+    void AddValue(const std::string type, const Teuchos::RCP<const Epetra_Vector> value, const double dt);
+
+    /// reset mean manager
+    void Reset();
+
+    /// get some mean value
+    Teuchos::RCP<const Epetra_Vector> GetMeanValue(const std::string type);
+
+    /// Write restart of mean manager
+    void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> fluidwriter);
+
+    /// Read restart of mean manager
+    void ReadRestart(IO::DiscretizationReader& fluidreader);
+
+  private:
+    /// weighted sum of all prior wall shear stresses
+    Teuchos::RCP<Epetra_Vector> SumWss_;
+    /// weighted sum of all prior concentrations
+    Teuchos::RCP<Epetra_Vector> SumPhi_;
+    /// weighted sum of all prior pressures
+    Teuchos::RCP<Epetra_Vector> SumPres_;
+
+    double SumDtWss_;
+    double SumDtPhi_;
+    double SumDtPres_;
+
+  };
 }
 
 #endif

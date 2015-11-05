@@ -43,26 +43,6 @@ FLD::TimIntAC::~TimIntAC()
  *----------------------------------------------------------------------*/
 void FLD::TimIntAC::ReadRestart(int step)
 {
-  const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC");
-  const bool restartfromfsi = DRT::INPUT::IntegralValue<int>(fs3idynac,"RESTART_FROM_PART_FSI"); //fs3idynac.get<int>("RESTART_FROM_PART_FSI");
-
-  if (not restartfromfsi) //standard restart
-  {
-    //AC-FSI specific output
-    if ( DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>(DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE") == INPAR::FLUID::wss_mean )
-    {
-      IO::DiscretizationReader reader(discret_,step);
-
-      Teuchos::RCP<Epetra_Vector> SumWss =Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(0),true));
-      reader.ReadVector(SumWss,"wss_fluid");
-
-      double SumDtWss = 0.0;
-      SumDtWss = reader.ReadDouble("wss_time");
-
-      SumWss->Scale(SumDtWss);
-      StressManager()->RestartWss(SumWss,SumDtWss);
-    }
-  }
   //else //nothing to do here
 
   return;
@@ -74,24 +54,5 @@ void FLD::TimIntAC::ReadRestart(int step)
 void FLD::TimIntAC::Output()
 {
   FluidImplicitTimeInt::Output();
-
-  //AC-FSI specific output
-  if ( DRT::INPUT::IntegralValue<INPAR::FLUID::WSSType>(DRT::Problem::Instance()->FluidDynamicParams() ,"WSS_TYPE") == INPAR::FLUID::wss_mean )
-  {
-    if ( uprestart_ > 0 and step_%uprestart_ == 0 ) //iff we write an restartable output
-    {
-      output_->WriteVector("wss_fluid",stressmanager_->GetPreCalcWallShearStresses(trueresidual_)); //we need WSS when restarting an AC FSI simulation
-      output_->WriteDouble("wss_time",stressmanager_->GetSumDtWss()); //we need WSS when restarting an AC FSI simulation
-    }
-  }
   return;
-}
-
-/*----------------------------------------------------------------------*
- | time update of stresses                                   Thon 07/15 |
- *----------------------------------------------------------------------*/
-void FLD::TimIntAC::TimeUpdateStresses()
-{
-  stressmanager_->GetStresses(trueresidual_,dta_);
-  //Note: we do the time update of wss from inside the ac-fsi framework!
 }
