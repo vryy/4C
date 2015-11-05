@@ -140,7 +140,7 @@ void NLNSOL::UTILS::StagnationDetection::Init(
   // initialize
   config_ = config;
 
-  if (config_->GetParameter<bool>(listname, "Stagnation Detection: on off"))
+  if (config_->GetParameter<bool>(listname, "stagnation detection: on off"))
   {
     active_ = true;
     stagitermax_ = config_->GetParameter<int>(listname, "stagnation detection: max iterations");
@@ -152,24 +152,23 @@ void NLNSOL::UTILS::StagnationDetection::Init(
 
   // configure output to screen
   setVerbLevel(NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(
-      config_->GetParameter<std::string>(listname, "Stagnation Detection: Verbosity")));
+      config_->GetParameter<std::string>(listname, "stagnation detection: verbosity")));
 
   if (getVerbLevel() > Teuchos::VERB_HIGH)
   {
     *getOStream() << "Parmeter List passed to Stagnation Detection: "
         << std::endl;
-//    )->print(*getOStream());
   }
 
   if (getVerbLevel() > Teuchos::VERB_MEDIUM)
   {
     *getOStream() << "Initialized Stagnation Detection with " << std::endl
-        << "  Stagnation Detection: on off = " << IsActive() << std::endl
-        << "  Stagnation Detection: max iterations = " << stagiter_ << std::endl
-        << "  Stagnation Detection: reduction threshold = " << stagthreshold_
+        << "  stagnation detection: on off = " << IsActive() << std::endl
+        << "  stagnation detection: max iterations = " << stagiter_ << std::endl
+        << "  stagnation detection: reduction threshold = " << stagthreshold_
         << std::endl
-        << "  Stagnation Detection: Verbosity = "
-        << config_->GetParameter<std::string>(listname, "Stagnation Detection: Verbosity")
+        << "  stagnation detection: verbosity = "
+        << config_->GetParameter<std::string>(listname, "stagnation detection: verbosity")
         << std::endl;
   }
 
