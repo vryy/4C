@@ -171,19 +171,13 @@ public:
     Teuchos::RCP<const Epetra_Vector>   acc,                       //!< acceleration vector
     Teuchos::RCP<const Epetra_Vector>   vel,                       //!< velocity vector
     Teuchos::RCP<const Epetra_Vector>   fsvel,                     //!< fine-scale velocity vector
-    int                                 nds,                       //!< number of the dofset the velocity/pressure state belongs to
-    bool                                setpressure=false          //!< flag whether the fluid pressure needs to be known for the scatra
+    const int                           nds,                       //!< number of the dofset the velocity/pressure state belongs to
+    const bool                          setpressure=false          //!< flag whether the fluid pressure needs to be known for the scatra
     );
 
-  void SetWallShearStresses(
-      Teuchos::RCP<const Epetra_Vector> wss,
-      Teuchos::RCP<const DRT::DofSet>   dofset,
-      Teuchos::RCP<DRT::Discretization> dis);
+  void SetWallShearStresses(Teuchos::RCP<const Epetra_Vector> wss, const int nds_wss);
 
-  void SetPressureFields(
-      Teuchos::RCP<const Epetra_Vector> pres,
-      Teuchos::RCP<const DRT::DofSet>   dofset,
-      Teuchos::RCP<DRT::Discretization> dis);
+  void SetPressureField(Teuchos::RCP<const Epetra_Vector> pressure, const int nds_pres);
 
   void SetMeanConcentration(Teuchos::RCP<Epetra_Vector> MeanConc);
 
@@ -955,12 +949,6 @@ protected:
   //! type of velocity field ? rename!!!
   const INPAR::SCATRA::VelocityField cdvel_;
 
-  //! Euclidean norm of wall shear stress
-  Teuchos::RCP<Epetra_Vector> wss_;
-
-  //! pressure
-  Teuchos::RCP<Epetra_Vector> pressure_;
-
   //! mean concentration in interface bewteen a scatracoupling (needed for instance for type fps3i)
   Teuchos::RCP<Epetra_Vector> meanconc_;
 
@@ -969,6 +957,12 @@ protected:
 
   //! number of dofset associated with displacement dofs
   int nds_disp_;
+
+  //! number of dofset associated with pressure dofs
+  int nds_pres_;
+
+  //! number of dofset associated with wall shear stress dofs
+  int nds_wss_;
 
   /*========================================================================*/
   //! @name coefficients and related

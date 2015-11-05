@@ -224,7 +224,7 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
 
       if (!infperm_) //get all FS3I interface condition parameters from the input file
       {
-        std::vector<double>* params = new std::vector<double>(8,true);
+        std::vector<double>* params = new std::vector<double>(7,true);
         params->at(0) = (coupcond[iter])->GetDouble("permeability coefficient");
         params->at(1) = (coupcond[iter])->GetDouble("hydraulic conductivity");
         params->at(2) = (coupcond[iter])->GetDouble("filtration coefficient");
@@ -232,10 +232,9 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
         const std::vector<double>* mywsscoeffs = (coupcond[iter])->Get<std::vector<double> >("wss coeffs");
         params->at(4)=mywsscoeffs->at(0);
         params->at(5)=mywsscoeffs->at(1);
-        params->at(6)=mywsscoeffs->at(2);
-        params->at(7) = (double)(coupcond[iter])->GetInt("numscal");
+        params->at(6) = (double)(coupcond[iter])->GetInt("numscal");
 
-        if (scatravec_[i]->ScaTraField()->NumScal() != params->at(7))
+        if (scatravec_[i]->ScaTraField()->NumScal() != params->at(6))
           dserror("Number of scalars NUMSCAL in ScaTra coupling conditions with COUPID %i does not equal the number of scalars your scalar field has!",myID);
 
         if ( (bool)params->at(3) ) //if we have WSS depended interface permeabiliy
@@ -284,8 +283,6 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
       if ( fluid_permcoeffs->at(5) != structure_permcoeffs->at(5) )
         dserror("Second WSS coefficient WSSCOEFFS of ScaTra couplings with COUPID %i needs to be the same!",ID);
       if ( fluid_permcoeffs->at(6) != structure_permcoeffs->at(6) )
-        dserror("Third WSS coefficient WSSCOEFFS of ScaTra couplings with COUPID %i needs to be the same!",ID);
-      if ( fluid_permcoeffs->at(7) != structure_permcoeffs->at(7) )
         dserror("Number of scalars NUMSCAL of ScaTra couplings with COUPID %i needs to be the same!",ID);
 
     }

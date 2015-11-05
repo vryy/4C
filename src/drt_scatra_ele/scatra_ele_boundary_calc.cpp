@@ -336,25 +336,44 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
   case SCATRA::bd_calc_fs3i_surface_permeability:
   {
+
     if(scatraparamstimint_->IsGenAlpha() or not scatraparamstimint_->IsIncremental())
-      dserror("calc_surface_permeability: chosen option not available");
+      dserror("Not a valid time integration scheme!");
 
-    // get values of scalar
+    // ------------get values of scalar transport------------------
     Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
-    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-
-    //get values of wall shear stress (the euclidean norm of the stress tensor)
-    Teuchos::RCP<const Epetra_Vector> wss  = discretization.GetState("WallShearStress");
-    if (wss==Teuchos::null)
-      dserror("Cannot get state vector 'WallShearStress'");
-
+    if (phinp==Teuchos::null)
+      dserror("Cannot get state vector 'phinp'");
     // extract local values from global vector
     std::vector<LINALG::Matrix<nen_,1> > ephinp(numdofpernode_,LINALG::Matrix<nen_,1>(true));
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp,lm);
-    std::vector<double> ewss(lm.size());
-    DRT::UTILS::ExtractMyValues(*wss,ewss,lm);
 
-    // get current condition
+
+    // ------------get values of wall shear stress-----------------------
+    // get number of dofset associated with pressure related dofs
+    const int ndswss = params.get<int>("ndswss",-1);
+    if (ndswss == -1)
+      dserror("Cannot get number of dofset of wss vector");
+    Teuchos::RCP<const Epetra_Vector> wss = discretization.GetState(ndswss, "WallShearStress");
+    if (wss==Teuchos::null)
+      dserror("Cannot get state vector 'WallShearStress'");
+
+    // determine number of velocity (and pressure) related dofs per node
+    const int numwssdofpernode = la[ndswss].lm_.size()/nen_;
+    // construct location vector for wss related dofs
+    std::vector<int> lmwss((nsd_+1)*nen_,-1);
+    for (int inode=0; inode<nen_; ++inode)
+      for (int idim=0; idim<nsd_+1; ++idim)
+        lmwss[inode*(nsd_+1)+idim] = la[ndswss].lm_[inode*numwssdofpernode+idim];
+
+    LINALG::Matrix<nsd_+1,nen_> ewss(true);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_+1,nen_> >(*wss,ewss,lmwss);
+
+    // rotate the vector field in the case of rotationally symmetric boundary conditions
+    // rotsymmpbc_->RotateMyValuesIfNecessary(ewss);
+
+
+    // ------------get current condition----------------------------------
     Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
     if (cond == Teuchos::null) dserror("Cannot access condition 'SurfacePermeability'");
 
@@ -364,16 +383,19 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
     //get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no 1->yes
     bool wss_onoff = (bool)cond->GetInt("wss onoff");
+    std::cout<<__FILE__<<__LINE__<<std::endl;
     const std::vector<double>* coeffs = cond->Get<std::vector<double> > ("wss coeffs");
 
     //calculate factor that accounts for WSS for each integration point
-    std::vector<double> f_WSS = WSSinfluence(ewss,wss_onoff,coeffs);
+    LINALG::Matrix<nen_,1> f_eWSS(true);
+    WSSinfluence(f_eWSS,ewss,wss_onoff,coeffs);
 
 
+    // ------------do the actual calculations----------------------------------
     EvaluateSurfacePermeability(
         ele,
         ephinp,
-        f_WSS,
+        f_eWSS,
         elemat1_epetra,
         elevec1_epetra,
         onoff,
@@ -385,48 +407,77 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
   case SCATRA::bd_calc_fps3i_surface_permeability:
   {
+
     // safety checks
     if(scatraparamstimint_->IsGenAlpha() or not scatraparamstimint_->IsIncremental())
-      dserror("calc_surface_permeability: chosen option not available");
+      dserror("Not a valid time integration scheme!");
 
-    //// get velocity values at nodes
-    //const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
-
-    //// we deal with a (nsd_+1)-dimensional flow field
-    //LINALG::Matrix<nsd_+1,nen_>  evel(true);
-    //DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_+1);
-
-    // get values of scalar transport
+    // ------------get values of scalar transport------------------
     Teuchos::RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
     if (phinp==Teuchos::null)
       dserror("Cannot get state vector 'phinp'");
-
-    //get values of wall shear stress (the euclidean norm of the stress tensor)
-    Teuchos::RCP<const Epetra_Vector> wss  = discretization.GetState("WallShearStress");
-    if (wss==Teuchos::null)
-      dserror("Cannot get state vector 'WallShearStress'");
-
-    //get values of pressure
-    Teuchos::RCP<const Epetra_Vector> pressure  = discretization.GetState("Pressure");
-    if (pressure==Teuchos::null)
-      dserror("Cannot get state vector 'Pressure'");
-
-    //get mean concentration in the interface (i.e. within the membrane)
-    Teuchos::RCP<const Epetra_Vector> phibar  = discretization.GetState("MeanConcentration");
-    if (phibar==Teuchos::null)
-      dserror("Cannot get state vector 'MeanConcentration'");
-
     // extract local values from global vector
     std::vector<LINALG::Matrix<nen_,1> > ephinp(numdofpernode_,LINALG::Matrix<nen_,1>(true));
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp,lm);
-    std::vector<LINALG::Matrix<nen_,1> > epressure(numdofpernode_,LINALG::Matrix<nen_,1>(true));
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*pressure,epressure,lm);
+
+
+    //------------get mean concentration in the interface (i.e. within the membrane)------------------
+    Teuchos::RCP<const Epetra_Vector> phibar  = discretization.GetState("MeanConcentration");
+    if (phibar==Teuchos::null)
+      dserror("Cannot get state vector 'MeanConcentration'");
+    // extract local values from global vector
     std::vector<LINALG::Matrix<nen_,1> > ephibar(numdofpernode_,LINALG::Matrix<nen_,1>(true));
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phibar,ephibar,lm);
-    std::vector<double> ewss(lm.size());
-    DRT::UTILS::ExtractMyValues(*wss,ewss,lm);
 
-    // get current condition
+
+    //--------get values of pressure at the interface ----------------------
+    // get number of dofset associated with pressure related dofs
+    const int ndspres = params.get<int>("ndspres",-1);
+    if (ndspres == -1)
+      dserror("Cannot get number of dofset of pressure vector");
+    Teuchos::RCP<const Epetra_Vector> pressure = discretization.GetState(ndspres, "Pressure");
+    if (pressure==Teuchos::null)
+      dserror("Cannot get state vector 'Pressure'");
+
+    // determine number of velocity (and pressure) related dofs per node
+    const int numveldofpernode = la[ndspres].lm_.size()/nen_;
+    // construct location vector for pressure related dofs
+    std::vector<int> lmpres(nen_,-1);
+    for (int inode=0; inode<nen_; ++inode)
+      lmpres[inode] = la[ndspres].lm_[inode*numveldofpernode+nsd_+1]; //only pressure dofs
+
+    LINALG::Matrix<nen_,1> epressure(true);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*pressure,epressure,lmpres);
+
+    // rotate the vector field in the case of rotationally symmetric boundary conditions
+    // rotsymmpbc_->RotateMyValuesIfNecessary(epressure);
+
+
+    // ------------get values of wall shear stress-----------------------
+    // get number of dofset associated with pressure related dofs
+    const int ndswss = params.get<int>("ndswss",-1);
+    if (ndswss == -1)
+      dserror("Cannot get number of dofset of wss vector");
+    Teuchos::RCP<const Epetra_Vector> wss = discretization.GetState(ndswss, "WallShearStress");
+    if (wss==Teuchos::null)
+      dserror("Cannot get state vector 'WallShearStress'");
+
+    // determine number of velocity (and pressure) related dofs per node
+    const int numwssdofpernode = la[ndswss].lm_.size()/nen_;
+    // construct location vector for wss related dofs
+    std::vector<int> lmwss((nsd_+1)*nen_,-1);
+    for (int inode=0; inode<nen_; ++inode)
+      for (int idim=0; idim<nsd_+1; ++idim)
+        lmwss[inode*(nsd_+1)+idim] = la[ndswss].lm_[inode*numwssdofpernode+idim];
+
+    LINALG::Matrix<nsd_+1,nen_> ewss(true);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_+1,nen_> >(*wss,ewss,lmwss);
+
+    // rotate the vector field in the case of rotationally symmetric boundary conditions
+    // rotsymmpbc_->RotateMyValuesIfNecessary(ewss);
+
+
+    // ------------get current condition----------------------------------
     Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
     if (cond == Teuchos::null)
       dserror("Cannot access condition 'DESIGN SCATRA COUPLING SURF CONDITIONS'");
@@ -434,14 +485,15 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     const std::vector<int>* onoff = cond->Get<std::vector<int> > ("onoff");
 
     //get the standard permeability of the interface
-    double perm = cond->GetDouble("permeability coefficient");
+    const double perm = cond->GetDouble("permeability coefficient");
 
     //get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no 1->yes
-    bool wss_onoff = (bool)cond->GetInt("wss onoff");
+    const bool wss_onoff = (bool)cond->GetInt("wss onoff");
     const std::vector<double>* coeffs = cond->Get<std::vector<double> > ("wss coeffs");
 
     //calculate factor that accounts for WSS for each integration point
-    std::vector<double> f_WSS = WSSinfluence(ewss,wss_onoff,coeffs);
+    LINALG::Matrix<nen_,1> f_eWSS(true);
+    WSSinfluence(f_eWSS,ewss,wss_onoff,coeffs);
 
     //hydraulic conductivity at interface
     const double conductivity = cond->GetDouble("hydraulic conductivity");
@@ -449,12 +501,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     //Staverman filtration coefficient at interface
     const double sigma = cond->GetDouble("filtration coefficient");
 
+
+    // ------------do the actual calculations----------------------------------
     EvaluateKedemKatchalsky(
         ele,
         ephinp,
-        epressure,
         ephibar,
-        f_WSS,
+        epressure,
+        f_eWSS,
         elemat1_epetra,
         elevec1_epetra,
         onoff,
@@ -1316,7 +1370,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
     const DRT::FaceElement*                       ele,      ///< current boundary element
     const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,   ///< scalar values at element nodes
-    const std::vector<double>&                    f_wss,    ///< factor for WSS at element nodes
+    const LINALG::Matrix<nen_,1>&                 f_ewss,    ///< factor for WSS at element nodes
     Epetra_SerialDenseMatrix&                     emat,     ///< element-matrix
     Epetra_SerialDenseVector&                     erhs,     ///< element-rhs
     const std::vector<int>*                       onoff,    ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
@@ -1328,7 +1382,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // define vector for wss concentration values at nodes
-  LINALG::Matrix<nen_,1> fwssnod(true);
+//  LINALG::Matrix<nen_,1> fwssnod(true);
 
   // loop over all scalars
   for(int k=0;k<numdofpernode_;++k)
@@ -1336,11 +1390,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
     //flag for dofs to be considered by membrane equations of Kedem and Katchalsky
     if((*onoff)[k]==1)
     {
-      for (int inode = 0; inode < nen_; ++inode)
-      {
-        // get factor for WSS influence at nodes
-        fwssnod(inode) = f_wss[inode * numdofpernode_ + k];
-      }
+//      for (int inode = 0; inode < nen_; ++inode)
+//      {
+//        // get factor for WSS influence at nodes
+//        fwssnod(inode) = f_wss[inode * numdofpernode_ + k];
+//      }
 
       // loop over all integration points
       for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
@@ -1358,7 +1412,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
         const double phi = funct_.Dot(ephinp[k]);
 
         // mean concentration at integration point
-        const double facWSS = funct_.Dot(fwssnod);
+        const double facWSS = funct_.Dot(f_ewss);
 
 
         // matrix
@@ -1398,9 +1452,9 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
     const DRT::FaceElement*                       ele,            ///< the actual boundary element
     const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,         ///< scalar values at element nodes
-    const std::vector<LINALG::Matrix<nen_,1> >&   epressure,      ///< pressure values at element nodes
     const std::vector<LINALG::Matrix<nen_,1> >&   ephibar,        ///< mean concentration values at element nodes
-    const std::vector<double>&                    f_wss,          ///< factor for WSS at element nodes
+    const LINALG::Matrix<nen_,1>&                 epressure,      ///< pressure values at element nodes
+    const LINALG::Matrix<nen_,1>&                 f_ewss,          ///< factor for WSS at element nodes
     Epetra_SerialDenseMatrix&                     emat,           ///< element-matrix
     Epetra_SerialDenseVector&                     erhs,           ///< element-rhs
     const std::vector<int>*                       onoff,          ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
@@ -1414,7 +1468,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // define vector for wss concentration values at nodes
-  LINALG::Matrix<nen_,1> fwssnod(true);
+//  LINALG::Matrix<nen_,1> fwssnod(true);
 
   // loop over all scalars
   for(int k=0;k<numdofpernode_;++k)   //numdofpernode_//1
@@ -1422,11 +1476,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
     //flag for dofs to be considered by membrane equations of Kedem and Katchalsky
     if((*onoff)[k]==1)
     {
-      for (int inode = 0; inode < nen_; ++inode)
-      {
-        // get factor for WSS influence at nodes
-        fwssnod(inode) = f_wss[inode * numdofpernode_ + k];
-      }
+//      for (int inode = 0; inode < nen_; ++inode)
+//      {
+//        // get factor for WSS influence at nodes
+//        fwssnod(inode) = f_wss[inode * numdofpernode_ + k];
+//      }
 
       // loop over all integration points
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -1444,13 +1498,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
         const double phi = funct_.Dot(ephinp[k]);
 
         // pressure at integration point
-        const double p = funct_.Dot(epressure[k]);
+        const double p = funct_.Dot(epressure);
 
         // mean concentration at integration point
         const double phibar = funct_.Dot(ephibar[k]);
 
         // mean concentration at integration point
-        const double facWSS = funct_.Dot(fwssnod);
+        const double facWSS = funct_.Dot(f_ewss);
 
 
         // matrix
@@ -1489,6 +1543,28 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
   }
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  Factor of WSS dependent interface transport           hemmler 07/14 |
+ |  Calculated as in Calvez, V., "Mathematical and numerical modeling of early atherosclerotic lesions",ESAIM: Proceedings. Vol. 30. EDP Sciences, 2010
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WSSinfluence(LINALG::Matrix<nen_,1>& f_ewss, const LINALG::Matrix<nsd_+1,nen_>& ewss, const bool wssonoff, const std::vector<double>* coeffs)
+{
+  for(int i=0; i<nen_;i++)
+  {
+    if (wssonoff)
+    {
+      //euklidian norm of act node wss
+      const double wss_i_2norm = sqrt(ewss(0,i)*ewss(0,i)+ewss(1,i)*ewss(1,i)+ewss(2,i)*ewss(2,i));
+      f_ewss(i) =log10(1+((*coeffs)[0])/(wss_i_2norm+(*coeffs)[1]))/log10(2); //empirical function (log law) to account for influence of WSS;
+    }
+    else //no WSS influence
+      f_ewss(i) = 1.0;
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over surface (private)           gjb 02/09 |
@@ -2543,27 +2619,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ReinitCharacteristicGalerkin
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  Factor of WSS dependent interface transport           hemmler 07/14 |
- |  Calculated as in Calvez, V., "Mathematical and numerical modeling of early atherosclerotic lesions",ESAIM: Proceedings. Vol. 30. EDP Sciences, 2010
- *----------------------------------------------------------------------*/
-
-template <DRT::Element::DiscretizationType distype>
-std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WSSinfluence(std::vector<double>  ewss, const bool wssonoff, const std::vector<double>* coeffs)
-{
-  std::vector<double> f_wss(ewss.size());
-
-  for(int i=0; i<(int)ewss.size();i++)
-  {
-    if (wssonoff)
-      f_wss[i] =((*coeffs)[0])*log10(1+((*coeffs)[1])/(ewss[i]+(*coeffs)[2])); //empirical function (log law) to account for influence of WSS;
-    else //no WSS influence
-      f_wss[i] = 1.0;
-  }
-
-  return f_wss;
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

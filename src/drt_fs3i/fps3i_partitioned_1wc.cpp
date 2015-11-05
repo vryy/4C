@@ -14,33 +14,31 @@
 
 *----------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>
-#include "../drt_fsi/fsi_monolithic.H"
-#include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_inpar/inpar_scatra.H"
+#include "../drt_inpar/drt_validparameters.H"
+#include "../drt_io/io_control.H"
+#include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
+#include "../drt_adapter/ad_fld_poro.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_adapter/ad_str_fpsiwrapper.H"
-#include "../drt_fpsi/fpsi_utils.H"
-#include "../drt_fpsi/fpsi_monolithic.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_condition_selector.H"
-#include "../drt_io/io_control.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_solver.H"
-#include "../drt_adapter/adapter_coupling.H"
-
+#include "../drt_fsi/fsi_monolithic.H"
+#include "../drt_scatra/scatra_algorithm.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
-
+#include "../drt_fpsi/fpsi_utils.H"
+#include "../drt_fpsi/fpsi_monolithic.H"
 #include "../drt_poroelast/poroelast_monolithic.H"
-
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/fluidresulttest.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 
 #include "fps3i_partitioned_1wc.H"
 
@@ -54,13 +52,19 @@ FS3I::PartFPS3I_1WC::PartFPS3I_1WC(const Epetra_Comm& comm)
   if(scatravec_[0]->ScaTraField()->Discretization()->AddDofSet(fpsi_->FluidField()->Discretization()->GetDofSetProxy()) != 1)
     dserror("Scatra discretization has illegal number of dofsets!");
 
-  // build a proxy of the poro (structure) discretization for the scatra field
-  Teuchos::RCP<DRT::DofSet> structdofset
-    = fpsi_->PoroField()->StructureField()->Discretization()->GetDofSetProxy();
-
   // check if scatra field has 2 discretizations, so that coupling is possible
-  if (scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(structdofset)!=1)
+  if (scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(fpsi_->PoroField()->StructureField()->Discretization()->GetDofSetProxy())!=1)
     dserror("unexpected dof sets in structure field");
+  // check if scatra field has 3 discretizations, so that coupling is possible
+  if (scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(fpsi_->PoroField()->FluidField()->Discretization()->GetDofSetProxy())!=2)
+    dserror("unexpected dof sets in structure field");
+
+  //Note: in the scatra fields we have now the following dof-sets:
+  // fluidscatra dofset 0: fluidscatra dofset
+  // fluidscatra dofset 1: fluid dofset
+  // structscatra dofset 0: structscatra dofset
+  // structscatra dofset 1: structure dofset
+  // structscatra dofset 2: porofluid dofset
 }
 
 
@@ -138,12 +142,6 @@ void FS3I::PartFPS3I_1WC::DoScatraStep()
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I_1WC::PrepareTimeStep()
 {
-  // set mesh displacement field for present time step
-  SetMeshDisp();
-
-  // set velocity fields from fluid and poro solution
-  // for present time step
-  SetVelocityFields();
   // prepare time step for both fluid- and poro-based scatra field
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {

@@ -855,17 +855,20 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   if (isale_)
     condparams.set<int>("ndsdisp",nds_disp_);
 
+  condparams.set<int>("ndswss",nds_wss_);
+
   // set vector values needed by elements
   discret_->ClearState();
 
   // add element parameters according to time-integration scheme
   AddTimeIntegrationSpecificVectors();
 
-  if (wss_!=Teuchos::null) //if we have set wall shear stresses
-  {
-    discret_->SetState("WallShearStress",wss_);
-  }
+  // test if all necessary ingredients had been set
+  Teuchos::RCP<const Epetra_Vector> wss = discret_->GetState(nds_wss_,"WallShearStress");
+  if ( wss == Teuchos::null )
+    dserror("WSS must already been set into one of the secondary dofset before calling this function!");
 
+  //Evaluate condition
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,"ScaTraCoupling");
   discret_->ClearState();
 
@@ -896,6 +899,9 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
   if (isale_)
     condparams.set<int>("ndsdisp",nds_disp_);
 
+  condparams.set<int>("ndswss",nds_wss_);
+  condparams.set<int>("ndspres",nds_pres_);
+
   // set vector values needed by elements
   discret_->ClearState();
 
@@ -903,14 +909,19 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
   AddTimeIntegrationSpecificVectors();
 
   // test if all necessary ingredients for the second Kedem-Katchalsky equations had been set
-  if (wss_==Teuchos::null or pressure_==Teuchos::null or meanconc_==Teuchos::null)
-    dserror("One of the necessary dependencies to calculate the solute flux through the interface (according to the second Kedem and Katchalsky equation) was not set prior!");
+  Teuchos::RCP<const Epetra_Vector> wss = discret_->GetState(nds_wss_,"WallShearStress");
+  if ( wss == Teuchos::null )
+    dserror("WSS must already been set into one of the secondary dofset before calling this function!");
 
-  // set scalar values needed by elements
-  discret_->SetState("WallShearStress",wss_);
-  discret_->SetState("Pressure",pressure_);
+  Teuchos::RCP<const Epetra_Vector> pressure = discret_->GetState(nds_pres_,"Pressure");
+  if ( pressure == Teuchos::null )
+    dserror("Pressure must already been set into one of the secondary dofset before calling this function!");
+
+  if ( meanconc_==Teuchos::null )
+    dserror("Mean concentration must already been set into one of the secondary dofset before calling this function!");
   discret_->SetState("MeanConcentration",meanconc_);
 
+  //Evaluate condition
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,"ScaTraCoupling");
   discret_->ClearState();
 

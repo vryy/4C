@@ -183,10 +183,11 @@ public:
       );
 
   //!computes the factor for the wall shear stress dependent interface flux
-  std::vector<double> WSSinfluence(
-      std::vector<double>  ewss,          ///<vector of euclidean norm of shear stress tensor of each node of the element
-      const bool           wssonoff,      ///<flag if WSS has influence on interface permeability
-      const std::vector<double>* coeffs); ///<coefficients of the log law to determine the influence of WSS on concentration flux
+  void WSSinfluence(
+      LINALG::Matrix<nen_,1>&            f_ewss,
+      const LINALG::Matrix<nsd_+1,nen_>& ewss,          ///<vector of euclidean norm of shear stress tensor of each node of the element
+      const bool                         wssonoff,      ///<flag if WSS has influence on interface permeability
+      const std::vector<double>*         coeffs);       ///<coefficients of the log law to determine the influence of WSS on concentration flux
 
   protected:
 
@@ -225,9 +226,9 @@ public:
   void EvaluateKedemKatchalsky(
       const DRT::FaceElement*                       ele,            ///< the actual boundary element
       const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,         ///< scalar values at element nodes
-      const std::vector<LINALG::Matrix<nen_,1> >&   epressure,      ///< pressure values at element nodes
       const std::vector<LINALG::Matrix<nen_,1> >&   ephibar,        ///< mean concentration values at element nodes
-      const std::vector<double>&                    f_wss,          ///< factor for WSS at element nodes
+      const LINALG::Matrix<nen_,1>&                 epressure,      ///< pressure values at element nodes
+      const LINALG::Matrix<nen_,1>&                 f_ewss,          ///< factor for WSS at element nodes
       Epetra_SerialDenseMatrix&                     emat,           ///< element-matrix
       Epetra_SerialDenseVector&                     erhs,           ///< element-rhs
       const std::vector<int>*                       onoff,          ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
@@ -248,7 +249,7 @@ public:
   void EvaluateSurfacePermeability(
       const DRT::FaceElement*                       ele,      ///< current boundary element
       const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,   ///< scalar values at element nodes
-      const std::vector<double>&                    f_wss,    ///< factor for WSS at element nodes
+      const LINALG::Matrix<nen_,1>&                 f_ewss,   ///< factor for WSS at element nodes
       Epetra_SerialDenseMatrix&                     emat,     ///< element-matrix
       Epetra_SerialDenseVector&                     erhs,     ///< element-rhs
       const std::vector<int>*                       onoff,    ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky

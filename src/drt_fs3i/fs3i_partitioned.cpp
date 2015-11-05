@@ -212,9 +212,30 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);
 
-   // ensure that initial time derivative of scalar is not calculated
-  //if (DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER")==false)
-  //  dserror("Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to false");
+  // care for secondary dof sets:
+  // add proxy of fluid degrees of freedom to scatra discretization
+  if(scatravec_[0]->ScaTraField()->Discretization()->AddDofSet(fsi_->FluidField()->Discretization()->GetDofSetProxy()) != 1)
+    dserror("Scatra discretization has illegal number of dofsets!");
+
+  // add proxy of structure degrees of freedom to scatra discretization
+  if(scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(fsi_->StructureField()->Discretization()->GetDofSetProxy()) != 1)
+    dserror("Scatra discretization has illegal number of dofsets!");
+
+  // build a proxy of the scatra discretization for the structure field
+  Teuchos::RCP<DRT::DofSet> scatradofset
+    = scatravec_[1]->ScaTraField()->Discretization()->GetDofSetProxy();
+
+  //Note: in the scatra fields we have now the following dof-sets:
+  // fluidscatra dofset 0: fluidscatra dofset
+  // fluidscatra dofset 1: fluid dofset
+  // structscatra dofset 0: structscatra dofset
+  // structscatra dofset 1: structure dofset
+
+
+  // check if scatra field has 2 discretizations, so that two-way coupling is possible
+  if (fsi_->StructureField()->Discretization()->AddDofSet(scatradofset)!=1)
+    dserror("unexpected dof sets in structure field");
+
 
   //---------------------------------------------------------------------
   // check existence of scatra coupling conditions for both
@@ -422,6 +443,10 @@ void FS3I::PartFS3I::TestResults(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FS3I::PartFS3I::SetFSISolution()
 {
+  //we clear every state, including the states of the secondary dof sets
+  for (unsigned i=0; i<scatravec_.size(); ++i)
+    scatravec_[i]->ScaTraField()->Discretization()->ClearState(true);
+
   SetMeshDisp();
   SetVelocityFields();
   SetWallShearStresses();
@@ -506,7 +531,7 @@ void FS3I::PartFS3I::SetWallShearStresses()
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->SetWallShearStresses(wss[i],Teuchos::null,discret[i]);
+    scatra->ScaTraField()->SetWallShearStresses(wss[i],1);
   }
 }
 

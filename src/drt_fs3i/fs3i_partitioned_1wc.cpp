@@ -29,21 +29,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 FS3I::PartFS3I_1WC::PartFS3I_1WC(const Epetra_Comm& comm)
   :PartFS3I(comm)
 {
-  // add proxy of fluid transport degrees of freedom to scatra discretization
-  if(scatravec_[0]->ScaTraField()->Discretization()->AddDofSet(fsi_->FluidField()->Discretization()->GetDofSetProxy()) != 1)
-    dserror("Scatra discretization has illegal number of dofsets!");
 
-  // add proxy of structure degrees of freedom to scatra discretization
-  if(scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(fsi_->StructureField()->Discretization()->GetDofSetProxy()) != 1)
-    dserror("Scatra discretization has illegal number of dofsets!");
-
-  // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<DRT::DofSet> scatradofset
-    = scatravec_[1]->ScaTraField()->Discretization()->GetDofSetProxy();
-
-  // check if scatra field has 2 discretizations, so that coupling is possible
-  if (fsi_->StructureField()->Discretization()->AddDofSet(scatradofset)!=1)
-    dserror("unexpected dof sets in structure field");
 }
 
 

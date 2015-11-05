@@ -70,23 +70,6 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
    fsineedsupdate_(false),
    extractjthscalar_(BuildMapExtractor())
 {
-  // add proxy of fluid degrees of freedom to scatra discretization
-  if(scatravec_[0]->ScaTraField()->Discretization()->AddDofSet(fsi_->FluidField()->Discretization()->GetDofSetProxy()) != 1)
-    dserror("Scatra discretization has illegal number of dofsets!");
-
-  // add proxy of structure degrees of freedom to scatra discretization
-  if(scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(fsi_->StructureField()->Discretization()->GetDofSetProxy()) != 1)
-    dserror("Scatra discretization has illegal number of dofsets!");
-
-  // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<DRT::DofSet> scatradofset
-    = scatravec_[1]->ScaTraField()->Discretization()->GetDofSetProxy();
-
-  // check if scatra field has 2 discretizations, so that two-way coupling is possible
-  if (fsi_->StructureField()->Discretization()->AddDofSet(scatradofset)!=1)
-    dserror("unexpected dof sets in structure field");
-
-
   //Some AC FSI specific testings:
 
   const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();

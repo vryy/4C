@@ -493,11 +493,15 @@ void FS3I::PartFPS3I::TestResults(const Epetra_Comm& comm)
  *----------------------------------------------------------------------*/
 void FS3I::PartFPS3I::SetFPSISolution()
 {
+  //we clear every state, including the states of the secondary dof sets
+  for (unsigned i=0; i<scatravec_.size(); ++i)
+    scatravec_[i]->ScaTraField()->Discretization()->ClearState(true);
 
   SetMeshDisp();
   SetVelocityFields();
   SetWallShearStresses();
   SetPressureFields();
+  SetMeanConcentration();
 
 
 }
@@ -582,7 +586,7 @@ void FS3I::PartFPS3I::SetWallShearStresses()
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->SetWallShearStresses(wss[i],Teuchos::null,discret[i]);
+    scatra->ScaTraField()->SetWallShearStresses(wss[i],i+1);
   }
 }
 
@@ -602,7 +606,7 @@ void FS3I::PartFPS3I::SetPressureFields()
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField()->SetPressureFields(pressure[i],Teuchos::null,discret[i]);
+    scatra->ScaTraField()->SetPressureField(pressure[i],i+1);
   }
 }
 
@@ -613,11 +617,6 @@ void FS3I::PartFPS3I::SetMeanConcentration()
 {
     std::vector<Teuchos::RCP<Epetra_Vector> > MeanConc;
     ExtractMeanConcentration(MeanConc);
-
-    std::vector<Teuchos::RCP<DRT::Discretization> > discret;
-
-    discret.push_back(scatravec_[0]->ScaTraField()->Discretization());
-    discret.push_back(scatravec_[1]->ScaTraField()->Discretization());
 
     for (unsigned i=0; i<scatravec_.size(); ++i)
     {
@@ -723,10 +722,10 @@ void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >
 void FS3I::PartFPS3I::ExtractPressure(std::vector<Teuchos::RCP<const Epetra_Vector> >& pressure)
 {
   //############ Fluid Field ###############
-  pressure.push_back(fpsi_->FluidField()->Velnp()); //this actually extracts the velocities as well. We sort them out later.
+  pressure.push_back(fpsi_->FluidField()->ExtractPressurePart(fpsi_->FluidField()->Velnp())); //this actually extracts the velocities as well. We sort them out later.
 
   //############ Poro Field ###############
-  pressure.push_back(fpsi_->PoroField()->FluidField()->Velnp()); //this actually extracts the velocities as well. We sort them out later.
+  pressure.push_back(fpsi_->PoroField()->FluidField()->ExtractPressurePart(fpsi_->PoroField()->FluidField()->Velnp())); //this actually extracts the velocities as well. We sort them out later.
 }
 
 /*----------------------------------------------------------------------*

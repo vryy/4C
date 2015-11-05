@@ -730,7 +730,7 @@ void INPAR::SCATRA::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
   scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("WSSONOFF")));
   scatracoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("wss onoff")));
   scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("WSSCOEFFS")));
-  scatracoupcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("wss coeffs",3)));
+  scatracoupcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("wss coeffs",2)));
 
 
   Teuchos::RCP<ConditionDefinition> surfscatracoup =
