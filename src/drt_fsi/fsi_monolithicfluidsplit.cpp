@@ -916,7 +916,7 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& m
   sr->Norm2(&ns);
   fr->Norm2(&nf);
   ar->Norm2(&na);
-  if (verbosity_ == 0)
+  if (verbosity_ == INPAR::FSI::verbosity_full)
   {
     Utils()->out() << std::scientific
            << "\nlinear solver quality:\n"
@@ -931,7 +931,7 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& m
   sr->NormInf(&ns);
   fr->NormInf(&nf);
   ar->NormInf(&na);
-  if (verbosity_ == 0)
+  if (verbosity_ == INPAR::FSI::verbosity_full)
   {
     Utils()->out() << "L_inf-norms:\n"
                  << END_COLOR "   |r|=" YELLOW << n
@@ -1370,7 +1370,7 @@ void FSI::MonolithicFluidSplit::ReadRestart(int step)
 void FSI::MonolithicFluidSplit::PrepareTimeStep()
 {
   IncrementTimeAndStep();
-  if (verbosity_ < 3)
+  if (verbosity_ >= INPAR::FSI::verbosity_low)
     PrintHeader();
 
   PrepareTimeStepPreconditioner();

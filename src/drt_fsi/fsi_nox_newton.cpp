@@ -17,7 +17,7 @@ NOX::FSI::Newton::Newton(const Teuchos::RCP<NOX::GlobalData>& gd,
     currentnlnres_(0.),
     plaintol_(1e-4),
     better_(0.1),
-    verbosity_(0)
+    verbosity_(INPAR::FSI::verbosity_full)
 {
   // needed because NOX::Direction::Newton::Newton() does not call
   // NOX::FSI::Newton::reset()
@@ -27,7 +27,7 @@ NOX::FSI::Newton::Newton(const Teuchos::RCP<NOX::GlobalData>& gd,
   Teuchos::ParameterList& lsParams = paramsPtr->sublist("Newton").sublist("Linear Solver");
   plaintol_  = lsParams.get<double>("base tolerance"); // relative tolerance
   better_    = lsParams.get<double>("adaptive distance"); // adaptive distance
-  verbosity_ = lsParams.get<int>("verbosity"); // verbosity level
+  verbosity_ = lsParams.get<INPAR::FSI::Verbosity>("verbosity"); // verbosity level
 }
 
 
@@ -74,7 +74,7 @@ bool NOX::FSI::Newton::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group&
     }
   }
 
-  if (verbosity_ < 2)
+  if (verbosity_ >= INPAR::FSI::verbosity_medium)
   {
     utils_->out() << "                --- Aztec input   relative tolerance "
                 << plaintol_
@@ -93,7 +93,7 @@ bool NOX::FSI::Newton::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group&
       if (tol>plaintol_)
       {
         lsParams.set<double>("Tolerance",tol);
-        if (verbosity_ < 2)
+        if (verbosity_ >= INPAR::FSI::verbosity_medium)
         {
           utils_->out() << "                *** Aztec adapted relative tolerance "
                       << tol

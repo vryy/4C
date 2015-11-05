@@ -55,7 +55,7 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
                                                     std::vector<int>& aiterations,
                                                     int analyze,
                                                     INPAR::FSI::LinearBlockSolver strategy,
-                                                    INPAR::FSI::FsiVerbosity verbosity,
+                                                    INPAR::FSI::Verbosity verbosity,
                                                     FILE* err)
   : OverlappingBlockMatrix(Teuchos::null,
                            maps,
@@ -199,7 +199,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     maxnlevel_=1;
   }
 
-  if (!myrank && verbosity_ == 0)
+  if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
   {
     printf("       -----------------------------------------------------------------------\n");
     if (strategy_==INPAR::FSI::FSIAMG)
@@ -281,7 +281,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(structInnerOp.RowMap());
-    if (!myrank && verbosity_ == 0) printf("       Structure: NumGlobalElements fine level %d\n",structInnerOp.RowMap().NumGlobalElements());
+    if (!myrank && verbosity_ == INPAR::FSI::verbosity_full) printf("       Structure: NumGlobalElements fine level %d\n",structInnerOp.RowMap().NumGlobalElements());
 
     // extract transfer operator P,R from ML
     MLAPI::Space fspace;
@@ -338,7 +338,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(fluidInnerOp.RowMap());
-    if (!myrank && verbosity_ == 0) printf("       Fluid    : NumGlobalElements fine level %d\n",fluidInnerOp.RowMap().NumGlobalElements());
+    if (!myrank && verbosity_ == INPAR::FSI::verbosity_full) printf("       Fluid    : NumGlobalElements fine level %d\n",fluidInnerOp.RowMap().NumGlobalElements());
 
     // extract transfer operator P,R from ML
     MLAPI::Space fspace;
@@ -396,7 +396,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   {
     // fine space matching Epetra objects
     MLAPI::Space finespace(aleInnerOp.RowMap());
-    if (!myrank && verbosity_ == 0) printf("       Ale      : NumGlobalElements fine level %d\n",aleInnerOp.RowMap().NumGlobalElements());
+    if (!myrank && verbosity_ == INPAR::FSI::verbosity_full) printf("       Ale      : NumGlobalElements fine level %d\n",aleInnerOp.RowMap().NumGlobalElements());
 
     // extract transfer operator P,R from ML
     MLAPI::Space fspace;
@@ -667,7 +667,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   }
 
   //-------------------------------------------------------------- timing
-  if (!myrank && verbosity_ == 0)
+  if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
   {
     printf("       -----------------------------------------------------------------------\n");
     printf("       Additional AMG(BGS/Schur)/ BGS(AMG) setup time %10.5e [s]\n",etime.ElapsedTime());

@@ -135,10 +135,10 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                      "low",
                                      "subproblem"),
                                  tuple<int>(
-                                     INPAR::FSI::fsiverbosity_full,
-                                     INPAR::FSI::fsiverbosity_medium,
-                                     INPAR::FSI::fsiverbosity_low,
-                                     INPAR::FSI::fsiverbosity_subproblem),
+                                     INPAR::FSI::verbosity_full,
+                                     INPAR::FSI::verbosity_medium,
+                                     INPAR::FSI::verbosity_low,
+                                     INPAR::FSI::verbosity_subproblem),
                                  &fsidyn);
 
   BoolParameter("MATCHGRID_FLUIDALE","Yes","is matching grid (fluid-ale)",&fsidyn);

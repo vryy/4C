@@ -852,7 +852,7 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBas
   sr->Norm2(&ns);
   fr->Norm2(&nf);
   ar->Norm2(&na);
-  if (verbosity_ == 0)
+  if (verbosity_ == INPAR::FSI::verbosity_full)
   {
     Utils()->out() << std::scientific
                  << "\nlinear solver quality:\n"
@@ -867,7 +867,7 @@ void FSI::MonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBas
   sr->NormInf(&ns);
   fr->NormInf(&nf);
   ar->NormInf(&na);
-  if (verbosity_ == 0)
+  if (verbosity_ == INPAR::FSI::verbosity_full)
   {
     Utils()->out() << "L_inf-norms:\n"
                  << END_COLOR "   |r|=" YELLOW << n

@@ -64,7 +64,7 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
     isadastructure_(false),
     isadafluid_(false),
     isadasolver_(false),
-    verbosity_(DRT::INPUT::IntegralValue<INPAR::FSI::FsiVerbosity>(DRT::Problem::Instance()->FSIDynamicParams(),"VERBOSITY"))
+    verbosity_(DRT::INPUT::IntegralValue<INPAR::FSI::Verbosity>(DRT::Problem::Instance()->FSIDynamicParams(),"VERBOSITY"))
 {
 
   // access the structural discretization
@@ -121,7 +121,7 @@ void FSI::MonolithicBase::ReadRestart(int step)
 void FSI::MonolithicBase::PrepareTimeStep()
 {
   IncrementTimeAndStep();
-  if (verbosity_ < 3)
+  if (verbosity_ >= INPAR::FSI::verbosity_low)
     PrintHeader();
   PrepareTimeStepPreconditioner();
   PrepareTimeStepFields();
@@ -563,7 +563,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
 
   switch (verbosity_)
   {
-  case INPAR::FSI::fsiverbosity_full:
+  case INPAR::FSI::verbosity_full:
   {
     printParams.set("Output Information",
                     NOX::Utils::Error |
@@ -582,7 +582,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
                     0);
     break;
   }
-  case INPAR::FSI::fsiverbosity_medium:
+  case INPAR::FSI::verbosity_medium:
   {
     printParams.set("Output Information",
                     NOX::Utils::Error |
@@ -601,8 +601,8 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
                     0);
     break;
   }
-  case INPAR::FSI::fsiverbosity_low:
-  case INPAR::FSI::fsiverbosity_subproblem:
+  case INPAR::FSI::verbosity_low:
+  case INPAR::FSI::verbosity_subproblem:
   {
     printParams.set("Output Information",
                     NOX::Utils::Error |
@@ -846,20 +846,20 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   // only. But the Jacobian is stored internally and will be returned
   // later on without looking at x again!
 
-  if (verbosity_ < 2)
+  if (verbosity_ >= INPAR::FSI::verbosity_medium)
     Utils()->out() << "\nEvaluate elements\n";
 
   {
     Epetra_Time ts(Comm());
     StructureField()->Evaluate(sx);
-    if (verbosity_ < 2)
+    if (verbosity_ >= INPAR::FSI::verbosity_medium)
       Utils()->out() << "structure: " << ts.ElapsedTime() << " sec\n";
   }
 
   {
     Epetra_Time ta(Comm());
     AleField()->Evaluate(ax);
-    if (verbosity_ < 2)
+    if (verbosity_ >= INPAR::FSI::verbosity_medium)
       Utils()->out() << "ale      : " << ta.ElapsedTime() << " sec\n";
   }
 
@@ -870,11 +870,11 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   {
      Epetra_Time tf(Comm());
     FluidField()->Evaluate(fx);
-    if (verbosity_ < 2)
+    if (verbosity_ >= INPAR::FSI::verbosity_medium)
       Utils()->out() << "fluid    : " << tf.ElapsedTime() << " sec\n";
   }
 
-  if (verbosity_ < 2)
+  if (verbosity_ >= INPAR::FSI::verbosity_medium)
     Utils()->out() << "\n";
 }
 
@@ -964,7 +964,7 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   // adaptive tolerance settings for linear solver
   lsParams.set<double>("base tolerance",fsimono.get<double>("BASETOL")); // relative tolerance
   lsParams.set<double>("adaptive distance",fsimono.get<double>("ADAPTIVEDIST")); // adaptive distance
-  lsParams.set<int>("verbosity", verbosity_); // verbosity level of FSI algorithm
+  lsParams.set<INPAR::FSI::Verbosity>("verbosity", verbosity_); // verbosity level of FSI algorithm
 }
 
 /*----------------------------------------------------------------------------*/

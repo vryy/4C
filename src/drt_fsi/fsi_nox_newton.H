@@ -10,6 +10,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+#include "../drt_inpar/inpar_fsi.H"
 
 namespace NOX
 {
@@ -54,7 +55,7 @@ namespace NOX
       double better_;
 
       /// verbosity level of FSI algorithm
-      int verbosity_;
+      INPAR::FSI::Verbosity verbosity_;
 
       std::vector<double> cresiduals_;
       std::vector<double> dresiduals_;

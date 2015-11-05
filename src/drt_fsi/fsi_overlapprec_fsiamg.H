@@ -53,7 +53,7 @@ namespace FSI
                                  std::vector<int>& aiterations,
                                  int analyze,
                                  INPAR::FSI::LinearBlockSolver strategy,
-                                 INPAR::FSI::FsiVerbosity verbosity,
+                                 INPAR::FSI::Verbosity verbosity,
                                  FILE* err=NULL);
 
     /** \name Attribute access functions */
@@ -617,7 +617,7 @@ namespace FSI
     std::vector<double>                  aomega_;
     std::vector<int>                     aiterations_;
 
-    const INPAR::FSI::FsiVerbosity verbosity_; ///< verbosity level of FSI algorithm
+    const INPAR::FSI::Verbosity verbosity_; ///< verbosity level of FSI algorithm
 
     /// @name AMG for structure
     int                                  snlevel_;   ///< num level in structure AMG

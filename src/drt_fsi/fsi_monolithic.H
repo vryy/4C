@@ -217,7 +217,7 @@ namespace FSI
     //@{
 
     /// verbosity level of FSI algorithm
-    const INPAR::FSI::FsiVerbosity verbosity_;
+    const INPAR::FSI::Verbosity verbosity_;
 
     //@}
 

@@ -131,12 +131,12 @@ namespace INPAR
     };
 
     /// Handling of non-converged nonlinear solver
-    enum FsiVerbosity
+    enum Verbosity
     {
-      fsiverbosity_full       = 0,               ///< write everything
-      fsiverbosity_medium     = 1,           ///< write only nonlinear solver status
-      fsiverbosity_low        = 2,           ///< write only nonlinear solver status
-      fsiverbosity_subproblem = 3,         ///< output for FSI as a subfield
+      verbosity_subproblem,        ///< output for FSI as a subproblem
+      verbosity_low,              ///< write only nonlinear solver status
+      verbosity_medium,           ///< write nonlinear and linear solver status
+      verbosity_full,             ///< write everything
     };
 
     //@}

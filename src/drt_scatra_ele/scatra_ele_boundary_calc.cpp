@@ -383,7 +383,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
 
     //get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no 1->yes
     bool wss_onoff = (bool)cond->GetInt("wss onoff");
-    std::cout<<__FILE__<<__LINE__<<std::endl;
+
     const std::vector<double>* coeffs = cond->Get<std::vector<double> > ("wss coeffs");
 
     //calculate factor that accounts for WSS for each integration point
