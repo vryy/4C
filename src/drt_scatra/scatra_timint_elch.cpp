@@ -13,6 +13,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_fluid/fluid_utils.H" // for splitter
 
 #include "../drt_io/io_control.H"
+#include "../drt_io/io.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -496,8 +497,25 @@ void SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
   // print cell voltage to screen
   OutputCellVoltage();
 
+  // for elch problems with moving boundary
+  if (isale_)
+    output_->WriteVector("trueresidual", trueresidual_);
+
   return;
 } // SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
+
+
+/*----------------------------------------------------------------------*
+ | problem-specific outputs                                  thon 11/15 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::RestartProblemSpecific( const int step )
+{
+  if (isale_)
+  {
+    IO::DiscretizationReader reader(discret_,step);
+    reader.ReadVector(trueresidual_, "trueresidual");
+  }
+}
 
 
 /*------------------------------------------------------------------------------*

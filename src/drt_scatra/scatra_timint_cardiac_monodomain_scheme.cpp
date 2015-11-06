@@ -91,7 +91,7 @@ void SCATRA::TimIntCardiacMonodomainOST::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::ReadRestart(int step)
+void SCATRA::TimIntCardiacMonodomainOST::ReadRestart(const int step)
 {
   // Call function from baseclass
   TimIntOneStepTheta::ReadRestart(step);
@@ -179,7 +179,7 @@ void SCATRA::TimIntCardiacMonodomainBDF2::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainBDF2::ReadRestart(int step)
+void SCATRA::TimIntCardiacMonodomainBDF2::ReadRestart(const int step)
 {
   // Call function from baseclass
   TimIntBDF2::ReadRestart(step);
@@ -266,7 +266,7 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::ReadRestart(int step)
+void SCATRA::TimIntCardiacMonodomainGenAlpha::ReadRestart(const int step)
 {
   // Call function from baseclass
   TimIntGenAlpha::ReadRestart(step);

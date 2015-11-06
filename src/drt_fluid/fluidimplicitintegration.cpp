@@ -3008,8 +3008,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   }
 
   // update stresses and wss
-  if (writestresses_)
-    TimeUpdateStresses();
+  TimeUpdateStresses();
 
   // update flow-rate, flow-volume and impedance vectors in case of flow-dependent pressure boundary conditions,
   if (nonlinearbc_)
@@ -3036,7 +3035,8 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::TimeUpdateStresses()
 {
-  stressmanager_->GetStresses(trueresidual_,dta_);
+  if (writestresses_)
+    stressmanager_->GetStresses(trueresidual_,dta_);
   if (write_wall_shear_stresses_)
     stressmanager_->GetWallShearStresses(trueresidual_,dta_);
 
@@ -3390,11 +3390,13 @@ void FLD::FluidImplicitTimeInt::Output()
       output_->WriteVector("traction",traction);
       if (myrank_==0)
         std::cout<<"Writing stresses"<<std::endl;
-      //only perform wall shear stress calculation when output is needed
-      if (write_wall_shear_stresses_ && xwall_ == Teuchos::null)
-      {
-        output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
-      }
+    }
+    //only perform wall shear stress calculation when output is needed
+    if (write_wall_shear_stresses_ && xwall_ == Teuchos::null)
+    {
+      output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
+      if (myrank_==0)
+        std::cout<<"Writing wall shear stresses"<<std::endl;
     }
 
     //biofilm growth

@@ -50,7 +50,7 @@ public:
   void Update(const int num=0);
 
   //! read restart data
-  void ReadRestart(int step);
+  void ReadRestart(const int step);
 
 protected:
 
@@ -99,7 +99,7 @@ public:
   void Update(const int num=0);
 
   //! read restart data
-  void ReadRestart(int step);
+  void ReadRestart(const int step);
 
 protected:
 
@@ -145,7 +145,7 @@ public:
   void Update(const int num=0);
 
   //! read restart data
-  void ReadRestart(int step);
+  void ReadRestart(const int step);
 
 protected:
 
@@ -188,7 +188,7 @@ public:
   void Update(const int num=0);
 
   //! read restart data
-  void ReadRestart(int step);
+  void ReadRestart(const int step);
 
 protected:
 

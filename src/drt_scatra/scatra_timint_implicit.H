@@ -182,7 +182,7 @@ public:
   void SetMeanConcentration(Teuchos::RCP<Epetra_Vector> MeanConc);
 
   //! read restart data
-  virtual void ReadRestart(int step) = 0;
+  virtual void ReadRestart(const int step) = 0;
 
   //! setup natural convection
   virtual void SetupNatConv();
@@ -439,6 +439,8 @@ public:
 
   //! problem-specific outputs
   virtual void OutputProblemSpecific(){return;};
+
+  virtual void RestartProblemSpecific( const int step ){return;};
 
   //! return time for evaluation of elements
   const double DtEle(){return dtele_;};

@@ -339,10 +339,6 @@ void SCATRA::TimIntBDF2::OutputRestart()
   output_->WriteVector("phin", phin_);
   output_->WriteVector("phinm", phinm_);
 
-  // for elch problems with moving boundary
-  if (isale_)
-    output_->WriteVector("trueresidual", trueresidual_);
-
   return;
 }
 
@@ -350,7 +346,7 @@ void SCATRA::TimIntBDF2::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::ReadRestart(int step)
+void SCATRA::TimIntBDF2::ReadRestart(const int step)
 {
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
@@ -364,9 +360,7 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
   reader.ReadVector(phin_, "phin");
   reader.ReadVector(phinm_,"phinm");
 
-  // for elch problems with moving boundary
-  if(isale_)
-    reader.ReadVector(trueresidual_, "trueresidual");
+  RestartProblemSpecific(step);
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)

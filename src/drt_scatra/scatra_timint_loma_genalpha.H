@@ -59,7 +59,7 @@ public:
   void UpdateThermPressure();
 
   /// read restart data
-  void ReadRestart(int step);
+  void ReadRestart(const int step);
 
   /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
   double ThermPressAf() { return thermpressaf_; }

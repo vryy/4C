@@ -287,26 +287,15 @@ void SCATRA::TimIntLomaGenAlpha::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                             vg 11/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::ReadRestart(int step)
+void SCATRA::TimIntLomaGenAlpha::ReadRestart(const int step)
 {
-  IO::DiscretizationReader reader(discret_,step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
-
-  if (myrank_==0)
-    std::cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<std::endl;
-
-  // read state vectors that are needed for generalized-alpha restart
-  reader.ReadVector(phinp_,  "phinp");
-  reader.ReadVector(phin_,   "phin");
-  reader.ReadVector(phidtnp_,"phidtnp");
-  reader.ReadVector(phidtn_, "phidtn");
-
-  if(isale_)
-    reader.ReadVector(trueresidual_, "trueresidual");
+  // do standard output
+  TimIntGenAlpha::ReadRestart(step);
 
   // restart data of loma problems
   // required for restart of closed systems
+
+  IO::DiscretizationReader reader(discret_,step);
 
   // thermodynamic pressure at time n+1
   thermpressnp_ = reader.ReadDouble("thermpressnp");
@@ -326,10 +315,6 @@ void SCATRA::TimIntLomaGenAlpha::ReadRestart(int step)
   thermpressdtam_ = reader.ReadDouble("thermpressdtam");
   // as well as initial mass
   initialmass_ = reader.ReadDouble("initialmass");
-
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
-      turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-    AVM3Preparation();
 
   return;
 }

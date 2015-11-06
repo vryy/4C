@@ -305,26 +305,15 @@ void SCATRA::TimIntLomaBDF2::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaBDF2::ReadRestart(int step)
+void SCATRA::TimIntLomaBDF2::ReadRestart(const int step)
 {
-  IO::DiscretizationReader reader(discret_,step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
-
-  if (myrank_==0)
-    std::cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<std::endl;
-
-  // read state vectors that are needed for BDF2 restart
-  reader.ReadVector(phinp_,"phinp");
-  reader.ReadVector(phin_, "phin");
-  reader.ReadVector(phinm_,"phinm");
-
-  // for elch problems with moving boundary
-  if(isale_)
-    reader.ReadVector(trueresidual_, "trueresidual");
+  // do standard output
+  TimIntBDF2::ReadRestart(step);
 
   // restart data of loma problems
   // required for restart of closed systems
+
+  IO::DiscretizationReader reader(discret_,step);
 
   // thermodynamic pressure at time n+1
   thermpressnp_ = reader.ReadDouble("thermpressnp");
@@ -338,10 +327,6 @@ void SCATRA::TimIntLomaBDF2::ReadRestart(int step)
   thermpressdtn_ = reader.ReadDouble("thermpressdtn");
   // as well as initial mass
   initialmass_ = reader.ReadDouble("initialmass");
-
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
-      turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-    AVM3Preparation();
 
   return;
 }

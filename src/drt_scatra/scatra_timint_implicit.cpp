@@ -2836,7 +2836,7 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
   output_->WriteVector("phinp", phinp_);
 
   // convective velocity (not written in case of coupled simulations)
-  if (cdvel_ != INPAR::SCATRA::velocity_zero)
+  if ( cdvel_ == INPAR::SCATRA::velocity_function or cdvel_ == INPAR::SCATRA::velocity_function_and_curve )
   {
     Teuchos::RCP<const Epetra_Vector> convel = discret_->GetState(nds_vel_, "convective velocity field");
     if(convel == Teuchos::null)

@@ -400,10 +400,6 @@ void SCATRA::TimIntGenAlpha::OutputRestart()
   output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin",   phin_);
 
-  // for elch problems with moving boundary
-  if (isale_)
-    output_->WriteVector("trueresidual", trueresidual_);
-
   return;
 }
 
@@ -411,7 +407,7 @@ void SCATRA::TimIntGenAlpha::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                             vg 11/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::ReadRestart(int step)
+void SCATRA::TimIntGenAlpha::ReadRestart(const int step)
 {
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
@@ -426,9 +422,7 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
   reader.ReadVector(phidtnp_,"phidtnp");
   reader.ReadVector(phidtn_, "phidtn");
 
-  // for elch problems with moving boundary
-  if(isale_)
-    reader.ReadVector(trueresidual_, "trueresidual");
+  RestartProblemSpecific(step);
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)

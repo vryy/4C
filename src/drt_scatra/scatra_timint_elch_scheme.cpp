@@ -153,7 +153,7 @@ void SCATRA::ScaTraTimIntElchOST::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::ReadRestart(int step)
+void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step)
 {
   TimIntOneStepTheta::ReadRestart(step);
 
@@ -460,7 +460,7 @@ void SCATRA::ScaTraTimIntElchBDF2::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(int step)
+void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(const int step)
 {
   TimIntBDF2::ReadRestart(step);
 
@@ -761,7 +761,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(int step)
+void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(const int step)
 {
   TimIntGenAlpha::ReadRestart(step);
 
@@ -1007,7 +1007,7 @@ void SCATRA::ScaTraTimIntElchStationary::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::ReadRestart(int step)
+void SCATRA::ScaTraTimIntElchStationary::ReadRestart(const int step)
 {
   TimIntStationary::ReadRestart(step);
 

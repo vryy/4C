@@ -280,26 +280,15 @@ void SCATRA::TimIntLomaOST::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaOST::ReadRestart(int step)
+void SCATRA::TimIntLomaOST::ReadRestart(const int step)
 {
-  IO::DiscretizationReader reader(discret_,step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
-
-  if (myrank_==0)
-    std::cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<std::endl;
-
-  // read state vectors that are needed for One-Step-Theta restart
-  reader.ReadVector(phinp_, "phinp");
-  reader.ReadVector(phin_,  "phin");
-  reader.ReadVector(phidtn_,"phidtn");
-
-  // for elch problems with moving boundary
-  if(isale_)
-    reader.ReadVector(trueresidual_, "trueresidual");
+  // do standard output
+  TimIntOneStepTheta::ReadRestart(step);
 
   // restart data of loma problems
   // required for restart of closed systems
+
+  IO::DiscretizationReader reader(discret_,step);
 
   // thermodynamic pressure at time n+1
   thermpressnp_ = reader.ReadDouble("thermpressnp");
@@ -312,8 +301,5 @@ void SCATRA::TimIntLomaOST::ReadRestart(int step)
   // as well as initial mass
   initialmass_ = reader.ReadDouble("initialmass");
 
-  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
-      turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-    AVM3Preparation();
   return;
 }

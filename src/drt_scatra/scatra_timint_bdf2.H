@@ -48,7 +48,7 @@ public:
   virtual void Update(const int num=0);
 
   /// read restart data
-  virtual void ReadRestart(int step);
+  virtual void ReadRestart(const int step);
 
   // routine to return scalar field phi at time step n-1
   Teuchos::RCP<Epetra_Vector> Phinm(){return Teuchos::null;}
