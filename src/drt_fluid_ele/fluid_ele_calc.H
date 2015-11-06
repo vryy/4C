@@ -1151,21 +1151,6 @@ protected:
       const double &               fssgviscfac     ///< = (fine scale subgrid viscousity) x timefacfac
       );
 
-  void ScaleSimSubGridStressTermPrefiltering(
-      LINALG::Matrix<nsd_,nen_> &  velforce,
-      const double &               rhsfac,
-      const double &               Cl);
-
-  void ScaleSimSubGridStressTermCross(
-      LINALG::Matrix<nsd_,nen_> &  velforce,
-      const double &               rhsfac,
-      const double &               Cl);
-
-  void ScaleSimSubGridStressTermReynolds(
-      LINALG::Matrix<nsd_,nen_> &  velforce,
-      const double &               rhsfac,
-      const double &               Cl);
-
   void MultfracSubGridScalesCross(
       LINALG::Matrix<nen_*nsd_,nen_*nsd_> &  estif_u,
       LINALG::Matrix<nsd_,nen_> &            velforce,
@@ -1179,10 +1164,6 @@ protected:
       const double &                         rhsfac);
 
   void MultfracSubGridScalesConsistentResidual();
-
-  void FineScaleSimilaritySubGridViscosityTerm(
-      LINALG::Matrix<nsd_,nen_> &  velforce,
-      const double &               fssgviscfac);
 
   //! loma related methods
   //! definition in fluid_impl_loma_service.cpp
@@ -1691,18 +1672,6 @@ protected:
   LINALG::Matrix<nsd_,1> fsvelint_;
   //! fine-scale velocity vector in gausspoint for multifractal subgrid-scale modeling
   LINALG::Matrix<nsd_,1> mffsvelint_;
-  //! filtered velocity in gausspoint
-  LINALG::Matrix<nsd_,1> velinthat_;
-  //! global filtered velocity derivatives in gausspoint w.r.t x,y,z
-  LINALG::Matrix<nsd_,nsd_> velhatderxy_;
-  //! filtered reynoldsstess in gausspoint
-  LINALG::Matrix<nsd_,nsd_> reystressinthat_;
-  //! divergence of filtered reynoldsstess in gausspoint
-  LINALG::Matrix<nsd_,1> reystresshatdiv_;
-  //! divergence of convective term of filtered velocity in gausspoint
-  LINALG::Matrix<nsd_,1> velhativelhatjdiv_;
-  //! filtered velocity divergence
-  double velhatdiv_;
   //! fine-scale global velocity derivatives in gausspoint w.r.t x,y,z
   LINALG::Matrix<nsd_,nsd_> fsvderxy_;
   //! fine-scale global velocity derivatives in gausspoint w.r.t x,y,z for multifractal subgrid-scale modeling

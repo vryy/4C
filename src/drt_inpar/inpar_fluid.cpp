@@ -1139,8 +1139,6 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Smagorinsky",
       "Smagorinsky_with_van_Driest_damping",
       "Dynamic_Smagorinsky",
-      "Scale_Similarity",
-      "Scale_Similarity_basic",
       "Multifractal_Subgrid_Scales",
       "Vreman",
       "Dynamic_Vreman"),
@@ -1149,12 +1147,10 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Classical constant coefficient Smagorinsky model. Be careful if you \nhave a wall bounded flow domain!",
       "Use an exponential damping function for the turbulent viscosity \nclose to the wall. This is only implemented for a channel geometry of \nheight 2 in y direction. The viscous lengthscale l_tau is \nrequired as additional input.",
       "The solution is filtered and by comparison of the filtered \nvelocity field with the real solution, the Smagorinsky constant is \nestimated in each step --- mind that this procedure includes \nan averaging in the xz plane, hence this implementation will only work \nfor a channel flow.",
-      "Scale Similarity Model coherent with the variational multiscale formulation",
-      "Scale Similarity Model according to liu, meneveau, katz",
       "Multifractal Subgrid-Scale Modeling based on the work of burton",
       "Vremans constant model",
       "Dynamic Vreman model according to You and Moin (2007)"),
-    tuple<int>(0,1,2,3,4,5,6,7,8),
+    tuple<int>(0,1,2,3,4,5,6),
     &fdyn_turbu);
 
   setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid viscosity",
@@ -1574,8 +1570,6 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  ),
                                tuple<int>(0,1),
                                &fdyn_turbmfs);
-
-  DoubleParameter("C_SCALE_SIMILARITY",1.0,"Constant for the scale similarity model. Something between 0.45 +- 0.15 or 1.0.", &fdyn_turbmfs);
 
   DoubleParameter(
     "CSGS_PHI",

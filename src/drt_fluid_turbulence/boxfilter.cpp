@@ -65,9 +65,7 @@ FLD::Boxfilter::Boxfilter(
     if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model") == "Dynamic_Smagorinsky")
       apply_dynamic_smagorinsky_ = true;
 
-    if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model") == "Scale_Similarity" or
-       modelparams->get<std::string>("PHYSICAL_MODEL","no_model") == "Scale_Similarity_basic" or
-       modelparams->get<std::string>("PHYSICAL_MODEL","no_model") == "Multifractal_Subgrid_Scales")
+    if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model") == "Multifractal_Subgrid_Scales")
       apply_box_filter_ = true;
 
     if (physicaltype_ == INPAR::FLUID::loma)

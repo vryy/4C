@@ -308,79 +308,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     // (only required for one-step-theta and BDF2 time-integration schemes)
     histmom_.Multiply(emhist,funct_);
 
-    // preparation of scale similarity type models
-    // get filtered velocities and reynolds-stresses at integration point
-    // get fine scale velocity at integration point for advanced models
-    if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity
-     or fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
-    {
-      velinthat_.Clear();
-      velhatderxy_.Clear();
-
-      // get filtered velocity at integration point
-      velinthat_.Multiply(evel_hat,funct_);
-      // get filtered velocity derivatives at integration point
-      velhatderxy_.MultiplyNT(evel_hat,derxy_);
-
-      reystressinthat_.Clear();
-      // get filtered reynoldsstress at integration point
-      for (int dimi=0;dimi<nsd_;dimi++)
-      {
-        for (int dimj=0;dimj<nsd_;dimj++)
-        {
-          for (int inode=0;inode<nen_;inode++)
-          {
-            reystressinthat_(dimi,dimj) += funct_(inode) * ereynoldsstress_hat(3*dimi+dimj,inode);
-          }
-        }
-      }
-
-      // filtered velocity divergence from previous iteration
-      velhatdiv_ = 0.0;
-      for (int idim = 0; idim <nsd_; ++idim)
-      {
-        velhatdiv_ += velhatderxy_(idim, idim);
-      }
-
-      static LINALG::Matrix<nsd_*nsd_,nen_> evelhativelhatj;
-      velhativelhatjdiv_.Clear();
-      for (int nn=0;nn<nsd_;++nn)
-      {
-        for (int rr=0;rr<nsd_;++rr)
-        {
-          for (int mm=0;mm<nen_;++mm)
-          {
-            velhativelhatjdiv_(nn,0) += derxy_(rr,mm)*evel_hat(nn,mm)*evel_hat(rr,mm);
-          }
-        }
-      }
-
-      // get divergence of filtered reynoldsstress at integration point
-      reystresshatdiv_.Clear();
-      for (int nn=0;nn<nsd_;++nn)
-      {
-        for (int rr=0;rr<nsd_;++rr)
-        {
-            int index = 3*nn+rr;
-            for (int mm=0;mm<nen_;++mm)
-            {
-              reystresshatdiv_(nn,0) += derxy_(rr,mm)*ereynoldsstress_hat(index,mm);
-            }
-        }
-      }
-
-      // get fine scale velocity at integration point
-      fsvelint_.Multiply(fsevelaf,funct_);
-    }
-    else
-    {
-      velinthat_.Clear();
-      velhatderxy_.Clear();
-      reystressinthat_.Clear();
-      reystresshatdiv_.Clear();
-      velhativelhatjdiv_.Clear();
-    }
-
 
     //----------------------------------------------------------------------
     // potential evaluation of material parameters, subgrid viscosity
@@ -839,30 +766,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
                                     fssgviscfac);
     }
 
-    // 17) subgrid-stress term (scale similarity)
-    //     (contribution only to right-hand-side vector)
-    if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity)
-    {
-      ScaleSimSubGridStressTermCross(
-                        velforce_,
-                        rhsfac,
-                        fldpara_->Cl());
-
-      ScaleSimSubGridStressTermReynolds(
-                        velforce_,
-                        rhsfac,
-                        fldpara_->Cl());
-    }
-
-    if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
-    {
-      ScaleSimSubGridStressTermPrefiltering(
-                            velforce_,
-                            rhsfac,
-                            fldpara_->Cl());
-    }
-
-    // 18) subgrid-stress term (multifractal subgrid scales)
+    // 17) subgrid-stress term (multifractal subgrid scales)
     if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
     {
       MultfracSubGridScalesCross(
@@ -878,7 +782,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
                         rhsfac);
     }
 
-    // 19) polynomial pressure projection term (Dohrmann, Bochev IJNME 2004)
+    // 18) polynomial pressure projection term (Dohrmann, Bochev IJNME 2004)
     //     (parameter-free inf-sub-stabilization, e.g. used instead of PSPG)
     if (fldpara_->PPP())
     {

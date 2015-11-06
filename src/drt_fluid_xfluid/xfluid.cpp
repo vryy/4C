@@ -2442,7 +2442,7 @@ bool FLD::XFluid::ConvergenceCheck(
       printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
              itnum,itemax,ittol,vresnorm_,presnorm_);
       printf(" (      --     ,te=%10.3E",dtele_);
-      if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
+      if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky)
       {
         printf(",tf=%10.3E",dtfilter_);
       }
@@ -2467,7 +2467,7 @@ bool FLD::XFluid::ConvergenceCheck(
                itnum,itemax,ittol,vresnorm_,presnorm_,
                incvelnorm_L2_/velnorm_L2_,incprenorm_L2_/prenorm_L2_);
         printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-        if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
+        if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky)
         {
           printf(",tf=%10.3E",dtfilter_);
         }
@@ -2490,7 +2490,7 @@ bool FLD::XFluid::ConvergenceCheck(
                itnum,itemax,ittol,vresnorm_,presnorm_,
                incvelnorm_L2_/velnorm_L2_,incprenorm_L2_/prenorm_L2_);
         printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-        if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
+        if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky)
         {
           printf(",tf=%10.3E",dtfilter_);
         }

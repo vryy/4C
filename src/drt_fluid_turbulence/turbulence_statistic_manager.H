@@ -113,15 +113,6 @@ public:
   void GetCurrentVelnp(Teuchos::RCP<Epetra_Vector>);
 
   /*!
-  \brief Store values computed during the element call
-
-  (including subfilter stresses for a scale
-  similarity model)
-
-  */
-  void StoreNodalValues(int step, const Teuchos::RCP<Epetra_Vector>   stress12);
-
-  /*!
   \brief Include current quantities in the time
   averaging procedure
 
@@ -270,8 +261,6 @@ private:
 
   Teuchos::RCP<Epetra_Vector>           myforce_    ;
 
-  Teuchos::RCP<Epetra_MultiVector>      myfilteredvel_;
-  Teuchos::RCP<Epetra_MultiVector>      myfilteredreystr_;
   Teuchos::RCP<Epetra_Vector>           myfsvelaf_    ;
   Teuchos::RCP<Epetra_Vector>           myfsscaaf_;
   //xwall object is required for evaluating inner element planes of channel

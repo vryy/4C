@@ -66,8 +66,6 @@ namespace FLD
     mydispn_         (fluid.dispn_         ),
     mygridvelaf_     (fluid.gridv_         ),
     myforce_         (fluid.trueresidual_  ),
-    myfilteredvel_   (fluid.filteredvel_   ),
-    myfilteredreystr_(fluid.filteredreystr_),
     myfsvelaf_       (fluid.fsvelaf_       ),
     myfsscaaf_       (fluid.fsscaaf_       ),
     myxwall_         (fluid.xwall_       ),
@@ -489,8 +487,6 @@ namespace FLD
     mydispnp_        (Teuchos::null        ),
     mydispn_         (Teuchos::null        ),
     mygridvelaf_     (Teuchos::null        ),
-    myfilteredvel_   (Teuchos::null        ),
-    myfilteredreystr_(Teuchos::null        ),
     myfsvelaf_       (Teuchos::null        ),
     myfsscaaf_       (Teuchos::null        ),
     myxwall_         (Teuchos::null        ),
@@ -644,14 +640,6 @@ namespace FLD
       {
         turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
       }
-      // check if we want to compute averages of scale similarity
-      // quantities (tau_SFS)
-      else if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
-              ==
-              "Scale_Similarity")
-      {
-        turbmodel_ = INPAR::FLUID::scale_similarity_basic;
-      }
       // check if we want to compute averages of multifractal
       // quantities (N, B)
       else if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
@@ -781,39 +769,6 @@ namespace FLD
             }
           statistics_channel_->AddDynamicSmagorinskyQuantities();
         }
-        break;
-      }
-      default:
-      {
-        // there are no values to be stored in these cases
-        break;
-      }
-    }
-  }
-
-    return;
-  }
-
-  /*----------------------------------------------------------------------
-
-    Store values computed during the element call
-
-  ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::StoreNodalValues(
-       int                        step,
-       const Teuchos::RCP<Epetra_Vector>   stress12)
-  {
-    // sampling takes place only in the sampling period
-    if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
-    {
-      switch(flow_)
-      {
-      case channel_flow_of_height_2:
-      case loma_channel_flow_of_height_2:
-      case scatra_channel_flow_of_height_2:
-      {
-        // add computed subfilter stress
-        if(turbmodel_ == INPAR::FLUID::scale_similarity_basic) statistics_channel_->AddSubfilterStresses(stress12);
         break;
       }
       default:
@@ -1165,11 +1120,6 @@ namespace FLD
               if (myfsphi_==Teuchos::null)
                 dserror ("Have not got fsphi!");
             }
-          }
-          if (turbmodel_ == INPAR::FLUID::scale_similarity_basic)
-          {
-            statetenss.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("filtered vel",myfilteredvel_));
-            statetenss.insert(std::pair<std::string,Teuchos::RCP<Epetra_MultiVector> >("filtered reystr",myfilteredreystr_));
           }
 
           switch(flow_)

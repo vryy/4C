@@ -221,13 +221,6 @@ public:
   void AddDynamicSmagorinskyQuantities();
 
   /*!
-    \brief Add computed subfilter stresses of scale
-           similarity model
-  */
-
-  void AddSubfilterStresses(const Teuchos::RCP<const Epetra_Vector>   stress12);
-
-  /*!
     \brief Add parameters of multifractal
            subgrid-scales model
   */
@@ -382,9 +375,6 @@ private:
   //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with
   //! wall damping quantities
   bool                             smagorinsky_;
-
-  //! toggle evaluation of scale similarity quantities
-  bool                             scalesimilarity_;
 
   //! toggle evaluation of scale multifractal quantities
   bool                             multifractal_;
@@ -584,15 +574,6 @@ private:
   Teuchos::RCP<std::vector<double> >     incrsumCi_delta_sq_;
 
   //!--------------------------------------------------
-  //!  averaged quantities from scale similarity model
-  //!--------------------------------------------------
-
-  //! sum over subfilter stress 12 --- used only for scale similarity model
-  Teuchos::RCP<std::vector<double> >     sumstress12_;
-  //! increment of sumstress12 over in one time step
-  Teuchos::RCP<std::vector<double> >     incrsumstress12_;
-
-  //!--------------------------------------------------
   //!  averaged quantities from multifractal subgid-scales
   //!--------------------------------------------------
 
@@ -693,11 +674,11 @@ private:
   Teuchos::RCP<std::vector<double> >     sum_eps_eddyvisc_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)
   Teuchos::RCP<std::vector<double> >     sum_eps_avm3_;
-  //! sum over all in plane averaged dissipation rates from scale similarity model
+  //! sum over all in plane averaged dissipation rates from mfs model
   Teuchos::RCP<std::vector<double> >     sum_eps_mfs_;
-  //! sum over all in plane averaged dissipation rates from scale similarity model (forwardscatter)
+  //! sum over all in plane averaged dissipation rates from mfs model (forwardscatter)
   Teuchos::RCP<std::vector<double> >     sum_eps_mfscross_;
-  //! sum over all in plane averaged dissipation rates from scale similarity model (backscatter)
+  //! sum over all in plane averaged dissipation rates from mfs model (backscatter)
   Teuchos::RCP<std::vector<double> >     sum_eps_mfsrey_;
   //! sum over all in plane averaged dissipation rates from Galerkin viscous term
   Teuchos::RCP<std::vector<double> >     sum_eps_visc_;
@@ -731,11 +712,11 @@ private:
   Teuchos::RCP<std::vector<double> >     sum_scatra_eps_eddyvisc_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)
   Teuchos::RCP<std::vector<double> >     sum_scatra_eps_avm3_;
-  //! sum over all in plane averaged dissipation rates from scale similarity model
+  //! sum over all in plane averaged dissipation rates from mfs model
   Teuchos::RCP<std::vector<double> >     sum_scatra_eps_mfs_;
-  //! sum over all in plane averaged dissipation rates from scale similarity model (forwardscatter)
+  //! sum over all in plane averaged dissipation rates from mfs model (forwardscatter)
   Teuchos::RCP<std::vector<double> >     sum_scatra_eps_mfscross_;
-  //! sum over all in plane averaged dissipation rates from scale similarity model (backscatter)
+  //! sum over all in plane averaged dissipation rates from mfs model (backscatter)
   Teuchos::RCP<std::vector<double> >     sum_scatra_eps_mfsrey_;
   //! sum over all in plane averaged dissipation rates from Galerkin viscous term
   Teuchos::RCP<std::vector<double> >     sum_scatra_eps_visc_;

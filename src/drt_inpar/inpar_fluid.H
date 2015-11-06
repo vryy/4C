@@ -290,8 +290,6 @@ namespace INPAR
       smagorinsky_with_van_Driest_damping,
       dynamic_smagorinsky,
       avm3,
-      scale_similarity,
-      scale_similarity_basic,
       multifractal_subgrid_scales,
       vreman,
       dynamic_vreman

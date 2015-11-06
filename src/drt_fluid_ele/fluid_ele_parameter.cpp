@@ -64,7 +64,6 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
     l_tau_(0.0),
     fssgv_(INPAR::FLUID::no_fssgv),
     vrfi_(INPAR::FLUID::cuberootvol),
-    Cl_(0.0),
     Csgs_(0.0),
     Csgs_phi_(0.0),
     alpha_(0.0),
@@ -533,16 +532,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters( Teuchos::
       Ci_ = turbmodelparamssgvisc.get<double>("C_YOSHIZAWA");
       include_Ci_ = DRT::INPUT::IntegralValue<int>(turbmodelparamssgvisc,"C_INCLUDE_CI");
     }
-    else if (physical_turbulence_model == "Scale_Similarity")
-    {
-      turb_mod_action_ = INPAR::FLUID::scale_similarity;
-      Cl_ = turbmodelparamsmfs.get<double>("C_SCALE_SIMILARITY");
-    }
-    else if (physical_turbulence_model == "Scale_Similarity_basic")
-    {
-      turb_mod_action_ = INPAR::FLUID::scale_similarity_basic;
-      Cl_ = turbmodelparamsmfs.get<double>("C_SCALE_SIMILARITY");
-    }
     else if (physical_turbulence_model == "Multifractal_Subgrid_Scales")
     {
       turb_mod_action_ = INPAR::FLUID::multifractal_subgrid_scales;
@@ -632,7 +621,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameters( Teuchos::
     }
     else
     {
-      dserror("Up to now, only Smagorinsky, Vreman, Scale Similarity and Multifractal Subgrid Scales are available");
+      dserror("Up to now, only Smagorinsky, Vreman and Multifractal Subgrid Scales are available");
     }
   } // end if(Classical LES)
 }

@@ -1634,38 +1634,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
   // set element id
   eid_ = ele->Id();
 
-  // for scale similarity model:
-  // get filtered veolcities and reynoldsstresses
-  LINALG::Matrix<nsd_,nen_> evel_hat(true);
-  LINALG::Matrix<nsd_*nsd_,nen_> ereynoldsstress_hat(true);
-  if (fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity
-      or fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
-  {
-    Teuchos::RCP<Epetra_MultiVector> filtered_vel = params.get<Teuchos::RCP<Epetra_MultiVector> >("Filtered velocity");
-    Teuchos::RCP<Epetra_MultiVector> fs_vel = params.get<Teuchos::RCP<Epetra_MultiVector> >("Fine scale velocity");
-    Teuchos::RCP<Epetra_MultiVector> filtered_reystre = params.get<Teuchos::RCP<Epetra_MultiVector> >("Filtered reynoldsstress");
-    if(enrtype==DRT::ELEMENTS::Fluid::xwall)
-      dserror("the following lines are not compatible with the xwall enrichment type");
-    for (int nn=0;nn<nen_;++nn)
-    {
-      int lid = (ele->Nodes()[nn])->LID();
-
-      for (int dimi=0;dimi<3;++dimi)
-      {
-        evel_hat(dimi,nn) = (*((*filtered_vel)(dimi)))[lid];
-        fsevelaf(dimi,nn) = (*((*fs_vel)(dimi)))[lid];
-
-        for (int dimj=0;dimj<3;++dimj)
-        {
-          int index=3*dimi+dimj;
-
-          ereynoldsstress_hat(index,nn) = (*((*filtered_reystre)(index)))[lid];
-
-        }
-      }
-    }
-  }
-
   // flag for higher order elements
   is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
   // overrule higher_order_ele if input-parameter is set
@@ -1924,25 +1892,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
     // get momentum history data at integration point
     // (only required for one-step-theta and BDF2 time-integration schemes)
     histmom_.Multiply(emhist,funct_);
-
-//    if(fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
-//    {
-//      reystressinthat_.Clear();
-//      velinthat_.Clear();
-//      // get filtered velocity at integration point
-//      velinthat_.Multiply(evel_hat,funct_);
-//      // get filtered reynoldsstress at integration point
-//      for (int dimi=0;dimi<nsd_;dimi++)
-//      {
-//        for (int dimj=0;dimj<nsd_;dimj++)
-//        {
-//          for (int inode=0;inode<nen_;inode++)
-//          {
-//            reystressinthat_(dimi,dimj) += funct_(inode) * ereynoldsstress_hat(3*dimi+dimj,inode);
-//          }
-//        }
-//      }
-//    }
 
     // evaluation of various partial operators at integration point
     // compute convective term from previous iteration and convective operator
@@ -2241,72 +2190,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcDissipation(
         eps_smag -= (2.0/3.0)*fac_*(sgvisc_*vdiv_+q_sq_)*vdiv_;
     }
 
-
-    //---------------------------------------------------------------
-    // scale-similarity model
-    //---------------------------------------------------------------
-
-    // dissipation Scale Similarity
-    /*
-             /                                \
-            |   ssm  /^n+1 \         / n+1 \   |
-            |  tau  | u     | , eps | u     |  |
-            |        \     /         \     /   |
-             \                                /
-    */
-//    if(fldpara_->TurbModAction() == INPAR::FLUID::scale_similarity_basic)
-//    {
-//      LINALG::Matrix<nsd_,nsd_> tau_scale_sim;
-//      for(int rr=0;rr<nsd_;++rr)
-//      {
-//        for(int mm=0;mm<nsd_;++mm)
-//        {
-//          tau_scale_sim(rr,mm) = reystressinthat_(rr,mm) - velinthat_(rr) * velinthat_(mm);
-//        }
-//      }
-//
-//      //old version
-//        double Production = 0.0;
-//
-//        for (int dimi=0;dimi<nsd_;dimi++)
-//        {
-//          for (int dimj=0;dimj<nsd_;dimj++)
-//          {
-//            Production += - tau_scale_sim(dimi,dimj)*0.5*two_epsilon(dimi,dimj);
-//          }
-//        }
-//
-//      // dissipation due to scale similarity model
-//      for(int rr=0;rr<nsd_;++rr)
-//      {
-//        for(int mm=0;mm<nsd_;++mm)
-//        {
-//          eps_scsim += -0.5*fac_*densaf_*fldpara_->Cl()*tau_scale_sim(rr,mm)*two_epsilon(mm,rr);
-//        }
-//      }
-//      if (Production >= 0.0)
-//      {
-//        // forwardscatter
-//        for(int rr=0;rr<nsd_;++rr)
-//        {
-//          for(int mm=0;mm<nsd_;++mm)
-//          {
-//            eps_scsimfs += -0.5*fac_*densaf_*fldpara_->Cl()*tau_scale_sim(rr,mm)*two_epsilon(mm,rr);
-//          }
-//        }
-//      }
-//      else
-//      {
-//        // backscatter
-//        for(int rr=0;rr<nsd_;++rr)
-//        {
-//          for(int mm=0;mm<nsd_;++mm)
-//          {
-//            eps_scsimbs += -0.5*fac_*densaf_*fldpara_->Cl()*tau_scale_sim(rr,mm)*two_epsilon(mm,rr);
-//          }
-//        }
-//      }
-//    }
 
     //---------------------------------------------------------------
     // standard Galerkin terms

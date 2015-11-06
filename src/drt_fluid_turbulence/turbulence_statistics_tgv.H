@@ -163,11 +163,11 @@ private:
   Teuchos::RCP<std::vector<double> >     sum_eps_eddyvisc_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)
   Teuchos::RCP<std::vector<double> >     sum_eps_avm3_;
-  //! sum over all in plane averaged dissipation rates from scale similarity model
+  //! sum over all in plane averaged dissipation rates from mfs model
   Teuchos::RCP<std::vector<double> >     sum_eps_mfs_;
-  //! sum over all in plane averaged dissipation rates from scale similarity model (forwardscatter)
+  //! sum over all in plane averaged dissipation rates from ,fs model (forwardscatter)
   Teuchos::RCP<std::vector<double> >     sum_eps_mfscross_;
-  //! sum over all in plane averaged dissipation rates from scale similarity model (backscatter)
+  //! sum over all in plane averaged dissipation rates from mfs model (backscatter)
   Teuchos::RCP<std::vector<double> >     sum_eps_mfsrey_;
   //! sum over all in plane averaged dissipation rates from Galerkin viscous term
   Teuchos::RCP<std::vector<double> >     sum_eps_visc_;

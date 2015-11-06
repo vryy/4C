@@ -119,7 +119,6 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   // get turbulence model
   Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
   smagorinsky_=false;
-  scalesimilarity_=false;
   multifractal_=false;
 
   if (modelparams->get<std::string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES") == "CLASSICAL_LES"
@@ -147,19 +146,6 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       }
 
       smagorinsky_=true;
-    }
-    // check if we want to compute averages of scale similarity
-    // quantities (tau_SFS)
-    else if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
-            == "Scale_Similarity")
-    {
-      if(discret_->Comm().MyPID()==0)
-      {
-        std::cout << "                             Initializing output for scale similarity type models\n\n\n";
-        fflush(stdout);
-      }
-
-      scalesimilarity_=true;
     }
     // check if we want to compute averages of multifractal
     // quantities (N, B)
@@ -917,21 +903,6 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   }
 
   //----------------------------------------------------------------------
-  // arrays for averaging of subfilter stresses
-  //
-
-  // check if we want to compute averages of subfilter stresses
-  if (scalesimilarity_)
-  {
-    // means for subfilter stress
-    sumstress12_  =  Teuchos::rcp(new std::vector<double> );
-    sumstress12_->resize(nodeplanes_->size(),0.0);
-
-    incrsumstress12_  =  Teuchos::rcp(new std::vector<double> );
-    incrsumstress12_->resize(nodeplanes_->size(),0.0);
-  }
-
-  //----------------------------------------------------------------------
   // arrays for averaging of parameters of multifractal subgrid-scales
   //
 
@@ -1305,16 +1276,6 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
         (*log_Cs) << "# Statistics for turbulent incompressible channel flow (Smagorinsky constant)\n\n";
       }
 
-      // additional output for scale similarity model
-      if (scalesimilarity_)
-      {
-        std::string s_ssm(statistics_outfilename_);
-        s_ssm.append(".SSM_statistics");
-
-        log_SSM = Teuchos::rcp(new std::ofstream(s_ssm.c_str(),std::ios::out));
-        (*log_SSM) << "# Statistics for turbulent incompressible channel flow (subfilter stresses)\n\n";
-      }
-
       // additional output for multifractal subgrid scales
       if (multifractal_)
       {
@@ -1513,18 +1474,6 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
       (*sumdiffeff_    )[rr]+=(*incrsumdiffeff_    )[rr];
       (*sumCi_         )[rr]+=(*incrsumCi_         )[rr];
       (*sumCi_delta_sq_)[rr]+=(*incrsumCi_delta_sq_)[rr];
-    }
-  }
-
-  //----------------------------------------------------------------------
-  // add increment of last iteration to the sum of stress12 values
-  // (statistics for scale similarity model)
-
-  if (scalesimilarity_)
-  {
-    for (unsigned rr=0;rr<(*incrsumstress12_).size();++rr)
-    {
-      (*sumstress12_)[rr]+=(*incrsumstress12_)[rr];
     }
   }
 
@@ -2840,79 +2789,6 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
 
 /*----------------------------------------------------------------------*
 
-            Add computed subfilter stresses of scale
-                        similarity model
-
-  ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::AddSubfilterStresses(const Teuchos::RCP<const Epetra_Vector>   stress12)
-{
-  Teuchos::RCP<std::vector<double> > global_incr_stress12_sum;
-  Teuchos::RCP<std::vector<double> > local_stress12_sum;
-  global_incr_stress12_sum = Teuchos::rcp(new std::vector<double> (nodeplanes_->size(),0.0));
-  local_stress12_sum = Teuchos::rcp(new std::vector<double> (nodeplanes_->size(),0.0));
-
-  for (int nid=0;nid<discret_->NumMyRowNodes();++nid)
-  {
-    // get the node
-    DRT::Node* node = discret_->lRowNode(nid);
-
-    // if we have an inflow channel problem, the nodes outside the inflow discretization are
-    // not in the bounding box -> we don't consider them for averaging
-    if (node->X()[0] < (*boundingbox_)(1,0)+NODETOL and
-        node->X()[1] < (*boundingbox_)(1,1)+NODETOL and
-        node->X()[2] < (*boundingbox_)(1,2)+NODETOL and
-        node->X()[0] > (*boundingbox_)(0,0)-NODETOL and
-        node->X()[1] > (*boundingbox_)(0,1)-NODETOL and
-        node->X()[2] > (*boundingbox_)(0,2)-NODETOL )
-    {
-      // get coordinate in node plane direction
-      double nodecoord = node->X()[dim_];
-
-      // get tau12 of this node
-      double tau12 = (*stress12)[nid];
-
-      //determine the node layer
-      int  nlayer;
-      bool found = false;
-      for (nlayer=0;nlayer<(int)(*nodeplanes_).size();)
-      {
-        if(nodecoord<((*nodeplanes_)[nlayer]+2e-9) && nodecoord >((*nodeplanes_)[nlayer]-2e-9))
-          //(nodecoord == (*nodeplanes_)[nlayer])
-          //(nodecoord<(*nodeplanes_)[nlayer+1])
-        {
-          found = true;
-          break;
-        }
-        nlayer++;
-      }
-      if (found ==false)
-      {
-        dserror("could not determine element layer");
-      }
-
-      // add tau12 up
-      (*local_stress12_sum)[nlayer] += tau12;
-
-    }
-  }
-
-  // now add all the stuff from the different processors
-  discret_->Comm().SumAll(&((*local_stress12_sum               )[0]),
-                          &((*global_incr_stress12_sum         )[0]),
-                          local_stress12_sum->size());
-
-    // Replace increment to compute average of tau12
-    for (unsigned rr=0;rr<global_incr_stress12_sum->size();++rr)
-    {
-      (*incrsumstress12_         )[rr] =(*global_incr_stress12_sum         )[rr];
-    }
-
-  return;
-} // FLD::TurbulenceStatisticsCha::AddSubfilterStresses
-
-
-/*----------------------------------------------------------------------*
-
             Add parameters of multifractal
                  subgrid-scales model
 
@@ -3197,18 +3073,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
         }
       }
     }
-    // parameters for a turbulence model
-    {
-      eleparams_.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
-      if ((params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL")=="Scale_Similarity"))
-      {
-        for(std::map<std::string,Teuchos::RCP<Epetra_MultiVector> >::iterator state =statetenss.begin();state!=statetenss.end();++state)
-        {
-          eleparams_.set(state->first,state->second);
-        }
-      }
-    }
-
+    eleparams_.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
     eleparams_.set<double>("thermpress at n+alpha_F/n+1",thermpressaf);
     eleparams_.set<double>("thermpress at n+alpha_M/n",thermpressam);
     eleparams_.set<double>("thermpressderiv at n+alpha_F/n+1",thermpressdtaf);
@@ -3424,7 +3289,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     Teuchos::RCP<std::vector<double> > global_incr_eps_avm3;
     global_incr_eps_avm3  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    // (in plane) averaged values of dissipation by scale similarity model
+    // (in plane) averaged values of dissipation by mfs
     Teuchos::RCP<std::vector<double> > global_incr_eps_mfs;
     global_incr_eps_mfs  = Teuchos::rcp(new std::vector<double> (presize,0.0));
     Teuchos::RCP<std::vector<double> > global_incr_eps_mfscross;
@@ -3768,7 +3633,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       global_scatra_incr_eps_eddyvisc  = Teuchos::rcp(new std::vector<double> (phisize,0.0));
       Teuchos::RCP<std::vector<double> > global_scatra_incr_eps_avm3;
       global_scatra_incr_eps_avm3  = Teuchos::rcp(new std::vector<double> (phisize,0.0));
-      // (in plane) averaged values of dissipation by scale similarity model
+      // (in plane) averaged values of dissipation by mfs model
       Teuchos::RCP<std::vector<double> > global_scatra_incr_eps_mfs;
       global_scatra_incr_eps_mfs  = Teuchos::rcp(new std::vector<double> (phisize,0.0));
       Teuchos::RCP<std::vector<double> > global_scatra_incr_eps_mfscross;
@@ -4119,38 +3984,6 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       }
       log_Cs->flush();
     } // end smagorinsky_
-
-    // ------------------------------------------------------------------
-    // additional output for scale similarity model
-    if (scalesimilarity_)
-    {
-      // get the outfile
-      Teuchos::RCP<std::ofstream> log_SSM;
-
-      std::string s_ssm(statistics_outfilename_);
-      s_ssm.append(".SSM_statistics");
-
-      log_SSM = Teuchos::rcp(new std::ofstream(s_ssm.c_str(),std::ios::app));
-
-      (*log_SSM) << "\n\n\n";
-      (*log_SSM) << "# Statistics record " << countrecord_;
-      (*log_SSM) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
-
-
-      (*log_SSM) << "#     y      ";
-      (*log_SSM) << "  tauSFS 12  ";
-      (*log_SSM) << &std::endl;
-      (*log_SSM) << std::scientific;
-      for (unsigned rr=0;rr<sumstress12_->size();++rr)
-      {
-        // we associate the value with the midpoint of the element layer
-        (*log_SSM) << std::setw(11) << std::setprecision(4) << (*nodeplanes_)[rr] << "  " ;
-
-        // the values to be visualised
-        (*log_SSM) << std::setw(11) << std::setprecision(4) << ((*sumstress12_         )[rr])/(numele_*numsamp_)   << &std::endl;
-      }
-      log_SSM->flush();
-    } // end scalesimilarity_
 
     // ------------------------------------------------------------------
     // additional output for multifractal subgrid-scale modeling
@@ -5612,16 +5445,6 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
       (*sumCi_delta_sq_)[rr]=0.0;
     }
   } // end smagorinsky_
-
-  // reset sampling for scale similarity model
-  if (scalesimilarity_)
-  {
-    for (unsigned rr=0;rr<sumstress12_->size();++rr)
-    {
-      // reset value
-      (*sumstress12_)         [rr]=0;
-    }
-  } // end scalesimilarity_
 
   // reset sampling for multifractal subgrid scales
   if (multifractal_)

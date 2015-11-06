@@ -175,14 +175,6 @@ void FluidFilter::WriteAllResults(PostField* field)
   //  writer_->WriteResult("radii", "radii", nodebased, 1);
   writer_->WriteResult("par_vel", "par_vel", dofbased, field->problem()->num_dim());
 
-  // additional output for turbulent flows (subfilter/-gridstress)
-  writer_->WriteResult("sfs11", "sfs11", nodebased, 1);
-  writer_->WriteResult("sfs12", "sfs12", nodebased, 1);
-  writer_->WriteResult("sfs13", "sfs13", nodebased, 1);
-  writer_->WriteResult("sfs22", "sfs22", nodebased, 1);
-  writer_->WriteResult("sfs23", "sfs23", nodebased, 1);
-  writer_->WriteResult("sfs33", "sfs33", nodebased, 1);
-
   // additional forces due to lung fsi (volume constraint)
   writer_->WriteResult("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());
 

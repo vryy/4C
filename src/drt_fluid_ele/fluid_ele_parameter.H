@@ -156,8 +156,6 @@ public:
   INPAR::FLUID::FineSubgridVisc Fssgv() const {return fssgv_;};
   // Flag to Vreman filter method
   INPAR::FLUID::VremanFiMethod Vrfi() const {return vrfi_;};
-  //! scale similarity constant
-  double Cl() const {return Cl_;};
   /// multifractal subgrid-scales
   double Csgs() const {return Csgs_;};
   double CsgsPhi() const {double tmp = 0.0; if(not adapt_Csgs_phi_) tmp = Csgs_phi_; else tmp = Csgs_phi_*meanCai_; return tmp;};
@@ -331,8 +329,6 @@ protected:
   INPAR::FLUID::FineSubgridVisc fssgv_;
   // flag to Vreman filter method
   INPAR::FLUID::VremanFiMethod vrfi_;
-  //! scale similarity constant
-  double Cl_;
   /// multifractal subgrid-scales
   double Csgs_;
   double Csgs_phi_;

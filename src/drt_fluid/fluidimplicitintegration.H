@@ -572,14 +572,6 @@ public:
   virtual double EvaluateDtViaCflIfApplicable();
 
   /*!
-  \brief calculate subfilter stresses
-
-  */
-  virtual Teuchos::RCP<Epetra_Vector> CalcSFS(
-  const int   i,
-  const int   j);
-
-  /*!
   \brief read restart data
 
   */
@@ -1204,15 +1196,6 @@ protected:
 
   /// only necessary for AVM3: fine-scale solution vector
   Teuchos::RCP<Epetra_Vector>    fsvelaf_;
-
-  /// only necessary for Scale Similarity Model: filtered velocity
-  Teuchos::RCP<Epetra_MultiVector>    filteredvel_;
-
-  /// only necessary for Scale Similarity Model: filtered reynolds stress
-  Teuchos::RCP<Epetra_MultiVector>    filteredreystr_;
-
-  /// only necessary for Scale Similarity Model: fine scale velocity
-  Teuchos::RCP<Epetra_MultiVector>    finescalevel_;
 
   /// only necessary for LES models including filtered quantities: filter type
   enum INPAR::FLUID::ScaleSeparation scale_sep_;

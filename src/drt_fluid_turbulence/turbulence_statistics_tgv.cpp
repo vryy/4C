@@ -284,18 +284,6 @@ void FLD::TurbulenceStatisticsTgv::EvaluateResiduals(
     }
   }
 
-  // parameters for a turbulence model
-  {
-    eleparams_.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
-    if ((params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL")=="Scale_Similarity"))
-    {
-      for(std::map<std::string,Teuchos::RCP<Epetra_MultiVector> >::iterator state =statetenss.begin();state!=statetenss.end();++state)
-      {
-        eleparams_.set(state->first,state->second);
-      }
-    }
-  }
-
   eleparams_.set<double>("thermpress at n+alpha_F/n+1",thermpressaf);
   eleparams_.set<double>("thermpress at n+alpha_M/n",thermpressam);
   eleparams_.set<double>("thermpressderiv at n+alpha_F/n+1",thermpressdtaf);
@@ -468,7 +456,7 @@ void FLD::TurbulenceStatisticsTgv::EvaluateResiduals(
 
   Teuchos::RCP<std::vector<double> > global_incr_eps_avm3;
   global_incr_eps_avm3  = Teuchos::rcp(new std::vector<double> (presize,0.0));
-  // (in plane) averaged values of dissipation by scale similarity model
+  // (in plane) averaged values of dissipation by mfs model
   Teuchos::RCP<std::vector<double> > global_incr_eps_mfs;
   global_incr_eps_mfs  = Teuchos::rcp(new std::vector<double> (presize,0.0));
   Teuchos::RCP<std::vector<double> > global_incr_eps_mfscross;

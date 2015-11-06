@@ -1195,8 +1195,6 @@ void FLD::FluidImplicitTimeInt::TreatTurbulenceModels(Teuchos::ParameterList& el
   // apply filter for turbulence models (only if required)
   //----------------------------------------------------------------------
    if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky
-    or turbmodel_ == INPAR::FLUID::scale_similarity
-    or turbmodel_ == INPAR::FLUID::scale_similarity_basic
     or turbmodel_ == INPAR::FLUID::dynamic_vreman)
   {
     //compute filtered velocity
@@ -1209,15 +1207,7 @@ void FLD::FluidImplicitTimeInt::TreatTurbulenceModels(Teuchos::ParameterList& el
   // parameters for turbulence model
   // TODO: rename list
   eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
-//      if (turbmodel_==INPAR::FLUID::scale_similarity
-//       or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-   if (turbmodel_==INPAR::FLUID::scale_similarity
-    or turbmodel_ == INPAR::FLUID::scale_similarity_basic)
-  {
-    eleparams.set("Filtered velocity",filteredvel_);
-    eleparams.set("Fine scale velocity",finescalevel_);
-    eleparams.set("Filtered reynoldsstress",filteredreystr_);
-  }
+
   if (turbmodel_==INPAR::FLUID::dynamic_vreman)
   {
     double cv=0.0;
@@ -2260,7 +2250,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
         itnum,itmax,ittol,vresnorm_,presnorm_,incvelnorm_L2_/velnorm_L2_,
         incprenorm_L2_/prenorm_L2_);
       printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-      if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
+      if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky)
         printf(",tf=%10.3E",dtfilter_);
       printf(")\n");
     }
@@ -2269,7 +2259,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
       printf("|   --/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
         itmax,ittol,vresnorm_,presnorm_);
       printf(" (      --     ,te=%10.3E",dtele_);
-      if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
+      if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky)
         printf(",tf=%10.3E",dtfilter_);
       printf(")\n");
     }
@@ -3252,12 +3242,6 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   LiftDrag();
 
-  // store subfilter stresses for additional output
-  if (turbmodel_==INPAR::FLUID::scale_similarity)
-  {
-    Teuchos::RCP<Epetra_Vector> stress12 = CalcSFS(1,2);
-    statisticsmanager_->StoreNodalValues(step_, stress12);
-  }
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
   // -------------------------------------------------------------------
@@ -3313,12 +3297,6 @@ void FLD::FluidImplicitTimeInt::CallStatisticsManager()
  -----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::StatisticsOutput()
 {
-  // store subfilter stresses for additional output
-  if (turbmodel_==INPAR::FLUID::scale_similarity)
-  {
-    Teuchos::RCP<Epetra_Vector> stress12 = CalcSFS(1,2);
-    statisticsmanager_->StoreNodalValues(step_, stress12);
-  }
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
   // -------------------------------------------------------------------
@@ -3413,7 +3391,7 @@ void FLD::FluidImplicitTimeInt::Output()
     // output of coarse and fine scale velocities
     // at time n+1 or n+af depending on the time
     // integration scheme
-    if (turbmodel_==INPAR::FLUID::scale_similarity or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales) // or dynamic_smagorinsky_)
+    if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales) // or dynamic_smagorinsky_)
     {
       const Epetra_Map* dofrowmap = discret_->DofRowMap();
       Teuchos::RCP<Epetra_Vector> filteredvel = LINALG::CreateVector(*dofrowmap,true);
@@ -3429,23 +3407,6 @@ void FLD::FluidImplicitTimeInt::Output()
       }
       output_->WriteVector("filteredvel",filteredvel);
       output_->WriteVector("fsvelaf",fsvel);
-      if (turbmodel_==INPAR::FLUID::scale_similarity)
-      {
-        if (myrank_==0)
-           std::cout << "output of subfilter stresses for scale similarity model ..." << std::endl;
-        Teuchos::RCP<Epetra_Vector> stress11 = CalcSFS(1,1);
-        output_->WriteVector("sfs11",stress11);
-        Teuchos::RCP<Epetra_Vector> stress12 = CalcSFS(1,2);
-        output_->WriteVector("sfs12",stress12);
-        Teuchos::RCP<Epetra_Vector> stress13 = CalcSFS(1,3);
-        output_->WriteVector("sfs13",stress13);
-        Teuchos::RCP<Epetra_Vector> stress22 = CalcSFS(2,2);
-        output_->WriteVector("sfs22",stress22);
-        Teuchos::RCP<Epetra_Vector> stress23 = CalcSFS(2,3);
-        output_->WriteVector("sfs23",stress23);
-        Teuchos::RCP<Epetra_Vector> stress33 = CalcSFS(3,3);
-        output_->WriteVector("sfs33",stress33);
-      }
     }
 #endif
 
@@ -3980,17 +3941,6 @@ void FLD::FluidImplicitTimeInt::AVM3AssembleMatAndRHS(Teuchos::ParameterList& el
 
   // parameters for turbulence approach
   eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
-  // dummy vectors initialized with zeros
-  // see remark fine scale velocity vector
-  if (turbmodel_==INPAR::FLUID::scale_similarity
-   or turbmodel_==INPAR::FLUID::scale_similarity_basic)
-  {
-    //compute filtered velocity
-    //set filtered velocity
-    eleparams.set("Filtered velocity",filteredvel_);
-    eleparams.set("Fine scale velocity",finescalevel_);
-    eleparams.set("Filtered reynoldsstress",filteredreystr_);
-  }
 
   //set xwall params
   if(xwall_!=Teuchos::null)
@@ -5468,31 +5418,6 @@ Teuchos::RCP<const Epetra_Map> FLD::FluidImplicitTimeInt::PressureRowMap()
 { return velpressplitter_->CondMap(); }
 
 
-Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcSFS(
-   const int   i,
-   const int   j
-)
-{
-  // compute filtered quantities with the latest velocity field
-  this->ApplyScaleSeparationForLES();
-
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
-  // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> tauSFS = LINALG::CreateVector(*noderowmap,true);
-
-  // get filtered velocity
-  Teuchos::RCP<Epetra_Vector> filteredvel = LINALG::CreateVector(*noderowmap,true);
-  Boxf_->FilteredVelComp(filteredvel, i, j);
-
-  // get filtered reynoldsstress
-  Teuchos::RCP<Epetra_Vector> filteredreystr = LINALG::CreateVector(*noderowmap,true);
-  Boxf_->FilteredReyStrComp(filteredreystr, i , j);
-
-  tauSFS->Update(1.0,*filteredreystr,-1.0, *filteredvel,0.0);
-
-  return tauSFS;
-}
-
 // -------------------------------------------------------------------
 // set general fluid parameter (AE 01/2011)
 // -------------------------------------------------------------------
@@ -5609,36 +5534,6 @@ void FLD::FluidImplicitTimeInt::SetGeneralTurbulenceParameters()
       turbmodel_ = INPAR::FLUID::smagorinsky;
     else if (physmodel == "Smagorinsky_with_van_Driest_damping")
       turbmodel_ = INPAR::FLUID::smagorinsky_with_van_Driest_damping;
-    else if(physmodel == "Scale_Similarity" or physmodel == "Scale_Similarity_basic")
-    {
-      if (physmodel == "Scale_Similarity")
-        turbmodel_ = INPAR::FLUID::scale_similarity;
-      else
-        turbmodel_ = INPAR::FLUID::scale_similarity_basic;
-      Teuchos::ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
-      const std::string scale_sep = modelparams->get<std::string>("SCALE_SEPARATION");
-      if (scale_sep == "box_filter")
-      {
-        scale_sep_ = INPAR::FLUID::box_filter;
-        // get one instance of the Boxfilter class
-        Boxf_=Teuchos::rcp(new FLD::Boxfilter(discret_, *params_));
-      }
-      else if (scale_sep == "algebraic_multigrid_operator")
-      {
-        scale_sep_ = INPAR::FLUID::algebraic_multigrid_operator;
-      }
-      else
-      {
-        dserror("Unknown filter type!");
-      }
-
-      const Epetra_Map* nodecolmap = discret_->NodeColMap();
-      filteredvel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-      finescalevel_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-      filteredreystr_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,9,true));
-
-      fsvelaf_  = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    }
     else if(physmodel == "Multifractal_Subgrid_Scales")
     {
       turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
@@ -5887,15 +5782,6 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
           std::cout << &std::endl;
         }
       }
-        else if(turbmodel_ == INPAR::FLUID::scale_similarity or turbmodel_ == INPAR::FLUID::scale_similarity_basic)
-      {
-        std::cout << "                             "      ;
-        std::cout << "\n";
-        std::cout << "- Constant:  Cl   = "      ;
-        std::cout << params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<double>("C_SCALE_SIMILARITY") << "\n";
-        std::cout << "- Scale separation:  " << params_->sublist("MULTIFRACTAL SUBGRID SCALES").get<std::string>("SCALE_SEPARATION") << "\n";
-        std::cout << &std::endl;
-      }
       else if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
       {
         Teuchos::ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
@@ -5952,189 +5838,6 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
     // compute averaged values for LijMij and MijMij
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
     DynSmag_->ApplyFilterForDynamicComputationOfCs(EvaluationVel(),scaaf_,ReturnThermpressaf(),dirichtoggle);
-  }
-  else if (turbmodel_==INPAR::FLUID::scale_similarity or turbmodel_==INPAR::FLUID::scale_similarity_basic)
-  {
-    switch (scale_sep_)
-    {
-    case INPAR::FLUID::box_filter:
-    {
-      // perform filtering
-      const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
-      // call only filtering
-      Boxf_->ApplyFilter(EvaluationVel(),scaaf_,ReturnThermpressaf(),dirichtoggle);
-
-      // get filtered fields
-      filteredvel_->PutScalar(0.0);
-      filteredreystr_->PutScalar(0.0);
-
-      Boxf_->GetFilteredVelocity(filteredvel_);
-      Boxf_->GetFilteredReynoldsStress(filteredreystr_);
-      Boxf_->GetFineScaleVelocity(finescalevel_);
-
-      // store fine-scale velocity
-      Boxf_->OutputofFineScaleVel(fsvelaf_);
-      break;
-    }
-    case INPAR::FLUID::algebraic_multigrid_operator:
-    {
-      const Epetra_Map* dofrowmap = discret_->DofRowMap();
-      const Epetra_Map* dofcolmap = discret_->DofColMap();
-
-      Teuchos::RCP<Epetra_Vector> row_filteredveltmp;
-      row_filteredveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
-      Teuchos::RCP<Epetra_Vector> col_filteredveltmp;
-      col_filteredveltmp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
-
-      Teuchos::RCP<Epetra_Vector> row_finescaleveltmp;
-      row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap,true));
-      Teuchos::RCP<Epetra_Vector> col_finescaleveltmp;
-      col_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
-
-      Teuchos::RCP<Epetra_MultiVector> row_filteredreystretmp;
-      row_filteredreystretmp = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
-      Teuchos::RCP<Epetra_MultiVector> col_filteredreystretmp;
-      col_filteredreystretmp = Teuchos::rcp(new Epetra_MultiVector(*dofcolmap,3,true));
-      Teuchos::RCP<Epetra_MultiVector> row_reystretmp;
-      row_reystretmp = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
-      Teuchos::RCP<Epetra_MultiVector> row_finescalereystretmp;
-      row_finescalereystretmp = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
-
-      /*-------------------------------------------------------------------
-         * remark:
-         * - first, the fine scale velocity is computed
-         * - second, we get the coarse scale velocity by subtracting
-         *   the fine scale velocity from the resolved velocity
-         * - the same procedure is applied to the reynolds stresses
-         * - One might think of directly computing the coarse scale quantities
-         *   by applying the respective scale-separation operator. However, in
-         *   doing so, coarse scale quantities are set to zero on dirichlet
-         *   boundaries due to the way the scale-separation operators are
-         *   constructed. Setting the fine scale part of the velocity equal zero
-         *   is a reasonable choice. However, this strategy is not reasonable for
-         *   coarse scale quantities. The coarse scale quantities should rather
-         *   contain the exact values. This is ensured by the proposed approach.
-      *-------------------------------------------------------------------*/
-      // get fine scale velocity
-      Sep_->Multiply(false,*EvaluationVel(),*row_finescaleveltmp);
-      // get filtered or coarse scale velocity
-      row_filteredveltmp->Update(1.0,*EvaluationVel(),-1.0,*row_finescaleveltmp,0.0);
-
-      /*-------------------------------------------------------------------
-         * idea:
-         * - calculate reynolds stress tensor at each node
-         * - filter the reynolds stress tensor by multiplication with
-         *   large scale separation operator
-      *-------------------------------------------------------------------*/
-      // calculate reynoldsstress
-      // loop all nodes on this proc
-      for (int nid=0;nid<discret_->NumMyRowNodes();++nid)
-      {
-        // get the node
-        DRT::Node* node = discret_->lRowNode(nid);
-
-        // get the dofs of the node
-        std::vector<int> dofs= discret_->Dof(node);
-        //we only loop over all velocity dofs
-        for(int di=0;di<discret_->NumDof(node)-1;++di)
-        {
-          // get global id of the dof
-          int gidi = dofs[di];
-          // get local id of the dof
-          int lidi = discret_->DofRowMap()->LID(gidi);
-          // get the velocity
-          double veli=(*EvaluationVel())[lidi];
-          for(int dj=0;dj<discret_->NumDof(node)-1;++dj)
-          {
-            // get the second velocity in the same way
-            int gidj =dofs[dj];
-            int lidj = discret_->DofRowMap()->LID(gidj);
-            double velj=(*EvaluationVel())[lidj];
-            // multiply the velocity to get the final component of the reynoldsstress tensor
-            double velivelj = veli*velj;
-            // store it
-            ((*row_reystretmp)(dj))->ReplaceGlobalValues(1,&velivelj,&gidi);
-          }
-        }
-      }
-
-      //get the filtered reynoldsstress
-      Sep_->Multiply(false,*row_reystretmp,*row_finescalereystretmp);
-      row_filteredreystretmp->Update(1.0,*row_reystretmp,-1.0,*row_finescalereystretmp,0.0);
-
-      // export quantities in dofrowmap format to dofcolumnmap format
-      LINALG::Export(*row_filteredveltmp,*col_filteredveltmp);
-      LINALG::Export(*row_finescaleveltmp,*col_finescaleveltmp);
-      LINALG::Export(*row_filteredreystretmp,*col_filteredreystretmp);
-
-      // transfer quantities from dofcolumnmap to nodecolmap
-      // filtered velocity and fine scale subgrid velocity
-      // loop all nodes on this proc (including ghosted ones)
-      for (int nid=0;nid<discret_->NumMyColNodes();++nid)
-      {
-        // get the node
-        DRT::Node* node = discret_->lColNode(nid);
-        // get global ids of all dofs of the node
-        std::vector<int> dofs= discret_->Dof(node);
-
-        //we only loop over all velocity dofs
-        for(int di=0;di<discret_->NumDof(node)-1;++di)
-        {
-          // get global id of the dof
-          int gidi = dofs[di];
-          // get local dof id corresponding to the global id
-          int lidi = discret_->DofColMap()->LID(gidi);
-          // get the values of the dof
-          double valvel = (*col_filteredveltmp)[lidi];
-          double valfsvel = (*col_finescaleveltmp)[lidi];
-          // store them
-          int err = 0;
-          err += ((*filteredvel_)(di))->ReplaceMyValues(1,&valvel,&nid);
-          err += ((*finescalevel_)(di))->ReplaceMyValues(1,&valfsvel,&nid);
-          if (err!=0) dserror("dof not on proc");
-        }
-      }
-
-          // transfer filtered reynoldsstress
-          // loop all nodes on this proc (including ghosted ones)
-          for (int nid=0;nid<discret_->NumMyColNodes();++nid)
-          {
-            // get the node
-            DRT::Node* node = discret_->lColNode(nid);
-            // get global ids of all dofs of the node
-            std::vector<int> dofs= discret_->Dof(node);
-
-            //we only loop over all velocity dofs
-            for(int di=0;di<discret_->NumDof(node)-1;++di)
-            {
-              // get global id of the dof
-              int gidi = dofs[di];
-              // get local dof id corresponding to the global id
-              int lidi = discret_->DofColMap()->LID(gidi);
-              //loop over all components
-              for(int dj=0;dj<discret_->NumDof(node)-1;++dj)
-              {
-                // get the values
-                double val = (*((*col_filteredreystretmp)(dj)))[lidi];
-                // and store it
-                const int ij = di*3+dj;
-                int err = ((*filteredreystr_)(ij))->ReplaceMyValues(1,&val,&nid);
-                if (err!=0) dserror("dof not on proc");
-              }
-            }
-          }
-
-      // store fine-scale velocity
-      fsvelaf_->Update(1.0,*row_finescaleveltmp,0.0);
-
-      break;
-    }
-    default:
-    {
-      dserror("Unknown filter type!");
-      break;
-    }
-    }
   }
   else if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
   {
