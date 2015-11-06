@@ -273,7 +273,6 @@ protected:
   //! @name restart variables
   int uprestart_;
   int upres_;
-  int writestresses_;
   //@}
 
   //! @name time step sizes

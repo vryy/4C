@@ -3037,6 +3037,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdateStresses()
 {
   if (writestresses_)
     stressmanager_->GetStresses(trueresidual_,dta_);
+
   if (write_wall_shear_stresses_)
     stressmanager_->GetWallShearStresses(trueresidual_,dta_);
 
@@ -3386,17 +3387,12 @@ void FLD::FluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-      Teuchos::RCP<Epetra_Vector> traction = stressmanager_->GetPreCalcStresses(trueresidual_);
-      output_->WriteVector("traction",traction);
-      if (myrank_==0)
-        std::cout<<"Writing stresses"<<std::endl;
+      output_->WriteVector("traction",stressmanager_->GetPreCalcStresses(trueresidual_));
     }
     //only perform wall shear stress calculation when output is needed
     if (write_wall_shear_stresses_ && xwall_ == Teuchos::null)
     {
       output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
-      if (myrank_==0)
-        std::cout<<"Writing wall shear stresses"<<std::endl;
     }
 
     //biofilm growth
@@ -3522,13 +3518,12 @@ void FLD::FluidImplicitTimeInt::Output()
     //only perform stress calculation when output is needed
     if (writestresses_)
     {
-      Teuchos::RCP<Epetra_Vector> traction = stressmanager_->GetPreCalcStresses(trueresidual_);
-      output_->WriteVector("traction",traction);
-      //only perform wall shear stress calculation when output is needed
-      if (write_wall_shear_stresses_ && xwall_ == Teuchos::null)
-      {
-        output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
-      }
+      output_->WriteVector("traction",stressmanager_->GetPreCalcStresses(trueresidual_));
+    }
+    //only perform wall shear stress calculation when output is needed
+    if (write_wall_shear_stresses_ && xwall_ == Teuchos::null)
+    {
+      output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(trueresidual_));
     }
 
     // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
