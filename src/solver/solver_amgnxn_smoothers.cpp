@@ -496,7 +496,9 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::BuildHierarchy()
 
   // Input num eq and offset in the final level.
   // The amalgamation factory needs this info!
-  int offsetFineLevel =  A_->RowMap().MinAllGID();
+  int offsetFineLevel(0);
+  if(num_pde_ > 1)
+    offsetFineLevel = A_->RowMap().MinAllGID();
   mueluOp->SetFixedBlockSize(num_pde_,offsetFineLevel);
   Teuchos::ParameterList& MatrixList = muelu_list_.sublist("Matrix");
   MatrixList.set<int>("DOF offset",offsetFineLevel);
