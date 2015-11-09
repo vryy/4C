@@ -1,6 +1,6 @@
 //
 // Maintainer: Anh-Tu Vuong
-// ehrl@lnm.mw.tum.de
+// vuong@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
 //
 ==================================================================
@@ -70,7 +70,7 @@ COUPALGO                        ssi_OneWay_SolidToScatra
 ITEMAX                          10
 SCATRA_FROM_RESTART_FILE        No
 SCATRATYPE                      ConvectionDiffusion
-MATCHINGGRID                    no
+FIELDCOUPLING                   meshtying
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     dual
 SEARCH_ALGORITHM                Binarytree

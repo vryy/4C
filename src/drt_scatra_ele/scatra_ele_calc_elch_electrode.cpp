@@ -318,7 +318,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::line2>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::line3>;
 
 // 2D elements
-//template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcElchElectrode<DRT::Element::quad8>;

@@ -555,7 +555,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcCharEleLength(
     case INPAR::SCATRA::root_of_volume:
     {
       // cast dimension to a double varibale -> pow()
-      const double dim = double (nsd_);
+      const double dim = double (nsd_ele_);
       h = std::pow(vol,1.0/dim);
     }
     break;

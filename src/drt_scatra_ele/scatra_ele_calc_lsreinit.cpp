@@ -1394,7 +1394,7 @@ template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line2>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::line3>;
 
 // 2D elements
-//template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad4>;
 //template class DRT::ELEMENTS::ScaTraEleCalcLsReinit<DRT::Element::quad8>;

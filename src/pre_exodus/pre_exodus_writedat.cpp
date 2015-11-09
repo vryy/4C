@@ -437,6 +437,7 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
   std::vector<EXODUS::elem_def> thermo;
   std::vector<EXODUS::elem_def> acou;
   std::vector<EXODUS::elem_def> cell;
+  std::vector<EXODUS::elem_def> cellscatra;
   std::vector<EXODUS::elem_def>::const_iterator i_et;
 
   for(i_et=eledefs.begin();i_et!=eledefs.end();++i_et){
@@ -449,6 +450,7 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
     else if (acte.sec.compare("THERMO")==0) thermo.push_back(acte);
     else if (acte.sec.compare("ACOUSTIC")==0) acou.push_back(acte);
     else if (acte.sec.compare("CELL")==0) cell.push_back(acte);
+    else if (acte.sec.compare("CELLSCATRA")==0) cellscatra.push_back(acte);
     else if (acte.sec.compare("")==0);
     else{
       std::cout << "Unknown ELEMENT sectionname in eb" << acte.id << ": '" << acte.sec << "'!" << std::endl;
@@ -524,6 +526,15 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
   // print cell elements
   dat << "---------------------------------------------------CELL ELEMENTS" << std::endl;
   for(i_et=cell.begin();i_et!=cell.end();++i_et)
+  {
+    EXODUS::elem_def acte = *i_et;
+    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
+  }
+
+  // print cellscatra elements
+  dat << "---------------------------------------------------CELLSCATRA ELEMENTS" << std::endl;
+  for(i_et=cellscatra.begin();i_et!=cellscatra.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
     Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);

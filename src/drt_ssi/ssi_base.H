@@ -18,12 +18,15 @@
 
 #include <Epetra_Vector.h>
 
+#include "../drt_inpar/inpar_ssi.H"
+
 namespace ADAPTER
 {
   class ScaTraBaseAlgorithm;
   class Structure;
   class ScaTraTimIntImpl;
   class CouplingMortar;
+  class MortarVolCoupl;
 }
 
 namespace LINALG
@@ -93,17 +96,17 @@ namespace SSI
 
     Teuchos::RCP<LINALG::MapExtractor> extractor_;
 
-    /// flag for matching structure and scatra discretization
-    bool matchinggrid_;
+    //! volume coupling (using mortar) adapter
+    Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
 
-    /// flag whether scalar transport on a boundary of the structure is present
-    bool boundarytransport_;
+    //! Type of coupling strategy between the two fields of the SSI problems
+    const INPAR::SSI::FieldCoupling fieldcoupling_;
 
     /// setup adapters for transport on boundary if necessary
-    void SetupBoundaryScatra(const std::string struct_disname, const std::string scatra_disname);
+    void SetupFieldCoupling(const std::string struct_disname, const std::string scatra_disname);
 
   private:
-    /// clone scatra discretization form structure discretization
+    /// setup discretizations and dofsets
     void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname);
 
     /// set structure mesh displacement on scatra field

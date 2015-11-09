@@ -34,57 +34,13 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
     dispincnp_(LINALG::CreateVector(*structure_->DofRowMap(0),true))
 {
 
-  if(matchinggrid_)
-  {
-    // build a proxy of the structure discretization for the scatra field
-    Teuchos::RCP<DRT::DofSet> structdofset
-      = structure_->Discretization()->GetDofSetProxy();
-    // build a proxy of the temperature discretization for the structure field
-    Teuchos::RCP<DRT::DofSet> scatradofset
-      = scatra_->ScaTraField()->Discretization()->GetDofSetProxy();
-
-    // check if scatra field has 2 discretizations, so that coupling is possible
-    if (scatra_->ScaTraField()->Discretization()->AddDofSet(structdofset)!=1)
-      dserror("unexpected dof sets in scatra field");
-    if (structure_->Discretization()->AddDofSet(scatradofset)!=1)
-      dserror("unexpected dof sets in structure field");
-  }
-  else
-  {
-    //first call FillComplete for single discretizations.
-    //This way the physical dofs are numbered successively
-    structure_->Discretization()->FillComplete();
-    scatra_->ScaTraField()->Discretization()->FillComplete();
-
-    //build auxiliary dofsets, i.e. pseudo dofs on each discretization
-    const int ndofpernode_scatra = 1; //scatradis->lRowElement(0)->NumDofPerNode();
-    const int ndofperelement_scatra  = 0;
-    const int ndofpernode_struct = DRT::Problem::Instance()->NDim();
-    const int ndofperelement_struct = 0;
-    if (structure_->Discretization()->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 1)
-      dserror("unexpected dof sets in structure field");
-    if (scatra_->ScaTraField()->Discretization()->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
-      dserror("unexpected dof sets in scatra field");
-
-    //call AssignDegreesOfFreedom also for auxiliary dofsets
-    //note: the order of FillComplete() calls determines the gid numbering!
-    // 1. structure dofs
-    // 2. scatra dofs
-    // 3. structure auxiliary dofs
-    // 4. scatra auxiliary dofs
-    structure_->Discretization()->FillComplete(true, false,false);
-    scatra_->ScaTraField()->Discretization()->FillComplete(true, false,false);
-  }
-
-  SetupBoundaryScatra(struct_disname, scatra_disname);
-
-  if (DRT::INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE")){
-    dserror("Different time stepping for two way coupling not implemented yet.");
-  }
-
   // call the SSI parameter lists
   const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
   const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");
+
+  if (DRT::INPUT::IntegralValue<int>(ssicontrol, "DIFFTIMESTEPSIZE")){
+    dserror("Different time stepping for two way coupling not implemented yet.");
+  }
 
   // Get the parameters for the ConvergenceCheck
   itmax_ = ssicontrol.get<int>("ITEMAX"); // default: =10
@@ -92,10 +48,6 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
 
   //do some checks
   {
-    if(boundarytransport_ and matchinggrid_)
-      dserror("Transport on domain boundary and matching discretizations is not supported. "
-          "Set MATCHINGGRID to 'no' in SSI CONTROL section or remove SSI Coupling Condition");
-
     INPAR::SCATRA::ConvForm convform
     = DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams,"CONVFORM");
     if ( convform != INPAR::SCATRA::convform_conservative )
@@ -163,7 +115,9 @@ void SSI::SSI_Part2WC::PrepareTimeStep()
   IncrementTimeAndStep();
   PrintHeader();
 
+  SetStructSolution(structure_->Dispn(),structure_->Veln());
   structure_-> PrepareTimeStep();
+  SetScatraSolution(scatra_->ScaTraField()->Phin());
   scatra_->ScaTraField()->PrepareTimeStep();
 }
 

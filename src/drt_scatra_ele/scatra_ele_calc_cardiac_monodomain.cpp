@@ -157,7 +157,8 @@ template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line2
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::line3,1>;
 
 // 2D elements
-//template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri3,2>;
+template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri3,3>;
 //template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad4,2>;
 template class DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<DRT::Element::quad4,3>;

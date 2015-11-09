@@ -45,6 +45,21 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("SCATRA_FROM_RESTART_FILE","No","read scatra result from restart files (use option 'restartfromfile' during execution of baci)",&ssidyn);
   StringParameter("SCATRA_FILENAME","nil","Control-file name for reading scatra results in SSI",&ssidyn);
 
+  // Type of coupling strategy between the two fields
+  setStringToIntegralParameter<int>(
+                              "FIELDCOUPLING","matching",
+                              "Type of coupling strategy between fields",
+                              tuple<std::string>(
+                                "matching",
+                                "meshtying",
+                                "volmortar"
+                                ),
+                              tuple<int>(
+                                  coupling_match,
+                                  coupling_meshtying,
+                                  coupling_volmortar
+                                ),
+                              &ssidyn);
 
   // Coupling strategy for SSI solvers
   setStringToIntegralParameter<int>(
@@ -92,8 +107,6 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  INPAR::SCATRA::impltype_chemo,
                                  INPAR::SCATRA::impltype_chemoreac),
                                  &ssidyn);
-
-  BoolParameter("MATCHINGGRID","Yes","is matching grid",&ssidyn);
 
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned SSI */

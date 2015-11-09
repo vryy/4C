@@ -15,7 +15,6 @@
 
 #include "ssi_partitioned.H"
 #include "ssi_utils.H"
-#include "../drt_inpar/inpar_ssi.H"
 
 #include "../drt_adapter/ad_str_wrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
@@ -27,6 +26,11 @@
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
 #include "../drt_scatra_ele/scatra_ele.H"
+
+//for coupling of nonmatching meshes
+#include "../drt_adapter/adapter_coupling_volmortar.H"
+#include "../drt_volmortar/volmortar_utils.H"
+#include"../drt_inpar/inpar_volmortar.H"
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_mapextractor.H"
@@ -51,16 +55,16 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
     zeros_(Teuchos::null),
     adaptermeshtying_(Teuchos::null),
     extractor_(Teuchos::null),
-    matchinggrid_(true),
-    boundarytransport_(false)
+    fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SSI::FieldCoupling>(DRT::Problem::Instance()->SSIControlParams(),"FIELDCOUPLING"))
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
 
-  //2.- Setup discretizations.
+  //2.- Setup discretizations and coupling.
   SetupDiscretizations(comm,struct_disname, scatra_disname);
+  SetupFieldCoupling(struct_disname, scatra_disname);
 
   //3.- Create the two uncoupled subproblems.
   // access the structural discretization
@@ -188,7 +192,45 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm, const std::str
     }
   }
 
-  matchinggrid_ = DRT::INPUT::IntegralValue<bool>(problem->SSIControlParams(),"MATCHINGGRID");
+  if(fieldcoupling_==INPAR::SSI::coupling_match)
+  {
+    // build a proxy of the structure discretization for the scatra field
+    Teuchos::RCP<DRT::DofSet> structdofset = structdis->GetDofSetProxy();
+    // build a proxy of the temperature discretization for the structure field
+    Teuchos::RCP<DRT::DofSet> scatradofset = scatradis->GetDofSetProxy();
+
+    // check if scatra field has 2 discretizations, so that coupling is possible
+    if (scatradis->AddDofSet(structdofset)!=1)
+      dserror("unexpected dof sets in scatra field");
+    if (structdis->AddDofSet(scatradofset)!=1)
+      dserror("unexpected dof sets in structure field");
+  }
+  else
+  {
+    //first call FillComplete for single discretizations.
+    //This way the physical dofs are numbered successively
+    structdis->FillComplete();
+    scatradis->FillComplete();
+
+    //build auxiliary dofsets, i.e. pseudo dofs on each discretization
+    const int ndofpernode_scatra = scatradis->NumDof(0,scatradis->lRowNode(0));
+    const int ndofperelement_scatra  = 0;
+    const int ndofpernode_struct = structdis->NumDof(0,structdis->lRowNode(0));
+    const int ndofperelement_struct = 0;
+    if (structdis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 1)
+      dserror("unexpected dof sets in structure field");
+    if (scatradis->BuildDofSetAuxProxy(ndofpernode_struct, ndofperelement_struct, 0, true) != 1)
+      dserror("unexpected dof sets in scatra field");
+
+    //call AssignDegreesOfFreedom also for auxiliary dofsets
+    //note: the order of FillComplete() calls determines the gid numbering!
+    // 1. structure dofs
+    // 2. scatra dofs
+    // 3. structure auxiliary dofs
+    // 4. scatra auxiliary dofs
+    structdis->FillComplete(true, false,false);
+    scatradis->FillComplete(true, false,false);
+  }
 
 }
 
@@ -205,34 +247,57 @@ void SSI::SSI_Base::SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Base::SetScatraSolution( Teuchos::RCP<const Epetra_Vector> phi )
 {
-  if(not boundarytransport_)
+  switch(fieldcoupling_)
+  {
+  case INPAR::SSI::coupling_match:
     structure_->Discretization()->SetState(1,"temperature",phi);
-  else
-    dserror("transfering scalar state to structure discretization not implemented for"
+    break;
+  case INPAR::SSI::coupling_volmortar:
+    structure_->Discretization()->SetState(1,"temperature",volcoupl_structurescatra_->ApplyVectorMapping12(phi));
+    break;
+  case INPAR::SSI::coupling_meshtying:
+    dserror("transfering scalar state to structure discretization not implemented for "
         "transport on structural boundary. Only SolidToScatra coupling available.");
+    break;
+  default:
+    dserror("unknown field coupling type in SetScatraSolution()");
+    break;
+  }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Base::SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel)
 {
-  if(not boundarytransport_)
+  switch(fieldcoupling_)
   {
-    scatra_->ScaTraField()->SetVelocityField(
-        zeros_, //convective vel.
-        Teuchos::null, //acceleration
-        vel, //velocity
-        Teuchos::null, //fsvel
-        1);
-  }
-  else
-  {
+  case INPAR::SSI::coupling_match:
+      scatra_->ScaTraField()->SetVelocityField(
+          zeros_, //convective vel.
+          Teuchos::null, //acceleration
+          vel, //velocity
+          Teuchos::null, //fsvel
+          1);
+      break;
+  case INPAR::SSI::coupling_volmortar:
+      scatra_->ScaTraField()->SetVelocityField(
+          volcoupl_structurescatra_->ApplyVectorMapping21(zeros_), //convective vel.
+          Teuchos::null, //acceleration
+          volcoupl_structurescatra_->ApplyVectorMapping21(vel), //velocity
+          Teuchos::null, //fsvel
+          1);
+      break;
+  case INPAR::SSI::coupling_meshtying:
     scatra_->ScaTraField()->SetVelocityField(
         adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(zeros_)), //convective vel.
         Teuchos::null, //acceleration
         adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(vel)), //velocity
         Teuchos::null, //fsvel
         1);
+    break;
+  default:
+    dserror("unknown field coupling type in SetVelocityFields()");
+    break;
   }
 }
 
@@ -240,37 +305,57 @@ void SSI::SSI_Base::SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel)
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Base::SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp )
 {
-  if(not boundarytransport_)
+  switch(fieldcoupling_)
   {
-    scatra_->ScaTraField()->ApplyMeshMovement(
-        disp,
-        1);
-  }
-  else
-  {
+  case INPAR::SSI::coupling_match:
+      scatra_->ScaTraField()->ApplyMeshMovement(
+          disp,
+          1);
+      break;
+  case INPAR::SSI::coupling_volmortar:
+      scatra_->ScaTraField()->ApplyMeshMovement(
+          volcoupl_structurescatra_->ApplyVectorMapping21(disp),
+          1);
+      break;
+  case INPAR::SSI::coupling_meshtying:
     scatra_->ScaTraField()->ApplyMeshMovement(
         adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(disp)),
         1);
+    break;
   }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Base::SetupBoundaryScatra(const std::string struct_disname, const std::string scatra_disname)
+void SSI::SSI_Base::SetupFieldCoupling(const std::string struct_disname, const std::string scatra_disname)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
   Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
 
-  //check for ssi coupling condition
-  std::vector<DRT::Condition*> ssicoupling;
-  scatradis->GetCondition("SSICoupling",ssicoupling);
-  if(ssicoupling.size())
-    boundarytransport_=true;
-  else
-    boundarytransport_=false;
+  //safety check
+  {
+    //check for ssi coupling condition
+    std::vector<DRT::Condition*> ssicoupling;
+    scatradis->GetCondition("SSICoupling",ssicoupling);
+    const bool havessicoupling = (ssicoupling.size()>0);
 
-  if(boundarytransport_)
+    if(havessicoupling and fieldcoupling_!=INPAR::SSI::coupling_meshtying)
+      dserror("SSICoupling condition only valid in combination with FIELDCOUPLING 'meshtying' in SSI DYNAMIC section. "
+          "If you want volume and surface coupling, FIELDCOUPLING 'volmortar' and "
+          "a Mortar/S2I condition (and no SSICoupling condition) for the volume-surface-scatra coupling.");
+
+    if(fieldcoupling_==INPAR::SSI::coupling_volmortar)
+    {
+      const Teuchos::ParameterList& volmortarparams = DRT::Problem::Instance()->VolmortarParams();
+      if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(volmortarparams,"COUPLINGTYPE")!=
+           INPAR::VOLMORTAR::couplingtype_coninter)
+        dserror("Volmortar coupling only tested for consistent interpolation, "
+            "i.e. 'COUPLINGTYPE consint' in VOLMORTAR COUPLING section. Try other couplings at own risk.");
+    }
+  }
+
+  if(fieldcoupling_==INPAR::SSI::coupling_meshtying)
   {
     adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
@@ -289,5 +374,14 @@ void SSI::SSI_Base::SetupBoundaryScatra(const std::string struct_disname, const 
                             );
 
     extractor_= Teuchos::rcp(new LINALG::MapExtractor(*structdis->DofRowMap(0),adaptermeshtying_->MasterDofRowMap(),true));
+  }
+  else if(fieldcoupling_==INPAR::SSI::coupling_volmortar)
+  {
+    // Scheme: non matching meshes --> volumetric mortar coupling...
+    volcoupl_structurescatra_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
+
+    //setup projection matrices (use default material strategy)
+    volcoupl_structurescatra_->Setup( structdis,
+                                      scatradis);
   }
 }

@@ -965,6 +965,8 @@ void DatFileReader::ReadDat()
   exclude.push_back("--PARTICLE DOMAIN");
   exclude.push_back("--CELL ELEMENTS");
   exclude.push_back("--CELL DOMAIN");
+  exclude.push_back("--CELLSCATRA ELEMENTS");
+  exclude.push_back("--CELLSCATRA DOMAIN");
 
   Teuchos::RCP<Epetra_Comm> comm = comm_;
 

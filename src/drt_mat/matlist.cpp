@@ -147,19 +147,20 @@ void MAT::MatList::Pack(DRT::PackBuffer& data) const
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
 
-  if (params_->local_)
-  {
-    // loop map of associated local materials
-    if (params_ != NULL)
+  if (params_ != NULL)
+    if (params_->local_)
     {
-      //std::map<int, Teuchos::RCP<MAT::Material> >::const_iterator m;
-      std::vector<int>::const_iterator m;
-      for (m=params_->MatIds()->begin(); m!=params_->MatIds()->end(); m++)
+      // loop map of associated local materials
+      if (params_ != NULL)
       {
-        (mat_.find(*m))->second->Pack(data);
+        //std::map<int, Teuchos::RCP<MAT::Material> >::const_iterator m;
+        std::vector<int>::const_iterator m;
+        for (m=params_->MatIds()->begin(); m!=params_->MatIds()->end(); m++)
+        {
+          (mat_.find(*m))->second->Pack(data);
+        }
       }
     }
-  }
 }
 
 

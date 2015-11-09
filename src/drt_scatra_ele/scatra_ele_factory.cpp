@@ -153,10 +153,16 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
       dserror("NURBS9 transport element not implemented as part of %i-dimensional problem. Just do it",ndim);
     break;
   }
-//  case DRT::Element::tri3:
-//  {
-//    return ScaTraImpl<DRT::Element::tri3,2>::Instance(problem,numdofpernode,numscal,disname);
-//  } /*
+  case DRT::Element::tri3:
+  {
+    if(ndim==2)
+      return DefineProblemType<DRT::Element::tri3,2>(problem,numdofpernode,numscal,disname);
+    else if(ndim==3)
+      return DefineProblemType<DRT::Element::tri3,3>(problem,numdofpernode,numscal,disname);
+    else
+      dserror("invalid problem dimension for tri3 transport element!");
+    break;
+  }
 //  case DRT::Element::tri6:
 //  {
 //    return ScaTraImpl<DRT::Element::tri6,2>::Instance(problem,numdofpernode,numscal,disname);

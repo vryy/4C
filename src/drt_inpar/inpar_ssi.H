@@ -7,7 +7,7 @@
 Maintainer: Anh-Tu Vuong
             vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15264
+            089 - 289-15251
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
@@ -26,7 +26,7 @@ namespace DRT { namespace INPUT { class ConditionDefinition; } }
 namespace INPAR
 {
 
-/// Input parameters for poroelasticity
+/// Input parameters for solid-scatra-interaction
 namespace SSI
 {
 
@@ -44,6 +44,14 @@ namespace SSI
     ssi_IterStaggAitken_SolidToScatra
     //IterStaggAitkenIrons,
     //Monolithic
+  };
+
+  /// Type of coupling strategy between the two fields of the SSI problems
+  enum FieldCoupling
+  {
+    coupling_match,
+    coupling_meshtying,
+    coupling_volmortar
   };
 
 

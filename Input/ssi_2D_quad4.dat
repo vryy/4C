@@ -1,6 +1,6 @@
 //
 // Maintainer: Anh-Tu Vuong
-// ehrl@lnm.mw.tum.de
+// vuong@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
 //
 ==================================================================
@@ -67,6 +67,7 @@ MAXTIME                         1.0
 TIMESTEP                        1.0
 COUPALGO                        ssi_OneWay_SolidToScatra
 ITEMAX                          10
+FIELDCOUPLING                   matching
 SCATRA_FROM_RESTART_FILE        No
 SCATRATYPE                      ConvectionDiffusion
 --------------------------------------------------------------------SOLVER 1

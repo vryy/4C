@@ -23,7 +23,8 @@ template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3,1>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::line3,3>;
 
 // 2D elements
-//template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri3, 3>;
 //template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4,2>;
 template class DRT::ELEMENTS::ScaTraEleCalc<DRT::Element::quad4,3>;
