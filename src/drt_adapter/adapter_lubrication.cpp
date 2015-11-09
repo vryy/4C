@@ -23,9 +23,9 @@ Maintainer: Andy Wirtz
 
 #include "../linalg/linalg_solver.H"
 
-#include "../drt_scatra/scatra_resulttest.H"
+#include "../drt_lubrication/lubrication_resulttest.H"
 
-#include "../drt_scatra/scatra_timint_stat.H"
+#include "../drt_lubrication/lubrication_timint_stat.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -107,7 +107,7 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
 
     // create instance of time integration class (call the constructor)
   lubrication_ = Teuchos::rcp(
-      new SCATRA::TimIntStationary(actdis, solver, lubricationtimeparams,
+      new LUBRICATION::TimIntStationary(actdis, solver, lubricationtimeparams,
           extraparams, output));
 
   lubrication_->Init();
@@ -120,5 +120,5 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::LubricationBaseAlgorithm::CreateLubricationFieldTest()
 {
-  return Teuchos::rcp(new SCATRA::ScaTraResultTest(lubrication_));
+  return Teuchos::rcp(new LUBRICATION::ResultTest(lubrication_));
 }

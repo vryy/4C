@@ -1015,6 +1015,10 @@ set(OBJS_DRT_SCATRA
   src/drt_levelset/levelset_intersection_utils.cpp
   src/drt_levelset/levelset_timint_ost.cpp
   src/drt_levelset/levelset_timint_stat.cpp
+  src/drt_lubrication/lubrication_resulttest.cpp
+  src/drt_lubrication/lubrication_timint_implicit_service.cpp
+  src/drt_lubrication/lubrication_timint_implicit.cpp
+  src/drt_lubrication/lubrication_timint_stat.cpp
 )
 set(OBJS_DRT_TSI
   src/drt_tsi/tsi_algorithm.cpp
@@ -2289,6 +2293,7 @@ add_library(alg_fpsi ${OBJS_DRT_FPSI})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
 add_library(alg_topopt ${OBJS_DRT_TOPOPT})
 add_library(alg_ssi ${OBJS_DRT_SSI})
+add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
 
 set(MULTIFIELD_LIBRARIES
   alg_elch
@@ -2326,7 +2331,6 @@ add_library(alg_invanalysis ${OBJS_INV_ANALYSIS})
 add_library(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 add_library(alg_mlmc ${OBJS_MLMC})
 add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
-add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
 add_library(alg_scatra ${OBJS_DRT_SCATRA})
 add_library(alg_statmech ${OBJS_DRT_STATMECH})
 add_library(alg_plastic_ssn ${OBJS_DRT_PLASTIC_SSN})

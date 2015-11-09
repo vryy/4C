@@ -189,9 +189,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::ExtractElementAndNodeVa
 )
 {
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("phinp");
+  Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("prenp");
   if (prenp==Teuchos::null)
-    dserror("Cannot get state vector 'phinp'");
+    dserror("Cannot get state vector 'prenp'");
 
   //values of pressure field are always in first dofset
   const std::vector<int>&    lm = la[0].lm_;
@@ -740,8 +740,8 @@ int DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::EvaluateAction(
     if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
 
     // need current solution
-    Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("phinp");
-    if (prenp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+    Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("prenp");
+    if (prenp==Teuchos::null) dserror("Cannot get state vector 'prenp'");
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*prenp,eprenp_,lm);
 
     CalErrorComparedToAnalytSolution(

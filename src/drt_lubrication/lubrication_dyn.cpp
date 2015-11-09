@@ -19,7 +19,7 @@ Maintainer: Andy Wirtz
 
 #include "../drt_lib/drt_utils_createdis.H"
 
-#include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_lubrication/lubrication_timint_implicit.H"
 
 
 /*----------------------------------------------------------------------*

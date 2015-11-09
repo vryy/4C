@@ -23,9 +23,9 @@ namespace DRT
   class ResultTest;
 }
 
-namespace SCATRA
+namespace LUBRICATION
 {
-  class ScaTraTimIntImpl;
+  class TimIntImpl;
 }
 
 namespace Teuchos
@@ -62,7 +62,7 @@ namespace ADAPTER {
     virtual ~LubricationBaseAlgorithm(){};
 
     /// access to the Lubrication field solver
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> LubricationField() { return lubrication_; }
+    Teuchos::RCP<LUBRICATION::TimIntImpl> LubricationField() { return lubrication_; }
 
     /// create result test for Lubrication field
     Teuchos::RCP<DRT::ResultTest> CreateLubricationFieldTest();
@@ -70,7 +70,7 @@ namespace ADAPTER {
   private:
 
     /// Lubrication field solver
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> lubrication_;
+    Teuchos::RCP<LUBRICATION::TimIntImpl> lubrication_;
 
   }; // class LubricationBaseAlgorithm
 
