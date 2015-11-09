@@ -697,10 +697,11 @@ void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >
   WallShearStress = fpsi_->FPSICoupl()->iFluidToPorofluid(WallShearStress);
 
   // insert porofluid interface entries into vector with full porofluid length
-  Teuchos::RCP<Epetra_Vector> porofluid = LINALG::CreateVector(*(fpsi_->PoroField()->Extractor()->FullMap()),true);
+  Teuchos::RCP<Epetra_Vector> porofluid = LINALG::CreateVector(*(fpsi_->PoroField()->FluidField()->DofRowMap()),true);
 
-  //Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
-  fpsi_->FPSICoupl()->PoroExtractor()->InsertVector(WallShearStress,3,porofluid);
+  //Parameter int block of function InsertVector:
+  fpsi_->FPSICoupl()->PoroFluidFpsiVelPresExtractor()->InsertVector(WallShearStress,1,porofluid);
+
   wss.push_back(porofluid);
 }
 
