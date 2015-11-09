@@ -582,9 +582,8 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
     // write the flowrates of the previous period
     output.WriteRedundantDoubleVector(stream1.str(),flowrates_);
 
-    // also write flowratesposition of this outlet
-    stream2 << "flowratesposId" << condnum;
-    output.WriteInt(stream2.str(), flowratespos_);
+    if ( flowratespos_ != pressurespos_)
+      dserror("Positions do not match!");
 
     // write the pressures
     stream4<< "pressuresId"<<condnum;
@@ -594,9 +593,6 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
     stream5 << "pressuresposId" << condnum;
     output.WriteInt(stream5.str(), pressurespos_);
   }
-
-  // write time step size dta_
-  output.WriteDouble("ImpedanceBC_dta", dta_);
 
   dpstream<<"dP"<<condnum;
   output.WriteDouble(dpstream.str(), dP_);
@@ -620,7 +616,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   std::stringstream stream1, stream2, stream3, stream4, stream5, dpstream;
 
   // old time step size
-  double odta = reader.ReadDouble("ImpedanceBC_dta");
+  double odta = reader.ReadDouble("timestep");
 
   // get time step of the current problems
   double ndta = dta_;
@@ -690,11 +686,10 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   else
   {
     stream1 << "flowratesId" << condnum;
-    stream2 << "flowratesposId" << condnum;
 
     // read in flow rates
     reader.ReadRedundantDoubleVector(flowrates_ ,stream1.str());
-    flowratespos_ = reader.ReadInt(stream2.str()) ;
+    flowratespos_ = pressurespos_;
 
     // Get old flowrates Vector size
     int oQSize = (int)flowrates_->size();
