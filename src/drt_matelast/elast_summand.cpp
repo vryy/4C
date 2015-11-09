@@ -35,6 +35,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_volsussmanbathe.H"
 #include "elast_volpenalty.H"
 #include "elast_vologden.H"
+#include "elast_volpow.H"
 #include "elast_coupanisoexpo.H"
 #include "elast_coupanisoexpotwocoup.H"
 #include "elast_coupanisoneohooke.H"
@@ -236,6 +237,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::VolOgden(curmat));
     MAT::ELASTIC::PAR::VolOgden* params = static_cast<MAT::ELASTIC::PAR::VolOgden*>(curmat->Parameter());
     return Teuchos::rcp(new VolOgden(params));
+  }
+  case INPAR::MAT::mes_volpow:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::VolPow(curmat));
+    MAT::ELASTIC::PAR::VolPow* params = static_cast<MAT::ELASTIC::PAR::VolPow*>(curmat->Parameter());
+    return Teuchos::rcp(new VolPow(params));
   }
   case INPAR::MAT::mes_coupanisoexpo:
   {

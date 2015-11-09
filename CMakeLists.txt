@@ -562,6 +562,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_vologden.cpp
   src/drt_matelast/elast_volpenalty.cpp
   src/drt_matelast/elast_volsussmanbathe.cpp
+  src/drt_matelast/elast_volpow.cpp
   src/drt_matelast/visco_isoratedep.cpp
   src/drt_matelast/visco_coupmyocard.cpp
   src/drt_matelast/visco_genmax.cpp

@@ -509,6 +509,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_volsussmanbathe:
   case INPAR::MAT::mes_volpenalty:
   case INPAR::MAT::mes_vologden:
+  case INPAR::MAT::mes_volpow:
   case INPAR::MAT::mes_coupanisoexpo:
   case INPAR::MAT::mes_coupanisopow:
   case INPAR::MAT::mes_coupanisoexpotwocoup:

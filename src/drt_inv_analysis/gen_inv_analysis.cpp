@@ -52,6 +52,7 @@ Maintainer: Michael Gee
 #include "../drt_matelast/elast_vologden.H"
 #include "../drt_matelast/elast_volpenalty.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
+#include "../drt_matelast/elast_volpow.H"
 #include "../drt_matelast/visco_coupmyocard.H"
 #include "../drt_matelast/visco_isoratedep.H"
 #include "../drt_matelast/visco_genmax.H"
@@ -1385,6 +1386,16 @@ void STR::GenInvAnalysis::ReadInParameters()
               //p_[j+1] = params2->beta_;
               break;
             }
+            case INPAR::MAT::mes_volpow:
+            {
+              filename_=filename_+"_volpow";
+              const MAT::ELASTIC::PAR::VolPow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::VolPow*>(actelastmat->Parameter());
+              int j = p_.Length();
+              p_.Resize(j+1);
+              p_[j]   = params2->a_;
+              //p_[j+1]   = params2->expon_;
+              break;
+            }
             default:
               dserror("cannot deal with this material");
               break;
@@ -1573,6 +1584,16 @@ void STR::GenInvAnalysis::ReadInParameters()
               //p_[j+1] = params2->beta_;
               break;
             }
+            case INPAR::MAT::mes_volpow:
+            {
+              filename_=filename_+"_volpow";
+              const MAT::ELASTIC::PAR::VolPow* params2 = dynamic_cast<const MAT::ELASTIC::PAR::VolPow*>(actelastmat->Parameter());
+              int j = p_.Length();
+              p_.Resize(j+1);
+              p_[j]   = params2->a_;
+              //p_[j+1]   = params2->expon_;
+              break;
+            }
             case INPAR::MAT::mes_coupexppol:
             {
               filename_=filename_+"_coupexppol";
@@ -1612,9 +1633,9 @@ void STR::GenInvAnalysis::ReadInParameters()
               filename_=filename_+"_genmax";
               const MAT::ELASTIC::PAR::GenMax* params2 = dynamic_cast<const MAT::ELASTIC::PAR::GenMax*>(actelastmat->Parameter());
               int j = p_.Length();
-              p_.Resize(j+2);
+              p_.Resize(j+1);
               p_[j]   = params2->tau_;
-              p_[j+1]   = params2->beta_;
+              //p_[j+1]   = params2->beta_;
               break;
             }
             default:
@@ -1644,6 +1665,7 @@ void STR::GenInvAnalysis::ReadInParameters()
       case INPAR::MAT::mes_coupmooneyrivlin:
       case INPAR::MAT::mes_volsussmanbathe:
       case INPAR::MAT::mes_volpenalty:
+      case INPAR::MAT::mes_volpow:
       case INPAR::MAT::mes_vologden:
       case INPAR::MAT::mes_isoratedep:
       case INPAR::MAT::mes_genmax:
@@ -2010,6 +2032,15 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
             j = j+1;
             break;
           }
+          case INPAR::MAT::mes_volpow:
+          {
+            MAT::ELASTIC::PAR::VolPow* params2 =
+              dynamic_cast<MAT::ELASTIC::PAR::VolPow*>(actelastmat->Parameter());
+            params2->SetA(abs(p_cur(j)));
+            //params2->SetExpon(abs(p_cur(j+1)));
+            j = j+1;
+            break;
+          }
           default:
             dserror("cannot deal with this material");
           }
@@ -2035,6 +2066,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
     case INPAR::MAT::mes_volsussmanbathe:
     case INPAR::MAT::mes_volpenalty:
     case INPAR::MAT::mes_vologden:
+    case INPAR::MAT::mes_volpow:
     case INPAR::MAT::mes_coupmyocard:
     case INPAR::MAT::mes_isoratedep:
     case INPAR::MAT::mes_genmax:
@@ -2250,6 +2282,15 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
             j = j+1;
             break;
           }
+          case INPAR::MAT::mes_volpow:
+          {
+            MAT::ELASTIC::PAR::VolPow* params2 =
+              dynamic_cast<MAT::ELASTIC::PAR::VolPow*>(actelastmat->Parameter());
+            params2->SetA(abs(p_cur(j)));
+            //params2->SetExpon(abs(p_cur(j+1)));
+            j = j+1;
+            break;
+          }
           case INPAR::MAT::mes_coupmyocard:
           {
             MAT::ELASTIC::PAR::CoupMyocard* params2 =
@@ -2271,8 +2312,8 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
             MAT::ELASTIC::PAR::GenMax* params2 =
               dynamic_cast<MAT::ELASTIC::PAR::GenMax*>(actelastmat->Parameter());
             params2->SetTau(abs(p_cur(j)));
-            params2->SetBeta(abs(p_cur(j+1)));
-            j = j+2;
+           // params2->SetBeta(abs(p_cur(j+1)));
+            j = j+1;
             break;
           }
           default:

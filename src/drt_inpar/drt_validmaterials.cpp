@@ -1371,6 +1371,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+
+  /*--------------------------------------------------------------------*/
+  // volumetric power law contribution
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_VolPow",
+                                            "Power law formulation for the volumetric part",
+                                            INPAR::MAT::mes_volpow));
+
+    AddNamedReal(m,"A","prefactor of power law");
+    AddNamedReal(m,"EXPON","exponent of power law");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
   /*--------------------------------------------------------------------*/
   // coupled anisotropic material with one exponential fiber family
   {
