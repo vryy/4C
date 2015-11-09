@@ -127,6 +127,11 @@ COUPALGO                        ssi_OneWay_ScatraToSolid
 ITEMAX                          10
 SCATRA_FROM_RESTART_FILE        No
 SCATRATYPE                      Cardiac_Monodomain
+FIELDCOUPLING                   volmortar
+----------------------------------------------------------VOLMORTAR COUPLING
+COUPLINGTYPE                    consint
+MESH_INIT                       no
+KEEP_EXTENDEDGHOSTING           no
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 20 DENS 0.001
 MAT 10 ELAST_CoupMooneyRivlin C1 1.0E-2 C2 0.0 C3 1.0E1

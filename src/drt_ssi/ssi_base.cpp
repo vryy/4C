@@ -172,28 +172,11 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm, const std::str
     conditions_to_copy = clonestrategy.ConditionsToCopy();
     DRT::UTILS::DiscretizationCreatorBase creator;
     creator.CopyConditions(scatradis,scatradis,conditions_to_copy);
-
-    // redistribute discr. with help of binning strategy
-    if(scatradis->Comm().NumProc()>1)
-    {
-      scatradis->FillComplete();
-      structdis->FillComplete();
-      // create vector of discr.
-      std::vector<Teuchos::RCP<DRT::Discretization> > dis;
-      dis.push_back(structdis);
-      dis.push_back(scatradis);
-
-      std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
-      std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
-
-      /// binning strategy is created and parallel redistribution is performed
-      Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
-        Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
-    }
   }
 
   if(fieldcoupling_==INPAR::SSI::coupling_match)
   {
+
     // build a proxy of the structure discretization for the scatra field
     Teuchos::RCP<DRT::DofSet> structdofset = structdis->GetDofSetProxy();
     // build a proxy of the temperature discretization for the structure field
