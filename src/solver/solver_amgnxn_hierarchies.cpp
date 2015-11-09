@@ -353,6 +353,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::AMGNXN::Hierarchies::BuildMueLuHierarchy
     if(nsdata==Teuchos::null)
       dserror("Error: null space data is empty");
 
+    // Hack making TSI work with the trilinos Q1_2015. The Q1_2014 version worked without this
+    if(numdf==1) offsetFineLevel = 0;
+
     //Prepare operator for MueLu
     Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_eop);
     if(A_crs==Teuchos::null)
