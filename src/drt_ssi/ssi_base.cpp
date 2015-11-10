@@ -77,10 +77,22 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
   bool isale = true;
   if(coupling == INPAR::SSI::ssi_OneWay_ScatraToSolid) isale = false;
 
+  // determine which time params to use to build the single fields
+  // in case of time stepping time params have to be read from single field sections
+  // in case of equal timestep size for all fields the time params are controlled solely
+  // by the problem section (e.g. ssi or cell dynamic)
+  const Teuchos::ParameterList* structtimeparams = &globaltimeparams;
+  const Teuchos::ParameterList* scatratimeparams = &globaltimeparams;
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->SSIControlParams(),"DIFFTIMESTEPSIZE"))
+  {
+    structtimeparams = &structparams;
+    scatratimeparams = &scatraparams;
+  }
+
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(globaltimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
+      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(*structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureField());
-  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatraparams,scatraparams,problem->SolverParams(linsolvernumber),scatra_disname,isale));
+  scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*scatratimeparams,scatraparams,problem->SolverParams(linsolvernumber),scatra_disname,isale));
   zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
 
 }
