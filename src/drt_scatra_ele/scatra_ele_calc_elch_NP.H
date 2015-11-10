@@ -378,12 +378,12 @@ class ScaTraEleInternalVariableManagerElchNP : public ScaTraEleInternalVariableM
 
     //! compute and set internal variables for the Nernst-Planck formulation
     void SetInternalVariablesElchNP(
-        LINALG::Matrix<NEN,1>&                 funct,       //!< array for shape functions
-        LINALG::Matrix<NSD,NEN>&               derxy,       //!< global derivatives of shape functions w.r.t x,y,z
-        std::vector<LINALG::Matrix<NEN,1> >&   ephinp,      //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
-        std::vector<LINALG::Matrix<NEN,1> >&   ephin,       //!< nodal state variables at t_(n)
-        LINALG::Matrix<NSD,NEN>&               econvelnp,   //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-        std::vector<LINALG::Matrix<NEN,1> >&   ehist        //!< history vector of transported scalars
+        const LINALG::Matrix<NEN,1>&                 funct,       //!< array for shape functions
+        const LINALG::Matrix<NSD,NEN>&               derxy,       //!< global derivatives of shape functions w.r.t x,y,z
+        const std::vector<LINALG::Matrix<NEN,1> >&   ephinp,      //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
+        const std::vector<LINALG::Matrix<NEN,1> >&   ephin,       //!< nodal state variables at t_(n)
+        const LINALG::Matrix<NSD,NEN>&               econvelnp,   //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
+        const std::vector<LINALG::Matrix<NEN,1> >&   ehist        //!< history vector of transported scalars
     )
     {
       // set internal variables in base variable manager

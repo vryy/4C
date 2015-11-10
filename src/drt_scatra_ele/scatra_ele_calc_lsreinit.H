@@ -327,13 +327,13 @@ class ScaTraEleInternalVariableManagerLsReinit : public ScaTraEleInternalVariabl
 
   // compute and set internal variables
   void SetInternalVariables(
-      LINALG::Matrix<NEN,1>& funct,  //! array for shape functions
-      LINALG::Matrix<NSD,NEN>& derxy, //! global derivatives of shape functions w.r.t x,y,z
-      std::vector<LINALG::Matrix<NEN,1> >& ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
-      std::vector<LINALG::Matrix<NEN,1> >& ephin,  //! scalar at t_(n)
-      LINALG::Matrix<NSD,NEN>& econvelnp, //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-      std::vector<LINALG::Matrix<NEN,1> >& ehist //! history vector of transported scalars
-  )
+      const LINALG::Matrix<NEN,1>&                 funct,       //! array for shape functions
+      const LINALG::Matrix<NSD,NEN>&               derxy,       //! global derivatives of shape functions w.r.t x,y,z
+      const std::vector<LINALG::Matrix<NEN,1> >&   ephinp,      //! scalar at t_(n+1) or t_(n+alpha_F)
+      const std::vector<LINALG::Matrix<NEN,1> >&   ephin,       //! scalar at t_(n)
+      const LINALG::Matrix<NSD,NEN>&               econvelnp,   //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
+      const std::vector<LINALG::Matrix<NEN,1> >&   ehist        //! history vector of transported scalars
+      )
   {
     dserror("Setting all members at once is not allowed for reinitialization!");
     return;

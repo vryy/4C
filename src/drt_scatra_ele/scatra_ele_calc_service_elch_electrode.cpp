@@ -210,7 +210,7 @@ template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::SetInternalVariablesForMatAndRHS()
 {
   // set internal variables
-  VarManager()->SetInternalVariablesElchElectrode(my::funct_,my::derxy_,my::ephinp_,my::ephin_,my::econvelnp_,my::ehist_,DiffManager());
+  VarManager()->SetInternalVariablesElchElectrode(my::funct_,my::derxy_,my::ephinp_,my::ephin_,my::econvelnp_,my::ehist_);
 
   return;
 } // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::SetInternalVariablesForMatAndRHS()
