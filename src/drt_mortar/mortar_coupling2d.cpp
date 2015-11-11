@@ -1208,6 +1208,10 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
   // loop over all master elements associated with this slave element
   for (int m=0;m<(int)Coupling().size();++m)
   {
+    // go on, if this s/m pair has no overlap
+    if (Coupling()[m]->Overlap()==false)
+      continue;
+
     double sxia=Coupling()[m]->XiProj()[0];
     double sxib=Coupling()[m]->XiProj()[1];
 
