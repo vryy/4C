@@ -1062,7 +1062,7 @@ void SCATRA::ScaTraTimIntImpl::SetPressureField(Teuchos::RCP<const Epetra_Vector
 /*----------------------------------------------------------------------*
  | Set Pressure Field                                     hemmler 05/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::SetMeanConcentration(Teuchos::RCP<Epetra_Vector> MeanConc)
+void SCATRA::ScaTraTimIntImpl::SetMeanConcentration(Teuchos::RCP<const Epetra_Vector> MeanConc)
 {
   if (MeanConc == Teuchos::null)
     dserror("MeanConc state is Teuchos::null");

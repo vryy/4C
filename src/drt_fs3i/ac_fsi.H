@@ -74,6 +74,9 @@ namespace FS3I
     ///Decide if fsi problem is already periodic
     void IsFsiPeriodic();
 
+    ///Decide if fluid scatra problem is periodic
+    void IsScatraPeriodic();
+
     ///Do a standard fsi step
     void DoFSIStepStandard();
 
@@ -84,19 +87,19 @@ namespace FS3I
     void DoFSIStepPeriodic();
 
     ///Get step number of on cycle ago
-    double GetStepOfPreviousPeriodAndPrepareReading(const int step_,const double time);
+    double GetStepOfOnePeriodAgoAndPrepareReading(const int step_,const double time);
+
+    ///Get step number of the beginning of this cycle
+    double GetStepOfBeginnOfThisPeriodAndPrepareReading(const int actstep,const double acttime);
 
     ///Get filename in which the equivalent step of the last period is written
-    std::string GetFileName(const int actstep);
+    std::string GetFileName(const int step);
 
     ///Set time and step in FSI and all subfields
     void SetTimeStepInFSI(const double time, const int step);
 
     ///Do a single scatra step
     void SmallTimeScaleDoScatraStep();
-
-    ///Decide if fluid scatra problem is steady state
-    void IsScatraPeriodic();
 
     ///Update and output the small time scale
     void SmallTimeScaleUpdateAndOutput();
@@ -110,12 +113,6 @@ namespace FS3I
     ///Convergence check for iterative staggered FS3I scheme
     bool PartFs3iConvergenceCkeck( const int itnum);
 
-    //! Handle WSS in mean manager and set FSI solution in scatra fields
-    void SmallTimeScaleSetFSISolution();
-
-    /// extract Wall Shear Stresses at the interface
-    void ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >& wss);
-
     //--------------------------------------------------------------------
     /// @name  control routines for the large time scale
     //--------------------------------------------------------------------
@@ -126,9 +123,18 @@ namespace FS3I
     ///Prepare the large time scale loop
     void PrepareLargeTimeScaleLoop();
 
+    ///Set mean wall shear stresses in scatra fields
+    void SetMeanWallShearStresses();
+
+    ///Set mean concentration of the fluid scatra field
+    void SetMeanFluidConcentration();
+
+    ///Set zero velocity field in scatra fields
+    void SetZeroVelocityField();
+
     ///Evaluate surface permeability condition for structure scatra field
     void EvaluateithScatraSurfacePermeability(
-        const int i ///<id of scalar
+        const int i ///<id of scalar to evaluate
         );
 
     ///Finish the large time scale loop
@@ -159,6 +165,12 @@ namespace FS3I
 
     ///update the structure scatra displacments due to growth
     void LargeTimeScaleDoGrowthUpdate();
+
+    ///OuterLoop for large time scale iterative staggered FS3I scheme
+    void LargeTimeScaleOuterLoopIterStagg();
+
+    /// set mean FSI values in scatra fields (only to be used in large time scale!!)
+    void LargeTimeScaleSetFSISolution();
 
     ///Update and output the large time scale
     void LargeTimeScaleUpdateAndOutput();
@@ -215,10 +227,10 @@ namespace FS3I
     bool fsineedsupdate_;
 
     ///Extract the j-th out of numscal_ dof
-    const std::vector<Teuchos::RCP<LINALG::MapExtractor> > extractjthscalar_;
+    const std::vector<Teuchos::RCP<LINALG::MapExtractor> > extractjthstructscalar_;
 
-    ///
-    Teuchos::RCP<FS3I::MeanManager> meanmanager_;
+    ///pointer to mean manager object
+    const Teuchos::RCP<FS3I::MeanManager> meanmanager_;
   };
 
   class MeanManager
@@ -238,10 +250,10 @@ namespace FS3I
     void Reset();
 
     /// get some mean value
-    Teuchos::RCP<const Epetra_Vector> GetMeanValue(const std::string type);
+    Teuchos::RCP<const Epetra_Vector> GetMeanValue(const std::string type) const;
 
     /// Write restart of mean manager
-    void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> fluidwriter);
+    void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> fluidwriter) const;
 
     /// Read restart of mean manager
     void ReadRestart(IO::DiscretizationReader& fluidreader);

@@ -33,11 +33,11 @@ STRUCT_VEL_ACC                  No
 STRUCT_SE                       No
 STRUCT_STRESS                   Cauchy //Yes:Piolakirchhoff
 STRUCT_COUPLING_STRESS          No
-STRUCT_STRAIN                   gl  //Green-Lagrange
+STRUCT_STRAIN                   No  //Green-Lagrange
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No
 FLUID_SOL                       Yes
-FLUID_STRESS                    Yes //yes ,needed for WWS output
+FLUID_STRESS                    No //yes ,needed for WWS output
 FLUID_WALL_SHEAR_STRESS         Yes //yes for WSS output
 FLUID_VIS                       No
 FILESTEPS                       1000
@@ -49,7 +49,7 @@ WRITE_TO_SCREEN                 Yes
 ----------------------------------------------------------------FS3I DYNAMIC
 MAXTIME                         100000000.0
 TIMESTEP                        0.01 //0.01
-NUMSTEP                         35
+NUMSTEP                         18
 RESTARTEVRY                     1
 UPRES                           1
 INF_PERM                        no //yes
@@ -76,10 +76,11 @@ ITEMAX                          20
 ----------------------------------------------------------------FS3I DYNAMIC/AC
 FSI_STEPS_PER_SCATRA_STEP       1
 PERIODICITY                     0.03
-WINDKESSEL_REL_TOL              3.0e-2
-FLUID_SCATRA_REL_TOL            3.0e-1
+WINDKESSEL_REL_TOL              1.35
+WSS_REL_TOL                     2.1
+FLUID_SCATRA_REL_TOL            4.0e-2
 GROWTH_UPDATES                  1
-FSI_UPDATE_TOL                  2.0e-1
+FSI_UPDATE_TOL                  1.0
 LARGE_TIMESCALE_TIMESTEP        60.0
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CALCERROR                       No
@@ -193,7 +194,7 @@ LIFTDRAG                        No
 CONVFORM                        convective
 NONLINEARBC                     yes //needed for FLUID NEUMANN INFLOW CONDITION
 MESHTYING                       no
-GRIDVEL                         BDF2 //OST
+GRIDVEL                         OST
 ALLDOFCOUPLED                   Yes
 CALCERROR                       no
 SIMPLER                         no
@@ -542,28 +543,28 @@ CURVE 2 on EXPR FUNC (1.0) t1 0.15 t2 1000000000.0
 -------------------------------------------------------------CURVE4
 -------------------------------------------------------------FUNCT1
 FUNCT 1 EXPR 0 0 0 FUNCTION ((1-(((x)^2+(y)^2)^4)/(18^8)))
--------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.0
+-------------------------------------------------------------FUNCT2 //initfunc fluid scatra
+FUNCT 2 COMPONENT 0 EXPR 0 0 0 FUNCTION 1.0
 FUNCT 2 COMPONENT 1 EXPR 0 0 0 FUNCTION 0.0
--------------------------------------------------------------FUNCT3
+-------------------------------------------------------------FUNCT3 //initfunc structure scatra
 FUNCT 3 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.0
 FUNCT 3 COMPONENT 1 EXPR 0 0 0 FUNCTION 0.0
 -------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 4146 QUANTITY phi VALUE 2.27318521105167211e-02 TOLERANCE 1e-6
-SCATRA DIS scatra2 NODE 4146 QUANTITY phi2 VALUE 1.77487742932030852e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispx VALUE 6.81623511428046946e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispy VALUE 2.82485341046553214e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispz VALUE 2.30036776821021770e-02 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 39 QUANTITY phi VALUE  7.31728188747964720e-02 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 4146 QUANTITY phi VALUE 3.50353810852923275e-01 TOLERANCE 1e-6
+SCATRA DIS scatra2 NODE 4146 QUANTITY phi2 VALUE 5.61949355916608051e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispx VALUE 1.47330304302165857e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispy VALUE 6.10657444073377242e-03 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispz VALUE 4.95774169175494314e-03 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 39 QUANTITY phi VALUE  1.08757930974404182e+00 TOLERANCE 1e-6
 SCATRA DIS scatra1 NODE 39 QUANTITY phi2 VALUE 0.00000000000000000e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY velx VALUE -1.66352504987193739e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY vely VALUE 8.30414518596414908e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY velz VALUE 1.54679750974008456e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY pressure VALUE 5.62296400225527668e+03 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispx VALUE -2.21467205725203314e-02 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispy VALUE 1.10558096810370210e-01 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispz VALUE 1.93676417124193020e-02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY velx VALUE 1.74755297787166808e+00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY vely VALUE -8.72234494568378871e+00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY velz VALUE -1.69239317053719662e+00 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY pressure VALUE 3.97648772919945441e+03 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispx VALUE -5.38090816828968796e-03 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispy VALUE 2.68679653972564575e-02 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispz VALUE 3.69100919336466313e-03 TOLERANCE 1e-6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  4
@@ -639,19 +640,19 @@ E 6 - 1
 --------------------------------------DESIGN SCATRA COUPLING SURF CONDITIONS
 DSURF                           2
 // fluid_fsi_no_line
-E 6 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 0.03010299957 CONDUCT 0.0 FILTR 0.0 WSSONOFF 1 WSSCOEFFS 1.0 1.0
+E 6 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 0.01 CONDUCT 0.0 FILTR 0.0 WSSONOFF 1 WSSCOEFFS 1.0 1.0
 // structure_fsi_no_line
-E 12 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 0.03010299957 CONDUCT 0.0 FILTR 0.0 WSSONOFF 1 WSSCOEFFS 1.0 1.0
+E 12 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 0.01 CONDUCT 0.0 FILTR 0.0 WSSONOFF 1 WSSCOEFFS 1.0 1.0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF  1
 //fluid_inflow_all
-E 1 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 CURVE 2 none FUNCT 1 0
+E 1 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 CURVE none none FUNCT 1 0
 // structure_inflow_no_line
 //E 8 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE 2 2 FUNCT 0 0
 -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 DLINE 1
 // fluid_inflow_line
-E 1 - NUMDOF 2 ONOFF 1 0 VAL 0.2 0.0 CURVE 2 none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 CURVE none none FUNCT 0 0
 // structure_inflow_line
 // E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE 2 2 FUNCT 0 0
 -------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS

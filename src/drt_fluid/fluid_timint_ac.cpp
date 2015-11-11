@@ -43,7 +43,15 @@ FLD::TimIntAC::~TimIntAC()
  *----------------------------------------------------------------------*/
 void FLD::TimIntAC::ReadRestart(int step)
 {
-  //else //nothing to do here
+  const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC");
+  const bool restartfrompartfsi = DRT::INPUT::IntegralValue<int>(fs3idynac,"RESTART_FROM_PART_FSI");
+
+  if (not restartfrompartfsi) //standard restart
+  {
+    IO::DiscretizationReader reader(discret_,step);
+
+    reader.ReadVector(trueresidual_,"trueresidual");
+  }
 
   return;
 }
@@ -54,5 +62,11 @@ void FLD::TimIntAC::ReadRestart(int step)
 void FLD::TimIntAC::Output()
 {
   FluidImplicitTimeInt::Output();
+
+  // output of solution
+  if (step_%upres_ == 0 or (uprestart_ > 0 and step_%uprestart_ == 0) )
+  {
+    output_->WriteVector("trueresidual", trueresidual_);
+  }
   return;
 }

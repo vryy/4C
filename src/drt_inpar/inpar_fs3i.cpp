@@ -155,6 +155,9 @@ void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // relative tolerance for the fluid scatra. Determines if the fluid scatra is already periodic
   DoubleParameter("FLUID_SCATRA_REL_TOL",-1.0,"Tolerance for the fluid scatra field to decide if it is periodic",&fs3idynac);
 
+  // relative tolerance for the fluid scatra. Determines if the fluid scatra is already periodic
+  DoubleParameter("WSS_REL_TOL",-1.0,"Tolerance for the wall shear stresses to decide if the FSI problem is periodic",&fs3idynac);
+
   // amount of growth updates in the large time scale loop
   IntParameter("GROWTH_UPDATES",1.0,"Amount of growth updates in the large time scale loop",&fs3idynac);
 

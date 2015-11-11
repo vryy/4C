@@ -499,7 +499,12 @@ void FS3I::PartFPS3I::SetFPSISolution()
 {
   //we clear every state, including the states of the secondary dof sets
   for (unsigned i=0; i<scatravec_.size(); ++i)
+  {
     scatravec_[i]->ScaTraField()->Discretization()->ClearState(true);
+    // we have to manually clear this since this can not be saved directly in the
+    // primary dof set (because it is cleared in between)
+    scatravec_[i]->ScaTraField()->ClearMeanConcentration();
+  }
 
   SetMeshDisp();
   SetVelocityFields();

@@ -179,7 +179,9 @@ public:
 
   void SetPressureField(Teuchos::RCP<const Epetra_Vector> pressure, const int nds_pres);
 
-  void SetMeanConcentration(Teuchos::RCP<Epetra_Vector> MeanConc);
+  void SetMeanConcentration(Teuchos::RCP<const Epetra_Vector> MeanConc);
+
+  void ClearMeanConcentration(){ meanconc_ = Teuchos::null; };
 
   //! read restart data
   virtual void ReadRestart(const int step) = 0;
@@ -952,7 +954,7 @@ protected:
   const INPAR::SCATRA::VelocityField cdvel_;
 
   //! mean concentration in interface bewteen a scatracoupling (needed for instance for type fps3i)
-  Teuchos::RCP<Epetra_Vector> meanconc_;
+  Teuchos::RCP<const Epetra_Vector> meanconc_;
 
   //! number of dofset associated with velocity related dofs
   int nds_vel_;

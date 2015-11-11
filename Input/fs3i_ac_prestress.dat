@@ -49,7 +49,7 @@ WRITE_TO_SCREEN                 Yes
 ----------------------------------------------------------------FS3I DYNAMIC
 MAXTIME                         100000000.0
 TIMESTEP                        0.01 //0.01
-NUMSTEP                         6
+NUMSTEP                         3
 RESTARTEVRY                     1
 UPRES                           1
 INF_PERM                        no //yes
@@ -255,9 +255,9 @@ LINEAR_SOLVER                   3
 COUPALGO                        iter_stagg_AITKEN_rel_param // iter_monolithicfluidsplit  //iter_monolithicstructuresplit
 DEBUGOUTPUT                     No
 SECONDORDER                     No //
-NUMSTEP                         3
+NUMSTEP                         1
 UPRES                           1
-RESTARTEVRY                     3
+RESTARTEVRY                     1
 TIMESTEP                        0.01
 MAXTIME                         1.000000001
 SLIDEALEPROJ                    None
@@ -550,7 +550,7 @@ CURVE 2 on EXPR FUNC (1.0) t1 0.55 t2 1000000000.0
 -------------------------------------------------------------FUNCT1
 FUNCT 1 EXPR 0 0 0 FUNCTION ((1-(((x)^2+(y)^2)^4)/(18^8)))
 -------------------------------------------------------------FUNCT2
-FUNCT 2 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.0
+FUNCT 2 COMPONENT 0 EXPR 0 0 0 FUNCTION 1.0
 FUNCT 2 COMPONENT 1 EXPR 0 0 0 FUNCTION 0.0
 -------------------------------------------------------------FUNCT3
 FUNCT 3 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.0
@@ -563,10 +563,10 @@ STRUCTURE DIS structure NODE 4146 QUANTITY dispz VALUE 0.00000000000000000e+00 T
 FLUID DIS fluid NODE 39 QUANTITY velx VALUE 0.00000000000000000e+00 TOLERANCE 1e-6
 FLUID DIS fluid NODE 39 QUANTITY vely VALUE 0.00000000000000000e+00 TOLERANCE 1e-6
 FLUID DIS fluid NODE 39 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY pressure VALUE 2.10839722027149946e+03 TOLERANCE 1e-6
-FLUID DIS fluid NODE 1439 QUANTITY velx VALUE -4.11471319985173001e-02TOLERANCE 1e-6
-FLUID DIS fluid NODE 1468 QUANTITY velz VALUE 1.57570009615647280e+02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 234 QUANTITY pressure VALUE 2.10211139455907778e+03 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY pressure VALUE 6.22110165339279888e+02 TOLERANCE 1e-6
+FLUID DIS fluid NODE 1439 QUANTITY velx VALUE 6.02312425214344450e-04 TOLERANCE 1e-6
+FLUID DIS fluid NODE 1468 QUANTITY velz VALUE 3.78653870059998638e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 234 QUANTITY pressure VALUE 3.83941509693955879e+02 TOLERANCE 1e-6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  4
@@ -642,19 +642,19 @@ E 6 - 1
 --------------------------------------DESIGN SCATRA COUPLING SURF CONDITIONS
 DSURF                           2
 // fluid_fsi_no_line
-E 6 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 1.505149978e-6 CONDUCT 0.0 FILTR 0.0 WSSONOFF 1 WSSCOEFFS 1.0 1.0
+E 6 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 0.1e-6 CONDUCT 0.0 FILTR 0.0 WSSONOFF 1 WSSCOEFFS 1.0 1.0
 // structure_fsi_no_line
-E 12 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 1.505149978e-6 CONDUCT 0.0 FILTR 0.0 WSSONOFF 1 WSSCOEFFS 1.0 1.0
+E 12 - NUMSCAL 2 ONOFF 1 0 COUPID 1 PERMCOEF 0.1e-6 CONDUCT 0.0 FILTR 0.0 WSSONOFF 1 WSSCOEFFS 1.0 1.0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF  1
 //fluid_inflow_all
-E 1 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 CURVE 2 none FUNCT 1 0
+E 1 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 CURVE none none FUNCT 1 0
 // structure_inflow_no_line
 //E 8 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE 2 2 FUNCT 0 0
 -------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 DLINE 1
 // fluid_inflow_line
-E 1 - NUMDOF 2 ONOFF 1 0 VAL 0.2 0.0 CURVE 2 none FUNCT 0 0
+E 1 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 CURVE none none FUNCT 0 0
 // structure_inflow_line
 // E 3 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 CURVE 2 2 FUNCT 0 0
 -------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
