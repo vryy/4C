@@ -604,6 +604,7 @@ protected:
                        const LINALG::Matrix<nen_,1>    &             escaam,
                        const LINALG::Matrix<nsd_,nen_> &             edispnp,
                        const LINALG::Matrix<nsd_,nen_> &             egridv,
+                       const LINALG::Matrix<nsd_,nen_> &             egridvn,
                        const LINALG::Matrix<nsd_,nen_> &             fsevelaf,
                        const LINALG::Matrix<nen_,1>    &             fsescaaf,
                        const LINALG::Matrix<nsd_,nen_> &             evel_hat,
@@ -725,6 +726,7 @@ protected:
                       const LINALG::Matrix<nsd_,nen_>&              emhist,
                       const LINALG::Matrix<nsd_,nen_>&              edispnp,
                       const LINALG::Matrix<nsd_,nen_>&              egridv,
+                      const LINALG::Matrix<nsd_,nen_>&              egridvn,
                       LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  estif,
                       LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
                       LINALG::Matrix<(nsd_+1)*nen_,    1>&          eforce,
@@ -789,6 +791,15 @@ protected:
       LINALG::Matrix<nsd_,nen_>&              egridv
   );
 
+  //! get ALE grid displacements and grid velocity for element
+  void GetGridDispVelALEOSTNew(
+      DRT::Discretization &                   discretization,
+      const std::vector<int> &                lm,
+      LINALG::Matrix<nsd_,nen_>&              edispnp,
+      LINALG::Matrix<nsd_,nen_>&              egridvnp,
+      LINALG::Matrix<nsd_,nen_>&              egridvn
+  );
+
   //! get ALE grid displacements for element
   virtual void GetGridDispALE(
       DRT::Discretization &                   discretization,
@@ -798,6 +809,9 @@ protected:
 
   //! set the (relative) convective velocity at integration point for various physical types
   void SetConvectiveVelint( const bool isale );
+
+  //! set the (relative) convective velocity at integration point for various physical types
+  void SetConvectiveVelintN( const bool isale );
 
   //! set element advective field for Oseen problems
   void SetAdvectiveVelOseen(DRT::ELEMENTS::Fluid* ele);
@@ -1512,6 +1526,7 @@ protected:
 
   LINALG::Matrix<nsd_, nen_> edispnp_;
   LINALG::Matrix<nsd_, nen_> egridv_;
+  LINALG::Matrix<nsd_, nen_> egridvn_;
 
   LINALG::Matrix<nsd_,nen_> fsevelaf_;
   LINALG::Matrix<nen_,1>    fsescaaf_;
@@ -1571,6 +1586,8 @@ protected:
   LINALG::Matrix<nsd_,1> sgvelint_;
   //! grid velocity u_G at integration point
   LINALG::Matrix<nsd_,1> gridvelint_;
+  //! grid velocity u_G at integration point for new ost
+  LINALG::Matrix<nsd_,1> gridvelintn_;
   //! ale convective velocity c=u-u_G at integration point
   LINALG::Matrix<nsd_,1> convvelint_;
   //! Oseen advective velocity at element nodes

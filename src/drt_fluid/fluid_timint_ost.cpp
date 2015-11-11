@@ -109,7 +109,11 @@ void FLD::TimIntOneStepTheta::SetStateTimInt()
 {
 
   discret_->SetState("velaf",velnp_);
-
+  if( params_->get<bool>("ost new") )
+  {
+    if(alefluid_)
+      discret_->SetState("gridvn",gridvn_);
+  }
   return;
 }
 

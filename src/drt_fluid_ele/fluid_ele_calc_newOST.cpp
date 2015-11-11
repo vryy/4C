@@ -80,6 +80,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
   const LINALG::Matrix<nsd_,nen_>&              emhist,
   const LINALG::Matrix<nsd_,nen_>&              edispnp,
   const LINALG::Matrix<nsd_,nen_>&              egridv,
+  const LINALG::Matrix<nsd_,nen_>&              egridvn,
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  estif,
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
   LINALG::Matrix<(nsd_+1)*nen_,1>&              eforce,
@@ -199,7 +200,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     velint_.Multiply(evelaf,funct_);
 
     // get the grid velocity in case of ALE
-    if(isale) gridvelint_.Multiply(egridv,funct_);
+    if(isale)
+    {
+      gridvelint_.Multiply(egridv,funct_);
+      gridvelintn_.Multiply(egridvn,funct_);
+    }
 
     // get convective velocity at integration point
     SetConvectiveVelint(isale);
@@ -271,7 +276,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
     }
 
     // get the grid velocity in case of ALE
-    if(isale) gridvelint_.Multiply(egridv,funct_);
+    if(isale)
+    {
+      gridvelint_.Multiply(egridv,funct_);
+      gridvelintn_.Multiply(egridvn,funct_);
+    }
 
     // get convective velocity at integration point
     SetConvectiveVelint(isale);
@@ -444,7 +453,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SysmatOSTNew(
 
     // New One Step Theta variables (for old time step):
     velintn_.Multiply(eveln,funct_);
-    conv_oldn_.Multiply(vderxyn_,velintn_);
+    // get convective velocity at integration point
+    SetConvectiveVelintN(isale);
+    conv_oldn_.Multiply(vderxyn_,convvelintn_);
     const double pressn = funct_.Dot(epren);
     gradpn_.Multiply(derxy_,epren);
 
@@ -2453,6 +2464,81 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SUPGOSTNew(
   } // loma
 
   return;
+}
+
+/*---------------------------------------------------------------------------*
+ | get ALE grid displacements and grid velocity for element     schott 11/14 |
+ *---------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::GetGridDispVelALEOSTNew(
+    DRT::Discretization &                   discretization,
+    const std::vector<int> &                lm,
+    LINALG::Matrix<nsd_,nen_>&              edispnp,
+    LINALG::Matrix<nsd_,nen_>&              egridvnp,
+    LINALG::Matrix<nsd_,nen_>&              egridvn
+)
+{
+  switch (fldpara_->PhysicalType())
+  {
+  case INPAR::FLUID::oseen:
+  case INPAR::FLUID::stokes:
+  {
+    dserror("ALE with Oseen or Stokes seems to be a tricky combination. Think deep before removing dserror!");
+    break;
+  }
+  default:
+  {
+    GetGridDispALE(discretization, lm, edispnp);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &egridvnp, NULL,"gridv");
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &egridvn, NULL,"gridvn");
+    break;
+  }
+  }
+}
+
+/*---------------------------------------------------------------------------*
+ |  set the (relative) convective velocity at integration point schott 11/14 |
+ *---------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::SetConvectiveVelintN(
+    const bool isale
+)
+{
+  // get convective velocity at integration point
+  switch (fldpara_->PhysicalType())
+  {
+  case INPAR::FLUID::incompressible:
+  case INPAR::FLUID::artcomp:
+  case INPAR::FLUID::varying_density:
+  case INPAR::FLUID::loma:
+  case INPAR::FLUID::boussinesq:
+  case INPAR::FLUID::topopt:
+  {
+    convvelintn_.Update(velintn_);
+    break;
+  }
+  case INPAR::FLUID::oseen:
+  {
+    dserror("not supported for new ost up to now");
+    break;
+  }
+  case INPAR::FLUID::stokes:
+  {
+    convvelintn_.Clear();
+    break;
+  }
+  default:
+    dserror("Physical type not implemented here. For Poro-problems see derived class FluidEleCalcPoro.");
+    break;
+  }
+
+  // (ALE case handled implicitly here using the (potential
+  //  mesh-movement-dependent) convective velocity, avoiding
+  //  various ALE terms used to be calculated before)
+  if (isale)
+  {
+    convvelintn_.Update(-1.0,gridvelintn_,1.0);
+  }
 }
 
 // template classes

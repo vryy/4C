@@ -129,6 +129,7 @@ DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::FluidEleCalc():
     velint_(true),
     sgvelint_(true),
     gridvelint_(true),
+    gridvelintn_(true),
     convvelint_(true),
     eadvvel_(true),
     accint_(true),
@@ -445,7 +446,16 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
   edispnp_.Clear();
   egridv_.Clear();
 
-  if (ele->IsAle()) GetGridDispVelALE(discretization, lm, edispnp_, egridv_);
+  if (ele->IsAle())
+  {
+    if(not fldparatimint_->IsNewOSTImplementation())
+    {
+      GetGridDispVelALE(discretization, lm, edispnp_, egridv_);
+      egridvn_.Clear();
+    }
+    else
+      GetGridDispVelALEOSTNew(discretization, lm, edispnp_, egridv_, egridvn_);
+  }
 
 
   // ---------------------------------------------------------------------
@@ -521,6 +531,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
     escaam_,
     edispnp_,
     egridv_,
+    egridvn_,
     fsevelaf_,
     fsescaaf_,
     evel_hat_,
@@ -573,6 +584,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(
   const LINALG::Matrix<nen_,1>    &             escaam,
   const LINALG::Matrix<nsd_,nen_> &             edispnp,
   const LINALG::Matrix<nsd_,nen_> &             egridv,
+  const LINALG::Matrix<nsd_,nen_> &             egridvn,
   const LINALG::Matrix<nsd_,nen_> &             fsevelaf,
   const LINALG::Matrix<nen_,1>    &             fsescaaf,
   const LINALG::Matrix<nsd_,nen_> &             evel_hat,
@@ -709,6 +721,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(
            emhist,
            edispnp,
            egridv,
+           egridvn,
            elemat1,
            elemat2,  // -> emesh
            elevec1,
