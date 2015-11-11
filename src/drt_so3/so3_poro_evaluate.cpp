@@ -467,7 +467,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset
       // disassemble velocities and pressures
-      if (discretization.HasState(1,"fluidvel"))
+      if (discretization.HasState(1,"fluidvel") and iocouplstress != INPAR::STR::stress_none)
       {
         // extract local values of the global vectors
         LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
@@ -943,43 +943,11 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::couplstress_poroelast(
   LINALG::Matrix<numdim_,numnod_> N_XYZ;
   LINALG::Matrix<numdim_,numnod_> deriv ;
 
-  DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule3D_undefined;
-  switch(distype)
-  {
-  case DRT::Element::hex8 :
-    gaussrule = DRT::UTILS::intrule_hex_8point;
-    break;
-  case DRT::Element::hex27 :
-    gaussrule = DRT::UTILS::intrule_hex_27point;
-    break;
-  default:
-    break;
-  }
-  const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule);
-
   for (int gp=0; gp<numgpt_; ++gp)
   {
-    //DRT::UTILS::shape_function<distype>(xsi_[gp],shapefct);
-    //DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
 
-    const double e1 = intpoints.qxg[gp][0];
-    const double e2 = intpoints.qxg[gp][1];
-    const double e3 = intpoints.qxg[gp][2];
-
-    DRT::UTILS::shape_function_3D       (shapefct,e1,e2,e3,distype);
-    DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
-
-    /* get the inverse of the Jacobian matrix which looks like:
-     **            [ X_,r  Y_,r  Z_,r ]^-1
-     **     J^-1 = [ X_,s  Y_,s  Z_,s ]
-     **            [ X_,t  Y_,t  Z_,t ]
-     */
-    LINALG::Matrix<numdim_,numdim_> invJ;
-    invJ.MultiplyNT(deriv,xrefe);
-
-    // compute derivatives N_XYZ at gp w.r.t. material coordinates
-    // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ,deriv); // (6.21)
+    //evaluate shape functions and derivatives at integration point
+    ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     ComputeDefGradient(defgrd,N_XYZ,xcurr);
