@@ -925,13 +925,17 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
   // do not recover condensed variables if it is a TSI predictor step
   bool no_recovery=data_->no_recovery_;
   // time integration factor (for TSI)
-  double theta=data_->scale_timint_;
+  double theta=-1.;
   // time step size (for TSI)
-  double dt=data_->dt_;
+  double dt=-1.;
   if (eval_tsi && (stiffmatrix!=NULL || force!=NULL))
-    if (theta==0 || dt==0)
+  {
+    // get time integration data
+    theta=data_->scale_timint_;
+    dt=data_->dt_;
+    if (theta<=0 || dt<=0)
       dserror("time integration parameters not provided in element for TSI problem");
-
+  }
   // check if we need to split the residuals (for Newton line search)
   // if true an additional global vector is assembled containing
   // the internal forces without the condensed EAS entries and the norm
@@ -1202,9 +1206,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     }
 
     // Gauss point temperature
-    double gp_temp=0.;
+    double gp_temp=-1.e12;
     if (eval_tsi) gp_temp = etemp.Dot(shapefunct);
-    else          gp_temp = -1.e12;
 
     // plastic flow increment
     LINALG::Matrix<nsd_,nsd_> deltaLp;
