@@ -1238,7 +1238,6 @@ set(OBJS_DRT_THERMO
   src/drt_thermo/thrtimint_statics.cpp
   src/drt_thermo/thrtimint_expl.cpp
   src/drt_thermo/thrtimint_expleuler.cpp
-  src/drt_thermo/thr_contact.cpp
 )
 set(OBJS_POST_GID_TXT
   src/post_gid/gid_out_txt.c
@@ -1941,6 +1940,8 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/contact_lagrange_strategy.cpp
   src/drt_contact/contact_monocoupled_lagrange_strategy.cpp
   src/drt_contact/contact_poro_lagrange_strategy.cpp
+  src/drt_contact/contact_tsi_lagrange_strategy.cpp
+  src/drt_contact/contact_tsi_interface.cpp
   src/drt_contact/contact_manager.cpp
   src/drt_contact/manager_nurbs.cpp
   src/drt_contact/contact_penalty_strategy.cpp

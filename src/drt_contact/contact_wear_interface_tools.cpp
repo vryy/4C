@@ -368,7 +368,7 @@ void CONTACT::WearInterface::FDCheckGapDeriv_W()
 
     double delta = 1e-8;
     if (fd%dim==0)
-      snode->FriDataPlus().wcurr()[0] += delta;
+      snode->WearData().wcurr()[0] += delta;
 
 
     // compute element areas
@@ -416,7 +416,7 @@ void CONTACT::WearInterface::FDCheckGapDeriv_W()
     }
     // undo finite difference modification
     if (fd%dim==0)
-      snode->FriDataPlus().wcurr()[0] -= delta;
+      snode->WearData().wcurr()[0] -= delta;
 
 
     std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
@@ -461,9 +461,9 @@ void CONTACT::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-    if (cnode->FriDataPlus().GetE().size()>0)
+    if (cnode->WearData().GetE().size()>0)
     {
-      std::map<int,double> scurr = cnode->FriDataPlus().GetE()[0];
+      std::map<int,double> scurr = cnode->WearData().GetE()[0];
 
       for (CI p=scurr.begin();p!=scurr.end();++p)
       {
@@ -472,7 +472,7 @@ void CONTACT::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
         if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
         FriNode* cnode2 = dynamic_cast<FriNode*>(node2);
 
-        double w = cnode2->FriDataPlus().wcurr()[0];
+        double w = cnode2->WearData().wcurr()[0];
 
         reft[i] += (p->second) * w ;
       }
@@ -534,9 +534,9 @@ void CONTACT::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
       if (!node3) dserror("ERROR: Cannot find node with gid %",gid3);
       FriNode* kcnode = dynamic_cast<FriNode*>(node3);
 
-      if (kcnode->FriDataPlus().GetE().size()>0)
+      if (kcnode->WearData().GetE().size()>0)
       {
-        std::map<int,double> sscurr = kcnode->FriDataPlus().GetE()[0];
+        std::map<int,double> sscurr = kcnode->WearData().GetE()[0];
 
         for (CI p=sscurr.begin();p!=sscurr.end();++p)
         {
@@ -545,7 +545,7 @@ void CONTACT::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
           if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
           FriNode* cnode2 = dynamic_cast<FriNode*>(node2);
 
-          double w = cnode2->FriDataPlus().wcurr()[0];
+          double w = cnode2->WearData().wcurr()[0];
 
           newt[k] += (p->second) * w ;
         }
@@ -658,9 +658,9 @@ void CONTACT::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
       if (!node3) dserror("ERROR: Cannot find node with gid %",gid3);
       FriNode* kcnode = dynamic_cast<FriNode*>(node3);
 
-      if (kcnode->FriDataPlus().GetE().size()>0)
+      if (kcnode->WearData().GetE().size()>0)
       {
-        std::map<int,double> sscurr = kcnode->FriDataPlus().GetE()[0];
+        std::map<int,double> sscurr = kcnode->WearData().GetE()[0];
 
         for (CI p=sscurr.begin();p!=sscurr.end();++p)
         {
@@ -669,7 +669,7 @@ void CONTACT::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
           if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
           FriNode* cnode2 = dynamic_cast<FriNode*>(node2);
 
-          double w = cnode2->FriDataPlus().wcurr()[0];
+          double w = cnode2->WearData().wcurr()[0];
 
           newt[k] += (p->second) * w ;
         }
@@ -770,9 +770,9 @@ void CONTACT::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedi
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-    if (cnode->FriDataPlus().GetE().size()>0)
+    if (cnode->WearData().GetE().size()>0)
     {
-      std::map<int,double> scurr = cnode->FriDataPlus().GetE()[0];
+      std::map<int,double> scurr = cnode->WearData().GetE()[0];
 
       for (CI p=scurr.begin();p!=scurr.end();++p)
       {
@@ -781,7 +781,7 @@ void CONTACT::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedi
         if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
         FriNode* cnode2 = dynamic_cast<FriNode*>(node2);
 
-        double w = cnode2->FriDataPlus().wcurr()[0];
+        double w = cnode2->WearData().wcurr()[0];
 
         reft[i] += (p->second) * w ;
       }
@@ -843,9 +843,9 @@ void CONTACT::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedi
       if (!node3) dserror("ERROR: Cannot find node with gid %",gid3);
       FriNode* kcnode = dynamic_cast<FriNode*>(node3);
 
-      if (kcnode->FriDataPlus().GetE().size()>0)
+      if (kcnode->WearData().GetE().size()>0)
       {
-        std::map<int,double> sscurr = kcnode->FriDataPlus().GetE()[0];
+        std::map<int,double> sscurr = kcnode->WearData().GetE()[0];
 
         for (CI p=sscurr.begin();p!=sscurr.end();++p)
         {
@@ -854,7 +854,7 @@ void CONTACT::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedi
           if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
           FriNode* cnode2 = dynamic_cast<FriNode*>(node2);
 
-          double w = cnode2->FriDataPlus().wcurr()[0];
+          double w = cnode2->WearData().wcurr()[0];
 
           newt[k] += (p->second) * w ;
         }
@@ -967,9 +967,9 @@ void CONTACT::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedi
       if (!node3) dserror("ERROR: Cannot find node with gid %",gid3);
       FriNode* kcnode = dynamic_cast<FriNode*>(node3);
 
-      if (kcnode->FriDataPlus().GetE().size()>0)
+      if (kcnode->WearData().GetE().size()>0)
       {
-        std::map<int,double> sscurr = kcnode->FriDataPlus().GetE()[0];
+        std::map<int,double> sscurr = kcnode->WearData().GetE()[0];
 
         for (CI p=sscurr.begin();p!=sscurr.end();++p)
         {
@@ -978,7 +978,7 @@ void CONTACT::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedi
           if (!node2) dserror("ERROR: Cannot find node with gid %",gid2);
           FriNode* cnode2 = dynamic_cast<FriNode*>(node2);
 
-          double w = cnode2->FriDataPlus().wcurr()[0];
+          double w = cnode2->WearData().wcurr()[0];
 
           newt[k] += (p->second) * w ;
         }
@@ -1082,9 +1082,9 @@ void CONTACT::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-    if (cnode->FriDataPlus().GetT().size()>0)
+    if (cnode->WearData().GetT().size()>0)
     {
-      std::map<int,double> scurr = cnode->FriDataPlus().GetT()[0];
+      std::map<int,double> scurr = cnode->WearData().GetT()[0];
 
       for (CI p=scurr.begin();p!=scurr.end();++p)
       {
@@ -1157,9 +1157,9 @@ void CONTACT::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
       if (!node3) dserror("ERROR: Cannot find node with gid %",gid3);
       FriNode* kcnode = dynamic_cast<FriNode*>(node3);
 
-      if (kcnode->FriDataPlus().GetT().size()>0)
+      if (kcnode->WearData().GetT().size()>0)
       {
-        std::map<int,double> sscurr = kcnode->FriDataPlus().GetT()[0];
+        std::map<int,double> sscurr = kcnode->WearData().GetT()[0];
 
         for (CI p=sscurr.begin();p!=sscurr.end();++p)
         {
@@ -1274,9 +1274,9 @@ void CONTACT::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdi
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-    if (cnode->FriDataPlus().GetT().size()>0)
+    if (cnode->WearData().GetT().size()>0)
     {
-      std::map<int,double> scurr = cnode->FriDataPlus().GetT()[0];
+      std::map<int,double> scurr = cnode->WearData().GetT()[0];
 
       for (CI p=scurr.begin();p!=scurr.end();++p)
       {
@@ -1349,9 +1349,9 @@ void CONTACT::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdi
       if (!node3) dserror("ERROR: Cannot find node with gid %",gid3);
       FriNode* kcnode = dynamic_cast<FriNode*>(node3);
 
-      if (kcnode->FriDataPlus().GetT().size()>0)
+      if (kcnode->WearData().GetT().size()>0)
       {
-        std::map<int,double> sscurr = kcnode->FriDataPlus().GetT()[0];
+        std::map<int,double> sscurr = kcnode->WearData().GetT()[0];
 
         for (CI p=sscurr.begin();p!=sscurr.end();++p)
         {
@@ -2253,7 +2253,7 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
     double delta = 1e-8;
     if (fd%dim==0)
     {
-      mnode->FriDataPlus().wcurr()[0] += delta;
+      mnode->WearData().wcurr()[0] += delta;
       coldof = mnode->Dofs()[0];
     }
 
@@ -2439,7 +2439,7 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
     // undo finite difference modification
     if (fd%dim==0)
     {
-      mnode->FriDataPlus().wcurr()[0] -= delta;
+      mnode->WearData().wcurr()[0] -= delta;
     }
   }
 
@@ -2485,16 +2485,16 @@ void CONTACT::WearInterface::FDCheckMortarTDeriv()
     //typedef std::map<int,std::map<int,double> >::const_iterator CID;
     //typedef std::map<int,double>::const_iterator CI;
 
-    if ((int)(cnode->FriDataPlus().GetT().size())==0)
+    if ((int)(cnode->WearData().GetT().size())==0)
       continue;
 
 //    for( int d=0; d<dim; d++ )
 //    {
       int dof = cnode->Dofs()[0];
-      refT[dof] = cnode->FriDataPlus().GetT()[0];
+      refT[dof] = cnode->WearData().GetT()[0];
 //    }
 
-    refDerivT[gid] = cnode->FriDataPlus().GetDerivTw();
+    refDerivT[gid] = cnode->WearData().GetDerivTw();
   }
 
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
@@ -2549,7 +2549,7 @@ void CONTACT::WearInterface::FDCheckMortarTDeriv()
         dserror("ERROR: Cannot find node with gid %",kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
-      if ((int)(kcnode->FriDataPlus().GetT().size())==0)
+      if ((int)(kcnode->WearData().GetT().size())==0)
         continue;
 
       typedef std::map<int,double>::const_iterator CI;
@@ -2559,7 +2559,7 @@ void CONTACT::WearInterface::FDCheckMortarTDeriv()
         int dof = kcnode->Dofs()[d];
 
         // store D-values into refD
-        newT[dof] = kcnode->FriDataPlus().GetT()[d];
+        newT[dof] = kcnode->WearData().GetT()[d];
 
         // print results (derivatives) to screen
         for (CI p=newT[dof].begin(); p!=newT[dof].end(); ++p)
@@ -2659,13 +2659,13 @@ void CONTACT::WearInterface::FDCheckMortarT_Master_Deriv()
     //typedef std::map<int,std::map<int,double> >::const_iterator CID;
     //typedef std::map<int,double>::const_iterator CI;
 
-    if ((int)(cnode->FriDataPlus().GetT().size())==0)
+    if ((int)(cnode->WearData().GetT().size())==0)
       continue;
 
     int dof = cnode->Dofs()[0];
-    refT[dof] = cnode->FriDataPlus().GetT()[0];
+    refT[dof] = cnode->WearData().GetT()[0];
 
-    refDerivT[gid] = cnode->FriDataPlus().GetDerivTw();
+    refDerivT[gid] = cnode->WearData().GetDerivTw();
   }
 
   //**************************************************************
@@ -2723,7 +2723,7 @@ void CONTACT::WearInterface::FDCheckMortarT_Master_Deriv()
         dserror("ERROR: Cannot find node with gid %",kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
-      if ((int)(kcnode->FriDataPlus().GetT().size())==0)
+      if ((int)(kcnode->WearData().GetT().size())==0)
         continue;
 
       typedef std::map<int,double>::const_iterator CI;
@@ -2733,7 +2733,7 @@ void CONTACT::WearInterface::FDCheckMortarT_Master_Deriv()
         int dof = kcnode->Dofs()[d];
 
         // store D-values into refD
-        newT[dof] = kcnode->FriDataPlus().GetT()[d];
+        newT[dof] = kcnode->WearData().GetT()[d];
 
         // print results (derivatives) to screen
         for (CI p=newT[dof].begin(); p!=newT[dof].end(); ++p)
@@ -2838,7 +2838,7 @@ void CONTACT::WearInterface::FDCheckMortarT_Master_Deriv()
         dserror("ERROR: Cannot find node with gid %",kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
-      if ((int)(kcnode->FriDataPlus().GetT().size())==0)
+      if ((int)(kcnode->WearData().GetT().size())==0)
         continue;
 
       typedef std::map<int,double>::const_iterator CI;
@@ -2848,7 +2848,7 @@ void CONTACT::WearInterface::FDCheckMortarT_Master_Deriv()
         int dof = kcnode->Dofs()[d];
 
         // store D-values into refD
-        newT[dof] = kcnode->FriDataPlus().GetT()[d];
+        newT[dof] = kcnode->WearData().GetT()[d];
 
         // print results (derivatives) to screen
         for (CI p=newT[dof].begin(); p!=newT[dof].end(); ++p)
@@ -2948,16 +2948,16 @@ void CONTACT::WearInterface::FDCheckMortarEDeriv()
     //typedef std::map<int,std::map<int,double> >::const_iterator CID;
     //typedef std::map<int,double>::const_iterator CI;
 
-    if ((int)(cnode->FriDataPlus().GetE().size())==0)
+    if ((int)(cnode->WearData().GetE().size())==0)
       continue;
 
 //    for( int d=0; d<dim; d++ )
 //    {
       int dof = cnode->Dofs()[0];
-      refE[dof] = cnode->FriDataPlus().GetE()[0];
+      refE[dof] = cnode->WearData().GetE()[0];
 //    }
 
-      refDerivE[gid] = cnode->FriDataPlus().GetDerivE();
+      refDerivE[gid] = cnode->WearData().GetDerivE();
   }
 
   // global loop to apply FD scheme to all SLAVE dofs (=dim*nodes)
@@ -3012,7 +3012,7 @@ void CONTACT::WearInterface::FDCheckMortarEDeriv()
         dserror("ERROR: Cannot find node with gid %",kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
-      if ((int)(kcnode->FriDataPlus().GetE().size())==0)
+      if ((int)(kcnode->WearData().GetE().size())==0)
         continue;
 
       typedef std::map<int,double>::const_iterator CI;
@@ -3022,7 +3022,7 @@ void CONTACT::WearInterface::FDCheckMortarEDeriv()
         int dof = kcnode->Dofs()[d];
 
         // store D-values into refD
-        newE[dof] = kcnode->FriDataPlus().GetE()[d];
+        newE[dof] = kcnode->WearData().GetE()[d];
 
         // print results (derivatives) to screen
         for (CI p=newE[dof].begin(); p!=newE[dof].end(); ++p)
@@ -3122,13 +3122,13 @@ void CONTACT::WearInterface::FDCheckMortarE_Master_Deriv()
     //typedef std::map<int,std::map<int,double> >::const_iterator CID;
     //typedef std::map<int,double>::const_iterator CI;
 
-    if ((int)(cnode->FriDataPlus().GetE().size())==0)
+    if ((int)(cnode->WearData().GetE().size())==0)
       continue;
 
     int dof = cnode->Dofs()[0];
-    refE[dof] = cnode->FriDataPlus().GetE()[0];
+    refE[dof] = cnode->WearData().GetE()[0];
 
-    refDerivE[gid] = cnode->FriDataPlus().GetDerivE();
+    refDerivE[gid] = cnode->WearData().GetDerivE();
   }
 
   //**************************************************************
@@ -3186,7 +3186,7 @@ void CONTACT::WearInterface::FDCheckMortarE_Master_Deriv()
         dserror("ERROR: Cannot find node with gid %",kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
-      if ((int)(kcnode->FriDataPlus().GetE().size())==0)
+      if ((int)(kcnode->WearData().GetE().size())==0)
         continue;
 
       typedef std::map<int,double>::const_iterator CI;
@@ -3196,7 +3196,7 @@ void CONTACT::WearInterface::FDCheckMortarE_Master_Deriv()
         int dof = kcnode->Dofs()[d];
 
         // store D-values into refD
-        newE[dof] = kcnode->FriDataPlus().GetE()[d];
+        newE[dof] = kcnode->WearData().GetE()[d];
 
         // print results (derivatives) to screen
         for (CI p=newE[dof].begin(); p!=newE[dof].end(); ++p)
@@ -3302,7 +3302,7 @@ void CONTACT::WearInterface::FDCheckMortarE_Master_Deriv()
         dserror("ERROR: Cannot find node with gid %",kgid);
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
-      if ((int)(kcnode->FriDataPlus().GetE().size())==0)
+      if ((int)(kcnode->WearData().GetE().size())==0)
         continue;
 
       typedef std::map<int,double>::const_iterator CI;
@@ -3312,7 +3312,7 @@ void CONTACT::WearInterface::FDCheckMortarE_Master_Deriv()
         int dof = kcnode->Dofs()[d];
 
         // store D-values into refD
-        newE[dof] = kcnode->FriDataPlus().GetE()[d];
+        newE[dof] = kcnode->WearData().GetE()[d];
 
         // print results (derivatives) to screen
         for (CI p=newE[dof].begin(); p!=newE[dof].end(); ++p)
@@ -3411,7 +3411,7 @@ void CONTACT::WearInterface::FDCheckWearDerivLm()
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // store wear-values into refW
-    refW[i]=cnode->FriDataPlus().WeightedWear();
+    refW[i]=cnode->WearData().WeightedWear();
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -3420,7 +3420,7 @@ void CONTACT::WearInterface::FDCheckWearDerivLm()
     // store warnings for this finite difference
     int w=0;
 
-    // Initialize -- set FriDataPlus.Wear() = 0 !!!
+    // Initialize -- set WearData.Wear() = 0 !!!
     Initialize();
 
     // now get the node we want to apply the FD scheme to
@@ -3462,7 +3462,7 @@ void CONTACT::WearInterface::FDCheckWearDerivLm()
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
-      newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWeightedWear();
+      newW[k]=wcoeff*kcnode->WearData().DeltaWeightedWear();
 
 //      if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
 //      {
@@ -3523,7 +3523,7 @@ void CONTACT::WearInterface::FDCheckWearDerivLm()
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // store gap-values into refG
-    cnode->FriDataPlus().WeightedWear()=refW[i];
+    cnode->WearData().WeightedWear()=refW[i];
   }
 
 
@@ -3563,7 +3563,7 @@ void CONTACT::WearInterface::FDCheckWearDeriv()
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // store wear-values into refW
-    refW[i]=cnode->FriDataPlus().WeightedWear();
+    refW[i]=cnode->WearData().WeightedWear();
   }
 
   // global loop to apply FD scheme to all slave dofs (=dim*nodes)
@@ -3572,7 +3572,7 @@ void CONTACT::WearInterface::FDCheckWearDeriv()
     // store warnings for this finite difference
     int w=0;
 
-    // Initialize -- set FriDataPlus.Wear() = 0 !!!
+    // Initialize -- set WearData.Wear() = 0 !!!
     Initialize();
 
     // now get the node we want to apply the FD scheme to
@@ -3617,7 +3617,7 @@ void CONTACT::WearInterface::FDCheckWearDeriv()
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
-      newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWeightedWear();
+      newW[k]=wcoeff*kcnode->WearData().DeltaWeightedWear();
 
       if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
       {
@@ -3714,7 +3714,7 @@ void CONTACT::WearInterface::FDCheckWearDeriv()
       FriNode* kcnode = dynamic_cast<FriNode*>(knode);
 
       // store gap-values into newG
-      newW[k]=wcoeff*kcnode->FriDataPlus().DeltaWeightedWear();
+      newW[k]=wcoeff*kcnode->WearData().DeltaWeightedWear();
 
       if (abs(newW[k]-refW[k]) > 1e-12 && newW[k]!=1.0e12 && refW[k] != 1.0e12)
       {
@@ -3772,7 +3772,7 @@ void CONTACT::WearInterface::FDCheckWearDeriv()
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-    cnode->FriDataPlus().WeightedWear()=refW[i];
+    cnode->WearData().WeightedWear()=refW[i];
   }
 
   return;

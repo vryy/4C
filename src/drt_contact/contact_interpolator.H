@@ -79,6 +79,14 @@ public:
                      std::vector<MORTAR::MortarElement*> meles);
 
   /*!
+   \brief Interpolate temperature of master side at a slave node
+   for 3D problems
+
+   */
+  void InterpolateMasterTemp3D(MORTAR::MortarElement& sele,
+                               std::vector<MORTAR::MortarElement*> meles);
+
+  /*!
    \brief lin 2D projection
 
    */
@@ -141,6 +149,17 @@ public:
                LINALG::SerialDenseMatrix& mderiv,
                std::vector<GEN::pairedvector<int,double> >& dmxi,
                double* gpn);
+
+
+  /*!
+   \brief node-wise master temperature calculation for 3D problems
+
+   */
+  void nwMasterTemp(CoNode& mynode,
+                    MORTAR::MortarElement& mele,
+                    const LINALG::SerialDenseVector& mval,
+                    const LINALG::SerialDenseMatrix& mderiv,
+                    const std::vector<GEN::pairedvector<int,double> >& dmxi);
 
   /*!
    \brief node-wise slip calculation

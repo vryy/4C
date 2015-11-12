@@ -173,7 +173,7 @@ void CONTACT::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
         FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-        cnode->FriDataPlus().wcurr()[0]=0.0;
+        cnode->WearData().wcurr()[0]=0.0;
       }
 
       if (wearbothpv_)
@@ -185,7 +185,7 @@ void CONTACT::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
           if (!node) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* cnode = dynamic_cast<FriNode*>(node);
 
-          cnode->FriDataPlus().wcurr()[0]=0.0;
+          cnode->WearData().wcurr()[0]=0.0;
         }
       }
     }
@@ -352,11 +352,6 @@ void CONTACT::WearLagrangeStrategy::InitMortar()
   if (!wearprimvar_) wearvector_ = LINALG::CreateVector(*gsnoderowmap_, true);
 
   /**********************************************************************/
-  /* (re)setup global matrix A for tsi problems                         */
-  /**********************************************************************/
-  if (tsi_) amatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
-
-  /**********************************************************************/
   /* in the case of dual quad 3D, the modified D matrices are setup     */
   /**********************************************************************/
   if (friction_ && Dualquadslave3d())
@@ -399,10 +394,6 @@ void CONTACT::WearLagrangeStrategy::AssembleMortar()
     //************************************************************
     // assemble wear vector
     if (!wearprimvar_) interface_[i]->AssembleWear(*wearvector_);
-
-    //************************************************************
-    // assemble matrix A for tsi with frictional contact
-    if (tsi_ and friction_) interface_[i]->AssembleA(*amatrix_);
 
 #ifdef CONTACTFDNORMAL
     // FD check of normal derivatives
@@ -468,7 +459,7 @@ void CONTACT::WearLagrangeStrategy::AssembleMortar()
           FriNode* cnode = dynamic_cast<FriNode*>(node);
 
           if(cnode->FriData().Slip()==true)
-            cnode->CoData().Getg()+=cnode->FriDataPlus().WeightedWear();
+            cnode->CoData().Getg()+=cnode->WearData().WeightedWear();
         }
       }
     }
@@ -484,11 +475,6 @@ void CONTACT::WearLagrangeStrategy::AssembleMortar()
   // FillComplete() matrix for both-sided wear *
   //********************************************
   d2matrix_->Complete(*gmdofrowmap_,*gmdofrowmap_);
-
-  //********************************************
-  // FillComplete() matrix for tsi problems    *
-  //********************************************
-  if (tsi_) amatrix_->Complete();
 
   return;
 }
@@ -3983,7 +3969,7 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
 
         for (int j=0;j<3;++j)
           nn[j]=frinode->MoData().n()[j];
-        wear = frinode->FriDataPlus().WeightedWear();
+        wear = frinode->WearData().WeightedWear();
 
         // find indices for DOFs of current node in Epetra_Vector
         // and put node values (normal and tangential stress components) at these DOFs
@@ -4149,7 +4135,7 @@ void CONTACT::WearLagrangeStrategy::DoWriteRestart(Teuchos::RCP<Epetra_Vector>& 
         if (frinode->FriData().Slip()) (*sliptoggle)[dof]=1;
         if (weightedwear_)
         {
-          (*weightedwear)[dof] = frinode->FriDataPlus().WeightedWear();
+          (*weightedwear)[dof] = frinode->WearData().WeightedWear();
         }
       }
     }
@@ -4656,7 +4642,7 @@ void CONTACT::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& read
           // set wear value
           if ((*sliptoggle)[dof]==1) dynamic_cast<CONTACT::FriNode*>(cnode)->FriData().Slip()=true;
           if (weightedwear_)
-            dynamic_cast<CONTACT::FriNode*>(cnode)->FriDataPlus().WeightedWear() = (*weightedwear)[dof];
+            dynamic_cast<CONTACT::FriNode*>(cnode)->WearData().WeightedWear() = (*weightedwear)[dof];
         }
       }
     }
@@ -5188,9 +5174,9 @@ void CONTACT::WearLagrangeStrategy::UpdateWearDiscretIterate(bool store)
         FriNode* cnode = dynamic_cast<FriNode*>(node);
 
         // reset
-        cnode->FriDataPlus().wcurr()[0] = 0.0;
-        cnode->FriDataPlus().wold()[0]  = 0.0;
-        cnode->FriDataPlus().waccu()[0] = 0.0;
+        cnode->WearData().wcurr()[0] = 0.0;
+        cnode->WearData().wold()[0]  = 0.0;
+        cnode->WearData().waccu()[0] = 0.0;
       }
       if(wearbothpv_)
       {
@@ -5205,9 +5191,9 @@ void CONTACT::WearLagrangeStrategy::UpdateWearDiscretIterate(bool store)
           FriNode* cnode = dynamic_cast<FriNode*>(node);
 
           // reset
-          cnode->FriDataPlus().wcurr()[0] = 0.0;
-          cnode->FriDataPlus().wold()[0]  = 0.0;
-          cnode->FriDataPlus().waccu()[0] = 0.0;
+          cnode->WearData().wcurr()[0] = 0.0;
+          cnode->WearData().wold()[0]  = 0.0;
+          cnode->WearData().waccu()[0] = 0.0;
         }
       }
     }

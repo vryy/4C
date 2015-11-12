@@ -498,6 +498,108 @@ protected:
   double           porolm_[3];      //lagrange multiplier from poro no penetration condition!
 }; //class CoNodePoroDataContainer
 
+/*!
+\brief A class containing additional data from tsi contact nodes
+
+This class contains additional information from tsi contact nodes which are
+are not needed for normal contact nodes.
+
+\author seitz (seitz@lnm.mw.tum.de)
+*/
+class CoNodeTSIDataContainer
+{
+public:
+
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  */
+  CoNodeTSIDataContainer(double t_ref, double t_dam);
+
+  /*!
+  \brief empty Constructor: unpack data later
+
+  */
+  CoNodeTSIDataContainer(){};
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~CoNodeTSIDataContainer() { return; }
+
+  /*!
+  \brief Pack this class so that it can be communicated
+
+  This function packs the datacontainer. This is only called
+  when the class has been initialized and the pointer to this
+  class exists.
+
+  */
+  virtual void Pack(DRT::PackBuffer& data) const;
+
+  /*!
+  \brief Unpack data from a vector into this class
+
+  This function unpacks the datacontainer. This is only called
+  when the class has been initialized and the pointer to this
+  class exists.
+
+  */
+  virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
+
+
+  //! @name Access methods
+
+  /*!
+  \brief Return max (Temp_slave , Temp_master)
+  */
+  double& TempMaster() { return temp_master_; }
+
+  /*!
+  \brief Return temperature
+  */
+  double& Temp() { return temp_; }
+
+  /*!
+  \brief Return reference temperature
+  */
+  double& Temp_Ref() { return t_ref_; }
+
+  /*!
+  \brief Return temperature
+  */
+  double& Temp_Dam() { return t_dam_; }
+
+  /*!
+  \brief Return thermo Lagrange multiplier
+  */
+  double& ThermoLM() { return thermo_lm_; }
+
+  std::map<int,double>& DerivTempMasterDisp() {return derivTempMasterDisp_;}
+  std::map<int,double>& DerivTempMasterTemp() {return derivTempMasterTemp_;}
+
+  void Clear();
+
+
+protected:
+
+  // don't want = operator and cctor
+  CoNodeTSIDataContainer operator = (const CoNodeTSIDataContainer& old);
+  CoNodeTSIDataContainer(const CoNodeTSIDataContainer& old);
+
+  double temp_;
+  double t_ref_;
+  double t_dam_;
+  double thermo_lm_;
+
+  double temp_master_;
+  std::map<int,double>derivTempMasterDisp_;
+  std::map<int,double>derivTempMasterTemp_;
+
+}; //class CoNodeTSIDataContainer
 
 /*!
  \brief A class for a contact node derived from MORTAR::MortarNode
@@ -648,6 +750,7 @@ public:
   inline CONTACT::CoNodeDataContainer& CoData() { return *codata_; }
 
   inline CONTACT::CoNodePoroDataContainer& CoPoroData() { return *coporodata_; }
+  inline CONTACT::CoNodeTSIDataContainer& CoTSIData() { return *cTSIdata_; }
 
   //@}
 
@@ -769,6 +872,11 @@ public:
   */
   virtual void InitializePoroDataContainer();
 
+  /*!
+  \brief Initializes the TSI data container of the node
+  */
+  virtual void InitializeTSIDataContainer(double t_ref, double t_dam);
+
 
   /*!
    \brief Resets the data container of the node
@@ -795,11 +903,8 @@ public:
 
   virtual void AddSNode(int node) {}
   virtual void AddMNode(int node) {}
-  virtual void AddAValue(int& row, int& col, double& val) {}
-  virtual void AddANode(int node) {}
-  virtual void AddBValue(int& row, int& col, double& val) {}
-  virtual void AddBNode(int node) {}
 
+  virtual bool HasCoTSIData(){return (cTSIdata_!=Teuchos::null);}
   //@}
 
 protected:
@@ -813,6 +918,8 @@ protected:
   Teuchos::RCP<CONTACT::CoNodeDataContainer> codata_; // additional information of proc's contact nodes
 
   Teuchos::RCP<CONTACT::CoNodePoroDataContainer> coporodata_;   // additional information of proc's poro contact nodes
+
+  Teuchos::RCP<CONTACT::CoNodeTSIDataContainer> cTSIdata_;   // additional information of TSI contact nodes
 
 };
 // class CoNode

@@ -21,7 +21,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*
  | headers                                                  bborn 06/08 |
  *----------------------------------------------------------------------*/
-#include "thr_contact.H"
 
 #include "../drt_adapter/adapter_thermo.H"
 
@@ -132,12 +131,6 @@ namespace THR
                         //!< to Dirichlet BCs
                         //!< This needs to be true if the bounded DOFs
                         //!< have been changed.
-      );
-
-    //! prepare thermal contact
-    void PrepareThermoContact(
-      Teuchos::RCP<MORTAR::ManagerBase> cmtman,
-      Teuchos::RCP<DRT::Discretization> discretstruct
       );
 
     //! prepare time step
@@ -522,10 +515,6 @@ namespace THR
     Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     { return dbcmaps_; }
 
-    //! Return thermal contact manager
-    Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager()
-    { return thermcontman_; }
-
     //@}
 
   protected:
@@ -627,14 +616,6 @@ namespace THR
     Teuchos::RCP<LINALG::SparseMatrix> tang_;
     //! capacity matrix (constant)
     //Teuchos::RCP<LINALG::SparseMatrix> capa_;
-
-    //@}
-
-    //! @name Managed stuff
-    //@{
-
-    // thermo contact manager
-    Teuchos::RCP<THR::ThermoContactMan> thermcontman_;
 
     //@}
 

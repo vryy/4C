@@ -229,13 +229,6 @@ namespace ADAPTER
     /// read restart information for given time step
     virtual void ReadRestart(const int step) = 0;
 
-    /// prepare thermal contact
-    virtual void PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
-                                      Teuchos::RCP<DRT::Discretization> discretstruct) = 0;
-
-    /// return thermal contact manager
-    virtual Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager() = 0;
-
     /// apply interface loads on the thermal field
     virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> ithermoload) = 0;
 

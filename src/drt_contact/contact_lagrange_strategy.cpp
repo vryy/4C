@@ -3004,7 +3004,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
             FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
             // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
-            double frcoeff = interface_[i]->IParams().get<double>("FRCOEFF");
+            double frcoeff = frinode->FrCoeff(interface_[i]->IParams().get<double>("FRCOEFF"));
 
             if(frinode->FriData().Slip() == false)
             {

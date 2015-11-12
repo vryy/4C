@@ -162,7 +162,7 @@ void CONTACT::FriNodeDataContainer::Unpack(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             mgit 07/11|
  *----------------------------------------------------------------------*/
-CONTACT::FriNodeDataContainerPlus::FriNodeDataContainerPlus() :
+CONTACT::FriNodeWearDataContainer::FriNodeWearDataContainer() :
     weightedwear_(0.0),
     deltaweightedwear_(0.0)
 {
@@ -176,7 +176,7 @@ CONTACT::FriNodeDataContainerPlus::FriNodeDataContainerPlus() :
  |  Pack data                                                  (public) |
  |                                                           farah 10/13|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNodeDataContainerPlus::Pack(DRT::PackBuffer& data) const
+void CONTACT::FriNodeWearDataContainer::Pack(DRT::PackBuffer& data) const
 {
   DRT::ParObject::AddtoPack(data, weightedwear_);
   DRT::ParObject::AddtoPack(data, deltaweightedwear_);
@@ -200,7 +200,7 @@ void CONTACT::FriNodeDataContainerPlus::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           farah 10/13|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNodeDataContainerPlus::Unpack(
+void CONTACT::FriNodeWearDataContainer::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   DRT::ParObject::ExtractfromPack(position, data, weightedwear_);
@@ -228,8 +228,7 @@ CONTACT::FriNode::FriNode(int id, const double* coords, const int owner,
     const int numdof, const std::vector<int>& dofs, const bool isslave,
     const bool initactive, const bool friplus) :
     CONTACT::CoNode(id, coords, owner, numdof, dofs, isslave, initactive),
-    mechdiss_(0.0),
-    friplus_(friplus)
+    wear_(friplus)
 {
 
   return;
@@ -240,7 +239,7 @@ CONTACT::FriNode::FriNode(int id, const double* coords, const int owner,
  *----------------------------------------------------------------------*/
 CONTACT::FriNode::FriNode(const CONTACT::FriNode& old) :
     CONTACT::CoNode(old),
-    mechdiss_(old.mechdiss_)
+    wear_(old.wear_)
 {
   // not yet used and thus not necessarily consistent
   dserror("ERROR: FriNode copy-ctor not yet implemented");
@@ -304,10 +303,10 @@ void CONTACT::FriNode::Pack(DRT::PackBuffer& data) const
   if (hasdata)
     fridata_->Pack(data);
 
-  bool hasdataplus = (fridataplus_ != Teuchos::null);
-  AddtoPack(data, hasdataplus);
-  if (hasdataplus)
-    fridataplus_->Pack(data);
+  bool hasweardata = (weardata_ != Teuchos::null);
+  AddtoPack(data, hasweardata);
+  if (hasweardata)
+    weardata_->Pack(data);
 
   return;
 }
@@ -347,16 +346,69 @@ void CONTACT::FriNode::Unpack(const std::vector<char>& data)
   bool hasdataplus = ExtractInt(position, data);
   if (hasdataplus)
   {
-    fridataplus_ = Teuchos::rcp(new CONTACT::FriNodeDataContainerPlus());
-    fridataplus_->Unpack(position, data);
+    weardata_ = Teuchos::rcp(new CONTACT::FriNodeWearDataContainer());
+    weardata_->Unpack(position, data);
   }
   else
-    fridataplus_ = Teuchos::null;
+    weardata_ = Teuchos::null;
 
   // Check
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int) data.size(), position);
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | calculate the apparent coefficient of friction            seitz 11/15|
+ *----------------------------------------------------------------------*/
+double CONTACT::FriNode::FrCoeff(const double& frcoeff_in)
+{
+  // return the friction coefficient, if we do not have a TSI problem
+  if (cTSIdata_==Teuchos::null)
+    return frcoeff_in;
+
+  // in TSI case, the friction coefficient is temperature dependent
+  else
+  {
+    double maxT=std::max(CoTSIData().Temp(),CoTSIData().TempMaster());
+    return frcoeff_in*(maxT-cTSIdata_->Temp_Dam())*(maxT-cTSIdata_->Temp_Dam())
+        /((cTSIdata_->Temp_Dam()-cTSIdata_->Temp_Ref())*(cTSIdata_->Temp_Dam()-cTSIdata_->Temp_Ref()));
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | calculate derivative of apparent coefficient of friction  seitz 11/15|
+ *----------------------------------------------------------------------*/
+void CONTACT::FriNode::derivFrCoeffTemp(
+    const double& frcoeff_in,
+    std::map<int,double>& derivT,
+    std::map<int,double>& derivDisp)
+{
+  derivT.clear();
+  derivDisp.clear();
+
+  // if we do not have a TSI problem, the friction coefficient is constant
+  if (cTSIdata_==Teuchos::null)
+    return;
+
+  double T_dam=cTSIdata_->Temp_Dam();
+  double T_ref=cTSIdata_->Temp_Ref();
+  if (cTSIdata_->Temp()>cTSIdata_->TempMaster())
+  {
+    double maxT=CoTSIData().Temp();
+    derivT[Dofs()[0]]+=2.*frcoeff_in*(maxT-T_dam)/((T_dam-T_ref)*(T_dam-T_ref));
+    derivDisp.clear();
+  }
+  else
+  {
+    double maxT=CoTSIData().TempMaster();
+    for (std::map<int,double>::const_iterator i=CoTSIData().DerivTempMasterTemp().begin();
+        i!=CoTSIData().DerivTempMasterTemp().end();++i)
+      derivT[i->first]+=2.*frcoeff_in*(maxT-T_dam)/((T_dam-T_ref)*(T_dam-T_ref))*i->second;
+    for (std::map<int,double>::const_iterator i=CoTSIData().DerivTempMasterDisp().begin();
+        i!=CoTSIData().DerivTempMasterDisp().end();++i)
+      derivDisp[i->first]+=2.*frcoeff_in*(maxT-T_dam)/((T_dam-T_ref)*(T_dam-T_ref))*i->second;
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -401,46 +453,16 @@ void CONTACT::FriNode::AddD2Value(int& row, int& col, double& val)
     dserror("ERROR: AddD2Value: function called for slave node %i", Id());
 
   // check if this has been called before
-  if ((int)FriDataPlus().GetD2().size()==0)
-    FriDataPlus().GetD2().resize(NumDof());
+  if ((int)WearData().GetD2().size()==0)
+    WearData().GetD2().resize(NumDof());
 
   // check row index input
-  if ((int)FriDataPlus().GetD2().size()<=row)
+  if ((int)WearData().GetD2().size()<=row)
     dserror("ERROR: AddD2Value: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  std::map<int, double>& d2map = FriDataPlus().GetD2()[row];
+  std::map<int, double>& d2map = WearData().GetD2()[row];
   d2map[col] += val;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
-|  Add a value to the 'ANodes' set                       gitterle 10/10|
-*----------------------------------------------------------------------*/
-void CONTACT::FriNode::AddANode(int node)
-{
-  // check if this is a master node or slave boundary node
-  if (IsSlave() == false)
-    dserror("ERROR: AddANode: function called for master node %i", Id());
-  if (IsOnBound() == true)
-    dserror("ERROR: AddANode: function called for boundary node %i", Id());
-
-  FriDataPlus().GetANodes().insert(node);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Add a value to the 'BNodes' set                        gitterle 10/10|
- *----------------------------------------------------------------------*/
-void CONTACT::FriNode::AddBNode(int node)
-{
-  // check if this is a slave node
-  if (IsSlave() == true)
-    dserror("ERROR: AddBNode: function called for slave node %i", Id());
-
-  GetBNodes().insert(node);
 
   return;
 }
@@ -488,63 +510,6 @@ void CONTACT::FriNode::AddJumpValue(double val, int k)
 }
 
 /*----------------------------------------------------------------------*
- |  Add a value to the 'A' map                             gitterle 10/10|
- *----------------------------------------------------------------------*/
-void CONTACT::FriNode::AddAValue(int& row, int& col, double& val)
-{
-  // check if this is a master node or slave boundary node
-  if (IsSlave() == false)
-    dserror("ERROR: AddAValue: function called for master node %i", Id());
-  if (IsOnBound()==true)
-    dserror("ERROR: AddAValue: function called for boundary node %i", Id());
-
-  // check if this has been called before
-  if ((int)FriDataPlus().GetA().size()==0)
-    FriDataPlus().GetA().resize(NumDof());
-
-  // check row index input
-  if ((int)FriDataPlus().GetA().size()<=row)
-    dserror("ERROR: AddAValue: tried to access invalid row index!");
-
-  // add the pair (col,val) to the given row
-  std::map<int, double>& amap = FriDataPlus().GetA()[row];
-  amap[col] += val;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
-|  Add a value to the 'B' map                             gitterle 10/10|
-*----------------------------------------------------------------------*/
-void CONTACT::FriNode::AddBValue(int& row, int& col, double& val)
-{
-  // check if this has been called before
-  if ((int) GetB().size() == 0)
-    GetB().resize(NumDof());
-
-  // check row index input
-  if ((int) GetB().size() <= row)
-    dserror("ERROR: AddBValue: tried to access invalid row index!");
-
-  // add the pair (col,val) to the given row
-  std::map<int, double>  & bmap = GetB()[row];
-  bmap[col] += val;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Add a value to mechanical dissipation                  gitterle 08/10|
- *----------------------------------------------------------------------*/
-void CONTACT::FriNode::AddMechDissValue(double& val)
-{
-  // add given value to mechdiss_
-  MechDiss() += val;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Add a value to the 'T' map                               farah 09/13|
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::AddTValue(int& row, int& col, double& val)
@@ -554,15 +519,15 @@ void CONTACT::FriNode::AddTValue(int& row, int& col, double& val)
 //    dserror("ERROR: AddTValue: function called for master node %i", Id());
 
   // check if this has been called before
-  if ((int) FriDataPlus().GetT().size() == 0)
-    FriDataPlus().GetT().resize(NumDof());
+  if ((int) WearData().GetT().size() == 0)
+    WearData().GetT().resize(NumDof());
 
   // check row index input
-  if ((int) FriDataPlus().GetT().size() <= row)
+  if ((int) WearData().GetT().size() <= row)
     dserror("ERROR: AddTValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  std::map<int, double>  & tmap = FriDataPlus().GetT()[row];
+  std::map<int, double>  & tmap = WearData().GetT()[row];
   tmap[col] += val;
 
   return;
@@ -578,15 +543,15 @@ void CONTACT::FriNode::AddEValue(int& row, int& col, double& val)
 //    dserror("ERROR: AddEValue: function called for master node %i", Id());
 
   // check if this has been called before
-  if ((int) FriDataPlus().GetE().size() == 0)
-    FriDataPlus().GetE().resize(NumDof());
+  if ((int) WearData().GetE().size() == 0)
+    WearData().GetE().resize(NumDof());
 
   // check row index input
-  if ((int) FriDataPlus().GetE().size() <= row)
+  if ((int) WearData().GetE().size() <= row)
     dserror("ERROR: AddEValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  std::map<int, double>  & emap = FriDataPlus().GetE()[row];
+  std::map<int, double>  & emap = WearData().GetE()[row];
   emap[col] += val;
 
   return;
@@ -640,7 +605,7 @@ void CONTACT::FriNode::StoreTracOld()
 void CONTACT::FriNode::AddDeltaWeightedWearValue(double& val)
 {
   // add given value to deltawear_
-  FriDataPlus().DeltaWeightedWear() += val;
+  WearData().DeltaWeightedWear() += val;
 }
 
 /*----------------------------------------------------------------------*
@@ -670,10 +635,10 @@ void CONTACT::FriNode::InitializeDataContainer()
   }
 
   // initialize data container for wear and tsi problems
-  if (friplus_ == true)
+  if (wear_ == true)
   {
-    if (fridataplus_ == Teuchos::null)
-      fridataplus_ = Teuchos::rcp(new CONTACT::FriNodeDataContainerPlus());
+    if (weardata_ == Teuchos::null)
+      weardata_ = Teuchos::rcp(new CONTACT::FriNodeWearDataContainer());
   }
 
   return;
@@ -686,7 +651,7 @@ void CONTACT::FriNode::ResetDataContainer()
 {
   // reset to Teuchos::null
   fridata_ = Teuchos::null;
-  fridataplus_ = Teuchos::null;
+  weardata_ = Teuchos::null;
   codata_ = Teuchos::null;
   modata_ = Teuchos::null;
 

@@ -265,4 +265,14 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // convergence tolerance of outer iteration loop
   DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check of outer iteraiton within partitioned TSI",&tsidynpart);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for tsi contact */
+  Teuchos::ParameterList& tsic = list->sublist("TSI CONTACT",false,"");
+
+  DoubleParameter("HEATTRANSSLAVE",0.0,"Heat transfer parameter for slave side in thermal contact",&tsic);
+  DoubleParameter("HEATTRANSMASTER",0.0,"Heat transfer parameter for master side in thermal contact",&tsic);
+  DoubleParameter("TEMP_DAMAGE",1.0e12,"damage temperatue at contact interface: friction coefficient zero there",&tsic);
+  DoubleParameter("TEMP_REF",0.0,"reference temperatue at contact interface: friction coefficient equals the given value",&tsic);
+
 }

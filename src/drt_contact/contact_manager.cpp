@@ -20,7 +20,9 @@ Maintainer: Alexander Popp
 #include "contact_lagrange_strategy.H"
 #include "contact_wear_lagrange_strategy.H"
 #include "contact_poro_lagrange_strategy.H"
+#include "contact_tsi_lagrange_strategy.H"
 #include "contact_wear_interface.H"
+#include "contact_tsi_interface.H"
 #include "contact_penalty_strategy.H"
 #include "contact_defines.H"
 #include "friction_node.H"
@@ -367,6 +369,8 @@ CONTACT::CoManager::CoManager(
       newinterface=Teuchos::rcp(new CONTACT::AugmentedInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else if(wlaw!=INPAR::WEAR::wear_none)
       newinterface=Teuchos::rcp(new CONTACT::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
+    else if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
+      newinterface=Teuchos::rcp(new CONTACT::CoTSIInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else
       newinterface = Teuchos::rcp(new CONTACT::CoInterface(groupid1, Comm(), dim, icparams, isself[0],redundant));
     interfaces.push_back(newinterface);
@@ -610,19 +614,7 @@ CONTACT::CoManager::CoManager(
   }
   else if (stype == INPAR::CONTACT::solution_lagmult)
   {
-    if (cparams.get<int>("PROBTYPE")!=INPAR::CONTACT::poro)
-    {
-      strategy_ = Teuchos::rcp(new CoLagrangeStrategy(
-          Discret().DofRowMap(),
-          Discret().NodeRowMap(),
-          cparams,
-          interfaces,
-          dim,
-          comm_,
-          alphaf,
-          maxdof));
-    }
-    else
+    if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
     {
       strategy_ = Teuchos::rcp(new PoroLagrangeStrategy(
           Discret().DofRowMap(),
@@ -635,6 +627,30 @@ CONTACT::CoManager::CoManager(
           maxdof,
           poroslave,
           poromaster));
+    }
+    else if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
+    {
+      strategy_ = Teuchos::rcp(new CoTSILagrangeStrategy(
+          Discret().DofRowMap(),
+          Discret().NodeRowMap(),
+          cparams,
+          interfaces,
+          dim,
+          comm_,
+          alphaf,
+          maxdof));
+    }
+    else
+    {
+      strategy_ = Teuchos::rcp(new CoLagrangeStrategy(
+          Discret().DofRowMap(),
+          Discret().NodeRowMap(),
+          cparams,
+          interfaces,
+          dim,
+          comm_,
+          alphaf,
+          maxdof));
     }
   }
   else if (stype == INPAR::CONTACT::solution_penalty)
@@ -906,6 +922,10 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_dual)
       dserror("ERROR: The augmented Lagrange formulation does not support dual shape functions.");
 
+    if (problemtype == prb_tsi
+        && DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true)
+      dserror("ERROR: Nodal scaling not yet implemented for TSI problems");
+
     // *********************************************************************
     // not (yet) implemented combinations
     // *********************************************************************
@@ -963,20 +983,17 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     // thermal-structure-interaction contact
     // *********************************************************************
     if (problemtype == prb_tsi
-        && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN")
-            != INPAR::MORTAR::shape_standard
-        && DRT::INPUT::IntegralValue<int>(tsic, "THERMOLAGMULT") == false)
-      dserror("ERROR: Thermal contact without Lagrange Multipliers only for standard shape functions");
+        && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_standard)
+      dserror("ERROR: Thermal contact only for dual shape functions");
 
     if (problemtype == prb_tsi
-        && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_standard
-        && DRT::INPUT::IntegralValue<int>(tsic, "THERMOLAGMULT") == true)
-      dserror("ERROR: Thermal contact with Lagrange Multipliers only for dual shape functions");
+        && DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact,"SYSTEM") != INPAR::CONTACT::system_condensed)
+      dserror("ERROR: Thermal contact only for dual shape functions with condensed system");
 
     // no nodal scaling in for thermal-structure-interaction
     if (problemtype == prb_tsi
-        && DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true)
-      dserror("ERROR: Nodal scaling not yet implemented for TSI problems");
+        && tsic.get<double>("TEMP_DAMAGE") <= tsic.get<double>("TEMP_REF"))
+      dserror("ERROR: damage temperature must be greater than reference temperature");
 
     // *********************************************************************
     // contact with wear

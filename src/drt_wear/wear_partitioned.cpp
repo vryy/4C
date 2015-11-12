@@ -680,10 +680,10 @@ void WEAR::Partitioned::WearSpatialMasterMap(Teuchos::RCP<Epetra_Vector>& disint
       if (cnode->IsSlave() == false)
       {
         // reset nodal Mortar maps
-        for (int j=0;j<(int)((cnode->FriDataPlus().GetD2()).size());++j)
-          (cnode->FriDataPlus().GetD2())[j].clear();
+        for (int j=0;j<(int)((cnode->WearData().GetD2()).size());++j)
+          (cnode->WearData().GetD2())[j].clear();
 
-        (cnode->FriDataPlus().GetD2()).resize(0);
+        (cnode->WearData().GetD2()).resize(0);
       }
     }
 
@@ -758,15 +758,15 @@ void WEAR::Partitioned::WearSpatialMaster(Teuchos::RCP<Epetra_Vector>& disinterf
 
       if(wtime == INPAR::WEAR::wear_time_different)
       {
-        if (abs(frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0])>1e-12)
-          wear = frinode->FriDataPlus().wcurr()[0]+frinode->FriDataPlus().waccu()[0];
+        if (abs(frinode->WearData().wcurr()[0] + frinode->WearData().waccu()[0])>1e-12)
+          wear = frinode->WearData().wcurr()[0]+frinode->WearData().waccu()[0];
         else
           wear=0.0;
       }
       else
       {
-        if (abs(frinode->FriDataPlus().wcurr()[0])>1e-12)
-          wear = frinode->FriDataPlus().wcurr()[0];
+        if (abs(frinode->WearData().wcurr()[0])>1e-12)
+          wear = frinode->WearData().wcurr()[0];
         else
           wear=0.0;
       }
@@ -848,22 +848,22 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
       {
         if(wtime == INPAR::WEAR::wear_time_different)
         {
-          if (abs(frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0])>1e-12)
-            wear = frinode->FriDataPlus().wcurr()[0]+frinode->FriDataPlus().waccu()[0];
+          if (abs(frinode->WearData().wcurr()[0] + frinode->WearData().waccu()[0])>1e-12)
+            wear = frinode->WearData().wcurr()[0]+frinode->WearData().waccu()[0];
           else
             wear=0.0;
         }
         else
         {
-          if (abs(frinode->FriDataPlus().wcurr()[0])>1e-12)
-            wear = frinode->FriDataPlus().wcurr()[0];
+          if (abs(frinode->WearData().wcurr()[0])>1e-12)
+            wear = frinode->WearData().wcurr()[0];
           else
             wear=0.0;
         }
       }
       else if (wtype == INPAR::WEAR::wear_intstate)
       {
-        wear = frinode->FriDataPlus().WeightedWear();
+        wear = frinode->WearData().WeightedWear();
       }
 
       // find indices for DOFs of current node in Epetra_Vector
@@ -1036,15 +1036,15 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       {
         if(wtime == INPAR::WEAR::wear_time_different)
         {
-          if (abs(frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0])>1e-12)
-            wear = frinode->FriDataPlus().wcurr()[0]+frinode->FriDataPlus().waccu()[0];
+          if (abs(frinode->WearData().wcurr()[0] + frinode->WearData().waccu()[0])>1e-12)
+            wear = frinode->WearData().wcurr()[0]+frinode->WearData().waccu()[0];
           else
             wear=0.0;
         }
         else
         {
-          if (abs(frinode->FriDataPlus().wcurr()[0])>1e-12)
-            wear = frinode->FriDataPlus().wcurr()[0];
+          if (abs(frinode->WearData().wcurr()[0])>1e-12)
+            wear = frinode->WearData().wcurr()[0];
           else
             wear=0.0;
         }
@@ -1052,7 +1052,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       // internal state variable approach:
       else if (wtype == INPAR::WEAR::wear_intstate)
       {
-        wear = frinode->FriDataPlus().WeightedWear();
+        wear = frinode->WearData().WeightedWear();
       }
 
       // find indices for DOFs of current node in Epetra_Vector
@@ -1209,22 +1209,22 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       {
         if(wtime == INPAR::WEAR::wear_time_different)
         {
-          if (abs(frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0])>1e-12)
-            wear = frinode->FriDataPlus().wcurr()[0]+frinode->FriDataPlus().waccu()[0];
+          if (abs(frinode->WearData().wcurr()[0] + frinode->WearData().waccu()[0])>1e-12)
+            wear = frinode->WearData().wcurr()[0]+frinode->WearData().waccu()[0];
           else
             wear=0.0;
         }
         else
         {
-          if (abs(frinode->FriDataPlus().wcurr()[0])>1e-12)
-            wear = frinode->FriDataPlus().wcurr()[0];
+          if (abs(frinode->WearData().wcurr()[0])>1e-12)
+            wear = frinode->WearData().wcurr()[0];
           else
             wear=0.0;
         }
       }
       else if (wtype == INPAR::WEAR::wear_intstate)
       {
-        wear = frinode->FriDataPlus().WeightedWear();
+        wear = frinode->WearData().WeightedWear();
       }
 
       // find indices for DOFs of current node in Epetra_Vector
@@ -1252,10 +1252,10 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       if (cnode->IsSlave() == false)
       {
         // reset nodal Mortar maps
-        for (int j=0;j<(int)((cnode->FriDataPlus().GetD2()).size());++j)
-          (cnode->FriDataPlus().GetD2())[j].clear();
+        for (int j=0;j<(int)((cnode->WearData().GetD2()).size());++j)
+          (cnode->WearData().GetD2())[j].clear();
 
-        (cnode->FriDataPlus().GetD2()).resize(0);
+        (cnode->WearData().GetD2()).resize(0);
       }
     }
 
@@ -1273,10 +1273,10 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
       if (cnode->IsSlave() == false)
       {
         // reset nodal Mortar maps
-        for (int j=0;j<(int)((cnode->FriDataPlus().GetD2()).size());++j)
-          (cnode->FriDataPlus().GetD2())[j].clear();
+        for (int j=0;j<(int)((cnode->WearData().GetD2()).size());++j)
+          (cnode->WearData().GetD2())[j].clear();
 
-        (cnode->FriDataPlus().GetD2()).resize(0);
+        (cnode->WearData().GetD2()).resize(0);
       }
     }
 

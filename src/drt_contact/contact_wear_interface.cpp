@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file contact_wear_interface.H
+\file contact_wear_interface.cpp
 
 <pre>
 Maintainer: Philipp Farah
@@ -112,9 +112,9 @@ void CONTACT::WearInterface::AssembleTE(LINALG::SparseMatrix& tglobal,
       dserror("ERROR: AssembleTE: Node ownership inconsistency!");
 
     /**************************************************** T-matrix ******/
-    if ((fnode->FriDataPlus().GetT()).size()>0)
+    if ((fnode->WearData().GetT()).size()>0)
     {
-      std::vector<std::map<int,double> >& tmap = fnode->FriDataPlus().GetT();
+      std::vector<std::map<int,double> >& tmap = fnode->WearData().GetT();
       int colsize = (int)tmap[0].size();
 
       std::map<int,double>::iterator colcurr;
@@ -142,9 +142,9 @@ void CONTACT::WearInterface::AssembleTE(LINALG::SparseMatrix& tglobal,
     }
 
     /**************************************************** E-matrix ******/
-    if ((fnode->FriDataPlus().GetE()).size()>0)
+    if ((fnode->WearData().GetE()).size()>0)
     {
-      std::vector<std::map<int,double> >& emap = fnode->FriDataPlus().GetE();
+      std::vector<std::map<int,double> >& emap = fnode->WearData().GetE();
       int rowsize = 1;//fnode->NumDof();
       int colsize = (int)emap[0].size();
 
@@ -229,9 +229,9 @@ void CONTACT::WearInterface::AssembleTE_Master(LINALG::SparseMatrix& tglobal,
     FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     /**************************************************** T-matrix ******/
-    if ((fnode->FriDataPlus().GetT()).size()>0)
+    if ((fnode->WearData().GetT()).size()>0)
     {
-      std::vector<std::map<int,double> >& tmap = fnode->FriDataPlus().GetT();
+      std::vector<std::map<int,double> >& tmap = fnode->WearData().GetT();
       int colsize = (int)tmap[0].size();
 
       std::map<int,double>::iterator colcurr;
@@ -259,9 +259,9 @@ void CONTACT::WearInterface::AssembleTE_Master(LINALG::SparseMatrix& tglobal,
     }
 
     /**************************************************** E-matrix ******/
-    if ((fnode->FriDataPlus().GetE()).size()>0)
+    if ((fnode->WearData().GetE()).size()>0)
     {
-      std::vector<std::map<int,double> >& emap = fnode->FriDataPlus().GetE();
+      std::vector<std::map<int,double> >& emap = fnode->WearData().GetE();
       int rowsize = 1;//fnode->NumDof();
       int colsize = (int)emap[0].size();
 
@@ -349,7 +349,7 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
     FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     // Mortar matrix Tw derivatives
-    std::map<int,std::map<int,double> >& tderiv = fnode->FriDataPlus().GetDerivTw();
+    std::map<int,std::map<int,double> >& tderiv = fnode->WearData().GetDerivTw();
 
     // get sizes and iterator start
     int slavesize = (int)tderiv.size(); // column size
@@ -376,7 +376,7 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
         dserror("False Dimension!");
 
       // Mortar matrix T derivatives
-      std::map<int,double>& thisdderive = fnode->FriDataPlus().GetDerivTw()[sgid];
+      std::map<int,double>& thisdderive = fnode->WearData().GetDerivTw()[sgid];
       int mapsize = (int)(thisdderive.size());
 
       // we choose the first node dof as wear dof
@@ -418,13 +418,13 @@ void CONTACT::WearInterface::AssembleLinT_D(LINALG::SparseMatrix& lintglobal)
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* fnode = dynamic_cast<FriNode*>(node);
 
-    if (fnode->FriDataPlus().GetT().size()>0)
+    if (fnode->WearData().GetT().size()>0)
     {
       // map iterator
       typedef std::map<int,double>::const_iterator           CI;
       typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
-      std::map<int,double>& nmap = fnode->FriDataPlus().GetT()[0];
+      std::map<int,double>& nmap = fnode->WearData().GetT()[0];
 
       // loop over col entries
       for (CI z=nmap.begin();z!=nmap.end();++z)
@@ -493,7 +493,7 @@ void CONTACT::WearInterface::AssembleLinT_D_Master(LINALG::SparseMatrix& lintglo
     FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     // Mortar matrix Tw derivatives
-    std::map<int,std::map<int,double> >& tderiv = fnode->FriDataPlus().GetDerivTw();
+    std::map<int,std::map<int,double> >& tderiv = fnode->WearData().GetDerivTw();
 
     // get sizes and iterator start
     int slavesize = (int)tderiv.size(); // column size
@@ -520,7 +520,7 @@ void CONTACT::WearInterface::AssembleLinT_D_Master(LINALG::SparseMatrix& lintglo
         dserror("False Dimension!");
 
       // Mortar matrix T derivatives
-      std::map<int,double>& thisdderive = fnode->FriDataPlus().GetDerivTw()[sgid];
+      std::map<int,double>& thisdderive = fnode->WearData().GetDerivTw()[sgid];
       int mapsize = (int)(thisdderive.size());
 
       // we choose the first node dof as wear dof
@@ -562,13 +562,13 @@ void CONTACT::WearInterface::AssembleLinT_D_Master(LINALG::SparseMatrix& lintglo
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     FriNode* fnode = dynamic_cast<FriNode*>(node);
 
-    if (fnode->FriDataPlus().GetT().size()>0)
+    if (fnode->WearData().GetT().size()>0)
     {
       // map iterator
       typedef std::map<int,double>::const_iterator           CI;
       typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
-      std::map<int,double>& nmap = fnode->FriDataPlus().GetT()[0];
+      std::map<int,double>& nmap = fnode->WearData().GetT()[0];
 
       // loop over col entries
       for (CI z=nmap.begin();z!=nmap.end();++z)
@@ -651,7 +651,7 @@ void CONTACT::WearInterface::AssembleLinE_D(LINALG::SparseMatrix& lineglobal)
     FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     // Mortar matrix Tw derivatives
-    std::map<int,std::map<int,double> >& ederiv = fnode->FriDataPlus().GetDerivE();
+    std::map<int,std::map<int,double> >& ederiv = fnode->WearData().GetDerivE();
 
     // get sizes and iterator start
     int slavesize = (int)ederiv.size(); // column size
@@ -670,10 +670,10 @@ void CONTACT::WearInterface::AssembleLinE_D(LINALG::SparseMatrix& lineglobal)
 
       // current wear - wear from last converged iteration step (partitioned scheme)
       double w = 0.0;
-      w=(csnode->FriDataPlus().wcurr()[0] + csnode->FriDataPlus().wold()[0]);
+      w=(csnode->WearData().wcurr()[0] + csnode->WearData().wold()[0]);
 
       // Mortar matrix T derivatives
-      std::map<int,double>& thisdderive = fnode->FriDataPlus().GetDerivE()[sgid];
+      std::map<int,double>& thisdderive = fnode->WearData().GetDerivE()[sgid];
       int mapsize = (int)(thisdderive.size());
 
       // we choose the first node dof as wear dof
@@ -742,7 +742,7 @@ void CONTACT::WearInterface::AssembleLinE_D_Master(LINALG::SparseMatrix& lineglo
     FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     // Mortar matrix Tw derivatives
-    std::map<int,std::map<int,double> >& ederiv = fnode->FriDataPlus().GetDerivE();
+    std::map<int,std::map<int,double> >& ederiv = fnode->WearData().GetDerivE();
 
     // get sizes and iterator start
     int slavesize = (int)ederiv.size(); // column size
@@ -761,10 +761,10 @@ void CONTACT::WearInterface::AssembleLinE_D_Master(LINALG::SparseMatrix& lineglo
 
       // current wear - wear from last converged iteration step (partitioned scheme)
       double w = 0.0;
-      w=(csnode->FriDataPlus().wcurr()[0] + csnode->FriDataPlus().wold()[0]);
+      w=(csnode->WearData().wcurr()[0] + csnode->WearData().wold()[0]);
 
       // Mortar matrix T derivatives
-      std::map<int,double>& thisdderive = fnode->FriDataPlus().GetDerivE()[sgid];
+      std::map<int,double>& thisdderive = fnode->WearData().GetDerivE()[sgid];
       int mapsize = (int)(thisdderive.size());
 
       // we choose the first node dof as wear dof
@@ -842,10 +842,10 @@ void CONTACT::WearInterface::AssembleLinT_LM(LINALG::SparseMatrix& lintglobal)
 
     typedef std::map<int,double>::const_iterator CI;
 
-    if (fnode->FriDataPlus().GetT().size()>0)
+    if (fnode->WearData().GetT().size()>0)
     {
       // column entries for row f
-      std::map<int,double>& fmap = fnode->FriDataPlus().GetT()[0];
+      std::map<int,double>& fmap = fnode->WearData().GetT()[0];
 
       for (CI p=fmap.begin();p!=fmap.end();++p)
       {
@@ -904,10 +904,10 @@ void CONTACT::WearInterface::AssembleLinT_LM_Master(LINALG::SparseMatrix& lintgl
 
     typedef std::map<int,double>::const_iterator CI;
 
-    if (fnode->FriDataPlus().GetT().size()>0)
+    if (fnode->WearData().GetT().size()>0)
     {
       // column entries for row f
-      std::map<int,double>& fmap = fnode->FriDataPlus().GetT()[0];
+      std::map<int,double>& fmap = fnode->WearData().GetT()[0];
 
       for (CI p=fmap.begin();p!=fmap.end();++p)
       {
@@ -3339,7 +3339,7 @@ void CONTACT::WearInterface::AssembleWear(Epetra_Vector& wglobal)
       dserror("ERROR: AssembleWear: Node ownership inconsistency!");
 
     /**************************************************** w-vector ******/
-    double wear = frinode->FriDataPlus().WeightedWear();
+    double wear = frinode->WearData().WeightedWear();
 
     Epetra_SerialDenseVector wnode(1);
     std::vector<int> lm(1);
@@ -3388,9 +3388,9 @@ void CONTACT::WearInterface::AssembleD2(LINALG::SparseMatrix& dglobal)
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     /**************************************************** D2-matrix ******/
-    if ((cnode->FriDataPlus().GetD2()).size()>0 )
+    if ((cnode->WearData().GetD2()).size()>0 )
     {
-      std::vector<std::map<int,double> > dmap = cnode->FriDataPlus().GetD2();
+      std::vector<std::map<int,double> > dmap = cnode->WearData().GetD2();
       int rowsize = cnode->NumDof();
       int colsize = (int)dmap[0].size();
 
@@ -4306,7 +4306,7 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
       Epetra_SerialDenseVector w_i(1);
 
       w_owner[0] = cnode->Owner();
-      w_i[0]     = - cnode->FriDataPlus().wold()[0] - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
+      w_i[0]     = - cnode->WearData().wold()[0] - cnode->WearData().wcurr()[0];    // already negative rhs!!!
       w_gid[0]   = cnode->Dofs()[0];//inactivedofs->GID(2*i);
 
       if (abs(w_i[0])>1e-15) LINALG::Assemble(inactiverhs, w_i, w_gid, w_owner);
@@ -4320,7 +4320,7 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs(Epetra_Vector& inactiverhs)
       Epetra_SerialDenseVector w_i(1);
 
       w_owner[0] = cnode->Owner();
-      w_i[0]     = - cnode->FriDataPlus().wold()[0] - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
+      w_i[0]     = - cnode->WearData().wold()[0] - cnode->WearData().wcurr()[0];    // already negative rhs!!!
       w_gid[0]   = cnode->Dofs()[0];//inactivedofs->GID(3*i);
 
       if (abs(w_i[0])>1e-15) LINALG::Assemble(inactiverhs, w_i, w_gid, w_owner);
@@ -4368,7 +4368,7 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs_Master(Epetra_FEVector& ina
       Epetra_SerialDenseVector w_i(1);
 
       w_owner[0] = Comm().MyPID();//cnode->Owner();
-      w_i[0]     = - cnode->FriDataPlus().wold()[0] - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
+      w_i[0]     = - cnode->WearData().wold()[0] - cnode->WearData().wcurr()[0];    // already negative rhs!!!
       w_gid[0]   = cnode->Dofs()[0];//inactivedofs->GID(2*i);
 
       if (abs(w_i[0])>1e-12) LINALG::Assemble(*rhs, w_i, w_gid, w_owner);
@@ -4382,7 +4382,7 @@ void CONTACT::WearInterface::AssembleInactiveWearRhs_Master(Epetra_FEVector& ina
       Epetra_SerialDenseVector w_i(1);
 
       w_owner[0] = Comm().MyPID();//cnode->Owner();
-      w_i[0]     = - cnode->FriDataPlus().wold()[0] - cnode->FriDataPlus().wcurr()[0];    // already negative rhs!!!
+      w_i[0]     = - cnode->WearData().wold()[0] - cnode->WearData().wcurr()[0];    // already negative rhs!!!
       w_gid[0]   = cnode->Dofs()[0];//inactivedofs->GID(3*i);
 
       if (abs(w_i[0])>1e-12) LINALG::Assemble(*rhs, w_i, w_gid, w_owner);
@@ -4442,9 +4442,9 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
       dserror("ERROR: AssembleWearCondRhs: Node ownership inconsistency!");
 
     /**************************************************** E-matrix ******/
-    if ((fnode->FriDataPlus().GetE()).size()>0)
+    if ((fnode->WearData().GetE()).size()>0)
     {
-      std::map<int,double>  emap = fnode->FriDataPlus().GetE()[0];
+      std::map<int,double>  emap = fnode->WearData().GetE()[0];
 
       for (CI p=emap.begin();p!=emap.end();++p)
       {
@@ -4459,7 +4459,7 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
         Epetra_SerialDenseVector w_i(1);
 
         w_owner[0] = fnode->Owner();
-        w_i[0]     = (- (csnode->FriDataPlus().wold()[0]) - (csnode->FriDataPlus().wcurr()[0])) * (p->second);
+        w_i[0]     = (- (csnode->WearData().wold()[0]) - (csnode->WearData().wcurr()[0])) * (p->second);
         w_gid[0]   = fnode->Dofs()[0];
 
         if (abs(w_i[0])>1e-15) LINALG::Assemble(rhs, w_i, w_gid, w_owner);
@@ -4469,9 +4469,9 @@ void CONTACT::WearInterface::AssembleWearCondRhs(Epetra_Vector& rhs)
     /**************************************************** T-matrix ******/
     // for condensation of lm and wear we condense the system with absol. lm
     // --> therefore we do not need the lm^i term...
-    if (((fnode->FriDataPlus().GetT()).size()>0) && systype != INPAR::CONTACT::system_condensed)
+    if (((fnode->WearData().GetT()).size()>0) && systype != INPAR::CONTACT::system_condensed)
     {
-      std::map<int,double> tmap = fnode->FriDataPlus().GetT()[0];
+      std::map<int,double> tmap = fnode->WearData().GetT()[0];
 
       for (CI p=tmap.begin();p!=tmap.end();++p)
       {
@@ -4537,9 +4537,9 @@ void CONTACT::WearInterface::AssembleWearCondRhs_Master(Epetra_FEVector& RHS)
     FriNode* fnode = dynamic_cast<FriNode*>(node);
 
     /**************************************************** E-matrix ******/
-    if ((fnode->FriDataPlus().GetE()).size()>0)
+    if ((fnode->WearData().GetE()).size()>0)
     {
-      std::map<int,double>  emap = fnode->FriDataPlus().GetE()[0];
+      std::map<int,double>  emap = fnode->WearData().GetE()[0];
 
       for (CI p=emap.begin();p!=emap.end();++p)
       {
@@ -4554,7 +4554,7 @@ void CONTACT::WearInterface::AssembleWearCondRhs_Master(Epetra_FEVector& RHS)
         Epetra_SerialDenseVector w_i(1);
 
         w_owner[0] = Comm().MyPID();//fnode->Owner();
-        w_i[0]     = (- (csnode->FriDataPlus().wold()[0]) - (csnode->FriDataPlus().wcurr()[0])) * (p->second);
+        w_i[0]     = (- (csnode->WearData().wold()[0]) - (csnode->WearData().wcurr()[0])) * (p->second);
         w_gid[0]   = fnode->Dofs()[0];
 
         if (abs(w_i[0])>1e-15) LINALG::Assemble(*rhs, w_i, w_gid, w_owner);
@@ -4564,9 +4564,9 @@ void CONTACT::WearInterface::AssembleWearCondRhs_Master(Epetra_FEVector& RHS)
     /**************************************************** T-matrix ******/
     // for condensation of lm and wear we condense the system with absol. lm
     // --> therefore we do not need the lm^i term...
-    if (((fnode->FriDataPlus().GetT()).size()>0) && systype != INPAR::CONTACT::system_condensed)
+    if (((fnode->WearData().GetT()).size()>0) && systype != INPAR::CONTACT::system_condensed)
     {
-      std::map<int,double> tmap = fnode->FriDataPlus().GetT()[0];
+      std::map<int,double> tmap = fnode->WearData().GetT()[0];
 
       for (CI p=tmap.begin();p!=tmap.end();++p)
       {
@@ -4617,24 +4617,6 @@ void CONTACT::WearInterface::Initialize()
     // reset feasible projection and segmentation status
     node->HasProj()    = false;
     node->HasSegment() = false;
-
-    if (friction_)
-    {
-      FriNode* frinode = dynamic_cast<FriNode*>(node);
-
-      // reset nodal mechanical dissipation
-      frinode->MechDiss() = 0.0;
-
-      // reset matrix B quantities
-      frinode->GetBNodes().clear();
-
-      // reset nodal B maps
-      for (int j=0;j<(int)((frinode->GetB()).size());++j)
-        (frinode->GetB())[j].clear();
-
-      (frinode->GetB()).resize(0);
-
-    }
   }
 
   //**************************************************
@@ -4654,10 +4636,10 @@ void CONTACT::WearInterface::Initialize()
       if (cnode->IsSlave() == false)
       {
         // reset nodal Mortar maps
-        for (int j=0;j<(int)((cnode->FriDataPlus().GetD2()).size());++j)
-          (cnode->FriDataPlus().GetD2())[j].clear();
+        for (int j=0;j<(int)((cnode->WearData().GetD2()).size());++j)
+          (cnode->WearData().GetD2())[j].clear();
 
-        (cnode->FriDataPlus().GetD2()).resize(0);
+        (cnode->WearData().GetD2()).resize(0);
       }
     }
   }
@@ -4752,16 +4734,16 @@ void CONTACT::WearInterface::Initialize()
       if(wearpv_)
       {
         // reset nodal Mortar wear maps
-        for (int j=0;j<(int)((frinode->FriDataPlus().GetT()).size());++j)
-          (frinode->FriDataPlus().GetT())[j].clear();
-        for (int j=0;j<(int)((frinode->FriDataPlus().GetE()).size());++j)
-          (frinode->FriDataPlus().GetE())[j].clear();
+        for (int j=0;j<(int)((frinode->WearData().GetT()).size());++j)
+          (frinode->WearData().GetT())[j].clear();
+        for (int j=0;j<(int)((frinode->WearData().GetE()).size());++j)
+          (frinode->WearData().GetE())[j].clear();
 
-        (frinode->FriDataPlus().GetT()).resize(0);
-        (frinode->FriDataPlus().GetE()).resize(0);
+        (frinode->WearData().GetT()).resize(0);
+        (frinode->WearData().GetE()).resize(0);
 
-        (frinode->FriDataPlus().GetDerivTw()).clear();
-        (frinode->FriDataPlus().GetDerivE()).clear();
+        (frinode->WearData().GetDerivTw()).clear();
+        (frinode->WearData().GetDerivE()).clear();
 
         (frinode->CoData().GetDerivGW()).clear();
       }
@@ -4769,28 +4751,13 @@ void CONTACT::WearInterface::Initialize()
       {
         // reset wear increment
         if(!wearpv_)
-          frinode->FriDataPlus().DeltaWeightedWear() = 0.0;
+          frinode->WearData().DeltaWeightedWear() = 0.0;
 
         // reset abs. wear.
         // for impl. wear algor. the abs. wear equals the
         // delta-wear
         if(wearimpl_ and !wearpv_)
-          frinode->FriDataPlus().WeightedWear() = 0.0;
-      }
-
-      //************************************
-      //              thermo
-      //*************************************
-      if (tsi_)
-      {
-        // reset matrix A quantities
-        frinode->FriDataPlus().GetANodes().clear();
-
-        // reset nodal A maps
-        for (int j=0;j<(int)((frinode->FriDataPlus().GetA()).size());++j)
-          (frinode->FriDataPlus().GetA())[j].clear();
-
-        (frinode->FriDataPlus().GetA()).resize(0);
+          frinode->WearData().WeightedWear() = 0.0;
       }
     }
   }
@@ -4808,16 +4775,16 @@ void CONTACT::WearInterface::Initialize()
       FriNode* frinode = dynamic_cast<FriNode*>(node);
 
       // reset nodal Mortar wear maps
-      for (int j=0;j<(int)((frinode->FriDataPlus().GetT()).size());++j)
-        (frinode->FriDataPlus().GetT())[j].clear();
-      for (int j=0;j<(int)((frinode->FriDataPlus().GetE()).size());++j)
-        (frinode->FriDataPlus().GetE())[j].clear();
+      for (int j=0;j<(int)((frinode->WearData().GetT()).size());++j)
+        (frinode->WearData().GetT())[j].clear();
+      for (int j=0;j<(int)((frinode->WearData().GetE()).size());++j)
+        (frinode->WearData().GetE())[j].clear();
 
-      (frinode->FriDataPlus().GetT()).resize(0);
-      (frinode->FriDataPlus().GetE()).resize(0);
+      (frinode->WearData().GetT()).resize(0);
+      (frinode->WearData().GetE()).resize(0);
 
-      (frinode->FriDataPlus().GetDerivTw()).clear();
-      (frinode->FriDataPlus().GetDerivE()).clear();
+      (frinode->WearData().GetDerivTw()).clear();
+      (frinode->WearData().GetDerivE()).clear();
     }
   }
 

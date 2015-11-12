@@ -43,7 +43,6 @@ MORTAR::MortarInterface(id,comm,dim,icontact,redundant),
 selfcontact_(selfcontact),
 friction_(false),
 wear_(false),
-tsi_(false),
 constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(icontact,"CONSTRAINT_DIRECTIONS"))
 {
   // set frictional contact status
@@ -57,10 +56,6 @@ constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>
       DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(icontact,"WEARLAW");
   if (wlaw != INPAR::WEAR::wear_none)
     wear_ = true;
-
-  // set thermo-structure-interaction with contact
-  if (icontact.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
-    tsi_ = true;
 
   // set poro contact
   if (icontact.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
@@ -1135,24 +1130,6 @@ void CONTACT::CoInterface::Initialize()
     // reset feasible projection and segmentation status
     node->HasProj()    = false;
     node->HasSegment() = false;
-
-    if (friction_)
-    {
-      FriNode* frinode = dynamic_cast<FriNode*>(node);
-
-      // reset nodal mechanical dissipation
-      frinode->MechDiss() = 0.0;
-
-      // reset matrix B quantities
-      frinode->GetBNodes().clear();
-
-      // reset nodal B maps
-      for (int j=0;j<(int)((frinode->GetB()).size());++j)
-        (frinode->GetB())[j].clear();
-
-      (frinode->GetB()).resize(0);
-
-    }
   }
 
   // loop over all slave nodes to reset stuff (standard column map)
@@ -1226,18 +1203,6 @@ void CONTACT::CoInterface::Initialize()
         // reset jumps
         frinode->FriData().jump_var()[0]=0.0;
         frinode->FriData().jump_var()[1]=0.0;
-      }
-
-      if (tsi_)
-      {
-        // reset matrix A quantities
-        frinode->FriDataPlus().GetANodes().clear();
-
-        // reset nodal A maps
-        for (int j=0;j<(int)((frinode->FriDataPlus().GetA()).size());++j)
-          (frinode->FriDataPlus().GetA())[j].clear();
-
-        (frinode->FriDataPlus().GetA()).resize(0);
       }
     }
 
@@ -4212,7 +4177,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype
   = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
-  double frcoeff    = IParams().get<double>("FRCOEFF");
+  double frcoeff_in = IParams().get<double>("FRCOEFF"); // the friction coefficient from the input
   double ct_input   = IParams().get<double>("SEMI_SMOOTH_CT");
   double cn_input   = IParams().get<double>("SEMI_SMOOTH_CN");
   bool adaptive_cn  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CN");
@@ -4221,6 +4186,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
   bool gp_slip      = DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR");
   bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(),"FRLESS_FIRST");
 
+  double frcoeff=0.; // the friction coefficient actually used
   bool consistent = false;
 
 #if defined(CONSISTENTSTICK) && defined(CONSISTENTSLIP)
@@ -4241,6 +4207,10 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 
     if (cnode->Owner() != Comm().MyPID())
       dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
+
+    // get friction coefficient for this node
+    // in case of TSI, the nodal temperature influences the local friction coefficient
+    frcoeff = cnode->FrCoeff(frcoeff_in);
 
     // more information from node
     double* n    = cnode->MoData().n();
@@ -5316,7 +5286,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
   INPAR::CONTACT::FrictionType ftype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(IParams(),"FRICTION");
   double frbound    = IParams().get<double>("FRBOUND");
-  double frcoeff    = IParams().get<double>("FRCOEFF");
+  double frcoeff_in = IParams().get<double>("FRCOEFF"); // the friction coefficient from the input
   double ct_input   = IParams().get<double>("SEMI_SMOOTH_CT");
   double cn_input   = IParams().get<double>("SEMI_SMOOTH_CN");
   bool adaptive_cn  = DRT::INPUT::IntegralValue<int>(IParams(),"MESH_ADAPTIVE_CN");
@@ -5324,6 +5294,9 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
   bool scale        = DRT::INPUT::IntegralValue<int>(IParams(),"LM_NODAL_SCALE");
   bool gp_slip      = DRT::INPUT::IntegralValue<int>(IParams(),"GP_SLIP_INCR");
   bool frilessfirst = DRT::INPUT::IntegralValue<int>(IParams(),"FRLESS_FIRST");
+
+  // the friction coefficient adapted by every node (eg depending on the local temperature)
+  double frcoeff=0.;
 
   //**********************************************************************
   //**********************************************************************
@@ -5344,6 +5317,10 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
       if (cnode->Owner() != Comm().MyPID())
         dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
+
+      // get friction coefficient for this node
+      // in case of TSI, the nodal temperature influences the local friction coefficient
+      frcoeff = cnode->FrCoeff(frcoeff_in);
 
       // prepare assembly, get information from node
       std::vector<GEN::pairedvector<int,double> > dnmap = cnode->CoData().GetDerivN();
@@ -7519,66 +7496,6 @@ bool CONTACT::CoInterface::SplitActiveDofs()
   slipt_   = Teuchos::rcp(new Epetra_Map(gcountslipT,countslipT,&myslipTgids[0],0,Comm()));
 
   return true;
-}
-
-/*----------------------------------------------------------------------*
- |  Assemble matrix A                                     gitterle 12/10|
- *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::AssembleA(LINALG::SparseMatrix& aglobal)
-{
-  // get out of here if not participating in interface
-  if (!lComm())
-    return;
-
-  // loop over proc's slave nodes of the interface for assembly
-  // use standard row map to assemble each node only once
-  for (int i=0;i<snoderowmap_->NumMyElements();++i)
-  {
-    int gid = snoderowmap_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    FriNode* frinode = dynamic_cast<FriNode*>(node);
-
-    if (frinode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleA: Node ownership inconsistency!");
-
-    /**************************************************** A-matrix ******/
-    if ((frinode->FriDataPlus().GetA()).size()>0)
-    {
-      std::vector<std::map<int,double> > amap = frinode->FriDataPlus().GetA();
-      int rowsize = frinode->NumDof();
-      int colsize = (int)amap[0].size();
-
-      for (int j=0;j<rowsize-1;++j)
-        if ((int)amap[j].size() != (int)amap[j+1].size())
-          dserror("ERROR: AssembleA: Column dim. of nodal A-map is inconsistent!");
-
-      std::map<int,double>::iterator colcurr;
-
-      for (int j=0;j<rowsize;++j)
-      {
-        int row = frinode->Dofs()[j];
-        int k = 0;
-
-        for (colcurr=amap[j].begin();colcurr!=amap[j].end();++colcurr)
-        {
-          int col = colcurr->first;
-          double val = colcurr->second;
-
-          // do the assembly into global A matrix
-          // create the A matrix, do not assemble zeros
-          aglobal.Assemble(val, row, col);
-
-          ++k;
-        }
-
-        if (k!=colsize)
-          dserror("ERROR: AssembleA: k = %i but colsize = %i",k,colsize);
-      }
-    }
-  }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -297,38 +297,8 @@ namespace TSI
     //! setup list with default parameters
     void SetDefaultParameters();
 
-    //! apply contact to off diagonal block k_st
-    /*!
-    Within the condensation process of Lagrange multipliers, the structural
-    LM are expressed in terms of the displacements, and, in the TSI case,
-    also in terms of the temperatures. This results in modification in the
-    off diagonal block k_st
-    */
-    void ApplyStructContact(Teuchos::RCP<LINALG::SparseMatrix>& k_st);
-
-    //! apply contact to off diagonal block k_ts
-    /*!
-    The contribution to the energy equation form thermal contact and the
-    thermal contact condition both depend on displacement dofs (deformed
-    configuration). This leads to additional entries in k_ts. Additionally,
-    the condensation process of thermal LM leads to contributions to k_ts.
-    */
-    void ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts );
-
-    //! entries from linearized mortar matrices D and M in energy
-    //! equation (with respect to displacements)
-    void AssembleLinDM(
-      LINALG::SparseMatrix& lindglobal,
-      LINALG::SparseMatrix& linmglobal
-      );
-
-    //! entries from linearized thermal contact condition
-    //! (with respect to displacements)
-    void AssembleThermContCondition(LINALG::SparseMatrix& lindisglobal);
-
     //! recover structural and thermal Lagrange multipliers
-    // this calls the separate fields
-    // plus takes into account the dependence on off diagonal blocks
+    // this takes into account the dependence on off diagonal blocks
     void RecoverStructThermLM();
 
     //@}
@@ -363,6 +333,14 @@ namespace TSI
     //! enum for STR time integartion
     enum INPAR::STR::DynamicType strmethodname_;
 
+
+    //! apply temperature state on structure discretization
+    virtual void ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp,
+                                  Teuchos::RCP<const Epetra_Vector> temp_res=Teuchos::null);
+
+    //! apply structural displacements and velocities on thermo discretization
+    virtual void ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> disp,
+                                  Teuchos::RCP<const Epetra_Vector> vel);
 
   private:
 
@@ -463,9 +441,6 @@ namespace TSI
 
     //! contact manager
     Teuchos::RCP<MORTAR::ManagerBase> cmtman_;
-
-    //! thermo contact manager
-    Teuchos::RCP<THR::ThermoContactMan> thermcontman_;
 
     Teuchos::RCP<Epetra_Vector> zstruct_ ;
     Teuchos::RCP<Epetra_Vector> ztherm_;

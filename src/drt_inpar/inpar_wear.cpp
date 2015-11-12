@@ -116,14 +116,4 @@ void INPAR::WEAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                 wear_time_equal, wear_time_equal,
                 wear_time_different, wear_time_different),
         &wear);
-
-  /*----------------------------------------------------------------------*/
-  /* parameters for tsi contact */
-  Teuchos::ParameterList& tsic = list->sublist("TSI CONTACT",false,"");
-
-  DoubleParameter("HEATTRANSSLAVE",0.0,"Heat transfer parameter for slave side in thermal contact",&tsic);
-  DoubleParameter("HEATTRANSMASTER",0.0,"Heat transfer parameter for master side in thermal contact",&tsic);
-
-  setStringToIntegralParameter<int>("THERMOLAGMULT","Yes","Lagrange Multipliers are applied for thermo-contact",
-                               yesnotuple,yesnovalue,&tsic);
 }

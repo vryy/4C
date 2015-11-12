@@ -128,14 +128,6 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
   //!    K_{Teffdyn} = K_{T}
   //! i.e. do nothing here
 
-  // apply modifications due to thermal contact
-  if (thermcontman_!= Teuchos::null)
-  {  
-    fres_->Scale(-1);
-    thermcontman_->ApplyThermoContact(tang_,fres_,tempn_,(*dt_)[0]);
-    fres_->Scale(-1);
-  }
-
   tang_->Complete();  // close tangent matrix
 
   //! hallelujah

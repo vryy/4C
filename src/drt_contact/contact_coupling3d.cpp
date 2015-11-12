@@ -1410,6 +1410,10 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
   else
     dserror("ERROR: chose contact algorithm not supported!");
 
+  // interpolate temperatures in TSI case
+  if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
+    CoInterpolator(imortar_).InterpolateMasterTemp3D(SlaveElement(),MasterElements());
+
   return true;
 }
 

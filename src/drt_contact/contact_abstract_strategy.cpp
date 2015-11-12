@@ -51,7 +51,6 @@ isselfcontact_(false),
 friction_(false),
 regularized_(false),
 dualquadslave3d_(false),
-tsi_(false),
 weightedwear_(false),
 wbothpv_(false),
 stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY")),
@@ -92,10 +91,6 @@ constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(Params(), "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none)
     regularized_ = true;
-
-  // set thermo-structure-interaction with contact
-  if (params.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
-    tsi_ = true;
 
   // call setup method with flag redistributed=FALSE, init=TRUE
   Setup(false, true);
@@ -1111,10 +1106,6 @@ void CONTACT::CoAbstractStrategy::InitMortar()
   else
     dserror("unknown contact constraint direction");
 
-  // matrix A for tsi problems
-  if (tsi_)
-    amatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 10));
-
   // in the case of frictional dual quad 3D, also the modified D matrices are setup
   if (friction_ && Dualquadslave3d())
   {
@@ -1147,10 +1138,6 @@ void CONTACT::CoAbstractStrategy::AssembleMortar()
     interface_[i]->AssembleDM(*dmatrix_, *mmatrix_);
     interface_[i]->AssembleG(*g_);
 
-    // assemble matrix A for tsi with frictional contact
-    if (tsi_ and friction_)
-      interface_[i]->AssembleA(*amatrix_);
-
 #ifdef CONTACTFDNORMAL
     // FD check of normal derivatives
     std::cout << " -- CONTACTFDNORMAL- -----------------------------------" << std::endl;
@@ -1180,9 +1167,6 @@ void CONTACT::CoAbstractStrategy::AssembleMortar()
   // FillComplete() global Mortar matrices
   dmatrix_->Complete();
   mmatrix_->Complete(*gmdofrowmap_, *gsdofrowmap_);
-
-  if (tsi_)
-    amatrix_->Complete();
 
   return;
 }
@@ -1478,7 +1462,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
         FriNode* fnode = dynamic_cast<FriNode*>(node);
 
         // store updated wcurr into node
-        fnode->FriDataPlus().wcurr()[0] =
+        fnode->WearData().wcurr()[0] =
             (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
       }
     }
@@ -1493,7 +1477,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
         FriNode* fnode = dynamic_cast<FriNode*>(node);
 
         // store updated wcurr into node
-        fnode->FriDataPlus().wold()[0] +=
+        fnode->WearData().wold()[0] +=
             (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
       }
     }
@@ -1565,7 +1549,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
 
             // store updated wcurr into node
             FriNode* fnode = dynamic_cast<FriNode*>(cnode);
-            fnode->FriDataPlus().wcurr()[0] =
+            fnode->WearData().wcurr()[0] =
                 (*vectorinterface)[locindex[(int) (dof / Dim())]];
             dof = dof + Dim() - 1;
             break;
@@ -1582,7 +1566,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
 
             // store updated wcurr into node
             FriNode* fnode = dynamic_cast<FriNode*>(cnode);
-            fnode->FriDataPlus().waccu()[0] +=
+            fnode->WearData().waccu()[0] +=
                 (*vectorinterface)[locindex[(int) (dof / Dim())]];
             dof = dof + Dim() - 1;
             break;
@@ -1599,7 +1583,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
 
             // store updated wcurr into node
             FriNode* fnode = dynamic_cast<FriNode*>(cnode);
-            fnode->FriDataPlus().wold()[0] +=
+            fnode->WearData().wold()[0] +=
                 (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
             dof = dof + Dim() - 1;
 
@@ -1635,11 +1619,11 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
 
               // amount of wear
               if (Params().get<int>("PROBTYPE") != INPAR::CONTACT::structalewear)
-                frinode->FriDataPlus().WeightedWear() += wearcoeff * frinode->FriDataPlus().DeltaWeightedWear();
+                frinode->WearData().WeightedWear() += wearcoeff * frinode->WearData().DeltaWeightedWear();
 
               // wear for each ale step
               else
-                frinode->FriDataPlus().WeightedWear()  = wearcoeff * frinode->FriDataPlus().DeltaWeightedWear();
+                frinode->WearData().WeightedWear()  = wearcoeff * frinode->WearData().DeltaWeightedWear();
             }
             break;
           }
@@ -1885,9 +1869,7 @@ void CONTACT::CoAbstractStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
   // (necessary e.g. for monolithic FSI with Lagrange multiplier contact,
   // because usually active set convergence check has been integrated into
   // structure Newton scheme, but now the monolithic FSI Newton scheme decides)
-  // not for thermo-structure-interaction because of partitioned scheme
-  // so long
-  if (!tsi_ and (!ActiveSetConverged() || !ActiveSetSemiSmoothConverged()))
+  if (!ActiveSetConverged() || !ActiveSetSemiSmoothConverged())
     dserror("ERROR: Active set not fully converged!");
 
   // reset active set status for next time step
@@ -2615,7 +2597,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         dserror("Error: Jumpteta should be zero for 2D");
 
         // compute weighted wear
-        if (weightedwear_) wear = frinode->FriDataPlus().WeightedWear();
+        if (weightedwear_) wear = frinode->WearData().WeightedWear();
 
         // store node id
         lnid.push_back(gid);

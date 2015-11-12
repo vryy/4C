@@ -277,21 +277,6 @@ void THR::TimInt::ApplyDirichletBC(
 
 
 /*----------------------------------------------------------------------*
- | prepare thermal contact                                   mgit 06/11 |
- *----------------------------------------------------------------------*/
-void THR::TimInt:: PrepareThermoContact(
-  Teuchos::RCP<MORTAR::ManagerBase> cmtman,
-  Teuchos::RCP<DRT::Discretization> discretstruct
-  )
-{
-
-  // thermo contact manager
-  thermcontman_ = Teuchos::rcp(new THR::ThermoContactMan(cmtman,discretstruct,discret_));
-  return;
-}  // PrepareThermoContact()
-
-
-/*----------------------------------------------------------------------*
  | update time and step counter                            bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::UpdateStepTime()

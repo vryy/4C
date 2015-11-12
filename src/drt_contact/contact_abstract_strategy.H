@@ -337,12 +337,6 @@ public:
   }
 
   /*!
-   \brief Return matrix A
-
-   */
-  Teuchos::RCP<LINALG::SparseMatrix> AMatrix() { return amatrix_; }
-
-  /*!
    \brief Return matrix T
 
    */
@@ -799,10 +793,6 @@ protected:
     Teuchos::RCP<LINALG::SparseMatrix>  invtrafo_;        // inverse trafo matrix T^(-1) for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix>  dmatrixmod_;      // modified global Mortar matrix D
     Teuchos::RCP<LINALG::SparseMatrix>  doldmod_;         // modified global Mortar matrix Dold
-
-    // thermo-structure-interaction with contact
-    bool tsi_;                                            // flag for thermo-structure interaction with contact
-    Teuchos::RCP<LINALG::SparseMatrix>  amatrix_;         // global matrix A
 
     // contact with wear
     bool weightedwear_;                                   // flag for contact with wear (is) --> weighted wear

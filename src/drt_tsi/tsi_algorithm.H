@@ -48,6 +48,7 @@ namespace ADAPTER
   class Thermo;
   class Structure;
   class MortarVolCoupl;
+  class Coupling;
 }
 
 
@@ -134,13 +135,14 @@ namespace TSI
     //! @name Transfer methods
 
     //! apply temperature state on structure discretization
-    void ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp,
+    virtual void ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> temp,
                                   Teuchos::RCP<const Epetra_Vector> temp_res=Teuchos::null);
 
     //! apply structural displacements and velocities on thermo discretization
-    void ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> disp,
+    virtual void ApplyStructCouplingState(Teuchos::RCP<const Epetra_Vector> disp,
                                   Teuchos::RCP<const Epetra_Vector> vel);
 
+    ADAPTER::Coupling& StructureThermoCoupling() { return *coupST_; }
     //@}
 
     //! @name Access methods
@@ -176,6 +178,8 @@ namespace TSI
     const bool matchinggrid_;
     //! volume coupling (using mortar) adapter
     Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volcoupl_;
+
+    Teuchos::RCP<ADAPTER::Coupling> coupST_; // S: master, T: slave
     //@}
 
   };  // Algorithm

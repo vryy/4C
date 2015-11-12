@@ -188,14 +188,6 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   // here is the negative sign for the external forces (heatfluxes)
   fres_->Update(-theta_, *fextn_, -(1.0-theta_), *fext_, 1.0);
 
-  // apply modifications due to thermal contact
-  if (thermcontman_!= Teuchos::null)
-  {
-    fres_->Scale(-1);
-    thermcontman_->ApplyThermoContact(tang_,fres_,tempn_,(*dt_)[0]);
-    fres_->Scale(-1);
-  }
-
   // no further modification on tang_ required
   // tang_ is already effective dynamic tangent matrix
   tang_->Complete();  // close tangent matrix

@@ -35,6 +35,11 @@
 #include "../drt_adapter/adapter_coupling_volmortar.H"
 #include "../drt_volmortar/volmortar_utils.H"
 
+// contact
+#include "../drt_contact/contact_lagrange_strategy.H"
+#include "../drt_contact/contact_tsi_lagrange_strategy.H"
+#include "../drt_contact/meshtying_contact_bridge.H"
+
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
 //! define the order in which the filters handle the Discretizations, which in
@@ -80,6 +85,18 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   dispnp_ = Teuchos::rcp(new Epetra_MultiVector(*(ThermoField()->Discretization()->NodeRowMap()),3,true));
   tempnp_ = Teuchos::rcp(new Epetra_MultiVector(*(StructureField()->Discretization()->NodeRowMap()),1,true));
 
+  // setup coupling object for matching discretization
+  if (matchinggrid_)
+  {
+    coupST_ = Teuchos::rcp(new ADAPTER::Coupling());
+    coupST_->SetupCoupling(*StructureField()->Discretization(),
+        *ThermoField()   ->Discretization(),
+        *StructureField()->Discretization()->NodeRowMap(),
+        *ThermoField()   ->Discretization()->NodeRowMap(),
+        1,
+        true);
+  }
+
   return;
 }
 
@@ -99,6 +116,13 @@ void TSI::Algorithm::Update()
 {
   StructureField()->Update();
   ThermoField()->Update();
+
+  // update contact
+  if (StructureField()->MeshtyingContactBridge()!=Teuchos::null)
+    if (StructureField()->MeshtyingContactBridge()->ContactManager()!=Teuchos::null)
+      dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->
+          ContactManager()->GetStrategy()).Update(StructureField()->WriteAccessDispnp(),coupST_);
+
   return;
 }
 
@@ -323,6 +347,16 @@ void TSI::Algorithm::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> 
       StructureField()->Discretization()->SetState(1,"temperature",temp);
     if (temp_res != Teuchos::null)
       StructureField()->Discretization()->SetState(1,"residual temperature",temp_res);
+
+    // set data in contact discretization
+    if (StructureField()->MeshtyingContactBridge()!=Teuchos::null)
+    {
+      CONTACT::CoTSILagrangeStrategy& costrategy = static_cast<CONTACT::CoTSILagrangeStrategy&>
+      (StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
+      Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp( new Epetra_Vector(*(ThermoField()->Tempnp())));
+      Teuchos::RCP<Epetra_Vector> temp2 = coupST_()->SlaveToMaster(temp);
+      costrategy.SetState("temp",temp2);
+    }
   }
   else
   {

@@ -253,7 +253,7 @@ protected:
 
  \author gitterle (gitterle@lnm.mw.tum.de)
  */
-class FriNodeDataContainerPlus
+class FriNodeWearDataContainer
 {
 public:
 
@@ -263,13 +263,13 @@ public:
    \brief Standard Constructor
 
    */
-  FriNodeDataContainerPlus();
+  FriNodeWearDataContainer();
 
   /*!
    \brief Destructor
 
    */
-  virtual ~FriNodeDataContainerPlus()
+  virtual ~FriNodeWearDataContainer()
   {
     return;
   }
@@ -281,21 +281,6 @@ public:
   virtual void Pack(DRT::PackBuffer& data) const;
   virtual void Unpack(std::vector<char>::size_type& position,
       const std::vector<char>& data);
-  /*!
-   \brief Return the old 'A' map (vector) of this node (last converged state)
-   */
-  virtual inline std::vector<std::map<int, double> >& GetA()
-  {
-    return arows_;
-  }
-
-  /*!
-   \brief Return the map with according slave nodes
-   */
-  virtual inline std::set<int>& GetANodes()
-  {
-    return anodes_;
-  }
 
   /*!
    \brief Return the weighted wear per node (length 1)
@@ -379,12 +364,8 @@ public:
 protected:
 
   // don't want = operator and cctor
-  FriNodeDataContainerPlus operator =(const FriNodeDataContainerPlus& old);
-  FriNodeDataContainerPlus(const FriNodeDataContainerPlus& old);
-
-  // tsi with contact related quantities
-  std::vector<std::map<int, double> > arows_; // nodal rows of matrix A
-  std::set<int> anodes_;                      // nodal set of according slave nodes
+  FriNodeWearDataContainer operator =(const FriNodeWearDataContainer& old);
+  FriNodeWearDataContainer(const FriNodeWearDataContainer& old);
 
   // wear related quantities
   double weightedwear_;      // weighted wear
@@ -402,7 +383,7 @@ protected:
   std::map<int, std::map<int, double> > derive_; // directional derivative of nodal E-matrix values
 
 };
-// class FriNodeDataContainerPlus
+// class FriNodeWearDataContainer
 
 /*!
  \brief A class for a frictional contact node derived from CONTACT::CoNode
@@ -503,30 +484,6 @@ public:
   virtual void Print(std::ostream& os) const;
 
   /*!
-   \brief Return mechanical dissipation per node  (length 1)
-   */
-  virtual double& MechDiss()
-  {
-    return mechdiss_;
-  }
-
-  /*!
-   \brief Return the 'B' map (vector) of this node
-   */
-  virtual inline std::vector<std::map<int, double> >& GetB()
-  {
-    return brows_;
-  }
-
-  /*!
-   \brief Return the map with according master nodes
-   */
-  virtual inline std::set<int>& GetBNodes()
-  {
-    return bnodes_;
-  }
-
-  /*!
    \brief Return of data container of this node
 
    This method returns the data container of this node where additional
@@ -542,13 +499,36 @@ public:
    \brief Return of additional data container of this node
 
    This method returns the additional data container of this node where additional
-   tsi and wear specific quantities/information are stored.
+   wear specific quantities/information are stored.
 
    */
-  inline CONTACT::FriNodeDataContainerPlus& FriDataPlus()
+  inline CONTACT::FriNodeWearDataContainer& WearData()
   {
-    return *fridataplus_;
+    return *weardata_;
   }
+
+  /*!
+   \brief calculate the apparent coefficient of friction
+
+   in a TSI problem, this is dependent on the slave and master
+   temperatures. Since the master temperature is displacement
+   dependent (due to the involved projections), it requires
+   a consistent linearization (see function below).
+   */
+  double FrCoeff(const double& frcoeff_in);
+
+  /*!
+   \brief calculate the derivative of apparent coefficient of friction
+
+   in a TSI problem, this is dependent on the slave and master
+   temperatures. Since the master temperature is displacement
+   dependent (due to the involved projections), it requires
+   a consistent linearization (see function below).
+   */
+  void derivFrCoeffTemp(
+      const double& frcoeff_in,
+      std::map<int,double>& derivT,
+      std::map<int,double>& derivDisp);
 
   //@}
 
@@ -617,43 +597,6 @@ public:
   void AddDerivJumpValue(int& row, const int& col, double val);
 
   void AddJumpValue(double val, int k);
-  /*!
-   \brief Add value to mechanical dissipation
-
-   */
-  void AddMechDissValue(double& val);
-
-  /*!
-   \brief Add a value to the 'A' map of this node
-
-   \param row : local dof row id to add to (rowise)
-   \param val : value to be added
-   \param col : global dof column id of the value added
-
-   */
-  void AddAValue(int& row, int& col, double& val);
-
-  /*!
-   \brief Add a value to the ANode set of this node
-
-   */
-  void AddANode(int node);
-
-  /*!
-   \brief Add a value to the 'B' map of this node
-
-   \param row : local dof row id to add to (rowise)
-   \param val : value to be added
-   \param col : global dof column id of the value added
-
-   */
-  void AddBValue(int& row, int& col, double& val);
-
-  /*!
-   \brief Add a value to the BNode set of this node
-
-   */
-  void AddBNode(int node);
 
   void AddD2Value(int& row, int& col, double& val);
 
@@ -703,15 +646,10 @@ public:
 
 protected:
 
-  // thermo contact related quantities
-  double mechdiss_;                           // mechanical dissipation
-  std::vector<std::map<int, double> > brows_; // nodal rows of matrix A
-  std::set<int> bnodes_;                      // nodal set of according slave nodes
-
   Teuchos::RCP<CONTACT::FriNodeDataContainer> fridata_;         // additional information of proc's friction nodes
-  Teuchos::RCP<CONTACT::FriNodeDataContainerPlus> fridataplus_; // additional information to proc's data container
+  Teuchos::RCP<CONTACT::FriNodeWearDataContainer> weardata_;    // additional information to proc's data container
 
-  bool friplus_; // bool for tsi || wear
+  bool wear_; // bool for wear
 };
 // class FriNode
 

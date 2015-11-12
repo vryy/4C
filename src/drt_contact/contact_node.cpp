@@ -152,6 +152,59 @@ void CONTACT::CoNodePoroDataContainer::Unpack(std::vector<char>::size_type& posi
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                            seitz 08/15|
+ *----------------------------------------------------------------------*/
+CONTACT::CoNodeTSIDataContainer::CoNodeTSIDataContainer(double t_ref, double t_dam)
+: temp_(-1.e12),
+  t_ref_(t_ref),
+  t_dam_(t_dam),
+ temp_master_(-1.e12)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Pack data                                                  (public) |
+ |                                                           seitz 08/15|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNodeTSIDataContainer::Pack(DRT::PackBuffer& data) const
+{
+  DRT::ParObject::AddtoPack(data,temp_master_);
+  DRT::ParObject::AddtoPack(data,t_ref_);
+  DRT::ParObject::AddtoPack(data,t_dam_);
+  DRT::ParObject::AddtoPack(data,derivTempMasterDisp_);
+  DRT::ParObject::AddtoPack(data,derivTempMasterTemp_);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Unpack data                                                (public) |
+ |                                                           seitz 08/15|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNodeTSIDataContainer::Unpack(std::vector<char>::size_type& position,
+                                          const std::vector<char>& data)
+{
+  DRT::ParObject::ExtractfromPack(position,data,temp_master_);
+  DRT::ParObject::ExtractfromPack(position,data,t_ref_);
+  DRT::ParObject::ExtractfromPack(position,data,t_dam_);
+  DRT::ParObject::ExtractfromPack(position,data,derivTempMasterDisp_);
+  DRT::ParObject::ExtractfromPack(position,data,derivTempMasterTemp_);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  clear data                                                 (public) |
+ |                                                           seitz 08/15|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNodeTSIDataContainer::Clear()
+{
+  temp_master_=-1.e12;
+  derivTempMasterDisp_.clear();
+  derivTempMasterTemp_.clear();
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
@@ -251,6 +304,11 @@ void CONTACT::CoNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,hasdataporo);
   if (hasdataporo) coporodata_->Pack(data);
 
+  // add tsidata
+  bool hasTSIdata = (cTSIdata_!=Teuchos::null);
+  AddtoPack(data,(int)hasTSIdata);
+  if (hasTSIdata) cTSIdata_->Pack(data);
+
   return;
 }
 
@@ -305,6 +363,16 @@ void CONTACT::CoNode::Unpack(const std::vector<char>& data)
   {
     coporodata_ = Teuchos::null;
   }
+
+  // TSI data
+  bool hasTSIdata = (bool) ExtractInt(position,data);
+  if (hasTSIdata)
+  {
+    cTSIdata_ = Teuchos::rcp(new CONTACT::CoNodeTSIDataContainer());
+    cTSIdata_->Unpack(position,data);
+  }
+  else
+    cTSIdata_=Teuchos::null;
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -487,6 +555,19 @@ void CONTACT::CoNode::InitializePoroDataContainer()
   {
     coporodata_ = Teuchos::rcp(new CONTACT::CoNodePoroDataContainer());
   }
+
+  return;
+}
+
+/*-----------------------------------------------------------------------*
+ |  Initialize TSI data container                             seitz 08/15|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::InitializeTSIDataContainer(double t_ref, double t_dam)
+{
+  // only initialize if not yet done
+
+  if (cTSIdata_ == Teuchos::null)
+    cTSIdata_ = Teuchos::rcp(new CONTACT::CoNodeTSIDataContainer(t_ref,t_dam));
 
   return;
 }

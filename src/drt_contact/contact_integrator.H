@@ -627,31 +627,6 @@ public:
       const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
       const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dual2map,
       const Epetra_Comm& comm);
-  /*!
-   \brief evaluate matrix A for tsi-contact
-
-   */
-  void inline GP_TSI_A(MORTAR::MortarElement& sele,
-      LINALG::SerialDenseVector& lmval, double& jac, double& wgt, int& nrow,
-      int& ncol, int& ndof);
-
-  /*!
-   \brief evaluate matrix B for tsi-contact
-
-   */
-  void inline GP_TSI_B(MORTAR::MortarElement& mele,
-      LINALG::SerialDenseVector& mval, double& jac, double& wgt, int& ncol,
-      int& ndof);
-
-  /*!
-   \brief evaluate mechanical dissipation(tsi-contact)
-
-   */
-  void inline GP_TSI_MechDiss(MORTAR::MortarElement& sele,
-      MORTAR::MortarElement& mele, LINALG::SerialDenseVector& sval,
-      LINALG::SerialDenseVector& mval, LINALG::SerialDenseVector& lmval,
-      double& jac, double& mechdiss, double& wgt, int& nrow, int& ncol,
-      int& ndof, bool& thermolagmult);
 
   /*!
    \brief evaluate wear + lin at GP
@@ -696,8 +671,7 @@ public:
       const std::vector<GEN::pairedvector<int, double> >& dsxigp,
       const std::vector<GEN::pairedvector<int, double> >& dmxigp,
       const std::vector<GEN::pairedvector<int, double> >& dnmap_unit,
-      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
-      double& mechdiss);
+      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap);
 
   /*!
    \brief lin weighted wear at GP

@@ -71,7 +71,8 @@ class StrategyBase
       wmupdate,    // update current pv wear for current step (master)
       wold,        // pv wear for last converged state (slave)
       wmold,       // pv wear for last converged state (master)
-      wupdateT     // accumulated pv wear for different time scales
+      wupdateT,    // accumulated pv wear for different time scales
+      lmThermo     // thermal Lagrange multiplier
     };
     //@}
 

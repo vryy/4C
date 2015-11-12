@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file tsi_algorithm.cpp
+\file tsi_partitioned.cpp
 
 \brief  Basis of all TSI algorithms that perform a coupling between the linear
         momentum equation and the heat conduction equation
@@ -102,11 +102,6 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     std::cout << *ThermoField()->DofRowMap(1) << std::endl;
 //    exit(0);
 #endif // TSIPARTITIONEDASOUTPUT
-
-  // contact
-  if (StructureField()->MeshtyingContactBridge() != Teuchos::null)
-    if (StructureField()->MeshtyingContactBridge()->HaveContact())
-      ThermoField()->PrepareThermoContact(StructureField()->MeshtyingContactBridge()->ContactManager(),StructureField()->Discretization());
 
 }  // cstr
 

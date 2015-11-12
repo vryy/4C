@@ -1498,7 +1498,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
         LINALG::SerialDenseMatrix mcoord(3,meles[nummaster]->NumNode());
         meles[nummaster]->GetNodalCoords(mcoord);
 
-        // get them in the case of tsi
+        // get them in the case of wear
         if (wear or gpslip_)
         {
           scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
@@ -1566,7 +1566,6 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
           std::vector<GEN::pairedvector<int,double> > dslipgp(2,((nmnode*ndof)+linsize));    // deriv. of slip for slipincr (xi, eta)
           std::vector<GEN::pairedvector<int,double> > dnmap_unit(3,((nmnode*ndof)+linsize)); // deriv of x,y and z comp. of gpn (unit)
 
-          double mechdiss    =  0.0;
           double jumpval[2]  = {0.0,0.0};  // jump for wear
           double wearval[1]  = {0.0};      // wear value
           //**********************************************************************
@@ -1588,7 +1587,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
             // std. wear for all wear-algorithm types --  mechdiss included
             GP_3D_Wear(sele,*meles[nummaster],sval,sderiv,mval,mderiv,lmval,lmderiv,scoord,scoordold,mcoord,
                  mcoordold,lagmult,gpn,jacslave,wgt,jumpval,wearval,dsliptmatrixgp,dweargp,dsxigp,
-                 dmxigp,dnmap_unit,dualmap,mechdiss);
+                 dmxigp,dnmap_unit,dualmap);
 
             // integrate T and E matrix for discr. wear
             if (WearType() == INPAR::WEAR::wear_primvar)
@@ -1690,27 +1689,12 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   if (cell==Teuchos::null)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
 
-  // flags for thermo-structure-interaction with contact
-  bool tsiprob = false;
-  if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::tsi) tsiprob=true;
-
   // poro contact
   bool poroprob = false;
   if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
   {
     if (imortar_.get<bool>("CONTACTNOPEN")) //evaluate additional terms just in case of no penectration condition
       poroprob=true;
-  }
-
-  bool friction = false;     // friction
-  bool thermolagmult = true; // thermal contact with or without LM
-
-  if(tsiprob)
-  {
-    if(DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(imortar_,"FRICTION") != INPAR::CONTACT::friction_none)
-      friction = true;
-    if (DRT::INPUT::IntegralValue<int>(imortar_,"THERMOLAGMULT")==false)
-      thermolagmult = false;
   }
 
   // contact with wear
@@ -1753,8 +1737,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
   Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
 
-  // get them in the case of tsi
-  if ((tsiprob and friction) or wear or gpslip_==true)
+  // get them in the case of wear
+  if (wear or gpslip_==true)
   {
     scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
     mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,mele.NumNode()));
@@ -1923,7 +1907,6 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     //**********************************************************************
     // frequently reused quantities
     //**********************************************************************
-    double mechdiss    =  0.0;
     double gpn[3]      = {0.0,0.0,0.0};
     double gap[1]      = {0.0};
     double jumpval[2]  = {0.0,0.0};  // jump for wear
@@ -1960,10 +1943,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     // WEAR stuff
     //*******************************
     // std. wear for all wear-algorithm types --  mechdiss included
-    if (wear or tsiprob)
+    if (wear)
       GP_3D_Wear(sele,mele,sval,sderiv,mval,mderiv,lmval,lmderiv,scoord,scoordold,mcoord,
            mcoordold,lagmult,gpn,jac,wgt,jumpval,wearval,dsliptmatrixgp,dweargp,dsxigp,
-           dmxigp,dnmap_unit,dualmap,mechdiss);
+           dmxigp,dnmap_unit,dualmap);
 
     if (wear)
     {
@@ -1981,18 +1964,6 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
           WearType() == INPAR::WEAR::wear_intstate)
         GP_D2(sele,mele,lm2val,mval,jac,wgt,comm);
     }
-
-    //*******************************
-    // TSI stuff
-    //*******************************
-    if ((tsiprob and friction) and thermolagmult == true)
-      GP_TSI_A(sele,lmval,jac,wgt,nrow,ncol,ndof);
-
-    if ((tsiprob and friction) and thermolagmult == false)
-      GP_TSI_B(mele,mval,jac,wgt,ncol,ndof);
-
-    if(tsiprob and friction)
-      GP_TSI_MechDiss(sele,mele,sval,mval,lmval,jac,mechdiss,wgt,nrow,ncol,ndof,thermolagmult);
 
     //*******************************
     // PORO stuff
@@ -2113,20 +2084,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   if (cell==Teuchos::null)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
 
-  // flags for thermo-structure-interaction with contact
-  bool tsiprob = false;
-  if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::tsi) tsiprob=true;
-
   // contact with wear
   bool wear = false;
   if(wearlaw_!= INPAR::WEAR::wear_none)
     wear = true;
-
-  // friction
-  bool friction = false;
-  if(DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(imortar_,"FRICTION")
-      != INPAR::CONTACT::friction_none)
-    friction = true;
 
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
@@ -2160,8 +2121,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
   Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
 
-  // get them in the case of tsi
-  if ((tsiprob and friction) or wear or DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
+  // get them in the case of wear
+  if (wear or DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
   {
     scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
     mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,mele.NumNode()));
@@ -2353,7 +2314,6 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     //**********************************************************************
     // frequently reused quantities
     //**********************************************************************
-    double mechdiss    =  0.0;
     double gpn[3]      = {0.0,0.0,0.0};
     double gap[1]      = {0.0};
     double jumpval[2]  = {0.0,0.0};  // jump for wear
@@ -2386,10 +2346,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     // WEAR stuff
     //*******************************
     // std. wear for all wear-algorithm types --  mechdiss included
-    if (wear or tsiprob)
+    if (wear)
       GP_3D_Wear(sele,mele,sval,sderiv,mval,mderiv,lmval,lmderiv,scoord,scoordold,mcoord,
            mcoordold,lagmult,gpn,jac,wgt,jumpval,wearval,dsliptmatrixgp,dweargp,dsxigp,
-           dmxigp,dnmap_unit,dualmap,mechdiss);
+           dmxigp,dnmap_unit,dualmap);
 
     // integrate T and E matrix for discr. wear
     if (WearType() == INPAR::WEAR::wear_primvar)
@@ -4465,7 +4425,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
     if (WearType() == INPAR::WEAR::wear_primvar)
     {
       FriNode* myfricnode = dynamic_cast<FriNode*> (mymrtrnode);
-      double w = myfricnode->FriDataPlus().wcurr()[0] + myfricnode->FriDataPlus().waccu()[0];
+      double w = myfricnode->WearData().wcurr()[0] + myfricnode->WearData().waccu()[0];
       sgpx[0]+=sval[i] * (scoord(0,i)-(myfricnode->MoData().n()[0]) * w);
       sgpx[1]+=sval[i] * (scoord(1,i)-(myfricnode->MoData().n()[1]) * w);
       sgpx[2]+=sval[i] * (scoord(2,i)-(myfricnode->MoData().n()[2]) * w);
@@ -4485,7 +4445,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
        WearType() == INPAR::WEAR::wear_primvar)
     {
       FriNode* mymrtrnodeM = dynamic_cast<FriNode*> (mnodes[i]);
-      double w = mymrtrnodeM->FriDataPlus().wcurr()[0] + mymrtrnodeM->FriDataPlus().waccu()[0];
+      double w = mymrtrnodeM->WearData().wcurr()[0] + mymrtrnodeM->WearData().waccu()[0];
       mgpx[0]+=mval[i] * (mcoord(0,i) - (mymrtrnodeM->MoData().n()[0]) * w);
       mgpx[1]+=mval[i] * (mcoord(1,i) - (mymrtrnodeM->MoData().n()[1]) * w);
       mgpx[2]+=mval[i] * (mcoord(2,i) - (mymrtrnodeM->MoData().n()[2]) * w);
@@ -4602,7 +4562,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
       for (int k=0;k<2;++k)
       {
         FriNode* frinode = dynamic_cast<FriNode*> (snodes[z]);
-        double w = frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0];
+        double w = frinode->WearData().wcurr()[0] + frinode->WearData().waccu()[0];
 
         dgapgp[frinode->Dofs()[k]] -= sval[z] * gpn[k];
 
@@ -4640,7 +4600,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
       for (int k=0;k<2;++k)
       {
         FriNode* frinode = dynamic_cast<FriNode*> (mnodes[z]);
-        const double w = frinode->FriDataPlus().wcurr()[0] + frinode->FriDataPlus().waccu()[0];
+        const double w = frinode->WearData().wcurr()[0] + frinode->WearData().waccu()[0];
 
         dgapgp[frinode->Dofs()[k]] += mval[z] * gpn[k];
 
@@ -4720,9 +4680,9 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
     if (WearType() == INPAR::WEAR::wear_primvar)
     {
       FriNode* myfricnode = dynamic_cast<FriNode*> (mymrtrnode);
-      sgpx[0]+=sval[i] * (scoord(0,i)-(myfricnode->MoData().n()[0]) * myfricnode->FriDataPlus().wcurr()[0]);
-      sgpx[1]+=sval[i] * (scoord(1,i)-(myfricnode->MoData().n()[1]) * myfricnode->FriDataPlus().wcurr()[0]);
-      sgpx[2]+=sval[i] * (scoord(2,i)-(myfricnode->MoData().n()[2]) * myfricnode->FriDataPlus().wcurr()[0]);
+      sgpx[0]+=sval[i] * (scoord(0,i)-(myfricnode->MoData().n()[0]) * myfricnode->WearData().wcurr()[0]);
+      sgpx[1]+=sval[i] * (scoord(1,i)-(myfricnode->MoData().n()[1]) * myfricnode->WearData().wcurr()[0]);
+      sgpx[2]+=sval[i] * (scoord(2,i)-(myfricnode->MoData().n()[2]) * myfricnode->WearData().wcurr()[0]);
     }
     else
     {
@@ -4740,9 +4700,9 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
     {
       FriNode* masternode = dynamic_cast<FriNode*> (mnodes[i]);
 
-      mgpx[0]+=mval[i] * (mcoord(0,i) - (masternode->MoData().n()[0] * masternode->FriDataPlus().wcurr()[0]) );
-      mgpx[1]+=mval[i] * (mcoord(1,i) - (masternode->MoData().n()[1] * masternode->FriDataPlus().wcurr()[0])  );
-      mgpx[2]+=mval[i] * (mcoord(2,i) - (masternode->MoData().n()[2] * masternode->FriDataPlus().wcurr()[0])  );
+      mgpx[0]+=mval[i] * (mcoord(0,i) - (masternode->MoData().n()[0] * masternode->WearData().wcurr()[0]) );
+      mgpx[1]+=mval[i] * (mcoord(1,i) - (masternode->MoData().n()[1] * masternode->WearData().wcurr()[0])  );
+      mgpx[2]+=mval[i] * (mcoord(2,i) - (masternode->MoData().n()[2] * masternode->WearData().wcurr()[0])  );
     }
     else
     {
@@ -4968,13 +4928,13 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
         dgapgp[frinode->Dofs()[k]] -= sval[z] * gpn[k];
 
         for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->FriDataPlus().wcurr()[0])* (p->second);
+          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->WearData().wcurr()[0])* (p->second);
 
         for (_CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-          dgapgp[p->first] -= gpn[k] * sderiv(z,1) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->FriDataPlus().wcurr()[0])* (p->second);
+          dgapgp[p->first] -= gpn[k] * sderiv(z,1) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->WearData().wcurr()[0])* (p->second);
 
         for (_CI p=frinode->CoData().GetDerivN()[k].begin();p!=frinode->CoData().GetDerivN()[k].end();++p)
-          dgapgp[p->first] += gpn[k] * sval[z] * frinode->FriDataPlus().wcurr()[0] * (p->second);
+          dgapgp[p->first] += gpn[k] * sval[z] * frinode->WearData().wcurr()[0] * (p->second);
       }
     }
   }
@@ -5025,13 +4985,13 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
         dgapgp[frinode->Dofs()[k]] += mval[z] * gpn[k];
 
         for (_CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
-          dgapgp[p->first] += gpn[k] * mderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->FriDataPlus().wcurr()[0]) * (p->second);
+          dgapgp[p->first] += gpn[k] * mderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->WearData().wcurr()[0]) * (p->second);
 
         for (_CI p=dmxigp[1].begin();p!=dmxigp[1].end();++p)
-          dgapgp[p->first] += gpn[k] * mderiv(z,1) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->FriDataPlus().wcurr()[0]) * (p->second);
+          dgapgp[p->first] += gpn[k] * mderiv(z,1) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->WearData().wcurr()[0]) * (p->second);
 
         for (_CI p=frinode->CoData().GetDerivN()[k].begin();p!=frinode->CoData().GetDerivN()[k].end();++p)
-          dgapgp[p->first] -= gpn[k] * mval[z] * frinode->FriDataPlus().wcurr()[0] * (p->second);
+          dgapgp[p->first] -= gpn[k] * mval[z] * frinode->WearData().wcurr()[0] * (p->second);
       }
     }
   }
@@ -5124,9 +5084,9 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
     if (WearType() == INPAR::WEAR::wear_primvar)
     {
       FriNode* myfrinode = dynamic_cast<FriNode*> (snodes[i]);
-      sgpx[0]+=sval[i] * (scoord(0,i)-(myfrinode->MoData().n()[0]) * myfrinode->FriDataPlus().wcurr()[0]);
-      sgpx[1]+=sval[i] * (scoord(1,i)-(myfrinode->MoData().n()[1]) * myfrinode->FriDataPlus().wcurr()[0]);
-      sgpx[2]+=sval[i] * (scoord(2,i)-(myfrinode->MoData().n()[2]) * myfrinode->FriDataPlus().wcurr()[0]);
+      sgpx[0]+=sval[i] * (scoord(0,i)-(myfrinode->MoData().n()[0]) * myfrinode->WearData().wcurr()[0]);
+      sgpx[1]+=sval[i] * (scoord(1,i)-(myfrinode->MoData().n()[1]) * myfrinode->WearData().wcurr()[0]);
+      sgpx[2]+=sval[i] * (scoord(2,i)-(myfrinode->MoData().n()[2]) * myfrinode->WearData().wcurr()[0]);
     }
     else
     {
@@ -5144,9 +5104,9 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
     {
       FriNode* masternode = dynamic_cast<FriNode*> (mnodes[i]);
 
-      mgpx[0]+=mval[i] * (mcoord(0,i) - (masternode->MoData().n()[0] * masternode->FriDataPlus().wcurr()[0]) );
-      mgpx[1]+=mval[i] * (mcoord(1,i) - (masternode->MoData().n()[1] * masternode->FriDataPlus().wcurr()[0])  );
-      mgpx[2]+=mval[i] * (mcoord(2,i) - (masternode->MoData().n()[2] * masternode->FriDataPlus().wcurr()[0])  );
+      mgpx[0]+=mval[i] * (mcoord(0,i) - (masternode->MoData().n()[0] * masternode->WearData().wcurr()[0]) );
+      mgpx[1]+=mval[i] * (mcoord(1,i) - (masternode->MoData().n()[1] * masternode->WearData().wcurr()[0])  );
+      mgpx[2]+=mval[i] * (mcoord(2,i) - (masternode->MoData().n()[2] * masternode->WearData().wcurr()[0])  );
     }
     else
     {
@@ -5302,13 +5262,13 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
         dgapgp[frinode->Dofs()[k]] -= sval[z] * gpn[k];
 
         for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->FriDataPlus().wcurr()[0])* (p->second);
+          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->WearData().wcurr()[0])* (p->second);
 
         for (_CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-          dgapgp[p->first] -= gpn[k] * sderiv(z,1) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->FriDataPlus().wcurr()[0])* (p->second);
+          dgapgp[p->first] -= gpn[k] * sderiv(z,1) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->WearData().wcurr()[0])* (p->second);
 
         for (_CI p=frinode->CoData().GetDerivN()[k].begin();p!=frinode->CoData().GetDerivN()[k].end();++p)
-          dgapgp[p->first] += gpn[k] * sval[z] * frinode->FriDataPlus().wcurr()[0] * (p->second);
+          dgapgp[p->first] += gpn[k] * sval[z] * frinode->WearData().wcurr()[0] * (p->second);
       }
     }
   }
@@ -5344,13 +5304,13 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
         dgapgp[frinode->Dofs()[k]] += mval[z] * gpn[k];
 
         for (_CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
-          dgapgp[p->first] += gpn[k] * mderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->FriDataPlus().wcurr()[0]) * (p->second);
+          dgapgp[p->first] += gpn[k] * mderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->WearData().wcurr()[0]) * (p->second);
 
         for (_CI p=dmxigp[1].begin();p!=dmxigp[1].end();++p)
-          dgapgp[p->first] += gpn[k] * mderiv(z,1) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->FriDataPlus().wcurr()[0]) * (p->second);
+          dgapgp[p->first] += gpn[k] * mderiv(z,1) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * frinode->WearData().wcurr()[0]) * (p->second);
 
         for (_CI p=frinode->CoData().GetDerivN()[k].begin();p!=frinode->CoData().GetDerivN()[k].end();++p)
-          dgapgp[p->first] -= gpn[k] * mval[z] * frinode->FriDataPlus().wcurr()[0] * (p->second);
+          dgapgp[p->first] -= gpn[k] * mval[z] * frinode->WearData().wcurr()[0] * (p->second);
       }
     }
   }
@@ -7929,8 +7889,7 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
      const std::vector<GEN::pairedvector<int,double> >& dsxigp,
      const std::vector<GEN::pairedvector<int,double> >& dmxigp,
      const std::vector<GEN::pairedvector<int,double> >& dnmap_unit,
-     const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
-     double& mechdiss)
+     const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
 {
   const int nrow = sele.NumNode();
   const int ncol = mele.NumNode();
@@ -8038,18 +7997,6 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
 
   for (int i=0;i<3;++i)
     lm_lin += gpn[i]*gplm[i];
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // TODO: outsource mechdiss to own function !!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // mechanical dissipation and wear
-  mechdiss = 0.0;
-  // evaluate mechanical dissipation
-  for (int i=0;i<3;i++)
-    mechdiss += lmtan(i,0)*jumptan(i,0);
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   // add to node
   for (int j=0;j<nrow;++j)
@@ -8544,156 +8491,6 @@ void inline CONTACT::CoIntegrator::GP_3D_Scaling_Lin(
 }
 
 /*----------------------------------------------------------------------*
- |  Compute entries for TSI matrix A                         farah 11/13|
- |  Case of using thermal lagrange multipliers                          |
- *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_TSI_A(
-    MORTAR::MortarElement& sele,
-    LINALG::SerialDenseVector& lmval,
-    double& jac,
-    double& wgt, int& nrow, int& ncol,
-    int& ndof)
-{
-  // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  if(!snodes) dserror("ERROR: Null pointer!");
-
-  // loop over all aseg matrix entries
-  // !!! nrow represents the slave Lagrange multipliers !!!
-  // !!! ncol represents the dofs                       !!!
-  for (int j=0; j<nrow; ++j)
-  {
-    CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(snodes[j]);
-
-    //loop over slave dofs
-    for (int jdof=0;jdof<ndof;++jdof)
-    {
-      // integrate mseg
-      for (int k=0; k<ncol; ++k)
-      {
-        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(snodes[k]);
-
-        for (int kdof=0;kdof<ndof;++kdof)
-        {
-          int col = mnode->Dofs()[kdof];
-
-          // multiply the two shape functions
-          double prod = lmval[j]*lmval[k]*jac*wgt;
-
-          // dof to dof
-          if (jdof==kdof)
-          {
-            if(abs(prod)>MORTARINTTOL) fnode->AddAValue(jdof,col,prod);
-            if(abs(prod)>MORTARINTTOL) fnode->AddANode(mnode->Id());
-          }
-        }
-      }
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Compute entries for TSI matrix B                         farah 11/13|
- |  Case of NOT using thermal lagrange multipliers                      |
- *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_TSI_B(
-    MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector& mval,
-    double& jac,
-    double& wgt, int& ncol,
-    int& ndof)
-{
-  // get slave element nodes themselves
-  DRT::Node** mnodes = mele.Nodes();
-  if(!mnodes) dserror("ERROR: Null pointer!");
-
-  // loop over all bseg matrix entries
-  // !!! nrow represents the master shape functions     !!!
-  // !!! ncol represents the dofs                       !!!
-  for (int j=0; j<ncol; ++j)
-  {
-    CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(mnodes[j]);
-
-    //loop over slave dofs
-    for (int jdof=0;jdof<ndof;++jdof)
-    {
-      // integrate mseg
-      for (int k=0; k<ncol; ++k)
-      {
-        CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mnodes[k]);
-
-        for (int kdof=0;kdof<ndof;++kdof)
-        {
-          int col = mnode->Dofs()[kdof];
-
-          // multiply the two shape functions
-          double prod = mval[j]*mval[k]*jac*wgt;
-
-          // dof to dof
-          if (jdof==kdof)
-          {
-            if(abs(prod)>MORTARINTTOL) fnode->AddBValue(jdof,col,prod);
-            if(abs(prod)>MORTARINTTOL) fnode->AddBNode(mnode->Id());
-          }
-        }
-      }
-    }
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Compute mechanical dissipation (TSI)                     farah 11/13|
- *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_TSI_MechDiss(
-    MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector& sval,
-    LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseVector& lmval,
-    double& jac, double& mechdiss,
-    double& wgt, int& nrow, int& ncol,
-    int& ndof, bool& thermolagmult)
-{
-  // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-  if(!snodes) dserror("ERROR: Null pointer!");
-
-  // get slave element nodes themselves
-  DRT::Node** mnodes = mele.Nodes();
-  if(!mnodes) dserror("ERROR: Null pointer!");
-
-  // compute cell mechanical dissipation / slave *********************
-  // nrow represents the slave side dofs !!!
-  for (int j=0; j<nrow; ++j)
-  {
-    CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(snodes[j]);
-
-    double prod = 0.0;
-    if(thermolagmult==true) prod = lmval[j]*mechdiss*jac*wgt;
-    else                    prod =  sval[j]*mechdiss*jac*wgt;
-
-    if(abs(prod)>MORTARINTTOL) fnode->AddMechDissValue(prod);
-  }
-
-  // compute cell mechanical dissipation / master *********************
-  // ncol represents the master side dofs !!!
-  for (int j=0;j<ncol;++j)
-  {
-    CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(mnodes[j]);
-
-    double prod = mval[j]*mechdiss*jac*wgt;
-
-    if(abs(prod)>MORTARINTTOL) fnode->AddMechDissValue(prod);
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Compute entries for E and T matrix at GP (Slave)         farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_TE(
@@ -8910,7 +8707,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Master_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& tmmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& tmmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       for (int m=0; m<nrow; ++m)
@@ -8965,7 +8762,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Master_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivE()[mgid];
 
       // (1) Lin(Phi) - slave GP coordinates
       fac = wgt*mderiv(iter, 0)*mval[j]*dsxideta*dxdsxi;
@@ -9046,7 +8843,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& tmmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& tmmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       for (int m=0; m<nrow; ++m)
@@ -9105,7 +8902,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivE()[mgid];
 
       // (1) Lin(Phi) - slave GP coordinates
       fac = wgt*sderiv(iter, 0)*sval[j]*dsxideta*dxdsxi;
@@ -9145,7 +8942,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& tmmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& tmmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       for (int m=0; m<nrow; ++m)
@@ -9211,7 +9008,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivE()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       for (int m=0; m<nrow; ++m)
@@ -9295,7 +9092,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       if (duallin)
@@ -9349,7 +9146,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivE()[mgid];
 
       // (2) Lin(Phi) - slave GP coordinates
       fac = wgt*sderiv(j, 0)*sval[iter]*jac;
@@ -9386,7 +9183,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivTw()[mgid];
 
       //**********************************************
       // LM-shape function lin...
@@ -9454,7 +9251,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivE()[mgid];
 
       //**********************************************
       // wear weighting lin...
@@ -9551,7 +9348,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       if (duallin)
@@ -9602,7 +9399,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivE()[mgid];
 
       // (2) Lin(Phi) - slave GP coordinates
       fac = wgt*mderiv(j, 0)*mval[iter]*jac;
@@ -9642,7 +9439,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivTw()[mgid];
+      std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
       if (duallin)
@@ -9705,7 +9502,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
       double fac = 0.0;
 
       // get the correct map as a reference
-      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->FriDataPlus().GetDerivE()[mgid];
+      std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivE()[mgid];
 
       // (2) Lin(Phi) - slave GP coordinates
       fac = wgt*mderiv(j, 0)*lm2val[iter]*jac;
