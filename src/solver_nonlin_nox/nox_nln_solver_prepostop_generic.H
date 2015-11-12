@@ -1,6 +1,6 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_prepostoperator.H
+\file nox_nln_solver_prepostop_generic.H
 
 \maintainer Michael Hiermeier
 
@@ -18,25 +18,35 @@
 
 namespace NOX {
 namespace NLN {
-  class PrePostOperator : public NOX::Abstract::PrePostOperator
+namespace Solver {
+namespace PrePostOp {
+/*! \brief Non-linear solver helper class
+ *
+ * The NOX::NLN::Solver s are supposed to use this helper class to save
+ * solver dependent things, such as the number of nonlinear solver steps.
+ *
+ * ToDo Extend the functionality to non-linear solvers which are not
+ * derived from the LineSearchBased class.
+ *
+ * \author Michael Hiermeier */
+  class Generic : public NOX::Abstract::PrePostOperator
   {
   public:
     //! constructor
-    PrePostOperator();
+    Generic();
 
     //! destructor
-    virtual ~PrePostOperator() {};
+    virtual ~Generic() {};
 
-    /*! \brief derived
-
-       User defined method that will be executed at the start of a call to NOX::Solver::Generic::step().
-    */
+    //! derived
     virtual void runPreIterate(const NOX::Solver::Generic& solver);
 
     //! derived
     virtual void runPreSolve(const NOX::Solver::Generic& nlnSolver);
 
   };
+} // namespace PrePostOp
+} // namespace Solver
 } // namespace NLN
 } // namespace NOX
 

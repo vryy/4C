@@ -60,8 +60,13 @@ namespace LineSearch {
     */
     Teuchos::RCP<NOX::LineSearch::Generic> BuildLineSearch(
         const Teuchos::RCP<NOX::GlobalData>& gd,
+        const Teuchos::RCP<NOX::StatusTest::Generic> outerTests,
         const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
               Teuchos::ParameterList& params);
+
+  private:
+    // checks if the inner status test pointer is initialized
+    void InnerStatusTestIsRequired(const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests) const;
 
   };
   /*! Nonmember function to build a line search object.
@@ -71,6 +76,7 @@ namespace LineSearch {
   */
   Teuchos::RCP<NOX::LineSearch::Generic> BuildLineSearch(
       const Teuchos::RCP<NOX::GlobalData>& gd,
+      const Teuchos::RCP<NOX::StatusTest::Generic> outerTests,
       const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
             Teuchos::ParameterList& params);
 

@@ -41,6 +41,7 @@ namespace LineSearch {
   public:
     //! Constructor
     Backtrack(const Teuchos::RCP<NOX::GlobalData>& gd,
+        const Teuchos::RCP<NOX::StatusTest::Generic> outerTests,
         const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
         Teuchos::ParameterList& params);
 
@@ -109,6 +110,9 @@ namespace LineSearch {
 
     //! search direction
     Teuchos::RCP<const NOX::Abstract::Vector> searchDirectionPtr_;
+
+    //! outer convergence tests
+    Teuchos::RCP<NOX::StatusTest::Generic> outerTestsPtr_;
 
     //! line search stopping tests
     Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTestsPtr_;

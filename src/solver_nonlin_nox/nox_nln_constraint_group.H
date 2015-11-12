@@ -33,6 +33,7 @@ namespace CONSTRAINT {
   public:
     //! Standard constructor
     Group(Teuchos::ParameterList& printParams,  //!< printing parameters
+      Teuchos::ParameterList& grpOptionParams,
       const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,  //!< basically the NOXified time integrator
       const NOX::Epetra::Vector& x,  //!< current solution vector
       const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys,  //!< linear system, matrix and RHS etc.

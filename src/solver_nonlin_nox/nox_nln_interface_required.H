@@ -63,7 +63,17 @@ namespace Interface {
     //! update the internal variables of the required interface (e.g. displacements)
     virtual void SetPrimarySolution(const NOX::Epetra::Vector& xOld,
         const NOX::Epetra::Vector& d,
-        const double& step) { /*will be deleted in a up-coming commit*/ };
+        const double& step)
+    {
+      /*will be deleted in a up-coming commit*/
+      dserror("SetPrimarySolution has to be implemented!");
+    };
+
+    virtual Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const
+    {
+      dserror("The evaluation of the lumped mass matrix is not implemented!");
+      return Teuchos::null;
+    }
   };
 } // namespace Interface
 } // namespace STR

@@ -131,15 +131,15 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormUpdate::checkStatus(
   // ---------------------------------------------------------
   // Determine if the Generic solver is a LineSearchBased solver
   // If it is not then return a "Converged" status
-  const Solver::Generic* test = NULL;
-  test = dynamic_cast<const Solver::LineSearchBased*>(&problem);
+  const NOX::Solver::Generic* test = NULL;
+  test = dynamic_cast<const NOX::Solver::LineSearchBased*>(&problem);
   if (test == NULL)
     criteria[1] = NOX::StatusTest::Converged;
   else
   {
     printCriteria2Info_ = true;
     computedStepSize_ =
-        (dynamic_cast<const Solver::LineSearchBased*>(&problem))->getStepSize();
+        (dynamic_cast<const NOX::Solver::LineSearchBased*>(&problem))->getStepSize();
 
     if (computedStepSize_ < alpha_)
     {

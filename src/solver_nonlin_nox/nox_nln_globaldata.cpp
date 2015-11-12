@@ -14,7 +14,7 @@
 #include "nox_nln_globaldata.H"   // class definition
 #include "nox_nln_constraint_interface_required.H"
 #include "nox_nln_meritfunction_factory.H"
-#include "nox_nln_prepostoperator.H"
+#include "nox_nln_solver_prepostop_generic.H"
 
 #include <NOX_Utils.H>
 #include <NOX_Epetra_Interface_Required.H>
@@ -227,8 +227,7 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
    * sublist "Solver Options". Since we are forced to use the
    * NOX_GlobalData class, we have to use this to define our own merit functions
    * by creating the particular class in the NOX::NLN::MeritFunction::Factory
-   * and insert it into the parameter list.
-   */
+   * and insert it into the parameter list. */
   Teuchos::ParameterList& solverOptionsList = nlnparams_->sublist("Solver Options");
 
   // Pure reading access to the unfinished nox_nln_globaldata class
@@ -241,9 +240,9 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
   if (not mrtFctPtr_.is_null())
     solverOptionsList.set<Teuchos::RCP<NOX::MeritFunction::Generic> >("User Defined Merit Function",mrtFctPtr_);
 
-  // We use the parameter list to define a PrePostOperator class for the
-  // non-linear iteration process.
-  prePostOpPtr_ = Teuchos::rcp(new NOX::NLN::PrePostOperator());
+  /* We use the parameter list to define a PrePostOperator class for the
+   * non-linear iteration process. */
+  prePostOpPtr_ = Teuchos::rcp(new NOX::NLN::Solver::PrePostOp::Generic());
   solverOptionsList.set<Teuchos::RCP<NOX::Abstract::PrePostOperator> >("User Defined Pre/Post Operator",prePostOpPtr_);
 
   return;
@@ -284,19 +283,13 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
   else
     outerStatusTestParams = xmlParams.sublist("Outer Status Test");
 
-  // If  we use a line search based backtracking non-linear solver a
-  // a inner-StatusTest list is necessary.
-  if ((nlnparams_->get<std::string>("Nonlinear Solver")=="Line Search Based") and
-      (nlnparams_->sublist("Line Search").get<std::string>("Method")=="Backtrack"))
+  /* If we use a line search based backtracking non-linear solver and an inner-status test
+   * list is necessary. We check it during the nox_nln_linesearch_factory call. */
+  if (xmlParams.isSublist("Inner Status Test"))
   {
     Teuchos::ParameterList& innerStatusTestParams = statusTestParams.sublist("Inner Status Test",false);
-
     // copy the "Inner Status Test" into the nox parameter list
-    if (not xmlParams.isSublist("Inner Status Test") or
-        xmlParams.sublist("Inner Status Test").numParams()==0)
-      dserror("You have to specify a filled sublist \"Inner Status Test\" in your xml-file to use a "
-          "\"Line Search Based\"-\"Backtrack\" method.");
-    else
+    if (xmlParams.sublist("Inner Status Test").numParams())
       innerStatusTestParams = xmlParams.sublist("Inner Status Test");
   }
 
@@ -398,10 +391,8 @@ const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>
 const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>
     NOX::NLN::GlobalData::GetPreconditionerInterface()
 {
-  /*
-   * We explicitly allow a return value of Teuchos::NULL, because the
-   * preconditioner interface is in many cases optional
-   */
+  /* We explicitly allow a return value of Teuchos::NULL, because the
+   * preconditioner interface is in many cases optional */
   return iPrecPtr_;
 }
 

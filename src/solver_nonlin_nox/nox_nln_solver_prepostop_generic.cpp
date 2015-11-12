@@ -1,6 +1,6 @@
 /*-----------------------------------------------------------*/
 /*!
-\file nox_nln_prepostoperator.cpp
+\file nox_nln_solver_prepostop_generic.cpp
 
 \maintainer Michael Hiermeier
 
@@ -11,7 +11,7 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "nox_nln_prepostoperator.H"    // class definition
+#include "nox_nln_solver_prepostop_generic.H"    // class definition
 #include "nox_nln_solver_linesearchbased.H"
 #include "nox_nln_statustest_normf.H"
 #include "nox_nln_aux.H"
@@ -23,14 +23,15 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::PrePostOperator::PrePostOperator()
+NOX::NLN::Solver::PrePostOp::Generic::Generic()
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::PrePostOperator::runPreIterate(const NOX::Solver::Generic& nlnSolver)
+void NOX::NLN::Solver::PrePostOp::Generic::runPreIterate(
+    const NOX::Solver::Generic& nlnSolver)
 {
   // ToDo Use the getListPtr() routine of the NOX::Solver::Generic class
   // and do a Teuchos::rcp_const_cast() instead!
@@ -58,7 +59,8 @@ void NOX::NLN::PrePostOperator::runPreIterate(const NOX::Solver::Generic& nlnSol
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::PrePostOperator::runPreSolve(const NOX::Solver::Generic& nlnSolver)
+void NOX::NLN::Solver::PrePostOp::Generic::runPreSolve(
+    const NOX::Solver::Generic& nlnSolver)
 {
   // ToDo Use the getListPtr() routine of the NOX::Solver::Generic class
   // and do a Teuchos::rcp_const_cast() instead!

@@ -30,18 +30,21 @@ namespace Teuchos {
 namespace LINALG {
   class Solver;
   class SparseOperator;
-}
+} // namespace LINALG
 namespace NOX {
-  namespace Epetra {
-    class Scaling;
-    namespace Interface {
-      class Jacobian;
-      class Preconditioner;
-    }
-  }
-}
+namespace Epetra {
+  class Scaling;
+namespace Interface {
+  class Jacobian;
+  class Preconditioner;
+} // namespace Interface
+} // namespace Epetra
+} // namespace NOX
 namespace NOX {
 namespace NLN {
+namespace Solver {
+  class PseudoTransient;
+} // namespace Solver
 namespace LinSystem {
   class PrePostOperator;
 } // namespace LinSystem
@@ -177,6 +180,13 @@ namespace LinSystem {
     virtual bool createPreconditioner(const NOX::Epetra::Vector& x,
                       Teuchos::ParameterList& linearSolverParams,
                       bool recomputeGraph) const;
+
+    //! adjust the pseudo time step (using a least squares approximation)
+    void adjustPseudoTimeStep(double& delta,
+        const double& stepSize,
+        const NOX::Epetra::Vector& dir,
+        const NOX::Epetra::Vector& rhs,
+        const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
     //! reset the linear solver parameters
     void reset();
@@ -320,12 +330,12 @@ namespace LinSystem {
     //! Stores the parameter "Compute Scaling Manually".
     bool manualScaling_;
 
-    //! Pointer to a user defined wrapped NOX::NLN::LinSystem::PrePostOp::Generic object.
+    //! Pointer to an user defined wrapped NOX::NLN::Abstract::PrePostOperator object.
     Teuchos::RCP<NOX::NLN::LinSystem::PrePostOperator> prePostOperatorPtr_;
 
   };
-}
-}
+} // namespace NLN
+} // namespace NOX
 
 
 #endif /* NOX_NLN_LINEARSYSTEM_H_ */

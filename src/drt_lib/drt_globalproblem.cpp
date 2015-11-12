@@ -325,6 +325,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadSection("--STRUCT NOX/Line Search/Backtrack", *list);
   reader.ReadSection("--STRUCT NOX/Line Search/Polynomial", *list);
   reader.ReadSection("--STRUCT NOX/Line Search/More'-Thuente", *list);
+  reader.ReadSection("--STRUCT NOX/Pseudo Transient", *list);
   reader.ReadSection("--STRUCT NOX/Trust Region", *list);
   reader.ReadSection("--STRUCT NOX/Printing", *list);
   reader.ReadSection("--STRUCT NOX/Status Test", *list);

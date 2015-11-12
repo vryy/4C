@@ -1732,17 +1732,18 @@ set(OBJS_SOLVER_NONLIN
 set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_aux.cpp
   src/solver_nonlin_nox/nox_nln_globaldata.cpp
-  src/solver_nonlin_nox/nox_nln_prepostoperator.cpp
   src/solver_nonlin_nox/nox_nln_problem_factory.cpp
   src/solver_nonlin_nox/nox_nln_problem.cpp
   src/solver_nonlin_nox/nox_nln_linearsystem.cpp
   src/solver_nonlin_nox/nox_nln_linearsystem_factory.cpp
   src/solver_nonlin_nox/nox_nln_linearsystem_prepostoperator.cpp
   src/solver_nonlin_nox/nox_nln_group.cpp
+  src/solver_nonlin_nox/nox_nln_group_prepostoperator.cpp
   src/solver_nonlin_nox/nox_nln_linesearch_factory.cpp
   src/solver_nonlin_nox/nox_nln_direction_factory.cpp
   src/solver_nonlin_nox/nox_nln_meritfunction_factory.cpp
   src/solver_nonlin_nox/nox_nln_solver_factory.cpp
+  src/solver_nonlin_nox/nox_nln_solver_prepostop_generic.cpp
   src/solver_nonlin_nox/nox_nln_solver_linesearchbased.cpp
   src/solver_nonlin_nox/nox_nln_solver_ptc.cpp
   src/solver_nonlin_nox/nox_nln_constraint_problem.cpp

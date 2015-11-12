@@ -64,6 +64,10 @@ namespace Solver {
     //! Returns the NOX::Utils object
     const NOX::Utils& GetUtils() const;
 
+    //! Returns the global status of the given test name
+    template <class T>
+    NOX::StatusTest::StatusType GetStatus() const;
+
   protected:
 
     //! initialize additional variables or overwrite base class initialization

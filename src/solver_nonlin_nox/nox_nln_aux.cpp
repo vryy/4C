@@ -12,8 +12,12 @@
 /*-----------------------------------------------------------*/
 
 #include "nox_nln_aux.H"
-#include "nox_nln_statustest_normf.H"
 #include "nox_nln_statustest_combo.H"
+
+// templated status test
+#include "nox_nln_statustest_normf.H"
+#include "nox_nln_statustest_normupdate.H"
+#include "nox_nln_statustest_normwrms.H"
 
 #include <Epetra_Vector.h>
 
@@ -122,6 +126,59 @@ double NOX::NLN::AUX::GetNormFClassVariable(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+template <class T>
+int NOX::NLN::AUX::GetOuterStatus(const NOX::StatusTest::Generic& test)
+{
+  // try to cast the given test to a NOX_StatusTest_Combo
+  const NOX::NLN::StatusTest::Combo* comboTest =
+      dynamic_cast<const NOX::NLN::StatusTest::Combo*>(&test);
+
+  // if it is no combo test, we just have to check for the desired type
+  if (comboTest == 0)
+  {
+    const T* desiredTest =
+        dynamic_cast<const T*>(&test);
+
+    // not the desired status test...
+    if (desiredTest==0)
+      return -100;
+    // yeah we found one...
+    else
+    {
+      // get the global status
+      return desiredTest->getStatus();
+    }
+  }
+  // if the nox_nln_statustest_combo Test cast was successful
+  else
+  {
+    const std::vector<Teuchos::RCP<NOX::StatusTest::Generic> >& tests =
+        comboTest->GetTestVector();
+    int gRet = -100;
+    for (std::size_t i=0;i<tests.size();++i)
+    {
+      // recursive function call
+      int lRet = GetOuterStatus<T>(*(tests[i]));
+      if (lRet==-100)
+        continue;
+      if (gRet == -100)
+        gRet = lRet;
+      else
+      {
+        NOX::StatusTest::StatusType gstatus =
+            static_cast<enum NOX::StatusTest::StatusType>(gRet);
+        gRet = (gstatus==NOX::StatusTest::Converged) ? lRet : gRet;
+      }
+    }
+    return gRet;
+  }
+
+  // default return
+  return -100;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 enum NOX::NLN::SolutionType NOX::NLN::AUX::ConvertQuantityType2SolutionType(
       const enum NOX::NLN::StatusTest::QuantityType& qtype)
 {
@@ -174,3 +231,9 @@ enum NOX::Abstract::Vector::NormType NOX::NLN::AUX::String2NormType(
 
   return norm_type;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template int NOX::NLN::AUX::GetOuterStatus<NOX::NLN::StatusTest::NormF>(const NOX::StatusTest::Generic& test);
+template int NOX::NLN::AUX::GetOuterStatus<NOX::NLN::StatusTest::NormUpdate>(const NOX::StatusTest::Generic& test);
+template int NOX::NLN::AUX::GetOuterStatus<NOX::NLN::StatusTest::NormWRMS>(const NOX::StatusTest::Generic& test);

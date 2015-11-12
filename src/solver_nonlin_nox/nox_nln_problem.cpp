@@ -104,7 +104,8 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::NoxProblem::CreateNoxGroup(
   const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq =
       nlnGlobalData_->GetRequiredInterface();
 
-  return (Teuchos::rcp(new NOX::NLN::Group(params.sublist("Printing"),iReq,*xVector_, linSys)));
+  return (Teuchos::rcp(new NOX::NLN::Group(params.sublist("Printing"),
+      params.sublist("Group Options"),iReq,*xVector_, linSys)));
 }
 
 /*----------------------------------------------------------------------------*

@@ -14,6 +14,8 @@
 #include "nox_nln_group.H"
 #include "nox_nln_interface_required.H"
 #include "nox_nln_linearsystem.H"
+#include "nox_nln_group_prepostoperator.H"
+#include "nox_nln_solver_ptc.H"
 
 #include <NOX_StatusTest_NormF.H>
 
@@ -22,20 +24,24 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Group::Group(
-    Teuchos::ParameterList& printParams,
+NOX::NLN::Group::Group(Teuchos::ParameterList& printParams,
+    Teuchos::ParameterList& grpOptionParams,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
     const NOX::Epetra::Vector& x,
-    const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys) :
-    NOX::Epetra::Group(printParams,i,x,linSys)
+    const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys)
+    : NOX::Epetra::Group(printParams,i,x,linSys),
+      grpOptionParams_(grpOptionParams),
+      prePostOperatorPtr_(Teuchos::rcp(new NOX::NLN::GROUP::PrePostOperator(grpOptionParams)))
 {
-  // empty
+  // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Group::Group(const NOX::NLN::Group& source, CopyType type) :
-  NOX::Epetra::Group(source,type)
+NOX::NLN::Group::Group(const NOX::NLN::Group& source, CopyType type)
+    : NOX::Epetra::Group(source,type),
+      grpOptionParams_(source.grpOptionParams_),
+      prePostOperatorPtr_(source.prePostOperatorPtr_)
 {
   // no new variables, pointers or references
 }
@@ -52,8 +58,8 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::Group::clone(CopyType type) const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Group::computeX(const NOX::Abstract::Group& grp,
-              const NOX::Abstract::Vector& d,
-              double step)
+    const NOX::Abstract::Vector& d,
+    double step)
 {
   // Cast to appropriate type, then call the "native" computeX
   const NOX::NLN::Group* nlngrp = dynamic_cast<const NOX::NLN::Group*> (&grp);
@@ -119,6 +125,18 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::setJacobianOperator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeF()
+{
+  prePostOperatorPtr_->runPreComputeF(RHSVector.getEpetraVector(),*this);
+
+  NOX::Abstract::Group::ReturnType ret = Epetra::Group::computeF();
+
+  prePostOperatorPtr_->runPostComputeF(RHSVector.getEpetraVector(),*this);
+  return ret;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeFandJacobian()
 {
   // initialize the return type
@@ -127,11 +145,13 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeFandJacobian()
   // update right hand side vector
   if (!isF() and isJacobian())
   {
-    ret = Epetra::Group::computeF();
+    ret = computeF();
   }
   // update right hand side vector and jacobian
   else if (!isJacobian())
   {
+    isValidRHS = false;
+    prePostOperatorPtr_->runPreComputeF(RHSVector.getEpetraVector(),*this);
     bool status = false;
     Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
         Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(sharedLinearSystem.getObject(this));
@@ -148,10 +168,12 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeFandJacobian()
     isValidJacobian = true;
 
     ret = NOX::Abstract::Group::Ok;
+    prePostOperatorPtr_->runPostComputeF(RHSVector.getEpetraVector(),*this);
   }
   // nothing to do, because all quantities are up-to-date
   else
   {
+    prePostOperatorPtr_->runPreComputeF(RHSVector.getEpetraVector(),*this);
     ret = NOX::Abstract::Group::Ok;
   }
 
@@ -317,6 +339,56 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetPreviousSolutionNorms(
 const double NOX::NLN::Group::GetObjectiveModelValue(const std::string& name) const
 {
   return GetNlnReqInterfacePtr()->GetObjectiveModelValue(name);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::Group::ResetPrePostOpertator()
+{
+  prePostOperatorPtr_->reset(grpOptionParams_);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::Group::adjustPseudoTimeStep(double& delta,
+    const double& stepSize,
+    const NOX::Abstract::Vector& dir,
+    const NOX::NLN::Solver::PseudoTransient& ptcsolver)
+{
+  const NOX::Epetra::Vector& dirEpetra =
+      dynamic_cast<const NOX::Epetra::Vector&>(dir);
+  adjustPseudoTimeStep(delta,stepSize,dirEpetra,ptcsolver);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::Group::adjustPseudoTimeStep(double& delta,
+    const double& stepSize,
+    const NOX::Epetra::Vector& dir,
+    const NOX::NLN::Solver::PseudoTransient& ptcsolver)
+{
+  if (!isF() or !isJacobian())
+    throwError("AdjustPseudoTimeStep",
+        "F and/or the jacobian are not evaluated!");
+
+  Teuchos::RCP<NOX::NLN::LinearSystem> nlnSharedLinearSystem =
+      Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(
+      sharedLinearSystem.getObject(this));
+
+  if (nlnSharedLinearSystem.is_null())
+    throwError("AdjustPseudoTimeStep()",
+        "Dynamic cast of the shared linear system failed!");
+
+  nlnSharedLinearSystem->adjustPseudoTimeStep(delta,stepSize,dir,RHSVector,
+      ptcsolver);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> NOX::NLN::Group::GetLumpedMassMatrixPtr() const
+{
+  return Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(
+      userInterfacePtr)->GetLumpedMassMatrixPtr();
 }
 
 /*----------------------------------------------------------------------*

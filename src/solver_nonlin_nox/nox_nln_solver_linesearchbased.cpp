@@ -16,8 +16,13 @@
 #include "nox_nln_linesearch_factory.H"
 #include "nox_nln_direction_factory.H"
 #include "nox_nln_group.H"
+#include "nox_nln_aux.H"
 
-#include <NOX_StatusTest_Generic.H>
+// templated status tests
+#include "nox_nln_statustest_normf.H"
+#include "nox_nln_statustest_normupdate.H"
+#include "nox_nln_statustest_normwrms.H"
+
 #include <NOX_Solver_SolverUtils.H>
 #include <NOX_Direction_Factory.H>
 #include <NOX_Direction_Generic.H>
@@ -53,7 +58,7 @@ void NOX::NLN::Solver::LineSearchBased::init(
 
   // NOTE: We use different factories at this point!
   lineSearchPtr = NOX::NLN::LineSearch::
-      BuildLineSearch(globalDataPtr,innerTests,paramsPtr->sublist("Line Search"));
+      BuildLineSearch(globalDataPtr,testPtr,innerTests,paramsPtr->sublist("Line Search"));
 
   directionPtr = NOX::NLN::Direction::
     BuildDirection(globalDataPtr, paramsPtr->sublist("Direction"));
@@ -125,8 +130,26 @@ const NOX::StatusTest::Generic& NOX::NLN::Solver::LineSearchBased::GetOuterStatu
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+template <class T>
+NOX::StatusTest::StatusType NOX::NLN::Solver::LineSearchBased::GetStatus() const
+{
+  NOX::StatusTest::StatusType gstatus = NOX::StatusTest::Unevaluated;
+  int status = NOX::NLN::AUX::GetOuterStatus<T>(*testPtr);
+  if (status != -100)
+    gstatus = static_cast<NOX::StatusTest::StatusType>(status);
+
+  return gstatus;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 const NOX::Utils& NOX::NLN::Solver::LineSearchBased::GetUtils() const
 {
   return *utilsPtr;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+template NOX::StatusTest::StatusType NOX::NLN::Solver::LineSearchBased::GetStatus<NOX::NLN::StatusTest::NormF>() const;
+template NOX::StatusTest::StatusType NOX::NLN::Solver::LineSearchBased::GetStatus<NOX::NLN::StatusTest::NormUpdate>() const;
+template NOX::StatusTest::StatusType NOX::NLN::Solver::LineSearchBased::GetStatus<NOX::NLN::StatusTest::NormWRMS>() const;

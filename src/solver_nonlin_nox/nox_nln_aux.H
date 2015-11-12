@@ -54,6 +54,18 @@ namespace AUX {
       const NOX::NLN::StatusTest::QuantityType& qType,
       const std::string& classVariableName);
 
+  /*! \brief Do a recursive search for a <T> status test class and return its status.
+   *
+   * If more than one of the given status test objects is combined in combination list,
+   * the AND combination of the different status is returned. I.e. if one of the status
+   * is unconverged, the return status is unconverged.
+   * If we cannot find the given status test class, a default value of -100 is returned.
+   *
+   * \param test : StatusTest object which will be scanned.
+   */
+  template <class T>
+  int GetOuterStatus(const NOX::StatusTest::Generic& test);
+
   /*! \brief Convert the quantity type to a solution type
 
      \param qtype : Quantity type which has to be converted.

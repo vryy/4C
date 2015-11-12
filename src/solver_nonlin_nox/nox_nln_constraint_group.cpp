@@ -24,11 +24,12 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::CONSTRAINT::Group::Group(Teuchos::ParameterList& printParams,
+    Teuchos::ParameterList& grpOptionParams,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
     const NOX::Epetra::Vector& x,
     const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys,
     const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr)
-    : NOX::NLN::Group(printParams,i,x,linSys),
+    : NOX::NLN::Group(printParams,grpOptionParams,i,x,linSys),
       userConstraintInterfaces_(iConstr)
 {
   return;

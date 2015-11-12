@@ -15,9 +15,9 @@
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_SOLVER_PTC_H_
 
 
-#include "nox_nln_solver_linesearchbased.H"   // base class of NOX::NLN::Solver::PseudoTransient
-#include "nox_nln_linearsystem_prepostoperator_generic.H"   // base class of NOX::NLN::LinSystem::PrePostOp::PseudoTransient
-#include <boost/algorithm/string/predicate.hpp>   // case insensitive string compare
+#include "nox_nln_solver_linesearchbased.H"      // base class of NOX::NLN::Solver::PseudoTransient
+#include "nox_nln_abstract_prepostoperator.H"    // base class of NOX::NLN::LinSystem::PrePostOp::PseudoTransient
+#include <boost/algorithm/string/predicate.hpp>  // case insensitive string compare
 
 #include <NOX_Abstract_Vector.H>
 
@@ -26,36 +26,38 @@ namespace LINALG {
   class SparseMatrix;
 } // namespace LINALG
 namespace NOX {
+namespace Epetra {
+  class Vector;
+} // namespace  Epetra
 namespace NLN {
   class LinearSystem;
-namespace LinSystem {
-namespace PrePostOp {
-  class Generic;
-} // namespace PrePostOp
-} // namespace LinSystem
 namespace Solver {
-/*!
-  \brief Pseudo Transient Continuation (PTC) non-linear solver
-
-  This implementation is based on the NOX::Solver::PseudoTransient class
-  and the former BACI internal implementation of the PTC method. In contrast
-  to the NOX internal implementation we try to avoid the need of the Thyra
-  interface package.
-  A further modification is the usage of the internal line search call: Instead of
-  using the new trial point after the line search method has already been applied,
-  we use the trial point with a default step length of one for the update of the
-  pseudo time step of the PTC method.
-
-  See also:
-
-  [1] C. T. Kelley, D. E. Keyes, "Convergence analysis of pseudo-transient continuation",
-      SIAM J. Numer. Anal., Vol. 35, No. 2, pp. 508-523, 1998.
-
-  [2] M. W. Gee, C. T. Kelley, R. B. Lehoucq, "Pseudo-transient continuation for nonlinear transient elasticity",
-      Int. J. Numer. Meth. Engng., Vol. 78, pp. 1209-1219, 2009.
-
-  \author Michael Hiermeier
- */
+/*! \brief Pseudo Transient Continuation (PTC) non-linear solver
+ *
+ * This implementation is based on the NOX::Solver::PseudoTransient class
+ * and the former BACI internal implementation of the PTC method. In contrast
+ * to the NOX internal implementation we try to avoid the need of the Thyra
+ * interface package.
+ *
+ * During the line search routine we use always the transient residual [3] for the
+ * current iteration point x_{n}
+ * \f[
+ *   r_{t}(x) = \delta_{n}^{-1} V_{n} (x - x{n}) + F(x)
+ * \f]
+ * and a desired merit function (e.g. the sum of squares merit function).
+ *
+ * See also:
+ *
+ * [1] C. T. Kelley, D. E. Keyes, "Convergence analysis of pseudo-transient continuation",
+ *     SIAM J. Numer. Anal., Vol. 35, No. 2, pp. 508-523, 1998.
+ *
+ * [2] M. W. Gee, C. T. Kelley, R. B. Lehoucq, "Pseudo-transient continuation for nonlinear transient elasticity",
+ *     Int. J. Numer. Meth. Engng., Vol. 78, pp. 1209-1219, 2009.
+ *
+ * [3] M. Ceze, K. J. Fidkowski, "Constrained pseudo-transient continuation",
+ *     Int. J. Numer. Meth. Engng., Vol. 102, pp. 1683-1703, 2015.
+ *
+ * \author Michael Hiermeier */
   class PseudoTransient : public NOX::NLN::Solver::LineSearchBased
   {
   public:
@@ -63,17 +65,23 @@ namespace Solver {
     enum TSCType
     {
       tsc_ser,      //!< switched evolution relaxation
-      tsc_tte       //!< temporal truncation error
+      tsc_tte,      //!< temporal truncation error
+      tsc_mrr       //!< model reduction ratio
     };
 
     //! Map pseudo time step control type stl_string to enum
     inline enum TSCType String2TSCType(const std::string& name)
     {
       TSCType type = tsc_ser;
-      if (boost::iequals(name,"ser"))
+      if (boost::iequals(name,"ser") or
+          boost::iequals(name,"switched evolution relaxation"))
         type = tsc_ser;
-      else if (boost::iequals(name,"tte"))
+      else if (boost::iequals(name,"tte") or
+          boost::iequals(name,"temporal truncation error"))
         type = tsc_tte;
+      else if (boost::iequals(name,"mrr") or
+          boost::iequals(name,"model reduction ratio"))
+        type = tsc_mrr;
       else
       {
         std::ostringstream msg;
@@ -88,7 +96,8 @@ namespace Solver {
     enum ScaleOpType
     {
       scale_op_identity,       //!< Use the identity matrix (see [2])
-      scale_op_cfl_diagonal    //!< Use a diagonal matrix based on the local Courant-Friedrichs-Lewy (CFL) number (see [1]).
+      scale_op_cfl_diagonal,   //!< Use a diagonal matrix based on the local Courant-Friedrichs-Lewy (CFL) number (see [1]).
+      scale_op_lumped_mass     //!< Use the lumped mass matrix as diagonal scaling operator (not well tested!)
     };
 
     //! Map scaling operator type stl_string to enum
@@ -99,6 +108,8 @@ namespace Solver {
         type = scale_op_identity;
       else if (boost::iequals(name,"cfl diagonal"))
         type = scale_op_cfl_diagonal;
+      else if (boost::iequals(name,"lumped mass"))
+        type = scale_op_lumped_mass;
       else
       {
         std::ostringstream msg;
@@ -127,6 +138,12 @@ namespace Solver {
     virtual void reset(const NOX::Abstract::Vector& initialGuess,
         const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests);
 
+    void createScalingOperator();
+
+    void createLinSystemPrePostOperator();
+
+    void createGroupPrePostOperator();
+
     //! derived
     virtual NOX::StatusTest::StatusType step();
 
@@ -139,6 +156,12 @@ namespace Solver {
     //! returns the scaling operator type
     const enum ScaleOpType& getScalingOperatorType() const;
 
+    //! returns the scaling diagonal operator
+    const Epetra_Vector& getScalingDiagOperator() const;
+
+    //! returns the usePseudoTransientResidual status
+    bool usePseudoTransientResidual() const;
+
   protected:
     //! initialize the PTC specific variables and call the init function of the base class
     virtual void init();
@@ -149,20 +172,80 @@ namespace Solver {
     //! compute the nodal pseudo velocity for the CFL update
     void computePseudoVelocity();
 
-    /*!
-      \brief Update the pseudo time step
+    /*! \brief Evaluate the model reduction ratio
+     *
+     *  We use the transient residual and the corresponding (quadratic) model $m(\eta_{n}^{*})$.
+     *  If we choose the Sum of Squares merit function, we get
+     *
+     *  \f[
+     *    \rho = \frac{0.5 r_{t}^{T}(x_{n}) r_{t}^{T}(x_{n}) - 0.5 r_{t}^{T}(x_{n} + \eta_{n}^{*} d) r_{t}^{T}(x_{n} + \eta_{n}^{*} d)}{0.5 r_{t}^{T}(x_{n}) r_{t}^{T}(x_{n}) - m(\eta_{n}^{*})},
+     *  \f]
+     *  where
+     *  \f{eqnarray*}{
+     *    m(\eta) &=& 0.5 r_{t}^{T}(x_{n}) r_{t}(x_{n}) + \eta d_{n} \nabla_{x} r_{t}(x)|_{x=x_{n}} r_{t}(x_{n}) + 0.5 \eta^{2} d_{n}^{T} \nabla_{x} r_{t}(x)|_{x=x_{n}} \nabla_{x} r_{t}(x)|_{x=x_{n}}^{T} d_{n} \\
+     *            &=& 0.5 F_{n}^{T} F_{n} + \eta d_{n} J_{t}^{T} F_{n} + 0.5 \eta^{2} d_{n}^{T} J_{t}^{T} J_{t} d_{n}, \\
+     *    \nabla_{x} r_{t}(x)|_{x=x_{n}} &=& J_{t}^{T} = \delta_{n}^{-1} V_{n} + \nabla_{x} F(x)|_{x=x_{n}}.
+     *  \f}
+     *
+     *  Please note, that the transient or modified Jacobian is necessary for the evaluation. Therefore,
+     *  the order of the function calls has to be considered. We have to call the evalModelReductionRatio()
+     *  before we call the adjustPseudoTimeStep() function! */
+    void evalModelReductionRatio();
 
-      There are two different options:
-      - The switched evolution relaxation
-        In the most simple case
+    /*! \brief Adjust the pseudo time step if line search was active and the step length has been changed
+     *
+     *  We use a least squares approximation based on the following idea.
+     *  The pseudo time step is modified in such a way, that it represents in a least squares
+     *  sense the actual used step, i.e. the direction vector scaled by the step length
+     *  parameter $\eta_{n}^{*}$. The corresponding pseudo time step is called
+     *  $\delta_{n}^{*}$:
+     *
+     *  \f[
+     *    [(\delta_{n}^{*})^{-1} V_{n} + \nabla_{x} F_{n}^{T}] (x(t_{n}+\delta^{*}_{n}) - x_{n}) = -F_{n},
+     *  \f]
+     *
+     *  where we replace $(x(t_{n}+\delta^{*}_{n})$ by $\eta_{n}^{*} d_{n}$ and reformulate the equation
+     *
+     *  \f[
+     *    V_{n} d_{n} = - \delta_{n}^{*} ((\eta_{n}^{*})^{-1} F_{n} + \nabla_{x} F_{n}^{T} d_{n}).
+     *  \f]
+     *
+     *  Since we cannot find a suitable scalar $\delta_{n}^{*}$, which solves the problem exactly, we
+     *  formulate a least squares problem to minimize the error:
+     *
+     *  \f[
+     *    \min\limits_{\delta_{n}} 0.5 \| V_{n} d_{n} - \delta_{n} ((\eta_{n}^{*})^{-1} F_{n} + \nabla_{x} F_{n}^{T} d_{n}) \|^{2}
+     *  \f]
+     *
+     *  The approximated pseudo time step is
+     *  \f[
+     *    \delta^{*}_{n} \approx - \frac{d_{n}^{T} V_{n} ((\eta_{n}^{*})^{-1} F_{n} + \nabla_{x} F_{n}^{T} d_{n})}{\|(\eta_{n}^{*})^{-1} F-{n} + \nabla F_{n}^{T} d_{n} \|^{2}}.
+     *  \f]
+     *
+     *  Please note, that we undo the changes to the jacobian, if the step length is not equal 1.0! */
+    void adjustPseudoTimeStep();
 
-            \delta_{n} = \delta_{0} \frac{\|\underline{F}(\underline{x}_{0})\|}{\|\underline{F}(\underline{x}_{n})\|}
-
-      - The temporal truncation error
-
-            MISSING AT THE MOMENT
-     */
+    /*! \brief Update the pseudo time step
+     *
+     *  There are two different options:
+     *  - The switched evolution relaxation
+     *    In the most simple case
+     *
+     *       \delta_{n} = \delta_{0} \frac{\|\underline{F}(\underline{x}_{0})\|}{\|\underline{F}(\underline{x}_{n})\|}
+     *
+     *  - The temporal truncation error
+     *
+     *       MISSING AT THE MOMENT
+     *
+     *  - The model reduction ratio
+     *    See the evalModelReductionRatio() routine for more detail on how to evaluate the ratio.
+     *
+     *    If rho is smaller than 0.2, the pseudo time step is decreased,
+     *    else if rho is larger than 0.9, the pseudo time step is increased,
+     *    otherwise we keep the current pseudo time step unchanged. */
     void updatePseudoTimeStep();
+
+    bool IsScalingOperator() const { return isScalingOperator_; };
 
   private:
     //! throw class specific error
@@ -176,7 +259,11 @@ namespace Solver {
 
     //! Pointer to a linear system pre/post operator, which is used
     //! to modify the jacobian directly from the non-linear solver.
-    Teuchos::RCP<NOX::NLN::LinSystem::PrePostOp::Generic> prePostLinSysPtr_;
+    Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prePostLinSysPtr_;
+
+    Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prePostGroupPtr_;
+
+    Teuchos::RCP<Epetra_Vector> scalingDiagOpPtr_;
 
     //! @name Special pseudo transient continuation parameters
     //@{
@@ -197,8 +284,18 @@ namespace Solver {
     //! solution time derivative used for scaling operator V in pseudo-transient paper.
     Teuchos::RCP<NOX::Abstract::Vector> xDot_;
 
-//    //! If set to true, the candidate direction will use the transient residual instead of the steady-state residual.  This is a modification of the Kelley-Keyes paper.
-//    bool use_transient_residual_;
+    /** \brief If set to true, the computeF function is used to modify the residual during the line search call.
+     *
+     *  The pseudo transient residual is defined as
+     *  \f[
+     *    r_{t}(\eta) = V_{n} \delta_{n}^{-1} [x_{n} + \eta d_{n} - x_{n}] + F(x_{n} + \eta d_{n})
+     *  \f]
+     */
+    bool usePseudoTransientResidual_;
+
+    bool calcDeltaInit_;
+
+    bool isScalingOperator_;
 
     //! Maximum number of iterations before pseudo-transient is disabled and the algorithm switches to a line search-based direct to steady state solve.
     int maxPseudoTransientIterations_;
@@ -211,45 +308,43 @@ namespace Solver {
 
     //! vector norm type (necessary for the time step control)
     enum NOX::Abstract::Vector::NormType normType_;
+
+    double modelReductionRatio_;
     //@}
 
   }; // class PseudoTransient
-
 } // namespace Solver
 namespace LinSystem {
 namespace PrePostOp {
-/*!
-  \brief Pseudo Transient Continuation (PTC) non-linear solver helper class
-
-  This class implementation is an example for the use of the NOX::NLN::LinSystem::PrePostOp::Generic
-  and its wrapper the NOX::NLN::LinSystem::PrePostOperator classes. The PTC solver uses them to modify
-  the linear system or to be even more precise the jacobian. The pre/post operator gives you access
-  to the linearsystem directly before and after the system is solved. At this moment the jacobian
-  evaluation and the right-hand-side evaluation should be done. You can modify the system in such a
-  way as your non-linear solver prescribes it. Here we use the specified scaling operator type for
-  the decision how to modify the jacobian.
-
-  \author Michael Hiermeier
+/*! \brief Pseudo Transient Continuation (PTC) non-linear solver helper class
+ *
+ * This class implementation is an example for the usage of the NOX::NLN::Abstract::PrePostOperator
+ * and its wrapper the NOX::NLN::LinSystem::PrePostOperator classes. The PTC solver uses them to modify
+ * the linear system or to be even more precise the jacobian.
+ *
+ * \author Michael Hiermeier
  */
-  class PseudoTransient : public Generic
+  class PseudoTransient : public NOX::NLN::Abstract::PrePostOperator
   {
   public:
     //! constructor
-    PseudoTransient(const NOX::NLN::Solver::PseudoTransient& ptcsolver);
+    PseudoTransient(Teuchos::RCP<Epetra_Vector>& scalingDiagOp,
+        const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
     //! destructor
     virtual ~PseudoTransient() { };
 
     //! derived
-    virtual void runPreApplyJacobianInverse(
-        NOX::Abstract::Vector& rhs,
+    virtual void runPostComputeJacobian(
         LINALG::SparseOperator& jac,
+        const Epetra_Vector& x,
         const NOX::NLN::LinearSystem& linsys);
 
-    //! derived (does nothing at the moment)
-    virtual void runPostApplyJacobianInverse(
-        NOX::Abstract::Vector& rhs,
+    //! derived
+    virtual void runPostComputeFandJacobian(
+        Epetra_Vector& rhs,
         LINALG::SparseOperator& jac,
+        const Epetra_Vector& x,
         const NOX::NLN::LinearSystem& linsys);
 
   protected:
@@ -259,9 +354,53 @@ namespace PrePostOp {
   private:
     //! read-only access
     const NOX::NLN::Solver::PseudoTransient& ptcsolver_;
+
+    //! reference to the scaling diagonal operator
+    Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr_;
   }; // class PseudoTransient
 } // namespace PrePostOp
 } // namespace LinSystem
+namespace GROUP {
+namespace PrePostOp {
+/*! \brief Pseudo Transient Continuation (PTC) non-linear solver helper class
+ *
+ * The PTC solver uses this helper class to modify the right hand side.
+ */
+  class PseudoTransient : public NOX::NLN::Abstract::PrePostOperator
+  {
+  public:
+    //! constructor
+    PseudoTransient(Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr,
+        const NOX::NLN::Solver::PseudoTransient& ptcsolver);
+
+    //! destructor
+    virtual ~PseudoTransient() {};
+
+    //! derived
+    virtual void runPreComputeF(Epetra_Vector& F,
+        const NOX::NLN::Group& grp);
+
+    //! derived
+    virtual void runPostComputeF(Epetra_Vector& F,
+        const NOX::NLN::Group& grp);
+
+  protected:
+    Teuchos::RCP<NOX::Epetra::Vector> evalPseudoTransientFUpdate(
+        const NOX::NLN::Group& grp);
+
+  private:
+    //! read-only access
+    const NOX::NLN::Solver::PseudoTransient& ptcsolver_;
+
+    //! reference to the scaling diagonal operator
+    Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr_;
+
+    //! reference to the flagg which indicates, if the current right-hand-side is the transient right-hand-side
+    bool isPseudoTransientResidual_;
+
+  }; // class PseudoTransient
+} // namespace PrePostOp
+} // namespace GROUP
 } // namespace NLN
 } // namespace NOX
 

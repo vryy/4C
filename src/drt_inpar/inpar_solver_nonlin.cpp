@@ -40,12 +40,13 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   {
     Teuchos::Array<std::string> st = Teuchos::tuple<std::string>(
         "Line Search Based",
+        "Pseudo Transient",
         "Trust Region Based",
         "Inexact Trust Region Based",
         "Tensor Based");
     Teuchos::setStringToIntegralParameter<int>(
         "Nonlinear Solver","Line Search Based","",
-        st,Teuchos::tuple<int>( 0, 1, 2, 3 ),
+        st,Teuchos::tuple<int>( 0, 1, 2, 3, 4 ),
         &snox);
   }
 
@@ -83,7 +84,9 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
     DoubleParameter("Forcing Term Maximum Tolerance",0.01,"",&newton);
     DoubleParameter("Forcing Term Alpha",1.5,"used only by \"Type 2\"",&newton);
     DoubleParameter("Forcing Term Gamma",0.9,"used only by \"Type 2\"",&newton);
-    BoolParameter("Rescue Bad Newton Solver","Yes","If set to true, we will use the computed direction even if the linear solve does not achieve the tolerance specified by the forcing term",&newton);
+    BoolParameter("Rescue Bad Newton Solver","Yes","If set to true, we will use "
+        "the computed direction even if the linear solve does not achieve the tolerance "
+        "specified by the forcing term",&newton);
   }
 
   // sub-sub-list "Steepest Descent"
@@ -107,18 +110,22 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   SetPrintEqualSign(ptc,true);
 
   {
-    DoubleParameter("deltaInit",1.0e-4,"Initial time step size",&ptc);
-    DoubleParameter("deltaMax",std::numeric_limits<double>::max(),"Maximum time step size.  If the new step size is greater than this value, the transient terms will be eliminated from the Newton interation resulting in a full Newton solve.",&ptc);
+    DoubleParameter("deltaInit",-1.0,"Initial time step size. If its negative, the initial time step is calculated automatically.",&ptc);
+    DoubleParameter("deltaMax",std::numeric_limits<double>::max(),"Maximum time step size. "
+        "If the new step size is greater than this value, the transient terms will be eliminated "
+        "from the Newton iteration resulting in a full Newton solve.",&ptc);
     DoubleParameter("deltaMin",1.0e-5,"Minimum step size.",&ptc);
     IntParameter("Maximum Number of Pseudo-Transient Iterations",std::numeric_limits<int>::max(),"",&ptc);
     Teuchos::Array<std::string> time_step_control = Teuchos::tuple<std::string>(
         "SER",
         "Switched Evolution Relaxation",
         "TTE",
-        "Temporal Truncation Error");
+        "Temporal Truncation Error",
+        "MRR",
+        "Model Reduction Ratio");
     Teuchos::setStringToIntegralParameter<int>(
         "Time Step Control","SER","",
-        time_step_control,Teuchos::tuple<int>( 0, 0, 1, 1 ),
+        time_step_control,Teuchos::tuple<int>( 0, 0, 1, 1, 2, 2 ),
         &ptc);
     Teuchos::Array<std::string> tsc_norm_type = Teuchos::tuple<std::string>(
         "Two Norm",
@@ -130,10 +137,11 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         &ptc);
     Teuchos::Array<std::string> scaling_op = Teuchos::tuple<std::string>(
         "Identity",
-        "CFL Diagonal");
+        "CFL Diagonal",
+        "Lumped Mass");
     Teuchos::setStringToIntegralParameter<int>(
         "Scaling Type","Identity","Type of the scaling matrix for the PTC method.",
-        scaling_op,Teuchos::tuple<int>( 0, 1 ),
+        scaling_op,Teuchos::tuple<int>( 0, 1, 2 ),
         &ptc);
   }
 

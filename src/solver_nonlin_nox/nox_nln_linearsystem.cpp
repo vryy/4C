@@ -15,7 +15,9 @@
 #include "nox_nln_interface_jacobian.H"
 #include "nox_nln_interface_required.H"
 #include "nox_nln_linearsystem_prepostoperator.H"
+#include "nox_nln_solver_ptc.H"
 
+#include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 
@@ -250,19 +252,13 @@ bool NOX::NLN::LinearSystem::applyJacobianTranspose(
 bool NOX::NLN::LinearSystem::applyJacobianInverse(
     Teuchos::ParameterList& linearSolverParams,
     const NOX::Epetra::Vector& input,
-          NOX::Epetra::Vector& result)
+    NOX::Epetra::Vector& result)
 {
   /* Need non-const version of the input vector
    * Epetra_LinearProblem requires non-const versions so we can perform
    * scaling of the linear problem.
    * Same is valid for the prePostOperator. We want to have the
-   * possibility to change the linear system. This is for example
-   * necessary for the PTC non-linear solver.
-   *
-   * NOTE: Alternatively it would be possible to parse the
-   * Epetra_LinearProblem object, but we want to stick to the LINALG
-   * derived objects outside of the linear solver.        hiermeier 09/15
-   */
+   * possibility to change the linear system. */
   NOX::Epetra::Vector& nonConstInput = const_cast<NOX::Epetra::Vector&>(input);
 
   prePostOperatorPtr_->runPreApplyJacobianInverse(nonConstInput,*jacPtr_,*this);
@@ -279,8 +275,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
   // Create Epetra linear problem object for the linear solve
   /* Note: We switch from LINALG_objects to pure Epetra_objects.
    * This is necessary for the linear solver.
-   *     LINALG::SparseMatrix ---> Epetra_CrsMatrix
-   */
+   *     LINALG::SparseMatrix ---> Epetra_CrsMatrix */
   Epetra_LinearProblem linProblem(&(*jacPtr_->EpetraOperator()),
       &(result.getEpetraVector()),
       &(nonConstInput.getEpetraVector()));
@@ -329,9 +324,9 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::applyRightPreconditioning(bool useTranspose,
-                                                       Teuchos::ParameterList& params,
-                                                       const NOX::Epetra::Vector& input,
-                                                       NOX::Epetra::Vector& result) const
+    Teuchos::ParameterList& params,
+    const NOX::Epetra::Vector& input,
+    NOX::Epetra::Vector& result) const
 {
   if (&result != &input)
     result = input;
@@ -342,16 +337,32 @@ bool NOX::NLN::LinearSystem::applyRightPreconditioning(bool useTranspose,
  *----------------------------------------------------------------------*/
 bool NOX::NLN::LinearSystem::computeJacobian(const NOX::Epetra::Vector& x)
 {
+  prePostOperatorPtr_->runPreComputeJacobian(*jacPtr_,x.getEpetraVector(),
+      *this);
+
   bool success = jacInterfacePtr_->computeJacobian(x.getEpetraVector(),
                           *jacPtr_);
+
+  prePostOperatorPtr_->runPostComputeJacobian(*jacPtr_,x.getEpetraVector(),
+      *this);
   return success;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::NLN::LinearSystem::computeFandJacobian(const NOX::Epetra::Vector& x, NOX::Epetra::Vector& rhs)
+bool NOX::NLN::LinearSystem::computeFandJacobian(
+    const NOX::Epetra::Vector& x,
+    NOX::Epetra::Vector& rhs)
 {
-  bool success = Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>(jacInterfacePtr_)->computeFandJacobian(x.getEpetraVector(),rhs.getEpetraVector(),*jacPtr_);
+  prePostOperatorPtr_->runPreComputeFandJacobian(rhs.getEpetraVector(),
+      *jacPtr_,x.getEpetraVector(),*this);
+
+  bool success = Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Jacobian>
+      (jacInterfacePtr_)->computeFandJacobian(x.getEpetraVector(),
+      rhs.getEpetraVector(),*jacPtr_);
+
+  prePostOperatorPtr_->runPostComputeFandJacobian(rhs.getEpetraVector(),
+      *jacPtr_,x.getEpetraVector(),*this);
   return success;
 }
 
@@ -369,6 +380,74 @@ void NOX::NLN::LinearSystem::resetScaling(const Teuchos::RCP<NOX::Epetra::Scalin
 {
   scaling_ = scalingObject;
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::LinearSystem::adjustPseudoTimeStep(
+    double& delta,
+    const double& stepSize,
+    const NOX::Epetra::Vector& dir,
+    const NOX::Epetra::Vector& rhs,
+    const NOX::NLN::Solver::PseudoTransient& ptcsolver)
+{
+  const Epetra_Vector& scalingDiagOp = ptcsolver.getScalingDiagOperator();
+  // ---------------------------------------------------------------------
+  // first undo the modification of the jacobian
+  // ---------------------------------------------------------------------
+  Teuchos::RCP<Epetra_Vector> v =
+      Teuchos::rcp(new Epetra_Vector(scalingDiagOp));
+  v->Scale(ptcsolver.getInversePseudoTimeStep());
+  Teuchos::RCP<LINALG::SparseMatrix> jac =
+      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(jacPtr_);
+  if (jac.is_null())
+    throwError("adjustPseudoTimeStep()","Cast to LINALG::SparseMatrix failed!");
+  // get the diagonal terms of the jacobian
+  Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(jac->RowMap(),false);
+  jac->ExtractDiagonalCopy(*diag);
+  diag->Update(-1.0,*v,1.0);
+  // Finally undo the changes
+  jac->ReplaceDiagonalValues(*diag);
+
+  // ---------------------------------------------------------------------
+  // calculate the least squares approximated corrected pseudo time step
+  // ---------------------------------------------------------------------
+  /* evaluate the first vector:
+   *    eta^{-1} F_{n-1} + (\nabla_{x} F_{n-1})^{T} d_{n-1}             */
+  double stepSizeInv = 1.0/stepSize;
+  Teuchos::RCP<Epetra_Vector> vec_1 = LINALG::CreateVector(jac->RowMap(),true);
+  Teuchos::RCP<Epetra_Vector> vec_2 = Teuchos::rcp(new Epetra_Vector(rhs.getEpetraVector()));
+  jac->Multiply(false,dir.getEpetraVector(),*vec_1);
+  vec_2->Scale(stepSizeInv);
+  vec_1->Update(1.0,*vec_2,1.0);
+  /* evaluate the second vector:              d^{T} V                   */
+  vec_2->Multiply(1.0,scalingDiagOp,dir.getEpetraVector(),0.0);
+
+  // finally evaluate the scalar product
+  double numerator = 0.0;
+  double denominator = 0.0;
+  vec_2->Dot(*vec_1,&numerator);
+  vec_1->Dot(*vec_1,&denominator);
+
+  // ----------------------------------------------------
+  // show the error (L2-norm)
+  // ----------------------------------------------------
+  Teuchos::RCP<Epetra_Vector> vec_err = LINALG::CreateVector(jac->RowMap(),true);
+  vec_err->Update(delta,*vec_1,1.0,*vec_2,0.0);
+  double error_start = 0.0;
+  vec_err->Norm2(&error_start);
+
+  delta = - numerator/denominator;
+
+  // ----------------------------------------------------
+  // show the actual remaining error (L2-norm)
+  // ----------------------------------------------------
+  vec_err->Update(delta,*vec_1,1.0,*vec_2,0.0);
+  double error_end = 0.0;
+  vec_err->Norm2(&error_end);
+  std::cout << "error: " << error_start << " --> " << error_end << std::endl;
+
+
 }
 
 /*----------------------------------------------------------------------*

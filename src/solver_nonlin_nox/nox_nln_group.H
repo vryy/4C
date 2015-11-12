@@ -25,18 +25,22 @@
 // forward declarations
 namespace NOX {
 namespace NLN {
+namespace Solver {
+  class PseudoTransient;
+} // namespace SOLVER
 namespace Interface {
   class Required;
 } // namespace Interface
+namespace GROUP {
+  class PrePostOperator;
+} // namespace GROUP
 
   class Group : public NOX::Epetra::Group
   {
   public:
-
     //! Standard Constructor
-    Group
-    (
-      Teuchos::ParameterList& printParams,  //!< printing parameters
+    Group(Teuchos::ParameterList& printParams,  //!< printing parameters
+      Teuchos::ParameterList& grpOptionParams,  //!< group option parameters
       const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,  //!< basically the NOXified user interface
       const NOX::Epetra::Vector& x,  //!< current solution vector
       const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys  //!< linear system, matrix and RHS etc.
@@ -62,6 +66,9 @@ namespace Interface {
               const NOX::Abstract::Vector& d,
               double step);
 
+    //! derived
+    virtual NOX::Abstract::Group::ReturnType computeF();
+
     //! Compute and store \f$F(x)\f$ and the jacobian \f$\frac{\partial F(x)}{\partial x}\f$ at the same time.
     //! This can result in a huge performance gain in some special cases, e.g. contact problems.
     virtual NOX::Abstract::Group::ReturnType computeFandJacobian();
@@ -71,6 +78,9 @@ namespace Interface {
 
     //! set jacobian operator
     virtual NOX::Abstract::Group::ReturnType setJacobianOperator(const Teuchos::RCP<const Epetra_Operator> jacOperator);
+
+    //! reset the prepostoperator for the nln group
+    void ResetPrePostOpertator();
 
     //! returns the nox_nln_interface_required pointer
     Teuchos::RCP<const NOX::NLN::Interface::Required> GetNlnReqInterfacePtr() const;
@@ -100,13 +110,33 @@ namespace Interface {
         const std::vector<StatusTest::QuantityType>& chQ,
         Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const;
 
+    //! adjust the pseudo time step length for the ptc nln solver
+    void adjustPseudoTimeStep(double& delta,
+        const double& stepSize,
+        const NOX::Abstract::Vector& dir,
+        const NOX::NLN::Solver::PseudoTransient& ptcsolver);
+    void adjustPseudoTimeStep(double& delta,
+        const double& stepSize,
+        const NOX::Epetra::Vector& dir,
+        const NOX::NLN::Solver::PseudoTransient& ptcsolver);
+
     //! compute and return some energy representative
     virtual const double GetObjectiveModelValue(const std::string& name) const;
+
+    //! get the lumped mass matrix
+    virtual Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const;
 
   private:
     //! Throw an NOX_error
     void throwError(const std::string& functionName,const std::string& errorMsg) const;
-  };
+
+  protected:
+    //! reference to the group options parameterlist
+    Teuchos::ParameterList& grpOptionParams_;
+
+    //! pointer to an user defined wrapped NOX::NLN::Abstract::PrePostOperator object.
+    Teuchos::RCP<NOX::NLN::GROUP::PrePostOperator> prePostOperatorPtr_;
+  };  // class Group
 } // namespace NLN
 } // namespace NOX
 

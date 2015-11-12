@@ -60,7 +60,6 @@ bool NOX::NLN::INNER::StatusTest::Armijo::Setup(
   if (slope_ >= 0.0)
     return false;
 
-
   // -------------------------------------------
   // Non-monotone setup
   // -------------------------------------------

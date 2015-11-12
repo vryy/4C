@@ -43,7 +43,7 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::CONSTRAINT::NoxProblem::CreateNoxGr
       nlnGlobalData_->GetRequiredInterface();
 
   return Teuchos::rcp(new NOX::NLN::CONSTRAINT::Group(params.sublist("Printing"),
-    iReq,*xVector_,linSys,GetConstrInterfaces()));
+      params.sublist("Group Options"),iReq,*xVector_,linSys,GetConstrInterfaces()));
 }
 
 /*----------------------------------------------------------------------------*

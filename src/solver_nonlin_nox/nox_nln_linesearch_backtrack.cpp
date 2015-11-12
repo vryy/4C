@@ -12,12 +12,13 @@
 /*-----------------------------------------------------------*/
 
 #include "nox_nln_linesearch_backtrack.H" // class definition
+#include "nox_nln_statustest_normf.H"
+#include "nox_nln_solver_linesearchbased.H"
 
 #include "../drt_lib/drt_dserror.H"
 
 #include <NOX_Utils.H>
 #include <NOX_GlobalData.H>
-#include <NOX_Solver_Generic.H>
 #include <NOX_Epetra_Group.H>
 
 #include <Teuchos_ParameterList.hpp>
@@ -26,10 +27,12 @@
  *----------------------------------------------------------------------------*/
 NOX::NLN::LineSearch::Backtrack::Backtrack(
     const Teuchos::RCP<NOX::GlobalData>& gd,
+    const Teuchos::RCP<NOX::StatusTest::Generic> outerTests,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
           Teuchos::ParameterList& params)
     : stepPtr_(NULL),
       checkType_(NOX::StatusTest::Complete),
+      outerTestsPtr_(outerTests),
       innerTestsPtr_(innerTests)
 {
   reset(gd, params);
@@ -98,15 +101,11 @@ bool NOX::NLN::LineSearch::Backtrack::compute
   // initialize the inner status test
   // ----------------------------------------------------------------------
   // BE CAREFUL HERE:
-  // During the copy operation in NOX::Solver::LineSearchBased::step()
+  // During the copy operation in Solver::LineSearchBased::step()
   // the current grp loses the ownership of the sharedLinearSystem. If we
   // want to access the jacobian, we have to use the oldGrp
   // (target of the copy process), instead.                hiermeier 08/15
   // ----------------------------------------------------------------------
-  // ToDo Check what is happening in the PTC case, since we call computeX once
-  // on the soln grp. Maybe this changes the ownership and we have to reset
-  // the ownership to the old grp before we can call the compute routine of the
-  // backtracking linesearch.
   const NOX::Epetra::Group* epetraOldGrpPtr =
         dynamic_cast<const NOX::Epetra::Group*>(&oldGrp);
   if (not epetraOldGrpPtr->isJacobian())
@@ -135,12 +134,28 @@ bool NOX::NLN::LineSearch::Backtrack::compute
   if (rtype != NOX::Abstract::Group::Ok)
     throwError("compute","Unable to compute F!");
 
+  /* Safe-guarding of the inner status test:
+   * If the outer NormF test is converged for a full step length,
+   * we don't have to reduce the step length any further.
+   * This additional check becomes necessary, because of cancellation
+   * errors and related numerical artifacts. */
+  // check the outer status test for the full step length
+  outerTestsPtr_->checkStatus(s,checkType_);
+  const NOX::NLN::Solver::LineSearchBased& lsSolver =
+      dynamic_cast<const NOX::NLN::Solver::LineSearchBased&>(s);
+  NOX::StatusTest::StatusType ostatus = lsSolver.
+      GetStatus<NOX::NLN::StatusTest::NormF>();
+  /* Skip the inner status test, if the outer NormF test is
+   * already converged! */
+  if (ostatus == NOX::StatusTest::Converged)
+    return true;
+
   // -------------------------------------------------
   // print header if desired
   // -------------------------------------------------
   if (utils_->isPrintType(NOX::Utils::InnerIteration))
   {
-    utils_->out() << "\n" << NOX::Utils::fill(72) << "\n"
+    utils_->out() << "\n" << NOX::Utils::fill(72,'=') << "\n"
         << "-- Backtrack Line Search -- \n";
   }
 
@@ -172,7 +187,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute
   // -------------------------------------------------
   if (utils_->isPrintType(NOX::Utils::InnerIteration))
   {
-    utils_->out() << NOX::Utils::fill(72) << "\n";
+    utils_->out() << NOX::Utils::fill(72,'=') << "\n";
   }
 
   if (status_ == NOX::NLN::INNER::StatusTest::status_step_too_short)
