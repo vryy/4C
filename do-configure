@@ -11,6 +11,7 @@ TRILINOS_BUILD_TYPE="release"
 COVERAGE=0
 USE_ACML=0
 USE_DEAL=0
+BUILD_CONTACT_MODULE=0
 USE_FORCEBUILD=0
 TRILINOS_EXPERIMENTAL=0  # use experimental Trilinos version
 ADDITIONAL_TESTS_PATH=""
@@ -26,7 +27,7 @@ SHARED_LIBS=OFF
 # version, though). This can then give per-line cost information
 # using 'valgrind --tool=callgrind ./baci-relwithdebinfo input output'
 
-OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,trilinos-debug,profiling,coverage,useDEAL,useACML,experimental,forceBuild -- "$@"`
+OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,trilinos-debug,profiling,coverage,useDEAL,useACML,experimental,forceBuild,build-contact-module -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
@@ -35,7 +36,7 @@ eval set -- $OPTIONS
 while true; do
   case "$1" in
     -h|--help) 
-      echo "usage: do-configure [--debug] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useDEAL] [--useACML] [--config=configurationfile] [--additionaltests=testfile]"
+      echo "usage: do-configure [--debug] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useDEAL] [--useACML] [--build-contact-module] [--config=configurationfile] [--additionaltests=testfile]"
       exit 1
       ;;
     -c|--config) 
@@ -69,6 +70,9 @@ while true; do
       ;;
     -f|--forceBuild)
       USE_FORCEBUILD=1
+      ;;
+    --build-contact-module)
+      BUILD_CONTACT_MODULE=1
       ;;
     --) shift ;
       break
@@ -209,9 +213,11 @@ Trilinos_DIR="$Trilinos_PREFIX/lib/cmake/Trilinos"
 echo $Trilinos_DIR
 ############################################################
 # prepare source for modules
-pushd $BACI_HOME/modules/contact_module
-./generate_contact_module.py
-popd
+if [ $BUILD_CONTACT_MODULE == 1 ]; then
+  pushd $BACI_HOME/modules/contact_module
+  ./generate_contact_module.py
+  popd
+fi
 
 ############################################################
 # run cmake
@@ -268,6 +274,7 @@ $CMAKE_COMMAND \
     -D ACMLDIR:STRING=$ACMLDIR_PATH \
     -D AMDLIBMDIR:FILEPATH=$AMDLIBMDIR_PATH \
     -D ADDITIONAL_TESTS:FILEPATH="$ADDITIONAL_TESTS_PATH" \
+    -D BUILD_CONTACT_MODULE="$BUILD_CONTACT_MODULE" \
     $EXTRA_ARGS \
     ${BACI_HOME}
 
