@@ -1399,7 +1399,7 @@ bool FSI::MonolithicXFEM::Evaluate()
   {
     Comm().Barrier();
 
-    Teuchos::TimeMonitor::zeroOutTimers();
+    //Teuchos::TimeMonitor::zeroOutTimers();
 
     // fluid field
     Epetra_Time tf(Comm());
