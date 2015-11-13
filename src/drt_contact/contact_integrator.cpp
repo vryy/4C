@@ -2850,22 +2850,15 @@ void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
           // isolate the dseg entries to be filled
           // (both the main diagonal and every other secondary diagonal)
           // and add current Gauss point's contribution to dseg
-          // loop over slave dofs
-          for (int jdof=0;jdof<ndof;++jdof)
+          if (mnode->IsOnBound())
           {
-            int col = mnode->Dofs()[jdof];
-
-            if (mnode->IsOnBound())
-            {
-              double minusval = -prod;
-              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
+              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),-prod);
               if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id()); // only for friction!
-            }
-            else
-            {
-              if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
-              if(abs(prod)>MORTARINTTOL) cnode->AddSNode(mnode->Id()); // only for friction!
-            }
+          }
+          else
+          {
+            if(abs(prod)>MORTARINTTOL) cnode->AddDValue(mnode->Id(),prod);
+            if(abs(prod)>MORTARINTTOL) cnode->AddSNode(mnode->Id()); // only for friction!
           }
         }
       }
@@ -2879,16 +2872,20 @@ void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
           // multiply the two shape functions
           double prod = lmval[j]*sval[k]*dxdsxi*wgt;
 
+
+          if(sele.IsSlave())
+          {
+            if(abs(prod)>MORTARINTTOL)
+              cnode->AddDValue(snode->Id(),prod);
+          }
+
           //loop over slave dofs
           for (int jdof=0;jdof<ndof;++jdof)
           {
             int col = snode->Dofs()[jdof];
 
             if(sele.IsSlave())
-            {
-              if(abs(prod)>MORTARINTTOL)
-                cnode->AddDValue(jdof,col,prod);
-            }
+            {}
             else
             {
               if (sele.Owner() == comm.MyPID())
@@ -2900,11 +2897,7 @@ void CONTACT::CoIntegrator::IntegrateD(MORTAR::MortarElement& sele,
           }
         }
       }
-
-
     }
-
-
 
     if(lin)
     {
@@ -4072,13 +4065,8 @@ void inline CONTACT::CoIntegrator::GP_DM(
         // multiply the two shape functions
         double prod = lmval[j]*mval[k]*jac*wgt;
 
-        //loop over slave dofs
-        for (int jdof=0;jdof<ndof;++jdof)
-        {
-          int col = mnode->Dofs()[jdof];
-          if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
+          if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),prod);
           if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());  // only for friction!
-        }
       }
 
       // integrate dseg
@@ -4089,21 +4077,15 @@ void inline CONTACT::CoIntegrator::GP_DM(
         // multiply the two shape functions
         double prod = lmval[j]*sval[k]*jac*wgt;
 
-        //loop over slave dofs
-        for (int jdof=0;jdof<ndof;++jdof)
+        if (snode->IsOnBound())
         {
-          int col = snode->Dofs()[jdof];
-          if (snode->IsOnBound())
-          {
-            double minusval = -prod;
-            if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
+            if(abs(prod)>MORTARINTTOL) cnode->AddMValue(snode->Id(),-prod);
             if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id()); // only for friction!
-          }
-          else
-          {
-            if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
-            if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id()); // only for friction!
-          }
+        }
+        else
+        {
+          if(abs(prod)>MORTARINTTOL) cnode->AddDValue(snode->Id(),prod);
+          if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id()); // only for friction!
         }
       }
     }
@@ -4123,22 +4105,16 @@ void inline CONTACT::CoIntegrator::GP_DM(
         // multiply the two shape functions
         double prod = lmval[j]*mval[k]*jac*wgt;
 
-        // loop over slave dofs
-        for (int jdof=0;jdof<ndof;++jdof)
+
+        if (!bound and abs(prod)>MORTARINTTOL)
         {
-          int col = mnode->Dofs()[jdof];
-          if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
-          if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());  // only for friction!
-          if (!bound and abs(prod)>MORTARINTTOL)
-          {
-            int newcol = cnode->Dofs()[jdof];
-
-            if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,newcol,prod);
-            if(abs(prod)>MORTARINTTOL) cnode->AddSNode(cnode->Id()); // only for friction!
-          }
+          if(abs(prod)>MORTARINTTOL) cnode->AddDValue(cnode->Id(),prod);
+          if(abs(prod)>MORTARINTTOL) cnode->AddSNode(cnode->Id()); // only for friction!
         }
-      }
 
+        if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),prod);
+        if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());  // only for friction!
+      }
 
       // integrate dseg (boundary modification)
       if (bound)
@@ -4159,22 +4135,15 @@ void inline CONTACT::CoIntegrator::GP_DM(
           // isolate the dseg entries to be filled
           // (both the main diagonal and every other secondary diagonal)
           // and add current Gauss point's contribution to dseg
-          // loop over slave dofs
-          for (int jdof=0;jdof<ndof;++jdof)
+          if (mnode->IsOnBound())
           {
-            int col = mnode->Dofs()[jdof];
-
-            if (mnode->IsOnBound())
-            {
-              double minusval = -prod;
-              if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
-              if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id()); // only for friction!
-            }
-            else
-            {
-              if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
-              if(abs(prod)>MORTARINTTOL) cnode->AddSNode(mnode->Id()); // only for friction!
-            }
+            if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),-prod);
+            if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id()); // only for friction!
+          }
+          else
+          {
+            if(abs(prod)>MORTARINTTOL) cnode->AddDValue(mnode->Id(),prod);
+            if(abs(prod)>MORTARINTTOL) cnode->AddSNode(mnode->Id()); // only for friction!
           }
         }
       }
@@ -4217,44 +4186,35 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
     {
       CoNode* cnode = dynamic_cast<CoNode*>(snodes[j]);
 
-      //loop over slave dofs
-      for (int jdof=0;jdof<ndof;++jdof)
+      // integrate mseg
+      for (int k=0; k<ncol; ++k)
       {
-        // integrate mseg
-        for (int k=0; k<ncol; ++k)
-        {
-          CoNode* mnode = dynamic_cast<CoNode*>(mnodes[k]);
+        CoNode* mnode = dynamic_cast<CoNode*>(mnodes[k]);
 
-          int col = mnode->Dofs()[jdof];
+        // multiply the two shape functions
+        double prod = lmval[j]*mval[k]*jac*wgt;
 
-          // multiply the two shape functions
-          double prod = lmval[j]*mval[k]*jac*wgt;
-
-          if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
+          if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),prod);
           if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());
-        }
+      }
 
-        // integrate dseg
-        for (int k=0; k<nrow; ++k)
+      // integrate dseg
+      for (int k=0; k<nrow; ++k)
+      {
+        CoNode* snode = dynamic_cast<CoNode*>(snodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmval[j]*sval[k]*jac*wgt;
+
+        if (snode->IsOnBound())
         {
-          CoNode* snode = dynamic_cast<CoNode*>(snodes[k]);
-
-          int col = snode->Dofs()[jdof];
-
-          // multiply the two shape functions
-          double prod = lmval[j]*sval[k]*jac*wgt;
-
-          if (snode->IsOnBound())
-          {
-            double minusval = -prod;
-            if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
-            if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id());
-          }
-          else
-          {
-            if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
-            if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id());
-          }
+          if(abs(prod)>MORTARINTTOL) cnode->AddMValue(snode->Id(),-prod);
+          if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id());
+        }
+        else
+        {
+          if(abs(prod)>MORTARINTTOL) cnode->AddDValue(snode->Id(),prod);
+          if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id());
         }
       }
     }
@@ -4270,44 +4230,35 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
     {
       CoNode* cnode = dynamic_cast<CoNode*>(sintnodes[j]);
 
-      //loop over slave dofs
-      for (int jdof=0;jdof<ndof;++jdof)
+      // integrate mseg
+      for (int k=0; k<ncol; ++k)
       {
-        // integrate mseg
-        for (int k=0; k<ncol; ++k)
+        CoNode* mnode = dynamic_cast<CoNode*>(mnodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmintval[j]*mval[k]*jac*wgt;
+
+        if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),prod);
+        if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());
+      }
+
+      // integrate dseg
+      for (int k=0; k<nrow; ++k)
+      {
+        CoNode* snode = dynamic_cast<CoNode*>(snodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmintval[j]*sval[k]*jac*wgt;
+
+        if (snode->IsOnBound())
         {
-          CoNode* mnode = dynamic_cast<CoNode*>(mnodes[k]);
-
-          int col = mnode->Dofs()[jdof];
-
-          // multiply the two shape functions
-          double prod = lmintval[j]*mval[k]*jac*wgt;
-
-          if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
-          if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());
+          if(abs(prod)>MORTARINTTOL) cnode->AddMValue(snode->Id(),-prod);
+          if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id());
         }
-
-        // integrate dseg
-        for (int k=0; k<nrow; ++k)
+        else
         {
-          CoNode* snode = dynamic_cast<CoNode*>(snodes[k]);
-
-          int col = snode->Dofs()[jdof];
-
-          // multiply the two shape functions
-          double prod = lmintval[j]*sval[k]*jac*wgt;
-
-          if (snode->IsOnBound())
-          {
-            double minusval = -prod;
-            if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,minusval);
-            if(abs(prod)>MORTARINTTOL) cnode->AddMNode(snode->Id());
-          }
-          else
-          {
-            if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,col,prod);
-            if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id());
-          }
+          if(abs(prod)>MORTARINTTOL) cnode->AddDValue(snode->Id(),prod);
+          if(abs(prod)>MORTARINTTOL) cnode->AddSNode(snode->Id());
         }
       }
     }
@@ -4323,26 +4274,19 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
     {
       CoNode* cnode = dynamic_cast<CoNode*>(snodes[j]);
 
-      //loop over slave dofs
-      for (int jdof=0;jdof<ndof;++jdof)
+      // integrate mseg
+      for (int k=0; k<ncol; ++k)
       {
-        int dcol = cnode->Dofs()[jdof];
+        CoNode* mnode = dynamic_cast<CoNode*>(mnodes[k]);
 
-        // integrate mseg
-        for (int k=0; k<ncol; ++k)
-        {
-          CoNode* mnode = dynamic_cast<CoNode*>(mnodes[k]);
+        // multiply the two shape functions
+        double prod = lmval[j]*mval[k]*jac*wgt;
 
-          int col = mnode->Dofs()[jdof];
+        if(abs(prod)>MORTARINTTOL) cnode->AddDValue(cnode->Id(),prod);
+        if(abs(prod)>MORTARINTTOL) cnode->AddSNode(cnode->Id());
 
-          // multiply the two shape functions
-          double prod = lmval[j]*mval[k]*jac*wgt;
-
-          if(abs(prod)>MORTARINTTOL) cnode->AddMValue(jdof,col,prod);
-          if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());
-          if(abs(prod)>MORTARINTTOL) cnode->AddDValue(jdof,dcol,prod);
-          if(abs(prod)>MORTARINTTOL) cnode->AddSNode(cnode->Id());
-        }
+        if(abs(prod)>MORTARINTTOL) cnode->AddMValue(mnode->Id(),prod);
+        if(abs(prod)>MORTARINTTOL) cnode->AddMNode(mnode->Id());
       }
     }
   }

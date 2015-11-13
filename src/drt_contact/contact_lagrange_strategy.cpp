@@ -2865,7 +2865,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           // row sum of D matrix
           double sumd = 0.;
           GEN::pairedvector<int,double>::const_iterator p;
-          for (p=cnode->MoData().GetD()[0].begin(); p!=cnode->MoData().GetD()[0].end(); p++)
+          for (p=cnode->MoData().GetD().begin(); p!=cnode->MoData().GetD().end(); p++)
             sumd += p->second;
           double mesh_h = pow(sumd,1./((double)Dim()-1.));
           if (adaptive_cn && mesh_h != 0.)

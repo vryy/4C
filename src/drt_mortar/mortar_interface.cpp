@@ -1708,17 +1708,11 @@ void MORTAR::MortarInterface::Initialize()
       monode->MoData().n()[j] = 0.0;
 
     // reset nodal Mortar maps
-    for (int j = 0; j < (int) ((monode->MoData().GetD()).size()); ++j)
-      (monode->MoData().GetD())[j].clear();
-    for (int j = 0; j < (int) ((monode->MoData().GetM()).size()); ++j)
-      (monode->MoData().GetM())[j].clear();
-    for (int j = 0; j < (int) ((monode->MoData().GetMmod()).size()); ++j)
-      (monode->MoData().GetMmod())[j].clear();
+    monode->MoData().GetD().clear();
+    monode->MoData().GetM().clear();
+    monode->MoData().GetMmod().clear();
 
-    (monode->MoData().GetD()).resize(0, 0);
-    (monode->MoData().GetM()).resize(0);
-    (monode->MoData().GetMmod()).resize(0);
-    (monode->MoData().GetScale()) = 0.;
+    monode->MoData().GetScale() = 0.;
   }
 
   // loop over all elements to reset candidates / search lists
@@ -3152,29 +3146,27 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
     /**************************************************** D-matrix ******/
     if ((mrtrnode->MoData().GetD()).size() > 0)
     {
-      const std::vector<GEN::pairedvector<int, double> >& dmap =
-          mrtrnode->MoData().GetD();
+      const GEN::pairedvector<int, double>& dmap = mrtrnode->MoData().GetD();
       int rowsize = mrtrnode->NumDof();
-      int colsize = (int) dmap[0].size();
-
-      for (int j = 0; j < rowsize - 1; ++j)
-        if ((int) dmap[j].size() != (int) dmap[j + 1].size())
-          dserror("ERROR: AssembleDM: Column dim. of nodal D-map is inconsistent!");
 
       GEN::pairedvector<int, double>::const_iterator colcurr;
 
-      for (int j = 0; j < rowsize; ++j)
+      for (colcurr = dmap.begin(); colcurr != dmap.end(); ++colcurr)
       {
-        int row = mrtrnode->Dofs()[j];
-        int k = 0;
+        double val = colcurr->second;
 
-        for (colcurr = dmap[j].begin(); colcurr != dmap[j].end(); ++colcurr)
+        if (LMNodalScale() == true && mrtrnode->MoData().GetScale() != 0.0)
+          val /= mrtrnode->MoData().GetScale();
+
+        DRT::Node* knode = Discret().gNode(colcurr->first);
+        if (!knode) dserror("node not found");
+        MortarNode*  kcnode = dynamic_cast<MortarNode*>(knode);
+        if (!kcnode) dserror("node not found");
+
+        for (int j = 0; j < rowsize; ++j)
         {
-          int col = colcurr->first;
-          double val = colcurr->second;
-
-          if (LMNodalScale() == true && mrtrnode->MoData().GetScale() != 0.0)
-            val /= mrtrnode->MoData().GetScale();
+          int row = mrtrnode->Dofs()[j];
+          int col = kcnode  ->Dofs()[j];
 
           // do the assembly into global D matrix
           if (shapefcn_ == INPAR::MORTAR::shape_dual
@@ -3203,91 +3195,77 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
             // create the d matrix, do not assemble zeros
             dglobal.Assemble(val, row, col);
           }
-
-          ++k;
         }
-
-        if (k != colsize)
-          dserror("ERROR: AssembleDM: k = %i but colsize = %i", k, colsize);
       }
     }
 
     /**************************************************** M-matrix ******/
     if ((mrtrnode->MoData().GetM()).size() > 0 and !onlyD)
     {
-      const std::vector<std::map<int, double> >& mmap =
-          mrtrnode->MoData().GetM();
+      const std::map<int, double>& mmap = mrtrnode->MoData().GetM();
       int rowsize = mrtrnode->NumDof();
-      int colsize = (int) mmap[0].size();
 
-      for (int j = 0; j < rowsize - 1; ++j)
-        if ((int) mmap[j].size() != (int) mmap[j + 1].size())
-          dserror("ERROR: AssembleDM: Column dim. of nodal M-map is inconsistent!");
+      std::map<int, double>::const_iterator colcurr;
 
-          std::map<int, double>::const_iterator colcurr;
-
-      for (int j = 0; j < rowsize; ++j)
+      for (colcurr = mmap.begin(); colcurr != mmap.end(); ++colcurr)
       {
-        int row = mrtrnode->Dofs()[j];
-        int k = 0;
+        DRT::Node* knode = Discret().gNode(colcurr->first);
+        if (!knode) dserror("node not found");
+        MortarNode*  kcnode = dynamic_cast<MortarNode*>(knode);
+        if (!kcnode) dserror("node not found");
 
-        for (colcurr = mmap[j].begin(); colcurr != mmap[j].end(); ++colcurr)
+        double val = colcurr->second;
+
+        if (LMNodalScale() == true && mrtrnode->MoData().GetScale() != 0.0)
+          val /= mrtrnode->MoData().GetScale();
+
+        for (int j = 0; j < rowsize; ++j)
         {
-          int col = colcurr->first;
-          double val = colcurr->second;
-
-          if (LMNodalScale() == true && mrtrnode->MoData().GetScale() != 0.0)
-            val /= mrtrnode->MoData().GetScale();
+          int row = mrtrnode->Dofs()[j];
+          int col = kcnode->Dofs()[j];
 
           // do not assemble zeros into m matrix
           if (abs(val) > 1.0e-12)
             mglobal.Assemble(val, row, col);
-          ++k;
         }
-
-        if (k != colsize)
-          dserror("ERROR: AssembleDM: k = %i but colsize = %i", k, colsize);
       }
     }
 
     /************************************************* Mmod-matrix ******/
     if ((mrtrnode->MoData().GetMmod()).size() > 0)
     {
-      const std::vector<std::map<int, double> >& mmap =
-          mrtrnode->MoData().GetMmod();
+      std::map<int, double>& mmap = mrtrnode->MoData().GetMmod();
       int rowsize = mrtrnode->NumDof();
-      int colsize = (int) mmap[0].size();
-
-      for (int j = 0; j < rowsize - 1; ++j)
-        if ((int) mmap[j].size() != (int) mmap[j + 1].size())
-          dserror("ERROR: AssembleDM: Column dim. of nodal Mmod-map is inconsistent!");
+      int colsize = (int) mmap.size()*rowsize;
 
       Epetra_SerialDenseMatrix Mnode(rowsize,colsize);
       std::vector<int> lmrow(rowsize);
       std::vector<int> lmcol(colsize);
       std::vector<int> lmrowowner(rowsize);
       std::map<int, double>::const_iterator colcurr;
-
-      for( int j=0;j<rowsize;++j)
-      {
-        int row = mrtrnode->Dofs()[j];
         int k = 0;
-        lmrow[j] = row;
-        lmrowowner[j] = mrtrnode->Owner();
 
-        for (colcurr=mmap[j].begin();colcurr!=mmap[j].end();++colcurr)
+        for (colcurr=mmap.begin();colcurr!=mmap.end();++colcurr)
         {
-          int col = colcurr->first;
-          double val = colcurr->second;
-          lmcol[k] = col;
+          DRT::Node* knode = Discret().gNode(colcurr->first);
+          if (!knode) dserror("node not found");
+          MortarNode*  kcnode = dynamic_cast<MortarNode*>(knode);
+          if (!kcnode) dserror("node not found");
 
-          Mnode(j,k)=val;
-          ++k;
+          for( int j=0;j<rowsize;++j)
+          {
+            int row = mrtrnode->Dofs()[j];
+            lmrow[j] = row;
+            lmrowowner[j] = mrtrnode->Owner();
+
+            int col = kcnode->Dofs()[j];
+            double val = colcurr->second;
+            lmcol[k] = col;
+
+            Mnode(j,k)=val;
+            ++k;
+          }
         }
-
-        if (k!=colsize)
-        dserror("ERROR: AssembleDM: k = %i but colsize = %i",k,colsize);
-      }
 
       mglobal.Assemble(-1, Mnode, lmrow, lmrowowner, lmcol);
     }
@@ -3834,8 +3812,8 @@ void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
       MortarNode* mrtrnode = dynamic_cast<MortarNode*>(node);
 
     // perform detection
-    const std::vector<GEN::pairedvector<int, double> > & dmap = mrtrnode->MoData().GetD();
-    const std::vector<std::map<int, double> >& mmap = mrtrnode->MoData().GetM();
+    const GEN::pairedvector<int, double> & dmap = mrtrnode->MoData().GetD();
+    const std::map<int, double>& mmap = mrtrnode->MoData().GetM();
     int sized = dmap.size();
     int sizem = mmap.size();
 

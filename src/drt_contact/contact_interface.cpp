@@ -1142,20 +1142,13 @@ void CONTACT::CoInterface::Initialize()
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // reset nodal Mortar maps
-    for (int j=0;j<(int)((cnode->MoData().GetD()).size());++j)
-      (cnode->MoData().GetD())[j].clear();
-    for (int j=0;j<(int)((cnode->MoData().GetM()).size());++j)
-      (cnode->MoData().GetM())[j].clear();
-    for (int j=0;j<(int)((cnode->MoData().GetMmod()).size());++j)
-      (cnode->MoData().GetMmod())[j].clear();
-
-    (cnode->MoData().GetD()).resize(0,0);
-    (cnode->MoData().GetM()).resize(0);
-    (cnode->MoData().GetMmod()).resize(0);
+    cnode->MoData().GetD().clear();
+    cnode->MoData().GetM().clear();
+    cnode->MoData().GetMmod().clear();
 
     // reset nodal scaling factor
-    (cnode->MoData().GetScale())=0.0;
-    (cnode->CoData().GetDerivScale()).clear();
+    cnode->MoData().GetScale()=0.0;
+    cnode->CoData().GetDerivScale().clear();
 
     // reset derivative maps of normal vector
     for (int j=0;j<(int)((cnode->CoData().GetDerivN()).size());++j)
@@ -1901,8 +1894,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
 
     if(activeinfuture==true)
     {
-      std::vector<GEN::pairedvector<int,double> >& dmap = cnode->MoData().GetD();
-      std::vector<GEN::pairedvector<int,double> >& dmapold = cnode->FriData().GetDOld();
+      GEN::pairedvector<int,double>& dmap = cnode->MoData().GetD();
+      GEN::pairedvector<int,double>& dmapold = cnode->FriData().GetDOld();
 
       std::set <int> snodes = cnode->FriData().GetSNodes();
 
@@ -1920,10 +1913,9 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
         DRT::Node* snode = idiscret_->gNode(gid);
         if (!snode) dserror("ERROR: Cannot find node with gid %",gid);
         CoNode* csnode = dynamic_cast<CoNode*>(snode);
-        const int* sdofs = csnode->Dofs();
 
-        double dik = (dmap[0])[sdofs[0]];
-        double dikold = (dmapold[0])[sdofs[0]];
+        double dik = dmap[csnode->Id()];
+        double dikold = dmapold[csnode->Id()];
 
         std::map<int,double>::iterator mcurr;
 
@@ -1934,8 +1926,8 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
         }
       } //  loop over adjacent slave nodes
 
-      std::vector<std::map<int,double> >& mmap = cnode->MoData().GetM();
-      std::vector<std::map<int,double> >& mmapold = cnode->FriData().GetMOld();
+      std::map<int,double>& mmap = cnode->MoData().GetM();
+      std::map<int,double>& mmapold = cnode->FriData().GetMOld();
 
       const std::set <int>& mnodescurrent = cnode->FriData().GetMNodes();
       const std::set <int>& mnodesold = cnode->FriData().GetMNodesOld();
@@ -1967,10 +1959,9 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
         DRT::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
         CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
-        const int* mdofs = cmnode->Dofs();
 
-        double mik = (mmap[0])[mdofs[0]];
-        double mikold = (mmapold[0])[mdofs[0]];
+        double mik = mmap[cmnode->Id()];
+        double mikold = mmapold[cmnode->Id()];
 
         std::map<int,double>::iterator mcurr;
 
@@ -2002,10 +1993,9 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
           DRT::Node* snode = idiscret_->gNode(gid);
           if (!snode) dserror("ERROR: Cannot find node with gid %",gid);
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
-          const int* sdofs = csnode->Dofs();
 
-          double dik = (dmap[0])[sdofs[0]];
-          double dikold=(dmapold[0])[sdofs[0]];
+          double dik = dmap[csnode->Id()];
+          double dikold=dmapold[csnode->Id()];
 
           for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
           {
@@ -2074,10 +2064,9 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
         DRT::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
         CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
-        const int* mdofs = cmnode->Dofs();
 
-        double mik = (mmap[0])[mdofs[0]];
-        double mikold=(mmapold[0])[mdofs[0]];
+        double mik = mmap[cmnode->Id()];
+        double mikold=mmapold[cmnode->Id()];
 
         for (int dimrow=0;dimrow<cnode->NumDof();++dimrow)
         {
@@ -3399,7 +3388,7 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
         GEN::pairedvector<int,double>::const_iterator pv;
         std::map<int,std::map<int,double> >::const_iterator q;
         // calculate row sum
-        for (pv=cnode->MoData().GetD()[0].begin(); pv!=cnode->MoData().GetD()[0].end(); pv++)
+        for (pv=cnode->MoData().GetD().begin(); pv!=cnode->MoData().GetD().end(); pv++)
           sumd += pv->second;
         mesh_h = pow(sumd,1./((double)Dim()-1.));
 
@@ -3758,7 +3747,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
           {
             int row = csnode->Dofs()[prodj];
             std::map<int,double>::iterator scolcurr = thisscalederiv.begin();
-            double d_jk=cnode->MoData().GetD()[0][csnode->Dofs()[0]];
+            double d_jk=cnode->MoData().GetD()[csnode->Id()];
 
             // loop over all directional derivative entries of scale factor
             for (int c=0;c<mapsize;++c)
@@ -3843,7 +3832,7 @@ void CONTACT::CoInterface::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
           {
             int row = cmnode->Dofs()[prodj];
             std::map<int,double>::iterator mcolcurr = thisscalederiv.begin();
-            double m_jk=cnode->MoData().GetM()[0][cmnode->Dofs()[0]];
+            double m_jk=cnode->MoData().GetM()[cmnode->Id()];
 
             // loop over all directional derivative entries of scale factor
             for (int c=0;c<mapsize;++c)
@@ -3956,7 +3945,7 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
           {
             double sumd = 0.;
             GEN::pairedvector<int,double>::const_iterator p;
-            for (p=cnode->MoData().GetD()[0].begin(); p!=cnode->MoData().GetD()[0].end(); p++)
+            for (p=cnode->MoData().GetD().begin(); p!=cnode->MoData().GetD().end(); p++)
               sumd += p->second;
 
             // scale with row sum of D-matrix
@@ -4439,7 +4428,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
           GEN::pairedvector<int,double>::const_iterator pv;
           std::map<int,std::map<int,double> >::const_iterator q;
           // calculate row sum
-          for (pv=cnode->MoData().GetD()[0].begin(); pv!=cnode->MoData().GetD()[0].end(); pv++)
+          for (pv=cnode->MoData().GetD().begin(); pv!=cnode->MoData().GetD().end(); pv++)
             sumd += pv->second;
           mesh_h = pow(sumd,1./((double)Dim()-1.));
 
@@ -5342,7 +5331,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           GEN::pairedvector<int,double>::const_iterator pv;
           std::map<int,std::map<int,double> >::const_iterator q;
           // calculate row sum
-          for (pv=cnode->MoData().GetD()[0].begin(); pv!=cnode->MoData().GetD()[0].end(); pv++)
+          for (pv=cnode->MoData().GetD().begin(); pv!=cnode->MoData().GetD().end(); pv++)
             sumd += pv->second;
           mesh_h = pow(sumd,1./((double)Dim()-1.));
 
@@ -6806,8 +6795,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         /***************************** -Deriv(abs)*ct*tan.(D-Dn-1)*ztan ***/
 
         // we need the nodal entries of the D-matrix and the old one
-        double D= (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
-        double Dold= (cnode->FriData().GetDOld()[0])[cnode->Dofs()[0]];
+        double D= cnode->MoData().GetD()[cnode->Id()];
+        double Dold= cnode->FriData().GetDOld()[cnode->Id()];
 
         if (abs(Dold)<0.0001)
           dserror ("Error:No entry for Dold");
@@ -6833,8 +6822,8 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         /***************************** -Deriv(abs)*ct*tan.(M-Mn-1)*ztan ***/
 
         // we need the nodal entries of the M-matrix and the old one
-        std::vector<std::map<int,double> >& mmap = cnode->MoData().GetM();
-        std::vector<std::map<int,double> >& mmapold = cnode->FriData().GetMOld();
+        std::map<int,double>& mmap = cnode->MoData().GetM();
+        std::map<int,double>& mmapold = cnode->FriData().GetMOld();
 
         // create a set of nodes including nodes according to M entries
         // from current and previous time step
@@ -6859,10 +6848,9 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
 
-          double mik = (mmap[0])[mdofs[0]];
-          double mikold = (mmapold[0])[mdofs[0]];
+          double mik = mmap[cmnode->Id()];
+          double mikold = mmapold[cmnode->Id()];
 
           // compute linstick-matrix entry of the current active node / master node pair
           // loop over all derivative maps (=dimensions)
@@ -6913,10 +6901,9 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
 
-          double mik = (mmap[0])[mdofs[0]];
-          double mikold = (mmapold[0])[mdofs[0]];
+          double mik = mmap[cmnode->Id()];
+          double mikold = mmapold[cmnode->Id()];
 
           // loop over all derivative maps (=dimensions)
           for (int dim=0;dim<cnode->NumDof();++dim)

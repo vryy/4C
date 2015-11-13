@@ -162,16 +162,6 @@ public:
     */
   virtual void AssembleInactive(LINALG::SparseMatrix* linConductThermoLM);
 
-  /*!
-    \brief Assemble the active rows of Mortar matrices D and M
-
-    This assembles lambda(thermo) = 0 for all inactive contact nodes
-    */
-  virtual void AssembleDMactive(LINALG::SparseMatrix& dglobal,
-      LINALG::SparseMatrix& mglobal);
-
-
-
 
    /*!
    \brief Initialize / reset interface for contact

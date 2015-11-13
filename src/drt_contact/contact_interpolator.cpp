@@ -1167,7 +1167,6 @@ void CONTACT::CoInterpolator::nwDM2D(CoNode& mynode,
                                    GEN::pairedvector<int,double>& dmxi)
 {
   const int ncol = mele.NumNode();
-  const int ndof = mynode.NumDof();
 
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
@@ -1179,26 +1178,16 @@ void CONTACT::CoInterpolator::nwDM2D(CoNode& mynode,
     // multiply the two shape functions
     double prod = mval[k];
 
-    //loop over slave dofs
-    for (int jdof=0;jdof<ndof;++jdof)
-    {
-      int col = mnode->Dofs()[jdof];
-      if(abs(prod)>MORTARINTTOL) mynode.AddMValue(jdof,col,prod);
-      if(abs(prod)>MORTARINTTOL) mynode.AddMNode(mnode->Id());  // only for friction!
-    }
+    if(abs(prod)>MORTARINTTOL) mynode.AddMValue(mnode->Id(),prod);
+    if(abs(prod)>MORTARINTTOL) mynode.AddMNode(mnode->Id());  // only for friction!
   }
 
   // integrate dseg
   // multiply the two shape functions
   double prod = 1.0;
 
-  //loop over slave dofs
-  for (int jdof=0;jdof<ndof;++jdof)
-  {
-    int col = mynode.Dofs()[jdof];
-    if(abs(prod)>MORTARINTTOL) mynode.AddDValue(jdof,col,prod);
+    if(abs(prod)>MORTARINTTOL) mynode.AddDValue(mynode.Id(),prod);
     if(abs(prod)>MORTARINTTOL) mynode.AddSNode(mynode.Id()); // only for friction!
-  }
 
   // integrate LinM
   for (int k=0; k<ncol; ++k)
@@ -1230,7 +1219,6 @@ void CONTACT::CoInterpolator::nwDM3D(CoNode& mynode,
                                    std::vector<GEN::pairedvector<int,double> >& dmxi)
 {
   const int ncol = mele.NumNode();
-  const int ndof = mynode.NumDof();
 
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
@@ -1242,26 +1230,16 @@ void CONTACT::CoInterpolator::nwDM3D(CoNode& mynode,
     // multiply the two shape functions
     double prod = mval[k];
 
-    //loop over slave dofs
-    for (int jdof=0;jdof<ndof;++jdof)
-    {
-      int col = mnode->Dofs()[jdof];
-      if(abs(prod)>MORTARINTTOL) mynode.AddMValue(jdof,col,prod);
-      if(abs(prod)>MORTARINTTOL) mynode.AddMNode(mnode->Id());  // only for friction!
-    }
+    if(abs(prod)>MORTARINTTOL) mynode.AddMValue(mnode->Id(),prod);
+    if(abs(prod)>MORTARINTTOL) mynode.AddMNode(mnode->Id());  // only for friction!
   }
 
   // integrate dseg
   // multiply the two shape functions
   double prod = 1.0;
 
-  //loop over slave dofs
-  for (int jdof=0;jdof<ndof;++jdof)
-  {
-    int col = mynode.Dofs()[jdof];
-    if(abs(prod)>MORTARINTTOL) mynode.AddDValue(jdof,col,prod);
-    if(abs(prod)>MORTARINTTOL) mynode.AddSNode(mynode.Id()); // only for friction!
-  }
+  if(abs(prod)>MORTARINTTOL) mynode.AddDValue(mynode.Id(),prod);
+  if(abs(prod)>MORTARINTTOL) mynode.AddSNode(mynode.Id()); // only for friction!
 
   // integrate LinM
   for (int k=0; k<ncol; ++k)
@@ -1802,7 +1780,6 @@ void CONTACT::MTInterpolatorCalc<distypeM>::Interpolate2D(MORTAR::MortarElement&
         kink_projection   = true;
         mynode->HasProj() = true;
 
-        int ndof = 2;
         static LINALG::Matrix<nm_,1> mval;
         MORTAR::UTILS::EvaluateShape_Displ(mxi, mval,*meles[nummaster], false);
 
@@ -1814,25 +1791,14 @@ void CONTACT::MTInterpolatorCalc<distypeM>::Interpolate2D(MORTAR::MortarElement&
           // multiply the two shape functions
           double prod = mval(k);
 
-          //loop over slave dofs
-          for (int jdof=0;jdof<ndof;++jdof)
-          {
-            int col = mnode->Dofs()[jdof];
-            if(abs(prod)>MORTARINTTOL) mynode->AddMValue(jdof,col,prod);
-          }
+          if(abs(prod)>MORTARINTTOL) mynode->AddMValue(mnode->Id(),prod);
         }
 
         // integrate dseg
         // multiply the two shape functions
         double prod = 1.0;
 
-        //loop over slave dofs
-        for (int jdof=0;jdof<ndof;++jdof)
-        {
-          int col = mynode->Dofs()[jdof];
-          if(abs(prod)>MORTARINTTOL) mynode->AddDValue(jdof,col,prod);
-        }
-
+        if(abs(prod)>MORTARINTTOL) mynode->AddDValue(mynode->Id(),prod);
       }//End hit ele
     }//End Loop over all Master Elements
   }
@@ -1940,7 +1906,6 @@ void CONTACT::MTInterpolatorCalc<distypeM>::Interpolate3D(MORTAR::MortarElement&
         kink_projection   = true;
         mynode->HasProj() = true;
 
-        int ndof = 3;
         static LINALG::Matrix<nm_,1> mval;
         MORTAR::UTILS::EvaluateShape_Displ(mxi, mval,*meles[nummaster], false);
 
@@ -1952,25 +1917,14 @@ void CONTACT::MTInterpolatorCalc<distypeM>::Interpolate3D(MORTAR::MortarElement&
           // multiply the two shape functions
           double prod = mval(k);
 
-          //loop over slave dofs
-          for (int jdof=0;jdof<ndof;++jdof)
-          {
-            int col = mnode->Dofs()[jdof];
-            if(abs(prod)>MORTARINTTOL) mynode->AddMValue(jdof,col,prod);
-          }
+          if(abs(prod)>MORTARINTTOL) mynode->AddMValue(mnode->Id(),prod);
         }
 
         // integrate dseg
         // multiply the two shape functions
         double prod = 1.0;
 
-        //loop over slave dofs
-        for (int jdof=0;jdof<ndof;++jdof)
-        {
-          int col = mynode->Dofs()[jdof];
-          if(abs(prod)>MORTARINTTOL) mynode->AddDValue(jdof,col,prod);
-        }
-
+        if(abs(prod)>MORTARINTTOL) mynode->AddDValue(mynode->Id(),prod);
       }//End hit ele
     }//End Loop over all Master Elements
   }

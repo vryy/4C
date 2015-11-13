@@ -128,7 +128,7 @@ public:
   /*!
    \brief Return the old 'D' map (vector) of this node (last converged state)
    */
-  virtual inline std::vector<GEN::pairedvector<int, double> >& GetDOld()
+  virtual inline GEN::pairedvector<int, double>& GetDOld()
   {
     return drowsold_;
   }
@@ -136,7 +136,7 @@ public:
   /*!
    \brief Return the old 'M' map (vector) of this node (last converged state)
    */
-  virtual inline std::vector<std::map<int, double> >& GetMOld()
+  virtual inline std::map<int, double>& GetMOld()
   {
     return mrowsold_;
   }
@@ -228,8 +228,8 @@ protected:
   bool slip_;         // true if cnode slips (contact force reaches friction bound)
   bool slipold_;      // true if cnode slips (contact force reaches friction bound) - last converged timestep
 
-  std::vector<GEN::pairedvector<int, double> > drowsold_; // nodal rows of old D matrix
-  std::vector<std::map<int, double> > mrowsold_;          // nodal rows of old M matrix
+  GEN::pairedvector<int, double> drowsold_; // nodal rows of old D matrix
+  std::map<int, double> mrowsold_;          // nodal rows of old M matrix
   std::set<int> snodes_;    // nodal set of according slave nodes
   std::set<int> mnodes_;    // nodal set of according master nodes
   std::set<int> mnodesold_; // nodal set of old according masternodes

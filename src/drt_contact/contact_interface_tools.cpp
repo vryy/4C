@@ -1178,8 +1178,8 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
   if (!lComm()) return;
 
   // create storage for D-Matrix entries
-  std::map<int, std::map<int,double> > refD; // stores dof-wise the entries of D
-  std::map<int, std::map<int,double> > newD;
+  std::map<int,double> refD; // stores dof-wise the entries of D
+  std::map<int,double> newD;
 
   std::map<int, std::map<int, std::map<int,double> > > refDerivD; // stores old derivm for every node
 
@@ -1200,12 +1200,9 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
     if ((int)(cnode->MoData().GetD().size())==0)
       continue;
 
-    for( int d=0; d<dim; d++ )
-    {
-      int dof = cnode->Dofs()[d];
-      for(_CI it = cnode->MoData().GetD()[d].begin(); it!=cnode->MoData().GetD()[d].end();++it)
-        refD[dof][it->first] = it->second;
-    }
+    for(_CI it = cnode->MoData().GetD().begin(); it!=cnode->MoData().GetD().end();++it)
+      refD[it->first] = it->second;
+
 
     refDerivD[gid] = cnode->CoData().GetDerivD();
   }
@@ -1262,50 +1259,41 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
         dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      int dim = kcnode->NumDof();
-
       if ((int)(kcnode->MoData().GetD().size())==0)
         continue;
 
       typedef std::map<int,double>::const_iterator CI;
       typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
-      for( int d=0; d<dim; d++ )
+      for(_CI it = kcnode->MoData().GetD().begin(); it!=kcnode->MoData().GetD().end();++it)
+        newD[it->first] = it->second;
+
+      // print results (derivatives) to screen
+      for (CI p=newD.begin(); p!=newD.end(); ++p)
       {
-        int dof = kcnode->Dofs()[d];
-        for(_CI it = kcnode->MoData().GetD()[d].begin(); it!=kcnode->MoData().GetD()[d].end();++it)
-          newD[dof][it->first] = it->second;
-
-        // store D-values into refD
-        //newD[dof] = kcnode->MoData().GetD()[d];
-
-        // print results (derivatives) to screen
-        for (CI p=newD[dof].begin(); p!=newD[dof].end(); ++p)
+        if (abs(newD[p->first]-refD[p->first]) > 1e-12)
         {
-          if (abs(newD[dof][p->first]-refD[dof][p->first]) > 1e-12)
+          double finit = (newD[p->first]-refD[p->first])/delta;
+          double analy = ((refDerivD[kgid])[p->first])[sdof];
+          double dev = finit - analy;
+
+          // kgid: currently tested dof of slave node kgid
+          // (p->first)/Dim(): paired master
+          // sdof: currently modified slave dof
+          std::cout << "(" << (p->first) << "," << sdof << ") : fd=" << finit << " derivd=" << analy << " DEVIATION " << dev;
+
+          if( abs(dev) > 1e-4 )
           {
-            double finit = (newD[dof][p->first]-refD[dof][p->first])/delta;
-            double analy = ((refDerivD[kgid])[(p->first)/Dim()])[sdof];
-            double dev = finit - analy;
-
-            // kgid: currently tested dof of slave node kgid
-            // (p->first)/Dim(): paired master
-            // sdof: currently modified slave dof
-            std::cout << "(" << dof << "," << (p->first)/Dim() << "," << sdof << ") : fd=" << finit << " derivd=" << analy << " DEVIATION " << dev;
-
-            if( abs(dev) > 1e-4 )
-            {
-              std::cout << " ***** WARNING ***** ";
-              w++;
-            }
-            else if( abs(dev) > 1e-5 )
-            {
-              std::cout << " ***** warning ***** ";
-              w++;
-            }
-
-            std::cout << std::endl;
+            std::cout << " ***** WARNING ***** ";
+            w++;
           }
+          else if( abs(dev) > 1e-5 )
+          {
+            std::cout << " ***** warning ***** ";
+            w++;
+          }
+
+          std::cout << std::endl;
         }
       }
     }
@@ -1379,36 +1367,28 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
         dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      int dim = kcnode->NumDof();
-
       if ((int)(kcnode->MoData().GetD().size())==0)
         continue;
 
       typedef std::map<int,double>::const_iterator CI;
       typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
-      for( int d=0; d<dim; d++ )
-      {
-        int dof = kcnode->Dofs()[d];
-        for(_CI it = kcnode->MoData().GetD()[d].begin(); it!=kcnode->MoData().GetD()[d].end();++it)
-          newD[dof][it->first] = it->second;
-
-        // store D-values into refD
-//        newD[dof] = kcnode->MoData().GetD()[d];
+        for(_CI it = kcnode->MoData().GetD().begin(); it!=kcnode->MoData().GetD().end();++it)
+          newD[it->first] = it->second;
 
         // print results (derivatives) to screen
-        for (CI p=newD[dof].begin(); p!=newD[dof].end(); ++p)
+        for (CI p=newD.begin(); p!=newD.end(); ++p)
         {
-          if (abs(newD[dof][p->first]-refD[dof][p->first]) > 1e-12)
+          if (abs(newD[p->first]-refD[p->first]) > 1e-12)
           {
-            double finit = (newD[dof][p->first]-refD[dof][p->first])/delta;
-            double analy = ((refDerivD[kgid])[(p->first)/Dim()])[mdof];
+            double finit = (newD[p->first]-refD[p->first])/delta;
+            double analy = ((refDerivD[kgid])[p->first])[mdof];
             double dev = finit - analy;
 
             // kgid: currently tested dof of slave node kgid
             // (p->first)/Dim(): paired master
             // sdof: currently modified slave dof
-            std::cout << "(" << dof << "," << (p->first)/Dim() << "," << mdof << ") : fd=" << finit << " derivd=" << analy << " DEVIATION " << dev;
+            std::cout << "(" << (p->first) << "," << mdof << ") : fd=" << finit << " derivd=" << analy << " DEVIATION " << dev;
 
             if( abs(dev) > 1e-4 )
             {
@@ -1425,7 +1405,6 @@ void CONTACT::CoInterface::FDCheckMortarDDeriv()
           }
         }
       }
-    }
 
     // undo finite difference modification
     if (fd%dim==0)
@@ -1474,8 +1453,8 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
   if (!lComm()) return;
 
   // create storage for M-Matrix entries
-  std::map<int, std::map<int,double> > refM; // stores dof-wise the entries of M
-  std::map<int, std::map<int,double> > newM;
+  std::map<int,double> refM; // stores dof-wise the entries of M
+  std::map<int,double> newM;
 
   std::map<int, std::map<int, std::map<int,double> > > refDerivM; // stores old derivm for every node
 
@@ -1497,11 +1476,7 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
     if ((int)(cnode->MoData().GetM().size())==0)
       continue;
 
-    for( int d=0; d<dim; d++ )
-    {
-      int dof = cnode->Dofs()[d];
-      refM[dof] = cnode->MoData().GetM()[d];
-    }
+    refM = cnode->MoData().GetM();
 
     refDerivM[gid] = cnode->CoData().GetDerivM();
   }
@@ -1558,47 +1533,40 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
         dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      int dim = kcnode->NumDof();
-
       if ((int)(kcnode->MoData().GetM().size())==0)
         continue;
 
       typedef std::map<int,double>::const_iterator CI;
 
-      for( int d=0; d<dim; d++ )
+      // store M-values into refM
+      newM = kcnode->MoData().GetM();
+
+      // print results (derivatives) to screen
+      for (CI p=newM.begin(); p!=newM.end(); ++p)
       {
-        int dof = kcnode->Dofs()[d];
-
-        // store M-values into refM
-        newM[dof] = kcnode->MoData().GetM()[d];
-
-        // print results (derivatives) to screen
-        for (CI p=newM[dof].begin(); p!=newM[dof].end(); ++p)
+        if (abs(newM[p->first]-refM[p->first]) > 1e-12)
         {
-          if (abs(newM[dof][p->first]-refM[dof][p->first]) > 1e-12)
+          double finit = (newM[p->first]-refM[p->first])/delta;
+          double analy = ((refDerivM[kgid])[(p->first)])[sdof];
+          double dev = finit - analy;
+
+          // kgid: currently tested dof of slave node kgid
+          // (p->first)/Dim(): paired master
+          // sdof: currently modified slave dof
+          std::cout << "(" << (p->first) << "," << sdof << ") : fd=" << finit << " derivm=" << analy << " DEVIATION " << dev;
+
+          if( abs(dev) > 1e-4 )
           {
-            double finit = (newM[dof][p->first]-refM[dof][p->first])/delta;
-            double analy = ((refDerivM[kgid])[(p->first)/Dim()])[sdof];
-            double dev = finit - analy;
-
-            // kgid: currently tested dof of slave node kgid
-            // (p->first)/Dim(): paired master
-            // sdof: currently modified slave dof
-            std::cout << "(" << dof << "," << (p->first)/Dim() << "," << sdof << ") : fd=" << finit << " derivm=" << analy << " DEVIATION " << dev;
-
-            if( abs(dev) > 1e-4 )
-            {
-              std::cout << " ***** WARNING ***** ";
-              w++;
-            }
-            else if( abs(dev) > 1e-5 )
-            {
-              std::cout << " ***** warning ***** ";
-              w++;
-            }
-
-            std::cout << std::endl;
+            std::cout << " ***** WARNING ***** ";
+            w++;
           }
+          else if( abs(dev) > 1e-5 )
+          {
+            std::cout << " ***** warning ***** ";
+            w++;
+          }
+
+          std::cout << std::endl;
         }
       }
     }
@@ -1672,47 +1640,40 @@ void CONTACT::CoInterface::FDCheckMortarMDeriv()
         dserror("ERROR: Cannot find node with gid %",kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
-      int dim = kcnode->NumDof();
-
       if ((int)(kcnode->MoData().GetM().size())==0)
         continue;
 
       typedef std::map<int,double>::const_iterator CI;
 
-      for( int d=0; d<dim; d++ )
+      // store M-values into refM
+      newM = kcnode->MoData().GetM();
+
+      // print results (derivatives) to screen
+      for (CI p=newM.begin(); p!=newM.end(); ++p)
       {
-        int dof = kcnode->Dofs()[d];
-
-        // store M-values into refM
-        newM[dof] = kcnode->MoData().GetM()[d];
-
-        // print results (derivatives) to screen
-        for (CI p=newM[dof].begin(); p!=newM[dof].end(); ++p)
+        if (abs(newM[p->first]-refM[p->first]) > 1e-12)
         {
-          if (abs(newM[dof][p->first]-refM[dof][p->first]) > 1e-12)
+          double finit = (newM[p->first]-refM[p->first])/delta;
+          double analy = ((refDerivM[kgid])[p->first])[mdof];
+          double dev = finit - analy;
+
+          // dof: currently tested dof of slave node kgid
+          // (p->first)/Dim(): paired master
+          // mdof: currently modified master dof
+          std::cout << "(" <<  (p->first) << "," << mdof << ") : fd=" << finit << " derivm=" << analy << " DEVIATION " << dev;
+
+          if( abs(dev) > 1e-4 )
           {
-            double finit = (newM[dof][p->first]-refM[dof][p->first])/delta;
-            double analy = ((refDerivM[kgid])[(p->first)/Dim()])[mdof];
-            double dev = finit - analy;
-
-            // dof: currently tested dof of slave node kgid
-            // (p->first)/Dim(): paired master
-            // mdof: currently modified master dof
-            std::cout << "(" << dof << "," << (p->first)/Dim() << "," << mdof << ") : fd=" << finit << " derivm=" << analy << " DEVIATION " << dev;
-
-            if( abs(dev) > 1e-4 )
-            {
-              std::cout << " ***** WARNING ***** ";
-              w++;
-            }
-            else if( abs(dev) > 1e-5 )
-            {
-              std::cout << " ***** warning ***** ";
-              w++;
-            }
-
-            std::cout << std::endl;
+            std::cout << " ***** WARNING ***** ";
+            w++;
           }
+          else if( abs(dev) > 1e-5 )
+          {
+            std::cout << " ***** warning ***** ";
+            w++;
+          }
+
+          std::cout << std::endl;
         }
       }
     }
@@ -2497,12 +2458,12 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
       {
         // check two versions of weighted gap
         double defgap = 0.0;
-        double wii = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
+        double wii = (kcnode->MoData().GetD())[kcnode->Id()];
 
         for (int j=0;j<dim;++j)
           defgap-= (kcnode->MoData().n()[j])*wii*(kcnode->xspatial()[j]);
 
-        std::vector<std::map<int,double> >& mmap = kcnode->MoData().GetM();
+        std::map<int,double>& mmap = kcnode->MoData().GetM();
         std::map<int,double>::const_iterator mcurr;
 
         for (int m=0;m<mnodefullmap->NumMyElements();++m)
@@ -2511,18 +2472,17 @@ void CONTACT::CoInterface::FDCheckGapDeriv()
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
           bool hasentry = false;
 
           // look for this master node in M-map of the active slave node
-          for (mcurr=mmap[0].begin();mcurr!=mmap[0].end();++mcurr)
-            if ((mcurr->first)==mdofs[0])
+          for (mcurr=mmap.begin();mcurr!=mmap.end();++mcurr)
+            if ((mcurr->first)==cmnode->Id())
             {
               hasentry=true;
               break;
             }
 
-          double mik = (mmap[0])[mdofs[0]];
+          double mik = mmap[cmnode->Id()];
           double* mxi = cmnode->xspatial();
 
           // get out of here, if master node not adjacent or coupling very weak
@@ -2662,16 +2622,9 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       (node->CoData().GetDerivTeta()).resize(0,0);
 
       // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->MoData().GetD()).size());++j)
-        (node->MoData().GetD())[j].clear();
-      for (int j=0;j<(int)((node->MoData().GetM()).size());++j)
-        (node->MoData().GetM())[j].clear();
-      for (int j=0;j<(int)((node->MoData().GetMmod()).size());++j)
-        (node->MoData().GetMmod())[j].clear();
-
-      (node->MoData().GetD()).resize(0,0);
-      (node->MoData().GetM()).resize(0);
-      (node->MoData().GetMmod()).resize(0);
+      node->MoData().GetD().clear();
+      node->MoData().GetM().clear();
+      node->MoData().GetMmod().clear();
 
       // reset derivative map of Mortar matrices
       (node->CoData().GetDerivD()).clear();
@@ -2869,16 +2822,9 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       (node->CoData().GetDerivTeta()).resize(0,0);
 
       // reset nodal Mortar maps
-      for (int j=0;j<(int)((node->MoData().GetD()).size());++j)
-        (node->MoData().GetD())[j].clear();
-      for (int j=0;j<(int)((node->MoData().GetM()).size());++j)
-        (node->MoData().GetM())[j].clear();
-      for (int j=0;j<(int)((node->MoData().GetMmod()).size());++j)
-        (node->MoData().GetMmod())[j].clear();
-
-      (node->MoData().GetD()).resize(0,0);
-      (node->MoData().GetM()).resize(0);
-      (node->MoData().GetMmod()).resize(0);
+      node->MoData().GetD().clear();
+      node->MoData().GetM().clear();
+      node->MoData().GetMmod().clear();
 
       // reset derivative map of Mortar matrices
       (node->CoData().GetDerivD()).clear();
@@ -3075,16 +3021,9 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     (node->CoData().GetDerivTeta()).resize(0,0);
 
     // reset nodal Mortar maps
-    for (int j=0;j<(int)((node->MoData().GetD()).size());++j)
-      (node->MoData().GetD())[j].clear();
-    for (int j=0;j<(int)((node->MoData().GetM()).size());++j)
-      (node->MoData().GetM())[j].clear();
-    for (int j=0;j<(int)((node->MoData().GetMmod()).size());++j)
-      (node->MoData().GetMmod())[j].clear();
-
-    (node->MoData().GetD()).resize(0,0);
-    (node->MoData().GetM()).resize(0);
-    (node->MoData().GetMmod()).resize(0);
+    node->MoData().GetD().clear();
+    node->MoData().GetM().clear();
+    node->MoData().GetMmod().clear();
 
     // reset derivative map of Mortar matrices
     (node->CoData().GetDerivD()).clear();
@@ -3214,8 +3153,8 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
     if (cnode->Active() and !(cnode->FriData().Slip()))
     {
       // calculate value of C-function
-      double D = (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
-      double Dold = (cnode->FriData().GetDOld()[0])[cnode->Dofs()[0]];
+      double D = cnode->MoData().GetD()[cnode->Id()];
+      double Dold = cnode->FriData().GetDOld()[cnode->Id()];
 
       for (int dim=0;dim<cnode->NumDof();++dim)
       {
@@ -3223,17 +3162,17 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
         jumpteta -= (cnode->CoData().teta()[dim])*(D-Dold)*(cnode->xspatial()[dim]);
       }
 
-      std::vector<std::map<int,double> >& mmap = cnode->MoData().GetM();
-      std::vector<std::map<int,double> >& mmapold = cnode->FriData().GetMOld();
+      std::map<int,double>& mmap = cnode->MoData().GetM();
+      std::map<int,double>& mmapold = cnode->FriData().GetMOld();
 
       std::map<int,double>::const_iterator colcurr;
       std::set <int> mnodes;
 
-      for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-        mnodes.insert((colcurr->first)/Dim());
+      for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+        mnodes.insert(colcurr->first);
 
-      for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-        mnodes.insert((colcurr->first)/Dim());
+      for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+        mnodes.insert(colcurr->first);
 
       std::set<int>::iterator mcurr;
 
@@ -3244,10 +3183,9 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
         DRT::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
         FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-        const int* mdofs = cmnode->Dofs();
 
-        double mik = (mmap[0])[mdofs[0]];
-        double mikold = (mmapold[0])[mdofs[0]];
+        double mik = mmap[cmnode->Id()];
+        double mikold = mmapold[cmnode->Id()];
 
         std::map<int,double>::iterator mcurr;
 
@@ -3338,8 +3276,8 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
       if (kcnode->Active() and !(kcnode->FriData().Slip()))
       {
         // check two versions of weighted gap
-        double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = kcnode->MoData().GetD()[kcnode->Id()];
+        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
@@ -3347,17 +3285,17 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
           jumpteta -= (kcnode->CoData().teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
         }
 
-        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
-        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::map<int,double> mmap = kcnode->MoData().GetM();
+        std::map<int,double> mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
         std::set <int> mnodes;
 
-        for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
-        for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
         std::set<int>::iterator mcurr;
 
@@ -3368,10 +3306,9 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
 
-          double mik = (mmap[0])[mdofs[0]];
-          double mikold = (mmapold[0])[mdofs[0]];
+          double mik = mmap[cmnode->Id()];
+          double mikold = mmapold[cmnode->Id()];
 
           std::map<int,double>::iterator mcurr;
 
@@ -3544,8 +3481,8 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
       if (kcnode->Active() and !(kcnode->FriData().Slip()))
       {
         // check two versions of weighted gap
-        double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = kcnode->MoData().GetD()[kcnode->Id()];
+        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
@@ -3553,17 +3490,17 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
           jumpteta -= (kcnode->CoData().teta()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
         }
 
-        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
-        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::map<int,double> mmap = kcnode->MoData().GetM();
+        std::map<int,double> mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
         std::set <int> mnodes;
 
-        for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
-        for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
         std::set<int>::iterator mcurr;
 
@@ -3574,10 +3511,9 @@ void CONTACT::CoInterface::FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglo
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
 
-          double mik = (mmap[0])[mdofs[0]];
-          double mikold = (mmapold[0])[mdofs[0]];
+          double mik = mmap[cmnode->Id()];
+          double mikold = mmapold[cmnode->Id()];
 
           std::map<int,double>::iterator mcurr;
 
@@ -3748,8 +3684,8 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
     if (cnode->FriData().Slip())
     {
       // calculate value of C-function
-      double D = (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
-      double Dold = (cnode->FriData().GetDOld()[0])[cnode->Dofs()[0]];
+      double D = cnode->MoData().GetD()[cnode->Id()];
+      double Dold = cnode->FriData().GetDOld()[cnode->Id()];
 
       for (int dim=0;dim<cnode->NumDof();++dim)
       {
@@ -3760,17 +3696,17 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
         znor += (cnode->MoData().n()[dim])*(cnode->MoData().lm()[dim]);
       }
 
-      std::vector<std::map<int,double> >& mmap = cnode->MoData().GetM();
-      std::vector<std::map<int,double> >& mmapold = cnode->FriData().GetMOld();
+      std::map<int,double>& mmap = cnode->MoData().GetM();
+      std::map<int,double>& mmapold = cnode->FriData().GetMOld();
 
       std::map<int,double>::const_iterator colcurr;
       std::set <int> mnodes;
 
-      for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-        mnodes.insert((colcurr->first)/Dim());
+      for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+        mnodes.insert(colcurr->first);
 
-      for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-        mnodes.insert((colcurr->first)/Dim());
+      for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+        mnodes.insert(colcurr->first);
 
       std::set<int>::iterator mcurr;
 
@@ -3781,10 +3717,9 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
         DRT::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
         FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-        const int* mdofs = cmnode->Dofs();
 
-        double mik = (mmap[0])[mdofs[0]];
-        double mikold = (mmapold[0])[mdofs[0]];
+        double mik = mmap[cmnode->Id()];
+        double mikold = mmapold[cmnode->Id()];
 
         std::map<int,double>::iterator mcurr;
 
@@ -3879,8 +3814,8 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
       if (kcnode->FriData().Slip())
       {
         // check two versions of weighted gap
-        double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = kcnode->MoData().GetD()[kcnode->Id()];
+        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
           jumptxi -= (kcnode->CoData().txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
@@ -3890,17 +3825,17 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
           znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
         }
 
-        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
-        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::map<int,double> mmap = kcnode->MoData().GetM();
+        std::map<int,double> mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
         std::set <int> mnodes;
 
-        for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
-        for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
         std::set<int>::iterator mcurr;
 
@@ -3911,9 +3846,8 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
-          double mik = (mmap[0])[mdofs[0]];
-          double mikold = (mmapold[0])[mdofs[0]];
+          double mik = mmap[cmnode->Id()];
+          double mikold = mmapold[cmnode->Id()];
 
           std::map<int,double>::iterator mcurr;
 
@@ -4103,8 +4037,8 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
       if (kcnode->FriData().Slip())
       {
         // check two versions of weighted gap
-        double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = kcnode->MoData().GetD()[kcnode->Id()];
+        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
@@ -4115,17 +4049,17 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
           znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
         }
 
-        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
-        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::map<int,double> mmap = kcnode->MoData().GetM();
+        std::map<int,double> mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
         std::set <int> mnodes;
 
-        for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
-        for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
         std::set<int>::iterator mcurr;
 
@@ -4136,10 +4070,9 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
 
-          double mik = (mmap[0])[mdofs[0]];
-          double mikold = (mmapold[0])[mdofs[0]];
+          double mik = mmap[cmnode->Id()];
+          double mikold = mmapold[cmnode->Id()];
 
           std::map<int,double>::iterator mcurr;
 
@@ -4331,8 +4264,8 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
       if (kcnode->FriData().Slip())
       {
         // check two versions of weighted gap
-        double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = kcnode->MoData().GetD()[kcnode->Id()];
+        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
@@ -4343,17 +4276,17 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
           znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
         }
 
-        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
-        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::map<int,double> mmap = kcnode->MoData().GetM();
+        std::map<int,double> mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
         std::set <int> mnodes;
 
-        for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
-        for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
         std::set<int>::iterator mcurr;
 
@@ -4364,10 +4297,9 @@ void CONTACT::CoInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMgloba
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
 
-          double mik = (mmap[0])[mdofs[0]];
-          double mikold = (mmapold[0])[mdofs[0]];
+          double mik = mmap[cmnode->Id()];
+          double mikold = mmapold[cmnode->Id()];
 
           std::map<int,double>::iterator mcurr;
 

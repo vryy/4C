@@ -352,14 +352,19 @@ void CONTACT::CoTSIInterface::AssembleDualMassLumped(
     /**********************************************dual mass matrix ******/
     if (conode->MoData().GetD().size() > 0)
     {
-      const GEN::pairedvector<int, double>& dualMassmap =conode->MoData().GetD()[0];
+      const GEN::pairedvector<int, double>& dualMassmap =conode->MoData().GetD();
       GEN::pairedvector<int, double>::const_iterator colcurr;
 
       for (colcurr = dualMassmap.begin(); colcurr != dualMassmap.end(); ++colcurr)
       {
+        DRT::Node* knode = Discret().gNode(colcurr->first);
+        if (!knode) dserror("node not found");
+        CoNode*  kcnode = dynamic_cast<CoNode*>(knode);
+        if (!kcnode) dserror("node not found");
+
         // create the mass matrix
         dualMassGlobal.FEAssemble(colcurr->second, conode->Dofs()[0],
-            colcurr->first);
+            kcnode->Dofs()[0]);
       }
     }
 
@@ -611,16 +616,25 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(
       /**************************************************** D-matrix ******/
       if (d_LinDissDISP!=NULL)
         if ((cnode->MoData().GetD()).size() > 0)
-          for (_cip k = cnode->MoData().GetD()[0].begin(); k != cnode->MoData().GetD()[0].end(); ++k)
+          for (_cip k = cnode->MoData().GetD().begin(); k != cnode->MoData().GetD().end(); ++k)
+          {
+            DRT::Node* knode = Discret().gNode(k->first);
+            if (!knode) dserror("node not found");
+            CONTACT::CoNode*  kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
             for (_cim currDeriv=derivDiss.begin();currDeriv!=derivDiss.end();++currDeriv)
-              d_LinDissDISP->FEAssemble(fac*k->second*currDeriv->second,k->first,currDeriv->first);
-
+              d_LinDissDISP->FEAssemble(fac*k->second*currDeriv->second,kcnode->Dofs()[0],currDeriv->first);
+          }
       /**************************************************** M-matrix ******/
       if (m_LinDissDISP!=NULL)
         if ((cnode->MoData().GetM()).size() > 0)
-          for (_cim k = cnode->MoData().GetM()[0].begin(); k != cnode->MoData().GetM()[0].end(); ++k)
+          for (_cim k = cnode->MoData().GetM().begin(); k != cnode->MoData().GetM().end(); ++k)
+            {
+            DRT::Node* knode = Discret().gNode(k->first);
+            if (!knode) dserror("node not found");
+            CONTACT::CoNode*  kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
             for (_cim currDeriv=derivDiss.begin();currDeriv!=derivDiss.end();++currDeriv)
-              m_LinDissDISP->FEAssemble(fac*k->second*currDeriv->second,k->first,currDeriv->first);
+              m_LinDissDISP->FEAssemble(fac*k->second*currDeriv->second,kcnode->Dofs()[0],currDeriv->first);
+            }
     }// linearization w.r.t. displacements
 
     // linearization wrt contact Lagrange multiplier
@@ -628,16 +642,26 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(
       // put everything together*******************************************
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetD()).size() > 0)
-        for (_cip k = cnode->MoData().GetD()[0].begin(); k != cnode->MoData().GetD()[0].end(); ++k)
+        for (_cip k = cnode->MoData().GetD().begin(); k != cnode->MoData().GetD().end(); ++k)
+        {
+          DRT::Node* knode = Discret().gNode(k->first);
+          if (!knode) dserror("node not found");
+          CONTACT::CoNode*  kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
           for (int d=0;d<3;++d)
-            d_LinDissContactLM->FEAssemble(-fac*k->second*jump_tan(d)/dt,k->first,cnode->Dofs()[d]);
+            d_LinDissContactLM->FEAssemble(-fac*k->second*jump_tan(d)/dt,kcnode->Dofs()[0],cnode->Dofs()[d]);
+        }
 
     /**************************************************** M-matrix ******/
     if (m_LinDissContactLM)
       if ((cnode->MoData().GetM()).size() > 0)
-        for (_cim k = cnode->MoData().GetM()[0].begin(); k != cnode->MoData().GetM()[0].end(); ++k)
+        for (_cim k = cnode->MoData().GetM().begin(); k != cnode->MoData().GetM().end(); ++k)
+          {
+          DRT::Node* knode = Discret().gNode(k->first);
+          if (!knode) dserror("node not found");
+          CONTACT::CoNode*  kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
           for (int d=0;d<3;++d)
-            m_LinDissContactLM->FEAssemble(-fac*k->second*jump_tan(d)/dt,k->first,cnode->Dofs()[d]);
+            m_LinDissContactLM->FEAssemble(-fac*k->second*jump_tan(d)/dt,kcnode->Dofs()[0],cnode->Dofs()[d]);
+          }
   } // loop over all LM slave nodes (row map)
 
 }
@@ -689,12 +713,11 @@ void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(const double fac,
           lin_disp->FEAssemble(-fac*lm_n*temp_k*l->second,cnode->Dofs()[0],l->first);
     }
 
-    for (_cip k = cnode->MoData().GetD()[0].begin(); k!=cnode->MoData().GetD()[0].end(); ++k)
+    for (_cip k = cnode->MoData().GetD().begin(); k!=cnode->MoData().GetD().end(); ++k)
     {
-      DRT::Node* knode = Discret().gNode(k->first/3);
+      DRT::Node* knode = Discret().gNode(k->first);
       if (!knode) dserror("ERROR: Cannot find node with gid %",gid);
       CoNode* cnodek = dynamic_cast<CoNode*>(knode);
-      if (cnodek->Dofs()[0]!=k->first) dserror("some inconsistency in nodes <--> dofs???");
       double temp_k = cnodek->CoTSIData().Temp();
       for (int d=0;d<3;++d)
         for (_cip l=cnode->CoData().GetDerivN()[d].begin();l!=cnode->CoData().GetDerivN()[d].end();++l)
@@ -705,12 +728,11 @@ void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(const double fac,
         lin_lm->FEAssemble(n(d)*temp_k*fac*k->second,cnode->Dofs()[0],cnode->Dofs()[d]);
     }
 
-    for (_cim k = cnode->MoData().GetM()[0].begin(); k!=cnode->MoData().GetM()[0].end(); ++k)
+    for (_cim k = cnode->MoData().GetM().begin(); k!=cnode->MoData().GetM().end(); ++k)
     {
-      DRT::Node* knode = Discret().gNode(k->first/3);
+      DRT::Node* knode = Discret().gNode(k->first);
       if (!knode) dserror("ERROR: Cannot find node with gid %",gid);
       CoNode* cnodek = dynamic_cast<CoNode*>(knode);
-      if (cnodek->Dofs()[0]!=k->first) dserror("some inconsistency in nodes <--> dofs???");
       double temp_k = cnodek->CoTSIData().Temp();
       for (int d=0;d<3;++d)
         for (_cip l=cnode->CoData().GetDerivN()[d].begin();l!=cnode->CoData().GetDerivN()[d].end();++l)
@@ -752,13 +774,23 @@ void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, LINALG::SparseMat
 
     cnode->MoData().GetD();
 
-    for (_cip k=cnode->MoData().GetD()[0].begin();k!=cnode->MoData().GetD()[0].end();++k)
+    for (_cip k=cnode->MoData().GetD().begin();k!=cnode->MoData().GetD().end();++k)
       if (abs(k->second)>1.e-12)
-        DM_LMn->FEAssemble(fac*lm_n*k->second,cnode->Dofs()[0],k->first);
+      {
+        DRT::Node* knode = Discret().gNode(k->first);
+        if (!knode) dserror("node not found");
+        CONTACT::CoNode*  kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
+        DM_LMn->FEAssemble(fac*lm_n*k->second,cnode->Dofs()[0],kcnode->Dofs()[0]);
+      }
 
-    for (_cim k=cnode->MoData().GetM()[0].begin();k!=cnode->MoData().GetM()[0].end();++k)
+    for (_cim k=cnode->MoData().GetM().begin();k!=cnode->MoData().GetM().end();++k)
       if (abs(k->second)>1.e-12)
-        DM_LMn->FEAssemble(-fac*lm_n*k->second,cnode->Dofs()[0],k->first);
+      {
+        DRT::Node* knode = Discret().gNode(k->first);
+        if (!knode) dserror("node not found");
+        CONTACT::CoNode*  kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
+        DM_LMn->FEAssemble(-fac*lm_n*k->second,cnode->Dofs()[0],kcnode->Dofs()[0]);
+      }
   }
   return;
 }
@@ -809,149 +841,11 @@ void CONTACT::CoTSIInterface::Initialize()
 
   for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
   {
-    CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_->lColNode(
-        i));
+    CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
     node->InitializeTSIDataContainer(
         imortar_.get<double>("TEMP_REF"),
         imortar_.get<double>("TEMP_DAMAGE"));
     node->CoTSIData().Clear();
   }
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Assemble Mortar matrices                                  popp 01/08|
- *----------------------------------------------------------------------*/
-void CONTACT::CoTSIInterface::AssembleDMactive(LINALG::SparseMatrix& dglobal,
-    LINALG::SparseMatrix& mglobal)
-{
-  // get out of here if not participating in interface
-  if (!lComm())
-    return;
-
-  // not (yet) implemented combinations
-  if (LMNodalScale())
-      dserror("LMNODALSCALE not implemented here");
-  if (shapefcn_ != INPAR::MORTAR::shape_dual
-      && shapefcn_ != INPAR::MORTAR::shape_petrovgalerkin)
-    dserror("only dual shape functions implemented");
-
-  // loop over proc's slave nodes of the interface for assembly
-  // use standard row map to assemble each node only once
-  for (int i = 0; i < activenodes_->NumMyElements(); ++i)
-  {
-    int gid = activenodes_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node)
-      dserror("ERROR: Cannot find node with gid %", gid);
-    CoNode* cnode = dynamic_cast<CoNode*>(node);
-
-    if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleDM: Node ownership inconsistency!");
-
-    /**************************************************** D-matrix ******/
-    if ((cnode->MoData().GetD()).size() > 0)
-    {
-      const std::vector<GEN::pairedvector<int, double> >& dmap =
-          cnode->MoData().GetD();
-      int rowsize = cnode->NumDof();
-      int colsize = (int) dmap[0].size();
-
-      for (int j = 0; j < rowsize - 1; ++j)
-        if ((int) dmap[j].size() != (int) dmap[j + 1].size())
-          dserror("ERROR: AssembleDM: Column dim. of nodal D-map is inconsistent!");
-
-      GEN::pairedvector<int, double>::const_iterator colcurr;
-
-      for (int j = 0; j < rowsize; ++j)
-      {
-        int row = cnode->Dofs()[j];
-        int k = 0;
-
-        for (colcurr = dmap[j].begin(); colcurr != dmap[j].end(); ++colcurr)
-        {
-          int col = colcurr->first;
-          double val = colcurr->second;
-
-          // do the assembly into global D matrix
-          if (shapefcn_ == INPAR::MORTAR::shape_dual
-              || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin)
-          {
-#ifdef MORTARTRAFO
-            dserror("MORTARTRAFO not implemented here");
-#else
-            // check for diagonality
-            if (row != col && abs(val) > 1.0e-12)
-              dserror("ERROR: AssembleDM: D-Matrix is not diagonal!");
-
-            // create an explicitly diagonal d matrix
-            if (row == col)
-              dglobal.Assemble(val, row, col);
-#endif // #ifdef MORTARTRAFO
-          }
-
-          ++k;
-        }
-
-        if (k != colsize)
-          dserror("ERROR: AssembleDM: k = %i but colsize = %i", k, colsize);
-      }
-    }
-
-    /**************************************************** M-matrix ******/
-    if (cnode->MoData().GetM().size() > 0)
-    {
-
-
-
-
-      const std::vector<std::map<int, double> >& mmap =
-          cnode->MoData().GetM();
-      int rowsize = cnode->NumDof();
-      int colsize = (int) mmap[0].size();
-
-      for (int j = 0; j < rowsize - 1; ++j)
-        if ((int) mmap[j].size() != (int) mmap[j + 1].size())
-        {
-          std::cout.precision(9);
-          std::cout << std::scientific;
-          std::cout << "node: " << cnode ->Id() << " mmap: " <<std::endl;
-          for (int tmpi=0;tmpi<3;++tmpi)
-          {
-            const std::vector<std::map<int, double> >& mmap =
-                cnode->MoData().GetM();
-            std::map<int, double>::const_iterator colcurr;
-            std::cout<< "i: " << tmpi <<std::endl;
-            for (colcurr = mmap[tmpi].begin(); colcurr != mmap[tmpi].end(); ++colcurr)
-              std::cout  << colcurr->first << "\t" << colcurr->second << std::endl;
-          }
-          dserror("ERROR: AssembleDM: Column dim. of nodal M-map is inconsistent!");
-        }
-
-          std::map<int, double>::const_iterator colcurr;
-
-      for (int j = 0; j < rowsize; ++j)
-      {
-        int row = cnode->Dofs()[j];
-        int k = 0;
-
-        for (colcurr = mmap[j].begin(); colcurr != mmap[j].end(); ++colcurr)
-        {
-          int col = colcurr->first;
-          double val = colcurr->second;
-
-          // do not assemble zeros into m matrix
-          if (abs(val) > 1.0e-12)
-            mglobal.Assemble(val, row, col);
-          ++k;
-        }
-
-        if (k != colsize)
-          dserror("ERROR: AssembleDM: k = %i but colsize = %i", k, colsize);
-      }
-    }
-  }
-
   return;
 }

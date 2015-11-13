@@ -223,12 +223,12 @@ void CONTACT::WearInterface::FDCheckGapDeriv()
       {
         // check two versions of weighted gap
         double defgap = 0.0;
-        double wii = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
+        double wii = (kcnode->MoData().GetD())[kcnode->Id()];
 
         for (int j=0;j<dim;++j)
           defgap-= (kcnode->MoData().n()[j])*wii*(kcnode->xspatial()[j]);
 
-        std::vector<std::map<int,double> >& mmap = kcnode->MoData().GetM();
+        std::map<int,double>& mmap = kcnode->MoData().GetM();
         std::map<int,double>::const_iterator mcurr;
 
         for (int m=0;m<mnodefullmap->NumMyElements();++m)
@@ -237,18 +237,17 @@ void CONTACT::WearInterface::FDCheckGapDeriv()
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
           bool hasentry = false;
 
           // look for this master node in M-map of the active slave node
-          for (mcurr=mmap[0].begin();mcurr!=mmap[0].end();++mcurr)
-            if ((mcurr->first)==mdofs[0])
+          for (mcurr=mmap.begin();mcurr!=mmap.end();++mcurr)
+            if ((mcurr->first)==cmnode->Id())
             {
               hasentry=true;
               break;
             }
 
-          double mik = (mmap[0])[mdofs[0]];
+          double mik = mmap[cmnode->Id()];
           double* mxi = cmnode->xspatial();
 
           // get out of here, if master node not adjacent or coupling very weak
@@ -1483,8 +1482,8 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
     if (cnode->FriData().Slip())
     {
       // calculate value of C-function
-      double D = (cnode->MoData().GetD()[0])[cnode->Dofs()[0]];
-      double Dold = (cnode->FriData().GetDOld()[0])[cnode->Dofs()[0]];
+      double D = cnode->MoData().GetD()[cnode->Id()];
+      double Dold = cnode->FriData().GetDOld()[cnode->Id()];
 
       for (int dim=0;dim<cnode->NumDof();++dim)
       {
@@ -1495,17 +1494,17 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
         znor += (cnode->MoData().n()[dim])*(cnode->MoData().lm()[dim]);
       }
 
-      std::vector<std::map<int,double> >& mmap = cnode->MoData().GetM();
-      std::vector<std::map<int,double> >& mmapold = cnode->FriData().GetMOld();
+      std::map<int,double>& mmap = cnode->MoData().GetM();
+      std::map<int,double>& mmapold = cnode->FriData().GetMOld();
 
       std::map<int,double>::const_iterator colcurr;
       std::set <int> mnodes;
 
-      for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-        mnodes.insert((colcurr->first)/Dim());
+      for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+        mnodes.insert(colcurr->first);
 
-      for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-        mnodes.insert((colcurr->first)/Dim());
+      for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+        mnodes.insert(colcurr->first);
 
       std::set<int>::iterator mcurr;
 
@@ -1516,10 +1515,9 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
         DRT::Node* mnode = idiscret_->gNode(gid);
         if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
         FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-        const int* mdofs = cmnode->Dofs();
 
-        double mik = (mmap[0])[mdofs[0]];
-        double mikold = (mmapold[0])[mdofs[0]];
+        double mik = mmap[cmnode->Id()];
+        double mikold = mmapold[cmnode->Id()];
 
         std::map<int,double>::iterator mcurr;
 
@@ -1614,8 +1612,8 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
       if (kcnode->FriData().Slip())
       {
         // check two versions of weighted gap
-        double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = kcnode->MoData().GetD()[kcnode->Id()];
+        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
           jumptxi -= (kcnode->CoData().txi()[dim])*(D-Dold)*(kcnode->xspatial()[dim]);
@@ -1625,17 +1623,17 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
           znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
         }
 
-        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
-        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::map<int,double> mmap = kcnode->MoData().GetM();
+        std::map<int,double> mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
         std::set <int> mnodes;
 
-        for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
-        for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
         std::set<int>::iterator mcurr;
 
@@ -1646,9 +1644,8 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
-          double mik = (mmap[0])[mdofs[0]];
-          double mikold = (mmapold[0])[mdofs[0]];
+          double mik = mmap[cmnode->Id()];
+          double mikold = mmapold[cmnode->Id()];
 
           std::map<int,double>::iterator mcurr;
 
@@ -1838,8 +1835,8 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
       if (kcnode->FriData().Slip())
       {
         // check two versions of weighted gap
-        double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = kcnode->MoData().GetD()[kcnode->Id()];
+        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
@@ -1850,17 +1847,17 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
           znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
         }
 
-        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
-        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::map<int,double> mmap = kcnode->MoData().GetM();
+        std::map<int,double> mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
         std::set <int> mnodes;
 
-        for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
-        for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
         std::set<int>::iterator mcurr;
 
@@ -1871,10 +1868,9 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
 
-          double mik = (mmap[0])[mdofs[0]];
-          double mikold = (mmapold[0])[mdofs[0]];
+          double mik = mmap[cmnode->Id()];
+          double mikold = mmapold[cmnode->Id()];
 
           std::map<int,double>::iterator mcurr;
 
@@ -2066,8 +2062,8 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
       if (kcnode->FriData().Slip())
       {
         // check two versions of weighted gap
-        double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = kcnode->MoData().GetD()[kcnode->Id()];
+        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
@@ -2078,17 +2074,17 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
           znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
         }
 
-        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
-        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::map<int,double> mmap = kcnode->MoData().GetM();
+        std::map<int,double> mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
         std::set <int> mnodes;
 
-        for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
-        for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
         std::set<int>::iterator mcurr;
 
@@ -2099,10 +2095,9 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
 
-          double mik = (mmap[0])[mdofs[0]];
-          double mikold = (mmapold[0])[mdofs[0]];
+          double mik = mmap[cmnode->Id()];
+          double mikold = mmapold[cmnode->Id()];
 
           std::map<int,double>::iterator mcurr;
 
@@ -2283,8 +2278,8 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
       if (kcnode->FriData().Slip())
       {
         // check two versions of weighted gap
-        double D = (kcnode->MoData().GetD()[0])[kcnode->Dofs()[0]];
-        double Dold = (kcnode->FriData().GetDOld()[0])[kcnode->Dofs()[0]];
+        double D = kcnode->MoData().GetD()[kcnode->Id()];
+        double Dold = kcnode->FriData().GetDOld()[kcnode->Id()];
 
         for (int dim=0;dim<kcnode->NumDof();++dim)
         {
@@ -2295,17 +2290,17 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
           znor += (kcnode->MoData().n()[dim])*(kcnode->MoData().lm()[dim]);
         }
 
-        std::vector<std::map<int,double> > mmap = kcnode->MoData().GetM();
-        std::vector<std::map<int,double> > mmapold = kcnode->FriData().GetMOld();
+        std::map<int,double> mmap = kcnode->MoData().GetM();
+        std::map<int,double> mmapold = kcnode->FriData().GetMOld();
 
         std::map<int,double>::iterator colcurr;
         std::set <int> mnodes;
 
-        for (colcurr=mmap[0].begin(); colcurr!=mmap[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmap.begin(); colcurr!=mmap.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
-        for (colcurr=mmapold[0].begin(); colcurr!=mmapold[0].end(); colcurr++)
-          mnodes.insert((colcurr->first)/Dim());
+        for (colcurr=mmapold.begin(); colcurr!=mmapold.end(); colcurr++)
+          mnodes.insert(colcurr->first);
 
         std::set<int>::iterator mcurr;
 
@@ -2316,10 +2311,9 @@ void CONTACT::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglo
           DRT::Node* mnode = idiscret_->gNode(gid);
           if (!mnode) dserror("ERROR: Cannot find node with gid %",gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
-          const int* mdofs = cmnode->Dofs();
 
-          double mik = (mmap[0])[mdofs[0]];
-          double mikold = (mmapold[0])[mdofs[0]];
+          double mik = mmap[cmnode->Id()];
+          double mikold = mmapold[cmnode->Id()];
 
           std::map<int,double>::iterator mcurr;
 

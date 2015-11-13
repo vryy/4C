@@ -1031,46 +1031,37 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(
       if (cnode->IsOnBound())
         continue;
 
-      //loop over slave dofs
-      for (int jdof = 0; jdof < ndof; ++jdof)
+      // integrate mseg
+      for (int k = 0; k < ncol; ++k)
       {
-        // integrate mseg
-        for (int k = 0; k < ncol; ++k)
+        MORTAR::MortarNode* mnode =
+            dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmval(j) * mval(k) * jac * wgt;
+
+        if (abs(prod) > MORTARINTTOL)
+          cnode->AddMValue(mnode->Id(), prod);
+      }
+
+      // integrate dseg
+      for (int k = 0; k < nrow; ++k)
+      {
+        MORTAR::MortarNode* snode =
+            dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmval(j) * sval(k) * jac * wgt;
+
+        if (snode->IsOnBound())
         {
-          MORTAR::MortarNode* mnode =
-              dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
-
-          int col = mnode->Dofs()[jdof];
-
-          // multiply the two shape functions
-          double prod = lmval(j) * mval(k) * jac * wgt;
-
           if (abs(prod) > MORTARINTTOL)
-            cnode->AddMValue(jdof, col, prod);
+            cnode->AddMValue(snode->Id(), -prod);
         }
-
-        // integrate dseg
-        for (int k = 0; k < nrow; ++k)
+        else
         {
-          MORTAR::MortarNode* snode =
-              dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
-
-          int col = snode->Dofs()[jdof];
-
-          // multiply the two shape functions
-          double prod = lmval(j) * sval(k) * jac * wgt;
-
-          if (snode->IsOnBound())
-          {
-            double minusval = -prod;
-            if (abs(prod) > MORTARINTTOL)
-              cnode->AddMValue(jdof, col, minusval);
-          }
-          else
-          {
-            if (abs(prod) > MORTARINTTOL)
-              cnode->AddDValue(jdof, col, prod);
-          }
+          if (abs(prod) > MORTARINTTOL)
+            cnode->AddDValue(snode->Id(), prod);
         }
       }
     }
@@ -1088,65 +1079,52 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_DM(
 
       if (cnode->IsOnBound())
         continue;
-
-      //loop over slave dofs
-      for (int jdof = 0; jdof < ndof; ++jdof)
+      // integrate mseg
+      for (int k = 0; k < ncol; ++k)
       {
-        // integrate mseg
-        for (int k = 0; k < ncol; ++k)
+        MORTAR::MortarNode* mnode =
+            dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmval(j) * mval(k) * jac * wgt;
+
+        if (!bound and abs(prod) > MORTARINTTOL)
+          cnode->AddDValue(cnode->Id(), prod);
+
+        if (abs(prod) > MORTARINTTOL)
+          cnode->AddMValue(mnode->Id(), prod);
+      }
+
+      // integrate dseg (boundary modification)
+      if (bound)
+      {
+        bool j_boundnode = cnode->IsOnBound();
+
+        for (int k = 0; k < nrow; ++k)
         {
           MORTAR::MortarNode* mnode =
-              dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+              dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+          bool k_boundnode = mnode->IsOnBound();
 
-          int col = mnode->Dofs()[jdof];
+          // do not assemble off-diagonal terms if j,k are both non-boundary nodes
+          if (!j_boundnode && !k_boundnode && (j != k))
+            continue;
 
           // multiply the two shape functions
-          double prod = lmval(j) * mval(k) * jac * wgt;
+          double prod = lmval(j) * sval(k) * jac * wgt;
 
-          if (abs(prod) > MORTARINTTOL)
-            cnode->AddMValue(jdof, col, prod);
-          if (!bound and abs(prod) > MORTARINTTOL)
+          // isolate the dseg entries to be filled
+          // (both the main diagonal and every other secondary diagonal)
+          // and add current Gauss point's contribution to dseg
+          if (mnode->IsOnBound())
           {
-            int newcol = cnode->Dofs()[jdof];
-
             if (abs(prod) > MORTARINTTOL)
-              cnode->AddDValue(jdof, newcol, prod);
+              cnode->AddMValue(mnode->Id(), -prod);
           }
-        }
-        // integrate dseg (boundary modification)
-        if (bound)
-        {
-          bool j_boundnode = cnode->IsOnBound();
-
-          for (int k = 0; k < nrow; ++k)
+          else
           {
-            MORTAR::MortarNode* mnode =
-                dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
-            bool k_boundnode = mnode->IsOnBound();
-
-            int col = mnode->Dofs()[jdof];
-
-            // do not assemble off-diagonal terms if j,k are both non-boundary nodes
-            if (!j_boundnode && !k_boundnode && (j != k))
-              continue;
-
-            // multiply the two shape functions
-            double prod = lmval(j) * sval(k) * jac * wgt;
-
-            // isolate the dseg entries to be filled
-            // (both the main diagonal and every other secondary diagonal)
-            // and add current Gauss point's contribution to dseg
-            if (mnode->IsOnBound())
-            {
-              double minusval = -prod;
-              if (abs(prod) > MORTARINTTOL)
-                cnode->AddMValue(jdof, col, minusval);
-            }
-            else
-            {
-              if (abs(prod) > MORTARINTTOL)
-                cnode->AddDValue(jdof, col, prod);
-            }
+            if (abs(prod) > MORTARINTTOL)
+              cnode->AddDValue(mnode->Id(), prod);
           }
         }
       }
@@ -1191,46 +1169,37 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     {
       MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
 
-      //loop over slave dofs
-      for (int jdof = 0; jdof < ndof; ++jdof)
+      // integrate mseg
+      for (int k = 0; k < ncol; ++k)
       {
-        // integrate mseg
-        for (int k = 0; k < ncol; ++k)
+        MORTAR::MortarNode* mnode =
+            dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmval[j] * mval(k) * jac * wgt;
+
+        if (abs(prod) > MORTARINTTOL)
+          cnode->AddMValue(mnode->Id(), prod);
+      }
+
+      // integrate dseg
+      for (int k = 0; k < nrow; ++k)
+      {
+        MORTAR::MortarNode* snode =
+            dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmval[j] * sval(k) * jac * wgt;
+
+        if (snode->IsOnBound())
         {
-          MORTAR::MortarNode* mnode =
-              dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
-
-          int col = mnode->Dofs()[jdof];
-
-          // multiply the two shape functions
-          double prod = lmval[j] * mval(k) * jac * wgt;
-
           if (abs(prod) > MORTARINTTOL)
-            cnode->AddMValue(jdof, col, prod);
+            cnode->AddMValue(snode->Id(), -prod);
         }
-
-        // integrate dseg
-        for (int k = 0; k < nrow; ++k)
+        else
         {
-          MORTAR::MortarNode* snode =
-              dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
-
-          int col = snode->Dofs()[jdof];
-
-          // multiply the two shape functions
-          double prod = lmval[j] * sval(k) * jac * wgt;
-
-          if (snode->IsOnBound())
-          {
-            double minusval = -prod;
-            if (abs(prod) > MORTARINTTOL)
-              cnode->AddMValue(jdof, col, minusval);
-          }
-          else
-          {
-            if (abs(prod) > MORTARINTTOL)
-              cnode->AddDValue(jdof, col, prod);
-          }
+          if (abs(prod) > MORTARINTTOL)
+            cnode->AddDValue(snode->Id(), prod);
         }
       }
     }
@@ -1246,46 +1215,37 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     {
       MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(sintnodes[j]);
 
-      //loop over slave dofs
-      for (int jdof = 0; jdof < ndof; ++jdof)
+      // integrate mseg
+      for (int k = 0; k < ncol; ++k)
       {
-        // integrate mseg
-        for (int k = 0; k < ncol; ++k)
+        MORTAR::MortarNode* mnode =
+            dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmintval[j] * mval(k) * jac * wgt;
+
+        if (abs(prod) > MORTARINTTOL)
+          cnode->AddMValue(mnode->Id(), prod);
+      }
+
+      // integrate dseg
+      for (int k = 0; k < nrow; ++k)
+      {
+        MORTAR::MortarNode* snode =
+            dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmintval[j] * sval(k) * jac * wgt;
+
+        if (snode->IsOnBound())
         {
-          MORTAR::MortarNode* mnode =
-              dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
-
-          int col = mnode->Dofs()[jdof];
-
-          // multiply the two shape functions
-          double prod = lmintval[j] * mval(k) * jac * wgt;
-
           if (abs(prod) > MORTARINTTOL)
-            cnode->AddMValue(jdof, col, prod);
+            cnode->AddMValue(snode->Id(),-prod);
         }
-
-        // integrate dseg
-        for (int k = 0; k < nrow; ++k)
+        else
         {
-          MORTAR::MortarNode* snode =
-              dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
-
-          int col = snode->Dofs()[jdof];
-
-          // multiply the two shape functions
-          double prod = lmintval[j] * sval(k) * jac * wgt;
-
-          if (snode->IsOnBound())
-          {
-            double minusval = -prod;
-            if (abs(prod) > MORTARINTTOL)
-              cnode->AddMValue(jdof, col, minusval);
-          }
-          else
-          {
-            if (abs(prod) > MORTARINTTOL)
-              cnode->AddDValue(jdof, col, prod);
-          }
+          if (abs(prod) > MORTARINTTOL)
+            cnode->AddDValue(snode->Id(), prod);
         }
       }
     }
@@ -1301,27 +1261,20 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     {
       MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
 
-      //loop over slave dofs
-      for (int jdof = 0; jdof < ndof; ++jdof)
+      // integrate mseg
+      for (int k = 0; k < ncol; ++k)
       {
-        int dcol = cnode->Dofs()[jdof];
+        MORTAR::MortarNode* mnode =
+            dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
 
-        // integrate mseg
-        for (int k = 0; k < ncol; ++k)
-        {
-          MORTAR::MortarNode* mnode =
-              dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
+        // multiply the two shape functions
+        double prod = lmval[j] * mval(k) * jac * wgt;
 
-          int col = mnode->Dofs()[jdof];
+        if (abs(prod) > MORTARINTTOL)
+          cnode->AddDValue(cnode->Id(), prod);
 
-          // multiply the two shape functions
-          double prod = lmval[j] * mval(k) * jac * wgt;
-
-          if (abs(prod) > MORTARINTTOL)
-            cnode->AddMValue(jdof, col, prod);
-          if (abs(prod) > MORTARINTTOL)
-            cnode->AddDValue(jdof, dcol, prod);
-        }
+        if (abs(prod) > MORTARINTTOL)
+          cnode->AddMValue(mnode->Id(), prod);
       }
     }
   }
@@ -1337,46 +1290,37 @@ void inline MORTAR::MortarIntegratorCalc<distypeS, distypeM>::GP_3D_DM_Quad(
     {
       MORTAR::MortarNode* cnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
 
-      //loop over slave dofs
-      for (int jdof = 0; jdof < ndof; ++jdof)
-      {
         // integrate mseg
         for (int k = 0; k < ncol; ++k)
         {
           MORTAR::MortarNode* mnode =
               dynamic_cast<MORTAR::MortarNode*>(mnodes[k]);
 
-          int col = mnode->Dofs()[jdof];
-
           // multiply the two shape functions
           double prod = lmval[j] * mval(k) * jac * wgt;
 
           if (abs(prod) > MORTARINTTOL)
-            cnode->AddMValue(jdof, col, prod);
+            cnode->AddMValue(mnode->Id(), prod);
         }
 
-        // integrate dseg
-        for (int k = 0; k < nrow; ++k)
+      // integrate dseg
+      for (int k = 0; k < nrow; ++k)
+      {
+        MORTAR::MortarNode* snode =
+            dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
+
+        // multiply the two shape functions
+        double prod = lmval[j] * sval(k) * jac * wgt;
+
+        if (snode->IsOnBound())
         {
-          MORTAR::MortarNode* snode =
-              dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
-
-          int col = snode->Dofs()[jdof];
-
-          // multiply the two shape functions
-          double prod = lmval[j] * sval(k) * jac * wgt;
-
-          if (snode->IsOnBound())
-          {
-            double minusval = -prod;
-            if (abs(prod) > MORTARINTTOL)
-              cnode->AddMValue(jdof, col, minusval);
-          }
-          else
-          {
-            if (abs(prod) > MORTARINTTOL)
-              cnode->AddDValue(jdof, col, prod);
-          }
+          if (abs(prod) > MORTARINTTOL)
+            cnode->AddMValue(snode->Id(), -prod);
+        }
+        else
+        {
+          if (abs(prod) > MORTARINTTOL)
+            cnode->AddDValue(snode->Id(), prod);
         }
       }
     }

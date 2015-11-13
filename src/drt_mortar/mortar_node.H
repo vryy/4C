@@ -131,23 +131,23 @@ public:
   /*!
    \brief Return the 'D' map (vector) of this node
    */
-  std::vector<GEN::pairedvector<int, double> >& GetD()
+  GEN::pairedvector<int, double>& GetD()
   {
     return drows_;
   }
 
   /*!
-   \brief Return the 'M' map (vector) of this node
+   \brief Return the 'M' map of this node
    */
-  std::vector<std::map<int, double> >& GetM()
+  std::map<int, double>& GetM()
   {
     return mrows_;
   }
 
   /*!
-   \brief Return the 'Mmod' map (vector) of this node
+   \brief Return the 'Mmod' map of this node
    */
-  std::vector<std::map<int, double> >& GetMmod()
+  std::map<int, double>& GetMmod()
   {
     return mmodrows_;
   }
@@ -173,9 +173,9 @@ protected:
   double lmold_[3]; // old Lagrange multiplier value (last converged state n)
   double lmuzawa_[3]; // Uzawa Lagrange multiplier value (last Uzawa step k)
 
-  std::vector<GEN::pairedvector<int, double> > drows_; // nodal rows of D matrix
-  std::vector<std::map<int, double> > mrows_; // nodal rows of M matrix
-  std::vector<std::map<int, double> > mmodrows_; // nodal rows of Mmod matrix
+  GEN::pairedvector<int, double> drows_; // nodal rows of D matrix
+  std::map<int, double> mrows_; // nodal rows of M matrix
+  std::map<int, double> mmodrows_; // nodal rows of Mmod matrix
 
   double scalefac_; // nodal scaling factor for better conditioning
 
@@ -461,7 +461,7 @@ public:
    \param col : global dof column id of the value added
 
    */
-  void AddDValue(int& row, int& col, double& val);
+  void AddDValue(const int& colnode, const double& val);
 
   /*!
    \brief Add a value to the 'M' map of this node
@@ -474,7 +474,7 @@ public:
    \param col : global dof column id of the value added
 
    */
-  void AddMValue(int& row, int& col, double& val);
+  void AddMValue(const int& colnode,const double& val);
 
   /*!
    \brief Add a value to the 'Mmod' map of this node
@@ -487,7 +487,7 @@ public:
    \param col : global dof column id of the value added
 
    */
-  void AddMmodValue(int& row, int& col, double& val);
+  void AddMmodValue(const int& colnode,const double& val);
 
   /*!
    \brief Add a value to the scale factor of this node

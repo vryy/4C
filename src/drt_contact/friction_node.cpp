@@ -36,7 +36,7 @@ DRT::ParObject* CONTACT::FriNodeType::Create(const std::vector<char> & data)
  |  ctor (public)                                             mgit 01/10|
  *----------------------------------------------------------------------*/
 CONTACT::FriNodeDataContainer::FriNodeDataContainer() :
-    slip_(false), slipold_(false)
+    slip_(false), slipold_(false),drowsold_(0)
 {
   for (int i = 0; i < 3; ++i)
   {
@@ -68,23 +68,14 @@ void CONTACT::FriNodeDataContainer::Pack(DRT::PackBuffer& data) const
   // add drowsold_,mrowsold_,mnodesold_
   int hasdata = drowsold_.size();
 
-  // check the sizes of vector/sets
-  if (hasdata != (int) mrowsold_.size()
-      or (hasdata == 0 and mnodesold_.size() != 0))
-    dserror("Something wrong with sizes of vector/sets!");
-
   DRT::ParObject::AddtoPack(data, hasdata);
 
   if (hasdata != 0)
   {
-    int dentries[3] = { (int)drowsold_[0].size(), (int)drowsold_[1].size(), (int)drowsold_[2].size() };
-    DRT::ParObject::AddtoPack(data, dentries, 3 * sizeof(int));
-
-    for (int i = 0; i < hasdata; i++)
-    {
-      DRT::ParObject::AddtoPack(data, (drowsold_[i]));
-      DRT::ParObject::AddtoPack(data, (mrowsold_[i]));
-    }
+    int dentries = (int)drowsold_.size();
+    DRT::ParObject::AddtoPack(data, dentries);
+    DRT::ParObject::AddtoPack(data, drowsold_);
+    DRT::ParObject::AddtoPack(data, mrowsold_);
     DRT::ParObject::AddtoPack(data, mnodesold_);
   }
 
@@ -127,19 +118,11 @@ void CONTACT::FriNodeDataContainer::Unpack(
 
   if (hasdata != 0)
   {
-    int dentries[3] =
-    { 0, 0, 0 };
-    DRT::ParObject::ExtractfromPack(position, data, dentries, 3 * sizeof(int));
+    int dentries = DRT::ParObject::ExtractInt(position, data);
 
-    drowsold_.resize(hasdata, 0);
-    mrowsold_.resize(hasdata);
-    for (int i = 0; i < hasdata; i++)
-    {
-      drowsold_[i].resize(dentries[i]);
-
-      DRT::ParObject::ExtractfromPack(position, data, drowsold_[i]);
-      DRT::ParObject::ExtractfromPack(position, data, mrowsold_[i]);
-    }
+    drowsold_.resize(dentries);
+    DRT::ParObject::ExtractfromPack(position, data, drowsold_);
+    DRT::ParObject::ExtractfromPack(position, data, mrowsold_);
     DRT::ParObject::ExtractfromPack(position, data, mnodesold_);
   }
 
@@ -562,19 +545,9 @@ void CONTACT::FriNode::AddEValue(int& row, int& col, double& val)
  *----------------------------------------------------------------------*/
 void CONTACT::FriNode::StoreDMOld()
 {
-  // copy drows_ to drowsold_
-
-  // reset old nodal Mortar maps
-  for (int j = 0; j < (int) (FriData().GetDOld().size()); ++j)
-    (FriData().GetDOld())[j].clear();
-  for (int j = 0; j < (int) ((FriData().GetMOld()).size()); ++j)
-    (FriData().GetMOld())[j].clear();
-
   // clear and zero nodal vectors
   FriData().GetDOld().clear();
   FriData().GetMOld().clear();
-  FriData().GetDOld().resize(0, 0);
-  FriData().GetMOld().resize(0);
 
   // write drows_ to drowsold_
   FriData().GetDOld() = MoData().GetD();

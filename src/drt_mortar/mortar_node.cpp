@@ -36,7 +36,7 @@ DRT::ParObject* MORTAR::MortarNodeType::Create( const std::vector<char> & data )
  |  ctor (public)                                            mgit 02/10|
  *----------------------------------------------------------------------*/
 MORTAR::MortarNodeDataContainer::MortarNodeDataContainer():
-drows_(0,0)
+drows_(0)
 {
   for (int i=0;i<3;++i)
   {
@@ -294,7 +294,7 @@ void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Add a value to the 'D' map                                popp 01/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::AddDValue(int& row, int& col, double& val)
+void MORTAR::MortarNode::AddDValue(const int& colnode,const double& val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave()==false)
@@ -304,15 +304,10 @@ void MORTAR::MortarNode::AddDValue(int& row, int& col, double& val)
 
   // check if this has been called before
   if ((int)MoData().GetD().size()==0)
-    MoData().GetD().resize(NumDof(),dentries_);
-
-  // check row index input
-  if ((int)MoData().GetD().size()<=row)
-    dserror("ERROR: AddDValue: tried to access invalid row index!");
+    MoData().GetD().resize(dentries_);
 
   // add the pair (col,val) to the given row
-  GEN::pairedvector<int,double>& dmap = MoData().GetD()[row];
-  dmap[col] += val;
+  MoData().GetD()[colnode] += val;
 
   return;
 }
@@ -320,7 +315,7 @@ void MORTAR::MortarNode::AddDValue(int& row, int& col, double& val)
 /*----------------------------------------------------------------------*
  |  Add a value to the 'M' map                                popp 01/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::AddMValue(int& row, int& col, double& val)
+void MORTAR::MortarNode::AddMValue(const int& colnode,const double& val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave()==false)
@@ -328,17 +323,8 @@ void MORTAR::MortarNode::AddMValue(int& row, int& col, double& val)
   if (IsOnBound()==true)
     dserror("ERROR: AddMValue: function called for boundary node %i", Id());
 
-  // check if this has been called before
-  if ((int)MoData().GetM().size()==0)
-    MoData().GetM().resize(NumDof());
-
-  // check row index input
-  if ((int)MoData().GetM().size()<=row)
-    dserror("ERROR: AddMValue: tried to access invalid row index!");
-
   // add the pair (col,val) to the given row
-  std::map<int,double>& mmap = MoData().GetM()[row];
-  mmap[col] += val;
+  MoData().GetM()[colnode] += val;
 
   return;
 }
@@ -346,7 +332,7 @@ void MORTAR::MortarNode::AddMValue(int& row, int& col, double& val)
 /*----------------------------------------------------------------------*
  |  Add a value to the 'Mmod' map                             popp 01/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarNode::AddMmodValue(int& row, int& col, double& val)
+void MORTAR::MortarNode::AddMmodValue(const int& colnode,const double& val)
 {
   // check if this is a master node or slave boundary node
   if (IsSlave()==false)
@@ -354,17 +340,8 @@ void MORTAR::MortarNode::AddMmodValue(int& row, int& col, double& val)
   if (IsOnBound()==true)
     dserror("ERROR: AddMmodValue: function called for boundary node %i", Id());
 
-  // check if this has been called before
-  if ((int)MoData().GetMmod().size()==0)
-    MoData().GetMmod().resize(NumDof());
-
-  // check row index input
-  if ((int)MoData().GetMmod().size()<=row)
-    dserror("ERROR: AddMmodValue: tried to access invalid row index!");
-
   // add the pair (col,val) to the given row
-  std::map<int,double>& mmodmap = MoData().GetMmod()[row];
-  mmodmap[col] += val;
+  MoData().GetMmod()[colnode] += val;
 
   return;
 }

@@ -4654,16 +4654,9 @@ void CONTACT::WearInterface::Initialize()
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // reset nodal Mortar maps
-    for (int j=0;j<(int)((cnode->MoData().GetD()).size());++j)
-      (cnode->MoData().GetD())[j].clear();
-    for (int j=0;j<(int)((cnode->MoData().GetM()).size());++j)
-      (cnode->MoData().GetM())[j].clear();
-    for (int j=0;j<(int)((cnode->MoData().GetMmod()).size());++j)
-      (cnode->MoData().GetMmod())[j].clear();
-
-    (cnode->MoData().GetD()).resize(0,0);
-    (cnode->MoData().GetM()).resize(0);
-    (cnode->MoData().GetMmod()).resize(0);
+    cnode->MoData().GetD().clear();
+    cnode->MoData().GetM().clear();
+    cnode->MoData().GetMmod().clear();
 
     // reset nodal scaling factor
     (cnode->MoData().GetScale())=0.0;
