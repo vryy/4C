@@ -407,3 +407,63 @@ const std::vector<std::vector<double> > GEO::CUT::BoundaryCell::CoordinatesV()
   }
   return corners;
 }
+
+/*------------------------------------------------------------------------*
+ *           A first step to validate if a boundary cell is valid.
+ *                               winter 11/2015
+ *------------------------------------------------------------------------*/
+bool GEO::CUT::Tri3BoundaryCell::IsValidBoundaryCell()
+{
+  const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+
+  const std::vector<Point*> points = this->Points();
+
+  // create planes consisting of 3 nodes each
+  LINALG::Matrix<numnodes,1> p0( points[0]->X() );
+  LINALG::Matrix<numnodes,1> p1( points[1]->X() );
+  LINALG::Matrix<numnodes,1> p2( points[2]->X() );
+
+  LINALG::Matrix<numnodes,1> v01;
+  LINALG::Matrix<numnodes,1> v02;
+  LINALG::Matrix<numnodes,1> v12;
+
+  v01.Update( 1, p1, -1, p0, 0 );
+  v02.Update( 1, p2, -1, p0, 0 );
+  v12.Update( 1, p1, -1, p2, 0 );
+
+  //Get distance to origin
+  LINALG::Matrix<numnodes,1> temp(true);
+  temp(0,0)=p0.Norm2();         //Distance of points to origin
+  temp(1,0)=p1.Norm2();
+  temp(2,0)=p2.Norm2();
+
+  // This is to scale the tolerance, it determines our maximum precision (i.e. machine precision)
+//  double max_dist_to_orgin = temp.NormInf();
+
+  //Distance between points in triangle
+  temp(0,0)=v01.Norm2();
+  temp(1,0)=v02.Norm2();
+  temp(2,0)=v12.Norm2();
+
+  double min_dist_in_tri = temp.MinValue();
+  //We want to test with this one I think... But might lead to problems.
+//  double tolerance = LINSOLVETOL*max_dist_to_orgin;
+
+  temp(0,0)=points[0]->Tolerance();
+  temp(1,0)=points[1]->Tolerance();
+  temp(2,0)=points[2]->Tolerance();
+  double max_tol_points = temp.MaxValue();
+
+
+//  std::cout << "min_dist_in_tri: " << min_dist_in_tri << std::endl;
+//  std::cout << "tolerance: " << tolerance << std::endl;
+//  std::cout << "max_tol_points: " << max_tol_points << std::endl;
+
+  if(min_dist_in_tri < max_tol_points)
+  {
+    return false;
+  }
+
+  return true;
+
+}

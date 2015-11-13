@@ -107,6 +107,11 @@ public:
   bool IsValid() const { return points_.size() > 0; }
 
   /*!
+  \brief Function to test if the distance between points is within point tolerance.
+   */
+  virtual bool IsValidBoundaryCell() = 0;
+
+  /*!
   \brief Get the Gaussian integration rule for the boundarycell
    */
   virtual DRT::UTILS::GaussIntegration gaussRule()=0;
@@ -274,6 +279,8 @@ public:
 
   virtual LINALG::Matrix<3,1> GetNormalVector();
 
+  virtual bool IsValidBoundaryCell();
+
   double MyAreaTri()
   {
     const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
@@ -303,7 +310,26 @@ public:
 //    double s=0.5*(v01.Norm2() + v02.Norm2() + v12.Norm2());
 //    double area = sqrt( s*(s-v01.Norm2())*(s-v02.Norm2())*(s-v12.Norm2()) );
 
-    double area = 0.25*sqrt((a+(b+c))*(c-(a-b))*(c+(a-b))*(a+(b-c)));
+    double areasqr = (a+(b+c))*(c-(a-b))*(c+(a-b))*(a+(b-c));
+    if(areasqr<0.0)
+    {
+      std::ofstream file( "Invalid_boundary_cell.pos" );
+
+      //Write BCs for outside VolumeCell:
+      file << "View \"BoundaryCells\" {\n";
+
+      DumpGmsh(file);
+
+      file << "};\n";
+
+      file << "View \"BoundaryCellsNormal\" {\n";
+
+      DumpGmshNormal(file);
+
+      file << "};\n";
+      dserror("Boundary Cell not valid! Written GMSH output in Invalid_boundary_cell.pos!");
+    }
+    double area = 0.25*sqrt(areasqr);
 
     // Alternative options:
     //  - cross-product (see cut_tetmesh.cpp in IsValidTet())
@@ -334,6 +360,7 @@ public:
 
   virtual void DumpGmshNormal( std::ofstream & file );
 
+  // Maybe shoelace theorem can be used here?
   virtual double Area() { return MyArea<DRT::Element::quad4>(); }
 
   virtual void ElementCenter(LINALG::Matrix<3,1> & midpoint);
@@ -343,6 +370,9 @@ public:
   virtual DRT::UTILS::GaussIntegration gaussRule();
 
   virtual LINALG::Matrix<3,1> GetNormalVector();
+
+  // Probably not the best way...
+  virtual bool IsValidBoundaryCell() { return (Area()>REF_AREA_BCELL); }
 
 protected:
 
@@ -379,6 +409,8 @@ public:
   virtual DRT::UTILS::GaussIntegration gaussRule();
 
   virtual LINALG::Matrix<3,1> GetNormalVector();
+
+  virtual bool IsValidBoundaryCell() { return (Area()>REF_AREA_BCELL); }
 
 protected:
 

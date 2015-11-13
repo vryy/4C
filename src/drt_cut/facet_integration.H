@@ -12,6 +12,7 @@ equations
 #include "cut_enum.H"
 
 //#define DIRECTDIV_EXTENDED_DEBUG_OUTPUT
+//#define TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
 
 namespace GEO
 {

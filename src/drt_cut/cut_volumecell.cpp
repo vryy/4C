@@ -1397,7 +1397,7 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GenerateInternalGaus
     const LINALG::Matrix<3,1> etaFacet( quadint.Point() );  //coordinates and weight of main gauss point
     LINALG::Matrix<3,1> intpt( etaFacet );
 
-    DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 6 ); //internal gauss rule for interval (-1,1)
+    DRT::UTILS::GaussIntegration gi( DRT::Element::line2, (DIRECTDIV_GAUSSRULE-1) ); //internal gauss rule for interval (-1,1)
 
     //x-coordinate of main Gauss point is projected in the reference plane
     double xbegin = (RefEqnPlane_[3]-RefEqnPlane_[1]*etaFacet(1,0)-

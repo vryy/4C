@@ -65,6 +65,11 @@
 // this value, then this main Gauss point is not considered
 #define JAC_LINE_TOL 1e-14
 
+// Defines the order of the Gaussrule used for the direct divergence.
+//  To make it fit also the DivergenceCells have to be fully triangulated for the mesh as is done in the LS.
+//  See the DirectDiv algorithm in facetintegration.
+#define DIRECTDIV_GAUSSRULE 7 // 7 for test cases
+
 // Construct the integration rules directly on the local coordinate system of the element
 #define LOCAL
 

@@ -790,7 +790,7 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRule( Mesh &mesh,
     }
 #endif
 
-    DRT::UTILS::GaussIntegration gi_temp = DRT::UTILS::GaussIntegration( bcell->Shape(), 7 );
+    DRT::UTILS::GaussIntegration gi_temp = DRT::UTILS::GaussIntegration( bcell->Shape(), DIRECTDIV_GAUSSRULE );
 
     if( bcell->Area() < REF_AREA_BCELL )
       continue;
@@ -1129,10 +1129,25 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew( Mesh &mesh,
 
   //If the facet is not planar it will be triangulated in DirectDivergence::ListFacets().
   // Might want to split the facet for the case it is a planar quad -> less divCells.
-  if(face1_->CornerPoints().size()>3 and face1_->BelongsToLevelSetSide())
+
+#ifndef TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
+   bool triangulate_and_levelset = ( face1_->CornerPoints().size()>3 and face1_->BelongsToLevelSetSide() );
+#else
+   bool triangulate_and_levelset = ( face1_->CornerPoints().size()>3 );
+#endif
+
+//  if(face1_->CornerPoints().size()>3 and face1_->BelongsToLevelSetSide())
+  if(triangulate_and_levelset)
     face1_->DoTriangulation(mesh,face1_->CornerPoints());
 
-  if((face1_->IsTriangulated() or face1_->IsFacetSplit()) and face1_->BelongsToLevelSetSide())
+#ifndef TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS
+  triangulate_and_levelset = ( (face1_->IsTriangulated() or face1_->IsFacetSplit()) and face1_->BelongsToLevelSetSide());
+#else
+  triangulate_and_levelset = (face1_->IsTriangulated() or face1_->IsFacetSplit());
+#endif
+
+//  if((face1_->IsTriangulated() or face1_->IsFacetSplit()) and face1_->BelongsToLevelSetSide())
+  if(triangulate_and_levelset)
   {
     std::vector<std::vector<Point*> > facet_triang;
     if(face1_->IsTriangulated())
@@ -1278,7 +1293,7 @@ void GEO::CUT::FacetIntegration::DivergenceIntegrationRuleNew( Mesh &mesh,
     }
 #endif
 
-    DRT::UTILS::GaussIntegration gi_temp = DRT::UTILS::GaussIntegration( bcell->Shape(), 7 );
+    DRT::UTILS::GaussIntegration gi_temp = DRT::UTILS::GaussIntegration( bcell->Shape(), DIRECTDIV_GAUSSRULE );
 
     if( bcell->Area() < REF_AREA_BCELL )
       continue;

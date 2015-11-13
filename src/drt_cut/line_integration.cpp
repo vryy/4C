@@ -45,7 +45,7 @@ double LineIntegration::integrate_line()
 
   //8 is the order of Gauss integration used in the line integration
   //since we integrate 6th order polynomial in volume, 8th order must be used for line
-  DRT::UTILS::GaussIntegration gi( DRT::Element::line2, 8 );
+  DRT::UTILS::GaussIntegration gi( DRT::Element::line2, (DIRECTDIV_GAUSSRULE+1) );
 
   for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
   {
