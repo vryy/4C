@@ -54,11 +54,11 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix
   Epetra_CrsMatrix* Atrans = NULL;
   Epetra_CrsMatrix* Btrans = NULL;
   if (transA)
-    Atrans = &(dynamic_cast<Epetra_CrsMatrix&>(transposera(*A.EpetraMatrix())));
+    Atrans = dynamic_cast<Epetra_CrsMatrix*>(&transposera(*A.EpetraMatrix()));
   else
     Atrans = A.EpetraMatrix().get();
   if (transB)
-    Btrans = &(dynamic_cast<Epetra_CrsMatrix&>(transposerb(*B.EpetraMatrix())));
+    Btrans = dynamic_cast<Epetra_CrsMatrix*>(&transposerb(*B.EpetraMatrix()));
   else
     Btrans = B.EpetraMatrix().get();
 

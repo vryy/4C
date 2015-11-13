@@ -74,7 +74,7 @@ void MAT::ELASTIC::CoupNeoHooke::AddStrainEnergy(
   // strain energy: psi = c / beta * (I3^{-beta} - 1) + c * (I1 - 3)
   double psiadd = c * (prinv(0) - 3.);
   if (beta != 0) // take care of possible division by zero in case or Poisson's ratio nu = 0.0
-    psiadd += (c / beta) * (pow(prinv(2), -beta) - 1.);
+    psiadd += (c / beta) * (std::exp(std::log(prinv(2)) * (-beta)) - 1.);
   else
     psiadd -= c*std::log(prinv(2));
 
@@ -97,9 +97,13 @@ void MAT::ELASTIC::CoupNeoHooke::AddDerivativesPrincipal(
   const double c     = params_->c_;
 
   dPI(0) += c;
-  dPI(2) -= c * std::pow(prinv(2),-beta -1.);
-
-  ddPII(2) += c*(beta+1.)*std::pow(prinv(2),-beta-2.);
+  // computing exp(log(a)*b) is faster than pow(a,b)
+  if (prinv(2) > 0)
+    {
+      const double prinv2_to_beta_m1 = std::exp(std::log(prinv(2))*(-beta-1.));
+      dPI(2) -= c * prinv2_to_beta_m1;
+      ddPII(2) += c*(beta+1.)*prinv2_to_beta_m1/prinv(2);
+    }
 
   return;
 }

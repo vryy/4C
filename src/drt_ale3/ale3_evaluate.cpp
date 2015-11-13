@@ -1330,7 +1330,7 @@ template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele,
     DRT::Discretization& dis, std::vector<int>& lm,
     Epetra_SerialDenseMatrix& sys_mat_epetra,
-    Epetra_SerialDenseVector& residual,
+    Epetra_SerialDenseVector& residual_epetra,
     std::vector<double>& my_dispnp, Teuchos::ParameterList& params)
 {
 
@@ -1338,8 +1338,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele,
   // A view to sys_mat_epetra
   LINALG::Matrix<numdof,numdof> sys_mat(sys_mat_epetra.A(),true);
   // update element geometry
-  Epetra_SerialDenseMatrix xrefe(iel,NUMDIM_ALE3);  // material coord. of element
-  Epetra_SerialDenseMatrix xcurr(iel,NUMDIM_ALE3);  // current  coord. of element
+  LINALG::Matrix<iel,NUMDIM_ALE3> xrefe;  // material coord. of element
+  LINALG::Matrix<iel,NUMDIM_ALE3> xcurr;  // current  coord. of element
   for (int i=0; i<iel; ++i)
   {
     xrefe(i,0) = ele->Nodes()[i]->X()[0];
@@ -1352,7 +1352,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele,
   }
   // --------------------------------------------------
   // Now do the nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<Epetra_SerialDenseVector> myknots;
   LINALG::Matrix<iel,1  >               weights(iel);
 
   if (distype == DRT::Element::nurbs8 || distype == DRT::Element::nurbs27)
@@ -1360,6 +1360,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele,
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
 
+    myknots.resize(3);
     bool zero_size = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,
         ele->Id());
 
@@ -1377,7 +1378,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele,
   }
   /*----------------------------------------- declaration of variables ---*/
   LINALG::Matrix<iel,1  > funct;
-  Epetra_SerialDenseMatrix deriv(NUMDIM_ALE3,iel);
+  LINALG::Matrix<NUMDIM_ALE3,iel> deriv;
   //LINALG::Matrix<3,  iel> deriv;
   LINALG::Matrix<3,  3  > xjm;
   LINALG::Matrix<3,  3  > xji;
@@ -1418,41 +1419,30 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele,
   **     J = [ x_,s  y_,s  z_,s ]
   **         [ x_,t  y_,t  z_,t ]
   */
-  Epetra_SerialDenseMatrix jac(NUMDIM_ALE3,NUMDIM_ALE3);
-  jac.Multiply('N','N',1.0,deriv,xrefe,1.0);
+  LINALG::Matrix<NUMDIM_ALE3,NUMDIM_ALE3> jac, jacinv;
+  jac.MultiplyNN(deriv,xrefe);
+  const double detJ = jac.Invert();
 
-  // compute determinant of Jacobian by Sarrus' rule
-  double detJ= jac(0,0) * jac(1,1) * jac(2,2)
-             + jac(0,1) * jac(1,2) * jac(2,0)
-             + jac(0,2) * jac(1,0) * jac(2,1)
-             - jac(0,0) * jac(1,2) * jac(2,1)
-             - jac(0,1) * jac(1,0) * jac(2,2)
-             - jac(0,2) * jac(1,1) * jac(2,0);
   if (abs(detJ) < 1E-16) dserror("ZERO JACOBIAN DETERMINANT");
   else if (detJ < 0.0) dserror("NEGATIVE JACOBIAN DETERMINANT");
+
   /* compute derivatives N_XYZ at gp w.r.t. material coordinates
   ** by solving   Jac . N_XYZ = N_rst   for N_XYZ
   ** Inverse of Jacobian is therefore not explicitly computed
   */
-  Epetra_SerialDenseMatrix N_XYZ(NUMDIM_ALE3,iel);
-  Epetra_SerialDenseSolver solve_for_inverseJac;  // solve A.X=B
-  solve_for_inverseJac.SetMatrix(jac);            // set A=jac
-  solve_for_inverseJac.SetVectors(N_XYZ,deriv);// set X=N_XYZ, B=deriv_gp
-  solve_for_inverseJac.FactorWithEquilibration(true);
-  int err2 = solve_for_inverseJac.Factor();
-  int err = solve_for_inverseJac.Solve();         // N_XYZ = J^-1.N_rst
-  if ((err != 0) && (err2!=0)) dserror("Inversion of Jacobian failed");
+  LINALG::Matrix<NUMDIM_ALE3,iel> N_XYZ;
+  N_XYZ.MultiplyNN(jac, deriv);
 
   // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-  Epetra_SerialDenseMatrix defgrd(NUMDIM_ALE3,NUMDIM_ALE3);
-  defgrd.Multiply('T','T',1.0,xcurr,N_XYZ,1.0);
+  LINALG::Matrix<NUMDIM_ALE3,NUMDIM_ALE3> defgrd;
+  defgrd.MultiplyTT(xcurr,N_XYZ);
 
   // Right Cauchy-Green tensor = F^T * F
-  Epetra_SerialDenseMatrix cauchygreen(NUMDIM_ALE3,NUMDIM_ALE3);
-  cauchygreen.Multiply('T','N',1.0,defgrd,defgrd,1.0);
+  LINALG::Matrix<NUMDIM_ALE3,NUMDIM_ALE3> cauchygreen;
+  cauchygreen.MultiplyTN(defgrd,defgrd);
   // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-  Epetra_SerialDenseVector glstrain(MAT::NUM_STRESS_3D);
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain;
   glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
   glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
   glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -1480,7 +1470,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele,
   **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
   **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
   */
-  Epetra_SerialDenseMatrix bop(MAT::NUM_STRESS_3D,numdof);
+  LINALG::Matrix<MAT::NUM_STRESS_3D,numdof> bop;
   for (int i=0; i<iel; ++i) {
     bop(0,NODDOF_ALE3*i+0) = defgrd(0,0)*N_XYZ(0,i);
     bop(0,NODDOF_ALE3*i+1) = defgrd(1,0)*N_XYZ(0,i);
@@ -1511,22 +1501,22 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele,
   params.set<int>("gp",iquad);
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
   so3mat->Evaluate(&fixed_defgrd,&glstrain_f,params,&stress_f,&cmat_f,ele->Id());
-  Epetra_SerialDenseMatrix cmat(View,cmat_f.A(),cmat_f.Rows(),cmat_f.Rows(),cmat_f.Columns());
-  Epetra_SerialDenseVector stress(View,stress_f.A(),stress_f.Rows());
   // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
   // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-  (residual).Multiply('T','N',detJ * intpoints.qwgt[iquad] ,bop,stress,1.0);
+  LINALG::Matrix<numdof,1> residual(residual_epetra, true);
+  residual.MultiplyTN(detJ * intpoints.qwgt[iquad] ,bop, stress_f, 1.0);
 
   // integrate `elastic' and `initial-displacement' stiffness matrix
   // keu = keu + (B^T . C . B) * detJ * w(gp)
-  Epetra_SerialDenseMatrix cb(MAT::NUM_STRESS_3D,numdof);
-  cb.Multiply('N','N',1.0,cmat,bop,1.0);          // temporary C . B
-  (sys_mat_epetra).Multiply('T','N',detJ * intpoints.qwgt[iquad] ,bop,cb,1.0);
+  LINALG::Matrix<MAT::NUM_STRESS_3D,numdof> cb;
+  cb.MultiplyNN(cmat_f,bop);          // temporary C . B
+  sys_mat.MultiplyTN(detJ * intpoints.qwgt[iquad] ,bop,cb,1.0);
+
   // integrate `geometric' stiffness matrix and add to keu *****************
-  Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1> sfac(stress_f); // auxiliary integrated stress
   sfac.Scale(detJ * intpoints.qwgt[iquad] );     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-  std::vector<double> SmB_L(NUMDIM_ALE3);     // intermediate Sm.B_L
+  double SmB_L[NUMDIM_ALE3];     // intermediate Sm.B_L
   // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
   for (int inod=0; inod<iel; ++inod){
     SmB_L[0] = sfac(0) * N_XYZ(0,inod) + sfac(3) * N_XYZ(1,inod) + sfac(5) * N_XYZ(2,inod);

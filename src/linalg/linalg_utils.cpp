@@ -332,11 +332,6 @@ void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
     Aprime = const_cast<Epetra_CrsMatrix*>(&A);
   }
 
-  if (scalarB != 1.0)
-    B.Scale(scalarB);
-  if (scalarB == 0.0)
-    B.PutScalar(0.0);
-
   //Loop over Aprime's rows and sum into
   int MaxNumEntries = EPETRA_MAX( Aprime->MaxNumEntries(), B.MaxNumEntries() );
   int NumEntries;
@@ -346,10 +341,28 @@ void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
   const int NumMyRows = Aprime->NumMyRows();
   int Row;
   int err;
+  const bool uselocal = B.Filled() && B.ColMap().SameAs(A.ColMap());
+  if (!uselocal)
+  {
+    if (scalarB != 1.0)
+      B.Scale(scalarB);
+    if (scalarB == 0.0)
+      B.PutScalar(0.0);
+  }
   if (scalarA)
   {
     for (int i = 0; i < NumMyRows; ++i)
     {
+      // Case 1: both matrices have the same col map - can add in local indices
+      if (uselocal)
+      {
+        double *valuesA = 0, *valuesB = 0;
+        Aprime->ExtractMyRowView(i, NumEntries, valuesA);
+        B.ExtractMyRowView(i, NumEntries, valuesB);
+        for (int j=0; j<NumEntries; ++j)
+          valuesB[j] = valuesB[j] * scalarB + valuesA[j] * scalarA;
+        continue;
+      }
       Row = Aprime->GRID(i);
       int ierr = Aprime->ExtractGlobalRowCopy(Row, MaxNumEntries, NumEntries,
           &Values[0], &Indices[0]);
@@ -358,14 +371,22 @@ void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
       if (scalarA != 1.0)
         for (int j = 0; j < NumEntries; ++j)
           Values[j] *= scalarA;
-      for (int j = 0; j < NumEntries; ++j)
+      // Case 2: B is filled and we can add all entries at once
+      if (B.Filled())
       {
-        err = B.SumIntoGlobalValues(Row, 1, &Values[j], &Indices[j]);
-        if (err < 0 || err == 2)
-          err = B.InsertGlobalValues(Row, 1, &Values[j], &Indices[j]);
-        if (err < 0)
-          dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
+        err = B.SumIntoGlobalValues(Row, NumEntries, &Values[0], &Indices[0]);
+        if (err != 0)
+          dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned err=%d", err);
       }
+      else
+        for (int j = 0; j < NumEntries; ++j)
+        {
+          err = B.SumIntoGlobalValues(Row, 1, &Values[j], &Indices[j]);
+          if (err < 0 || err == 2)
+            err = B.InsertGlobalValues(Row, 1, &Values[j], &Indices[j]);
+          if (err < 0)
+            dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
+        }
     }
   }
 }

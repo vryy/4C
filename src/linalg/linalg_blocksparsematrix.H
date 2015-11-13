@@ -395,10 +395,10 @@ protected:
       int lcol, int cgid, int cblock);
 
   /// find row block to a given row gid
-  int RowBlock(int lrow, int rgid);
+  int RowBlock(int rgid);
 
   /// find column block to a given column gid
-  int ColBlock(int rblock, int lcol, int cgid);
+  int ColBlock(int rblock, int cgid);
 
   /// access to the block sparse matrix for subclasses
   BlockSparseMatrixBase& Mat() { return mat_; }
@@ -410,6 +410,9 @@ private:
 
   /// all ghost entries stored by row,column
   std::map<int,std::map<int,double> > ghost_;
+
+  /// scratch array for identifying column information
+  std::vector<std::vector<int> > scratch_lcols_;
 };
 
 /*----------------------------------------------------------------------*
@@ -514,7 +517,7 @@ void LINALG::BlockSparseMatrix<Strategy>::Complete()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 inline
-int LINALG::DefaultBlockMatrixStrategy::RowBlock(int lrow, int rgid)
+int LINALG::DefaultBlockMatrixStrategy::RowBlock(int rgid)
 {
   int rows = mat_.Rows();
   for (int rblock=0; rblock<rows; ++rblock)
@@ -531,7 +534,7 @@ int LINALG::DefaultBlockMatrixStrategy::RowBlock(int lrow, int rgid)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 inline
-int LINALG::DefaultBlockMatrixStrategy::ColBlock(int rblock, int lcol, int cgid)
+int LINALG::DefaultBlockMatrixStrategy::ColBlock(int rblock, int cgid)
 {
   int cols = mat_.Cols();
   for (int cblock = 0; cblock<cols; ++cblock)
@@ -574,6 +577,14 @@ void LINALG::DefaultBlockMatrixStrategy::Assemble(int eid,
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
 
+  dsassert(static_cast<int>(scratch_lcols_.size()) == mat_.Rows(), "Unexpected number of block rows");
+
+  for (int rblock=0; rblock<mat_.Rows(); ++rblock)
+  {
+    scratch_lcols_[rblock].resize(lcoldim);
+    std::fill(scratch_lcols_[rblock].begin(), scratch_lcols_[rblock].end(), -1);
+  }
+
   // loop rows of local matrix
   for (int lrow=0; lrow<lrowdim; ++lrow)
   {
@@ -583,15 +594,18 @@ void LINALG::DefaultBlockMatrixStrategy::Assemble(int eid,
       continue;
 
     int rgid = lmrow[lrow];
-    int rblock = RowBlock(lrow,rgid);
+    int rblock = RowBlock(rgid);
+
+    if (scratch_lcols_[rblock][0] == -1)
+      for (int lcol=0; lcol<lcoldim; ++lcol)
+        scratch_lcols_[rblock][lcol] = ColBlock(rblock,lmcol[lcol]);
 
     for (int lcol=0; lcol<lcoldim; ++lcol)
     {
       double val = Aele(lrow,lcol);
       int cgid = lmcol[lcol];
-      int cblock = ColBlock(rblock,lcol,cgid);
 
-      Assemble(val,lrow,rgid,rblock,lcol,cgid,cblock);
+      Assemble(val,lrow,rgid,rblock,lcol,cgid,scratch_lcols_[rblock][lcol]);
     }
   }
 }
@@ -619,13 +633,13 @@ void LINALG::DefaultBlockMatrixStrategy::Assemble(int eid,
       continue;
 
     int rgid = lmrow[lrow];
-    int rblock = RowBlock(lrow,rgid);
+    int rblock = RowBlock(rgid);
 
     for (int lcol=0; lcol<lcoldim; ++lcol)
     {
       double val = Aele(lrow,lcol);
       int cgid = lmcol[lcol];
-      int cblock = ColBlock(rblock,lcol,cgid);
+      int cblock = ColBlock(rblock,cgid);
 
       Assemble(val,lrow,rgid,rblock,lcol,cgid,cblock);
     }
@@ -638,8 +652,8 @@ void LINALG::DefaultBlockMatrixStrategy::Assemble(int eid,
 inline
 void LINALG::DefaultBlockMatrixStrategy::Assemble(double val, int rgid, int cgid)
 {
-  int rblock = RowBlock(0,rgid);
-  int cblock = ColBlock(rblock,0,cgid);
+  int rblock = RowBlock(rgid);
+  int cblock = ColBlock(rblock,cgid);
 
   Assemble(val,0,rgid,rblock,0,cgid,cblock);
 }

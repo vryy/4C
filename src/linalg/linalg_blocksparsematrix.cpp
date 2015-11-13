@@ -121,17 +121,15 @@ void LINALG::BlockSparseMatrixBase::Complete()
     std::vector<int> colmapentries;
     for (int c=0; c<Cols(); ++c)
     {
-      std::set<int> colset;
       for (int r=0; r<Rows(); ++r)
       {
         const Epetra_Map& colmap = Matrix(r,c).ColMap();
-        copy(colmap.MyGlobalElements(),
-             colmap.MyGlobalElements()+colmap.NumMyElements(),
-             inserter(colset, colset.begin()));
+        colmapentries.insert(colmapentries.end(), colmap.MyGlobalElements(),
+                             colmap.MyGlobalElements()+colmap.NumMyElements());
       }
-      colmapentries.reserve(colmapentries.size()+colset.size());
-      copy(colset.begin(), colset.end(), back_inserter(colmapentries));
     }
+    std::sort(colmapentries.begin(), colmapentries.end());
+    colmapentries.erase(std::unique(colmapentries.begin(), colmapentries.end()),colmapentries.end());
     fullcolmap_ = Teuchos::rcp(new Epetra_Map(-1,colmapentries.size(),&colmapentries[0],0,Comm()));
   }
 }
@@ -526,7 +524,8 @@ std::ostream& LINALG::operator << (std::ostream& os, const LINALG::BlockSparseMa
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 LINALG::DefaultBlockMatrixStrategy::DefaultBlockMatrixStrategy(BlockSparseMatrixBase& mat)
-  : mat_(mat)
+  : mat_(mat),
+    scratch_lcols_(mat_.Rows())
 {
 }
 
@@ -666,7 +665,7 @@ void LINALG::DefaultBlockMatrixStrategy::Complete()
   {
     // most stupid way to find the right row
     int rgid = irow->first;
-    int rblock = RowBlock(0, rgid);
+    int rblock = RowBlock(rgid);
     if (rblock==-1)
       dserror("row finding panic");
 
