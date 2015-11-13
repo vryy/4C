@@ -40,10 +40,15 @@ Maintainer:  Raffaela Kruse and Benedikt Schott
  |  ctor  Initialize coupling matrices                     schott 01/15 |
  *----------------------------------------------------------------------*/
 FLD::XFluidState::CouplingState::CouplingState(
-    const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap, const Teuchos::RCP<DRT::Discretization>&  slavediscret):
+    const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
+    const Teuchos::RCP<DRT::Discretization>&  slavediscret_mat,
+    const Teuchos::RCP<DRT::Discretization>&  slavediscret_rhs
+    ):
     is_active_(true)
 {
-  if(slavediscret == Teuchos::null) dserror("invalid slave discretization for coupling application");
+  if(slavediscret_mat == Teuchos::null) dserror("invalid slave discretization for coupling application");
+  if(slavediscret_rhs == Teuchos::null) dserror("invalid slave discretization for coupling application");
+
 
   // savegraph flag set to true, as there is no change in the matrix graph expected for the lifetime
   // of this state container
@@ -51,11 +56,11 @@ FLD::XFluidState::CouplingState::CouplingState(
   // NOTE: setting explicit Dirichlet to false can cause problems with ML preconditioner (see remark in LINALG::Sparsematrix)
   // however, we prefer not to build new matrices in ApplyDirichlet
   C_xs_  = Teuchos::rcp(new LINALG::SparseMatrix(*xfluiddofrowmap,300,false,true,LINALG::SparseMatrix::FE_MATRIX));
-  C_sx_  = Teuchos::rcp(new LINALG::SparseMatrix(*slavediscret->DofRowMap(),300,false,true,LINALG::SparseMatrix::FE_MATRIX));
-  C_ss_  = Teuchos::rcp(new LINALG::SparseMatrix(*slavediscret->DofRowMap(),300,false,true,LINALG::SparseMatrix::FE_MATRIX));
+  C_sx_  = Teuchos::rcp(new LINALG::SparseMatrix(*slavediscret_mat->DofRowMap(),300,false,true,LINALG::SparseMatrix::FE_MATRIX));
+  C_ss_  = Teuchos::rcp(new LINALG::SparseMatrix(*slavediscret_mat->DofRowMap(),300,false,true,LINALG::SparseMatrix::FE_MATRIX));
 
-  rhC_s_    = LINALG::CreateVector(*slavediscret->DofRowMap(),true);
-  rhC_s_col_= LINALG::CreateVector(*slavediscret->DofColMap(),true);
+  rhC_s_    = LINALG::CreateVector(*slavediscret_rhs->DofRowMap(),true);
+  rhC_s_col_= LINALG::CreateVector(*slavediscret_rhs->DofColMap(),true);
 }
 
 /*----------------------------------------------------------------------*
@@ -254,7 +259,9 @@ void FLD::XFluidState::InitCouplingMatricesAndRhs()
       }
       else if(condition_manager_->IsMeshCondition(coup_idx))
       {
-        coup_state = Teuchos::rcp(new XFluidState::CouplingState(xfluiddofrowmap_, coupling->GetCouplingDis()));
+        // for matrix use the full condition dis to enable assign in blockmatrix (row map of matrix is not changed by complete!)
+        // for rhs we need the additional ghosting of the boundary zone on slave side, therefore the specifically modified coupling dis
+        coup_state = Teuchos::rcp(new XFluidState::CouplingState(xfluiddofrowmap_, coupling->GetCondDis(), coupling->GetCouplingDis()));
       }
       else dserror("coupling object is neither a level-set coupling object nor a mesh-coupling object");
     }

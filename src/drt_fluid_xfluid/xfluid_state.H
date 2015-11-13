@@ -111,7 +111,11 @@ public:
     }
 
     //! ctor  Initialize coupling matrices
-    CouplingState(const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap, const Teuchos::RCP<DRT::Discretization>&  slavediscret);
+    CouplingState(
+        const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
+        const Teuchos::RCP<DRT::Discretization>&  slavediscret_mat,
+        const Teuchos::RCP<DRT::Discretization>&  slavediscret_rhs
+    );
 
     //! zero coupling matrices and rhs vectors
     void ZeroCouplingMatricesAndRhs();
