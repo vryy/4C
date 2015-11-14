@@ -19,6 +19,9 @@ Maintainer: Sophie Rausch
 
 /*----------------------------------------------------------------------*/
 /* headers */
+
+#include <limits>
+
 #include "elast_coupneohooke.H"
 #include "../drt_mat/matpar_material.H"
 
@@ -104,6 +107,8 @@ void MAT::ELASTIC::CoupNeoHooke::AddDerivativesPrincipal(
       dPI(2) -= c * prinv2_to_beta_m1;
       ddPII(2) += c*(beta+1.)*prinv2_to_beta_m1/prinv(2);
     }
+  else
+    dPI(2) = ddPII(2) = std::numeric_limits<double>::quiet_NaN();
 
   return;
 }

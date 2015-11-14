@@ -341,7 +341,7 @@ void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
   const int NumMyRows = Aprime->NumMyRows();
   int Row;
   int err;
-  const bool uselocal = B.Filled() && B.ColMap().SameAs(A.ColMap());
+  const bool uselocal = B.Filled() && A.RowMap().SameAs(B.RowMap()) && B.ColMap().SameAs(A.ColMap());
   if (!uselocal)
   {
     if (scalarB != 1.0)
@@ -354,13 +354,28 @@ void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
     for (int i = 0; i < NumMyRows; ++i)
     {
       // Case 1: both matrices have the same col map - can add in local indices
-      if (uselocal)
+      if (uselocal && Aprime->NumMyEntries(i) <= B.NumMyEntries(i))
       {
         double *valuesA = 0, *valuesB = 0;
-        Aprime->ExtractMyRowView(i, NumEntries, valuesA);
-        B.ExtractMyRowView(i, NumEntries, valuesB);
-        for (int j=0; j<NumEntries; ++j)
-          valuesB[j] = valuesB[j] * scalarB + valuesA[j] * scalarA;
+        int *indicesA = 0, *indicesB = 0;
+        int NumEntriesB = -1;
+        Aprime->ExtractMyRowView(i, NumEntries, valuesA, indicesA);
+        B.ExtractMyRowView(i, NumEntriesB, valuesB, indicesB);
+
+        // The source matrix A might have fewer entries than the target matrix B -> go through
+        // the columns in both matrices simultaneously (note that the entries are sorted) and
+        // identify the appropriate columns
+        dsassert(NumEntriesB >= NumEntries, "Target matrix has fewer entries than source matrix and cannot add new ones");
+        for (int jA=0, jB=0; jA<NumEntries; ++jA)
+          {
+            while (indicesB[jB] < indicesA[jA])
+            {
+              ++jB;
+              dsassert(jB < NumEntriesB, "Could not find index");
+            }
+            dsassert(indicesB[jB] == indicesA[jA], "Could not find index");
+            valuesB[jB] = valuesB[jB] * scalarB + valuesA[jA] * scalarA;
+          }
         continue;
       }
       Row = Aprime->GRID(i);
