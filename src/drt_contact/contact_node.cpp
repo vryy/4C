@@ -159,7 +159,8 @@ CONTACT::CoNodeTSIDataContainer::CoNodeTSIDataContainer(double t_ref, double t_d
 : temp_(-1.e12),
   t_ref_(t_ref),
   t_dam_(t_dam),
- temp_master_(-1.e12)
+  thermo_lm_(0.),
+  temp_master_(-1.e12)
 {
   return;
 }
