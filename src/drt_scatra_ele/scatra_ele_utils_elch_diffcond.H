@@ -49,24 +49,28 @@ namespace DRT
 
         //! evaluate electrolyte material
         void MatElchMat(
-            const Teuchos::RCP<const MAT::Material>                                                         material,      //!< electrolyte material
-            const Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond<myelch::nsd_,myelch::nen_> >&   varmanager,    //!< internal variable manager
-            const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&                                           diffmanager,   //!< diffusion manager
-            INPAR::ELCH::DiffCondMat&                                                                       diffcondmat    //!< ion type
+            const Teuchos::RCP<const MAT::Material>&                material,         //!< electrolyte material
+            const std::vector<double>&                              concentrations,   //!< local concentration values
+            const INPAR::ELCH::EquPot&                              equpot,           //!< type of closing equation for electric potential
+            const double&                                           ffrt,             //!< factor F²/RT
+            const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&   diffmanager,      //!< diffusion manager
+            INPAR::ELCH::DiffCondMat&                               diffcondmat       //!< ion type
             );
 
         //! evaluate electrolyte phase
         void MatElchPhase(
-            const Teuchos::RCP<const MAT::Material>                                                         material,      //!< electrolyte phase
-            const Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond<myelch::nsd_,myelch::nen_> >&   varmanager,    //!< internal variable manager
-            const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&                                           diffmanager,   //!< diffusion manager
-            INPAR::ELCH::DiffCondMat&                                                                       diffcondmat    //!< ion type
+            const Teuchos::RCP<const MAT::Material>&                material,         //!< electrolyte phase
+            const std::vector<double>&                              concentrations,   //!< local concentration values
+            const INPAR::ELCH::EquPot&                              equpot,           //!< type of closing equation for electric potential
+            const double&                                           ffrt,             //!< factor F²/RT
+            const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&   diffmanager,      //!< diffusion manager
+            INPAR::ELCH::DiffCondMat&                               diffcondmat       //!< ion type
             );
 
         //! evaluate Newman material
         void MatNewman(
-            const Teuchos::RCP<const MAT::Material>                 material,        //!< Newman material
-            const double                                            concentration,   //!< concentration
+            const Teuchos::RCP<const MAT::Material>&                material,        //!< Newman material
+            const double&                                           concentration,   //!< local concentration value
             const Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond>&   diffmanager      //!< diffusion manager
             );
 
