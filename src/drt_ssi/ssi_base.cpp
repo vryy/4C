@@ -188,6 +188,8 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm, const std::str
 
   if(fieldcoupling_==INPAR::SSI::coupling_match)
   {
+    structdis->FillComplete();
+    scatradis->FillComplete();
 
     // build a proxy of the structure discretization for the scatra field
     Teuchos::RCP<DRT::DofSet> structdofset = structdis->GetDofSetProxy();
