@@ -142,7 +142,10 @@ public:
   */
   virtual double ResidualScaling() const
   {
-    return 1.0/(theta_*dta_);
+    if( params_->get<bool>("ost new") )
+      return 1.0/(dta_);
+    else
+      return 1.0/(theta_*dta_);
   }
 
   /*!
