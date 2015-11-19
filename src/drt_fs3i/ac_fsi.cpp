@@ -241,7 +241,9 @@ void FS3I::ACFSI::Timeloop()
   while (NotFinished())
   {
     SmallTimeScaleLoop();
-    LargeTimeScaleLoop();
+
+    if (NotFinished())
+      LargeTimeScaleLoop();
   }
 }
 
@@ -566,6 +568,7 @@ void FS3I::ACFSI::DoFSIStepStandard()
 void FS3I::ACFSI::DoFSIStepSubcycled( const int subcyclingsteps)
 {
   int subcyclingiter = 0;
+
   while (subcyclingiter < subcyclingsteps)
   {
     subcyclingiter++;
@@ -842,6 +845,7 @@ void FS3I::ACFSI::FsiOutput()
   if ((uprestart != 0 && step_ % uprestart == 0) or ModuloIsRealtiveZero(time_,fsiperiod_,time_) )
   {
     Teuchos::RCP<IO::DiscretizationWriter> fluiddiskwriter = fsi_->FluidField()->DiscWriter();
+//    fluiddiskwriter->WriteVector("wss", WallShearStress_lp_);
     meanmanager_->WriteRestart(fluiddiskwriter);
   }
 

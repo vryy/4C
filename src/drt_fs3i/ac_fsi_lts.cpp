@@ -131,7 +131,7 @@ void FS3I::ACFSI::SetMeanWallShearStresses()
 /*----------------------------------------------------------------------*
  |  Set mean concentration of the fluid scatra field         Thon 11/15 |
  *----------------------------------------------------------------------*/
-void FS3I::ACFSI::SetMeanFluidConcentration()
+void FS3I::ACFSI::SetMeanFluidScatraConcentration()
 {
   Teuchos::RCP<const Epetra_Vector> MeanFluidConc = meanmanager_->GetMeanValue("mean_phi");
 
@@ -198,7 +198,7 @@ void FS3I::ACFSI::FinishLargeTimeScaleLoop()
 
   SetTimeStepInFSI(time_,step_);
   // we now have to fix the time_ and step_ of the structure field, since this is not shifted
-  // in PrepareTimeStep(), but in Update() which we here will not call. So..
+  // in PrepareTimeStep(), but in Update(), which we here will not call. So..
   fsi_->StructureField()->SetTime(time_);
   fsi_->StructureField()->SetTimen(time_+fsi_->StructureField()->Dt());
   fsi_->StructureField()->SetStep(step_);
@@ -494,7 +494,7 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
     phidiff_bltsl_j->MaxValue(&max_phidiff_bltsl);
 
     if (Comm().MyPID()==0)
-      std::cout<<std::scientific<<std::setprecision(2)<<" The maximal local growth since the beginning of the large time scale loop is "<<alpha*max_phidiff_bltsl<<std::endl;
+      std::cout<<std::scientific<<std::setprecision(2)<<"The maximal local growth since the beginning of the large time scale loop is "<<alpha*max_phidiff_bltsl<<std::endl;
 
     //----------------------------------------------------------------------------------------------------
     // now the actual comparison
@@ -507,12 +507,12 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
       dserror("It should not be possible to have done so much growth updates. Sorry!");
 
     //do we need a growth update?
-    if ( max_phidiff_bltsl * alpha >= (growth_updates_counter_+1) / (double)growth_updates * fsi_update_tol )
+    if ( max_phidiff_bltsl * alpha >= ((double)growth_updates_counter_+1.0) / (double)growth_updates * fsi_update_tol )
     {
       growthneedsupdate = true;
     }
 
-    //are we done with the curren large time scale loop?
+    //are we done with the current large time scale loop?
     if (max_phidiff_bltsl * alpha >= fsi_update_tol)
     {
       fsineedsupdate_ = true;
@@ -527,6 +527,8 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
  *-------------------------------------------------------------------------*/
 void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
 {
+  const int growth_updates = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC").get<int>("GROWTH_UPDATES");
+
   const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> fluidscatra = scatravec_[0]->ScaTraField();
   const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> structurescatra = scatravec_[1]->ScaTraField();
 
@@ -539,8 +541,8 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   if (Comm().MyPID()==0)
   {
     std::cout<<"\n************************************************************************"
-               "\n                            AC GROWTH UPDATE"
-               "\n************************************************************************"<<std::endl;
+               "\n                         AC GROWTH UPDATE " << growth_updates_counter_+1 <<"/"<<growth_updates
+             <<"\n************************************************************************"<<std::endl;
   }
 
 
@@ -550,7 +552,7 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   structurescatra->Update(1);
 
   //----------------------------------------------------------------------
-  // Switch time step of structure scatra
+  // Switch time step of scatra fields
   //----------------------------------------------------------------------
   //Switch back the time step to do the update with the same (small) timestep as the fsi (subcycling time step possible!)
   const double dt_fluid = fsi_->FluidField()->Dt();
@@ -578,9 +580,6 @@ void FS3I::ACFSI::LargeTimeScaleDoGrowthUpdate()
   //----------------------------------------------------------------------
   // do the growth update
   //----------------------------------------------------------------------
-  //NOTE: in there SetFSISolution() does not mess up our WSS since fsiisperiodic_ == true! But let's check for safety
-  if ( not fsiisperiodic_)
-    dserror("Here fsiisperiodic_ must be true to not mess up the WSS in ExtractWSS()");
 
   //the actual calculations
   LargeTimeScaleOuterLoopIterStagg();
@@ -671,7 +670,7 @@ void FS3I::ACFSI::LargeTimeScaleSetFSISolution()
 
   SetMeshDisp();
   SetMeanWallShearStresses();
-  SetMeanFluidConcentration();
+  SetMeanFluidScatraConcentration();
   //Set zeros velocities since we assume that the large time scale can not see the deformation of the small time scale
   SetZeroVelocityField();
 }
@@ -685,7 +684,7 @@ void FS3I::ACFSI::LargeTimeScaleUpdateAndOutput()
   SetTimeStepInFSI(time_,step_);
   scatravec_[0]->ScaTraField()->SetTimeStep(time_,step_);
 
-  //write fsi and fluid scatra output. Structure scatra output is done later anyways
+  //write fsi output
   //FSI update and output
 //  fsi_->PrepareOutput();
 //  fsi_->Update();

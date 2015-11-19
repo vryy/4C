@@ -127,7 +127,7 @@ namespace FS3I
     void SetMeanWallShearStresses();
 
     ///Set mean concentration of the fluid scatra field
-    void SetMeanFluidConcentration();
+    void SetMeanFluidScatraConcentration();
 
     ///Set zero velocity field in scatra fields
     void SetZeroVelocityField();
