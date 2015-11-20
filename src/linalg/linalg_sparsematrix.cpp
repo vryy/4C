@@ -1651,7 +1651,6 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
   Teuchos::RCP<Epetra_CrsMatrix> A22 = Abase(1,1).EpetraMatrix();
   if (A11->Filled() || A12->Filled() || A21->Filled() || A22->Filled())
     dserror("Block matrix may not be filled on input");
-  const Epetra_Comm& Comm    = Abase.Comm();
   const Epetra_Map&  A11rmap = Abase.RangeMap(0);
   const Epetra_Map&  A11dmap = Abase.DomainMap(0);
   const Epetra_Map&  A22rmap = Abase.RangeMap(1);
