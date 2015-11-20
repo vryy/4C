@@ -129,7 +129,7 @@ namespace FSI
     row map stays the same but the column map changes.
 
     A special point here is that the source matrix column might include more
-    values that the respective destination matrix column. This happens with
+    values than the respective destination matrix column. This happens with
     fluid matrices that include velocity and pressure values whereas the
     corresponding ale matrices just contain displacement values. In such a
     case it is possible to advice the transformation to drop the pressure

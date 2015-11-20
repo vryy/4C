@@ -177,7 +177,7 @@ void LINALG::SparseMatrixBase::Add(const LINALG::SparseOperator& A, const bool t
 const void LINALG::SparseMatrixBase::AddOther(LINALG::SparseMatrixBase& B, const bool transposeA, const double scalarA, const double scalarB) const
 {
   //B.Add(*this, transposeA, scalarA, scalarB);
-  LINALG::Add( *sysmat_, transposeA, scalarA, *B.sysmat_, scalarB );
+  LINALG::Add( *sysmat_, transposeA, scalarA, B, scalarB );
 }
 
 

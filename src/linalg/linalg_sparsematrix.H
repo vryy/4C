@@ -607,10 +607,10 @@ LINALG::SparseMatrix::Split(
   if(domainmaps.NumMaps() != rangemaps.NumMaps())
     dserror("Must have equal number of range and domain maps for matrix splitting!");
 
-  // initialize resulting BlockSparseMatrix
-  const int npr = EpetraMatrix()->MaxNumEntries();
+  // initialize resulting BlockSparseMatrix. no need to provide estimates of nonzeros because
+  // all entries will be inserted at once anyway
   Teuchos::RCP<BlockSparseMatrix<Strategy> > blockA =
-    Teuchos::rcp(new LINALG::BlockSparseMatrix<Strategy>(domainmaps,rangemaps,npr,explicitdirichlet_,savegraph_));
+    Teuchos::rcp(new LINALG::BlockSparseMatrix<Strategy>(domainmaps,rangemaps,0,explicitdirichlet_,savegraph_));
 
   // perform matrix splitting
   if(domainmaps.NumMaps() == 2)

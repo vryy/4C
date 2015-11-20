@@ -313,10 +313,6 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
 
   Teuchos::RCP<LINALG::SparseMatrix> f = FluidField()->SystemMatrix();
 
-  // Uncomplete fluid matrix to be able to deal with slightly defective
-  // interface meshes.
-  f->UnComplete();
-
   double scale     = FluidField()->ResidualScaling();
   double timescale = FluidField()->TimeScaling();
 
@@ -350,17 +346,17 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
     mat.Matrix(1,1).Add(fmgg,false,1./timescale,1.0);
     mat.Matrix(1,1).Add(fmGg,false,1./timescale,1.0);
 
-    (*fmgitransform_)(mmm->FullRowMap(),
+    (*fmiitransform_)(mmm->FullRowMap(),
                       mmm->FullColMap(),
-                      fmgi,
+                      fmii,
                       1.,
                       ADAPTER::CouplingMasterConverter(coupfa),
                       mat.Matrix(1,2),
                       false,
                       false);
-    (*fmiitransform_)(mmm->FullRowMap(),
+    (*fmgitransform_)(mmm->FullRowMap(),
                       mmm->FullColMap(),
-                      fmii,
+                      fmgi,
                       1.,
                       ADAPTER::CouplingMasterConverter(coupfa),
                       mat.Matrix(1,2),
@@ -422,10 +418,8 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseMat
 
   const Teuchos::RCP<ADAPTER::StructureLung>& structfield = Teuchos::rcp_dynamic_cast<ADAPTER::StructureLung>(StructureField());
 
-  LINALG::SparseMatrix s = *StructureField()->SystemMatrix();
-  s.UnComplete();
+  LINALG::SparseMatrix &s = *StructureField()->SystemMatrix();
   s.Add(AddStructConstrMatrix_->Matrix(0,0), false, 1.0, 1.0);
-  s.Complete();
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocks =
     s.Split<LINALG::DefaultBlockMatrixStrategy>(*structfield->FSIInterface(),

@@ -372,10 +372,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
   }
 
   StructMatrix->Complete();
-  LINALG::SparseMatrix& ConstrStructMatrix = StructMatrix->Matrix(1,0);
-  ConstrStructMatrix.UnComplete();
-  ConstrStructMatrix.Add(StructMatrix->Matrix(0,1), true, 1.0, 0.0);
-  StructMatrix->Complete();
+  StructMatrix->Matrix(1,0) = *StructMatrix->Matrix(0,1).Transpose();
 
 #if 0 // Debug
   //############################################################################################

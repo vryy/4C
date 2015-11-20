@@ -741,11 +741,20 @@ inline void Complete(Teuchos::RCP<Epetra_CrsMatrix> A,
 /*!
  \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
 
- Add one matrix to another. the matrix B to be added to must not be
- completed. Sparsity patterns of A and B need not match and A and B can be
- nonsymmetric in value and pattern.
- Row map of A has to be a processor-local subset of the row map of B.
+ Add one matrix to another.
 
+ The matrix B may or may not be completed. If B is completed, no new elements can be
+ inserted and the addition only succeeds in case the sparsity pattern of B is a superset of
+ the sparsity pattern of A (otherwise: dserror).
+
+ Performance characterization: If B is filled (completed), this function is pretty fast,
+ typically on the order of two to four matrix-vector products with B. The case where B is un-filled
+ runs much slower (on the order of up to 100 matrix-vector products).
+
+ Sparsity patterns of A and B need not match and A and B can be
+ nonsymmetric in value and pattern.
+
+ Row map of A has to be a processor-local subset of the row map of B.
 
  Note that this is a true parallel add, even in the transposed case!
 
@@ -761,9 +770,19 @@ void Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
 /*!
  \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
 
- Add one matrix to another. the matrix B to be added to must not be
- completed. Sparsity patterns of A and B need not match and A and B can be
+ Add one matrix to another.
+
+ The matrix B may or may not be completed. If B is completed, no new elements can be
+ inserted and the addition only succeeds in case the sparsity pattern of B is a superset of
+ the sparsity pattern of A (otherwise: dserror).
+
+ Performance characterization: If B is filled (completed), this function is pretty fast,
+ typically on the order of two to four matrix-vector products with B. The case where B is un-filled
+ runs much slower (on the order of up to 100 matrix-vector products).
+
+ Sparsity patterns of A and B need not match and A and B can be
  nonsymmetric in value and pattern.
+
  Row map of A has to be a processor-local subset of the row map of B.
 
 
@@ -783,6 +802,32 @@ inline void Add(const Teuchos::RCP<Epetra_CrsMatrix> A, const bool transposeA,
   LINALG::Add(*A, transposeA, scalarA, *B, scalarB);
   return;
 }
+
+/*!
+ \brief Add a (transposed) Epetra_CrsMatrix to a LINALG::SparseMatrix: B = B*scalarB + A(^T)*scalarA
+
+ Add one matrix to another.
+
+ As opposed to the other Add() functions, this method can handle both the case where
+ matrix B is fill-completed (for performance reasons) but does not have to.
+ If B is completed and new matrix elements are detected, the matrix is un-completed and
+ rebuild internally (expensive).
+
+ Sparsity patterns of A and B need not match and A and B can be
+ nonsymmetric in value and pattern.
+
+ Row map of A has to be a processor-local subset of the row map of B.
+
+ Note that this is a true parallel add, even in the transposed case!
+
+ \param A          (in)     : Matrix to add to B (must have Filled()==true)
+ \param transposeA (in)     : flag indicating whether transposed of A should be used
+ \param scalarA    (in)     : scaling factor for A
+ \param B          (in/out) : Matrix to be added to (must have Filled()==false)
+ \param scalarB    (in)     : scaling factor for B
+ */
+void Add(const Epetra_CrsMatrix& A, const bool transposeA, const double scalarA,
+         LINALG::SparseMatrixBase& B, const double scalarB);
 
 /*!
  \brief Compute transposed matrix of an Epetra_CrsMatrix explicitly

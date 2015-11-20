@@ -308,12 +308,138 @@ void LINALG::Complete(Epetra_CrsMatrix& A, const Epetra_Map& domainmap,
   return;
 }
 
+
+
+namespace LINALG
+{
+  namespace
+  {
+    /*----------------------------------------------------------------------*
+     |  Internal optimized matrix addition                 kronbichler 11/15|
+     |  B += A(transposed)*scalarA                                          |
+     |  Return value: number of local rows in A added successfully          |
+     |             (in case B must be uncompleted, this must be remembered) |
+     *----------------------------------------------------------------------*/
+    int Add (const Epetra_CrsMatrix& A, const double scalarA,
+             Epetra_CrsMatrix& B, const double scalarB,
+             const int startRow = 0)
+    {
+      if (!A.Filled())
+        dserror("Internal error, matrix A must have called FillComplete()");
+
+      const int NumMyRows = A.NumMyRows();
+
+      // Case 1 where matrix B is filled. In that case, we can attempt to add in local indices,
+      // much faster than the global indices... :-)
+      if (B.Filled())
+      {
+        if (startRow != 0)
+          dserror("Internal error. Not implemented.");
+
+        // step 1: get the indexing from A to B in a random-access array
+        std::vector<int> AcolToBcol(A.ColMap().NumMyElements());
+        for (int i=0; i<A.ColMap().NumMyElements(); ++i)
+          AcolToBcol[i] = B.ColMap().LID(A.ColMap().GID(i));
+
+        std::vector<int> indicesInB(A.MaxNumEntries());
+
+        // step 2: loop over all local rows in matrix A and attempt the addition in local index space
+        for (int i=0 ; i<NumMyRows; ++i )
+        {
+          const int myRowB = B.RowMap().LID(A.RowMap().GID(i));
+          if (myRowB == -1)
+            dserror("LINALG::Add: The row map of matrix B must be a superset of the row map of Matrix A.");
+
+          // extract views of both the row in A and in B
+          double *valuesA = 0, *valuesB = 0;
+          int *indicesA = 0, *indicesB = 0;
+          int NumEntriesA = -1, NumEntriesB = -1;
+          A.ExtractMyRowView(i, NumEntriesA, valuesA, indicesA);
+          B.ExtractMyRowView(myRowB, NumEntriesB, valuesB, indicesB);
+
+          // check if we can identify all indices from matrix A in matrix B. quite a lot of
+          // indirect addressing in here, but these are all local operations and thus pretty fast
+          bool failed = false;
+          indicesInB.clear();
+          for (int jA=0, jB=0; jA<NumEntriesA; ++jA)
+          {
+            const int col = AcolToBcol[indicesA[jA]];
+            if (col == -1)
+            {
+              failed = true;
+              break;
+            }
+            while (jB < NumEntriesB && indicesB[jB] < col)
+              ++jB;
+
+            // did not find index in linear search (re-indexing from A.ColMap() to B.ColMap()
+            // might pass through the indices differently), try binary search
+            if (indicesB[jB] != col)
+              jB = std::lower_bound(&indicesB[0], &indicesB[0]+NumEntriesB, col) - &indicesB[0];
+
+            // not found, sparsity pattern of B does not contain the index from A -> terminate
+            if (indicesB[jB] != col)
+            {
+              failed = true;
+              break;
+            }
+
+            indicesInB.push_back(jB);
+          }
+
+          if (failed)
+            return i;
+          else
+          {
+            for (int j=0; j<NumEntriesA; ++j)
+              valuesB[indicesInB[j]] += scalarA * valuesA[j];
+          }
+        }
+
+        return NumMyRows;
+      }
+
+      // case 2 where B is not filled -> good old slow addition in global indices
+
+      //Loop over Aprime's rows and sum into
+      std::vector<int> Indices(A.MaxNumEntries());
+      std::vector<double> Values(A.MaxNumEntries());
+
+      // Continue with i from the previous attempt
+      for (int i=startRow ; i < NumMyRows; ++i)
+      {
+        const int Row = A.GRID(i);
+        int NumEntries = 0;
+        int ierr = A.ExtractGlobalRowCopy(Row, Values.size(), NumEntries,
+                                          &Values[0], &Indices[0]);
+        if (ierr)
+          dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", ierr);
+        if (scalarA != 1.0)
+          for (int j = 0; j < NumEntries; ++j)
+            Values[j] *= scalarA;
+        for (int j = 0; j < NumEntries; ++j)
+        {
+          int err = B.SumIntoGlobalValues(Row, 1, &Values[j], &Indices[j]);
+          if (err < 0 || err == 2)
+            err = B.InsertGlobalValues(Row, 1, &Values[j], &Indices[j]);
+          if (err < 0)
+            dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
+        }
+      }
+
+      return NumMyRows;
+    }
+  }
+}
+
+
+
 /*----------------------------------------------------------------------*
- |  Add a sparse matrix to another  (public)                 mwgee 12/06|
+ |  Add a sparse matrix to another  (public)           kronbichler 11/15|
  |  B = B*scalarB + A(transposed)*scalarA                               |
  *----------------------------------------------------------------------*/
 void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
-    const double scalarA, Epetra_CrsMatrix& B, const double scalarB)
+                 const double scalarA, LINALG::SparseMatrixBase& B, const double scalarB)
 {
   if (!A.Filled())
     dserror("FillComplete was not called on A");
@@ -332,78 +458,63 @@ void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
     Aprime = const_cast<Epetra_CrsMatrix*>(&A);
   }
 
-  //Loop over Aprime's rows and sum into
-  int MaxNumEntries = EPETRA_MAX( Aprime->MaxNumEntries(), B.MaxNumEntries() );
-  int NumEntries;
-  std::vector<int> Indices(MaxNumEntries);
-  std::vector<double> Values(MaxNumEntries);
+  if (scalarB == 0.)
+    B.PutScalar(0.0);
+  else if (scalarB != 1.0)
+    B.Scale(scalarB);
 
-  const int NumMyRows = Aprime->NumMyRows();
-  int Row;
-  int err;
-  const bool uselocal = B.Filled() && A.RowMap().SameAs(B.RowMap()) && B.ColMap().SameAs(A.ColMap());
-  if (!uselocal)
+  int rowsAdded = Add(*Aprime, scalarA, *B.EpetraMatrix(), scalarB);
+  int localSuccess = rowsAdded == Aprime->RowMap().NumMyElements();
+  int globalSuccess = 0;
+  B.Comm().MinAll(&localSuccess, &globalSuccess, 1);
+  if (!globalSuccess)
   {
-    if (scalarB != 1.0)
-      B.Scale(scalarB);
-    if (scalarB == 0.0)
-      B.PutScalar(0.0);
-  }
-  if (scalarA)
-  {
-    for (int i = 0; i < NumMyRows; ++i)
-    {
-      // Case 1: both matrices have the same col map - can add in local indices
-      if (uselocal && Aprime->NumMyEntries(i) <= B.NumMyEntries(i))
-      {
-        double *valuesA = 0, *valuesB = 0;
-        int *indicesA = 0, *indicesB = 0;
-        int NumEntriesB = -1;
-        Aprime->ExtractMyRowView(i, NumEntries, valuesA, indicesA);
-        B.ExtractMyRowView(i, NumEntriesB, valuesB, indicesB);
+    if (!B.Filled())
+      dserror("Unexpected state of B (expected: B not filled, got: B filled)");
 
-        // The source matrix A might have fewer entries than the target matrix B -> go through
-        // the columns in both matrices simultaneously (note that the entries are sorted) and
-        // identify the appropriate columns
-        dsassert(NumEntriesB >= NumEntries, "Target matrix has fewer entries than source matrix and cannot add new ones");
-        for (int jA=0, jB=0; jA<NumEntries; ++jA)
-          {
-            while (indicesB[jB] < indicesA[jA])
-            {
-              ++jB;
-              dsassert(jB < NumEntriesB, "Could not find index");
-            }
-            dsassert(indicesB[jB] == indicesA[jA], "Could not find index");
-            valuesB[jB] = valuesB[jB] * scalarB + valuesA[jA] * scalarA;
-          }
-        continue;
-      }
-      Row = Aprime->GRID(i);
-      int ierr = Aprime->ExtractGlobalRowCopy(Row, MaxNumEntries, NumEntries,
-          &Values[0], &Indices[0]);
-      if (ierr)
-        dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d", ierr);
-      if (scalarA != 1.0)
-        for (int j = 0; j < NumEntries; ++j)
-          Values[j] *= scalarA;
-      // Case 2: B is filled and we can add all entries at once
-      if (B.Filled())
-      {
-        err = B.SumIntoGlobalValues(Row, NumEntries, &Values[0], &Indices[0]);
-        if (err != 0)
-          dserror("Epetra_CrsMatrix::SumIntoGlobalValues returned err=%d", err);
-      }
-      else
-        for (int j = 0; j < NumEntries; ++j)
-        {
-          err = B.SumIntoGlobalValues(Row, 1, &Values[j], &Indices[j]);
-          if (err < 0 || err == 2)
-            err = B.InsertGlobalValues(Row, 1, &Values[j], &Indices[j]);
-          if (err < 0)
-            dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d", err);
-        }
-    }
+    // not successful -> matrix structure must be un-completed to be able to add new
+    // indices.
+    B.UnComplete();
+    Add(*Aprime, scalarA, *B.EpetraMatrix(), scalarB, rowsAdded);
+    B.Complete();
   }
+}
+
+
+
+/*----------------------------------------------------------------------*
+ |  Add a sparse matrix to another  (public)                 mwgee 12/06|
+ |  B = B*scalarB + A(transposed)*scalarA                               |
+ *----------------------------------------------------------------------*/
+void LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA,
+                 const double scalarA, Epetra_CrsMatrix& B, const double scalarB)
+{
+  if (!A.Filled())
+    dserror("FillComplete was not called on A");
+
+  Epetra_CrsMatrix* Aprime = NULL;
+  Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
+  if (transposeA)
+  {
+    //Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
+    Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose());
+    Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(
+        const_cast<Epetra_CrsMatrix&>(A)))));
+  }
+  else
+  {
+    Aprime = const_cast<Epetra_CrsMatrix*>(&A);
+  }
+
+  if (scalarB == 0.)
+    B.PutScalar(0.0);
+  else if (scalarB != 1.0)
+    B.Scale(scalarB);
+
+  int rowsAdded = Add(*Aprime, scalarA, B, scalarB);
+  if (rowsAdded != Aprime->RowMap().NumMyElements())
+    dserror("LINALG::Add: Could not add all entries from A into B in row %d",
+            Aprime->RowMap().GID(rowsAdded));
 }
 
 /*----------------------------------------------------------------------*

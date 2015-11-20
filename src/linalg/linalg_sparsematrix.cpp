@@ -350,7 +350,7 @@ void LINALG::SparseMatrix::Reset()
   else
   {
     // use information about number of allocated entries not to fall back to matrix with zero size
-    // otherwise assembly would be extremly expensive!
+    // otherwise assembly would be extremely expensive!
     for ( unsigned i=0; i<numentries.size(); ++i )
     {
       numentries[i] = graph.NumAllocatedMyIndices(i);
@@ -1441,7 +1441,7 @@ void LINALG::SparseMatrix::Add(const LINALG::SparseMatrixBase& A,
                                const double scalarA,
                                const double scalarB)
 {
-  Add(*A.EpetraMatrix(),transposeA,scalarA,scalarB);
+  LINALG::Add( *A.EpetraMatrix(), transposeA, scalarA, *this, scalarB );
 }
 
 
@@ -1452,7 +1452,7 @@ void LINALG::SparseMatrix::Add(const Epetra_CrsMatrix& A,
                                const double scalarA,
                                const double scalarB)
 {
-  LINALG::Add( A, transposeA, scalarA, *sysmat_, scalarB );
+  LINALG::Add( A, transposeA, scalarA, *this, scalarB );
 }
 
 
@@ -1657,46 +1657,22 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
   const Epetra_Map&  A22rmap = Abase.RangeMap(1);
   const Epetra_Map&  A22dmap = Abase.DomainMap(1);
 
-  // build the redundant domain map info for the smaller of the 2 submaps
-  bool doa11;
-  const Epetra_Map* refmap;
-  if (A11dmap.NumGlobalElements()>A22dmap.NumGlobalElements())
+  // find out about how the column map is linked to the individual processors.
+  // this is done by filling the information about the rowmap into a vector that
+  // is then exported to the column map
+  Epetra_Vector dselector(A->DomainMap());
+  for (int i=0; i<dselector.MyLength(); ++i)
   {
-    doa11 = false;
-    refmap = &A22dmap;
+    const int gid = A->DomainMap().GID(i);
+    if (A11dmap.MyGID(gid))
+      dselector[i] = 0.;
+    else if (A22dmap.MyGID(gid))
+      dselector[i] = 1.;
+    else
+      dselector[i] = -1.;
   }
-  else
-  {
-    doa11 = true;
-    refmap = &A11dmap;
-  }
-  //-------------------------------------------- create a redundant set
-  std::set<int> gset;
-  {
-    std::vector<int> global(refmap->NumGlobalElements());
-    int count=0;
-    for (int proc=0; proc<Comm.NumProc(); ++proc)
-    {
-      int length = 0;
-      if (proc==Comm.MyPID())
-      {
-        for (int i=0; i<refmap->NumMyElements(); ++i)
-        {
-          global[count+length] = refmap->GID(i);
-          ++length;
-        }
-      }
-      Comm.Broadcast(&length,1,proc);
-      Comm.Broadcast(&global[count],length,proc);
-      count += length;
-    }
-#ifdef DEBUG
-    if (count != refmap->NumGlobalElements())
-      dserror("SparseMatrix::Split2x2: mismatch in dimensions");
-#endif
-    // create the map
-    for (int i=0; i<count; ++i) gset.insert(global[i]);
-  }
+  Epetra_Vector selector(A->ColMap());
+  LINALG::Export(dselector, selector);
 
   std::vector<int>    gcindices1(A->MaxNumEntries());
   std::vector<double> gvalues1(A->MaxNumEntries());
@@ -1715,29 +1691,26 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
     int     numentries;
     double* values;
     int*    cindices;
-#ifdef DEBUG
     int err = A->ExtractMyRowView(i,numentries,values,cindices);
     if (err) dserror("SparseMatrix::Split2x2: A->ExtractMyRowView returned %d",err);
-#else
-    A->ExtractMyRowView(i,numentries,values,cindices);
-#endif
     for (int j=0; j<numentries; ++j)
     {
       const int gcid = A->ColMap().GID(cindices[j]);
-      // see whether we have gcid as part of gset
-      std::set<int>::const_iterator curr = gset.find(gcid);
+      dsassert(cindices[j] < selector.MyLength(), "Internal error");
       // column is in A*1
-      if ( (doa11 && curr!=gset.end()) || (!doa11 && curr==gset.end()) )
+      if ( selector[cindices[j]] == 0. )
       {
         gcindices1[count1] = gcid;
         gvalues1[count1++] = values[j];
       }
       // column us in A*2
-      else
+      else if (selector[cindices[j]] == 1. )
       {
         gcindices2[count2] = gcid;
         gvalues2[count2++] = values[j];
       }
+      else
+        dserror("Could not identify column index with block, internal error.");
     }
     //======================== row belongs to A11 and A12
     if (A11rmap.MyGID(grid))

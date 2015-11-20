@@ -64,19 +64,26 @@ AddValues(Teuchos::RCP<Epetra_CrsMatrix> edst,
     // We might want to preserve a Dirichlet row in our destination matrix
     // here as well. Skip for now.
 
-    for (int j=0; j<NumEntries; ++j)
+    if (edst->NumAllocatedGlobalEntries(row) == 0)
     {
-      // add all values, including zeros, as we need a proper matrix graph
-      int err = edst->SumIntoGlobalValues(row, 1, const_cast<double*>(&Values[j]), &Indices[j]);
-      if (err>0)
-      {
-        err = edst->InsertGlobalValues(row, 1, const_cast<double*>(&Values[j]), &Indices[j]);
-        if (err<0)
-          dserror("InsertGlobalValues error: %d", err);
-      }
-      else if (err<0)
-        dserror("SumIntoGlobalValues error: %d", err);
+      int err = edst->InsertGlobalValues(row, NumEntries, const_cast<double*>(&Values[0]), &Indices[0]);
+      if (err<0)
+        dserror("InsertGlobalValues error: %d", err);
     }
+    else
+      for (int j=0; j<NumEntries; ++j)
+      {
+        // add all values, including zeros, as we need a proper matrix graph
+        int err = edst->SumIntoGlobalValues(row, 1, const_cast<double*>(&Values[j]), &Indices[j]);
+        if (err>0)
+        {
+          err = edst->InsertGlobalValues(row, 1, const_cast<double*>(&Values[j]), &Indices[j]);
+          if (err<0)
+            dserror("InsertGlobalValues error: %d", err);
+        }
+        else if (err<0)
+          dserror("SumIntoGlobalValues error: %d", err);
+      }
   }
   else
   {
@@ -281,6 +288,8 @@ FSI::UTILS::MatrixColTransform::MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc
   const Epetra_Map& dstrowmap = edst->RowMap();
   const Epetra_Map& srccolmap = esrc->ColMap();
 
+  std::vector<int> idx;
+  std::vector<double> vals;
   int rows = esrc->NumMyRows();
   for (int i=0; i<rows; ++i)
   {
@@ -291,10 +300,8 @@ FSI::UTILS::MatrixColTransform::MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc
     if (err!=0)
       dserror("ExtractMyRowView error: %d", err);
 
-    std::vector<int> idx;
-    std::vector<double> vals;
-    idx.reserve(NumEntries);
-    vals.reserve(NumEntries);
+    idx.clear();
+    vals.clear();
 
     for (int j=0; j<NumEntries; ++j)
     {
