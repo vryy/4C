@@ -295,7 +295,10 @@ void LINALG::SparseMatrix::Zero()
 {
   if (graph_==Teuchos::null)
   {
-    Reset();
+    if (Filled() && !explicitdirichlet_)
+      sysmat_->PutScalar(0.);
+    else
+      Reset();
   }
   else
   {

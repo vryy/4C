@@ -1141,7 +1141,7 @@ void TSI::Monolithic::SetupSystemMatrix()
   // structural block k_st (3nxn)
   // build mechanical-thermal block
 
-  k_st_->Zero();
+  k_st_->Reset();
   // call the element and calculate the matrix block
 #ifndef MonTSIwithoutTHR
   ApplyStrCouplMatrix(k_st_);
@@ -1216,7 +1216,7 @@ void TSI::Monolithic::SetupSystemMatrix()
   // thermo part k_ts (nx3n)
   // build thermal-mechanical block
 
-  k_ts_->Zero();
+  k_ts_->Reset();
 
   // call the element and calculate the matrix block
 #if ( (!defined(MonTSIwithoutSTR)) and (!defined(COUPLEINITTEMPERATURE)) )

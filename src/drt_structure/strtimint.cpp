@@ -417,13 +417,13 @@ void STR::TimInt::createFields( Teuchos::RCP<LINALG::Solver>& solver )
   }
 
   // create empty matrices
-  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
-  mass_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+  stiff_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, false, true));
+  mass_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, false, true));
   if (damping_ != INPAR::STR::damp_none)
   {
     if (HaveNonlinearMass()==INPAR::STR::ml_none)
     {
-      damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
+      damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, false, true));
     }
     else
     {
