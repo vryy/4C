@@ -453,6 +453,8 @@ void POROELAST::PoroBase::SetupCoupling()
     {
       //for submeshes we only couple a part of the structure disc. with the fluid disc.
       // we use the fact, that we have matching grids and matching gids
+      // The node matching search tree is used to find matching structure and fluid nodes.
+      // Note, that the structure discretization must be the bigger one (because it is the masterdis).
       coupfs_->SetupCoupling(*structdis,
                              *fluiddis,
                              *fluidnoderowmap,
@@ -462,12 +464,15 @@ void POROELAST::PoroBase::SetupCoupling()
     }
     else
     {
+      // matching grid case: we rely on that the cloning strategy build the fluid node map with equal
+      // node gids as the structure and also identical parallel distribution.
+      // Hence, we do not use the node search tree here and use the same fluid node map also as permuted map.
       coupfs_->SetupCoupling(*structdis,
                              *fluiddis,
                              *structnoderowmap,
                              *fluidnoderowmap,
-                             ndof,
-                             true);
+                             *fluidnoderowmap,
+                             ndof);
     }
 
     FluidField()->SetMeshMap(coupfs_->SlaveDofMap());

@@ -241,6 +241,36 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+                                      const DRT::Discretization& slavedis,
+                                      const Epetra_Map& masternodemap,
+                                      const Epetra_Map& slavenodemap,
+                                      const Epetra_Map& permslavenodemap,
+                                      const int numdof)
+{
+  if (masternodemap.NumGlobalElements()!=slavenodemap.NumGlobalElements())
+    dserror("got %d master nodes but %d slave nodes for coupling",
+        masternodemap.NumGlobalElements(),
+        slavenodemap.NumGlobalElements());
+
+  // just copy Epetra maps
+
+  Teuchos::RCP<Epetra_Map> mymasternodemap =
+    Teuchos::rcp(new Epetra_Map(masternodemap));
+
+  Teuchos::RCP<Epetra_Map> myslavenodemap =
+    Teuchos::rcp(new Epetra_Map(slavenodemap));
+
+  Teuchos::RCP<Epetra_Map> mypermslavenodemap =
+    Teuchos::rcp(new Epetra_Map(permslavenodemap));
+
+  // build slave to master permutation and dof all maps
+  FinishCoupling(masterdis, slavedis, mymasternodemap, myslavenodemap, mypermslavenodemap, numdof);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
                                    const DRT::Discretization& slavedis,
                                    std::vector<int>& masternodes,
