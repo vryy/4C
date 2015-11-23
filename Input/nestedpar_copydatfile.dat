@@ -73,7 +73,7 @@ AZREUSE                         8                             // how often to re
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
 IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-4                        // tolerance in unscaled residual
+AZTOL                           1.0E-4                       // tolerance in unscaled residual
 AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test
 AZITER                          5000                          // max iterations
 AZSUB                           50                            // size of krylov space for gmres
@@ -573,8 +573,8 @@ NODE 52 COORD 1.850000000000000e+01 0.000000000000000e+00 0.000000000000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
 // standard AAA material parametersa
-MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 1.0e-7
-MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.044 BETA 1.881 NUE 0.49 DENS 1.0e-7
+MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044E6 BETA 1.881E6 NUE 0.49 DENS 1.0e-7
+MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.044E6 BETA 1.881E6 NUE 0.49 DENS 1.0e-7
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.5 FACTOR 0.0 0.3200072
 ----------------------------------------------------------------------CURVE2
