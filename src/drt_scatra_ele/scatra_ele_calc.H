@@ -327,6 +327,13 @@ namespace ELEMENTS
       );
 
     //! calculate/reconstruct gradient(s) at nodes using L2-projection.
+    virtual void CalcGradientAtNodes(
+      const DRT::Element*             ele,       //!< the element we are dealing with
+      Epetra_SerialDenseMatrix&       elemat1,   //!< element matrix, to be filled
+      Epetra_SerialDenseMatrix&       elemat2   //!< element RHS vector (x-direction)
+      );
+
+    //! calculate/reconstruct gradient(s) at nodes using L2-projection.
     virtual void CalcCurvatureAtNodes(
       const DRT::Element*                             ele,          //!< the element we are dealing with
       Epetra_SerialDenseMatrix&                       elemat1,      //!< element matrix, to be filled

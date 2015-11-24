@@ -230,8 +230,9 @@ public:
   //! calculate error compared to analytical solution
   virtual void EvaluateErrorComparedToAnalyticalSol();
 
-  //! calculate the reconstructed nodal gradient of phi
-  Teuchos::RCP<Epetra_MultiVector> GetSmoothedGradientAtNodes(const Teuchos::RCP<const Epetra_Vector> phi);
+    //! Calculate the reconstructed nodal gradient of phi
+    Teuchos::RCP<Epetra_MultiVector>  ReconstructGradientAtNodes(
+        const Teuchos::RCP<const Epetra_Vector> phi);
 
   //! finite difference check for scalar transport system matrix
   void FDCheck();
@@ -631,10 +632,14 @@ protected:
       double& conresnorminf
   );
 
-  //! Calculate the reconstructed nodal gradient of phi
-  void ReconstructGradientAtNodes(
-      Teuchos::RCP<Epetra_MultiVector> gradPhi,
-      const Teuchos::RCP<const Epetra_Vector> phi);
+//  //! Calculate the reconstructed nodal gradient of phi
+  Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
+    Teuchos::RCP<const Epetra_Vector> state,
+    const std::string statename,
+    const int numvec,
+    Teuchos::ParameterList& params,
+    const int solvernumber
+    );
 
   //! compute contributions of solution-depending boundary and interface conditions to global system of equations
   virtual void EvaluateSolutionDependingConditions(

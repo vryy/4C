@@ -1718,28 +1718,12 @@ void SCATRA::ScaTraTimIntImpl::SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> s
   return;
 }
 
-/*==========================================================================*/
-// Reconstruct gradients
-/*==========================================================================*/
-//! Calculate the reconstructed nodal gradient of phi
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::GetSmoothedGradientAtNodes(const Teuchos::RCP<const Epetra_Vector> phi)
-{
-  Teuchos::RCP<Epetra_MultiVector> gradphi = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
-
-  ReconstructGradientAtNodes(gradphi,phi);
-  return gradphi;
-}
-
-
 /*----------------------------------------------------------------------*
  | Calculate the reconstructed nodal gradient of phi        winter 04/14|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodes(
-    Teuchos::RCP<Epetra_MultiVector> gradPhi,
+Teuchos::RCP<Epetra_MultiVector>  SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodes(
     const Teuchos::RCP<const Epetra_Vector> phi)
 {
-  // zero out matrix entries
-  sysmat_->Zero();
 
   // create the parameters for the discretization
   Teuchos::ParameterList eleparams;
@@ -1747,24 +1731,76 @@ void SCATRA::ScaTraTimIntImpl::ReconstructGradientAtNodes(
   // action for elements
   eleparams.set<int>("action",SCATRA::recon_gradients_at_nodes);
 
-  // set vector values needed by elements
+//  ///=========================================
+//  // Need to change call in scatra_ele_calc_general_service.cpp CalcGradientAtNodes(..,..,..)
+//  //  if these lines are uncommented.
+//  Teuchos::RCP<Epetra_MultiVector> gradPhi = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
+//
+//  // zero out matrix entries
+//  sysmat_->Zero();
+//
+//  // set vector values needed by elements
+//  discret_->ClearState();
+//  discret_->SetState("phinp",phi);
+//
+//  Teuchos::RCP<Epetra_MultiVector> rhs_vectors = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
+//
+//  discret_->Evaluate(eleparams,sysmat_,Teuchos::null,Teuchos::rcp((*rhs_vectors)(0),false),Teuchos::rcp((*rhs_vectors)(1),false),Teuchos::rcp((*rhs_vectors)(2),false));
+//
+//  discret_->ClearState();
+//
+//  // finalize the complete matrix
+//  sysmat_->Complete();
+//
+//  //TODO Remove for-loop and add Belos solver instead
+//  for (int idim=0; idim<3 ; idim++)
+//    solver_->Solve(sysmat_->EpetraOperator(),Teuchos::rcp((*gradPhi)(idim),false),Teuchos::rcp((*rhs_vectors)(idim),false),true,true);
+//
+//  ///=========================================
+
+  ///**********************************
+
+  // Probably not the nicest way...
+  // Might want to have L2_projection incorporated into two-phase surface tension parameters
+  const Teuchos::ParameterList& scatradyn =
+    DRT::Problem::Instance()->ScalarTransportDynamicParams();
+  const int lstsolver = scatradyn.get<int>("LINEAR_SOLVER");
+
+  const int dim = DRT::Problem::Instance()->NDim();
+
+  Teuchos::RCP<Epetra_MultiVector> gradPhi = SCATRA::ScaTraTimIntImpl::ComputeNodalL2Projection(phi,"phinp",dim,eleparams,lstsolver);
+
+  //As the object is a MultiVector, this has to be done to keep the structure from before...
+  //  not the nicest way but better than nothing.
+  gradPhi->ReplaceMap(*(discret_->DofRowMap()));
+  Teuchos::rcp((*gradPhi)(0),false)->ReplaceMap(*(discret_->DofRowMap()));
+  Teuchos::rcp((*gradPhi)(1),false)->ReplaceMap(*(discret_->DofRowMap()));
+  Teuchos::rcp((*gradPhi)(2),false)->ReplaceMap(*(discret_->DofRowMap()));
+
+  return gradPhi;
+}
+
+/*----------------------------------------------------------------------*
+ | Calculate the L2-projection of a scalar                  winter 04/14|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNodalL2Projection(
+    Teuchos::RCP<const Epetra_Vector> state,
+    const std::string statename,
+    const int numvec,
+    Teuchos::ParameterList& eleparams,
+    const int solvernumber)
+{
+  //Warning, this is only tested so far for 1 scalar field!!!
+
+  // dependent on the desired projection, just remove this line
+  if(not state->Map().SameAs(*discret_->DofRowMap()))
+    dserror("input map is not a dof row map of the fluid");
+
+  // set given state for element evaluation
   discret_->ClearState();
-  discret_->SetState("phinp",phi);
+  discret_->SetState(statename,state);
 
-  Teuchos::RCP<Epetra_MultiVector> rhs_vectors = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
-
-  discret_->Evaluate(eleparams,sysmat_,Teuchos::null,Teuchos::rcp((*rhs_vectors)(0),false),Teuchos::rcp((*rhs_vectors)(1),false),Teuchos::rcp((*rhs_vectors)(2),false));
-
-  discret_->ClearState();
-
-  // finalize the complete matrix
-  sysmat_->Complete();
-
-  //TODO Remove for-loop and add Belos solver instead
-  for (int idim=0; idim<3 ; idim++)
-    solver_->Solve(sysmat_->EpetraOperator(),Teuchos::rcp((*gradPhi)(idim),false),Teuchos::rcp((*rhs_vectors)(idim),false),true,true);
-
-  return;
+  return DRT::UTILS::ComputeNodalL2Projection(discret_,statename,numvec,eleparams,solvernumber);;
 }
 
 

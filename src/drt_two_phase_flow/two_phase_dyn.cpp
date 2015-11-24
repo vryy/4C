@@ -48,10 +48,29 @@ void two_phase_dyn(int restart)
   // print warning to screen
   if (comm.MyPID()==0)
   {
-    std::cout << "                   T(wo) P(hase) F(low)                  " <<std::endl;
-    std::cout << "=========================================================" <<std::endl;
-    std::cout << "You are now about to enter the module for two phase flow!" <<std::endl;
-    std::cout << "=========================================================" <<std::endl;
+    //    std::cout << "                   T(wo) P(hase) F(low)                  " <<std::endl;
+    //    std::cout << "=========================================================" <<std::endl;
+    //    std::cout << "You are now about to enter the module for two phase flow!" <<std::endl;
+    //    std::cout << "=========================================================" <<std::endl;
+
+        //    std::cout <<"                                      \n"
+        //              <<"           T(wo) P(hase) F(low)       \n"
+        //              <<"                __ \\ / __            \n"
+        //              <<"               /  \\ | /  \\          \n"
+        //              <<"                   \\|/               \n"
+        //              <<"              _,.---v---._            \n"
+        //              <<"     /\\__/\\  /            \\        \n"
+        //              <<"     \\_  _/ /              \\        \n"
+        //              <<"       \\ \\_|           @ __|        \n"
+        //              <<"        \\                \\_         \n"
+        //              <<"         \\     ,__/       /          \n"
+        //              <<" ~~~~~~~~~`~~~~~~~~~~~~~~/~~~~~~~ " << std::endl;
+
+
+        std::cout << "         .-``'.     T(wo) P(hase) F(low)   .'''-.          " <<std::endl;
+        std::cout << "       .`   .`~        SMEARED (CSF)       ~`.   '.        " <<std::endl;
+        std::cout << "   _.-'     '._                            _.'     '-._    " <<std::endl;
+        std::cout << "                                                           " <<std::endl;
   }
 
 
@@ -207,13 +226,27 @@ void fluid_xfem_ls_drt(int restart)
   // print warning to screen
   if (comm.MyPID()==0)
   {
-    std::cout << "=========================================================" <<std::endl;
-    std::cout << "|                  XFluid with levelset                 |" <<std::endl;
-    std::cout << "=========================================================" <<std::endl;
-    std::cout << "|   Cut is done with level set. Calculations in Xfluid  | " <<std::endl;
-    std::cout << "=========================================================" <<std::endl;
-    std::cout << "|          XFEM is utilized for the computations        | " <<std::endl;
-    std::cout << "=========================================================" <<std::endl;
+    //    std::cout << "=========================================================" <<std::endl;
+    //    std::cout << "|                  XFluid with levelset                 |" <<std::endl;
+    //    std::cout << "=========================================================" <<std::endl;
+    //    std::cout << "|   Cut is done with level set. Calculations in Xfluid  | " <<std::endl;
+    //    std::cout << "=========================================================" <<std::endl;
+    //    std::cout << "|          XFEM is utilized for the computations        | " <<std::endl;
+    //    std::cout << "=========================================================" <<std::endl;
+        // A whale when the time is right!
+        std::cout <<"                                        \n"
+                  <<"             T(wo) P(hase) F(low)       \n"
+                  <<"                  __ \\ / __            \n"
+                  <<"                 /  \\ | /  \\          \n"
+                  <<"                     \\|/               \n"
+                  <<"                _,.---v---._            \n"
+                  <<"       /\\__/\\  /            \\        \n"
+                  <<"       \\_  _/ /    X F E M   \\        \n"
+                  <<"         \\ \\_|           @ __|        \n"
+                  <<"          \\                \\_         \n"
+                  <<"           \\     ,__/       /          \n"
+                  <<"   ~~~~~~~~~`~~~~~~~~~~~~~~/~~~~~~~~~~  \n"
+                  <<"                                        "<< std::endl;
   }
 
   // define abbreviation
@@ -343,7 +376,7 @@ void fluid_xfem_ls_drt(int restart)
    else
    {
      // every time integration scheme must be either static or dynamic
-     dserror("Only stationary time integration is currently tested for Fluid_XFEM_LevelSet! OST is being built now.");
+     dserror("Time integration schemes not supported. Only OST or Stationary allowed for XFEM.");
    }
 
    //------------------------------------------------------------------------------------------------

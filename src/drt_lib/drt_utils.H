@@ -225,7 +225,8 @@ namespace UTILS
 
   /*!
     \brief compute L2 projection of a dof based field onto a node based field in a least
-    squares sense
+    squares sense.
+    WARNING: Make sure to pass down a dofrowmap appropriate for your discretization.
 
     \return an Epetra_MultiVector based on the discret's node row map containing numvec vectors
             with the projected state
@@ -235,7 +236,6 @@ namespace UTILS
    */
   Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
       Teuchos::RCP<DRT::Discretization> dis,   ///< underlying discretization
-      Teuchos::RCP<const Epetra_Vector> state, ///< state vector needed on element level
       const std::string statename,             ///< name of state which will be set
       const int numvec,                        ///< number of entries per node to project
       Teuchos::ParameterList& params,          ///< parameter list that contains the element action

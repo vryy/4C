@@ -78,6 +78,7 @@ enum Action {
     project_hdg_force_on_dof_vec_for_hit,
     project_hdg_initial_field_for_hit,
     velgradient_projection,
+    presgradient_projection,
     calc_dt_via_cfl,
     calc_mass_flow_periodic_hill,
     reset_immersed_ele,

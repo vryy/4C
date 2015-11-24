@@ -286,7 +286,7 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
   {
     Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhase>(FluidField())->SetScalarFields(ScaTraField()->Phinp(),
                                        Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(ScaTraField()->Phinp()),
-                                       ScaTraField()->GetSmoothedGradientAtNodes(ScaTraField()->Phinp()),
+                                       ScaTraField()->ReconstructGradientAtNodes(ScaTraField()->Phinp()),
                                        ScaTraField()->Residual(),
                                        ScaTraField()->Discretization(),
                                        -1);
@@ -315,7 +315,7 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
                              Teuchos::rcp_dynamic_cast<SCATRA::LevelSetTimIntOneStepTheta>(ScaTraField())->Phidtnptheta(alpham),
                              Teuchos::null, //ScaTraField()->FsPhi()
                              Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(phiaf),
-                             ScaTraField()->GetSmoothedGradientAtNodes(phiaf),
+                             ScaTraField()->ReconstructGradientAtNodes(phiaf),
                              ScaTraField()->Discretization());
 
 
@@ -327,7 +327,7 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
 //                                       ScaTraField()->Phidtnp(),
 //                                       ScaTraField()->FsPhi(), //Teuchos::null
 //                                       Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(),
-//                                       ScaTraField()->GetGradientAtNodes(),
+//                                       ScaTraField()->ReconstructGradientAtNodes(),
 //                                       ScaTraField()->Discretization());
 
   }
@@ -339,12 +339,12 @@ void TWOPHASEFLOW::Algorithm::SetScaTraValuesInFluid()
                                    ScaTraField()->Phidtnp(),
                                    ScaTraField()->FsPhi(), //Teuchos::null
                                    Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(ScaTraField()->Phinp()),
-                                   ScaTraField()->GetSmoothedGradientAtNodes(ScaTraField()->Phinp()),
+                                   ScaTraField()->ReconstructGradientAtNodes(ScaTraField()->Phinp()),
                                    ScaTraField()->Discretization());
 
     Teuchos::rcp_dynamic_cast<FLD::TimIntTwoPhaseOst>(FluidField())->SetIterScalarFieldsn(
                                        Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField())->GetNodalCurvature(ScaTraField()->Phin()),
-                                       ScaTraField()->GetSmoothedGradientAtNodes(ScaTraField()->Phin()),
+                                       ScaTraField()->ReconstructGradientAtNodes(ScaTraField()->Phin()),
                                        ScaTraField()->Discretization());
   }
   break;

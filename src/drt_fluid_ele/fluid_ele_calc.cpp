@@ -1842,7 +1842,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::AddSurfaceTensionForce(
 
       Dheavyside_epsilon = 1.0/(2.0 * epsilon)*(1.0+cos(PI*gaussescan/epsilon));
       scalar_fac = Dheavyside_epsilon*gamma_*gausscurvaturen;
-      generalbodyforcen_.Update(scalar_fac,gradphi,1.0);
+      generalbodyforcen_.Update(scalar_fac,gradphin,1.0);
 
     }
 

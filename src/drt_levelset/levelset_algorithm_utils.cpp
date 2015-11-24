@@ -917,8 +917,7 @@ Teuchos::RCP<Epetra_Vector> SCATRA::LevelSetAlgorithm::GetNodalCurvature(
   // of the adjacent elements (applied, e.g., by Florian Henke and implemented in the old combustion module),
   // should be added here as well.
 
-  Teuchos::RCP<Epetra_MultiVector> gradphi = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 3, true));
-  ReconstructGradientAtNodes(gradphi,phi);
+  Teuchos::RCP<Epetra_MultiVector> gradphi = ReconstructGradientAtNodes(phi);
   Teuchos::RCP<Epetra_Vector> nodalCurvature = GetNodalCurvature(phi, gradphi);
 
   return nodalCurvature;

@@ -799,6 +799,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     case FLD::xwall_calc_mk:
     case FLD::tauw_via_gradient:
     case FLD::velgradient_projection:
+    case FLD::presgradient_projection:
     case FLD::calc_velgrad_ele_center:
     case FLD::calc_dt_via_cfl:
     case FLD::calc_mass_flow_periodic_hill:

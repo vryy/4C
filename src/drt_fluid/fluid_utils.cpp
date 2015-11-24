@@ -1285,6 +1285,9 @@ void FLD::UTILS::ProjectGradientAndSetParam(Teuchos::RCP<DRT::Discretization> di
   const int numvec = dim*dim;
   Teuchos::ParameterList params;
 
+    // dependent on the desired projection, just remove this line
+    if(not vel->Map().SameAs(*discret->DofRowMap()))
+      dserror("input map is not a dof row map of the fluid");
 
   if(recomethod == INPAR::FLUID::gradreco_none)
     ;//no projection and no parameter in parameter list
@@ -1304,9 +1307,14 @@ void FLD::UTILS::ProjectGradientAndSetParam(Teuchos::RCP<DRT::Discretization> di
     if(solvernumber<1)
       dserror("you have to specify a VELGRAD_PROJ_SOLVER");
     params.set<int>("action",FLD::velgradient_projection);
+
+    // set given state for element evaluation
+    discret->ClearState();
+    discret->SetState("vel",vel);
+
     // project velocity gradient of fluid to nodal level via L2 projection and store it in a ParameterList
     Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
-        DRT::UTILS::ComputeNodalL2Projection(discret, vel, "vel", numvec, params, solvernumber);
+        DRT::UTILS::ComputeNodalL2Projection(discret,"vel", numvec, params, solvernumber);
     discret->AddMultiVectorToParameterList(eleparams,paraname,projected_velgrad);
   }
 

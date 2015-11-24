@@ -499,7 +499,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp_,lm);
 
-    CalcGradientAtNodes(ele, elemat1_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
+//    CalcGradientAtNodes(ele, elemat1_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
+    CalcGradientAtNodes(ele, elemat1_epetra, elemat2_epetra);
 
     break;
   }
@@ -776,6 +777,60 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcGradientAtNodes(
       elevec1[node_i*numdofpernode_+k] += funct_(node_i) * fac * grad_phi(0,0);
       elevec2[node_i*numdofpernode_+k] += funct_(node_i) * fac * grad_phi(1,0);
       elevec3[node_i*numdofpernode_+k] += funct_(node_i) * fac * grad_phi(2,0);
+    }
+
+    } //loop over degrees of freedom
+
+  } //loop over integration points
+
+  return;
+
+} //ScaTraEleCalc::CalcGradientAtNodes
+
+
+/*-------------------------------------------------------------------------*
+ | Element reconstruct grad phi, one deg of freedom (for now) winter 11/15 |
+ *-------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcGradientAtNodes(
+  const DRT::Element*             ele,
+  Epetra_SerialDenseMatrix&       elemat1,
+  Epetra_SerialDenseMatrix&       elemat2
+  )
+{
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+   // Loop over integration points
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // Get integration factor and evaluate shape func and its derivatives at the integration points.
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,gpid);
+    // Loop over degrees of freedom
+    for (int k=0; k<numdofpernode_; k++)
+    {
+    LINALG::Matrix<3,1> grad_phi(true);
+
+    // Get gradient of phi at Gauss point
+    for (int node = 0; node< nen_; node++)
+      for (int idim = 0; idim< nsd_; idim++)
+        grad_phi(idim,0) += ephinp_[k](node,0)*derxy_(idim,node);
+
+
+    //const double eta_smooth=0.0; //Option for smoothing factor, currently not used.
+    //diffmanager_->SetIsotropicDiff(eta_smooth,k);
+
+    // Compute element matrix. For L2-projection
+    CalcMatDiff(elemat1,k,fac);
+    CalcMatMass(elemat1,k,fac,1.0);
+
+    // Compute element vectors. For L2-Projection
+    for (int node_i=0;node_i<nen_;node_i++)
+    {
+      for (int j=0;j<nsd_;j++)
+      {
+        elemat2(node_i,numdofpernode_*k+j) += funct_(node_i) * fac * grad_phi(j,0);
+      }
     }
 
     } //loop over degrees of freedom

@@ -309,7 +309,7 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
 
     if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_divgrad_normal)
     {
-      smoothedgradphi = ScaTraField()->GetSmoothedGradientAtNodes(ScaTraField()->Phinp());
+      smoothedgradphi = ScaTraField()->ReconstructGradientAtNodes(ScaTraField()->Phinp());
     }
     else if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_nodal_curvature)
     {
@@ -318,7 +318,7 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
     else if(surftensapprox_==INPAR::TWOPHASE::surface_tension_approx_laplacebeltrami)
     {
       if(not (laplacebeltrami_==INPAR::TWOPHASE::matrix_non_smoothed))
-        smoothedgradphi = ScaTraField()->GetSmoothedGradientAtNodes(ScaTraField()->Phinp());
+        smoothedgradphi = ScaTraField()->ReconstructGradientAtNodes(ScaTraField()->Phinp());
     }
 
     xfluid->SetLevelSetField(ScaTraField()->Phinp(),

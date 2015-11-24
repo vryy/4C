@@ -111,7 +111,7 @@ void DRT::Node::Print(std::ostream& os) const
   int numcond = condition_.size();
   if (numcond)
   {
-    os << endl << numcond << " Conditions:\n";
+    os << std::endl << numcond << " Conditions:\n";
     std::map<std::string,Teuchos::RCP<Condition> >::const_iterator curr;
     for (curr=condition_.begin(); curr != condition_.end(); ++curr)
     {

@@ -198,6 +198,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
       return VelGradientProjection(ele, params, discretization, lm, elemat1, elemat2);
     }
     break;
+    case FLD::presgradient_projection:
+    {
+      // project velocity gradient to nodal level
+      return PresGradientProjection(ele, params, discretization, lm, elemat1, elemat2);
+    }
+    break;
     case FLD::calc_dt_via_cfl:
     {
       return CalcTimeStep(ele, discretization, lm, elevec1);
@@ -848,6 +854,81 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::VelGradientProjection(
           elemat2(vi,i*nsd_+j) += fac_*funct_(vi)*vderxy_(i,j);
         }
       }
+    }
+
+  } // end of integration loop
+
+  return 0;
+}
+
+/*---------------------------------------------------------------------*
+ | Action type: presgradient_projection                                |
+ | project pressure gradient to nodal level               winter 09/15 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::PresGradientProjection(
+  DRT::ELEMENTS::Fluid*     ele,
+  Teuchos::ParameterList&   params,
+  DRT::Discretization&      discretization,
+  std::vector<int>&         lm,
+  Epetra_SerialDenseMatrix& elemat1,
+  Epetra_SerialDenseMatrix& elemat2)
+{
+  //----------------------------------------------------------------------------
+  //   Extract velocity/pressure from global vectors
+  //----------------------------------------------------------------------------
+
+  LINALG::Matrix<nen_,1> epres(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &epres,"pres");
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  // set element id
+  eid_ = ele->Id();
+
+  if (ele->IsAle())
+  {
+    LINALG::Matrix<nsd_,nen_>       edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"disp");
+
+    // get new node positions for isale
+     xyze_ += edispnp;
+  }
+
+  //------------------------------------------------------------------
+  //                       INTEGRATION LOOP
+  //------------------------------------------------------------------
+
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
+
+    gradp_.Multiply(derxy_,epres);
+
+    // fill element matrix (mass matrix) and elevec in each node
+    for (int vi=0; vi<nen_; ++vi) // loop rows
+    {
+      for (int ui=0; ui<nen_; ++ui) // loop columns
+      {
+        elemat1(vi,ui) += fac_*funct_(ui)*funct_(vi);
+      }
+    }
+
+    // fill elemat which is of size node x (1*nsd_) with rhs
+    for (int i=0; i<nsd_; ++i) // loop rows of vderxy
+    {
+//      for (int j=0; j<nsd_; ++j) // loop columns of vderxy
+//      {
+        for (int vi=0; vi<nen_; ++vi) // loop nodes
+        {
+          elemat2(vi,i) += fac_*funct_(vi)*gradp_(i,0);
+        }
+//      }
     }
 
   } // end of integration loop

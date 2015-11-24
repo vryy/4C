@@ -364,6 +364,20 @@ public:
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2);
 
+
+  /*! \brief Project pressure gradient to nodal level
+   *
+   *   \author mwinter
+   *   \date   09/2015
+   */
+  virtual int PresGradientProjection(
+    DRT::ELEMENTS::Fluid*     ele,
+    Teuchos::ParameterList&   params,
+    DRT::Discretization&      discretization,
+    std::vector<int>&         lm,
+    Epetra_SerialDenseMatrix& elemat1,
+    Epetra_SerialDenseMatrix& elemat2);
+
   /*! \brief Calculate a divergence of velocity at the element center
    *
    *   \author ehrl

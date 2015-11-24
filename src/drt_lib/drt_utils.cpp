@@ -223,28 +223,26 @@ void DRT::UTILS::EquateValuesAtTheseNodes( Epetra_Vector& vec,
 
 /*----------------------------------------------------------------------*
  | compute node based L2 projection originating from a dof based        |
- | state vector                                             ghamm 06/14 |
+ | state vector                                                         |
+ | WARNING: Make sure to pass down a discretization with a SetState     |
+ |          .                                               ghamm 06/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
   Teuchos::RCP<DRT::Discretization> dis,
-  Teuchos::RCP<const Epetra_Vector> state,
   const std::string statename,
   const int numvec,
   Teuchos::ParameterList& params,
   const int solvernumber
   )
 {
+
+  // check if the statename has been set
+  if(! dis->HasState(statename))
+    dserror("The discretization does not know about this statename. Please review how you call this function.");
+
   // check whether action type is set
   if(params.getEntryRCP("action") == Teuchos::null)
     dserror("action type for element is missing");
-
-  // dependent on the desired projection, just remove this line
-  if(not state->Map().SameAs(*dis->DofRowMap()))
-    dserror("input map is not a dof row map of the fluid");
-
-  // set given state for element evaluation
-  dis->ClearState();
-  dis->SetState(statename,state);
 
   // handle pbcs if existing
   // build inverse map from slave to master nodes
@@ -289,6 +287,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
   std::vector<int> lm;
   std::vector<int> lmowner;
   std::vector<int> lmstride;
+  DRT::Element::LocationArray la(dis->NumDofSets());
 
   // define element matrices and vectors
   Epetra_SerialDenseMatrix elematrix1;
@@ -306,8 +305,10 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
     DRT::Element* actele = dis->lColElement(i);
     const int numnode = actele->NumNode();
 
-    // get element location vector and ownerships
-    actele->LocationVector(*dis,lm,lmowner,lmstride);
+    actele->LocationVector(*dis,la,false);
+    lmowner=la[0].lmowner_;
+    lmstride=la[0].stride_;
+    lm=la[0].lm_;
 
     // Reshape element matrices and vectors and initialize to zero
     elevector1.Size(numnode);
@@ -315,7 +316,9 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
     elematrix2.Shape(numnode,numvec);
 
     // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
-    actele->Evaluate(params,*dis,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+//    actele->Evaluate(params,*dis,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+    int err = actele->Evaluate(params,*dis,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+    if (err) dserror("Element %d returned err=%d",actele->Id(),err);
 
     // get element location vector for nodes
     lm.resize(numnode);
