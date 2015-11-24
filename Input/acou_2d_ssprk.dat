@@ -23,7 +23,7 @@ SOURCETERMFUNCNO                2
 CALCERRORFUNCNO                 0
 PHOTOACOU                       No
 ERRORMAPS                       No
-TIMEINT                         lsrk45reg2 // ssprk expleuler
+TIMEINT                         ssprk
 INV_ANALYSIS                    none
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 --------------------------------------------------------------------SOLVER 1
@@ -81,10 +81,10 @@ FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION 0 exp(1000000*(-x^2.0-y^2.0))
 ----------------------------------------------------------------------FUNCT2
 FUNCT2 EXPR 0.0 0.0 0.0 FUNCTION exp(1000000*(-x^2.0-y^2.0))
 ------------------------------------------------RESULT DESCRIPTION
-ACOUSTIC DIS acou NODE 1 QUANTITY pressure VALUE 1.91403077450179426e-01 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 21 QUANTITY pressure VALUE 2.13598736913627677e-04 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 49 QUANTITY pressure VALUE 1.04513539886299175e-01 TOLERANCE 1e-5
-ACOUSTIC DIS acou NODE 121 QUANTITY pressure VALUE 2.13598736913185919e-04 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 1 QUANTITY pressure VALUE 1.92663141020120943e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 21 QUANTITY pressure VALUE 9.99883786771416649e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 49 QUANTITY pressure VALUE 9.57191835761269205e-01 TOLERANCE 1e-5
+ACOUSTIC DIS acou NODE 121 QUANTITY pressure VALUE 9.99883786771416538e-01 TOLERANCE 1e-5
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  4

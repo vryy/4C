@@ -170,6 +170,11 @@ public:
   virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
   /*!
+  \brief Return center coordinates of element
+  */
+  virtual std::vector<double> ElementCenterRefeCoords();
+
+  /*!
   \brief Return unique ParObject id
 
   every class implementing ParObject needs a unique id defined at the

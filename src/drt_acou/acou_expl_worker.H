@@ -161,6 +161,7 @@ namespace ACOU
                                     const std::pair<unsigned int,unsigned int>              &cell_range) const;
 
     value_type evaluate_source_adjoint(const Point<dim> &p, const std::vector<std::vector<value_type> > nodes, std::vector<value_type> values) const;
+    value_type evaluate_source_timereversal(const Point<dim> &p, const std::vector<std::vector<value_type> > nodes, std::vector<value_type> values) const;
 
     mutable Teuchos::RCP<Function<dim> > dirichlet_boundary_conditions;
     mutable Teuchos::RCP<Function<dim> > source_term;

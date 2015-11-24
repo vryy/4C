@@ -88,11 +88,13 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                    "none",
                    "patopti",
                    "patoptiacou",
+                   "patoptiacouident",
                    "patsegm"),
                  tuple<int>(
                    pat_none,
                    pat_opti,
                    pat_optiacou,
+                   pat_optiacouident,
                    pat_segm),
                  &acousticdyn);
 
@@ -118,6 +120,10 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   StringParameter("ACOUPARAMLIST","none","list of std::string of acoustical parameters to be optimized",&acou_inv);
   StringParameter("SEGMENTATIONMATS","none.material","Filename of file containing table of materials",&acou_inv);
   DoubleParameter("EQUALITYPENALTY",1.0,"penalty coefficient for the equality constraint for segmentation",&acou_inv);
+  IntParameter("SEQUENZE",-1,"sequential optimization for penalty and the rest",&acou_inv);
+  BoolParameter("GRADWEIGHTING","No","Weighting of gradient with reaction contribution",&acou_inv);
+  BoolParameter("TIMEREVERSAL","No","Initial reaction guess with time reversal",&acou_inv);
+  BoolParameter("SAMPLEOBJECTIVE","No","Sample objective function for several parameters (need be implemented)",&acou_inv);
 }
 
 

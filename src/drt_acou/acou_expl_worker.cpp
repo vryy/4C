@@ -996,6 +996,15 @@ local_apply_boundary_face (const MatrixFree<dim,value_type> &,
 {
   FEFaceEvaluation<dim,fe_degree,fe_degree+1,dim+1,value_type> phi(this->data, true, 0, 0, true);
 
+  // quantities we need in the loop
+  Point<dim> point;
+  std::vector<value_type> node_values;
+  std::vector<std::vector<value_type> > node_coords;
+  node_coords.resize(GeometryInfo<dim>::vertices_per_face);
+  node_values.resize(GeometryInfo<dim>::vertices_per_face);
+  for(unsigned int n=0; n<GeometryInfo<dim>::vertices_per_face; ++n)
+    node_coords[n].resize(dim);
+
   for (unsigned int face=face_range.first; face<face_range.second; face++)
   {
     phi.reinit(face);
@@ -1034,17 +1043,11 @@ local_apply_boundary_face (const MatrixFree<dim,value_type> &,
         {
           for (unsigned int v=0; v<VectorizedArray<value_type>::n_array_elements && data.faces[face].left_cell[v] != numbers::invalid_unsigned_int; ++v)
           {
-            Point<dim> point;
             for (unsigned int d=0; d<dim; ++d)
               point[d] = q_point[d][v];
 
-            std::vector<value_type> node_values;
-            std::vector<std::vector<value_type> > node_coords;
-            node_coords.resize(GeometryInfo<dim>::vertices_per_face);
-            node_values.resize(GeometryInfo<dim>::vertices_per_face);
             for(unsigned int n=0; n<GeometryInfo<dim>::vertices_per_face; ++n)
             {
-              node_coords[n].resize(dim);
               for(unsigned int d=0; d<dim; ++d)
                 node_coords[n][d] = table_node_coords(face-data.n_macro_inner_faces(),v,n,d);
               int gid = table_node_ids(face-data.n_macro_inner_faces(),v,n);
@@ -1065,17 +1068,11 @@ local_apply_boundary_face (const MatrixFree<dim,value_type> &,
         {
           for (unsigned int v=0; v<VectorizedArray<value_type>::n_array_elements && data.faces[face].left_cell[v] != numbers::invalid_unsigned_int; ++v)
           {
-            Point<dim> point;
             for (unsigned int d=0; d<dim; ++d)
               point[d] = q_point[d][v];
 
-            std::vector<value_type> node_values;
-            std::vector<std::vector<value_type> > node_coords;
-            node_coords.resize(GeometryInfo<dim>::vertices_per_face);
-            node_values.resize(GeometryInfo<dim>::vertices_per_face);
             for(unsigned int n=0; n<GeometryInfo<dim>::vertices_per_face; ++n)
             {
-              node_coords[n].resize(dim);
               for(unsigned int d=0; d<dim; ++d)
                 node_coords[n][d] = table_node_coords(face-data.n_macro_inner_faces(),v,n,d);
               int gid = table_node_ids(face-data.n_macro_inner_faces(),v,n);
@@ -1088,7 +1085,28 @@ local_apply_boundary_face (const MatrixFree<dim,value_type> &,
       }
       else if(int_boundary_id==3) // free boundary
         lambda = VectorizedArray<value_type>();
-      else if(int_boundary_id>=4) // dbcs
+      else if(int_boundary_id==4) // dbc from time reversal
+      {
+        if(source_adjoint_meas!=Teuchos::null)
+        {
+          for (unsigned int v=0; v<VectorizedArray<value_type>::n_array_elements && data.faces[face].left_cell[v] != numbers::invalid_unsigned_int; ++v)
+          {
+            for (unsigned int d=0; d<dim; ++d)
+              point[d] = q_point[d][v];
+
+            for(unsigned int n=0; n<GeometryInfo<dim>::vertices_per_face; ++n)
+            {
+              for(unsigned int d=0; d<dim; ++d)
+                node_coords[n][d] = table_node_coords(face-data.n_macro_inner_faces(),v,n,d);
+              int gid = table_node_ids(face-data.n_macro_inner_faces(),v,n);
+              int lid = source_adjoint_meas->Map().LID(gid);
+              node_values[n] =  source_adjoint_meas->operator ()(this->timestep_source_number)->operator [](lid);
+            }
+            lambda[v] = this->evaluate_source_timereversal(point,node_coords,node_values);
+          }
+        }
+      }
+      else if(int_boundary_id>=5) // dbcs
       {
         if(this->adjoint_eval==false)
           for (unsigned int v=0; v<VectorizedArray<value_type>::n_array_elements; ++v)
@@ -1096,7 +1114,7 @@ local_apply_boundary_face (const MatrixFree<dim,value_type> &,
             Point<dim> point;
             for (unsigned int d=0; d<dim; ++d)
               point[d] = q_point[d][v];
-            lambda[v] = dirichlet_boundary_conditions->value(point,int_boundary_id-4);
+            lambda[v] = dirichlet_boundary_conditions->value(point,int_boundary_id-5);
           }
         else
           lambda = VectorizedArray<value_type>();
@@ -1142,9 +1160,40 @@ typename WaveEquationOperationBase<dim>::value_type WaveEquationOperation<dim,fe
 
     if(node_distance<quad_distance)
     {
-      std::cout<<"punkt "<<xyz[0]<<" "<<xyz[1]<<" nodecoords "<<nodes[0][0]<<" "<<nodes[0][1]<<" "
-                                                                                 <<nodes[1][0]<<" "<<nodes[1][1]<<" "
-                                                                 <<" nodevals  "<<values[0]<<" "<<values[1]<<std::endl;
+      std::cout<<"punkt "<<xyz[0]<<" "<<xyz[1]<<" nodecoords "<<nodes[0][0]<<" "<<nodes[0][1]
+                                              <<" "           <<nodes[1][0]<<" "<<nodes[1][1]<<" "
+                                              <<" nodevals  " <<values[0]  <<" "<<values[1]<<std::endl;
+      std::cout<<"wrong face!!!"<<std::endl<<std::endl;
+    }
+  }
+  else
+    dserror("not yet implemented");
+
+  return result;
+}
+
+template <int dim, int fe_degree>
+typename WaveEquationOperationBase<dim>::value_type WaveEquationOperation<dim,fe_degree>::evaluate_source_timereversal(const Point<dim> &p, const std::vector<std::vector<value_type> > nodes, std::vector<value_type> values) const
+{
+  value_type result = 0.0;
+  value_type xyz[dim];
+  for(unsigned d=0; d<dim; ++d)
+    xyz[d] = p(d);
+
+  if(dim==2 && nodes.size()==2) // quad4 with line2 face element
+  {
+    value_type node_distance = std::sqrt( (nodes[0][0]-nodes[1][0])*(nodes[0][0]-nodes[1][0])
+                                        + (nodes[0][1]-nodes[1][1])*(nodes[0][1]-nodes[1][1]) );
+    value_type quad_distance = std::sqrt( (xyz[0]-nodes[0][0])*(xyz[0]-nodes[0][0])
+                                        + (xyz[1]-nodes[0][1])*(xyz[1]-nodes[0][1]) );
+
+    result = quad_distance/node_distance * values[1] + (node_distance-quad_distance)/node_distance * values[0];
+
+    if(node_distance<quad_distance)
+    {
+      std::cout<<"punkt "<<xyz[0]<<" "<<xyz[1]<<" nodecoords "<<nodes[0][0]<<" "<<nodes[0][1]
+                                              <<" "           <<nodes[1][0]<<" "<<nodes[1][1]<<" "
+                                              <<" nodevals  " <<values[0]  <<" "<<values[1]<<std::endl;
       std::cout<<"wrong face!!!"<<std::endl<<std::endl;
     }
   }

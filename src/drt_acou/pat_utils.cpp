@@ -139,7 +139,19 @@ Teuchos::RCP<Epetra_MultiVector> ACOU::PATSearchDirection::ComputeDirection(Teuc
   }
   else
   {
-    direction->Update(-1.0,*gradient,0.0);
+    if(0)
+      direction->Update(-1000.0,*gradient,0.0);
+    else
+    {
+      double maxval = 0.0;
+      gradient->MaxValue(&maxval);
+      double minval = 0.0;
+      gradient->MinValue(&minval);
+      if(abs(minval)>maxval)
+        direction->Update(0.1/minval,*gradient,0.0);
+      else
+        direction->Update(-0.1/maxval,*gradient,0.0);
+    }
   }
   return direction;
 }
@@ -202,8 +214,11 @@ bool ACOU::PATLineSearch::Run()
     imagereconstruction_->ReplaceParams(step_);
 
     // solve forward problem
-    imagereconstruction_->SolveStandardScatra();
-    imagereconstruction_->SolveStandardAcou();
+    if( imagereconstruction_->GetSequenze()==0 || imagereconstruction_->GetSequenze()==-1 )
+    {
+      imagereconstruction_->SolveStandardScatra();
+      imagereconstruction_->SolveStandardAcou();
+    }
 
     // evaluate objective function
     J_i_ = imagereconstruction_->EvalulateObjectiveFunction();
@@ -220,8 +235,11 @@ bool ACOU::PATLineSearch::Run()
       std::cout<<"*************** line search condition 1 NOT met, J_i "<<J_i_<<", J_0 "<<J_0_<<std::endl;
 
     // solve adjoint problem
-    imagereconstruction_->SolveAdjointAcou();
-    imagereconstruction_->SolveAdjointScatra();
+    if( imagereconstruction_->GetSequenze()==0 || imagereconstruction_->GetSequenze()==-1 )
+    {
+      imagereconstruction_->SolveAdjointAcou();
+      imagereconstruction_->SolveAdjointScatra();
+    }
 
     // calculate gradient
     imagereconstruction_->EvaluateGradient();
@@ -295,6 +313,8 @@ double ACOU::PATLineSearch::PredictStepLength()
       alpha = 10.0*alpha_i_;
     else if(alpha1<alpha_i_&&alpha2<alpha_i_)
       alpha = 2.0*alpha_i_;
+    else
+      alpha = 2.0*alpha_i_;
   }
   else
   {
@@ -323,6 +343,7 @@ double ACOU::PATLineSearch::Zoom(double alpha_lo, double alpha_hi, double J_alph
       alpha_j = alpha_hi+(alpha_lo-alpha_hi)/3.0;
     else
       alpha_j = (alpha_lo + alpha_hi) / 2.0;
+
     // output for user
     if(!myrank_)
       std::cout<<"*************** zoom iteration "<<j<<": alpha_lo "<<alpha_lo<<" alpha_hi "<<alpha_hi<<" alpha_j "<<alpha_j<<std::endl;
@@ -339,6 +360,10 @@ double ACOU::PATLineSearch::Zoom(double alpha_lo, double alpha_hi, double J_alph
     // evaluate objective function
     J_j = imagereconstruction_->EvalulateObjectiveFunction();
 
+    // output for user
+    if(!myrank_)
+      std::cout<<"J_j "<<J_j<<" J_0_ "<<J_0_<<" J_0_+c1_... "<<J_0_ + c1_ * alpha_j * normgradphi_0_<<" J_alpha_lo "<<J_alpha_lo<<std::endl;
+
     if( J_j > J_0_ + c1_ * alpha_j * normgradphi_0_ || J_j >= J_alpha_lo )
     {
       if(!myrank_)
@@ -348,8 +373,11 @@ double ACOU::PATLineSearch::Zoom(double alpha_lo, double alpha_hi, double J_alph
     else
     {
       // solve adjoint problem
-      imagereconstruction_->SolveAdjointAcou();
-      imagereconstruction_->SolveAdjointScatra();
+      if(imagereconstruction_->GetSequenze()==0 || imagereconstruction_->GetSequenze()==-1 )
+      {
+        imagereconstruction_->SolveAdjointAcou();
+        imagereconstruction_->SolveAdjointScatra();
+      }
 
       // calculate gradient
       imagereconstruction_->EvaluateGradient();

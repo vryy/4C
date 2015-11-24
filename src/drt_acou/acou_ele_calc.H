@@ -69,6 +69,9 @@ namespace ELEMENTS
                          bool                                 padaptivity);
 
     /// map solution values to nodes
+    void ComputePressureAverage(Epetra_SerialDenseVector& elevec);
+
+    /// map solution values to nodes
     void NodeBasedPsi(Epetra_SerialDenseVector&            elevec1,
                       double                               dt,
                       double                               fac);

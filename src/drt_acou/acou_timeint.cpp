@@ -59,7 +59,7 @@ ACOU::AcouTimeInt::AcouTimeInt(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   velnp_ = LINALG::CreateVector(*dofrowmap,true);
 
-  if(adjoint_)
+  if(params_->isParameter("rhsvec"))
   {
     //adjoint_rhs_= params_->get<Teuchos::RCP<Epetra_MultiVector> >("rhsvec");
     Teuchos::RCP<Epetra_MultiVector> rowadjointrhs = params_->get<Teuchos::RCP<Epetra_MultiVector> >("rhsvec");
@@ -88,6 +88,9 @@ ACOU::AcouTimeInt::AcouTimeInt(
     LINALG::Export(*rowadjointrhs,*adjoint_rhs_);
     discret_->Comm().Barrier();
   }
+
+  if(!invana_)
+    params_->set<bool>("timereversal",false);
 
 } // AcouTimeInt
 

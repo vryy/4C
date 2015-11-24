@@ -39,7 +39,8 @@ enum Action {
   ele_init_from_restart,              // 14
   project_dirich_field,               // 15
   ele_init_from_acouoptrestart,       // 16
-  bd_integrate                        // 17
+  bd_integrate,                       // 17
+  calc_average_pressure               // 18
 }; // enum Action
 
 } // namespace ACOU

@@ -286,6 +286,14 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
 
     break;
   }
+  case ACOU::calc_average_pressure:
+  {
+    const bool padapty = params.get<bool>("padaptivity");
+    const int useacouoptvecs = params.get<int>("useacouoptvecs");
+    ReadGlobalVectors(ele, discretization, lm, padapty, useacouoptvecs);
+    ComputePressureAverage(elevec1);
+    break;
+  }
   default:
     dserror("unknown action supplied");
     break;
@@ -881,6 +889,27 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateLight(
   }
   else
     dserror("not yet implemented");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ * ComputePressureAverage
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcouEleCalc<distype>::ComputePressureAverage(Epetra_SerialDenseVector& elevec)
+{
+  double norm_p = 0.0, area = 0.0;
+  for (unsigned int q = 0; q < shapes_->nqpoints_; ++q)
+  {
+    double numerical_p = 0.0;
+    for (unsigned int i = 0; i < shapes_->ndofs_; ++i)
+      numerical_p += shapes_->shfunct(i, q) * interiorPressnp_(i);
+    norm_p += numerical_p * shapes_->jfac(q);
+    area += shapes_->jfac(q);
+  }
+  elevec[0] = norm_p / area;
 
   return;
 }

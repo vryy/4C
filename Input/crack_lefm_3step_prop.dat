@@ -7,6 +7,8 @@
 
 //------------------
 // Test case that checks completely splitting the body into two
+// Note by S.Schoeder: this test case fails if run on more than
+// one processor since commit 21389
 //------------------
 
 

@@ -222,7 +222,7 @@ void AcouExplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history, Teuch
     if (step_==0)
     {
       output_->WriteElementData(true);
-      if(invana_)
+      //if(invana_)
         OutputDensityAndSpeedOfSound();
     }
   }
@@ -590,7 +590,8 @@ WaveEquationProblem<dim>::WaveEquationProblem(Teuchos::RCP<DRT::DiscretizationHD
   bacitimeint(timeintin),
   invana(params->get<bool>("invana")),
   adjoint(params->get<bool>("adjoint")),
-  acouopt(params->get<bool>("acouopt"))
+  acouopt(params->get<bool>("acouopt")),
+  timereversal(params->get<bool>("timereversal"))
 {
   make_grid_and_dofs(discret,bacitimeint->AdjointSourceVec());
   const unsigned int fe_degree = discret->lRowElement(0)->Degree();
@@ -750,9 +751,10 @@ void WaveEquationProblem<dim>::make_grid_and_dofs(Teuchos::RCP<DRT::Discretizati
         {
           for(unsigned v=0;  v<GeometryInfo<dim>::vertices_per_face; ++v)
             is_diri += int(dirichletBC[dbc]->ContainsNode(nodeids[v]));
+
           if(is_diri>=GeometryInfo<dim>::vertices_per_face)
           {
-            cell->face(f)->set_boundary_id(4+dbc);
+            cell->face(f)->set_boundary_id(5+dbc);
             break;
           }
         }
@@ -777,7 +779,12 @@ void WaveEquationProblem<dim>::make_grid_and_dofs(Teuchos::RCP<DRT::Discretizati
             for(unsigned v=0;  v<GeometryInfo<dim>::vertices_per_face; ++v)
               is_pmon += int(pressmonBC[pmon]->ContainsNode(nodeids[v]));
           }
-          if(is_pmon >= GeometryInfo<dim>::vertices_per_face)
+          if(is_pmon >= GeometryInfo<dim>::vertices_per_face && timereversal)
+          {
+            cell->face(f)->set_boundary_id(4);
+            break;
+          }
+          else if(is_pmon >= GeometryInfo<dim>::vertices_per_face)
           {
             if(is_abc >= GeometryInfo<dim>::vertices_per_face)
              cell->face(f)->set_boundary_id(2);
@@ -789,7 +796,8 @@ void WaveEquationProblem<dim>::make_grid_and_dofs(Teuchos::RCP<DRT::Discretizati
             break;
         }
         // if you come here (no break previously) then it is free
-        cell->face(f)->set_boundary_id(3);
+        if(is_diri < GeometryInfo<dim>::vertices_per_face)
+          cell->face(f)->set_boundary_id(3);
       }
     }
   }
@@ -1002,7 +1010,7 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Te
 //          << ", solution norm p: "
 //          << std::setprecision(5) << std::setw(10) << solution_mag << std::endl;
 //
-  if(!invana) // otherwise we  get way too much output files
+  if(!invana && step%up_res == 0) // otherwise we  get way too much output files
   {
     DataOut<dim> data_out;
 
@@ -1058,7 +1066,7 @@ void WaveEquationProblem<dim>::run(Teuchos::RCP<Epetra_MultiVector> history, Teu
     }
   case INPAR::ACOU::acou_lsrk33reg2:
     {
-      integrator.reset(new LowStorageRK45Reg2<WaveEquationOperationBase<dim> >(*evaluator));
+      integrator.reset(new LowStorageRK33Reg2<WaveEquationOperationBase<dim> >(*evaluator));
       break;
     }
   case INPAR::ACOU::acou_lsrk45reg3:
@@ -1096,7 +1104,7 @@ void WaveEquationProblem<dim>::run(Teuchos::RCP<Epetra_MultiVector> history, Teu
       evaluator->compute_gradient_contributions(stored_forward_solutions[(step-1)%up_res],stored_forward_solutions[(step-1)%up_res+1],solutions);
 
     // in case of backward inverse run, we need the driving force (pressure differences)
-    if(invana&&adjoint)
+    if(bacitimeint->AdjointSourceVec()!=Teuchos::null)
       evaluator->set_timestep_source_number(bacitimeint->AdjointSourceVec()->NumVectors()-step-1);
 
     // do the actual time integration

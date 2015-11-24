@@ -91,19 +91,6 @@ void acoustics_drt()
     }
   }
 
-  // calculate size of required dof set (internal field)
-  const int dim = DRT::Problem::Instance()->NDim();
-  int degreep1 = 0;
-  if(DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(acouparams,"PHYSICAL_TYPE") == INPAR::ACOU::acou_lossless)
-    degreep1 = dynamic_cast<DRT::ELEMENTS::Acou*>(acoudishdg->lRowElement(0))->Degree() + 1 ; //DRT::ELEMENTS::Acou::degree + 1;
-  else if(DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(acouparams,"PHYSICAL_TYPE") == INPAR::ACOU::acou_solid)
-    degreep1 = dynamic_cast<DRT::ELEMENTS::AcouSol*>(acoudishdg->lRowElement(0))->Degree() + 1 ; //DRT::ELEMENTS::AcouSol::degree +1;
-  else
-    dserror("PHYSICAL TYPE unknown");
-  int nscalardofs = 1;
-  for(int i=0; i<dim; ++i)
-    nscalardofs *= degreep1;
-
   // set degrees of freedom in the discretization
   //acoudishdg->BuildDofSetAuxProxy(0,elementndof,0,false);
   // build map
@@ -331,6 +318,9 @@ void acoustics_drt()
     case INPAR::ACOU::pat_optiacou:
       myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiAcou(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
     break;
+    case INPAR::ACOU::pat_optiacouident:
+      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiAcouIdent(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
+    break;
     case INPAR::ACOU::pat_segm:
       myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionSegmentation(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
     break;
@@ -338,7 +328,8 @@ void acoustics_drt()
       dserror("other pat types not listed");
       break;
     }
-    myinverseproblem->InitialRun();
+    if(DRT::INPUT::IntegralValue<bool>(acouparams.sublist("PA IMAGE RECONSTRUCTION"),"SAMPLEOBJECTIVE"))
+      myinverseproblem->SampleObjectiveFunction();
     myinverseproblem->Optimize();
 
     // do testing if required

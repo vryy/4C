@@ -106,7 +106,7 @@ private:
   Teuchos::RCP<ACOU::AcouExplicitTimeInt> bacitimeint;
 
   // flags needed for image reconstruction
-  bool invana, adjoint, acouopt;
+  bool invana, adjoint, acouopt, timereversal;
 
   // forward time integration in the adjoint run
   void intermediate_integrate(Teuchos::RCP<RungeKuttaIntegrator<WaveEquationOperationBase<dim> > > integrator);
