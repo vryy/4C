@@ -137,6 +137,9 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
   }
   blockrowdofmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
 
+  //contact no penetration constraint not yet works for non-matching structure and fluid discretizations
+  if(no_penetration_ and (not matchinggrid_))
+    dserror("The contact no penetration constraint does not yet work for non-matching discretizations!");
 }
 
 

@@ -55,6 +55,10 @@ POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
                          "Mortar");
 
   fvelactiverowdofmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
+
+  //mesh tying not yet works for non-matching structure and fluid discretizations
+  if(not matchinggrid_)
+    dserror("The coupling algorithm 'poro_monolithicmeshtying' does not yet work for non-matching discretizations!");
 }
 
 /*----------------------------------------------------------------------*
