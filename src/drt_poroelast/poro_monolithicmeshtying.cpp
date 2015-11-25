@@ -78,24 +78,15 @@ void POROELAST::MonolithicMeshtying::Evaluate(Teuchos::RCP<const Epetra_Vector> 
   Monolithic::Evaluate(x,firstiter);
 
   //get state vectors to store in contact data container
-  Teuchos::RCP<Epetra_Vector> fvel = Teuchos::rcp(new Epetra_Vector(*FluidField()->ExtractVelocityPart(FluidField()->Velnp())));
-  fvel = FluidStructureCoupling().SlaveToMaster(fvel);
+  Teuchos::RCP<Epetra_Vector> fvel =
+      FluidStructureCoupling().SlaveToMaster(FluidField()->ExtractVelocityPart(FluidField()->Velnp()));
 
-  //in the case that the problem is no pure poroelastic but a structure - poroelastic one, the poro skeleton
-  //velocities must be distinct from structural velocities. structural velocities and displacements are not needed
-  //for structural-poro meshtying.
-  //so this vector splitting procedure is here to not store structural quantities for poroelastic meshtying,
-  //because it is not needed
+  // modified pressure vector modfpres is used to get pressure values to mortar/contact integrator.
+  // the pressure values will be written on first displacement DOF
 
-  Teuchos::RCP<Epetra_Vector> tmpsvel = Teuchos::rcp(new Epetra_Vector(*StructureField()->Velnp()));
-  Teuchos::RCP<Epetra_Vector> svel = Teuchos::rcp(new Epetra_Vector(*FluidStructureCoupling().MasterDofMap()));
-  LINALG::Export(*tmpsvel, *svel);
-
-  Teuchos::RCP<Epetra_Vector> tmpsdisp = Teuchos::rcp(new Epetra_Vector(*StructureField()->Dispnp()));
-  Teuchos::RCP<Epetra_Vector> sdisp = Teuchos::rcp(new Epetra_Vector(*FluidStructureCoupling().MasterDofMap()));
-  LINALG::Export(*tmpsdisp, *sdisp);
-
+  //extract fluid pressures from full fluid state vector
   Teuchos::RCP<const Epetra_Vector> fpres = FluidField()->ExtractPressurePart(FluidField()->Velnp());
+  //initialize modified pressure vector with fluid velocity dof map
   Teuchos::RCP<Epetra_Vector> modfpres = Teuchos::rcp(new Epetra_Vector(*FluidField()->VelocityRowMap(),true));
 
   const int ndim = DRT::Problem::Instance()->NDim();
@@ -103,22 +94,42 @@ void POROELAST::MonolithicMeshtying::Evaluate(Teuchos::RCP<const Epetra_Vector> 
   double* val = fpres->Values();
   for (int i = 0; i < fpres->MyLength() ; ++i)
   {
-    int gid = mygids[i]-ndim;//should be ndim
+    int gid = mygids[i]-ndim;
+    //copy pressure value into first velocity DOF of the same node
     modfpres->ReplaceGlobalValues(1, &val[i], &gid);
   }
+  //convert velocity map to structure displacement map
   modfpres = FluidStructureCoupling().SlaveToMaster(modfpres);
 
-  Teuchos::RCP<LINALG::SparseMatrix> f = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(systemmatrix_->Matrix(1,1)));
-  Teuchos::RCP<LINALG::SparseMatrix> k_fs = Teuchos::rcp<LINALG::SparseMatrix>(new LINALG::SparseMatrix(systemmatrix_->Matrix(1,0)));
+  // for the SetState() methods in EvaluatePoroMt() non const state vectores are needed
+  // ->WriteAccess... methods are used (even though we will not change the states ...)
+  Teuchos::RCP<Epetra_Vector> svel  = StructureField()->WriteAccessVelnp();
+  Teuchos::RCP<Epetra_Vector> sdisp = StructureField()->WriteAccessDispnp();
+
+  // for the EvaluatePoroMt() method RCPs on the matrices are needed...
+  Teuchos::RCP<LINALG::SparseMatrix> f    = Teuchos::rcpFromRef<LINALG::SparseMatrix>(systemmatrix_->Matrix(1,1));
+  Teuchos::RCP<LINALG::SparseMatrix> k_fs = Teuchos::rcpFromRef<LINALG::SparseMatrix>(systemmatrix_->Matrix(1,0));
 
   Teuchos::RCP<Epetra_Vector> frhs = Extractor()->ExtractVector(rhs_,1);
 
-  mortar_adapter_->EvaluatePoroMt(fvel,svel,modfpres,sdisp,StructureField()->Discretization(),f,k_fs,frhs,FluidStructureCoupling(),FluidField()->DofRowMap());
+  //modify system matrix and rhs for meshtying
+  mortar_adapter_->EvaluatePoroMt(
+      fvel,
+      svel,
+      modfpres,
+      sdisp,
+      StructureField()->Discretization(),
+      f,
+      k_fs,
+      frhs,
+      FluidStructureCoupling(),
+      FluidField()->DofRowMap());
 
+  //assign modified parts of system matrix into full system matrix
+  systemmatrix_->Assign(1,1,LINALG::View,*f);
+  systemmatrix_->Assign(1,0,LINALG::View,*k_fs);
 
-  systemmatrix_->Assign(1,1,LINALG::Copy,*f);
-  systemmatrix_->Assign(1,0,LINALG::Copy,*k_fs);
-
+  //assign modified part of RHS vector into full RHS vector
   Extractor()->InsertVector(*frhs, 1, *rhs_);
 
   //because the mesh tying interface stays the same, the map extractors for a separate convergence check
