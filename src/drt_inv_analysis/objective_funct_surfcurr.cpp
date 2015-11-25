@@ -1,3 +1,4 @@
+#if defined(HAVE_Kokkos)
 /*----------------------------------------------------------------------*/
 /*!
  * \file objective_funct_surfcurr.cpp
@@ -838,3 +839,4 @@ void INVANA::Triangulation::CommunicateData(extract_type& data)
 
 /*----------------------------------------------------------------------*/
 const Teuchos::RCP<Epetra_Comm> INVANA::Triangulation::Comm() {return surface_->Comm();}
+#endif

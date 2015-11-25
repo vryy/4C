@@ -1,3 +1,4 @@
+#if defined(HAVE_Kokkos)
 /*----------------------------------------------------------------------*/
 /*!
  * \file objective_funct_surfcurr.H
@@ -16,6 +17,7 @@ Maintainer: Sebastian Kehl
 #include "objective_funct.H"
 
 #include "Epetra_Map.h"
+
 #include <Kokkos_Core.hpp>
 
 // forward declarations
@@ -577,3 +579,4 @@ private:
 }  // namespace INVANA
 
 #endif // OBJECTIVE_FUNCT_SURFCURR_H
+#endif

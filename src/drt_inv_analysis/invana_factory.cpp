@@ -51,7 +51,11 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(Teuchos::RCP<DRT:
     break;
     case INPAR::INVANA::stat_inv_obj_surfcurr:
     {
+#if defined(HAVE_Kokkos)
       objfunct = Teuchos::rcp(new INVANA::SurfCurrentGroup(discret));
+#else
+      dserror("You need Kokkos for Surface Current based objective functions");
+#endif
     }
     break;
     case INPAR::INVANA::stat_inv_obj_none:
