@@ -18,13 +18,13 @@ Maintainer: Sebastian Kehl
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_io/io_pstream.H"
 
-#include <ctime>
+#include <sys/time.h>
 
 
 /*----------------------------------------------------------------------*/
 /* standard constructor of current representation                       */
 /*----------------------------------------------------------------------*/
-INVANA::ObjectiveFunctSurfCurrRepresentation::ObjectiveFunctSurfCurrRepresentation(Teuchos::RCP<DRT::Discretization> discret):
+INVANA::SurfCurrentGroup::SurfCurrentGroup(Teuchos::RCP<DRT::Discretization> discret):
 sourcedis_(discret),
 targetdis_(Teuchos::null)
 {
@@ -50,7 +50,7 @@ targetdis_(Teuchos::null)
 
   // find corresponding conditions in source and target discretization
   // and initialize the associated objective functions
-  std::vector<Teuchos::RCP<ObjectiveFunctSurfCurr> > dump;
+  std::vector<Teuchos::RCP<SurfCurrentPair> > dump;
   currents_.push_back(dump);
   for (int i=0; i<(int)scc_source.size(); i++)
   {
@@ -62,7 +62,7 @@ targetdis_(Teuchos::null)
       if (idt==ids)
       {
         // add to "0" since the loop of multiple measurements over timestill missing
-        currents_[0].push_back(Teuchos::rcp(new ObjectiveFunctSurfCurr(sourcedis_,targetdis_,scc_source[i],scc_target[j])));
+        currents_[0].push_back(Teuchos::rcp(new SurfCurrentPair(sourcedis_,targetdis_,scc_source[i],scc_target[j])));
         foundit=true;
         break;
       }
@@ -80,12 +80,20 @@ targetdis_(Teuchos::null)
   if (currents_[0].size()!=scc_source.size())
     dserror("problem in finding corresponding current conditions in source and target discretization");
 
+  //initialize parallel environment for the computation of each surface current pair
+  Kokkos::initialize();
+#if defined( KOKKOS_HAVE_OPENMP )
+  std::cout << "Surface Currents in OpenMP-mode" << std::endl;
+#else
+  std::cout << "Surface Currents in Serial-mode" << std::endl;
+#endif
+
 }
 
 /*----------------------------------------------------------------------*/
 /* find step of measurement according to given time          keh 10/14  */
 /*----------------------------------------------------------------------*/
-int INVANA::ObjectiveFunctSurfCurrRepresentation::FindStep(double time)
+int INVANA::SurfCurrentGroup::FindStep(double time)
 {
   // find step of the evaluation according to time:
   int step=-1;
@@ -102,7 +110,7 @@ int INVANA::ObjectiveFunctSurfCurrRepresentation::FindStep(double time)
 /*----------------------------------------------------------------------*/
 /* Evaluate value of the objective function                  keh 11/13  */
 /*----------------------------------------------------------------------*/
-void INVANA::ObjectiveFunctSurfCurrRepresentation::Evaluate(Teuchos::RCP<Epetra_Vector> state,
+void INVANA::SurfCurrentGroup::Evaluate(Teuchos::RCP<Epetra_Vector> state,
     double time,
     double& val)
 {
@@ -115,28 +123,26 @@ void INVANA::ObjectiveFunctSurfCurrRepresentation::Evaluate(Teuchos::RCP<Epetra_
   //so far only the case were one single "measurement" for the final timestep of the simulation is considered
   sourcedis_->SetState("displacements", state);
 
-  std::clock_t start;
-  double duration;
-
-  start = std::clock();
+  struct timeval begin,end;
+  gettimeofday(&begin,NULL);
 
   for(int i=0; i<(int)currents_[0].size(); ++i)
   {
     // evaluate every single surface combination
     val+=currents_[0][i]->WSpaceNorm();
   }
-
-  duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+  gettimeofday(&end,NULL);
+  double dtime = 1.0*(end.tv_sec-begin.tv_sec) + 1.0e-6*(end.tv_usec-begin.tv_usec);
 
   if (sourcedis_->Comm().MyPID()==0)
-    IO::cout << "SURFACE CURRENT function evaluation took: " << duration << " seconds" << IO::endl;
+    IO::cout << "SURFACE CURRENT function evaluation took: " << dtime << " seconds" << IO::endl;
 }
 
 /*----------------------------------------------------------------------*/
 /* Evaluate the gradient of the objective function                      */
 /* w.r.t the displacements                                   keh 11/13  */
 /*----------------------------------------------------------------------*/
-void INVANA::ObjectiveFunctSurfCurrRepresentation::EvaluateGradient(Teuchos::RCP<Epetra_Vector> state,
+void INVANA::SurfCurrentGroup::EvaluateGradient(Teuchos::RCP<Epetra_Vector> state,
     double time,
     Teuchos::RCP<Epetra_Vector> gradient)
 {
@@ -148,24 +154,22 @@ void INVANA::ObjectiveFunctSurfCurrRepresentation::EvaluateGradient(Teuchos::RCP
 
   sourcedis_->SetState("displacements", state);
 
-  std::clock_t start;
-  double duration;
-
-  start = std::clock();
+  struct timeval begin,end;
+  gettimeofday(&begin,NULL);
 
   for(int i=0; i<(int)currents_[0].size(); ++i)
   {
     // evaluate every single surface combination
     currents_[0][i]->GradientWSpaceNorm(gradient);
   }
-
-  duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
+  gettimeofday(&end,NULL);
+  double dtime = 1.0*(end.tv_sec-begin.tv_sec) + 1.0e-6*(end.tv_usec-begin.tv_usec);
 
   if (sourcedis_->Comm().MyPID()==0)
-    IO::cout << "SURFACE CURRENT gradient evaluation took: " << duration << " seconds" << IO::endl;
+    IO::cout << "SURFACE CURRENT gradient evaluation took: " << dtime << " seconds" << IO::endl;
 }
 
-void INVANA::ObjectiveFunctSurfCurrRepresentation::SetScale(double sigmaW)
+void INVANA::SurfCurrentGroup::SetScale(double sigmaW)
 {
   for(int i=0; i<(int)currents_[0].size(); ++i)
   {
@@ -177,18 +181,11 @@ void INVANA::ObjectiveFunctSurfCurrRepresentation::SetScale(double sigmaW)
 /*----------------------------------------------------------------------*/
 /* standard constructor for a surface current                keh 11/13  */
 /*----------------------------------------------------------------------*/
-INVANA::ObjectiveFunctSurfCurr::ObjectiveFunctSurfCurr(Teuchos::RCP<DRT::Discretization> sourcedis,
+INVANA::SurfCurrentPair::SurfCurrentPair(
+    Teuchos::RCP<DRT::Discretization> sourcedis,
     Teuchos::RCP<DRT::Discretization> targetdis,
     DRT::Condition* sourcecond,
-    DRT::Condition* targetcond):
-sourcedis_(sourcedis),
-targetdis_(targetdis),
-sourcecond_(sourcecond),
-targetcond_(targetcond),
-sourcemap_(Teuchos::null),
-targetmap_(Teuchos::null),
-sourcemapred_(Teuchos::null),
-targetmapred_(Teuchos::null)
+    DRT::Condition* targetcond)
 {
   // get the scale of the kernel
   const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
@@ -198,652 +195,646 @@ targetmapred_(Teuchos::null)
 
   scaling_ = DRT::INPUT::IntegralValue<bool>(statinvp, "OBJECTIVEFUNCTSCAL");
 
-  // generate map of boundary elements of source and target
-  sourcemap_ = Teuchos::rcp(new Epetra_Map(SetupConditionMap(sourcecond_, sourcedis_)));
-  targetmap_ = Teuchos::rcp(new Epetra_Map(SetupConditionMap(targetcond_, targetdis_)));
+  // Setup the triangulations
+  tri_target_ = Teuchos::rcp(new INVANA::Triangulation(targetdis,Teuchos::rcp(targetcond,false)));
+  tri_source_ = Teuchos::rcp(new INVANA::Triangulation(sourcedis,Teuchos::rcp(sourcecond,false)));
 
-  // compute the all reduced maps for data communication
-  // completely redundant maps on every proc
-  sourcemapred_ = LINALG::AllreduceEMap(*sourcemap_);
-  targetmapred_ = LINALG::AllreduceEMap(*targetmap_);
+  extract_type x_target = tri_target_->Points();
+  int xsize=x_target.size();
+  trimesh_type x_target_view("X_View_t", xsize);
+  trimesh_host_type h_x_target_view = Kokkos::create_mirror_view (x_target_view);
 
-  //complete evaluation of the target data can be done here once
-  ComputeNormalCenterMaterialConfig(targetcond_,targetdis_,&normal_t_,&center_t_);
+  // Fill View and Copy to device
+  ExtractToHView(x_target, h_x_target_view);
+  Kokkos::deep_copy (x_target_view, h_x_target_view);
 
-  normal_t_distr_=normal_t_;
-  center_t_distr_=center_t_;
-  // "allreduce" target data to all procs here already, since it is the same throughout
-  DRT::Exporter ex(*targetmap_,*targetmapred_,targetdis_->Comm());
-  ex.Export(normal_t_distr_);
-  ex.Export(center_t_distr_);
+  // normals
+  currents_type n_target("N_View_t",xsize);
+  Kokkos::parallel_for(xsize,Normal(n_target, x_target_view));
+  n_target_=n_target;
 
-  // precompute structural integrity component of the functional
-  structinttarget_=Convolute(normal_t_,center_t_,normal_t_distr_,center_t_distr_);
+  // centers
+  currents_type c_target("C_View_t",xsize);
+  Kokkos::parallel_for(xsize,Centers(c_target, x_target_view));
+  c_target_=c_target;
 
+  double sum=0.0;
+  Kokkos::parallel_reduce(xsize,Convolute<currents_type>(c_target,n_target,c_target,n_target,sigmaW2_),sum);
+
+  // since the work was done redundantly by all mpi-ranks
+  // this value should be the same for all
+  preconvtarget_ = sum;
 }
 
 /*----------------------------------------------------------------------*/
-const Epetra_Map INVANA::ObjectiveFunctSurfCurr::SetupConditionMap(
-    DRT::Condition* cond, Teuchos::RCP<DRT::Discretization> dis)
+double INVANA::SurfCurrentPair::WSpaceNorm()
 {
-  // get total number of elements in this condition
-  int lnumele = cond->Geometry().size();
-  int gnumele;
-  cond->Comm()->SumAll(&lnumele,&gnumele,1);
+  int myrank = tri_source_->Comm()->MyPID();
+  int numrnk = tri_source_->Comm()->NumProc();
 
-  // a vector to hold the gids
-  std::vector<int> gids;
-
-  // get the geometry and loop the elements
-  std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond->Geometry();
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator ele;
-  for (ele=geom.begin(); ele != geom.end(); ++ele)
-  {
-    Teuchos::RCP<DRT::Element> element = ele->second;
-
-    // only proceed in case this element has a row element parent:
-    Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(element,true);
-    if ( dis->ElementRowMap()->LID( faceele->ParentElement()->Id() ) == -1 )
-      continue;
-
-    switch(element->NumNode())
-    {
-    case 3:
-    {
-      gids.push_back(element->Id());
-    }
-    break;
-    case 4:
-    {
-      gids.push_back(element->Id());
-      gids.push_back(element->Id()+gnumele);
-    }
-    break;
-    default:
-        dserror("shape type not supported in here!\n");
-    break;
-    }
-  }
-
-  // maybe use the LINALG map creator here?
-  Epetra_Map elemap = Epetra_Map(-1,(int)gids.size(),gids.data(),0,*(cond->Comm()));
-  return elemap;
-}
-
-/*----------------------------------------------------------------------*/
-void  INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterMaterialConfig(DRT::Condition* cond,
-    Teuchos::RCP<DRT::Discretization> discret,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* normals,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* centers)
-{
-  //clear data maps
-  normals->clear();
-  centers->clear();
-
-  // get total number of elements in this condition
-  int lnumele = cond->Geometry().size();
-  int gnumele;
-  cond->Comm()->SumAll(&lnumele,&gnumele,1);
-
-  // get the geometry and loop the elements
-  std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond->Geometry();
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator ele;
-  for (ele=geom.begin(); ele != geom.end(); ++ele)
-  {
-    Teuchos::RCP<DRT::Element> element = ele->second;
-    int numnodes = element->NumNode();
-    int egid = element->Id();
-
-    // only proceed in case this element has a row element parent:
-    Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(element,true);
-    if ( discret->ElementRowMap()->LID( faceele->ParentElement()->Id() ) == -1 )
-      continue;
-
-    // fill maps of normals and centers with data:
-    // case tri  -> no special treatment
-    // case quad -> split into 2 tris and associate to the second tri a gid as gid=egid+maxele
-    LINALG::SerialDenseMatrix x(3,3); //node coordinates
-    Epetra_SerialDenseMatrix c(3,1); // facet center
-    Epetra_SerialDenseMatrix n(3,1); // facet normal
-    if (numnodes==3)
-    {
-      for (int i=0; i<3; ++i)
-      {
-        x(i,0) = element->Nodes()[i]->X()[0];
-        x(i,1) = element->Nodes()[i]->X()[1];
-        x(i,2) = element->Nodes()[i]->X()[2];
-      }
-      ComputeNormalCenter(x,n,c);
-
-      // plug everything into the data maps
-      normals->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid,Teuchos::rcp(new Epetra_SerialDenseMatrix(n)) ));
-      centers->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid,Teuchos::rcp(new Epetra_SerialDenseMatrix(c)) ));
-    }
-    else if (numnodes==4)
-    {
-      //permutations to split the quad
-      int perm0[]={0,1,2}; // nodes of the first tri
-      int perm1[]={0,2,3}; // nodes of the second tri
-
-      // first tri
-      for (int i=0; i<3; ++i)
-      {
-        x(i,0) = element->Nodes()[perm0[i]]->X()[0];
-        x(i,1) = element->Nodes()[perm0[i]]->X()[1];
-        x(i,2) = element->Nodes()[perm0[i]]->X()[2];
-      }
-      ComputeNormalCenter(x,n,c);
-
-      // plug everything into the data maps
-      normals->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid,Teuchos::rcp(new Epetra_SerialDenseMatrix(n)) ));
-      centers->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid,Teuchos::rcp(new Epetra_SerialDenseMatrix(c)) ));
-
-      // second tri
-      for (int i=0; i<3; ++i)
-      {
-        x(i,0) = element->Nodes()[perm1[i]]->X()[0];
-        x(i,1) = element->Nodes()[perm1[i]]->X()[1];
-        x(i,2) = element->Nodes()[perm1[i]]->X()[2];
-      }
-      ComputeNormalCenter(x,n,c);
-
-      // plug everything into the data maps
-      normals->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid+gnumele,Teuchos::rcp(new Epetra_SerialDenseMatrix(n)) ));
-      centers->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid+gnumele,Teuchos::rcp(new Epetra_SerialDenseMatrix(c)) ));
-    }
-    else
-      dserror("only linear tris or bilinear quads are processed in here");
-  }
-}
-
-/*----------------------------------------------------------------------*/
-void  INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenterSpatialConfig(DRT::Condition* cond,
-    Teuchos::RCP<DRT::Discretization> discret,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* normals,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* centers,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >* derivnormal,
-    std::map<int, std::vector<int> >* facetdofmap,
-    bool wantderiv)
-{
-  // clear data maps
-  normals->clear();
-  centers->clear();
-  derivnormal->clear();
-  facetdofmap->clear();
-
-  // get state of displacement
-  if (!discret->HasState("displacements"))
-    dserror("state needs to be set in advance");
-
-  Teuchos::RCP<const Epetra_Vector> disp = discret->GetState("displacements");
-  disp = discret->GetState("displacements");
-
-  // get total number of elements in this condition
-  int lnumele = cond->Geometry().size();
-  int gnumele;
-  cond->Comm()->SumAll(&lnumele,&gnumele,1);
-
-  // get the geometry and loop the elements
-  std::map<int,Teuchos::RCP<DRT::Element> >& geom = cond->Geometry();
-  std::map<int,Teuchos::RCP<DRT::Element> >::iterator ele;
-  for (ele=geom.begin(); ele != geom.end(); ++ele)
-  {
-    Teuchos::RCP<DRT::Element> element = ele->second;
-    int numnodes = element->NumNode();
-    int egid = element->Id();
-
-    // only proceed in case this element has a row element parent:
-    Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(element,true);
-    if ( discret->ElementRowMap()->LID( faceele->ParentElement()->Id() ) == -1 )
-      continue;
-
-    //get this element's dofs
-    DRT::Element::LocationArray la(discret->NumDofSets());
-    element->LocationVector(*discret,la,false);
-
-    // this element's displacements
-    std::vector<double> mydisp(la[0].lm_.size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
-
-    // fill maps of normals and centers with data:
-    // case tri  -> no special treatment
-    // case quad -> split into 2 tris and associate to the second tri a gid as gid=egid+maxele
-    LINALG::SerialDenseMatrix x(3,3); // node coordinates
-    Epetra_SerialDenseMatrix c(3,1); // facet center
-    Epetra_SerialDenseMatrix n(3,1); // facet normal
-    Epetra_SerialDenseMatrix dn(3,9); // facet normal derivative
-    std::vector<int> dofs; // each facets dof gids
-    if (numnodes==3)
-    {
-      for (int i=0; i<3; ++i)
-      {
-        x(i,0) = element->Nodes()[i]->X()[0]+mydisp[i*3+0];
-        x(i,1) = element->Nodes()[i]->X()[1]+mydisp[i*3+1];
-        x(i,2) = element->Nodes()[i]->X()[2]+mydisp[i*3+2];
-
-        if (wantderiv)
-        {
-          dofs.push_back(la[0].lm_[i*3+0]);
-          dofs.push_back(la[0].lm_[i*3+1]);
-          dofs.push_back(la[0].lm_[i*3+2]);
-        }
-
-      }
-      ComputeNormalCenter(x,n,c);
-      if (wantderiv) ComputeNormalDeriv(x,dn);
-
-      normals->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid,Teuchos::rcp(new Epetra_SerialDenseMatrix(n)) ));
-      centers->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid,Teuchos::rcp(new Epetra_SerialDenseMatrix(c)) ));
-      if (wantderiv)
-      {
-        derivnormal->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid,Teuchos::rcp(new Epetra_SerialDenseMatrix(dn)) ));
-        facetdofmap->insert(std::pair<int,std::vector<int> >(egid,dofs));
-      }
-
-    }
-    else if (numnodes==4)
-    {
-      //permutations to split the quad
-      int perm0[]={0,1,2}; // nodes of the first tri
-      int perm1[]={0,2,3}; // nodes of the second tri
-
-      // first tri
-      for (int i=0; i<3; ++i)
-      {
-        x(i,0) = element->Nodes()[perm0[i]]->X()[0]+mydisp[perm0[i]*3+0];
-        x(i,1) = element->Nodes()[perm0[i]]->X()[1]+mydisp[perm0[i]*3+1];
-        x(i,2) = element->Nodes()[perm0[i]]->X()[2]+mydisp[perm0[i]*3+2];
-
-        if (wantderiv)
-        {
-          dofs.push_back(la[0].lm_[perm0[i]*3+0]);
-          dofs.push_back(la[0].lm_[perm0[i]*3+1]);
-          dofs.push_back(la[0].lm_[perm0[i]*3+2]);
-        }
-      }
-      ComputeNormalCenter(x,n,c);
-      if (wantderiv) ComputeNormalDeriv(x,dn);
-
-      normals->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid,Teuchos::rcp(new Epetra_SerialDenseMatrix(n)) ));
-      centers->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid,Teuchos::rcp(new Epetra_SerialDenseMatrix(c)) ));
-      if (wantderiv)
-      {
-        derivnormal->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid,Teuchos::rcp(new Epetra_SerialDenseMatrix(dn)) ));
-        facetdofmap->insert(std::pair<int,std::vector<int> >(egid,dofs));
-      }
-
-      dofs.clear();
-      // second tri
-      for (int i=0; i<3; ++i)
-      {
-        x(i,0) = element->Nodes()[perm1[i]]->X()[0]+mydisp[perm1[i]*3+0];
-        x(i,1) = element->Nodes()[perm1[i]]->X()[1]+mydisp[perm1[i]*3+1];
-        x(i,2) = element->Nodes()[perm1[i]]->X()[2]+mydisp[perm1[i]*3+2];
-
-        if (wantderiv)
-        {
-          dofs.push_back(la[0].lm_[perm1[i]*3+0]);
-          dofs.push_back(la[0].lm_[perm1[i]*3+1]);
-          dofs.push_back(la[0].lm_[perm1[i]*3+2]);
-        }
-      }
-      ComputeNormalCenter(x,n,c);
-      if (wantderiv) ComputeNormalDeriv(x,dn);
-
-      // plug everything in to the data maps
-      normals->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid+gnumele,Teuchos::rcp(new Epetra_SerialDenseMatrix(n)) ));
-      centers->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid+gnumele,Teuchos::rcp(new Epetra_SerialDenseMatrix(c)) ));
-      if (wantderiv)
-      {
-        derivnormal->insert(std::pair<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >(egid+gnumele,Teuchos::rcp(new Epetra_SerialDenseMatrix(dn)) ));
-        facetdofmap->insert(std::pair<int,std::vector<int> >(egid+gnumele,dofs));
-      }
-
-    }
-    else
-      dserror("only linear tris or bilinear quads are processed in here");
-  }
-}
-
-/*----------------------------------------------------------------------*/
-void INVANA::ObjectiveFunctSurfCurr::ComputeNormalCenter(LINALG::SerialDenseMatrix& x,
-    Epetra_SerialDenseMatrix& n,
-    Epetra_SerialDenseMatrix& c)
-{
-  // normal
-  n(0,0)=0.5*((x(2,1)-x(0,1))*(x(0,2)-x(1,2))-(x(2,2)-x(0,2))*(x(0,1)-x(1,1)));
-  n(1,0)=0.5*((x(2,2)-x(0,2))*(x(0,0)-x(1,0))-(x(2,0)-x(0,0))*(x(0,2)-x(1,2)));
-  n(2,0)=0.5*((x(2,0)-x(0,0))*(x(0,1)-x(1,1))-(x(2,1)-x(0,1))*(x(0,0)-x(1,0)));
-
-  // center
-  c(0,0)=(x(0,0)+x(1,0)+x(2,0))/3;
-  c(1,0)=(x(0,1)+x(1,1)+x(2,1))/3;
-  c(2,0)=(x(0,2)+x(1,2)+x(2,2))/3;
-
-}
-
-/*----------------------------------------------------------------------*/
-void INVANA::ObjectiveFunctSurfCurr::ComputeNormalDeriv(LINALG::SerialDenseMatrix& x,
-                                                        Epetra_SerialDenseMatrix& dn)
-{
-  // derivative of normal (wich is the cross product of vector made up from point
-  // coordinates in x, see function ComputeNormalCenter) wrt the single dofs
-  // -> a 3by9 matrix [dN/du1 dN/du2 ... dN/du9]
-
-  // dofs of the first node
-  // dN/du1 -> dN/x(0,0)
-  dn(0,0)=0.0;
-  dn(1,0)=(x(2,2)-x(0,2))+(x(0,2)-x(1,2));
-  dn(2,0)=-(x(0,1)-x(1,1))-(x(2,1)-x(0,1));
-
-  // dN/du2 -> dN/x(0,1)
-  dn(0,1)=-(x(0,2)-x(1,2))-(x(2,2)-x(0,2));
-  dn(1,1)=0.0;
-  dn(2,1)=(x(2,0)-x(0,0))+(x(0,0)-x(1,0));
-
-  // dN/du3 -> dN/dx(0,2)
-  dn(0,2)=(x(2,1)-x(0,1))+(x(0,1)-x(1,1));
-  dn(1,2)=-(x(0,0)-x(1,0))-(x(2,0)-x(0,0));
-  dn(2,2)=0.0;
-
-  // dofs of the second node
-  // dN/du4 -> dN/dx(1,0)
-  dn(0,3)=-0.0;
-  dn(1,3)=-(x(2,2)-x(0,2));
-  dn(2,3)=(x(2,1)-x(0,1));
-
-  // dN/du5 -> dN/dx(1,1)
-  dn(0,4)=(x(2,2)-x(0,2));
-  dn(1,4)=0.0;
-  dn(2,4)=-(x(2,0)-x(0,0));
-
-  // dN/du6 -> dN/dx(1,2)
-  dn(0,5)=-(x(2,1)-x(0,1));
-  dn(1,5)=(x(2,0)-x(0,0));
-  dn(2,5)=0.0;
-
-  // dofs of the third node
-  // dN/du7 -> dN/dx(2,0)
-  dn(0,6)=0.0;
-  dn(1,6)=-(x(0,2)-x(1,2));
-  dn(2,6)=(x(0,1)-x(1,1));
-
-  // dN/du8 -> dN/dx(2,1)
-  dn(0,7)=(x(0,2)-x(1,2));
-  dn(1,7)=0.0;
-  dn(2,7)=-(x(0,0)-x(1,0));
-
-  // dN/du9 -> dN/dx(2,2)
-  dn(0,8)=-(x(0,1)-x(1,1));
-  dn(1,8)=(x(0,0)-x(1,0));
-  dn(2,8)=0.0;
-
-  dn.Scale(0.5);
-
-}
-
-void INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > data)
-{
-  std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator it;
-
-  std::cout << "id data x y z" << std::endl;
-  for (it=data.begin(); it!=data.end(); ++it)
-  {
-    std::cout << "gid: " << it->first << " data: " << (*it->second)(0,0) << " " << (*it->second)(1,0) << " " << (*it->second)(2,0) << std::endl;
-  }
-}
-
-void INVANA::ObjectiveFunctSurfCurr::PrintDataToScreen(std::map<int,std::vector<int> > data)
-{
-  std::map<int,std::vector<int> >::iterator it;
-
-  for (it=data.begin(); it!=data.end(); ++it)
-  {
-    std::cout << "gid: " << it->first << " data: ";
-    for (int j=0; j<(int)it->second.size(); j++)
-      std::cout << (it->second)[j] << " ";
-
-    std::cout << " " << std::endl;
-  }
-}
-
-double INVANA::ObjectiveFunctSurfCurr::Convolute(std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n1,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n2,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c2)
-{
-  double val = 0.0;
-
-  std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator ito;
-  std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator iti;
-  //Epetra_SerialDenseMatrix dum(3,1);
-  for (ito=n1.begin(); ito!=n1.end(); ++ito)
-  {
-    for (iti=n2.begin(); iti!=n2.end(); ++iti)
-    {
-      double dot = dotp(*(ito->second),*(iti->second));
-      val+=dot*kernel(*c2[iti->first], *c1[ito->first]);
-    }
-  }
-
-  double gval=0.0;
-  sourcedis_->Comm().SumAll(&val,&gval,1);
-
-  return gval;
-}
-
-void INVANA::ObjectiveFunctSurfCurr::DerivComponent2(Teuchos::RCP<Epetra_Vector> lgradient,
-    std::map<int,std::vector<int> >& facetdofmap,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n1,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n2,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c2)
-{
-    Epetra_SerialDenseMatrix dum(9,1);
-    double dot;
-    int err;
-
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator ito;
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator iti;
-    for (ito=n1.begin(); ito!=n1.end(); ++ito)
-    {
-      for (iti=n2.begin(); iti!=n2.end(); ++iti)
-      {
-        dot = dum.DOT(3,(*(ito->second))[0],(*(iti->second))[0],1,1);
-
-        // for the dofs of the inner loop facet
-        dum = kernelderiv(*c2[iti->first], *c1[ito->first]);
-        dum.Scale(dot);
-        //add result to the corresponding entries in the global gradient vector
-        err = lgradient->SumIntoGlobalValues(9,dum[0],facetdofmap[iti->first].data());
-        if (err)
-          dserror("one of these gids not living on this proc");
-
-        // for the dofs of the outer loop facet
-        //dum = kernelderiv(*c1[ito->first],*c2[iti->first]);
-        //dum.Scale(dot);
-        dum.Scale(-1.0);
-        //add result to the corresponding entries in the global gradient vector
-        err = lgradient->SumIntoGlobalValues(9,dum[0],facetdofmap[ito->first].data());
-        if (err)
-          dserror("one of these gids not living on this proc");
-      }
-    }
-}
-
-void INVANA::ObjectiveFunctSurfCurr::DerivComponent3(Teuchos::RCP<Epetra_Vector> lgradient,
-    std::map<int,std::vector<int> >& facetdofmap,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n1,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n2,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c2)
-{
-    Epetra_SerialDenseMatrix dum(9,1);
-
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator ito;
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator iti;
-    for (ito=n1.begin(); ito!=n1.end(); ++ito)
-    {
-      for (iti=n2.begin(); iti!=n2.end(); ++iti)
-      {
-        double dot = dum.DOT(3,(*(ito->second))[0],(*(iti->second))[0],1,1);
-
-        // for the dofs of the outer loop facet
-        dum = kernelderiv(*c1[ito->first],*c2[iti->first]);
-        dum.Scale(dot);
-        //add result to the corresponding entries in the global gradient vector
-        int err = lgradient->SumIntoGlobalValues(9,dum[0],facetdofmap[ito->first].data());
-        if (err)
-          dserror("one of these gids not living on this proc");
-      }
-    }
-}
-
-void INVANA::ObjectiveFunctSurfCurr::DerivComponent1(Teuchos::RCP<Epetra_Vector> lgradient,
-    std::map<int,std::vector<int> >& facetdofmap,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& dn1,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c1,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& n2,
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& c2)
-{
-    Epetra_SerialDenseMatrix dum(9,1);
-
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator ito;
-    std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >::iterator iti;
-    for (ito=dn1.begin(); ito!=dn1.end(); ++ito)
-    {
-      for (iti=n2.begin(); iti!=n2.end(); ++iti)
-      {
-        dum.Multiply('T','N',1.0,*(ito->second), *(iti->second),0.0);
-        dum.Scale(kernel(*c2[iti->first], *c1[ito->first]));
-
-        //add result to the corresponding entries in the global gradient vector
-        int err = lgradient->SumIntoGlobalValues(9,dum[0],facetdofmap[ito->first].data());
-        if (err)
-          dserror("one of these gids not living on this proc");
-      }
-    }
-}
-
-double INVANA::ObjectiveFunctSurfCurr::WSpaceNorm()
-{
   // the structural integrity component of the target is already precomputed
-  double val=structinttarget_;
+  double val=preconvtarget_;
 
-  //evaluate centers and normals in the spatial configuration (no derivatives at this point)
-  ComputeNormalCenterSpatialConfig(sourcecond_,sourcedis_,&normal_s_,&center_s_,&derivnormal_s_,&facetdofmap_,false);
+  // let the triangulation be warped according to the state of whatever, e.g the pde
+  // solved by the 'discretization'
+  tri_source_->EvaluateWarp();
 
-  //communicate the data maps to proc0
-  normal_s_distr_=normal_s_;
-  center_s_distr_=center_s_;
-  DRT::Exporter ex(*sourcemap_,*sourcemapred_,sourcedis_->Comm());
-  ex.Export(normal_s_distr_);
-  ex.Export(center_s_distr_);
+  //-------------------------------------------------
+  // All the points and the data reduced to myrank
+  extract_type x_source = tri_source_->Points(myrank);
+  extract_type disp = tri_source_->Data(myrank);
+  unsigned xsize=x_source.size();
 
-  //do the looping and plug result into val.
-  val+=Convolute(normal_s_,center_s_,normal_s_distr_,center_s_distr_);
-  val-=2*Convolute(normal_s_,center_s_,normal_t_distr_,center_t_distr_);
+  // View on all points of the source
+  trimesh_type x_source_view("X_View_s", xsize);
+  trimesh_host_type h_x_source_view = Kokkos::create_mirror_view (x_source_view);
+  ExtractToHView(x_source, h_x_source_view);
+  Kokkos::deep_copy (x_source_view, h_x_source_view);
+
+  // View on all the data associated to the points
+  trimesh_type d_source_view("D_View",xsize);
+  trimesh_host_type h_d_source_view = Kokkos::create_mirror_view (d_source_view);
+  ExtractToHView(disp,h_d_source_view);
+  Kokkos::deep_copy (d_source_view, h_d_source_view);
+
+  //-------------------------------------------------
+  // Normals and Centers
+  // push forward points
+  Kokkos::parallel_for(xsize,Update(x_source_view,d_source_view));
+
+  // normals
+  currents_type n_source("N_View_s",xsize);
+  Kokkos::parallel_for(xsize,Normal(n_source, x_source_view));
+
+  // centers
+  currents_type c_source("C_View_s",xsize);
+  Kokkos::parallel_for(xsize,Centers(c_source, x_source_view));
+
+  //-------------------------------------------------
+  // chunks of the data for myrank
+  std::pair<currents_type::size_type, currents_type::size_type> mychunk = MyIndices(numrnk,myrank,xsize);
+  auto my_c_source = Kokkos::subview(c_source, mychunk, Kokkos::ALL());
+  auto my_n_source = Kokkos::subview(n_source, mychunk, Kokkos::ALL());
+  int my_xsize = my_c_source.dimension_0();
+
+  //-------------------------------------------------
+  // Do the convolutions
+  double sum=0.0;
+  Kokkos::parallel_reduce(my_xsize,Convolute<ViewStride>(my_c_source,my_n_source,c_source,n_source,sigmaW2_),sum);
+  double gsum=0.0;
+  tri_source_->Comm()->SumAll(&sum,&gsum,1);
+  val+=gsum;
+
+  sum=0.0;
+  Kokkos::parallel_reduce(my_xsize,Convolute<ViewStride>(my_c_source,my_n_source,c_target_,n_target_,sigmaW2_),sum);
+  gsum=0.0;
+  tri_source_->Comm()->SumAll(&sum,&gsum,1);
+  val-=2*gsum;
 
   //scaling by number of surface elements in source and target
   if (scaling_)
   {
-    double fac = normal_s_distr_.size()+normal_t_distr_.size();
-    //sourcedis_->Comm().Broadcast(&fac,1,0);
+    double fac = xsize+c_target_.dimension_0();
     val=val/fac;
   }
 
   return val;
 }
 
-void INVANA::ObjectiveFunctSurfCurr::GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector> gradient)
+/*----------------------------------------------------------------------*/
+void INVANA::SurfCurrentPair::GradientWSpaceNorm(Teuchos::RCP<Epetra_MultiVector> gradient)
 {
-  //all reduced to all procs
-  Teuchos::RCP<Epetra_Map> dofrowmapred =  LINALG::AllreduceEMap(*(sourcedis_->DofRowMap()));
-  Teuchos::RCP<Epetra_Vector> lgradient = Teuchos::rcp(new Epetra_Vector(*dofrowmapred,true));
+  int myrank = tri_source_->Comm()->MyPID();
+  int numrnk = tri_source_->Comm()->NumProc();
 
-  // parallel distributed but overlapping
-  Teuchos::RCP<Epetra_Vector> ggradient = Teuchos::rcp(new Epetra_Vector(*(sourcedis_->DofColMap()),true));
-  Teuchos::RCP<Epetra_Vector> tempdist = Teuchos::rcp(new Epetra_Vector(*(sourcedis_->DofColMap()),true));
+  // let the triangulation be warped according to the state of whatever, e.g the pde
+  // solved by the 'discretization'
+  tri_source_->EvaluateWarp();
 
+  //-------------------------------------------------
+  // All the points and the data reduced to myrank
+  extract_type x_source = tri_source_->Points(myrank);
+  extract_type disp = tri_source_->Data(myrank);
+  unsigned xsize=x_source.size();
 
-  // evaluate centers, normals and derivatives of the source in the spatial configuration
-  ComputeNormalCenterSpatialConfig(sourcecond_,sourcedis_,&normal_s_,&center_s_,&derivnormal_s_,&facetdofmap_,true);
+  // View on all points of the source
+  trimesh_type x_source_view("X_View_s", xsize);
+  trimesh_host_type h_x_source_view = Kokkos::create_mirror_view (x_source_view);
+  Teuchos::RCP<Epetra_Map> trimap=Teuchos::rcp(new Epetra_Map(0,0,*tri_source_->Comm()));
+  ExtractToHView(x_source, h_x_source_view, trimap);
+  Kokkos::deep_copy (x_source_view, h_x_source_view);
 
-  //communicate the data maps to all procs
-  normal_s_distr_=normal_s_;
-  center_s_distr_=center_s_;
-  facetdofmap_distr_=facetdofmap_;
-  DRT::Exporter ex(*sourcemap_,*sourcemapred_,sourcedis_->Comm());
-  ex.Export(normal_s_distr_);
-  ex.Export(center_s_distr_);
-  ex.Export(facetdofmap_distr_);
+  // View on all the data associated to the points
+  trimesh_type d_source_view("D_View",xsize);
+  trimesh_host_type h_d_source_view = Kokkos::create_mirror_view (d_source_view);
+  ExtractToHView(disp,h_d_source_view);
+  Kokkos::deep_copy (d_source_view, h_d_source_view);
 
-  // compute the different summands making up the gradient
-  DerivComponent1(ggradient,facetdofmap_,derivnormal_s_,center_s_,normal_s_distr_,center_s_distr_);
-  ggradient->Scale(2.0);
+  //-------------------------------------------------
+  // Normals and Centers
+  // push forward points
+  Kokkos::parallel_for(xsize,Update(x_source_view,d_source_view));
 
-  DerivComponent1(tempdist,facetdofmap_,derivnormal_s_,center_s_,normal_t_distr_,center_t_distr_);
-  ggradient->Update(-2.0,*tempdist,1.0);
+  // normals
+  currents_type n_source("N_View_s",xsize);
+  Kokkos::parallel_for(xsize,Normal(n_source, x_source_view));
 
-  DerivComponent2(lgradient,facetdofmap_distr_,normal_s_,center_s_,normal_s_distr_,center_s_distr_);
+  // derivative of the normals
+  trimesh_vecdata_type dn_source("DN_View_s",xsize);
+  Kokkos::parallel_for(xsize,DNormal(x_source_view,dn_source));
 
-  tempdist->PutScalar(0.0);
-  DerivComponent3(tempdist,facetdofmap_,normal_s_,center_s_,normal_t_distr_,center_t_distr_);
-  ggradient->Update(-2.0,*tempdist,1.0);
+  // centers
+  currents_type c_source("C_View_s",xsize);
+  Kokkos::parallel_for(xsize,Centers(c_source, x_source_view));
 
-  Epetra_Export exporter1(lgradient->Map(), gradient->Map());
-  Teuchos::RCP<Epetra_MultiVector> tmp1 = Teuchos::rcp(new Epetra_Vector(gradient->Map(),true));
-  int err1 = tmp1->Export(*lgradient, exporter1, Add); //!!! add off proc components
-  if (err1)
-    dserror("export to supposedly unique gradient layout failed");
+  // Initialize the gradient
+  trimesh_type grad("G_View",xsize);
+  Kokkos::parallel_for(xsize,Init9(grad));
 
-  Epetra_Export exporter2(ggradient->Map(), gradient->Map());
-  Teuchos::RCP<Epetra_MultiVector> tmp2 = Teuchos::rcp(new Epetra_Vector(gradient->Map(),true));
-  int err2 = tmp2->Export(*ggradient, exporter2, Add); //!!! add off proc components
-  if (err2)
-    dserror("export to supposedly unique gradient layout failed");
+  //-------------------------------------------------
+  // chunks of the data for myrank
+  std::pair<currents_type::size_type, currents_type::size_type> mychunk = MyIndices(numrnk,myrank,xsize);
+  auto my_c_source = Kokkos::subview(c_source, mychunk, Kokkos::ALL());
+  auto my_n_source = Kokkos::subview(n_source, mychunk, Kokkos::ALL());
+  auto my_dn_source = Kokkos::subview(dn_source,mychunk, Kokkos::ALL());
+  int my_xsize = my_c_source.dimension_0();
 
-  tmp1->Update(1.0,*tmp2,1.0);
+  int off = mychunk.first;
+  Kokkos::parallel_for(my_xsize,ConvoluteDN<ViewStride,ViewStride>(my_c_source,my_dn_source,c_source,n_source,grad,off,sigmaW2_,2.0));
+  Kokkos::parallel_for(my_xsize,ConvoluteDN<ViewStride,ViewStride>(my_c_source,my_dn_source,c_target_,n_target_,grad,off,sigmaW2_,-2.0));
+  Kokkos::parallel_for(my_xsize, ConvoluteDk<ViewStride>(my_c_source,my_n_source,c_source,n_source,grad,off,sigmaW2_,1.0,true));
+  Kokkos::parallel_for(my_xsize, ConvoluteDk<ViewStride>(my_c_source,my_n_source,c_target_,n_target_,grad,off,sigmaW2_,-2.0,false));
 
-  //scaling
-  double fac=1.0;
+  // Bring back to host
+  trimesh_host_type h_grad = Kokkos::create_mirror_view(grad);
+  Kokkos::deep_copy(h_grad,grad);
+
+  // restore in extract_type format to pass it to the SetData routine
+  extract_type grad_data;
+  HViewToExtract(h_grad,*trimap,grad_data);
+
+  // Set gradient data into the global gradient vector
+  Teuchos::RCP<Epetra_MultiVector> lgradient = Teuchos::rcp(new Epetra_MultiVector(gradient->Map(),true));
+  tri_source_->SetDataGlobally(grad_data,*trimap,lgradient);
+
+  //scaling by number of surface elements in source and target
   if (scaling_)
   {
-   fac = normal_s_distr_.size()+normal_t_distr_.size();
-   //sourcedis_->Comm().Broadcast(&fac,1,0);
+    double fac = xsize+c_target_.dimension_0();
+    tri_source_->Comm()->Broadcast(&fac,1,0);
+    gradient->Update(1.0/fac,*lgradient,1.0);
   }
-
-  // set into the gradient (update here, since there migth be other pairs of surfaces which contribute)
-  gradient->Update(1.0/fac,*tmp1,1.0);
-
+  else
+    gradient->Update(1.0,*lgradient,1.0);
 }
 
-inline double INVANA::ObjectiveFunctSurfCurr::kernel(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y)
+/*----------------------------------------------------------------------*/
+std::pair<int,int> INVANA::SurfCurrentPair::MyIndices(int nrnk, int myrnk, int size)
 {
-  return exp(-((x(0,0)-y(0,0))*(x(0,0)-y(0,0))+(x(1,0)-y(1,0))*(x(1,0)-y(1,0))+(x(2,0)-y(2,0))*(x(2,0)-y(2,0)))/sigmaW2_);
+  int l = size%nrnk;
+  int s = (int)(size-l)/nrnk;
+
+  int lower = myrnk*s;
+  int upper = (myrnk+1)*s;
+
+  // for the "last" rank
+  if (myrnk==(nrnk-1))
+    upper = size;
+
+  return std::make_pair(lower, upper);
 }
 
-inline Epetra_SerialDenseMatrix INVANA::ObjectiveFunctSurfCurr::kernelderiv(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y)
+/*----------------------------------------------------------------------*/
+void INVANA::SurfCurrentPair::ExtractToHView(
+    const extract_type& in,
+    trimesh_host_type& out)
 {
-  double val=-(2.0/(3.0*sigmaW2_))*kernel(x,y); // factor 3 comes since we want derivatives wrt nodal dofs but x is the center
+  dsassert(in.size()!=out.dimension_0(),"dimension mismatch");
 
-  Epetra_SerialDenseMatrix deriv(9,1);
-  LINALG::SerialDenseMatrix diff = x;
-  diff.Update(-1.0,y,1.0);
-
-  for (int i=0; i<3; i++)
+  // fill the data in the view
+  int i=0;
+  for (auto it=in.begin(); it!=in.end(); it++)
   {
-    deriv(i*3+0,0) = diff(0,0);
-    deriv(i*3+1,0) = diff(1,0);
-    deriv(i*3+2,0) = diff(2,0);
+    out(i,0) = it->second[0];
+    out(i,1) = it->second[1];
+    out(i,2) = it->second[2];
+    out(i,3) = it->second[3];
+    out(i,4) = it->second[4];
+    out(i,5) = it->second[5];
+    out(i,6) = it->second[6];
+    out(i,7) = it->second[7];
+    out(i,8) = it->second[8];
+    i++;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::SurfCurrentPair::ExtractToHView(
+    const extract_type& in,
+    trimesh_host_type& out,
+    Teuchos::RCP<Epetra_Map> map)
+{
+  dsassert(in.size()!=out.dimension_0(),"dimension mismatch");
+
+  std::vector<int> gids;
+
+  // fill the data in the view
+  int i=0;
+  for (auto it=in.begin(); it!=in.end(); it++)
+  {
+    gids.push_back(it->first);
+    out(i,0) = it->second[0];
+    out(i,1) = it->second[1];
+    out(i,2) = it->second[2];
+    out(i,3) = it->second[3];
+    out(i,4) = it->second[4];
+    out(i,5) = it->second[5];
+    out(i,6) = it->second[6];
+    out(i,7) = it->second[7];
+    out(i,8) = it->second[8];
+    i++;
   }
 
-  deriv.Scale(val);
-
-  return deriv;
+  *map=Epetra_Map(-1,(int)gids.size(),gids.data(),0,map->Comm());
 }
 
-inline double INVANA::ObjectiveFunctSurfCurr::dotp(Epetra_SerialDenseMatrix x, Epetra_SerialDenseMatrix y)
+void INVANA::SurfCurrentPair::HViewToExtract(const trimesh_host_type& in, const Epetra_Map& inmap, extract_type& out)
 {
-  return x(0,0)*y(0,0)+x(1,0)*y(1,0)+x(2,0)*y(2,0);
+  int size0=in.dimension_0();
+  std::vector<double> dum;
+  for (int i=0; i<size0; i++)
+  {
+    for(unsigned j=0; j<in.dimension_1(); j++)
+      dum.push_back(in(i,j));
+
+    out.insert(std::pair<int, std::vector<double> >(inmap.GID(i),dum));
+    dum.clear();
+  }
 }
+
+/*----------------------------------------------------------------------*/
+void INVANA::Triangulation::EvaluatePoints()
+{
+  //clear data
+  points_.clear();
+  std::vector<int> gids;
+
+  int lnumele = surface_->Geometry().size();
+  int gnumele;
+  surface_->Comm()->SumAll(&lnumele,&gnumele,1);
+
+  for (auto ele=surface_->Geometry().begin(); ele != surface_->Geometry().end(); ++ele)
+  {
+    Teuchos::RCP<DRT::Element> element = ele->second;
+
+    // exclude non row map elements to be processed
+    Teuchos::RCP<DRT::FaceElement> elef = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(element);
+    if (discret_->ElementRowMap()->LID(elef->ParentElementId()) == -1) continue;
+
+    int numnodes = element->NumNode();
+    int egid = element->Id();
+
+    // fill maps of normals and centers with data:
+    // case tri  -> no special treatment
+    // case quad -> split into 2 tris and associate to the second tri a gid as gid=egid+maxele
+    std::vector<double> x; //node coordinates
+
+    if (numnodes==3)
+    {
+      for (int i=0; i<3; ++i)
+      {
+        x.push_back(element->Nodes()[i]->X()[0]);
+        x.push_back(element->Nodes()[i]->X()[1]);
+        x.push_back(element->Nodes()[i]->X()[2]);
+      }
+      points_.insert(std::pair<int, std::vector<double> >(egid,x));
+      gids.push_back(egid);
+
+    }
+    else if (numnodes==4)
+    {
+      //permutations to split the quad
+      int perm0[]={0,1,2}; // nodes of the first tri
+      int perm1[]={0,2,3}; // nodes of the second tri
+
+      // first tri
+      for (int i=0; i<3; ++i)
+      {
+        x.push_back(element->Nodes()[perm0[i]]->X()[0]);
+        x.push_back(element->Nodes()[perm0[i]]->X()[1]);
+        x.push_back(element->Nodes()[perm0[i]]->X()[2]);
+      }
+      points_.insert(std::pair<int, std::vector<double> >(egid,x));
+      gids.push_back(egid);
+
+      x.clear();
+      // second tri
+      for (int i=0; i<3; ++i)
+      {
+        x.push_back(element->Nodes()[perm1[i]]->X()[0]);
+        x.push_back(element->Nodes()[perm1[i]]->X()[1]);
+        x.push_back(element->Nodes()[perm1[i]]->X()[2]);
+      }
+      points_.insert(std::pair<int, std::vector<double> >(egid+gnumele,x));
+      gids.push_back(egid+gnumele);
+    }
+    else
+      dserror("only linear tris or bilinear quads are processed in here");
+  }
+  // set up new map of triangles (which is unique)
+  trimap_ = Teuchos::rcp(new Epetra_Map(-1,(int)gids.size(),gids.data(),0,*(surface_->Comm())));
+
+  haspoints_=true;
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::Triangulation::EvaluateDofs()
+{
+  std::vector<int> gids;
+
+  // get total number of face elements in this condition
+  int lnumele = surface_->Geometry().size();
+  int gnumele;
+  surface_->Comm()->SumAll(&lnumele,&gnumele,1);
+
+  // loop the surface elements and build dof map for the faces
+  facetdofstype facetdofs;
+  for (auto ele=surface_->Geometry().begin(); ele != surface_->Geometry().end(); ++ele)
+  {
+    Teuchos::RCP<DRT::Element> element = ele->second;
+    int numnodes = element->NumNode();
+    int egid = element->Id();
+
+    //get this element's dofs
+    DRT::Element::LocationArray la(discret_->NumDofSets());
+    element->LocationVector(*discret_,la,false);
+
+    if (numnodes==3)
+    {
+      facetdofs.insert(std::pair<int,std::vector<int> >(egid,la[0].lm_));
+      gids.push_back(egid);
+    }
+    else if (numnodes==4)
+    {
+      //permutations to split the quad
+      int perm0[]={0,1,2}; // nodes of the first tri
+      int perm1[]={0,2,3}; // nodes of the second tri
+
+      std::vector<int> dofs;
+
+      // first tri
+      for (int i=0; i<3; ++i)
+      {
+        dofs.push_back(la[0].lm_[perm0[i]*3+0]);
+        dofs.push_back(la[0].lm_[perm0[i]*3+1]);
+        dofs.push_back(la[0].lm_[perm0[i]*3+2]);
+      }
+      facetdofs.insert(std::pair<int,std::vector<int> >(egid,dofs));
+      gids.push_back(egid);
+
+      dofs.clear();
+      // second tri
+      for (int i=0; i<3; ++i)
+      {
+        dofs.push_back(la[0].lm_[perm1[i]*3+0]);
+        dofs.push_back(la[0].lm_[perm1[i]*3+1]);
+        dofs.push_back(la[0].lm_[perm1[i]*3+2]);
+      }
+      facetdofs.insert(std::pair<int,std::vector<int> >(egid+gnumele,dofs));
+      gids.push_back(egid+gnumele);
+    }
+    else
+      dserror("only linear tris or bilinear quads are processed in here");
+  }
+  // set up new map of triangles (which is not unique)
+  Epetra_Map trimap(-1,(int)gids.size(),gids.data(),0,*(surface_->Comm()));
+
+  // make it unique
+  DRT::Exporter ex(trimap,*trimap_,trimap_->Comm());
+  ex.Export(facetdofs);
+
+  facetmap_=facetdofs;
+  hasdofs_=true;
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::Triangulation::EvaluateWarp()
+{
+  //clear data
+  data_.clear();
+  std::vector<int> gids;
+
+  // get state of displacement
+  if (!discret_->HasState("displacements"))
+    dserror("state needs to be set in advance to be able to gather data");
+
+  Epetra_Vector disp(*(discret_->GetState("displacements")));
+
+  // get total number of face elements in this condition
+  int lnumele = surface_->Geometry().size();
+  int gnumele;
+  surface_->Comm()->SumAll(&lnumele,&gnumele,1);
+
+  // triangulation
+  std::map<int,Teuchos::RCP<DRT::Element> >& geom = surface_->Geometry();
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator ele;
+  for (ele=geom.begin(); ele != geom.end(); ++ele)
+  {
+    Teuchos::RCP<DRT::Element> element = ele->second;
+    int numnodes = element->NumNode();
+    int egid = element->Id();
+
+    //get this element's dofs
+    DRT::Element::LocationArray la(discret_->NumDofSets());
+    element->LocationVector(*discret_,la,false);
+
+    // this element's displacements
+    std::vector<double> mydisp(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(disp,mydisp,la[0].lm_);
+
+    // fill maps of normals and centers with data:
+    // case tri  -> no special treatment
+    // case quad -> split into 2 tris and associate to the second tri a gid as gid=egid+maxele
+    std::vector<double> x; //node data
+
+    if (numnodes==3)
+    {
+      for (int i=0; i<3; ++i)
+      {
+        x.push_back(mydisp[i*3+0]);
+        x.push_back(mydisp[i*3+1]);
+        x.push_back(mydisp[i*3+2]);
+      }
+      data_.insert(std::pair<int, std::vector<double> >(egid,x));
+      gids.push_back(egid);
+
+    }
+    else if (numnodes==4)
+    {
+      //permutations to split the quad
+      int perm0[]={0,1,2}; // nodes of the first tri
+      int perm1[]={0,2,3}; // nodes of the second tri
+
+      // first tri
+      for (int i=0; i<3; ++i)
+      {
+        x.push_back(mydisp[perm0[i]*3+0]);
+        x.push_back(mydisp[perm0[i]*3+1]);
+        x.push_back(mydisp[perm0[i]*3+2]);
+      }
+      data_.insert(std::pair<int, std::vector<double> >(egid,x));
+      gids.push_back(egid);
+
+      x.clear();
+      // second tri
+      for (int i=0; i<3; ++i)
+      {
+        x.push_back(mydisp[perm1[i]*3+0]);
+        x.push_back(mydisp[perm1[i]*3+1]);
+        x.push_back(mydisp[perm1[i]*3+2]);
+      }
+      data_.insert(std::pair<int, std::vector<double> >(egid+gnumele,x));
+      gids.push_back(egid+gnumele);
+    }
+    else
+      dserror("only linear tris or bilinear quads are processed in here");
+  }
+  // set up new map of triangles (which is not unique)
+  Epetra_Map trimap(-1,(int)gids.size(),gids.data(),0,*(surface_->Comm()));
+
+  // make it unique
+  DRT::Exporter ex(trimap,*trimap_,trimap_->Comm());
+  ex.Export(data_);
+
+  hasdata_=true;
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::Triangulation::SetDataGlobally(const extract_type& data,const Epetra_Map& datamap, Teuchos::RCP<Epetra_MultiVector> vector)
+{
+  int myrank = Comm()->MyPID();
+  // reduce assemble vector to myrank
+  Epetra_Map bla(-1,vector->Map().NumMyElements(),vector->Map().MyGlobalElements(),0,vector->Comm());
+  Epetra_Map dofmap_red(*(LINALG::AllreduceEMap(bla,myrank)));
+
+  //reduce facetmap to myrank
+  facetdofstype facetmap_red = facetmap_;
+  DRT::Exporter ex1(*trimap_,datamap,trimap_->Comm());
+  ex1.Export(facetmap_red);
+
+  //assemble everything on myrank
+  Epetra_Vector vector_red(dofmap_red,true);
+  std::vector<int> dofs;
+  for (auto it=data.begin(); it!=data.end(); it++)
+  {
+    auto facet = facetmap_red.find(it->first);
+    if (facet == facetmap_red.end())
+      dserror("Facet %d could not be found", it->first);
+
+    dofs = facet->second;
+    int err = vector_red.SumIntoGlobalValues(9,it->second.data(),dofs.data());
+    if (err) dserror("Something went wrong!");
+
+  }
+
+  // bring to the MPI parallel layout
+  Epetra_Export ex2(dofmap_red,vector->Map());
+  int err2 = vector->Export(vector_red, ex2, Add);
+  if (err2)
+    dserror("export into global gradien layout failed with code: %d",err2);
+}
+
+/*----------------------------------------------------------------------*/
+INVANA::extract_type INVANA::Triangulation::Points(int rank)
+{
+  if (not haspoints_)
+    dserror("Points were not evaluated so far!");
+
+  // copy since we want to keep the original points
+  extract_type p(points_);
+  CommunicateData(p,rank);
+  return p;
+}
+
+/*----------------------------------------------------------------------*/
+INVANA::extract_type INVANA::Triangulation::Points()
+{
+  if (not haspoints_)
+    dserror("Points were not evaluated so far!");
+
+  // copy since we want to keep the original points
+  extract_type p(points_);
+  CommunicateData(p);
+  return p;
+}
+
+/*----------------------------------------------------------------------*/
+INVANA::extract_type INVANA::Triangulation::Data(int rank)
+{
+  if (not hasdata_)
+    dserror("Data was not evaluated so far!");
+
+  // copy since we want to keep the original data
+  extract_type p(data_);
+  CommunicateData(p,rank);
+  return p;
+}
+
+/*----------------------------------------------------------------------*/
+INVANA::extract_type INVANA::Triangulation::Data()
+{
+  if (not hasdata_)
+    dserror("Data was not evaluated so far!");
+
+  // copy since we want to keep the original data
+  extract_type p(data_);
+  CommunicateData(p);
+  return p;
+}
+
+/*----------------------------------------------------------------------*/
+INVANA::extract_type INVANA::Triangulation::MyPoints()
+{
+  if (not haspoints_)
+    dserror("Points were not evaluated so far!");
+
+  return points_;
+}
+
+/*----------------------------------------------------------------------*/
+INVANA::extract_type INVANA::Triangulation::MyData()
+{
+  if (not hasdata_)
+    dserror("Data was not evaluated so far!");
+
+  return data_;
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::Triangulation::CommunicateData(extract_type& data,int rank)
+{
+
+  Epetra_Map map_red(*LINALG::AllreduceEMap(*trimap_, rank));
+
+  // build the exporter
+  DRT::Exporter ex(*trimap_,map_red,trimap_->Comm());
+
+  // export
+  ex.Export(data);
+}
+
+/*----------------------------------------------------------------------*/
+void INVANA::Triangulation::CommunicateData(extract_type& data)
+{
+
+  Epetra_Map map_red(*LINALG::AllreduceEMap(*trimap_));
+
+  // build the exporter
+  DRT::Exporter ex(*trimap_,map_red,trimap_->Comm());
+
+  // export
+  ex.Export(data);
+}
+
+/*----------------------------------------------------------------------*/
+const Teuchos::RCP<Epetra_Comm> INVANA::Triangulation::Comm() {return surface_->Comm();}

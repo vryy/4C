@@ -26,9 +26,6 @@ namespace DRT
 namespace INVANA
 {
 
-class MatParManager;
-
-
   /**
   \brief An objective function to be used by the inverse analysis
 

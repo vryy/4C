@@ -51,7 +51,7 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(Teuchos::RCP<DRT:
     break;
     case INPAR::INVANA::stat_inv_obj_surfcurr:
     {
-      objfunct = Teuchos::rcp(new INVANA::ObjectiveFunctSurfCurrRepresentation(discret));
+      objfunct = Teuchos::rcp(new INVANA::SurfCurrentGroup(discret));
     }
     break;
     case INPAR::INVANA::stat_inv_obj_none:

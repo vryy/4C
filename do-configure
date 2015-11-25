@@ -247,6 +247,7 @@ $CMAKE_COMMAND \
     -D HAVE_Trilinos_Q3_2013:BOOL=$BUILD_HAVE_Trilinos_Q3_2013 \
     -D HAVE_Trilinos_Q1_2014:BOOL=$BUILD_HAVE_Trilinos_Q1_2014 \
     -D HAVE_Stratimikos:BOOL=$BUILD_Stratimikos \
+    -D HAVE_OpenMP:BOOL=OFF \
     -D TRILINOS_DEV:BOOL=$TRILINOSDEV \
     -D DEAL_II_DIR=$DEAL_II_DIR \
     -D D_ARTNET:BOOL=ON \
