@@ -107,6 +107,12 @@ if (HAVE_Stratimikos)
   add_definitions("-DHAVE_Stratimikos")
 endif (HAVE_Stratimikos)
 
+option (HAVE_Kokkos "Turn on Kokkos support (needs Kokkos to be compiled with Trilinos)" OFF)
+if (HAVE_Kokkos)
+  MESSAGE("II Turn on support for Kokkos")
+  add_definitions("-DHAVE_Kokkos")
+endif(HAVE_Kokkos)
+
 option (ENABLE_STACKTR "Enable printing of a stacktrace in case of a dserror" ON)
 if (ENABLE_STACKTR)
   MESSAGE("II Print stacktrace in dserror")

@@ -1,4 +1,4 @@
-#if defined(HAVE_Kokkos)
+#if defined( HAVE_Kokkos )
 /*----------------------------------------------------------------------*/
 /*!
  * \file objective_funct_surfcurr.cpp
