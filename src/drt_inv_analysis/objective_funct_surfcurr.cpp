@@ -49,6 +49,14 @@ targetdis_(Teuchos::null)
   if (scc_source.size()!=scc_target.size())
     dserror("Size of conditions in source and target differs. We need the size to be equal for meaningful computation");
 
+  //initialize parallel environment for the computation of each surface current pair
+  Kokkos::initialize();
+#if defined( KOKKOS_HAVE_OPENMP )
+  std::cout << "Surface Currents in OpenMP-mode" << std::endl;
+#else
+  std::cout << "Surface Currents in Serial-mode" << std::endl;
+#endif
+
   // find corresponding conditions in source and target discretization
   // and initialize the associated objective functions
   std::vector<Teuchos::RCP<SurfCurrentPair> > dump;
@@ -80,14 +88,6 @@ targetdis_(Teuchos::null)
 
   if (currents_[0].size()!=scc_source.size())
     dserror("problem in finding corresponding current conditions in source and target discretization");
-
-  //initialize parallel environment for the computation of each surface current pair
-  Kokkos::initialize();
-#if defined( KOKKOS_HAVE_OPENMP )
-  std::cout << "Surface Currents in OpenMP-mode" << std::endl;
-#else
-  std::cout << "Surface Currents in Serial-mode" << std::endl;
-#endif
 
 }
 
