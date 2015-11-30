@@ -184,3 +184,40 @@ Teuchos::RCP<Epetra_Map> DRT::DiscretizationXFEM::ExtendMap(const Epetra_Map* sr
 
   return  Teuchos::rcp(new Epetra_Map(-1,dstgids.size(), &dstgids[0],0,srcmap->Comm()));
 }
+
+/*----------------------------------------------------------------------*
+ |  set a reference to a data vector (public)                mwgee 12/06|
+ *----------------------------------------------------------------------*/
+void DRT::DiscretizationXFEM::SetInitialState(unsigned nds,const std::string& name,Teuchos::RCP<const Epetra_Vector> state)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("DRT::DiscretizationXFEM::SetInitialState");
+
+  if (!HaveDofs()) dserror("FillComplete() was not called");
+  const Epetra_Map* colmap = InitialDofColMap(nds);
+  const Epetra_BlockMap& vecmap = state->Map();
+
+  if (state_.size()<=nds)
+    state_.resize(nds+1);
+
+  // if it's already in column map just set a reference
+  // This is a rough test, but it might be ok at this place. It is an
+  // error anyway to hand in a vector that is not related to our dof
+  // maps.
+  if (vecmap.PointSameAs(*colmap))
+  {
+    state_[nds][name] = state;
+  }
+  else // if it's not in column map export and allocate
+  {
+#ifdef DEBUG
+    if (not InitialDofRowMap(nds)->SameAs(state->Map()))
+    {
+      dserror("row map of discretization and state vector %s are different. This is a fatal bug!",name.c_str());
+    }
+#endif
+    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*colmap,false);
+    LINALG::Export(*state,*tmp);
+    state_[nds][name] = tmp;
+  }
+  return;
+}

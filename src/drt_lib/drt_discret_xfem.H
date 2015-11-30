@@ -4,7 +4,7 @@
 \brief a class to manage one discretization with changing dofs
 
 <pre>
-Maintainer: Ager
+Maintainer: Christoph Ager
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 - 15249
@@ -126,7 +126,7 @@ public:
   virtual std::vector<int> InitialDof(const Node* node) const
   { dsassert(initialdofsets_.size()==1,"expect just one dof set");
     dsassert(initialized_,"no initial dofs assigned");
-    return Dof(0,node);
+    return InitialDof(0,node);
   }
 
   /*!
@@ -192,6 +192,29 @@ public:
 
   /// checks if Discretization is initialized
   bool Initialized() const;
+
+
+  /*!
+  \brief Set a reference to a data vector
+
+  Using this method, a reference to a vector can
+  be supplied to the discretization. The elements can access
+  this vector by using the name of that vector.
+  The method expects state to be either of dof row map or of
+  dof column map.
+  If the vector is supplied in DofColMap() a reference to it will be stored.
+  If the vector is NOT supplied in DofColMap(), but in DofRowMap(),
+   a vector with column map is allocated and the supplied vector is exported to it.
+  Everything is stored/referenced using Teuchos::RCP.
+
+  \param nds (in): number of dofset
+  \param name (in): Name of data
+  \param state (in): vector of some data
+
+  \note This class will not take ownership or in any way modify the solution vector.
+  */
+  virtual void SetInitialState(unsigned nds,const std::string& name,Teuchos::RCP<const Epetra_Vector> state);
+
 
 private:
 
