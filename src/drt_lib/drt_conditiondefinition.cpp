@@ -287,8 +287,16 @@ void DRT::INPUT::IntVectorConditionComponent::DefaultLine(std::ostream& stream)
   }
   else
   {
-    for (int i=0; i<length_; ++i)
-      stream << 0 << " ";
+    if(fortranstyle_)
+    {
+      for (int i=0; i<length_; ++i)
+        stream << -1 << " ";
+    }
+    else
+    {
+      for (int i=0; i<length_; ++i)
+        stream << 0 << " ";
+    }
   }
 }
 
@@ -319,7 +327,11 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(DR
                                                                               Teuchos::RCP<std::stringstream> condline,
                                                                               Teuchos::RCP<DRT::Condition> condition)
 {
-  std::vector<int> numbers(length_,0);
+  // Added this as fortranstyle input was not initialized correctly if optional_ was true.
+  int initialize_value = 0;
+  if(fortranstyle_) initialize_value =-1;
+
+  std::vector<int> numbers(length_,initialize_value);
 
   for (int i=0; i<length_; ++i)
   {
@@ -340,7 +352,8 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(DR
         if (optional_ and i==0)
         {
           // failed to read the numbers, fall back to default values
-          condline = PushBack(number,condline);
+          condline = PushBack("",condline); //This line has been changed to incorporate optional flag!!
+          //condline = PushBack(number,condline); //Old implementation -> Not working!!!
           break;
         }
         dserror("Expected %i input parameters for variable '%s' in '%s'\n"
@@ -455,7 +468,8 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(D
       if (optional_ and i==0)
       {
         // failed to read the numbers, fall back to default values
-        condline = PushBack(number,condline);
+        condline = PushBack("",condline); //This line has been changed to incorporate optional flag!!
+        //condline = PushBack(number,condline); //Old implementation -> Not working!!!
         break;
       }
       dserror("Expected %i input parameters for variable '%s' in '%s'\n"
