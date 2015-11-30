@@ -2089,7 +2089,7 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       // atrial volume
       (*sysvec9)[numdof_per_cond*condID + 0] = p_at_m/E_at_m + V_at_0;
       // arterial compartment volume
-      (*sysvec9)[numdof_per_cond*condID + 1] = C_ar * (p_ar_m - p_ar_0) + V_ar_0;
+      (*sysvec9)[numdof_per_cond*condID + 1] = C_ar * (p_ar_m - Z_ar * q_vout_m - p_ar_0) + V_ar_0;
       // venous compartment volume
       (*sysvec9)[numdof_per_cond*condID + 2] = C_ven * (p_ven_m - p_ven_0) + V_ven_0;
 
