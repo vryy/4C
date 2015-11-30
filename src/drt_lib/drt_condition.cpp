@@ -124,8 +124,11 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==FPSICoupling)                  os << "FPSI Coupling condition: ";
   else if (Type()==XFEM_Surf_Displacement)        os << "XFEM Surface Displacement condition: ";
   else if (Type()==XFEM_Levelset_Weak_Dirichlet)  os << "XFEM Levelset weak Dirichlet boundary condition: ";
+  else if (Type()==XFEM_Levelset_Navier_Slip)     os << "XFEM Levelset Navier Slip boundary condition: ";
+  else if (Type()==XFEM_Robin_Dirichlet_Volume)   os << "XFEM Levelset Navier Slip Robin(Dirichlet)-Volume Condition: ";
+  else if (Type()==XFEM_Robin_Neumann_Volume)     os << "XFEM Levelset Navier Slip Robin(Neumann)-Volume Condition: ";
   else if (Type()==XFEM_Levelset_Neumann)         os << "XFEM Levelset Neumann boundary condition: ";
-  else if (Type()==XFEM_Levelset_Twophase)        os << "XFEM Levelset Thophase coupling condition: ";
+  else if (Type()==XFEM_Levelset_Twophase)        os << "XFEM Levelset Twophase coupling condition: ";
   else if (Type()==XFEM_Levelset_Combustion)      os << "XFEM Levelset Combustion coupling condition: ";
   else if (Type()==XFEM_Surf_FSIPart)             os << "XFEM Surface partitioned XFSI boundary condition: ";
   else if (Type()==XFEM_Surf_FSIMono)             os << "XFEM Surface monolithic XFSI coupling condition: ";
@@ -133,6 +136,9 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==XFEM_Surf_FluidFluid)          os << "XFEM Surface Fluid-Fluid coupling condition: ";
   else if (Type()==XFEM_Surf_Weak_Dirichlet)      os << "XFEM Surface weak Dirichlet boundary condition: ";
   else if (Type()==XFEM_Surf_Neumann)             os << "XFEM Surface Neumann boundary condition: ";
+  else if (Type()==XFEM_Surf_Navier_Slip)         os << "XFEM Surface Navier Slip boundary condition: ";
+  else if (Type()==XFEM_Robin_Dirichlet_Surf)     os << "XFEM Mesh Navier Slip Robin(Dirichlet)-Volume Condition: ";
+  else if (Type()==XFEM_Robin_Neumann_Surf)       os << "XFEM Mesh Navier Slip Robin(Neumann)-Volume Condition: ";
   else if (Type()==FluidFluidCoupling)            os << "Fluid Fluid Coupling condition: ";
   else if (Type()==ALEFluidCoupling)              os << "ALE Fluid Coupling condition: ";
   else if (Type()==FluidMesh)                     os << "Create standalone fluid mesh from condition: ";

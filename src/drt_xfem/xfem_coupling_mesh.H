@@ -356,6 +356,93 @@ public:
 };
 
 
+/*!
+\brief
+ */
+class MeshCouplingNavierSlip : public MeshCouplingBC
+{
+public:
+
+  //! constructor
+  explicit MeshCouplingNavierSlip(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+      const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+      Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+      const int                           coupling_id,///< id of composite of coupling conditions
+      const double                        time,      ///< time
+      const int                           step       ///< time step
+  );
+
+  //! destructor
+  virtual ~MeshCouplingNavierSlip()
+  {
+    return;
+  }
+
+public:
+
+  void EvaluateCouplingConditions(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      LINALG::Matrix<3,3>& proj_matrix,
+      const LINALG::Matrix<3,1>& x,
+      const LINALG::Matrix<3,1>& normal,
+      const DRT::Condition* cond,
+      const bool & eval_dirich_at_gp
+  );
+
+  /// this function has to be reviewed for usage with OST new.
+  void EvaluateCouplingConditionsOldState(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
+  /// get the slip coefficient for this coupling
+  void GetSlipCoefficient(
+        double& slipcoeff,
+        const LINALG::Matrix<3,1>& x,
+        const DRT::Condition* cond
+  );
+
+  virtual void PrepareSolve();
+
+protected:
+
+  void SetConditionSpecificParameters(
+      const std::string &                 cond_name ///< name of the condition, by which the derived cutter discretization is identified
+  );
+
+  void GetConditionByRobinId(
+      const std::vector<DRT::Condition*> & mycond,
+      const int coupling_id,
+      std::vector<DRT::Condition*> & mynewcond
+  );
+
+  void CreateRobinIdMap(
+      const std::vector< DRT::Condition* > & conditions_NS,
+      const std::vector< DRT::Condition* > & conditions_robin,
+      const std::string &                    robin_id_name,
+      std::map< int ,DRT::Condition* > &     conditionsmap_robin
+      );
+
+private:
+
+  // Condition map. Corelating robin_id from Navier Slip condition and
+  //                 Robin Dirichlet/Neumann input sections
+  //        robin_id    Robin_cond
+  std::map<   int   , DRT::Condition* >      conditionsmap_robin_dirch_;
+  std::map<   int   , DRT::Condition* >      conditionsmap_robin_neumann_;
+
+  //       Coupling Surface (E 1)          slip length    is slip length constant?
+  std::map<        int       ,   std::pair<    double  ,          bool       > > sliplength_map_;
+  //       Coupling Surface (E 1)  Force only tangential veloctiy to surface
+  std::map<         int          ,     bool     > force_tangvel_map_;
+
+};
+
+
 
 /*!
 \brief
@@ -405,6 +492,12 @@ public:
       const int step
   );
 
+  virtual void GetSlipCoefficient(
+      double& slipcoeff,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
   // interface foces
   Teuchos::RCP<Epetra_Vector> ITrueResidual(){ return itrueresidual_; }
 
@@ -426,6 +519,9 @@ protected:
 
   virtual bool HasMovingInterface(){ return true; }
 
+  void SetConditionSpecificParameters(
+      const std::string &                 cond_name ///< name of the condition, by which the derived cutter discretization is identified
+  );
 
   //------------------------------- vectors -----------------------------
   //! @name cutter-dis state vectors
@@ -433,7 +529,10 @@ protected:
   Teuchos::RCP<Epetra_Vector>    iforcecol_;     //! interface forces acting on the fluid surface (column vector assembly)
   //@}
 
-
+  //---------------------------------parameters--------------------------------
+  //! @name parameters
+  //       Coupling Surface (E 1)          slip length    is slip length constant?
+  std::map<        int       ,   std::pair<    double  ,          bool       > > sliplength_map_;
   //@}
 
 };

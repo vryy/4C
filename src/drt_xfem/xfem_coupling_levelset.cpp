@@ -25,6 +25,13 @@ Maintainer: Benedikt Schott & Magnus Winter
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 
+#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_lib/drt_discret_xfem.H"
+
+//Needed to find element conditions
+#include "../drt_lib/drt_condition_utils.H"
+
+
 XFEM::LevelSetCoupling::LevelSetCoupling(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
     const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
@@ -162,9 +169,10 @@ void XFEM::LevelSetCoupling::ReadRestart(
 
 }
 
-/*----------------------------------------------------------------------*
- | ... |
- *----------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ | Set the level set field and if smoothed gradients are needed create these |
+ |                                                                           |
+ *---------------------------------------------------------------------------*/
 bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
 {
 
@@ -217,6 +225,80 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
     // now copy the values
     err = phinp_->ReplaceMyValue(lnodeid,0,final_val);
     if (err != 0) dserror("error while inserting value into phinp_");
+  }
+
+  // Might make this available for other condition types!
+  const INPAR::XFEM::EleCouplingCondType cond_type = CondType_stringToEnum(cond_name_);
+
+  if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
+  {
+
+    //Do we need smoothed gradients? I.e. what type is it?
+    const int val = cutterele_conds_[lid].second->GetInt("SURFACE_PROJECTION");
+    projtosurf_ = static_cast<INPAR::XFEM::ProjToSurface>(val);
+
+    if(projtosurf_!=INPAR::XFEM::Proj_normal) //and projtosurf_!=INPAR::XFEM::Proj_normal_phi
+    {
+
+      // check for potential L2_Projection smoothing
+      const int l2_proj_num  = cond->GetInt("l2projsolv");
+
+      // SMOOTHED GRAD PHI!!!!!! (Create from nodal map on Xfluid discretization)
+      // This method might be a bit too complicated as we need to save modphinp (size of fluid discretization),
+      // as well as gradphinp_smoothed_rownode as the function ComputeNodalL2Projection returns the row node map.
+      //----------------------------------------------
+      // create the parameters for the discretization
+      Teuchos::ParameterList eleparams;
+      // action for elements
+      eleparams.set<int>("action",FLD::presgradient_projection);
+
+      //To get phi nodal values into pressure dofs in the fluid discretization!!! - any idea for nice implementation?
+      const Epetra_Map* modphinp_dofrowmap = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)->InitialDofRowMap();
+      Teuchos::RCP<Epetra_Vector> modphinp = Teuchos::rcp(new Epetra_Vector(*modphinp_dofrowmap,true));
+
+      double* val = phinp_->Values();
+
+      int numrows = cutter_dis_->NumMyRowNodes();
+      // loop all column nodes on the processor
+      for(int lnodeid=0;lnodeid<numrows;++lnodeid)
+      {
+        // get the processor's local node
+        DRT::Node* lsnode = cutter_dis_->lRowNode(lnodeid);
+        if (lsnode == NULL)
+          dserror("Returned node is null-pointer.");
+
+        std::vector<int> initialdof = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)->InitialDof(lsnode);
+
+        if(initialdof.size()!=4)
+          dserror("Initial Dof Size is not 4! Size: %d",initialdof.size());
+
+        const int gid = initialdof[3];
+
+        int err = modphinp->ReplaceGlobalValues(1,&val[lnodeid],&gid);
+        if(err!=0)
+          dserror("Something went wrong when replacing the values.");
+
+      } // Loop over all nodes
+
+      //SAFETY check
+      // dependent on the desired projection, just remove this line
+      if(not modphinp->Map().SameAs(*Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)->InitialDofRowMap()))
+        dserror("input map is not a dof row map of the fluid");
+
+      // set given state for element evaluation
+      cutter_dis_->ClearState();
+      Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)->SetInitialState(0,"pres",modphinp);
+
+//      Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode= DRT::UTILS::ComputeNodalL2Projection(cutter_dis_,modphinp,"pres",3,eleparams,l2_proj_num);
+      Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode= DRT::UTILS::ComputeNodalL2Projection(cutter_dis_,"pres",3,eleparams,l2_proj_num);
+      if(gradphinp_smoothed_rownode==Teuchos::null)
+        dserror("A smoothed grad phi is required, but an empty one is provided!");
+
+      gradphinp_smoothed_node_ = Teuchos::rcp(new Epetra_MultiVector(*cutter_dis_->NodeColMap(),3));
+      LINALG::Export(*gradphinp_smoothed_rownode,*gradphinp_smoothed_node_);
+
+      //---------------------------------------------- // SMOOTHED GRAD PHI END
+    }
   }
 
   delta_phi->Update(1.0, *phinp_, -1.0); // phinp - phin
@@ -699,6 +781,151 @@ void XFEM::LevelSetCouplingNeumann::EvaluateCouplingConditionsOldState(
   EvaluateNeumannFunction(itraction, x, cond, time_-dt_);
 }
 
+void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditions(
+    LINALG::Matrix<3,1>& ivel,
+    LINALG::Matrix<3,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+
+  // evaluate interface velocity (given by weak Dirichlet condition)
+  EvaluateDirichletFunction(ivel, x, cutterele_cond_robin_dirichlet_[0], time_);
+
+  // evaluate interface traction (given by Neumann condition)
+  if(has_neumann_jump_)
+    EvaluateNeumannFunction(itraction, x, cutterele_cond_robin_neumann_[0], time_);
+
+}
+
+void XFEM::LevelSetCouplingNavierSlip::EvaluateCouplingConditionsOldState(
+    LINALG::Matrix<3,1>& ivel,
+    LINALG::Matrix<3,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+  // evaluate interface velocity (given by weak Dirichlet condition)
+  EvaluateDirichletFunction(ivel, x, cutterele_cond_robin_dirichlet_[0], time_-dt_);
+
+  // evaluate interface traction (given by Neumann condition)
+  if(has_neumann_jump_)
+    EvaluateNeumannFunction(itraction, x, cutterele_cond_robin_neumann_[0], time_-dt_);
+}
+
+void XFEM::LevelSetCouplingNavierSlip::GetSlipCoefficient(
+    double& slipcoeff,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+  if(is_constant_sliplength_)
+    slipcoeff = sliplength_;
+  else
+    EvaluateScalarFunction(slipcoeff,x.A(),sliplength_,cond,time_);
+
+}
+
+void XFEM::LevelSetCouplingNavierSlip::SetElementSpecificConditions(
+    std::vector<DRT::Condition* > & cutterle_cond,
+    const std::string & cond_name,
+    const int & robin_id)
+{
+  // number of column cutter boundary elements
+  int nummycolele = cutter_dis_->NumMyColElements();
+
+  cutterle_cond.clear();
+  cutterle_cond.reserve(nummycolele);
+
+  //// initialize the vector invalid coupling-condition type "NONE"
+  //EleCoupCond init_pair = EleCoupCond(INPAR::XFEM::CouplingCond_NONE,NULL);
+  for(int lid=0; lid<nummycolele; ++lid) cutterle_cond.push_back(NULL);
+
+  //-----------------------------------------------------------------------------------
+  // loop all column cutting elements on this processor
+  for(int lid=0; lid<nummycolele; ++lid)
+  {
+    DRT::Element* cutele = cutter_dis_->lColElement(lid);
+
+    // get all conditions with given condition name
+    std::vector<DRT::Condition*> mycond;
+    DRT::UTILS::FindElementConditions(cutele, cond_name, mycond);
+
+    std::vector<DRT::Condition*> mynewcond;
+    GetConditionByRobinId(mycond, robin_id, mynewcond);
+
+    DRT::Condition* cond_unique = NULL;
+
+    // safety checks
+    if(mynewcond.size() != 1)
+    {
+      dserror("%i conditions of the same name with robin id %i, for element %i! %s coupling-condition not unique!", mynewcond.size(), (robin_id+1), cutele->Id(), cond_name.c_str());
+
+    }
+    else if(mynewcond.size() == 1) // unique condition found
+    {
+      cond_unique = mynewcond[0];
+    }
+
+    // store the unique condition pointer to the cutting element
+    cutterle_cond[lid] = cond_unique;
+  }
+  //  //-----------------------------------------------------------------------------------
+  //  // check if all column cutter elements have a valid condition type
+  //  // loop all column cutting elements on this processor
+  for(int lid=0; lid<nummycolele; ++lid)
+  {
+    if(cutterle_cond[lid] == NULL)
+      dserror("cutter element with local id %i has no Robin-condition!!!", lid);
+  }
+
+}
+
+void XFEM::LevelSetCouplingNavierSlip::SetConditionSpecificParameters()
+{
+
+  // Get robin coupling IDs
+  robin_dirichlet_id_ = cutterele_conds_[0].second->GetInt("robin_id_dirch");
+  robin_neumann_id_ = cutterele_conds_[0].second->GetInt("robin_id_neumann");
+
+  has_neumann_jump_ = (robin_neumann_id_ < 0) ? false : true;
+
+  // Get the scaling factor for the slip length
+  sliplength_ = cutterele_conds_[0].second->GetDouble("slipcoeff");
+
+  //Temporary variable for readability.
+  bool tmp_bool;
+
+  // Is the slip length constant? Don't call functions at GP-level unnecessary.
+  tmp_bool = (cutterele_conds_[0].second->GetInt("curve") < 0 and cutterele_conds_[0].second->GetInt("funct") < 1);
+  is_constant_sliplength_ = (tmp_bool) ? true : false;
+
+  // Project the prescribed velocity in tangential direction, to remove "spurious velocities"
+  //  from the geometry approximation.
+  tmp_bool=( (cutterele_conds_[0].second->GetInt("force_tang_vel")) ==0 );
+  forcetangvel_ = (tmp_bool) ? false : true;
+
+}
+
+void XFEM::LevelSetCouplingNavierSlip::GetConditionByRobinId(
+    const std::vector<DRT::Condition*> & mycond,
+    const int coupling_id,
+    std::vector<DRT::Condition*> & mynewcond
+)
+{
+  mynewcond.clear();
+
+  // select the conditions with specified "couplingID"
+  for(size_t i=0; i< mycond.size(); ++i)
+  {
+    DRT::Condition* cond = mycond[i];
+    const int id = cond->GetInt("robin_id");
+
+    if(id == coupling_id)
+      mynewcond.push_back(cond);
+  }
+}
+
 /*----------------------------------------------------------------------*
  | Set the LevelSet Field from a two phase algorithm.                   |
  *----------------------------------------------------------------------*/
@@ -724,7 +951,7 @@ void XFEM::LevelSetCouplingTwoPhase::SetLevelSetField(
 
 // CUT INFORMATION FROM LEVEL SET
   // loop all nodes on the processor
-  for(int lnodeid=0;lnodeid<cutter_dis_->NumMyRowNodes();lnodeid++)
+  for(int lnodeid=0;lnodeid<cutter_dis_->NumMyRowNodes(); ++lnodeid)
   {
     // get the processor's local scatra node
     DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
@@ -754,7 +981,7 @@ void XFEM::LevelSetCouplingTwoPhase::SetLevelSetField(
       Teuchos::RCP<Epetra_Vector> curvaturenp_rownode = Teuchos::rcp(new Epetra_Vector(*cutter_dis_->NodeRowMap()));
 
     // loop all column nodes on the processor
-    for(int lnodeid=0;lnodeid<cutter_dis_->NumMyRowNodes();lnodeid++)
+    for(int lnodeid=0;lnodeid<cutter_dis_->NumMyRowNodes(); ++lnodeid)
     {
       // get the processor's local scatra node
       DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
@@ -794,7 +1021,7 @@ void XFEM::LevelSetCouplingTwoPhase::SetLevelSetField(
     int numvec = smoothed_gradphiaf->NumVectors();
 
     // loop all column nodes on the processor
-    for(int lnodeid=0;lnodeid<cutter_dis_->NumMyRowNodes();lnodeid++)
+    for(int lnodeid=0;lnodeid<cutter_dis_->NumMyRowNodes();++lnodeid)
     {
       // get the processor's local scatra node
       DRT::Node* lscatranode = scatradis->lRowNode(lnodeid);
@@ -808,7 +1035,7 @@ void XFEM::LevelSetCouplingTwoPhase::SetLevelSetField(
         dserror("localdofid not found in map for given globaldofid");
 
       // now copy the values
-      for(int i=0; i<numvec; i++)
+      for(int i=0; i<numvec; ++i)
       {
         value = smoothed_gradphiaf->Pointers()[i][localscatradofid]; //Somehow it is turned around?
         err = gradphinp_smoothed_rownode->ReplaceMyValue(lnodeid,i,value);

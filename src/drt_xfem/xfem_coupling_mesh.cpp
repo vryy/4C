@@ -82,6 +82,16 @@ void XFEM::MeshCoupling::SetConditionsToCopy()
 
   // additional conditions required for the displacements of the cutter mesh
   conditions_to_copy_.push_back("XFEMSurfDisplacement");
+
+  // for Navier Slip/ Robin boundary conditions
+  // this implementation should be reviewed at some point as it requires these conditions
+  //  to have a couplingID. In theory this should not be necessary.
+  if(cond_name_=="XFEMSurfNavierSlip")
+  {
+    conditions_to_copy_.push_back("XFEMRobinDirichletSurf");
+    conditions_to_copy_.push_back("XFEMRobinNeumannSurf");
+  }
+
 }
 
 
@@ -376,7 +386,7 @@ void XFEM::MeshCouplingBC::EvaluateCondition(
 
     if(condname == "XFEMSurfDisplacement")
       EvaluateInterfaceDisplacement(final_values,lnode,cond,time);
-    else if(condname == "XFEMSurfWeakDirichlet")
+    else if(condname == "XFEMSurfWeakDirichlet" or condname=="XFEMRobinDirichletSurf")
       EvaluateInterfaceVelocity(final_values,lnode,cond,time,dt);
     else dserror("non supported condname for evaluation %s", condname.c_str());
 
@@ -721,6 +731,292 @@ void XFEM::MeshCouplingNeumann::PrepareSolve()
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 //! constructor
+XFEM::MeshCouplingNavierSlip::MeshCouplingNavierSlip(
+    Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+    const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
+    Teuchos::RCP<DRT::Discretization>&  cond_dis,  ///< discretization from which cutter discretization can be derived
+    const int                           coupling_id,///< id of composite of coupling conditions
+    const double                        time,      ///< time
+    const int                           step       ///< time step
+) : MeshCouplingBC(bg_dis,cond_name,cond_dis, coupling_id, time, step)
+{
+  //Build necessary maps to limit getting integers and strings on Gausspoint level.
+  SetConditionSpecificParameters(cond_name);
+
+  if(myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
+  EvaluateCondition( ivelnp_,"XFEMRobinDirichletSurf", time_, dt_);
+
+  // set the initial interface velocities also to iveln
+  iveln_->Update(1.0,*ivelnp_,0.0);
+}
+
+void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditions(
+    LINALG::Matrix<3,1>& ivel,
+    LINALG::Matrix<3,1>& itraction,
+    LINALG::Matrix<3,3>& proj_matrix,
+    const LINALG::Matrix<3,1>& x,
+    const LINALG::Matrix<3,1>& normal,
+    const DRT::Condition* cond,
+    const bool & eval_dirich_at_gp
+)
+{
+
+  //Create normal projection matrix.
+  //  Add the smoothed normals here!!!
+  LINALG::Matrix<3,3> eye(true);
+  for(unsigned int i =0; i<3; ++i)
+    eye(i,i)=1;
+  for(unsigned int i =0; i<3; ++i)
+  {
+    for(unsigned int j =0; j<3; ++j)
+    {
+      proj_matrix(i,j)          = eye(i,j) - normal(i,0) * normal(j,0);
+    }
+  }
+
+  // help variable
+  int robin_id_dirch;
+
+  if(eval_dirich_at_gp)
+  {
+    // evaluate interface velocity (given by weak Dirichlet condition)
+    robin_id_dirch = cond->GetInt("robin_id_dirch");
+    //Check if int is negative (signbit(x) -> x<0 true, x=>0 false)
+    if(!std::signbit(robin_id_dirch))
+      EvaluateDirichletFunction(ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second , time_);
+
+// Safety checks
+#ifdef DEBUG
+    if ( (conditionsmap_robin_dirch_.find(robin_id_dirch)) == conditionsmap_robin_dirch_.end() )
+    {
+      dserror("Key was not found in this instance!! Fatal error! (conditionsmap_robin_dirch_)");
+    }
+#endif
+  }
+
+  // evaluate interface traction (given by Neumann condition)
+  robin_id_dirch = cond->GetInt("robin_id_neumann");
+  if(!std::signbit(robin_id_dirch))
+    EvaluateNeumannFunction(itraction, x, conditionsmap_robin_neumann_.find(robin_id_dirch)->second , time_);
+
+  if( force_tangvel_map_.find(cond->Id())->second ) //forcetangvel_)
+  {
+    LINALG::Matrix<3,1> tmp_ivel(true);
+    tmp_ivel.MultiplyTN(proj_matrix,ivel); //apply Projection matrix from the right. (u_0 * P^t)
+    ivel.Update(1.0,tmp_ivel,0.0);
+  }
+
+// Safety checks
+#ifdef DEBUG
+  if(!std::signbit(robin_id_dirch))
+  {
+    if ( ( conditionsmap_robin_neumann_.find(robin_id_dirch)) == conditionsmap_robin_neumann_.end() )
+    {
+      dserror("Key was not found in this instance!! Fatal error! (conditionsmap_robin_neumann_)");
+    }
+  }
+  std::map<   int   , bool > ::iterator it_bool;
+  if ( (it_bool = force_tangvel_map_.find(cond->Id())) == force_tangvel_map_.end() )
+  {
+      dserror("Key was not found in this instance!! Fatal error! (force_tangvel_map_)");
+  }
+#endif
+
+}
+
+void XFEM::MeshCouplingNavierSlip::EvaluateCouplingConditionsOldState(
+    LINALG::Matrix<3,1>& ivel,
+    LINALG::Matrix<3,1>& itraction,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+// TODO: Add parameters as in call above!!!
+//  //Create normal projection matrix.
+//  LINALG::Matrix<3,3> eye(true);
+//  for(unsigned int i =0; i<3; ++i)
+//    eye(i,i)=1;
+//  for(unsigned int i =0; i<3; ++i)
+//  {
+//    for(unsigned int j =0; j<3; ++j)
+//    {
+//      proj_matrix(i,j)          = eye(i,j) - normal(i,0) * normal(j,0);
+//    }
+//  }
+
+  // evaluate interface velocity (given by weak Dirichlet condition)
+  int robin_id_dirch = cond->GetInt("robin_id_dirch");
+  //Check if int is negative (signbit(x) -> x<0 true, x=>0 false)
+  if(!std::signbit(robin_id_dirch))
+    EvaluateDirichletFunction(ivel, x, conditionsmap_robin_dirch_.find(robin_id_dirch)->second , time_-dt_);
+
+  // evaluate interface traction (given by Neumann condition)
+  robin_id_dirch = cond->GetInt("robin_id_neumann");
+  if(!std::signbit(robin_id_dirch))
+    EvaluateNeumannFunction(itraction, x, conditionsmap_robin_neumann_.find(robin_id_dirch)->second , time_-dt_);
+
+}
+
+void XFEM::MeshCouplingNavierSlip::PrepareSolve()
+{
+  // set the new interface displacements where DBCs or Neumann BCs have to be evaluted
+  SetInterfaceDisplacement();
+
+  //  // set the initial interface velocity and possible initialization function
+  //  SetInterfaceVelocity();
+  if(myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
+  EvaluateCondition( ivelnp_,"XFEMRobinDirichletSurf", time_, dt_);
+}
+
+void XFEM::MeshCouplingNavierSlip::GetSlipCoefficient(
+    double& slipcoeff,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+
+  // Extract correct slip length - bool pair for this condition ID.
+  std::pair<double,bool> & tmp_pair = sliplength_map_.find(cond->Id())->second;
+
+  if(tmp_pair.second) // Is slip length constant?
+    slipcoeff = tmp_pair.first;
+  else                // Otherwise, evaluate function at gausspoint
+    EvaluateScalarFunction(slipcoeff,x.A(),tmp_pair.first,cond,time_);
+}
+
+void XFEM::MeshCouplingNavierSlip::CreateRobinIdMap(
+    const std::vector< DRT::Condition* > & conditions_NS,
+    const std::vector< DRT::Condition* > & conditions_robin,
+    const std::string &                    robin_id_name,
+    std::map< int ,DRT::Condition* > &     conditionsmap_robin
+    )
+{
+
+  // Loop over all Navier Slip conditions
+  for(unsigned i=0; i<conditions_NS.size(); ++i)
+  {
+    //Extract its robin id (either dirichlet or neumann)
+    const int tmp_robin_id = conditions_NS[i]->GetInt(robin_id_name);
+
+    // Is this robin id active? I.e. is it not 0 or negative?
+    if(!(tmp_robin_id<0))
+    {
+      std::vector<DRT::Condition*> mynewcond;
+      GetConditionByRobinId(conditions_robin,tmp_robin_id,mynewcond);
+
+      // The robin id should be unique. I.e. For one Coupling ID only a robin id can only exist once.
+      if(mynewcond.size()==1)
+      {
+        if(!conditionsmap_robin.insert( std::make_pair( tmp_robin_id, mynewcond[0] ) ).second)
+          dserror("ID already existing! For conditionsmap_robin.");
+      }
+      else
+      {
+        dserror("Active Robin Dirichlet/Neumann condition provided in Navier Slip condition, but not in input file!!");
+      }
+
+    }
+  }
+
+  // Is the created map the same size as the existing provided robin conditions?
+  if((conditionsmap_robin).size()!=conditions_robin.size())
+  {
+    std::cout << "conditionsmap_robin.size(): " <<  (conditionsmap_robin).size() << std::endl;
+    std::cout << "conditions_robin.size(): " << conditions_robin.size() << std::endl;
+    dserror("More Robin Dirichlet/Neumann Conditions provided than necessary!");
+  }
+
+}
+
+void XFEM::MeshCouplingNavierSlip::SetConditionSpecificParameters(  const std::string &  cond_name)
+{
+
+  // Get conditions based on cutter discretization.
+  std::vector< DRT::Condition* >  conditions_dirich;
+  cutter_dis_->GetCondition("XFEMRobinDirichletSurf", conditions_dirich);
+
+  std::vector< DRT::Condition* >  conditions_neumann;
+  cutter_dis_->GetCondition("XFEMRobinNeumannSurf", conditions_neumann);
+
+  std::vector< DRT::Condition* >  conditions_NS;
+  cutter_dis_->GetCondition(cond_name, conditions_NS);
+
+  //Establishes unique connection between Navier Slip section and Robin Dirichlet Neumann sections
+  CreateRobinIdMap(
+      conditions_NS,
+      conditions_dirich,
+      "robin_id_dirch",
+      conditionsmap_robin_dirch_);
+
+  CreateRobinIdMap(
+      conditions_NS,
+      conditions_neumann,
+      "robin_id_neumann",
+      conditionsmap_robin_neumann_);
+
+  // Create maps for easy extraction at gausspoint level
+  for(std::vector<DRT::Condition*>::iterator i=conditions_NS.begin();
+      i!=conditions_NS.end();
+      ++i)
+  {
+    int cond_int = (*i)->Id();
+
+    double sliplength = (*i)->GetDouble("slipcoeff");
+
+    // Is the slip length constant? Don't call functions at GP-level unnecessary.
+    bool slip_bool = ((*i)->GetInt("curve") < 0 and (*i)->GetInt("funct") < 1);
+
+    bool force_tangential =( ((*i)->GetInt("force_tang_vel")) == 1 );
+
+    if(!sliplength_map_.insert( std::make_pair( cond_int, std::make_pair(sliplength,slip_bool) ) ).second)
+      dserror("ID already existing! For sliplength_map_.");
+
+    if(!force_tangvel_map_.insert( std::make_pair( cond_int, force_tangential ) ).second)
+      dserror("ID already existing! For force_tangvel_map_.");
+
+  }
+
+  // Check if eval-type is same in Navier slip section and
+  //       Robin Dirichlet section (Safety check! (not beautiful structure but could be worse..))
+  for(std::vector<DRT::Condition*>::iterator i=conditions_NS.begin();
+      i!=conditions_NS.end();
+      ++i)
+  {
+    DRT::Condition* tmp_cond = *i;
+
+    const int tmp_robin_id = tmp_cond->GetInt("robin_id_dirch");
+    if(!std::signbit(tmp_robin_id))
+    {
+      if((*conditionsmap_robin_dirch_.find(tmp_robin_id)->second->Get<std::string>("evaltype")).compare(
+          *(tmp_cond->Get<std::string>("evaltype")))!=0)
+        dserror("Not same function to evaluate in Dirichlet cond as in Main Cond.");
+    }
+  }
+
+}
+
+void XFEM::MeshCouplingNavierSlip::GetConditionByRobinId(
+    const std::vector<DRT::Condition*> & mycond,
+    const int coupling_id,
+    std::vector<DRT::Condition*> & mynewcond
+)
+{
+  mynewcond.clear();
+
+  // select the conditions with specified "couplingID"
+  for(size_t i=0; i< mycond.size(); ++i)
+  {
+    DRT::Condition* cond = mycond[i];
+    const int id = cond->GetInt("robin_id");
+
+    if(id == coupling_id)
+      mynewcond.push_back(cond);
+  }
+}
+
+
+
+//! constructor
 XFEM::MeshCouplingFSI::MeshCouplingFSI(
     Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
     const std::string &                 cond_name,///< name of the condition, by which the derived cutter discretization is identified
@@ -730,6 +1026,7 @@ XFEM::MeshCouplingFSI::MeshCouplingFSI(
     const int                           step       ///< time step
 ) : MeshCoupling(bg_dis,cond_name,cond_dis,coupling_id, time, step)
 {
+  SetConditionSpecificParameters(cond_name);
   InitStateVectors_FSI();
 }
 
@@ -809,6 +1106,22 @@ void XFEM::MeshCouplingFSI::ReadRestart(
     dserror("Global dof numbering in maps does not match");
 
 
+}
+
+void XFEM::MeshCouplingFSI::GetSlipCoefficient(
+    double& slipcoeff,
+    const LINALG::Matrix<3,1>& x,
+    const DRT::Condition* cond
+)
+{
+
+  // Extract correct slip length - bool pair for this condition ID.
+  std::pair<double,bool> & tmp_pair = sliplength_map_.find(cond->Id())->second;
+
+  if(tmp_pair.second) // Is slip length constant?
+    slipcoeff = tmp_pair.first;
+  else                // Otherwise, evaluate function at gausspoint
+    EvaluateScalarFunction(slipcoeff,x.A(),tmp_pair.first,cond,time_);
 }
 
 /*--------------------------------------------------------------------------*
@@ -912,6 +1225,35 @@ void XFEM::MeshCouplingFSI::Output(
     cutter_output_->WriteVector("idispnp_res", idispnp_);
     cutter_output_->WriteVector("idispnpi_res", idispnpi_);
   }
+}
+
+void XFEM::MeshCouplingFSI::SetConditionSpecificParameters(  const std::string &  cond_name)
+{
+
+  std::vector< DRT::Condition* >  conditions_XFSI;
+  cutter_dis_->GetCondition(cond_name, conditions_XFSI);
+
+  // Create maps for easy extraction at gausspoint level
+  for(std::vector<DRT::Condition*>::iterator i=conditions_XFSI.begin();
+      i!=conditions_XFSI.end();
+      ++i)
+  {
+
+    (*i)->Print(std::cout);
+
+    int cond_int = (*i)->Id();
+
+    double sliplength = (*i)->GetDouble("slipcoeff");
+
+    // Is the slip length constant? Don't call functions at GP-level unnecessary.
+    bool slip_bool = ((*i)->GetInt("curve") < 0 and (*i)->GetInt("funct") < 1);
+
+    if(!sliplength_map_.insert( std::make_pair( cond_int, std::make_pair(sliplength,slip_bool) ) ).second)
+      dserror("ID already existing! For sliplength_map_.");
+
+  }
+
+
 }
 
 //----------------------------------------------------------------------

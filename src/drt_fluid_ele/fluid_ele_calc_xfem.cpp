@@ -932,7 +932,8 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
       if( cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
           cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
-          cond_type == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)
+          cond_type == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART or
+          cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
       {
         si->SetInterfaceJumpStatenp(*cutter_dis, "ivelnp", cutla[0].lm_);
       }
@@ -992,7 +993,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
           drs = 1.0;
           normal = bc->GetNormalVector();
           const double* gpcord = iquad.Point();
-          for (int idim=0;idim<3;idim++)
+          for (int idim=0;idim<3;++idim)
           {
             x_gp_lin(idim,0) = gpcord[idim];
           }
@@ -1569,7 +1570,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
 
       if(cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
          cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
-         cond_type == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)
+         cond_type == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART or
+         cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
       {
         si->SetInterfaceJumpStatenp(*cutter_dis, "ivelnp", cutla[0].lm_);
         if (my::fldparatimint_->IsNewOSTImplementation())
@@ -1755,7 +1757,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceHybridLM(
           drs = 1.0;
           normal = bc->GetNormalVector();
           const double* gpcord = iquad.Point();
-          for (int idim=0;idim<3;idim++)
+          for (int idim=0;idim<3;++idim)
           {
             x_gp_lin(idim,0) = gpcord[idim];
           }
@@ -3077,7 +3079,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   Epetra_SerialDenseMatrix ele_xyze(my::nsd_,my::nen_);
   for ( int i=0; i<my::nen_; ++i )
   {
-    for(int j=0; j<my::nsd_; j++)
+    for(int j=0; j<my::nsd_; ++j)
       ele_xyze(j,i) = my::xyze_( j, i );
   }
 
@@ -3278,7 +3280,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
       if(cond_type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET or
          cond_type == INPAR::XFEM::CouplingCond_SURF_FSI_PART or
-         cond_type == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART)
+         cond_type == INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART or
+         cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
       {
         si->SetInterfaceJumpStatenp(*cutter_dis, "ivelnp", cutla[0].lm_);
         if (my::fldparatimint_->IsNewOSTImplementation())
@@ -3436,7 +3439,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           drs = 1.0;
           normal_ = bc->GetNormalVector();
           const double* gpcord = iquad.Point();
-          for (int idim=0;idim<3;idim++)
+          for (int idim=0;idim<3;++idim)
           {
             x_gp_lin_(idim,0) = gpcord[idim];
           }
@@ -3492,6 +3495,17 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         //----------------------------------------------
         // get convective velocity at integration point
         my::SetConvectiveVelint(ele->IsAle());
+
+        //---------------------------------------------------------------------------------
+        // Get the slip length (\beta) for Navier Slip/MCL simulations
+        // Could become dependent later on mesh-size and or position of contact line.
+        // See for example Legendre and Duponts paper or Buscaglia and Ausas.
+        //---------------------------------------------------------------------------------
+
+        double slipcoeff=0.0;
+        coupling->GetSlipCoefficient(slipcoeff,x_gp_lin_,coupcond.second);
+        if(slipcoeff < 0.0)
+          dserror("The slip length can not be negative.");
 
         //-----------------------------------------------------------------------------
         // compute stabilization factors
@@ -3574,17 +3588,18 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             kappa_s,                     // mortaring weighting
             my::densaf_,                 // fluid density
             NIT_full_stab_fac,           // full Nitsche's penalty term scaling (viscous+convective part)
+            NIT_visc_stab_fac,           // viscous part of Nitsche's penalty term scaling
             my::funct_,                  // bg shape functions
             my::derxy_,                  // bg shape function gradient
             my::vderxy_,                 // bg grad u^n+1
             press,                       // bg p^n+1
             my::velint_,                 // bg u^n+1
-            ivelint_jump_,                // prescribed interface velocity, Dirichlet values or jump height for coupled problems
-            itraction_jump_,              // prescribed interface traction, jump height for coupled problems
-            itraction_jump_matrix_,       // prescribed interface traction matrix for Laplace-Beltrami projection
+            ivelint_jump_,               // prescribed interface velocity, Dirichlet values or jump height for coupled problems
+            itraction_jump_,             // prescribed interface traction, jump height for coupled problems
+            itraction_jump_matrix_,      // prescribed interface traction matrix for Laplace-Beltrami projection
+            slipcoeff,                   // prescribed slip length for Robin type BC
             is_traction_jump
           );
-
 
           if (my::fldparatimint_->IsNewOSTImplementation())
           {
@@ -3599,6 +3614,17 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
             ivelintn_jump_.Clear();
             itractionn_jump_.Clear();
 
+            // Safety check
+            if(cond_type == INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP or
+               cond_type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP       )
+            {
+
+              if (my::fldparatimint_->IsNewOSTImplementation())
+              {
+                dserror("How to deal with NavierSlip boundary condition and new OSTImplementation?");
+              }
+
+            }
 
             if(cond_type != INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE and
                 cond_type != INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION)
@@ -3720,15 +3746,15 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     Teuchos::RCP<XFEM::CouplingBase> coupling,                               ///< coupling object
     LINALG::Matrix<my::nsd_,1>& ivelint_jump,                                ///< prescribed interface jump vector for velocity
     LINALG::Matrix<my::nsd_,1>& itraction_jump,                              ///< prescribed interface jump vector for traction
-    LINALG::Matrix<my::nsd_,my::nsd_>& itraction_jump_matrix,                ///< prescribed projection matrix for evaluation of curavture through Laplace-Beltrami
+    LINALG::Matrix<my::nsd_,my::nsd_>& projection_matrix,                    ///< prescribed projection matrix for evaluation of curavture through Laplace-Beltrami or splitting of tangential and normal directions
     const LINALG::Matrix<my::nsd_,1>& x,                                     ///< global coordinates of Gaussian point
     const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
     Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si, ///< side implementation for cutter element
     LINALG::Matrix<3,1>& rst,                                                ///< local coordinates of GP for bg element
-    bool& is_traction_jump                                                   ///< is it a traction jump or is it a laplace-beltrami
+    bool& is_xtpf_curvature_impl                                             ///< is it a traction jump or is it a laplace-beltrami
 )
 {
-  //TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GetInterfaceJumpVectors");
+  TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::GetInterfaceJumpVectors");
 
   // [| v |] := vm - vs
 
@@ -3775,6 +3801,31 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
     // nothing to evaluate as continuity coupling conditions have to be evaluated
     break;
   }
+  case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
+  {
+
+
+    bool eval_dirich_at_gp = (*(cond->Get<std::string>("evaltype")) == "funct_gausspoint");
+
+    // The velocity is evaluated twice in this framework...
+    Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlip>(coupling)->EvaluateCouplingConditions(ivelint_jump,itraction_jump,projection_matrix,x,normal,cond,eval_dirich_at_gp);
+
+    if(!eval_dirich_at_gp)
+    {
+
+      si->GetInterfaceJumpVelnp(ivelint_jump);
+
+    }
+
+    break;
+  }
+  case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
+  {
+
+    Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingNavierSlip>(coupling)->EvaluateCouplingConditions<distype>(ivelint_jump,itraction_jump,x,cond,projection_matrix,my::eid_,my::funct_,my::derxy_,normal);
+
+    break;
+  }
   case INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE:
   {
     // where [*] = (*)^m - (*)^s = (*)^+ - (*)^-
@@ -3785,7 +3836,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
 
     if(gamma_m_ != 0.0)
     {
-      Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(coupling)->EvaluateTractionDiscontinuity<distype>(itraction_jump,itraction_jump_matrix,my::eid_,my::funct_,my::derxy_,normal,surf_coeff,is_traction_jump);
+      Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(coupling)->EvaluateTractionDiscontinuity<distype>(itraction_jump,projection_matrix,my::eid_,my::funct_,my::derxy_,normal,surf_coeff,is_xtpf_curvature_impl);
     }
 
     break;
@@ -3797,6 +3848,27 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
   }
   // Neumann boundary conditions for Mesh and Levelset
   default: dserror("invalid type of condition %i, which prescribed interface vectors have to be set?", cond_type); break;
+  }
+
+  // Create a projection matrix.
+  //  If it is a Navier-Slip coupling, the matrix is provided from the Evaluation.
+  //   Furthermore, if it is a Laplace-Beltrami way of calculating the surface tension,
+  //   do not fill the matrix as it contains the "projection matrix" for LB implementation.
+  if(cond_type != INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP
+      and cond_type != INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP
+      and is_xtpf_curvature_impl != false)
+  {
+    //Create normal projection matrix.
+    LINALG::Matrix<my::nsd_,my::nsd_> eye(true);
+    for(unsigned int i =0; i<my::nsd_; ++i)
+      eye(i,i)=1;
+    for(unsigned int i =0; i<my::nsd_; ++i)
+    {
+      for(unsigned int j =0; j<my::nsd_; ++j)
+      {
+        projection_matrix(i,j)          = eye(i,j) - normal(i,0) * normal(j,0);
+      }
+    }
   }
 
   return;
@@ -3828,6 +3900,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectorsOldState(
   switch (cond_type)
   {
   case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
+  case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
   {
     const std::string* evaltype = cond->Get<std::string>("evaltype");
 
@@ -3847,6 +3920,7 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectorsOldState(
   case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
   case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
   case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
+  case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
   {
     // evaluate condition function at Gaussian point
     coupling->EvaluateCouplingConditionsOldState(ivelintn_jump,itractionn_jump,x,cond);
@@ -4448,9 +4522,9 @@ void FluidEleCalcXFEM<distype>::BuildTractionVector(
 {
   // compute the stresses at the current Gaussian point for computing the interface force
   LINALG::Matrix<my::nsd_,my::nsd_> two_eps;
-  for(int i=0; i<my::nsd_; i++)
+  for(int i=0; i<my::nsd_; ++i)
   {
-    for(int j=0; j<my::nsd_; j++)
+    for(int j=0; j<my::nsd_; ++j)
     {
       two_eps(j,i) = my::vderxy_(i,j) + my::vderxy_(j,i);
     }
@@ -4523,7 +4597,7 @@ void FluidEleCalcXFEM<distype>::EvaluateNeumann(
     //-----------------------------------------------
     //    - (vm, t)
     //-----------------------------------------------
-    for (int ir = 0; ir<my::nen_; ir++)
+    for (int ir = 0; ir<my::nen_; ++ir)
     {
       const unsigned row = ir*(my::nsd_+1) + ivel;
       rhC_um(row,0) += funct_m_timefacfac(ir)*itraction_jump(ivel);
@@ -4672,7 +4746,7 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
     if (fabs(meas_surf) < 1.e-8)  dserror("Element contribution to interface has zero size.");
 
     // compute the cut volume measure
-    for( GEO::CUT::plain_volumecell_set::const_iterator i=vcSet.begin();i!=vcSet.end();i++ )
+    for( GEO::CUT::plain_volumecell_set::const_iterator i=vcSet.begin();i!=vcSet.end();++i )
     {
       GEO::CUT::VolumeCell* vc = *i;
       meas_vol += vc->Volume();
@@ -4738,7 +4812,7 @@ double FluidEleCalcXFEM<distype>::ComputeCharEleLength(
     const int numfaces = DRT::UTILS::getNumberOfElementFaces(ele->Shape());
 
     // loop all surfaces
-    for(int lid=0; lid< numfaces; lid++)
+    for(int lid=0; lid< numfaces; ++lid)
     {
       meas_surf = std::max(meas_surf, ComputeMeasFace(ele, ele_xyze, lid));
     }
@@ -4787,10 +4861,10 @@ double FluidEleCalcXFEM<distype>::ComputeMeasFace(
   std::vector< std::vector<int> > map = DRT::UTILS::getEleNodeNumberingFaces(ele->Shape());
 
   // extract the surface's node coordinates from the element's nodes coordinates
-  for(int n=0; n<numnode_face; n++)
+  for(int n=0; n<numnode_face; ++n)
   {
     const int node_lid = map[local_face_id][n];
-    for(int idim = 0; idim < my::nsd_; idim++)
+    for(int idim = 0; idim < my::nsd_; ++idim)
       xyze_face(idim,n) = ele_xyze(idim,node_lid);
   }
 
@@ -4822,7 +4896,7 @@ double FluidEleCalcXFEM<distype>::ComputeMeasFace(
     |               start loop over integration points                     |
    *----------------------------------------------------------------------*/
   const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
-  for (int gpid=0; gpid<intpoints.nquad; gpid++)
+  for (int gpid=0; gpid<intpoints.nquad; ++gpid)
   {
     const double e0 = intpoints.qxg[gpid][0];
     const double e1 = intpoints.qxg[gpid][1];
@@ -4906,7 +4980,7 @@ double FluidEleCalcXFEM<distype>::ComputeMeasCutSurf(
           drs = 1.0;
           normal = bc->GetNormalVector();
           const double* gpcord = iquad.Point();
-          for (int idim=0;idim<3;idim++)
+          for (int idim=0;idim<3;++idim)
           {
             x_gp_lin(idim,0) = gpcord[idim];
           }

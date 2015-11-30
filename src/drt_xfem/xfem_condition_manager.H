@@ -131,6 +131,10 @@ public:
     {
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNeumann(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
     }
+    else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)
+    {
+      mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNavierSlip(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
+    }
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)
     {
       mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFluidFluid(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
@@ -154,6 +158,10 @@ public:
     else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN)
     {
       levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNeumann(bg_dis_, cond_name, coupling_id, time_, step_)));
+    }
+    else if(CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
+    {
+      levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNavierSlip(bg_dis_, cond_name, coupling_id, time_, step_)));
     }
     else if (CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE)
     {
@@ -556,8 +564,10 @@ public:
     case INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART:
     case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
     case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
+    case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
     case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
     case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
+    case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
     {
       return false;
       break;

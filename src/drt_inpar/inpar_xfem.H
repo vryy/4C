@@ -174,10 +174,21 @@ namespace INPAR
       CouplingCond_SURF_CRACK_FSI_PART,
       CouplingCond_SURF_WEAK_DIRICHLET,
       CouplingCond_SURF_NEUMANN,
+      CouplingCond_SURF_NAVIER_SLIP,
       CouplingCond_LEVELSET_WEAK_DIRICHLET,
       CouplingCond_LEVELSET_NEUMANN,
+      CouplingCond_LEVELSET_NAVIER_SLIP,
       CouplingCond_LEVELSET_TWOPHASE,
       CouplingCond_LEVELSET_COMBUSTION
+    };
+
+    //Type of surface projection for splitting of normal and tangential directions
+    enum ProjToSurface
+    {
+      Proj_normal,
+      Proj_smoothed,
+      Proj_normal_smoothed_comb,
+      Proj_normal_phi
     };
 
     /// set the xfem parameters
@@ -193,4 +204,4 @@ namespace INPAR
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_FSI_H
+#endif  // #ifndef INPAR_XFEM_H

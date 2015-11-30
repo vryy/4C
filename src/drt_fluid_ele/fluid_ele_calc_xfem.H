@@ -249,7 +249,7 @@ private:
       Teuchos::RCP<XFEM::CouplingBase> coupling,                               ///< coupling object
       LINALG::Matrix<my::nsd_,1>& ivelint_jump,                                ///< prescribed interface jump vector for velocity
       LINALG::Matrix<my::nsd_,1>& itraction_jump,                              ///< prescribed interface jump vector for traction
-      LINALG::Matrix<my::nsd_,my::nsd_>& itraction_jump_matrix,                ///< prescribed projection matrix for evaluation of curavture through Laplace-Beltrami
+      LINALG::Matrix<my::nsd_,my::nsd_>& projection_matrix,                    ///< prescribed projection matrix for evaluation of curavture through Laplace-Beltrami or splitting of tangential and normal directions
       const LINALG::Matrix<my::nsd_,1>& x,                                     ///< global coordinates of Gaussian point
       const LINALG::Matrix<my::nsd_,1>& normal,                                ///< normal vector at Gaussian point
       Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype> > si, ///< side implementation for cutter element

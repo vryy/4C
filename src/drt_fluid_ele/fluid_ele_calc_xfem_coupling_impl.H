@@ -21,6 +21,16 @@ Maintainer: Raffaela Kruse /Benedikt Schott
 
 #include "fluid_ele_calc_xfem_coupling_impl.H"
 
+//   qnuP - option SHOULD BE ON!
+//     projects the given velocity into normal direction in case there
+//     is a smoothed projection matrix given.
+#define PROJECT_VEL_FOR_PRESSURE_ADJOINT
+
+//  For comparison to Urquizas paper with his slip length implementation
+//   Only working for Navier-Slip (i.e. itraction_jump_ = 0)!
+//   Can be modified to work for this case as well.
+//#define ENFORCE_URQUIZA_GNBC
+
 namespace DRT
 {
   namespace ELEMENTS
@@ -337,6 +347,7 @@ namespace DRT
           const double &                    kappa_s,                ///< mortaring weight for coupling slave
           const double &                    density_m,              ///< fluid density (master)
           const double &                    NIT_full_stab_fac,      ///< full Nitsche's penalty term scaling (viscous+convective part)
+          const double &                    NIT_visc_stab_fac,      ///< convective Nitsche's penalty term scaling
           const LINALG::Matrix<nen_,1> &    funct_m,                ///< coupling master shape functions
           const LINALG::Matrix<nsd_,nen_> & derxy_m,                ///< spatial derivatives of coupling master shape functions
           const LINALG::Matrix<nsd_,nsd_> & vderxy_m,               ///< coupling master spatial velocity derivatives
@@ -345,6 +356,7 @@ namespace DRT
           const LINALG::Matrix<nsd_,1> &    ivelint_jump,           ///< prescribed interface velocity, Dirichlet values or jump height for coupled problems
           const LINALG::Matrix<nsd_,1> &    itraction_jump,         ///< prescribed interface traction, jump height for coupled problems
           const LINALG::Matrix<nsd_,nsd_>&  itraction_jump_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
+          const double &                    sliplength,             ///< prescribed slip length for Robin type BC
           const bool                        is_traction_jump        ///< is it a normal traction jump or calculated throw laplace-beltrami
         );
 
@@ -417,6 +429,13 @@ namespace DRT
           const LINALG::Matrix<nen_,1> &            funct_m                       ///< funct_m
         );
 
+        //! evaluate viscous-consistency term for Nitsche's method (scaled with master side's weighting factor)
+        void NIT_visc_Consistency_MasterTerms_Projected(
+          const LINALG::Matrix<nsd_,nen_> &         derxy_m,                      ///< master deriv
+          const LINALG::Matrix<nen_,1> &            funct_m,                      ///< funct_m
+          const LINALG::Matrix<nsd_,nsd_>&          proj_matrix                   ///< pürojection matrix
+        );
+
         //! evaluate viscous-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_visc_Consistency_SlaveTerms(
           const LINALG::Matrix<nsd_,slave_nen_> &   derxy_s,                      ///< slave shape function derivatives
@@ -427,8 +446,26 @@ namespace DRT
         void NIT_visc_AdjointConsistency_MasterTerms(
           const LINALG::Matrix<nsd_,nen_> &         derxy_m_viscm_timefacfac_km,  ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
           const LINALG::Matrix<nen_,1> &            funct_m,                      ///< funct_m
-          const LINALG::Matrix<nsd_,1> &            normal                        ///< normal vector
+          const LINALG::Matrix<nsd_,1> &            normal                         ///< normal vector
         );
+
+        //! evaluate viscous-adjoint-consistency term for Nitsche's method (scaled with master side's weighting factor)
+        void NIT_visc_AdjointConsistency_MasterTerms_Projected(
+            const LINALG::Matrix<nsd_,nen_> &         derxy_m_viscm_timefacfac_km,  ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
+            const LINALG::Matrix<nen_,1> &            funct_m,                      ///< funct_m
+            const LINALG::Matrix<nsd_,1> &            normal,                        ///< normal vector
+            const double &                            stab_tang_dir                     ///< stab parameter in tangential direction
+        );
+
+        //! evaluate traction-traction term
+        void NIT_visc_Neumann_AdjointConsistency_MasterTerms_Projected(
+          const LINALG::Matrix<nsd_,nen_> &        derxy_m_viscm_timefacfac_km,       ///< master shape function derivatives * timefacfac * 2 * mu_m * kappa_m
+          const LINALG::Matrix<nsd_,nen_> &        derxy_m,                           ///< master deriv
+          const LINALG::Matrix<nsd_,nsd_> &        vderxy_m,                          ///< coupling master spatial velocity derivatives
+          const LINALG::Matrix<nen_,1> &           funct_m,                           ///< embedded element funct *mu*timefacfac
+          const LINALG::Matrix<nsd_,1> &           normal,                            ///< normal vector
+          const double &                           stab_tang_dir                      ///< stab parameter
+          );
 
         //! evaluate viscous-adjoint-consistency term for Nitsche's method (scaled with slave side's weighting factor)
         void NIT_visc_AdjointConsistency_SlaveTerms(
@@ -495,11 +532,33 @@ namespace DRT
             const double &                         timefacfac       ///< time integration factor
         );
 
+        //!  evaluate Nitsche's penalty term
+        void NIT_Stab_Penalty_Projected(
+            const LINALG::Matrix<nen_,1>&          funct_m,         ///< funct
+            const double &                         stabfac,         ///< stabilization factor
+            const double &                         timefacfac       ///< time integration factor
+        );
+
         //!  evaluate only the master side's part of Nitsche's penalty term
         void NIT_Stab_Penalty_MasterTerms(
           const LINALG::Matrix<nen_,1>&            funct_m,         ///< funct
           const double &                           stabfac,         ///< Nitsche stabilization factor
           const double &                           timefacfac       ///< time integration scaling
+        );
+
+        //!  evaluate only the master side's part of Nitsche's penalty term
+        void NIT_Stab_Penalty_MasterTerms_Projected(
+          const LINALG::Matrix<nen_,1>&            funct_m,         ///< funct
+          const double &                           stabfac,         ///< Nitsche stabilization factor
+          const double &                           timefacfac       ///< time integration scaling
+        );
+
+        //! evaluate viscous penalty for the Neumann terms of the Robin-condition
+        void NIT_visc_Neumann_Penalty_MasterTerms_Projected(
+          const LINALG::Matrix<nsd_,nen_> &     derxy_m,                      ///< master deriv
+          const LINALG::Matrix<nen_,1> &        funct_m,                      ///< funct_m
+          const double &                        km_viscm,                     ///< traction jump
+          const double &                        stab_tang_dir                 ///< tangential stabilization parameter [gamma*h_E/(gamma*h_E+epsilon)]
         );
 
         //!  evaluate master side's part of rhs contribution from Nitsche's penalty term
@@ -533,7 +592,62 @@ namespace DRT
           const double &                           timefacfac       ///< timefac * fac
         );
 
+        //! Do Nitsche penalty terms < [|v|] , [|u|] P >
+        void Do_NIT_Stab_Penalty_Terms_Projected(
+          const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
+          const LINALG::Matrix<nsd_,nsd_>&              projection_matrix,            ///< projection_matrix
+          const LINALG::Matrix<nsd_,1>&                 velint_diff_proj_matrix,     ///< velocity difference projected
+          const double &                                stabfac,                      ///< stabilization factor in normal direction
+          const double &                                timefacfac                    ///< time integration factor
+          );
+
+        //! Do Nitsche penalty terms < [|v|] , [|u|] >
+        void Do_NIT_Stab_Penalty_Terms(
+          const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
+          const double &                                stabfac,                      ///< stabilization factor in normal direction
+          const double &                                timefacfac                    ///< time integration factor
+          );
+
+        //! Do Nitsche consistency and adjoint consistency terms with projection
+        void Do_NIT_visc_Adjoint_and_Neumann_MasterTerms_Projected(
+            const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
+            const LINALG::Matrix<nsd_,nen_> &             derxy_m,                      ///< spatial derivatives of coupling master shape functions
+            const LINALG::Matrix<nsd_,nsd_> &             vderxy_m,                     ///< coupling master spatial velocity derivatives
+            const LINALG::Matrix<nsd_,nsd_>&              projection_matrix,            ///< projection_matrix
+            const LINALG::Matrix<nsd_,1>&                 velint_diff_proj_matrix,      ///< velocity difference projected
+            const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal-vector
+            const double &                                stabepsnittang_t,             ///< stabilization factor in normal direction
+            const double &                                stabadjtang_t,                ///< stabilization factor in normal direction
+            const double &                                stabepsadjtang_t,             ///< stabilization factor in normal direction
+            const double &                                km_viscm_fac,                  ///< scaling factor
+            const LINALG::Matrix<nsd_,1>&                 itraction_jump,
+            const bool &                                  sliplength_not_zero           ///< eval Robin-terms
+        );
+
+        //! Do Nitsche consistency and adjoint consistency terms
+        void Do_NIT_visc_Adjoint_MasterTerms(
+            const LINALG::Matrix<nen_,1>&                 funct_m,                      ///< funct * timefacfac
+            const LINALG::Matrix<nsd_,nen_> &             derxy_m,                      ///< spatial derivatives of coupling master shape functions
+            const LINALG::Matrix<nsd_,1>&                 normal,                       ///< normal-vector
+            const double &                                km_viscm_fac                  ///< scaling factor
+          );
+
       private:
+
+        void NIT_Create_Standard_Projection_Matrices(
+            const LINALG::Matrix<nsd_,1>&          normal   ///< normal vector
+        );
+
+        // Get the stabilization parameters for the specific problem.
+        void GetStabilizationParameters(
+            const double &                                NIT_full_stab_fac,            ///< full Nitsche stab fac
+            const double &                                NIT_visc_stab_fac,            ///< viscous Nitsche stab fac
+            double &                                      stabnit,                      ///< stabilization factor NIT_Penalty
+            double &                                      stabepsnit,                   ///< stabilization factor NIT_Penalty Neumann
+            double &                                      stabadj,                      ///< stabilization factor Adjoint
+            double &                                      stabepsadj,                   ///< stabilization factor Adjoint Neumann
+            const bool &                                  sliplength_not_zero           ///< bool for now, add a inpar for more options?
+        );
 
         //! @name useful constants for DOF-index numbering
         //@{
@@ -608,7 +722,7 @@ namespace DRT
 
         LINALG::Matrix<slave_nen_,slave_nen_> funct_s_s_dyad_;
 
-        LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfac_;
+        LINALG::Matrix<nsd_,nen_> derxy_m_viscm_timefacfac_; // dN^(nen)/dx_i * mu_m * kappa_m
 
         LINALG::Matrix<nsd_,1> normal_pres_timefacfac_;
 
@@ -626,7 +740,7 @@ namespace DRT
 
         LINALG::Matrix<slave_nen_,1> half_normal_deriv_s_viscs_timefacfac_ks_;
 
-        LINALG::Matrix<nen_,1> normal_deriv_m_viscm_km_;
+        LINALG::Matrix<nen_,1> normal_deriv_m_viscm_km_;  // dN^(nen)/dx_i * n * mu_m * kappa_m
 
         LINALG::Matrix<slave_nen_,1> normal_deriv_s_viscs_ks_;
 
@@ -640,7 +754,42 @@ namespace DRT
 
         LINALG::Matrix<nsd_,1> velint_diff_;
 
+        //Only exists in NIT_Stab_Penalty_MasterTerms and
+        //               NIT_Stab_Penalty
+        //   i.e. probably should define, normal and tangential components
         LINALG::Matrix<nsd_,1> velint_diff_timefacfac_stabfac_;
+
+        //Needed members for GNBC
+        //  Projection matrices:
+        LINALG::Matrix<nsd_,nsd_> proj_tangential_;
+        LINALG::Matrix<nsd_,nsd_> proj_normal_;
+        LINALG::Matrix<nsd_,nsd_> proj_matrix_;
+
+        //Projected
+        LINALG::Matrix<nsd_,1> vderxy_x_normal_transposed_viscx_timefacfac_kx_pmatrix_;
+
+        //Help variables:
+        LINALG::Matrix<nsd_,nsd_> velint_proj_norm_diff_dyad_normal_, velint_proj_norm_diff_dyad_normal_symm_;
+        LINALG::Matrix<nsd_,1>    vderxy_m_normal_tang_, vderxy_m_normal_transposed_;
+
+        //  Stabilization parameters:
+        double sliplength_;            //  epsilon
+        double dyn_visc_;
+
+        //  projected velocity components:
+        LINALG::Matrix<nsd_,1> velint_diff_proj_normal_;
+        LINALG::Matrix<nsd_,1> velint_diff_proj_tangential_;
+        LINALG::Matrix<nsd_,1> velint_diff_proj_matrix_;
+
+        //  projected traction jump components:
+        LINALG::Matrix<nsd_,1> itraction_jump_proj_matrix_;
+
+        //ConsistencyNeumann help variable
+        LINALG::Matrix<nsd_,nen_> proj_matrix_derxy_m_; // (beta) * 2.0 * mu_m * timefacefac * km * p_1(IX,j)
+
+        //AdjointNeumann help variables
+        LINALG::Matrix<nen_,1>    normal_deriv_m_;     // 2.0 * half_normal(k) * derxy_m(k,ix)
+        LINALG::Matrix<nen_,nen_> derxy_m_P_derxy_m_;  // 2.0 * derxy_m(j,IC) P^t_{jk} * derxy_m(k,IR) * mu_m * timefacfac * km
 
         double velint_diff_normal_pres_timefacfac_;
       };

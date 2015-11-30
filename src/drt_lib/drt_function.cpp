@@ -984,6 +984,23 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("FORWARDFACINGSTEP")
     ;
 
+  DRT::INPUT::LineDefinition sliplengthlevelsetmanipulator;
+  sliplengthlevelsetmanipulator
+    .AddNamedInt("FUNCT")
+    .AddTag("SLIPLENGTHFUNCTION")
+    ;
+
+  DRT::INPUT::LineDefinition movinglevelsetcylinder;
+  movinglevelsetcylinder
+    .AddNamedInt("FUNCT")
+    .AddTag("MOVINGLEVELSETCYLINDER")
+    .AddNamedDoubleVector("ORIGIN",3)
+    .AddNamedDouble("RADIUS")
+    .AddNamedDoubleVector("DIRECTION",3)
+    .AddNamedDouble("DISTANCE")
+    .AddNamedDouble("MAXSPEED")
+    ;
+
   DRT::INPUT::LineDefinition bubbles;
   bubbles
     .AddNamedInt("FUNCT")
@@ -1099,6 +1116,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(collapsingwatercolumncoarse);
   lines->Add(impactfunction);
   lines->Add(gerstenbergerforwardfacingstep);
+  lines->Add(sliplengthlevelsetmanipulator);
+  lines->Add(movinglevelsetcylinder);
   lines->Add(bubbles);
   lines->Add(oraclesgfunc);
   lines->Add(rotatingcone);
@@ -1438,6 +1457,29 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       else if (function->HaveNamed("FORWARDFACINGSTEP"))
       {
         functions_.push_back(Teuchos::rcp(new GerstenbergerForwardfacingStep()));
+      }
+      else if (function->HaveNamed("SLIPLENGTHFUNCTION"))
+      {
+        functions_.push_back(Teuchos::rcp(new SlipLengthLevelSetManipulator()));
+      }
+      else if (function->HaveNamed("MOVINGLEVELSETCYLINDER"))
+      {
+        std::vector<double> origin;
+        function->ExtractDoubleVector("ORIGIN",origin);
+
+        double radius;
+        function->ExtractDouble("RADIUS",radius);
+
+        std::vector<double> direction;
+        function->ExtractDoubleVector("DIRECTION",direction);
+
+        double distance;
+        function->ExtractDouble("DISTANCE",distance);
+
+        double maxspeed;
+        function->ExtractDouble("MAXSPEED",maxspeed);
+
+        functions_.push_back(Teuchos::rcp(new MovingLevelSetCylinder( &origin, radius, &direction, distance, maxspeed)));
       }
       else if (function->HaveNamed("CONTROLLEDROTATION"))
       {

@@ -127,10 +127,12 @@ public:
     else if(type == INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID)           return "FLUID-FLUID Coupling";
     else if(type == INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)   return "WEAK DIRICHLET BC / LS";
     else if(type == INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN)          return "NEUMANN BC        / LS";
+    else if(type == INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)      return "NAVIER SLIP BC    / LS";
     else if(type == INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE)         return "TWO-PHASE Coupling";
     else if(type == INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION)       return "COMBUSTION Coupling";
     else if(type == INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)       return "WEAK DIRICHLET BC / MESH";
     else if(type == INPAR::XFEM::CouplingCond_SURF_NEUMANN)              return "NEUMANN BC        / MESH";
+    else if(type == INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP)          return "NAVIER SLIP BC    / MESH";
     else dserror("unsupported coupling condition type %i", type);
 
     return "UNKNOWN";
@@ -192,6 +194,15 @@ public:
     mat = Teuchos::null;
   }
 
+  /// get the sliplength for the specific coupling condition
+  virtual void GetSlipCoefficient(
+      double& slipcoeff,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond)
+  {
+    slipcoeff = 0.0;
+  }
+
 protected:
 
   void SetElementConditions();
@@ -217,6 +228,14 @@ protected:
   void EvaluateFunction(
       std::vector<double>& final_values,
       const double* x,
+      const DRT::Condition* cond,
+      const double time
+  );
+
+  void EvaluateScalarFunction(
+      double & final_value,
+      const double* x,
+      const double & val,
       const DRT::Condition* cond,
       const double time
   );

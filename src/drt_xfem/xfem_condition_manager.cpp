@@ -47,6 +47,7 @@ XFEM::ConditionManager::ConditionManager(
     // NOTE: CHANGING THE ORDER HERE CAN INFLUENCE BOOLEAN COMBINATIONS WHEN CREATING UNIQUE LS-FIELD
     conditions_to_check.push_back("XFEMLevelsetNeumann"); // Neumann before Dirichlet, otherwise artificial error at outflow due to rough approximation by level-set
     conditions_to_check.push_back("XFEMLevelsetWeakDirichlet");
+    conditions_to_check.push_back("XFEMLevelsetNavierSlip");
     conditions_to_check.push_back("XFEMLevelsetTwophase");
     conditions_to_check.push_back("XFEMLevelsetCombustion");
 
@@ -80,6 +81,7 @@ XFEM::ConditionManager::ConditionManager(
     conditions_to_check.push_back("XFEMSurfFSIMono");
     conditions_to_check.push_back("XFEMSurfCrackFSIPart");
     conditions_to_check.push_back("XFEMSurfFluidFluid");
+    conditions_to_check.push_back("XFEMSurfNavierSlip");
 
     // check if a coupling discretization has relevant conditioned nodes
     // create new coupling object for each type of condition and each coupling discretization

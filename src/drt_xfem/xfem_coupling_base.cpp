@@ -29,10 +29,12 @@ INPAR::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& 
   else if(condname == "XFEMSurfFluidFluid")         return INPAR::XFEM::CouplingCond_SURF_FLUIDFLUID;
   else if(condname == "XFEMLevelsetWeakDirichlet")  return INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET;
   else if(condname == "XFEMLevelsetNeumann")        return INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN;
+  else if(condname == "XFEMLevelsetNavierSlip")     return INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP;
   else if(condname == "XFEMLevelsetTwophase")       return INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE;
   else if(condname == "XFEMLevelsetCombustion")     return INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION;
   else if(condname == "XFEMSurfWeakDirichlet")      return INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET;
   else if(condname == "XFEMSurfNeumann")            return INPAR::XFEM::CouplingCond_SURF_NEUMANN;
+  else if(condname == "XFEMSurfNavierSlip")         return INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP;
   //else dserror("condition type not supported: %s", condname.c_str());
 
   return INPAR::XFEM::CouplingCond_NONE;
@@ -185,13 +187,15 @@ void XFEM::CouplingBase::SetAveragingStrategy()
   case INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART:
   case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET:
   case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
+  case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
   case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
   case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
+  case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
   {
     averaging_strategy_ = INPAR::XFEM::Xfluid_Sided;
     break;
   }
-  default: dserror("which is the coupling discretization for this type of coupling %i?", cond_type); break;
+  default: dserror("which is the averaging strategy for this type of coupling %i?", cond_type); break;
   }
 }
 
@@ -232,12 +236,14 @@ void XFEM::CouplingBase::SetCouplingDiscretization()
   case INPAR::XFEM::CouplingCond_SURF_CRACK_FSI_PART:
   case INPAR::XFEM::CouplingCond_SURF_WEAK_DIRICHLET: // set this to Teuchos::null when the values are read from the function instead of the ivelnp vector
   case INPAR::XFEM::CouplingCond_SURF_NEUMANN:
+  case INPAR::XFEM::CouplingCond_SURF_NAVIER_SLIP:
   {
     coupl_dis_ = cutter_dis_;
     break;
   }
   case INPAR::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET:
   case INPAR::XFEM::CouplingCond_LEVELSET_NEUMANN:
+  case INPAR::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
   {
     coupl_dis_ = Teuchos::null;
     break;
@@ -359,5 +365,80 @@ void XFEM::CouplingBase::EvaluateFunction(
     }
 
     final_values[dof] = num*(functionfac+noise);
+  } // loop dofs
+}
+
+void XFEM::CouplingBase::EvaluateScalarFunction(
+    double & final_values,
+    const double* x,
+    const double& val,
+    const DRT::Condition* cond,
+    const double time
+)
+{
+  if(cond == NULL) dserror("invalid condition");
+
+  const int numdof = 1;
+
+  //---------------------------------------
+  // get values and switches from the condition
+  const std::vector<int>*    curve     = cond->Get<std::vector<int>    >("curve");
+  const std::vector<int>*    functions = cond->Get<std::vector<int>    >("funct");
+
+  // uniformly distributed random noise
+
+  if((*functions).size()!=1 or (*curve).size()!=1)
+    dserror("Do not call EvaluateScalarFunction with more than one function/value/curve provided");
+
+  DRT::Condition& secondary = const_cast<DRT::Condition&>(*cond);
+  const std::vector<double>* percentage = secondary.GetMutable<std::vector<double> >("randnoise");
+
+  if(time < -1e-14) dserror("Negative time in curve/function evaluation: time = %f", time);
+
+  //---------------------------------------
+  // set this condition
+  //---------------------------------------
+  for(int dof=0;dof<numdof;++dof)
+  {
+    // get factor given by spatial function
+    int functnum = -1;
+    if (functions) functnum = (*functions)[dof];
+
+    // check for potential time curve
+    int curvenum = -1;
+    if (curve) curvenum = (*curve)[dof];
+
+    // initialization of time-curve factor and function factor
+    double functionfac = 1.0;
+    double curvefac = 1.0;
+
+    // compute potential time curve or set time-curve factor to one
+    if (curvenum >= 0)
+    {
+      curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+    }
+
+    double num = val*curvefac;
+
+    if (functnum>0)
+    {
+      functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof%numdof,x,time,NULL);
+    }
+
+    // uniformly distributed noise
+    double noise = 0.0;
+    if( percentage != NULL )
+    {
+      if(percentage->size() != 1) dserror("expect vector of length one!");
+      const double perc = percentage->at(0);
+
+      if(fabs(perc)> 1e-14 )
+      {
+        const double randomnumber = DRT::Problem::Instance()->Random()->Uni(); // uniformly distributed between -1.0, 1.0
+        noise = perc * randomnumber;
+      }
+    }
+
+    final_values = num*(functionfac+noise);
   } // loop dofs
 }

@@ -110,6 +110,9 @@ protected:
   //! Output specific
   Teuchos::RCP<IO::DiscretizationWriter> ls_output_;
 
+  // Specify way of creating the projection matrix
+  INPAR::XFEM::ProjToSurface projtosurf_;
+
   //@}
 
 };
@@ -230,6 +233,350 @@ public:
 
 };
 
+/*!
+\brief
+ */
+class LevelSetCouplingNavierSlip : public LevelSetCouplingBC
+{
+public:
+
+  //! constructor
+  explicit LevelSetCouplingNavierSlip(
+      Teuchos::RCP<DRT::Discretization>&  bg_dis,   ///< background discretization
+      const std::string &                 cond_name, ///< name of the condition, by which the derived cutter discretization is identified
+      const int                           coupling_id,///< id of composite of coupling conditions
+      const double                        time,      ///< time
+      const int                           step       ///< time step
+  ) : LevelSetCouplingBC(bg_dis, cond_name, coupling_id, time, step)
+  {
+    SetConditionSpecificParameters();
+
+    //Might save these differently....
+    //  For instance in a std::map< robin_id, DRT::Condition* > as is done in NavSlip-Mesh
+    SetElementSpecificConditions(cutterele_cond_robin_dirichlet_,"XFEMRobinDirichletVol",robin_dirichlet_id_);
+    if(has_neumann_jump_)
+      SetElementSpecificConditions(cutterele_cond_robin_neumann_,"XFEMRobinNeumannVol",robin_neumann_id_);
+
+  }
+
+
+  //! destructor
+  virtual ~LevelSetCouplingNavierSlip()
+  {
+    return;
+  }
+
+public:
+
+  void SetElementSpecificConditions(
+      std::vector<DRT::Condition* > &  cutterle_cond,
+      const std::string &              cond_name,
+      const int &                      robin_id
+  );
+
+  void EvaluateCouplingConditions(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
+  void EvaluateCouplingConditionsOldState(
+      LINALG::Matrix<3,1>& ivel,
+      LINALG::Matrix<3,1>& itraction,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond
+  );
+
+  void GetSlipCoefficient(
+      double& slipcoeff,
+      const LINALG::Matrix<3,1>& x,
+      const DRT::Condition* cond);
+
+
+  /*!
+   Return prescribed velocities and traction vectors for a GNBC boundary condition.
+   Also returns the projection matrix (to the plane of the surface) needed for the GNBC condition.
+   */
+  template <DRT::Element::DiscretizationType DISTYPE,
+  class V1, class V2, class X1, class T1, class M1, class M2, class M3>
+  void EvaluateCouplingConditions(
+      V1&       ivel,                          ///< prescribed velocity at interface
+      V2&       itraction,                     ///< prescribed traction at interface
+      X1&       x,                             ///< coordinates of gauss point
+      const DRT::Condition* cond,              ///< condition prescribed to this surface
+      T1&       itraction_jump_matrix,         ///< Laplace-Beltrami matrix for surface tension calculations
+      int       eid,                           ///< element ID
+      M1&       funct,                         ///< local shape function for Gauss Point (from fluid element)
+      M2&       derxy,                         ///< local derivatives of shape function for Gauss Point (from fluid element)
+      M3&       normal                         ///< surface normal of cut element
+  )
+{
+    EvaluateCouplingConditions(ivel,itraction,x,cond);
+    EvalProjectionMatrix<DISTYPE>(itraction_jump_matrix,eid,funct,derxy,normal);
+
+    /*Here one could do a projection of ivel to only point in the tangential direction.
+      This would enforce that no spurious velocities occur in the normal direction (i.e. no-penetration always enforced).
+      However, these will occur in an XFSI. Thus a solution has to be found which can handle this the best.
+    */
+
+    if(forcetangvel_)
+    {
+
+#if(1) //If 0 project in normal direction
+      LINALG::Matrix<3,1> tmp_ivel(true);
+      tmp_ivel.MultiplyTN(itraction_jump_matrix,ivel); //apply Projection matrix from the right. (u_0 * P^t)
+      ivel.Update(1.0,tmp_ivel,0.0);
+#else
+      //If we want only normal direction for testing it can be "hacked" in here.
+//      //  itraction_jump_matrix.Print(std::cout);
+      LINALG::Matrix<3,3> proj_normal(true);
+//      proj_normal.Scale(0.0);
+      for(unsigned i=0; i<3; i++) proj_normal(i,i) = 1.0;
+      proj_normal.Update(-1.0,itraction_jump_matrix,1.0);
+
+      LINALG::Matrix<3,1> tmp_ivel(true);
+      tmp_ivel.MultiplyTN(proj_normal,ivel); //apply Projection matrix from the right. (u_0 * P^n)
+      ivel.Update(1.0,tmp_ivel,0.0);
+#endif
+
+    }
+
+};
+
+  /*!
+   Return a smoothed/non-smoothed tangiential projection of the level set surface.
+   */
+  template <DRT::Element::DiscretizationType DISTYPE,
+  class T1, class M1, class M2, class M3>
+  void EvalProjectionMatrix(
+      T1&       itraction_jump_matrix,         ///< Projection matrix
+      int       eid,                           ///< element ID
+      M1&       funct,                         ///< local shape function for Gauss Point (from fluid element)
+      M2&       derxy,                         ///< local derivatives of shape function for Gauss Point (from fluid element)
+      M3&       normal                         ///< surface normal of cut element
+  )
+  {
+
+    //Properties of a projection matrix:
+    //-------------------------------------------------------------------------
+    // 1) P is singular (i.e. not of full rank, no inverse exists).
+    // 2) P*P = P
+    // 3) P^T = P
+    // 4) a*P*a \geq 0 \forall a
+    //-------------------------------------------------------------------------
+
+    // number space dimensions for element
+    const size_t nsd = DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
+
+    // number of nodes of element
+    const size_t nen = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+    //Should this be provided as well by the input?
+    DRT::Element* actele = cutter_dis_->gElement(eid);
+
+    //Create the identity matrix (Probably not the fastest way...) Might make it global?
+    LINALG::Matrix<nsd,nsd> eye(true);
+    for(unsigned int i =0; i<nsd; ++i)
+      eye(i,i)=1;
+
+    //   Non-smoothed projection matrix
+    LINALG::Matrix<nsd,nsd> p_matrix(true);
+    if(projtosurf_!=INPAR::XFEM::Proj_smoothed)
+    {
+      for(unsigned int i =0; i<nsd; ++i)
+      {
+        for(unsigned int j =0; j<nsd; ++j)
+        {
+          p_matrix(i,j)          = eye(i,j) - normal(i,0) * normal(j,0);
+        }
+      }
+    }
+
+    //   Smoothed projection matrix
+    LINALG::Matrix<nsd,nsd> p_smoothed_matrix(true);
+    // Does the chosen Laplace-Beltrami configuration necessitate a smoothed projection matrix?
+    if(projtosurf_!=INPAR::XFEM::Proj_normal)
+    {
+      if(gradphinp_smoothed_node_==Teuchos::null)
+        dserror("Smoothed projection only available if a smoothed level set gradient field is existing.");
+
+      LINALG::Matrix<nsd,nen> esmoothedgradphi(true);
+
+      //Make this one global in class? Thus removing unnecessary calls to ExtractMyNodeBasedValues?
+      std::vector<double> mygradphi;
+      DRT::UTILS::ExtractMyNodeBasedValues(actele,mygradphi,*gradphinp_smoothed_node_);
+
+      for (unsigned int inode=0; inode<nen; ++inode)  // number of nodes
+      {
+        for(unsigned int idim=0; idim<nsd; ++idim)   // number of dimensions
+        {
+          (esmoothedgradphi)(idim,inode) = mygradphi[idim+(inode*nsd)];
+        }  // end for(idim)
+      }
+      //Gradients @ GaussPoints
+      LINALG::Matrix<nsd,1> gradphi;
+      gradphi.Multiply(esmoothedgradphi,funct);
+
+      const double normgradphi=gradphi.Norm2();
+      if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
+        gradphi.Scale(1.0/normgradphi);
+      else
+        gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
+
+      for(unsigned int i =0; i<nsd; ++i)
+      {
+        for(unsigned int j =0; j<nsd; ++j)
+        {
+          p_smoothed_matrix(i,j) = eye(i,j) - gradphi(i,0) * gradphi(j,0);
+        }
+      }
+    }
+
+    // If the smoothed and boundary normal are to be combined this option exists:
+    if(projtosurf_==INPAR::XFEM::Proj_normal_smoothed_comb)
+    {
+      if(gradphinp_smoothed_node_==Teuchos::null)
+        dserror("Smoothed projection only available if a smoothed level set gradient field is existing.");
+
+      LINALG::Matrix<nsd,nen> esmoothedgradphi(true);
+
+      //Make this one global in class? Thus removing unnecessary calls to ExtractMyNodeBasedValues?
+      std::vector<double> mygradphi;
+      DRT::UTILS::ExtractMyNodeBasedValues(actele,mygradphi,*gradphinp_smoothed_node_);
+
+      for (unsigned int inode=0; inode<nen; ++inode)  // number of nodes
+      {
+        for(unsigned int idim=0; idim<nsd; ++idim)   // number of dimensions
+        {
+          (esmoothedgradphi)(idim,inode) = mygradphi[idim+(inode*nsd)];
+        }  // end for(idim)
+      }
+      //Gradients @ GaussPoints
+      LINALG::Matrix<nsd,1> gradphi;
+      gradphi.Multiply(esmoothedgradphi,funct);
+
+      const double normgradphi=gradphi.Norm2();
+      if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
+        gradphi.Scale(1.0/normgradphi);
+      else
+        gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
+
+
+      // normal_comb = alpha_n * normal + (1-alpha)*gradphi
+      LINALG::Matrix<nsd,1> normal_comb(true);
+      double alpha_n = 0.3;
+      normal_comb.Update(alpha_n,normal,-(1.0-alpha_n),gradphi);
+
+      const double normnormal_comb=normal_comb.Norm2();
+      if(normnormal_comb>1e-9) //1e-9 is set to create a reasonable scaling.
+        normal_comb.Scale(1.0/normnormal_comb);
+      else
+        normal_comb.Scale(0.0); //This to catch the cases when normal_comb \approx 0
+
+      for(unsigned int i =0; i<nsd; ++i)
+      {
+        for(unsigned int j =0; j<nsd; ++j)
+        {
+          p_smoothed_matrix(i,j) = eye(i,j) - normal_comb(i,0) * normal_comb(j,0);
+        }
+      }
+    }
+
+    // normal vector extracted from the levelset field without smoothing
+    if(projtosurf_==INPAR::XFEM::Proj_normal_phi)
+    {
+
+      LINALG::Matrix<nen,1> ephi(true);
+
+      //Make this one global in class? Thus removing unnecessary calls to ExtractMyNodeBasedValues?
+      std::vector<double> myphi;
+      DRT::UTILS::ExtractMyNodeBasedValues(actele,myphi,*phinp_);
+
+      for (unsigned int inode=0; inode<nen; ++inode)  // number of nodes
+      {
+          (ephi)(inode,0) = myphi[inode];
+      }
+
+      //Gradients @ GaussPoints
+      LINALG::Matrix<nsd,1> gradphi;
+      gradphi.Multiply(derxy,ephi);
+
+      const double normgradphi=gradphi.Norm2();
+      if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
+        gradphi.Scale(1.0/normgradphi);
+      else
+        gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
+
+      for(unsigned int i =0; i<nsd; ++i)
+      {
+        for(unsigned int j =0; j<nsd; ++j)
+        {
+          p_smoothed_matrix(i,j) = eye(i,j) - gradphi(i,0) * gradphi(j,0);
+        }
+      }
+    }
+
+    switch(projtosurf_)
+    {
+    case INPAR::XFEM::Proj_normal:
+    {
+      itraction_jump_matrix.Update(p_matrix);
+      break;
+    }
+    case INPAR::XFEM::Proj_smoothed:
+    {
+      itraction_jump_matrix.Update(p_smoothed_matrix);
+      break;
+    }
+    case INPAR::XFEM::Proj_normal_smoothed_comb:
+    {
+      itraction_jump_matrix.Update(p_smoothed_matrix);
+      break;
+    }
+    case INPAR::XFEM::Proj_normal_phi:
+    {
+      itraction_jump_matrix.Update(p_smoothed_matrix);
+      break;
+    }
+    default:
+    {
+      dserror("This option for a projection matrix %d does not exist. \n",projtosurf_);
+      break;
+    }
+    }
+
+    return;
+  }
+
+protected:
+
+  void SetConditionSpecificParameters();
+
+  void GetConditionByRobinId(
+      const std::vector<DRT::Condition*> & mycond,
+      const int coupling_id,
+      std::vector<DRT::Condition*> & mynewcond
+  );
+
+private:
+
+  bool forcetangvel_;
+  bool is_constant_sliplength_;
+  bool has_neumann_jump_;
+  double sliplength_;
+
+  // ID given the Robin Dirichlet/-Neumann conditions (need to match the one given in the "MAIN condition")
+  int robin_dirichlet_id_;
+  int robin_neumann_id_;
+
+  // Get the condition for the dirichlet and neumann condition associated with the Robin-condition
+  std::vector<DRT::Condition* > cutterele_cond_robin_dirichlet_;
+  std::vector<DRT::Condition* > cutterele_cond_robin_neumann_;
+
+
+}; //End LevelSetCouplingNavierSlip
+
 
 class LevelSetCouplingTwoPhase : public LevelSetCoupling
 {
@@ -243,7 +590,9 @@ public:
       const double                        time,      ///< time
       const int                           step       ///< time step
   ) : LevelSetCoupling(bg_dis, cond_name, coupling_id, time, step),
-      surfacetension_init_(false)
+      surfacetension_init_(false),
+      surftensapprox_(INPAR::TWOPHASE::surface_tension_approx_none),
+      laplacebeltrami_(INPAR::TWOPHASE::matrix_mixed_smoothed)
   {}
 
   virtual ~LevelSetCouplingTwoPhase()
@@ -342,7 +691,7 @@ public:
       if(gradphi2np_smoothed_node_==Teuchos::null)
       {
         // loop over nodes
-        for(size_t i = 0; i< nen; i++)
+        for(size_t i = 0; i< nen; ++i)
         {
           if(nsd==3)
           {
@@ -416,18 +765,16 @@ public:
 
     //Create the identity matrix (Probably not the fastest way...) Might make it global?
     LINALG::Matrix<nsd,nsd> eye(true);
-    for(unsigned int i =0; i<nsd; i++)
-      for(unsigned int j =0; j<nsd; j++)
-        if(i==j)
-          eye(i,j)=1;
+    for(unsigned int i =0; i<nsd; ++i)
+      eye(i,i)=1;
 
     //   Non-smoothed projection matrix
     LINALG::Matrix<nsd,nsd> p_matrix(true);
     if(laplacebeltrami_!=INPAR::TWOPHASE::matrix_smoothed)
     {
-      for(unsigned int i =0; i<nsd; i++)
+      for(unsigned int i =0; i<nsd; ++i)
       {
-        for(unsigned int j =0; j<nsd; j++)
+        for(unsigned int j =0; j<nsd; ++j)
         {
           p_matrix(i,j)          = eye(i,j) - normal(i,0) * normal(j,0);
         }
@@ -465,9 +812,9 @@ public:
       else
         gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
 
-      for(unsigned int i =0; i<nsd; i++)
+      for(unsigned int i =0; i<nsd; ++i)
       {
-        for(unsigned int j =0; j<nsd; j++)
+        for(unsigned int j =0; j<nsd; ++j)
         {
           p_smoothed_matrix(i,j) = eye(i,j) - gradphi(i,0) * gradphi(j,0);
         }
@@ -557,6 +904,7 @@ public:
     {
 
       is_traction_jump=false;
+      //itraction_jump_matrix.Scale(0.0);
 
       // P = (\delta_{ij} - n_{i}n{j})
       // Calculations for evaluation with Laplace-Beltrami operator
@@ -573,9 +921,10 @@ public:
   );
 
 private:
+
+  bool surfacetension_init_;
   INPAR::TWOPHASE::SurfaceTensionApprox surftensapprox_;
   INPAR::TWOPHASE::LaplaceBeltramiCalc  laplacebeltrami_;
-  bool surfacetension_init_;
 
 };
 
