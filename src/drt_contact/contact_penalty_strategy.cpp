@@ -20,6 +20,7 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_utils.H"
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_sparsematrix.H"
 
 
 /*----------------------------------------------------------------------*
@@ -137,6 +138,14 @@ void CONTACT::CoPenaltyStrategy::Initialize()
 void CONTACT::CoPenaltyStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff,
                                                  Teuchos::RCP<Epetra_Vector>& feff)
 {
+  // if we use a GPTS-penalty method, everything has already been calculated and
+  // just needs to be added to the force vector and stiffness matrix
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(Params(),"ALGORITHM")== INPAR::MORTAR::algorithm_gpts)
+  {
+    ApplyGPTSforces(kteff,feff);
+    return;
+  }
+
   // in the beginning of this function, the regularized contact forces
   // in normal and tangential direction are evaluated from geometric
   // measures (gap and relative tangential velocity). Here, also active and
@@ -647,3 +656,25 @@ void CONTACT::CoPenaltyStrategy::UpdateUzawaAugmentedLagrange()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | apply GPTS forces and stiffness to the given system       seitz 11/15|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoPenaltyStrategy::ApplyGPTSforces(
+    Teuchos::RCP<LINALG::SparseOperator> kteff,
+    Teuchos::RCP<Epetra_Vector> feff)
+{
+  Teuchos::RCP<Epetra_FEVector> fc=Teuchos::rcp(new Epetra_FEVector(feff->Map()));
+  Teuchos::RCP<LINALG::SparseMatrix> kc =
+      Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->AddGPTSforces(fc);
+    interface_[i]->AddGPTSstiffness(kc);
+  }
+  if (feff->Update(1.,*fc,1.)) dserror("update went wrong");
+  kc->Complete();
+  kteff->UnComplete();
+  kteff->Add(*kc,false,1.,1.);
+  kteff->Complete();
+  return;}

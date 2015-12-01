@@ -816,6 +816,12 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
           std::cout << "===== Node-To-Segment approach =================================" << std::endl;
           std::cout << "================================================================\n" << std::endl;
         }
+        else if(algorithm == INPAR::MORTAR::algorithm_gpts)
+        {
+          std::cout << "================================================================" << std::endl;
+          std::cout << "===== Gauss-Point-To-Segment approach ==========================" << std::endl;
+          std::cout << "================================================================\n" << std::endl;
+        }
         // invalid system type
         else
           dserror("ERROR: Invalid system type for contact/meshtying");

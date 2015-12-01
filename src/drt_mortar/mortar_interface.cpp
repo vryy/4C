@@ -777,6 +777,32 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
     }
   }
 
+  // intitialize GPTS container, if necessary
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(IParams(),"ALGORITHM")
+      == INPAR::MORTAR::algorithm_gpts)
+  {
+    for (int i = 0; i < SlaveColNodesBound()->NumMyElements(); ++i)
+    {
+      int gid = SlaveColNodesBound()->GID(i);
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node)
+        dserror("ERROR: Cannot find node with gid %i", gid);
+      CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
+      if (mnode)
+        mnode->InitializeGPTSDataContainer();
+    }
+    for (int i = 0; i < MasterColNodes()->NumMyElements(); ++i)
+    {
+      int gid = MasterColNodes()->GID(i);
+      DRT::Node* node = Discret().gNode(gid);
+      if (!node)
+        dserror("ERROR: Cannot find node with gid %i", gid);
+      CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
+      if (mnode)
+        mnode->InitializeGPTSDataContainer();
+    }
+  }
+
   // initialize element data container
   for (int i = 0; i < SlaveColElements()->NumMyElements(); ++i)
   {

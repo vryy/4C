@@ -86,7 +86,8 @@ namespace INPAR
     enum AlgorithmType
     {
       algorithm_mortar,    ///< mortar algorithm
-      algorithm_nts        ///< node-to-segment algorithm
+      algorithm_nts,       ///< node-to-segment algorithm
+      algorithm_gpts       ///< gp-to-segment algorithm
     };
 
     /// Type of parallel redistribution algorithm

@@ -13,6 +13,7 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 
 #include <Epetra_CrsMatrix.h>
+#include <Epetra_FEVector.h>
 #include <Epetra_Time.h>
 #include "contact_interface.H"
 #include "contact_node.H"
@@ -1130,6 +1131,14 @@ void CONTACT::CoInterface::Initialize()
     // reset feasible projection and segmentation status
     node->HasProj()    = false;
     node->HasSegment() = false;
+
+    // reset gpts forces
+    if (node->CoGPTSData()!=Teuchos::null)
+      for (int d=0;d<Dim();++d)
+      {
+        node->CoGPTSData()->GetGPTSforce()[d]=0.;
+        node->CoGPTSData()->GetGPTSforceDeriv()[d].clear();
+      }
   }
 
   // loop over all slave nodes to reset stuff (standard column map)
@@ -7675,5 +7684,48 @@ void CONTACT::CoInterface::AssembleNCoupLin(LINALG::SparseMatrix& sglobal, ADAPT
       }
     }
   }
+  return;
+}
+
+void CONTACT::CoInterface::AddGPTSforces(Teuchos::RCP<Epetra_FEVector> feff)
+{
+  for (int i=0;i<mnodecolmap_->NumMyElements();++i)
+  {
+    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Discret().gNode(mnodecolmap_->GID(i)));
+    if (!cnode) dserror("node not found;");
+    int err = feff->SumIntoGlobalValues(Dim(),cnode->Dofs(),cnode->CoGPTSData()->GetGPTSforce());
+    if (err<0)
+      dserror("stop");
+  }
+  for (int i=0;i<snodecolmap_->NumMyElements();++i)
+  {
+    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Discret().gNode(snodecolmap_->GID(i)));
+    if (!cnode) dserror("node not found;");
+    int err = feff->SumIntoGlobalValues(Dim(),cnode->Dofs(),cnode->CoGPTSData()->GetGPTSforce());
+    if (err<0)
+      dserror("stop");
+  }
+  if(feff->GlobalAssemble(Add,false)!=0) dserror("GlobalAssemble failed");
+  return;
+}
+
+void CONTACT::CoInterface::AddGPTSstiffness(Teuchos::RCP<LINALG::SparseMatrix> kteff)
+{
+  for (int i=0;i<mnodecolmap_->NumMyElements();++i)
+    {
+      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Discret().gNode(mnodecolmap_->GID(i)));
+      for (int d=0;d<cnode->NumDof();++d)
+        for (std::map<int,double>::const_iterator p=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].begin();
+            p!=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].end();++p)
+          kteff->FEAssemble(-p->second,cnode->Dofs()[d],p->first);
+    }
+  for (int i=0;i<snodecolmap_->NumMyElements();++i)
+    {
+      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Discret().gNode(snodecolmap_->GID(i)));
+      for (int d=0;d<cnode->NumDof();++d)
+        for (std::map<int,double>::const_iterator p=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].begin();
+            p!=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].end();++p)
+          kteff->FEAssemble(-p->second,cnode->Dofs()[d],p->first);
+    }
   return;
 }

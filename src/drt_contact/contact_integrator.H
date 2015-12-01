@@ -292,6 +292,17 @@ public:
       std::vector<GEN::pairedvector<int, double> >& dnmap_unit,
       bool quadratic, int nintrow = 0);
 
+/*!
+\brief evaluate GPTS forces and linearization at this gp
+*/
+  void GPTS_forces(
+      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+      const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,const std::vector<GEN::pairedvector<int,double> >& dsxi,
+      const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,const std::vector<GEN::pairedvector<int,double> >& dmxi,
+      const double jac,const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
+      const double gap, const GEN::pairedvector<int,double>& dgapgp,
+      const double* gpn, const std::vector<GEN::pairedvector<int,double> >& dnmap_unit);
+
   /*!
    \brief evaluate weighted Gap entries at GP (quad-pwlin)
 
@@ -1042,6 +1053,8 @@ protected:
     INPAR::MORTAR::LagMultQuad                       lagmultquad_; // type of lm interpolation for quadr. FE
     bool                                             nodalscale_;  // flag for nodal scaling
     bool                                             gpslip_;      // gp-wise evaluated slip increment
+    INPAR::MORTAR::AlgorithmType                     algo_;        // contact algorithm
+    double                                           ppn_;         // penalty param in normal direction (needed for gpts)
 
     // wear inputs from parameter list
     INPAR::WEAR::WearLaw                          wearlaw_;     // type of wear law

@@ -45,6 +45,8 @@ shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"LM_SHAPEF
 lagmultquad_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LM_QUAD")),
 nodalscale_(DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")),
 gpslip_(DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")),
+algo_(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_,"ALGORITHM")),
+ppn_(imortar_.get<double>("PENALTYPARAM")),
 wearlaw_(DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(imortar_,"WEARLAW")),
 wearimpl_(false),
 wearside_(INPAR::WEAR::wear_slave),
@@ -1922,13 +1924,27 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     //**********************************************************************
     // evaluate at GP and lin char. quantities
     //**********************************************************************
-    // integrate D and M matrix
-    bool bound =false;
-    GP_DM(sele,mele,lmval,sval,mval,jac,wgt,nrow,ncol,ndof,bound);
 
     // integrate and lin gp gap
     GP_3D_G(sele,mele,sval,mval,lmval,scoord,mcoord,sderiv,mderiv,gap,gpn,lengthn,jac,
          wgt,dsxigp, dmxigp,dgapgp,dnmap_unit,false);
+
+    // if we use GPTS, all we need is the forces here
+    if (algo_==INPAR::MORTAR::algorithm_gpts)
+    {
+      GPTS_forces(sele,mele,
+          sval,sderiv,dsxigp,
+          mval,mderiv,dmxigp,
+          jac,jacintcellmap,wgt,
+          *gap,dgapgp,
+          gpn,dnmap_unit);
+      // and we're done for this gp
+      continue;
+    }
+
+    // integrate D and M matrix
+    bool bound =false;
+    GP_DM(sele,mele,lmval,sval,mval,jac,wgt,nrow,ncol,ndof,bound);
 
     // compute segment scaling factor
     if (nodalscale_)
@@ -11190,4 +11206,57 @@ double inline CONTACT::CoIntegrator::TDetDeformationGradient(
     }
   }
   return J;
+}
+
+void CONTACT::CoIntegrator::GPTS_forces(
+    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,const std::vector<GEN::pairedvector<int,double> >& dsxi,
+    const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,const std::vector<GEN::pairedvector<int,double> >& dmxi,
+    const double jac,const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
+    const double gap, const GEN::pairedvector<int,double>& dgapgp,
+    const double* gpn, const std::vector<GEN::pairedvector<int,double> >& dnmap_unit)
+{
+  if (gap>0.)
+    return;
+  if (sele.Owner()!=Comm_.MyPID())
+    return;
+
+  for (int d=0;d<Dim();++d)
+  {
+    double gp_force = ppn_ * jac*wgt*gap*gpn[d];
+
+    for (int s=0;s<sele.NumNode();++s)
+      dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[s])->CoGPTSData()->GetGPTSforce()[d]+=gp_force*sval(s);
+    for (int m=0;m<sele.NumNode();++m)
+      dynamic_cast<CONTACT::CoNode*>(mele.Nodes()[m])->CoGPTSData()->GetGPTSforce()[d]-=gp_force*mval(m);
+
+    std::map<int,double> deriv_gp_force;
+
+    for (GEN::pairedvector<int,double>::const_iterator p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
+      deriv_gp_force[p->first]+=ppn_ * p->second * wgt*gap*gpn[d];
+    for (GEN::pairedvector<int,double>::const_iterator p=dgapgp.begin();p!=dgapgp.end();++p)
+      deriv_gp_force[p->first]+=ppn_ * jac*wgt*p->second*gpn[d];
+    for (GEN::pairedvector<int,double>::const_iterator p=dnmap_unit[d].begin();p!=dnmap_unit[d].end();++p)
+      deriv_gp_force[p->first]+=ppn_ * jac*wgt*gap*p->second;
+
+    for (std::map<int,double>::const_iterator p=deriv_gp_force.begin();p!=deriv_gp_force.end();++p)
+    {
+      for (int s=0;s<sele.NumNode();++s)
+        dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[s])->CoGPTSData()->GetGPTSforceDeriv()[d][p->first]+=p->second*sval(s);
+      for (int m=0;m<mele.NumNode();++m)
+        dynamic_cast<CONTACT::CoNode*>(mele.Nodes()[m])->CoGPTSData()->GetGPTSforceDeriv()[d][p->first]-=p->second*mval(m);
+    }
+
+    for (int e=0;e<2;++e)
+      for (GEN::pairedvector<int,double>::const_iterator p=dsxi[e].begin();p!=dsxi[e].end();++p)
+        for (int s=0;s<sele.NumNode();++s)
+          dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[s])->CoGPTSData()->GetGPTSforceDeriv()[d][p->first]+=gp_force*sderiv(s,e)*p->second;
+
+    for (int e=0;e<2;++e)
+      for (GEN::pairedvector<int,double>::const_iterator p=dmxi[e].begin();p!=dmxi[e].end();++p)
+        for (int m=0;m<mele.NumNode();++m)
+          dynamic_cast<CONTACT::CoNode*>(mele.Nodes()[m])->CoGPTSData()->GetGPTSforceDeriv()[d][p->first]-=gp_force*mderiv(m,e)*p->second;
+
+  }
+  return;
 }

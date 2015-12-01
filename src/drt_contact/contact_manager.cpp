@@ -1127,6 +1127,36 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   } // END NTS CHECKS
 
   // *********************************************************************
+  //                       GPTS-SPECIFIC CHECKS
+  // *********************************************************************
+  else if(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar,"ALGORITHM") == INPAR::MORTAR::algorithm_nts)
+  {
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_penalty)
+      dserror("ERROR: GPTS-Algorithm only with penalty strategy");
+
+    if (contact.get<double>("PENALTYPARAM") <= 0.0)
+      dserror("ERROR: Penalty parameter eps = 0, must be greater than 0");
+
+    if (problemtype!=prb_structure)
+      dserror("ERROR: GPTS algorithm only tested for structural problems");
+
+    if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none)
+      dserror("GPTS algorithm not implemented for wear");
+
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") != INPAR::MORTAR::inttype_segments)
+      dserror("GPTS algorithm only for segment-based integration");
+
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(cparams, "FRICTION")!=INPAR::CONTACT::friction_none)
+      dserror("GPTS algorithm only for frictionless contact");
+
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") != INPAR::MORTAR::lagmult_undefined)
+          dserror("GPTS algorithm only implemented for first order interpolation");
+
+    if (dim!=3)
+      dserror("GPTS algorithm only implemented for 3D contact");
+  }// END GPTS CHECKS
+
+  // *********************************************************************
   // store contents of BOTH ParameterLists in local parameter list
   // *********************************************************************
   cparams.setParameters(mortar);

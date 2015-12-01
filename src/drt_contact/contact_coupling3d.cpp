@@ -1395,7 +1395,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
   //*********************************
   // Mortar Contact
   //*********************************
-  if(algo==INPAR::MORTAR::algorithm_mortar)
+  if(algo==INPAR::MORTAR::algorithm_mortar || algo==INPAR::MORTAR::algorithm_gpts)
     EvaluateMortar();
 
   //*********************************

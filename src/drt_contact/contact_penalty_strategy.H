@@ -188,6 +188,12 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   */
   void UpdateUzawaAugmentedLagrange();
 
+  /*!
+  \brief Apply the GPTS contact force and stiffness to the global system
+
+  */
+  void ApplyGPTSforces(Teuchos::RCP<LINALG::SparseOperator> kteff, Teuchos::RCP<Epetra_Vector> feff);
+
   //@}
 
   //! @name Empty functions (Lagrange contact)

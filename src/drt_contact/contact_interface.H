@@ -14,6 +14,8 @@ Maintainer: Alexander Popp
 
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../linalg/linalg_sparseoperator.H"
+#include <Epetra_FEVector.h>
 
 
 /*!
@@ -609,6 +611,9 @@ public:
 
   */
   virtual void FDCheckPenaltyTracFric();
+
+  void AddGPTSforces(Teuchos::RCP<Epetra_FEVector> feff);
+  void AddGPTSstiffness(Teuchos::RCP<LINALG::SparseMatrix> kteff);
 
   //@}
 

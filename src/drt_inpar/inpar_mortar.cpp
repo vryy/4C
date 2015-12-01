@@ -127,10 +127,12 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   setStringToIntegralParameter<int>("ALGORITHM","Mortar","Type of meshtying/contact algorithm",
       tuple<std::string>("mortar","Mortar",
-                         "nts","NTS"),
+                         "nts","NTS",
+                         "gpts","GPTS"),
       tuple<int>(
                  algorithm_mortar,algorithm_mortar,
-                 algorithm_nts,algorithm_nts),
+                 algorithm_nts,algorithm_nts,
+                 algorithm_gpts,algorithm_gpts),
       &mortar);
 
   DoubleParameter("MAX_BALANCE",2.0,"Maximum value of load balance measure before parallel redistribution",&mortar);
