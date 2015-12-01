@@ -643,6 +643,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
   src/drt_adapter/adapter_lubrication.cpp
+  src/drt_adapter/adapter_particle.cpp
   src/drt_adapter/ad_str_structure.cpp
 #  src/drt_adapter/ad_str_structure_new.cpp
   src/drt_adapter/ad_str_constr_merged.cpp
@@ -1415,6 +1416,12 @@ set(OBJS_DRT_LOMA
   src/drt_loma/loma_dyn.cpp
 )
 
+set(OBJS_DRT_CAVITATION
+  src/drt_particle/cavitation_algorithm.cpp
+  src/drt_particle/cavitation_service.cpp
+  src/drt_particle/particle_dyn.cpp
+)  
+
 set(OBJS_DRT_TWO_PHASE
   src/drt_two_phase_flow/two_phase_algorithm.cpp
   src/drt_two_phase_flow/two_phase_dyn.cpp
@@ -1615,17 +1622,13 @@ set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
 )
 set(OBJS_DRT_PARTICLE
-  src/drt_adapter/adapter_particle.cpp
   src/drt_particle/particle_timint.cpp
   src/drt_particle/particle_timint_expl.cpp
   src/drt_particle/particle_timint_centrdiff.cpp
   src/drt_particle/particle_timint_expleuler.cpp
   src/drt_particle/particle_timint_rk.cpp
-  src/drt_particle/particle_dyn.cpp
   src/drt_particle/binning_strategy.cpp
   src/drt_particle/particle_algorithm.cpp
-  src/drt_particle/cavitation_algorithm.cpp
-  src/drt_particle/cavitation_service.cpp
   src/drt_particle/particle_contact.cpp
   src/drt_particle/scatra_particle_coupling.cpp
   src/drt_particle/particle_resulttest.cpp
@@ -2301,6 +2304,7 @@ add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_immersed_problem ${OBJS_DRT_IMMERSED_PROBLEM})
 add_library(alg_fsi_xfem ${OBJS_DRT_FSI_XFEM})
 add_library(alg_loma ${OBJS_DRT_LOMA})
+add_library(alg_cavitation ${OBJS_DRT_CAVITATION})
 add_library(alg_two_phase ${OBJS_DRT_TWO_PHASE})
 add_library(alg_tsi ${OBJS_DRT_TSI})
 add_library(alg_sti ${OBJS_DRT_STI})
@@ -2317,6 +2321,7 @@ set(MULTIFIELD_LIBRARIES
   alg_fsi
   alg_fsi_xfem
   alg_loma
+  alg_cavitation
   alg_two_phase
   alg_tsi
   alg_sti

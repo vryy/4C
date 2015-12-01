@@ -38,6 +38,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/permeablefluid.H"
+#include "../drt_mat/cavitationfluid.H"
 
 #include "../drt_inpar/inpar_fpsi.H"
 #include "../drt_inpar/inpar_material.H"
@@ -5696,6 +5697,21 @@ else if (material->MaterialType() == INPAR::MAT::m_herschelbulkley)
     visc_ = tau0*((1.0-exp(-mexp*uplimshearrate))/uplimshearrate) + kfac*pow(uplimshearrate,(nexp-1.0));
   else
     visc_ = tau0*((1.0-exp(-mexp*rateofstrain))/rateofstrain) + kfac*pow(rateofstrain,(nexp-1.0));
+}
+else if (material->MaterialType() == INPAR::MAT::m_cavitation)
+{
+  const MAT::CavitationFluid* actmat = static_cast<const MAT::CavitationFluid*>(material.get());
+
+  // get constant base density
+  const double density_0 = actmat->Density();
+
+  // compute density at at n+alpha_F; no density scaling necessary here due
+  // to the special choice of forces applied to the fluid
+  //  densaf_ = fluidfracaf*density_0;
+  densaf_ = density_0;
+
+  // get constant viscosity
+  visc_ = actmat->Viscosity();
 }
 else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
 {

@@ -8,9 +8,9 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-small cavitation example with one-way coupling
-using a simplified force computation for buoyancy forces;
-fluid is gravity loaded but fully clamped such that no fluid velocity/acceleration occur
+small cavitation example with one-way coupling and subcycling between the fields
+using a detailed force computation
+fluid is gravity loaded and a velocity bump is applied for a short time [0,0.2]
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      27
 //NODES                         64
@@ -37,13 +37,14 @@ BOUNDINGBOX                     -1.000001 -1.000001 -1.100001 1.100001 1.100001 
 DYNAMICTYP                      CentrDiff
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
 ----------------------------------------------------------CAVITATION DYNAMIC
-COUPALGO                        cavitation_oneway //cavitation_twowaymomentum
-INFLOW_RADIUS_BLENDING          no
+COUPALGO                        cavitation_oneway
+INFLOW_RADIUS_BLENDING          yes
 MAXTIME                         0.5
 NUMSTEP                         5
 RESTARTEVRY                     3
-SIMPLIFIED_BUBBLE_FORCES        Yes
-TIMESTEP                        5.0e-3
+SIMPLIFIED_BUBBLE_FORCES        No
+TIMESTEP                        5.0e-2
+TIME_STEP_SIZE_RATIO            10
 UPRES                           1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
@@ -147,7 +148,7 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 MAT 1 MAT_fluid DYNVISCOSITY 8.9e-4 DENSITY 1000.0 GAMMA 1.0
 MAT 2 MAT_Particle DENSITY 1.3 INITRADIUS 0.01 NUE 0.3 YOUNG 210.0E9
 ----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC (0.05*(1-cos(2*pi*t/0.02))) t1 0.0 t2 0.01
+CURVE1 on EXPR FUNC (-0.05*(1-cos(2*pi*t/0.20))) t1 0.0 t2 0.20
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
@@ -163,19 +164,19 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0-9810.0*z  // p_init = \rho_fl * g *
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE 0.00000000000000000e+00 TOLERANCE 1e-12
 FLUID DIS fluid NODE 12 QUANTITY vely VALUE 0.00000000000000000e+00 TOLERANCE 1e-12
 FLUID DIS fluid NODE 12 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-12
-FLUID DIS fluid NODE 12 QUANTITY pressure VALUE 3.27000000000000000e+03 TOLERANCE 1e-12
+FLUID DIS fluid NODE 12 QUANTITY pressure VALUE 3.17733026070121286e+03 TOLERANCE 1e-08
 PARTICLE DIS particle NODE 2 QUANTITY dispx VALUE 0.0e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 2 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 2 QUANTITY dispz VALUE 9.05953000753211835e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 2 QUANTITY dispy VALUE 0.0e+00 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 2 QUANTITY dispz VALUE 8.63972657110417375e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 2 QUANTITY velx VALUE 0.0e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 2 QUANTITY vely VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 2 QUANTITY velz VALUE 4.55443719640268752e-01 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 6 QUANTITY dispx VALUE 4.02901363700616522e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 2 QUANTITY vely VALUE 0.0e+00 TOLERANCE 1.0e-11
+PARTICLE DIS particle NODE 2 QUANTITY velz VALUE 7.61077953368336058e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 6 QUANTITY dispx VALUE 4.30541908227236203e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 6 QUANTITY dispy VALUE 4.0e-01 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 6 QUANTITY dispz VALUE -9.98542372804871126e-01 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 6 QUANTITY velx VALUE 1.83107257388883254e-01 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 6 QUANTITY vely VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 6 QUANTITY velz VALUE 2.39792657256535924e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 6 QUANTITY dispz VALUE -9.46816577203651644e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 6 QUANTITY velx VALUE 2.84356942488453480e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 6 QUANTITY vely VALUE 0.0e+00 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 6 QUANTITY velz VALUE 7.56564889363104065e-01 TOLERANCE 1.0e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -185,7 +186,7 @@ NDPARTICLE                      1
 -----------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 //                              fluid_volume
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 CURVE none none 1 none FUNCT 0 0 0 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 //                              fluid_volume
@@ -197,7 +198,7 @@ E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 --------------------------------------------DESIGN PARTICLE INFLOW CONDITION
 DPARTICLE                       1
 // particle inflow
-E 1 - vertex1 -0.4 -0.4 -1.0 vertex2 0.4 0.4 -1.0 num_per_dir 2 2 1 inflow_vel 0.2 0.0 0.0 inflow_vel_curve 0 inflow_freq 100
+E 1 - vertex1 -0.4 -0.4 -1.0 vertex2 0.4 0.4 -1.0 num_per_dir 2 2 1 inflow_vel 0.2 0.0 0.0 inflow_vel_curve 0 inflow_freq 10
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
 NODE                            0 DPARTICLE 1
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
@@ -428,7 +429,7 @@ NODE 61 COORD 1.0000000000000000e+00 1.0000000000000000e+00 3.3333333333333337e-
 NODE 62 COORD 1.0000000000000000e+00 1.0000000000000000e+00 1.0000000000000000e+00
 NODE 63 COORD 1.0000000000000000e+00 1.0000000000000000e+00 -3.3333333333333326e-01
 NODE 64 COORD 1.0000000000000000e+00 1.0000000000000000e+00 -1.0000000000000000e+00
-PARTICLE 2 COORD 0.000000000000000e+00 0.000000000000000e+00 0.900000000000000e+00
+PARTICLE 2 COORD 0.000000000000000e+00 0.000000000000000e+00 0.700000000000000e+00
 PARTICLE 3 COORD 0.000000000000000e+00 0.000000000000000e+00 0.999900000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
 --------------------------------------------------------------FLUID ELEMENTS

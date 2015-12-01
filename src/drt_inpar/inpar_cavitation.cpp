@@ -38,6 +38,7 @@ void INPAR::CAVITATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&cavitationdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&cavitationdyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&cavitationdyn);
+  IntParameter("RESTARTSTEP_PARTICLES",-1,"Step for restarting particles in cavitation problem",&cavitationdyn);
 
   // Coupling strategy
   setStringToIntegralParameter<int>(
@@ -79,6 +80,8 @@ void INPAR::CAVITATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
   IntParameter("VOIDFRAC_PROJ_SOLVER",-1,"Number of linear solver used for L2 projection",&cavitationdyn);
 
   IntParameter("TIME_STEP_SIZE_RATIO",1,"Ration between fluid and particle time step size in cavitation problems",&cavitationdyn);
+
+  BoolParameter("INFLOW_RADIUS_BLENDING","yes","switch on/off blending of radius of inflowing particles",&cavitationdyn);
 
   BoolParameter("COMPUTE_RADIUS_RP_BASED","no","switch on/off radius calculation based on Ralyeigh-Plesset equation",&cavitationdyn);
 }
@@ -209,6 +212,9 @@ void INPAR::PARTICLE::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Co
   // inflow frequency of particles
   particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("inflow_freq")));
   particleinflowcomponents.push_back(Teuchos::rcp(new RealConditionComponent("inflow_freq")));
+  // time delay of inflow particles
+  particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("timedelay", true)));
+  particleinflowcomponents.push_back(Teuchos::rcp(new RealConditionComponent("timedelay")));
 
 
   Teuchos::RCP<ConditionDefinition> particlecond =

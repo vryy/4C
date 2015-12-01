@@ -330,6 +330,10 @@ namespace CAVITATION
 
     const int timestepsizeratio_;   ///< ratio between fluid and particle time step in case of subcycling
 
+    bool inflowradiusblending_;   ///< bool whether radius of inflow particles is blended over several time steps
+
+    int blendingsteps_;   ///< number of steps that is used to blend bubble radius from initially small to final size
+
     //@}
 
     //! @name fluid related stuff
@@ -340,6 +344,8 @@ namespace CAVITATION
     Teuchos::RCP<ADAPTER::Fluid> fluid_;     ///< underlying fluid time integrator
 
     std::map<int, std::list<Teuchos::RCP<BubbleSource> > > bubble_source_;   ///< store particle sources for each bin
+
+    std::set<int> latestinflowbubbles_;   ///< store latest inflow particle ids
 
     Teuchos::RCP<Epetra_Vector> ele_volume_;   ///< element row map containing the volume of each element
 
@@ -373,7 +379,8 @@ namespace CAVITATION
       std::vector<double> inflow_vel,   ///< inflow velocity
       int inflow_vel_curve,   ///< inflow velocity can be superposed with a time curve
       double inflow_radius,   ///< initial radius of particle
-      double inflow_freq   ///< frequency of entering particles
+      double inflow_freq,   ///< frequency of entering particles
+      double timedelay
       );
 
     // internal variables
@@ -383,6 +390,7 @@ namespace CAVITATION
     int inflow_vel_curve_;
     double inflow_radius_;
     double inflow_freq_;
+    double timedelay_;
 
   }; // BubbleSource
 

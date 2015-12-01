@@ -548,7 +548,7 @@ void PARTICLE::TimInt::ReadRestartState()
   reader.ReadVector(accn_, "acceleration");
   acc_->UpdateSteps(*accn_);
   reader.ReadVector(radius_, "radius");
-  if(variableradius_)
+  if(variableradius_ and radius_->GlobalLength() != 0)
   {
     reader.ReadVector(radius0_, "radius0");
     reader.ReadVector(radiusdot_, "radiusdot");

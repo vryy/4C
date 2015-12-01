@@ -185,6 +185,9 @@ namespace ADAPTER
     //! extract mass vector
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessMass() = 0;
 
+    //! extract inertia vector
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessInertia() = 0;
+
     //@}
 
     //! @name Time step helpers

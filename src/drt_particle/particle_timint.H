@@ -297,6 +297,9 @@ namespace PARTICLE
     //! extract mass vector
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessMass() { return mass_; }
 
+    //! extract inertia vector
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessInertia() { return inertia_; }
+
     //@}
 
     //! Set forces due to interface loads, the force is expected external-force-like

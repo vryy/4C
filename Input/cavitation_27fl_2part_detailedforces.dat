@@ -38,6 +38,7 @@ DYNAMICTYP                      CentrDiff
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
 ----------------------------------------------------------CAVITATION DYNAMIC
 COUPALGO                        cavitation_oneway //cavitation_twowaymomentum
+INFLOW_RADIUS_BLENDING          no
 MAXTIME                         0.5
 NUMSTEP                         5
 RESTARTEVRY                     3

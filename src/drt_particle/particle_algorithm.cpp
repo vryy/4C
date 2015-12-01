@@ -265,7 +265,7 @@ void PARTICLE::Algorithm::Integrate()
     particles_->Veln()->MaxValue(&maxvel);
     double maxrad = 0.0;
     particles_->Radius()->MaxValue(&maxrad);
-    if(maxrad + maxvel*Dt() > 0.5*cutoff_radius_)
+    if(maxrad + maxvel*particles_->Dt() > 0.5*cutoff_radius_)
       dserror("Particles travel more than one bin per time step (%f > %f). Increase bin size or reduce step size", 2.0*(maxrad + maxvel*Dt()), cutoff_radius_);
   }
 
