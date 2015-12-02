@@ -33,6 +33,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Cavitation"]                                       = prb_cavitation;
     string2prbtype["Combustion"]                                       = prb_combust;
     string2prbtype["Crack"]                                            = prb_crack;
+    string2prbtype["Elastohydrodynamic Lubrication"]                   = prb_ehl;
     string2prbtype["Electrochemistry"]                                 = prb_elch;
     string2prbtype["Fluid"]                                            = prb_fluid;
     string2prbtype["Fluid_Ale"]                                        = prb_fluid_ale;
@@ -56,13 +57,13 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Inverse_Analysis"]                                 = prb_invana;
     string2prbtype["Level_Set"]                                        = prb_level_set;
     string2prbtype["Low_Mach_Number_Flow"]                             = prb_loma;
+    string2prbtype["Lubrication"]                                      = prb_lubrication;
     string2prbtype["NP_Supporting_Procs"]                              = prb_np_support;
     string2prbtype["Particle"]                                         = prb_particle;
     string2prbtype["Poroelastic_scalar_transport"]                     = prb_poroscatra;
     string2prbtype["Poroelasticity"]                                   = prb_poroelast;
     string2prbtype["RedAirways_Tissue"]                                = prb_redairways_tissue;
     string2prbtype["ReducedDimensionalAirWays"]                        = prb_red_airways;
-    string2prbtype["Lubrication"]                                         = prb_lubrication;
     string2prbtype["Scalar_Thermo_Interaction"]                        = prb_sti;
     string2prbtype["Scalar_Transport"]                                 = prb_scatra;
     string2prbtype["StatMech"]                                         = prb_statmech;

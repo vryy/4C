@@ -35,6 +35,7 @@ Maintainer: Lena Wiechert
 #include "aaagasser.H"
 #include "aaaraghavanvorp_damage.H"
 #include "aaa_mixedeffects.H"
+#include "lubrication_mat.H"
 #include "scatra_mat.H"
 #include "scatra_mat_poro_ecm.H"
 #include "scatra_mat_aniso.H"
@@ -240,6 +241,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::AAA_mixedeffects(curmat));
     MAT::PAR::AAA_mixedeffects* params = static_cast<MAT::PAR::AAA_mixedeffects*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_lubrication:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::LubricationMat(curmat));
+    MAT::PAR::LubricationMat* params = static_cast<MAT::PAR::LubricationMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_scatra:

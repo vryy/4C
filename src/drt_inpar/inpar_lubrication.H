@@ -24,6 +24,13 @@ namespace INPAR
   namespace LUBRICATION
   {
 
+  /// compute error compared to analytical solution
+  enum CalcError
+  {
+    calcerror_no,
+    calcerror_byfunction
+  };
+
     /// set the lubrication parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

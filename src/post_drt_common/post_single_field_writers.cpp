@@ -269,6 +269,18 @@ void AleFilter::WriteAllResults(PostField* field)
 
 
 /*----------------------------------------------------------------------*
+|                                                           wirtz 11/15 |
+\*----------------------------------------------------------------------*/
+void LubricationFilter::WriteAllResults(PostField* field)
+{
+  writer_->WriteResult("prenp", "pressure", dofbased, 1);
+
+  // write element results (e.g. element owner)
+  WriteElementResults(field);
+}
+
+
+/*----------------------------------------------------------------------*
 |                                                           gjb 12/07   |
 \*----------------------------------------------------------------------*/
 void ScaTraFilter::WriteAllResults(PostField* field)

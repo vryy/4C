@@ -1,5 +1,5 @@
 /*!
- \file post_drt_ensight_single_field_writers.H
+ \file post_single_field_writers.H
 
  \brief main routine of the Ensight filter
 
@@ -128,6 +128,30 @@ class InterfaceFilter : public PostFilterBase
 public:
     InterfaceFilter(PostField *field,
                     std::string name)
+    :
+      PostFilterBase (field, name)
+    {
+    }
+
+protected:
+
+    virtual void WriteAllResults(
+            PostField* field);
+};
+
+
+/*!
+ \brief Writer for lubrication problems
+
+ \author wirtz
+ \date 11/15
+*/
+class LubricationFilter : public PostFilterBase
+{
+public:
+    /// constructor
+    LubricationFilter(PostField *field,
+                      std::string name)
     :
       PostFilterBase (field, name)
     {

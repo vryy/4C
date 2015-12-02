@@ -31,7 +31,7 @@ Maintainer: Andy Wirtz
 /*----------------------------------------------------------------------*/
 void ADAPTER::LubricationBaseAlgorithm::Setup(
     const Teuchos::ParameterList&   prbdyn,         ///< parameter list for global problem
-    const Teuchos::ParameterList&   lubricationdyn,    ///< parameter list for Lubrication subproblem
+    const Teuchos::ParameterList&   lubricationdyn, ///< parameter list for Lubrication subproblem
     const Teuchos::ParameterList&   solverparams,   ///< parameter list for Lubrication solver
     const std::string&              disname,        ///< name of Lubrication discretization
     const bool                      isale           ///< ALE flag
@@ -99,11 +99,6 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
 
   // ----------------Eulerian or ALE formulation of transport equation(s)
   extraparams->set<bool>("isale",isale);
-
-  // ------------------------------------get also fluid turbulence sublist
-  const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
-  extraparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
-  extraparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
 
     // create instance of time integration class (call the constructor)
   lubrication_ = Teuchos::rcp(

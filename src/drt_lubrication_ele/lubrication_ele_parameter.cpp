@@ -80,7 +80,7 @@ DRT::ELEMENTS::LubricationEleParameter::LubricationEleParameter(
 }
 
 //----------------------------------------------------------------------*/
-// set parameters which are equal for every fluid           wirtz 10/15 |
+// set parameters which are equal for every lubrication     wirtz 10/15 |
 //----------------------------------------------------------------------*/
 void DRT::ELEMENTS::LubricationEleParameter::SetTimeParameters(
     Teuchos::ParameterList& parameters   //!< parameter list
@@ -91,7 +91,7 @@ void DRT::ELEMENTS::LubricationEleParameter::SetTimeParameters(
 }
 
 //----------------------------------------------------------------------*/
-// set parameters which are equal for every fluid           wirtz 10/15 |
+// set parameters which are equal for every lubrication     wirtz 10/15 |
 //----------------------------------------------------------------------*/
 void DRT::ELEMENTS::LubricationEleParameter::SetGeneralParameters(
     Teuchos::ParameterList& parameters   //!< parameter list

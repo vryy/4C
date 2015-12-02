@@ -38,30 +38,19 @@ NUMSTEP                         3
 TIMESTEP                        0.01
 UPRES                           1
 RESTARTEVRY                     1
-LINEAR_SOLVER                   1
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
-LINEAR_SOLVER                   1
-SOLVERTYPE                      nonlinear
-TIMEINTEGR                      Stationary // One_Step_Theta
-UPRES                           1
-RESTARTEVRY                     20
-NUMSTEP                         3
-MAXTIME                         0.03
-TIMESTEP                        1.0e-2
-THETA                           1.0
-VELOCITYFIELD                   zero
-VELFUNCNO                       -1
-INITIALFIELD                    zero_field
-INITFUNCNO                      0
-FSSUGRDIFF                      No
-WRITEFLUX                       No
-CALCERROR                       No
+CALCERROR                       No // No error_by_function
 CALCERRORNO                     2
-OUTMEAN                         no
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+OUTMEAN                         No // No Yes
+OUTPUT_GMSH                     No // No Yes
+MATLAB_STATE_OUTPUT             No // No Yes
+LINEAR_SOLVER                   1
+ITEMAX                          10
+ABSTOLRES                       1.0e-14
 CONVTOL                         1.0e-6
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.1
 --------------------------------------------------------------------SOLVER 1
-NAME                            Sca_Tra_Solver
+NAME                            Lubrication_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -95,7 +84,7 @@ ML_DAMPFINE                     0.67                          // damping fine gr
 ML_DAMPMED                      1.0                           // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_scatra DIFFUSIVITY 1.00
+MAT 1 MAT_lubrication VISCOSITY 1.0 DENSITY 1.0
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
@@ -106,7 +95,7 @@ FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION x/sqrt(x*x+y*y)
 ----------------------------------------------------------------------FUNCT2
 FUNCT2 COMPONENT 0 EXPR 0 0 0 FUNCTION -(z*z*1.0E12)/2+(z*1.0E12)/80+1.0E5
 -------------------------------------------------RESULT DESCRIPTION
-LUBRICATION DIS lubrication NODE 7 QUANTITY phi VALUE 7.82249999999914914e+07 TOLERANCE 1e-13
+LUBRICATION DIS lubrication NODE 7 QUANTITY pre VALUE 7.82249999999914914e+07 TOLERANCE 1e-13
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  1
@@ -235,5 +224,6 @@ NODE        36 COORD  2.1650635094610966e-02  1.2500000000000004e-02  1.25000000
 ---------------------------------------------------THERMO ELEMENTS
 ---------------------------------------------------ACOUSTIC ELEMENTS
 ---------------------------------------------------CELL ELEMENTS
+---------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------------------END
 // END

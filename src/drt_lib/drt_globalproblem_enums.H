@@ -33,6 +33,7 @@ typedef enum _PROBLEM_TYP
   prb_cavitation,           // cavitation problem
   prb_combust,              // combustion problem
   prb_crack,                // crack propagation modeling
+  prb_ehl,                  // elastohydrodynamic lubrication problem (or lubrication structure interaction)
   prb_elch,                 // electrochemical problem
   prb_fluid,                // fluid problem
   prb_fluid_ale,            // fluid on an ale mesh (no structure)
@@ -56,6 +57,7 @@ typedef enum _PROBLEM_TYP
   prb_invana,               // inverse analysis of structures(so far)
   prb_level_set,            // level-set problem
   prb_loma,                 // low-Mach-number flow problem
+  prb_lubrication,          // lubrication problem (reduced fluid model for elastohydrodynamic lubrication)
   prb_np_support,           // supporting procs for nested parallelism
   prb_opt,                  // structural optimization  problem
   prb_particle,             // particle simulation
@@ -63,7 +65,6 @@ typedef enum _PROBLEM_TYP
   prb_poroscatra,           // passive scalar transport in porous media
   prb_red_airways,          // reduced dimensional airways
   prb_redairways_tissue,    // coupling of reduced-dimensional airways with 3D tissue model
-  prb_lubrication,          // lubrication problem (reduced fluid model for elastohydrodynamic lubrication)
   prb_scatra,               // scalar transport problem (e.g. convection-diffusion)
   prb_ssi,                  // scalar structure interaction
   prb_statmech,             // structural problem

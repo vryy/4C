@@ -246,8 +246,15 @@ void runEnsightVtuFilter(PostProblem    &problem)
         writer.WriteFiles();
         break;
     }
-    case prb_cardiac_monodomain:
+    case prb_ehl:
     case prb_lubrication:
+    {
+        PostField* lubricationfield = problem.get_discretization(0);
+        LubricationFilter lubricationwriter(lubricationfield, problem.outname());
+        lubricationwriter.WriteFiles();
+        break;
+    }
+    case prb_cardiac_monodomain:
     case prb_scatra:
     {
         std::string basename = problem.outname();

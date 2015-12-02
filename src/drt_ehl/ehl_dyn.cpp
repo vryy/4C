@@ -1,8 +1,8 @@
 /*--------------------------------------------------------------------------*/
 /*!
-\file lubrication_dyn.cpp
+\file ehl_dyn.cpp
 
-\brief entry point for the solution of Lubrication problems
+\brief dummy
 
 <pre>
 Maintainer: Andy Wirtz
@@ -13,7 +13,7 @@ Maintainer: Andy Wirtz
 */
 /*--------------------------------------------------------------------------*/
 
-#include "../drt_lubrication/lubrication_dyn.H"
+#include "../drt_ehl/ehl_dyn.H"
 
 #include "../drt_adapter/adapter_lubrication.H"
 
@@ -23,9 +23,9 @@ Maintainer: Andy Wirtz
 
 
 /*----------------------------------------------------------------------*
- | Main control routine for Lubrication problems            wirtz 11/15 |
+ | Main control routine for EHL problems                    wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void lubrication_dyn(int restart)
+void ehl_dyn(int restart)
 {
   // access the communicator
   const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("lubrication")->Comm();
@@ -90,4 +90,4 @@ void lubrication_dyn(int restart)
 
 return;
 
-} // end of lubrication_dyn()
+} // end of ehl_dyn()

@@ -200,6 +200,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // lubrication material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_lubrication",
+                                            "lubrication material",
+                                            INPAR::MAT::m_lubrication));
+
+    AddNamedReal(m,"VISCOSITY","lubricant viscosity");
+    AddNamedReal(m,"DENSITY","lubricant density");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // scalar transport material (with potential reaction coefficient)
   {
     Teuchos::RCP<MaterialDefinition> m

@@ -36,8 +36,8 @@ class TimIntImpl;
 /*!
   \brief lubrication specific result test class
 
-  \author gjb
-  \date 07/08
+  \author wirtz
+  \date 11/15
 */
 class ResultTest : public DRT::ResultTest
 {
@@ -73,18 +73,10 @@ protected:
 
 private:
 
-  /// Teuchos::RCP to scalar transport discretization
+  /// Teuchos::RCP to lubrication discretization
   Teuchos::RCP<DRT::Discretization> dis_;
   /// Teuchos::RCP to solution vector
   Teuchos::RCP<Epetra_Vector>       mysol_;
-  /// Teuchos::RCP to solution at nodes (meshfree)
-  Teuchos::RCP<Epetra_Vector>       myvan_;
-  /// Teuchos::RCP to mass/heat flux vector
-  Teuchos::RCP<Epetra_MultiVector>  myflux_;
-  /// Teuchos::RCP to scatra structure biofilm growth vector
-  Teuchos::RCP<Epetra_MultiVector>  mystrgrowth_;
-  /// Teuchos::RCP to scatra fluid biofilm growth vector
-  Teuchos::RCP<Epetra_MultiVector>  myfldgrowth_;
   /// number of iterations in last newton iteration
   int mynumiter_;
 };

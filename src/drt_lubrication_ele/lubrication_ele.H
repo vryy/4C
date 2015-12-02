@@ -347,7 +347,7 @@ public:
   \param nnode: Number of nodes attached to this element
   \param nodeids: global ids of nodes attached to this element
   \param nodes: the discretizations map of nodes to build ptrs to nodes from
-  \param parent: The parent fluid element of this surface
+  \param parent: The parent lubrication element of this surface
   \param lsurface: the local surface number of this surface w.r.t. the parent element
   */
   LubricationBoundary(

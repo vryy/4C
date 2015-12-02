@@ -11,7 +11,7 @@ Maintainer: Andy Wirtz
 
 */
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_lubrication_ele/lubrication_ele_action.H"
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 
@@ -36,12 +36,12 @@ int DRT::ELEMENTS::Lubrication::Evaluate(
 {
 
   // check for the action parameter
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
+  const LUBRICATION::Action action = DRT::INPUT::get<LUBRICATION::Action>(params,"action");
   switch(action)
   {
     // all physics-related stuff is included in the implementation class(es) that can
     // be used in principle inside any element (at the moment: only Lubrication element)
-    case SCATRA::calc_mat_and_rhs:
+    case LUBRICATION::calc_mat_and_rhs:
     {
       return DRT::ELEMENTS::LubricationFactory::ProvideImpl(Shape(),discretization.Name())->Evaluate(
               this,
@@ -56,7 +56,8 @@ int DRT::ELEMENTS::Lubrication::Evaluate(
               );
       break;
     }
-    case SCATRA::calc_error:
+    case LUBRICATION::calc_error:
+    case LUBRICATION::calc_mean_scalars:
     {
       return DRT::ELEMENTS::LubricationFactory::ProvideImpl(Shape(),discretization.Name())->EvaluateService(
                this,
@@ -70,9 +71,9 @@ int DRT::ELEMENTS::Lubrication::Evaluate(
                elevec3);
       break;
     }
-    case SCATRA::set_time_parameter:
-    case SCATRA::set_general_scatra_parameter:
-    case SCATRA::set_turbulence_scatra_parameter:
+    case LUBRICATION::set_time_parameter:
+    case LUBRICATION::set_general_lubrication_parameter:
+    // these actions have already been evaluated during element pre-evaluate
       break;
     default:
     {
@@ -112,18 +113,18 @@ void DRT::ELEMENTS::LubricationType::PreEvaluate(DRT::Discretization&           
                                             Teuchos::RCP<Epetra_Vector>           systemvector2,
                                             Teuchos::RCP<Epetra_Vector>           systemvector3)
 {
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(p,"action");
+  const LUBRICATION::Action action = DRT::INPUT::get<LUBRICATION::Action>(p,"action");
 
   switch(action)
   {
-  case SCATRA::set_general_scatra_parameter:
+  case LUBRICATION::set_general_lubrication_parameter:
   {
     DRT::ELEMENTS::LubricationEleParameter::Instance(dis.Name())->SetGeneralParameters(p);
 
     break;
   }
 
-  case SCATRA::set_time_parameter:
+  case LUBRICATION::set_time_parameter:
   {
     DRT::ELEMENTS::LubricationEleParameter::Instance(dis.Name())->SetTimeParameters(p);
 

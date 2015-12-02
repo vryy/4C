@@ -22,24 +22,22 @@ Maintainer: Andy Wirtz
 #include "../drt_lib/drt_discret.H"
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | ctor                                                     wirtz 11/15 |
+ *----------------------------------------------------------------------*/
 LUBRICATION::ResultTest::ResultTest(Teuchos::RCP<TimIntImpl> lubrication) :
 DRT::ResultTest("LUBRICATION"),
 dis_(lubrication->Discretization()),
 mysol_(lubrication->Prenp()),
-myvan_(lubrication->Preatmeshfreenodes()),
-myflux_(lubrication->Flux()),
-mystrgrowth_(lubrication->StrGrowth()),
-myfldgrowth_(lubrication->FldGrowth()),
 mynumiter_(lubrication->IterNum())
 {
   return;
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | test node                                                wirtz 11/15 |
+ *----------------------------------------------------------------------*/
 void LUBRICATION::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
@@ -87,7 +85,7 @@ void LUBRICATION::ResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ner
 
 
 /*----------------------------------------------------------------------*
- | get nodal result to be tested                             fang 03/15 |
+ | get nodal result to be tested                            wirtz 11/15 |
  *----------------------------------------------------------------------*/
 const double LUBRICATION::ResultTest::ResultNode(
     const std::string   quantity,   //! name of quantity to be tested
@@ -98,61 +96,12 @@ const double LUBRICATION::ResultTest::ResultNode(
   double result(0.);
 
   // extract row map from solution vector
-  const Epetra_BlockMap& phinpmap = mysol_->Map();
+  const Epetra_BlockMap& prenpmap = mysol_->Map();
 
-  // test result value of single scalar field
-  if(quantity == "phi")
-    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,0))];
+  // test result value of pressure field
+  if(quantity == "pre")
+    result = (*mysol_)[prenpmap.LID(dis_->Dof(0,node,0))];
 
-  // test result values for a system of scalars
-  else if(quantity == "phi1")
-    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,0))];
-  else if(quantity == "phi2")
-    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,1))];
-  else if(quantity == "phi3")
-    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,2))];
-  else if(quantity == "phi4")
-    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,3))];
-  else if(quantity == "phi5")
-    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,4))];
-  else if(quantity == "phi6")
-    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,5))];
-  else if(quantity == "phi7")
-    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,6))];
-  else if(quantity == "phi8")
-    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,7))];
-  else if(quantity == "phi9")
-    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,8))];
-  else if(quantity == "phi10")
-    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,9))];
-  else if(quantity == "phi11")
-    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,10))];
-  else if(quantity == "phi12")
-    result = (*mysol_)[phinpmap.LID(dis_->Dof(0,node,11))];
-  else if(quantity == "van_phi")
-    result = (*myvan_)[phinpmap.LID(dis_->Dof(0,node,0))];
-
-  // we support only testing of fluxes for the first scalar
-  else if(quantity == "fluxx")
-    result = ((*myflux_)[0])[phinpmap.LID(dis_->Dof(0,node,0))];
-  else if(quantity == "fluxy")
-    result = ((*myflux_)[1])[phinpmap.LID(dis_->Dof(0,node,0))];
-  else if(quantity == "fluxz")
-    result = ((*myflux_)[2])[phinpmap.LID(dis_->Dof(0,node,0))];
-
-  // test result values for biofilm growth (scatra structure and scatra fluid)
-  else if(quantity == "scstr_growth_displx")
-    result = ((*mystrgrowth_)[0])[phinpmap.LID(dis_->Dof(0,node,0))];
-  else if(quantity == "scstr_growth_disply")
-    result = ((*mystrgrowth_)[1])[phinpmap.LID(dis_->Dof(0,node,0))];
-  else if(quantity == "scstr_growth_displz")
-    result = ((*mystrgrowth_)[2])[phinpmap.LID(dis_->Dof(0,node,0))];
-  else if(quantity == "scfld_growth_displx")
-    result = ((*myfldgrowth_)[0])[phinpmap.LID(dis_->Dof(0,node,0))];
-  else if(quantity == "scfld_growth_disply")
-    result = ((*myfldgrowth_)[1])[phinpmap.LID(dis_->Dof(0,node,0))];
-  else if(quantity == "scfld_growth_displz")
-    result = ((*myfldgrowth_)[2])[phinpmap.LID(dis_->Dof(0,node,0))];
   // catch unknown quantity strings
   else
     dserror("Quantity '%s' not supported in result test!", quantity.c_str());
@@ -162,7 +111,7 @@ const double LUBRICATION::ResultTest::ResultNode(
 
 
 /*-------------------------------------------------------------------------------------*
- | test special quantity not associated with a particular element or node   fang 03/15 |
+ | test special quantity not associated with a particular element or node  wirtz 11/15 |
  *-------------------------------------------------------------------------------------*/
 void LUBRICATION::ResultTest::TestSpecial(
     DRT::INPUT::LineDefinition&   res,
@@ -191,7 +140,7 @@ void LUBRICATION::ResultTest::TestSpecial(
 
 
 /*----------------------------------------------------------------------*
- | get special result to be tested                           fang 03/15 |
+ | get special result to be tested                          wirtz 11/15 |
  *----------------------------------------------------------------------*/
 const double LUBRICATION::ResultTest::ResultSpecial(
     const std::string   quantity   //! name of quantity to be tested

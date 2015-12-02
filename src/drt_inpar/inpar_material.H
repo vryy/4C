@@ -68,6 +68,7 @@ namespace INPAR
       m_growth_volumetric_scd,                 ///< integration point based growth (scalar dependent)
       m_herschelbulkley,                       ///< fluid with nonlinear viscosity according to Herschel-Bulkley
       m_ion,                                   ///< properties of an ion species in an electrolyte solution
+      m_lubrication,                           ///< lubrication material
       m_matlist,                               ///< collection of single materials (used for scalar transport problems)
       m_matlist_reactions,                     ///< collection of single materials (used for scalar transport problems) and collection of reactions (used for advanced reaction elements)
       m_matlist_chemotaxis,                    ///< collection of single materials (used for scalar transport problems) and collection of chemotactic pairs (used for chemotaxis elements)

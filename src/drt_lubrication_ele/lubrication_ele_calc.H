@@ -24,7 +24,7 @@ Maintainer: Andy Wirtz
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_lubrication_ele/lubrication_ele_interface.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_lubrication_ele/lubrication_ele_action.H"
 
 
 
@@ -37,7 +37,7 @@ namespace ELEMENTS
   // forward declaration
   class LubricationEleParameter;
 
-  class LubricationEleDiffManager;
+  class LubricationEleViscManager;
   template<int NSD,int NEN> class LubricationEleInternalVariableManager;
 
   /// Lubrication element implementation
@@ -123,7 +123,7 @@ namespace ELEMENTS
          DRT::Element*                 ele,
          Teuchos::ParameterList&       params,
          DRT::Discretization&          discretization,
-         const SCATRA::Action&         action,
+         const LUBRICATION::Action&    action,
          DRT::Element::LocationArray&  la,
          Epetra_SerialDenseMatrix&     elemat1_epetra,
          Epetra_SerialDenseMatrix&     elemat2_epetra,
@@ -212,6 +212,13 @@ namespace ELEMENTS
       Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm
     );
 
+    //! calculate scalar(s) and domain integral
+    virtual void CalculateScalars(
+      const DRT::Element*             ele,       //!< the element we are dealing with
+      Epetra_SerialDenseVector&       scalars,   //!< scalar to be computed
+      const bool                      inverting  //!< bool indicating inversion
+    );
+
 
     /*========================================================================*/
     //! @name material and related functions
@@ -237,8 +244,8 @@ namespace ELEMENTS
       const int                               iquad=-1   //!< id of current gauss point (default = -1)
     );
 
-    //! material ScaTra
-    virtual void MatScaTra(
+    //! material Lubrication
+    virtual void MatLubrication(
       const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       double&                                 densn,    //!< density at t_(n)
       double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
@@ -346,8 +353,8 @@ namespace ELEMENTS
     //! @name manager classes for efficient application to various problems
     /*========================================================================*/
 
-    //! manager for diffusion
-    Teuchos::RCP<LubricationEleDiffManager> diffmanager_;
+    //! manager for viscosity
+    Teuchos::RCP<LubricationEleViscManager> viscmanager_;
 
     //! variable manager for Gauss point values
     Teuchos::RCP<LubricationEleInternalVariableManager<nsd_,nen_> > lubricationvarmanager_;
@@ -427,32 +434,32 @@ namespace ELEMENTS
       has to be constructed in the problem-dependent subclass for element
       evaluation.
   */
-  class LubricationEleDiffManager
+  class LubricationEleViscManager
   {
   public:
 
-    LubricationEleDiffManager():
-      diff_(0.0)
+    LubricationEleViscManager():
+      visc_(0.0)
       {return;}
 
-    virtual ~LubricationEleDiffManager(){};
+    virtual ~LubricationEleViscManager(){};
 
     //! Set the isotropic diffusion coefficient
-    virtual void SetIsotropicDiff(const double diff)
+    virtual void SetIsotropicVisc(const double visc)
     {
-      if (diff < 0.0) dserror("negative (physical) diffusivity: %f",0,diff);
+      if (visc < 0.0) dserror("negative (physical) viscosity: %f",0,visc);
 
-      diff_ = diff;
+      visc_ = visc;
       return;
     }
 
     //! Return the stored isotropic diffusion coefficients
-    virtual double GetIsotropicDiff(){return diff_;}
+    virtual double GetIsotropicDiff(){return visc_;}
 
   protected:
 
-    //! pressure diffusion coefficient
-    double diff_;
+    //! lubricant viscosity
+    double visc_;
 
   };
 

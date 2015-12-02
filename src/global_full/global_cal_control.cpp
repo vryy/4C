@@ -17,6 +17,7 @@ Maintainer: Michael Gee
 #include "../drt_ale/ale_dyn.H"
 #include "../drt_art_net/art_net_dyn_drt.H"
 #include "../drt_combust/combust_dyn.H"
+#include "../drt_ehl/ehl_dyn.H"
 #include "../drt_elch/elch_dyn.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
 #include "../drt_fpsi/fpsi_dyn.H"
@@ -25,11 +26,11 @@ Maintainer: Michael Gee
 #include "../drt_immersed_problem/immersed_problem_dyn.H"
 #include "../drt_levelset/levelset_dyn.H"
 #include "../drt_loma/loma_dyn.H"
+#include "../drt_lubrication/lubrication_dyn.H"
 #include "../drt_opti/topopt_dyn.H"
 #include "../drt_particle/particle_dyn.H"
 #include "../drt_poroelast/poro_dyn.H"
 #include "../drt_red_airways/red_airways_dyn_drt.H"
-#include "../drt_lubrication/lubrication_dyn.H"
 #include "../drt_scatra/scatra_dyn.H"
 #include "../drt_ssi/ssi_dyn.H"
 #include "../drt_sti/sti_dyn.H"
@@ -65,6 +66,9 @@ void ntacal()
       break;
     case prb_lubrication:
       lubrication_dyn(restart);
+      break;
+    case prb_ehl:
+      ehl_dyn(restart);
       break;
     case prb_cardiac_monodomain:
     case prb_scatra:

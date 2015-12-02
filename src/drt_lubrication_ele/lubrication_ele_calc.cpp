@@ -25,11 +25,14 @@ Maintainer: Andy Wirtz
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lubrication_ele/lubrication_ele_parameter.H"
 
-#include "../drt_scatra_ele/scatra_ele_calc_utils.H"
-#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_inpar/inpar_lubrication.H"
 
-#include "../drt_mat/material.H"
-#include "../drt_mat/scatra_mat.H"
+#include "../drt_lubrication_ele/lubrication_ele_calc_utils.H"
+#include "../drt_lubrication_ele/lubrication_ele_action.H"
+
+#include "../drt_lib/standardtypes_cpp.H"
+
+#include "../drt_mat/lubrication_mat.H"
 
 
 /*----------------------------------------------------------------------*
@@ -47,7 +50,7 @@ DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::LubricationEleCalc(const std
     xjm_(true),     // initialized to zero
     xij_(true),     // initialized to zero
     bodyforce_(true), // size of vector
-    diffmanager_(Teuchos::rcp(new LubricationEleDiffManager())),           // diffusion manager for diffusivity
+    viscmanager_(Teuchos::rcp(new LubricationEleViscManager())),           // viscosity manager for viscosity
     lubricationvarmanager_(Teuchos::rcp(new LubricationEleInternalVariableManager<nsd_,nen_>())),   // internal variable manager
     eid_(0),
     ele_(NULL)
@@ -217,7 +220,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Sysmat(
   )
 {
   //----------------------------------------------------------------------
-  // get material and stabilization parameters (evaluation at element center)
+  // get material parameters (evaluation at element center)
   //----------------------------------------------------------------------
   // density at t_(n)
   double densn(1.0);
@@ -233,7 +236,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Sysmat(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(LUBRICATION::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
@@ -258,8 +261,8 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Sysmat(
     // standard Galerkin terms
     //----------------------------------------------------------------
 
-    // stabilization parameter and integration factors
-    const double timefacfac = fac; // ************************** works only for stationary problems!
+    // integration factors
+    const double timefacfac = fac; // works only for stationary problems!
 
     //----------------------------------------------------------------
     // 1) element matrix: stationary terms
@@ -277,7 +280,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Sysmat(
     // term (if required) on right hand side depending on respective
     // (non-)incremental stationary or time-integration scheme
     //----------------------------------------------------------------
-    double rhsfac    = fac; // ************************** works only for stationary problems!
+    double rhsfac    = fac; // works only for stationary problems!
 
     //----------------------------------------------------------------
     // standard Galerkin transient, old part of rhs and bodyforce term
@@ -342,12 +345,10 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Materials(
 
   )
 {
-
-  // todo: lubrication material
   switch(material->MaterialType())
   {
-  case INPAR::MAT::m_scatra:
-    MatScaTra(material,densn,densnp,densam,visc,iquad);
+  case INPAR::MAT::m_lubrication:
+    MatLubrication(material,densn,densnp,densam,visc,iquad);
     break;
   default:
     dserror("Material type %i is not supported",material->MaterialType());
@@ -357,10 +358,10 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::Materials(
 }
 
 /*----------------------------------------------------------------------*
- |  Material ScaTra                                         wirtz 10/15 |
+ |  Material Lubrication                                    wirtz 10/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::MatScaTra(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::MatLubrication(
   const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
   double&                                 densn,    //!< density at t_(n)
   double&                                 densnp,   //!< density at t_(n+1) or t_(n+alpha_F)
@@ -370,14 +371,14 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::MatScaTra(
   )
 {
 
-  const Teuchos::RCP<const MAT::ScatraMat>& actmat
-    = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
+  const Teuchos::RCP<const MAT::LubricationMat>& actmat
+    = Teuchos::rcp_dynamic_cast<const MAT::LubricationMat>(material);
 
-  // get constant diffusivity
-  diffmanager_->SetIsotropicDiff(actmat->Diffusivity());
+  // get constant viscosity
+  viscmanager_->SetIsotropicVisc(actmat->Viscosity());
 
   return;
-} // LubricationEleCalc<distype>::MatScaTra
+} // LubricationEleCalc<distype>::MatLubrication
 
 /*-----------------------------------------------------------------------------*
  | compute rhs containing bodyforce                                wirtz 10/15 |
@@ -407,7 +408,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcMatDiff(
   )
 {
   // diffusive term
-  const double fac_diffus = timefacfac * diffmanager_->GetIsotropicDiff();
+  const double fac_diffus = timefacfac * viscmanager_->GetIsotropicDiff();
   for (int vi=0; vi<nen_; ++vi)
   {
     for (int ui=0; ui<nen_; ++ui)
@@ -450,7 +451,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalcRHSDiff(
 {
   const LINALG::Matrix<nsd_,1>& gradpre = lubricationvarmanager_->GradPre();
 
-  double vrhs = rhsfac*diffmanager_->GetIsotropicDiff();
+  double vrhs = rhsfac*viscmanager_->GetIsotropicDiff();
 
   for (int vi=0; vi<nen_; ++vi)
   {
@@ -693,7 +694,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::EvaluateService(
     return 0;
 
   // check for the action parameter
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
+  const LUBRICATION::Action action = DRT::INPUT::get<LUBRICATION::Action>(params,"action");
 
   // evaluate action
   EvaluateAction(
@@ -720,7 +721,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::EvaluateAction(
     DRT::Element*                 ele,
     Teuchos::ParameterList&       params,
     DRT::Discretization&          discretization,
-    const SCATRA::Action&         action,
+    const LUBRICATION::Action&         action,
     DRT::Element::LocationArray&  la,
     Epetra_SerialDenseMatrix&     elemat1_epetra,
     Epetra_SerialDenseMatrix&     elemat2_epetra,
@@ -734,7 +735,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::EvaluateAction(
   // determine and evaluate action
   switch(action)
   {
-  case SCATRA::calc_error:
+  case LUBRICATION::calc_error:
   {
     // check if length suffices
     if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
@@ -748,6 +749,23 @@ int DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::EvaluateAction(
       ele,
       params,
       elevec1_epetra);
+
+    break;
+  }
+
+  case LUBRICATION::calc_mean_scalars:
+  {
+    // get flag for inverting
+    bool inverting = params.get<bool>("inverting");
+
+    // need current scalar vector
+    // -> extract local values from the global vectors
+    Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("prenp");
+    if (prenp==Teuchos::null) dserror("Cannot get state vector 'prenp'");
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*prenp,eprenp_,lm);
+
+    // calculate scalars and domain integral
+    CalculateScalars(ele,elevec1_epetra,inverting);
 
     break;
   }
@@ -772,7 +790,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnaly
   Epetra_SerialDenseVector&             errors
   )
 {
-  if (DRT::INPUT::get<SCATRA::Action>(params,"action") != SCATRA::calc_error)
+  if (DRT::INPUT::get<LUBRICATION::Action>(params,"action") != LUBRICATION::calc_error)
     dserror("How did you get here?");
 
   // -------------- prepare common things first ! -----------------------
@@ -781,13 +799,13 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnaly
 
   // integration points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
-  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(LUBRICATION::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const INPAR::SCATRA::CalcError errortype = DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
+  const INPAR::LUBRICATION::CalcError errortype = DRT::INPUT::get<INPAR::LUBRICATION::CalcError>(params, "calcerrorflag");
   switch(errortype)
   {
 
-  case INPAR::SCATRA::calcerror_byfunction:
+  case INPAR::LUBRICATION::calcerror_byfunction:
   {
     const int errorfunctno = params.get<int>("error function number");
 
@@ -836,7 +854,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnaly
         {
           // Todo: calc gradpre correctly
 //          std::cout
-//              << "Warning: Gradient of analytical solution cannot be evaluated correctly for transport on curved surfaces!"
+//              << "Warning: Gradient of analytical solution cannot be evaluated correctly for lubrication on curved surfaces!"
 //              << std::endl;
           gradpre_exact.Clear();
         }
@@ -882,6 +900,53 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnaly
 
   return;
 } // DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnalytSolution
+
+/*---------------------------------------------------------------------*
+|  calculate scalar(s) and domain integral                 wirtz 10/15 |
+*----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalculateScalars(
+const DRT::Element*             ele,
+Epetra_SerialDenseVector&       scalars,
+const bool                      inverting
+  )
+{
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(LUBRICATION::DisTypeToOptGaussRule<distype>::rule);
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+    // calculate integrals of (inverted) scalar(s) and domain
+    if (inverting)
+    {
+      for (int i=0; i<nen_; i++)
+      {
+        const double fac_funct_i = fac*funct_(i);
+        if (std::abs(eprenp_(i,0))> EPS14)
+          scalars[0] += fac_funct_i/eprenp_(i,0);
+        else
+          dserror("Division by zero");
+        // for domain volume
+        scalars[1] += fac_funct_i;
+      }
+    }
+    else
+    {
+      for (int i=0; i<nen_; i++)
+      {
+        const double fac_funct_i = fac*funct_(i);
+        scalars[0] += fac_funct_i*eprenp_(i,0);
+        // for domain volume
+        scalars[1] += fac_funct_i;
+      }
+    }
+  } // loop over integration points
+
+  return;
+} // LubricationEleCalc::CalculateScalars
 
 // template classes
 

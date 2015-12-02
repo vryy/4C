@@ -1258,6 +1258,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
+  case prb_ehl:
   case prb_lubrication:
   {
     // create empty discretizations

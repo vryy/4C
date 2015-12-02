@@ -494,6 +494,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/growth_scd.cpp
   src/drt_mat/herschelbulkley.cpp
   src/drt_mat/ion.cpp
+  src/drt_mat/lubrication_mat.cpp
   src/drt_mat/material.cpp
   src/drt_mat/material_service.cpp
   src/drt_mat/matlist.cpp
@@ -639,10 +640,10 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_opt.cpp
   src/drt_adapter/ad_opt_fluid_adjoint_base.cpp
   src/drt_adapter/ad_opt_fluid_algo.cpp
+  src/drt_adapter/adapter_lubrication.cpp
   src/drt_adapter/adapter_scatra_base_algorithm.cpp
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
-  src/drt_adapter/adapter_lubrication.cpp
   src/drt_adapter/adapter_particle.cpp
   src/drt_adapter/ad_str_structure.cpp
 #  src/drt_adapter/ad_str_structure_new.cpp
@@ -718,6 +719,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_immersed.cpp
   src/drt_inpar/inpar_invanalysis.cpp
   src/drt_inpar/inpar_levelset.cpp
+  src/drt_inpar/inpar_lubrication.cpp
   src/drt_inpar/inpar_meshfree.cpp
   src/drt_inpar/inpar_mlmc.cpp
   src/drt_inpar/inpar_mortar.cpp
@@ -725,7 +727,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_poroscatra.cpp
   src/drt_inpar/inpar_potential.cpp
   src/drt_inpar/inpar_problemtype.cpp
-  src/drt_inpar/inpar_lubrication.cpp
   src/drt_inpar/inpar_s2i.cpp
   src/drt_inpar/inpar_scatra.cpp
   src/drt_inpar/inpar_searchtree.cpp
@@ -993,8 +994,14 @@ set(OBJS_DRT_UTILS
   src/pss_full/pss_table.c
   src/pss_full/pss_table_iter.c
 )
+set(OBJS_DRT_EHL
+  src/drt_ehl/ehl_dyn.cpp
+)
 set(OBJS_DRT_LUBRICATION
   src/drt_lubrication/lubrication_dyn.cpp
+  src/drt_lubrication/lubrication_resulttest.cpp
+  src/drt_lubrication/lubrication_timint_implicit.cpp
+  src/drt_lubrication/lubrication_timint_stat.cpp
 )
 set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_algorithm.cpp
@@ -1031,10 +1038,6 @@ set(OBJS_DRT_SCATRA
   src/drt_levelset/levelset_intersection_utils.cpp
   src/drt_levelset/levelset_timint_ost.cpp
   src/drt_levelset/levelset_timint_stat.cpp
-  src/drt_lubrication/lubrication_resulttest.cpp
-  src/drt_lubrication/lubrication_timint_implicit_service.cpp
-  src/drt_lubrication/lubrication_timint_implicit.cpp
-  src/drt_lubrication/lubrication_timint_stat.cpp
 )
 set(OBJS_DRT_TSI
   src/drt_tsi/tsi_algorithm.cpp
@@ -2314,7 +2317,7 @@ add_library(alg_fpsi ${OBJS_DRT_FPSI})
 add_library(alg_fs3i ${OBJS_DRT_FS3I})
 add_library(alg_topopt ${OBJS_DRT_TOPOPT})
 add_library(alg_ssi ${OBJS_DRT_SSI})
-add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
+add_library(alg_ehl ${OBJS_DRT_EHL})
 
 set(MULTIFIELD_LIBRARIES
   alg_elch
@@ -2332,7 +2335,7 @@ set(MULTIFIELD_LIBRARIES
   alg_fs3i
   alg_topopt
   alg_ssi
-  alg_lubrication
+  alg_ehl
   )
 
 # the adapter layer
@@ -2353,6 +2356,7 @@ add_library(alg_invanalysis ${OBJS_INV_ANALYSIS})
 add_library(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 add_library(alg_mlmc ${OBJS_MLMC})
 add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
+add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
 add_library(alg_scatra ${OBJS_DRT_SCATRA})
 add_library(alg_statmech ${OBJS_DRT_STATMECH})
 add_library(alg_plastic_ssn ${OBJS_DRT_PLASTIC_SSN})
@@ -2372,6 +2376,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_fluid
   alg_xfluid
   alg_redairways
+  alg_lubrication
   alg_scatra
   alg_structure
   alg_statmech
