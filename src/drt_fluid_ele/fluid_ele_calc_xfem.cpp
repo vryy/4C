@@ -217,6 +217,7 @@ int FluidEleCalcXFEM<distype>::ComputeError(
   double p_err = 0.0;
 
   const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
+  const int calcerrfunctno = DRT::INPUT::get<int>(params,"error function number");
 
   const double t = my::fldparatimint_->Time();
 
@@ -300,6 +301,7 @@ int FluidEleCalcXFEM<distype>::ComputeError(
 
     AnalyticalReference(
              calcerr,          ///< which reference solution
+             calcerrfunctno,   ///< error function number
              u_analyt,         ///< exact velocity
              grad_u_analyt,    ///< exact velocity gradient
              p_analyt,         ///< exact pressure
@@ -387,6 +389,7 @@ int FluidEleCalcXFEM<distype>::ComputeError(
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::AnalyticalReference(
     const int                               calcerr,     ///< which reference solution
+    const int                               calcerrfunctno, ///< error function number
     LINALG::Matrix<my::nsd_,1> &            u,           ///< exact jump vector (coupled)
     LINALG::Matrix<my::nsd_,my::nsd_> &     grad_u,      ///< exact velocity gradient
     double &                                p,           ///< exact pressure
@@ -656,8 +659,6 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
 
   case INPAR::FLUID::byfunct:
   {
-    const int func_no = 1;
-
 
     // function evaluation requires a 3D position vector!!
     double position[3];
@@ -679,25 +680,68 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
 
     if(my::nsd_ == 2)
     {
-      const double u_exact_x = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(0,position,t,NULL);
-      const double u_exact_y = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(1,position,t,NULL);
-      const double p_exact   = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(2,position,t,NULL);
+      const double u_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(0,position,t,NULL);
+      const double u_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(1,position,t,NULL);
+      const double p_exact   = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(2,position,t,NULL);
 
       u(0) = u_exact_x;
       u(1) = u_exact_y;
       p    = p_exact;
+
+
+      std::vector<std::vector<double> > uder_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(0,position,t,NULL);
+      std::vector<std::vector<double> > uder_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(1,position,t,NULL);
+      //std::vector<std::vector<double> > pder_exact   = DRT::Problem::Instance()->Funct(func_no-1).FctDer(2,position,t,1,NULL);
+
+      if(uder_exact_x.size())
+      {
+        grad_u(0,0)=uder_exact_x[0][0];
+        grad_u(0,1)=uder_exact_x[0][1];
+      }
+
+      if(uder_exact_y.size())
+      {
+        grad_u(1,0)=uder_exact_y[0][0];
+        grad_u(1,1)=uder_exact_y[0][1];
+      }
+
     }
     else if(my::nsd_==3)
     {
-      const double u_exact_x = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(0,position,t,NULL);
-      const double u_exact_y = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(1,position,t,NULL);
-      const double u_exact_z = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(2,position,t,NULL);
-      const double p_exact   = DRT::Problem::Instance()->Funct(func_no-1).Evaluate(3,position,t,NULL);
+      const double u_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(0,position,t,NULL);
+      const double u_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(1,position,t,NULL);
+      const double u_exact_z = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(2,position,t,NULL);
+      const double p_exact   = DRT::Problem::Instance()->Funct(calcerrfunctno-1).Evaluate(3,position,t,NULL);
 
       u(0) = u_exact_x;
       u(1) = u_exact_y;
       u(2) = u_exact_z;
       p    = p_exact;
+
+      std::vector<std::vector<double> > uder_exact_x = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(0,position,t,NULL);
+      std::vector<std::vector<double> > uder_exact_y = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(1,position,t,NULL);
+      std::vector<std::vector<double> > uder_exact_z = DRT::Problem::Instance()->Funct(calcerrfunctno-1).FctDer(2,position,t,NULL);
+
+      if(uder_exact_x.size())
+      {
+        grad_u(0,0)=uder_exact_x[0][0];
+        grad_u(0,1)=uder_exact_x[0][1];
+        grad_u(0,2)=uder_exact_x[0][2];
+      }
+
+      if(uder_exact_y.size())
+      {
+        grad_u(1,0)=uder_exact_y[0][0];
+        grad_u(1,1)=uder_exact_y[0][1];
+        grad_u(1,2)=uder_exact_y[0][2];
+      }
+
+      if(uder_exact_z.size())
+      {
+        grad_u(2,0)=uder_exact_z[0][0];
+        grad_u(2,1)=uder_exact_z[0][1];
+        grad_u(2,2)=uder_exact_z[0][2];
+      }
 
 //      u(0) = 5.0+30.0*position[1];
 //      u(1) = 0.0;
@@ -743,6 +787,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 #endif
 
   const int calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params,"calculate error");
+  const int calcerrfunctno = DRT::INPUT::get<int>(params,"error function number");
 
   const double t = my::fldparatimint_->Time();
 
@@ -1124,6 +1169,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
         AnalyticalReference(
             calcerr,          ///< which reference solution
+            calcerrfunctno,   ///< error function number
             u_analyt,         ///< exact velocity (onesided), exact jump vector (coupled)
             grad_u_analyt,    ///< exact velocity gradient
             p_analyt,         ///< exact pressure

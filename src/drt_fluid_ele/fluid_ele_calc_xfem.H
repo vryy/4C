@@ -234,12 +234,13 @@ private:
 
   //! evaluate analytical reference solution
   void AnalyticalReference(
-      const int                               calcerr,     ///< which reference solution
-      LINALG::Matrix<my::nsd_,1> &            u,           ///< exact jump vector (coupled)
-      LINALG::Matrix<my::nsd_,my::nsd_> &     grad_u,      ///< exact velocity gradient
-      double &                                p,           ///< exact pressure
-      LINALG::Matrix<my::nsd_,1> &            xyzint,      ///< xyz position of gaussian point
-      const double &                          t,           ///< time
+      const int                               calcerr,        ///< which reference solution
+      const int                               calcerrfunctno, ///< error function number
+      LINALG::Matrix<my::nsd_,1> &            u,              ///< exact jump vector (coupled)
+      LINALG::Matrix<my::nsd_,my::nsd_> &     grad_u,         ///< exact velocity gradient
+      double &                                p,              ///< exact pressure
+      LINALG::Matrix<my::nsd_,1> &            xyzint,         ///< xyz position of gaussian point
+      const double &                          t,              ///< time
       Teuchos::RCP<MAT::Material>             mat = Teuchos::null
   );
 

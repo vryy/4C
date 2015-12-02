@@ -282,6 +282,10 @@ void fluid_xfem_ls_drt(int restart)
    // access parameter list for fluid
    //const Teuchos::ParameterList& fdyn = problem->FluidDynamicParams();
 
+   // Needed for altgeo-creation
+   if(!scatradis->Filled())
+     scatradis->FillComplete();
+
    // use fluid discretization as layout for scatra discretization
    if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
 

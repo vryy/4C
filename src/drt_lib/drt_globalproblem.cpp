@@ -1151,6 +1151,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       xfluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("xfluid",reader.Comm()));
       xfluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(xfluiddis)));
       AddDis("xfluid", xfluiddis);
+
+      //Not working for XFF... Have to look into it if one wants to use the box geometry feature.
+//      nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
+//              DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(),"GEOMETRY"), 0);
+
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID")));
     }
     else
@@ -1158,7 +1163,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
       fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
       AddDis("fluid", fluiddis);
-      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+
+      nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
+              DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(),"GEOMETRY"), 0);
+
+//      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     }
 
     aledis    = Teuchos::rcp(new DRT::Discretization("ale"       ,reader.Comm()));
@@ -1186,7 +1195,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     AddDis("ale", aledis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+
+    nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
+            DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(),"GEOMETRY"), 0);
+
+    //nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;

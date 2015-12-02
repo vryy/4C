@@ -38,10 +38,10 @@ namespace DRT
 
     /* Moves a 2D cylinder back and forth along a predetermined direction in a sinus like fashion,
 
-       x_pos = maxspeed_ * sin(sin_coeff* t) * direction_ + origin_
+       x_pos = midpoint_trajectory_ + direction_*(L/2)*sin(sin_coeff*t-PI*0.5)
 
-       The cylinder reaches its destined distance at the time t_dist = 2.0*maxspeed_/(PI*distance_)
-                                      and maximum velocity at t_max  = PI/2.
+       The cylinder reaches its turning point distance at the time t_dist = n*PI/2   n=0,1,2,3,...
+                                           and maximum velocity at t_max  = n*PI/4   n=1,2,3,4,...
     */
     class MovingLevelSetCylinder : public Function
     {
@@ -71,8 +71,48 @@ namespace DRT
       // Distance traveled
       double distance_;
 
-      // Distance traveled
+      // Maximum speed
       double maxspeed_;
+    };
+
+
+    /* Stationary Taylor-Couette flow with Navier-Slip type boundary condition at inner cylinder.
+
+    */
+    class TaylorCouetteFlow : public Function
+    {
+    public:
+
+      /// ctor
+      TaylorCouetteFlow(
+          double radius_inner,
+          double radius_outer,
+          double vel_theta_inner,
+          double vel_theta_outer,
+          double epsilon);
+
+      /// evaluate function at given position in space
+      double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+      std::vector<std::vector<double> > FctDer(int index, const double* x, const double t, DRT::Discretization* dis);
+
+    private:
+
+      // Origin of the geometry
+//      std::vector<double> origin_; // Assume (0,0,0)
+
+      // Radius
+      double radius_inner_;
+      double radius_outer_;
+
+      // std::vector<double> prescribed_zero_pressure_point;
+
+      // Traction prescribed (might be added at some point)
+
+      double c1_;
+      double c2_;
+      double c3_;
+
     };
 
 

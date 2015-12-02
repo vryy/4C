@@ -1001,6 +1001,17 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedDouble("MAXSPEED")
     ;
 
+  DRT::INPUT::LineDefinition taylorcouetteflow;
+  taylorcouetteflow
+    .AddNamedInt("FUNCT")
+    .AddTag("TAYLORCOUETTEFLOW")
+    .AddNamedDouble("RADIUS_I")
+    .AddNamedDouble("RADIUS_O")
+    .AddNamedDouble("VEL_THETA_I")
+    .AddNamedDouble("VEL_THETA_O")
+    .AddNamedDouble("SLIPLENGTH_I")
+    ;
+
   DRT::INPUT::LineDefinition bubbles;
   bubbles
     .AddNamedInt("FUNCT")
@@ -1118,6 +1129,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(gerstenbergerforwardfacingstep);
   lines->Add(sliplengthlevelsetmanipulator);
   lines->Add(movinglevelsetcylinder);
+  lines->Add(taylorcouetteflow);
   lines->Add(bubbles);
   lines->Add(oraclesgfunc);
   lines->Add(rotatingcone);
@@ -1480,6 +1492,23 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractDouble("MAXSPEED",maxspeed);
 
         functions_.push_back(Teuchos::rcp(new MovingLevelSetCylinder( &origin, radius, &direction, distance, maxspeed)));
+      }
+      else if (function->HaveNamed("TAYLORCOUETTEFLOW"))
+      {
+        double radius_i;
+        function->ExtractDouble("RADIUS_I",radius_i);
+        double radius_o;
+        function->ExtractDouble("RADIUS_O",radius_o);
+
+        double vel_theta_i;
+        function->ExtractDouble("VEL_THETA_I",vel_theta_i);
+        double vel_theta_o;
+        function->ExtractDouble("VEL_THETA_O",vel_theta_o);
+
+        double sliplength_i;
+        function->ExtractDouble("SLIPLENGTH_I",sliplength_i);
+
+        functions_.push_back(Teuchos::rcp(new TaylorCouetteFlow( radius_i, radius_o, vel_theta_i, vel_theta_o, sliplength_i)));
       }
       else if (function->HaveNamed("CONTROLLEDROTATION"))
       {
