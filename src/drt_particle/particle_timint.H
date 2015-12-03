@@ -320,6 +320,9 @@ namespace PARTICLE
     //! Return current step number $n$
     virtual int StepOld() const { return step_; }
 
+    //! Return current step number $n+1$
+    virtual int Step() const { return stepn_; }
+
     //! Set current time and step number map
     virtual void SetTimeStep(const double time, const int step)
     {

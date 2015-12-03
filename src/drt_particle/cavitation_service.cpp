@@ -1210,6 +1210,98 @@ DRT::Element* CAVITATION::Algorithm::GetEleCoordinatesFromPosition(
 
 
 /*----------------------------------------------------------------------*
+ | compute velocity at bubble position                     ghamm 12/15  |
+ *----------------------------------------------------------------------*/
+bool CAVITATION::Algorithm::ComputeVelocityAtBubblePosition(
+  DRT::Node* currparticle,
+  LINALG::Matrix<3,1>& particleposition,
+  Epetra_SerialDenseMatrix& elemat1,
+  Epetra_SerialDenseMatrix& elemat2,
+  Epetra_SerialDenseVector& elevec1,
+  Epetra_SerialDenseVector& elevec2,
+  Epetra_SerialDenseVector& elevec3)
+{
+  // find out in which fluid element the current particle is located
+  if(currparticle->NumElement() != 1)
+    dserror("ERROR: A particle is assigned to more than one bin!");
+  DRT::Element** currele = currparticle->Elements();
+  DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+
+  static LINALG::Matrix<3,1> elecoord(false);
+  DRT::Element* targetfluidele = GetEleCoordinatesFromPosition(particleposition, currbin, elecoord, approxelecoordsinit_);
+
+  if(targetfluidele == NULL)
+  {
+    std::cout << "WARNING: velocity for bubble (id: " << currparticle->Id() << " ) could not be computed at position: "
+        << particleposition(0) << " " << particleposition(1) << " " << particleposition(2) << " on proc " << myrank_ << std::endl;
+    return false;
+  }
+
+  // get element location vector and ownerships
+  std::vector<int> lm_f;
+  std::vector<int> lmowner_f;
+  std::vector<int> lmstride;
+  targetfluidele->LocationVector(*fluiddis_,lm_f,lmowner_f,lmstride);
+
+  // set action in order to compute velocity -> state with name "veln" (and "velnp") expected inside
+  Teuchos::ParameterList params;
+  params.set<int>("action",FLD::interpolate_velocity_to_given_point);
+  params.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
+
+  // call the element specific evaluate method (elevec1 = fluid vel n, elevec2 = fluid vel np)
+  targetfluidele->Evaluate(params,*fluiddis_,lm_f,elemat1,elemat2,elevec1,elevec2,elevec3);
+
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute pressure at bubble position                     ghamm 06/15  |
+ *----------------------------------------------------------------------*/
+bool CAVITATION::Algorithm::ComputePressureAtBubblePosition(
+  DRT::Node* currparticle,
+  LINALG::Matrix<3,1>& particleposition,
+  Epetra_SerialDenseMatrix& elemat1,
+  Epetra_SerialDenseMatrix& elemat2,
+  Epetra_SerialDenseVector& elevec1,
+  Epetra_SerialDenseVector& elevec2,
+  Epetra_SerialDenseVector& elevec3)
+{
+  // find out in which fluid element the current particle is located
+  if(currparticle->NumElement() != 1)
+    dserror("ERROR: A particle is assigned to more than one bin!");
+  DRT::Element** currele = currparticle->Elements();
+  DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+
+  static LINALG::Matrix<3,1> elecoord(false);
+  DRT::Element* targetfluidele = GetEleCoordinatesFromPosition(particleposition, currbin, elecoord, approxelecoordsinit_);
+
+  if(targetfluidele == NULL)
+  {
+    std::cout << "WARNING: pressure for bubble (id: " << currparticle->Id() << " ) could not be computed at position: "
+        << particleposition(0) << " " << particleposition(1) << " " << particleposition(2) << " on proc " << myrank_ << std::endl;
+    return false;
+  }
+
+  // get element location vector and ownerships
+  std::vector<int> lm_f;
+  std::vector<int> lmowner_f;
+  std::vector<int> lmstride;
+  targetfluidele->LocationVector(*fluiddis_,lm_f,lmowner_f,lmstride);
+
+  // set action in order to compute pressure -> state with name "veln" (and "velnp") expected inside
+  Teuchos::ParameterList params;
+  params.set<int>("action",FLD::interpolate_pressure_to_given_point);
+  params.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
+
+  // call the element specific evaluate method (elevec1 = fluid press)
+  targetfluidele->Evaluate(params,*fluiddis_,lm_f,elemat1,elemat2,elevec1,elevec2,elevec3);
+
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*
  | compute nodal fluid fraction based on L2 projection      ghamm 04/14 |
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::ComputeL2ProjectedFluidFraction(

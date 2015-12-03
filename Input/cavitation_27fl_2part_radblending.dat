@@ -9,6 +9,7 @@ General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
 small cavitation example with one-way coupling and subcycling between the fields
+radius is blended during inflow process up to its final size
 using a detailed force computation
 fluid is gravity loaded and a velocity bump is applied for a short time [0,0.2]
 ----------------------------------------------------------------PROBLEM SIZE
@@ -167,16 +168,16 @@ FLUID DIS fluid NODE 12 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e
 FLUID DIS fluid NODE 12 QUANTITY pressure VALUE 3.17733026070121286e+03 TOLERANCE 1e-08
 PARTICLE DIS particle NODE 2 QUANTITY dispx VALUE 0.0e+00 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 2 QUANTITY dispy VALUE 0.0e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 2 QUANTITY dispz VALUE 8.63972657110417375e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 2 QUANTITY dispz VALUE 8.63682427698287403e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 2 QUANTITY velx VALUE 0.0e+00 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 2 QUANTITY vely VALUE 0.0e+00 TOLERANCE 1.0e-11
-PARTICLE DIS particle NODE 2 QUANTITY velz VALUE 7.61077953368336058e-01 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 6 QUANTITY dispx VALUE 4.30541908227236203e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 2 QUANTITY velz VALUE 7.69324412418810999e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 6 QUANTITY dispx VALUE 4.27982347265715768e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 6 QUANTITY dispy VALUE 4.0e-01 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 6 QUANTITY dispz VALUE -9.46816577203651644e-01 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 6 QUANTITY velx VALUE 2.84356942488453480e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 6 QUANTITY dispz VALUE -9.80767901028293587e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 6 QUANTITY velx VALUE 1.01346745409289798e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 6 QUANTITY vely VALUE 0.0e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 6 QUANTITY velz VALUE 7.56564889363104065e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 6 QUANTITY velz VALUE 6.74351580258033434e-01 TOLERANCE 1.0e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

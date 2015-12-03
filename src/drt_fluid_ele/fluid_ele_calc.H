@@ -253,6 +253,19 @@ public:
       Epetra_SerialDenseVector&            elevec1_epetra
       );
 
+  /*---------------------------------------------------------------------*
+   | Action type: interpolate_velocity_to_given_point                    |
+   | calculate velocity at given point                       ghamm 12/15 |
+   *---------------------------------------------------------------------*/
+  int InterpolateVelocityToPoint(
+      DRT::ELEMENTS::Fluid*     ele,
+      Teuchos::ParameterList&   params,
+      DRT::Discretization&      discretization,
+      std::vector<int>&         lm,
+      Epetra_SerialDenseVector& elevec1,
+      Epetra_SerialDenseVector& elevec2
+      );
+
   /*! \brief Interpolate pressure to given point
    *
    *  \author ghamm \date 06/2015

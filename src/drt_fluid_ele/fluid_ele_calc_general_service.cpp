@@ -152,7 +152,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
       return InterpolateVelocityGradientAndPressure(ele, discretization, lm, elevec1, elevec2);
     }
     break;
-    case FLD::interpolate_velocity_to_given_point:
+    case FLD::interpolate_velocity_to_given_point_immersed:
     {
       // interpolate structural velocity to given point
       return InterpolateVelocityToNode(params, ele, discretization, lm, elevec1, elevec2);
@@ -168,6 +168,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
     {
       // interpolate structural velocity to given point
       return CalcArtificialVelocityDivergence(params, ele, discretization, lm, elevec1);
+    }
+    break;
+    case FLD::interpolate_velocity_to_given_point:
+    {
+      // interpolate velocity to given point
+      return InterpolateVelocityToPoint(ele, params, discretization, lm, elevec1, elevec2);
     }
     break;
     case FLD::interpolate_pressure_to_given_point:
@@ -3714,6 +3720,78 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CorrectImmersedBoundVelocities
   return 0;
 
 } // CorrectImmersedBoundVelocities()
+
+
+/*---------------------------------------------------------------------*
+ | Action type: interpolate_velocity_to_given_point                    |
+ | calculate velocity at given point                       ghamm 12/15 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToPoint(
+    DRT::ELEMENTS::Fluid*     ele,
+    Teuchos::ParameterList&   params,
+    DRT::Discretization&      discretization,
+    std::vector<int>&         lm,
+    Epetra_SerialDenseVector& elevec1,
+    Epetra_SerialDenseVector& elevec2)
+{
+  // coordinates of the current integration point
+  LINALG::Matrix<nsd_,1> elecoords = params.get<LINALG::Matrix<nsd_,1> >("elecoords");
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  // set element id
+  eid_ = ele->Id();
+
+  if (ele->IsAle())
+  {
+    LINALG::Matrix<nsd_,nen_>       edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"disp");
+
+    // get new node positions for isale
+     xyze_ += edispnp;
+  }
+
+  // the int point considered is the point given from outside
+  EvalShapeFuncAndDerivsAtIntPoint(elecoords.A(), -1.0);
+
+  //----------------------------------------------------------------------------
+  //   Extract velocity from global vectors and compute velocity at point
+  //----------------------------------------------------------------------------
+
+  static LINALG::Matrix<nsd_,nen_> eveln;
+  if(discretization.HasState("veln"))
+  {
+    // fill the local element vector with the global values
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eveln, NULL,"veln");
+    velint_.Multiply(eveln,funct_);
+
+    for (int isd=0;isd<nsd_;isd++)
+    {
+      elevec1[isd] = velint_(isd);
+    }
+  }
+
+  static LINALG::Matrix<nsd_,nen_> evelnp;
+  if(discretization.HasState("velnp"))
+  {
+    // fill the local element vector with the global values
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnp, NULL,"velnp");
+    velint_.Multiply(evelnp,funct_);
+
+    for (int isd=0;isd<nsd_;isd++)
+    {
+      elevec2[isd] = velint_(isd);
+    }
+  }
+
+  return 0;
+}
+
 
 /*---------------------------------------------------------------------*
  | Action type: interpolate_pressure_to_given_point                    |

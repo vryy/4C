@@ -66,6 +66,7 @@ CAVITATION::Algorithm::Algorithm(
   timestepsizeratio_(params.get<int>("TIME_STEP_SIZE_RATIO")),
   inflowradiusblending_((bool)DRT::INPUT::IntegralValue<int>(params,"INFLOW_RADIUS_BLENDING")),
   blendingsteps_(0),
+  initbubblevelfromfluid_((bool)DRT::INPUT::IntegralValue<int>(params,"INIT_BUBBLEVEL_FROM_FLUID")),
   fluiddis_(Teuchos::null),
   fluid_(Teuchos::null),
   ele_volume_(Teuchos::null),
@@ -272,6 +273,9 @@ void CAVITATION::Algorithm::InitCavitation()
   particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
   particles_->Init();
 
+  if(initbubblevelfromfluid_)
+    InitBubbleVelFromFluidVel();
+
   // compute volume of each fluid element and store it
   ele_volume_ = LINALG::CreateVector(*fluiddis_->ElementRowMap(), false);
   int numfluidele = fluiddis_->NumMyRowElements();
@@ -383,7 +387,11 @@ void CAVITATION::Algorithm::InitBubblePressure()
       particleposition(d) = (*bubblepos)[posx+d];
 
     // state vector of fluid has already been set earlier ("veln")
-    ComputePressureAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
+    const bool fluidelefound = ComputePressureAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
+    if(fluidelefound == false)
+      dserror("no underlying fluid element for pressure computation was found for bubble %d at positions %f %f %f on proc %d",
+          currparticle->Id(), particleposition(0), particleposition(1), particleposition(2), myrank_);
+
     const double pambient0 = elevec1[0];
 
     // compute initial equilibrium bubble gas partial pressure
@@ -395,40 +403,49 @@ void CAVITATION::Algorithm::InitBubblePressure()
 
 
 /*----------------------------------------------------------------------*
- | compute pressure at bubble position                     ghamm 06/15  |
+ | initialize bubble velocity from fluid velocity          ghamm 12/15  |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::ComputePressureAtBubblePosition(
-  DRT::Node* currparticle,
-  LINALG::Matrix<3,1>& particleposition,
-  Epetra_SerialDenseMatrix& elemat1,
-  Epetra_SerialDenseMatrix& elemat2,
-  Epetra_SerialDenseVector& elevec1,
-  Epetra_SerialDenseVector& elevec2,
-  Epetra_SerialDenseVector& elevec3)
+void CAVITATION::Algorithm::InitBubbleVelFromFluidVel()
 {
-  // find out in which fluid element the current particle is located
-  if(currparticle->NumElement() != 1)
-    dserror("ERROR: A particle is assigned to more than one bin!");
-  DRT::Element** currele = currparticle->Elements();
-  DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+  // extract variables
+  Teuchos::RCP<const Epetra_Vector> vel = Teuchos::rcp(new Epetra_Vector(*fluid_->Veln()));
+  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispn();
+  Teuchos::RCP<Epetra_Vector> bubblevelnp = particles_->WriteAccessVelnp();
 
-  static LINALG::Matrix<3,1> elecoord(false);
-  DRT::Element* targetfluidele = GetEleCoordinatesFromPosition(particleposition, currbin, elecoord, approxelecoordsinit_);
+  // set state for velocity evaluation in fluid
+  fluiddis_->SetState("veln",vel);
 
-  // get element location vector and ownerships
-  std::vector<int> lm_f;
-  std::vector<int> lmowner_f;
-  std::vector<int> lmstride;
-  targetfluidele->LocationVector(*fluiddis_,lm_f,lmowner_f,lmstride);
+  // define element matrices and vectors
+  Epetra_SerialDenseMatrix elemat1;
+  Epetra_SerialDenseMatrix elemat2;
+  Epetra_SerialDenseVector elevec1;
+  Epetra_SerialDenseVector elevec2;
+  Epetra_SerialDenseVector elevec3;
 
-  // set action in order to compute pressure -> state with name "veln" (and "velnp") expected inside
-  Teuchos::ParameterList params;
-  params.set<int>("action",FLD::interpolate_pressure_to_given_point);
-  params.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
+  // Reshape element vector for velocity contribution
+  elevec1.Size(dim_);
 
-  // call the element specific evaluate method (elevec1 = fluid press)
-  targetfluidele->Evaluate(params,*fluiddis_,lm_f,elemat1,elemat2,elevec1,elevec2,elevec3);
+  // initialize velocity for all bubbles according to underlying fluid velocity
+  for(int i=0; i<particledis_->NodeRowMap()->NumMyElements(); ++i)
+  {
+    // bubble position is needed to get current velocity for that bubble
+    DRT::Node* currparticle = particledis_->lRowNode(i);
+    // fill particle position
+    static LINALG::Matrix<3,1> particleposition;
+    std::vector<int> lm_b = particledis_->Dof(currparticle);
+    int posx = bubblepos->Map().LID(lm_b[0]);
+    for (int d=0; d<dim_; ++d)
+      particleposition(d) = (*bubblepos)[posx+d];
 
+    // state vector of fluid has already been set earlier ("veln")
+    const bool fluidelefound = ComputeVelocityAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
+    if(fluidelefound == false)
+      dserror("no underlying fluid element for velocity computation was found for bubble %d at positions %f %f %f on proc %d",
+          currparticle->Id(), particleposition(0), particleposition(1), particleposition(2), myrank_);
+
+    for (int d=0; d<dim_; ++d)
+      (*bubblevelnp)[posx+d] = elevec1(d);
+  }
   return;
 }
 
@@ -533,10 +550,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   Teuchos::RCP<Epetra_Vector> acc = Teuchos::rcp(new Epetra_Vector(*velnp));
   acc->Update(-1.0/Dt(), *veln, 1.0/Dt());
 
-  double theta;
-  if((particles_->StepOld()+1) % timestepsizeratio_ == 0)
-    theta = 1.0;
-  else
+  double theta = 1.0;
+  if(particles_->Step() % timestepsizeratio_ != 0)
     theta = (double)((particles_->StepOld()+1) % timestepsizeratio_) / (double)timestepsizeratio_;
 
   // fluid velocity linearly interpolated between n and n+1 in case of subcycling
@@ -966,19 +981,19 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       double m_b = vol_b * rho_b;
       static LINALG::Matrix<3,1> gravityforce(false);
       gravityforce.Update(m_b, gravity_acc_);
-      std::cout << "t: " << Time() << " gravity force         : " << gravityforce << std::endl;
+      std::cout << "t: " << particles_->Time() << " gravity force       : " << gravityforce << std::endl;
 
       if(simplebubbleforce_)
       {
         static LINALG::Matrix<3,1> buoy_force(false);
         buoy_force.Update(-rho_l,gravity_acc_);
         buoy_force.Scale(vol_b);
-        std::cout << "t: " << Time() << " buoy_force          : " << buoy_force << std::endl;
+        std::cout << "t: " << particles_->Time() << " buoy_force          : " << buoy_force << std::endl;
 
         static LINALG::Matrix<3,1> inertia_force(false);
         inertia_force.Update(rho_l,Du_Dt);
         inertia_force.Scale(vol_b);
-        std::cout << "t: " << Time() << " inertia_force       : " << inertia_force << std::endl;
+        std::cout << "t: " << particles_->Time() << " inertia_force       : " << inertia_force << std::endl;
       }
       else
       {
@@ -992,11 +1007,11 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 
         static LINALG::Matrix<3,1> pressgrad_force(false);
         pressgrad_force.Update(-vol_b,grad_p);
-        std::cout << "t: " << Time() << " pressgrad force     : " << pressgrad_force << std::endl;
+        std::cout << "t: " << particles_->Time() << " pressgrad force     : " << pressgrad_force << std::endl;
 
         static LINALG::Matrix<3,1> viscous_force(false);
         viscous_force.Update(2.0*mu_l*vol_b, visc_stress);
-        std::cout << "t: " << Time() << " viscous force       : " << viscous_force << std::endl;
+        std::cout << "t: " << particles_->Time() << " viscous force       : " << viscous_force << std::endl;
       }
 
       // added mass force
@@ -1004,15 +1019,15 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       addedmassforce.Update(coeff3, Du_Dt, -coeff3/m_b, bubbleforce);
 
       // drag, lift and added mass force
-      std::cout << "t: " << Time() << " dragforce force     : " << dragforce << std::endl;
-      std::cout << "t: " << Time() << " liftforce force     : " << liftforce << std::endl;
-      std::cout << "t: " << Time() << " added mass force    : " << addedmassforce << std::endl;
+      std::cout << "t: " << particles_->Time() << " dragforce force     : " << dragforce << std::endl;
+      std::cout << "t: " << particles_->Time() << " liftforce force     : " << liftforce << std::endl;
+      std::cout << "t: " << particles_->Time() << " added mass force    : " << addedmassforce << std::endl;
 
       // sum over all bubble forces
-      std::cout << "t: " << Time() << " particle force      : " << bubbleforce << std::endl;
+      std::cout << "t: " << particles_->Time() << " particle force      : " << bubbleforce << std::endl;
 
       // fluid force
-      std::cout << "t: " << Time() << " fluid force         : " << couplingforce << std::endl;
+      std::cout << "t: " << particles_->Time() << " fluid force         : " << couplingforce << std::endl;
     }
 
   } // end iparticle
@@ -1123,7 +1138,7 @@ void CAVITATION::Algorithm::ComputeRadius()
   const MAT::PAR::CavitationFluid* actmat = static_cast<const MAT::PAR::CavitationFluid*>(mat);
 
   // initialization of required constants
-  const double rho_l = actmat->density_*WEIGHTSCALE/pow(LENGTHSCALE,3.0);
+  const double rho_l = actmat->density_*WEIGHTSCALE/pow(LENGTHSCALE,3);
   const double mu_l = actmat->viscosity_*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE);
   const double gamma = (actmat->gamma_)*WEIGHTSCALE/(TIMESCALE*TIMESCALE);
   const double pvapor = actmat->p_vapor_*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
@@ -1139,8 +1154,10 @@ void CAVITATION::Algorithm::ComputeRadius()
     for (int d=0; d<dim_; ++d)
       particleposition(d) = (*bubblepos)[posx+d];
 
-    // compute pressure at bubble position
-    ComputePressureAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
+    // compute pressure at bubble position and skip computation in case no underlying fluid element was found
+    const bool fluidelefound = ComputePressureAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
+    if(fluidelefound == false)
+      continue;
 
     const double pfluidn = elevec1[0]*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
     const double pfluidnp = elevec1[1]*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
@@ -1404,7 +1421,7 @@ double CAVITATION::Algorithm::f_R_dot(
 void CAVITATION::Algorithm::ParticleInflow()
 {
   // inflow and radius blending only once in fluid time step
-  if(particles_->StepOld() % timestepsizeratio_ != 0)
+  if(particles_->Step() % timestepsizeratio_ != 0)
     return;
 
   std::map<int, std::list<Teuchos::RCP<BubbleSource> > >::const_iterator biniter;
@@ -1463,7 +1480,7 @@ void CAVITATION::Algorithm::ParticleInflow()
           (*radiusn)[bubblelid] *= blendingfac;
         }
         // adapt radius dependent quantities
-        const double mass = density * 4.0/3.0 * M_PI * pow((*particles_->WriteAccessRadius())[bubblelid], 3.0);
+        const double mass = density * 4.0/3.0 * M_PI * pow((*particles_->WriteAccessRadius())[bubblelid], 3);
         (*massn)[bubblelid] = mass;
         if(inertian != Teuchos::null)
           (*inertian)[bubblelid] = 0.4 * mass * (*particles_->WriteAccessRadius())[bubblelid] * (*particles_->WriteAccessRadius())[bubblelid];
@@ -1502,7 +1519,7 @@ void CAVITATION::Algorithm::ParticleInflow()
       // add a random offset to initial inflow position
       if(amplitude)
       {
-        for(int d=0; d<3; ++d)
+        for(int d=0; d<dim_; ++d)
         {
           const double randomwert = DRT::Problem::Instance()->Random()->Uni();
           inflow_position[d] += randomwert * amplitude * (*particleiter)->inflow_radius_;
@@ -1545,7 +1562,7 @@ void CAVITATION::Algorithm::ParticleInflow()
   }
 
   std::cout << "Inflow of " << inflowcounter << " bubbles on proc " << myrank_
-      << " using " << ss.str() << " blending steps" << std::endl;
+      << " at time " << particles_->Time() << " using " << ss.str() << " blending steps" << std::endl;
 
   // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
   particledis_->FillComplete(true, false, true);
@@ -1579,6 +1596,23 @@ void CAVITATION::Algorithm::ParticleInflow()
   const double density = particles_->ParticleDensity();
 
   const double invblendingsteps = 1.0 / (double)blendingsteps_;
+
+  // if bubbles should start with velocity equal to underlying fluid velocity
+  // define element matrices and vectors
+  Epetra_SerialDenseMatrix elemat1;
+  Epetra_SerialDenseMatrix elemat2;
+  Epetra_SerialDenseVector elevec1;
+  Epetra_SerialDenseVector elevec2;
+  Epetra_SerialDenseVector elevec3;
+  if(initbubblevelfromfluid_)
+  {
+    // set state for velocity evaluation in fluid
+    fluiddis_->SetState("velnp",fluid_->Velnp());
+
+    // Reshape element vector for velocity contribution
+    elevec2.Size(dim_);
+  }
+
   for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
   {
     std::list<Teuchos::RCP<BubbleSource> >::const_iterator particleiter;
@@ -1589,31 +1623,52 @@ void CAVITATION::Algorithm::ParticleInflow()
       if(Time() < timedelay)
         continue;
 
-      std::vector<double> inflow_position = (*particleiter)->inflow_position_;
-      std::vector<double> inflow_vel = (*particleiter)->inflow_vel_;
-      int inflow_vel_curve = (*particleiter)->inflow_vel_curve_;
-      double inflow_radius = (*particleiter)->inflow_radius_;
       int newbubbleid = maxbubbleid + (*particleiter)->inflowid_;
+      DRT::Node* currparticle = particledis_->gNode(newbubbleid);
+      // get the first dof of a particle and convert it into a LID
+      int lid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
+      for(int d=0; d<dim_; ++d)
+        (*disn)[lid+d] = currparticle->X()[d];
 
+      // either choose bubble velocity from underlying fluid or from input file
+      if(initbubblevelfromfluid_)
+      {
+        // bubble position is needed to get current velocity for that bubble
+        static LINALG::Matrix<3,1> particleposition;
+        for (int d=0; d<dim_; ++d)
+          particleposition(d) = currparticle->X()[d];
+
+        // state vector of fluid has already been set earlier ("velnp")
+        const bool fluidelefound = ComputeVelocityAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
+        if(fluidelefound == false)
+          dserror("no underlying fluid element for velocity computation was found for bubble %d at positions %f %f %f on proc %d",
+              currparticle->Id(), particleposition(0), particleposition(1), particleposition(2), myrank_);
+
+        for (int d=0; d<dim_; ++d)
+          (*veln)[lid+d] = elevec2(d);
+      }
+      else
+      {
+        std::vector<double> inflow_vel = (*particleiter)->inflow_vel_;
+        const int inflow_vel_curve = (*particleiter)->inflow_vel_curve_;
+
+        double curvefac = 1.0;
+        // curves are numbered starting with 1 in the input file
+        if(inflow_vel_curve > 0)
+          curvefac = DRT::Problem::Instance()->Curve(inflow_vel_curve-1).f(Time());
+
+        for(int d=0; d<dim_; ++d)
+          (*veln)[lid+d] = inflow_vel[d] * curvefac;
+      }
+
+      // get node lid
+      lid = noderowmap->LID(newbubbleid);
+
+      double inflow_radius = (*particleiter)->inflow_radius_;
       // start with a small radius that is blended to the actual value
       inflow_radius *= invblendingsteps;
-
-      double curvefac = 1.0;
-      // curves are numbered starting with 1 in the input file
-      if(inflow_vel_curve > 0)
-        curvefac = DRT::Problem::Instance()->Curve(inflow_vel_curve-1).f(Time());
-
-      DRT::Node* currparticle = particledis_->gNode(newbubbleid);
-      // get the first gid of a particle and convert it into a LID
-      int lid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
-      for(int dim=0; dim<dim_; ++dim)
-      {
-        (*disn)[lid+dim] = inflow_position[dim];
-        (*veln)[lid+dim] = inflow_vel[dim] * curvefac;
-      }
-      lid = noderowmap->LID(newbubbleid);
       (*radiusn)[lid] = inflow_radius;
-      const double mass = density * 4.0/3.0 * M_PI * pow(inflow_radius, 3.0);
+      const double mass = density * 4.0/3.0 * M_PI * pow(inflow_radius, 3);
       (*massn)[lid] = mass;
       if(inertian != Teuchos::null)
         (*inertian)[lid] = 0.4 * mass * inflow_radius * inflow_radius;
@@ -1641,7 +1696,7 @@ void CAVITATION::Algorithm::Update()
   // here is the transition from n+1 -> n
   PARTICLE::Algorithm::Update();
 
-  if((particles_->StepOld()-1) % timestepsizeratio_ == 0)
+  if(particles_->StepOld() % timestepsizeratio_ == 0)
   {
     fluid_->Update();
 
@@ -1895,10 +1950,10 @@ void CAVITATION::Algorithm::Output()
   // do we have a restart step?
   const int uprestart = DRT::Problem::Instance()->CavitationParams().get<int>("RESTARTEVRY");
 
-  if((particles_->StepOld()-1) % timestepsizeratio_ == 0)
+  if(particles_->StepOld() % timestepsizeratio_ == 0)
   {
     // call fluid output and add restart data for fluid fraction if necessary
-    fluid_->Output();
+    fluid_->StatisticsAndOutput();
     if( Step()%uprestart == 0 && uprestart != 0 )
       fluid_->DiscWriter()->WriteVector("fluid_fraction", fluidfracn_, IO::DiscretizationWriter::dofvector);
   }
@@ -2028,7 +2083,7 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
 
     // check for initial overlap of particles
     double inflow_vel_mag = sqrt((*inflow_vel)[0]*(*inflow_vel)[0] + (*inflow_vel)[1]*(*inflow_vel)[1] + (*inflow_vel)[2]*(*inflow_vel)[2]);
-    if(initial_radius/inflow_vel_mag > inflowtime)
+    if(initbubblevelfromfluid_ == false && initial_radius/inflow_vel_mag > inflowtime)
     {
       if(detectoverlap)
         dserror("Overlap for inflowing bubbles expected: initial_radius/inflow_vel_mag = %f s > inflow_freq = %f s", initial_radius/inflow_vel_mag, inflowtime);

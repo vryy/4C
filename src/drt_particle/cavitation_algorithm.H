@@ -96,8 +96,22 @@ namespace CAVITATION
     /// initialize bubble pressure
     virtual void InitBubblePressure();
 
+   // initialize bubble velocity from fluid velocity
+   virtual void InitBubbleVelFromFluidVel();
+
    /// compute pressure at bubble position
-   virtual void ComputePressureAtBubblePosition(
+   virtual bool ComputePressureAtBubblePosition(
+     DRT::Node* currparticle,
+     LINALG::Matrix<3,1>& particleposition,
+     Epetra_SerialDenseMatrix& elemat1,
+     Epetra_SerialDenseMatrix& elemat2,
+     Epetra_SerialDenseVector& elevec1,
+     Epetra_SerialDenseVector& elevec2,
+     Epetra_SerialDenseVector& elevec3
+     );
+
+    //compute velocity at bubble position
+   virtual bool ComputeVelocityAtBubblePosition(
      DRT::Node* currparticle,
      LINALG::Matrix<3,1>& particleposition,
      Epetra_SerialDenseMatrix& elemat1,
@@ -333,6 +347,8 @@ namespace CAVITATION
     bool inflowradiusblending_;   ///< bool whether radius of inflow particles is blended over several time steps
 
     int blendingsteps_;   ///< number of steps that is used to blend bubble radius from initially small to final size
+
+    bool initbubblevelfromfluid_;   ///< bool whether initial bubble velocity is computed from the underlying fluid element
 
     //@}
 

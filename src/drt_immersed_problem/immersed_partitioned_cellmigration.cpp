@@ -369,7 +369,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
             &fluid_vol_strategy,
             curr_subset_of_backgrounddis_,
             cell_SearchTree_, currpositions_cell_,
-            (int)FLD::interpolate_velocity_to_given_point,
+            (int)FLD::interpolate_velocity_to_given_point_immersed,
             false);
 
       /////////////////////////////////////////////////////////////////////////////////////
