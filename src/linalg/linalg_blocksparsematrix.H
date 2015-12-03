@@ -63,7 +63,7 @@ class BlockSparseMatrixBase : public SparseOperator
   virtual void SetupPreconditioner() {}
 
   /// Merge block matrix into a SparseMatrix
-  Teuchos::RCP<SparseMatrix> Merge() const;
+  Teuchos::RCP<SparseMatrix> Merge(bool explicitdirichlet = true) const;
 
   /** \name Block matrix access */
   //@{

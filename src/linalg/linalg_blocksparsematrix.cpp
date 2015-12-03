@@ -45,15 +45,15 @@ LINALG::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtractor& do
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> LINALG::BlockSparseMatrixBase::Merge() const
+Teuchos::RCP<LINALG::SparseMatrix> LINALG::BlockSparseMatrixBase::Merge(bool explicitdirichlet) const
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::BlockSparseMatrixBase::Merge");
 
   const SparseMatrix& m00 = Matrix(0,0);
   Teuchos::RCP<SparseMatrix> sparse = Teuchos::rcp(new SparseMatrix(*fullrowmap_,
                                                                     m00.MaxNumEntries(),
-                                                                    m00.ExplicitDirichlet(),
-                                                                    m00.SaveGraph()));
+                                                                    explicitdirichlet)
+                                                                   );
   for (unsigned i=0; i<blocks_.size(); ++i)
   {
     sparse->Add(blocks_[i],false,1.0,1.0);
