@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file ad_fld_lung.cpp
+
+<pre>
+Maintainer: Lena Yoshihara
+            yoshihara@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15303
+</pre>
+
+*----------------------------------------------------------------------*/
+
 #include "ad_fld_lung.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -314,7 +326,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
 
   // transposed "ale" constraint matrix -> linearization of constraint equation
   for (int i=0; i<Interface()->NumMaps(); ++i)
-    ConstrAleMatrix->Matrix(0,i).Add(AleConstrMatrix->Matrix(i,0), true, 1.0, 0.0);
+    ConstrAleMatrix->Matrix(0,i) = *AleConstrMatrix->Matrix(i,0).Transpose();
   ConstrAleMatrix->Complete();
 
   // Note: there is no contribution of the FSI boundary to the overall
@@ -333,7 +345,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
   FluidConstrMatrix->ApplyDirichlet(*outflowfsimap, false);
 
   // transposed fluid constraint matrix -> linearization of constraint equation
-  ConstrFluidMatrix->Add(*FluidConstrMatrix, true, 1.0, 0.0);
+  *ConstrFluidMatrix = *FluidConstrMatrix->Transpose();
   ConstrFluidMatrix->Complete(fluidmap, constrmap);
   FluidConstrMatrix->Scale(invresscale);
   ConstrFluidMatrix->Scale(dttheta);

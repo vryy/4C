@@ -1,5 +1,14 @@
+/*!----------------------------------------------------------------------
+\file fsi_matrixtransform.cpp
 
+<pre>
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
 
+*----------------------------------------------------------------------*/
 
 #include <vector>
 #include <iterator>
@@ -7,296 +16,258 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_exporter.H"
-#include "../linalg/linalg_blocksparsematrix.H"
+#include "../linalg/linalg_utils.H"
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-static void
-InsertValues(Teuchos::RCP<Epetra_CrsMatrix> edst,
-             const Epetra_Map& dstrowmap,
-             const Epetra_Map& dstmap,
-             int row,
-             int NumEntries,
-             const double *Values,
-             int *Indices)
-{
-  if (not edst->Filled())
-  {
-    // put row into matrix
-    int err = edst->InsertGlobalValues(dstmap.GID(row), NumEntries, const_cast<double*>(Values), Indices);
-    if (err<0)
-      dserror("InsertGlobalValues error: %d", err);
-  }
-  else
-  {
-    const Epetra_Map& dstcolmap = edst->ColMap();
-    for (int j=0; j<NumEntries; ++j)
-    {
-      Indices[j] = dstcolmap.LID(Indices[j]);
-    }
-
-    int lid = dstrowmap.LID(dstmap.GID(row));
-    int err = edst->ReplaceMyValues(lid, NumEntries, const_cast<double*>(Values), Indices);
-    if (err)
-      dserror("ReplaceMyValues error: %d", err);
-  }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-static void
-AddValues(Teuchos::RCP<Epetra_CrsMatrix> edst,
-          const Epetra_Map& dstrowmap,
-          const Epetra_Map& dstmap,
-          int row,
-          int NumEntries,
-          const double *Values,
-          int *Indices)
-{
-  if (not edst->Filled())
-  {
-    row = dstmap.GID(row);
-
-    // put row into matrix
-    //
-    // We might want to preserve a Dirichlet row in our destination matrix
-    // here as well. Skip for now.
-
-    if (edst->NumAllocatedGlobalEntries(row) == 0)
-    {
-      int err = edst->InsertGlobalValues(row, NumEntries, const_cast<double*>(&Values[0]), &Indices[0]);
-      if (err<0)
-        dserror("InsertGlobalValues error: %d", err);
-    }
-    else
-      for (int j=0; j<NumEntries; ++j)
-      {
-        // add all values, including zeros, as we need a proper matrix graph
-        int err = edst->SumIntoGlobalValues(row, 1, const_cast<double*>(&Values[j]), &Indices[j]);
-        if (err>0)
-        {
-          err = edst->InsertGlobalValues(row, 1, const_cast<double*>(&Values[j]), &Indices[j]);
-          if (err<0)
-            dserror("InsertGlobalValues error: %d", err);
-        }
-        else if (err<0)
-          dserror("SumIntoGlobalValues error: %d", err);
-      }
-  }
-  else
-  {
-    const Epetra_Map& dstcolmap = edst->ColMap();
-    for (int j=0; j<NumEntries; ++j)
-    {
-      int gid = Indices[j];
-      int lid = dstcolmap.LID(gid);
-      if ( lid < 0 )
-      {
-        dserror("illegal local id: lid=%d, gid=%d",lid,gid);
-      }
-      Indices[j] = lid;
-    }
-
-    // We have to care for Dirichlet conditions in the filled destination
-    // matrix. If there is just the diagonal entry we assume the row to be
-    // Dirichlet and force the source matrix to have a Dirichlet row as
-    // well. If this is not desired another flag would be needed.
-
-    int lid = dstrowmap.LID(dstmap.GID(row));
-
-    int myNumEntries;
-    double *myValues;
-    int *myIndices;
-    int err = edst->ExtractMyRowView(lid, myNumEntries, myValues, myIndices);
-    if (err)
-      dserror("ExtractMyRowView error: %d on row lid=%d.\nI'm totally lost here.",err,lid);
-
-    if (myNumEntries>=NumEntries)
-    {
-      // The normal case. This has to match.
-
-      err = edst->SumIntoMyValues(lid, NumEntries, const_cast<double*>(Values), Indices);
-      if (err)
-      {
-        const Epetra_Comm& comm = dstrowmap.Comm();
-        for (int i=0; i<comm.NumProc(); ++i)
-        {
-          if (i==comm.MyPID())
-          {
-            std::cout << "PROC " << i << ":\n";
-            std::cout << "actual line: ";
-            std::copy(myIndices, myIndices+myNumEntries, std::ostream_iterator<int>(std::cout, " "));
-            std::cout << "\ngiven  line: ";
-            std::copy(Indices, Indices+NumEntries, std::ostream_iterator<int>(std::cout, " "));
-            std::cout << "\n";
-          }
-          comm.Barrier();
-        }
-
-        dserror("SumIntoMyValues error: %d on row lid=%d.\nMaybe unfill of matrix block is needed.", err, lid);
-      }
-    }
-    else if (myNumEntries==1)
-    {
-      // we have a dirichlet line in our destination matrix
-      if (myIndices[0]!=lid)
-        dserror("Single entry row without diagonal value. Confused.");
-      for (int j=0; j<NumEntries; ++j)
-      {
-        if (Indices[j]==lid)
-        {
-          err = edst->SumIntoMyValues(lid, 1, const_cast<double*>(&Values[j]), &Indices[j]);
-          if (err)
-            dserror("SumIntoMyValues error: %d on row lid=%d.\nThis is not supposed to happen.", err, lid);
-        }
-        else
-        {
-          if (Values[j]!=0.0)
-          {
-            dserror("Attempt to add a non-Dirichlet row to a filled Dirichlet row.\n"
-                    "Did you specify all required boundary conditions?");
-          }
-        }
-      }
-    }
-    else
-    {
-      dserror("Filled destination matrix row shorter than src row: %d, %d. Panic.", myNumEntries, NumEntries);
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix>
-FSI::UTILS::MatrixRowTransform::Redistribute(const LINALG::SparseMatrix& src,
-                                             const Epetra_Map& permsrcmap)
-{
-  if (exporter_==Teuchos::null)
-  {
-    exporter_ = Teuchos::rcp(new Epetra_Export(permsrcmap, src.RowMap()));
-  }
-
-  Teuchos::RCP<Epetra_CrsMatrix> permsrc = Teuchos::rcp(new Epetra_CrsMatrix(Copy,permsrcmap,src.MaxNumEntries()));
-  int err = permsrc->Import(*src.EpetraMatrix(),*exporter_,Insert);
-  if (err)
-    dserror("Import failed with err=%d",err);
-
-  permsrc->FillComplete(src.DomainMap(),permsrcmap);
-  return permsrc;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void
-FSI::UTILS::MatrixRowTransform::MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc,
-                                             const Epetra_Map& dstmap,
-                                             Teuchos::RCP<Epetra_CrsMatrix> edst,
-                                             bool addmatrix)
-{
-  if (not esrc->Filled())
-    dserror("filled source matrix expected");
-
-  Epetra_Map dstrowmap = edst->RowMap();
-  Epetra_Map srccolmap = esrc->ColMap();
-
-  int rows = esrc->NumMyRows();
-  for (int i=0; i<rows; ++i)
-  {
-    int NumEntries;
-    double *Values;
-    int *Indices;
-    int err = esrc->ExtractMyRowView(i, NumEntries, Values, Indices);
-    if (err!=0)
-      dserror("ExtractMyRowView error: %d", err);
-
-    // pull indices back to global
-    std::vector<int> idx(NumEntries);
-    for (int j=0; j<NumEntries; ++j)
-    {
-      idx[j] = srccolmap.GID(Indices[j]);
-    }
-
-    if (addmatrix)
-      AddValues(edst,dstrowmap,dstmap,i,NumEntries,Values,&idx[0]);
-    else
-      InsertValues(edst,dstrowmap,dstmap,i,NumEntries,Values,&idx[0]);
-  }
-}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool
-FSI::UTILS::MatrixRowTransform::operator()(const LINALG::SparseMatrix& src,
-                                           double scale,
-                                           const ADAPTER::CouplingConverter& converter,
-                                           LINALG::SparseMatrix& dst,
-                                           bool addmatrix)
+FSI::UTILS::MatrixLogicalSplitAndTransform::operator()(const LINALG::SparseMatrix& src,
+                                                       const Epetra_Map& logical_range_map,
+                                                       const Epetra_Map& logical_domain_map,
+                                                       double scale,
+                                                       const ADAPTER::CouplingConverter* row_converter,
+                                                       const ADAPTER::CouplingConverter* col_converter,
+                                                       LINALG::SparseMatrix& dst,
+                                                       bool exactmatch,
+                                                       bool addmatrix)
 {
-  const Epetra_Map& permsrcmap = *converter.PermSrcMap();
-  const Epetra_Map& dstmap     = *converter.DstMap();
+  Teuchos::RCP<Epetra_CrsMatrix> esrc = src.EpetraMatrix();
+  const Epetra_Map *final_range_map = &logical_range_map;
+  const Epetra_Map *matching_dst_rows = &logical_range_map;
 
-  Teuchos::RCP<Epetra_CrsMatrix> permsrc = Redistribute(src,permsrcmap);
-  permsrc->Scale(scale);
+  if (row_converter)
+  {
+    const Epetra_Map& permsrcmap = *row_converter->PermSrcMap();
 
-  if (not addmatrix)
+    // check if the permuted map is simply a subset of the current rowmap (no communication)
+    int subset = 1;
+    for (int i=0; i<permsrcmap.NumMyElements(); ++i)
+      if (!src.RowMap().MyGID(permsrcmap.GID(i)))
+      {
+        subset = 0;
+        break;
+      }
+
+    int gsubset = 0;
+    logical_range_map.Comm().MinAll(&subset, &gsubset, 1);
+
+    // need communication -> call import on permuted map
+    if (!gsubset)
+    {
+      if (exporter_==Teuchos::null)
+      {
+        exporter_ = Teuchos::rcp(new Epetra_Export(permsrcmap, src.RowMap()));
+      }
+
+      Teuchos::RCP<Epetra_CrsMatrix> permsrc = Teuchos::rcp(new Epetra_CrsMatrix(Copy,permsrcmap,0));
+      int err = permsrc->Import(*src.EpetraMatrix(),*exporter_,Insert);
+      if (err)
+        dserror("Import failed with err=%d",err);
+
+      permsrc->FillComplete(src.DomainMap(),permsrcmap);
+      esrc = permsrc;
+    }
+
+    final_range_map = &permsrcmap;
+    matching_dst_rows = row_converter->DstMap().get();
+  }
+
+  SetupGidMap(col_converter ? *col_converter->SrcMap() : esrc->RowMap(), esrc->ColMap(),
+              col_converter, src.Comm());
+
+  if (!addmatrix)
     dst.Zero();
 
-  Teuchos::RCP<Epetra_CrsMatrix> edst = dst.EpetraMatrix();
-  MatrixInsert(permsrc,dstmap,edst,addmatrix);
+  InternalAdd(esrc, *final_range_map, col_converter ? *col_converter->SrcMap() : logical_domain_map,
+              *matching_dst_rows, dst.EpetraMatrix(), exactmatch, scale);
 
   return true;
 }
 
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void
-FSI::UTILS::MatrixColTransform::SetupGidMap(const Epetra_Map& rowmap,
-                                            const Epetra_Map& colmap,
-                                            const ADAPTER::CouplingConverter& converter,
-                                            const Epetra_Comm& comm)
+FSI::UTILS::MatrixLogicalSplitAndTransform::SetupGidMap(const Epetra_Map& rowmap,
+                                                        const Epetra_Map& colmap,
+                                                        const ADAPTER::CouplingConverter* converter,
+                                                        const Epetra_Comm& comm)
 {
   if (not havegidmap_)
   {
-    DRT::Exporter ex(rowmap,colmap,comm);
-    converter.FillSrcToDstMap(gidmap_);
-    ex.Export(gidmap_);
+    if (converter != NULL)
+    {
+      DRT::Exporter ex(rowmap,colmap,comm);
+      converter->FillSrcToDstMap(gidmap_);
+      ex.Export(gidmap_);
+    }
+    else
+      for (int i = 0; i<colmap.NumMyElements(); ++i)
+        gidmap_[colmap.GID(i)] = colmap.GID(i);
     havegidmap_ = true;
   }
 }
 
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void
-FSI::UTILS::MatrixColTransform::MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc,
-                                             const Epetra_Map& dstmap,
-                                             Teuchos::RCP<Epetra_CrsMatrix> edst,
-                                             bool exactmatch,
-                                             bool addmatrix,
-                                             double scale)
+FSI::UTILS::MatrixLogicalSplitAndTransform::InternalAdd(Teuchos::RCP<Epetra_CrsMatrix> esrc,
+                                                        const Epetra_Map& logical_range_map,
+                                                        const Epetra_Map& logical_domain_map,
+                                                        const Epetra_Map& matching_dst_rows,
+                                                        Teuchos::RCP<Epetra_CrsMatrix> edst,
+                                                        bool exactmatch,
+                                                        double scale)
 {
   if (not esrc->Filled())
     dserror("filled source matrix expected");
 
+  Epetra_Vector dselector(esrc->DomainMap());
+  for (int i=0; i<dselector.MyLength(); ++i)
+  {
+    const int gid = esrc->DomainMap().GID(i);
+    if (logical_domain_map.MyGID(gid))
+      dselector[i] = 1.;
+    else
+      dselector[i] = 0.;
+  }
+  Epetra_Vector selector(esrc->ColMap());
+  LINALG::Export(dselector, selector);
+
+  if (edst->Filled())
+    AddIntoFilled(esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows, edst,
+                  exactmatch, scale);
+  else
+    AddIntoUnfilled(esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows, edst,
+                    exactmatch, scale);
+}
+
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void
+FSI::UTILS::MatrixLogicalSplitAndTransform::AddIntoFilled(Teuchos::RCP<Epetra_CrsMatrix> esrc,
+                                                          const Epetra_Map& logical_range_map,
+                                                          const Epetra_Map& logical_domain_map,
+                                                          const Epetra_Vector& selector,
+                                                          const Epetra_Map& matching_dst_rows,
+                                                          Teuchos::RCP<Epetra_CrsMatrix> edst,
+                                                          bool exactmatch,
+                                                          double scale)
+{
+  const Epetra_Map& srccolmap = esrc->ColMap();
   const Epetra_Map& dstrowmap = edst->RowMap();
+
+  // If the destination matrix is filled, we can add in local indices. This code is similar
+  // to what is done in LINALG::Add(SparseMatrix, SparseMatrix) for the filled case.
+  // We perform four steps:
+  // 1. Identify the local column index mapping from the source to the destination matrix from
+  //    on the global IDs
+  // 2. Loop over the input matrix rows, extract row view in two matrices
+  // 3. Match columns of row i in source matrix (called A) to the columns in the destination
+  //    matrix (called B)
+  // 4. Perform addition
+  if (lidvector_.size() != srccolmap.NumMyElements())
+  {
+    lidvector_.clear();
+    lidvector_.resize(srccolmap.NumMyElements(), -1);
+    for (std::map<int,int>::const_iterator iter=gidmap_.begin(); iter!=gidmap_.end(); ++iter)
+    {
+      const int lid = srccolmap.LID(iter->first);
+      if (lid != -1)
+        lidvector_[lid] = edst->ColMap().LID(iter->second);
+    }
+  }
+
+  int rows = logical_range_map.NumMyElements();
+  for (int i=0; i<rows; ++i)
+  {
+    int NumEntriesA, NumEntriesB;
+    double *ValuesA, *ValuesB;
+    int *IndicesA, *IndicesB;
+    const int rowA = esrc->RowMap().LID(logical_range_map.GID(i));
+    if (rowA == -1)
+      dserror("Internal error");
+    int err = esrc->ExtractMyRowView(rowA, NumEntriesA, ValuesA, IndicesA);
+    if (err!=0)
+      dserror("ExtractMyRowView error: %d", err);
+
+    // identify the local row index in the destination matrix corresponding to i
+    const int rowB = dstrowmap.LID(matching_dst_rows.GID(i));
+    err = edst->ExtractMyRowView(rowB, NumEntriesB, ValuesB, IndicesB);
+    if (err!=0)
+      dserror("ExtractMyRowView error: %d", err);
+
+    // loop through the columns in source matrix and find respective place in destination
+    for (int jA=0, jB=0; jA<NumEntriesA; ++jA)
+    {
+      // skip entries belonging to a different block of the logical block matrix
+      if (selector[IndicesA[jA]] == 0.)
+        continue;
+
+      const int col = lidvector_[IndicesA[jA]];
+      if (col == -1)
+      {
+        if (exactmatch)
+          dserror("gid %d not found in map for lid %d at %d",
+                  srccolmap.GID(IndicesA[jA]), IndicesA[jA], jA);
+        else
+          continue;
+      }
+
+      // try linear search in B
+      while (jB < NumEntriesB && IndicesB[jB] < col)
+        ++jB;
+
+      // did not find index in linear search (re-indexing from A.ColMap() to B.ColMap()
+      // might pass through the indices differently), try binary search
+      if (jB == NumEntriesB || IndicesB[jB] != col)
+        jB = std::lower_bound(&IndicesB[0], &IndicesB[0]+NumEntriesB, col) - &IndicesB[0];
+
+      // not found, sparsity pattern of B does not contain the index from A -> terminate
+      if (jB == NumEntriesB || IndicesB[jB] != col)
+      {
+        dserror("Attempted to add column with unknown global index %d to row %d",
+                srccolmap.GID(IndicesA[jA]), esrc->RowMap().GID(i));
+      }
+
+      ValuesB[jB] += ValuesA[jA] * scale;
+    }
+  }
+}
+
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void
+FSI::UTILS::MatrixLogicalSplitAndTransform::AddIntoUnfilled(Teuchos::RCP<Epetra_CrsMatrix> esrc,
+                                                            const Epetra_Map& logical_range_map,
+                                                            const Epetra_Map& logical_domain_map,
+                                                            const Epetra_Vector& selector,
+                                                            const Epetra_Map& matching_dst_rows,
+                                                            Teuchos::RCP<Epetra_CrsMatrix> edst,
+                                                            bool exactmatch,
+                                                            double scale)
+{
   const Epetra_Map& srccolmap = esrc->ColMap();
 
+  // standard code for the unfilled case
   std::vector<int> idx;
   std::vector<double> vals;
-  int rows = esrc->NumMyRows();
+  int rows = logical_range_map.NumMyElements();
   for (int i=0; i<rows; ++i)
   {
     int NumEntries;
     double *Values;
     int *Indices;
-    int err = esrc->ExtractMyRowView(i, NumEntries, Values, Indices);
+    int err = esrc->ExtractMyRowView(esrc->RowMap().LID(logical_range_map.GID(i)), NumEntries, Values, Indices);
     if (err!=0)
       dserror("ExtractMyRowView error: %d", err);
 
@@ -305,6 +276,10 @@ FSI::UTILS::MatrixColTransform::MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc
 
     for (int j=0; j<NumEntries; ++j)
     {
+      // skip entries belonging to a different block of the logical block matrix
+      if (selector[Indices[j]] == 0.)
+        continue;
+
       int gid = srccolmap.GID(Indices[j]);
       std::map<int,int>::const_iterator iter = gidmap_.find(gid);
       if (iter!=gidmap_.end())
@@ -320,70 +295,74 @@ FSI::UTILS::MatrixColTransform::MatrixInsert(Teuchos::RCP<Epetra_CrsMatrix> esrc
       }
     }
 
-    Values = &vals[0];
     NumEntries = vals.size();
+    const int globalRow = matching_dst_rows.GID(i);
 
-    if (addmatrix)
-      AddValues(edst,dstrowmap,dstmap,i,NumEntries,Values,&idx[0]);
+    // put row into matrix
+    //
+    // We might want to preserve a Dirichlet row in our destination matrix
+    // here as well. Skip for now.
+
+    if (edst->NumAllocatedGlobalEntries(globalRow) == 0)
+    {
+      int err = edst->InsertGlobalValues(globalRow, NumEntries, &vals[0], &idx[0]);
+      if (err<0)
+        dserror("InsertGlobalValues error: %d", err);
+    }
     else
-      InsertValues(edst,dstrowmap,dstmap,i,NumEntries,Values,&idx[0]);
+      for (int j=0; j<NumEntries; ++j)
+      {
+        // add all values, including zeros, as we need a proper matrix graph
+        int err = edst->SumIntoGlobalValues(globalRow, 1, &vals[j], &idx[j]);
+        if (err>0)
+        {
+          err = edst->InsertGlobalValues(globalRow, 1, &vals[j], &idx[j]);
+          if (err<0)
+            dserror("InsertGlobalValues error: %d", err);
+        }
+        else if (err<0)
+          dserror("SumIntoGlobalValues error: %d", err);
+      }
   }
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool
-FSI::UTILS::MatrixColTransform::operator()(const Epetra_Map& rowmap,
-                                           const Epetra_Map& colmap,
-                                           const LINALG::SparseMatrix& src,
-                                           double scale,
-                                           const ADAPTER::CouplingConverter& converter,
-                                           LINALG::SparseMatrix& dst,
-                                           bool exactmatch,
-                                           bool addmatrix)
+
+bool FSI::UTILS::MatrixRowTransform::operator () (const LINALG::SparseMatrix& src,
+                                                  double scale,
+                                                  const ::ADAPTER::CouplingConverter& converter,
+                                                  LINALG::SparseMatrix& dst,
+                                                  bool addmatrix)
 {
-  SetupGidMap(rowmap,colmap,converter,src.Comm());
-
-  if (not addmatrix)
-    dst.Zero();
-
-  Teuchos::RCP<Epetra_CrsMatrix> esrc = src.EpetraMatrix();
-  Teuchos::RCP<Epetra_CrsMatrix> edst = dst.EpetraMatrix();
-
-  MatrixInsert(esrc,esrc->RowMap(),edst,exactmatch,addmatrix,scale);
-
-  return true;
+  return transformer(src, src.RangeMap(), src.DomainMap(), scale, &converter,
+                     NULL, dst, false, addmatrix);
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool
-FSI::UTILS::MatrixRowColTransform::operator()(const LINALG::SparseMatrix& src,
-                                              double scale,
-                                              const ADAPTER::CouplingConverter& rowconverter,
-                                              const ADAPTER::CouplingConverter& colconverter,
-                                              LINALG::SparseMatrix& dst,
-                                              bool exactmatch,
-                                              bool addmatrix)
+
+bool FSI::UTILS::MatrixColTransform::operator () (const Epetra_Map& ,
+                                                  const Epetra_Map& ,
+                                                  const LINALG::SparseMatrix& src,
+                                                  double scale,
+                                                  const ::ADAPTER::CouplingConverter& converter,
+                                                  LINALG::SparseMatrix& dst,
+                                                  bool exactmatch,
+                                                  bool addmatrix)
 {
-  const Epetra_Map& permsrcmap = *rowconverter.PermSrcMap();
-  const Epetra_Map& dstmap     = *rowconverter.DstMap();
-
-  Teuchos::RCP<Epetra_CrsMatrix> permsrc = rowtrans_.Redistribute(src,permsrcmap);
-  if (scale!=1.)
-    permsrc->Scale(scale);
-
-  if (not addmatrix)
-    dst.Zero();
-
-  Teuchos::RCP<Epetra_CrsMatrix> edst = dst.EpetraMatrix();
-
-  coltrans_.SetupGidMap(*colconverter.SrcMap(),permsrc->ColMap(),colconverter,src.Comm());
-  coltrans_.MatrixInsert(permsrc,dstmap,edst,exactmatch,addmatrix,1.0);
-
-  return true;
+  return transformer(src, src.RangeMap(), src.DomainMap(), scale, NULL,
+                     &converter, dst, exactmatch, addmatrix);
 }
 
 
+
+bool FSI::UTILS::MatrixRowColTransform::operator () (const LINALG::SparseMatrix& src,
+                                                     double scale,
+                                                     const ::ADAPTER::CouplingConverter& rowconverter,
+                                                     const ::ADAPTER::CouplingConverter& colconverter,
+                                                     LINALG::SparseMatrix& dst,
+                                                     bool exactmatch,
+                                                     bool addmatrix)
+{
+  return transformer(src, src.RangeMap(), src.DomainMap(), scale, &rowconverter,
+                     &colconverter, dst, exactmatch, addmatrix);
+}
