@@ -478,10 +478,6 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
     k_sf=volcoupl_->ApplyMatrixMapping12(k_sf);
   }
 
-  // Uncomplete mechanical-fluid matrix to be able to deal with slightly
-  // defective interface meshes.
-
-
   /*----------------------------------------------------------------------*/
   // pure fluid part k_ff ( (3n+1)x(3n+1) )
 
@@ -521,14 +517,6 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
 
     k_fs=volcoupl_->ApplyMatrixMapping21(k_fs);
   }
-
-  // uncomplete because the fluid interface can have more connections than the
-  // structural one. (Tet elements in fluid can cause this.) We should do
-  // this just once...
-  k_ss->UnComplete();
-  k_sf->UnComplete();
-  k_fs->UnComplete();
-  k_ff->UnComplete();
 
   // assign structure part to the Poroelasticity matrix
   mat.Assign(0, 0, LINALG::View, *k_ss);
@@ -578,16 +566,12 @@ void POROELAST::Monolithic::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void POROELAST::Monolithic::LinearSolve()
 {
-  // Solve for inc_ = [disi_,tempi_]
-  // Solve K_Teffdyn . IncX = -R  ===>  IncX_{n+1} with X=[d,T]
-  // \f$x_{i+1} = x_i + \Delta x_i\f$
   if (solveradapttol_ and (iter_ > 1))
   {
     double worst = normrhs_;
     double wanted = tolfres_;
     solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
   }
-  // apply Dirichlet BCs to system of equations
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
 
   // equilibrate global system of equations if necessary
@@ -595,9 +579,10 @@ void POROELAST::Monolithic::LinearSolve()
 
   if(directsolve_)
   {
-    // merge blockmatrix to SparseMatrix and solve
+    // merge blockmatrix to SparseMatrix
     Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
+    //apply dirichlet boundary conditions
     LINALG::ApplyDirichlettoSystem(
         sparse,
         iterinc_,
@@ -616,8 +601,7 @@ void POROELAST::Monolithic::LinearSolve()
   }
   else // use bgs2x2_operator
   {
-    // in case of inclined boundary conditions
-    // rotate systemmatrix_ using GetLocSysTrafo()!=Teuchos::null
+    //apply dirichlet boundary conditions
     LINALG::ApplyDirichlettoSystem(
       systemmatrix_,
       iterinc_,
@@ -627,6 +611,7 @@ void POROELAST::Monolithic::LinearSolve()
       *CombinedDBCMap()
       );
 
+    // standard solver call
     solver_->Solve(
                systemmatrix_->EpetraOperator(),
                iterinc_,
