@@ -1580,10 +1580,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunctions(
   // access boundary area variable with its actual value
   double boundaryint = params.get<double>("area");
 
-  bool outputall = false;
-  if(params.isParameter("alldof"))
-    outputall = true;
-
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -1593,30 +1589,20 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunctions(
     const double fac = EvalShapeFuncAndIntFac(intpoints,gpid);
 
     // compute integral of shape functions
-    for (int node=0;node<nen_;++node)
-    {
-      for (int k=0; k< numscal_; k++)
-      {
+    for (int node=0; node<nen_; ++node)
+      for (int k=0; k<numdofpernode_; ++k)
         elevec1[node*numdofpernode_+k] += funct_(node) * fac;
-      }
-      if(outputall==true)
-        elevec1[node*numdofpernode_+numdofpernode_-1] += funct_(node) * fac;
-    }
 
-    if (addarea)
-    {
-      // area calculation
+    // area calculation
+    if(addarea)
       boundaryint += fac;
-    }
-
   } //loop over integration points
 
   // add contribution to the global value
   params.set<double>("area",boundaryint);
 
   return;
-
-} //ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunction
+} // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunctions
 
 
 /*----------------------------------------------------------------------*

@@ -122,8 +122,8 @@ E 3 - ID 0 pot -0.1 curve none numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 
 E 4 - ID 1 pot 0.0 curve none numscal 2 stoich -1 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 10 gamma 1.0 refcon 0.1 dl_spec_cap 0.0 END
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE                           2
-E 1 - OUTPUT standard //flux calculation at inner cylinder
-E 2 - OUTPUT standard //flux calculation at inner cylinder
+E 1 -
+E 2 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 3 DLINE 1

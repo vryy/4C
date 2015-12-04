@@ -657,20 +657,6 @@ void INPAR::SCATRA::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
 
   /*--------------------------------------------------------------------*/
   // Boundary flux evaluation condition for scalar transport
-
-  std::vector<Teuchos::RCP<ConditionComponent> > fluxeval;
-  //OUTPUT:
-  // - default: scalar flux is only evaluated for standard degrees of freedom (NUMSCAL)
-  //            this was the only option until 05/13
-  // - all: scalar flux is evaluated for all degrees of freedom (NUMDOF - including potential dof)
-  //        e.g. diffusion conduction formulation with div i -> potential dof gives current flow
-  fluxeval.push_back(Teuchos::rcp(new SeparatorConditionComponent("OUTPUT")));
-  fluxeval.push_back(Teuchos::rcp(new StringConditionComponent("output",
-                        "standard",
-                        Teuchos::tuple<std::string>("standard","alldof"),
-                        Teuchos::tuple<int>(INPAR::SCATRA::fluxeval_standard,
-                                            INPAR::SCATRA::fluxeval_alldof))));
-
   Teuchos::RCP<ConditionDefinition> linebndryfluxeval =
     Teuchos::rcp(new ConditionDefinition("SCATRA FLUX CALC LINE CONDITIONS",
                                          "ScaTraFluxCalc",
@@ -685,13 +671,6 @@ void INPAR::SCATRA::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
                                          DRT::Condition::ScaTraFluxCalc,
                                          true,
                                          DRT::Condition::Surface));
-
-  for (unsigned i=0; i<fluxeval.size(); ++i)
-  {
-    linebndryfluxeval->AddComponent(fluxeval[i]);
-    surfbndryfluxeval->AddComponent(fluxeval[i]);
-  }
-
   condlist.push_back(linebndryfluxeval);
   condlist.push_back(surfbndryfluxeval);
 

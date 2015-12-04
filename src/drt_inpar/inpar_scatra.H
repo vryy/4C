@@ -216,13 +216,6 @@ namespace INPAR
       zero
     };
 
-    /// type of method for improving consistency of stabilized methods
-    enum Fluxeval
-    {
-      fluxeval_standard,
-      fluxeval_alldof
-    };
-
     /// type of finite difference check
     enum FDCheck
     {

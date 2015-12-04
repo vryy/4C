@@ -113,8 +113,8 @@ E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE 2
 E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE 2
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE                           2
-E 1 - OUTPUT standard // for flux calculation on these two boundaries
-E 2 - OUTPUT standard
+E 1 -
+E 2 -
 -----------------------------------------------------------FLUID KNOTVECTORS
 BEGIN                           NURBSPATCH
 ID                              1

@@ -111,7 +111,7 @@ DSURF                           1
 // outflow surface and do your flux calculation there!!!
 // The current setting in this test with periodic b.c.'s required this workaround.
 //
-E 3 - OUTPUT standard
+E 3 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY

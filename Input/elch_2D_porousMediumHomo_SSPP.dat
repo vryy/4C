@@ -166,8 +166,8 @@ E 3 - ID 0 pot -0.2 curve none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Bu
 E 4 - ID 1 pot 0.00 curve none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 100 gamma 0.66 refcon 1.0 dl_spec_cap 0.0 END
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE  2
-E 3 - OUTPUT alldof
-E 4 - OUTPUT alldof         // for flux calculation on this boundary
+E 3 -
+E 4 -
 ---------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
 //DSURF   1
 //E 1 - scatra NUMMODES 2 ONOFF 0 1 integration

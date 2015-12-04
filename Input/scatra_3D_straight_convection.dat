@@ -124,8 +124,8 @@ E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 CURVE none FUNCT 0
 E 4 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           2
-E 2 - OUTPUT standard // for flux calculation on these boundaries
-E 4 - OUTPUT standard
+E 2 -
+E 4 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 643 DNODE 1
 NODE 1 DNODE 2

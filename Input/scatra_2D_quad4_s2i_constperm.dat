@@ -101,10 +101,10 @@ E 3 -
 E 4 -
 ----------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE  4
-E 1 - OUTPUT standard
-E 2 - OUTPUT standard
-E 3 - OUTPUT standard
-E 4 - OUTPUT standard
+E 1 -
+E 2 -
+E 3 -
+E 4 -
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1
 NODE    4 DLINE 1

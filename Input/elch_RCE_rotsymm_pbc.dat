@@ -253,7 +253,7 @@ DVOL                            1
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           1
-E 7 - OUTPUT standard //flux calculation at inner cylinder
+E 7 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 122 DNODE 1

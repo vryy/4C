@@ -244,7 +244,7 @@ E 6 - NUMDOF 1 ONOFF 1 VAL 293.0 CURVE none FUNCT 0
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 //                              DOBJECT
 DLINE                           1
-E 2 - OUTPUT standard
+E 2 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 3131 DNODE 1
 NODE 2853 DNODE 2

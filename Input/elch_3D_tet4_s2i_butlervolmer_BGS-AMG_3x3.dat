@@ -138,12 +138,12 @@ E 1 - ID 0
 E 6 - ID 1
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           6
-E 1 - OUTPUT alldof
-E 2 - OUTPUT alldof
-E 3 - OUTPUT alldof
-E 4 - OUTPUT alldof
-E 5 - OUTPUT alldof
-E 6 - OUTPUT alldof
+E 1 -
+E 2 -
+E 3 -
+E 4 -
+E 5 -
+E 6 -
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE    104 DSURFACE 1
 NODE    106 DSURFACE 1

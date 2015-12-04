@@ -117,8 +117,8 @@ E 3 - ID 0 pot -0.1 curve none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 li
 E 4 - ID 1 pot  0.0 curve none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 linear alpha 1 i0 40 gamma 0.0 refcon 0.1 dl_spec_cap 0 END
 --------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE  2
-E 3 - OUTPUT alldof // for flux calculation on this boundary
-E 4 - OUTPUT alldof // for flux calculation on this boundary
+E 3 -
+E 4 -
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    3 DLINE 1
