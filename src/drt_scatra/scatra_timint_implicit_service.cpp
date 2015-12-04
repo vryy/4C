@@ -323,12 +323,13 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     std::vector<DRT::Condition*> cond;
     discret_->GetCondition(condnames[i],cond);
 
-    // go to the next condition type, if there's nothing to do!
-    if (!cond.size()) continue;
+    // safety check
+    if(!cond.size())
+      dserror("Flux output requested without corresponding boundary condition specification!");
 
     if (myrank_ == 0)
     {
-      std::cout << "Normal fluxes at boundary '" << condnames[i] << "':" << std::endl;
+      std::cout << "Normal fluxes at boundary '" << condnames[i] << "' on discretization '" << discret_->Name() << "':" << std::endl;
       std::cout <<"+----+-----+-------------------------+------------------+--------------------------+" << std::endl;
       std::cout << "| ID | DOF | Integral of normal flux | Area of boundary | Mean normal flux density |" << std::endl;
     }

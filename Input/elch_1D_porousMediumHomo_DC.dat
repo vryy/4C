@@ -42,8 +42,6 @@ VELFUNCNO                       -1
 VELOCITYFIELD                   zero
 UPRES                           1
 MATID                           1
-WRITEFLUX                       totalflux_boundary
-WRITEFLUX_IDS                   1 2
 OUTMEAN                         Yes
 SKIPINITDER                     Yes
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
@@ -119,8 +117,6 @@ E 2 - NUMDOF 2 ONOFF 1 1 VAL 1.0 0.0 CURVE 5 none FUNCT 0 0
 // for the unconstrained dof's has to be considered as a solution-depending Neumann BC
 // which has to be implemented in scatra_ele_boundary.cpp
 // -> not implemented yet since complex implementation and rarely used!!
---------------------------------------------SCATRA FLUX CALC LINE CONDITIONS
-DLINE                           0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    101 DNODE 2
