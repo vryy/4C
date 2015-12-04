@@ -109,6 +109,26 @@
   //! implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
   //! hence we have to calculate and set K(c)=(-A + 4*(A-2)_{+};0) and f(c)=(0;12*(A-2)_{+}) and corresponding derivatives.
 
+  //! note for the implementation of the power law feature:
+  //! assume the following reaction: 1*A + 2*B  --> 3*C with reaction coefficient 4.0
+  //!
+  //! if we assume the reaction is depending on the product of all
+  //! reactants via a power law (this corresponds to couplingtype "power_multiplicative"),
+  //! the corresponding equations are: \partial_t A = -(4*1*B^2)*A^3  (negative since reactant)
+  //!                              \partial_t B = -(4*2*A^3)*B^2  (negative since reactant)
+  //!                              \partial_t C = + 4*3*A^3*B^2   (positive since product)
+  //!
+  //! this equation is in BACI achieved by the MAT_scatra_reaction material:
+  //! ----------------------------------------------------------MATERIALS
+  //! MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 2 4 5 NUMREAC 1 REACIDS 3 END //collect Concentrations
+  //! MAT 2 MAT_scatra DIFFUSIVITY 0.0
+  //! MAT 4 MAT_scatra DIFFUSIVITY 0.0
+  //! MAT 5 MAT_scatra DIFFUSIVITY 0.0
+  //! MAT 3 MAT_scatra_reaction NUMSCAL 3 STOICH -1 -2 3 REACOEFF 4.0 COUPLING power_multiplicative ROLE 3 2 0
+  //!
+  //! implementation is of form: \partial_t c_i + K_i(c)*c_i = f_i(c), were f_i(c) is supposed not to linear depend on c_i
+  //! hence we have to calculate and set K(c)=(4*B;8*A;0) and f(c)=(0;0;12*A*B) and corresponding derivatives.
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype,int probdim>
@@ -460,6 +480,21 @@ switch (couplingtype)
     break;
   }
 
+  case MAT::PAR::reac_coup_power_multiplicative: //reaction of type A*B*C:
+  {
+    for (int ii=0; ii < my::numscal_; ii++)
+    {
+      if (stoich[ii]<0)
+      {
+        if (ii!=k)
+          rcfac *= std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]);
+        else
+          rcfac *= std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]-1.0);
+      }
+    }
+    break;
+  }
+
   case MAT::PAR::reac_coup_constant: //constant source term:
   {
     rcfac = 0.0;
@@ -572,6 +607,25 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFa
       break;
     }
 
+    case MAT::PAR::reac_coup_power_multiplicative: //reaction of type A*B*C:
+    {
+      if (stoich[toderive]<0 and toderive!=k)
+      {
+        for (int ii=0; ii < my::numscal_; ii++)
+        {
+          if (stoich[ii]<0 and ii!=k and ii!= toderive)
+            rcdmfac *= std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]);
+          else if(stoich[ii]<0 and ii!=k and ii== toderive)
+            rcdmfac *= couprole[ii]*std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]-1.0);
+          else if(stoich[ii]<0 and ii==k and ii== toderive and couprole[ii]!=1.0)
+            rcdmfac *= (couprole[ii]-1.0)*std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]-2.0);
+        }
+      }
+      else
+        rcdmfac=0.0;
+      break;
+    }
+
     case MAT::PAR::reac_coup_constant: //constant source term:
     {
       rcdmfac = 0.0;
@@ -593,9 +647,9 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFa
               if (ii==k)
                 rcdmfac *= 1;
               else if (ii!=toderive and couprole[ii]<0)
-                rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+                rcdmfac *= my::scatravarmanager_->Phinp(ii);
               else if (ii!=toderive and couprole[ii]>0)
-                rcdmfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii]+my::funct_.Dot(my::ephinp_[ii]));
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii]+my::scatravarmanager_->Phinp(ii));
               else if (ii!=toderive and couprole[ii] == 0)
                 rcdmfac *= 1;
               else if (ii == toderive)
@@ -606,13 +660,13 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFa
               if (ii==k)
                 rcdmfac *= 1;
               else if (ii!=toderive and couprole[ii]<0)
-                rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+                rcdmfac *= my::scatravarmanager_->Phinp(ii);
               else if (ii!=toderive and couprole[ii]>0)
-                rcdmfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii]+my::funct_.Dot(my::ephinp_[ii]));
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii]+my::scatravarmanager_->Phinp(ii));
               else if (ii!=toderive and couprole[ii]==0)
                 rcdmfac *= 1;
               else if (ii == toderive)
-                rcdmfac *= couprole[ii]/std::pow((couprole[ii]+my::funct_.Dot(my::ephinp_[ii])),2);
+                rcdmfac *= couprole[ii]/std::pow((couprole[ii]+my::scatravarmanager_->Phinp(ii)),2);
             }
           }
           else if (couprole[k] > 0 )
@@ -622,11 +676,11 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFa
             else if ( (k!=toderive) and couprole[toderive]<0)
             {
               if (ii==k)
-                rcdmfac *= 1/(couprole[ii]+my::funct_.Dot(my::ephinp_[ii]));
+                rcdmfac *= 1/(couprole[ii]+my::scatravarmanager_->Phinp(ii));
               else if ((ii !=toderive) and (couprole[ii]<0))
-                rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+                rcdmfac *= my::scatravarmanager_->Phinp(ii);
               else if ((ii!=toderive) and (couprole[ii]>0))
-                rcdmfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii]+my::funct_.Dot(my::ephinp_[ii]));
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii]+my::scatravarmanager_->Phinp(ii));
               else if ((ii!=toderive) and (couprole[ii]==0))
                 rcdmfac *= 1;
               else if (ii==toderive)
@@ -635,24 +689,24 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFa
             else if ( (k!=toderive) and couprole[toderive]>0)
             {
               if (ii==k)
-                rcdmfac *= 1/(couprole[ii]+my::funct_.Dot(my::ephinp_[ii]));
+                rcdmfac *= 1/(couprole[ii]+my::scatravarmanager_->Phinp(ii));
               else if ((ii!=toderive) and couprole[ii]<0)
-                rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+                rcdmfac *= my::scatravarmanager_->Phinp(ii);
               else if ((ii!=toderive) and couprole[ii]>0)
-                rcdmfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii] + my::funct_.Dot(my::ephinp_[ii]));
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii] + my::scatravarmanager_->Phinp(ii));
               else if ((ii!=toderive) and (couprole[ii]==0))
                 rcdmfac *= 1;
               else if (ii==toderive)
-                rcdmfac *= couprole[ii]/std::pow((couprole[ii]+my::funct_.Dot(my::ephinp_[ii])),2);
+                rcdmfac *= couprole[ii]/std::pow((couprole[ii]+my::scatravarmanager_->Phinp(ii)),2);
             }
             else if (k==toderive)
             {
               if (ii==k)
-                rcdmfac *= -1/std::pow((couprole[ii]+my::funct_.Dot(my::ephinp_[ii])),2);
+                rcdmfac *= -1/std::pow((couprole[ii]+my::scatravarmanager_->Phinp(ii)),2);
               else if ((ii!=toderive) and (couprole[ii]<0))
-                rcdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+                rcdmfac *= my::scatravarmanager_->Phinp(ii);
               else if ((ii!=toderive) and (couprole[ii]>0))
-                rcdmfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii] + my::funct_.Dot(my::ephinp_[ii]));
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii] + my::scatravarmanager_->Phinp(ii));
               else if ((ii!=toderive) and (couprole[ii]==0))
                 rcdmfac *= 1;
             }
@@ -737,6 +791,18 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTer
       break;
     }
 
+    case MAT::PAR::reac_coup_power_multiplicative: //reaction of type A*B*C:
+    {
+      for (int ii=0; ii < my::numscal_; ii++)
+      {
+        if (stoich[ii]<0)
+        {
+          bftfac *= std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]);
+        }
+      }
+      break;
+    }
+
     case MAT::PAR::reac_coup_constant: //constant source term:
     {
       if (stoich[k]<0)
@@ -754,9 +820,9 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTer
           for (int ii=0; ii < my::numscal_; ii++)
           {
             if (couprole[ii]>0) //and (ii!=k))
-              bftfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii]+my::funct_.Dot(my::ephinp_[ii]));
+              bftfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii]+my::scatravarmanager_->Phinp(ii));
             else if (couprole[ii]<0) //and (ii!=k))
-              bftfac *= my::funct_.Dot(my::ephinp_[ii]);
+              bftfac *= my::scatravarmanager_->Phinp(ii);
           }
         }
       }
@@ -832,7 +898,24 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceDer
           for (int ii=0; ii < my::numscal_; ii++)
           {
             if (stoich[ii]<0 and ii!=toderive)
-              bfdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+              bfdmfac *= my::scatravarmanager_->Phinp(ii);
+          }
+        }
+      else
+        bfdmfac=0.0;
+      break;
+    }
+
+    case MAT::PAR::reac_coup_power_multiplicative: //reaction of type A*B*C:
+    {
+      if (stoich[toderive]<0)
+        {
+          for (int ii=0; ii < my::numscal_; ii++)
+          {
+            if (stoich[ii]<0 and ii!=toderive)
+              bfdmfac *= std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]);
+            else if(stoich[ii]<0 and ii==toderive)
+              bfdmfac *= std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]-1.0);
           }
         }
       else
@@ -859,16 +942,16 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceDer
             if (ii != toderive)
             {
               if (couprole[ii] > 0)
-                bfdmfac *= my::funct_.Dot(my::ephinp_[ii])/(couprole[ii] + my::funct_.Dot(my::ephinp_[ii]));
+                bfdmfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii] + my::scatravarmanager_->Phinp(ii));
               else if (couprole[ii] < 0)
-                bfdmfac *= my::funct_.Dot(my::ephinp_[ii]);
+                bfdmfac *= my::scatravarmanager_->Phinp(ii);
               else
                 bfdmfac *= 1;
             }
             else
             {
               if (couprole[ii] > 0)
-                bfdmfac *= couprole[ii]/(std::pow((my::funct_.Dot(my::ephinp_[ii])+couprole[ii]), 2));
+                bfdmfac *= couprole[ii]/(std::pow((my::scatravarmanager_->Phinp(ii)+couprole[ii]), 2));
               else if (couprole[ii] < 0)
                 bfdmfac *= 1;
               else

@@ -33,6 +33,7 @@ namespace MAT
   {
     reac_coup_none,  ///< no coupling, initialization value
     reac_coup_simple_multiplicative, ///< coupling of type A*B
+    reac_coup_power_multiplicative, ///< coupling of type A*B
     reac_coup_constant, //< no coupling, constant increase/decrease
     reac_coup_michaelis_menten, //coupling of type (B/(const+B))*A
   };

@@ -59,6 +59,24 @@ MAT::PAR::ScatraReactionMat::ScatraReactionMat(
       break;
     }
 
+    case MAT::PAR::reac_coup_power_multiplicative: //reaction of type A*B*C:
+    {
+      bool allpositiv = true;
+      bool rolezero = false;
+      for (int ii=0; ii < numscal_; ii++)
+      {
+        if (stoich_->at(ii)<0)
+          allpositiv = false;
+        if (stoich_->at(ii)!=0 and couprole_->at(ii) == 0)
+          rolezero = true;
+      }
+      if (allpositiv)
+        dserror("In the case of reac_coup_potential_multiplicative there must be at least one negative entry in each STOICH list!");
+      if (rolezero)
+        dserror("There is one reacting scalar with a zero exponent STOICH list. This does not make sense!");
+      break;
+    }
+
     case MAT::PAR::reac_coup_constant: //constant source term:
     {
       bool issomepositiv = false;
@@ -122,6 +140,10 @@ MAT::PAR::reaction_coupling MAT::PAR::ScatraReactionMat::SetCouplingType( Teucho
   if ( *(matdata->Get<std::string >("COUPLING")) == "simple_multiplicative" )
   {
     return reac_coup_simple_multiplicative;
+  }
+  else if ( *(matdata->Get<std::string >("COUPLING")) == "power_multiplicative")
+  {
+    return reac_coup_power_multiplicative;
   }
   else if ( *(matdata->Get<std::string >("COUPLING")) == "constant")
   {
