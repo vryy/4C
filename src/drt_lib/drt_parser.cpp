@@ -185,6 +185,11 @@ void DRT::PARSER::Lexer::Lexan()
   tok_ = tok_rpar;
   return;
       }
+      else if (t == ',')
+      {
+  tok_ = tok_comma;
+  return;
+      }
       else
       {
   if (t >= 32)

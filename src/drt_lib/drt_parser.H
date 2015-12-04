@@ -121,7 +121,8 @@ protected:
     tok_mod,  // modulus ??? (NOT AVAILABLE)
     tok_pow,  // power '^'
     tok_lpar,  // left parenthesis '('
-    tok_rpar  // right parenthesis ')'
+    tok_rpar,  // right parenthesis ')'
+    tok_comma  // comma ',' (used to separate function arguments)
   };
 
   std::string funct_;  // function description as string, i.e. "t^2", "sin(t)", etc
@@ -159,6 +160,7 @@ private:
   SyntaxTreeNode<T>* ParsePow();
   SyntaxTreeNode<T>* ParseTerm();
   SyntaxTreeNode<T>* ParseExpr();
+  SyntaxTreeNode<T>* Parse();
 
   //! recursively extract corresponding number out of a syntax tree node
   T Interpret(SyntaxTreeNode<T>* node);
@@ -188,7 +190,7 @@ Parser<T>::Parser(std::string funct)
 {
   Lexan();  // retrieve first token of funct_
             // it is stored in (base) Lexer variables of Parser object
-  expr_ = ParseExpr();  // create syntax tree equivalent to funct_
+  expr_ = Parse();  // create syntax tree equivalent to funct_
 }
 
 
@@ -356,6 +358,24 @@ SyntaxTreeNode<T>* Parser<T>::ParsePrimary()
           Lexan();
           break;
         }
+        else if(name=="atan2")
+        {
+          lhs = new SyntaxTreeNode<T>(SyntaxTreeNode<T>::lt_function,NULL,NULL);
+          lhs->function_ = name;
+          Lexan();
+          if (tok_!=tok_lpar)
+            dserror("'(' expected after function name '%s'", name.c_str());
+          Lexan();
+          lhs->lhs_ = ParseExpr();
+          if (tok_!=tok_comma)
+            dserror("',' expected");
+          Lexan();
+          lhs->rhs_ = ParseExpr();
+          if (tok_!=tok_rpar)
+            dserror("')' expected for function name '%s'", name.c_str());
+          Lexan();
+          break;
+        }
         else
         {
           str_[integer_] = '\0';
@@ -366,6 +386,7 @@ SyntaxTreeNode<T>* Parser<T>::ParsePrimary()
     break;
   default:
     dserror("unexpected token %d", tok_);
+    break;
   }
 
   return lhs;
@@ -442,6 +463,25 @@ SyntaxTreeNode<T>* Parser<T>::ParseTerm()
   return lhs;
 }
 
+/*----------------------------------------------------------------------*/
+/*!
+\brief Parse entity
+\author u.kue
+\date 10/07
+*/
+template <class T>
+SyntaxTreeNode<T>* Parser<T>::Parse()
+{
+  SyntaxTreeNode<T>* lhs;
+
+  lhs = ParseExpr();
+
+  //check for invalid tokens at the beginning of a parse entities
+  if(tok_==tok_comma or tok_==tok_rpar)
+    dserror("unexpected token %d. Invalid syntax. Missing brackets or comma instead of decimal point?", tok_);
+
+  return lhs;
+}
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -551,6 +591,7 @@ T Parser<T>::Interpret(SyntaxTreeNode<T>* node)
       break;
     default:
       dserror("unknown variable '%c'", node->v_.variable);
+      break;
     }
     break;
   // unary operators
@@ -571,6 +612,13 @@ T Parser<T>::Interpret(SyntaxTreeNode<T>* node)
     else if (node->function_=="log") res = log(arg);
     else if (node->function_=="log10") res = log10(arg);
     else if (node->function_=="sqrt") res = sqrt(arg);
+    else if (node->function_=="atan2")
+    {
+      T arg2;
+      // recursively visit branches and obtain sub-results
+      arg2 = Interpret(node->rhs_);
+      res = atan2(arg,arg2);
+    }
     //else if (node->function_=="ceil") res = ceil(arg);
     else if (node->function_=="fabs") res = fabs(arg);
     //else if (node->function_=="floor") res = floor(arg);
@@ -591,6 +639,7 @@ T Parser<T>::Interpret(SyntaxTreeNode<T>* node)
   }
   default:
     dserror("unknown syntax tree node type");
+    break;
   }
 
   return res;
