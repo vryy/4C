@@ -309,6 +309,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   DRT::INPUT::LineDefinition scatra_special;
   scatra_special
     .AddTag("SCATRA")
+    .AddNamedString("DIS")
     .AddTag("SPECIAL")
     .AddNamedString("QUANTITY")
     .AddNamedDouble("VALUE")

@@ -169,8 +169,10 @@ void SCATRA::ScaTraResultTest::TestSpecial(
     int&                          test_count
     )
 {
-  // make sure that quantity is tested only once
-  if(dis_->Comm().MyPID() == 0)
+  // make sure that quantity is tested only on specified discretization and only by one processor
+  std::string disname;
+  res.ExtractString("DIS",disname);
+  if(disname == dis_->Name() and dis_->Comm().MyPID() == 0)
   {
     // extract name of quantity to be tested
     std::string quantity;
