@@ -29,6 +29,13 @@ bool DRT::ELEMENTS::Spring3::ReadElement(const std::string& eletype,
   // Gruesse aus Barcelona, Martin und Dhruba
   linedef->ExtractDouble("CROSS",crosssec_);
 
+
+  //set nodal tridas according to input file
+  Qnew_.resize(NumNode());
+  Qold_.resize(NumNode());
+
+  Qold_  = Qnew_;
+
   return true;
 }
 /*------------------------------------------------------------------------*

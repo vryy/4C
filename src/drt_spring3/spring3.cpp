@@ -13,10 +13,12 @@ Maintainer: Dhrubajyoti Mukherjee
 
 #include "spring3.H"
 #include "../drt_beam3eb/beam3eb.H"
+#include "../drt_beam3ii/beam3ii.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_fem_general/largerotations.H"
 
 DRT::ELEMENTS::Spring3Type DRT::ELEMENTS::Spring3Type::instance_;
 
@@ -111,6 +113,10 @@ DRT::ELEMENTS::Spring3::Spring3(const DRT::ELEMENTS::Spring3& old) :
  ThetaRef_(old.ThetaRef_),
  diff_disp_ref_(old.diff_disp_ref_),
  deltatheta_(old.deltatheta_),
+ Qnew_(old.Qnew_),
+ Qold_(old.Qold_),
+ dispthetanew_(old.dispthetanew_),
+ dispthetaold_(old.dispthetaold_),
  material_(old.material_),
  lrefe_(old.lrefe_),
  lcurr_(old.lcurr_),
@@ -172,6 +178,105 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Spring3::Shape() const
   return line2;
 }
 
+void DRT::ELEMENTS::Spring3::GetCurrTangents(std::vector<double>&      disp,
+                                 std::vector<LINALG::Matrix<3,1> >&    Tcurr)
+{
+  //rotational displacement at a certain node between this and last iteration step
+  LINALG::Matrix<3,1>  deltatheta(true);
+  //rotational displacement at a certain node between this and last iteration step in quaternion form
+  LINALG::Matrix<4,1>  deltaQ(true);
+  //Compute current nodal triads
+  for (int node=0; node<2; node++)
+  {
+    /*rotation increment relative to configuration in last iteration step is difference between current rotation
+     *entry in displacement vector minus rotation entry in displacement vector in last iteration step*/
+
+    //This shift is necessary, since our beam formulation and the corresponding linearization is based on multiplicative
+    //increments, while in BACI (Newtonfull()) the displacement of the last iteration and the rotation increment
+    //of the current iteration are added in an additive manner. This step is reversed in the next two lines in order
+    //to recover the multiplicative rotation increment between the last and the current Newton step. This also
+    //means that dispthetanew_ has no physical meaning since it is the additive sum of non-additive rotation increments(meier, 03.2014)
+    for(int i=0; i<3; i++)
+      dispthetanew_[node](i) = disp[6*node+3+i];
+
+    deltatheta  = dispthetanew_[node];
+    deltatheta -= dispthetaold_[node];
+
+    //compute quaternion from rotation angle relative to last configuration
+    LARGEROTATIONS::angletoquaternion(deltatheta,deltaQ);
+    //multiply relative rotation with rotation in last configuration to get rotation in new configuration
+    LARGEROTATIONS::quaternionproduct(Qold_[node],deltaQ,Qnew_[node]);
+
+    //renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
+    Qnew_[node].Scale(1/Qnew_[node].Norm2());
+
+    LINALG::Matrix<3,3> Triad(true);
+    LARGEROTATIONS::quaterniontotriad(Qnew_[node],Triad);
+    for (int i=0; i<3; i++)
+      Tcurr[node](i)=Triad (i,0);  // reference CheckOrientation StatMechManager
+
+    Tcurr[node].Scale(1/Tcurr[node].Norm2());
+
+  }
+
+  return;
+} //DRT::ELEMENTS::Beam3::UpdateNodalTriad
+
+//brief! Return current tangent of beam3ii elements connected to beam3 element
+void DRT::ELEMENTS::Spring3::TcurrBeam3ii(LINALG::Matrix<3,1>& Tcurr1, LINALG::Matrix<3,1>& Tcurr2)
+{
+  DRT::Node* node1 = this->Nodes()[0];
+  DRT::Element* Element1=node1->Elements()[0];
+  const DRT::ElementType &eot_el1 = Element1->ElementType();
+  if(eot_el1==DRT::ELEMENTS::Beam3iiType::Instance())
+  {
+    DRT::ELEMENTS::Beam3ii* fil1 = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (Element1);
+    if(fil1==NULL)
+      return;
+    int nodenumber=0;
+    if(node1->Id()!=fil1->NodeIds()[0])
+      nodenumber=1;
+    Tcurr1=fil1->Tcurr((int)fil1->NodeIds()[nodenumber]);
+  }
+  DRT::Node* node2 = this->Nodes()[1];
+  DRT::Element* Element2=node2->Elements()[0];
+  if(Element2->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance())
+  {
+    DRT::ELEMENTS::Beam3ii* fil2 = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (Element2);
+    if (fil2==NULL)
+      return;
+    int nodenumber=0;
+    if(node1->Id()!=fil2->NodeIds()[0])
+      nodenumber=1;
+    Tcurr2=fil2->Tcurr((int)fil2->NodeIds()[nodenumber]);
+  }
+ return;
+}
+
+//brief! Return current tangent of beam3ii elements connected to beam3 element
+void DRT::ELEMENTS::Spring3::TrefBeam3ii(LINALG::Matrix<3,1>& Tref1, LINALG::Matrix<3,1>& Tref2)
+{
+  DRT::Node* node1 = this->Nodes()[0];
+  DRT::Element* Element1=node1->Elements()[0];
+  const DRT::ElementType &eot_el1 = Element1->ElementType();
+  if(eot_el1==DRT::ELEMENTS::Beam3iiType::Instance())
+  {
+    DRT::ELEMENTS::Beam3ii* fil1 = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (Element1);
+    if(fil1==NULL)
+      return;
+    Tref1=fil1->Tref();
+  }
+  DRT::Node* node2 = this->Nodes()[1];
+  DRT::Element* Element2=node2->Elements()[0];
+  if(Element2->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance())
+  {
+    DRT::ELEMENTS::Beam3ii* fil2 = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (Element2);
+    if (fil2==NULL)
+      return;
+    Tref2=fil2->Tref();
+  }
+ return;
+}
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -193,6 +298,10 @@ void DRT::ELEMENTS::Spring3::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,ThetaRef_);
   AddtoPack<1,3>(data,diff_disp_ref_);
   AddtoPack<1,3>(data,deltatheta_);
+  AddtoPack<4,1>(data,Qnew_);
+  AddtoPack<4,1>(data,Qold_);
+  AddtoPack<3,1>(data,dispthetanew_);
+  AddtoPack<3,1>(data,dispthetaold_);
   AddtoPack(data,material_);
   AddtoPack(data,lrefe_);
   AddtoPack(data,lcurr_);
@@ -231,6 +340,10 @@ void DRT::ELEMENTS::Spring3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,ThetaRef_);
   ExtractfromPack<1,3>(position,data,diff_disp_ref_);
   ExtractfromPack<1,3>(position,data,deltatheta_);
+  ExtractfromPack<4,1>(position,data,Qnew_);
+  ExtractfromPack<4,1>(position,data,Qold_);
+  ExtractfromPack<3,1>(position,data,dispthetanew_);
+  ExtractfromPack<3,1>(position,data,dispthetaold_);
   ExtractfromPack(position,data,material_);
   ExtractfromPack(position,data,lrefe_);
   ExtractfromPack(position,data,lcurr_);
@@ -264,9 +377,52 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Spring3::Lines()
   return lines;
 }
 
-
-void DRT::ELEMENTS::Spring3::SetUpReferenceGeometry(const std::vector<double>& xrefe, const std::vector<double>& rotrefe, const bool secondinit)
+/*-----------------------------------------------------------------------------*
+ |  Initialize reference Tangents (public)                        mueller 10/12|
+ *-----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Spring3::SetInitialTangents(std::vector<LINALG::Matrix<4,1> > & initquaternions)
 {
+  //  if(initquaternions.Norm2()!=0.0)
+  {
+    Qnew_.resize(NumNode());
+    Qold_.resize(NumNode());
+    dispthetaold_.resize(NumNode());
+    dispthetanew_.resize(NumNode());
+    trefNode_.resize(2);
+
+    LINALG::Matrix<3,3> Triad(true);
+//     initquatern
+    for (int node=0; node<2; node++)
+    {
+    for (int j=0; j<4; j++)
+    {
+      Qnew_[node](j)=initquaternions[node](j);
+      Qold_[node](j)=initquaternions[node](j);
+    }
+
+      LARGEROTATIONS::quaterniontotriad(initquaternions[node],Triad);
+      trefNode_[node].Clear();
+      for (int i=0; i<3; i++)
+      {
+        trefNode_[node](i)=Triad (i,0);
+
+      }
+
+      trefNode_[node].Scale(1/trefNode_[node].Norm2());
+    }
+  }
+  return;
+}
+
+void DRT::ELEMENTS::Spring3::SetUpReferenceGeometry(const std::vector<double>& xrefe,
+                                                    const std::vector<double>& rotrefe,
+                                                    const bool secondinit, const bool reissner)
+{
+  if(reissner)
+    FilamentIsReissner_=true;
+  else
+    FilamentIsReissner_=false;
+
   /*this method initializes geometric variables of the element; the initilization can usually be applied to elements only once;
    *therefore after the first initilization the flag isinit is set to true and from then on this method does not take any action
    *when called again unless it is called on purpose with the additional parameter secondinit. If this parameter is passed into
@@ -275,6 +431,7 @@ void DRT::ELEMENTS::Spring3::SetUpReferenceGeometry(const std::vector<double>& x
    *second initilization in principle (e.g. for periodic boundary conditions*/
   if(!isinit_ || secondinit)
   {
+
     isinit_ = true;
 
     //setting reference coordinates
@@ -292,21 +449,22 @@ void DRT::ELEMENTS::Spring3::SetUpReferenceGeometry(const std::vector<double>& x
     jacobinode_[0] = lrefe_ / 2.0;
     jacobinode_[1] = lrefe_ / 2.0;
 
-    double abs_rotrefe=0;
-    for (int i=0; i<6; i++)
-      abs_rotrefe+= std::pow(rotrefe[i],2);
-
-    if (abs_rotrefe!=0)
-    {
+//    if (abs_rotrefe!=0)
+//    {
       //assign size to the vector
       ThetaRef_.resize(3);
-      trefNode_.resize(3);
 
-      for (int node=0; node<2; node++)
+      // The reference Tangent for Reissner type of filament
+//      // is set in statmech_manager
+      if (!reissner)
       {
-        trefNode_[node].Clear();
-        for(int dof=0; dof<3; dof++)
-          trefNode_[node](dof)=rotrefe[3*node+dof];
+        trefNode_.resize(2);
+        for (int node=0; node<2; node++)
+        {
+          trefNode_[node].Clear();
+          for(int dof=0; dof<3; dof++)
+            trefNode_[node](dof)=rotrefe[3*node+dof];
+        }
       }
       diff_disp_ref_.Clear();
 
@@ -394,7 +552,7 @@ void DRT::ELEMENTS::Spring3::SetUpReferenceGeometry(const std::vector<double>& x
 
         Theta0_(location)=ThetaRef_[location];
       }
-    }
+//    }
   }
 
   return;

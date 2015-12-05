@@ -139,6 +139,10 @@ int DRT::ELEMENTS::Spring3::Evaluate(Teuchos::ParameterList&   params,
     else if (act == Spring3::calc_struct_internalforce)
       t3_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);
 
+    /*at the end of an iteration step the geometric configuration has to be updated: the starting point for the
+     * next iteration step is the configuration at the end of the current step */
+    Qold_ = Qnew_;
+    dispthetaold_= dispthetanew_;
 
     /*
       //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
@@ -531,14 +535,27 @@ void DRT::ELEMENTS::Spring3::CalcDeltaTheta(std::vector<double>& disp,
   }
 
   //current tangent vector
-  for (int node=0; node<2; node++)
+  std::vector<LINALG::Matrix<3,1> > Tcurr;
+  Tcurr.resize(2);
+  //current tangent vector
+  if (FilamentIsReissner_)
   {
-    tcurrNode[node].Clear();
-    for (int j=0; j<3; ++j)
+    this->GetCurrTangents(disp, Tcurr);
+    for (int node=0; node<2; node++)
+    for(int i=0; i<3; i++)
     {
-      tcurrNode[node](j)   = trefNode_[node](j) + disp[6*node +3 + j];
+      tcurrNode[node](i)=Tcurr[node](i);
     }
   }
+  else
+    for (int node=0; node<2; node++)
+    {
+      tcurrNode[node].Clear();
+      for (int j=0; j<3; ++j)
+      {
+        tcurrNode[node](j)   = trefNode_[node](j) + disp[6*node +3 + j];
+      }
+    }
 
   for (int location=0; location<3; location++) // Location of torsional spring. There are three locations
   {
@@ -653,15 +670,31 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList&   params,
     xcurr(j+3)   = Nodes()[1]->X()[j] + disp[6 + j];  //second node
     diff_disp_curr(j) = (xcurr(j+3) - xcurr(j));        // v1 = d2 - d1
   }
+  std::vector<LINALG::Matrix<3,1> > Tcurr;
+  Tcurr.resize(2);
   //current tangent vector
-  for (int j=0; j<3; ++j)
+  if (FilamentIsReissner_)
   {
-    tcurrNode1(j)   = trefNode_[0](j) + disp[3 + j];  //first node
-    tcurrNode2(j)   = trefNode_[1](j) + disp[9 + j];  //second node
+    LINALG::Matrix<3,1> Tcurr1(true);
+    LINALG::Matrix<3,1> Tcurr2(true);
+
+    this->GetCurrTangents(disp, Tcurr);
+    this->TcurrBeam3ii(Tcurr1,Tcurr2);
+    for(int i=0; i<3; i++)
+    {
+      tcurrNode1(i)=Tcurr[0](i);
+      tcurrNode2(i)=Tcurr[1](i);
+    }
+  }
+  else
+  {
+    for (int j=0; j<3; ++j)
+    {
+      tcurrNode1(j)   = trefNode_[0](j) + disp[3 + j];  //first node
+      tcurrNode2(j)   = trefNode_[1](j) + disp[9 + j];  //second node
+    }
   }
 
-//  if (tcurrNode1.MaxValue()>0.999 || tcurrNode2.MaxValue()>0.999)
-//    return;
 
   deltatheta_.Clear();
   LINALG::Matrix<1,3> thetacurr(true);

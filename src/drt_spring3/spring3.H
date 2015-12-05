@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
- \file truss3.H
+ \file spring3.H
 
  \brief three dimensional spring element
 
@@ -130,9 +130,17 @@ public:
    */
   virtual DiscretizationType Shape() const;
 
+  virtual void SetInitialTangents(std::vector<LINALG::Matrix<4,1> >& initquaternions);
+
+  virtual void TcurrBeam3ii(LINALG::Matrix<3,1>& Tcurr1, LINALG::Matrix<3,1>& Tcurr2);
+
+  virtual void TrefBeam3ii(LINALG::Matrix<3,1>& Tref1, LINALG::Matrix<3,1>& Tref2);
+
   /*Print the change in angle of this element*/
 
   virtual LINALG::Matrix<1,3> DeltaTheta() const;
+
+  virtual void GetCurrTangents(std::vector<double>& disp, std::vector<LINALG::Matrix<3,1> >& Tcurr);
 
   /*!
    \brief Return unique ParObject id
@@ -172,7 +180,7 @@ public:
 
   //!sets reference coordinates X_ and refenrence length lrefe_ for elements added to the discretization after simulation start
   void SetUpReferenceGeometry(const std::vector<double>& xrefe, const std::vector<double>& rotrefe,
-      const bool secondinit = false);
+      const bool secondinit = false, const bool reissner= false);
 
   //@}
 
@@ -382,6 +390,9 @@ private:
   //! container containing all kind of Spring3 thisandthat
   DRT::Container data_;
 
+  // boolian indicating if the spring crosslinker binds to a reissner filament
+  bool FilamentIsReissner_;
+
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
@@ -399,6 +410,16 @@ private:
 
   //Change is angle
   LINALG::Matrix<1,3> deltatheta_;
+
+
+  //! nodal triads in quaternion during the current iteration step
+  std::vector<LINALG::Matrix<4,1> > Qnew_;
+  //! nodal triads in quaternion form at the end of the preceeding iteration step
+  std::vector<LINALG::Matrix<4,1> > Qold_;
+  //!rotation angle displacement at nodes; relates to current configuration
+  std::vector<LINALG::Matrix<3,1> > dispthetanew_;
+  //!rotation angle displacement at nodes; relates to the end of the preceeding iteration step
+  std::vector<LINALG::Matrix<3,1> > dispthetaold_;
 
   //! material type
   int material_;
