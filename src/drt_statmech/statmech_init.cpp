@@ -91,10 +91,15 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     case INPAR::STATMECH::linkermodel_std:
     {
       linkermodel_ = statmech_linker_std;
-      if(statmechparams_.get<double>("ILINK",0.0) == 0.0)
+      if(statmechparams_.get<double>("ILINK",0.0) == 0.0 && statmechparams_.get<double>("ALINK",0.0) != 0.0)
       {
         if(!discret_->Comm().MyPID())
           std::cout<<"  -- standard Truss3 linkers"<<std::endl;
+      }
+      else if(statmechparams_.get<double>("ILINK",0.0) == 0.0 && statmechparams_.get<double>("ALINK",0.0) == 0.0)
+      {
+        if(!discret_->Comm().MyPID())
+          std::cout<<"  -- standard Spring3 linkers"<<std::endl;
       }
       else
       {
@@ -319,8 +324,8 @@ void STATMECH::StatMechManager::ElementSanityCheck()
   // An element used to browse through local Row Elements
 
   DRT::Element * element = discret_->gElement(discret_->lRowElement(0)->Id());
-  if (element->ElementType().Name()=="Beam3iiType" && linkermodel_ != statmech_linker_none && statmechparams_.get<double>("ILINK",0.0) == 0.0)
-    dserror("Truss linkers are not currently configured to bind with filaments discretized with Beam3ii elements.\nPlease choose Beam3Type element for linkers.");
+//  if (element->ElementType().Name()=="Beam3iiType" && linkermodel_ != statmech_linker_none && statmechparams_.get<double>("ILINK",0.0) != 0.0)
+//    dserror("Truss linkers are not currently configured to bind with filaments discretized with Beam3ii elements.\nPlease choose Beam3Type element for linkers.");
   if (element->ElementType().Name()=="Beam3ebType" && linkermodel_ != statmech_linker_none && statmechparams_.get<double>("ILINK",0.0) != 0.0)
     dserror("Currently only Truss and spring linkers are configured to bind with filaments discretized with Beam3eb elements.\nPlease set ILINK=0 to activate truss linkers, ILINK=ALINK=0 activate spring linkers.");
   return;
@@ -1399,6 +1404,12 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
         GetNodalBindingSpotPositionsFromDisVec(discol, Teuchos::null, nodalrotations);
         nodalquaternions = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),4));
         GetElementBindingSpotTriads(nodalquaternions);
+      }
+      else if(linkermodel_ == statmech_linker_std  && statmechparams_.get<double>("ILINK",0.0)==0.0 && statmechparams_.get<double>("ALINK",0.0)==0.0)
+      {
+        nodalquaternions = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),4));
+        GetElementBindingSpotTriads(nodalquaternions);
+        std::cout<<"nodalquaternions="<<*nodalquaternions<<std::endl;
       }
 
       // add elements to problem discretization (processor specific)

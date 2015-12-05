@@ -58,6 +58,7 @@ Maintainer: Alexander Popp
 #include "../drt_so3/so_hex8p1j1.H"
 #include "../drt_so3/so_shw6.H"
 #include "../drt_so3/so_sh8p8.H"
+#include "../drt_discsh3/discsh3.H"
 
 #include "../drt_crack/crackUtils.H"
 
@@ -211,6 +212,16 @@ STR::TimIntImpl::TimIntImpl
             INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
 
+  // Initiate Edge element for discrete shell elements
+  if(HaveFaceDiscret())
+  {
+    const DRT::ElementType &eot = discret_->lRowElement(0)->ElementType();
+    if (eot == DRT::ELEMENTS::DiscSh3Type::Instance() && DRT::Problem::Instance()->ProblemType() == prb_statmech)
+      InitializeEdgeElements();
+    else if (eot == DRT::ELEMENTS::DiscSh3Type::Instance() && DRT::Problem::Instance()->ProblemType() != prb_statmech)
+      dserror("Please set your PROBLEMTYP & DYNAMICTYP to StatMech");
+  }
+
   // create empty residual force vector
   fres_ = LINALG::CreateVector(*DofRowMapView(), false);
 
@@ -323,6 +334,18 @@ int STR::TimIntImpl::IntegrateStep()
   error = Solve();
   return error;
 }
+
+/*----------------------------------------------------------------------------*
+ | Create Edges of for discrete shell elements       mukherjee (public)  04/15|
+ *-----------------------------------------------------------------------------*/
+void STR::TimIntImpl::InitializeEdgeElements()
+{
+  facediscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
+  facediscret_->CreateInternalFacesExtension(true);
+  facediscret_->FillCompleteFaces();
+  return;
+}
+
 /*----------------------------------------------------------------------*/
 /* predict solution */
 void STR::TimIntImpl::Predict()
@@ -889,6 +912,53 @@ void STR::TimIntImpl::ApplyForceStiffInternal
   // *********** time measurement ***********
   double dtcpu = timer_->WallTime();
   // *********** time measurement ***********
+  if(HaveStatMechBilayer())
+  {
+    // get reference volume
+    params.set("action", "calc_struct_refvol");
+    Teuchos::RCP<Epetra_SerialDenseVector> vol_ref
+    = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    discret_->EvaluateScalars(params, vol_ref);
+
+    // get reference CG
+    params.set("action", "calc_struct_refCG");
+    Teuchos::RCP<Epetra_SerialDenseVector> CG_ref
+    = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+    discret_->EvaluateScalars(params, CG_ref);
+
+    // get reference area
+    params.set("action", "calc_struct_refarea");
+    Teuchos::RCP<Epetra_SerialDenseVector> area_ref
+    = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    discret_->EvaluateScalars(params, area_ref);
+
+    // get current volume
+    discret_->SetState("displacement", disn_);
+    params.set("action", "calc_struct_currvol");
+    Teuchos::RCP<Epetra_SerialDenseVector> vol_curr
+    = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    discret_->EvaluateScalars(params, vol_curr);
+
+    // get current CG
+    params.set("action", "calc_struct_currCG");
+    Teuchos::RCP<Epetra_SerialDenseVector> CG_curr
+    = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+    discret_->EvaluateScalars(params, CG_curr);
+
+    // get current area
+    params.set("action", "calc_struct_currarea");
+    Teuchos::RCP<Epetra_SerialDenseVector> area_curr
+    = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    discret_->EvaluateScalars(params, area_curr);
+    discret_->ClearState();
+
+    params.set("reference volume",double((*vol_ref)(0)));
+    params.set("current volume",double((*vol_curr)(0)));
+    params.set<Teuchos::RCP<Epetra_SerialDenseVector> >("reference CG", CG_ref);
+    params.set<Teuchos::RCP<Epetra_SerialDenseVector> >("current CG", CG_curr);
+    params.set("reference area",double((*area_ref)(0)));
+    params.set("current area",double((*area_curr)(0)));
+   }
   // action for elements
   const std::string action = "calc_struct_nlnstiff";
   params.set("action", action);
@@ -937,6 +1007,10 @@ void STR::TimIntImpl::ApplyForceStiffInternal
   discret_->Evaluate(params, stiff, damp, fint, Teuchos::null, fintn_str_);
   discret_->ClearState();
 
+  if (HaveFaceDiscret())
+  {
+    AssembleEdgeBasedMatandRHS(params,fint,dis,vel);
+  }
   // get plasticity data
   if (HaveSemiSmoothPlasticity()) plastman_->GetPlasticParams(params);
 

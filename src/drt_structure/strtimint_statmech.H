@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file statmech_time.H
+\file strtimint_statmech.H
 
 <pre>
 Maintainer: Kei Müller
@@ -31,6 +31,7 @@ namespace LINALG
 namespace STATMECH
 {
   class StatMechManager;
+  class StatMechManagerBilayer;
 }
 
 namespace CONTACT
@@ -72,6 +73,9 @@ namespace STR
 
     //! \brief retrieve random numbers per element
     void RandomNumbersPerElement();
+
+    //! \brief retrieve random numbers per element
+    void RandomNumbersPerNode();
 
     //! \brief suppresses output to screen/lof file in some special cases
     void SuppressOutput();
@@ -153,11 +157,45 @@ namespace STR
     //! \brief Reset relevant values, vectors, discretization state, etc. before repeating the time step (if unconverged)
     void StatMechRestoreConvState();
 
+    //! \brief Reset relevant values, vectors, discretization state, etc. before repeating the time step (if unconverged)
+    void PrintTotalSurfAreaperIter();
+
+    void PrintTotalVolperIter();
+
+    void PrintTotalEdgeLenperIter();
+
+    void GmshOutputEveryIter();
+
     //! \brief call Update() method of statmechmanager_ according to options chosen
     void StatMechUpdate(bool newrandomnumbers);
 
     //! \brief call Output() method of statmechmanager_ according to options chosen
     void StatMechOutput();
+
+    //! Do Line search iteration
+    //!
+    //! This routines expects a prepared negative residual force #fres_
+    //! and associated effective stiffness matrix #stiff_
+    int NewtonLS();
+
+    //! Solver call (line search)
+    int LsSolveNewtonStep();
+
+    //! Update structural RHS and stiffness matrix (line search)
+    void LsUpdateStructuralRHSandStiff(bool& isexcept,double& merit_fct);
+
+    //! Evaluate the specified merit function (line search)
+    //! (for pure structural problems this routine is rather short.
+    //! However, to incorporate contact problems more easily the
+    //! evaluation of the merit function is performed here.)
+    //! return 0 if successful
+    int LsEvalMeritFct(double& merit_fct);
+
+    //! Print information concerning the last line search step (line search)
+    void LsPrintLineSearchIter(double* mf_value, int iter_ls, double step_red);
+
+    //! Check the inner linesearch loop for convergence (line search)
+    bool LsConverged(double* mf_value, double step_red);
 
     //!\brief writing output including restart information
     //virtual void Output();
@@ -203,6 +241,9 @@ namespace STR
 
     //! \brief maximal number of random numbers to be generated in each time step per element
     int maxrandomnumbersperglobalelement_;
+
+    //! \brief maximal number of random numbers to be generated in each time step per node
+    int maxrandomnumbersperglobalnode_;
 
     //! \brief MultiVector holding random numbers
     Teuchos::RCP<Epetra_MultiVector> randomnumbers_;

@@ -48,6 +48,7 @@ namespace DRT
   class Condition;
   class Element;
   class Discretization;
+  class DiscretizationFaces;
 }
 namespace CONTACT
 {

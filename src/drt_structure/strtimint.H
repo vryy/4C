@@ -39,11 +39,15 @@ Maintainer: Alexander Popp
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_timestepping/timintmstep.H"
+#include "../drt_lib/drt_discret_faces.H"
+#include "../drt_statmech_bilayer/statmech_manager_bilayer.H"
+
 
 // forward declarations
 namespace DRT
 {
   class Discretization;
+  class DiscretizationFaces;
 
   namespace UTILS
   {
@@ -71,6 +75,7 @@ namespace CONTACT
 namespace STATMECH
 {
   class StatMechManager;
+  class StatMechManagerBilayer;
 }
 
 namespace POTENTIAL
@@ -907,6 +912,9 @@ namespace STR
     //! return bool indicating if contact or meshtying are defined
     bool HaveSemiSmoothPlasticity() { return (plastman_ != Teuchos::null); }
 
+    //! return bool indicating if edge based integration is defined
+    bool HaveFaceDiscret() { return (facediscret_ != Teuchos::null); }
+
     //! get access to the plasticity manager from TSI
     const Teuchos::RCP<DRT::UTILS::PlastSsnManager> GetPlasticityManager() {return plastman_;}
 
@@ -917,6 +925,12 @@ namespace STR
     //! Apply results of mesh initialization (mortar meshtying) to the
     //! underlying problem discretization
     void ApplyMeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod);
+
+
+    void AssembleEdgeBasedMatandRHS(Teuchos::ParameterList&  params,
+                                    Teuchos::RCP<Epetra_Vector> & fint,
+                                    const Teuchos::RCP<Epetra_Vector> & disp,
+                                    const Teuchos::RCP<Epetra_Vector> & vel);
 
     //! Check if plasticity elements are involved and
     //! create manager object + initialize all relevant stuff if so
@@ -977,8 +991,17 @@ namespace STR
     //! return bool indicating if statmech is defined
     bool HaveStatMech() { return (statmechman_ != Teuchos::null); }
 
+    //! return bool indicating if statmech for lipid bilayer  is defined
+    bool HaveStatMechBilayer() { return (statmechmanBilayer_ != Teuchos::null); }
+
+    //! return bool indicating if statmech for network & lipid bilayer is defined
+    bool HaveStatMechNetworkBilayer() { return (statmechman_ != Teuchos::null && statmechmanBilayer_ != Teuchos::null); }
+
     //! return statmech manager
     virtual Teuchos::RCP<STATMECH::StatMechManager> StatMechManager() {return statmechman_;}
+
+    //! return statmech managerbilayer
+    virtual Teuchos::RCP<STATMECH::StatMechManagerBilayer> StatMechManagerBilayer() {return statmechmanBilayer_;}
 
     //! Check if statistical mechanics is chosen in input file and
     //! create manager object + initialize all relevant stuff if so
@@ -1044,6 +1067,10 @@ namespace STR
     //! @name General purpose algorithm members
     //@{
     Teuchos::RCP<DRT::Discretization> discret_;  //!< attached discretisation
+
+    // face discretization (only initialized for edge-based stabilization)
+    Teuchos::RCP<DRT::DiscretizationFaces>      facediscret_;
+
     int myrank_;  //!< ID of actual processor in parallel
     Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver (no contact/meshtying)
     Teuchos::RCP<LINALG::Solver> contactsolver_;  //!< linear algebraic solver (for contact/meshtying)
@@ -1134,6 +1161,9 @@ namespace STR
 
     //! statistical mechanics
     Teuchos::RCP<STATMECH::StatMechManager> statmechman_;
+
+    //! statistical mechanics
+    Teuchos::RCP<STATMECH::StatMechManagerBilayer> statmechmanBilayer_;
 
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;

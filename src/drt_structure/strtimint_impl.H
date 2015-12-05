@@ -23,6 +23,7 @@ Maintainer: Alexander Popp
 #include <NOX_Epetra_Group.H>
 
 #include "strtimint.H"
+#include "../drt_lib/drt_discret.H"
 
 // forward declarations
 namespace DRT
@@ -101,6 +102,9 @@ namespace STR
 
     //! Do time integration of single step
     int IntegrateStep();
+
+    //! Create Edges of for discrete shell elements
+    void InitializeEdgeElements();
 
     //! @name Prediction
     //@{

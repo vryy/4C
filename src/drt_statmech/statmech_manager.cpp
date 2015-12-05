@@ -2001,6 +2001,11 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
       nodalquaternions = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),4));
       GetElementBindingSpotTriads(nodalquaternions);
     }
+    else if(linkermodel_ == statmech_linker_std  && statmechparams_.get<double>("ILINK",0.0)==0.0 && statmechparams_.get<double>("ALINK",0.0)==0.0)
+    {
+      nodalquaternions = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeColMap()),4));
+      GetElementBindingSpotTriads(nodalquaternions);
+    }
 
     // add elements to problem discretization (processor specific)
     for(int i=0; i<addcrosselement->MyLength(); i++)
@@ -2287,6 +2292,7 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
         break;
     }
   }
+  // For Truss linkers
   else if(statmechparams_.get<double>("ILINK",0.0) == 0.0 && statmechparams_.get<double>("ALINK",0.0) != 0.0)
   {
     switch((int)globalnodeids->size())
@@ -2342,6 +2348,7 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
        break;
     }
   }
+  // For Spring linkers
   else if(statmechparams_.get<double>("ILINK",0.0) == 0.0 && statmechparams_.get<double>("ALINK",0.0) == 0.0)
   {
     switch((int)globalnodeids->size())
@@ -2358,7 +2365,25 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
        newcrosslinker->SetMaterial(2);
 
        //correct reference configuration data is computed for the new crosslinker element;
-       newcrosslinker->SetUpReferenceGeometry(xrefe,rotrefe);
+
+       DRT::Element * element = discret_->gElement(discret_->lRowElement(0)->Id());
+       if (element->ElementType().Name()=="Beam3iiType")
+       {
+         // set initial triads/quaternions
+         if(nodalquaternions==Teuchos::null)
+           dserror("No nodal quaternions delivered to this method!");
+
+         std::vector<LINALG::Matrix<4,1> > nodequat((int)globalnodeids->size(),LINALG::Matrix<4, 1>(true));
+         for(int i=0; i<(int)nodequat.size(); i++)
+           for(int j=0; j<(int)nodequat[i].M(); j++)
+             (nodequat[i])(j) =(*nodalquaternions)[j][nodalquaternions->Map().LID((*globalnodeids)[i])];
+
+         newcrosslinker->SetInitialTangents(nodequat);
+         newcrosslinker->SetUpReferenceGeometry(xrefe,rotrefe,false,true);
+       }
+       else
+         newcrosslinker->SetUpReferenceGeometry(xrefe,rotrefe);
+
 
        //add element to discretization
        if(!addinitlinks)

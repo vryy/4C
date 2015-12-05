@@ -29,6 +29,7 @@ Maintainer: Benedikt Schott, Martin Kronbichler
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid_ele/fluid_ele_intfaces_calc.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_discsh3/discsh3.H"
 
 #include "../drt_mat/material.H"
 
@@ -231,6 +232,117 @@ void DRT::DiscretizationFaces::EvaluateEdgeBased(
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Evaluate edge-based integrals (public)               mukherjee 07/15|
+ *----------------------------------------------------------------------*/
+void DRT::DiscretizationFaces::EvaluateEdgeBasedStruct(
+        Teuchos::ParameterList&  params,
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<Epetra_Vector>          systemvector1
+)
+{
+  TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationFaces::EvaluateEdgeBasedStruct" );
+
+  Teuchos::RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*(this->DofColMap()),true);
+
+
+  const Epetra_Map* rmap = NULL;
+
+  Teuchos::RCP<Epetra_FECrsMatrix> sysmat_FE;
+  if (systemmatrix1 != Teuchos::null)
+  {
+    rmap = &(systemmatrix1->OperatorRangeMap());
+    sysmat_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
+  }
+  else dserror("sysmat is NULL!");
+
+  Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(new LINALG::SparseMatrix(Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),LINALG::View,true,false,LINALG::SparseMatrix::FE_MATRIX));
+
+  const int numrowintfaces = NumMyRowFaces();
+
+  for (int i=0; i<numrowintfaces; ++i)
+  {
+    DRT::Element* actface = lRowFace(i);
+
+
+    DRT::ELEMENTS::DiscSh3Line * ele = dynamic_cast<DRT::ELEMENTS::DiscSh3Line *>(actface);
+    if ( ele==NULL ) dserror( "expect DiscSh3Line element" );
+
+
+    // get the parent Shell elements
+    DRT::Element* p_master = ele->ParentMasterElement();
+    DRT::Element* p_slave  = ele->ParentSlaveElement();
+
+
+    size_t p_master_numnode = p_master->NumNode();
+    size_t p_slave_numnode  = p_slave->NumNode();
+
+    std::vector<int> nds_master;
+    nds_master.reserve(p_master_numnode);
+
+    std::vector<int> nds_slave;
+    nds_slave.reserve(p_slave_numnode);
+
+    for(size_t i=0; i< p_master_numnode; i++)  nds_master.push_back(0);
+
+    for(size_t i=0; i< p_slave_numnode; i++)   nds_slave.push_back(0);
+
+
+    //Set master ele to the Material for evaluation.
+    Teuchos::RCP<MAT::Material> material = p_master->Material();
+
+#ifdef DEBUG
+    //Set master ele to the Material for slave.
+    Teuchos::RCP<MAT::Material> material_s = p_slave->Material();
+
+    //Test whether the materials for the parent and slave element are the same.
+    if(material->MaterialType() != material_s->MaterialType())
+      dserror(" not the same material for master and slave parent element");
+#endif
+
+
+    // call the egde-based assemble and evaluate routine
+    ele->AssembleInternalFacesUsingNeighborData(params,
+                                                ele,
+                                                material,
+                                                nds_master,
+                                                nds_slave,
+                                                *this,
+                                                sysmat_linalg,
+                                                residual_col);
+
+  }
+
+  sysmat_linalg->Complete();
+
+
+  // if the fluid system matrix is of type BlockSparseMatrix, we cannot add
+  // and have to split sysmat_linalg - therefore, we try to cast the fluid system matrix!
+  // we need RTTI here - the type-IDs are compared and the dynamic cast is only performed,
+  // if we really have an underlying BlockSparseMatrix; hopefully that saves some
+  // runtime.. (kruse, 09/14)
+  if (typeid(*systemmatrix1) == typeid(*sysmat_linalg))
+  {
+//
+
+    (systemmatrix1)->Add(*sysmat_linalg, false, 1.0, 1.0);
+  }
+  else
+    dserror("you shouldn't end up here.");
+
+
+  //------------------------------------------------------------
+  // need to export residual_col to systemvector1 (residual_)
+  Epetra_Vector res_tmp(systemvector1->Map(),false);
+  Epetra_Export exporter(residual_col->Map(),res_tmp.Map());
+  int err2 = res_tmp.Export(*residual_col,exporter,Add);
+  if (err2) dserror("Export using exporter returned err=%d",err2);
+  systemvector1->Update(1.0,res_tmp,1.0);
+
+  return;
+
+} // EvaluateEdgeBasedStruct
 
 
 /*----------------------------------------------------------------------*

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file statmech.cpp
+\file strtimint_statmech.cpp
 \brief time integration for structural problems with statistical mechanics
 
 <pre>
@@ -18,9 +18,11 @@ Maintainer: Kei Müller
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_locsys.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_krylov_projector.H"
 #include "../drt_statmech/statmech_manager.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_io/io_pstream.H"
@@ -31,6 +33,8 @@ Maintainer: Kei Müller
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_beamcontact.H"
+#include "../drt_plastic_ssn/plastic_ssn_manager.H"
+#include "../drt_structure/strtimint.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "stru_aux.H"
 
@@ -43,6 +47,9 @@ Maintainer: Kei Müller
 #include "../drt_truss3/truss3.H"
 #include "../drt_truss3cl/truss3cl.H"
 #include "../drt_truss2/truss2.H"
+#include "../drt_discsh3/discsh3.H"
+
+#include <fenv.h>
 
 
 //#define GMSHPTCSTEPS
@@ -69,22 +76,36 @@ iterges_(0)
   ndim_= DRT::Problem::Instance()->NDim();
 
   // print dbc type for this simulation to screen
-  StatMechPrintBCType();
+  if(HaveStatMech())
+    StatMechPrintBCType();
 
   if(!discret_->Comm().MyPID())
   {
-    std::cout<<"StatMech output path: "<<statmechman_->StatMechRootPath()<<"/StatMechOutput/"<<std::endl;
-    std::cout<<"================================================================"<<std::endl;
+    if(HaveStatMech())
+    {
+      std::cout<<"StatMech output path: "<<statmechman_->StatMechRootPath()<<"/StatMechOutput/"<<std::endl;
+      std::cout<<"================================================================"<<std::endl;
+    }
+    else if (HaveStatMechBilayer())
+    {
+      std::cout<<"StatMech output path: "<<statmechmanBilayer_->StatMechRootPath()<<"/StatMechOutput/"<<std::endl;
+      std::cout<<"================================================================"<<std::endl;
+    }
   }
 
   // retrieve number of random numbers per element and store them in randomnumbersperelement_
   RandomNumbersPerElement();
 
+  // retrieve number of random numbers per node and store them in randomnumberspernode_
+  RandomNumbersPerNode();
+
   //suppress all output printed to screen in case of single filament studies in order not to generate too much output on the cluster
-  SuppressOutput();
+  if(HaveStatMech())
+    SuppressOutput();
 
   //in case that beam contact is activated by respective input parameter, a Beam3cmanager object is created
-  InitializeBeamContact();
+  if(HaveStatMech())
+    InitializeBeamContact();
 
   //temporary safety check -> will be removed when time loop is reorganized
   if(DRT::Problem::Instance()->ProblemType() != prb_statmech)
@@ -235,6 +256,11 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
       if((statmechman_->GetPeriodLength())->at(0) > 0.0)
         statmechman_->PeriodicBoundaryTruss3CLInit(discret_->lColElement(i));
     }
+    else if ( eot == DRT::ELEMENTS::DiscSh3Type::Instance() )
+    {
+      //see whether current element needs more random numbers per time step than any other before
+      randomnumbersperlocalelement=std::max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::DiscSh3*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+    }
     else
       continue;
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)
@@ -242,6 +268,35 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
   /*so far the maximal number of random numbers required per element has been checked only locally on this processor;
    *now we compare the results of each processor and store the maximal one in maxrandomnumbersperglobalelement_*/
   discret_->Comm().MaxAll(&randomnumbersperlocalelement,&maxrandomnumbersperglobalelement_ ,1);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  random number per node                    (public) mueller 03/12 |
+ *----------------------------------------------------------------------*/
+void STR::TimIntStatMech::RandomNumbersPerNode()
+{
+  //maximal number of random numbers to be generated per time step for any column map element of this processor
+  int randomnumbersperlocalnode = 0;
+
+  /*check maximal number of nodes of an element with stochastic forces on this processor*/
+  for (int i=0; i<  discret_->NumMyColElements(); ++i)
+  {
+    const DRT::ElementType & eot = discret_->lColElement(i)->ElementType();
+    /*stochastic forces implemented so far only for the following elements:*/
+     if ( eot == DRT::ELEMENTS::DiscSh3Type::Instance() )
+    {
+      //see whether current element needs more random numbers per time step than any other before
+      randomnumbersperlocalnode=std::max(randomnumbersperlocalnode,dynamic_cast<DRT::ELEMENTS::DiscSh3*>(discret_->lColElement(i))->HowManyRandomNumbersPerNode());
+    }
+    else
+      continue;
+  } //for (int i=0; i<dis_.NumMyColElements(); ++i)
+
+  /*so far the maximal number of random numbers required per element has been checked only locally on this processor;
+   *now we compare the results of each processor and store the maximal one in maxrandomnumbersperglobalelement_*/
+  discret_->Comm().MaxAll(&randomnumbersperlocalnode,&maxrandomnumbersperglobalnode_ ,1);
 
   return;
 }
@@ -389,10 +444,13 @@ void STR::TimIntStatMech::UpdateAndOutput()
   // after this call we will have disn_==dis_, etc
   UpdateStepState();
 
-//  if(!discret_->Comm().MyPID())
-//    std::cout<<"\n\npre UpdateTimeAndStepSize: time = "<<(*time_)[0]<<", timen_ = "<<timen_<<", dt = "<<(*dt_)[0]<<std::endl;
   // hand over time step size and time of the latest converged time step
-  statmechman_->UpdateTimeAndStepSize((*dt_)[0], timen_);
+  if(HaveStatMech())
+    statmechman_->UpdateTimeAndStepSize((*dt_)[0], timen_);
+  else if(HaveStatMechBilayer())
+  {
+    statmechmanBilayer_->UpdateTimeAndStepSize((*dt_)[0], timen_);
+  }
 
   // update time and step
 //  if(!discret_->Comm().MyPID())
@@ -508,8 +566,10 @@ INPAR::STR::ConvergenceStatus STR::TimIntStatMech::Solve()
       PTC();
     else if(itertype_==INPAR::STR::soltech_newtonfull)
       NewtonFull();
+    else if(itertype_==INPAR::STR::soltech_newtonls)
+      NewtonLS();
     else
-      dserror("itertype %d not implemented for StatMech applications! Choose either ptc or fullnewton!", itertype_);
+      dserror("itertype %d not implemented for StatMech applications! Choose ptc/fullnewton/lsnewton !", itertype_);
   }
 
   INPAR::STR::ConvergenceStatus status = INPAR::STR::conv_success;
@@ -660,7 +720,10 @@ void STR::TimIntStatMech::ApplyDirichletBC(const double                time,
   // disn then also holds prescribed new dirichlet displacements
 
   // determine DBC evaluation mode (new vs. old)
-  statmechman_->EvaluateDirichletStatMech(p, dis, vel, dbcmaps_);
+  if (HaveStatMech())
+    statmechman_->EvaluateDirichletStatMech(p, dis, vel, dbcmaps_);
+  if (HaveStatMechBilayer())
+    statmechmanBilayer_->EvaluateDirichletStatMech(p, dis, vel, dbcmaps_);
 
   discret_->ClearState();
 
@@ -778,7 +841,10 @@ void STR::TimIntStatMech::ApplyForceExternal(const double                       
   if (damping_ == INPAR::STR::damp_material)
     discret_->SetState(0,"velocity", vel);
 
-  statmechman_->EvaluateNeumannStatMech(p,disn, fext, fextlin);
+  if (HaveStatMech())
+    statmechman_->EvaluateNeumannStatMech(p,disn, fext, fextlin);
+  else if (HaveStatMechBilayer())
+    statmechmanBilayer_->EvaluateNeumannStatMech(p,disn, fext, fextlin);
 
   // go away
   return;
@@ -800,16 +866,67 @@ void STR::TimIntStatMech::ApplyForceStiffInternal(const double                  
 
   // create the parameters for the discretization
   Teuchos::ParameterList p;
+
+  //passing statistical mechanics parameters to elements
+  if(HaveStatMech())
+    statmechman_->AddStatMechParamsTo(p, randomnumbers_);
+  else if(HaveStatMechBilayer())
+  {
+    statmechmanBilayer_->AddStatMechParamsTo(p, randomnumbers_);
+
+    // get reference volume
+    p.set("action", "calc_struct_refvol");
+    Teuchos::RCP<Epetra_SerialDenseVector> vol_ref
+    = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    discret_->EvaluateScalars(p, vol_ref);
+
+    // get reference CG
+    p.set("action", "calc_struct_refCG");
+    Teuchos::RCP<Epetra_SerialDenseVector> CG_ref
+    = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+    discret_->EvaluateScalars(p, CG_ref);
+
+    // get reference area
+    p.set("action", "calc_struct_refarea");
+    Teuchos::RCP<Epetra_SerialDenseVector> area_ref
+    = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    discret_->EvaluateScalars(p, area_ref);
+
+    // get current volume
+    discret_->SetState("displacement", disn_);
+    p.set("action", "calc_struct_currvol");
+    Teuchos::RCP<Epetra_SerialDenseVector> vol_curr
+    = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    discret_->EvaluateScalars(p, vol_curr);
+
+    // get current CG
+    p.set("action", "calc_struct_currCG");
+    Teuchos::RCP<Epetra_SerialDenseVector> CG_curr
+    = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+    discret_->EvaluateScalars(p, CG_curr);
+
+
+    // get current area
+    p.set("action", "calc_struct_currarea");
+    Teuchos::RCP<Epetra_SerialDenseVector> area_curr
+    = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    discret_->EvaluateScalars(p, area_curr);
+
+    discret_->ClearState();
+
+    p.set("reference volume",double((*vol_ref)(0)));
+    p.set("current volume",double((*vol_curr)(0)));
+    p.set<Teuchos::RCP<Epetra_SerialDenseVector> >("reference CG", CG_ref);
+    p.set<Teuchos::RCP<Epetra_SerialDenseVector> >("current CG", CG_curr);
+    p.set("reference area",double((*area_ref)(0)));
+    p.set("current area",double((*area_curr)(0)));
+  }
+
   // action for elements
   const std::string action = "calc_struct_nlnstiff";
   p.set("action", action);
   p.set("total time", time);
   p.set("delta time", dt);
-
-  //disi->PutScalar(0.0);
-
-  //passing statistical mechanics parameters to elements
-  statmechman_->AddStatMechParamsTo(p, randomnumbers_);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -819,6 +936,10 @@ void STR::TimIntStatMech::ApplyForceStiffInternal(const double                  
   discret_->SetState(0,"velocity", vel);
   discret_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
+  if (HaveFaceDiscret())
+  {
+    AssembleEdgeBasedMatandRHS(p,fint,dis,vel);
+  }
 
   t_eval += timer_->WallTime() - t_evaluate;
 
@@ -877,6 +998,13 @@ void STR::TimIntStatMech::NewtonFull()
   // check whether we have a sanely filled stiffness matrix
   if (not stiff_->Filled()){ dserror("Effective stiffness matrix must be filled here");}
 
+  if (outputeveryiter_)
+  {
+    int restart = DRT::Problem::Instance()->Restart();
+    if (stepn_ == (restart + 1)) outputcounter_ = 0;
+    OutputEveryIter(true);
+  }
+
   // initialise equilibrium loop
   iter_ = 1;
   normfres_ = CalcRefNormForce();
@@ -920,10 +1048,12 @@ void STR::TimIntStatMech::NewtonFull()
     solver_->ResetTolerance();
 
     //In beam contact applications it can be necessary to limit the Newton step size (scaled residual displacements)
-    LimitStepsizeBeamContact(disi_);
+    if(HaveStatMech())
+      LimitStepsizeBeamContact(disi_);
 
     //Biopolymer network applications (for filaments with beam3eb elements and spring crosslinkers)
-    LimitStepsizeBeam(disi_);
+    if (HaveStatMech())
+      LimitStepsizeBeam(disi_);
 
 //    // recover standard displacements (no effect on StatMech)
 //    RecoverSTCSolution();
@@ -981,13 +1111,16 @@ void STR::TimIntStatMech::NewtonFull()
     // increment equilibrium loop index
     iter_ += 1;
 
+    // DEBUG: Gmsh Output
+//    GmshOutputEveryIter();
+    //    if(HaveStatMech())
+//      if()
     // Print GMSHOUTPUT
     //********************Begin: GMSH Output*******************************
         // STEP 1: OUTPUT OF TIME STEP INDEX
 //        std::ostringstream filename;
-//        filename << "/home/mukherjee/workspace/baci/release/o/gmsh_output/";
+//        filename << "/home/mukherjee/workspace/baci/release/GmshOutput/";
 //
-//        //filename << "o/gmsh_output/";
 //        if (iter_<1000000)
 //          filename << "network_timestep" << std::setw(4) << std::setfill('0')<<step_+1<<"Iter"<<std::setw(2) << std::setfill('0') << iter_-1;
 //        else /*(timestep>=1000000)*/
@@ -996,8 +1129,18 @@ void STR::TimIntStatMech::NewtonFull()
 //        // finish filename
 //        filename<<".pos";
 //
-//        statmechman_->GmshOutput((*disn_),filename,step_,(*time_)[0]);
+////        statmechman_->GmshOutput((*disn_),filename,step_,(*time_)[0]);
+//        statmechmanBilayer_->GmshOutput((*disn_),filename,step_,(*time_)[0]);
    //********************End: GMSH Output:*******************************
+
+        // Print total surface area
+//        PrintTotalSurfAreaperIter();
+
+        // Print total enclosed Volume
+//        PrintTotalVolperIter();
+
+        // Print total EdgeLength
+//        PrintTotalEdgeLenperIter();
 
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
     if(normfres_>1.0e4 && iter_>4)
@@ -1080,7 +1223,14 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
       p.set("delta time",(*dt_)[0]);
       p.set("alpha f",1-theta_);
 
-      statmechman_->AddStatMechParamsTo(p, randomnumbers_);
+
+
+      if(HaveStatMech())
+        statmechman_->AddStatMechParamsTo(p, randomnumbers_);
+      else if(HaveStatMechBilayer())
+        statmechmanBilayer_->AddStatMechParamsTo(p, randomnumbers_);
+      else
+        dserror("No Statistical Mechanics module found!");
 
       // set vector values needed by elements
       discret_->ClearState();
@@ -1380,7 +1530,11 @@ void STR::TimIntStatMech::PTC()
 
   //-----------------------------parameters from statistical mechanics parameter list
   // hard wired ptc parameters
-  Teuchos::ParameterList statmechparams = statmechman_->GetStatMechParams();
+  Teuchos::ParameterList statmechparams;
+  if(HaveStatMech())
+    statmechparams = statmechman_->GetStatMechParams();
+  if(HaveStatMechBilayer())
+    statmechparams = statmechmanBilayer_->GetStatMechBilayerParams();
   double ctransptc = statmechparams.get<double>("CTRANSPTC0",0.0);
   // crotptc is used here as equivalent to dti of the PTC scheme
   double crotptc   = statmechparams.get<double>("CROTPTC0",0.145);
@@ -1525,7 +1679,10 @@ void STR::TimIntStatMech::PTCBrownianForcesAndDamping(double& dt, double& crotpt
   p.set("ctransptc",ctransptc);
 
   //add statistical vector to parameter list for statistical forces and damping matrix computation
-  statmechman_->AddStatMechParamsTo(p);
+  if(HaveStatMech())
+    statmechman_->AddStatMechParamsTo(p);
+  else if(HaveStatMechBilayer())
+    statmechmanBilayer_->AddStatMechParamsTo(p);
 
   //evaluate ptc stiffness contribution in all the elements
   discret_->Evaluate(p,stiff_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -1563,6 +1720,506 @@ void STR::TimIntStatMech::PTCStatMechUpdate(double& ctransptc, double& crotptc, 
   }
   return;
 }//STR::TimIntStatMech::PTCStatMechUpdate()
+
+
+
+/*---------------------------------------------------------------------
+ solution with line search algorithm                  hiermeier 08/13
+---------------------------------------------------------------------*/
+int STR::TimIntStatMech::NewtonLS()
+{
+  // The specific time integration has set the following
+  // --> On #fres_ is the positive force residuum
+  // --> On #stiff_ is the effective dynamic stiffness matrix
+
+  int linsolve_error= 0;
+  int fscontrol = 0;             // integer for a first step control (equal 1: deactivation) // fixme check if this is necessary for structural mechanics
+  bool eval_error = false;       // an error occurred in the structure evaluation
+
+  // check whether we have a sanely filled stiffness matrix
+  if (not stiff_->Filled())
+    dserror("Effective stiffness matrix must be filled here");
+
+  if (outputeveryiter_)
+  {
+    int restart = DRT::Problem::Instance()->Restart();
+    if (stepn_ == (restart + 1)) outputcounter_ = 0;
+    OutputEveryIter(true);
+  }
+
+  // initialize equilibrium loop (outer Full Newton loop)
+  iter_ = 1;
+  normfres_ = CalcRefNormForce();
+  // normdisi_ was already set in predictor; this is strictly >0
+  timer_->ResetStartTime();
+
+  // Merit function at current stage and for ls step
+  std::vector<double> merit_fct (2);
+
+  // Temporal copies of different vectors. Necessary for the sufficient decrease check.
+  Teuchos::RCP<Epetra_Vector> tdisn = Teuchos::rcp(new Epetra_Vector(*disn_));
+  Teuchos::RCP<Epetra_Vector> tveln = Teuchos::rcp(new Epetra_Vector(*veln_));
+  Teuchos::RCP<Epetra_Vector> taccn = Teuchos::rcp(new Epetra_Vector(*accn_));
+
+  // equilibrium iteration loop (outer full Newton loop)
+  while ( ( (not Converged() and (not linsolve_error)) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
+  {
+    // initialize the Newton line search iteration counter
+    int iter_ls  = 0;
+    double step_red = 1.0;
+
+    /*************************************************************
+    ***           Save successful iteration state               ***
+    **************************************************************/
+
+    // It's necessary to save a temporal copy of the end-point displacements,
+    // before any update is performed (because of the pseudo energy norm):
+    tdisn->Update(1.0, *disn_, 0.0);                  // copy of the displ vector
+    tveln->Update(1.0, *veln_, 0.0);                  // copy of the velocity vector
+    taccn->Update(1.0, *accn_, 0.0);                  // copy of the acceleration vector
+
+    /*************************************************************
+    ***                       Solver Call                       ***
+    **************************************************************/
+    linsolve_error = LsSolveNewtonStep();
+
+    // Evaluate merit function
+    if (iter_==1)
+      LsEvalMeritFct(merit_fct[0]);
+    else
+      merit_fct[0]=merit_fct[1];
+
+    // Check if pred_constdis is used. If yes, the first step is not controlled.
+    if (pred_ == INPAR::STR::pred_constdis or pred_ == INPAR::STR::pred_constdisvelacc)
+      fscontrol = 1;
+    else if ((pred_==INPAR::STR::pred_tangdis || pred_==INPAR::STR::pred_constacc ||
+             pred_==INPAR::STR::pred_constvel)|| (iter_ > 1))
+      fscontrol=0;
+    else
+      dserror("The behavior of the chosen predictor is not yet tested in the line search framework.");
+
+    /*************************************************************
+    ***      Update right-hand side and stiffness matrix        ***
+    **************************************************************/
+    Teuchos::ParameterList params;
+    params.set<bool>("tolerate_errors",true);
+    params.set<bool>("eval_error",false);
+    if (fresn_str_!=Teuchos::null)
+    {
+      // attention: though it is called rhs_norm it actually contains sum x_i^2, i.e. the square of the L2-norm
+      params.set<double>("cond_rhs_norm",0.);
+      // need to know the processor id
+      params.set<int>("MyPID",myrank_);
+    }
+    {
+      int exceptcount = 0;
+      fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+      EvaluateForceStiffResidual(params);
+      if (fetestexcept(FE_INVALID) || fetestexcept(FE_OVERFLOW)
+          || fetestexcept(FE_DIVBYZERO) || params.get<bool>("eval_error")==true)
+        exceptcount  = 1;
+      int tmp=0;
+      discret_->Comm().SumAll(&exceptcount,&tmp,1);
+      if (tmp)
+        eval_error=true;
+      feclearexcept(FE_ALL_EXCEPT);
+      feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+    }
+
+    // get residual of condensed variables (e.g. EAS) for NewtonLS
+    if (fresn_str_!=Teuchos::null)
+    {
+      double loc=params.get<double>("cond_rhs_norm");
+      discret_->Comm().SumAll(&loc,&cond_res_,1);
+    }
+
+    // blank residual at (locally oriented) Dirichlet DOFs
+    // rotate to local co-ordinate systems
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateGlobalToLocal(fres_);
+
+    // extract reaction forces
+    // reactions are negative to balance residual on DBC
+    freact_->Update(-1.0, *fres_, 0.0);
+    dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+    // rotate reaction forces back to global co-ordinate system
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateLocalToGlobal(freact_);
+
+    // blank residual at DOFs on Dirichlet BC
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+    // rotate back to global co-ordinate system
+    if (locsysman_ != Teuchos::null)
+      locsysman_->RotateLocalToGlobal(fres_);
+
+    // cancel in residual those forces that would excite rigid body modes and
+    // that thus vanish in the Krylov space projection
+    if (projector_!=Teuchos::null)
+      projector_->ApplyPT(*fres_);
+
+    /*************************************************************
+    ***           merit function (current iteration)            ***
+    **************************************************************/
+    int err=LsEvalMeritFct(merit_fct[1]);
+    eval_error = (eval_error || err);
+
+    if (outputeveryiter_) OutputEveryIter(true);
+
+    /*************************************************************
+    ***          1st inner LINE SEARCH loop                     ***
+    **************************************************************/
+
+    while ((iter_-fscontrol > 0) && ((!LsConverged(& merit_fct[0], step_red) || eval_error) && (iter_ls < ls_maxiter_)))
+    {
+      /*************************************************************
+      ***           Display line search information               ***
+      **************************************************************/
+      if (iter_ls==0)
+        LsPrintLineSearchIter(&merit_fct[0],iter_ls,step_red);
+
+      // increase inner loop count
+      ++iter_ls;
+
+      /*************************************************************
+      ***                   Step size control                     ***
+      **************************************************************/
+      step_red *= alpha_ls_;
+      // >>>> displacement, velocity, acceleration <<<<<<<<<<<<<<<
+      // scale displ. increment
+      disi_->Scale(alpha_ls_);
+      // load old displ. vector
+      disn_->Update(1.0, *tdisn, 0.0);
+      // load old vel. vector
+      veln_->Update(1.0, *tveln, 0.0);
+      // load old acc. vector
+      accn_->Update(1.0, *taccn, 0.0);
+
+      // Update nodal displ., vel., acc., etc.
+      UpdateIter(iter_);
+      /*************************************************************
+      ***   Update right-hand side (and part. stiffness matrix)   ***
+      **************************************************************/
+      LsUpdateStructuralRHSandStiff(eval_error,merit_fct[1]);
+
+      /*************************************************************
+      ***           Display line search information               ***
+      **************************************************************/
+      LsPrintLineSearchIter(&merit_fct[0],iter_ls,step_red);
+
+      if (!(eval_error) && (outputeveryiter_)) OutputEveryIter(true, true);
+    }
+
+    if (iter_ls!=0)
+    {
+      if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0) and  printiter_ )
+      {
+        std::ostringstream oss;
+        std::string dashline;
+        dashline.assign(64,'-');
+        oss << dashline ;
+        // print to screen (could be done differently...)
+        if (printerrfile_)
+        {
+          fprintf(errfile_, "%s\n", oss.str().c_str());
+          fflush(errfile_);
+        }
+
+        fprintf(stdout, "%s\n", oss.str().c_str());
+        fflush(stdout);
+      }
+    }
+
+    /*************************************************************
+    ***      Print Newton Step information                      ***
+    **************************************************************/
+
+    // build residual force norm
+    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
+    // build residual displacement norm
+    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+
+    PrintNewtonIter();
+
+    // increment equilibrium loop index
+    iter_ += 1;
+
+    // DEBUG
+    GmshOutputEveryIter();
+  } // end equilibrium loop
+
+  // correct iteration counter
+  iter_ -= 1;
+
+  // call monitor
+  if (conman_->HaveMonitor())
+    conman_->ComputeMonitorValues(disn_);
+
+  //do nonlinear solver error check
+  return NewtonFullErrorCheck(linsolve_error,0);
+}
+
+
+/*----------------------------------------------------------------------
+   Solver Call (line search)                          hiermeier 09/13
+----------------------------------------------------------------------*/
+int STR::TimIntStatMech::LsSolveNewtonStep()
+{
+  int linsolve_error = 0;
+  /*************************************************************
+  ***           Prepare the solution procedure                ***
+  **************************************************************/
+  // make negative residual
+  fres_->Scale(-1.0);
+
+  // transform to local co-ordinate systems
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateGlobalToLocal(SystemMatrix(), fres_);
+
+  // STC preconditioning
+  STCPreconditioning();
+
+  // apply Dirichlet BCs to system of equations
+  disi_->PutScalar(0.0);  // Useful? depends on solver and more
+  LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
+                                 GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
+
+  /*************************************************************
+  ***                     Solver Call                         ***
+  **************************************************************/
+  // *********** time measurement ***********
+  double dtcpu = timer_->WallTime();
+  // *********** time measurement ***********
+
+  // solve for disi_
+  // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
+  if (solveradapttol_ and (iter_ > 1))
+  {
+    double worst = normfres_;
+    double wanted = tolfres_;
+    solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+  }
+
+  linsolve_error = solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1, projector_);
+  // check for problems in linear solver
+  // however we only care about this if we have a fancy divcont action (meaning function will return 0 )
+  linsolve_error = LinSolveErrorCheck(linsolve_error);
+
+  //In beam contact applications it can be necessary to limit the Newton step size (scaled residual displacements)
+  LimitStepsizeBeamContact(disi_);
+
+  solver_->ResetTolerance();
+
+  // recover standard displacements
+  RecoverSTCSolution();
+
+  // *********** time measurement ***********
+  dtsolve_ = timer_->WallTime() - dtcpu;
+  // *********** time measurement ***********
+
+  // update end-point displacements etc
+  UpdateIter(iter_);
+
+  return(linsolve_error);
+}
+
+/*----------------------------------------------------------------------
+   Update structural RHS and stiff (line search)      hiermeier 09/13
+----------------------------------------------------------------------*/
+void STR::TimIntStatMech::LsUpdateStructuralRHSandStiff(bool& isexcept,double& merit_fct)
+{
+  // --- Checking for floating point exceptions
+  fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+
+  // compute residual forces #fres_ and stiffness #stiff_
+  // whose components are globally oriented
+  int exceptcount = 0;
+  Teuchos::ParameterList params;
+  // elements may tolerate errors usually leading to dserrors
+  // in such cases the elements force the line search to reduce
+  // the step size by setting "eval_error" to true
+  params.set<bool>("tolerate_errors",true);
+  params.set<bool>("eval_error",false);
+  // condensed degrees of freedom need to know the step reduction
+  params.set<double>("alpha_ls",alpha_ls_);
+  // line search needs to know the residuals of additional condensed dofs
+  if (fresn_str_!=Teuchos::null)
+  {
+    params.set<double>("cond_rhs_norm",0.);
+    // need to know the processor id
+    params.set<int>("MyPID",myrank_);
+  }
+  EvaluateForceStiffResidual(params);
+
+  // get residual of condensed variables (e.g. EAS) for NewtonLS
+  if (fresn_str_!=Teuchos::null)
+  {
+    double loc=params.get<double>("cond_rhs_norm");
+    discret_->Comm().SumAll(&loc,&cond_res_,1);
+  }
+
+  if (fetestexcept(FE_INVALID) || fetestexcept(FE_OVERFLOW)
+      || fetestexcept(FE_DIVBYZERO) || params.get<bool>("eval_error")==true)
+    exceptcount  = 1;
+
+  // synchronize the exception flag isexcept on all processors
+  int exceptsum = 0;
+  discret_->Comm().SumAll(& exceptcount, & exceptsum, 1);
+  if (exceptsum > 0)
+    isexcept = true;
+  else
+    isexcept=false;
+
+  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+  feclearexcept(FE_ALL_EXCEPT);
+  // blank residual at (locally oriented) Dirichlet DOFs
+  // rotate to local co-ordinate systems
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateGlobalToLocal(fres_);
+
+  // extract reaction forces
+  // reactions are negative to balance residual on DBC
+  freact_->Update(-1.0, *fres_, 0.0);
+  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact_);
+  // rotate reaction forces back to global co-ordinate system
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateLocalToGlobal(freact_);
+
+  // blank residual at DOFs on Dirichlet BC
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+  // rotate back to global co-ordinate system
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateLocalToGlobal(fres_);
+
+  // cancel in residual those forces that would excite rigid body modes and
+  // that thus vanish in the Krylov space projection
+  if (projector_!=Teuchos::null)
+    projector_->ApplyPT(*fres_);
+
+  /*************************************************************
+  ***          merit function (current iteration)             ***
+  **************************************************************/
+  int err=LsEvalMeritFct(merit_fct);
+  isexcept = (isexcept || err);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------
+   Evaluate the merit function (line search)          hiermeier 08/13
+----------------------------------------------------------------------*/
+int STR::TimIntStatMech::LsEvalMeritFct(double& merit_fct)
+{
+  fedisableexcept(FE_OVERFLOW);
+  int err=0;
+  // Calculate the quadratic norm of the right-hand side as merit function
+  // Calculate the merit function value: (1/2) * <RHS,RHS>
+  if (fresn_str_==Teuchos::null)
+  {
+    err=fres_->Dot(*fres_,& merit_fct);
+  }
+  else
+  {
+    merit_fct=0.;
+    err=fresn_str_->Dot(*fresn_str_,&merit_fct);
+    merit_fct+=cond_res_;
+  }
+  merit_fct *= 0.5 ;
+
+  int exceptcount=0;
+  if (fetestexcept(FE_OVERFLOW))
+      exceptcount  = 1;
+  int exceptsum = 0;
+  discret_->Comm().SumAll(& exceptcount, & exceptsum, 1);
+  if (exceptsum!=0)
+    return err;
+  feclearexcept(FE_ALL_EXCEPT);
+  feenableexcept(FE_OVERFLOW);
+
+  return 0;
+}
+
+/*----------------------------------------------------------------------
+   Print information about the last line search step  hiermeier 09/13
+----------------------------------------------------------------------*/
+void STR::TimIntStatMech::LsPrintLineSearchIter(double* mf_value, int iter_ls, double step_red)
+{
+    normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
+  // print to standard out
+  if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0) and  printiter_ )
+  {
+    std::ostringstream oss;
+    if (iter_ls== 0)
+    {
+      std::string dashline;
+      dashline.assign(64,'-');
+      oss << dashline << std::endl;
+      oss << std::setw(6) << "ls_iter";
+      oss << std::setw(16) << "step_scale";
+      oss << std::setw(16) << "abs-dis-norm";
+      oss << std::setw(16) << "merit-fct";
+      oss << std::setw(10)<< "te";
+      if (HaveSemiSmoothPlasticity())
+        oss << std::setw(10) << "#active";
+      oss << std::endl;
+    }
+
+    oss << std::setw(7) << iter_ls;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << step_red;
+    // build residual displacement norm
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_;
+    if (iter_ls==0)
+      oss << std::setw(16) << std::setprecision(5) << std::scientific << mf_value[0];
+    else
+      oss << std::setw(16) << std::setprecision(5) << std::scientific << mf_value[1];
+    oss << std::setw(10) << std::setprecision(2) << std::scientific << dtele_;
+    if (HaveSemiSmoothPlasticity())
+      oss << std::setw(10) << std::scientific << plastman_->NumActivePlasticGP();
+
+    // finish oss
+    oss << std::ends;
+
+      // print to screen (could be done differently...)
+    if (printerrfile_)
+    {
+      fprintf(errfile_, "%s\n", oss.str().c_str());
+      fflush(errfile_);
+    }
+
+    fprintf(stdout, "%s\n", oss.str().c_str());
+    fflush(stdout);
+  }
+
+  // see you
+  return;
+}
+
+/*----------------------------------------------------------------------
+   Inner convergence check (line search)              hiermeier 08/13
+----------------------------------------------------------------------*/
+bool STR::TimIntStatMech::LsConverged(double* mf_value,double step_red)
+{
+  bool check_ls_mf = false;
+
+  /*************************************************************
+  ***           Check for sufficient descent                  ***
+  **************************************************************/
+  // mf_value[1]: NEW merit function value
+  //            --> f(x + alpha_ls * dx)
+  // mf_value[0]: OLD merit function value (initial value at the beginning of the time step
+  //              or function value of the last converged iteration step. Converged means that
+  //              the last step fulfilled the LsConverged test.)
+  //            --> f(x)
+  // The check follows to
+  //            f(x + alpha_ls * dx) - f(x) <= - 2 * sigma_ls * step_red_ * f(x).
+  check_ls_mf = ((mf_value[1] - mf_value[0]) <= - 2.0 * sigma_ls_ * step_red * mf_value[0]);
+
+
+//  std::cout<<"step_red="<<step_red<<std::endl;
+//  std::cout<<"check_ls_mf="<<check_ls_mf<<std::endl;
+  return (check_ls_mf);
+}
+
 
 /*----------------------------------------------------------------------*
  |  incremental iteration update of state                  mueller 03/12|
@@ -1657,7 +2314,12 @@ void STR::TimIntStatMech::ConvergenceStatusUpdate(bool converged)
   else
   {
     isconverged_ = false;
-    statmechman_->UpdateNumberOfUnconvergedSteps();
+    if(HaveStatMechBilayer())
+    {
+      statmechmanBilayer_->UpdateNumberOfUnconvergedSteps();
+    }
+    else
+      statmechman_->UpdateNumberOfUnconvergedSteps();
   }
   return;
 }
@@ -1778,35 +2440,97 @@ bool STR::TimIntStatMech::BeamContactExitUzawaAt(int& maxuzawaiter)
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::StatMechPrepareStep()
 {
-  if(HaveStatMech())
+  if(HaveStatMech() || HaveStatMechBilayer())
   {
-    Teuchos::ParameterList statmechparams = statmechman_->GetStatMechParams();
+    Teuchos::ParameterList statmechparams;
+    if(HaveStatMech())
+      statmechparams = statmechman_->GetStatMechParams();
+    else if(HaveStatMechBilayer())
+      statmechparams = statmechmanBilayer_->GetStatMechBilayerParams();
 
-    // special preparations for the very first step
-    if(step_ == 0)
+    switch (DRT::INPUT::IntegralValue<INPAR::STATMECH::SimulationType>(statmechparams,"SIMULATION_TYPE"))
     {
-      /* In case we add an initial amount of already linked crosslinkers, we have to build the octree
-       * even before the first statmechman_->Update() call because the octree is needed to decide
-       * whether links can be set...*/
-      if(statmechparams.get<int>("INITOCCUPIEDBSPOTS",0)>0)
-        statmechman_->SetInitialCrosslinkers(beamcman_);
+    case INPAR::STATMECH::simulation_type_biopolymer_network:
+    case INPAR::STATMECH::simulation_type_none:
+    {
+//
+      // special preparations for the very first step
+      if(step_ == 0)
+      {
+        /* In case we add an initial amount of already linked crosslinkers, we have to build the octree
+         * even before the first statmechman_->Update() call because the octree is needed to decide
+         * whether links can be set...*/
+        if(statmechparams.get<int>("INITOCCUPIEDBSPOTS",0)>0)
+          statmechman_->SetInitialCrosslinkers(beamcman_);
 
-      // Initialize Statistical Mechanics Output
-      statmechman_->InitOutput(DRT::Problem::Instance()->NDim(),*((*dis_)(0)),step_,(*dt_)[0]);
+        // Initialize Statistical Mechanics Output
+        statmechman_->InitOutput(DRT::Problem::Instance()->NDim(),*((*dis_)(0)),step_,(*dt_)[0]);
+      }
+
+      //save relevant class variables at the beginning of this time step
+      statmechman_->WriteConv(beamcman_);
+
+      double randnumtimeinc = statmechparams.get<double>("RANDNUMTIMEINT",-1.0);
+      int randnumupdatestep = static_cast<int>( (timen_-(*dt_)[0]) / randnumtimeinc + 1.0e-8);
+
+      //seed random generators of statmechman_ to generate the same random numbers even if the simulation was interrupted by a restart
+      statmechman_->SeedRandomGenerators(step_, randnumupdatestep);
+
+      if(!discret_->Comm().MyPID() && printscreen_)
+      {
+        std::cout<<"\nbegin time step "<<stepn_<<":";
+      }
     }
-
-    //save relevant class variables at the beginning of this time step
-    statmechman_->WriteConv(beamcman_);
-
-    double randnumtimeinc = statmechparams.get<double>("RANDNUMTIMEINT",-1.0);
-    int randnumupdatestep = static_cast<int>( (timen_-(*dt_)[0]) / randnumtimeinc + 1.0e-8);
-
-    //seed random generators of statmechman_ to generate the same random numbers even if the simulation was interrupted by a restart
-    statmechman_->SeedRandomGenerators(step_, randnumupdatestep);
-
-    if(!discret_->Comm().MyPID() && printscreen_)
+    break;
+    case INPAR::STATMECH::simulation_type_lipid_bilayer:
     {
-      std::cout<<"\nbegin time step "<<stepn_<<":";
+      // special preparations for the very first step
+      if(step_ == 0)
+      {
+        // Initialize Statistical Mechanics Output
+        // TODO: create output for lipid bilayer analysis
+        statmechmanBilayer_->InitOutput(DRT::Problem::Instance()->NDim(),*((*dis_)(0)),step_,(*dt_)[0]);
+      }
+
+
+      double randnumtimeinc = statmechparams.get<double>("RANDNUMTIMEINT",-1.0);
+      int randnumupdatestep = static_cast<int>( (timen_-(*dt_)[0]) / randnumtimeinc + 1.0e-8);
+
+      //seed random generators of statmechman_ to generate the same random numbers even if the simulation was interrupted by a restart
+      statmechmanBilayer_->SeedRandomGenerators(step_, randnumupdatestep);
+
+      if(!discret_->Comm().MyPID() && printscreen_)
+      {
+        std::cout<<"\nbegin time step "<<stepn_<<":";
+      }
+    }
+    break;
+    case INPAR::STATMECH::simulation_type_network_bilayer:
+    {
+      // special preparations for the very first step
+      if(step_ == 0)
+      {
+        // Initialize Statistical Mechanics Output
+        // TODO: create output for network & lipid bilayer analysis
+        statmechmanBilayer_->InitOutput(DRT::Problem::Instance()->NDim(),*((*dis_)(0)),step_,(*dt_)[0]);
+      }
+
+
+      double randnumtimeinc = statmechparams.get<double>("RANDNUMTIMEINT",-1.0);
+      int randnumupdatestep = static_cast<int>( (timen_-(*dt_)[0]) / randnumtimeinc + 1.0e-8);
+
+      //seed random generators of statmechman_ to generate the same random numbers even if the simulation was interrupted by a restart
+      statmechmanBilayer_->SeedRandomGenerators(step_, randnumupdatestep);
+      statmechman_->SeedRandomGenerators(step_, randnumupdatestep);
+      if(!discret_->Comm().MyPID() && printscreen_)
+      {
+        std::cout<<"\nbegin time step "<<stepn_<<":";
+      }
+    }
+    break;
+    default:
+      dserror("Simulation type not found! Please check input parameters.");
+      break;
     }
   }
 
@@ -1819,19 +2543,33 @@ void STR::TimIntStatMech::StatMechPrepareStep()
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::StatMechUpdate(bool newrandomnumbers)
 {
-  if(!HaveStatMech())
+  if(!HaveStatMech() && !HaveStatMechBilayer())
     dserror("You should not be here!");
+//
 
-  Teuchos::ParameterList statmechparams = statmechman_->GetStatMechParams();
+//  Teuchos::ParameterList statmechparams = statmechman_->GetStatMechParams();
+  Teuchos::ParameterList statmechparams;
+  if(HaveStatMech())
+    statmechparams = statmechman_->GetStatMechParams();
+  if(HaveStatMechBilayer()) // Get parameter for bilayer
+    statmechparams = statmechmanBilayer_->GetStatMechBilayerParams();
   //assuming that iterations will converge
+//
+
   isconverged_ = true;
   const double t_admin = Teuchos::Time::wallTime();
-  if(HaveBeamContact())
-    statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_,beamcman_,buildoctree_, printscreen_);
-  else
-    statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_, Teuchos::null,false,printscreen_);
+  if(HaveStatMech())
+  {
+    if(HaveBeamContact())
+      statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_,beamcman_,buildoctree_, printscreen_);
+    else
+      statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_, Teuchos::null,false,printscreen_);
+  }
+  else if(HaveStatMechBilayer())
+    statmechmanBilayer_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_, false, printscreen_);
   // print to screen
   StatMechPrintUpdate(t_admin);
+//
 
   //Only generate new random numbers if necessary (for repeated time steps this depends on the type of divercont_ action)
   if(newrandomnumbers)
@@ -1839,17 +2577,27 @@ void STR::TimIntStatMech::StatMechUpdate(bool newrandomnumbers)
     /*multivector for stochastic forces evaluated by each element; the numbers of vectors in the multivector equals the maximal
      *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
      *for synchrinisation of these random numbers in parallel computing*/
-    randomnumbers_ = Teuchos::rcp( new Epetra_MultiVector(*(discret_->ElementColMap()),maxrandomnumbersperglobalelement_,true) );
+    if(HaveStatMech())
+      randomnumbers_ = Teuchos::rcp( new Epetra_MultiVector(*(discret_->ElementColMap()),maxrandomnumbersperglobalelement_,true) );
+    else if(HaveStatMechBilayer())
+      randomnumbers_ = Teuchos::rcp( new Epetra_MultiVector(*(discret_->NodeColMap()),maxrandomnumbersperglobalnode_,true) );
+
     /*pay attention: for a constant predictor an incremental velocity update is necessary, which has been deleted out of the code in oder to simplify it*/
     //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)^0.5
     double randnumtimeinc = statmechparams.get<double>("RANDNUMTIMEINT",-1.0);
     if(randnumtimeinc==-1.0)
     {
-      statmechman_->GenerateGaussianRandomNumbers(randomnumbers_,0,pow(2.0 * statmechparams.get<double>("KT",0.0) / (*dt_)[0],0.5));
+      if(HaveStatMech())
+        statmechman_->GenerateGaussianRandomNumbers(randomnumbers_,0,pow(2.0 * statmechparams.get<double>("KT",0.0) / (*dt_)[0],0.5));
+      else if(HaveStatMechBilayer())
+        statmechmanBilayer_->GenerateGaussianRandomNumbers(randomnumbers_,0,pow(2.0 * statmechparams.get<double>("KT",0.0) / (*dt_)[0],0.5));
     }
     else
     {
-      statmechman_->GenerateGaussianRandomNumbers(randomnumbers_,0,pow(2.0 * statmechparams.get<double>("KT",0.0) / randnumtimeinc ,0.5));
+      if(HaveStatMech())
+        statmechman_->GenerateGaussianRandomNumbers(randomnumbers_,0,pow(2.0 * statmechparams.get<double>("KT",0.0) / randnumtimeinc ,0.5));
+      else if(HaveStatMechBilayer())
+        statmechmanBilayer_->GenerateGaussianRandomNumbers(randomnumbers_,0,pow(2.0 * statmechparams.get<double>("KT",0.0) / randnumtimeinc ,0.5));
     }
   }
 
@@ -1863,13 +2611,20 @@ void STR::TimIntStatMech::StatMechPrintUpdate(const double& t_admin)
 {
   if(!myrank_ && printscreen_)
   {
-    INPAR::STATMECH::LinkerModel linkermodel = DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"LINKERMODEL");
-    if(linkermodel != INPAR::STATMECH::linkermodel_none)
+    if(HaveStatMech())
     {
-      std::cout<<"\nTime for update of crosslinkers                   : " << Teuchos::Time::wallTime() - t_admin<< " seconds";
-      std::cout<<"\nTotal number of elements after crosslinker update : "<<discret_->NumGlobalElements();
+      INPAR::STATMECH::LinkerModel linkermodel = DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"LINKERMODEL");
+      if(linkermodel != INPAR::STATMECH::linkermodel_none)
+      {
+        std::cout<<"\nTime for update of crosslinkers                   : " << Teuchos::Time::wallTime() - t_admin<< " seconds";
+        std::cout<<"\nTotal number of elements after crosslinker update : "<<discret_->NumGlobalElements();
+      }
+      std::cout<<"\nNumber of unconverged steps since simulation start: "<<statmechman_->NumberOfUnconvergedSteps()<<"\n"<<std::endl;
     }
-    std::cout<<"\nNumber of unconverged steps since simulation start: "<<statmechman_->NumberOfUnconvergedSteps()<<"\n"<<std::endl;
+    else if(HaveStatMechBilayer())
+    {
+      std::cout<<"\nNumber of unconverged steps since simulation start: "<<statmechmanBilayer_->NumberOfUnconvergedSteps()<<"\n"<<std::endl;
+    }
   }
   return;
 }//StatMechPrintUpdate()
@@ -1887,6 +2642,10 @@ void STR::TimIntStatMech::StatMechOutput()
       statmechman_->Output(ndim_,(*time_)[0],step_,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_, printscreen_);
     else
       statmechman_->Output(ndim_,(*time_)[0],step_,(*dt_)[0],*((*dis_)(0)),*fint_, Teuchos::null, printscreen_);
+  }
+  if(HaveStatMechBilayer())
+  {
+    statmechmanBilayer_->Output(ndim_,(*time_)[0],step_,(*dt_)[0],*((*dis_)(0)),*fint_, printscreen_);
   }
   return;
 }// StatMechOutput()
@@ -1910,4 +2669,168 @@ void STR::TimIntStatMech::StatMechRestoreConvState()
   }
   return;
 } // StatMechRestoreConvState()
+
+void STR::TimIntStatMech::PrintTotalSurfAreaperIter()
+{
+  //we need displacements also of ghost nodes and hence export displacment vector to column map format
+  Epetra_Vector discol(*(discret_->DofColMap()), true);
+  LINALG::Export(*disn_, discol);
+
+  double area_ele=0;
+  double area_total=0;
+  for (int i=0; i < discret_->NumMyRowElements() - 1; i++)
+  {
+    //getting pointer to current element
+    DRT::Element* element = discret_->lRowElement(i);
+    const DRT::ElementType & eot = element->ElementType();
+
+    if(eot == DRT::ELEMENTS::DiscSh3Type::Instance())    // discrete shell element
+    {
+      DRT::ELEMENTS::DiscSh3* ele = dynamic_cast<DRT::ELEMENTS::DiscSh3*>(element);
+      area_ele=ele->CalcSurfArea(*discret_,discol,false);
+    }
+    discret_->Comm().SumAll(&area_ele, &area_total, 1);
+  }
+
+  //proc 0 write complete output into file, all other proc inactive
+  if(!discret_->Comm().MyPID())
+  {
+
+    FILE* fp = NULL; //file pointer for statistical output file
+
+    //name of output file
+    std::ostringstream outputfilename;
+    outputfilename.str("");
+    outputfilename << "/home/mukherjee/workspace/baci/release/StatMechOutput/SurfaceAreaIterations" << ".dat";
+
+    fp = fopen(outputfilename.str().c_str(), "a");
+    std::stringstream filecontent;
+    //          filecontent << iter_-1;
+    filecontent << std::scientific << std::setprecision(10);
+    filecontent << " " << area_total;
+
+    filecontent << std::endl;
+    fputs(filecontent.str().c_str(), fp);
+    fclose(fp);
+  }
+
+  return;
+
+}
+
+void STR::TimIntStatMech::PrintTotalVolperIter()
+{
+  //we need displacements also of ghost nodes and hence export displacment vector to column map format
+  Epetra_Vector discol(*(discret_->DofColMap()), true);
+  LINALG::Export(*disn_, discol);
+
+  double vol_ele=0;
+  double vol_total=0;
+  for (int i=0; i < discret_->NumMyRowElements() - 1; i++)
+  {
+    //getting pointer to current element
+    DRT::Element* element = discret_->lRowElement(i);
+    const DRT::ElementType & eot = element->ElementType();
+
+    if(eot == DRT::ELEMENTS::DiscSh3Type::Instance())    // discrete shell element
+    {
+      DRT::ELEMENTS::DiscSh3* ele = dynamic_cast<DRT::ELEMENTS::DiscSh3*>(element);
+      vol_ele=ele->CalcVolume(*discret_,discol,false);
+    }
+    discret_->Comm().SumAll(&vol_ele, &vol_total, 1);
+  }
+
+  //proc 0 write complete output into file, all other proc inactive
+  if(!discret_->Comm().MyPID())
+  {
+
+    FILE* fp = NULL; //file pointer for statistical output file
+
+    //name of output file
+    std::ostringstream outputfilename;
+    outputfilename.str("");
+    outputfilename << "/home/mukherjee/workspace/baci/release/StatMechOutput/VolumeperIterations" << ".dat";
+
+    fp = fopen(outputfilename.str().c_str(), "a");
+    std::stringstream filecontent;
+    //          filecontent << iter_-1;
+    filecontent << std::scientific << std::setprecision(10);
+    filecontent << " " << vol_total;
+
+    filecontent << std::endl;
+    fputs(filecontent.str().c_str(), fp);
+    fclose(fp);
+  }
+
+  return;
+
+}
+
+void STR::TimIntStatMech::PrintTotalEdgeLenperIter()
+{
+  //we need displacements also of ghost nodes and hence export displacment vector to column map format
+  Epetra_Vector discol(*(discret_->DofColMap()), true);
+  LINALG::Export(*disn_, discol);
+
+  double Edge_ele=0;
+  double Edge_total=0;
+  for (int i=0; i < facediscret_->NumMyRowFaces() - 1; i++)
+  {
+    //getting pointer to current element
+    DRT::Element* element = facediscret_->lRowFace(i);
+    const DRT::ElementType & eot = element->ElementType();
+
+    if(eot == DRT::ELEMENTS::DiscSh3LineType::Instance())    // discrete shell Edge element
+    {
+      DRT::ELEMENTS::DiscSh3Line* ele = dynamic_cast<DRT::ELEMENTS::DiscSh3Line*>(element);
+      Edge_ele=ele->GetCurrEdgeLength(*discret_,discol);
+    }
+    discret_->Comm().SumAll(&Edge_ele, &Edge_total, 1);
+  }
+
+  //proc 0 write complete output into file, all other proc inactive
+  if(!discret_->Comm().MyPID())
+  {
+
+    FILE* fp = NULL; //file pointer for statistical output file
+
+    //name of output file
+    std::ostringstream outputfilename;
+    outputfilename.str("");
+    outputfilename << "/home/mukherjee/workspace/baci/release/StatMechOutput/EdgeperIterations" << ".dat";
+
+    fp = fopen(outputfilename.str().c_str(), "a");
+    std::stringstream filecontent;
+    //          filecontent << iter_-1;
+    filecontent << std::scientific << std::setprecision(10);
+    filecontent << " " << Edge_total;
+
+    filecontent << std::endl;
+    fputs(filecontent.str().c_str(), fp);
+    fclose(fp);
+  }
+
+  return;
+}
+
+void STR::TimIntStatMech::GmshOutputEveryIter()
+{
+      // STEP 1: OUTPUT OF TIME STEP INDEX
+      std::ostringstream filename;
+      filename << "/home/mukherjee/workspace/baci/release/GmshOutput/";
+
+      if (iter_<1000000)
+        filename << "Timestep" << std::setw(4) << std::setfill('0')<<step_+1<<"Iter"<<std::setw(2) << std::setfill('0') << iter_-1;
+      else /*(timestep>=1000000)*/
+        dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
+
+      // finish filename
+      filename<<".pos";
+
+//        statmechman_->GmshOutput((*disn_),filename,step_,(*time_)[0]);
+      statmechmanBilayer_->GmshOutput((*disn_),filename,step_,(*time_)[0]);
+
+  return;
+
+}
 

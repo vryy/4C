@@ -33,7 +33,12 @@ int ADAPTER::StructureStatMech::Integrate()
 
   // set statmech internal time and time step size
   double dt = 0.0;
-  StatMechManager()->UpdateTimeAndStepSize(dt,TimeOld(),true);
+  if(HaveStatMech())
+    StatMechManager()->UpdateTimeAndStepSize(dt,TimeOld(),true);
+  else if(HaveStatMechBilayer())
+  {
+    StatMechManagerBilayer()->UpdateTimeAndStepSize(dt,TimeOld(),true);
+  }
   SetDt(dt);
   // this is necessary in case the time step size changed with the initial step (originally timen_ is set in strtimint.cpp)
   SetTimen(TimeOld()+Dt());
@@ -78,7 +83,8 @@ int ADAPTER::StructureStatMech::Integrate()
 #endif
 
     //periodic shift of configuration at the end of the time step in order to avoid improper output
-    StatMechManager()->PeriodicBoundaryShift(*WriteAccessDispnp(), ndim, Time(), Dt());
+    if(HaveStatMech())
+      StatMechManager()->PeriodicBoundaryShift(*WriteAccessDispnp(), ndim, Time(), Dt());
 
 #ifdef MEASURETIME
     const double t3 = Teuchos::Time::wallTime();

@@ -31,6 +31,18 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   Teuchos::ParameterList& statmech = list->sublist("STATISTICAL MECHANICS",false,"");
 
+  //Reading kind of problem to be solved with StatMech
+  setStringToIntegralParameter<int>("SIMULATION_TYPE","None","TYPE of problem to be solved with StatMech",
+                               //listing possible std::strings in input file in category THERMALBATH
+                               tuple<std::string>("None", "none", "biopolymer_network","lipid_bilayer","network_bilayer"),
+                               //translating input std::strings into BACI input parameters
+                               tuple<int>(INPAR::STATMECH::simulation_type_none,
+                                          INPAR::STATMECH::simulation_type_none,
+                                          INPAR::STATMECH::simulation_type_biopolymer_network,
+                                          INPAR::STATMECH::simulation_type_lipid_bilayer,
+                                          INPAR::STATMECH::simulation_type_network_bilayer),
+                                          &statmech);
+
   //Reading kind of background fluid stream in the thermal bath
   setStringToIntegralParameter<int>("THERMALBATH","None","Type of thermal bath applied to elements",
                                //listing possible std::strings in input file in category THERMALBATH
@@ -50,7 +62,7 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                                     "anisotropic",
                                                     "orientationcorrelation",
                                                     "endtoend_const",
-                                                    "viscoelasticity",
+//                                                    "viscoelasticity",
 //                                                    "networkcreep",
 //                                                    "networkrelax",
                                                     "networkdispfield",
@@ -60,7 +72,8 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                                     "loomelnrg",
                                                     "motassay",
                                                     "linkerlength",
-                                                    "deltatheta"
+                                                    "deltatheta",
+                                                    "vesceqshapes"
                                                     ),
                                  //translating input std::strings into BACI input parameters
                                  tuple<int>(statout_none,statout_none,
@@ -68,7 +81,7 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                             statout_anisotropic,
                                             statout_orientationcorrelation,
                                             statout_endtoendconst,
-                                            statout_viscoelasticity,
+//                                            statout_viscoelasticity,
 //                                            statout_networkcreep,
 //                                            statout_networkrelax,
                                             statout_networkdispfield,
@@ -78,7 +91,8 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                             statout_loomelnrg,
                                             statout_motassay,
                                             statout_linkerlength,
-                                            statout_deltatheta),
+                                            statout_deltatheta,
+                                            statout_vesceqshapes),
                                  &statmech);
 
   //Reading which kind of friction model should be applied
@@ -195,12 +209,22 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   setNumericStringParameter("ACTIONDT","-1.0","Time step sizes corresponding to ACTIONTIME values.",&statmech);
   // index controlling the start of BC application (see ACTIONTIME)
   IntParameter("BCTIMEINDEX",-1,"Integer refers to the n-th entry of ACTIONTIME. States beginning of BC application. Starts counting at '1' !",&statmech);
+  // Measure the number of passes
+  IntParameter("NUMPASSES",-1," Number of passes for finding the equilibrium shapes of the lipid_bilayer membrane!",&statmech);
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("FILAMENTPOLARITY","No","toggles filament polarity",yesnotuple,yesnovalue,&statmech);
+  //Reading whether bond-flips are activated for membranes
+  setStringToIntegralParameter<int>("BONDFLIP","No","toggles bond-flip for lipidbilayer",yesnotuple,yesnovalue,&statmech);
   //Rise per monomer in the actin double helix according to Howard, p. 125
   setNumericStringParameter("RISEPERBSPOT","0.00277","rise per monomer in the actin one-start helix",&statmech);
   //Rotation per monomer in the actin double helix according to Howard, p. 125
   DoubleParameter("ROTPERBSPOT",-2.8999,"rotation per monomer in the actin double-helix",&statmech);
+  DoubleParameter("AREA_PENALTY",0.0,"Area penalty for bio-memebrane ",&statmech);
+  DoubleParameter("BARY_PENALTY",0.0,"Penalty of Barymeter for bio-memebrane ",&statmech);
+  DoubleParameter("CURV_PENALTY",0.0,"Curvature penalty for bio-memebrane ",&statmech);
+  DoubleParameter("CG_PENALTY",0.0,"Center of Gravity penalty for bio-memebrane ",&statmech);
+  DoubleParameter("LINE_PENALTY",0.0,"Line penalty for bio-memebrane ",&statmech);
+  DoubleParameter("VOL_PENALTY",0.0,"Volume penalty for bio-memebrane ",&statmech);
   //angular offset of the binding spot orientation (constant for each filament)
   DoubleParameter("BSPOTOFFSET",0.0,"angular offset of the binding spot orientation (constant for each filament)",&statmech);
   //angle between binding spot orientation and the surface of the cone-shaped binding spot reactive volume

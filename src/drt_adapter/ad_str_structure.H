@@ -67,6 +67,7 @@ namespace UTILS
 namespace STATMECH
 {
   class StatMechManager;
+  class StatMechManagerBilayer;
 }
 
 namespace TIMINT
@@ -503,6 +504,9 @@ namespace ADAPTER {
 
     /// return statmech manager
     virtual Teuchos::RCP<STATMECH::StatMechManager> StatMechManager() = 0;
+
+    /// return statmech manager for lipid bilayer
+    virtual Teuchos::RCP<STATMECH::StatMechManagerBilayer> StatMechManagerBilayer() = 0;
 
   };
 

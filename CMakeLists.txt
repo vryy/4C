@@ -611,6 +611,12 @@ set(OBJS_DRT_STATMECH
   src/drt_statmech/statmech_structanaly.cpp
   src/drt_statmech/statmech_utils.cpp
 )
+set(OBJS_DRT_STATMECHBILAYER
+  src/drt_statmech_bilayer/statmech_manager_bilayer.cpp
+  src/drt_statmech_bilayer/statmech_bilayer_gmsh.cpp
+  src/drt_statmech_bilayer/statmech_bilayer_output.cpp
+  src/drt_statmech_bilayer/statmech_bilayer_utils.cpp
+)
 set(OBJS_DRT_PLASTIC_SSN
   src/drt_plastic_ssn/plastic_ssn_manager.cpp
 )
@@ -1910,6 +1916,13 @@ set(OBJS_DRT_T3_LIB
   src/drt_truss3/truss3_evaluate.cpp
   src/drt_truss3/truss3_input.cpp
 )
+set(OBJS_DRT_DISCSH3_LIB
+  src/drt_discsh3/discsh3.cpp
+  src/drt_discsh3/discsh3_line.cpp
+  src/drt_discsh3/discsh3_evaluate.cpp
+  src/drt_discsh3/discsh3_line_evaluate.cpp
+  src/drt_discsh3/discsh3_input.cpp
+)
 set(OBJS_DRT_SP3_LIB
   src/drt_spring3/spring3.cpp
   src/drt_spring3/spring3_evaluate.cpp
@@ -2257,6 +2270,7 @@ add_library(ele_opti ${OBJS_DRT_TOPOPT_LIB})
 add_library(ele_s8 ${OBJS_DRT_S8_LIB})
 add_library(ele_lubrication ${OBJS_DRT_LUBRICATION_LIB})
 add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
+add_library(ele_discsh3 ${OBJS_DRT_DISCSH3_LIB})
 add_library(ele_sp3 ${OBJS_DRT_SP3_LIB})
 add_library(ele_meshfree_scatra ${OBJS_DRT_MESHFREE_SCATRA_LIB})
 add_library(ele_so ${OBJS_SOH8_LIB})
@@ -2282,6 +2296,7 @@ set(ELEMENT_LIBRARIES
   ele_b3cl
   ele_bele3
   ele_combust3
+  ele_discsh3
   ele_fluid
   ele_meshfree_fluid
   ele_opti
@@ -2359,6 +2374,7 @@ add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
 add_library(alg_scatra ${OBJS_DRT_SCATRA})
 add_library(alg_statmech ${OBJS_DRT_STATMECH})
+add_library(alg_statmech_bilayer ${OBJS_DRT_STATMECHBILAYER})
 add_library(alg_plastic_ssn ${OBJS_DRT_PLASTIC_SSN})
 add_library(alg_structure ${OBJS_DRT_STRUCTURE})
 add_library(alg_thermo ${OBJS_DRT_THERMO})
@@ -2380,6 +2396,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_scatra
   alg_structure
   alg_statmech
+  alg_statmech_bilayer
   alg_crack
   alg_plastic_ssn
   alg_invanalysis

@@ -22,7 +22,13 @@ namespace INPAR
   /// Input parameters used in statistical mechanics
   namespace STATMECH
   {
-
+    enum SimulationType
+    {
+      simulation_type_none, // Problems involving just biopolymer networks
+      simulation_type_biopolymer_network, // Problems involving just biopolymer networks
+      simulation_type_lipid_bilayer,       // Problems involving lipid bilayer without the networks
+      simulation_type_network_bilayer       // Problems involving lipid bilayer with the networks
+    };
     /// Type of thermal bath affecting elements
     /// (this enum represents the input file parameter THERMALBATH)
     enum ThermalBathType
@@ -50,7 +56,9 @@ namespace INPAR
       statout_loomelnrg, ///< writing output for filament elastic energy
       statout_motassay, ///< writing output for motility assay (active linker setup)
       statout_linkerlength, //< writing output of spring linkers
-      statout_deltatheta // < writing output of change in inclusive angle of filaments when connected to linkers
+      statout_deltatheta, // < writing output of change in inclusive angle of filaments when connected to linkers
+      // Membrane cases
+      statout_vesceqshapes
     };
 
     /// (this enum represents the input file parameter STAT_OUTPUT)

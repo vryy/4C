@@ -60,6 +60,7 @@ Maintainer: Alexander Popp
 #include "../drt_patspec/patspec.H"
 #include "../drt_immersed_problem/immersed_field_exchange_manager.H"
 #include "../drt_statmech/statmech_manager.H"
+#include "../drt_statmech_bilayer/statmech_manager_bilayer.H"
 #include "../drt_plastic_ssn/plastic_ssn_manager.H"
 #include "../drt_stru_multi/microstatic.H"
 
@@ -106,6 +107,7 @@ STR::TimInt::TimInt
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : discret_(actdis),
+  facediscret_(Teuchos::null),
   myrank_(actdis->Comm().MyPID()),
   solver_(solver),
   contactsolver_(contactsolver),
@@ -147,6 +149,7 @@ STR::TimInt::TimInt
   cmtbridge_(Teuchos::null),
   beamcman_(Teuchos::null),
   statmechman_(Teuchos::null),
+  statmechmanBilayer_(Teuchos::null),
   locsysman_(Teuchos::null),
   pressure_(Teuchos::null),
   propcrack_(Teuchos::null),
@@ -891,6 +894,29 @@ void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ | add potential edge-based stabilization terms         rasthofer 06/13 |
+ *----------------------------------------------------------------------*/
+void STR::TimInt::AssembleEdgeBasedMatandRHS(Teuchos::ParameterList&  params,
+                                             Teuchos::RCP<Epetra_Vector> & fint,
+                                             const Teuchos::RCP<Epetra_Vector> & disp,
+                                             const Teuchos::RCP<Epetra_Vector> & vel)
+{
+  // add edged-based stabilization, if selected
+//  if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based")
+  {
+     discret_->SetState("displacement",disp);
+     discret_->SetState("velocity",vel);
+    // Sparse Operator
+     facediscret_->EvaluateEdgeBasedStruct(params,stiff_,fint);
+     discret_->ClearState();
+
+  }
+
+  return;
+}
+
 /*----------------------------------------------------------------------*/
 /* Check for semi-smooth Newton type of plasticity and do preparations */
 void STR::TimInt::PrepareSemiSmoothPlasticity()
@@ -954,8 +980,9 @@ void STR::TimInt::PrepareStatMech()
   // some parameters
   const Teuchos::ParameterList&   statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
   INPAR::STATMECH::ThermalBathType tbtype  = DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechparams,"THERMALBATH");
+  INPAR::STATMECH::SimulationType simype  = DRT::INPUT::IntegralValue<INPAR::STATMECH::SimulationType>(statmechparams,"SIMULATION_TYPE");
 
-  if(tbtype != INPAR::STATMECH::thermalbath_none)
+  if(tbtype != INPAR::STATMECH::thermalbath_none && (simype==INPAR::STATMECH::simulation_type_biopolymer_network || simype==INPAR::STATMECH::simulation_type_none ))
   {
     statmechman_ = Teuchos::rcp(new STATMECH::StatMechManager(discret_));
 
@@ -965,10 +992,10 @@ void STR::TimInt::PrepareStatMech()
       switch(tbtype)
       {
         case INPAR::STATMECH::thermalbath_uniform:
-          std::cout << "========= Statistical Mechanics: uniform thermal bath ==========\n" << std::endl;
+          std::cout << "========= Statistical Mechanics: Biopolymer network in uniform thermal bath ==========\n" << std::endl;
           break;
         case INPAR::STATMECH::thermalbath_shearflow:
-          std::cout << "======== Statistical Mechanics: thermal bath, shearflow ========\n" << std::endl;
+          std::cout << "======== Statistical Mechanics: Biopolymer network in thermal bath, shearflow ========\n" << std::endl;
           break;
         default: dserror("Undefined thermalbath type!");
         break;
@@ -978,6 +1005,36 @@ void STR::TimInt::PrepareStatMech()
         std::cout<<"STDOUT SUPPRESSED!"<<std::endl;
     }
   }
+  else if(tbtype == INPAR::STATMECH::thermalbath_uniform && simype==INPAR::STATMECH::simulation_type_lipid_bilayer)
+  {
+    statmechmanBilayer_ = Teuchos::rcp(new STATMECH::StatMechManagerBilayer(discret_));
+
+    // output
+    if (!discret_->Comm().MyPID())
+    {
+      std::cout << "========= Statistical Mechanics: lipid bilayer in uniform thermal bath  ==========\n" << std::endl;
+      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+      if(!ioparams.get<int>("STDOUTEVRY",0))
+        std::cout<<"STDOUT SUPPRESSED!"<<std::endl;
+    }
+  }
+  else if(tbtype == INPAR::STATMECH::thermalbath_uniform && simype==INPAR::STATMECH::simulation_type_network_bilayer)
+  {
+    statmechman_        = Teuchos::rcp(new STATMECH::StatMechManager(discret_));
+    statmechmanBilayer_ = Teuchos::rcp(new STATMECH::StatMechManagerBilayer(discret_));
+
+    // output
+    if (!discret_->Comm().MyPID())
+    {
+      std::cout << "========= Statistical Mechanics: lipid bilayer & network in uniform thermal bath  ==========\n" << std::endl;
+
+      Teuchos::ParameterList ioparams = DRT::Problem::Instance()->IOParams();
+      if(!ioparams.get<int>("STDOUTEVRY",0))
+        std::cout<<"STDOUT SUPPRESSED!"<<std::endl;
+    }
+  }
+ // else
+   // dserror("Simulation Type not recognised!");
   return;
 }
 
@@ -1050,6 +1107,58 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 
     // create the parameters for the discretization
     Teuchos::ParameterList p;
+
+    if (HaveStatMechBilayer())
+    {
+
+       // get reference volume
+      p.set("action", "calc_struct_refvol");
+       Teuchos::RCP<Epetra_SerialDenseVector> vol_ref
+         = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+       discret_->EvaluateScalars(p, vol_ref);
+
+       // get reference CG
+      p.set("action", "calc_struct_refCG");
+       Teuchos::RCP<Epetra_SerialDenseVector> CG_ref
+         = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+       discret_->EvaluateScalars(p, CG_ref);
+
+       // get reference area
+      p.set("action", "calc_struct_refarea");
+       Teuchos::RCP<Epetra_SerialDenseVector> area_ref
+         = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+       discret_->EvaluateScalars(p, area_ref);
+
+       discret_->SetState("displacement", disn_);
+       // get current volume
+       p.set("action", "calc_struct_currvol");
+       Teuchos::RCP<Epetra_SerialDenseVector> vol_curr
+         = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+       discret_->EvaluateScalars(p, vol_curr);
+
+       // get current CG
+       p.set("action", "calc_struct_currCG");
+       Teuchos::RCP<Epetra_SerialDenseVector> CG_curr
+         = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+       discret_->EvaluateScalars(p, CG_curr);
+
+
+       // get current area
+       p.set("action", "calc_struct_currarea");
+       Teuchos::RCP<Epetra_SerialDenseVector> area_curr
+         = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+       discret_->EvaluateScalars(p, area_curr);
+
+       discret_->ClearState();
+
+       p.set("reference volume",double((*vol_ref)(0)));
+       p.set("current volume",double((*vol_curr)(0)));
+       p.set<Teuchos::RCP<Epetra_SerialDenseVector> >("reference CG", CG_ref);
+       p.set<Teuchos::RCP<Epetra_SerialDenseVector> >("current CG", CG_curr);
+       p.set("reference area",double((*area_ref)(0)));
+       p.set("current area",double((*area_curr)(0)));
+    }
+
     // action for elements
     if(lumpmass_ == false)
       p.set("action", "calc_struct_nlnstiffmass");
@@ -1099,6 +1208,14 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, fintn_str_);
     discret_->ClearState();
+
+    // If have edge based integration
+    // Loop over Edge elements
+    if (HaveFaceDiscret())
+    {
+      AssembleEdgeBasedMatandRHS(p,fint, (*dis_)(0),(*vel_)(0));
+    }
+
 
     //plastic parameters
     if (HaveSemiSmoothPlasticity())
