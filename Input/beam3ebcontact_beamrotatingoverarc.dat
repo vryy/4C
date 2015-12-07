@@ -125,10 +125,10 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1e9 NUE 0.0 DENS 0 THEXPANS 0.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------------------CURVE2
 CURVE2 on EXPR FUNC 0.0 t1 0.0 t2 1.0
-CURVE2 on EXPR FUNC 1.0-cos(2*pi*(t-1.0)/4.0))) t1 1.0 t2 5.0
+CURVE2 on EXPR FUNC 1.0-cos(2*pi*(t-1.0)/4.0) t1 1.0 t2 5.0
 ----------------------------------------------------------------------CURVE3
 CURVE3 on EXPR FUNC 0.0 t1 0.0 t2 1.0
-CURVE3 on EXPR FUNC sin(2*pi*(t-1.0)/4.0))) t1 1.0 t2 5.0
+CURVE3 on EXPR FUNC sin(2*pi*(t-1.0)/4.0) t1 1.0 t2 5.0
 ----------------------------------------------------------RESULT DESCRIPTION
 //Results with ANS and 4 GP
 STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE 3.04409153849278136e-01 TOLERANCE 1e-12
