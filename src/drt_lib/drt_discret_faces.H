@@ -330,14 +330,6 @@ public:
        Teuchos::RCP<Epetra_Vector>          systemvector1
   );
 
-  /*!
-  \brief Evaluate edge-based integrals for structural problems
-  */
-  void EvaluateEdgeBasedStruct(
-      Teuchos::ParameterList&  params,
-       Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
-       Teuchos::RCP<Epetra_Vector>          systemvector1
-  );
 
   /*!
   \brief Complete construction of a face elements

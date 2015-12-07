@@ -60,7 +60,7 @@ int DRT::ELEMENTS::DiscSh3Line::EvaluateNeumann(
  | Evaluate implementation for internal surface stabilization (public)  mukherjee 08/15|
  *-------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::DiscSh3Line::EvaluateEdges(
-    Teuchos::ParameterList&                  params,
+    const Teuchos::ParameterList&                  params,
     DRT::ELEMENTS::DiscSh3Line*              edge,              ///< internal face element
     DRT::Discretization&                     discretization,       ///< discretization
     std::vector<int>&                        patchlm,              ///< patch local map
@@ -308,14 +308,12 @@ if(master_ele->IfHaveDamping()&& slave_ele->IfHaveDamping())
   /*// If Different damping is taken account
  if(master_ele->IfHaveDamping()&& slave_ele->IfHaveDamping())
  {
-   dserror("stop");
    //get time step size
    FAD dt = params.get<double>("delta time",0.0);
 
     //damping coefficients for translational and rotational degrees of freedom
    FAD gamma = params.get<double>("ETA",0.0);
 
-//   std::cout<<"gamma"<<gamma<<std::endl;
 
    std::vector<FAD> v_FAD_curr(NUMDOF_DISCSH3+3,0.0); // +3 because of additional node of neighbour
    AddCurrVel(*master_ele,*slave_ele,connectivity,v_FAD_curr, discretization);
@@ -410,7 +408,7 @@ if(master_ele->IfHaveDamping()&& slave_ele->IfHaveDamping())
  | Assemble internal faces integrals using data from both parent elements mukherjee 08/15|
  *---------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3Line::AssembleInternalFacesUsingNeighborData(
-    Teuchos::ParameterList&  params,
+    const Teuchos::ParameterList&  params,
     DRT::ELEMENTS::DiscSh3Line*         intface,         ///< internal face element
     Teuchos::RCP<MAT::Material> &        material,        ///< material for face stabilization
     std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element

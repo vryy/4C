@@ -31,8 +31,9 @@ Maintainer: Alexander Popp
 #include "../drt_contact/meshtying_abstract_strategy.H"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "../drt_contact/contact_abstract_strategy.H"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "../drt_contact/meshtying_contact_bridge.H"
-#include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_beamcontact.H"
+#include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_beamcontact/beam3contact_defines.H"
@@ -213,13 +214,12 @@ STR::TimIntImpl::TimIntImpl
   }
 
   // Initiate Edge element for discrete shell elements
-  if(HaveFaceDiscret())
+  if(DRT::Problem::Instance()->ProblemType() == prb_statmech)
   {
-    const DRT::ElementType &eot = discret_->lRowElement(0)->ElementType();
-    if (eot == DRT::ELEMENTS::DiscSh3Type::Instance() && DRT::Problem::Instance()->ProblemType() == prb_statmech)
+    const Teuchos::ParameterList&   statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+    INPAR::STATMECH::SimulationType simype  = DRT::INPUT::IntegralValue<INPAR::STATMECH::SimulationType>(statmechparams,"SIMULATION_TYPE");
+    if (simype==INPAR::STATMECH::simulation_type_lipid_bilayer)
       InitializeEdgeElements();
-    else if (eot == DRT::ELEMENTS::DiscSh3Type::Instance() && DRT::Problem::Instance()->ProblemType() != prb_statmech)
-      dserror("Please set your PROBLEMTYP & DYNAMICTYP to StatMech");
   }
 
   // create empty residual force vector

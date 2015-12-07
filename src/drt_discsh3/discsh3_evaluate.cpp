@@ -382,7 +382,7 @@ int DRT::ELEMENTS::DiscSh3::EvaluateNeumann(Teuchos::ParameterList&   params,
   dserror("Method not configured yet!");
   // get values and switches from the condition
    const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
-   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+//   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
 
    /*
    **    TIME CURVE BUSINESS
@@ -438,6 +438,7 @@ void DRT::ELEMENTS::DiscSh3::sh3_nlnstiffmass(Teuchos::ParameterList&   params,
                                               Epetra_SerialDenseVector* force)
 {
   x_n_=SpatialConfiguration(disp);
+  Teuchos::ParameterList StatMechParams = DRT::Problem::Instance()->StatisticalMechanicsParams();
 
   // Calculate the stiffness and viscous contribution arising from area constraint
   const int NumGElements=discretization.NumGlobalElements();
@@ -455,14 +456,21 @@ void DRT::ELEMENTS::DiscSh3::sh3_nlnstiffmass(Teuchos::ParameterList&   params,
   // Global way of computing constraint on Barycenter
   //   BaryConstrtStiffmass(params,disp,vel,stiffmatrix,force,NumGElements);
 
-  // Local way of computing constraint on element area
+  INPAR::STATMECH::AreaPenaltyType area_pen_type = DRT::INPUT::IntegralValue<INPAR::STATMECH::AreaPenaltyType>(StatMechParams,"AREA_PENALTY_TYPE");
+
+  if(area_pen_type==INPAR::STATMECH::areapenalty_local)
+  {
+    // Local way of computing constraint on element area
     AreaConstrtStiffmass(params,disp,vel,stiffmatrix,force);
+  }
+  else if(area_pen_type==INPAR::STATMECH::areapenalty_global)
+  {
+    // Global way of computing constraint on element area
+    AreaConstrtGlobalStiff(params,discretization,disp,stiffmatrix,force);
+  }
 
   // Local way of computing constraint on element area (Quadrature based)
-//  AreaConstrtQuadStiffmass(params,disp,vel,stiffmatrix,force);
-
-  // Global way of computing constraint on element area
-//   AreaConstrtGlobalStiff(params,discretization,disp,stiffmatrix,force);
+  //  AreaConstrtQuadStiffmass(params,disp,vel,stiffmatrix,force);
 
   // Local way of Calculating the force & stiffness contribution
   // arising from volume constraint (Only applicable in case of enclosed volume)
@@ -476,8 +484,8 @@ void DRT::ELEMENTS::DiscSh3::sh3_nlnstiffmass(Teuchos::ParameterList&   params,
   sh3_lumpmass(disp,massmatrix);
 
   // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
-//  if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
-//  internalforces_ = *force;
+  //  if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
+  //  internalforces_ = *force;
   /*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
   * it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a
   * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
@@ -512,7 +520,6 @@ inline void DRT::ELEMENTS::DiscSh3::CalcBrownian(Teuchos::ParameterList& params,
   //if no random numbers for generation of stochastic forces are passed to the element no Brownian dynamics calculations are conducted
   if( params.get<  Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
     return;
-//  dserror("stop");
 
   //Evaluation of force vectors and stiffness matrices
 

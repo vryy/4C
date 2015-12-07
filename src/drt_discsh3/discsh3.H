@@ -1115,7 +1115,7 @@ public:
 
   //    evaluate implementation for internal surface stabilization
   virtual int EvaluateEdges(
-      Teuchos::ParameterList&                 params,
+      const Teuchos::ParameterList&                 params,
       DRT::ELEMENTS::DiscSh3Line*             edge,              ///< internal face element
       DRT::Discretization&                     discretization,       ///< discretization
       std::vector<int>&                        patchlm,              ///< patch local map
@@ -1130,7 +1130,7 @@ public:
 
 
   void AssembleInternalFacesUsingNeighborData(
-      Teuchos::ParameterList&  params,
+      const Teuchos::ParameterList&  params,
       DRT::ELEMENTS::DiscSh3Line*         intface,         ///< internal face element
       Teuchos::RCP<MAT::Material> &        material,        ///< material for face stabilization
       std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element

@@ -128,6 +128,14 @@ namespace INPAR
       filamentmodel_helical /// < filament with helical orientation of binding spots
     };
 
+    /// (this enum represents the input file parameter FILAMENTMODEL
+    enum AreaPenaltyType
+    {
+      areapenalty_local,   // Local area penalty
+      areapenalty_global,  // Global area penalty
+      areapenalty_none     // No area penalty
+    };
+
     /// set the statmech parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

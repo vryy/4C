@@ -201,6 +201,19 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                             bsstype_octree),
                                             &statmech);
 
+  //%%%%%%%%%%%%% Bilayer Model %%%%%%%%%%%%%%%%%%%%//
+  //Reading which kind of filament model should be applied
+  setStringToIntegralParameter<int>("AREA_PENALTY_TYPE","local","Area penalty type applied in Statmech simulations",
+                                 //listing possible std::strings in input file in category AREA_PENALTY_TYPE
+                                 tuple<std::string>("local",
+                                                    "global",
+                                                    "none"),
+                                 //translating input std::strings into BACI input parameters
+                                 tuple<int>(areapenalty_local,
+                                            areapenalty_global,
+                                            areapenalty_none),
+                                            &statmech);
+
   //time after which writing of statistical output is started
   DoubleParameter("STARTTIMEOUT",0.0,"Time after which writing of statistical output is started",&statmech);
   // Time values at which certain actions are carried out
@@ -219,11 +232,17 @@ void INPAR::STATMECH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   setNumericStringParameter("RISEPERBSPOT","0.00277","rise per monomer in the actin one-start helix",&statmech);
   //Rotation per monomer in the actin double helix according to Howard, p. 125
   DoubleParameter("ROTPERBSPOT",-2.8999,"rotation per monomer in the actin double-helix",&statmech);
+  // Value of penalty parameter
   DoubleParameter("AREA_PENALTY",0.0,"Area penalty for bio-memebrane ",&statmech);
+  // Value of penalty parameter
   DoubleParameter("BARY_PENALTY",0.0,"Penalty of Barymeter for bio-memebrane ",&statmech);
+  // Value of penalty parameter
   DoubleParameter("CURV_PENALTY",0.0,"Curvature penalty for bio-memebrane ",&statmech);
+  // Value of penalty parameter
   DoubleParameter("CG_PENALTY",0.0,"Center of Gravity penalty for bio-memebrane ",&statmech);
+  // Value of penalty parameter
   DoubleParameter("LINE_PENALTY",0.0,"Line penalty for bio-memebrane ",&statmech);
+  // Value of penalty parameter
   DoubleParameter("VOL_PENALTY",0.0,"Volume penalty for bio-memebrane ",&statmech);
   //angular offset of the binding spot orientation (constant for each filament)
   DoubleParameter("BSPOTOFFSET",0.0,"angular offset of the binding spot orientation (constant for each filament)",&statmech);

@@ -909,7 +909,7 @@ void STR::TimInt::AssembleEdgeBasedMatandRHS(Teuchos::ParameterList&  params,
      discret_->SetState("displacement",disp);
      discret_->SetState("velocity",vel);
     // Sparse Operator
-     facediscret_->EvaluateEdgeBasedStruct(params,stiff_,fint);
+     facediscret_->EvaluateEdgeBased(stiff_,fint);
      discret_->ClearState();
 
   }
