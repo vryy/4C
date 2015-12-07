@@ -221,11 +221,10 @@ public:
 
   //! calculate mass/heat normal flux at specified boundaries
   Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(
-    std::vector<std::string>& condnames,   //!< ?
-    const bool           writetofile, //!< ?
-    const int            num=0,       //!< field number
-    bool                 fixtotflux=false //!< always calculate flux_total_boundary
-  );
+      std::vector<std::string>&   condnames,     //!< ?
+      const bool                  writetofile,   //!< ?
+      const int                   num=0          //!< field number
+      );
 
   //! calculate error compared to analytical solution
   virtual void EvaluateErrorComparedToAnalyticalSol();

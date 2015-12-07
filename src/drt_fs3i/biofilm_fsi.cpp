@@ -367,7 +367,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 
     // calculation of the flux at the interface based on normal influx values before time shift of results
     // is performed in Update
-    Teuchos::RCP<Epetra_MultiVector> strufluxn = struscatra->ScaTraField()->CalcFluxAtBoundary(biogrcondnames,false,0,1);
+    Teuchos::RCP<Epetra_MultiVector> strufluxn = struscatra->ScaTraField()->CalcFluxAtBoundary(biogrcondnames,false);
 
     UpdateScatraFields();
 

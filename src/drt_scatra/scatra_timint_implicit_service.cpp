@@ -174,10 +174,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
  |  calculate mass / heat normal flux at specified boundaries  gjb 06/09|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
-    std::vector<std::string>& condnames,
-    const bool writetofile,
-    const int num,
-    bool fixtotflux)
+    std::vector<std::string>&   condnames,     //!< ?
+    const bool                  writetofile,   //!< ?
+    const int                   num            //!< field number
+    )
 {
   // The normal flux calculation is based on the idea proposed in
   // GRESHO ET AL.,
@@ -186,8 +186,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   // INTERNATIONAL JOURNAL FOR NUMERICAL METHODS IN FLUIDS, VOL. 7, 371-394 (1987)
   // For the moment, we are lumping the 'boundary mass matrix' instead of solving
   // a small linear system!
-
-  if (fixtotflux ==1) writeflux_= INPAR::SCATRA::flux_total_boundary;
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
