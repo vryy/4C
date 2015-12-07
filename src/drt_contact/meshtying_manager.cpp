@@ -244,8 +244,8 @@ discret_(discret)
         // create MortarNode object
         Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),node->X(),
                                                               node->Owner(),
-                                                              Discret().NumDof(node),
-                                                              Discret().Dof(node),
+                                                              Discret().NumDof(0,node),
+                                                              Discret().Dof(0,node),
                                                               isslave[j]));
         //-------------------
         // get nurbs weight!
