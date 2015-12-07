@@ -175,7 +175,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
   default:
   {
     dserror("Decide, whether ALE_TYPE = '%s' is linear or nonlinear.",
-        adyn->get<std::string>("ALE_TYPE"));
+        adyn->get<std::string>("ALE_TYPE").c_str());
     break;
   }
   }
