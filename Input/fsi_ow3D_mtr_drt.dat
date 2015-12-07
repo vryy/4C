@@ -13,7 +13,8 @@ MATERIALS                       3
 NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-ALE_TYPE                        springs
+ALE_TYPE                        springs_material
+UPDATEMATRIX                    no
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1
@@ -3621,10 +3622,10 @@ NODE 1132 COORD 1.00000000e+00 1.10000002e+00 -5.00000007e-02
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 60 QUANTITY dispy VALUE -4.170323733e-05 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY velx VALUE 3.051507265e-05 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY vely VALUE -6.83930093149005781e-04 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 60 QUANTITY dispy VALUE -4.17029920008008545e-05 TOLERANCE 1e-11
+FLUID DIS fluid NODE 589 QUANTITY velx VALUE 3.05149894348366844e-05 TOLERANCE 1e-11
+FLUID DIS fluid NODE 589 QUANTITY vely VALUE -6.83929613539969051e-04 TOLERANCE 1e-11
 FLUID DIS fluid NODE 589 QUANTITY velz VALUE 0.0 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY pressure VALUE 8.32592890843335438e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 589 QUANTITY pressure VALUE 8.32592810223514376e-03 TOLERANCE 1e-11
 -------------------------------------------------------------------------END
 //                              END

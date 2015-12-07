@@ -45,8 +45,8 @@ GAMMA                           1.0
 CHARELELENGTH_PC                root_of_volume
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-ALE_TYPE                        solid
-MAXITER                          10
+ALE_TYPE                        solid_linear
+UPDATEMATRIX                    no
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1
 TIMESTEP                        0.1
@@ -7040,9 +7040,9 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 //CURVE1 on Explicit FUNC f(t)=exp(1-1:t) c1 1.0 c2 1.0
 CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1834 QUANTITY dispx VALUE -3.34920672276418737e-05 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 1834 QUANTITY dispy VALUE -3.63727504237473982e-04 TOLERANCE 1e-9
-FLUID DIS fluid NODE 2155 QUANTITY vely VALUE 3.43128636138521307e-04 TOLERANCE 1e-8
-FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE -2.45498696659764972e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1834 QUANTITY dispx VALUE -3.34920672276418737e-05 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 1834 QUANTITY dispy VALUE -3.63727504237473982e-04 TOLERANCE 1e-12
+FLUID DIS fluid NODE 2155 QUANTITY vely VALUE 3.43128636138521307e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE -2.45498696659764972e-03 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END

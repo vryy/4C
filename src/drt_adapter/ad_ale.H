@@ -82,7 +82,7 @@ class Ale
 public:
 
   //! virtual to get polymorph destruction
-  virtual ~Ale();
+  virtual ~Ale(){};
 
   //! @name Vector access
 

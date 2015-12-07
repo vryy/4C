@@ -95,7 +95,8 @@ TOL_VEL_RES_INF                 1e-10
 TOL_VEL_RES_L2                  1e-10
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-ALE_TYPE                        springs
+ALE_TYPE                        laplace_material
+UPDATEMATRIX                    no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          Aztec_MSR

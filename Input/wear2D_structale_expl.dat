@@ -61,7 +61,7 @@ SYSTEM                          condensed//saddlepoint
 //NORMCOMBI_RESFCONTCONSTR        Or
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
-ALE_TYPE                        springs
+ALE_TYPE                        springs_spatial
 MAXITER                         1
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual

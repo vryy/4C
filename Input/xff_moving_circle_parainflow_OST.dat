@@ -79,7 +79,7 @@ EOS_DEFINITION_TAU              Burman_Fernandez
 EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   //EOS_he_surf_with_max_diameter
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
-ALE_TYPE                        springs
+ALE_TYPE                        springs_spatial
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         8.0
 NUMSTEP                         8

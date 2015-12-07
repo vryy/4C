@@ -26,7 +26,7 @@ WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 --------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        springs
+ALE_TYPE                        springs_spatial
 LINEAR_SOLVER                   1
 NUMSTEP                         2
 MAXTIME                         0.5

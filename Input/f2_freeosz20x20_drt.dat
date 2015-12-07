@@ -84,7 +84,8 @@ LINEAR_SOLVER                   2
 TIMESTEP                        0.05
 NUMSTEP                         200
 MAXTIME                         5.0
-ALE_TYPE                        springs
+ALE_TYPE                        springs_material
+UPDATEMATRIX                    no
 RESULTSEVRY                     1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Freesurface_Solver

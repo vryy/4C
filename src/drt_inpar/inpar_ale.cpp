@@ -25,15 +25,34 @@ void INPAR::ALE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   Teuchos::ParameterList& adyn = list->sublist("ALE DYNAMIC",false,"");
 
-  DoubleParameter("TIMESTEP",0.1,"",&adyn);
-  IntParameter("NUMSTEP",41,"",&adyn);
-  DoubleParameter("MAXTIME",4.0,"",&adyn);
-  setStringToIntegralParameter<int>("ALE_TYPE","solid","ale mesh movement algorithm",
-                               tuple<std::string>("solid","laplace","springs"),
-                               tuple<int>(solid,
-                                   laplace,
-                                   springs),
-                               &adyn);
+  DoubleParameter("TIMESTEP",0.1,"time step size",&adyn);
+  IntParameter("NUMSTEP",41,"max number of time steps",&adyn);
+  DoubleParameter("MAXTIME",4.0,"max simulation time",&adyn);
+
+  setStringToIntegralParameter<int>("ALE_TYPE", "solid",
+      "ale mesh movement algorithm",
+      tuple<std::string>(
+          "solid",
+          "solid_linear",
+          "laplace_material",
+          "laplace_spatial",
+          "springs_material",
+          "springs_spatial"
+          ),
+      tuple<int>(
+          solid,
+          solid_linear,
+          laplace_material,
+          laplace_spatial,
+          springs_material,
+          springs_spatial
+          ),
+      &adyn);
+
+  BoolParameter("UPDATEMATRIX", "no",
+      "Update stiffness matrix in every time step (only for linear/material strategies)",
+      &adyn);
+
   IntParameter("MAXITER",1,"Maximum number of newton iterations.",&adyn);
   DoubleParameter("TOLRES",1.0e-06,"Absolute tolerance for length scaled L2 residual norm ",&adyn);
   DoubleParameter("TOLDISP",1.0e-06,"Absolute tolerance for length scaled L2 increment norm ",&adyn);

@@ -66,7 +66,8 @@ ITEMAX                          100
 SHAPEDERIVATIVES                Yes
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
-ALE_TYPE                        springs
+ALE_TYPE                        springs_material
+UPDATEMATRIX                    no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Freesurface_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

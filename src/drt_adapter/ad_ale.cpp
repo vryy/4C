@@ -24,6 +24,7 @@ Maintainer: Matthias Mayr
 #include "../drt_ale/ale.H"
 
 #include "../drt_inpar/drt_validparameters.H"
+#include "../drt_inpar/inpar_parameterlist_utils.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -42,24 +43,10 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ADAPTER::Ale::~Ale()
-{
-}
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 ADAPTER::AleBaseAlgorithm::AleBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn,
     Teuchos::RCP<DRT::Discretization> actdis)
 {
-  // check whether we have chosen a valid aletype for new ale
-  INPAR::ALE::AleDynamic aletyp = DRT::INPUT::IntegralValue<
-      INPAR::ALE::AleDynamic>(DRT::Problem::Instance()->AleDynamicParams(),
-      "ALE_TYPE");
-  if (aletyp != INPAR::ALE::solid && aletyp != INPAR::ALE::springs
-      && aletyp != INPAR::ALE::laplace)
-    dserror("Not a valid ALETYP for new ale.");
-
   SetupAle(prbdyn, actdis);
 }
 
@@ -162,8 +149,36 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
 
 
   // create the ALE time integrator
-  Teuchos::RCP < ALE::Ale > ale = Teuchos::rcp(
-      new ALE::Ale(actdis, solver, adyn, output));
+  INPAR::ALE::AleDynamic aletype
+      = DRT::INPUT::IntegralValue<INPAR::ALE::AleDynamic>(*adyn, "ALE_TYPE");
+  Teuchos::RCP<ALE::Ale> ale = Teuchos::null;
+  switch (aletype)
+  {
+  // catch all nonlinear cases
+  case INPAR::ALE::solid:
+  case INPAR::ALE::laplace_spatial:
+  case INPAR::ALE::springs_spatial:
+  {
+    ale = Teuchos::rcp(new ALE::Ale(actdis, solver, adyn, output));
+
+    break;
+  }
+  // catch and linear cases
+  case INPAR::ALE::solid_linear:
+  case INPAR::ALE::laplace_material:
+  case INPAR::ALE::springs_material:
+  {
+    ale = Teuchos::rcp(new ALE::AleLinear(actdis, solver, adyn, output));
+
+    break;
+  }
+  default:
+  {
+    dserror("Decide, whether ALE_TYPE = '%s' is linear or nonlinear.",
+        adyn->get<std::string>("ALE_TYPE"));
+    break;
+  }
+  }
 
   /* determine problem type and then wrap the ALE time integrator into a
    * problem-specific wrapper */
@@ -171,7 +186,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
   {
   case prb_ale:
   {
-    ale_=ale;
+    ale_ = ale;
     break;
   }
   case prb_fsi:

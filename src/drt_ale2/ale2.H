@@ -291,30 +291,51 @@ public:
 
 private:
 
+  /*! \brief ALE mesh motion via Laplacian smoohting
+   *
+   *  Solve Laplace equation
+   *  \f[
+   *    \nabla_{config}\cdot\nabla_{config} d = 0, \quad d = \hat d \text{ on } \Gamma
+   *  \f]
+   *  with \f$\nabla_{config}\f$ denoting the material or spatial gradient
+   *  operator and the displacement field \f$d\f$ and satisfying prescribed
+   *  displacement on the entire boundary \f$\Gamma\f$.
+   *
+   *  \note For spatial configuration, displacement vector equals current
+   *  displacements. For material configuration, displacement vector is zero.
+   */
   void static_ke_laplace(
-      DRT::Discretization& dis,
-      std::vector<int>& lm,
-      Epetra_SerialDenseMatrix* sys_mat, Epetra_SerialDenseVector& residual,
-      std::vector<double>& displacements,
-      Teuchos::ParameterList& params);
+      DRT::Discretization& dis, ///< discretization
+      std::vector<int>& lm, ///< node owning procs
+      Epetra_SerialDenseMatrix* sys_mat, ///< element stiffness matrix (to be filled)
+      Epetra_SerialDenseVector& residual, ///< element residual vector (to be filled)
+      std::vector<double>& displacements, ///< nodal discplacements
+      const bool spatialconfiguration ///< use spatial configuration (true), material configuration (false)
+      );
 
-  void static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
-      Epetra_SerialDenseVector& residual,
-      std::vector<double>& displacements);
+  void static_ke_spring(
+      Epetra_SerialDenseMatrix* sys_mat, ///< element stiffness matrix (to be filled)
+      Epetra_SerialDenseVector& residual, ///< element residual vector (to be filled)
+      std::vector<double>& displacements, ///, nodal displacements
+      const bool spatialconfiguration ///< use spatial configuration (true), material configuration (false)
+      );
 
   /*! \brief evaluate element quantities for nonlinear case
    *
-   *  we can handle st.venant kirchoff material and many materials
+   *  We can handle St.-Venant-Kirchhoff material and many materials
    *  from the elast hyper toolbox.
    *
    *  \note this routine was copied from DRT::ELEMENTS::Wall1
    */
   void static_ke_nonlinear(
-      const std::vector<int> & lm,
-      const std::vector<double> & disp,
-      Epetra_SerialDenseMatrix * stiffmatrix, Epetra_SerialDenseVector * force,
-      Teuchos::ParameterList& params);
-
+      const std::vector<int> & lm, ///< node owning procs
+      const std::vector<double> & disp, ///< nodal displacements
+      Epetra_SerialDenseMatrix* stiffmatrix, ///< element stiffness matrix (to be filled)
+      Epetra_SerialDenseVector* force, ///< element residual vector (to be filled)
+      Teuchos::ParameterList& params, ///< parameter list
+      const bool spatialconfiguration, ///< use spatial configuration (true), material configuration (false)
+      const bool pseudolinear ///< compute residual as stiffness * displacements (pseudo-linear approach)
+      );
 
   void CallMatGeoNonl(
       const Epetra_SerialDenseVector& strain, ///< Green-Lagrange strain vector
@@ -326,21 +347,23 @@ private:
       );
 
   void MaterialResponse3dPlane(
-      Epetra_SerialDenseMatrix& stress,
-      Epetra_SerialDenseMatrix& C,
-      const Epetra_SerialDenseVector& strain,
-      Teuchos::ParameterList& params);
+      Epetra_SerialDenseMatrix& stress, ///< stress state (output)
+      Epetra_SerialDenseMatrix& C, ///< material tensor (output)
+      const Epetra_SerialDenseVector& strain, ///< strain state (input)
+      Teuchos::ParameterList& params ///< parameter list
+      );
 
   void MaterialResponse3d(
-    LINALG::Matrix<6,1>* stress,
-    LINALG::Matrix<6,6>* cmat,
-    const LINALG::Matrix<6,1>* glstrain,
-    Teuchos::ParameterList& params
+    LINALG::Matrix<6,1>* stress, ///< stress state (output)
+    LINALG::Matrix<6,6>* cmat, ///< material tensor (output)
+    const LINALG::Matrix<6,1>* glstrain, ///< strain state (input)
+    Teuchos::ParameterList& params ///< parameter list
     );
 
+  //! Transform Green-Lagrange notation from 2D to 3D
   void GreenLagrangePlane3d(
-    const Epetra_SerialDenseVector& glplane,
-    LINALG::Matrix<6, 1>& gl3d);
+    const Epetra_SerialDenseVector& glplane, ///< Green-Lagrange strains in 2D notation
+    LINALG::Matrix<6, 1>& gl3d); ///< Green-Lagrange strains in 2D notation
 
   void edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,
       double* length, double* sin_alpha, double* cos_alpha);
@@ -374,45 +397,55 @@ private:
     const int iel
     );
 
+  ///! Compute deformation gradient
   void DefGrad(
-      Epetra_SerialDenseVector& F,
-      Epetra_SerialDenseVector& strain,
-      const Epetra_SerialDenseMatrix& xrefe,
-      const Epetra_SerialDenseMatrix& xcure,
-      Epetra_SerialDenseMatrix& boplin,
+      Epetra_SerialDenseVector& F, ///< deformation gradient (to be filled)
+      Epetra_SerialDenseVector& strain, ///< strain tensor (to be filled)
+      const Epetra_SerialDenseMatrix& xrefe, ///< nodal positions of reference configuration
+      const Epetra_SerialDenseMatrix& xcure, ///< nodal positions of current configuration
+      Epetra_SerialDenseMatrix& boplin, ///< B-operator
       const int iel
       );
 
+  //! Compute geometric part of stiffness matrix
   void Kg(
-      Epetra_SerialDenseMatrix& estif,
-      const Epetra_SerialDenseMatrix& boplin,
-      const Epetra_SerialDenseMatrix& stress,
-      const double fac,
-      const int nd,
-      const int numeps);
+      Epetra_SerialDenseMatrix& estif, ///< element stiffness matrix (to be filled)
+      const Epetra_SerialDenseMatrix& boplin, ///< B-operator
+      const Epetra_SerialDenseMatrix& stress, ///< 2. Piola-Kirchhoff stress tensor
+      const double fac, ///< factor for Gaussian quadrature
+      const int nd, ///< number of DOFs in this element
+      const int numeps
+      );
 
+  //! Compute elastic part of stiffness matrix
   void Keu(
-      Epetra_SerialDenseMatrix& estif,
-      const Epetra_SerialDenseMatrix& b_cure,
-      const Epetra_SerialDenseMatrix& C,
-      const double fac,
-      const int nd,
-      const int numeps);
+      Epetra_SerialDenseMatrix& estif, ///< element stiffness matrix (to be filled)
+      const Epetra_SerialDenseMatrix& b_cure, ///< B-operator for current configuration (input)
+      const Epetra_SerialDenseMatrix& C, ///< material tensor (input)
+      const double fac, ///< factor for Gaussian quadrature
+      const int nd, ///< number of DOFs in this element
+      const int numeps
+      );
 
+  //! Compute internal forces for solid approach
   void Fint(
-      const Epetra_SerialDenseMatrix& stress,
-      const Epetra_SerialDenseMatrix& b_cure,
-      Epetra_SerialDenseVector& intforce,
-      const double fac,
-      const int nd);
+      const Epetra_SerialDenseMatrix& stress, ///< 2. Piola-Kirchhoff stress (input)
+      const Epetra_SerialDenseMatrix& b_cure, ///< B-operator for current configuration (input)
+      Epetra_SerialDenseVector& intforce, ///< force vector (to be filled)
+      const double fac, ///< factor for Gaussian quadrature
+      const int nd ///< number of DOFs in this element
+      );
 
   //! action parameters recognized by ale2
   enum ActionType
   {
     none,
     calc_ale_solid, ///< compute stiffness based on fully nonlinear elastic solid with hyperelastic material law
-    calc_ale_springs, ///< compute stiffness based on springs algorithm on last time step configuration
-    calc_ale_laplace,///< compute stiffness based on laplacian smoothing based on initial configuration
+    calc_ale_solid_linear, ///< compute stiffness based on linear elastic solid with hyperelastic material law
+    calc_ale_springs_material, ///< compute stiffness based on springs algorithm in material configuration
+    calc_ale_springs_spatial, ///< compute stiffness based on springs algorithm in spatial configuration
+    calc_ale_laplace_material,///< compute stiffness based on laplacian smoothing based on material configuration
+    calc_ale_laplace_spatial,///< compute stiffness based on laplacian smoothing based on spatial configuration
     setup_material, ///< Setup material in case of ElastHyper Tool Box
   };
 

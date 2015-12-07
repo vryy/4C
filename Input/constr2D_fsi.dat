@@ -95,7 +95,8 @@ LINEAR_SOLVER                   1
 TIMESTEP                        0.1
 NUMSTEP                         41
 MAXTIME                         4.0
-ALE_TYPE                        springs
+ALE_TYPE                        springs_material
+UPDATEMATRIX                    no
 RESULTSEVRY                     1
 -----------------------------------------------------------------FSI DYNAMIC
 COUPALGO                        iter_stagg_AITKEN_rel_param

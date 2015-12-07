@@ -122,12 +122,18 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
   std::string action = params.get<std::string>("action","none");
   if (action == "none")
     dserror("No action supplied");
-  else if (action == "calc_ale_laplace")
-      act = Ale3::calc_ale_laplace;
+  else if (action == "calc_ale_laplace_material")
+    act = Ale3::calc_ale_laplace_material;
+  else if (action == "calc_ale_laplace_spatial")
+    act = Ale3::calc_ale_laplace_spatial;
   else if (action == "calc_ale_solid")
-      act = Ale3::calc_ale_solid;
-  else if (action == "calc_ale_springs" )
-    act = Ale3::calc_ale_springs;
+    act = Ale3::calc_ale_solid;
+  else if (action == "calc_ale_solid_linear")
+    act = Ale3::calc_ale_solid_linear;
+  else if (action == "calc_ale_springs_material" )
+    act = Ale3::calc_ale_springs_material;
+  else if (action == "calc_ale_springs_spatial" )
+    act = Ale3::calc_ale_springs_spatial;
   else if (action == "calc_ale_node_normal")
     act = Ale3::calc_ale_node_normal;
   else if (action == "setup_material")
@@ -140,21 +146,27 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
 
   switch (act)
   {
-  case calc_ale_laplace:
+  case calc_ale_laplace_material:
   {
     std::vector<double> my_dispnp;
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     my_dispnp.resize(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-    Ale3_Impl_Interface::Impl(this)->static_ke_laplace(
-                           this,
-                           discretization,
-                           elemat1,
-                           elevec1,
-                           my_dispnp,
-                           mat,
-                           params);
+    Ale3_Impl_Interface::Impl(this)->static_ke_laplace(this, discretization,
+        elemat1, elevec1, my_dispnp, mat, false);
+
+    break;
+  }
+  case calc_ale_laplace_spatial:
+  {
+    std::vector<double> my_dispnp;
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    my_dispnp.resize(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+
+    Ale3_Impl_Interface::Impl(this)->static_ke_laplace(this, discretization,
+        elemat1, elevec1, my_dispnp, mat, true);
 
     break;
   }
@@ -165,17 +177,40 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
     Ale3_Impl_Interface::Impl(this)->static_ke_nonlinear(this, discretization, lm,
-        elemat1, elevec1, my_dispnp, params);
+        elemat1, elevec1, my_dispnp, params, true);
 
     break;
   }
-  case calc_ale_springs:
+  case calc_ale_solid_linear:
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
     std::vector<double> my_dispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-    Ale3_Impl_Interface::Impl(this)->static_ke_spring(this,elemat1,elevec1,my_dispnp);
+    Ale3_Impl_Interface::Impl(this)->static_ke_nonlinear(this, discretization, lm,
+        elemat1, elevec1, my_dispnp, params, false);
+
+    break;
+  }
+  case calc_ale_springs_material:
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    std::vector<double> my_dispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+
+    Ale3_Impl_Interface::Impl(this)->static_ke_spring(this, elemat1, elevec1,
+        my_dispnp, false);
+
+    break;
+  }
+  case calc_ale_springs_spatial:
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+    std::vector<double> my_dispnp(lm.size());
+    DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+
+    Ale3_Impl_Interface::Impl(this)->static_ke_spring(this, elemat1, elevec1,
+        my_dispnp, true);
 
     break;
   }
@@ -895,10 +930,11 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
     Epetra_SerialDenseMatrix& sys_mat_epetra,
-    Epetra_SerialDenseVector& residual,
-    const std::vector<double>& displacements)
+    Epetra_SerialDenseVector& residual_epetra,
+    const std::vector<double>& displacements, const bool spatialconfiguration)
 {
-  LINALG::Matrix<3*iel,3*iel> sys_mat(sys_mat_epetra.A(),true);
+  LINALG::Matrix<3*iel,3*iel> sys_mat(sys_mat_epetra.A(), true);
+  LINALG::Matrix<3*iel,1> residual(residual_epetra.A(), true);
   int node_i, node_j;                                     // end nodes of spring
   double length;                                          // length of edge
   double dx, dy, dz;                                      // deltas in each direction
@@ -915,12 +951,15 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
     xyze(2,i)=x[2];
   }
 
-  // update spatial configuration
-  for(int i=0;i<iel;i++)
+  // update spatial configuration (if necessary)
+  if (spatialconfiguration)
   {
-    xyze(0,i) += displacements[3*i];
-    xyze(1,i) += displacements[3*i+1];
-    xyze(2,i) += displacements[3*i+2];
+    for(int i=0;i<iel;i++)
+    {
+      xyze(0,i) += displacements[3*i];
+      xyze(1,i) += displacements[3*i+1];
+      xyze(2,i) += displacements[3*i+2];
+    }
   }
 
 //lineal springs from all corner nodes to all corner nodes
@@ -1313,14 +1352,12 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
     break;
   }
 
+  // compute residual
   residual.Scale(0.0);
-  for(int i =0; i< 3*iel; ++i)
-  {
-    for(int j=0; j<3*iel; ++j)
-    {
-      residual[i]+=sys_mat(i,j)*displacements[j];
-    }
-  }
+  for(int i = 0; i< 3*iel; ++i)
+    for(int j = 0; j < 3*iel; ++j)
+      residual(i,0) += sys_mat(i,j) * displacements[j];
+
   return;
 }
 
@@ -1331,7 +1368,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele,
     DRT::Discretization& dis, std::vector<int>& lm,
     Epetra_SerialDenseMatrix& sys_mat_epetra,
     Epetra_SerialDenseVector& residual_epetra,
-    std::vector<double>& my_dispnp, Teuchos::ParameterList& params)
+    std::vector<double>& my_dispnp, Teuchos::ParameterList& params,
+    const bool spatialconfiguration)
 {
 
   const int numdof  = NODDOF_ALE3 * iel;
@@ -1346,9 +1384,16 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele,
     xrefe(i,1) = ele->Nodes()[i]->X()[1];
     xrefe(i,2) = ele->Nodes()[i]->X()[2];
 
-    xcurr(i,0) = xrefe(i,0) + my_dispnp[i*NODDOF_ALE3+0];
-    xcurr(i,1) = xrefe(i,1) + my_dispnp[i*NODDOF_ALE3+1];
-    xcurr(i,2) = xrefe(i,2) + my_dispnp[i*NODDOF_ALE3+2];
+    xcurr(i,0) = xrefe(i,0);
+    xcurr(i,1) = xrefe(i,1);
+    xcurr(i,2) = xrefe(i,2);
+
+    if (spatialconfiguration)
+    {
+      xcurr(i,0) += my_dispnp[i*NODDOF_ALE3+0];
+      xcurr(i,1) += my_dispnp[i*NODDOF_ALE3+1];
+      xcurr(i,2) += my_dispnp[i*NODDOF_ALE3+2];
+    }
   }
   // --------------------------------------------------
   // Now do the nurbs specific stuff
@@ -1545,17 +1590,11 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele,
     DRT::Discretization& dis, Epetra_SerialDenseMatrix& sys_mat_epetra,
     Epetra_SerialDenseVector& residual,
     std::vector<double>& my_dispnp, Teuchos::RCP<MAT::Material> material,
-    Teuchos::ParameterList& params)
+    const bool spatialconfiguration)
 {
-  dserror("We don't know what is really done in the element evaluation"
-      "of the Laplace smoothing strategy. Check this CAREFULLY before"
-      "using it.");
-
-
-  // ******************************************************
-  // this method was copied from the ALE2 element and extended to 3D
-  // ToDo: proper implementation of min_Jac for stiffness heuristics
-  // ******************************************************
+//  dserror("We don't know what is really done in the element evaluation"
+//      "of the Laplace smoothing strategy. Check this CAREFULLY before"
+//      "using it.");
 
   const int nd  = 3 * iel;
   // A view to sys_mat_epetra
@@ -1578,12 +1617,15 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele,
     xyze(2,i)=x[2];
   }
 
-  // update spatial configuration
-  for(int i=0;i<iel;i++)
+  // update spatial configuration if necessary
+  if (spatialconfiguration)
   {
-    xyze(0,i) += my_dispnp[3*i+0];
-    xyze(1,i) += my_dispnp[3*i+1];
-    xyze(2,i) += my_dispnp[3*i+2];
+    for(int i=0;i<iel;i++)
+    {
+      xyze(0,i) += my_dispnp[3*i+0];
+      xyze(1,i) += my_dispnp[3*i+1];
+      xyze(2,i) += my_dispnp[3*i+2];
+    }
   }
 
   // --------------------------------------------------
@@ -1591,26 +1633,20 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele,
   std::vector<Epetra_SerialDenseVector> myknots(3);
   LINALG::Matrix<iel,1  >               weights(iel);
 
-  if(distype==DRT::Element::nurbs8
-      ||
-      distype==DRT::Element::nurbs27)
+  if(distype==DRT::Element::nurbs8 or distype==DRT::Element::nurbs27)
   {
-    DRT::NURBS::NurbsDiscretization* nurbsdis
-    =
+    DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
 
     bool zero_size=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
 
     if(zero_size)
-    {
       return;
-    }
 
     for (int inode=0; inode<iel; ++inode)
     {
-      DRT::NURBS::ControlPoint* cp
-      =
-          dynamic_cast<DRT::NURBS::ControlPoint* > (ele->Nodes()[inode]);
+      DRT::NURBS::ControlPoint* cp =
+          dynamic_cast<DRT::NURBS::ControlPoint*>(ele->Nodes()[inode]);
 
       weights(inode) = cp->W();
     }
@@ -1634,9 +1670,6 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele,
   // This whole method was copied from the ALE2 element and extended to 3D.
   // ToDo: proper computation and usage of min_detF. Is there any detailed literature
   //       on this approach?
-
-  // double min_detF(0.0);         /* minimal Jacobian determinant   */
-  // ale2_min_jaco(Shape(),xyze,&min_detF);
 
   // integration loops
   for (int iquad=0;iquad<intpoints.nquad;iquad++)
@@ -1663,13 +1696,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele,
       gp(1)=e2;
       gp(2)=e3;
 
-      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
-      (funct  ,
-          deriv  ,
-          gp     ,
-          myknots,
-          weights,
-          distype);
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(funct, deriv, gp, myknots,
+          weights, distype);
     }
 
     // determine jacobian matrix at point r,s,t
@@ -1693,7 +1721,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele,
     //   on the underlying concept of min_detF (see comments above). We simply
     //   use here the Jacobi determinant evaluated at the Gauss points instead of
     //   min_detF determined at corner node positions.
-    const double k_diff = 1.0/(det*det);
+    const double k_diff = 1.0; //1.0/(det*det);
     //   Due to this heuristic, small elements are artificially made stiffer
     //   and large elements are made softer
     /*------------------------------- sort it into stiffness matrix ---*/
@@ -1704,23 +1732,16 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele,
 
   // insert finished temporary matrix
   for (int d=0; d < 3; d++)
-  {
     for (int i=0; i < iel; i++)
-    {
       for (int j=0; j < iel; j++)
-      {
         sys_mat(i*3+d,j*3+d)+= tempmat(i,j);
-      }
-    }
-  }
+
+  // compute residual vector
   residual.Scale(0.0);
   for(int i =0; i< nd; ++i)
-  {
     for(int j=0; j<nd; ++j)
-    {
       residual[i]+=sys_mat(i,j)*my_dispnp[j];
-    }
-  }
+
   return;
 }
 

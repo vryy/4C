@@ -74,7 +74,7 @@ EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf   // EOS_he_surf_wit
 SECONDORDER                     No
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
-ALE_TYPE                        springs
+ALE_TYPE                        springs_spatial
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
 GMSH_SOL_OUT                    No

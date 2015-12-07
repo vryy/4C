@@ -4,7 +4,7 @@
 // 089 - 289-10362
 //
 -------------------------------------------------------------TITLE
-pure ale mesh motion problem in 2D using the solid formulation
+pure ale mesh motion problem in 2D using the springs model
 ------------------------------------------------------PROBLEM SIZE
 DIM                             2
 -----------------------------------------------------DISCRETISATION
@@ -25,9 +25,8 @@ STDOUTEVRY                      1
 WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
-LIMIT_OUTP_TO_PROC              0
 --------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        solid_linear
+ALE_TYPE                        springs_material
 UPDATEMATRIX                    no
 LINEAR_SOLVER                   1
 NUMSTEP                         2
@@ -42,8 +41,8 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 1.0
 -------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t t1 0.0 t2 1.0
 -------------------------------------------------RESULT DESCRIPTION
-ALE DIS ale NODE 3 QUANTITY dispx VALUE -7.50000000000019124e-02 TOLERANCE 1e-12
-ALE DIS ale NODE 3 QUANTITY dispy VALUE 2.50000000000000056e-01 TOLERANCE 1e-12
+ALE DIS ale NODE 3 QUANTITY dispx VALUE 3.97555927731682440e-02 TOLERANCE 1e-12
+ALE DIS ale NODE 3 QUANTITY dispy VALUE 2.49999999999999944e-01 TOLERANCE 1e-12
 -------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  0

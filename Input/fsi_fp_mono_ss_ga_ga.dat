@@ -14,7 +14,8 @@ Structure: GenAlpha with ConstVel
 //NODES                         24
 DIM                             3
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        solid
+ALE_TYPE                        solid_linear
+UPDATEMATRIX                    no
 LINEAR_SOLVER                   1
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   1

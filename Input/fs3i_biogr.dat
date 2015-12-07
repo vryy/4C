@@ -16,7 +16,7 @@ created by pre_exodus
 //NODES                         4946
 DIM                             3
 -----------------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        springs
+ALE_TYPE                        springs_spatial
 MAXTIME                         10000.0
 NUMSTEP                         41
 NUM_INITSTEP                    0

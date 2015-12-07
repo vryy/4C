@@ -330,8 +330,11 @@ public:
   {
     none,
     calc_ale_solid, ///< compute stiffness based on fully nonlinear elastic solid with hyperelastic material law
-    calc_ale_springs, ///< compute stiffness based on springs algorithm on last time step configuration
-    calc_ale_laplace,///< compute stiffness based on laplacian smoothing based on initial configuration
+    calc_ale_solid_linear, ///< compute stiffness based on linear elastic solid with hyperelastic material law
+    calc_ale_springs_material, ///< compute stiffness based on springs algorithm in material configuration
+    calc_ale_springs_spatial, ///< compute stiffness based on springs algorithm in spatial configuration
+    calc_ale_laplace_material,///< compute stiffness based on laplacian smoothing based on material configuration
+    calc_ale_laplace_spatial,///< compute stiffness based on laplacian smoothing based on spatial configuration
     calc_ale_node_normal,///< Calculate boundary node normal
     ba_calc_ale_node_normal, ///< Calculate boundary node normal TODO (@ HAHN unused action please fix me!)
     setup_material, ///< Setup material in case of ElastHyper Tool Box
@@ -360,20 +363,31 @@ public:
   /// Internal implementation class for fluid element
   static Ale3_Impl_Interface* Impl(DRT::ELEMENTS::Ale3* ele);
 
-  virtual void static_ke_spring(Ale3* ele, Epetra_SerialDenseMatrix& sys_mat,
-      Epetra_SerialDenseVector& residual,
-      const std::vector<double>& displacements) = 0;
+  virtual void static_ke_spring(Ale3* ele, ///< pointer to element
+      Epetra_SerialDenseMatrix& sys_mat, ///< element stiffness matrix (to be filled)
+      Epetra_SerialDenseVector& residual, ///< element residual vector (to be filled)
+      const std::vector<double>& displacements, ///< nodal displacements
+      const bool spatialconfiguration ///< use spatial configuration (true), material configuration (false)
+      ) = 0;
 
-  virtual void static_ke_nonlinear(Ale3* ele, DRT::Discretization& discretization,
-      std::vector<int>& lm, Epetra_SerialDenseMatrix& sys_mat,
-      Epetra_SerialDenseVector& residual,
-      std::vector<double>& my_dispnp,
-      Teuchos::ParameterList& params)=0;
+  virtual void static_ke_nonlinear(Ale3* ele, ///< pointer to element
+      DRT::Discretization& discretization, ///< discretization
+      std::vector<int>& lm, ///< node owner procs
+      Epetra_SerialDenseMatrix& sys_mat, ///< element stiffness matrix (to be filled)
+      Epetra_SerialDenseVector& residual, ///< element residual vector (to be filled)
+      std::vector<double>& my_dispnp, ///< nodal displacements
+      Teuchos::ParameterList& params, ///< parameter list
+      const bool spatialconfiguration ///< use spatial configuration (true), material configuration (false)
+      ) = 0;
 
-  virtual void static_ke_laplace(Ale3* ele, DRT::Discretization& dis,
-      Epetra_SerialDenseMatrix& sys_mat, Epetra_SerialDenseVector& residual,
-      std::vector<double>& my_dispnp,
-      Teuchos::RCP<MAT::Material> material, Teuchos::ParameterList& params) = 0;
+  virtual void static_ke_laplace(Ale3* ele, ///< pointer to element
+      DRT::Discretization& dis, ///< discretization
+      Epetra_SerialDenseMatrix& sys_mat, ///< element stiffnes matrix (to be filled)
+      Epetra_SerialDenseVector& residual, ///< element residual vector (to be filled)
+      std::vector<double>& my_dispnp, ///< nodal displacements
+      Teuchos::RCP<MAT::Material> material, ///< material law
+      const bool spatialconfiguration ///< use spatial configuration (true), material configuration (false)
+      ) = 0;
 
     virtual void ElementNodeNormal(Ale3*                      ele,
                                    Epetra_SerialDenseVector&  elevec1,
@@ -398,25 +412,31 @@ public:
   /// called upon destruction
   virtual void Done();
 
-  void static_ke_laplace(
-    Ale3*                      ele,
-    DRT::Discretization&       dis,
-    Epetra_SerialDenseMatrix&  sys_mat,
-    Epetra_SerialDenseVector&  residual,
-    std::vector<double>&       my_dispnp,
-    Teuchos::RCP<MAT::Material> material,
-    Teuchos::ParameterList&    params);
+  void static_ke_laplace(Ale3* ele, ///< pointer to element
+      DRT::Discretization& dis, ///< discretization
+      Epetra_SerialDenseMatrix& sys_mat, ///< element stiffnes matrix (to be filled)
+      Epetra_SerialDenseVector& residual, ///< element residual vector (to be filled)
+      std::vector<double>& my_dispnp, ///< nodal displacements
+      Teuchos::RCP<MAT::Material> material, ///< material law
+      const bool spatialconfiguration ///< use spatial configuration (true), material configuration (false)
+      );
 
-  void static_ke_spring(Ale3*                     ele,
-                        Epetra_SerialDenseMatrix& sys_mat,
-                        Epetra_SerialDenseVector& residual,
-                        const std::vector<double>& displacements);
+  void static_ke_spring(Ale3* ele, ///< pointer to element
+      Epetra_SerialDenseMatrix& sys_mat_epetra, ///< element stiffness matrix (to be filled)
+      Epetra_SerialDenseVector& residual_epetra, ///< element residual vector (to be filled)
+      const std::vector<double>& displacements, ///< nodal displacements
+      const bool spatialconfiguration ///< use spatial configuration (true), material configuration (false)
+      );
 
-  void static_ke_nonlinear(Ale3* ele, DRT::Discretization& discretization,
-      std::vector<int>& lm, Epetra_SerialDenseMatrix& sys_mat,
-      Epetra_SerialDenseVector& residual,
-      std::vector<double>& my_dispnp,
-      Teuchos::ParameterList& params);
+  void static_ke_nonlinear(Ale3* ele, ///< pointer to element
+      DRT::Discretization& discretization, ///< discretization
+      std::vector<int>& lm, ///< node owner procs
+      Epetra_SerialDenseMatrix& sys_mat, ///< element stiffness matrix (to be filled)
+      Epetra_SerialDenseVector& residual, ///< element residual vector (to be filled)
+      std::vector<double>& my_dispnp, ///< nodal displacements
+      Teuchos::ParameterList& params, ///< parameter list
+      const bool spatialconfiguration ///< use spatial configuration (true), material configuration (false)
+      );
 
   void ElementNodeNormal(Ale3*                      ele,
                               Epetra_SerialDenseVector&  elevec1,

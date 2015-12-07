@@ -69,10 +69,11 @@ class MapExtractor;
 //! ALE: Mesh moving algorithms for Arbitrary Lagrangian Eulerian observer
 namespace ALE
 {
-/*! \brief ALE time integration
+/*! \class Ale
+ *  \brief ALE time integration
  *
- *  Pure ALE field for mesh motion algorithms. To include this into a coupled
- *  problem, use a problem specific adapter that derives from
+ *  Pure ALE field for nonlinear mesh motion algorithms. To include this into a
+ *  coupled problem, use a problem specific adapter that derives from
  *  ADAPTER::AleWrapper.
  *
  *  We provide the following ALE formulations:
@@ -109,7 +110,7 @@ namespace ALE
  *       No. 3-4, pp. 305-316, 2002
  *  </ul>
  *
- *  \sa STR::TimInt, FLD::TimInt
+ *  \sa STR::TimInt, FLD::TimInt, ALE::AleLinear
  *
  *  \author mayr.mt \date 10/2014
  */
@@ -125,9 +126,7 @@ public:
       Teuchos::RCP<IO::DiscretizationWriter> output ///< output writing
       );
 
-  virtual ~Ale()
-  {
-  }
+  virtual ~Ale(){};
 
   /*! \brief Create Systemmatrix
    *
@@ -173,7 +172,7 @@ public:
   virtual void EvaluateElements();
 
   /// Convert element action enum to std::string
-  const std::string ElementActionString(
+  virtual const std::string ElementActionString(
       const enum INPAR::ALE::AleDynamic name ///< enum to convert
       );
 
@@ -198,7 +197,10 @@ public:
   /// start a new time step
   virtual void PrepareTimeStep();
 
-  /// Solve a single time step
+  /*! \brief Do a single time step
+   *
+   *  Perform Newton iteration to solve the nonlinear problem.
+   */
   virtual void TimeStep(
       ALE::UTILS::MapExtractor::AleDBCSetType dbc_type = ALE::UTILS::MapExtractor::dbc_set_std
       );
@@ -206,29 +208,25 @@ public:
   /// write output
   virtual void Output();
 
-  /*!
-   \brief Reset time step
-
-   In case of time step size adaptivity, time steps might have to be repeated.
-   Therefore, we need to reset the solution back to the initial solution of the
-   time step.
-
-   \author mayr.mt
-   \date 08/2013
+  /*! \brief Reset time step
+   *
+   *  In case of time step size adaptivity, time steps might have to be repeated.
+   *  Therefore, we need to reset the solution back to the initial solution of
+   *  the time step.
+   *
+   *  \author mayr.mt \date 08/2013
    */
   virtual void ResetStep();
 
-  /*!
-   \brief Reset time and step in case that a time step has to be repeated
-
-   ALE field increments time and step at the beginning of a time step. If a time
-   step has to be repeated, we need to take this into account and decrease time and
-   step beforehand. They will be incremented right at the beginning of the repetition
-   and, thus, everything will be fine. Currently, this is needed for time step size
-   adaptivity in FSI.
-
-   \author mayr.mt
-   \date 08/2013
+  /*! \brief Reset time and step in case that a time step has to be repeated
+   *
+   *  ALE field increments time and step at the beginning of a time step. If a
+   *  time step has to be repeated, we need to take this into account and
+   *  decrease time and step beforehand. They will be incremented right at the
+   *  beginning of the repetition and, thus, everything will be fine. Currently,
+   *  this is needed for time step size adaptivity in FSI.
+   *
+   *  \author mayr.mt \date 08/2013
    */
   virtual void ResetTime(const double dtold);
 
@@ -361,7 +359,20 @@ public:
 
   //@}
 
+protected:
+
+  //! Read parameter list
+  const Teuchos::ParameterList& Params() const { return *params_; }
+
+  //! write access to residual
+  virtual Teuchos::RCP<Epetra_Vector> WriteAccessResidual() const
+  {
+    return residual_;
+  }
+
 private:
+
+  virtual const bool UpdateSysMatEveryStep() const { return true; }
 
   //! @name Misc
 
@@ -411,9 +422,9 @@ private:
    *  Use this as the right hand side for a Newton algorithm. It should equal
    *  the negative residual: #rhs_ = - #residual_
    *
-   *  We update this variabel only right after the discret_->Evaluate() call.
+   *  We update this variable only right after the discret_->Evaluate() call.
    *
-   *  \warning DO NOT TOUCH THIS VARIBALE AT OHTER PLACES!!!
+   *  \warning DO NOT TOUCH THIS VARIBALE AT OTHER PLACES!!!
    *
    *  \author mayr.mt \date 10/2014
    */
@@ -470,7 +481,106 @@ private:
 
   //@}
 
-}; // class ALE
+}; // class Ale
+
+/*! \class AleLinear
+ *  \brief Ale time integrator for linear mesh motion algorihtms
+ *
+ *  Simplification of nonlinear ALE::Ale class in case of a linear mesh motion
+ *  algorithm. Only functions related to nonlinear solution techniques must be
+ *  overloaded, i.e. EvaluateElements or the nonlinear solve.
+ *
+ *  Linear mesh motion should be sufficient in case of small or uniform/
+ *  volumetric mesh deformation, but evaluates the system matrix just once and
+ *  is much cheaper than the nonlinear version.
+ *
+ *  We allow for two options:
+ *  <ul>
+ *  <li> Fully linear: The system matrix is evaluated only once at the beginning
+ *       of the simulation. The residual is computed as \f$r = K*d\f$. </li>
+ *  <li> Pseudo-linear: The system matrix is evaluated at the beginning of each
+ *       time step, while dependencies on the displacement field are considered.
+ *       The residual is computed as \f$r = K*d\f$. </li>
+ *  </ul>
+ *
+ *  \author mayr.mt \date 11/2015
+ */
+class AleLinear : public Ale
+{
+public:
+
+  //! @name Construction / Destruction
+  //@{
+
+  //! Constructor
+  AleLinear(
+      Teuchos::RCP<DRT::Discretization> actdis, ///< pointer to discretization
+      Teuchos::RCP<LINALG::Solver> solver, ///< linear solver
+      Teuchos::RCP<Teuchos::ParameterList> params, ///< parameter list
+      Teuchos::RCP<IO::DiscretizationWriter> output ///< output writing
+      );
+
+  // Destructor
+  virtual ~AleLinear(){};
+
+  //@}
+
+  //! Computation
+  //@{
+
+  /*! \brief Start a new time step
+   *
+   *  Prepare time step as in nonlinear case. Reset #validsysmat_ in case of an
+   *  updated strategy, i.e. if #sysmat_ needs to be recomputed at the beginning
+   *  of each time step.
+   *
+   *  \author mayr.mt \date 12/2015
+   */
+  virtual void PrepareTimeStep();
+
+  /*! \brief Do a single time step
+   *
+   *  Just call the linear solver once.
+   *
+   *  \author mayr.mt \date 11/2015
+   */
+  virtual void TimeStep(
+      ALE::UTILS::MapExtractor::AleDBCSetType dbc_type = ALE::UTILS::MapExtractor::dbc_set_std
+      );
+
+  /*! \brief Evaluate all elements
+   *
+   *  In the linear case, the system matrix \f$K\f$ is kept constant throughout
+   *  the entire computation. Thus, we call ALE::Ale::EvaluateElements() once in
+   *  the beginning to compute the stiffness matrix. Afterwards, we only need to
+   *  compute the current residual \f$f_{res}\f$ as
+   *  \f[
+   *    f_{res} = Kd
+   *  \f]
+   *  based on the current displacements \f$d\f$.
+   *
+   *  In order to initially provide a matrix, we call Ale::EvaluateElements() in
+   *  the very first call. This is kept track of by #validsysmat_.
+   *
+   *  \author mayr.mt \date 11/2015
+   */
+  virtual void EvaluateElements();
+
+  //@}
+
+protected:
+
+private:
+
+  virtual const bool UpdateSysMatEveryStep() const { return updateeverystep_; }
+
+  //! Is the #sysmat_ valid (true) or does it need to be re-evaluated (false)
+  bool validsysmat_;
+
+  //! \brief Update stiffness matrix oncer per time step ?
+  bool updateeverystep_;
+
+}; // class AleLinear
 
 } // namespace ALE
 

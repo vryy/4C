@@ -40,14 +40,25 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     dserror("No action supplied");
   else if (action == "calc_ale_solid")
      act = Ale2::calc_ale_solid;
-  else if (action == "calc_ale_laplace")
-      act = Ale2::calc_ale_laplace;
-  else if (action == "calc_ale_springs" )
-    act = Ale2::calc_ale_springs;
+  else if (action == "calc_ale_solid_linear")
+     act = Ale2::calc_ale_solid_linear;
+  else if (action == "calc_ale_laplace_material")
+    act = Ale2::calc_ale_laplace_material;
+  else if (action == "calc_ale_laplace_spatial")
+    act = Ale2::calc_ale_laplace_spatial;
+  else if (action == "calc_ale_springs_material" )
+    act = Ale2::calc_ale_springs_material;
+  else if (action == "calc_ale_springs_spatial" )
+    act = Ale2::calc_ale_springs_spatial;
   else if (action == "setup_material")
     act = Ale2::setup_material;
   else
     dserror("%s is an unknown type of action for Ale2",action.c_str());
+
+  bool spatialconfiguration = true;
+  if (params.isParameter("use spatial configuration"))
+    spatialconfiguration = params.get<bool>("use spatial configuration");
+
 
   // get the material
   Teuchos::RCP<MAT::Material> mat = Material();
@@ -60,26 +71,56 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> my_dispnp(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-      static_ke_nonlinear(lm,my_dispnp,&elemat1,&elevec1,params);
+      static_ke_nonlinear(lm, my_dispnp, &elemat1, &elevec1, params, true, false);
 
       break;
     }
-    case calc_ale_laplace:
+    case calc_ale_solid_linear:
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
       std::vector<double> my_dispnp(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
-      static_ke_laplace(discretization,lm,&elemat1,elevec1,my_dispnp,params);
+
+      static_ke_nonlinear(lm, my_dispnp, &elemat1, &elevec1, params, spatialconfiguration, true);
 
       break;
     }
-    case calc_ale_springs:
+    case calc_ale_laplace_material:
+    {
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      std::vector<double> my_dispnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp,
+          spatialconfiguration);
+
+      break;
+    }
+    case calc_ale_laplace_spatial:
+    {
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      std::vector<double> my_dispnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp, my_dispnp, lm);
+      static_ke_laplace(discretization, lm, &elemat1, elevec1, my_dispnp, true);
+
+      break;
+    }
+    case calc_ale_springs_material:
     {
       Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp"); // get the displacements
       std::vector<double> my_dispnp(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-      static_ke_spring(&elemat1,elevec1,my_dispnp);
+      static_ke_spring(&elemat1, elevec1, my_dispnp, spatialconfiguration);
+
+      break;
+    }
+    case calc_ale_springs_spatial:
+    {
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp"); // get the displacements
+      std::vector<double> my_dispnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+
+      static_ke_spring(&elemat1, elevec1, my_dispnp, true);
 
       break;
     }
@@ -340,8 +381,8 @@ void DRT::ELEMENTS::Ale2::ale2_tors_spring_quad4(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
-    Epetra_SerialDenseVector& residual,
-    std::vector<double>& displacements)
+    Epetra_SerialDenseVector& residual, std::vector<double>& displacements,
+    const bool spatialconfiguration)
 {
   const int iel = NumNode(); // numnode of this element
   const DiscretizationType distype = this->Shape();
@@ -379,13 +420,15 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
     xyze(1,i)=Nodes()[i]->X()[1];
   }
 
-  // compute spatial configuration
-  for(int i=0;i<iel;i++)
+  // compute spatial configuration (if necessary)
+  if (spatialconfiguration)
   {
-    xyze(0,i)+= displacements[i*2];
-    xyze(1,i)+= displacements[i*2+1];
+    for(int i=0;i<iel;i++)
+    {
+      xyze(0,i)+= displacements[i*2];
+      xyze(1,i)+= displacements[i*2+1];
+    }
   }
-
 
   //Linear springs from all corner nodes to all corner nodes
   //loop over all edges and diagonals of the element
@@ -513,31 +556,28 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
       dserror("unknown distype in ale spring dynamic");
       break;
   }
+
+  // compute residual vector
   residual.Scale(0.0);
   for(int i =0; i< 2*iel; ++i)
-  {
     for(int j=0; j<2*iel; ++j)
-    {
       residual[i]+=(*sys_mat)(i,j)*displacements[j];
-    }
-  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ale2::static_ke_nonlinear(
-    const std::vector<int>                    & lm         ,
-    const std::vector<double>                 & disp       ,
-    Epetra_SerialDenseMatrix             * stiffmatrix,
-    Epetra_SerialDenseVector             * force      ,
-    Teuchos::ParameterList& params )
+void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int> & lm,
+    const std::vector<double> & disp, Epetra_SerialDenseMatrix * stiffmatrix,
+    Epetra_SerialDenseVector * force, Teuchos::ParameterList& params,
+    const bool spatialconfiguration, const bool pseudolinear)
 {
   const int numnode = NumNode();
-  const int numdf   = 2;
-  const int nd      = numnode*numdf;
+  const int numdf = 2;
+  const int nd = numnode * numdf;
 
-
-   // general arrays
+  // general arrays
   Epetra_SerialDenseVector funct(numnode);
   Epetra_SerialDenseMatrix deriv;
   deriv.Shape(2,numnode);
@@ -561,7 +601,7 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(
   C.Shape(4,4);
 
 
-  /*------- get integraton data ---------------------------------------- */
+  /*------- get integration data ---------------------------------------- */
   const DiscretizationType distype = Shape();
 
   // gaussian points
@@ -573,9 +613,15 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(
   {
     xrefe(0,k) = Nodes()[k]->X()[0];
     xrefe(1,k) = Nodes()[k]->X()[1];
-    xcure(0,k) = xrefe(0,k) + disp[k*numdf+0];
-    xcure(1,k) = xrefe(1,k) + disp[k*numdf+1];
 
+    xcure(0,k) = xrefe(0,k);
+    xcure(1,k) = xrefe(1,k);
+
+    if (spatialconfiguration)
+    {
+      xcure(0,k) += disp[k*numdf+0];
+      xcure(1,k) += disp[k*numdf+1];
+    }
   }
 
   /*--------------------------------- get node weights for nurbs elements */
@@ -602,11 +648,9 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(
     const double wgt = intpoints.qwgt[ip];
 
     // get values of shape functions and derivatives in the gausspoint
-    if(distype != DRT::Element::nurbs4
-       &&
-       distype != DRT::Element::nurbs9)
+    if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
     {
-    // shape functions and their derivatives for polynomials
+      // shape functions and their derivatives for polynomials
       DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
       DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
     }
@@ -643,76 +687,86 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(
     if (stiffmatrix) Keu(*stiffmatrix,b_cure,C,fac,nd,numeps);
 
     /*--------------- nodal forces fi from integration of stresses ---*/
-    if (force) Fint(stress,b_cure,*force,fac,nd);
+    if (not pseudolinear and force) Fint(stress,b_cure,*force,fac,nd);
 
 
   } // for (int ip=0; ip<totngp; ++ip)
 
-  return;
-}
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-static void ale2_min_jaco(DRT::Element::DiscretizationType distyp,
-    Epetra_SerialDenseMatrix xyz, double *min_detF)
-{
-  double  detF[4]; // Jacobian determinant at nodes
-
-  switch (distyp)
+  if (pseudolinear and force)
   {
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-      /*--------------------- evaluate Jacobian determinant at nodes ---*/
-      detF[0] = 0.25 * ( (xyz[0][0]-xyz[0][1]) * (xyz[1][0]-xyz[1][3])
-                       - (xyz[1][0]-xyz[1][1]) * (xyz[0][0]-xyz[0][3]) );
-      detF[1] = 0.25 * ( (xyz[0][0]-xyz[0][1]) * (xyz[1][1]-xyz[1][2])
-                       - (xyz[1][0]-xyz[1][1]) * (xyz[0][1]-xyz[0][2]) );
-      detF[2] = 0.25 * ( (xyz[0][3]-xyz[0][2]) * (xyz[1][1]-xyz[1][2])
-                       - (xyz[1][3]-xyz[1][2]) * (xyz[0][1]-xyz[0][2]) );
-      detF[3] = 0.25 * ( (xyz[0][3]-xyz[0][2]) * (xyz[1][0]-xyz[1][3])
-                       - (xyz[1][3]-xyz[1][2]) * (xyz[0][0]-xyz[0][3]) );
+    Epetra_SerialDenseVector displacements;
+    displacements.Resize(nd);
+    for (int i = 0; i < nd; ++i)
+      displacements(i) = disp[i];
 
-      std::cout << "detF[0] = " << detF[0] << std::endl;
-      std::cout << "detF[1] = " << detF[1] << std::endl;
-      std::cout << "detF[2] = " << detF[2] << std::endl;
-      std::cout << "detF[3] = " << detF[3] << std::endl;
-
-      /*------------------------------------------------- check sign ---*/
-      if (detF[0] <= 0.0) dserror("Negative JACOBIAN ");
-      if (detF[1] <= 0.0) dserror("Negative JACOBIAN ");
-      if (detF[2] <= 0.0) dserror("Negative JACOBIAN ");
-      if (detF[3] <= 0.0) dserror("Negative JACOBIAN ");
-      /*-------------------------------------- look for the smallest ---*/
-      *min_detF = ( detF[0]  < detF[1]) ?  detF[0]  : detF[1];
-      *min_detF = (*min_detF < detF[2]) ? *min_detF : detF[2];
-      *min_detF = (*min_detF < detF[3]) ? *min_detF : detF[3];
-      /*----------------------------------------------------------------*/
-      break;
-    case DRT::Element::tri3:
-      *min_detF = (-xyz[0][0]+xyz[0][1]) * (-xyz[1][0]+xyz[1][2])
-                - (-xyz[0][0]+xyz[0][2]) * (-xyz[1][0]+xyz[1][1]);
-      if (*min_detF <= 0.0) dserror("Negative JACOBIAN ");
-      break;
-    default:
-      dserror("minimal Jacobian determinant for this distyp not implemented");
-      break;
+    stiffmatrix->Multiply(false, displacements, *force);
   }
+
   return;
 }
+
+///*----------------------------------------------------------------------------*/
+///*----------------------------------------------------------------------------*/
+//static void ale2_min_jaco(DRT::Element::DiscretizationType distyp,
+//    Epetra_SerialDenseMatrix xyz, double *min_detF)
+//{
+//  double  detF[4]; // Jacobian determinant at nodes
+//
+//  switch (distyp)
+//  {
+//    case DRT::Element::quad4:
+//    case DRT::Element::quad8:
+//    case DRT::Element::quad9:
+//      /*--------------------- evaluate Jacobian determinant at nodes ---*/
+//      detF[0] = 0.25 * ( (xyz[0][0]-xyz[0][1]) * (xyz[1][0]-xyz[1][3])
+//                       - (xyz[1][0]-xyz[1][1]) * (xyz[0][0]-xyz[0][3]) );
+//      detF[1] = 0.25 * ( (xyz[0][0]-xyz[0][1]) * (xyz[1][1]-xyz[1][2])
+//                       - (xyz[1][0]-xyz[1][1]) * (xyz[0][1]-xyz[0][2]) );
+//      detF[2] = 0.25 * ( (xyz[0][3]-xyz[0][2]) * (xyz[1][1]-xyz[1][2])
+//                       - (xyz[1][3]-xyz[1][2]) * (xyz[0][1]-xyz[0][2]) );
+//      detF[3] = 0.25 * ( (xyz[0][3]-xyz[0][2]) * (xyz[1][0]-xyz[1][3])
+//                       - (xyz[1][3]-xyz[1][2]) * (xyz[0][0]-xyz[0][3]) );
+//
+//      std::cout << "detF[0] = " << detF[0] << std::endl;
+//      std::cout << "detF[1] = " << detF[1] << std::endl;
+//      std::cout << "detF[2] = " << detF[2] << std::endl;
+//      std::cout << "detF[3] = " << detF[3] << std::endl;
+//
+//      /*------------------------------------------------- check sign ---*/
+//      if (detF[0] <= 0.0) dserror("Negative JACOBIAN ");
+//      if (detF[1] <= 0.0) dserror("Negative JACOBIAN ");
+//      if (detF[2] <= 0.0) dserror("Negative JACOBIAN ");
+//      if (detF[3] <= 0.0) dserror("Negative JACOBIAN ");
+//      /*-------------------------------------- look for the smallest ---*/
+//      *min_detF = ( detF[0]  < detF[1]) ?  detF[0]  : detF[1];
+//      *min_detF = (*min_detF < detF[2]) ? *min_detF : detF[2];
+//      *min_detF = (*min_detF < detF[3]) ? *min_detF : detF[3];
+//      /*----------------------------------------------------------------*/
+//      break;
+//    case DRT::Element::tri3:
+//      *min_detF = (-xyz[0][0]+xyz[0][1]) * (-xyz[1][0]+xyz[1][2])
+//                - (-xyz[0][0]+xyz[0][2]) * (-xyz[1][0]+xyz[1][1]);
+//      if (*min_detF <= 0.0) dserror("Negative JACOBIAN ");
+//      break;
+//    default:
+//      dserror("minimal Jacobian determinant for this distyp not implemented");
+//      break;
+//  }
+//  return;
+//}
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis,
     std::vector<int> &lm, Epetra_SerialDenseMatrix *sys_mat,
     Epetra_SerialDenseVector& residual, std::vector<double>& displacements,
-    Teuchos::ParameterList &params)
+    const bool spatialconfiguration)
 {
-  dserror("We don't know what is really done in the element evaluation"
-      "of the Laplace smoothing strategy. Check this CAREFULLY before"
-      "using it.");
+//  dserror("We don't know what is really done in the element evaluation"
+//      "of the Laplace smoothing strategy. Check this CAREFULLY before"
+//      "using it.");
 
   const int iel = NumNode();
-//  const int nd  = 2 * iel;
   const DiscretizationType distype = this->Shape();
 
   Epetra_SerialDenseMatrix xyze(2,iel);
@@ -724,12 +778,16 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis,
     xyze(1,i)=Nodes()[i]->X()[1];
   }
 
-  // update spatial configuration
-  for(int i=0;i<iel;i++)
+  // update spatial configuration if necessary
+  if (spatialconfiguration)
   {
-    xyze(0,i) += displacements[2*i+0];
-    xyze(1,i) += displacements[2*i+1];
+    for(int i=0;i<iel;i++)
+    {
+      xyze(0,i) += displacements[2*i+0];
+      xyze(1,i) += displacements[2*i+1];
+    }
   }
+
   // --------------------------------------------------
   // Now do the nurbs specific stuff
   std::vector<Epetra_SerialDenseVector> myknots(2);
@@ -754,33 +812,30 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis,
   }
 
   /*----------------------------------------- declaration of variables ---*/
-  Epetra_SerialDenseVector  funct(iel);
-  Epetra_SerialDenseMatrix      deriv(2,iel);
-  Epetra_SerialDenseMatrix      deriv_xy(2,iel);
-  Epetra_SerialDenseMatrix      xjm(2,2);
-  Epetra_SerialDenseMatrix      xji(2,2);
-//  Epetra_SerialDenseMatrix      bop(3,2*iel);
-//  Epetra_SerialDenseMatrix      d(4,4);
+  Epetra_SerialDenseVector funct(iel);
+  Epetra_SerialDenseMatrix deriv(2,iel);
+  Epetra_SerialDenseMatrix deriv_xy(2,iel);
+  Epetra_SerialDenseMatrix xjm(2,2);
+  Epetra_SerialDenseMatrix xji(2,2);
 
-  // gaussian points
+  // Gauss quadrature points
   const DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(distype);
-  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
-  double             min_detF = 0.0;         /* minimal Jacobian determinant   */
-  ale2_min_jaco(Shape(),xyze,&min_detF);
+  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule);
+//  double min_detF = 0.0;         /* minimal Jacobian determinant   */
+//  ale2_min_jaco(Shape(),xyze,&min_detF);
 
-  // integration loops
-  for (int iquad=0;iquad<intpoints.nquad;iquad++)
+  // integration loop
+  for (int iquad = 0; iquad < intpoints.nquad; ++iquad)
   {
+    // parameter coordinates in 1- and 2-direction at quadrature point 'iquad'
     const double e1 = intpoints.qxg[iquad][0];
     const double e2 = intpoints.qxg[iquad][1];
 
-    // get values of shape functions and derivatives in the gausspoint
-    if(distype != DRT::Element::nurbs4
-       &&
-       distype != DRT::Element::nurbs9)
+    // get values of shape functions and derivatives at the gausspoint
+    if(distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
     {
       // shape functions and their derivatives for polynomials
-      DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
+      DRT::UTILS::shape_function_2D(funct,e1,e2,distype);
       DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
     }
     else
@@ -790,24 +845,19 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis,
       gp(0)=e1;
       gp(1)=e2;
 
-      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
-        (funct  ,
-         deriv  ,
-         gp     ,
-         myknots,
-         weights,
-         distype);
+      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(funct, deriv, gp, myknots,
+          weights, distype);
     }
 
     // compute jacobian matrix
 
     // determine jacobian at point r,s,t
-    for (int i=0; i<2; i++)
+    for (int i=0; i<2; ++i)
     {
-      for (int j=0; j<2; j++)
+      for (int j=0; j<2; ++j)
       {
         double dum=0.;
-        for (int l=0; l<iel; l++)
+        for (int l=0; l<iel; ++l)
         {
           dum += deriv(i,l)*xyze(j,l);
         }
@@ -818,8 +868,6 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis,
     // determinant of jacobian
     const double det = xjm(0,0)*xjm(1,1) - xjm(0,1)*xjm(1,0);
     const double fac = intpoints.qwgt[iquad]*det;
-
-    // calculate operator B
 
     // inverse of jacobian
     const double dum=1.0/det;
@@ -832,12 +880,14 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis,
       for (int jsd=0; jsd<2; jsd++)
         for (int inode=0; inode<iel; inode++)
           deriv_xy(isd,inode) = xji(isd,jsd) * deriv(jsd,inode);
+
     /*------------------------- diffusivity depends on displacement ---*/
-    const double k_diff = 1.0/min_detF/min_detF;
+    const double k_diff = 1.0; // 1.0/min_detF/min_detF;
+
     /*------------------------------- sort it into stiffness matrix ---*/
-    for (int i=0; i<iel; i++)
+    for (int i=0; i<iel; ++i)
     {
-       for (int j=0; j<iel; j++)
+       for (int j=0; j<iel; ++j)
        {
          (*sys_mat)(i*2,j*2)     += ( deriv_xy(0,i) * deriv_xy(0,j)
                                     + deriv_xy(1,i) * deriv_xy(1,j) )*fac*k_diff;
@@ -846,14 +896,13 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(DRT::Discretization& dis,
        }
     }
   }
+
   residual.Scale(0.0);
-  for(int i =0; i< 2*iel; ++i)
-  {
-    for(int j=0; j<2*iel; ++j)
-    {
-      residual[i]+=(*sys_mat)(i,j)*displacements[j];
-    }
-  }
+  for (int i = 0; i < 2 * iel; ++i)
+    for (int j = 0; j < 2 * iel; ++j)
+      residual[i] += (*sys_mat)(i, j) * displacements[j];
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*/

@@ -238,10 +238,11 @@ void ALE::Ale::EvaluateElements()
 
   // action for elements
   eleparams.set<std::string>("action", ElementActionString(aletype_));
+  eleparams.set<bool>("use spatial configuration", UpdateSysMatEveryStep());
 
   discret_->SetState("dispnp", dispnp_);
 
-  discret_->Evaluate(eleparams,sysmat_,residual_);
+  discret_->Evaluate(eleparams, sysmat_, residual_);
   discret_->ClearState();
 
   sysmat_->Complete();
@@ -257,14 +258,23 @@ const std::string ALE::Ale::ElementActionString(
   case INPAR::ALE::solid :
     return "calc_ale_solid";
     break;
-  case INPAR::ALE::laplace :
-    return "calc_ale_laplace";
+  case INPAR::ALE::solid_linear :
+    return "calc_ale_solid_linear";
     break;
-  case INPAR::ALE::springs :
-    return "calc_ale_springs";
+  case INPAR::ALE::laplace_material :
+    return "calc_ale_laplace_material";
+    break;
+  case INPAR::ALE::laplace_spatial :
+    return "calc_ale_laplace_spatial";
+    break;
+  case INPAR::ALE::springs_material :
+    return "calc_ale_springs_material";
+    break;
+  case INPAR::ALE::springs_spatial :
+    return "calc_ale_springs_spatial";
     break;
   default :
-    dserror("Cannot make std::string for ALE type  %d", name);
+    dserror("Cannot make std::string for ALE type %d", name);
     return "";
   }
 }
@@ -694,4 +704,64 @@ Teuchos::RCP<const LINALG::SparseMatrix> ALE::Ale::GetLocSysTrafo() const
     return locsysman_->Trafo();
 
   return Teuchos::null;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// class AleLinear ////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/*----------------------------------------------------------------------------*/
+ALE::AleLinear::AleLinear(Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver,
+    Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<IO::DiscretizationWriter> output)
+: Ale(actdis, solver, params, output),
+  validsysmat_(false),
+  updateeverystep_(false)
+{
+  updateeverystep_ = DRT::INPUT::IntegralValue<bool>(Params(), "UPDATEMATRIX");
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+void ALE::AleLinear::PrepareTimeStep()
+{
+  Ale::PrepareTimeStep();
+
+  if (updateeverystep_)
+    validsysmat_ = false;
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+void ALE::AleLinear::TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
+{
+  Evaluate(Teuchos::null, dbc_type);
+  Solve();
+  UpdateIter();
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+void ALE::AleLinear::EvaluateElements()
+{
+  if (not validsysmat_)
+  {
+    Ale::EvaluateElements();
+
+    validsysmat_ = true;
+  }
+  else if (not SystemMatrix().is_null())
+    SystemMatrix()->Apply(*Dispnp(), *WriteAccessResidual());
+  else if (not BlockSystemMatrix().is_null())
+    BlockSystemMatrix()->Apply(*Dispnp(), *WriteAccessResidual());
+  else
+    dserror("Can't compute residual for linear ALE.");
+
+  return;
 }

@@ -62,7 +62,7 @@ SEMI_SMOOTH_CT                  100
 SYSTEM                          saddlepoint
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   2
-ALE_TYPE                        springs
+ALE_TYPE                        springs_spatial
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BinaryTree

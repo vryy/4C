@@ -29,11 +29,13 @@ namespace INPAR
   /// possible types of moving boundary simulation
   enum AleDynamic
   {
-    // old types
     none, ///< default
-    laplace, ///< Laplacian smoothing
-    springs, ///< use a spring analogy
-    solid, ///< pseudo-structure approach
+    laplace_material, ///< Laplacian smoothing based on material configuration
+    laplace_spatial, ///< Laplacian smoothing based on spatial configuration
+    springs_material, ///< use a spring analogy based on material configuration
+    springs_spatial, ///< use a spring analogy based on spatial configuration
+    solid, ///< nonlinear pseudo-structure approach
+    solid_linear ///< linear pseudo-structure approach
   };
   /// Handling of non-converged nonlinear solver
   enum DivContAct

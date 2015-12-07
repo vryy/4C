@@ -58,7 +58,8 @@ CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-ALE_TYPE                        solid
+ALE_TYPE                        solid_linear
+UPDATEMATRIX                    no
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1000.0
 TIMESTEP                        0.1
@@ -7066,8 +7067,7 @@ CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 2155 QUANTITY vely VALUE -1.714573833e-05 TOLERANCE 1e-8
-FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE 2.869248748e-04 TOLERANCE 1e-8
-//STRUCTURE DIS structure NODE 1782 POSITION sol(1,2) NAME dy VALUE -0.0000026252202840 TOLERANCE 1e-8
+FLUID DIS fluid NODE 2155 QUANTITY vely VALUE -1.71472229883596602e-05 TOLERANCE 1e-10
+FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE 2.86933886675524085e-04 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END

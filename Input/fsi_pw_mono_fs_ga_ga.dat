@@ -17,7 +17,6 @@ NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
-//!RESTART                      3
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
@@ -71,7 +70,8 @@ TOL_VEL_RES_INF                 1e-08
 TOL_VEL_RES_L2                  1e-08
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-ALE_TYPE                        solid
+ALE_TYPE                        springs_material
+UPDATEMATRIX                    yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          Aztec_MSR
@@ -19275,9 +19275,9 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 3.1e-3 10000 FACTOR 0.0 0.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 3043 QUANTITY velx VALUE 1.29427181361693863e-03 TOLERANCE 1e-7
-FLUID DIS fluid NODE 3043 QUANTITY vely VALUE -6.90311562279138599e-04 TOLERANCE 1e-7
-FLUID DIS fluid NODE 3043 QUANTITY velz VALUE -3.87347867205592076e-04 TOLERANCE 1e-7
-FLUID DIS fluid NODE 3043 QUANTITY pressure VALUE 1.10213415545261473e+00 TOLERANCE 1e-4
+FLUID DIS fluid NODE 3043 QUANTITY velx VALUE 1.29383824271353661e-03 TOLERANCE 1e-10
+FLUID DIS fluid NODE 3043 QUANTITY vely VALUE -6.90144379166576132e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 3043 QUANTITY velz VALUE -3.87248326719420483e-04 TOLERANCE 1e-10
+FLUID DIS fluid NODE 3043 QUANTITY pressure VALUE 1.10177775256421184e+00 TOLERANCE 1e-7
 -------------------------------------------------------------------------END
 //                              END

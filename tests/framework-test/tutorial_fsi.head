@@ -3,7 +3,7 @@
 //
 // ale mesh movement algorithm
 //                              solid, springs, laplace
-ALE_TYPE                        springs
+ALE_TYPE                        springs_spatial
 //
 // number of linear solver used for ale problems...
 LINEAR_SOLVER                   1
