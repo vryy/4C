@@ -249,7 +249,7 @@ void STATMECH::StatMechManagerBilayer::BuildStatMechRootPath()
     std::ostringstream statmechfilepath;
     statmechfilepath << outputrootpath_ << "/StatMechOutput/";
     struct stat st;
-    if(stat(statmechfilepath.str().c_str(), &st) !=0 && DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechBilayerparams_, "SPECIAL_OUTPUT")!=INPAR::STATMECH::statout_none)
+    if(stat(statmechfilepath.str().c_str(), &st) !=0 && DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechBilayerparams_, "SPECIAL_OUTPUT")!=INPAR::STATMECH::statout_none  && DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechBilayerparams_, "SPECIAL_OUTPUT")!=INPAR::STATMECH::statout_vesceqshapes)
       dserror("The folder %s was not found but is required for statistical mechanics output!", statmechfilepath.str().c_str());
     std::ostringstream gmshfilepath;
     gmshfilepath << outputrootpath_ <<"/GmshOutput/";

@@ -177,9 +177,7 @@ void DRT::DiscretizationFaces::EvaluateEdgeBased(
                                                    sysmat_linalg,
                                                    residual_col);
     }
-
     else // Fluid
-
     {
       DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>(actface);
       if ( ele==NULL ) dserror( "expect FluidIntFace element" );
