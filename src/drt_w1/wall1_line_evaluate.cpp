@@ -269,7 +269,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       // check for correct input
       if ((*onoff)[0] != 1)
         dserror("orthopressure on 1st dof only!");
-      for (int checkdof = 1; checkdof <= noddof; ++checkdof)
+      for (int checkdof = 1; checkdof < noddof; ++checkdof)
       {
         if ((*onoff)[checkdof] != 0)
           dserror("orthopressure on 1st dof only!");
