@@ -1944,7 +1944,7 @@ int STR::TimIntStatMech::NewtonLS()
     iter_ += 1;
 
     // DEBUG
-    GmshOutputEveryIter();
+   // GmshOutputEveryIter();
   } // end equilibrium loop
 
   // correct iteration counter
