@@ -130,27 +130,7 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   if (erroractionstrategy != INPAR::FSI::divcont_stop and erroractionstrategy != INPAR::FSI::divcont_continue)
     isadasolver_ = true;
 
-  flmethod_ = DRT::INPUT::IntegralValue<int>(fsiada,"AUXINTEGRATORFLUID");
-
-  switch (flmethod_) // ToDo: depends also on the order of accuracy of marching time integrator
-  {                  //       (cf. Thesis by B. Bornemann, 2003 and structure field)
-    case INPAR::FSI::timada_fld_none:
-    case INPAR::FSI::timada_fld_expleuler:
-    {
-      estorderfl_ = 1.0;
-      break;
-    }
-    case INPAR::FSI::timada_fld_adamsbashforth2:
-    {
-      estorderfl_ = 2.0;
-      break;
-    }
-    default:
-    {
-      dserror("Unknown auxiliary time integrator!");
-      break;
-    }
-  }
+  flmethod_ = FluidField()->GetTimAdaMethodName();
 
   //----------------------------------------------------------------------------
   // Handling of Dirichlet BCs in error estimation
@@ -176,6 +156,18 @@ void FSI::Monolithic::InitTimIntAda(const Teuchos::ParameterList& fsidyn)
   if (dtmax_ < dtmin_)
     dserror("DTMAX = %f is not allowed to be smaller than DTMIN = %f.",
         dtmax_, dtmin_);
+
+  /* safety check for BDF2 time integration in fluid
+   * (cf. PhD Thesis [Bornemann, 2003, p. 61, eq. (3.40)]) */
+  if (FluidField()->TimIntScheme() == INPAR::FLUID::timeint_bdf2
+      and fsiada.get<double>("SIZERATIOMAX") >= 1.0+sqrt(2))
+  {
+    dserror("In case of BDF2 time integration, the maximum increase of "
+        "two subsequent time step sizes is limited to be less than '1+sqrt(2)'"
+        "due to stability reasons "
+        "(cf. PhD Thesis [Bornemann, 2003, p. 61, eq. (3.40)]). "
+        "Choose an appropriate value!");
+  }
 
   return;
 }
@@ -340,7 +332,6 @@ void FSI::Monolithic::WriteAdaFileHeader() const
     (*logada_) << "Time Adaptivity in monolithic Fluid-Structure-Interaction:" << "\n"
                << " - Error estimation method in fluid field: " << flmethod_  << "\n"
                << " - Error estimation method in structure field: " << strmethod << "\n"
-               << "   (0 = None, 1 = Explicit Euler, 2 = Adams Bashforth 2)" << "\n"
                << " - Error tolerance in fluid field: " << errtolfl_  << "\n"
                << " - Error tolerance in structure field: " << errtolstr_  << "\n"
                << " - Minimum allowed time step size DTMIN = " << dtmin_ << "\n"
@@ -503,10 +494,13 @@ void FSI::Monolithic::AdaptTimeStepSize()
   {
     FluidField()->IndicateErrorNorms(flnorm_, flfsinorm_, flinnernorm_, flinfnorm_, flinffsinorm_, flinfinnernorm_);
 
+    // error order
+    const double order = FluidField()->GetTimAdaErrOrder();
+
     //calculate time step sizes resulting from errors in the fluid field
-    dtfl_ = CalculateTimeStepSize(flnorm_, errtolfl_, estorderfl_);
-    dtflfsi_ = CalculateTimeStepSize(flfsinorm_, errtolfl_, estorderfl_);
-    dtflinner_ = CalculateTimeStepSize(flinnernorm_, errtolfl_, estorderfl_);
+    dtfl_ = CalculateTimeStepSize(flnorm_, errtolfl_, order);
+    dtflfsi_ = CalculateTimeStepSize(flfsinorm_, errtolfl_, order);
+    dtflinner_ = CalculateTimeStepSize(flinnernorm_, errtolfl_, order);
   }
   // ---------------------------------------------------------------------------
 

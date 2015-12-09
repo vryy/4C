@@ -23,6 +23,8 @@ Maintainer: Matthias Mayr
 
 #include "ad_fld_wrapper.H"
 
+#include "../drt_inpar/inpar_fsi.H"
+
 namespace DRT
 {
   class Condition;
@@ -166,7 +168,7 @@ namespace ADAPTER {
     //! @name Time step size adaptivity in monolithic FSI
     //@{
 
-    /*! Do one step with auxiliary time integration scheme
+    /*! \brief Do one step with auxiliary time integration scheme
      *
      *  Do a single time step with the user given auxiliary time integration
      *  scheme. Result is stored in #locerrvelnp_ and is used later to estimate
@@ -176,18 +178,39 @@ namespace ADAPTER {
      */
     virtual void TimeStepAuxiliar();
 
-    /*! Indicate norms of temporal discretization error
+    /*! \brief Indicate norms of temporal discretization error
      *
      *  \author mayr.mt \date 12/2013
      */
     virtual void IndicateErrorNorms(
-        double& err,        ///< L2-norm of temporal discretization error based on all DOFs
-        double& errcond,    ///< L2-norm of temporal discretization error based on interface DOFs
-        double& errother,   ///< L2-norm of temporal discretization error based on interior DOFs
-        double& errinf,     ///< L-inf-norm of temporal discretization error based on all DOFs
+        double& err, ///< L2-norm of temporal discretization error based on all DOFs
+        double& errcond, ///< L2-norm of temporal discretization error based on interface DOFs
+        double& errother, ///< L2-norm of temporal discretization error based on interior DOFs
+        double& errinf, ///< L-inf-norm of temporal discretization error based on all DOFs
         double& errinfcond, ///< L-inf-norm of temporal discretization error based on interface DOFs
         double& errinfother ///< L-inf-norm of temporal discretization error based on interior DOFs
         );
+
+    /*! \brief Error order for adaptive fluid time integration
+     *
+     *  \author mayr.mt \date 04/2015
+     */
+    const double GetTimAdaErrOrder() const;
+
+    /*! \brief Name of auxiliary time integrator
+     *
+     *  \author mayr.mt \date 04/2015
+     */
+    const std::string GetTimAdaMethodName() const;
+
+    //! Type of adaptivity algorithm
+    enum ETimAdaAux
+    {
+      ada_none, ///< no time step size adaptivity
+      ada_upward, ///< of upward type, i.e. auxiliary scheme has \b higher order of accuracy than marching scheme
+      ada_downward, ///< of downward type, i.e. auxiliary scheme has \b lower order of accuracy than marching scheme
+      ada_orderequal ///< of equal order type, i.e. auxiliary scheme has the \b same order of accuracy like the marching method
+    };
 
     //@}
 
@@ -199,7 +222,13 @@ namespace ADAPTER {
     /// create conditioned dof-map extractor for the fluid
     virtual void SetupInterface();
 
-    /// build inner velocity dof-map
+    /*! \brief Build inner velocity map
+     *
+     *  Only DOFs in the interior of the fluid domain are considered. DOFs at
+     *  the interface are excluded.
+     *
+     *  We use only velocity DOFs and only those without Dirichlet constraint.
+     */
     void BuildInnerVelMap();
 
     /// A casted pointer to the fluid itself
@@ -231,7 +260,7 @@ namespace ADAPTER {
     //! Time step size adaptivity in monolithic FSI
     //@{
 
-    /*! \brief Do an explicit Euler step as auxiliary time integrator
+    /*! \brief Do a single explicit Euler step as auxiliary time integrator
      *
      *  Based on state vector \f$x_n\f$ and its time derivative \f$\dot{x}_{n}\f$
      *  at time \f$t_{n}\f$, we calculate \f$x_{n+1}\f$ using an explicit Euler
@@ -241,15 +270,14 @@ namespace ADAPTER {
      *    x_{n+1} = x_{n} + \Delta t_{n} \dot{x}_{n}
      *  \f]
      *
-     *  \author mayr.mt
-     *  \date 10/2013
+     *  \author mayr.mt \date 10/2013
      */
     void ExplicitEuler(const Epetra_Vector& veln, ///< velocity at \f$t_n\f$
-                       const Epetra_Vector& accn, ///< acceleration at \f$t_n\f$
-                       Epetra_Vector& velnp       ///< velocity at \f$t_{n+1}\f$
-                       ) const;
+        const Epetra_Vector& accn, ///< acceleration at \f$t_n\f$
+        Epetra_Vector& velnp ///< velocity at \f$t_{n+1}\f$
+        ) const;
 
-    /*! \brief Do an Adams-Bashforth 2 step as auxiliary time integrator
+    /*! \brief Do a single Adams-Bashforth 2 step as auxiliary time integrator
      *
      *  Based on state vector \f$x_n\f$ and its time derivatives \f$\dot{x}_{n}\f$
      *  and \f$\dot{x}_{n-1}\f$ at time steps \f$t_{n}\f$ and \f$t_{n-1}\f$,
@@ -258,46 +286,51 @@ namespace ADAPTER {
      *
      *  \f[
      *    x_{n+1} = x_{n}
-     *            + \frac{2\Delta t_{n} \Delta t_{n-1} + \Delta t_{n}^2}{2\Delta t_{n-1}} \dot{x}_{n}
+     *            + \frac{2\Delta t_{n} \Delta t_{n-1} + \Delta t_{n}^2}
+     *                   {2\Delta t_{n-1}} \dot{x}_{n}
      *            - \frac{\Delta t_{n}^2}{2\Delta t_{n-1}} \dot{x}_{n-1}
      *  \f]
      *
      *  <h3> References: </h3>
+     *  <ul>
+     *  <li> Wall WA: Fluid-Struktur-Interaktion mit stabilisierten Finiten
+     *       Elementen, PhD Thesis, Universitaet Stuttgart, 1999 </li>
+     *  <li> Bornemann B: Time Integration Algorithms for the Steady States of
+     *       Dissipative Non-Linear Dynamic Systems, PhD Thesis, Imperial
+     *       College London, 2003 </li>
+     *  <li> Gresho PM, Griffiths DF, Silvester DJ: Adaptive Time-Stepping for
+     *       Incompressible Flow Part I: Scalar Advection-Diffusion,
+     *       SIAM J. Sci. Comput. (30), pp. 2018-2054, 2008 </li>
+     *  <li> Kay DA, Gresho PM, Griffiths DF, Silvester DJ: Adaptive Time
+     *       Stepping for Incompressible Flow Part II: Navier-Stokes Equations,
+     *       SIAM J. Sci. Comput. (32), pp. 111-128, 2010 </li>
      *
-     *  - Wall, W. A.: Fluid-Struktur-Interaktion mit stabilisierten Finiten
-     *  Elementen, PhD Thesis, Universitaet Stuttgart, 1999
-     *
-     *  - Bornemann, B.: Time Integration Algorithms for the Steady States of
-     *  Dissipative Non-Linear Dynamic Systems, PhD Thesis, Imperial College
-     *  London, 2003
-     *
-     *  - Gresho, P. M., Griffiths, D. F., Silvester, D. J.: Adaptive Time-Stepping
-     *  for Incompressible Flow Part I: Scalar Advection-Diffusion,
-     *  SIAM J. Sci. Comput. (30), pp. 2018-2054, 2008
-     *
-     *  - Kay, D. A., Gresho, P. M., Griffiths, D. F., Silvester, D. J.: Adaptive
-     *  Time Stepping for Incompressible Flow Part II: Navier-Stokes Equations,
-     *  SIAM J. Sci. Comput. (32), pp. 111-128, 2010
-     *
-     *  \author mayr.mt
-     *  \date 11/2013
+     *  \author mayr.mt \date 11/2013
      */
-    void AdamsBashforth2(const Epetra_Vector& veln,   ///< velocity at \f$t_n\f$
-                         const Epetra_Vector& accn,   ///< acceleration at \f$t_n\f$
-                         const Epetra_Vector& accnm,  ///< acceleration at \f$t_{n-1}\f$
-                         Epetra_Vector& velnp         ///< velocity at \f$t_{n+1}\f$
-                         ) const;
+    void AdamsBashforth2(const Epetra_Vector& veln, ///< velocity at \f$t_n\f$
+        const Epetra_Vector& accn, ///< acceleration at \f$t_n\f$
+        const Epetra_Vector& accnm, ///< acceleration at \f$t_{n-1}\f$
+        Epetra_Vector& velnp ///< velocity at \f$t_{n+1}\f$
+        ) const;
 
     //! Compute length-scaled L2-norm of a vector
     virtual double CalculateErrorNorm(const Epetra_Vector& vec, ///< vector to compute norm of
-                                      const int numneglect = 0  ///< number of DOFs that have to be neglected for length scaling
-                                       ) const;
+        const int numneglect = 0 ///< number of DOFs that have to be neglected for length scaling
+        ) const;
+
+    //! return order of accuracy of auxiliary integrator
+    const int AuxMethodOrderOfAccuracy() const;
+
+    //! return leading error coefficient of velocity of auxiliary integrator
+    const double AuxMethodLinErrCoeffVel() const;
 
     Teuchos::RCP<Epetra_Vector> locerrvelnp_; ///< vector of temporal local discretization error
 
-    int auxintegrator_; ///< auxiliary time integrator in fluid field
+    INPAR::FSI::FluidMethod auxintegrator_; ///< auxiliary time integrator in fluid field
 
     int numfsidbcdofs_; ///< number of interface DOFs with Dirichlet boundary condition
+
+    ETimAdaAux methodadapt_; ///< type of adaptive method
 
     //@}
 

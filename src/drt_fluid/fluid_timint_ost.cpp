@@ -350,3 +350,42 @@ void FLD::TimIntOneStepTheta::TreatTurbulenceModels(Teuchos::ParameterList& elep
   }
   return;
 }
+
+/*----------------------------------------------------------------------*
+| Give local order of accuracy of velocity part         mayr.mt 04/2015 |
+*-----------------------------------------------------------------------*/
+const int FLD::TimIntOneStepTheta::MethodOrderOfAccuracyVel() const
+{
+  if (theta_ != 0.5)
+    return 1;
+  else
+    return 2;
+}
+
+/*----------------------------------------------------------------------*
+| Give local order of accuracy of pressure part         mayr.mt 04/2015 |
+*-----------------------------------------------------------------------*/
+const int FLD::TimIntOneStepTheta::MethodOrderOfAccuracyPres() const
+{
+  if (theta_ != 0.5)
+    return 1;
+  else
+    return 2;
+}
+
+/*----------------------------------------------------------------------*
+| Return linear error coefficient of velocity           mayr.mt 04/2015 |
+*-----------------------------------------------------------------------*/
+const double FLD::TimIntOneStepTheta::MethodLinErrCoeffVel() const
+{
+  double fac = 0.0;
+
+  if (MethodOrderOfAccuracy() == 1)
+    fac = 0.5 - theta_;
+  else if (MethodOrderOfAccuracy() == 2)
+    fac = -1.0 / 12.0; // = 1.0/6.0 - 0.5*theta_ with theta_ = 0.5
+  else
+    dserror("Unknown Order of Accuracy for One Step Theta time integration.");
+
+  return fac;
+}

@@ -475,25 +475,53 @@ public:
     return;
   }
 
-  /*!
-  \brief Reset time and step in case that a time step has to be repeated
-
-  Fluid field increments time and step at the beginning of a time step. If a time
-  step has to be repeated, we need to take this into account and decrease time and
-  step beforehand. They will be incremented right at the beginning of the repetition
-  and, thus, everything will be fine. Currently, this is needed for time step size
-  adaptivity in FSI.
-
-  \author mayr.mt
-  \date 08/2013
+  /*! \brief Reset time and step in case that a time step has to be repeated
+   *
+   *  Fluid field increments time and step at the beginning of a time step. If a
+   *  time step has to be repeated, we need to take this into account and
+   *  decrease time and step beforehand. They will be incremented right at the
+   *  beginning of the repetition and, thus, everything will be fine.
+   *
+   *  Currently, this is needed for time step size adaptivity in FSI.
+   *
+   *  \author mayr.mt \date 08/2013
    */
-  virtual void ResetTime(const double dtold) { SetTimeStep(Time()-dtold, Step()-1); }
+  virtual void ResetTime(const double dtold)
+  {
+    SetTimeStep(Time()-dtold, Step()-1);
+  }
+
+  //! Give order of accuracy
+  virtual const int MethodOrderOfAccuracy() const
+  {
+    return std::min(MethodOrderOfAccuracyVel(), MethodOrderOfAccuracyPres());
+  }
+
+  //! Give local order of accuracy of velocity part
+  virtual const int MethodOrderOfAccuracyVel() const
+  {
+    dserror("Not implemented in base class. May be overwritten by derived class.");
+    return 0;
+  }
+
+  //! Give local order of accuracy of pressure part
+  virtual const int MethodOrderOfAccuracyPres() const
+  {
+    dserror("Not implemented in base class. May be overwritten by derived class.");
+    return 0;
+  }
+  //! Return linear error coefficient of velocity
+  virtual const double MethodLinErrCoeffVel() const
+  {
+    dserror("Not implemented in base class. May be overwritten by derived class.");
+    return 0;
+  }
+
+  //@}
 
   /*!
   \brief lift'n'drag forces, statistics time sample and
          output of solution and statistics
-
-  //@}
 
   */
   virtual void StatisticsAndOutput();

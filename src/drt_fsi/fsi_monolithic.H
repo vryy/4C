@@ -551,14 +551,21 @@ namespace FSI
     //! @name Parameters for FSI time adaptivity
     //@{
 
-    double errtolfl_;   ///< tolerance for norm of local truncation error in fluid field
-    double errtolstr_;  ///< tolerance for norm of local truncation error in structure field
+    double errtolfl_; ///< tolerance for norm of local truncation error in fluid field
+    double errtolstr_; ///< tolerance for norm of local truncation error in structure field
 
-    int flmethod_;    ///< auxiliary time integrator in fluid field
+    std::string flmethod_; ///< type of auxiliary time integrator in fluid field
 
     //@}
 
-    //! @name Artificial interface energy due to temporal discretization
+    /*! @name Artificial interface energy due to temporal discretization\
+     *
+     *  If time discretization of fluid and structure fields do not evaluate the
+     *  field equilibria at the same instance in time, artificial energy is
+     *  produced. For details see remark 3.2 in [Mayr et al. (2015): A Temporal
+     *  Consistent Monolithic Approach to Fluid-Structure Interaction Enabling
+     *  Single Field Predictors, SISC 37(1):B30-B59]
+     */
     //@{
 
     //! Write data into interface energy file
@@ -844,9 +851,6 @@ namespace FSI
     double dtstrinner_;     ///< time step size based on error in interior DOFs of structure field
     double dtflinner_;      ///< time step size based on error in interior DOFs of fluid field
     double dtnonlinsolver_; ///< time step size based on non-convergence of nonlinear solver
-
-    int estorderfl_;    ///< order of accuracy of auxiliary time integrator in fluid field
-    int estorderstr_;   ///< order of accuracy of auxiliary time integrator in structure field
 
     bool dtminused_;    ///< true if time step size has been repeated with dtmin_
 

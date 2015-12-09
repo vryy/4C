@@ -142,13 +142,38 @@ public:
       return 1.0/(theta_*dta_);
   }
 
+  //! @name Time Step Size Adaptivity
+  //@{
+
+  //! Give local order of accuracy of velocity part
+  virtual const int MethodOrderOfAccuracyVel() const { return 2; };
+
+  //! Give local order of accuracy of pressure part
+  virtual const int MethodOrderOfAccuracyPres() const  { return 2; };
+
+  /*! \brief Return linear error coefficient of velocity
+   *
+   *  The linear discretization error reads
+   *  \f[
+   *  e \approx -\frac{\left(\Delta t_n + \Delta t_{n-1}\right)^2}
+   *                  {6\Delta t_n\left(2\Delta t_n+\Delta t_{n-1}\right)}
+   *             \Delta t_n^3 \dddot{u}(t_n)
+   *    + HOT\left(\Delta t_n^4\right)
+   *  \f]
+   *
+   *  \author mayr.mt \date 04/2015
+   */
+  virtual const double MethodLinErrCoeffVel() const;
+
+  //@}
+
 protected:
 
   /// copy constructor
   TimIntBDF2 (const TimIntBDF2& old);
 
   /*!
-  \brief velocity required for evaluation of related quantites required on element level
+  \brief velocity required for evaluation of related quantities required on element level
 
   */
   virtual const Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return velnp_;};

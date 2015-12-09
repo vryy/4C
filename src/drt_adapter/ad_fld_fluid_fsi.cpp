@@ -52,7 +52,8 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   meshmap_(Teuchos::rcp(new LINALG::MapExtractor())),
   locerrvelnp_(Teuchos::null),
   auxintegrator_(INPAR::FSI::timada_fld_none),
-  numfsidbcdofs_(0)
+  numfsidbcdofs_(0),
+  methodadapt_(ada_none)
 {
   // make sure
   if (fluid_ == Teuchos::null)
@@ -96,7 +97,20 @@ void ADAPTER::FluidFSI::Init()
   const bool timeadapton = DRT::INPUT::IntegralValue<bool>(fsidyn.sublist("TIMEADAPTIVITY"),"TIMEADAPTON");
   if (timeadapton)
   {
-    auxintegrator_ = DRT::INPUT::IntegralValue<int>(fsidyn.sublist("TIMEADAPTIVITY"),"AUXINTEGRATORFLUID");
+    // extract the type of auxiliary integrator from the input parameter list
+    auxintegrator_ = DRT::INPUT::IntegralValue<INPAR::FSI::FluidMethod>(
+        fsidyn.sublist("TIMEADAPTIVITY"), "AUXINTEGRATORFLUID");
+
+    if (auxintegrator_ != INPAR::FSI::timada_fld_none)
+    {
+      // determine type of adaptivity
+      if (AuxMethodOrderOfAccuracy() > fluidimpl_->MethodOrderOfAccuracy())
+        methodadapt_ = ada_upward;
+      else if (AuxMethodOrderOfAccuracy() < fluidimpl_->MethodOrderOfAccuracy())
+        methodadapt_ = ada_downward;
+      else
+        methodadapt_ = ada_orderequal;
+    }
 
     //----------------------------------------------------------------------------
     // Handling of Dirichlet BCs in error estimation
@@ -502,8 +516,10 @@ void ADAPTER::FluidFSI::CalculateError()
 void ADAPTER::FluidFSI::TimeStepAuxiliar()
 {
   // current state
-  Teuchos::RCP<const Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(*Veln()));
-  Teuchos::RCP<const Epetra_Vector> accn = Teuchos::rcp(new Epetra_Vector(*Accn()));
+  Teuchos::RCP<const Epetra_Vector> veln =
+      Teuchos::rcp(new Epetra_Vector(*Veln()));
+  Teuchos::RCP<const Epetra_Vector> accn =
+      Teuchos::rcp(new Epetra_Vector(*Accn()));
 
   // prepare vector for solution of auxiliary time step
   locerrvelnp_ = Teuchos::rcp(new Epetra_Vector(*fluid_->DofRowMap(),true));
@@ -528,7 +544,8 @@ void ADAPTER::FluidFSI::TimeStepAuxiliar()
       if (Step() >= 1) // AdamsBashforth2 only if at least second time step
       {
         // Acceleration from previous time step
-        Teuchos::RCP<Epetra_Vector> accnm = Teuchos::rcp(new Epetra_Vector(*ExtractVelocityPart(Accnm())));
+        Teuchos::RCP<Epetra_Vector> accnm =
+            Teuchos::rcp(new Epetra_Vector(*ExtractVelocityPart(Accnm())));
 
         AdamsBashforth2(*veln, *accn, *accnm, *locerrvelnp_);
       }
@@ -552,9 +569,7 @@ void ADAPTER::FluidFSI::TimeStepAuxiliar()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::ExplicitEuler(const Epetra_Vector& veln,
-                                      const Epetra_Vector& accn,
-                                      Epetra_Vector& velnp
-                                      ) const
+    const Epetra_Vector& accn, Epetra_Vector& velnp) const
 {
   // Do a single explicit Euler step
   velnp.Update(1.0, veln, Dt(), accn, 0.0);
@@ -565,10 +580,8 @@ void ADAPTER::FluidFSI::ExplicitEuler(const Epetra_Vector& veln,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::AdamsBashforth2(const Epetra_Vector& veln,
-                                        const Epetra_Vector& accn,
-                                        const Epetra_Vector& accnm,
-                                        Epetra_Vector& velnp
-                                        ) const
+    const Epetra_Vector& accn, const Epetra_Vector& accnm,
+    Epetra_Vector& velnp) const
 {
   // time step sizes of current and previous time step
   const double dt = Dt();
@@ -576,46 +589,58 @@ void ADAPTER::FluidFSI::AdamsBashforth2(const Epetra_Vector& veln,
 
   // Do a single Adams-Bashforth 2 step
   velnp.Update(1.0, veln, 0.0);
-  velnp.Update((2.0*dt*dto+dt*dt) / (2*dto), accn, -dt*dt / (2.0*dto), accnm, 1.0);
+  velnp.Update((2.0 * dt * dto + dt * dt) / (2 * dto), accn,
+      -dt * dt / (2.0 * dto), accnm, 1.0);
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::FluidFSI::IndicateErrorNorms(double& err,
-                                           double& errcond,
-                                           double& errother,
-                                           double& errinf,
-                                           double& errinfcond,
-                                           double& errinfother
-                                           )
+void ADAPTER::FluidFSI::IndicateErrorNorms(double& err, double& errcond,
+    double& errother, double& errinf, double& errinfcond, double& errinfother)
 {
   // compute estimation of local discretization error
-  locerrvelnp_->Update(-1.0, *Velnp(), 1.0);
+  if (methodadapt_ == ada_orderequal)
+  {
+    const double coeffmarch = fluidimpl_->MethodLinErrCoeffVel();
+    const double coeffaux = AuxMethodLinErrCoeffVel();
+    locerrvelnp_->Update(-1.0, *Velnp(), 1.0);
+    locerrvelnp_->Scale(coeffmarch / (coeffaux - coeffmarch));
+  }
+  else
+  {
+    // schemes do not have the same order of accuracy
+    locerrvelnp_->Update(-1.0, *Velnp(), 1.0);
+  }
 
   // set '0' on all pressure DOFs
-  Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(locerrvelnp_->Map(), true));
+  Teuchos::RCP<const Epetra_Vector> zeros =
+      Teuchos::rcp(new Epetra_Vector(locerrvelnp_->Map(), true));
   LINALG::ApplyDirichlettoSystem(locerrvelnp_, zeros, *(PressureRowMap()));
   // TODO: Do not misuse ApplyDirichlettoSystem()...works for this purpose here: writes zeros into all pressure DoFs
 
   // set '0' on Dirichlet DOFs
   zeros = Teuchos::rcp(new Epetra_Vector(locerrvelnp_->Map(), true));
-  LINALG::ApplyDirichlettoSystem(locerrvelnp_, zeros, *(GetDBCMapExtractor()->CondMap()));
+  LINALG::ApplyDirichlettoSystem(locerrvelnp_, zeros,
+      *(GetDBCMapExtractor()->CondMap()));
 
   // extract the condition part of the full error vector (i.e. only interface velocity DOFs)
-  Teuchos::RCP<Epetra_Vector> errorcond
-    = Teuchos::rcp(new Epetra_Vector(*Interface()->ExtractFSICondVector(locerrvelnp_)));
+  Teuchos::RCP<Epetra_Vector> errorcond = Teuchos::rcp(
+      new Epetra_Vector(*Interface()->ExtractFSICondVector(locerrvelnp_)));
 
-  // in case of structure split: extract the other part of the full error vector (i.e. interior velocity and all pressure DOFs)
-  Teuchos::RCP<Epetra_Vector> errorother
-    = Teuchos::rcp(new Epetra_Vector(*Interface()->ExtractOtherVector(locerrvelnp_)));
+  /* in case of structure split: extract the other part of the full error vector
+   * (i.e. interior velocity and all pressure DOFs) */
+  Teuchos::RCP<Epetra_Vector> errorother = Teuchos::rcp(
+      new Epetra_Vector(*Interface()->ExtractOtherVector(locerrvelnp_)));
 
   // calculate L2-norms of different subsets of temporal discretization error vector
   // (neglect Dirichlet and pressure DOFs for length scaling)
-  err = CalculateErrorNorm(*locerrvelnp_, GetDBCMapExtractor()->CondMap()->NumGlobalElements() + PressureRowMap()->NumGlobalElements());
+  err = CalculateErrorNorm(*locerrvelnp_,
+      GetDBCMapExtractor()->CondMap()->NumGlobalElements() + PressureRowMap()->NumGlobalElements());
   errcond = CalculateErrorNorm(*errorcond, numfsidbcdofs_);
-  errother = CalculateErrorNorm(*errorother, PressureRowMap()->NumGlobalElements() + (GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numfsidbcdofs_));
+  errother = CalculateErrorNorm(*errorother,
+      PressureRowMap()->NumGlobalElements() + (GetDBCMapExtractor()->CondMap()->NumGlobalElements() - numfsidbcdofs_));
 
   // calculate L-inf-norms of temporal discretization errors
   locerrvelnp_->NormInf(&errinf);
@@ -669,9 +694,98 @@ double ADAPTER::FluidFSI::CalculateErrorNorm(const Epetra_Vector& vec,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+const int ADAPTER::FluidFSI::AuxMethodOrderOfAccuracy() const
+{
+  if (auxintegrator_ == INPAR::FSI::timada_fld_none)
+    return 0;
+  else if (auxintegrator_ == INPAR::FSI::timada_fld_expleuler)
+    return 1;
+  else if (auxintegrator_ == INPAR::FSI::timada_fld_adamsbashforth2)
+    return 2;
+  else
+  {
+    dserror("Unknown auxiliary time integration scheme for fluid field.");
+    return 0;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const double ADAPTER::FluidFSI::AuxMethodLinErrCoeffVel() const
+{
+  if (auxintegrator_ == INPAR::FSI::timada_fld_none)
+    return 0.0;
+  else if (auxintegrator_ == INPAR::FSI::timada_fld_expleuler)
+    return 0.5;
+  else if (auxintegrator_ == INPAR::FSI::timada_fld_adamsbashforth2)
+  {
+    // time step sizes of current and previous time step
+    const double dtc = Dt();
+    const double dto = fluidimpl_->DtPrevious();
+
+    // leading error coefficient
+    return (2 * dtc + 3 * dto) / (12 * dtc);
+  }
+  else
+  {
+    dserror("Unknown auxiliary time integration scheme for fluid field.");
+    return 0;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const double ADAPTER::FluidFSI::GetTimAdaErrOrder() const
+{
+  if (auxintegrator_ != INPAR::FSI::timada_fld_none)
+  {
+    if (methodadapt_ == ada_upward)
+      return fluidimpl_->MethodOrderOfAccuracyVel();
+    else
+      return AuxMethodOrderOfAccuracy();
+  }
+  else
+  {
+    dserror("Cannot return error order for adaptive time integration, since"
+        "no auxiliary scheme has been chosen for the fluid field.");
+    return 0.0;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const std::string ADAPTER::FluidFSI::GetTimAdaMethodName() const
+{
+  switch (auxintegrator_)
+  {
+  case INPAR::FSI::timada_fld_none:
+  {
+    return "none";
+    break;
+  }
+  case INPAR::FSI::timada_fld_expleuler:
+  {
+    return "ExplicitEuler";
+    break;
+  }
+  case INPAR::FSI::timada_fld_adamsbashforth2:
+  {
+    return "AdamsBashfort2";
+    break;
+  }
+  default:
+  {
+    dserror("Unknown auxiliary time integration scheme for fluid field.");
+    return "";
+    break;
+  }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::SetupInterface()
 {
-
   interface_->Setup(*dis_,false);
 }
 
@@ -679,9 +793,6 @@ void ADAPTER::FluidFSI::SetupInterface()
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::BuildInnerVelMap()
 {
-  // build inner velocity map
-  // dofs at the interface are excluded
-  // we use only velocity dofs and only those without Dirichlet constraint
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   maps.push_back(FluidWrapper::VelocityRowMap());
   maps.push_back(Interface()->OtherMap());

@@ -149,11 +149,24 @@ public:
   */
   const Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return Teuchos::null;};
 
-
   /*!
   \brief treat turbulence models in AssembleMatAndRHS
   */
   virtual void TreatTurbulenceModels(Teuchos::ParameterList& eleparams);
+
+  //! @name Time Step Size Adaptivity
+  //@{
+
+  //! Give local order of accuracy of velocity part
+  virtual const int MethodOrderOfAccuracyVel() const { return 1; }
+
+  //! Give local order of accuracy of pressure part
+  virtual const int MethodOrderOfAccuracyPres() const { return 1; }
+
+  //! Return linear error coefficient of velocity
+  virtual const double MethodLinErrCoeffVel() const { return 1.0; }
+
+  //@}
 
 protected:
 

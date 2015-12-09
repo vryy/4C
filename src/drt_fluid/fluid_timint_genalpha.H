@@ -22,6 +22,16 @@ Maintainers: Ursula Rasthofer & Martin Kronbichler
 namespace FLD
 {
 
+/*! \brief Generalized-Alpha time integration for fluid problems
+ *
+ *  <h3> References </h3>
+ *  <ul>
+ *  <li>[1] Jansen KE, Whiting CH, Hulbert GM: A generalized-\f$\alpha\f$ method
+ *          for integrating the filered Navier--Stokes euqations with a
+ *          stabilized finite element method, Comp. Meth. Appl. Mech. Engng.,
+ *          190(3-4), pp. 305--319, 2000 </li>
+ *  </ul>
+ */
 class TimIntGenAlpha : public virtual FluidImplicitTimeInt
 {
 
@@ -171,6 +181,45 @@ public:
 
   */
   virtual void TreatTurbulenceModels(Teuchos::ParameterList& eleparams);
+
+  //! @name Time Step Size Adaptivity
+  //@{
+
+  /*! \brief Give local order of accuracy of velocity part
+   *
+   *  Generalized-Alpha is second order accurate if
+   *  \f$\gamma=\frac{1}{2}+\alpha_{m}-\alpha_{f}\f$
+   *  (cf. eq. (17) in [Jansen, 2000]), otherwise only first order.
+   *
+   *  \author mayr.mt \date 04/2015
+   */
+  virtual const int MethodOrderOfAccuracyVel() const;
+
+  /*! \brief Give local order of accuracy of pressure part
+   *
+   *  Generalized-Alpha is second order accurate if
+   *  \f$\gamma=\frac{1}{2}+\alpha_{m}-\alpha_{f}\f$
+   *  (cf. eq. (17) in [Jansen, 2000]), otherwise only first order.
+   *
+   *  \author mayr.mt \date 04/2015
+   */
+  virtual const int MethodOrderOfAccuracyPres() const;
+
+  /*! \brief Return linear error coefficient of velocity
+   *
+   *  The linear discretization error reads
+   *  \f[
+   *  e \approx \Delta t_n^2\left(\frac{1}{2}-\gamma\right)\ddot{u}(t_n)
+   *    + \Delta t_n^3\left(\frac{1}{6}-\frac{\gamma}{2}\right)\dddot{u}(t_n)
+   *    + HOT\left(\Delta t_n^4\right)
+   *  \f]
+   *
+   *  \author mayr.mt \date 04/2015
+   */
+  virtual const double MethodLinErrCoeffVel() const;
+
+  //@}
+
 protected:
 
   /// copy constructor

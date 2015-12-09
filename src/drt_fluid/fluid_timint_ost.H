@@ -184,6 +184,30 @@ public:
   */
   virtual void TreatTurbulenceModels(Teuchos::ParameterList& eleparams);
 
+  //! @name Time Step Size Adaptivity
+  //@{
+
+  //! Give local order of accuracy of velocity part
+  virtual const int MethodOrderOfAccuracyVel() const;
+
+  //! Give local order of accuracy of pressure part
+  virtual const int MethodOrderOfAccuracyPres() const;
+
+  /*! \brief Return linear error coefficient of velocity
+   *
+   *  The linear discretization error reads
+   *  \f[
+   *  e \approx \Delta t_n^2\left(\frac{1}{2}-\theta\right)\ddot{u}(t_n)
+   *    + \Delta t_n^3\left(\frac{1}{6}-\frac{\theta}{2}\right)\dddot{u}(t_n)
+   *    + HOT\left(\Delta t_n^4\right)
+   *  \f]
+   *
+   *  \author mayr.mt \date 04/2015
+   */
+  virtual const double MethodLinErrCoeffVel() const;
+
+  //@}
+
 protected:
 
   /// copy constructor

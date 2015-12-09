@@ -230,3 +230,14 @@ void FLD::TimIntBDF2::SetElementTimeParameter()
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
+
+/*----------------------------------------------------------------------*
+| Return linear error coefficient of velocity             mayr.mt 12/13 |
+*-----------------------------------------------------------------------*/
+const double FLD::TimIntBDF2::MethodLinErrCoeffVel() const
+{
+  double nominator = (dta_ + dtp_) * (dta_ + dtp_);
+  double denominator = 6 * dta_ * (2 * dta_ + dtp_);
+
+  return nominator/denominator;
+}

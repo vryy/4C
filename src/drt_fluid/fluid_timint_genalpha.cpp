@@ -466,3 +466,42 @@ Teuchos::RCP<Epetra_Vector> FLD::TimIntGenAlpha::ExtrapolateEndPoint
 
   return vecnp;
 }
+
+/*----------------------------------------------------------------------*
+| Give local order of accuracy of velocity part         mayr.mt 04/2015 |
+*-----------------------------------------------------------------------*/
+const int FLD::TimIntGenAlpha::MethodOrderOfAccuracyVel() const
+{
+  if (fabs(gamma_ - 0.5 - alphaM_ + alphaF_) < 1.0e-6)
+    return 2;
+  else
+    return 1;
+}
+
+/*----------------------------------------------------------------------*
+| Give local order of accuracy of pressure part         mayr.mt 04/2015 |
+*-----------------------------------------------------------------------*/
+const int FLD::TimIntGenAlpha::MethodOrderOfAccuracyPres() const
+{
+  if (fabs(gamma_ - 0.5 - alphaM_ + alphaF_) < 1.0e-6)
+    return 2;
+  else
+    return 1;
+}
+
+/*----------------------------------------------------------------------*
+| Return linear error coefficient of velocity           mayr.mt 04/2015 |
+*-----------------------------------------------------------------------*/
+const double FLD::TimIntGenAlpha::MethodLinErrCoeffVel() const
+{
+  double fac = 0.0;
+
+  if (MethodOrderOfAccuracy() == 1)
+    fac = 0.5 - gamma_;
+  else if (MethodOrderOfAccuracy() == 2)
+    fac = 1.0 / 6.0 - 0.5 * gamma_;
+  else
+    dserror("Unknown Order of Accuracy for Gen-Alpha time integration.");
+
+  return fac;
+}
