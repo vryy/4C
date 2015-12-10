@@ -200,6 +200,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp
 
   if (pstype != INPAR::STR::prestress_none && time <= pstime)
   {
+    if (Discretization()->Comm().MyPID() == 0)
+      std::cout << "\Applying no displacements to the fluid since we do prestressing" << std::endl;
+
     return Teuchos::rcp(new Epetra_Vector(*interface_->FSICondMap(),true));
   }
   else
