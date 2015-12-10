@@ -1,11 +1,15 @@
 /*!----------------------------------------------------------------------
-\file springdashpot_manager.cpp
+\file springdashpot_manager.H
 
-\brief Manages all spring-dashpot boundary conditions
+\brief Methods for spring and dashpot constraints / boundary conditions:
 
 <pre>
-Maintainer: Martin Pfaller, pfaller@lnm.mw.tum.de
+Maintainer: Martin Pfaller
+            pfaller@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15264
 </pre>
+
 *----------------------------------------------------------------------*/
 
 #ifndef SPRINGDASHPOT_MANAGER_H
@@ -69,6 +73,18 @@ namespace UTILS
     void Output(Teuchos::RCP<IO::DiscretizationWriter> output,
                 Teuchos::RCP<DRT::Discretization> discret,
                 Teuchos::RCP<Epetra_Vector> disp);
+
+    /*!
+     \brief Read restart information
+    */
+    void ReadRestart(
+      IO::DiscretizationReader& reader,
+      const double& time);
+
+    //! reset spring after having done a MULF prestressing update (mhv 12/2015)
+    void ResetPrestress(
+        Teuchos::RCP<Epetra_Vector> disold
+        );
 
   private:
     Teuchos::RCP<DRT::Discretization> actdisc_; ///< standard discretization

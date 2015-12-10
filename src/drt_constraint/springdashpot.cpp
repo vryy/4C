@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file patspec.cpp
+\file springdashpot.cpp
 
 \brief Methods for spring and dashpot constraints / boundary conditions:
 
@@ -46,7 +46,8 @@ UTILS::SpringDashpot::SpringDashpot(
     gapdt_(),
     dgap_(),
     normals_(),
-    dnormals_()
+    dnormals_(),
+    offset_prestr_()
 {
   // set type of this spring
   SetSpringType();
@@ -72,6 +73,8 @@ UTILS::SpringDashpot::SpringDashpot(
     InitializeCurSurfNormal();
   else if (springtype_ == refsurfnormal)
     GetRefNormals(geom);
+  // initialize prestressing offset
+  InitializePrestrOffset();
 
   return;
 }
@@ -92,6 +95,7 @@ void UTILS::SpringDashpot::Evaluate(
   gap_.clear();
   gapdt_.clear();
   springstress_.clear();
+
 
   // get time integrator properties
   const double gamma = parlist.get("scale_gamma",0.0);
@@ -119,6 +123,8 @@ void UTILS::SpringDashpot::Evaluate(
       // get nodal values
       const double nodalarea = area_[gid]; // nodal area
       const std::vector<double> normal = normals_[gid]; // normalized nodal normal
+      // get nodal displacement values of last time step for MULF offset
+      const std::vector<double> offsetprestr = offset_prestr_[gid];
 
       const int numdof = actdisc_->NumDof(0,node);
       assert (numdof==3);
@@ -144,7 +150,7 @@ void UTILS::SpringDashpot::Evaluate(
         double gapdt = 0.; // projection of velocity vector to refsurfnormal (v \cdot N) = gap function
         for (int k=0; k<numdof; ++k)
         {
-          gap -= u[k]*normal[k]; // project displacement on normal
+          gap -= (u[k]-offsetprestr[k])*normal[k]; // project displacement on normal
           gapdt -= v[k]*normal[k]; // project velocity on normal
         }
 
@@ -164,7 +170,7 @@ void UTILS::SpringDashpot::Evaluate(
                 "when specifying 'all' as DIRECTION (no ref surface normal information is calculated for that case)! "
                 "Only possible for DIRECTION 'refsurfnormal' or 'cursurfnormal'.");
 
-          const double val  = nodalarea*(stiff_tens_*(u[k]-offset_) + viscosity_*v[k]);
+          const double val  = nodalarea*(stiff_tens_*(u[k]-offset_-offsetprestr[k]) + viscosity_*v[k]);
           const double dval = nodalarea*(stiff_tens_ + viscosity_*gamma/(beta*ts_size));
 
           const int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
@@ -246,6 +252,104 @@ void UTILS::SpringDashpot::Evaluate(
 }
 
 /*----------------------------------------------------------------------*
+ |                                                             mhv 12/15|
+ *----------------------------------------------------------------------*/
+void UTILS::SpringDashpot::Reset(
+    Teuchos::RCP<Epetra_Vector> dis)
+{
+
+  // loop nodes of current condition
+  const std::vector<int>& nds = *nodes_;
+  for (int j=0; j<(int)nds.size(); ++j)
+  {
+    // nodes owned by processor
+    if (actdisc_->NodeRowMap()->MyGID(nds[j]))
+    {
+      int gid = nds[j];
+      DRT::Node* node = actdisc_->gNode(gid);
+      if (!node) dserror("Cannot find global node %d",gid);
+
+      const int numdof = actdisc_->NumDof(0,node);
+      assert (numdof==3);
+      std::vector<int> dofs = actdisc_->Dof(0,node);
+
+      // initialize. calculation of displacements differs for each spring variant
+      std::vector<double> uoff(numdof, 0.0); // displacement vector of condition nodes
+      if (springtype_ == refsurfnormal ||
+          springtype_ == all)
+      {
+        for (int k=0; k<numdof; ++k)
+        {
+          uoff[k] = -(*dis)[dis->Map().LID(dofs[k])]; // extract nodal displacement to be offset
+        }
+
+        std::vector<double> offpr = offset_prestr_[gid];
+        offset_prestr_.erase(gid);
+
+        for (int k=0; k<numdof; ++k)
+        {
+          uoff[k] += offpr[k]; // accumulate displacements to be offset
+        }
+
+      }
+      offset_prestr_.insert(std::pair<int, std::vector<double> >(gid, uoff));
+
+    } //node owned by processor
+  } //loop over nodes
+
+}
+
+/*----------------------------------------------------------------------*
+ |                                                             mhv 12/15|
+ *----------------------------------------------------------------------*/
+void UTILS::SpringDashpot::SetRestart(
+    Teuchos::RCP<Epetra_MultiVector> vec)
+{
+
+  // loop nodes of current condition
+  const std::vector<int>& nds = *nodes_;
+  for (int j=0; j<(int)nds.size(); ++j)
+  {
+    // nodes owned by processor
+    if (actdisc_->NodeRowMap()->MyGID(nds[j]))
+    {
+      int gid = nds[j];
+      DRT::Node* node = actdisc_->gNode(gid);
+      if (!node) dserror("Cannot find global node %d",gid);
+
+      const int numdof = actdisc_->NumDof(0,node);
+      assert (numdof==3);
+      std::vector<int> dofs = actdisc_->Dof(0,node);
+
+
+      if (springtype_ == refsurfnormal ||
+          springtype_ == all)
+      {
+
+        // import spring offset length
+        for(std::map<int, std::vector<double> >::iterator i = offset_prestr_.begin(); i != offset_prestr_.end(); ++i)
+        {
+          // global id -> local id
+          const int lid = vec->Map().LID(i->first);
+          // local id on processor
+          if (lid>=0)
+          {
+            // copy all components of spring offset length vector
+            (i->second)[0] = (*(*vec)(0))[lid];
+            (i->second)[1] = (*(*vec)(1))[lid];
+            (i->second)[2] = (*(*vec)(2))[lid];
+
+          }
+        }
+
+      }
+
+    } //node owned by processor
+  } //loop over nodes
+
+}
+
+/*----------------------------------------------------------------------*
  |                                                         pfaller Jan14|
  *----------------------------------------------------------------------*/
 void UTILS::SpringDashpot::OutputGapNormal(
@@ -290,6 +394,31 @@ void UTILS::SpringDashpot::OutputGapNormal(
       (*(*stress)(0))[lid] += (i->second)[0];
       (*(*stress)(1))[lid] += (i->second)[1];
       (*(*stress)(2))[lid] += (i->second)[2];
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |                                                             mhv Dec15|
+ *----------------------------------------------------------------------*/
+void UTILS::SpringDashpot::OutputPrestrOffset(
+    Teuchos::RCP<Epetra_MultiVector> &springprestroffset)
+{
+
+  // export spring offset length
+  for(std::map<int, std::vector<double> >::iterator i = offset_prestr_.begin(); i != offset_prestr_.end(); ++i)
+  {
+    // global id -> local id
+    const int lid = springprestroffset->Map().LID(i->first);
+    // local id on processor
+    if (lid>=0)
+    {
+      // copy all components of spring offset length vector
+      (*(*springprestroffset)(0))[lid] = (i->second)[0];
+      (*(*springprestroffset)(1))[lid] = (i->second)[1];
+      (*(*springprestroffset)(2))[lid] = (i->second)[2];
     }
   }
 
@@ -525,6 +654,39 @@ void UTILS::SpringDashpot::GetRefNormals(const std::map<int,Teuchos::RCP<DRT::El
 
       // insert to map
       normals_.insert(std::pair<int, std::vector<double> >(gid, temp));
+    }
+  }
+
+  return;
+}
+
+/*-----------------------------------------------------------------------*
+|(private)                                                    mhv 12/2015|
+ *-----------------------------------------------------------------------*/
+void UTILS::SpringDashpot::InitializePrestrOffset()
+{
+  offset_prestr_.clear();
+
+  const std::vector<int>& nds = *nodes_;
+  for (int j=0; j<(int)nds.size(); ++j)
+  {
+    if (actdisc_->NodeRowMap()->MyGID(nds[j]))
+    {
+      int gid = nds[j];
+
+      DRT::Node* node = actdisc_->gNode(gid);
+      if (!node) dserror("Cannot find global node %d",gid);
+
+      int numdof = actdisc_->NumDof(node);
+      std::vector<int> dofs = actdisc_->Dof(node);
+
+      assert (numdof==3);
+
+      std::vector<double> temp(numdof, 0.0);
+
+      // insert to map
+      offset_prestr_.insert(std::pair<int, std::vector<double> >(gid, temp));
+
     }
   }
 

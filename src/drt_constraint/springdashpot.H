@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file patspec.H
+\file springdashpot.H
 
 \brief Methods for spring and dashpot constraints / boundary conditions
 
@@ -86,11 +86,23 @@ namespace UTILS
           Teuchos::RCP<Epetra_Vector> veln,
           Teuchos::ParameterList parlist);
 
+      //! reset after prestressing with MULF
+      void Reset(
+          Teuchos::RCP<Epetra_Vector> dis);
+
+      //! set reset after prestressing with MULF
+      void SetRestart(
+          Teuchos::RCP<Epetra_MultiVector> vec);
+
       //! output of gap, normal, and nodal stiffness
       void OutputGapNormal(
           Teuchos::RCP<Epetra_Vector> &gap,
           Teuchos::RCP<Epetra_MultiVector> &normals,
           Teuchos::RCP<Epetra_MultiVector> &stress);
+
+      //! output of spring offset
+      void OutputPrestrOffset(
+          Teuchos::RCP<Epetra_MultiVector> &springprestroffset);
 
       //! return type of spring
       SpringType GetSpringType()
@@ -115,6 +127,9 @@ namespace UTILS
       //! get current normal
       void GetCurNormals(Teuchos::RCP<Epetra_Vector> disp);
 
+      //! initialize prestr offset
+      void InitializePrestrOffset();
+
       Teuchos::RCP<DRT::Discretization> actdisc_; ///< standard discretization
       Teuchos::RCP<DRT::Condition> spring_; ///< spring dashpot condition
       Teuchos::RCP<ADAPTER::CouplingNonLinMortar> mortar_; //< mortar interface in case of curnormal springs
@@ -134,10 +149,11 @@ namespace UTILS
       std::map<int, double> gap0_; //< nodal gap in reference configuration
       std::map<int, double> gap_; //< nodal gap in current configuration
       std::map<int, double> gapdt_; //< nodal gap velocity in current configuration
-      std::map<int,std::map<int,double> > dgap_; //< linearization of nodal gap
+      std::map<int, std::map<int,double> > dgap_; //< linearization of nodal gap
       std::map<int, std::vector<double> > normals_; //< nodal normal
-      std::map<int,std::vector<GEN::pairedvector<int,double> > > dnormals_; //< linearization of nodal normal
+      std::map<int, std::vector<GEN::pairedvector<int,double> > > dnormals_; //< linearization of nodal normal
       std::map<int, std::vector<double> > springstress_; //< nodal force applied by spring dashpot BC for output
+      std::map<int, std::vector<double> > offset_prestr_; //< prestressing offset
 
     private:
       SpringType springtype_;

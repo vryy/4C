@@ -668,6 +668,9 @@ namespace STR
     //! Read and set restart values for Windkessel
     void ReadRestartWindkessel();
 
+    //! Read and set restart values for Spring Dashpot
+    void ReadRestartSpringDashpot();
+
     //! Read and set restart values for contact / meshtying
     void ReadRestartContactMeshtying();
 

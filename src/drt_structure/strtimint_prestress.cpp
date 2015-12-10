@@ -1,6 +1,6 @@
-/*----------------------------------------------------------------------*/
-/*!
-\file strtimint_statics.cpp
+/*!----------------------------------------------------------------------
+\file strtimint_prestress.cpp
+
 \brief Static Prestress analysis
 
 <pre>
@@ -9,15 +9,16 @@ Maintainer: Sebastian Kehl
             http://www.lnm.mw.tum.de
             089 - 289-15249
 </pre>
-*/
 
-/*----------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
+
 /* headers */
 #include "strtimint_prestress.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io.H"
+#include "../drt_constraint/springdashpot_manager.H"
 
 /*======================================================================*/
 /* constructor */
@@ -51,7 +52,7 @@ void STR::TimIntPrestress::UpdateStepElement()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
-  
+
   // which prestress type?
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
@@ -75,7 +76,7 @@ void STR::TimIntPrestress::UpdateStepElement()
       discret_->ClearState();
     }
   }
-  
+
   // INVERSE DESIGN
   else if (pstype == INPAR::STR::prestress_id)
   {
@@ -105,7 +106,7 @@ void STR::TimIntPrestress::UpdateStepElement()
   if (pstype == INPAR::STR::prestress_id && (*time_)[0] <= pstime && timen_ > pstime)
   {
     // switch in id mode:
-    dis_->UpdateSteps(*zeros_); 
+    dis_->UpdateSteps(*zeros_);
     vel_->UpdateSteps(*zeros_);  // this simply copies zero vectors
     acc_->UpdateSteps(*zeros_);  // this simply copies zero vectors
     if (!discret_->Comm().MyPID()) IO::cout << "XXXXXX Entering INVERSEDESIGN SWITCH" << IO::endl;
@@ -117,12 +118,18 @@ void STR::TimIntPrestress::UpdateStepElement()
 
   if (pstype == INPAR::STR::prestress_mulf &&  (*time_)[0] <= pstime)
   {
+    //prestressing for spring in spring dashpot - corresponds to storage of deformation gradient in material law (mhv 12/2015)
+    //pass current displacement state to spring at end of MULF step
+    if (springman_->HaveSpringDashpot())
+    {
+      springman_->ResetPrestress(disn_);
+    }
     // only for MULF prestressing mode:
-    dis_->UpdateSteps(*zeros_); 
+    dis_->UpdateSteps(*zeros_);
     vel_->UpdateSteps(*zeros_);  // this simply copies zero vectors
     acc_->UpdateSteps(*zeros_);  // this simply copies zero vectors
   }
-  
+
 }
 
 /*----------------------------------------------------------------------*/

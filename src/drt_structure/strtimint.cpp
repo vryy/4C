@@ -1920,6 +1920,7 @@ void STR::TimInt::ReadRestart
   ReadRestartSurfstress();
   ReadRestartMultiScale();
   ReadRestartCrack();
+  ReadRestartSpringDashpot();
 
   ReadRestartForce();
 
@@ -2057,13 +2058,24 @@ void STR::TimInt::ReadRestartConstraint()
 }
 
 /*----------------------------------------------------------------------*/
-/* Read and set restart values for constraints */
+/* Read and set restart values for windkessel */
 void STR::TimInt::ReadRestartWindkessel()
 {
   if (windkman_->HaveWindkessel())
   {
     IO::DiscretizationReader reader(discret_, step_);
     windkman_->ReadRestart(reader,(*time_)[0]);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/* Read and set restart values for spring dashpot */
+void STR::TimInt::ReadRestartSpringDashpot()
+{
+  if (springman_->HaveSpringDashpot())
+  {
+    IO::DiscretizationReader reader(discret_, step_);
+    springman_->ReadRestart(reader,(*time_)[0]);
   }
 }
 

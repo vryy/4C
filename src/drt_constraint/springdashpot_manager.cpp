@@ -1,12 +1,17 @@
 /*!----------------------------------------------------------------------
 \file springdashpot_manager.cpp
 
-\brief Manages all spring-dashpot boundary conditions
+\brief Methods for spring and dashpot constraints / boundary conditions:
 
 <pre>
-Maintainer: Martin Pfaller, pfaller@lnm.mw.tum.de
+Maintainer: Martin Pfaller
+            pfaller@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15264
 </pre>
- *----------------------------------------------------------------------*/
+
+*----------------------------------------------------------------------*/
+
 #include <iostream>
 #include "../drt_io/io_pstream.H" // has to go before io.H
 #include "../drt_io/io.H"
@@ -60,6 +65,18 @@ void UTILS::SpringDashpotManager::StiffnessAndInternalForces(
   return;
 }
 
+void UTILS::SpringDashpotManager::ResetPrestress(
+    Teuchos::RCP<Epetra_Vector> dis)
+{
+  // loop over all spring dashpot conditions and reset them
+  for (int i=0; i<n_conds_; ++i)
+  {
+    springs_[i]->Reset(dis);
+  }
+
+  return;
+}
+
 void UTILS::SpringDashpotManager::Output(
     Teuchos::RCP<IO::DiscretizationWriter> output,
     Teuchos::RCP<DRT::Discretization> discret,
@@ -69,6 +86,7 @@ void UTILS::SpringDashpotManager::Output(
   Teuchos::RCP<Epetra_Vector> gap = Teuchos::rcp(new Epetra_Vector(*(actdisc_->NodeRowMap()),true));
   Teuchos::RCP<Epetra_MultiVector> normals = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
   Teuchos::RCP<Epetra_MultiVector> springstress = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
+  Teuchos::RCP<Epetra_MultiVector> springoffsetprestr = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
 
   // collect outputs from all spring dashpot conditions
   bool found_cursurfnormal = false;
@@ -81,6 +99,7 @@ void UTILS::SpringDashpotManager::Output(
       springs_[i]->OutputGapNormal(gap, normals, springstress);
       found_cursurfnormal = true;
     }
+    springs_[i]->OutputPrestrOffset(springoffsetprestr);
   }
 
   // write vectors to output
@@ -91,6 +110,29 @@ void UTILS::SpringDashpotManager::Output(
     output->WriteVector("springstress", springstress);
   }
 
+  output->WriteVector("springoffsetprestr", springoffsetprestr);
+
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+|(public)                                                      mhv 03/15|
+|Read restart information                                               |
+ *-----------------------------------------------------------------------*/
+void UTILS::SpringDashpotManager::ReadRestart(IO::DiscretizationReader& reader,const double& time)
+{
+
+  Teuchos::RCP<Epetra_MultiVector> tempvec = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
+
+  reader.ReadMultiVector(tempvec, "springoffsetprestr");
+  // loop over all spring dashpot conditions and reset them
+  for (int i=0; i<n_conds_; ++i)
+  {
+    springs_[i]->SetRestart(tempvec);
+  }
+
+  return;
+}
+
 
