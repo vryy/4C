@@ -87,9 +87,10 @@ void STATMECH::StatMechManagerBilayer::Output(const int                     ndim
         std::cout<<"---------------------------------------------------------------------"<<std::endl;
       }
 
-      PrintTotalArea(dis);
+      //  Debug: Check if total and volume is preserved
+      //PrintTotalArea(dis);
 
-      PrintTotalVol(dis);
+      //PrintTotalVol(dis);
 
     }
     break;
