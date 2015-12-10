@@ -635,7 +635,8 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   reader.ReadRedundantDoubleVector(pressures_ ,stream4.str());
 
   // read in the pressures' position
-  pressurespos_ = reader.ReadInt(stream5.str()) ;
+  pressurespos_ = reader.ReadInt(stream5.str());
+  flowratespos_ = pressurespos_;
 
   // Get old Pressure Vector size
   int oPSize = (int)pressures_->size();
@@ -689,7 +690,6 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
 
     // read in flow rates
     reader.ReadRedundantDoubleVector(flowrates_ ,stream1.str());
-    flowratespos_ = pressurespos_;
 
     // Get old flowrates Vector size
     int oQSize = (int)flowrates_->size();
