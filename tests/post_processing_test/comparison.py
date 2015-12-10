@@ -7,6 +7,16 @@ import sys
 import csv
 import operator
 
+def isEqual(ref,line,tol):
+  if len(ref) != len(line):
+    print 'check your reference csv-file'
+    sys.exit(1)
+  for j in range(0,len(ref)):
+    if not (float(line[j]) >= (float(ref[j])-float(tol))) and (float(line[j]) <= (float(ref[j])+float(tol))):
+      return False
+  return True
+
+    
 if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
   sm.Connect()
 
@@ -66,7 +76,15 @@ if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
   sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2))
   sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2))
   sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2))
-
+  # sortlist* are lists with values of the corresponding csv-files. Each list contains further lists for each line in the csv-file.
+    
+  # remove last element (tolerance) in each list in sortlist_ref
+  tol = []
+  for i in range(0,len(sortlist_ref)):
+    index_tol = len(sortlist_ref[i]) - 1
+    tol.append(sortlist_ref[i][index_tol])
+    sortlist_ref[i] = sortlist_ref[i][0:index_tol]
+    
   # comparison
   for ele1, ele2 in zip(sortlist1, sortlist2):
       if ele1 != ele2:
@@ -77,11 +95,15 @@ if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
   print 'files are identical'
 
   # verification of results
-  for ref_line in sortlist_ref:
-    if not ref_line in sortlist1:
-      print 'results in csv lists are NOT correct'
-      sys.exit(1)
-  print'results in csv lists are correct'
+  for i in range(0,len(sortlist_ref)):
+    for j in range(0,len(sortlist1)):
+      if isEqual(sortlist_ref[i],sortlist1[j],tol[i]):
+        break
+      if j == (len(sortlist1)-1):
+        print 'results in csv-files are NOT correct'
+        print sortlist_ref[i],'in',sys.argv[3],'is not being found in xxx_par.csv'
+        sys.exit(1)
+  print'results in csv-files are correct'   
 
 else:
   sm.Connect()
@@ -131,7 +153,7 @@ else:
   csv_reader2 = csv.reader(open('./xxx_ser0.csv', 'r'), delimiter = ',')
   head2   = csv_reader2.next()
   index2  = head1.index('Points:0')
-
+  
   # read in of reference file
   ref_sortlist_name = sys.argv[3]
   csv_reader_ref = csv.reader(open(ref_sortlist_name,'r'), delimiter = ',')
@@ -142,7 +164,15 @@ else:
   sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2))
   sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2))
   sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2))
-
+  # sortlist* are lists with values of the corresponding csv-files. Each list contains further lists for each line in the csv-file.
+    
+  # remove last element (tolerance) in each list in sortlist_ref
+  tol = []
+  for i in range(0,len(sortlist_ref)):
+    index_tol = len(sortlist_ref[i]) - 1
+    tol.append(sortlist_ref[i][index_tol])
+    sortlist_ref[i] = sortlist_ref[i][0:index_tol]
+  
   # comparison
   for ele1, ele2 in zip(sortlist1, sortlist2):
       if ele1 != ele2:
@@ -153,8 +183,13 @@ else:
   print 'files are identical'
 
   # verification of results
-  for ref_line in sortlist_ref:
-    if not ref_line in sortlist1:
-      print 'results in csv lists are NOT correct'
-      sys.exit(1)
-  print'results in csv lists are correct'
+  for i in range(0,len(sortlist_ref)):
+    for j in range(0,len(sortlist1)):
+      if isEqual(sortlist_ref[i],sortlist1[j],tol[i]):
+        break
+      if j == (len(sortlist1)-1):
+        print 'results in csv-files are NOT correct'
+        print sortlist_ref[i],'in',sys.argv[3],'is not being found in xxx_par.csv'
+        sys.exit(1)
+  print'results in csv-files are correct'  
+
