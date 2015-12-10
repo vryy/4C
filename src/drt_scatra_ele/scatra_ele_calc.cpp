@@ -455,8 +455,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
   if (not scatrapara_->TauGP())
   {
     // get velocity at element center
-    LINALG::Matrix<nsd_,1> convelint(true);
-    convelint.Multiply(econvelnp_,funct_);
+    LINALG::Matrix<nsd_,1> convelint = scatravarmanager_->ConVel();
 
     for (int k = 0;k<numscal_;++k) // loop of each transported scalar
     {
@@ -499,14 +498,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
 
       // provide necessary velocities and gradients at element center
       // get velocity at element center
-      LINALG::Matrix<nsd_,1> convelint(true);
       LINALG::Matrix<nsd_,1> fsvelint(true);
-      convelint.Multiply(econvelnp_,funct_);
       fsvelint.Multiply(efsvel_,funct_);
 
       // calculate model coefficients
       for (int k = 0;k<numscal_;++k) // loop of each transported scalar
-        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),visc,convelint,fsvelint);
+        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(),fsvelint);
     }
   }
 
@@ -531,7 +528,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
 
     // velocity divergence required for conservative form
     double vdiv(0.0);
-    if (scatrapara_->IsConservative()) GetDivergence(vdiv,evelnp_);
+    if (scatrapara_->IsConservative())
+      GetDivergence(vdiv,evelnp_);
 
     // get fine-scale velocity and its derivatives at integration point
     LINALG::Matrix<nsd_,1> fsvelint(true);
@@ -577,13 +575,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
         if (scatrapara_->ASSGD())
         {
           // pre-calculation of stabilization parameter at integration point need for some forms of artificial diffusion
-          CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(k),vol);
+          CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol);
 
           // compute artificial diffusion
-          CalcArtificialDiff(vol,k,densnp,scatravarmanager_->ConVel(k),scatravarmanager_->GradPhi(k),scatravarmanager_->ConvPhi(k),scatrares,tau[k]);
+          CalcArtificialDiff(vol,k,densnp,scatravarmanager_->ConVel(),scatravarmanager_->GradPhi(k),scatravarmanager_->ConvPhi(k),scatrares,tau[k]);
 
           // recompute strong residual since now diffus_new = diffus_old + artdiff
-          CalcStrongResidual(k,scatrares,densam,densnp,rea_phi,rhsint,tau[k]);
+          CalcStrongResidual(k,scatrares,densam,densnp,rea_phi,rhsint,tau[k]); //TODO:(Thon) do we really have to do this??
         }
 
         // calculation of all-scale subgrid diffusivity (by, e.g.,
@@ -599,23 +597,24 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
         }
 
         // calculation of fine-scale artificial subgrid diffusivity at element center
-        if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),scatravarmanager_->ConVel(k));
+        if (turbparams_->FSSGD())
+          CalcFineScaleSubgrDiff(sgdiff,subgrdiff,ele,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),scatravarmanager_->ConVel());
 
         // calculation of subgrid-scale velocity at integration point if required
         if (scatrapara_->RBSubGrVel())
         {
           // calculation of stabilization parameter related to fluid momentum
           // equation at integration point
-          CalcTau(tau[k],visc,0.0,densnp,scatravarmanager_->ConVel(k),vol);
+          CalcTau(tau[k],visc,0.0,densnp,scatravarmanager_->ConVel(),vol);
           // calculation of residual-based subgrid-scale velocity
-          CalcSubgrVelocity(ele,sgvelint,densam,densnp,visc,scatravarmanager_->ConVel(k),tau[k]);
+          CalcSubgrVelocity(ele,sgvelint,densam,densnp,visc,scatravarmanager_->ConVel(),tau[k]);
 
           // calculation of subgrid-scale convective part
           sgconv.MultiplyTN(derxy_,sgvelint);
         }
 
         // (re)compute stabilization parameter at integration point, since diffusion may have changed
-        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(k),vol);
+        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol); //TODO:(Thon) do we really have to do this??
       }
 
       LINALG::Matrix<nen_,1> diff(true);
@@ -639,7 +638,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       {
         if (turbparams_->BD_Gp())
           // calculate model coefficients
-          CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(k),fsvelint);
+          CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(),fsvelint);
 
         // calculate fine-scale velocity, its derivative and divergence for multifractal subgrid-scale modeling
         for (int idim=0; idim<nsd_; idim++)
@@ -1362,7 +1361,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatConv(
   const LINALG::Matrix<nen_,1>& sgconv
   )
 {
-  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv(k);
+  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv();
 
   // convective term in convective form
   const double densfac = timefacfac*densnp;
@@ -1453,7 +1452,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatTransConvDiffStab(
   const LINALG::Matrix<nen_,1>& diff
   )
 {
-  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv(k);
+  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv();
 
   const double dens2taufac = timetaufac*densnp*densnp;
   for (int vi=0; vi<nen_; ++vi)
@@ -1569,7 +1568,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatMassStab(
   const LINALG::Matrix<nen_,1>& diff
   )
 {
-  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv(k);
+  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv();
   const double densamnptaufac = taufac*densam*densnp;
   //----------------------------------------------------------------
   // stabilization of transient term
@@ -1624,7 +1623,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatReact(
   const LINALG::Matrix<nen_,1>&      diff
   )
 {
-  const LINALG::Matrix<nen_,1>&      conv = scatravarmanager_->Conv(k);
+  const LINALG::Matrix<nen_,1>&      conv = scatravarmanager_->Conv();
 
   const double fac_reac        = timefacfac*densnp*reamanager_->GetReaCoeff(k);
   const double timetaufac_reac = timetaufac*densnp*reamanager_->GetReaCoeff(k);
@@ -1827,7 +1826,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::RecomputeScatraResForRhs(
   const double                  rhsint
   )
 {
-  const LINALG::Matrix<nsd_,1>& convelint = scatravarmanager_->ConVel(k);
+  const LINALG::Matrix<nsd_,1>& convelint = scatravarmanager_->ConVel();
   const double&                 phin = scatravarmanager_->Phin(k);
 
   if (scatraparatimint_->IsGenAlpha())
@@ -2033,7 +2032,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSTransConvDiffStab(
   )
 {
 
-  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv(k);
+  const LINALG::Matrix<nen_,1>& conv = scatravarmanager_->Conv();
 
   // convective rhs stabilization (in convective form)
   double vrhs = rhstaufac*scatrares*densnp;
@@ -2146,7 +2145,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSMFS(
 {
   const double&                  phinp = scatravarmanager_->Phinp(k);
   const LINALG::Matrix<nsd_,1>&  gradphi = scatravarmanager_->GradPhi(k);
-  const LINALG::Matrix<nsd_,1>&  convelint = scatravarmanager_->ConVel(k);
+  const LINALG::Matrix<nsd_,1>&  convelint = scatravarmanager_->ConVel();
 
   if (nsd_<3) dserror("Turbulence is 3D!");
   // fixed-point iteration only (i.e. beta=0.0 assumed), cf

@@ -346,16 +346,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODFluid(
       GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
     }
 
-    // get velocity at integration point
-    //LINALG::Matrix<nsd_,1> velint(true);
-    LINALG::Matrix<nsd_,1> convelint(true);
-    //velint.Multiply(evelnp_,funct_);
-    convelint.Multiply(econvelnp_,funct_);
-
-    // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-    LINALG::Matrix<nen_,1> conv(true);
-    conv.MultiplyTN(derxy_,convelint);
-
     // velocity divergence required for conservative form
     double vdiv(0.0);
     if (scatrapara_->IsConservative()) GetDivergence(vdiv,evelnp_);

@@ -1104,16 +1104,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
 
     if (not scatrapara_->TauGP())
     {
-      // get velocity at element center
-      LINALG::Matrix<nsd_,1> velint(true);
-      LINALG::Matrix<nsd_,1> convelint(true);
-      velint.Multiply(evelnp_,funct_);
-      convelint.Multiply(econvelnp_,funct_);
-
       for (int k = 0;k<numscal_;++k) // loop of each transported scalar
       {
         // calculation of stabilization parameter at element center
-        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol);
+        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol);
       }
     }
   }
@@ -1141,15 +1135,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
       // get phi at integration point for all scalars
       const double& phiint = scatravarmanager_->Phinp(k);
 
-      // get velocity at integration point
-      LINALG::Matrix<nsd_,1> velint(true);
-      LINALG::Matrix<nsd_,1> convelint(true);
-      velint.Multiply(evelnp_,funct_);
-      convelint.Multiply(econvelnp_,funct_);
-
       // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-      LINALG::Matrix<nen_,1> conv(true);
-      conv.MultiplyTN(derxy_,convelint);
+      LINALG::Matrix<nen_,1> conv = scatravarmanager_->Conv();
 
       // scalar at integration point at time step n+1
       const double phinp = funct_.Dot(ephinp_[k]);
@@ -1169,7 +1156,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
       }
 
       // calculation of stabilization parameter at integration point
-      if (scatrapara_->TauGP()) CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(k),vol);
+      if (scatrapara_->TauGP()) CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol);
 
       const double fac_tau = fac*tau[k];
 

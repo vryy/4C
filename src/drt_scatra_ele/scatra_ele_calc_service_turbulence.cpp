@@ -1641,10 +1641,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
 
   if (not scatrapara_->TauGP())
   {
-    // get velocity at element center
-    LINALG::Matrix<nsd_,1> convelint(true);
-    convelint.Multiply(econvelnp_,funct_);
-
     // calculation of all-scale subgrid diffusivity (by, e.g.,
     // Smagorinsky model) at element center
     if (turbparams_->TurbModel() == INPAR::FLUID::smagorinsky
@@ -1662,7 +1658,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
     if (turbparams_->FSSGD()) CalcFineScaleSubgrDiff(sgdiff,elevec1_epetra_subgrdiff_dummy,ele,vol,0,densnp,diffmanager_->GetIsotropicDiff(0),scatravarmanager_->ConVel());
 
     // calculation of stabilization parameter at element center
-    CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetReaCoeff(0),densnp,convelint,vol);
+    CalcTau(tau[0],diffmanager_->GetIsotropicDiff(0),reamanager_->GetReaCoeff(0),densnp,scatravarmanager_->ConVel(),vol);
   }
 
 
@@ -1687,14 +1683,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDissipation(
       }
       // provide necessary velocities and gradients at element center
       // get velocity at element center
-      LINALG::Matrix<nsd_,1> convelint(true);
       LINALG::Matrix<nsd_,1> fsvelint(true);
-      convelint.Multiply(econvelnp_,funct_);
       fsvelint.Multiply(efsvel_,funct_);
 
       // calculate model coefficients
       for (int k = 0;k<numscal_;++k) // loop of each transported scalar
-        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),visc,convelint,fsvelint);
+        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,vol,k,densnp,diffmanager_->GetIsotropicDiff(k),visc,scatravarmanager_->ConVel(),fsvelint);
     }
   }
 

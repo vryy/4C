@@ -1103,7 +1103,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcMatReact(
   my::CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,sgconv,diff);
 
   const double&                       phinp = my::scatravarmanager_->Phinp(k);
-  const LINALG::Matrix<my::nen_,1>&   conv  = my::scatravarmanager_->Conv(k);
+  const LINALG::Matrix<my::nen_,1>&   conv  = my::scatravarmanager_->Conv();
 
   // -----------------second care for Term (\partial_c K(c)) .* c - (\partial_c f_{reabody}(c))------------
 
