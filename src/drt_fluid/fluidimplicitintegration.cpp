@@ -102,6 +102,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   writestresses_(params_->get<int>("write stresses", 0)),
   write_wall_shear_stresses_(params_->get<int>("write wall shear stresses", 0)),
   write_eledata_everystep_(params_->get<int>("write element data in every step", 0)),
+  write_nodedata_first_step_(params_->get<int>("write node data in first step")),
   dtele_(0.0),
   dtfilter_(0.0),
   dtsolve_(0.0),
@@ -3413,6 +3414,9 @@ void FLD::FluidImplicitTimeInt::Output()
     // write domain decomposition for visualization (only once!)
     if ((step_==upres_ or step_ == 0) and !write_eledata_everystep_) output_->WriteElementData(true);
     else output_->WriteElementData(true);
+
+    if (step_ <= 1 and write_nodedata_first_step_)
+      output_->WriteNodeData(true);
 
     if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
     {

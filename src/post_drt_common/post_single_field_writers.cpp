@@ -113,12 +113,15 @@ void StructureFilter::WriteAllResults(PostField* field)
   //additional output for tsi (non-matching grid)
   writer_->WriteResult("struct_temperature", "struct_temperature", nodebased, 1);
 
+  // Write element and node owners
+  WriteElementResults(field);
+  WriteNodeResults(field);
+
   //additional output for cell migration simulation
   writer_->WriteResult("cell_penalty_traction", "penalty_traction", dofbased, field->problem()->num_dim());
   writer_->WriteResult("cell_penalty_gap", "cell_penalty_gap", dofbased, field->problem()->num_dim());
   writer_->WriteResult("cell_nodal_normals", "cell_nodal_normals", dofbased, field->problem()->num_dim());
 
-  WriteElementResults(field); //To comment
   if (stresstype_!="none")
   {
     // although appearing here twice, only one function call to PostStress
@@ -145,10 +148,13 @@ void StructureFilter::WriteAllResults(PostField* field)
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void StructureFilter::WriteAllResultsOneTimeStep(PostResult& result, bool firststep, bool laststep)
 {
-  writer_->WriteResultOneTimeStep(result, "displacement", "displacement", dofbased, result.field()->problem()->num_dim(), firststep, laststep);
-
+  writer_->WriteResultOneTimeStep(result, "displacement", "displacement",
+      dofbased, result.field()->problem()->num_dim(), firststep, laststep);
+  WriteNodeResults(result.field());
   return;
 }
 
@@ -220,6 +226,7 @@ void FluidFilter::WriteAllResults(PostField* field)
   }
 
   WriteElementResults(field);
+  WriteNodeResults(field);
 }
 
 
@@ -241,6 +248,7 @@ void XFluidFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("fsvelocity", "fsvelocity", dofbased, field->problem()->num_dim());
 
   WriteElementResults(field);
+  WriteNodeResults(field);
 }
 
 
@@ -256,6 +264,7 @@ void InterfaceFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("iaccn", "iaccn", dofbased, field->problem()->num_dim());
   writer_->WriteResult("itrueresnp", "itrueresnp", dofbased, field->problem()->num_dim());
   WriteElementResults(field);
+  WriteNodeResults(field);
 }
 
 
@@ -265,6 +274,7 @@ void AleFilter::WriteAllResults(PostField* field)
 {
   writer_->WriteResult("dispnp", "displacement", dofbased, field->problem()->num_dim());
   WriteElementResults(field);
+  WriteNodeResults(field);
 }
 
 
@@ -334,8 +344,9 @@ void ScaTraFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("k_10","k_10",elementbased,1);
   writer_->WriteResult("concentrationsum","concentrationsum",elementbased,1);
 
-  // write element results (e.g. element owner)
+  // write element and node results (e.g. owner)
   WriteElementResults(field);
+  WriteNodeResults(field);
 }
 
 
@@ -380,8 +391,9 @@ void ElchFilter::WriteAllResults(PostField* field)
   // write magnetic field (always 3D)
   writer_->WriteResult("magnetic_field", "B", nodebased, 3);
 
-  // write element results (e.g. element owner)
+  // write element and node results (e.g. owner)
   WriteElementResults(field);
+  WriteNodeResults(field);
 }
 
 /*----------------------------------------------------------------------*/
@@ -397,8 +409,9 @@ void ThermoFilter::WriteAllResults(PostField* field)
   // write temperature rate
   //writer_->WriteResult("rate", "rate", dofbased, numdofpernode);
 
-  // write element results (e.g. element owner)
+  // write element and results (e.g. owner)
   WriteElementResults(field);
+  WriteNodeResults(field);
 
   if (heatfluxtype_ != "none")
   {

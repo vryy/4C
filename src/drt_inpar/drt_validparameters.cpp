@@ -531,6 +531,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("FLUID_STRESS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_WALL_SHEAR_STRESS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_ELEDATA_EVRY_STEP","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("FLUID_NODEDATA_FIRST_STEP","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_VIS","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("THERM_TEMPERATURE","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("THERM_HEATFLUX","None","",

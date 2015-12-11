@@ -369,7 +369,7 @@ void fsi_ale_drt()
 
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
-  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+  FSI_COUPLING coupling = DRT::INPUT::IntegralValue<FSI_COUPLING>(fsidyn, "COUPALGO");
   switch (coupling)
   {
     case fsi_pseudo_structureale:
@@ -466,6 +466,52 @@ void fsi_ale_drt()
 
       // now do the coupling setup and create the combined dofmap
       fsi->SetupSystem();
+
+      // possibly redistribute domain decomposition
+      {
+        const INPAR::FSI::Redistribute redistribute = DRT::INPUT::IntegralValue<
+          INPAR::FSI::Redistribute>(fsimono, "REDISTRIBUTE");
+
+        const double weight1 = fsimono.get<double>("REDIST_WEIGHT1");
+        const double weight2 = fsimono.get<double>("REDIST_WEIGHT2");
+        if (redistribute == INPAR::FSI::Redistribute_structure
+            or redistribute == INPAR::FSI::Redistribute_fluid)
+        {
+          // redistribute either structure or fluid domain
+          fsi->RedistributeDomainDecomposition(redistribute, coupling, weight1,
+              weight2, comm);
+          // do setup again after redistribution
+          fsi->SetupSystem();
+
+          const double secweight1 = fsidyn.sublist("MONOLITHIC SOLVER").get<double>(
+              "REDIST_SECONDWEIGHT1");
+          const double secweight2 = fsidyn.sublist("MONOLITHIC SOLVER").get<double>(
+              "REDIST_SECONDWEIGHT2");
+          if (secweight1 != -1.0)
+          {
+            // redistribute either structure or fluid domain
+            fsi->RedistributeDomainDecomposition(redistribute, coupling, secweight1,
+              secweight2, comm);
+
+            // do setup again after redistribution
+            fsi->SetupSystem();
+          }
+        }
+        else if (redistribute==INPAR::FSI::Redistribute_both)
+        {
+          // redistribute both structure and fluid domain
+          fsi->RedistributeDomainDecomposition(INPAR::FSI::Redistribute_structure,
+              coupling, weight1, weight2, comm);
+
+          // do setup again after redistribution (do this again here in between because the P matrix changed!)
+          fsi->SetupSystem();
+          fsi->RedistributeDomainDecomposition(INPAR::FSI::Redistribute_fluid,
+              coupling, weight1, weight2, comm);
+
+          // do setup again after redistribution
+          fsi->SetupSystem();
+        }
+      }
 
       // here we go...
       fsi->Timeloop(fsi);

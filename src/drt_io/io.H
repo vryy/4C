@@ -277,6 +277,9 @@ public:
   //! write element data to file
   virtual void WriteElementData(bool writeowner);
 
+  //! write node data to file
+  virtual void WriteNodeData(bool writeowner);
+
   //! write a non discretisation based vector of doubles
   /*!
     Write this vector only from proc0. It is assumed that this is a 'small' vector

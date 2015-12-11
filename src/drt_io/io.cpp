@@ -1300,6 +1300,71 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::WriteNodeData(bool writeowner)
+{
+  if(binio_)
+  {
+    std::map<std::string,int>::const_iterator fool;
+    std::map<std::string,int> names; // contains name and dimension of data
+
+    // loop over all nodes and build map of data names and dimensions
+    const Epetra_Map* noderowmap = dis_->NodeRowMap();
+    if(writeowner == true)
+    {
+      for (int i=0; i<noderowmap->NumMyElements(); ++i)
+      {
+        // write owner of every node
+        dis_->lRowNode(i)->VisOwner(names);
+      }
+    }
+
+    for (int i=0; i<noderowmap->NumMyElements(); ++i)
+    {
+      // get names and dimensions from every node
+      dis_->lRowNode(i)->VisNames(names);
+    }
+
+    /* By applying GatherAll we get the combined map including all nodal values
+     * which where found by VisNames
+     */
+    const Epetra_Comm& comm = dis_->Comm();
+    LINALG::GatherAll(names, comm);
+
+    // make sure there's no name with a dimension of less than 1
+    for (fool = names.begin(); fool!= names.end(); ++fool)
+      if (fool->second < 1) dserror("Dimension of data must be at least 1");
+
+    // loop all names aquired form the nodes and fill data vectors
+    for (fool = names.begin(); fool!= names.end(); ++fool)
+    {
+      const int dimension = fool->second;
+      std::vector<double> nodedata(dimension);
+
+      // MultiVector stuff from the nodes is put in
+      Epetra_MultiVector sysdata(*noderowmap, dimension, true);
+
+      for (int i=0; i<noderowmap->NumMyElements(); ++i)
+      {
+        // zero is the default value if not all nodes write the same node data
+        for (int idim=0; idim<dimension; ++idim)
+          nodedata[idim] = 0.0;
+
+        // get data for a given name from node and put in sysdata
+        dis_->lRowNode(i)->VisData(fool->first, nodedata);
+        if ((int)nodedata.size() != dimension)
+          dserror("element manipulated size of visualization data");
+
+        for (int j=0; j<dimension; ++j)
+          (*sysdata(j))[i] = nodedata[j];
+      }
+
+      WriteVector(fool->first, Teuchos::rcp(&sysdata,false), IO::DiscretizationWriter::nodevector);
+
+    } // for (fool = names.begin(); fool!= names.end(); ++fool)
+  }
+}
 
 /*----------------------------------------------------------------------*
  *                                                          gammi 05/08 *

@@ -229,26 +229,47 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("FSIAMGANALYZE", "No",
       "run analysis on fsiamg multigrid scheme", &fsimono);
 
+  IntParameter("HYBRID_FILL_LEVEL", 0,
+      "Level of fill of the hybrid ILU preconditioner.", &fsimono);
+
+  BoolParameter("HYBRIDFULL", "yes",
+      "Apply Additive Schwarz Preconditioner on all procs (yes)\n"
+          "or on interface procs only (no)", &fsimono);
+
   BoolParameter("INFNORMSCALING", "Yes", "Scale Blocks with row infnorm?",
+      &fsimono);
+
+  setStringToIntegralParameter<int>(
+      "INNERPREC", "PreconditionedKrylov",
+      "Inner preconditioner used in a hybrid Schwarz setting.",
+      tuple<std::string>(
+          "PreconditionedKrylov",
+          "FSIAMG"
+          ),
+      tuple<int>(
+          INPAR::FSI::PreconditionedKrylov,
+          INPAR::FSI::FSIAMG
+          ),
       &fsimono);
 
   IntParameter("ITEMAX", 100, "Maximum allowed number of nonlinear iterations",
       &fsimono);
 
-  setStringToIntegralParameter<int>("LINEARBLOCKSOLVER","PreconditionedKrylov",
-      "Linear solver algorithm for monolithic block system in monolithic FSI.\n"
-      "Most of the time preconditioned Krylov is the right thing to choose. But there are\n"
-      "block Gauss-Seidel methods as well.",
+  setStringToIntegralParameter<int>(
+      "LINEARBLOCKSOLVER", "PreconditionedKrylov",
+      "Linear block preconditioner for block system in monolithic FSI.",
       tuple<std::string>(
-        "PreconditionedKrylov",
-        "FSIAMG",
-        "AMGnxn"
-        ),
+          "PreconditionedKrylov",
+          "FSIAMG",
+          "AMGnxn",
+          "HybridSchwarz"
+          ),
       tuple<int>(
-        INPAR::FSI::PreconditionedKrylov,
-        INPAR::FSI::FSIAMG,
-        INPAR::FSI::AMGnxn
-        ),
+          INPAR::FSI::PreconditionedKrylov,
+          INPAR::FSI::FSIAMG,
+          INPAR::FSI::AMGnxn,
+          INPAR::FSI::HybridSchwarz
+          ),
       &fsimono);
 
   // Iteration parameters for convergence check of newton loop
@@ -294,6 +315,27 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("REBUILDPRECEVERYSTEP", "Yes",
       "Enforce rebuilding the preconditioner at the beginning of every time step",
       &fsimono);
+
+  setStringToIntegralParameter<int>(
+      "REDISTRIBUTE", "off",
+      "Redistribute domain decomposition.",
+      tuple<std::string>(
+          "off",
+          "structure",
+          "fluid",
+          "both"),
+      tuple<int>(
+          INPAR::FSI::Redistribute_off,
+          INPAR::FSI::Redistribute_structure,
+          INPAR::FSI::Redistribute_fluid,
+          INPAR::FSI::Redistribute_both
+          ),
+      &fsimono);
+
+  DoubleParameter("REDIST_WEIGHT1",1.0,"Weight for redistribution, general domain.",&fsimono);
+  DoubleParameter("REDIST_WEIGHT2",50000.0,"Weight for redistribution, interface domain.",&fsimono);
+  DoubleParameter("REDIST_SECONDWEIGHT1",-1.0,"Weight for 2nd redistribution, general domain.",&fsimono);
+  DoubleParameter("REDIST_SECONDWEIGHT2",-1.0,"Weight for 2nd redistribution, interface domain.",&fsimono);
 
   BoolParameter("SHAPEDERIVATIVES", "No",
       "Include linearization with respect to mesh movement in Navier Stokes equation.",

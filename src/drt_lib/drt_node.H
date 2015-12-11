@@ -257,6 +257,43 @@ public:
 
   //@}
 
+  /*! \brief Query names of node data to be visualized using BINIO
+   *
+   *  This method is to be overloaded by a derived class.
+   *  The node is supposed to fill the provided map with key names of
+   *  visualization data the node wants to visualize.
+   *
+   *  \return On return, the derived class has filled names with key names of
+   *  data it wants to visualize and with int dimensions of that data.
+   */
+  virtual void VisNames(std::map<std::string,int>& names) { return; }
+
+  /*! \brief Visualize the owner of the node using BINIO
+   *
+   *  \param names (out): Owner is added to the key names
+   */
+  virtual void VisOwner(std::map<std::string,int>& names)
+  {
+    names.insert(std::pair<std::string,int>("Nodeowner",1));
+    //names.insert(std::pair<string,int>("EleGId",1));
+    return; }
+
+  /*! \brief Query data to be visualized using BINIO of a given name
+   *
+   *  This method is to be overloaded by a derived class.
+   *  The derived method is supposed to call this base method to visualize the
+   *  owner of the node.
+   *  If the derived method recognizes a supported data name, it shall fill it
+   *  with corresponding data.
+   *  If it does NOT recognizes the name, it shall do nothing.
+   *
+   *  \warning The method must not change size of variable data
+   *
+   *  \param name (in): Name of data that is currently processed for visualization
+   *  \param data (out): data to be filled by element if it recognizes the name
+   */
+  virtual bool VisData(const std::string& name, std::vector<double>& data);
+
 protected:
 
   /*!

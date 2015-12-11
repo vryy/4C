@@ -327,12 +327,14 @@ void LINALG::Solver::FixMLNullspace(std::string field,
   double* ons = &((*ns)[0]);
 
   const int olength = (int)ns->size() / ndim;
-  if (olength != oldmap.NumMyElements())
-    dserror("Nullspace does not match old map length");
 
   const int nlength = newmap.NumMyElements();
 
   if (olength==nlength) return; // everything should be ok, do nothing
+
+  if (olength != oldmap.NumMyElements())
+    dserror("Nullspace does not match old map length, %d %d", olength,
+        oldmap.NumMyElements());
 
   if (nlength > olength)
     dserror("New problem size larger than old - full rebuild of nullspace neccessary");

@@ -2407,6 +2407,7 @@ void STR::TimInt::OutputRestart
     output_->NewStep(step_, (*time_)[0]);
     output_->WriteVector("displacement", (*dis_)(0));
     output_->WriteElementData(firstoutputofrun_);
+    output_->WriteNodeData(firstoutputofrun_);
   }
   else
   {
@@ -2420,7 +2421,10 @@ void STR::TimInt::OutputRestart
     output_->WriteVector("velocity", (*vel_)(0));
     output_->WriteVector("acceleration", (*acc_)(0));
     if(!HaveStatMech())
+    {
       output_->WriteElementData(firstoutputofrun_);
+      output_->WriteNodeData(firstoutputofrun_);
+    }
     WriteRestartForce(output_);
   }
   // owner of elements is just written once because it does not change during simulation (so far)
@@ -2551,6 +2555,7 @@ void STR::TimInt::OutputState
 
   // owner of elements is just written once because it does not change during simulation (so far)
   output_->WriteElementData(firstoutputofrun_);
+  output_->WriteNodeData(firstoutputofrun_);
   firstoutputofrun_ = false;
 
   if (surfstressman_->HaveSurfStress() && writesurfactant_)
@@ -3695,6 +3700,9 @@ void STR::TimInt::Reset()
   accn_ = LINALG::CreateVector(*DofRowMapView(), true);
   // create empty interface force vector
   fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
+
+  dbcmaps_= Teuchos::rcp(new LINALG::MapExtractor());
+  createFields(solver_);
 
   // set initial fields
   SetInitialFields();

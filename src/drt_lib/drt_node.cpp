@@ -228,4 +228,18 @@ void DRT::Node::SetPos(std::vector<double> nvector)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Query data to be visualized by BINIO                       (public) |
+ |                                                        mayr.mt 11/15 |
+ *----------------------------------------------------------------------*/
+bool DRT::Node::VisData(const std::string& name, std::vector<double>& data)
+{
+  if (name == "Nodeowner")
+  {
+    if ((int)data.size() < 1) dserror("Size mismatch");
+    data[0] = Owner();
+    return true;
+  }
+  return false;
+}
 

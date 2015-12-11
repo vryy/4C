@@ -24,6 +24,11 @@ Maintainer: Matthias Mayr
 
 namespace FSI
 {
+  class OverlappingBlockMatrixHybridSchwarz;
+}
+
+namespace FSI
+{
 
 
   /// special version of block matrix that includes the FSI block preconditioner
@@ -54,7 +59,8 @@ namespace FSI
                                  int analyze,
                                  INPAR::FSI::LinearBlockSolver strategy,
                                  INPAR::FSI::Verbosity verbosity,
-                                 FILE* err=NULL);
+                                 FILE* err=NULL,
+                                 OverlappingBlockMatrixHybridSchwarz* hybridPrec = NULL);
 
     /** \name Attribute access functions */
     //@{
@@ -618,6 +624,9 @@ namespace FSI
     std::vector<int>                     aiterations_;
 
     const INPAR::FSI::Verbosity verbosity_; ///< verbosity level of FSI algorithm
+
+    //! hybrid additive/multiplicative Schwarz preconditioner
+    OverlappingBlockMatrixHybridSchwarz* hybridPrec_;
 
     /// @name AMG for structure
     int                                  snlevel_;   ///< num level in structure AMG

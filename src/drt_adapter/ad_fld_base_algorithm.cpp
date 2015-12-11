@@ -1308,7 +1308,9 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   // flag for writing wall shear stress
   fluidtimeparams->set<int>("write wall shear stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_WALL_SHEAR_STRESS"));
   // flag for writing element data in every step and not only once (i.e. at step == 0 or step == upres)
-   fluidtimeparams->set<int>("write element data in every step"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_ELEDATA_EVRY_STEP"));
+  fluidtimeparams->set<int>("write element data in every step"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_ELEDATA_EVRY_STEP"));
+  // flag for writing node data in the first time step
+  fluidtimeparams->set<int>("write node data in first step", DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_NODEDATA_FIRST_STEP"));
   // flag for writing fluid field to gmsh
    if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->IOParams(),"OUTPUT_GMSH") == false)
    {

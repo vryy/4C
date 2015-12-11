@@ -26,6 +26,7 @@ Maintainer: Matthias Mayr
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_condition_utils.H" // ToDo (mayr) remove?
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_utils.H"
 
@@ -41,6 +42,7 @@ Maintainer: Matthias Mayr
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_io/io.H" // ToDo (mayr) remove?
 
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
@@ -49,6 +51,7 @@ Maintainer: Matthias Mayr
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_overlapprec_amgnxn.H"
+#include "fsi_overlapprec_hybrid.H"
 
 /*----------------------------------------------------------------------------*/
 /* Note: The order of calling the three BaseAlgorithm-constructors is
@@ -67,30 +70,16 @@ FSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
     verbosity_(DRT::INPUT::IntegralValue<INPAR::FSI::Verbosity>(DRT::Problem::Instance()->FSIDynamicParams(),"VERBOSITY"))
 {
 
-  // access the structural discretization
-  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+  // access the discretizations
+  Teuchos::RCP<DRT::Discretization> structdis =
+      DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> fluiddis =
+      DRT::Problem::Instance()->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> aledis =
+      DRT::Problem::Instance()->GetDis("ale");
 
-  // access structural dynamic params list which will be possibly modified while creating the time integrator
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
-  // ask base algorithm for the structural time integrator
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(structure->StructureField());
-
-  if(structure_ == Teuchos::null)
-    dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
-
-  // ask base algorithm for the fluid time integrator
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true));
-  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fluid->FluidField());
-
-  // ask base algorithm for the ale time integrator
-  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(timeparams, DRT::Problem::Instance()->GetDis("ale")));
-  ale_ =  Teuchos::rcp_dynamic_cast<ADAPTER::AleFsiWrapper>(ale->AleField());
-  if(ale_ == Teuchos::null)
-     dserror("cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
-
-
+  CreateStructureTimeIntegrator(timeparams,structdis);
+  CreateFluidAndALETimeIntegrator(timeparams,fluiddis,aledis);
 
   coupsf_ = Teuchos::rcp(new ADAPTER::Coupling());
   coupsa_ = Teuchos::rcp(new ADAPTER::Coupling());
@@ -114,6 +103,63 @@ void FSI::MonolithicBase::ReadRestart(int step)
   AleField()->ReadRestart(step);
 
   SetTimeStep(FluidField()->Time(), FluidField()->Step());
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void FSI::MonolithicBase::CreateStructureTimeIntegrator(
+    const Teuchos::ParameterList& timeparams,
+    Teuchos::RCP<DRT::Discretization> structdis)
+{
+  // delete deprecated time integrator
+  structure_ = Teuchos::null;
+
+  // access structural dynamic params
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
+  // ask base algorithm for the structural time integrator
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
+      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams,
+          const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+  structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(
+      structure->StructureField());
+
+  if (structure_ == Teuchos::null)
+    dserror("Cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper "
+        "failed.");
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void FSI::MonolithicBase::CreateFluidAndALETimeIntegrator(
+    const Teuchos::ParameterList& timeparams,
+    Teuchos::RCP<DRT::Discretization> fluiddis,
+    Teuchos::RCP<DRT::Discretization> aledis)
+{
+  // delete deprecated time integrators
+  fluid_ = Teuchos::null;
+  ale_ = Teuchos::null;
+
+  // ask base algorithm for the fluid time integrator
+  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
+      Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,
+          DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true));
+  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidFSI>(fluid->FluidField());
+
+  if(fluid_ == Teuchos::null)
+    dserror("Cast from ADAPTER::Fluid to ADAPTER::FluidFSI failed");
+
+  // ask base algorithm for the ale time integrator
+  Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale =
+      Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(timeparams, aledis));
+  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFsiWrapper>(ale->AleField());
+
+  if(ale_ == Teuchos::null)
+    dserror("Cast from ADAPTER::Ale to ADAPTER::AleFsiWrapper failed");
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1097,8 +1143,10 @@ FSI::BlockMonolithic::BlockMonolithic(const Epetra_Comm& comm,
                                       const Teuchos::ParameterList& timeparams)
   : Monolithic(comm,timeparams),
     precondreusecount_(0),
-    timeparams_(timeparams)
+    timeparams_(timeparams),
+    interfaceprocs_(0)
 {
+  //interfaceprocs_.push_back(-1);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1218,13 +1266,15 @@ void FSI::BlockMonolithic::CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlock
     }
   }
 
-  INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
+  INPAR::FSI::LinearBlockSolver linearsolverstrategy =
+      DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono,"LINEARBLOCKSOLVER");
 
   // create block system matrix
   switch(linearsolverstrategy)
   {
   case INPAR::FSI::PreconditionedKrylov:
   case INPAR::FSI::FSIAMG:
+  {
      mat = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(
                                    Extractor(),
                                    *StructureField(),
@@ -1247,6 +1297,7 @@ void FSI::BlockMonolithic::CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlock
                                    verbosity_,
                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
     break;
+  }
   case INPAR::FSI::AMGnxn:
 #ifdef HAVE_MueLu
     {
@@ -1270,8 +1321,38 @@ void FSI::BlockMonolithic::CreateSystemMatrix(Teuchos::RCP<FSI::OverlappingBlock
     dserror("The AMGnxn preconditioner works only with MueLu activated");
 #endif // HAVE_MueLu
     break;
-  default:
-    dserror("Unsupported type of monolithic solver");
+  case INPAR::FSI::HybridSchwarz:
+  {
+    mat = Teuchos::rcp(new OverlappingBlockMatrixHybridSchwarz(
+                                  Extractor(),
+                                  *StructureField(),
+                                  *FluidField(),
+                                  *AleField(),
+                                  structuresplit,
+                                  DRT::INPUT::IntegralValue<int>(fsimono,"SYMMETRICPRECOND"),
+                                  blocksmoother,
+                                  schuromega,
+                                  pcomega,
+                                  pciter,
+                                  spcomega,
+                                  spciter,
+                                  fpcomega,
+                                  fpciter,
+                                  apcomega,
+                                  apciter,
+                                  DRT::INPUT::IntegralValue<int>(fsimono,"FSIAMGANALYZE"),
+                                  linearsolverstrategy,
+                                  interfaceprocs_,
+                                  verbosity_,
+                                  DRT::Problem::Instance()->ErrorFile()->Handle()));
     break;
   }
+  default:
+  {
+    dserror("Unsupported type of monolithic solver/preconditioner");
+    break;
+  }
+  }
+
+  return;
 }

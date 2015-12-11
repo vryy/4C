@@ -114,6 +114,7 @@ void DRT::Problem::Done()
 DRT::Problem::Problem() :
   probtype_(prb_none),
   restartstep_(0),
+  restarttime_(0.0),
   npgroup_(Teuchos::null)
 {
   materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
@@ -1058,7 +1059,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
     aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
 
-    AddDis("structure", structdis);
+    //AddDis("structure", struPartUsingParMetisctdis);              PROBLEM
     AddDis("fluid", fluiddis);
     AddDis("ale", aledis);
 

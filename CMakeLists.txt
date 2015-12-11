@@ -1084,6 +1084,7 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_lungmonolithic_structuresplit.cpp
   src/drt_fsi/fsi_matrixtransform.cpp
   src/drt_fsi/fsi_monolithic.cpp
+  src/drt_fsi/fsi_monolithic_redistribution.cpp
   src/drt_fsi/fsi_monolithic_timintada.cpp
   src/drt_fsi/fsi_monolithic_nonox.cpp
   src/drt_fsi/fsi_monolithic_linearsystem.cpp
@@ -1106,6 +1107,7 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_nox_sd.cpp
   src/drt_fsi/fsi_overlapprec.cpp
   src/drt_fsi/fsi_overlapprec_fsiamg.cpp
+  src/drt_fsi/fsi_overlapprec_hybrid.cpp
   src/drt_fsi/fsi_lung_overlapprec.cpp
   src/drt_fsi/fsi_constr_overlapprec.cpp
   src/drt_fsi/fsi_overlapprec_fsiamg_analysis.cpp

@@ -532,7 +532,9 @@ void DRT::Discretization::DoDirichletCondition(
       if ((*onoff)[onesetj]==0)
       {
         const int lid = (*systemvectoraux).Map().LID(dofs[j]);
-        if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+        if (lid<0)
+          dserror("Global id %d not on this proc %d in system vector", dofs[j],
+              comm_->MyPID());
         if (toggle!=Teuchos::null)
           (*toggle)[lid] = 0.0;
         // get rid of entry in DBC map - if it exists

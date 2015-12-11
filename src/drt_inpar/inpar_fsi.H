@@ -72,12 +72,13 @@ namespace INPAR
       DirichletNeumann
     };
 
-    /// Linear solver algorithm for monolithic block system in monolithic FSI
+    /// Linear preconditioning algorithm for monolithic block system
     enum LinearBlockSolver
     {
-      PreconditionedKrylov,
-      FSIAMG,
-      AMGnxn
+      PreconditionedKrylov, ///< BGS(AMG)
+      FSIAMG, ///< AMG(BGS)
+      AMGnxn, ///< general n-by-n block preconditioning framework
+      HybridSchwarz ///< hybrid additive/multiplicative Schwarz
     };
 
     /// Projection methods for sliding fluid-structure interface
@@ -130,13 +131,22 @@ namespace INPAR
       divcont_revert_dt           ///< revert time step size to previous one
     };
 
-    /// Handling of non-converged nonlinear solver
+    /// Verbosity of FSI algorithm
     enum Verbosity
     {
-      verbosity_subproblem,        ///< output for FSI as a subproblem
-      verbosity_low,              ///< write only nonlinear solver status
-      verbosity_medium,           ///< write nonlinear and linear solver status
-      verbosity_full,             ///< write everything
+      verbosity_subproblem, ///< output for FSI as a subproblem
+      verbosity_low, ///< write only nonlinear solver status
+      verbosity_medium, ///< write nonlinear and linear solver status
+      verbosity_full, ///< write everything
+    };
+
+    /// options for parallel domain redistribution
+    enum Redistribute
+    {
+      Redistribute_off, ///< no redistribution
+      Redistribute_structure, ///< redistribute structure field only
+      Redistribute_fluid, ///< redistribute fluid field only
+      Redistribute_both ///< redistribute both structure and fluid field
     };
 
     //@}

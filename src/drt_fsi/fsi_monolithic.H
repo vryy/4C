@@ -37,6 +37,16 @@ namespace ADAPTER
   class StructureFSITimIntAda;
 }
 
+namespace DRT
+{
+  class Node;
+
+  namespace UTILS
+  {
+    template <typename> class TimIntMStep;
+  }
+}
+
 namespace FSI
 {
   class FSIResultTest;
@@ -106,6 +116,19 @@ namespace FSI
 
     /// read restart data
     virtual void ReadRestart(int step);
+
+    //! create time integrator for structure field
+    virtual void CreateStructureTimeIntegrator(
+        const Teuchos::ParameterList& timeparams, ///< time integration parameters
+        Teuchos::RCP<DRT::Discretization> structdis ///< discretization of structure field
+        );
+
+    //! create time integrators for fluid and ale field
+    virtual void CreateFluidAndALETimeIntegrator(
+        const Teuchos::ParameterList& timeparams, ///< time integration parameters
+        Teuchos::RCP<DRT::Discretization> fluiddis, ///< discretization of fluid field
+        Teuchos::RCP<DRT::Discretization> aledis ///< discretization of ALE field
+        );
 
     //! @name Time loop building blocks
 
@@ -350,6 +373,21 @@ namespace FSI
     //! Get number of time step repetitions in case of time step adaptivity
     int GetNumAdaptSteps() const { return adaptstep_; }
 
+    /*! \brief Redistribute domain decomposition
+     *
+     *  We want to achieve a distribution with matching processor patches at the
+     *  FSI interface. Therefore, we analyze the current non-matching
+     *  distribution to find a matching node-to-node mapping. Then, we call
+     *  Isorropia/Zoltan to repartition fluid or/and structure field.
+     */
+    virtual void RedistributeDomainDecomposition(
+        const INPAR::FSI::Redistribute domain, ///< redistribute structure or fluid
+        const FSI_COUPLING coupling, ///< structure split or fluid split
+        const double inputWeight1, ///< weight for graph
+        const double inputWeight2, ///< weight for graph
+        const Epetra_Comm& comm ///< communicator
+        ) = 0;
+
   protected:
 
     //! Prepare preconditioner for new time step
@@ -389,34 +427,36 @@ namespace FSI
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Epetra::Group> grp) = 0;
 
-    //! Extract the three field vectors from a given composed vector
-    //!
-    //! We are dealing with NOX here, so x is step increment \f$\Delta x\f$
-    //! that brings us from \f$t^{n}\f$ to \f$t^{n+1}\f$:
-    //! \f$x^{n+1} = x^{n} + \Delta x\f$
-    //!
-    //! Iteration increments, that are needed internally in the single fields,
-    //! have to be computed somewhere else.
-    //!
-    //! \param x  (i) composed vector that contains all field vectors
-    //! \param sx (o) structural displacements
-    //! \param fx (o) fluid velocities and pressure
-    //! \param ax (o) ale displacements
+    /*! \brief Extract the three field vectors from a given composed vector
+     *
+     *  We are dealing with NOX here, so x is step increment \f$\Delta x\f$
+     *  that brings us from \f$t^{n}\f$ to \f$t^{n+1}\f$:
+     *  \f$x^{n+1} = x^{n} + \Delta x\f$
+     *
+     *  Iteration increments, that are needed internally in the single fields,
+     *  have to be computed somewhere else.
+     *
+     *  \param x  (i) composed vector that contains all field vectors
+     *  \param sx (o) structural displacements
+     *  \param fx (o) fluid velocities and pressure
+     *  \param ax (o) ale displacements
+     */
     virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
                                      Teuchos::RCP<const Epetra_Vector>& sx,
                                      Teuchos::RCP<const Epetra_Vector>& fx,
                                      Teuchos::RCP<const Epetra_Vector>& ax) = 0;
 
-    //! Put three field vectors together to a monolithic vector
-    //!
-    //! Slave vectors are only allowed to contain inner DOFs. Only master vector
-    //! is allowed to contain interface DOFs. All vectors are put together.
-    //! As usual, the ordering is: structure --  fluid -- ALE
-    //!
-    //! \sa FSI::MonolithicFluidSplit::CombineFieldVectors()
-    //! \sa FSI::MonolithicStructureSplit::CombineFieldVectors()
-    //! \sa FSI::MortarMonolithicFluidSplit::CombineFieldVectors()
-    //! \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
+    /*! \brief Put three field vectors together to a monolithic vector
+     *
+     *  Slave vectors are only allowed to contain inner DOFs. Only master vector
+     *  is allowed to contain interface DOFs. All vectors are put together.
+     *  As usual, the ordering is: structure --  fluid -- ALE
+     *
+     *  \sa FSI::MonolithicFluidSplit::CombineFieldVectors()
+     *  \sa FSI::MonolithicStructureSplit::CombineFieldVectors()
+     *  \sa FSI::MortarMonolithicFluidSplit::CombineFieldVectors()
+     *  \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
+     */
     void CombineFieldVectors(
           Epetra_Vector &v,                       ///< composed vector containing all field vectors
           Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
@@ -424,16 +464,17 @@ namespace FSI
           Teuchos::RCP<const Epetra_Vector> av    ///< ale DOFs
     );
 
-    //! Put three field vectors together to a monolithic vector
-    //!
-    //! Slave vectors are only allowed to contain inner DOFs. Only master vector
-    //! is allowed to contain interface DOFs. All vectors are put together.
-    //! As usual, the ordering is: structure --  fluid -- ALE
-    //!
-    //! \sa FSI::MonolithicFluidSplit::CombineFieldVectors()
-    //! \sa FSI::MonolithicStructureSplit::CombineFieldVectors()
-    //! \sa FSI::MortarMonolithicFluidSplit::CombineFieldVectors()
-    //! \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
+    /*! \brief Put three field vectors together to a monolithic vector
+     *
+     *  Slave vectors are only allowed to contain inner DOFs. Only master vector
+     *  is allowed to contain interface DOFs. All vectors are put together.
+     *  As usual, the ordering is: structure --  fluid -- ALE
+     *
+     *  \sa FSI::MonolithicFluidSplit::CombineFieldVectors()
+     *  \sa FSI::MonolithicStructureSplit::CombineFieldVectors()
+     *  \sa FSI::MortarMonolithicFluidSplit::CombineFieldVectors()
+     *  \sa FSI::MortarMonolithicStructureSplit::CombineFieldVectors()
+     */
     virtual void CombineFieldVectors(
           Epetra_Vector &v,                       ///< composed vector containing all field vectors
           Teuchos::RCP<const Epetra_Vector> sv,   ///< structural DOFs
@@ -450,11 +491,11 @@ namespace FSI
     /// full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap() const { return blockrowdofmap_.FullMap(); }
 
-    /// set full monolithic dof row map
-    /*!
-      A subclass calls this method (from its constructor) and thereby
-      defines the number of blocks, their maps and the block order. The block
-      maps must be row maps by themselves and must not contain identical GIDs.
+    /*! \brief set full monolithic dof row map
+     *
+     *  A subclass calls this method (from its constructor) and thereby
+     *  defines the number of blocks, their maps and the block order. The block
+     *  maps must be row maps by themselves and must not contain identical GIDs.
      */
     void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
@@ -976,6 +1017,130 @@ namespace FSI
     /// the composed system matrix
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
+
+    //! Create #lambda_ and #lambdaold_
+    virtual void SetLambda(){};
+
+    //! Set #notsetup_ = true after redistribution
+    virtual void SetNotSetup(){};
+
+    /*! \brief Redistribute domain decomposition
+     *
+     *  We want to achieve a distribution with matching processor patches at the
+     *  FSI interface. Therefore, we analyze the current non-matching
+     *  distribution to find a matching node-to-node mapping. Then, we call
+     *  Isorropia/Zoltan to repartition fluid or/and structure field.
+     */
+    virtual void RedistributeDomainDecomposition(
+        const INPAR::FSI::Redistribute domain, ///< redistribute structure or fluid
+        const FSI_COUPLING coupling, ///< structure split or fluid split
+        const double inputWeight1, ///< weight for graph
+        const double inputWeight2, ///< weight for graph
+        const Epetra_Comm& comm ///< communicator
+        );
+
+    /*! \brief Find future / desired owner for each node at the interface
+     *
+     *  The relation is saved in the map \c nodeOwner as node -- owner.
+     *
+     *  In \c inverseNodeOwner the same information is contained in the form
+     *  owner -- nodes.
+     *
+     *  The maps are built for interface nodes of the domain \c domain, where
+     *  domain = {fluid, structure}.
+     */
+    virtual void CreateNodeOwnerRelationship(
+        std::map<int,int>* nodeOwner,
+        std::map<int,std::list<int> >* inverseNodeOwner,
+        std::map<int, DRT::Node*>* fluidnodesPtr,
+        std::map<int, DRT::Node*>* structuregnodesPtr,
+        Teuchos::RCP<DRT::Discretization> structuredis, ///< structure discretization
+        Teuchos::RCP<DRT::Discretization> fluiddis, ///< fluid discretization
+        const INPAR::FSI::Redistribute domain
+        ) = 0;
+
+    /*! \brief Build weighted graph to influence distribution made by ZOLTAN
+     *
+     *  Set high edge weights between all interface nodes that are supposed to
+     *  be on the same processor patch. In addition, delete the edges at the
+     *  interface between two processor patches such that a cut is provoked
+     *  there
+     *
+     *  \note This graph does no longer represent the actual connectivity of the
+     *  discretization because edges have been deleted. These edges have to be
+     *  inserted in InsertDeletedEdges()
+     *
+     *  \sa InsertDeletedEdges()
+     */
+    virtual void BuildWeightedGraph(
+        Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights,
+        Teuchos::RCP<Epetra_CrsGraph> initgraph_manip,
+        Teuchos::RCP<const Epetra_CrsGraph> initgraph,
+        const double inputWeight1,
+        const double inputWeight2,
+        std::map<int,int>* nodeOwner,
+        std::map<int,std::list<int> >* inverseNodeOwner,
+        std::map<int,std::list<int> >* deletedEdges,
+        const Epetra_Comm& comm ///< communicator
+        );
+
+    /*! \brief Call to ZOLTAN
+     *
+     *  A manipulated graph \c initgraph_manip is passed to Zoltan, that
+     *  represents the desired domain decomposition. To make the desired
+     *  decomposition more 'attractive' for Zoltan, the weighting matrix
+     *  \c crs_ge_weights is used.
+     */
+    virtual Teuchos::RCP<Epetra_CrsGraph> CallZoltan(
+        Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip, ///< manipulated graph
+        Teuchos::RCP<const Epetra_CrsMatrix> crs_ge_weights ///< matrix with weights
+        );
+
+    /*! \brief Switch the nodes of the patches between processors
+     *
+     *  After the ZOLTAN redistribution the borders of the patches should match
+     *  at the interface but neighboring patches are in general not on the same
+     *  processor after the redistribution. This function switches the patches
+     *  among the processors in order to achieve this.
+     */
+    virtual Teuchos::RCP<Epetra_CrsGraph> SwitchDomains(
+        Teuchos::RCP<Epetra_Map> rownodes,
+        std::map<int,int>* nodeOwner,
+        Teuchos::RCP<Epetra_CrsGraph> bal_graph,
+        const Epetra_Comm& comm ///< communicator
+        );
+
+    /*! \brief Insert edges that were deleted in BuildWeightedGraph()
+     *
+     *  This is necessary in order to have correct column maps. The column maps
+     *  are extracted from \c switched_bal_graph but this graph was manipulated
+     *  in such a way that edges at the interface between two processor patches
+     *  are removed. These edges have to be inserted here before the extraction
+     *  of the column map.
+     *
+     *  \sa BuildWeightedGraph()
+     */
+    virtual void InsertDeletedEdges(
+        std::map<int,std::list<int> >* deletedEdges,
+        Teuchos::RCP<Epetra_Map> switched_rownodes,
+        Teuchos::RCP<Epetra_CrsGraph> switched_bal_graph
+        );
+
+    /*! \brief Find the node that is related to a given dof
+     *
+     * Input: nodes - map of nodes with their global ids
+     *                gdofid - global id of dof
+     *                discretization
+     * Output: re - pointer to array with global id of node related to gdofid
+     *              and owner id of node
+     */
+    virtual void FindNodeRelatedToDof(
+        std::map<int, DRT::Node*>* nodes, ///< map of nodes with their global ids
+        int gdofid, ///<  global id of dof
+        Teuchos::RCP<DRT::Discretization> discretization, ///< discretization
+        int* re ///< pointer to array with global id of node related to gdofid and owner id of node
+        );
+
   protected:
 
     /*! \brief Prepare preconditioner for new time step
@@ -1043,6 +1208,9 @@ namespace FSI
     virtual void SetupRHSFirstiter(Epetra_Vector& f) = 0;
 
     //@}
+
+    //! list of procs who own interface nodes
+    std::list<int> interfaceprocs_;
 
   };
 }

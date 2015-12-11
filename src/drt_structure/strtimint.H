@@ -607,7 +607,7 @@ namespace STR
       return discret_;
     }
 
-    //! Access to rcp pointer to dofrowmap of discretization
+    //! Access to dofrowmap of discretization via const raw pointer
     const Epetra_Map* DofRowMapView();
 
     //! Access solver, one of these have to be removed (see below)

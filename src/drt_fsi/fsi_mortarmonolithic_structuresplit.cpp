@@ -130,9 +130,7 @@ FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(
   fsaigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
   fsmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
 
-  // Recovery of Lagrange multiplier happens on structure field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(),true));
-  lambdaold_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(),true));
+  SetLambda();
   ddiinc_ = Teuchos::null;
   disiprev_ = Teuchos::null;
   disgprev_ = Teuchos::null;
@@ -150,6 +148,18 @@ FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(
   if (lambda_ == Teuchos::null) { dserror("Allocation of 'lambda_' failed."); }
   if (lambdaold_ == Teuchos::null) { dserror("Allocation of 'lambdaold_' failed."); }
 #endif
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void FSI::MortarMonolithicStructureSplit::SetLambda()
+{
+  lambda_ = Teuchos::rcp(
+      new Epetra_Vector(*StructureField()->Interface()->FSICondMap(), true));
+  lambdaold_ = Teuchos::rcp(
+      new Epetra_Vector(*StructureField()->Interface()->FSICondMap(), true));
 
   return;
 }
@@ -1852,4 +1862,210 @@ bool FSI::MortarMonolithicStructureSplit::SetAccepted() const
 void FSI::MortarMonolithicStructureSplit::CreateSystemMatrix()
 {
   FSI::BlockMonolithic::CreateSystemMatrix(systemmatrix_,true);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MortarMonolithicStructureSplit::CreateNodeOwnerRelationship(
+    std::map<int, int>* nodeOwner,
+    std::map<int, std::list<int> >* inverseNodeOwner,
+    std::map<int, DRT::Node*>* structurenodesPtr,
+    std::map<int, DRT::Node*>* fluidgnodesPtr,
+    Teuchos::RCP<DRT::Discretization> structuredis,
+    Teuchos::RCP<DRT::Discretization> fluiddis,
+    const INPAR::FSI::Redistribute domain)
+{
+  /*******************************************/
+  /* distribute masternodes to future owners */
+  /*******************************************/
+  /* Idea:
+   * - the P matrix maps dofs from fluid to structure (fluidsplit) and from structure to fluid (structuresplit)
+   * - find "neighboring dofs" via entries in row of P matrix
+   * - get owner of the node of the corresponding slave dof and global node
+   *   id of the node of the corresponding master dof
+   * - save this pair in map nodeOwner: global id of master node -> desired owner of this node
+   */
+
+  int numproc = comm_.NumProc();
+  int myrank = comm_.MyPID();
+
+  // get P matrix
+  Teuchos::RCP<LINALG::SparseMatrix> P = coupsfm_->GetMortarTrafo(); // P matrix that couples structure dofs with fluid dofs
+  Teuchos::RCP<Epetra_CrsMatrix> P_;
+  P_ = P->EpetraMatrix();
+  const Epetra_Map& P_Map = P_->RowMap();         // maps fluid dofs to procs
+
+  int NumMyElements = P_Map.NumMyElements();
+  int numFluidDofs = P_->NumGlobalCols();               // number of related fluid dofs on interface
+
+  int NumMaxElements;
+  comm_.MaxAll(&NumMyElements, &NumMaxElements, 1);
+
+  int skip = DRT::Problem::Instance()->NDim();  // Only evaluate one dof per node, skip the other dofs related to the node. It is nsd_=skip.
+
+  int re[2];            // return: re[0] = global node id, re[1] = owner of node
+  int flnode;           // fluid
+  int flowner;
+  int stnode;           // structure
+  int stowner = -1;
+
+
+  std::map<int,int>::iterator nodeOwnerIt;
+
+  // loop over fluid dofs, i.e. rows in the P matrix
+  /* We loop over NumMaxElements because all procs have to stay in the loop until
+   * the last proc checked each of its rows.
+   */
+
+
+  for (int stdofLID = 0; stdofLID < NumMaxElements; stdofLID = stdofLID + skip)
+  {
+
+    flnode = -1;
+    flowner = -1;
+    stnode = -1;
+    stowner = -1;
+
+    int NumEntries = 0;
+    double Values[numFluidDofs];
+    int fldofGID[numFluidDofs];
+
+    if (NumMyElements > 0)
+    {
+      int stdofGID = P_Map.GID(stdofLID); // gid of structure dof
+      // find related node and owner to stdofGID
+      FindNodeRelatedToDof(structurenodesPtr, stdofGID, structuredis, re);   //fluid
+      stnode = re[0];
+      stowner = re[1];
+
+      P_->ExtractGlobalRowCopy(stdofGID, numFluidDofs, NumEntries, Values, fldofGID);
+    }
+
+    // Loop over related structure dofs and get related nodes.
+
+    int maxNumEntries;
+    comm_.MaxAll(&NumEntries,&maxNumEntries,1);
+
+    for (int j = 0; j < maxNumEntries; ++j){
+      if (j < NumEntries){
+        FindNodeRelatedToDof(fluidgnodesPtr, fldofGID[j], fluiddis, re);
+        flnode = re[0];
+        flowner = re[1];
+      }
+
+      // A processor can only find a neighbored node if it belongs to its domain (which in general is not the case).
+      // Therefore, we have to search in the other processors' domains.
+
+      int copy;
+      int foundNode = -2;
+      int sendNode = -2;
+      int saveNode = -2;
+      int foundOwner;
+      int sendOwner;
+      int saveOwner;
+      int dofid;
+
+      for (int proc = 0; proc < numproc; ++proc){
+        copy = flnode;
+        comm_.Broadcast(&copy, 1, proc);    // send nodeid to check if the processor needs help to find its neighbor, code: copy=-2
+        if (copy == -2){
+          dofid = fldofGID[j];
+          comm_.Broadcast(&dofid, 1, proc);
+          FindNodeRelatedToDof(fluidgnodesPtr, dofid, fluiddis,re); // let each processor look for the node related to gstid
+          foundNode = re[0];
+          foundOwner = re[1];
+          for (int j = 0; j < numproc; ++j){
+            sendNode = foundNode;
+            sendOwner = foundOwner;
+            comm_.Broadcast(&sendNode, 1, j);
+            comm_.Broadcast(&sendOwner, 1, j);
+            if (sendNode != -2){ // check which processor found the node
+              saveNode = sendNode;
+              saveOwner = sendOwner;
+              break;
+            }
+          }
+          if (myrank == proc && saveNode != -2){ // save the nodegid on the respective processor
+            stnode = saveNode;
+            stowner = saveOwner;
+          }
+        }
+      }
+
+      if (domain == INPAR::FSI::Redistribute_structure && stnode != -1){   // map structure nodes to fluid owners
+          (*nodeOwner)[stnode]=flowner;
+      }
+      else if (domain == INPAR::FSI::Redistribute_fluid)  // map fluid nodes to structure owners
+        (*nodeOwner)[flnode]=stowner;
+
+    } //for (int j = 0; j < maxNumEntries; ++j){
+
+    if (NumMyElements != 0){
+      NumMyElements -= skip;
+    }
+
+  } // end loop over structure dofs
+
+
+//    std::map<int,int>::iterator nodeOwnerPrint;
+//    for (nodeOwnerPrint = nodeOwner.begin(); nodeOwnerPrint != nodeOwner.end(); ++nodeOwnerPrint){
+//      std::cout<<"\nNode: "<<nodeOwnerPrint->first<<" Owner: "<<nodeOwnerPrint->second<<" I am proc "<<myrank;
+//    }
+
+
+  // If the structure is redistributed, it might occur that one node is contained several times in the
+  // list because several procs might have introduced it.
+  for (int proc=0; proc<numproc; ++proc){
+    //std::map<int,int>::iterator nodeOwnerIt;   already declared
+    nodeOwnerIt = nodeOwner->begin();
+    int nodeSize = (int)nodeOwner->size();
+    comm_.Broadcast(&nodeSize,1,proc);
+    int node;
+    for (int i=0; i<nodeSize; ++i){
+      node = nodeOwnerIt->first;
+      comm_.Broadcast(&node,1,proc);
+      if (myrank > proc){
+
+        try{
+           nodeOwner->at(node);
+           nodeOwner->erase(node);
+          }
+         catch (std::exception& exc)
+        {
+        }
+      }
+      if (myrank==proc){
+        nodeOwnerIt++;
+      }
+    }
+
+  }
+
+//  std::map<int,int>::iterator nodeOwnerPrint;
+//  for (nodeOwnerPrint = nodeOwner.begin(); nodeOwnerPrint != nodeOwner.end(); ++nodeOwnerPrint){
+//    std::cout<<"\nNode: "<<nodeOwnerPrint->first<<" Owner: "<<nodeOwnerPrint->second<<" I am proc "<<comm_.MyPID();
+//  }
+
+  std::list<int>::iterator listIt;
+    int sendPair[2];
+    nodeOwnerIt = nodeOwner->begin();    // already declared
+
+    for (int proc=0; proc<numproc; ++proc){
+      int numNodes = nodeOwner->size();
+      comm_.Broadcast(&numNodes,1,proc);
+
+      for (int i=0; i<numNodes; ++i){
+        if (myrank==proc){
+          sendPair[0]=nodeOwnerIt->first;
+          sendPair[1]=nodeOwnerIt->second;
+        }
+        comm_.Broadcast(sendPair,2,proc);
+        listIt = (*inverseNodeOwner)[sendPair[1]].begin();
+        (*inverseNodeOwner)[sendPair[1]].insert(listIt,sendPair[0]);
+
+        if (myrank==proc)
+          nodeOwnerIt++;
+      }
+    }
+
 }

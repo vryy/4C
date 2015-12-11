@@ -1084,6 +1084,8 @@ protected:
   int write_eledata_everystep_;
   //@}
 
+  int write_nodedata_first_step_;
+
   //! @name time step sizes
   double dtp_; ///< time step size of previous time step
   //@}
