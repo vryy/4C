@@ -226,8 +226,10 @@ void ADAPTER::FluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ive
   // apply the interface velocities
   Interface()->InsertFSICondVector(ivel,fluidimpl_->WriteAccessVelnp());
 
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-  if (DRT::INPUT::IntegralValue<int>(fsidyn,"DIVPROJECTION"))
+  const Teuchos::ParameterList& fsipart =
+      DRT::Problem::Instance()->FSIDynamicParams().sublist(
+          "PARTITIONED SOLVER");
+  if (DRT::INPUT::IntegralValue<int>(fsipart,"DIVPROJECTION"))
   {
     // project the velocity field into a divergence free subspace
     // (might enhance the linear solver, but we are still not sure.)
