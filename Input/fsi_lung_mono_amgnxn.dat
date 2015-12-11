@@ -137,7 +137,6 @@ TIMESTEP                        1.0
 UPRES                           1
 SECONDORDER                     Yes
 DEBUGOUTPUT                     No
-DIVPROJECTION                   no
 SLIDEALEPROJ                    None
 -------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 PREDICTOR                       d(n)

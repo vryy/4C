@@ -133,7 +133,6 @@ RESTARTEVRY                     1
 TIMESTEP                        0.01
 MAXTIME                         1e9
 SLIDEALEPROJ                    None
-DIVPROJECTION                   no
 -------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)

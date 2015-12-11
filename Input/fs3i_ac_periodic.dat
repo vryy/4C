@@ -261,7 +261,6 @@ RESTARTEVRY                     20
 TIMESTEP                        0.01
 MAXTIME                         3
 SLIDEALEPROJ                    None
-DIVPROJECTION                   no
 VERBOSITY                       subproblem
 --------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 SHAPEDERIVATIVES                No //

@@ -104,7 +104,6 @@ RESTARTEVRY                     2
 NUMSTEP                         3
 TIMESTEP                        0.01
 MAXTIME                         0.03
-DIVPROJECTION                   no
 -------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)

@@ -87,7 +87,6 @@ NUMSTEP                         2
 UPRES                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_stagg_fixed_rel_param
-DIVPROJECTION                   no
 -------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 PREDICTOR                       d(n)
 COUPVARIABLE                    Force

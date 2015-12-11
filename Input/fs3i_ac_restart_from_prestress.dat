@@ -261,7 +261,6 @@ RESTARTEVRY                     1
 TIMESTEP                        0.01
 MAXTIME                         1.000000001
 SLIDEALEPROJ                    None
-DIVPROJECTION                   no
 VERBOSITY                       medium //subproblem
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-6

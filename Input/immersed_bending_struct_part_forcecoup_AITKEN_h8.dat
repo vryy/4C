@@ -87,7 +87,6 @@ NUMSTEP                         2000
 UPRES                           1
 RESTARTEVRY                     2
 COUPALGO                        iter_stagg_AITKEN_rel_param
-DIVPROJECTION                   no
 -------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 PREDICTOR                       d(n)
 COUPVARIABLE                    Force
