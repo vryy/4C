@@ -262,7 +262,7 @@ TIMESTEP                        0.01
 MAXTIME                         1.000000001
 SLIDEALEPROJ                    None
 DIVPROJECTION                   no
-VERBOSITY                       subproblem
+VERBOSITY                       medium //subproblem
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-6
 ITEMAX                          30
@@ -340,7 +340,7 @@ ML_PROLONG_THRES                0.0
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOOTHERCOARSE               Umfpack //Umfpack
-ML_SMOTIMES                     2 2 2 2 2             //ILU levels
+ML_SMOTIMES                     1 0 0 0 0              //ILU levels
 ML_DAMPFINE                     0.79
 ML_DAMPMED                      0.79
 ML_DAMPCOARSE                   1.0
@@ -375,7 +375,7 @@ ML_PROLONG_THRES                0.0                             // threshold for
 ML_SMOOTHERFINE                 ILU                       // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  ILU                       // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     9 12 12 12 1                    // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES                     5 5 5 5 1                    // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     0.79                            // damping fine grid
 ML_DAMPMED                      0.79                            // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
@@ -409,7 +409,7 @@ ML_PROLONG_THRES                0.0
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOOTHERCOARSE               Umfpack //Umfpack
-ML_SMOTIMES                     9 12 12 12 1
+ML_SMOTIMES                     5 5 5 5 1
 ML_DAMPFINE                     0.79
 ML_DAMPMED                      0.79
 ML_DAMPCOARSE                   1.0
@@ -559,20 +559,20 @@ FUNCT 3 COMPONENT 1 EXPR 0 0 0 FUNCTION 0.0
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra2 NODE 4146 QUANTITY phi VALUE 8.15087426036360818e-11 TOLERANCE 1e-10
 SCATRA DIS scatra2 NODE 4146 QUANTITY phi2 VALUE 0.00000000000000000e+00 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 4146 QUANTITY dispx VALUE 1.49660435244896566e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispy VALUE 6.20274700157413816e-03 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 4146 QUANTITY dispz VALUE 5.57802541758162674e-03 TOLERANCE 1e-6
-SCATRA DIS scatra1 NODE 39 QUANTITY phi VALUE  -4.04677445941158120e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 4146 QUANTITY dispx VALUE 1.21495691369507448e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispy VALUE 5.03547618592482121e-03 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 4146 QUANTITY dispz VALUE 4.13302858414293581e-03 TOLERANCE 1e-6
+SCATRA DIS scatra1 NODE 39 QUANTITY phi VALUE  -4.05567271608074306e-02 TOLERANCE 1e-10
 SCATRA DIS scatra1 NODE 39 QUANTITY phi2 VALUE 0.00000000000000000e+00 TOLERANCE 1e-10
 SCATRA DIS scatra1 NODE 1 QUANTITY phi VALUE  6.16161945313002057e-01 TOLERANCE 1e-10
 SCATRA DIS scatra1 NODE 36 QUANTITY phi2 VALUE 0.00000000000000000e+00 TOLERANCE 1e-10
-FLUID DIS fluid NODE 39 QUANTITY velx VALUE -2.05605701379149491e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY vely VALUE 1.02659811019429381e+00 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY velz VALUE 1.65794090234736763e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 39 QUANTITY pressure VALUE 2.05321540898593685e+03 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispx VALUE -5.23831720147141869e-03 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispy VALUE 2.61499862438053579e-02 TOLERANCE 1e-6
-ALE DIS ale NODE 39 QUANTITY dispz VALUE 4.99822085877175450e-03 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY velx VALUE -1.92285414790619030e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY vely VALUE 9.60104558841491262e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY velz VALUE 1.52985379022045426e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 39 QUANTITY pressure VALUE 2.04484951293821314e+03 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispx VALUE -4.08175512108939920e-03 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispy VALUE 2.03767566317301085e-02 TOLERANCE 1e-6
+ALE DIS ale NODE 39 QUANTITY dispz VALUE 3.42084433003057159e-03 TOLERANCE 1e-6
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  4

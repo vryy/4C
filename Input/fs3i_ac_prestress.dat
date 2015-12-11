@@ -266,7 +266,7 @@ VERBOSITY                       medium
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-6
 ITEMAX                          30
-COUPVARIABLE                    Force // Displacement //
+COUPVARIABLE                    Displacement // Force //
 //PREDICTOR                       d(n)
 //RELAX                           0.825
 --------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
@@ -340,7 +340,7 @@ ML_PROLONG_THRES                0.0
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOOTHERCOARSE               Umfpack //Umfpack
-ML_SMOTIMES                     2 2 2 2 2             //ILU levels
+ML_SMOTIMES                     1 0 0 0 0             //ILU levels
 ML_DAMPFINE                     0.79
 ML_DAMPMED                      0.79
 ML_DAMPCOARSE                   1.0
@@ -375,7 +375,7 @@ ML_PROLONG_THRES                0.0                             // threshold for
 ML_SMOOTHERFINE                 ILU                       // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  ILU                       // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     9 12 12 12 1                    // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES                     5 5 5 5 1                    // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     0.79                            // damping fine grid
 ML_DAMPMED                      0.79                            // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
