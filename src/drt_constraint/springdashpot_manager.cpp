@@ -86,7 +86,6 @@ void UTILS::SpringDashpotManager::Output(
   Teuchos::RCP<Epetra_Vector> gap = Teuchos::rcp(new Epetra_Vector(*(actdisc_->NodeRowMap()),true));
   Teuchos::RCP<Epetra_MultiVector> normals = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
   Teuchos::RCP<Epetra_MultiVector> springstress = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
-  Teuchos::RCP<Epetra_MultiVector> springoffsetprestr = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
 
   // collect outputs from all spring dashpot conditions
   bool found_cursurfnormal = false;
@@ -99,7 +98,6 @@ void UTILS::SpringDashpotManager::Output(
       springs_[i]->OutputGapNormal(gap, normals, springstress);
       found_cursurfnormal = true;
     }
-    springs_[i]->OutputPrestrOffset(springoffsetprestr);
   }
 
   // write vectors to output
@@ -110,6 +108,24 @@ void UTILS::SpringDashpotManager::Output(
     output->WriteVector("springstress", springstress);
   }
 
+  return;
+}
+
+void UTILS::SpringDashpotManager::OutputRestart(
+    Teuchos::RCP<IO::DiscretizationWriter> output,
+    Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<Epetra_Vector> disp)
+{
+  // row maps for export
+  Teuchos::RCP<Epetra_MultiVector> springoffsetprestr = Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->NodeRowMap()),3,true));
+
+  // collect outputs from all spring dashpot conditions
+  for (int i=0; i<n_conds_; ++i)
+  {
+    springs_[i]->OutputPrestrOffset(springoffsetprestr);
+  }
+
+  // write vector to output for restart
   output->WriteVector("springoffsetprestr", springoffsetprestr);
 
   return;

@@ -74,6 +74,11 @@ namespace UTILS
                 Teuchos::RCP<DRT::Discretization> discret,
                 Teuchos::RCP<Epetra_Vector> disp);
 
+    //! output of prestressing offset for restart
+    void OutputRestart(Teuchos::RCP<IO::DiscretizationWriter> output,
+                Teuchos::RCP<DRT::Discretization> discret,
+                Teuchos::RCP<Epetra_Vector> disp);
+
     /*!
      \brief Read restart information
     */

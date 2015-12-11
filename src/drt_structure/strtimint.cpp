@@ -2491,7 +2491,7 @@ void STR::TimInt::OutputRestart
 
   // springdashpot output
   if (springman_->HaveSpringDashpot())
-    springman_->Output(output_, discret_, disn_);
+    springman_->OutputRestart(output_, discret_, disn_);
 
   // info dedicated to user's eyes staring at standard out
   if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0))
