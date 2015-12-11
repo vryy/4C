@@ -3425,12 +3425,8 @@ void FLD::FluidImplicitTimeInt::Output()
       if (alefluid_)
       {
         output_->WriteVector("dispn", dispn_);
+        output_->WriteVector("dispnm",dispnm_);
         output_->WriteVector("gridvn", gridvn_);
-
-        const Teuchos::ParameterList& fluiddynparams =  DRT::Problem::Instance()->FluidDynamicParams();
-        const int gridvel = DRT::INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
-        if ( gridvel == INPAR::FLUID::BDF2 )
-          output_->WriteVector("dispnm",dispnm_);
       }
       if(xwall_!=Teuchos::null)
           output_->WriteVector("wss",stressmanager_->GetPreCalcWallShearStresses(xwall_->FixDirichletInflow(trueresidual_)));
@@ -3468,12 +3464,8 @@ void FLD::FluidImplicitTimeInt::Output()
     {
       output_->WriteVector("dispnp", dispnp_);
       output_->WriteVector("dispn", dispn_);
+      output_->WriteVector("dispnm",dispnm_);
       output_->WriteVector("gridvn", gridvn_);
-
-      const Teuchos::ParameterList& fluiddynparams =  DRT::Problem::Instance()->FluidDynamicParams();
-      const int gridvel = DRT::INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
-      if ( gridvel == INPAR::FLUID::BDF2 )
-        output_->WriteVector("dispnm",dispnm_);
     }
 
     // write mesh in each restart step --- the elements are required since
@@ -3725,13 +3717,8 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   {
     reader.ReadVector(dispnp_,"dispnp");
     reader.ReadVector(dispn_ , "dispn");
+    reader.ReadVector(dispnm_,"dispnm");
     reader.ReadVector(gridvn_,"gridvn");
-
-    const Teuchos::ParameterList& fluiddynparams =  DRT::Problem::Instance()->FluidDynamicParams();
-    const int gridvel = DRT::INPUT::IntegralValue<INPAR::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
-
-    if ( gridvel == INPAR::FLUID::BDF2 )
-      reader.ReadVector(dispnm_,"dispnm");
   }
 
   // flow rate and flow volume in case of flow-dependent pressure bc
