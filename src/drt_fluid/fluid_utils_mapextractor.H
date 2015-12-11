@@ -1,4 +1,15 @@
+/*!----------------------------------------------------------------------
+\file fluid_utils_mapextractor.H
+\brief extracting maps of fluid discretizations
 
+<pre>
+Maintainers: Benjamin Krank & Martin Kronbichler
+             {krank,kronbichler}@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15252/-235
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifndef FLUID_UTILS_MAPEXTRACTOR_H
 #define FLUID_UTILS_MAPEXTRACTOR_H
 

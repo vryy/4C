@@ -14,10 +14,10 @@
      and a stationary solver.
 
 <pre>
-Maintainers: Ursula Rasthofer & Volker Gravemeier
-             {rasthofer,vgravem}@lnm.mw.tum.de
+Maintainers: Benjamin Krank & Volker Gravemeier
+             {krank,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15236/-245
+             089 - 289-15252/-245
 </pre>
 
 *----------------------------------------------------------------------*/

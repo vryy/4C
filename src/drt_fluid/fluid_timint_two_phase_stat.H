@@ -3,8 +3,8 @@
 \brief
 
 <pre>
-Maintainers: Ursula Rasthofer & Martin Kronbichler
-             {rasthofer,kronbichler}@lnm.mw.tum.de
+Maintainers: Magnus Winter & Martin Kronbichler
+             {winter,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15236/-235
 </pre>

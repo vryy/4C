@@ -1,8 +1,7 @@
 /*!----------------------------------------------------------------------
 \file fluid_meshtying.cpp
 
-\brief Methods needed to apply rotationally symmetric periodic boundary
-       conditions for fluid problems
+\brief Methods to apply meshtying to fluid and scatra systems
 
 <pre>
 Maintainer: Andreas Ehrl

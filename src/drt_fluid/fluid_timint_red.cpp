@@ -4,10 +4,10 @@
 \brief TimIntRedModels
 
 <pre>
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
+Maintainers: Benjamin Krank & Martin Kronbichler
+             {krank,kronbichler}@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15252/-235
 </pre>
 */
 /*----------------------------------------------------------------------*/

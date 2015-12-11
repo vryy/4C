@@ -5,10 +5,10 @@
 
 
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
+Maintainers: Benjamin Krank & Martin Kronbichler
+             {krank,kronbichler}@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15252/-235
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -26,11 +26,11 @@ typedef int idxtype;
 extern "C"
 {
   void METIS_PartGraphRecursive(int *, idxtype *, idxtype *,
-				idxtype *, idxtype *, int *, int *, int *,
-				int *, int *, idxtype *);
+        idxtype *, idxtype *, int *, int *, int *,
+        int *, int *, idxtype *);
   void METIS_PartGraphKway(int *, idxtype *, idxtype *, idxtype *,
-			   idxtype *, int *, int *, int *, int *, int *,
-			   idxtype *);
+         idxtype *, int *, int *, int *, int *, int *,
+         idxtype *);
 }
 
 // forward declarations

@@ -3,10 +3,10 @@
 \brief infnorm-scaling utility class for preconditioning of fluid problems
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15252
+Maintainers: Benjamin Krank & Martin Kronbichler
+             {krank,kronbichler}@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15252/-235
 </pre>
 
 *----------------------------------------------------------------------*/

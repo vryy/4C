@@ -1,13 +1,13 @@
 /*!-----------------------------------------------------------------------------------------------*
-\file fluid_turb_inflow_gen.H
+\file fluid_discret_extractor.H
 
   \brief creates a second discretization as part of the complete discretization for inflow generation
 
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
+Maintainers: Benjamin Krank & Martin Kronbichler
+             {krank,kronbichler}@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15252/-235
 </pre>
  *------------------------------------------------------------------------------------------------*/
 

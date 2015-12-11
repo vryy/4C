@@ -4,10 +4,10 @@
 \brief Generalized-alpha time-integration scheme
 
 <pre>
-Maintainers: Ursula Rasthofer & Martin Kronbichler
-             {rasthofer,kronbichler}@lnm.mw.tum.de
+Maintainers: Benjamin Krank & Martin Kronbichler
+             {krank,kronbichler}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15236/-235
+             089 - 289-15252/-235
 </pre>
 */
 /*----------------------------------------------------------------------*/
