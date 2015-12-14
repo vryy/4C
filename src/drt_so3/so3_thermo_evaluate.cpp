@@ -853,13 +853,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
     etemp(i,0) = temp[i+0];
   }
 
-  // we need the (residual) displacement -- current increment of displacement
-  LINALG::Matrix<numdofperelement_,1> res_d;
-  for (int i = 0; i<numdofperelement_; ++i)
-  {
-    res_d(i) = residual[i];
-  }
-
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
   // by N_XYZ = J^-1 * N_rst
   LINALG::Matrix<nsd_,nen_> N_XYZ;
@@ -1186,13 +1179,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
     xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
 
     etemp(i,0) = temp[i+0];
-  }
-
-  // we need the (residual) displacement -- current increment of displacement
-  LINALG::Matrix<numdofperelement_,1> res_d;
-  for (int i = 0; i<numdofperelement_; ++i)
-  {
-    res_d(i) = residual[i];
   }
 
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
