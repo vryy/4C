@@ -1965,7 +1965,9 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
     phinp_->Update(1.,*phinp_original,0.);
 
     // impose perturbation
-    phinp_->SumIntoGlobalValue(col,0,fdcheckeps_);
+    if(phinp_->Map().MyGID(col))
+      if(phinp_->SumIntoGlobalValue(col,0,fdcheckeps_))
+        dserror("Perturbation could not be imposed on state vector for finite difference check!");
 
     // carry perturbation over to state vectors at intermediate time stages if necessary
     ComputeIntermediateValues();
@@ -1984,15 +1986,20 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
 
     // Note that we still need to evaluate the first comparison as well. For small entries in the system
     // matrix, the second comparison might yield good agreement in spite of the entries being wrong!
-    for(int row=0; row<discret_->DofRowMap()->NumMyElements(); ++row)
+    for(int rowlid=0; rowlid<discret_->DofRowMap()->NumMyElements(); ++rowlid)
     {
-      // get current entry in original system matrix
+      // get global index of current matrix row
+      const int rowgid = sysmat_original->RowMap().GID(rowlid);
+      if(rowgid < 0)
+        dserror("Invalid global ID of matrix row!");
+
+      // get relevant entry in current row of original system matrix
       double entry(0.);
-      int length = sysmat_original->NumMyEntries(row);
+      int length = sysmat_original->NumMyEntries(rowlid);
       int numentries;
       std::vector<double> values(length);
       std::vector<int> indices(length);
-      sysmat_original->ExtractMyRowCopy(row,length,numentries,&values[0],&indices[0]);
+      sysmat_original->ExtractMyRowCopy(rowlid,length,numentries,&values[0],&indices[0]);
       for(int ientry=0; ientry<length; ++ientry)
       {
         if(sysmat_original->ColMap().GID(indices[ientry]) == col)
@@ -2003,7 +2010,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
       }
 
       // finite difference suggestion (first divide by epsilon and then add for better conditioning)
-      const double fdval = -(*residual_)[row] / fdcheckeps_ + (*rhs_original)[row] / fdcheckeps_;
+      const double fdval = -(*residual_)[rowlid] / fdcheckeps_ + (*rhs_original)[rowlid] / fdcheckeps_;
 
       // confirm accuracy of first comparison
       if(abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
@@ -2024,7 +2031,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
       // evaluate first comparison
       if(abs(relerr1) > fdchecktol_)
       {
-        std::cout << "sysmat[" << row << "," << col << "]:  " << entry << "   ";
+        std::cout << "sysmat[" << rowgid << "," << col << "]:  " << entry << "   ";
         std::cout << "finite difference suggestion:  " << fdval << "   ";
         std::cout << "absolute error:  " << abserr1 << "   ";
         std::cout << "relative error:  " << relerr1 << std::endl;
@@ -2036,10 +2043,10 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
       else
       {
         // left-hand side in second comparison
-        const double left  = entry - (*rhs_original)[row] / fdcheckeps_;
+        const double left  = entry - (*rhs_original)[rowlid] / fdcheckeps_;
 
         // right-hand side in second comparison
-        const double right = -(*residual_)[row] / fdcheckeps_;
+        const double right = -(*residual_)[rowlid] / fdcheckeps_;
 
         // confirm accuracy of second comparison
         if(abs(right) > 1.e-17 and abs(right) < 1.e-15)
@@ -2060,8 +2067,8 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
         // evaluate second comparison
         if(abs(relerr2) > fdchecktol_)
         {
-          std::cout << "sysmat[" << row << "," << col << "]-rhs[" << row << "]/eps:  " << left << "   ";
-          std::cout << "-rhs_perturbed[" << row << "]/eps:  " << right << "   ";
+          std::cout << "sysmat[" << rowgid << "," << col << "]-rhs[" << rowgid << "]/eps:  " << left << "   ";
+          std::cout << "-rhs_perturbed[" << rowgid << "]/eps:  " << right << "   ";
           std::cout << "absolute error:  " << abserr2 << "   ";
           std::cout << "relative error:  " << relerr2 << std::endl;
 
