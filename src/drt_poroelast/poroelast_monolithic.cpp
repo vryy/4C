@@ -57,6 +57,9 @@
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 
+// immersed
+#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
+
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 01/12  |
  *----------------------------------------------------------------------*/
@@ -198,6 +201,8 @@ void POROELAST::Monolithic::Solve()
 
     //Modify System for Contact or Meshtying!
     EvalPoroMortar();
+
+    EvalCellMigrationSpecific();
 
     //std::cout << "  time for Evaluate : " << timer.ElapsedTime() << "\n";
     //timer.ResetStartTime();
@@ -2178,3 +2183,21 @@ void POROELAST::Monolithic::EquilibrateMatrixRows(
   return;
 } // POROELAST::Monolithic::EquilibrateMatrixRows
 
+
+/*----------------------------------------------------------------------*
+ | Cell Migration Specific Modifications of Previously Evaluated Fields |
+ |                                                         rauch 12/15  |
+ *----------------------------------------------------------------------*/
+void POROELAST::Monolithic::EvalCellMigrationSpecific()
+{
+  if(DRT::Problem::Instance()->ProblemType()==prb_immersed_cell)
+  {
+    //DRT::ImmersedFieldExchangeManager* exchange_manager = DRT::ImmersedFieldExchangeManager::Instance();
+
+    // add adhesion forces to rhs
+    //Extractor()->AddVector((exchange_manager->GetPointerECMAdhesionForce()),0,rhs_,-1.0);
+
+  }
+
+  return;
+}
