@@ -3906,11 +3906,11 @@ void FluidEleCalcXFEM<distype>::GetInterfaceJumpVectors(
   {
     //Create normal projection matrix.
     LINALG::Matrix<my::nsd_,my::nsd_> eye(true);
-    for(unsigned int i =0; i<my::nsd_; ++i)
+    for(int i =0; i<my::nsd_; ++i)
       eye(i,i)=1;
-    for(unsigned int i =0; i<my::nsd_; ++i)
+    for(int i =0; i<my::nsd_; ++i)
     {
-      for(unsigned int j =0; j<my::nsd_; ++j)
+      for(int j =0; j<my::nsd_; ++j)
       {
         projection_matrix(i,j)          = eye(i,j) - normal(i,0) * normal(j,0);
       }

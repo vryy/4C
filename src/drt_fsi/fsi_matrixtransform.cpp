@@ -173,7 +173,7 @@ FSI::UTILS::MatrixLogicalSplitAndTransform::AddIntoFilled(Teuchos::RCP<Epetra_Cr
   // 3. Match columns of row i in source matrix (called A) to the columns in the destination
   //    matrix (called B)
   // 4. Perform addition
-  if (lidvector_.size() != srccolmap.NumMyElements())
+  if (int(lidvector_.size()) != srccolmap.NumMyElements())
   {
     lidvector_.clear();
     lidvector_.resize(srccolmap.NumMyElements(), -1);

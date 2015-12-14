@@ -82,6 +82,10 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
       return other.FindAmbiguousCutLines( mesh, element, *this, cuts );
     }
   }
+
+  dserror("How did you get here?");
+  return false;
+
 }
 
 bool GEO::CUT::Side::AllOnNodes( const PointSet & points )
