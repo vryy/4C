@@ -1370,12 +1370,6 @@ namespace ELEMENTS
     virtual void AddToConvPhi(const int k,double conv_phi) {conv_phi_[k] += conv_phi;};
     //! set convective term of current scalar value
     virtual void ScaleConvPhi(const int k,double scale) {conv_phi_[k] *= scale;};
-    //! set convective velocity
-    virtual void SetConVel(LINALG::Matrix<NSD,1>& convel) {convelint_ = convel;};
-    //! set history term of current scalar value
-    virtual void SetHist(const int k,double hist) {hist_[k] = hist;};
-    //! set convective part in convective form
-    virtual void SetConv(LINALG::Matrix<NEN,1>& conv) {conv_ = conv;};
 
   protected:
 
