@@ -47,23 +47,31 @@ public:
   /// called upon destruction
   virtual void Done();
 
-  Teuchos::RCP<GEO::SearchTree> immersed_SearchTree_;
-  std::map<int,LINALG::Matrix<3,1> >* currpositions_immerseddis_;
+  bool isinitialized_;
+  bool isfluidinteraction_;
+
   int check_counter_;
   int num_isimmersedbry_;
   int numnlniter_;
+
   double gap_max_;
   double gap_min_;
   double void_min_;
   double void_max_;
   double delta_porosity_max_;
   double simple_ecm_interaction_constant;
+
   std::map<int,std::vector<double> > porosity_at_gp_;
   std::map<int,std::vector<double> > porosity_at_gp_old_timestep_;
+  std::map<int,std::vector<double> > porositiy_old_;
+  std::map<int,LINALG::Matrix<3,1> >* currpositions_immerseddis_;
   std::map<int,std::vector<LINALG::Matrix<3,1> > > penalty_traction_at_gp_;
+
   Teuchos::RCP<Epetra_Vector> points_to_ecm_penalty_traction_;
   Teuchos::RCP<Epetra_Vector> points_to_ecm_penalty_gap_;
   Teuchos::RCP<Epetra_Vector> cell_current_nodal_normals_;
+  Teuchos::RCP<Epetra_Vector> points_to_ecm_adhesion_force_;
+
   LINALG::Matrix<3,1> max_gap_searchdirection_;
   LINALG::Matrix<3,1> max_gap_spacepoint_;
   LINALG::Matrix<3,1> min_gap_searchdirection_;
@@ -71,13 +79,15 @@ public:
 
   Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> FSIStructureWrapperImmersed_;
 
-  bool isinitialized_;
-
-  std::map<int,std::vector<double> > porositiy_old_;
+  Teuchos::RCP<GEO::SearchTree> immersed_SearchTree_;
 
   void SetIsInitialized(bool trueorfalse){isinitialized_=trueorfalse; return;};
 
   bool IsInitialized(){return isinitialized_;};
+
+  void SetIsFluidInteraction(bool trueorfalse){isfluidinteraction_=trueorfalse; return;};
+
+  bool IsFluidInteraction(){return isfluidinteraction_;};
 
   void SetImmersedSearchTree(Teuchos::RCP<GEO::SearchTree> immersed_SearchTree)
   {
@@ -180,6 +190,10 @@ public:
    void SetAdapter(Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> adapter){FSIStructureWrapperImmersed_ = adapter; return;};
 
    Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> GetAdapter(){return FSIStructureWrapperImmersed_;};
+
+   void SetPointerECMAdhesionForce(const Teuchos::RCP<Epetra_Vector> vector){points_to_ecm_adhesion_force_=vector; return;};
+
+   Teuchos::RCP<Epetra_Vector> GetPointerECMAdhesionForce(){return points_to_ecm_adhesion_force_;};
 
 private:
 

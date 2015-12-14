@@ -3285,11 +3285,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
   //  2) interpolation of structural divergence to fluid integration points covered by immersed structure
   //----------------------------------------------------------------------
 
-  // cast currently evaluated element to Immersed type element
   DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
-  // get pointer to the global problem
+
   DRT::Problem* globalproblem = DRT::Problem::Instance();
-  // get the discretization names
+
+  // check if fluid interacton is switched ON
+  // if NOT : just mark isimmersed and isboundaryimmersed elements
+  static int isfluidinteraction = (globalproblem->CellMigrationParams().get<std::string>("FLUID_INTERACTION") == "yes");
+
   std::string backgrddisname(discretization.Name());
   std::string immerseddisname(params.get<std::string>("immerseddisname"));
 
@@ -3401,13 +3404,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
     match = true;
   }
 
-//  // DEBUG output
-//  if(ele->Nodes()[node]->Id()==83274)
-//  {
-//    std::cout<<"Node "<<ele->Nodes()[node]->Id()<< "at pos. ["<<ele->Nodes()[node]->X()[0]+targeteledisp[node*nsd_+0]<<" "<<ele->Nodes()[node]->X()[1]+targeteledisp[node*nsd_+1]<<" "<<ele->Nodes()[node]->X()[2]+targeteledisp[node*nsd_+2]<<"]"<<std::endl;
-//    std::cout<<"Belongs to Ele "<<ele->Id()<<" and is matched="<<static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->IsMatched()<<" before InterpolateToBackgrdPoint."<<std::endl;
-//  }
-
   IMMERSED::InterpolateToBackgrdPoint  <DRT::Element::hex8,                       // source/structure
                                         DRT::Element::hex8>                       // target/fluid
                                                        (curr_subset_of_structdis,
@@ -3422,12 +3418,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
                                                         vel_calculation,
                                                         false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element to
                                                        );                         // interpolate to its backgrd nodes.
-
-//  // DEBUG output
-//  if(ele->Nodes()[node]->Id()==83274)
-//  {
-//    std::cout<<"After InterpolateToBackgrdPoint match="<<match<<std::endl;
-//  }
 
   // under fsi structure NOT under immersed structure !
   if(vel[0]==-12345.0 and vel[1]==-12345.0)
@@ -3457,7 +3447,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
   else if (matchnum < nen_ and matchnum > 0)
   {
     immersedele -> SetBoundaryIsImmersed(1);
-    immersedele -> ConstructElementRCP(num_gp_fluid_bound);
+    if (isfluidinteraction)
+    {
+      immersedele -> ConstructElementRCP(num_gp_fluid_bound);
 
     // DEBUG test
 #ifdef DEBUG
@@ -3472,71 +3464,74 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToNode(
     if((int)(immersedele->GetRCPIntPointHasProjectedDivergence()->size())!=num_gp_fluid_bound)
       dserror("size of IntPointHasProjectedDivergence should be equal numgp in cut element = %d",num_gp_fluid_bound);
 # endif
+    } // these vectors only need to be constructed when fluid interaction is switched ON
   }
 
-
-  /********************************************************************************/
-  // 2) Interpolation of structural divergence
-  //    (loop over all int points of elements set as "BoundaryIsImmersed")
-  /********************************************************************************/
-
-  // only velocity divergence needs to be calculated and interpolated here
-  vel_calculation = false;
-  // get integration rule of fluid element
-  const DRT::UTILS::GaussIntegration intpoints_fluid_bound(distype,degree_gp_fluid_bound);
-
-  if (degree_gp_fluid_bound)
+  // interpolate divergence of immerseddis velocity to backgrd. int. points only if fluid interaction is switched ON
+  if (isfluidinteraction)
   {
-    if (immersedele->IsBoundaryImmersed())
+    /********************************************************************************/
+    // 2) Interpolation of structural divergence
+    //    (loop over all int points of elements set as "BoundaryIsImmersed")
+    /********************************************************************************/
+
+    // only velocity divergence needs to be calculated and interpolated here
+    vel_calculation = false;
+    // get integration rule of fluid element
+    const DRT::UTILS::GaussIntegration intpoints_fluid_bound(distype,degree_gp_fluid_bound);
+
+    if (degree_gp_fluid_bound)
     {
-      for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints_fluid_bound.begin(); iquad!=intpoints_fluid_bound.end(); ++iquad )
+      if (immersedele->IsBoundaryImmersed())
       {
-        std::vector<double> backgrdxi(nsd_);
-        backgrdxi[0] = iquad.Point()[0];
-        backgrdxi[1] = iquad.Point()[1];
-        backgrdxi[2] = iquad.Point()[2];
+        for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints_fluid_bound.begin(); iquad!=intpoints_fluid_bound.end(); ++iquad )
+        {
+          std::vector<double> backgrdxi(nsd_);
+          backgrdxi[0] = iquad.Point()[0];
+          backgrdxi[1] = iquad.Point()[1];
+          backgrdxi[2] = iquad.Point()[2];
 
-      bool gp_has_projected_divergence = false;
-      if(immersedele->GetRCPIntPointHasProjectedDivergence() != Teuchos::null)
-        if(immersedele->GetRCPIntPointHasProjectedDivergence()->size() > 0)
-          gp_has_projected_divergence = (int)immersedele->IntPointHasProjectedDivergence(*iquad);
+          bool gp_has_projected_divergence = false;
+          if(immersedele->GetRCPIntPointHasProjectedDivergence() != Teuchos::null)
+            if(immersedele->GetRCPIntPointHasProjectedDivergence()->size() > 0)
+              gp_has_projected_divergence = (int)immersedele->IntPointHasProjectedDivergence(*iquad);
 
-      if(gp_has_projected_divergence)
-      {
-        match = true;
+          if(gp_has_projected_divergence)
+          {
+            match = true;
+          }
+
+          IMMERSED::InterpolateToBackgrdPoint  <DRT::Element::hex8,                       // source/structure
+          DRT::Element::hex8>                       // target/fluid
+          (curr_subset_of_structdis,
+              immerseddis,              // source/structure
+              backgrddis,               // target/fluid
+              *ele,
+              backgrdxi,
+              targeteledisp,
+              action,
+              div,                      // result (in dof 3)
+              match,
+              vel_calculation,
+              false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element to
+          );                         // interpolate to its backgrd nodes.
+          // under fsi structure NOT under immersed structure !
+          if(div[3]==-12345.0)
+            match=false;
+
+          if(match)
+          {
+            immersedele->SetIntPointHasProjectedDivergence(*iquad,1);
+            immersedele->StoreProjectedIntPointDivergence(*iquad,div[nsd_]);
+          }
+
+          // reset match to false and check next int point in the following loop execution
+          match = false;
+
+        } // loop over int points
       }
-
-      IMMERSED::InterpolateToBackgrdPoint  <DRT::Element::hex8,                       // source/structure
-                                            DRT::Element::hex8>                       // target/fluid
-                                                           (curr_subset_of_structdis,
-                                                            immerseddis,              // source/structure
-                                                            backgrddis,               // target/fluid
-                                                            *ele,
-                                                            backgrdxi,
-                                                            targeteledisp,
-                                                            action,
-                                                            div,                      // result (in dof 3)
-                                                            match,
-                                                            vel_calculation,
-                                                            false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element to
-                                                           );                         // interpolate to its backgrd nodes.
-      // under fsi structure NOT under immersed structure !
-      if(div[3]==-12345.0)
-        match=false;
-
-      if(match)
-      {
-        immersedele->SetIntPointHasProjectedDivergence(*iquad,1);
-        immersedele->StoreProjectedIntPointDivergence(*iquad,div[nsd_]);
-      }
-
-      // reset match to false and check next int point in the following loop execution
-      match = false;
-
-      } // loop over int points
     }
   }
-
   return 0;
 }
 

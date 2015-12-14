@@ -20,6 +20,9 @@ Maintainers: Andreas Rauch
 
 namespace DRT
 {
+
+class ImmersedFieldExchangeManager;
+
 namespace ELEMENTS
 {
 
@@ -35,6 +38,9 @@ class FluidEleCalcPoroP1Immersed : public FluidEleCalcPoroP1<distype>
 protected:
   /// private Constructor since we are a Singleton.
   FluidEleCalcPoroP1Immersed();
+
+  /// pointer to exchange manager
+  ImmersedFieldExchangeManager* exchange_manager_;
 
 public:
   virtual ~FluidEleCalcPoroP1Immersed() {}

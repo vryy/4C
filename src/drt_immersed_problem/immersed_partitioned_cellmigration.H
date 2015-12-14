@@ -45,7 +45,7 @@ class ImmersedPartitionedCellMigration : public ImmersedPartitioned
 
 public:
 
-  /// setup partitioned ImmersedFSI algorithm
+  /// setup partitioned immersed cell migration algorithm
   explicit ImmersedPartitionedCellMigration(const Epetra_Comm& comm);
 
   /// initialize search tree for structure discretization and ghost structure redundantly
@@ -134,9 +134,8 @@ protected:
   /// calc the current fluid tractions interpolated to the structural surface
   void CalcECMTractionOnStructure();
 
-  /// check input vector for negatives and set them zero
-  //void PreventInterfacePullingTraction(Teuchos::RCP<Epetra_Vector> increment_vector,
-  //                                     Teuchos::RCP<Epetra_Vector> total_vector);
+  /// mark elements in which adhering cell boundary is immersed
+  void DistributeAdhesionForce();
 
   //! @name Various global vectors
   //@{
@@ -147,12 +146,13 @@ protected:
   Teuchos::RCP<Epetra_Vector> cell_penalty_traction_;        //!< boundary traction rhs on immersed cell from cell-ecm interaction
   Teuchos::RCP<Epetra_Vector> cell_delta_penalty_traction_;  //!< boundary traction rhs on immersed cell from cell-ecm interaction
   Teuchos::RCP<Epetra_Vector> cell_delta_penalty_traction_old_;  //!< boundary traction rhs on immersed cell from cell-ecm interaction of previous iteration
-  Teuchos::RCP<Epetra_Vector> penalty_gap_;
-  Teuchos::RCP<Epetra_Vector> curr_nodal_normals_;
+  Teuchos::RCP<Epetra_Vector> penalty_gap_;                      //!< gap inegrated over surface
+  Teuchos::RCP<Epetra_Vector> curr_nodal_normals_;               //!< current nodal normals included in cell output for visualization
+  Teuchos::RCP<Epetra_Vector> ecm_adhesion_forces_;              //!< current nodal adhesion forces on ecm
   //@}
 
   //! @name Pointers to Discretizations
-    //@{
+  //@{
   Teuchos::RCP<DRT::Discretization> backgroundstructuredis_;
   Teuchos::RCP<DRT::Discretization> backgroundfluiddis_;
   Teuchos::RCP<DRT::Discretization> immerseddis_;
@@ -160,7 +160,7 @@ protected:
   //@}
 
   //! @name parameters and variables for relaxation
-    //@{
+  //@{
   Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory_;
   bool relaxforceglobally_;
   bool relaxvelglobally_;
@@ -175,8 +175,10 @@ protected:
   /// poro structure of the immersed problem
   Teuchos::RCP< ::ADAPTER::FPSIStructureWrapper>            porostructure_;
 
-  /// poroelast subproblem
+  /// pointer to cell subproblem (structure-scatra interaction)
   Teuchos::RCP<SSI::SSI_Base> cell_subproblem_;
+
+  /// pointer to poroelast subproblem (poro-scatra interaction)
   Teuchos::RCP<POROELAST::PoroScatraBase> poroelast_subproblem_;
 
   /// basic information for parallelism
@@ -186,51 +188,96 @@ protected:
   /// pointer to global problem
   DRT::Problem* globalproblem_;
 
-  /// various other parameters
+  /// coupling scheme
   bool displacementcoupling_;
-  bool multicellmigration_;
+
+  /// switch that determines if there are more than one distinct immersed cells
+  bool multicellmigration_;  //! distinct cells must be marked with ImmersedSearchbox condition
+
+  /// amoeboid or proteolytic migration
   int migrationtype_;
+
+  /// global timstep
+  double timestep_;
+
+  //! @name proteolytic migration control parameters
+  //@{
   double segregationconstant_;
   int segregationtype_;
   int segregationby_;
+  //@}
+
   double penalty_start_; //!< start penalty parameter at the beginning of each timestep
-  double penalty_init_;  //!< init penalty parameter
+
+  //! @name cell initialization
+  //@{
   bool initialize_cell_;
-  double timestep_;
   double initial_timestep_;
+  double penalty_init_;        //!< init penalty parameter
   int initialization_steps_;
-  bool ecm_interaction_;
+  //@}
+
+  /// counter for number of unconverged timesteps
   int continued_steps_;
+
+
   double nu_; //!< AITKEN relaxation parameter
+
+  /// number of integration points related to mass conserving adaption of equations
   int degree_gp_fluid_bound_; //!< number of integration points in fluid elements cut by structural boundary
+
+  /// switch between ssi_cell and pure structure
   bool ssi_cell_; //!< tells if cell subproblem is ssi problem or not
 
+  //! @name Interaction Switches
+  //@{
+  bool fluid_interaction_;  //!< switch for cell-fluid-interaction
+  bool ecm_interaction_;    //!< switch for cell compression by ecm
+  bool adhesion_dynamics_;  //!< switch for cell-ecm interaction at adhesion sites
+  //@}
 
+  //! @name Manager for data exchange between fields
+  //@{
   DRT::ImmersedFieldExchangeManager* exchange_manager_ ;
+  //@}
 
   //! @name Search Trees
-    //@{
-    Teuchos::RCP<GEO::SearchTree> fluid_SearchTree_;  //!< search tree for fluid domain
-    Teuchos::RCP<GEO::SearchTree> cell_SearchTree_;   //!< search tree for cell domain
-    //@}
+  //@{
+  Teuchos::RCP<GEO::SearchTree> fluid_SearchTree_;  //!< search tree for fluid domain
+  Teuchos::RCP<GEO::SearchTree> cell_SearchTree_;   //!< search tree for cell domain
+  //@}
 
   //! @name current nodal positions of the discretizations
-    //@{
-    std::map<int,LINALG::Matrix<3,1> > currpositions_cell_; //!< map of vectors for search tree containing current structural positions
-    std::map<int,LINALG::Matrix<3,1> > currpositions_ECM_;  //!< map of vectors for search tree containing current fluid positions
-   //@}
+  //@{
+  std::map<int,LINALG::Matrix<3,1> > currpositions_cell_; //!< map of vectors for search tree containing current structural positions
+  std::map<int,LINALG::Matrix<3,1> > currpositions_ECM_;  //!< map of vectors for search tree containing current fluid positions
+  //@}
 
-    //! @name current subsets of discretizations
-      //@{
-    std::map<int,std::set<int> > curr_subset_of_backgrounddis_;    //!< backgrd elements to evaluate the dirichlet interpolation
-    //@}
+  //! @name current subsets of discretizations
+  //@{
+  std::map<int,std::set<int> > curr_subset_of_backgrounddis_;    //!< backgrd elements to evaluate the dirichlet interpolation
+  //@}
 
-    //! @name current subsets of discretizations
-      //@{
-    Teuchos::RCP<const Epetra_Map> dbcmap_ordinary_;       //!< dirichlet bc map before consideration of immersed values
-    Teuchos::RCP<Epetra_Map> dbcmap_immersed_;             //!< dirichlet bc map of immersed values
-    Teuchos::RCP<Epetra_Map> dbcmap_immersed_scatra_;      //!< dirichlet bc map of immersed scatra values
-    //@}
+  //! @name Maps for Dirichlet BCs
+  //@{
+  Teuchos::RCP<const Epetra_Map> dbcmap_ordinary_;       //!< dirichlet bc map before consideration of immersed values
+  Teuchos::RCP<Epetra_Map> dbcmap_immersed_;             //!< dirichlet bc map of immersed values
+  Teuchos::RCP<Epetra_Map> dbcmap_immersed_scatra_;      //!< dirichlet bc map of immersed scatra values
+  //@}
+
+private:
+
+  /// reinitialize the transfer vectors
+  void ReinitTransferVectors(){  porofluid_artificial_velocity_->PutScalar(0.0);
+                                 cell_bdry_traction_->PutScalar(0.0);
+                                 cell_delta_penalty_traction_->PutScalar(0.0);
+                                 poroscatra_segregated_phi_->PutScalar(0.0);
+                                 penalty_gap_->PutScalar(0.0);
+                                 return;
+                              };
+
+  /// reset element and node information about immersed method
+  void ResetImmersedInformation();
 
 };// class ImmersedFSI
 } // namspace IMMERSED

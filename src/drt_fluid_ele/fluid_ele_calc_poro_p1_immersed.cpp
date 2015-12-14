@@ -22,6 +22,7 @@ Maintainers: Andreas Rauch
 
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
 
 
 /*----------------------------------------------------------------------*
@@ -62,7 +63,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::FluidEleCalcPoroP1Immersed()
   : DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::FluidEleCalcPoroP1()
 {
-
+  exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
 }
 
 /*----------------------------------------------------------------------*
@@ -324,7 +325,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::EvaluatePressureEquatio
       gp_has_projected_divergence = (int)(immersedele_->IntPointHasProjectedDivergence(gp_iquad_));
 
   // here the term that should not be contained in the formulation is subtracted
-  if(immersedele_->IsImmersed() or gp_has_projected_divergence)
+  if((immersedele_->IsImmersed() or gp_has_projected_divergence) and exchange_manager_->IsFluidInteraction())
   {
     if( my_p::porofldpara_->PoroContiPartInt() == false )
     {

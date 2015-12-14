@@ -492,7 +492,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     case prb_immersed_ale_fsi:
     case prb_immersed_cell:
     {
-      structure_ = Teuchos::rcp(new FSIStructureWrapperImmersed(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
+      structure_ = Teuchos::rcp(new FSIStructureWrapperImmersed(tmpstr));
     }
     break;
     case prb_fsi_crack:

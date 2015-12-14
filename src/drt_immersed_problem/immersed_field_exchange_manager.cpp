@@ -65,8 +65,14 @@ DRT::ImmersedFieldExchangeManager::ImmersedFieldExchangeManager()
   delta_porosity_max_=0.0;
   points_to_ecm_penalty_traction_ = Teuchos::null;
   isinitialized_=false;
+  currpositions_immerseddis_ = NULL;
+  simple_ecm_interaction_constant = 0.0;
+  numnlniter_=0;
 }
 
+
+//----------------------------------------------------------------------*/
+//----------------------------------------------------------------------*/
 void DRT::ImmersedFieldExchangeManager::InitializePorosityAtGPMap()
 {
 

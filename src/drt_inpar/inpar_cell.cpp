@@ -105,8 +105,30 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     &celldyn);
 
   setStringToIntegralParameter<int>(
-                                    "ECM_INTERACTION","yes",
+                                    "ECM_INTERACTION","no",
                                     "Switch on/off cell-ecm interaction model",
+                                    tuple<std::string>(
+                                                       "no",
+                                                       "yes"),
+                                    tuple<int>(
+                                               0,
+                                               1),
+                                    &celldyn);
+
+  setStringToIntegralParameter<int>(
+                                    "FLUID_INTERACTION","yes",
+                                    "Switch on/off cell-fluid interaction model",
+                                    tuple<std::string>(
+                                                       "no",
+                                                       "yes"),
+                                    tuple<int>(
+                                               0,
+                                               1),
+                                    &celldyn);
+
+  setStringToIntegralParameter<int>(
+                                    "ADHESION_DYNAMICS","no",
+                                    "include adhesion dynamics in simulation",
                                     tuple<std::string>(
                                                        "no",
                                                        "yes"),
@@ -125,6 +147,7 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                                0,
                                                1),
                                     &celldyn);
+
 
   DoubleParameter("SEGREGATION_CONST",0.0,"basic constant for segregation equation",&celldyn);
 

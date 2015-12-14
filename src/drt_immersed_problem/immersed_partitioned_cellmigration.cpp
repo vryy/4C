@@ -41,6 +41,8 @@ Maintainers: Andreas Rauch
 
 #include <Teuchos_TimeMonitor.hpp>
 
+#include "../drt_mortar/mortar_calc_utils.H"
+
 
 IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(const Epetra_Comm& comm)
   : ImmersedPartitioned(comm)
@@ -61,7 +63,7 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
   // counter for continued (unconverged) steps
   continued_steps_=0;
 
-  // decide whether multiple structural bodies or not
+  // decide whether multiple cell bodies or not
   std::vector<DRT::Condition*> conditions;
   immerseddis_->GetCondition("ImmersedSearchbox",conditions);
   if((int)conditions.size()>0)
@@ -142,9 +144,7 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
       std::cout<<"\n Created Field Cell Structure without intracellular signaling capabilitiy... \n \n"<<std::endl;
   }
 
-
   // create instance of poroelast subproblem
-  //poroelast_subproblem_ = Teuchos::rcp(new POROELAST::Monolithic(comm, globalproblem_->PoroelastDynamicParams()));
   poroelast_subproblem_ = POROELAST::UTILS::CreatePoroScatraAlgorithm(globalproblem_->CellMigrationParams(),Comm());
   // set pointer to poro fpsi structure
   porostructure_ = poroelast_subproblem_->PoroField()->StructureField();
@@ -159,18 +159,16 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
   cell_penalty_traction_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
   // vector of DELTA of penalty traction on cell bdry int points integrated over cell surface
   cell_delta_penalty_traction_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
-  // vector of DELTA of penalty traction on cell bdry int points integrated over cell surface of previous iteration
-  //cell_delta_penalty_traction_old_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
   // gap integrated over surface
   penalty_gap_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
-  // current nodal normals
-  curr_nodal_normals_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
   // vector with fluid velocities interpolated from structure
   porofluid_artificial_velocity_ = Teuchos::rcp(new Epetra_Vector(*(poroelast_subproblem_->FluidField()->DofRowMap()),true));
   // vector with fluid velocities interpolated from structure
-  porofluid_artificial_source_ = Teuchos::rcp(new Epetra_Vector(*(poroelast_subproblem_->FluidField()->DofRowMap()),true));
-  // vector with fluid velocities interpolated from structure
   poroscatra_segregated_phi_ = Teuchos::rcp(new Epetra_Vector(*(poroelast_subproblem_->ScaTraField()->DofRowMap(0)),true));
+  // current nodal normals
+  curr_nodal_normals_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
+  // vector of adhesion forces in ecm
+  ecm_adhesion_forces_ = Teuchos::rcp(new Epetra_Vector(*(poroelast_subproblem_->StructureField()->DofRowMap()),true));
 
   // construct 3D search tree for fluid domain
   // initialized in SetupSBackgroundDiscretization()
@@ -207,9 +205,14 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
   else
     initial_timestep_=timestep_;
 
+  // get number of timesteps of cell initialization
   initialization_steps_=globalproblem_->CellMigrationParams().get<int>("INITIALIZATION_STEPS");
 
+  // initialize the interaction switches
+  fluid_interaction_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"FLUID_INTERACTION");
+  exchange_manager_->SetIsFluidInteraction(fluid_interaction_);
   ecm_interaction_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"ECM_INTERACTION");
+  adhesion_dynamics_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"ADHESION_DYNAMICS");
 
   // get integration rule for fluid elements cut by structural boundary
   int num_gp_fluid_bound = globalproblem_->ImmersedMethodParams().get<int>("NUM_GP_FLUID_BOUND");
@@ -235,23 +238,12 @@ IMMERSED::ImmersedPartitionedCellMigration::ImmersedPartitionedCellMigration(con
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
-  // reinitialize the transfer vectors
-  porofluid_artificial_velocity_->PutScalar(0.0);
-  porofluid_artificial_source_->PutScalar(0.0);
-  cell_bdry_traction_->PutScalar(0.0);
-  cell_delta_penalty_traction_->PutScalar(0.0);
-  poroscatra_segregated_phi_->PutScalar(0.0);
-  penalty_gap_->PutScalar(0.0);
+  ReinitTransferVectors();
 
-  // reset element and node information about immersed method
-  Teuchos::ParameterList params;
-  params.set<int>("action",FLD::reset_immersed_ele);
-  params.set<int>("Physical Type", poroelast_subproblem_->FluidField()->PhysicalType());
-  params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
-  backgroundfluiddis_->Evaluate(params);
+  ResetImmersedInformation();
 
-
-  if (displacementcoupling_) // DISPLACEMENT COUPLING
+  // DISPLACEMENT COUPLING
+  if (displacementcoupling_)
   {
     const Teuchos::RCP<Epetra_Vector> idispn = Teuchos::rcp(new Epetra_Vector(x));
 
@@ -273,7 +265,8 @@ void IMMERSED::ImmersedPartitionedCellMigration::CouplingOp(const Epetra_Vector 
       dserror("Vector update of Coupling-residual returned err=%d",err);
 
   }
-  else if(!displacementcoupling_) // FORCE COUPLING
+  // FORCE COUPLING
+  else if(!displacementcoupling_)
   {
 
     // get the initial guess
@@ -364,22 +357,28 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
       }
 
       if(curr_subset_of_backgrounddis_.empty()==false)
-        EvaluateWithInternalCommunication(params,
+        EvaluateImmersed(params,
             backgroundfluiddis_,
             &fluid_vol_strategy,
             curr_subset_of_backgrounddis_,
             cell_SearchTree_, currpositions_cell_,
             (int)FLD::interpolate_velocity_to_given_point_immersed,
             false);
+      else
+      {
+        // do nothing : a proc without subset of backgrd dis. does not need to enter evaluation,
+        //              since cell is ghosted on all procs and no communication has to be performed.
+      }
 
       /////////////////////////////////////////////////////////////////////////////////////
       //  Apply Dirichlet values to background fluid
       //
-      // dofsetnum of backgroundfluid is 0 for backgroundfluiddis in poroelast_subproblem_
-      BuildImmersedDirichMap(backgroundfluiddis_, dbcmap_immersed_, poroelast_subproblem_->FluidField()->GetDBCMapExtractor()->CondMap(),0);
-      poroelast_subproblem_->FluidField()->AddDirichCond(dbcmap_immersed_);
-      // apply immersed dirichlets to porofluid field
-      DoImmersedDirichletCond(poroelast_subproblem_->FluidField()->WriteAccessVelnp(),backgrd_dirichlet_values, dbcmap_immersed_);
+      if(fluid_interaction_)
+      {
+        BuildImmersedDirichMap(backgroundfluiddis_, dbcmap_immersed_, poroelast_subproblem_->FluidField()->GetDBCMapExtractor()->CondMap(),0);
+        poroelast_subproblem_->FluidField()->AddDirichCond(dbcmap_immersed_);
+        DoImmersedDirichletCond(poroelast_subproblem_->FluidField()->WriteAccessVelnp(),backgrd_dirichlet_values, dbcmap_immersed_);
+      }
 
       /////////////////////////////////////////////////////////////////////////////////////
       //  Apply Dirichlet values to background scatra field
@@ -408,9 +407,6 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
             std::cout<<"WARNING! Undefined SEGREGATION type! "
             "Volumetric Segregation is assumed by default."<<std::endl;
         }
-
-        // set poro solution in scatra
-        poroelast_subproblem_->SetPoroSolution();
 
         Teuchos::ParameterList sparams_struct;
 
@@ -474,28 +470,33 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
       exchange_manager_->SetCheckCounter(0);
       //exchange_manager_->SetNumIsImmersedBoundary(0);
 
+      //DistributeAdhesionForce();
+
       // solve poro
       poroelast_subproblem_->Solve();
 
       //std::cout<<"Matched "<<exchange_manager_->GetCheckCounter()<<" integration points in "<<exchange_manager_->GetNumIsImmersedBoundary()<<" IsImmersedBoundary() elements on PROC "<<myrank_<<". "<<std::endl;
 
-      // remove immersed dirichlets from dbcmap of fluid (and scatra) (may be different in next iteration)
-      poroelast_subproblem_->FluidField() ->RemoveDirichCond(dbcmap_immersed_);
+      // remove immersed dirichlets from dbcmap of fluid (may be different in next iteration)
+      if(fluid_interaction_)
+        poroelast_subproblem_->FluidField()->RemoveDirichCond(dbcmap_immersed_);
+      // remove immersed dirichlets from dbcmap of scatra (may be different in next iteration)
       if(migrationtype_==INPAR::CELL::cell_migration_proteolytic and segregationby_==INPAR::CELL::segregation_by_dirichlet)
         poroelast_subproblem_->ScaTraField()->RemoveDirichCond(dbcmap_immersed_scatra_);
 
       // rebuild the combined dbcmap
       poroelast_subproblem_->BuildCombinedDBCMap();
 
-    }
+    } // fillflag not User
+
 
     // calculate new fluid traction interpolated to structural surface
     CalcFluidTractionOnStructure();
 
   } // not during cell initialization
 
-  // calculate new ecm traction interpolated to structural surface
-  // this also needs to be done during cell initialization.
+  // calculate new ecm compressive traction interpolated to structural surface
+  // this is the basic ingredient of the cell initialization.
   CalcECMTractionOnStructure();
 
   return;
@@ -542,7 +543,6 @@ void IMMERSED::ImmersedPartitionedCellMigration::PrepareTimeStep()
   if(myrank_==0)
     std::cout<<"Poro Predictor: "<<std::endl;
   poroelast_subproblem_->PrepareTimeStep();
-  poroelast_subproblem_->SetPoroSolution();
 }
 
 
@@ -588,9 +588,6 @@ void IMMERSED::ImmersedPartitionedCellMigration::BuildImmersedDirichMap(Teuchos:
               mydirichdofs.push_back(dofs[dim]);
           }
 
-          // include also pressure dof if node does not belong to a boundary background element
-          //if((nodes[inode]->IsBoundaryImmersed())==0)
-          //  mydirichdofs.push_back(dofs[3]);
         }
       }
     }
@@ -743,7 +740,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::SetupBackgroundDiscretization()
   fluid_SearchTree_->initializeTree(rootBox,*backgroundfluiddis_,GEO::TreeType(GEO::OCTTREE));
 
   if(myrank_==0)
-    std::cout<<"\n Build Fluid SearchTree ... "<<std::endl;
+    std::cout<<"\n Build Fluid/ECM SearchTree ... "<<std::endl;
   return;
 }
 
@@ -771,7 +768,6 @@ void IMMERSED::ImmersedPartitionedCellMigration::PrepareBackgroundOp()
 
   double structsearchradiusfac = DRT::Problem::Instance()->ImmersedMethodParams().get<double>("STRCT_SRCHRADIUS_FAC");
 
-  //
   // determine subset of fluid discretization which is potentially underlying the immersed discretization
   //
   // get state
@@ -796,18 +792,15 @@ void IMMERSED::ImmersedPartitionedCellMigration::PrepareBackgroundOp()
 
     my_currpositions_cell[node->Id()] = currpos;
   }
-  // Communicate local currpositions:
-  // map with current structural positions should be same on all procs
-  // to make use of the advantages of ghosting the structure redundantly
+
+  // communicate local currpositions:
+  // map with current cell positions should be same on all procs
+  // to make use of the advantages of ghosting the cell redundantly
   // on all procs.
   int procs[Comm().NumProc()];
   for(int i=0;i<Comm().NumProc();i++)
     procs[i]=i;
   LINALG::Gather<int,LINALG::Matrix<3,1> >(my_currpositions_cell,currpositions_cell_,Comm().NumProc(),&procs[0],Comm());
-
-//  DEBUG output
-//  std::cout<<"Proc "<<Comm().MyPID()<<": my_curr_pos.size()="<<my_currpositions_cell.size()<<std::endl;
-//  std::cout<<"Proc "<<Comm().MyPID()<<":    curr_pos.size()="<<currpositions_struct_.size()<<std::endl;
 
   if (multicellmigration_ == false)
   {
@@ -820,20 +813,12 @@ void IMMERSED::ImmersedPartitionedCellMigration::PrepareBackgroundOp()
     boundingboxcenter(1) = structBox(1,0)+(structBox(1,1)-structBox(1,0))*0.5;
     boundingboxcenter(2) = structBox(2,0)+(structBox(2,1)-structBox(2,0))*0.5;
 
-# ifdef DEBUG
-    std::cout<<"Bounding Box of Structure: "<<structBox<<" on PROC "<<Comm().MyPID()<<std::endl;
-    std::cout<<"Bounding Box Center of Structure: "<<boundingboxcenter<<" on PROC "<<Comm().MyPID()<<std::endl;
-    std::cout<<"Search Radius Around Center: "<<structsearchradiusfac*max_radius<<" on PROC "<<Comm().MyPID()<<std::endl;
-    std::cout<<"Length of Dispnp()="<<celldisplacements->MyLength()<<" on PROC "<<Comm().MyPID()<<std::endl;
-    std::cout<<"Size of currpositions_struct_="<<currpositions_cell_.size()<<" on PROC "<<Comm().MyPID()<<std::endl;
-    std::cout<<"My DofRowMap Size="<<immerseddis_->DofRowMap()->NumMyElements()<<"  My DofColMap Size="<<immerseddis_->DofColMap()->NumMyElements()<<" on PROC "<<Comm().MyPID()<<std::endl;
-    std::cout<<"Dis Structure NumColEles: "<<immerseddis_->NumMyColElements()<<" on PROC "<<Comm().MyPID()<<std::endl;
-# endif
-
+    // search background elements covered by bounding box of cell
     curr_subset_of_backgrounddis_ = fluid_SearchTree_->searchElementsInRadius(*backgroundfluiddis_,currpositions_ECM_,boundingboxcenter,structsearchradiusfac*max_radius,0);
 
     if(curr_subset_of_backgrounddis_.empty() == false)
       std::cout<<"\nPrepareBackgroundOp returns "<<curr_subset_of_backgrounddis_.begin()->second.size()<<" background elements on Proc "<<Comm().MyPID()<<std::endl;
+
   }
   else
   {
@@ -924,25 +909,6 @@ void IMMERSED::ImmersedPartitionedCellMigration::SetupRelaxation()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedCellMigration::ExtractPressurePart()
-{
-  double* values;
-  for(int i=0; i<porofluid_artificial_velocity_->MyLength();++i)
-  {
-    if(i%4==3)
-    {
-      int gid = poroelast_subproblem_->FluidField()->DofRowMap()->GID(i);
-      values = porofluid_artificial_velocity_ ->Values();
-      porofluid_artificial_source_->ReplaceGlobalValue(gid,0,values[i]);
-    }
-  }
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedCellMigration::SetFieldDt()
 {
   // set parameters for pre-simulation
@@ -990,6 +956,8 @@ void IMMERSED::ImmersedPartitionedCellMigration::SetFieldDt()
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedCellMigration::ReadRestart(int step)
 {
   cellstructure_->ReadRestart(step);
@@ -1003,7 +971,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedCellMigration::CalcFluidTractionOnStructure()
 {
-  if(!initialize_cell_) // not during cell initialization
+  if(!initialize_cell_ and fluid_interaction_) // not during cell initialization
   {
 
     Teuchos::ParameterList params;
@@ -1143,3 +1111,222 @@ void IMMERSED::ImmersedPartitionedCellMigration::CalcECMTractionOnStructure()
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedCellMigration::DistributeAdhesionForce()
+{
+  if(adhesion_dynamics_)
+  {
+    immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
+    backgroundstructuredis_->SetState(0,"displacement",porostructure_->Dispnp());
+
+    if(myrank_ == 0)
+    {
+      std::cout<<"################################################################################################"<<std::endl;
+      std::cout<<"###   Spread adhesion forces onto ecm                  "<<std::endl;
+    }
+
+    double tol = 1e-13;
+
+    bool match = false;
+
+    DRT::Element* ele;  //!< pointer to background structure ecm element
+    DRT::Element* iele; //!< pointer to background fluid element (carries immersed information)
+
+    LINALG::Matrix<3,1> xi(true);       //!< parameter space coordinate of anode in background element
+    std::vector<double> anode_coord(3); //!< current coordinates of anode
+    std::vector<double> myvalues;       //!< processor local ecm element displacements
+
+    // get reaction forces at cell surface
+    Teuchos::RCP<Epetra_Vector> freact = CellField()->Freact();
+    double* freact_values = freact->Values();
+
+    // get condition which marks adhesion nodes
+    DRT::Condition* condition = immerseddis_->GetCondition("NeumannIntegration");
+    const std::vector<int>* adhesion_nodes = condition->Nodes();
+    int adhesion_nodesize = adhesion_nodes->size();
+    DRT::Node* adhesion_node;
+
+    Teuchos::RCP<const Epetra_Vector> ecmstate = backgroundstructuredis_->GetState("displacement");
+    if(ecmstate == Teuchos::null)
+      dserror("Could not get state displacement from background structure");
+
+    Teuchos::RCP<const Epetra_Vector> cellstate = immerseddis_->GetState("displacement");
+    if(cellstate == Teuchos::null)
+      dserror("Could not get state displacement from cell structure");
+
+
+    // loop over all adhesion nodes
+    for(int anode=0;anode<adhesion_nodesize;anode++)
+    {
+      xi(0)=2.0; xi(1)=2.0; xi(2)=2.0;
+      match=false;
+
+      int anodeid = adhesion_nodes->at(anode);
+      adhesion_node = immerseddis_->gNode(anodeid);
+
+      // get coordinates of adhesion node
+      const double* X = adhesion_node->X();
+
+      // get displacements
+      DRT::Element** adjacent_elements = adhesion_node->Elements();
+      DRT::Element::LocationArray la(1);
+      adjacent_elements[0]->LocationVector(*immerseddis_,la,false);
+      // extract local values of the global vectors
+      myvalues.resize(la[0].lm_.size());
+      DRT::UTILS::ExtractMyValues(*cellstate,myvalues,la[0].lm_);
+      double adhesioneledisp[24];
+      for(int node=0;node<8;++node)
+        for(int dof=0; dof<3;++dof)
+          adhesioneledisp[node*3+dof]=myvalues[node*3+dof];
+
+      // determine which node of element is anode
+      int locid = -1;
+      DRT::Node** nodes = adjacent_elements[0]->Nodes();
+      for(int i=0;i<adjacent_elements[0]->NumNode();++i)
+      {
+        if(nodes[i]->Id() == anodeid)
+        {
+          locid = i;
+          break;
+        }
+      }
+
+      if(locid == -1)
+        dserror("could not get local index of adhesion node in element");
+
+      // fill vector with current coordinate
+      anode_coord[0] = X[0] + adhesioneledisp[locid*3+0];
+      anode_coord[1] = X[1] + adhesioneledisp[locid*3+1];
+      anode_coord[2] = X[2] + adhesioneledisp[locid*3+2];
+
+      // find ecm element in which adhesion node is immersed
+      // every proc that has searchboxgeom elements
+      for(std::map<int, std::set<int> >::const_iterator closele = curr_subset_of_backgrounddis_.begin(); closele != curr_subset_of_backgrounddis_.end(); closele++)
+      {
+        if(match)
+          break;
+
+        for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
+        {
+          if(match)
+            break;
+
+          ele=backgroundstructuredis_->gElement(*eleIter);
+          iele=backgroundfluiddis_->gElement(*eleIter);
+
+          DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(iele);
+          if(immersedele == NULL)
+            dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
+
+          if(immersedele->IsBoundaryImmersed())
+          {
+            bool converged = false;
+            double residual = -1234.0;
+
+            DRT::Element::LocationArray la(1);
+            ele->LocationVector(*backgroundstructuredis_,la,false);
+            // extract local values of the global vectors
+            myvalues.resize(la[0].lm_.size());
+            DRT::UTILS::ExtractMyValues(*ecmstate,myvalues,la[0].lm_);
+            double sourceeledisp[24];
+            for(int node=0;node<8;++node)
+              for(int dof=0; dof<3;++dof)
+                sourceeledisp[node*3+dof]=myvalues[node*4+dof];
+
+            // node 1  and node 7 coords of current source element (diagonal points)
+            const double* X1 = ele->Nodes()[1]->X();
+            double x1[3];
+            x1[0]=X1[0]+sourceeledisp[1*3+0];
+            x1[1]=X1[1]+sourceeledisp[1*3+1];
+            x1[2]=X1[2]+sourceeledisp[1*3+2];
+            const double* X7 = ele->Nodes()[7]->X();
+            double diagonal = sqrt(pow(X1[0]-X7[0],2)+pow(X1[1]-X7[1],2)+pow(X1[2]-X7[2],2));
+
+            // calc distance of current anode to arbitrary node (e.g. node 1) of curr source element
+            double distance = sqrt(pow(x1[0]-anode_coord[0],2)+pow(x1[1]-anode_coord[1],2)+pow(x1[2]-anode_coord[2],2));
+
+            // get parameter space coords xi in source element of global point anode
+            // NOTE: if the anode is very far away from the source element ele
+            //       it is unnecessary to jump into this functon and invoke a newton iteration.
+            // Therefore: only call GlobalToCurrentLocal if distance is smaller than factor*characteristic element length
+            if(distance < 2.5*diagonal)
+            {
+              MORTAR::UTILS::GlobalToCurrentLocal<DRT::Element::hex8>(*ele,&sourceeledisp[0],&anode_coord[0],&xi(0),converged,residual);
+              //MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*ele,&anode_coord[0],&xi(0),converged);
+              if(converged == false)
+              {
+                std::cout<<"Warning! GlobalToCurrentLocal did not converge for adhesion node "<<anodeid<<". Res="<<residual<<std::endl;
+                xi(0)=2.0; xi(1)=2.0; xi(2)=2.0;
+              }
+            }
+            else
+            {
+              xi(0)=2.0; xi(1)=2.0; xi(2)=2.0;
+            }
+          } // if cut by boundary
+
+          // anode lies in element ele
+          if (abs(xi(0))<(1.0+tol) and abs(xi(1))<(1.0+tol) and abs(xi(2))<(1.0+tol))
+          {
+            match = true;
+            //std::cout<<"could match adhesion node "<<anodeid<<" in background ecm element "<<ele->Id()<<std::endl;
+
+            // spread force to nodes of ecm ele
+            std::vector<int> dofs = immerseddis_->Dof(adhesion_node);
+            if(dofs.size()!=3)
+              dserror("dofs=3 expected. dofs=%d instead",dofs.size());
+
+            for(int dof=0;dof<1;dof++)
+            {
+              int doflid = freact->Map().LID(dofs[dof]);
+              double dofval = freact_values[doflid];
+
+              // evaluate shapefcts of ele at point xi
+              //todo
+              // write entry into ecm_adhesion_forces_
+              DRT::Node** spreadnodes = ele->Nodes();
+              for(int snode=0;snode<8;snode++)
+              {
+                std::vector<int> sdofs = backgroundstructuredis_->Dof(spreadnodes[snode]);
+                if(sdofs.size()!=4)
+                  dserror("dofs=4 expected. dofs=%d instead",sdofs.size()); // 4 dofs per node in porostructure
+
+                int error = ecm_adhesion_forces_->SumIntoGlobalValue(sdofs[dof],0,0,0.0);
+                if(error != 0)
+                  dserror("SumIntoGlobalValue returned err=%d",error);
+              } // node loop
+            }// dof loop
+
+          } // adhesion node is matched
+
+        } // loop over element ids
+      } // loop over curr_subset_of_backgrounddis_
+
+    } // loop over all adhesion nodes
+
+    // set pointer to adhesion force vector in immersed exchange manager
+    exchange_manager_->SetPointerECMAdhesionForce(ecm_adhesion_forces_);
+
+    if(myrank_ == 0)
+    {
+      std::cout<<"################################################################################################"<<std::endl;
+    }
+
+  } // if adhesion_dynamics_ == true
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedCellMigration::ResetImmersedInformation()
+{
+  Teuchos::ParameterList params;
+  params.set<int>("action",FLD::reset_immersed_ele);
+  params.set<int>("Physical Type", poroelast_subproblem_->FluidField()->PhysicalType());
+  params.set<int>("intpoints_fluid_bound",degree_gp_fluid_bound_);
+  backgroundfluiddis_->Evaluate(params);
+
+  return;
+}
