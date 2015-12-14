@@ -58,18 +58,6 @@ void POROELAST::PoroScatraPart1WC::DoScatraStep()
   ScaTraField()->Solve();
 }
 
-/*----------------------------------------------------------------------*/
-//prepare time step                                  rauch/vuong 04/15  |
-/*----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WC::PrepareTimeStep()
-{
-  IncrementTimeAndStep();
-  PrintHeader();
-
-  ScaTraField()->PrepareTimeStep();
-  PoroField()->PrepareTimeStep();
-}
-
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |
  *----------------------------------------------------------------------*/
@@ -138,6 +126,20 @@ void POROELAST::PoroScatraPart1WCPoroToScatra::Timeloop()
 
     Output();
   }
+}
+
+/*----------------------------------------------------------------------*/
+//prepare time step                                  rauch/vuong 04/15  |
+/*----------------------------------------------------------------------*/
+void POROELAST::PoroScatraPart1WCPoroToScatra::PrepareTimeStep()
+{
+  IncrementTimeAndStep();
+  PrintHeader();
+
+  PoroField()->PrepareTimeStep();
+  SetPoroSolution();
+  ScaTraField()->PrepareTimeStep();
+
 }
 
 /*----------------------------------------------------------------------*
@@ -213,6 +215,20 @@ void POROELAST::PoroScatraPart1WCScatraToPoro::Timeloop()
     Output();
   }
 }
+
+/*----------------------------------------------------------------------*/
+//prepare time step                                  rauch/vuong 04/15  |
+/*----------------------------------------------------------------------*/
+void POROELAST::PoroScatraPart1WCScatraToPoro::PrepareTimeStep()
+{
+  IncrementTimeAndStep();
+  PrintHeader();
+
+  ScaTraField()->PrepareTimeStep();
+  SetScatraSolution();
+  PoroField()->PrepareTimeStep();
+}
+
 
 /*----------------------------------------------------------------------*
  |                                                   rauch/vuong 04/15  |

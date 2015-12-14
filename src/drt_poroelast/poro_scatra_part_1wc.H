@@ -32,9 +32,6 @@ namespace POROELAST
     //! solve one time step of scalar transport problem
     void DoScatraStep();
 
-    //! increment time and step and print header
-    void PrepareTimeStep();
-
     //! prepare output
     void PrepareOutput();
 
@@ -59,6 +56,9 @@ namespace POROELAST
     //! actual time loop
     void Timeloop();
 
+    //! increment time and step and print header
+    void PrepareTimeStep();
+
     //! perform iteration loop between fields
     void Solve();
 
@@ -79,6 +79,9 @@ namespace POROELAST
 
     //! actual time loop
     void Timeloop();
+
+    //! increment time and step and print header
+    void PrepareTimeStep();
 
     //! perform iteration loop between fields
     void Solve();
