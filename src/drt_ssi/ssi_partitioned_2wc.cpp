@@ -233,13 +233,13 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
     printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
     printf("|-  step/max  -|-  tol      [norm]  -|-  scalar-inc  -|-  disp-inc      -|-  scalar-rel-inc  -|-  disp-rel-inc  -|\n");
     printf("|   %3d/%3d    |  %10.3E[L_2 ]   |  %10.3E    |  %10.3E      |  %10.3E        |  %10.3E      |",
-         itnum,itmax_,ittol_,scaincnorm_L2/Dt()/scaincnp_->GlobalLength(),dispincnorm_L2/Dt()/dispincnp_->GlobalLength(),scaincnorm_L2/scanorm_L2,dispincnorm_L2/dispnorm_L2);
+         itnum,itmax_,ittol_,scaincnorm_L2/Dt()/sqrt(scaincnp_->GlobalLength()),dispincnorm_L2/Dt()/sqrt(dispincnp_->GlobalLength()),scaincnorm_L2/scanorm_L2,dispincnorm_L2/dispnorm_L2);
     printf("\n");
     printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
   }
 
   // converged
-  if ( (scaincnorm_L2/scanorm_L2 <= ittol_) and (dispincnorm_L2/dispnorm_L2 <= ittol_) and (dispincnorm_L2/Dt()<=ittol_) and (scaincnorm_L2/Dt()<=ittol_) )
+  if ( ((scaincnorm_L2/scanorm_L2) <= ittol_) and ((dispincnorm_L2/dispnorm_L2) <= ittol_) and ((dispincnorm_L2/Dt()/sqrt(dispincnp_->GlobalLength()))<=ittol_) and ((scaincnorm_L2/Dt()/sqrt(scaincnp_->GlobalLength()))<=ittol_) )
   {
     stopnonliniter = true;
     if (Comm().MyPID()==0 )
@@ -252,7 +252,7 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
 
   // stop if itemax is reached without convergence
   // timestep
-  if ( (itnum==itmax_) and ((scaincnorm_L2/scanorm_L2 > ittol_) or (dispincnorm_L2/dispnorm_L2 > ittol_) or (dispincnorm_L2/Dt()>ittol_) or (scaincnorm_L2/Dt())>ittol_ ) )
+  if ( (itnum==itmax_) and (((scaincnorm_L2/scanorm_L2) > ittol_) or ((dispincnorm_L2/dispnorm_L2) > ittol_) or ((dispincnorm_L2/Dt()/sqrt(dispincnp_->GlobalLength()))>ittol_) or (scaincnorm_L2/Dt()/sqrt(scaincnp_->GlobalLength()))>ittol_ ) )
   {
     stopnonliniter = true;
     if ((Comm().MyPID()==0) )
