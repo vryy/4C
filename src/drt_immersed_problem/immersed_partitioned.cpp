@@ -39,7 +39,7 @@ IMMERSED::ImmersedPartitioned::ImmersedPartitioned(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
-  const Teuchos::ParameterList& immerseddyn   = DRT::Problem::Instance()->ImmersedMethodParams();
+  const Teuchos::ParameterList& immerseddyn = DRT::Problem::Instance()->ImmersedMethodParams();
 
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = noxparameterlist_;
@@ -391,7 +391,6 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
 
       lineSearchParams.set("Method", "Full Step");
       lineSearchParams.sublist("Full Step").set("Full Step", immersedpart.get<double>("RELAX"));
-      std::cout<<"RELAX = "<<immersedpart.get<double>("RELAX")<<std::endl;
       break;
     }
     case INPAR::CELL::cell_iter_stagg_AITKEN_rel_param:

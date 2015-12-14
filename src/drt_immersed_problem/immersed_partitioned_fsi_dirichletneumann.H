@@ -126,16 +126,6 @@ protected:
   std::map<int,std::set<int> > curr_subset_of_fluiddis_;    //!< fluid elements to evaluate the dirichlet interpolation
   std::map<int,LINALG::Matrix<3,1> > currpositions_struct_; //!< map of vectors for search tree containing current structural positions
   std::map<int,LINALG::Matrix<3,1> > currpositions_fluid_;  //!< map of vectors for search tree containing current fluid positions
-  //!
-  //!           (backgrd element id)   (ref. coord. of immersed gp in backgrd element) (size = gp x dim)
-  //!                     |                             |
-  //!           std::map<int , std::map<int , std::vector<double> > >
-  //!                                    |
-  //!                           (immersed element id)
-  //!
-  //!Teuchos::RCP<std::map<int,Teuchos::RCP<std::map<int,Teuchos::RCP<std::vector<double> > > > > > bdry_intpoint_positionmap_;
-  //!Teuchos::RCP<Epetra_Vector> fluid_stress_at_struct_intpoints_;
-  //!Teuchos::RCP<Epetra_Map> bdry_gp_columnmap_;
   //@}
 
   /// basic information for parallelism

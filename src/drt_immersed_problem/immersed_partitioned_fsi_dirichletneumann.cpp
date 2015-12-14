@@ -317,7 +317,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
       std::cout<<"###   Interpolate Dirichlet Values from immersed elements which overlap the "<<MBFluidField()->Discretization()->Name()<<" nodes ..."<<std::endl;
     }
 
-      EvaluateWithInternalCommunication(params,
+      EvaluateImmersed(params,
                                         MBFluidField()->Discretization(),
                                         &fluid_vol_strategy,
                                         curr_subset_of_fluiddis_,
@@ -365,7 +365,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
       }
 
       // calculate new dirichlet velocities for fluid elements cut by structure
-      EvaluateWithInternalCommunication(params,
+      EvaluateImmersed(params,
                                         MBFluidField()->Discretization(),
                                         &fluid_vol_strategy,
                                         curr_subset_of_fluiddis_,

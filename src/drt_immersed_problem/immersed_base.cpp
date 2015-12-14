@@ -910,14 +910,14 @@ void IMMERSED::ImmersedBase::CreateGhosting(const Teuchos::RCP<DRT::Discretizati
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::EvaluateWithInternalCommunication(Teuchos::ParameterList& params,
-                                                               Teuchos::RCP<DRT::Discretization> dis,
-                                                               DRT::AssembleStrategy* strategy,
-                                                               std::map<int,std::set<int> >& elementstoeval,
-                                                               Teuchos::RCP<GEO::SearchTree> structsearchtree,
-                                                               std::map<int,LINALG::Matrix<3,1> >& currpositions_struct,
-                                                               int action,
-                                                               bool evaluateonlyboundary)
+void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
+                                              Teuchos::RCP<DRT::Discretization> dis,
+                                              DRT::AssembleStrategy* strategy,
+                                              std::map<int,std::set<int> >& elementstoeval,
+                                              Teuchos::RCP<GEO::SearchTree> structsearchtree,
+                                              std::map<int,LINALG::Matrix<3,1> >& currpositions_struct,
+                                              int action,
+                                              bool evaluateonlyboundary)
 {
   // pointer to element
   DRT::Element* ele;
@@ -972,7 +972,7 @@ void IMMERSED::ImmersedBase::EvaluateWithInternalCommunication(Teuchos::Paramete
       strategy->AssembleVector1( la[row].lm_, la[row].lmowner_ );
     }
   }
-} // EvaluateWithInternalCommunication
+} // EvaluateImmersed
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1037,12 +1037,11 @@ void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(Teuchos::RC
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-/// !! Only for parallel calculations !!
 /// Reduces to standard EvaluateCondition on one proc.
 /// Evaluate a specific condition using assemble strategy allowing communication at element level
 /// until every conditioned element is evaluated. Needed especially during interpolation from an
 /// other discretization to the conditioned elements (e.g. in immersed method).
-/// The integration point of a conditiond element requesting a quantity may be owned by the same
+/// The integration point of a conditioned element requesting a quantity may be owned by another
 /// proc as the interpolating element providing this quantity.  rauch 05/14
 void IMMERSED::ImmersedBase::EvaluateInterpolationCondition
 (
