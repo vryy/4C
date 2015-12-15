@@ -400,6 +400,10 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(LINALG::SparseMatrix* linD_X,
   if (linD_X==NULL && linM_X==NULL)
     return;
 
+  // no dissipation without friction
+  if (!friction_ && mode == LinDM_Diss)
+    return;
+
   const double dt = IParams().get<double>("TIMESTEP");
 
   // loop over all LM slave nodes (row map)
@@ -559,6 +563,10 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(
 
   // get out if there's nothing to do
   if (d_LinDissDISP==NULL && m_LinDissDISP==NULL && d_LinDissContactLM==NULL && m_LinDissContactLM==NULL)
+    return;
+
+  // there's no dissipation without friction
+  if (!friction_)
     return;
 
   typedef std::map         <int,double>::const_iterator _cim;

@@ -31,7 +31,6 @@ THERM_HEATFLUX                  Initial     // None, Current
 THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Initial     // None, Current
 ------------------------------------------------CONTACT DYNAMIC
-FRICTION             coulomb
 SEMI_SMOOTH_CN       1e0
 SEMI_SMOOTH_CT       1e0
 LINEAR_SOLVER        1

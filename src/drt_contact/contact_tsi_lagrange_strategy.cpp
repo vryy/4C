@@ -132,6 +132,7 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
     Teuchos::RCP<Epetra_Vector>& combined_RHS,
     Teuchos::RCP<ADAPTER::Coupling> coupST,
     Teuchos::RCP<Epetra_Vector> dis,
+    Teuchos::RCP<Epetra_Vector> temp,
     Teuchos::RCP<const LINALG::MapExtractor> str_dbc,
     Teuchos::RCP<const LINALG::MapExtractor> thr_dbc,
     bool predictor
@@ -142,6 +143,13 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
 
   // set the new displacements
   SetState("displacement", dis);
+
+  for (unsigned i=0;i<interface_.size();++i)
+    interface_[i]->Initialize();
+
+  // set new temperatures
+  Teuchos::RCP<Epetra_Vector> temp2 = coupST()->SlaveToMaster(temp);
+  SetState("temp",temp2);
 
   // error checks
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM")
@@ -172,9 +180,11 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
   Teuchos::RCP<Epetra_Map> thr_all_dofs = Teuchos::rcp(new Epetra_Map(*coupST->SlaveDofMap()));
 
   // assemble the constraint lines for the active contact nodes
-  LINALG::SparseMatrix dcsdd  (*gactivedofs_,100,true,false,LINALG::SparseMatrix::FE_MATRIX);
+  Teuchos::RCP<LINALG::SparseMatrix> dcsdd =
+      Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
   LINALG::SparseMatrix dcsdT  (*gactivedofs_,100,true,false,LINALG::SparseMatrix::FE_MATRIX);
-  LINALG::SparseMatrix dcsdLMc (*gactivedofs_,100,true,false,LINALG::SparseMatrix::FE_MATRIX);
+  Teuchos::RCP<LINALG::SparseMatrix> dcsdLMc =
+      Teuchos::rcp(new LINALG::SparseMatrix(*gactivedofs_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
   Teuchos::RCP<Epetra_Vector> rcsa = LINALG::CreateVector(*gactivedofs_,true);
   Teuchos::RCP<Epetra_Vector> g_all;
   if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -216,8 +226,16 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
     interface_[i]->AssembleG(*g_all);
 
     // linearized tangential contact (friction)
-    tsi_interface->AssembleLinSlip (dcsdLMc,dcsdd,dcsdT,*rcsa);
-    tsi_interface->AssembleLinStick(dcsdLMc,dcsdd,dcsdT,*rcsa);
+    if (friction_)
+    {
+      tsi_interface->AssembleLinSlip (*dcsdLMc,*dcsdd,dcsdT,*rcsa);
+      tsi_interface->AssembleLinStick(*dcsdLMc,*dcsdd,dcsdT,*rcsa);
+    }
+    else
+    {
+      tsi_interface->AssembleTN(dcsdLMc,Teuchos::null);
+      tsi_interface->AssembleTNderiv(dcsdd,Teuchos::null);
+    }
 
     // linearized thermal contact (heat conduction)
     tsi_interface->AssembleLinConduct(dcTdd,dcTdT,dcTdLMt,dcTdLMc);
@@ -241,8 +259,8 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
   m_LinDissContactLM.Complete(*gactivedofs_,*gmdofrowmap_);
   s                 .Complete(*gsmdofrowmap_,*gactivedofs_);
 
-  dcsdd.Add(s,false,1.,-1.);
-  dcsdLMc.Scale(-1.);
+  dcsdd->Add(s,false,1.,-1.);
+  dcsdLMc->Scale(-1.);
   dcsdT.Scale(-1.);
   rcsa->Scale(1.);
 
@@ -268,9 +286,9 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
   // complete all the new matrix blocks
   // Note: since the contact interace assemled them, they are all based
   //       on displacement row and col maps. Hence, some still need to be transformed
-  dcsdd.Complete(*gsmdofrowmap_,*gactivedofs_);
+  dcsdd->Complete(*gsmdofrowmap_,*gactivedofs_);
   dcsdT.Complete(*gsmdofrowmap_,*gactivedofs_);
-  dcsdLMc.Complete(*gactivedofs_,*gactivedofs_);
+  dcsdLMc->Complete(*gactivedofs_,*gactivedofs_);
   dcTdd.Complete(*gsmdofrowmap_,*gactivedofs_);
   dcTdT.Complete(*gsmdofrowmap_,*gactivedofs_);
   dcTdLMc.Complete(*gactivedofs_,*gactivedofs_);
@@ -534,7 +552,7 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
   tmpv=Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
   Teuchos::RCP<Epetra_Vector> tmpv2 = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
   LINALG::Export(*z_,*tmpv2);
-  dcsdLMc.Multiply(false,*tmpv2,*tmpv);
+  dcsdLMc->Multiply(false,*tmpv2,*tmpv);
   tmpv->Scale(-1.);
   AddVector(*tmpv,*rcsa);
   tmpv = Teuchos::null;
@@ -660,7 +678,7 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
   AddVector(rtm,*combined_RHS);
 
   // (2)b active constraints in the active slave rows
-  kss_new.Add(dcsdd,false,1.,1.);
+  kss_new.Add(*dcsdd,false,1.,1.);
 
   FSI::UTILS::MatrixColTransform()(*gactivedofs_,*gsmdofrowmap_,dcsdT,1.,
       ADAPTER::CouplingMasterConverter(*coupST),kst_new,false,true);
@@ -679,7 +697,7 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
   tmpv = Teuchos::null;
 
   // third row
-  Teuchos::RCP<LINALG::SparseMatrix> wDinv = LINALG::Multiply(dcsdLMc,false,*dInvA,true,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> wDinv = LINALG::Multiply(*dcsdLMc,false,*dInvA,true,false,false,true);
   kss_new.Add(*LINALG::Multiply(*wDinv,false,*kss_a,false,false,false,true),false,-1./(1.-alphaf_),1.);
   kst_new.Add(*LINALG::Multiply(*wDinv,false,*kst_a,false,false,false,true),false,-1./(1.-alphaf_),1.);
   tmpv=Teuchos::rcp(new Epetra_Vector(*gactivedofs_));

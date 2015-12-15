@@ -347,16 +347,6 @@ void TSI::Algorithm::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector> 
       StructureField()->Discretization()->SetState(1,"temperature",temp);
     if (temp_res != Teuchos::null)
       StructureField()->Discretization()->SetState(1,"residual temperature",temp_res);
-
-    // set data in contact discretization
-    if (StructureField()->MeshtyingContactBridge()!=Teuchos::null)
-    {
-      CONTACT::CoTSILagrangeStrategy& costrategy = static_cast<CONTACT::CoTSILagrangeStrategy&>
-      (StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
-      Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp( new Epetra_Vector(*(ThermoField()->Tempnp())));
-      Teuchos::RCP<Epetra_Vector> temp2 = coupST_()->SlaveToMaster(temp);
-      costrategy.SetState("temp",temp2);
-    }
   }
   else
   {

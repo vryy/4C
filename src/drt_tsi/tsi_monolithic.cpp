@@ -568,7 +568,7 @@ void TSI::Monolithic::NewtonFull()
     // do the thermo contact modifications all at once
     if (cmtman_!=Teuchos::null)
       dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).Evaluate(
-          SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),
+          SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
           StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor(),iter_==1);
 
     // *********** time measurement ***********
