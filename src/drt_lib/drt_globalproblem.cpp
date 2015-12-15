@@ -1059,7 +1059,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     fluiddis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(fluiddis)));
     aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
 
-    //AddDis("structure", struPartUsingParMetisctdis);              PROBLEM
+    AddDis("structure", structdis);
     AddDis("fluid", fluiddis);
     AddDis("ale", aledis);
 
