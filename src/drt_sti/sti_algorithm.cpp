@@ -532,8 +532,15 @@ void STI::Algorithm::FDCheck()
   double maxabserr(0.);
   double maxrelerr(0.);
 
-  for (int col=0; col<sysmat_original->NumGlobalCols(); ++col)
+  for (int col=0; col<sysmat_original->ColMap().MaxAllGID(); ++col)
   {
+    // check whether current column index is a valid global column index and continue loop if not
+    int collid(sysmat_original->ColMap().LID(col));
+    int maxcollid(-1);
+    Comm().MaxAll(&collid,&maxcollid,1);
+    if(maxcollid < 0)
+      continue;
+
     // fill global state vector with original state variables
     statenp->Update(1.,*statenp_original,0.);
 
