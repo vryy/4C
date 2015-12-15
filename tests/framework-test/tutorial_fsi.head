@@ -352,10 +352,6 @@ COUPALGO                        iter_stagg_AITKEN_rel_param
 //                              No,Yes,no,yes,NO,YES,Interface,Preconditioner,All
 DEBUGOUTPUT                     No
 //
-// Project velocity into divergence-free subspace for partitioned fsi
-//                              Yes,No,yes,no,YES,NO
-DIVPROJECTION                   no
-//
 // Total simulation time
 MAXTIME                         3
 //
@@ -548,6 +544,10 @@ PREDICTOR                       d(n)
 //
 // fixed relaxation parameter for partitioned FSI solvers
 RELAX                           1.0
+//
+// Project velocity into divergence-free subspace for partitioned fsi
+//                              Yes,No,yes,no,YES,NO
+DIVPROJECTION                   no
 //
 --------------------------------------------------------------------------IO
 //

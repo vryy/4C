@@ -922,10 +922,6 @@ MAXTIME                         1000
 //     None,Curr,Ref,RotZ,RotZSphere
 SLIDEALEPROJ                    None
 //
-// Project velocity into divergence-free subspace for partitioned fsi
-//     Yes,No,yes,no,YES,NO
-DIVPROJECTION                   no
-//
 --------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 //
 // Include linearization with respect to mesh movement in Navier Stokes equation.
@@ -1124,6 +1120,10 @@ MAXOMEGA                        0
 //
 // Maximum number of iterations over fields
 ITEMAX                          100
+//
+// Project velocity into divergence-free subspace for partitioned fsi
+//     Yes,No,yes,no,YES,NO
+DIVPROJECTION                   no
 //
 -----------------------------------------------------------SOLVER 1
 //
