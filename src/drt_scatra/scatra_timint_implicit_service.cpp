@@ -749,12 +749,12 @@ void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string
     if(condstring == "BoundaryIntegral")
     {
       label = "Boundary";
-      condparams.set<int>("action",SCATRA::calc_domain_integral);
+      condparams.set<int>("action",SCATRA::bd_calc_boundary_integral);
     }
     else if(condstring == "DomainIntegral")
     {
       label = "Domain";
-      condparams.set<int>("action",SCATRA::bd_calc_boundary_integral);
+      condparams.set<int>("action",SCATRA::calc_domain_integral);
     }
     else
       dserror("Invalid condition name!");
@@ -795,7 +795,7 @@ void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string
 
          // open file in appropriate mode and write header at beginning
          std::ofstream file;
-         if(Step() == 0)
+         if(Step() == 0 and condid == 0)
          {
            file.open(filename.c_str(),std::fstream::trunc);
            file << "Step,Time,"+label+"ID,"+label+"Integral" << std::endl;
