@@ -1258,8 +1258,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
 
             for (int ui=0; ui<nen_; ++ui)
             {
-              eslavematrix(fvi,ui*numscal_+k) += funct_(vi)*(*permeabilities)[k]*funct_(ui)*timefacfac;
-              emastermatrix(fvi,ui*numscal_+k) -= funct_(vi)*(*permeabilities)[k]*funct_(ui)*timefacfac;
+              const int fui = ui*numscal_+k;
+
+              const double linearization = funct_(vi)*(*permeabilities)[k]*funct_(ui)*timefacfac;
+
+              eslavematrix(fvi,fui) += linearization;
+              emastermatrix(fvi,fui) -= linearization;
             }
 
             eslaveresidual[fvi] -= funct_(vi)*(*permeabilities)[k]*(slavephiint-masterphiint)*timefacrhsfac;
