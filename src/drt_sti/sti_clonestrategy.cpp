@@ -30,8 +30,19 @@ void STI::ScatraThermoCloneStrategy::CheckMaterialType(
     )
 {
   // check whether material with specified ID is compatible with cloned element or not
-  if(DRT::Problem::Instance()->Materials()->ById(matid)->Type() != INPAR::MAT::m_scatra)
-    dserror("Material with ID %d is not compatible with cloned transport element!",matid);
+  switch(DRT::Problem::Instance()->Materials()->ById(matid)->Type())
+  {
+    case INPAR::MAT::m_soret:
+      // do nothing in case of compatible material
+      break;
+
+    default:
+    {
+      // throw error in case of incompatible material
+      dserror("Material with ID %d is not compatible with cloned transport element!",matid);
+      break;
+    }
+  }
 
   return;
 }
@@ -47,12 +58,16 @@ std::map<std::string,std::string> STI::ScatraThermoCloneStrategy::ConditionsToCo
   std::map<std::string,std::string> conditions;
 
   // insert thermo conditions
+  conditions.insert(std::pair<std::string,std::string>("S2ICouplingSlave","S2ICouplingSlave"));
+  conditions.insert(std::pair<std::string,std::string>("S2ICouplingMaster","S2ICouplingMaster"));
+  conditions.insert(std::pair<std::string,std::string>("ScaTraFluxCalc","ScaTraFluxCalc"));
   conditions.insert(std::pair<std::string,std::string>("ThermoDirichlet","Dirichlet"));
   conditions.insert(std::pair<std::string,std::string>("ThermoPointNeumann","PointNeumann"));
   conditions.insert(std::pair<std::string,std::string>("ThermoLineNeumann","LineNeumann"));
   conditions.insert(std::pair<std::string,std::string>("ThermoSurfaceNeumann","SurfaceNeumann"));
   conditions.insert(std::pair<std::string,std::string>("ThermoVolumeNeumann","VolumeNeumann"));
   conditions.insert(std::pair<std::string,std::string>("ThermoInitfield","Initfield"));
+  conditions.insert(std::pair<std::string,std::string>("ThermoRobin","ScatraRobin"));
 
   // return map
   return conditions;
@@ -103,12 +118,12 @@ void STI::ScatraThermoCloneStrategy::SetElementData(
   // provide cloned element with physical implementation type
   switch(oldele_transport->ImplType())
   {
-  case INPAR::SCATRA::impltype_elch_diffcond:
+  case INPAR::SCATRA::impltype_elch_diffcond_thermo:
   {
     newele_transport->SetImplType(INPAR::SCATRA::impltype_thermo_elch_diffcond);
     break;
   }
-  case INPAR::SCATRA::impltype_elch_electrode:
+  case INPAR::SCATRA::impltype_elch_electrode_thermo:
   {
     newele_transport->SetImplType(INPAR::SCATRA::impltype_thermo_elch_electrode);
     break;

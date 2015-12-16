@@ -2,7 +2,7 @@
 /*!
 \file scatra_ele_boundary_factory.cpp
 
-\brief factory for fluid scatra boundary evaluation
+\brief factory for scatra boundary evaluation
 
 <pre>
 Maintainer: Andreas Ehrl
@@ -18,10 +18,12 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele.H"
 #include "scatra_ele_boundary_calc_elch_diffcond.H"
 #include "scatra_ele_boundary_calc_elch_electrode.H"
+#include "scatra_ele_boundary_calc_elch_electrode_sti_thermo.H"
 #include "scatra_ele_boundary_calc_elch_NP.H"
 #include "scatra_ele_boundary_calc_loma.H"
 #include "scatra_ele_boundary_calc_poro.H"
 #include "scatra_ele_boundary_calc_std.H"
+#include "scatra_ele_boundary_calc_sti_electrode.H"
 #include "scatra_ele_boundary_interface.H"
 #include "scatra_ele_calc.H"
 #include "scatra_ele_boundary_factory.H"
@@ -98,27 +100,16 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
 {
   switch(impltype)
   {
-  case INPAR::SCATRA::impltype_std:
   case INPAR::SCATRA::impltype_advreac:
-  case INPAR::SCATRA::impltype_chemo:
-  case INPAR::SCATRA::impltype_chemoreac:
   case INPAR::SCATRA::impltype_aniso:
   case INPAR::SCATRA::impltype_cardiac_monodomain:
+  case INPAR::SCATRA::impltype_chemo:
+  case INPAR::SCATRA::impltype_chemoreac:
   case INPAR::SCATRA::impltype_levelset:
-  {
-    return DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(numdofpernode,numscal,disname);
-    break;
-  }
-  case INPAR::SCATRA::impltype_thermo_elch_electrode:
-  {
-    // to be implemented very soon...
-    return NULL;
-    break;
-  }
+  case INPAR::SCATRA::impltype_std:
   case INPAR::SCATRA::impltype_thermo_elch_diffcond:
   {
-    // to be implemented very soon...
-    return NULL;
+    return DRT::ELEMENTS::ScaTraEleBoundaryCalcStd<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_loma:
@@ -133,19 +124,13 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
   }
   case INPAR::SCATRA::impltype_elch_electrode_thermo:
   {
-    // to be implemented very soon...
-    return NULL;
+    return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_elch_diffcond:
-  {
-    return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Instance(numdofpernode,numscal,disname);
-    break;
-  }
   case INPAR::SCATRA::impltype_elch_diffcond_thermo:
   {
-    // to be implemented very soon...
-    return NULL;
+    return DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_elch_NP:
@@ -155,13 +140,18 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
   }
   case INPAR::SCATRA::impltype_poro:
   case INPAR::SCATRA::impltype_pororeac:
-    {
+  {
     return DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Instance(numdofpernode,numscal,disname);
     break;
-    }
+  }
+  case INPAR::SCATRA::impltype_thermo_elch_electrode:
+  {
+    return DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype>::Instance(numdofpernode,numscal,disname);
+    break;
+  }
   default:
   {
-    dserror("Defined problem type does not exist!!");
+    dserror("Defined implementation type does not exist!");
     break;
   }
   } // switch(impltype)

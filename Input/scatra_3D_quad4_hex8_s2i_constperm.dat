@@ -36,7 +36,7 @@ LINEAR_SOLVER                   1
 ITEMAX                          10
 CONVTOL                         1e-8
 ABSTOLRES                       1e-15
---------------------------------------------------------S2I DYNAMIC
+------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 MORTARTYPE                      NoMortar
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK

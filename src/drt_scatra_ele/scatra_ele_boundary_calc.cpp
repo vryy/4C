@@ -573,7 +573,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
     EvaluateS2ICoupling(ele,
         params,
         discretization,
-        lm,
+        la,
         elemat1_epetra,
         elemat2_epetra,
         elevec1_epetra);
@@ -1188,13 +1188,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetConstNormal(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
-    const DRT::FaceElement*     ele,             ///< current boundary element
-    Teuchos::ParameterList&     params,           ///< parameter list
-    DRT::Discretization&        discretization,   ///< discretization
-    std::vector<int>&           lm,               ///< location vector
-    Epetra_SerialDenseMatrix&   eslavematrix,     ///< element matrix for slave side
-    Epetra_SerialDenseMatrix&   emastermatrix,    ///< element matrix for master side
-    Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
+    const DRT::FaceElement*        ele,              ///< current boundary element
+    Teuchos::ParameterList&        params,           ///< parameter list
+    DRT::Discretization&           discretization,   ///< discretization
+    DRT::Element::LocationArray&   la,               ///< location array
+    Epetra_SerialDenseMatrix&      eslavematrix,     ///< element matrix for slave side
+    Epetra_SerialDenseMatrix&      emastermatrix,    ///< element matrix for master side
+    Epetra_SerialDenseVector&      eslaveresidual    ///< element residual for slave side
     )
 {
   // get global and interface state vectors
@@ -1206,8 +1206,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
   // extract local nodal values on present and opposite sides of scatra-scatra interface
   std::vector<LINALG::Matrix<nen_,1> > eslavephinp(numscal_);
   std::vector<LINALG::Matrix<nen_,1> > emasterphinp(numscal_);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,eslavephinp,lm);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*imasterphinp,emasterphinp,lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,eslavephinp,la[0].lm_);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*imasterphinp,emasterphinp,la[0].lm_);
 
   // get current scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -1333,7 +1333,18 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
   if(cond == Teuchos::null)
     dserror("Cannot access condition 'ScatraRobin'");
 
-  double prefac = cond->GetDouble("Prefactor");
+  // extract prefactor and reference value from condition
+  const double prefac = cond->GetDouble("Prefactor");
+  const double refval = cond->GetDouble("Refvalue");
+
+  // extract global state vector from discretization
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  if(phinp == Teuchos::null)
+    dserror("Cannot read state vector \"phinp\" from discretization!");
+
+  // extract local nodal state variables from global state vector
+  std::vector<LINALG::Matrix<nen_,1> > ephinp(numdofpernode_,LINALG::Matrix<nen_,1>(true));
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phinp,ephinp,lm);
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -1343,22 +1354,28 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(
   {
     for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
     {
+      // evaluate values of shape functions and domain integration factor at current integration point
       const double fac = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(intpoints,gpid);
-      // evaluate overall integration factors
-      const double timefac = scatraparamstimint_->TimeFac()*fac;
-      const double timefacprefac = timefac * prefac;
 
+      // evaluate overall integration factors
+      const double prefactimefacfac = prefac*scatraparamstimint_->TimeFac()*fac;
+      const double prefactimefacrhsfac = prefac*scatraparamstimint_->TimeFacRhs()*fac;
+
+      // evaluate current scalar at current integration point
+      const double phinp = funct_.Dot(ephinp[k]);
+
+      // evaluate element matrix and element right-hand side vector
       for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numscal_+k;
 
         for (int ui=0; ui<nen_; ++ui)
-        {
-          elemat1_epetra(fvi,ui*numscal_+k) += funct_(vi)*funct_(ui)* timefacprefac;
-        }
+          elemat1_epetra(fvi,ui*numscal_+k) += funct_(vi)*funct_(ui)*prefactimefacfac;
+
+        elevec1_epetra[fvi] -= funct_(vi)*(phinp-refval)*prefactimefacrhsfac;
       }
-    }
-  }
+    } // loop over integration points
+  } // loop over scalars
 
   return;
 }

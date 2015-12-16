@@ -2,7 +2,7 @@
 /*!
 \file scatra_ele_calc_elch_electrode.H
 
-\brief evaluation of scatra elements for conservation of mass concentration and electronic charge within electrodes
+\brief evaluation of scatra elements for conservation of mass concentration and electronic charge within isothermal electrodes
 
 <pre>
 Maintainer: Rui Fang
@@ -196,10 +196,10 @@ namespace DRT
         //! set internal variables for electrodes
         virtual void SetInternalVariablesForMatAndRHS();
 
-      private:
-
         //! get diffusion manager for electrodes
         Teuchos::RCP<ScaTraEleDiffManagerElchElectrode> DiffManager(){return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchElectrode>(my::diffmanager_);};
+
+      private:
 
         //! get internal variable manager for electrodes
         Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrode<my::nsd_,my::nen_> > VarManager(){return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerElchElectrode<my::nsd_,my::nen_> >(my::scatravarmanager_);};
@@ -274,7 +274,7 @@ namespace DRT
           {
             for(int iscal=0;iscal<numscal;++iscal)
             {
-              std::cout << "derivation diffusion coefficient (" << k << "," << iscal << "):  " << (derivdiff_[k])[iscal] << std::endl;
+              std::cout << "derivative of diffusion coefficient (" << k << "," << iscal << "):  " << (derivdiff_[k])[iscal] << std::endl;
             }
           }
           std::cout << std::endl;
@@ -282,7 +282,7 @@ namespace DRT
           std::cout << "conductivity:   " << cond_ << std::endl;
 
           for(int k=0;k<numscal;++k)
-            std::cout << "derivation of conductivity  " << k << ":   " << derivcond_[k] << std::endl;
+            std::cout << "derivative of conductivity  " << k << ":   " << derivcond_[k] << std::endl;
           std::cout << std::endl;
 
           return;

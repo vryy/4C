@@ -274,7 +274,8 @@ public:
     RedAirwayVolDependentPleuralPressureCond,
     RedAirwayEvalLungVolCond,
     SPRboundary,
-    TransportRobin
+    TransportRobin,
+    ThermoRobin
   };
 
   /*!

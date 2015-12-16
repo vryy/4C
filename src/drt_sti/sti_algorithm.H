@@ -18,15 +18,35 @@ Maintainer: Rui Fang
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 // forward declarations
+class Epetra_Map;
+class Epetra_Time;
+class Epetra_Vector;
+
+namespace ADAPTER
+{
+  class Coupling;
+}
+
+namespace FSI
+{
+  namespace UTILS
+  {
+    class MatrixColTransform;
+    class MatrixRowTransform;
+  }
+}
+
 namespace LINALG
 {
   class BlockSparseMatrixBase;
   class MapExtractor;
+  class Solver;
   class SparseMatrix;
 }
 
 namespace SCATRA
 {
+  class MeshtyingStrategyS2I;
   class ScaTraTimIntImpl;
 }
 
@@ -88,6 +108,12 @@ namespace STI
       //! evaluate time step using Newton-Raphson iteration
       void Solve();
 
+      //! assemble off-diagonal scatra-thermo block of global system matrix
+      void AssembleODBlockScatraThermo();
+
+      //! assemble off-diagonal thermo-scatra block of global system matrix
+      void AssembleODBlockThermoScatra();
+
       //! update scatra and thermo fields after time step evaluation
       void Update();
 
@@ -96,6 +122,12 @@ namespace STI
 
       //! thermo time integrator
       Teuchos::RCP<SCATRA::ScaTraTimIntImpl> thermo_;
+
+      //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
+      Teuchos::RCP<SCATRA::MeshtyingStrategyS2I> strategyscatra_;
+
+      //! meshtying strategy for scatra-scatra interface coupling on thermo discretization
+      Teuchos::RCP<SCATRA::MeshtyingStrategyS2I> strategythermo_;
 
       //! input parameters for scatra-thermo interaction
       Teuchos::RCP<Teuchos::ParameterList> stiparameters_;
@@ -159,6 +191,21 @@ namespace STI
 
       //! L2 norm of thermo increment vector
       double thermoincnorm_;
+
+      //! interface coupling adapter for scatra discretization
+      Teuchos::RCP<const ADAPTER::Coupling> icoupscatra_;
+
+      //! interface coupling adapter for thermo discretization
+      Teuchos::RCP<const ADAPTER::Coupling> icoupthermo_;
+
+      //! slave-to-master row transformation operator for scatra-thermo block of global system matrix
+      Teuchos::RCP<FSI::UTILS::MatrixRowTransform> islavetomasterrowtransformscatraod_;
+
+      //! slave-to-master column transformation operator for thermo-scatra block of global system matrix
+      Teuchos::RCP<FSI::UTILS::MatrixColTransform> islavetomastercoltransformthermood_;
+
+      //! master-to-slave row transformation operator for thermo-scatra block of global system matrix
+      Teuchos::RCP<FSI::UTILS::MatrixRowTransform> imastertoslaverowtransformthermood_;
   }; // class Algorithm : public ADAPTER::AlgorithmBase
 } // namespace STI
 #endif

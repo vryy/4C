@@ -2,7 +2,7 @@
 /*!
 \file scatra_ele_boundary_calc_elch_electrode.cpp
 
-\brief evaluation of ScaTra boundary elements for electrodes
+\brief evaluation of ScaTra boundary elements for isothermal electrodes
 
 <pre>
 Maintainer: Rui Fang
@@ -90,13 +90,13 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::ScaTraEleBoundaryCal
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoupling(
-    const DRT::FaceElement*     ele,              ///< current boundary element
-    Teuchos::ParameterList&     params,           ///< parameter list
-    DRT::Discretization&        discretization,   ///< discretization
-    std::vector<int>&           lm,               ///< location vector
-    Epetra_SerialDenseMatrix&   eslavematrix,     ///< element matrix for slave side
-    Epetra_SerialDenseMatrix&   emastermatrix,    ///< element matrix for master side
-    Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
+    const DRT::FaceElement*        ele,              ///< current boundary element
+    Teuchos::ParameterList&        params,           ///< parameter list
+    DRT::Discretization&           discretization,   ///< discretization
+    DRT::Element::LocationArray&   la,               ///< location array
+    Epetra_SerialDenseMatrix&      eslavematrix,     ///< element matrix for slave side
+    Epetra_SerialDenseMatrix&      emastermatrix,    ///< element matrix for master side
+    Epetra_SerialDenseVector&      eslaveresidual    ///< element residual for slave side
     )
 {
   // access material of parent element
@@ -115,8 +115,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   // extract local nodal values on present and opposite side of scatra-scatra interface
   std::vector<LINALG::Matrix<my::nen_,1> > eslavephinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
   std::vector<LINALG::Matrix<my::nen_,1> > emasterphinp(my::numdofpernode_,LINALG::Matrix<my::nen_,1>(true));
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,eslavephinp,lm);
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*imasterphinp,emasterphinp,lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,eslavephinp,la[0].lm_);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*imasterphinp,emasterphinp,la[0].lm_);
 
   // get current scatra-scatra interface coupling condition
   Teuchos::RCP<DRT::Condition> s2icondition = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -139,9 +139,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   if(reactivespecies > 1)
     dserror("Charge transfer at electrode-electrolyte interface must not involve more than one reactive species!");
   const double faraday = INPAR::ELCH::faraday_const;
-  const double frt = myelch::elchparams_->FRT();
-  if(frt <= 0.)
-    dserror("Factor F/RT is negative!");
   const double alphaa = s2icondition->GetDouble("alpha_a");
   const double alphac = s2icondition->GetDouble("alpha_c");
   const double kr = s2icondition->GetDouble("k_r");
@@ -174,6 +171,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       if (timefacfac < 0. or timefacrhsfac < 0.)
         dserror("Integration factor is negative!");
 
+      // evaluate factor F/RT
+      const double frt = GetFRT(discretization,la);
+
       // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
       const double eslavephiint = my::funct_.Dot(eslavephinp[k]);
       const double eslavepotint = my::funct_.Dot(eslavephinp[my::numscal_]);
@@ -192,6 +192,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       {
         // Butler-Volmer kinetics
         case INPAR::S2I::kinetics_butlervolmer:
+        case INPAR::S2I::kinetics_butlervolmerpeltier:
         {
           const double i0 = kr*faraday*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac);
           const double expterm1 = exp(alphaa*frt*eta);
@@ -276,7 +277,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       dserror("Unknown closing equation for electric potential!");
       break;
     }
-    } // switch(equpot_)
+    } // switch(myelch::elchparams_->EquPot())
   } // loop over scalars
 
   return;
@@ -300,7 +301,19 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetVale
 
 
 /*----------------------------------------------------------------------*
+ | evaluate factor F/RT                                      fang 08/15 |
  *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+const double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetFRT(
+    DRT::Discretization&           discretization,   ///< discretization
+    DRT::Element::LocationArray&   la                ///< location array
+) const
+{
+  // fetch factor F/RT from electrochemistry parameter list in isothermal case
+  return myelch::elchparams_->FRT();
+};
+
+
 // template classes
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<DRT::Element::quad4>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<DRT::Element::quad8>;

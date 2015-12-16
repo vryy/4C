@@ -2067,7 +2067,7 @@ void SCATRA::ScaTraTimIntImpl::CreateMeshtyingStrategy()
 
   // scatra-scatra interface coupling
   else if(s2icoupling_)
-    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this,DRT::Problem::Instance()->S2IDynamicParams()));
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this,params_->sublist("S2I COUPLING")));
 
   // standard case without meshtying
   else
@@ -2215,11 +2215,12 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
     Teuchos::RCP<Epetra_Vector>          rhs                //!< rhs vector
 )
 {
-  // evaluate meshtying
-  strategy_->EvaluateMeshtying();
-
   // evaluate Robin type boundary condition (needed for photoacoustic simulations)
   EvaluateRobinBoundaryConditions(systemmatrix,rhs);
+
+  // evaluate meshtying
+  // this needs to be done as final step for consistency
+  strategy_->EvaluateMeshtying();
 
   return;
 } // ScaTraTimIntImpl::EvaluateSolutionDependingConditions

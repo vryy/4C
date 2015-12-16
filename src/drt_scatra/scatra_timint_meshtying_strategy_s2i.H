@@ -76,6 +76,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! destructor
     virtual ~MeshtyingStrategyS2I(){return;};
 
+    //! return interface coupling adapter
+    const Teuchos::RCP<const ADAPTER::Coupling> CouplingAdapter() const {return icoup_;};
+
     //! compute meshtying residual terms and their linearizations
     virtual void EvaluateMeshtying() const;
 
@@ -84,6 +87,15 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! initialize system matrix
     Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
+
+    //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs
+    const Teuchos::RCP<LINALG::SparseMatrix>& MasterMatrix() const {return imastermatrix_;};
+
+    //! return master dofs transformed to slave side of scatra-scatra interface
+    const Teuchos::RCP<const Epetra_Vector> MasterPhinp() const {return imasterphinp_;};
+
+    //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. slave dofs
+    const Teuchos::RCP<LINALG::SparseMatrix>& SlaveMatrix() const {return islavematrix_;};
 
     //! solve resulting linear system of equations
     void Solve(
@@ -123,6 +135,7 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     Teuchos::RCP<LINALG::SparseMatrix> imastermatrix_;
 
     //! transformation operators for auxiliary system matrices
+    Teuchos::RCP<FSI::UTILS::MatrixRowTransform> imastertoslaverowtransform_;
     Teuchos::RCP<FSI::UTILS::MatrixColTransform> islavetomastercoltransform_;
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> islavetomasterrowtransform_;
     Teuchos::RCP<FSI::UTILS::MatrixRowColTransform> islavetomasterrowcoltransform_;
@@ -196,6 +209,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! flag for meshtying method
     const INPAR::S2I::MortarType mortartype_;
+
+    //! flag for evaluation of interface linearizations and residuals on slave side only
+    bool slaveonly_;
 }; // class MeshtyingStrategyS2I
 } // namespace SCATRA
 #endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H

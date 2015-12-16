@@ -1277,7 +1277,7 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
   for(int icond = 0; icond < numcond; icond++)
   {
     // check if Nernst-BC is defined on electrode kinetics condition
-    if (Elchcond[icond]->GetInt("kinetic model")==INPAR::SCATRA::nernst)
+    if (Elchcond[icond]->GetInt("kinetic model")==INPAR::ELCH::nernst)
     {
       // safety check
       if(!Elchcond[icond]->GeometryDescription())
@@ -1335,7 +1335,7 @@ void SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
 
   // scatra-scatra interface coupling
   else if(s2icoupling_)
-    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2IElch(this,DRT::Problem::Instance()->S2IDynamicParams()));
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyS2IElch(this,params_->sublist("S2I COUPLING")));
 
   // standard case without meshtying
   else
@@ -1579,13 +1579,16 @@ const double SCATRA::ScaTraTimIntElch::ComputeConductivity(
   else
     eleparams.set("specresist",false);
 
-  //provide displacement field in case of ALE
+  // provide number of dofset associated with velocity-related dofs
+  eleparams.set<int>("ndsvel",nds_vel_);
+
+  // provide displacement field in case of ALE
   if (isale_)
     eleparams.set<int>("ndsdisp",nds_disp_);
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("phinp",phinp_);
+  AddTimeIntegrationSpecificVectors();
 
   // evaluate integrals of scalar(s) and domain
   Teuchos::RCP<Epetra_SerialDenseVector> sigma_domint

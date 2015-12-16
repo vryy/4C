@@ -2,7 +2,7 @@
 /*!
 \file scatra_ele_calc_elch_diffcond.cpp
 
-\brief evaluation of ScaTra elements for diffusion-conduction ion-transport equations
+\brief evaluation of scatra elements for isothermal diffusion-conduction ion-transport equations
 
 <pre>
 Maintainer: Andreas Ehrl

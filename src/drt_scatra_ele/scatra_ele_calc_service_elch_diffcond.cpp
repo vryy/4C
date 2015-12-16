@@ -354,8 +354,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(
     for(int kk=0; kk<my::numscal_; ++kk)
       reactspecies += abs((*stoich)[kk]);
 
-    if(reactspecies>1 and (kinetics==INPAR::SCATRA::butler_volmer or kinetics == INPAR::SCATRA::butler_volmer_yang1997 or
-        kinetics == INPAR::SCATRA::tafel or kinetics == INPAR::SCATRA::linear))
+    if(reactspecies>1 and (kinetics==INPAR::ELCH::butler_volmer or kinetics == INPAR::ELCH::butler_volmer_yang1997 or
+        kinetics == INPAR::ELCH::tafel or kinetics == INPAR::ELCH::linear))
       dserror("Kinetic model Butler-Volmer / Butler-Volmer-Yang / Tafel and Linear: \n"
           "Only one educt and no product is allowed in the implemented version");
   }

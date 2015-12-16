@@ -309,7 +309,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
     // extract additional local values from global vector
     Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
     if (phin==Teuchos::null) dserror("Cannot get state vector 'phin'");
-    std::vector<double> myphin(lm.size());
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*phin,ephin_,lm);
   }
 

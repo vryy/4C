@@ -206,13 +206,13 @@ public:
 
   //! evaluate scatra-scatra interface coupling condition
   virtual void EvaluateS2ICoupling(
-      const DRT::FaceElement*     ele,              ///< current boundary element
-      Teuchos::ParameterList&     params,           ///< parameter list
-      DRT::Discretization&        discretization,   ///< discretization
-      std::vector<int>&           lm,               ///< location vector
-      Epetra_SerialDenseMatrix&   eslavematrix,     ///< element matrix for slave side
-      Epetra_SerialDenseMatrix&   emastermatrix,    ///< element matrix for master side
-      Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
+      const DRT::FaceElement*        ele,              ///< current boundary element
+      Teuchos::ParameterList&        params,           ///< parameter list
+      DRT::Discretization&           discretization,   ///< discretization
+      DRT::Element::LocationArray&   la,               ///< location array
+      Epetra_SerialDenseMatrix&      eslavematrix,     ///< element matrix for slave side
+      Epetra_SerialDenseMatrix&      emastermatrix,    ///< element matrix for master side
+      Epetra_SerialDenseVector&      eslaveresidual    ///< element residual for slave side
   );
 
   //! calculate boundary integral, i.e., surface area of boundary element

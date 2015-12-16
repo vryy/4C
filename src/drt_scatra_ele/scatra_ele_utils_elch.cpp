@@ -133,8 +133,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
   // concentration-dependent Butler-Volmer law(s)
   switch(kinetics)
   {
-  case INPAR::SCATRA::butler_volmer:
-  case INPAR::SCATRA::butler_volmer_yang1997:
+  case INPAR::ELCH::butler_volmer:
+  case INPAR::ELCH::butler_volmer_yang1997:
   {
     // read model-specific parameters
     const double alphaa = cond->GetDouble("alpha_a");
@@ -199,7 +199,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
     else
       pow_conint_gamma_k = std::pow(conint[k]/refcon,gamma);
 
-    if (kinetics==INPAR::SCATRA::butler_volmer)
+    if (kinetics==INPAR::ELCH::butler_volmer)
     {
       // note: gamma==0 deactivates concentration dependency in Butler-Volmer!
       const double expterm = exp(alphaa*frt*eta)-exp((-alphac)*frt*eta);
@@ -240,7 +240,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
       }
     } // end if(kinetics=="Butler-Volmer")
 
-    else if (kinetics==INPAR::SCATRA::butler_volmer_yang1997)
+    else if (kinetics==INPAR::ELCH::butler_volmer_yang1997)
     {
       if(dlcap!=0.0)
         dserror("double layer charging is not implemented for Butler-Volmer-Yang electrode kinetics");
@@ -276,7 +276,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
   // implementation of cathodic path: i_n = i_0 * (-exp(-alpha * frt* eta)
   // -> cathodic reaction path: i_0 > 0 and alpha > 0
   // -> anodic reacton path:    i_0 < 0 and alpha < 0
-  case INPAR::SCATRA::tafel:
+  case INPAR::ELCH::tafel:
   {
     // read model-specific parameter
     const double alpha = cond->GetDouble("alpha");
@@ -345,7 +345,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
   // previously implemented: i_n = i_0*(alphaa*frt*(V_M - phi) + 1.0)
   //                         -> linearization in respect to anodic branch!!
   //                         this is not the classical verion of a linear electrode kinetics law
-  case INPAR::SCATRA::linear:
+  case INPAR::ELCH::linear:
   {
     // read model-specific parameter
     const double alphaa = cond->GetDouble("alpha");
@@ -417,7 +417,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
     break;
   }
 
-  case INPAR::SCATRA::butler_volmer_newman:
+  case INPAR::ELCH::butler_volmer_newman:
   {
     // "Electrochemical systems"
     // Newman and Thomas-Alyea, 2004
@@ -520,7 +520,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
     break;
   }
 
-  case INPAR::SCATRA::butler_volmer_bard:
+  case INPAR::ELCH::butler_volmer_bard:
   {
     // "Electrochemical Methods Fundamentals and Applications"
     // Bard and Faulkner, 2001, pp. 94 ff; pp. 99 eq. 3.4.10
@@ -636,7 +636,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElchKineticsAtIntegrati
     break;
   }
 
-  case INPAR::SCATRA::nernst:
+  case INPAR::ELCH::nernst:
     break;
 
   default:
@@ -713,8 +713,8 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
   // concentration-dependent Butler-Volmer law(s)
   switch(kinetics)
   {
-  case INPAR::SCATRA::butler_volmer:
-  case INPAR::SCATRA::butler_volmer_yang1997:
+  case INPAR::ELCH::butler_volmer:
+  case INPAR::ELCH::butler_volmer_yang1997:
   {
     // read model-specific parameter
     const double alphaa = cond->GetDouble("alpha_a");
@@ -756,13 +756,13 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
       dserror("The electrode kinetics flag zero_cur has only two options: false (=0) or true (=1).");
 
     double expterm(0.0);
-    if (kinetics==INPAR::SCATRA::butler_volmer)
+    if (kinetics==INPAR::ELCH::butler_volmer)
     {
       // general Butler-Volmer
       expterm = std::pow(conint[k]/refcon,gamma) * (exp(alphaa*frt*eta)-exp((-alphac)*frt*eta));
       linea = std::pow(conint[k]/refcon,gamma) * frt*((alphaa*exp(alphaa*frt*eta)) + (alphac*exp((-alphac)*frt*eta)));
     }
-    if (kinetics==INPAR::SCATRA::butler_volmer_yang1997)
+    if (kinetics==INPAR::ELCH::butler_volmer_yang1997)
     {
       if (((conint[k]/refcon)<EPS13) && (gamma < 1.0))
       {// prevents NaN's in the current density evaluation
@@ -810,7 +810,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
   // implementation of cathodic path: i_n = i_0 * (-exp(-alpha * frt* eta)
   // -> cathodic reaction path: i_0 > 0 and alpha > 0
   // -> anodic reacton path:    i_0 < 0 and alpha < 0
-  case INPAR::SCATRA::tafel:
+  case INPAR::ELCH::tafel:
   {
     // read model-specific parameter
     const double alpha = cond->GetDouble("alpha");
@@ -865,7 +865,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
   // previously implemented: i_n = i_0*(alphaa*frt*(V_M - phi) + 1.0)
   //                         -> linearization in respect to anodic branch!!
   //                         this is not the classical version of a linear electrode kinetics law
-  case INPAR::SCATRA::linear:
+  case INPAR::ELCH::linear:
   {
     // read model-specific parameter
     const double alphaa = cond->GetDouble("alpha");
@@ -932,7 +932,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     break;
   }
 
-  case INPAR::SCATRA::butler_volmer_newman:
+  case INPAR::ELCH::butler_volmer_newman:
   {
     // "Electrochemical systems"
     // Newman ad Thomas-Alyea, 2004
@@ -1049,7 +1049,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     break;
   }
 
-  case INPAR::SCATRA::butler_volmer_bard:
+  case INPAR::ELCH::butler_volmer_bard:
   {
     // "Electrochemical Methods Fundamentals and Applications"
     // Bard and Faulkner, 2001, pp. 94 ff; pp. 99 eq. 3.4.10
@@ -1146,7 +1146,7 @@ void DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::EvaluateElectrodeStatusAtIntegr
     break;
   } // end Butler-Volmer-Bard
 
-  case INPAR::SCATRA::nernst:
+  case INPAR::ELCH::nernst:
   {
     const double e0 = cond->GetDouble("e0");
     const double c0 = cond->GetDouble("c0");

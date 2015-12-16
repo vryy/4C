@@ -31,9 +31,9 @@ namespace ELEMENTS
 template<DRT::Element::DiscretizationType distype>
 class ScaTraEleCalcElchDiffCond : public ScaTraEleCalcElchElectrode<distype>
 {
-private:
+protected:
 
-  /// private constructor, since we are a Singleton.
+  /// protected constructor, since we are a Singleton, but a derived class exists
   ScaTraEleCalcElchDiffCond(const int numdofpernode,const int numscal,const std::string& disname);
 
   typedef ScaTraEleCalc<distype> my;
@@ -54,14 +54,14 @@ public:
   /// called upon destruction
   virtual void Done();
 
-private:
+protected:
 
   /*========================================================================*/
   //! @name general framework
   /*========================================================================*/
 
   //! calculate contributions to matrix and rhs (inside of loop over all scalars)
-  void CalcMatAndRhs(
+  virtual void CalcMatAndRhs(
       Epetra_SerialDenseMatrix&     emat,         //!< element matrix to calculate
       Epetra_SerialDenseVector&     erhs,         //!< element rhs to calculate
       const int                     k,            //!< index of current scalar

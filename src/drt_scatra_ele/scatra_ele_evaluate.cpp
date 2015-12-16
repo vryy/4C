@@ -240,6 +240,8 @@ int DRT::ELEMENTS::Transport::Evaluate(
 
     case SCATRA::calc_scatra_mono_odblock_fluid:
     case SCATRA::calc_scatra_mono_odblock_mesh:
+    case SCATRA::calc_scatra_mono_odblock_scatrathermo:
+    case SCATRA::calc_scatra_mono_odblock_thermoscatra:
     {
       return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateOD(
               this,

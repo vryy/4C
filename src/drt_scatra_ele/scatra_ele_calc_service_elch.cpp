@@ -227,9 +227,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(
     // get flag if the inverse of the conductivity should be calculated -> specific resistance
     bool specresist = params.get<bool>("specresist");
 
-    // extract local values from the global vector
-    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*phinp,my::ephinp_,la[0].lm_);
+    // extract quantities for element evaluation
+    this->ExtractElementAndNodeValues(ele,params,discretization,la);
 
     // elevec1_epetra(0):          conductivity of ionic species 0
     // elevec1_epetra(numscal_-1): conductivity of ionic species (numscal_-1)
@@ -471,8 +470,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcElchBoundaryKineticsPoint(
     for(int kk=0; kk<my::numscal_; ++kk)
       reactspecies += abs((*stoich)[kk]);
 
-    if(reactspecies>1 and (kinetics==INPAR::SCATRA::butler_volmer or kinetics == INPAR::SCATRA::butler_volmer_yang1997 or
-        kinetics == INPAR::SCATRA::tafel or kinetics == INPAR::SCATRA::linear))
+    if(reactspecies>1 and (kinetics==INPAR::ELCH::butler_volmer or kinetics == INPAR::ELCH::butler_volmer_yang1997 or
+        kinetics == INPAR::ELCH::tafel or kinetics == INPAR::ELCH::linear))
       dserror("Kinetic model Butler-Volmer / Butler-Volmer-Yang / Tafel and Linear: \n"
           "Only one educt and no product is allowed in the implemented version");
   }

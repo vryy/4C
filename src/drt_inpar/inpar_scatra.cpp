@@ -479,9 +479,9 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           "field_by_condition"
           ),
       tuple<int>(
-          INPAR::THR::initfield_zero_field,
-          INPAR::THR::initfield_field_by_function,
-          INPAR::THR::initfield_field_by_condition
+          INPAR::SCATRA::initfield_zero_field,
+          INPAR::SCATRA::initfield_field_by_function,
+          INPAR::SCATRA::initfield_field_by_condition
           ),
       &stidyn
       );
@@ -574,6 +574,38 @@ void INPAR::SCATRA::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
 
           kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer",butlervolmer,INPAR::S2I::kinetics_butlervolmer)));
         }
+
+        {
+          // Butler-Volmer-Peltier
+          std::vector<Teuchos::RCP<ConditionComponent> > butlervolmerpeltier;
+          butlervolmerpeltier.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));            // total number of existing scalars
+          std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepcomp;
+          intsepcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+          std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp;                         // string separator in front of integer stoichiometry vector in input file line
+          intvectcomp.push_back(Teuchos::rcp(new IntVectorConditionComponent("stoichiometries",0)));   // integer vector of stoichiometric coefficients
+          std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepcomp;                         // empty vector --> no separators for real vectors needed
+          std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp;                       // empty vector --> no real vectors needed
+          butlervolmerpeltier.push_back(Teuchos::rcp(new IntRealBundle(
+              "stoichiometries",
+              Teuchos::rcp(new IntConditionComponent("numscal")),
+              intsepcomp,
+              intvectcomp,
+              realsepcomp,
+              realvectcomp
+          )));
+          butlervolmerpeltier.push_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
+          butlervolmerpeltier.push_back(Teuchos::rcp(new IntConditionComponent("e-")));
+          butlervolmerpeltier.push_back(Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+          butlervolmerpeltier.push_back(Teuchos::rcp(new RealConditionComponent("k_r")));
+          butlervolmerpeltier.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+          butlervolmerpeltier.push_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
+          butlervolmerpeltier.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+          butlervolmerpeltier.push_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
+          butlervolmerpeltier.push_back(Teuchos::rcp(new SeparatorConditionComponent("peltier")));
+          butlervolmerpeltier.push_back(Teuchos::rcp(new RealConditionComponent("peltier")));
+
+          kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Peltier",butlervolmerpeltier,INPAR::S2I::kinetics_butlervolmerpeltier)));
+        }
       } // kinetic models for scatra-scatra interface coupling
 
       // insert kinetic models into vector with input file line components
@@ -583,8 +615,8 @@ void INPAR::SCATRA::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
           Teuchos::rcp(new StringConditionComponent(
              "kinetic model",
              "ConstantPermeability",
-             Teuchos::tuple<std::string>("ConstantPermeability","Butler-Volmer"),
-             Teuchos::tuple<int>(INPAR::S2I::kinetics_constperm,INPAR::S2I::kinetics_butlervolmer))),
+             Teuchos::tuple<std::string>("ConstantPermeability","Butler-Volmer","Butler-Volmer-Peltier"),
+             Teuchos::tuple<int>(INPAR::S2I::kinetics_constperm,INPAR::S2I::kinetics_butlervolmer,INPAR::S2I::kinetics_butlervolmerpeltier))),
           kineticmodels)));
     }
 
@@ -745,15 +777,19 @@ void INPAR::SCATRA::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
                                          DRT::Condition::TransportRobin,
                                          true,
                                          DRT::Condition::Surface));
-  std::vector<Teuchos::RCP<ConditionComponent> > prefac;
-  prefac.push_back(Teuchos::rcp(new SeparatorConditionComponent("Prefactor",true)));
-  prefac.push_back(Teuchos::rcp(new RealConditionComponent("Prefactor")));
 
-  for(unsigned i=0; i<prefac.size(); ++i)
+  std::vector<Teuchos::RCP<ConditionComponent> > scatrarobincomponents;
+  scatrarobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("Prefactor")));
+  scatrarobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("Prefactor")));
+  scatrarobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("Refvalue")));
+  scatrarobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("Refvalue")));
+
+  for(unsigned i=0; i<scatrarobincomponents.size(); ++i)
   {
-    scatrarobinline->AddComponent(prefac[i]);
-    scatrarobinsurf->AddComponent(prefac[i]);
+    scatrarobinline->AddComponent(scatrarobincomponents[i]);
+    scatrarobinsurf->AddComponent(scatrarobincomponents[i]);
   }
+
   condlist.push_back(scatrarobinline);
   condlist.push_back(scatrarobinsurf);
 

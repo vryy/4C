@@ -50,7 +50,7 @@ namespace DRT
 
     private:
 
-      /// private constructor for singletons
+      //! private constructor for singletons
       ScaTraEleBoundaryCalcElchDiffCond(const int numdofpernode,const int numscal,const std::string& disname);
 
       //! evaluate action
@@ -98,13 +98,13 @@ namespace DRT
 
       //! evaluate scatra-scatra interface coupling condition
       void EvaluateS2ICoupling(
-          const DRT::FaceElement*     ele,              ///< current boundary element
-          Teuchos::ParameterList&     params,           ///< parameter list
-          DRT::Discretization&        discretization,   ///< discretization
-          std::vector<int>&           lm,               ///< location vector
-          Epetra_SerialDenseMatrix&   eslavematrix,     ///< element matrix for slave side
-          Epetra_SerialDenseMatrix&   emastermatrix,    ///< element matrix for master side
-          Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
+          const DRT::FaceElement*        ele,              ///< current boundary element
+          Teuchos::ParameterList&        params,           ///< parameter list
+          DRT::Discretization&           discretization,   ///< discretization
+          DRT::Element::LocationArray&   la,               ///< location array
+          Epetra_SerialDenseMatrix&      eslavematrix,     ///< element matrix for slave side
+          Epetra_SerialDenseMatrix&      emastermatrix,    ///< element matrix for master side
+          Epetra_SerialDenseVector&      eslaveresidual    ///< element residual for slave side
       );
 
       //! extract valence of species k from element material

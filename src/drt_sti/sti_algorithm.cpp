@@ -12,21 +12,28 @@ Maintainer: Rui Fang
 </pre>
 */
 /*----------------------------------------------------------------------*/
+#include "sti_algorithm.H"
+
 #include <Epetra_Time.h>
 
+#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
+
+#include "../drt_fsi/fsi_matrixtransform.H"
 
 #include "../drt_io/io_control.H"
 
+#include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+
+#include "../drt_scatra_ele/scatra_ele_action.H"
 
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
-
-#include "sti_algorithm.H"
 
 /*--------------------------------------------------------------------------------*
  | constructor                                                         fang 04/15 |
@@ -42,64 +49,24 @@ STI::Algorithm::Algorithm(
 
     scatra_(Teuchos::null),
     thermo_(Teuchos::null),
+    strategyscatra_(Teuchos::null),
+    strategythermo_(Teuchos::null),
     stiparameters_(Teuchos::rcp(new Teuchos::ParameterList(stidyn))),
     fieldparameters_(Teuchos::rcp(new Teuchos::ParameterList(scatradyn))),
     iter_(0),
     itermax_(fieldparameters_->sublist("NONLINEAR").get<int>("ITEMAX")),
     itertol_(fieldparameters_->sublist("NONLINEAR").get<double>("CONVTOL")),
     restol_(fieldparameters_->sublist("NONLINEAR").get<double>("ABSTOLRES")),
-
-    // initialize global map extractor
-    maps_(Teuchos::rcp(new LINALG::MapExtractor(
-        *LINALG::MergeMap(
-            *scatra_->Discretization()->DofRowMap(),
-            *thermo_->Discretization()->DofRowMap(),
-            false
-            ),
-        thermo_->DofRowMap(),
-        scatra_->DofRowMap()
-        ))),
-
-    // initialize global system matrix
-    systemmatrix_(Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-        *maps_,
-        *maps_,
-        81,
-        false,
-        true
-        ))),
-
-    // initialize scatra-thermo block of global system matrix
-    scatrathermoblock_(Teuchos::rcp(new LINALG::SparseMatrix(
-        *scatra_->Discretization()->DofRowMap(),
-        81,
-        true,
-        true
-        ))),
-
-    // initialize thermo-scatra block of global system matrix
-    thermoscatrablock_(Teuchos::rcp(new LINALG::SparseMatrix(
-        *thermo_->Discretization()->DofRowMap(),
-        81,
-        true,
-        true
-        ))),
-
-    // initialize global increment vector for Newton-Raphson iteration
-    increment_(LINALG::CreateVector(
-        *DofRowMap(),
-        true
-        )),
+    maps_(Teuchos::null),
+    systemmatrix_(Teuchos::null),
+    scatrathermoblock_(Teuchos::null),
+    thermoscatrablock_(Teuchos::null),
+    increment_(Teuchos::null),
 
     // initialize timer for Newton-Raphson iteration
     timer_(Teuchos::rcp(new Epetra_Time(comm))),
 
-    // initialize global residual vector
-    residual_(LINALG::CreateVector(
-        *DofRowMap(),
-        true
-        )),
-
+    residual_(Teuchos::null),
     dtsolve_(0.),
 
     // initialize algebraic solver for global system of equations
@@ -115,21 +82,14 @@ STI::Algorithm::Algorithm(
     scatraincnorm_(0.),
     thermodofnorm_(0.),
     thermoresnorm_(0.),
-    thermoincnorm_(0.)
+    thermoincnorm_(0.),
+
+    icoupscatra_(Teuchos::null),
+    icoupthermo_(Teuchos::null),
+    islavetomasterrowtransformscatraod_(Teuchos::null),
+    islavetomastercoltransformthermood_(Teuchos::null),
+    imastertoslaverowtransformthermood_(Teuchos::null)
 {
-  // check maps from scatra and thermo discretizations
-  if(scatra_->Discretization()->DofRowMap()->NumGlobalElements() == 0)
-    dserror("Scatra discretization does not have any degrees of freedom!");
-  if(thermo_->Discretization()->DofRowMap()->NumGlobalElements() == 0)
-    dserror("Thermo discretization does not have any degrees of freedom!");
-
-  // check global map extractor
-  maps_->CheckForValidMapExtractor();
-
-  // additional safety check
-  if(!scatra_->IsIncremental())
-    dserror("Must have incremental solution approach for scatra-thermo interaction!");
-
   // initialize scatra time integrator
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_,*fieldparameters_,solverparams))->ScaTraField();
 
@@ -138,6 +98,82 @@ STI::Algorithm::Algorithm(
 
   // initialize thermo time integrator
   thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_,*fieldparameters_,solverparams,"thermo"))->ScaTraField();
+
+  // check maps from scatra and thermo discretizations
+  if(scatra_->Discretization()->DofRowMap()->NumGlobalElements() == 0)
+    dserror("Scatra discretization does not have any degrees of freedom!");
+  if(thermo_->Discretization()->DofRowMap()->NumGlobalElements() == 0)
+    dserror("Thermo discretization does not have any degrees of freedom!");
+
+  // additional safety checks
+  if(!scatra_->IsIncremental())
+    dserror("Must have incremental solution approach for scatra-thermo interaction!");
+  if(thermo_->NumScal() != 1)
+    dserror("Thermo field must involve exactly one transported scalar!");
+
+  // extract meshtying strategies for scatra-scatra interface coupling from scatra and thermo time integrators
+  strategyscatra_ = Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyS2I>(scatra_->Strategy());
+  strategythermo_ = Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyS2I>(thermo_->Strategy());
+
+  // initialize global map extractor
+  maps_ = Teuchos::rcp(new LINALG::MapExtractor(
+      *LINALG::MergeMap(
+          *scatra_->Discretization()->DofRowMap(),
+          *thermo_->Discretization()->DofRowMap(),
+          false
+          ),
+      thermo_->DofRowMap(),
+      scatra_->DofRowMap()
+      ));
+
+  // check global map extractor
+  maps_->CheckForValidMapExtractor();
+
+  // initialize global increment vector for Newton-Raphson iteration
+  increment_ = LINALG::CreateVector(
+      *DofRowMap(),
+      true
+      );
+
+  // initialize global residual vector
+  residual_ = LINALG::CreateVector(
+      *DofRowMap(),
+      true
+      );
+
+  // initialize global system matrix
+  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+          *maps_,
+          *maps_,
+          81,
+          false,
+          true
+          ));
+
+  // initialize scatra-thermo block of global system matrix
+  scatrathermoblock_ = Teuchos::rcp(new LINALG::SparseMatrix(
+         *scatra_->Discretization()->DofRowMap(),
+         81,
+         true,
+         true
+         ));
+
+  // initialize thermo-scatra block of global system matrix
+  thermoscatrablock_ = Teuchos::rcp(new LINALG::SparseMatrix(
+         *thermo_->Discretization()->DofRowMap(),
+         81,
+         true,
+         true
+         ));
+
+  // initialize coupling adapter
+  icoupscatra_ = strategyscatra_->CouplingAdapter();
+  icoupthermo_ = strategythermo_->CouplingAdapter();
+
+  // initialize transformation operators
+  islavetomasterrowtransformscatraod_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+  islavetomastercoltransformthermood_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
+  imastertoslaverowtransformthermood_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
 
   return;
 } // STI::Algorithm::Algorithm
@@ -148,11 +184,24 @@ STI::Algorithm::Algorithm(
  *----------------------------------------------------------------------*/
 void STI::Algorithm::AssembleMatAndRHS()
 {
+  // pass scatra degrees of freedom to thermo discretization and vice versa
+  ExchangeStateVectors();
+
   // build system matrix and residual for scatra field
   scatra_->PrepareLinearSolve();
 
+  // pass master-side scatra degrees of freedom to thermo discretization for evaluation of scatra-scatra interface coupling
+  if(thermo_->S2ICoupling())
+    thermo_->Discretization()->SetState(2,"imasterscatra",strategyscatra_->MasterPhinp());
+
   // build system matrix and residual for thermo field
   thermo_->PrepareLinearSolve();
+
+  // assemble off-diagonal scatra-thermo block of global system matrix (derivatives of scatra residuals w.r.t. thermo degrees of freedom)
+  AssembleODBlockScatraThermo();
+
+  // assemble off-diagonal thermo-scatra block of global system matrix (derivatives of thermo residuals w.r.t. scatra degrees of freedom)
+  AssembleODBlockThermoScatra();
 
   // build global system matrix
   systemmatrix_->Assign(0,0,LINALG::View,*scatra_->SystemMatrix());
@@ -161,12 +210,12 @@ void STI::Algorithm::AssembleMatAndRHS()
   systemmatrix_->Assign(1,1,LINALG::View,*thermo_->SystemMatrix());
   systemmatrix_->Complete();
 
-  // create full monolithic rhs vector
+  // create full monolithic right-hand side vector
   maps_->InsertVector(scatra_->Residual(),0,residual_);
   maps_->InsertVector(thermo_->Residual(),1,residual_);
 
   return;
-} // STI::Algorithm::AssembleMatAndRHS
+} // STI::Algorithm::AssembleMatAndRHS()
 
 
 /*----------------------------------------------------------------------*
@@ -175,7 +224,7 @@ void STI::Algorithm::AssembleMatAndRHS()
 const Teuchos::RCP<const Epetra_Map>& STI::Algorithm::DofRowMap() const
 {
   return maps_->FullMap();
-}  // STI::Algorithm::DofRowMap()
+} // STI::Algorithm::DofRowMap()
 
 
 /*-------------------------------------------------------------------------------------*
@@ -184,8 +233,8 @@ const Teuchos::RCP<const Epetra_Map>& STI::Algorithm::DofRowMap() const
 void STI::Algorithm::ExchangeStateVectors()
 {
   // pass scatra degrees of freedom to thermo discretization and vice versa
-  thermo_->Discretization()->SetState(1,"scatra",scatra_->Phiafnp());
-  scatra_->Discretization()->SetState(1,"thermo",thermo_->Phiafnp());
+  scatra_->Discretization()->SetState(2,"thermo",thermo_->Phiafnp());
+  thermo_->Discretization()->SetState(2,"scatra",scatra_->Phiafnp());
 
   return;
 } // STI::Algorithm::ExchangeStateVectors()
@@ -304,8 +353,12 @@ void STI::Algorithm::ModifyFieldParametersForThermoField()
     dserror("Initial field parameters not properly set in input file section SCALAR TRANSPORT DYNAMIC!");
   if(!stiparameters_->isParameter("THERMO_INITIALFIELD") or !stiparameters_->isParameter("THERMO_INITFUNCNO"))
     dserror("Initial field parameters not properly set in input file section SCALAR TRANSPORT DYNAMIC!");
-  fieldparameters_->set<int>("INITIALFIELD",stiparameters_->get<int>("THERMO_INITIALFIELD"));
+  fieldparameters_->set<std::string>("INITIALFIELD",stiparameters_->get<std::string>("THERMO_INITIALFIELD"));
   fieldparameters_->set<int>("INITFUNCNO",stiparameters_->get<int>("THERMO_INITFUNCNO"));
+
+  // set flag in thermo meshtying strategy for evaluation of interface linearizations and residuals on slave side only
+  if(scatra_->S2ICoupling())
+    fieldparameters_->sublist("S2I COUPLING").set<std::string>("SLAVEONLY","Yes");
 
   return;
 } // STI::Algorithm::ModifyFieldParametersForThermoField()
@@ -335,14 +388,27 @@ void STI::Algorithm::PrepareTimeStep()
   IncrementTimeAndStep();
 
   // provide scatra and thermo fields with velocities
-  scatra_->SetVelocityField(2);
-  thermo_->SetVelocityField(2);
+  scatra_->SetVelocityField(1);
+  thermo_->SetVelocityField(1);
 
   // pass scatra degrees of freedom to thermo discretization and vice versa
   ExchangeStateVectors();
 
-  // prepare time step for scatra and thermo fields
+  // prepare time step for scatra field
   scatra_->PrepareTimeStep();
+
+  // pass scatra degrees of freedom to thermo discretization and vice versa
+  // this only needs to be done for the first time step, when the initial values of the electric potential state variables are computed
+  if(Step() == 1)
+  {
+    ExchangeStateVectors();
+
+    // pass master-side scatra degrees of freedom to thermo discretization for evaluation of scatra-scatra interface coupling
+    if(thermo_->S2ICoupling())
+      thermo_->Discretization()->SetState(2,"imasterscatra",strategyscatra_->MasterPhinp());
+  }
+
+  // prepare time step for thermo field
   thermo_->PrepareTimeStep();
 
   // print time step information to screen
@@ -447,6 +513,245 @@ void STI::Algorithm::Solve()
 } // STI::Algorithm::Solve
 
 
+/*--------------------------------------------------------------------------------*
+ | assemble off-diagonal scatra-thermo block of global system matrix   fang 12/15 |
+ *--------------------------------------------------------------------------------*/
+void STI::Algorithm::AssembleODBlockScatraThermo()
+{
+  // initialize scatra-thermo matrix block
+  scatrathermoblock_->Zero();
+
+  // create parameter list for element evaluation
+  Teuchos::ParameterList eleparams;
+
+  // action for elements
+  eleparams.set<int>("action",SCATRA::calc_scatra_mono_odblock_scatrathermo);
+
+  // number of dofset associated with velocity-related dofs on scatra discretization
+  eleparams.set<int>("ndsvel",1);
+
+  // remove state vectors from scatra discretization
+  scatra_->Discretization()->ClearState();
+
+  // add state vectors to scatra discretization
+  scatra_->AddTimeIntegrationSpecificVectors();
+
+  // create strategy for assembly of scatra-thermo matrix block
+  DRT::AssembleStrategy strategyscatrathermo(
+      0,                    // row assembly based on number of dofset associated with scatra dofs on scatra discretization
+      2,                    // column assembly based on number of dofset associated with thermo dofs on scatra discretization
+      scatrathermoblock_,   // scatra-thermo matrix block
+      Teuchos::null,        // no additional matrices or vectors
+      Teuchos::null,
+      Teuchos::null,
+      Teuchos::null
+      );
+
+  // assemble scatra-thermo matrix block
+  scatra_->Discretization()->Evaluate(eleparams,strategyscatrathermo);
+
+  // provide scatra-thermo matrix block with contributions from scatra-scatra interface coupling if applicable
+  if(scatra_->S2ICoupling())
+  {
+    // initialize auxiliary system matrix for linearizations of slave-side scatra fluxes w.r.t. slave-side thermo dofs
+    strategyscatra_->SlaveMatrix()->Zero();
+
+    // create parameter list for element evaluation
+    Teuchos::ParameterList condparams;
+
+    // action for elements
+    condparams.set<int>("action",SCATRA::bd_calc_s2icoupling_od);
+
+    // add state vector containing master-side scatra degrees of freedom to scatra discretization
+    scatra_->Discretization()->SetState("imasterphinp",strategyscatra_->MasterPhinp());
+
+    // create strategy for assembly of auxiliary system matrix
+    DRT::AssembleStrategy strategyscatrathermos2i(
+        0,                                // row assembly based on number of dofset associated with scatra dofs on scatra discretization
+        2,                                // column assembly based on number of dofset associated with thermo dofs on scatra discretization
+        strategyscatra_->SlaveMatrix(),   // auxiliary system matrix
+        Teuchos::null,                    // no additional matrices of vectors
+        Teuchos::null,
+        Teuchos::null,
+        Teuchos::null
+        );
+
+    // evaluate scatra-scatra interface coupling
+    scatra_->Discretization()->EvaluateCondition(condparams,strategyscatrathermos2i,"S2ICouplingSlave");
+
+    // finalize auxiliary system matrix
+    strategyscatra_->SlaveMatrix()->Complete(*maps_->Map(1),*maps_->Map(0));
+
+    // assemble linearizations of slave-side scatra fluxes w.r.t. slave-side thermo dofs into scatra-thermo matrix block
+    scatrathermoblock_->Add(*strategyscatra_->SlaveMatrix(),false,1.,1.);
+
+    // derive linearizations of master-side scatra fluxes w.r.t. slave-side thermo dofs and assemble into scatra-thermo matrix block
+    (*islavetomasterrowtransformscatraod_)(
+        *strategyscatra_->SlaveMatrix(),
+        -1.,
+        ADAPTER::CouplingSlaveConverter(*icoupscatra_),
+        *scatrathermoblock_,
+        true
+        );
+
+    // linearizations of scatra fluxes w.r.t. master-side thermo dofs are not needed, since these dofs will be condensed out later
+  }
+
+  // finalize scatra-thermo matrix block
+  scatrathermoblock_->Complete(*maps_->Map(1),*maps_->Map(0));
+
+  // apply Dirichlet boundary conditions to scatra-thermo matrix block
+  scatrathermoblock_->ApplyDirichlet(*scatra_->DirichMaps()->CondMap(),false);
+
+  // remove state vectors from scatra discretization
+  scatra_->Discretization()->ClearState();
+
+  return;
+} // STI::Algorithm::AssembleODBlockScatraThermo()
+
+
+/*--------------------------------------------------------------------------------*
+ | assemble off-diagonal thermo-scatra block of global system matrix   fang 12/15 |
+ *--------------------------------------------------------------------------------*/
+void STI::Algorithm::AssembleODBlockThermoScatra()
+{
+  // initialize thermo-scatra matrix block
+  thermoscatrablock_->Zero();
+
+  // create parameter list for element evaluation
+  Teuchos::ParameterList eleparams;
+
+  // action for elements
+  eleparams.set<int>("action",SCATRA::calc_scatra_mono_odblock_thermoscatra);
+
+  // number of dofset associated with velocity-related dofs on thermo discretization
+  eleparams.set<int>("ndsvel",1);
+
+  // remove state vectors from thermo discretization
+  thermo_->Discretization()->ClearState();
+
+  // add state vectors to thermo discretization
+  thermo_->AddTimeIntegrationSpecificVectors();
+
+  // create strategy for assembly of thermo-scatra matrix block
+  DRT::AssembleStrategy strategythermoscatra(
+      0,                    // row assembly based on number of dofset associated with thermo dofs on thermo discretization
+      2,                    // column assembly based on number of dofset associated with scatra dofs on thermo discretization
+      thermoscatrablock_,   // thermo-scatra matrix block
+      Teuchos::null,        // no additional matrices or vectors
+      Teuchos::null,
+      Teuchos::null,
+      Teuchos::null
+      );
+
+  // assemble thermo-scatra matrix block
+  thermo_->Discretization()->Evaluate(eleparams,strategythermoscatra);
+
+  // provide thermo-scatra matrix block with contributions from scatra-scatra interface coupling if applicable
+  if(thermo_->S2ICoupling())
+  {
+    // initialize auxiliary system matrix for linearizations of slave-side thermo fluxes w.r.t. slave-side scatra dofs
+    strategythermo_->SlaveMatrix()->Zero();
+
+    // initialize auxiliary system matrix for linearizations of slave-side thermo fluxes w.r.t. master-side scatra dofs
+    strategythermo_->MasterMatrix()->Zero();
+
+    // create parameter list for element evaluation
+    Teuchos::ParameterList condparams;
+
+    // action for elements
+    condparams.set<int>("action",SCATRA::bd_calc_s2icoupling_od);
+
+    // create strategy for assembly of auxiliary system matrices
+    DRT::AssembleStrategy strategythermoscatras2i(
+        0,                                // row assembly based on number of dofset associated with thermo dofs on thermo discretization
+        2,                                // column assembly based on number of dofset associated with scatra dofs on thermo discretization
+        strategythermo_->SlaveMatrix(),   // auxiliary system matrices
+        strategythermo_->MasterMatrix(),
+        Teuchos::null,                    // no additional matrices of vectors
+        Teuchos::null,
+        Teuchos::null
+        );
+
+    // evaluate scatra-scatra interface coupling
+    thermo_->Discretization()->EvaluateCondition(condparams,strategythermoscatras2i,"S2ICouplingSlave");
+
+    // finalize auxiliary system matrices
+    strategythermo_->SlaveMatrix()->Complete(*icoupscatra_->SlaveDofMap(),*icoupthermo_->SlaveDofMap());
+    strategythermo_->MasterMatrix()->Complete(*icoupscatra_->SlaveDofMap(),*icoupthermo_->SlaveDofMap());
+
+    // assemble linearizations of slave-side thermo fluxes w.r.t. slave-side scatra dofs into thermo-scatra matrix block
+    thermoscatrablock_->Add(*strategythermo_->SlaveMatrix(),false,1.,1.);
+
+    // derive linearizations of slave-side thermo fluxes w.r.t. master-side scatra dofs and assemble into thermo-scatra matrix block
+    (*islavetomastercoltransformthermood_)(
+        strategythermo_->MasterMatrix()->RowMap(),
+        strategythermo_->MasterMatrix()->ColMap(),
+        *strategythermo_->MasterMatrix(),
+        1.,
+        ADAPTER::CouplingSlaveConverter(*icoupscatra_),
+        *thermoscatrablock_,
+        true,
+        true
+        );
+
+    // linearizations of master-side thermo fluxes w.r.t. scatra dofs are not needed, since thermo fluxes are source terms and thus only evaluated once on slave side
+
+    // initialize temporary matrix for master-side rows of thermo-scatra matrix block
+    LINALG::SparseMatrix thermoscatrarowsmaster(*icoupthermo_->MasterDofMap(),81);
+
+    // loop over all master-side rows of thermo-scatra matrix block
+    for(int masterdoflid=0; masterdoflid<icoupthermo_->MasterDofMap()->NumMyElements(); ++masterdoflid)
+    {
+      // determine global ID of current matrix row
+      const int masterdofgid = icoupthermo_->MasterDofMap()->GID(masterdoflid);
+      if(masterdofgid < 0)
+        dserror("Couldn't find local ID %d in map!",masterdoflid);
+
+      // extract current matrix row from thermo-scatra matrix block
+      const int length = thermoscatrablock_->EpetraMatrix()->NumGlobalEntries(masterdofgid);
+      int numentries(0);
+      std::vector<double> values(length,0.);
+      std::vector<int> indices(length,0);
+      if(thermoscatrablock_->EpetraMatrix()->ExtractGlobalRowCopy(masterdofgid,length,numentries,&values[0],&indices[0]) != 0)
+        dserror("Cannot extract matrix row with global ID %d from thermo-scatra matrix block!",masterdofgid);
+
+      // copy current matrix row of thermo-scatra matrix block into temporary matrix
+      if(thermoscatrarowsmaster.EpetraMatrix()->InsertGlobalValues(masterdofgid,numentries,&values[0],&indices[0]) < 0)
+        dserror("Cannot insert matrix row with global ID %d into temporary matrix!",masterdofgid);
+    }
+
+    // finalize temporary matrix with master-side rows of thermo-scatra matrix block
+    thermoscatrarowsmaster.Complete(*maps_->Map(0),*icoupthermo_->MasterDofMap());
+
+    // add master-side rows of thermo-scatra matrix block to corresponding slave-side rows
+    (*imastertoslaverowtransformthermood_)(
+        thermoscatrarowsmaster,
+        1.,
+        ADAPTER::CouplingMasterConverter(*icoupthermo_),
+        *thermoscatrablock_,
+        true
+        );
+  }
+
+  // finalize thermo-scatra matrix block
+  thermoscatrablock_->Complete(*maps_->Map(0),*maps_->Map(1));
+
+  // apply Dirichlet boundary conditions to scatra-thermo matrix block
+  thermoscatrablock_->ApplyDirichlet(*thermo_->DirichMaps()->CondMap(),false);
+
+  if(thermo_->S2ICoupling())
+    // zero out master-side rows of thermo-scatra matrix block after having added them to the
+    // corresponding slave-side rows to finalize condensation of master-side thermo dofs
+    thermoscatrablock_->ApplyDirichlet(*icoupthermo_->MasterDofMap(),false);
+
+  // remove state vectors from thermo discretization
+  thermo_->Discretization()->ClearState();
+
+  return;
+} // STI::Algorithm::AssembleODBlockThermoScatra()
+
+
 /*----------------------------------------------------------------------*
  | time loop                                                 fang 04/15 |
  *----------------------------------------------------------------------*/
@@ -532,10 +837,10 @@ void STI::Algorithm::FDCheck()
   double maxabserr(0.);
   double maxrelerr(0.);
 
-  for (int col=0; col<=sysmat_original->ColMap().MaxAllGID(); ++col)
+  for (int colgid=0; colgid<=sysmat_original->ColMap().MaxAllGID(); ++colgid)
   {
     // check whether current column index is a valid global column index and continue loop if not
-    int collid(sysmat_original->ColMap().LID(col));
+    int collid(sysmat_original->ColMap().LID(colgid));
     int maxcollid(-1);
     Comm().MaxAll(&collid,&maxcollid,1);
     if(maxcollid < 0)
@@ -545,8 +850,8 @@ void STI::Algorithm::FDCheck()
     statenp->Update(1.,*statenp_original,0.);
 
     // impose perturbation
-    if(statenp->Map().MyGID(col))
-      if(statenp->SumIntoGlobalValue(col,0,scatra_->FDCheckEps()))
+    if(statenp->Map().MyGID(colgid))
+      if(statenp->SumIntoGlobalValue(colgid,0,scatra_->FDCheckEps()))
         dserror("Perturbation could not be imposed on state vector for finite difference check!");
     scatra_->Phinp()->Update(1.,*maps_->ExtractVector(statenp,0),0.);
     thermo_->Phinp()->Update(1.,*maps_->ExtractVector(statenp,1),0.);
@@ -585,7 +890,7 @@ void STI::Algorithm::FDCheck()
       sysmat_original->ExtractMyRowCopy(rowlid,length,numentries,&values[0],&indices[0]);
       for(int ientry=0; ientry<length; ++ientry)
       {
-        if(sysmat_original->ColMap().GID(indices[ientry]) == col)
+        if(sysmat_original->ColMap().GID(indices[ientry]) == colgid)
         {
           entry = values[ientry];
           break;
@@ -614,7 +919,7 @@ void STI::Algorithm::FDCheck()
       // evaluate first comparison
       if(abs(relerr1) > scatra_->FDCheckTol())
       {
-        std::cout << "sysmat[" << rowgid << "," << col << "]:  " << entry << "   ";
+        std::cout << "sysmat[" << rowgid << "," << colgid << "]:  " << entry << "   ";
         std::cout << "finite difference suggestion:  " << fdval << "   ";
         std::cout << "absolute error:  " << abserr1 << "   ";
         std::cout << "relative error:  " << relerr1 << std::endl;
@@ -650,7 +955,7 @@ void STI::Algorithm::FDCheck()
         // evaluate second comparison
         if(abs(relerr2) > scatra_->FDCheckTol())
         {
-          std::cout << "sysmat[" << rowgid << "," << col << "]-rhs[" << rowgid << "]/eps:  " << left << "   ";
+          std::cout << "sysmat[" << rowgid << "," << colgid << "]-rhs[" << rowgid << "]/eps:  " << left << "   ";
           std::cout << "-rhs_perturbed[" << rowgid << "]/eps:  " << right << "   ";
           std::cout << "absolute error:  " << abserr2 << "   ";
           std::cout << "relative error:  " << relerr2 << std::endl;
@@ -675,7 +980,7 @@ void STI::Algorithm::FDCheck()
     if(counterglobal)
     {
       printf("--> FAILED AS LISTED ABOVE WITH %d CRITICAL MATRIX ENTRIES IN TOTAL\n\n",counterglobal);
-      dserror("Finite difference check failed for scalar transport system matrix!");
+      dserror("Finite difference check failed for STI system matrix!");
     }
     else
       printf("--> PASSED WITH MAXIMUM ABSOLUTE ERROR %+12.5e AND MAXIMUM RELATIVE ERROR %+12.5e\n\n",maxabserrglobal,maxrelerrglobal);

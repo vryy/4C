@@ -26,8 +26,8 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
 
-  Teuchos::ParameterList& s2idyn = list->sublist(
-      "S2I DYNAMIC",
+  Teuchos::ParameterList& s2icoupling = list->sublist("SCALAR TRANSPORT DYNAMIC",true).sublist(
+      "S2I COUPLING",
       false,
       "control parameters for scatra-scatra interface coupling"
       );
@@ -49,7 +49,7 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           matrix_block_condition,
           matrix_block_condition_dof
           ),
-      &s2idyn
+      &s2icoupling
       );
 
   // type of mortar meshtying
@@ -71,7 +71,7 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           mortar_saddlepoint,
           mortar_condensed
           ),
-      &s2idyn
+      &s2icoupling
       );
 
   // flag for equilibration of global system of equations
@@ -91,6 +91,9 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           equilibration_columns,
           equilibration_full
           ),
-      &s2idyn
+      &s2icoupling
       );
+
+  // flag for evaluation of interface linearizations and residuals on slave side only
+  BoolParameter("SLAVEONLY","No","flag for evaluation of interface linearizations and residuals on slave side only",&s2icoupling);
 }

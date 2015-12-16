@@ -1167,45 +1167,38 @@ set(OBJS_DRT_LUBRICATION_LIB
 
 )
 set(OBJS_DRT_SCATRA_LIB
+  src/drt_scatra_ele/scatra_ele.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc.cpp
-  src/drt_scatra_ele/scatra_ele_boundary_calc_std.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_elch.cpp
-  src/drt_scatra_ele/scatra_ele_boundary_calc_elch_NP.cpp
-  src/drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_elch_diffcond.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_sti_thermo.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_calc_elch_NP.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_loma.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_poro.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_calc_std.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_calc_sti_electrode.cpp
   src/drt_scatra_ele/scatra_ele_boundary_evaluate.cpp
-  src/drt_scatra_ele/scatra_ele_factory.cpp
   src/drt_scatra_ele/scatra_ele_boundary_factory.cpp
-  src/drt_scatra_ele/scatra_ele.cpp
-  src/drt_scatra_ele/scatra_ele_evaluate.cpp
-  src/drt_scatra_ele/scatra_ele_input.cpp
   src/drt_scatra_ele/scatra_ele_calc.cpp
-  src/drt_scatra_ele/scatra_ele_calc_OD.cpp
+  src/drt_scatra_ele/scatra_ele_calc_advanced_reaction.cpp
   src/drt_scatra_ele/scatra_ele_calc_aniso.cpp
   src/drt_scatra_ele/scatra_ele_calc_cardiac_monodomain.cpp
-  src/drt_scatra_ele/scatra_ele_calc_std.cpp
+  src/drt_scatra_ele/scatra_ele_calc_chemo.cpp
+  src/drt_scatra_ele/scatra_ele_calc_chemo_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch.cpp
-  src/drt_scatra_ele/scatra_ele_calc_elch_NP.cpp
-  src/drt_scatra_ele/scatra_ele_calc_elch_electrode.cpp
   src/drt_scatra_ele/scatra_ele_calc_elch_diffcond.cpp
+  src/drt_scatra_ele/scatra_ele_calc_elch_diffcond_sti_thermo.cpp
+  src/drt_scatra_ele/scatra_ele_calc_elch_electrode.cpp
+  src/drt_scatra_ele/scatra_ele_calc_elch_electrode_sti_thermo.cpp 
+  src/drt_scatra_ele/scatra_ele_calc_elch_NP.cpp
   src/drt_scatra_ele/scatra_ele_calc_loma.cpp
   src/drt_scatra_ele/scatra_ele_calc_ls.cpp
   src/drt_scatra_ele/scatra_ele_calc_lsreinit.cpp
+  src/drt_scatra_ele/scatra_ele_calc_OD.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro.cpp
-  src/drt_scatra_ele/scatra_ele_calc_advanced_reaction.cpp
-  src/drt_scatra_ele/scatra_ele_calc_chemo.cpp
-  src/drt_scatra_ele/scatra_ele_calc_chemo_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_poro_reac_ECM.cpp
-  src/drt_scatra_ele/scatra_ele_calc_utils.cpp
-  src/drt_scatra_ele/scatra_ele_parameter_std.cpp
-  src/drt_scatra_ele/scatra_ele_parameter_lsreinit.cpp
-  src/drt_scatra_ele/scatra_ele_parameter_elch.cpp
-  src/drt_scatra_ele/scatra_ele_parameter_elch_diffcond.cpp
-  src/drt_scatra_ele/scatra_ele_parameter_timint.cpp
-  src/drt_scatra_ele/scatra_ele_parameter_turbulence.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_general.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_stabilization.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_turbulence.cpp
@@ -1217,6 +1210,21 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_calc_service_elch_diffcond.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_elch.cpp
   src/drt_scatra_ele/scatra_ele_calc_service_cardiac_monodomain.cpp
+  src/drt_scatra_ele/scatra_ele_calc_std.cpp
+  src/drt_scatra_ele/scatra_ele_calc_sti_diffcond.cpp
+  src/drt_scatra_ele/scatra_ele_calc_sti_electrode.cpp
+  src/drt_scatra_ele/scatra_ele_calc_utils.cpp
+  src/drt_scatra_ele/scatra_ele_evaluate.cpp
+  src/drt_scatra_ele/scatra_ele_factory.cpp
+  src/drt_scatra_ele/scatra_ele_input.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_elch.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_elch_diffcond.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_lsreinit.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_std.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_timint.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_turbulence.cpp
+  src/drt_scatra_ele/scatra_ele_sti_elch.cpp
+  src/drt_scatra_ele/scatra_ele_sti_thermo.cpp
   src/drt_scatra_ele/scatra_ele_utils_elch.cpp
   src/drt_scatra_ele/scatra_ele_utils_elch_diffcond.cpp
   src/drt_scatra_ele/scatra_ele_utils_elch_electrode.cpp

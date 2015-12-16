@@ -2,7 +2,7 @@
 /*!
 \file scatra_ele_calc_elch_electrode.cpp
 
-\brief evaluation of scatra elements for conservation of mass concentration and electronic charge within electrodes
+\brief evaluation of scatra elements for conservation of mass concentration and electronic charge within isothermal electrodes
 
 <pre>
 Maintainer: Rui Fang

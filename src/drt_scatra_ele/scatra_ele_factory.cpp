@@ -28,6 +28,10 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_calc_poro_reac.H"
 #include "scatra_ele_calc_aniso.H"
 #include "scatra_ele_calc_cardiac_monodomain.H"
+#include "scatra_ele_calc_elch_diffcond_sti_thermo.H"
+#include "scatra_ele_calc_elch_electrode_sti_thermo.H"
+#include "scatra_ele_calc_sti_diffcond.H"
+#include "scatra_ele_calc_sti_electrode.H"
 
 #include "../drt_meshfree_discret/meshfree_scatra_cell_calc_std.H"
 
@@ -262,14 +266,12 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   }
   case INPAR::SCATRA::impltype_thermo_elch_electrode:
   {
-    // to be implemented soon...
-    return NULL;
+    return DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_thermo_elch_diffcond:
   {
-    // to be implemented soon...
-    return NULL;
+    return DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_levelset:
@@ -299,8 +301,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   }
   case INPAR::SCATRA::impltype_elch_electrode_thermo:
   {
-    // to be implemented soon...
-    return NULL;
+    return DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_elch_diffcond:
@@ -310,8 +311,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
   }
   case INPAR::SCATRA::impltype_elch_diffcond_thermo:
   {
-    // to be implemented soon...
-    return NULL;
+    return DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_poro:

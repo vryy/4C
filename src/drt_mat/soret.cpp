@@ -40,7 +40,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Soret::CreateMaterial()
 
 MAT::SoretType MAT::SoretType::instance_;
 
-const DRT::ParObject* MAT::SoretType::Create(const std::vector<char>& data) const
+DRT::ParObject* MAT::SoretType::Create(const std::vector<char>& data)
 {
   MAT::Soret* soret = new MAT::Soret();
   soret->Unpack(data);

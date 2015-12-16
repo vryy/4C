@@ -168,8 +168,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcElchBoundaryKinetics
     for(int kk=0; kk<my::numscal_; ++kk)
       reactspecies += abs((*stoich)[kk]);
 
-    if(reactspecies>1 and (kinetics==INPAR::SCATRA::butler_volmer or kinetics == INPAR::SCATRA::butler_volmer_yang1997 or
-        kinetics == INPAR::SCATRA::tafel or kinetics == INPAR::SCATRA::linear))
+    if(reactspecies>1 and (kinetics==INPAR::ELCH::butler_volmer or kinetics == INPAR::ELCH::butler_volmer_yang1997 or
+        kinetics == INPAR::ELCH::tafel or kinetics == INPAR::ELCH::linear))
       dserror("Kinetic model Butler-Volmer / Butler-Volmer-Yang / Tafel and Linear: \n"
           "Only one educt and no product is allowed in the implemented version");
   }
@@ -293,7 +293,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
   const int  kinetics = cond->GetInt("kinetic model");
 
   // Nernst-BC
-  if(kinetics == INPAR::SCATRA::nernst)
+  if(kinetics == INPAR::ELCH::nernst)
   {
     // get actual values of transported scalars
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -374,7 +374,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>::CalcNernstLinearization(
          }
       } // end of loop over integration points gpid
     } // end loop over scalars
-  }  // end if(kinetics == INPAR::SCATRA::nernst)
+  }  // end if(kinetics == INPAR::ELCH::nernst)
 }
 
 

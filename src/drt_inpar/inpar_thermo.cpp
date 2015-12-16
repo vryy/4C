@@ -314,5 +314,39 @@ void INPAR::THR::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
   condlist.push_back(linethermoconvect);
   condlist.push_back(surfthermoconvect);
 
-}
+  /*--------------------------------------------------------------------*/
+  // Robin boundary conditions for heat transfer
+  Teuchos::RCP<ConditionDefinition> thermorobinline = Teuchos::rcp(new ConditionDefinition(
+      "THERMO ROBIN LINE CONDITIONS",
+      "ThermoRobin",
+      "Thermo Robin boundary condition",
+      DRT::Condition::ThermoRobin,
+      true,
+      DRT::Condition::Line
+      )
+  );
+  Teuchos::RCP<ConditionDefinition> thermorobinsurf = Teuchos::rcp(new ConditionDefinition(
+      "THERMO ROBIN SURF CONDITIONS",
+      "ThermoRobin",
+      "Thermo Robin boundary condition",
+      DRT::Condition::ThermoRobin,
+      true,
+      DRT::Condition::Surface
+      )
+  );
 
+  std::vector<Teuchos::RCP<ConditionComponent> > thermorobincomponents;
+  thermorobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("Prefactor")));
+  thermorobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("Prefactor")));
+  thermorobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("Refvalue")));
+  thermorobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("Refvalue")));
+
+  for(unsigned i=0; i<thermorobincomponents.size(); ++i)
+  {
+    thermorobinline->AddComponent(thermorobincomponents[i]);
+    thermorobinsurf->AddComponent(thermorobincomponents[i]);
+  }
+
+  condlist.push_back(thermorobinline);
+  condlist.push_back(thermorobinsurf);
+}

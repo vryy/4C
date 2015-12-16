@@ -34,7 +34,8 @@ namespace INPAR
     enum KineticModels
     {
       kinetics_constperm,
-      kinetics_butlervolmer
+      kinetics_butlervolmer,
+      kinetics_butlervolmerpeltier
     };
 
     //! type of global system matrix in global system of equations

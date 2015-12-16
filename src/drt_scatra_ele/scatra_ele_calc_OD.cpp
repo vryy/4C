@@ -58,39 +58,78 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateOD(
   // calculate element coefficient matrix
   //--------------------------------------------------------------------------------
 
-  // check for the action parameter
+  // extract action parameter
   const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
-  switch(action)
-  {
-  case SCATRA::calc_scatra_mono_odblock_mesh:
-  {
-    const int ndofpernodemesh = nsd_;
 
-    SysmatODMesh(
+  // evaluate action
+  EvaluateActionOD(
       ele,
+      params,
+      discretization,
+      action,
+      la,
       elemat1_epetra,
-      ndofpernodemesh);
-    break;
-  }
-  case SCATRA::calc_scatra_mono_odblock_fluid:
-  {
-    const int numdofpernode_fluid = nsd_+1;
-
-    SysmatODFluid(
-      ele,
-      elemat1_epetra,
-      numdofpernode_fluid);
-    break;
-  }
-  default:
-  {
-    dserror("Not acting on action %i. Forgot implementation?", action);
-    break;
-  }
-  }
+      elemat2_epetra,
+      elevec1_epetra,
+      elevec2_epetra,
+      elevec3_epetra
+      );
 
   return 0;
 }
+
+
+/*----------------------------------------------------------------------*
+ | evaluate action for off-diagonal system matrix block      fang 11/15 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateActionOD(
+    DRT::Element*                 ele,
+    Teuchos::ParameterList&       params,
+    DRT::Discretization&          discretization,
+    const SCATRA::Action&         action,
+    DRT::Element::LocationArray&  la,
+    Epetra_SerialDenseMatrix&     elemat1_epetra,
+    Epetra_SerialDenseMatrix&     elemat2_epetra,
+    Epetra_SerialDenseVector&     elevec1_epetra,
+    Epetra_SerialDenseVector&     elevec2_epetra,
+    Epetra_SerialDenseVector&     elevec3_epetra
+    )
+{
+  // determine and evaluate action
+  switch(action)
+  {
+    case SCATRA::calc_scatra_mono_odblock_mesh:
+    {
+      SysmatODMesh(
+          ele,
+          elemat1_epetra,
+          nsd_
+        );
+
+      break;
+    }
+
+    case SCATRA::calc_scatra_mono_odblock_fluid:
+    {
+      SysmatODFluid(
+        ele,
+        elemat1_epetra,
+        nsd_+1);
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Not acting on action %i. Forgot implementation?", action);
+      break;
+    }
+  } // switch(action)
+
+  return 0;
+}
+
 
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                 vuong 08/14|

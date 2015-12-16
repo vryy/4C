@@ -203,19 +203,6 @@ namespace INPAR
       consistency_l2_projection_lumped
     };
 
-    /// type of boundary kinetics
-    enum BoundaryKinetics
-    {
-      butler_volmer,
-      butler_volmer_yang1997,
-      tafel,
-      linear,
-      butler_volmer_newman,
-      butler_volmer_bard,
-      nernst,
-      zero
-    };
-
     /// type of finite difference check
     enum FDCheck
     {

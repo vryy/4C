@@ -7,20 +7,16 @@
 <pre>
 Maintainer: Rui Fang
             fang@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
-
 /*----------------------------------------------------------------------*/
-
-
+#include "inpar_elch.H"
 
 #include "drt_validparameters.H"
-#include "inpar_elch.H"
-#include "inpar_scatra.H"
+
 #include "../drt_lib/drt_conditiondefinition.H"
-
-
 
 void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -45,7 +41,7 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  "no moving boundary algorithm",
                                  "pseudo-transient moving boundary algorithm",
                                  "full moving boundary algorithm including fluid solve")  ,
-                                tuple<int>(
+                               tuple<int>(
                                   elch_mov_bndry_no,
                                   elch_mov_bndry_pseudo_transient,
                                   elch_mov_bndry_fully_transient),
@@ -60,10 +56,10 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     "relation_pot_cur",
                                     "effective_length_with_initial_cond",
                                     "effective_length_with_integrated_cond"),
-                                   tuple<int>(
-                                     approxelctresist_relpotcur,
-                                     approxelctresist_effleninitcond,
-                                     approxelctresist_efflenintegcond),
+                                  tuple<int>(
+                                    approxelctresist_relpotcur,
+                                    approxelctresist_effleninitcond,
+                                    approxelctresist_efflenintegcond),
                                     &elchcontrol);
   IntParameter("GSTATCONDID_CATHODE",0,"condition id of electrode kinetics for cathode",&elchcontrol);
   IntParameter("GSTATCONDID_ANODE",1,"condition id of electrode kinetics for anode",&elchcontrol);
@@ -84,14 +80,14 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                   "Poisson",
                                   "Laplace",
                                   "divi"),
-                                 tuple<int>(
-                                   equpot_undefined,
-                                   equpot_enc,
-                                   equpot_enc_pde,
-                                   equpot_enc_pde_elim,
-                                   equpot_poisson,
-                                   equpot_laplace,
-                                   equpot_divi),
+                                tuple<int>(
+                                  equpot_undefined,
+                                  equpot_enc,
+                                  equpot_enc_pde,
+                                  equpot_enc_pde_elim,
+                                  equpot_poisson,
+                                  equpot_laplace,
+                                  equpot_divi),
                                   &elchcontrol);
   BoolParameter("BLOCKPRECOND","NO","Switch to block-preconditioned family of solvers, only works with block preconditioners like CheapSIMPLE!",&elchcontrol);
   BoolParameter("DIFFCOND_FORMULATION","No","Activation of diffusion-conduction formulation",&elchcontrol);
@@ -121,8 +117,6 @@ void INPAR::ELCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 }
 
 
-
-/// set specific mortar conditions
 void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist)
 {
   using namespace DRT::INPUT;
@@ -130,7 +124,14 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
   /*--------------------------------------------------------------------*/
   // electrode state of charge
   {
-    // definition of electrode state of charge volume condition
+    // definition of electrode state of charge surface and volume conditions
+    Teuchos::RCP<ConditionDefinition> electrodesocsurf =
+        Teuchos::rcp(new ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE SURF CONDITIONS",
+                                             "ElectrodeSOC",
+                                             "electrode state of charge surface condition",
+                                             DRT::Condition::ElectrodeSOC,
+                                             true,
+                                             DRT::Condition::Surface));
     Teuchos::RCP<ConditionDefinition> electrodesocvol =
         Teuchos::rcp(new ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS",
                                              "ElectrodeSOC",
@@ -139,7 +140,7 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
                                              true,
                                              DRT::Condition::Volume));
 
-    // equip condition definition with input file line components
+    // equip condition definitions with input file line components
     std::vector<Teuchos::RCP<ConditionComponent> > electrodesoccomponents;
 
     {
@@ -151,14 +152,17 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
       electrodesoccomponents.push_back(Teuchos::rcp(new RealConditionComponent("c_100%")));
     }
 
-    // insert input file line components into condition definition
+    // insert input file line components into condition definitions
     for (unsigned i=0; i<electrodesoccomponents.size(); ++i)
+    {
+      electrodesocsurf->AddComponent(electrodesoccomponents[i]);
       electrodesocvol->AddComponent(electrodesoccomponents[i]);
+    }
 
-    // insert condition definition into global list of valid condition definitions
+    // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(electrodesocsurf);
     condlist.push_back(electrodesocvol);
   }
-
 
   /*--------------------------------------------------------------------*/
   // cell voltage
@@ -222,7 +226,7 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
     butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer",
                                                              butlervolmer,
-                                                             INPAR::SCATRA::butler_volmer)));
+                                                             INPAR::ELCH::butler_volmer)));
 
     // Butler-Volmer Yang
     // parameter are identical to Butler-Volmer
@@ -242,7 +246,7 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
     butlervolmeryang.push_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Yang1997",
                                                              butlervolmeryang,
-                                                             INPAR::SCATRA::butler_volmer_yang1997)));
+                                                             INPAR::ELCH::butler_volmer_yang1997)));
 
     // Tafel kinetics
     std::vector<Teuchos::RCP<ConditionComponent> > tafel;
@@ -258,7 +262,7 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
     tafel.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Tafel",
                                                              tafel,
-                                                             INPAR::SCATRA::tafel)));
+                                                             INPAR::ELCH::tafel)));
 
     // linear kinetics
     std::vector<Teuchos::RCP<ConditionComponent> > linear;
@@ -275,7 +279,7 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
     linear.push_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("linear",
                                                                    linear,
-                                                                   INPAR::SCATRA::linear)));
+                                                                   INPAR::ELCH::linear)));
 
     // Butler-Volmer-Newman: "Newman (book), 2004, p. 213, eq. 8.26"
     //                       "Wittmann (Bachelor thesis), 2011, p. 15, eq. 2.30"
@@ -291,7 +295,7 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
     bvnewman.push_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Newman",
                                                               bvnewman,
-                                                              INPAR::SCATRA::butler_volmer_newman)));
+                                                              INPAR::ELCH::butler_volmer_newman)));
 
     // Butler-Volmer-Newman: "Bard (book), 2001, p. 99, eq. 3.4.10"
     //                       "Wittmann (Bachelor thesis), 2011, p. 16, eq. 2.32"
@@ -311,7 +315,7 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
     bvbard.push_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Bard",
                                                               bvbard,
-                                                              INPAR::SCATRA::butler_volmer_bard)));
+                                                              INPAR::ELCH::butler_volmer_bard)));
 
     // Nernst equation:
     std::vector<Teuchos::RCP<ConditionComponent> > nernst;
@@ -323,7 +327,7 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
     nernst.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Nernst",
                                                               nernst,
-                                                              INPAR::SCATRA::nernst)));
+                                                              INPAR::ELCH::nernst)));
 
     // input: stoichiometry for reaction mechanism (IntRealBundle)
     // definition separator for int vectors
@@ -370,14 +374,14 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
            "Butler-Volmer",
            Teuchos::tuple<std::string>("Butler-Volmer","Butler-Volmer-Yang1997","Tafel","linear",
                                        "Butler-Volmer-Newman","Butler-Volmer-Bard","Nernst","zero"),
-           Teuchos::tuple<int>(INPAR::SCATRA::butler_volmer,
-                               INPAR::SCATRA::butler_volmer_yang1997,
-                               INPAR::SCATRA::tafel,
-                               INPAR::SCATRA::linear,
-                               INPAR::SCATRA::butler_volmer_newman,
-                               INPAR::SCATRA::butler_volmer_bard,
-                               INPAR::SCATRA::nernst,
-                               INPAR::SCATRA::zero))),
+           Teuchos::tuple<int>(INPAR::ELCH::butler_volmer,
+                               INPAR::ELCH::butler_volmer_yang1997,
+                               INPAR::ELCH::tafel,
+                               INPAR::ELCH::linear,
+                               INPAR::ELCH::butler_volmer_newman,
+                               INPAR::ELCH::butler_volmer_bard,
+                               INPAR::ELCH::nernst,
+                               INPAR::ELCH::zero))),
         reactionmodel)));
 
     Teuchos::RCP<ConditionDefinition> electrodeboundarykineticspoint =
@@ -505,7 +509,7 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
         butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("dl_spec_cap")));
         butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
         butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("END")));
-        kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer",butlervolmer,INPAR::SCATRA::butler_volmer)));
+        kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer",butlervolmer,INPAR::ELCH::butler_volmer)));
       }
 
       electrodedomainkineticscomponents.push_back(Teuchos::rcp(new CondCompBundleSelector(
@@ -514,7 +518,7 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
               "kinetic model",
               "Butler-Volmer",
               Teuchos::tuple<std::string>("Butler-Volmer"),
-              Teuchos::tuple<int>(INPAR::SCATRA::butler_volmer))),
+              Teuchos::tuple<int>(INPAR::ELCH::butler_volmer))),
           kineticmodels)));
     }
 
@@ -531,5 +535,4 @@ void INPAR::ELCH::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
     condlist.push_back(electrodedomainkineticssurf);
     condlist.push_back(electrodedomainkineticsvol);
   }
-
 }

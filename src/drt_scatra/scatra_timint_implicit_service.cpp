@@ -1959,10 +1959,10 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
   double maxabserr(0.);
   double maxrelerr(0.);
 
-  for (int col=0; col<=sysmat_original->ColMap().MaxAllGID(); ++col)
+  for (int colgid=0; colgid<=sysmat_original->ColMap().MaxAllGID(); ++colgid)
   {
     // check whether current column index is a valid global column index and continue loop if not
-    int collid(sysmat_original->ColMap().LID(col));
+    int collid(sysmat_original->ColMap().LID(colgid));
     int maxcollid(-1);
     discret_->Comm().MaxAll(&collid,&maxcollid,1);
     if(maxcollid < 0)
@@ -1972,8 +1972,8 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
     phinp_->Update(1.,*phinp_original,0.);
 
     // impose perturbation
-    if(phinp_->Map().MyGID(col))
-      if(phinp_->SumIntoGlobalValue(col,0,fdcheckeps_))
+    if(phinp_->Map().MyGID(colgid))
+      if(phinp_->SumIntoGlobalValue(colgid,0,fdcheckeps_))
         dserror("Perturbation could not be imposed on state vector for finite difference check!");
 
     // carry perturbation over to state vectors at intermediate time stages if necessary
@@ -2009,7 +2009,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
       sysmat_original->ExtractMyRowCopy(rowlid,length,numentries,&values[0],&indices[0]);
       for(int ientry=0; ientry<length; ++ientry)
       {
-        if(sysmat_original->ColMap().GID(indices[ientry]) == col)
+        if(sysmat_original->ColMap().GID(indices[ientry]) == colgid)
         {
           entry = values[ientry];
           break;
@@ -2038,7 +2038,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
       // evaluate first comparison
       if(abs(relerr1) > fdchecktol_)
       {
-        std::cout << "sysmat[" << rowgid << "," << col << "]:  " << entry << "   ";
+        std::cout << "sysmat[" << rowgid << "," << colgid << "]:  " << entry << "   ";
         std::cout << "finite difference suggestion:  " << fdval << "   ";
         std::cout << "absolute error:  " << abserr1 << "   ";
         std::cout << "relative error:  " << relerr1 << std::endl;
@@ -2074,7 +2074,7 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
         // evaluate second comparison
         if(abs(relerr2) > fdchecktol_)
         {
-          std::cout << "sysmat[" << rowgid << "," << col << "]-rhs[" << rowgid << "]/eps:  " << left << "   ";
+          std::cout << "sysmat[" << rowgid << "," << colgid << "]-rhs[" << rowgid << "]/eps:  " << left << "   ";
           std::cout << "-rhs_perturbed[" << rowgid << "]/eps:  " << right << "   ";
           std::cout << "absolute error:  " << abserr2 << "   ";
           std::cout << "relative error:  " << relerr2 << std::endl;

@@ -60,7 +60,7 @@ namespace MAT
 
       static SoretType& Instance() {return instance_;};
 
-      const DRT::ParObject* Create(const std::vector<char>& data) const;
+      DRT::ParObject* Create(const std::vector<char>& data);
 
     private:
 

@@ -47,7 +47,7 @@ EVALUATION_MAT                  integration_point
 INITPOTCALC                     yes
 DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
------------------------------------------------------------------S2I DYNAMIC
+---------------------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 MORTARTYPE                      NoMortar
 MATRIXTYPE                      block_condition
 EQUILIBRATION                   rows

@@ -100,5 +100,9 @@ void DRT::ELEMENTS::ScaTraEleParameterElch::SetParameters(
   // get parameter F/RT
   frt_ = parameters.get<double>("frt");
 
+  // safety check
+  if(frt_ <= 0.)
+    dserror("Factor F/RT is non-positive!");
+
   return;
 }

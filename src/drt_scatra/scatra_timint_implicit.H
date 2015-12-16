@@ -331,6 +331,12 @@ public:
   const double FDCheckEps() const {return fdcheckeps_;};
   const double FDCheckTol() const {return fdchecktol_;};
 
+  //! return meshtying strategy (includes standard case without meshtying)
+  const Teuchos::RCP<SCATRA::MeshtyingStrategyBase>& Strategy() const {return strategy_;};
+
+  //! return flag for scatra-scatra interface coupling
+  const bool& S2ICoupling() const {return s2icoupling_;};
+
   /*========================================================================*/
   //! @name Time, time-step and related methods
   /*========================================================================*/

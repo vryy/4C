@@ -44,6 +44,7 @@ blockmaps_master_(Teuchos::null),
 icoup_(Teuchos::null),
 islavematrix_(Teuchos::null),
 imastermatrix_(Teuchos::null),
+imastertoslaverowtransform_(Teuchos::null),
 islavetomastercoltransform_(Teuchos::null),
 islavetomasterrowtransform_(Teuchos::null),
 islavetomasterrowcoltransform_(Teuchos::null),
@@ -63,7 +64,8 @@ colequilibration_(
     or
     DRT::INPUT::IntegralValue<INPAR::S2I::EquilibrationMethods>(*parameters_,"EQUILIBRATION") == INPAR::S2I::equilibration_full
     ),
-mortartype_(DRT::INPUT::IntegralValue<INPAR::S2I::MortarType>(*parameters_,"MORTARTYPE"))
+mortartype_(DRT::INPUT::IntegralValue<INPAR::S2I::MortarType>(*parameters_,"MORTARTYPE")),
+slaveonly_(DRT::INPUT::IntegralValue<bool>(*parameters_,"SLAVEONLY"))
 {
   return;
 } // SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I
@@ -97,14 +99,19 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
 
     // evaluate scatra-scatra interface coupling at time t_{n+1} or t_{n+alpha_F}
     islavematrix_->Zero();
-    imastermatrix_->Zero();
+    if(not slaveonly_)
+      imastermatrix_->Zero();
     islaveresidual_->PutScalar(0.);
-    scatratimint_->Discretization()->EvaluateCondition(condparams,islavematrix_,imastermatrix_,islaveresidual_,Teuchos::null,Teuchos::null,"S2ICouplingSlave");
+    if(not slaveonly_)
+      scatratimint_->Discretization()->EvaluateCondition(condparams,islavematrix_,imastermatrix_,islaveresidual_,Teuchos::null,Teuchos::null,"S2ICouplingSlave");
+    else
+      scatratimint_->Discretization()->EvaluateCondition(condparams,islavematrix_,Teuchos::null,islaveresidual_,Teuchos::null,Teuchos::null,"S2ICouplingSlave");
     scatratimint_->Discretization()->ClearState();
 
     // finalize interface matrices
     islavematrix_->Complete();
-    imastermatrix_->Complete();
+    if(not slaveonly_)
+      imastermatrix_->Complete();
 
     // assemble global system matrix depending on matrix type
     switch(matrixtype_)
@@ -119,15 +126,90 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
         // assemble linearizations of slave fluxes w.r.t. slave dofs into global system matrix
         systemmatrix->Add(*islavematrix_,false,1.,1.);
 
-        // transform linearizations of slave fluxes w.r.t. master dofs and assemble into global system matrix
-        (*islavetomastercoltransform_)(imastermatrix_->RowMap(),imastermatrix_->ColMap(),*imastermatrix_,1.,
-            ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true,true);
+        if(not slaveonly_)
+        {
+          // transform linearizations of slave fluxes w.r.t. master dofs and assemble into global system matrix
+          (*islavetomastercoltransform_)(imastermatrix_->RowMap(),imastermatrix_->ColMap(),*imastermatrix_,1.,
+              ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true,true);
 
-        // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global system matrix
-        (*islavetomasterrowtransform_)(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true);
+          // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global system matrix
+          (*islavetomasterrowtransform_)(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true);
 
-        // derive linearizations of master fluxes w.r.t. master dofs and assemble into global system matrix
-        (*islavetomasterrowcoltransform_)(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true,true);
+          // derive linearizations of master fluxes w.r.t. master dofs and assemble into global system matrix
+          (*islavetomasterrowcoltransform_)(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),*systemmatrix,true,true);
+        }
+
+        // In case the interface linearizations and residuals are evaluated on slave side only,
+        // we now apply a standard meshtying algorithm to condense out the master-side degrees of freedom.
+        else
+        {
+          // initialize temporary matrix for master-side rows of system matrix
+          LINALG::SparseMatrix systemmatrixrowsmaster(*icoup_->MasterDofMap(),81);
+
+          // loop over all master-side rows of system matrix
+          for(int masterdoflid=0; masterdoflid<icoup_->MasterDofMap()->NumMyElements(); ++masterdoflid)
+          {
+            // determine global ID of current matrix row
+            const int masterdofgid = icoup_->MasterDofMap()->GID(masterdoflid);
+            if(masterdofgid < 0)
+              dserror("Couldn't find local ID %d in map!",masterdoflid);
+
+            // extract current matrix row from system matrix
+            const int length = systemmatrix->EpetraMatrix()->NumGlobalEntries(masterdofgid);
+            int numentries(0);
+            std::vector<double> values(length,0.);
+            std::vector<int> indices(length,0);
+            if(systemmatrix->EpetraMatrix()->ExtractGlobalRowCopy(masterdofgid,length,numentries,&values[0],&indices[0]) != 0)
+              dserror("Cannot extract matrix row with global ID %d from system matrix!",masterdofgid);
+
+            // copy current matrix row of system matrix into temporary matrix
+            if(systemmatrixrowsmaster.EpetraMatrix()->InsertGlobalValues(masterdofgid,numentries,&values[0],&indices[0]) < 0)
+              dserror("Cannot insert matrix row with global ID %d into temporary matrix!",masterdofgid);
+          }
+
+          // zero out master-side rows of system matrix and put a one on the main diagonal
+          systemmatrix->Complete();
+          systemmatrix->ApplyDirichlet(*icoup_->MasterDofMap(),true);
+          systemmatrix->UnComplete();
+
+          // loop over all master-side rows of system matrix
+          for(int masterdoflid=0; masterdoflid<icoup_->MasterDofMap()->NumMyElements(); ++masterdoflid)
+          {
+            // determine global ID of current matrix row
+            const int masterdofgid = icoup_->MasterDofMap()->GID(masterdoflid);
+            if(masterdofgid < 0)
+              dserror("Couldn't find local ID %d in map!",masterdoflid);
+
+            // determine global ID of associated slave-side matrix column
+            const int slavedofgid = icoup_->PermSlaveDofMap()->GID(masterdoflid);
+            if(slavedofgid < 0)
+              dserror("Couldn't find local ID %d in permuted map!",masterdoflid);
+
+            // insert value -1. into intersection of master-side row and slave-side column in system matrix
+            // this effectively forces the master-side degree of freedom to assume the same value as the slave-side degree of freedom
+            const double value(-1.);
+            if(systemmatrix->EpetraMatrix()->InsertGlobalValues(masterdofgid,1,&value,&slavedofgid) < 0)
+              dserror("Cannot insert value -1. into matrix row with global ID %d and matrix column with global ID %d!",masterdofgid,slavedofgid);
+
+            // insert zero into intersection of master-side row and slave-side column in temporary matrix
+            // this prevents the system matrix from changing its graph when calling this function again during the next Newton iteration
+            const double zero(0.);
+            if(systemmatrixrowsmaster.EpetraMatrix()->InsertGlobalValues(masterdofgid,1,&zero,&slavedofgid) < 0)
+              dserror("Cannot insert zero into matrix row with global ID %d and matrix column with global ID %d!",masterdofgid,slavedofgid);
+          }
+
+          // finalize temporary matrix with master-side rows of system matrix
+          systemmatrixrowsmaster.Complete(*scatratimint_->DofRowMap(),*icoup_->MasterDofMap());
+
+          // add master-side rows of system matrix to corresponding slave-side rows to finalize matrix condensation of master-side degrees of freedom
+          (*imastertoslaverowtransform_)(
+              systemmatrixrowsmaster,
+              1.,
+              ADAPTER::CouplingMasterConverter(*icoup_),
+              *systemmatrix,
+              true
+              );
+        }
 
         break;
       }
@@ -142,15 +224,22 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
         // assemble linearizations of slave fluxes w.r.t. slave dofs into global system matrix
         blocksystemmatrix->Matrix(1,1).Add(*islavematrix_,false,1.,1.);
 
-        // transform linearizations of slave fluxes w.r.t. master dofs and assemble into global system matrix
-        (*islavetomastercoltransform_)(imastermatrix_->RowMap(),imastermatrix_->ColMap(),*imastermatrix_,1.,
-            ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(1,2));
+        if(not slaveonly_)
+        {
+          // transform linearizations of slave fluxes w.r.t. master dofs and assemble into global system matrix
+          (*islavetomastercoltransform_)(imastermatrix_->RowMap(),imastermatrix_->ColMap(),*imastermatrix_,1.,
+              ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(1,2));
 
-        // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global system matrix
-        (*islavetomasterrowtransform_)(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(2,1));
+          // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global system matrix
+          (*islavetomasterrowtransform_)(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(2,1));
 
-        // derive linearizations of master fluxes w.r.t. master dofs and assemble into global system matrix
-        (*islavetomasterrowcoltransform_)(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(2,2),true,true);
+          // derive linearizations of master fluxes w.r.t. master dofs and assemble into global system matrix
+          (*islavetomasterrowcoltransform_)(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),blocksystemmatrix->Matrix(2,2),true,true);
+        }
+
+        // safety check
+        else
+          dserror("Scatra-scatra interface coupling with evaluation of interface linearizations and residuals on slave side only is not yet available for block system matrices!");
 
         break;
       }
@@ -163,36 +252,46 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
         if(blocksystemmatrix == Teuchos::null)
           dserror("System matrix is not a block matrix!");
 
-        Teuchos::RCP<LINALG::SparseMatrix> ksm(Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->SlaveDofMap(),81,false)));
-        Teuchos::RCP<LINALG::SparseMatrix> kms(Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->MasterDofMap(),81,false)));
-        Teuchos::RCP<LINALG::SparseMatrix> kmm(Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->MasterDofMap(),81,false)));
-
-        // transform linearizations of slave fluxes w.r.t. master dofs
-        (*islavetomastercoltransform_)(imastermatrix_->RowMap(),imastermatrix_->ColMap(),*imastermatrix_,1.,ADAPTER::CouplingSlaveConverter(*icoup_),*ksm);
-        ksm->Complete(*icoup_->MasterDofMap(),*icoup_->SlaveDofMap());
-
-        // derive linearizations of master fluxes w.r.t. slave dofs
-        (*islavetomasterrowtransform_)(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),*kms);
-        kms->Complete(*icoup_->SlaveDofMap(),*icoup_->MasterDofMap());
-
-        // derive linearizations of master fluxes w.r.t. master dofs
-        (*islavetomasterrowcoltransform_)(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),*kmm);
-        kmm->Complete();
-
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockkss(islavematrix_->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_slave_,*blockmaps_slave_));
         blockkss->Complete();
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockksm(ksm->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_master_,*blockmaps_slave_));
-        blockksm->Complete();
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockkms(kms->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_slave_,*blockmaps_master_));
-        blockkms->Complete();
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockkmm(kmm->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_master_,*blockmaps_master_));
-        blockkmm->Complete();
 
-        // assemble interface block matrices into global block system matrix
+        // assemble interface block matrix into global block system matrix
         blocksystemmatrix->Add(*blockkss,false,1.,1.);
-        blocksystemmatrix->Add(*blockksm,false,1.,1.);
-        blocksystemmatrix->Add(*blockkms,false,1.,1.);
-        blocksystemmatrix->Add(*blockkmm,false,1.,1.);
+
+        if(not slaveonly_)
+        {
+          Teuchos::RCP<LINALG::SparseMatrix> ksm(Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->SlaveDofMap(),81,false)));
+          Teuchos::RCP<LINALG::SparseMatrix> kms(Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->MasterDofMap(),81,false)));
+          Teuchos::RCP<LINALG::SparseMatrix> kmm(Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->MasterDofMap(),81,false)));
+
+          // transform linearizations of slave fluxes w.r.t. master dofs
+          (*islavetomastercoltransform_)(imastermatrix_->RowMap(),imastermatrix_->ColMap(),*imastermatrix_,1.,ADAPTER::CouplingSlaveConverter(*icoup_),*ksm);
+          ksm->Complete(*icoup_->MasterDofMap(),*icoup_->SlaveDofMap());
+
+          // derive linearizations of master fluxes w.r.t. slave dofs
+          (*islavetomasterrowtransform_)(*islavematrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),*kms);
+          kms->Complete(*icoup_->SlaveDofMap(),*icoup_->MasterDofMap());
+
+          // derive linearizations of master fluxes w.r.t. master dofs
+          (*islavetomasterrowcoltransform_)(*imastermatrix_,-1.,ADAPTER::CouplingSlaveConverter(*icoup_),ADAPTER::CouplingSlaveConverter(*icoup_),*kmm);
+          kmm->Complete();
+
+          Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockksm(ksm->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_master_,*blockmaps_slave_));
+          blockksm->Complete();
+          Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockkms(kms->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_slave_,*blockmaps_master_));
+          blockkms->Complete();
+          Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockkmm(kmm->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_master_,*blockmaps_master_));
+          blockkmm->Complete();
+
+          // assemble interface block matrices into global block system matrix
+          blocksystemmatrix->Add(*blockksm,false,1.,1.);
+          blocksystemmatrix->Add(*blockkms,false,1.,1.);
+          blocksystemmatrix->Add(*blockkmm,false,1.,1.);
+        }
+
+        // safety check
+        else
+          dserror("Scatra-scatra interface coupling with evaluation of interface linearizations and residuals on slave side only is not yet available for block system matrices!");
 
         break;
       }
@@ -207,8 +306,37 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
     // assemble slave residuals into global residual vector
     interfacemaps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
 
-    // transform master residuals and assemble into global residual vector
-    interfacemaps_->AddVector(icoup_->SlaveToMaster(islaveresidual_),2,scatratimint_->Residual(),-1.);
+    if(not slaveonly_)
+      // transform master residuals and assemble into global residual vector
+      interfacemaps_->AddVector(icoup_->SlaveToMaster(islaveresidual_),2,scatratimint_->Residual(),-1.);
+
+    // In case the interface linearizations and residuals are evaluated on slave side only,
+    // we now apply a standard meshtying algorithm to condense out the master-side degrees of freedom.
+    else
+    {
+      // initialize temporary vector for master-side entries of residual vector
+      Teuchos::RCP<Epetra_Vector> residualmaster = Teuchos::rcp(new Epetra_Vector(*icoup_->MasterDofMap()));
+
+      // loop over all master-side entries of residual vector
+      for(int masterdoflid=0; masterdoflid<icoup_->MasterDofMap()->NumMyElements(); ++masterdoflid)
+      {
+        // determine global ID of current vector entry
+        const int masterdofgid = icoup_->MasterDofMap()->GID(masterdoflid);
+        if(masterdofgid < 0)
+          dserror("Couldn't find local ID %d in map!",masterdoflid);
+
+        // copy current vector entry into temporary vector
+        if(residualmaster->ReplaceGlobalValue(masterdofgid,0,(*scatratimint_->Residual())[scatratimint_->DofRowMap()->LID(masterdofgid)]))
+          dserror("Cannot insert residual vector entry with global ID %d into temporary vector!",masterdofgid);
+
+        // zero out current vector entry
+        if(scatratimint_->Residual()->ReplaceGlobalValue(masterdofgid,0,0.))
+          dserror("Cannot insert zero into residual vector entry with global ID %d!",masterdofgid);
+      }
+
+      // add master-side entries of residual vector to corresponding slave-side entries to finalize vector condensation of master-side degrees of freedom
+      interfacemaps_->AddVector(icoup_->MasterToSlave(residualmaster),1,scatratimint_->Residual());
+    }
 
     break;
   }
@@ -324,9 +452,14 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     // initialize auxiliary system matrices and associated transformation operators
     islavematrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*(icoup_->SlaveDofMap()),81));
     imastermatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*(icoup_->SlaveDofMap()),81));
-    islavetomastercoltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
-    islavetomasterrowtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
-    islavetomasterrowcoltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
+    if(not slaveonly_)
+    {
+      islavetomastercoltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixColTransform);
+      islavetomasterrowtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
+      islavetomasterrowcoltransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowColTransform);
+    }
+    else
+      imastertoslaverowtransform_ = Teuchos::rcp(new FSI::UTILS::MatrixRowTransform);
 
     // initialize auxiliary residual vector
     islaveresidual_ = Teuchos::rcp(new Epetra_Vector(*(icoup_->SlaveDofMap())));

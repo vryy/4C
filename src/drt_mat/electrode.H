@@ -27,7 +27,8 @@ namespace MAT
     enum OCPModels
     {
       ocp_undefined,
-      ocp_redlichkister
+      ocp_redlichkister,
+      ocp_taralov
     };
 
     //! parameters for electrode material
@@ -151,6 +152,13 @@ namespace MAT
 
       //! compute first derivative of half cell open circuit potential with respect to concentration
       const double ComputeFirstDerivOpenCircuitPotential(
+          const double concentration,   //!< concentration
+          const double faraday,         //!< Faraday constant
+          const double frt              //!< factor F/RT
+          ) const;
+
+      //! compute second derivative of half cell open circuit potential with respect to concentration
+      const double ComputeSecondDerivOpenCircuitPotential(
           const double concentration,   //!< concentration
           const double faraday,         //!< Faraday constant
           const double frt              //!< factor F/RT

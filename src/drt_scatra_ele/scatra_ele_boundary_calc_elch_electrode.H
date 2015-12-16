@@ -2,7 +2,7 @@
 /*!
 \file scatra_ele_boundary_calc_elch_electrode.H
 
-\brief evaluation of ScaTra boundary elements for electrodes
+\brief evaluation of ScaTra boundary elements for isothermal electrodes
 
 <pre>
 Maintainer: Rui Fang
@@ -50,20 +50,26 @@ namespace DRT
 
       //! evaluate scatra-scatra interface coupling condition
       virtual void EvaluateS2ICoupling(
-          const DRT::FaceElement*     ele,              ///< current boundary element
-          Teuchos::ParameterList&     params,           ///< parameter list
-          DRT::Discretization&        discretization,   ///< discretization
-          std::vector<int>&           lm,               ///< location vector
-          Epetra_SerialDenseMatrix&   eslavematrix,     ///< element matrix for slave side
-          Epetra_SerialDenseMatrix&   emastermatrix,    ///< element matrix for master side
-          Epetra_SerialDenseVector&   eslaveresidual    ///< element residual for slave side
-      );
+          const DRT::FaceElement*        ele,              ///< current boundary element
+          Teuchos::ParameterList&        params,           ///< parameter list
+          DRT::Discretization&           discretization,   ///< discretization
+          DRT::Element::LocationArray&   la,               ///< location array
+          Epetra_SerialDenseMatrix&      eslavematrix,     ///< element matrix for slave side
+          Epetra_SerialDenseMatrix&      emastermatrix,    ///< element matrix for master side
+          Epetra_SerialDenseVector&      eslaveresidual    ///< element residual for slave side
+          );
 
       //! extract valence of species k from element material
       virtual const double GetValence(
           const Teuchos::RCP<const MAT::Material>&   material,   //! element material
           const int                                  k           //! species number
-      ) const;
+          ) const;
+
+      //! evaluate factor F/RT
+      virtual const double GetFRT(
+          DRT::Discretization&           discretization,   ///< discretization
+          DRT::Element::LocationArray&   la                ///< location array
+          ) const;
     }; // class ScaTraEleBoundaryCalcElchElectrode
   } // namespace ELEMENTS
 } // namespace DRT

@@ -38,7 +38,7 @@ namespace SCATRA
           ) const;
 
       //! time integrator
-      const Teuchos::RCP<ScaTraTimIntElch>& elchtimint_;
+      const Teuchos::RCP<const ScaTraTimIntElch> elchtimint_;
   }; // class ElchResultTest : public ScaTraResultTest
 } // namespace SCATRA
 #endif
