@@ -40,7 +40,7 @@ LIFTDRAG                        No
 MAXTIME                         1000
 NONLINITER                      Newton
 NUMSTASTEPS                     0
-NUMSTEP                         1
+NUMSTEP                         10
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
 RESTARTEVRY                     20
@@ -49,7 +49,7 @@ STARTFUNCNO                     -1
 START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.01
+TIMESTEP                        0.0008
 UPRES                           1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
@@ -59,11 +59,11 @@ FSSUGRDIFF                      No
 INITFUNCNO                      3
 INITIALFIELD                    field_by_function
 MAXTIME                         0.02
-NUMSTEP                         35
+NUMSTEP                         10
 RESTARTEVRY                     2
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.0002
+TIMESTEP                        0.0008
 VELFUNCNO                       1
 VELOCITYFIELD Navier_Stokes //function
 WRITEFLUX                       diffusiveflux_boundary        // do not use totalflux_boundary due to introduction of mesh convection!
@@ -94,8 +94,8 @@ MOLARVOLUME                     10.0                          // 7.11E-3 // mola
 EQUPOT                          ENC
 BLOCKPRECOND                    Yes
 -----------------------------------------------------------------ALE DYNAMIC
-TIMESTEP                        0.0002
-NUMSTEP                         21
+TIMESTEP                        0.0008
+NUMSTEP                         10
 MAXTIME                         0.02
 ALE_TYPE                        solid
 RESULTSEVRY                     1
@@ -261,23 +261,23 @@ FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1 QUANTITY velx VALUE 0.0e+00 TOLERANCE 1e-09
-FLUID DIS fluid NODE 1 QUANTITY vely VALUE -1.29606320083432945e-02 TOLERANCE 1e-10
-FLUID DIS fluid NODE 1 QUANTITY velz VALUE 0.0e+00 TOLERANCE 1e-09
-FLUID DIS fluid NODE 1 QUANTITY pressure VALUE 2.53240855139188550e-02 TOLERANCE 1e-05
-SCATRA DIS scatra NODE 1 QUANTITY fluxx VALUE 0.0e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 1 QUANTITY fluxy VALUE 1.29606320219237793e-03 TOLERANCE 1e-12
-SCATRA DIS scatra NODE 1 QUANTITY fluxz VALUE 0.0e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 3.49017480067483621e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 2.40856946313280051e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 1 QUANTITY phi3 VALUE 4.11910396613063590e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 1 QUANTITY phi4 VALUE 1.40698263847322246e-04 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 28 QUANTITY phi1 VALUE 3.47024238071087454e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 28 QUANTITY phi4 VALUE 1.29716833489874059e-04 TOLERANCE 1e-10
-ALE DIS ale NODE 1 QUANTITY dispx VALUE 0.0e+00 TOLERANCE 1e-09
-ALE DIS ale NODE 1 QUANTITY dispy VALUE 2.58509403025798974e-05 TOLERANCE 1e-14
-ALE DIS ale NODE 1 QUANTITY dispz VALUE 0.0e+00 TOLERANCE 1e-09
-ALE DIS ale NODE 28 QUANTITY dispy VALUE 2.53139499547100107e-05 TOLERANCE 1e-14
+FLUID DIS fluid NODE 1 QUANTITY velx VALUE 0.00000000000000000e+00 TOLERANCE 1e-14
+FLUID DIS fluid NODE 1 QUANTITY vely VALUE -4.04852104305662465e-07 TOLERANCE 1e-14
+FLUID DIS fluid NODE 1 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-14
+FLUID DIS fluid NODE 1 QUANTITY pressure VALUE -9.94439792250837340e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 1 QUANTITY fluxx VALUE 0.00000000000000000e+00 TOLERANCE 1e-14
+SCATRA DIS scatra NODE 1 QUANTITY fluxy VALUE 4.04861839101116412e-08 TOLERANCE 1e-14
+SCATRA DIS scatra NODE 1 QUANTITY fluxz VALUE 0.00000000000000000e+00 TOLERANCE 1e-14
+SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 3.47800045480743891e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 2.40788619118417913e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 1 QUANTITY phi3 VALUE 4.12017229140687213e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 1 QUANTITY phi4 VALUE -8.78603918704553817e-07 TOLERANCE 1e-14
+SCATRA DIS scatra NODE 28 QUANTITY phi1 VALUE 3.47426313233420547e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 28 QUANTITY phi4 VALUE -2.03744711154004160e-06 TOLERANCE 1e-14
+ALE DIS ale NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1e-14
+ALE DIS ale NODE 1 QUANTITY dispy VALUE 2.07236784683175871e-05 TOLERANCE 1e-14
+ALE DIS ale NODE 1 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1e-14
+ALE DIS ale NODE 28 QUANTITY dispy VALUE 2.02931945345120346e-05 TOLERANCE 1e-14
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
