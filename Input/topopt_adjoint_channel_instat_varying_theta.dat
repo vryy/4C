@@ -78,7 +78,6 @@ PHYSICAL_TYPE                   Topology_optimization
 PREDICTOR                       steady_state
 STARTFUNCNO                     1
 STEADYSTEP                      -1
-STEADYTOL                       1e-6
 THETA                           0.6
 TIMEINTEGR                      One_Step_Theta//Stationary//
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION

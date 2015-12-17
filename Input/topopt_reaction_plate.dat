@@ -59,7 +59,6 @@ SIMPLER                         no
 STARTFUNCNO                     1
 START_THETA                     0.66
 STEADYSTEP                      -1
-STEADYTOL                       1e-6
 THETA                           0.66
 TIMEINTEGR                      Stationary
 PHYSICAL_TYPE                   Topology_optimization

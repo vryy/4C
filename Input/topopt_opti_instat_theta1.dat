@@ -60,7 +60,6 @@ SIMPLER                         no
 SIMPLER_SOLVER                  -1
 STARTFUNCNO                     1
 STEADYSTEP                      -1
-STEADYTOL                       1e-6
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta//Stationary//
 -------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION

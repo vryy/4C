@@ -129,7 +129,6 @@ NUMSTEP                         1000
 PREDICTOR                       constant_acceleration         //explicit_second_order_midpoint //constant_acceleration //explicit_second_order_midpoint //zero_acceleration //steady_state // constant_acceleration // constant_increment // explicit_second_order_midpoint // TangVel
 SIMPLER                         no
 STEADYSTEP                      -1
-STEADYTOL                       1e-06
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01//0.02

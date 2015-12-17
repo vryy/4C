@@ -67,7 +67,6 @@ SIMPLER_SOLVER                  -1
 STARTFUNCNO                     -1
 START_THETA                     1.0
 STEADYSTEP                      -1
-STEADYTOL                       1e-10
 STRONG_REDD_3D_COUPLING_TYPE    no
 THETA                           0.9
 TIMEINTEGR                      One_Step_Theta

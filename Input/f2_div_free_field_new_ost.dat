@@ -62,7 +62,6 @@ PHYSICAL_TYPE                   Incompressible //Topology_optimization
 PREDICTOR                       steady_state
 STARTFUNCNO                     1
 STEADYSTEP                      -1
-STEADYTOL                       1e-6
 THETA                           0.66 //0.5
 TIMEINTEGR                      One_Step_Theta  //Stationary
 NEW_OST                         yes

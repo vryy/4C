@@ -97,7 +97,6 @@ NUMSTEP                         2000
 SIMPLER                         no
 START_THETA                     1.0
 STEADYSTEP                      -1
-STEADYTOL                       1e-06
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01

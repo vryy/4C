@@ -36,7 +36,6 @@ NUMSTEP                         1
 RESTARTEVRY                     5
 SIMPLER                         no
 STEADYSTEP                      -1
-STEADYTOL                       1e-06
 THETA                           1.0//0.66
 TIMEINTEGR                      One_Step_Theta                //Stationary
 TIMESTEP                        0.01//0.003125                //0.00625

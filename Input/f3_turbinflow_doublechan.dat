@@ -52,7 +52,6 @@ RESTARTEVRY                     2
 STARTFUNCNO                     1
 START_THETA                     1
 STEADYSTEP                      -1
-STEADYTOL                       1e-06
 UPRES                           1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross

@@ -100,7 +100,6 @@ ALPHA_F                         1
 GAMMA                           1
 THETA                           0.66
 CONVTOL                         1e-9
-STEADYTOL                       1e-09
 START_THETA                     1
 STRONG_REDD_3D_COUPLING_TYPE    no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION

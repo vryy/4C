@@ -45,7 +45,6 @@ CONVFORM                        convective
 SIMPLER                         no
 ITEMAX                          2 // crucial! problem must be linear!
 CONVTOL                         1e-13
-STEADYTOL                       1e-6
 -------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        pressure_projection
 INCONSISTENT                    No

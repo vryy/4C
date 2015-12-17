@@ -42,7 +42,6 @@ SIMPLER                         no
 STARTFUNCNO                     2
 START_THETA                     1
 STEADYSTEP                      -1
-STEADYTOL                       1e-06
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1

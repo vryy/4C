@@ -86,7 +86,6 @@ NONLINEARBC                     yes
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
 STEADYSTEP                      -1
-STEADYTOL                       1.000e-06
 STRONG_REDD_3D_COUPLING_TYPE    no
 -------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross

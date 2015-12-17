@@ -83,7 +83,6 @@ ITEMAX                          20                              // 20
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-10
 STEADYSTEP                      -1
-STEADYTOL                       1.0E-6
 UPRES                           1
 RESTARTEVRY                     10
 NUMSTASTEPS                     0

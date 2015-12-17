@@ -321,7 +321,6 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("THETA",0.66,"Time integration factor",&fdyn);
 
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&fdyn);
-  DoubleParameter("STEADYTOL",1e-6,"Tolerance for steady state check",&fdyn);
   DoubleParameter("START_THETA",1.0,"Time integration factor for starting scheme",&fdyn);
 
   setStringToIntegralParameter<int>("STRONG_REDD_3D_COUPLING_TYPE",

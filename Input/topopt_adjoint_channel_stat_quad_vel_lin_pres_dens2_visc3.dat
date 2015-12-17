@@ -78,7 +78,6 @@ NONLINITER Newton //fixed_point_like
 PREDICTOR                       steady_state
 STARTFUNCNO                     1
 STEADYSTEP                      -1
-STEADYTOL                       1e-6
 THETA                           0.5
 TIMEINTEGR                      Stationary
 PHYSICAL_TYPE                   Topology_optimization

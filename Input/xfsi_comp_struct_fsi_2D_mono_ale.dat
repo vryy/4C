@@ -136,7 +136,6 @@ NUMSTASTEPS                     1
 NUMSTEP                         1000
 SIMPLER                         no
 STEADYSTEP                      -1
-STEADYTOL                       1e-06
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01//0.02

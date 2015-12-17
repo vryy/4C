@@ -64,7 +64,6 @@ RESTARTEVRY                     35
 STARTFUNCNO                     -1
 START_THETA                     1
 STEADYSTEP                      -1
-STEADYTOL                       1e-05
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.001

@@ -51,7 +51,6 @@ RESTARTEVRY                     20
 SIMPLER                         no
 STARTFUNCNO                     2
 STEADYSTEP                      -1
-STEADYTOL                       1e-12
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1

@@ -94,7 +94,6 @@ ALPHA_F                         1.0
 GAMMA                           1.0
 THETA                           1.0
 CONVTOL                         1e-07
-STEADYTOL                       1e-06
 START_THETA                     1.0
 -------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based

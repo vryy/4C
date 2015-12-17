@@ -51,7 +51,6 @@ ALPHA_F                         0.6666666666666666667
 GAMMA                           0.6666666666666666667
 THETA                           0.5
 CONVTOL                         1e-04
-STEADYTOL                       1e-06
 START_THETA                     1
 STRONG_REDD_3D_COUPLING_TYPE    no
 -----------------------------------------------------------SOLVER 1
