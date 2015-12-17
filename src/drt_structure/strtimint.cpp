@@ -3701,9 +3701,6 @@ void STR::TimInt::Reset()
   // create empty interface force vector
   fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
 
-  dbcmaps_= Teuchos::rcp(new LINALG::MapExtractor());
-  createFields(solver_);
-
   // set initial fields
   SetInitialFields();
 
