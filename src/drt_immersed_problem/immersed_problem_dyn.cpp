@@ -203,10 +203,6 @@ void CellMigrationControlAlgorithm()
   // get parameterlist for immersed method
   const Teuchos::ParameterList& immersedmethodparams = problem->ImmersedMethodParams();
 
-  // choose algorithm
-  int coupling = DRT::INPUT::IntegralValue<int>(immersedmethodparams,"COUPALGO");
-  int scheme   = DRT::INPUT::IntegralValue<int>(immersedmethodparams,"SCHEME");
-
   // declare general ParameterList that can be handed into Algorithm
   Teuchos::ParameterList params;
 
