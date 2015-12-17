@@ -66,6 +66,7 @@ public:
   std::map<int,std::vector<double> > porositiy_old_;
   std::map<int,LINALG::Matrix<3,1> >* currpositions_immerseddis_;
   std::map<int,std::vector<LINALG::Matrix<3,1> > > penalty_traction_at_gp_;
+  std::map<int,std::set<int> >* points_to_curr_subset_of_backgrounddis_;
 
   Teuchos::RCP<Epetra_Vector> points_to_ecm_penalty_traction_;
   Teuchos::RCP<Epetra_Vector> points_to_ecm_penalty_gap_;
@@ -100,9 +101,9 @@ public:
     return immersed_SearchTree_;
   };
 
-  void SetCurrentPositionsImmersedDis(std::map<int,LINALG::Matrix<3,1> >& currpositions_immerseddis)
+  void SetCurrentPositionsImmersedDis(std::map<int,LINALG::Matrix<3,1> >* currpositions_immerseddis)
   {
-    currpositions_immerseddis_ = &(currpositions_immerseddis);
+    currpositions_immerseddis_ = currpositions_immerseddis;
     return;
   };
 
@@ -194,6 +195,10 @@ public:
    void SetPointerECMAdhesionForce(const Teuchos::RCP<Epetra_Vector> vector){points_to_ecm_adhesion_force_=vector; return;};
 
    Teuchos::RCP<Epetra_Vector> GetPointerECMAdhesionForce(){return points_to_ecm_adhesion_force_;};
+
+   void SetPointerToCurrentSubsetOfBackgrdDis(std::map<int,std::set<int> >* pointer){points_to_curr_subset_of_backgrounddis_ = pointer;};
+
+   std::map<int,std::set<int> >* GetPointerToCurrentSubsetOfBackgrdDis(){return points_to_curr_subset_of_backgrounddis_;};
 
 private:
 

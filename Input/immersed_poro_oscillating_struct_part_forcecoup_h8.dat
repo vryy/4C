@@ -100,14 +100,16 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 -----------------------------------------------------------------CELL DYNAMIC
+COUPALGO                        iter_stagg_fixed_rel_param
 MIGRATIONTYPE                   ameboid
+PSEUDO2D                        yes
+SIMTYPE                         pureFSI
 ECM_INTERACTION                 no
 MAXTIME                         0.02
 TIMESTEP                        0.01
 NUMSTEP                         2
 UPRES                           1
 RESTARTEVRY                     1
-COUPALGO                        iter_stagg_fixed_rel_param
 ECM_FIBER_RADIUS                100.0 // very large -> no ecm interaction
 PENALTY_START                   1000
 ----------------------------------------------------IMMERSED METHOD
@@ -127,7 +129,7 @@ TIMESTATS                       endofsim // everyiter
 -------------------------------------IMMERSED METHOD/PARTITIONED SOLVER
 PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)
-COUPVARIABLE                    Force
+COUPVARIABLE_FSI                Force
 COUPMETHOD                      immersed
 BASETOL                         0.001
 CONVTOL                         1e-09

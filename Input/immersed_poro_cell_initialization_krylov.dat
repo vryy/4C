@@ -37,7 +37,7 @@ NUM_GP_FLUID_BOUND              8
 ---------------------------------IMMERSED METHOD/PARTITIONED SOLVER
 PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)
-COUPVARIABLE                    Displacement // Displacement Force
+COUPVARIABLE_FSI                Displacement // Displacement Force
 COUPMETHOD                      immersed
 BASETOL                         0.001
 CONVTOL                         1e-05
@@ -47,6 +47,8 @@ ITEMAX                          23
 -------------------------------------------------------CELL DYNAMIC
 COUPALGO                        iter_stagg_fixed_rel_param
 MIGRATIONTYPE                   ameboid
+PSEUDO2D                        yes
+SIMTYPE                         pureFSI
 ECM_INTERACTION                 yes
 SEGREGATION                     surface
 SEGREGATION_BY                  dirichlet

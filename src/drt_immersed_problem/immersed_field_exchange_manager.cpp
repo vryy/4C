@@ -68,6 +68,7 @@ DRT::ImmersedFieldExchangeManager::ImmersedFieldExchangeManager()
   currpositions_immerseddis_ = NULL;
   simple_ecm_interaction_constant = 0.0;
   numnlniter_=0;
+  points_to_ecm_adhesion_force_=Teuchos::null;
 }
 
 

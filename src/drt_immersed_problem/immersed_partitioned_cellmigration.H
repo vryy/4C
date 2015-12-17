@@ -46,27 +46,21 @@ class ImmersedPartitionedCellMigration : public ImmersedPartitioned
 public:
 
   /// setup partitioned immersed cell migration algorithm
-  explicit ImmersedPartitionedCellMigration(const Epetra_Comm& comm);
-
-  /// initialize search tree for structure discretization and ghost structure redundantly
-  void SetupImmersedDiscretization();
-
-  /// initialize search tree for poro discretization
-  void SetupBackgroundDiscretization();
+  explicit ImmersedPartitionedCellMigration(const Teuchos::ParameterList& params, const Epetra_Comm& comm);
 
   /// access to field cell
   Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> CellField(){return cellstructure_;};
 
   /// access to field Poro
   //Teuchos::RCP<POROELAST::Monolithic> PoroField(){return poroelast_subproblem_;};
-  Teuchos::RCP<POROELAST::PoroScatraBase> PoroField(){return poroelast_subproblem_;};
+  Teuchos::RCP<POROELAST::PoroScatraBase> PoroField(){return poroscatra_subproblem_;};
 
   /// read restart
   virtual void ReadRestart(int step);
 
 protected:
 
-  /// composed FSI operator
+  /// composed Field-Field-Interaction operator
   void CouplingOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
 
   /// background operator
@@ -119,9 +113,6 @@ protected:
   /// initialize the relaxation parameters and print output
   void SetupRelaxation();
 
-  /// setup poro algorithm (coupling, combined dofmaps, etc.)
-  void SetupPoroAlgorithm();
-
   /// extract the pressure part
   void ExtractPressurePart();
 
@@ -134,9 +125,6 @@ protected:
   /// calc the current fluid tractions interpolated to the structural surface
   void CalcECMTractionOnStructure();
 
-  /// mark elements in which adhering cell boundary is immersed
-  void DistributeAdhesionForce();
-
   //! @name Various global vectors
   //@{
   Teuchos::RCP<Epetra_Vector> porofluid_artificial_velocity_;//!< background velocity interpolated from immersed dis
@@ -148,7 +136,6 @@ protected:
   Teuchos::RCP<Epetra_Vector> cell_delta_penalty_traction_old_;  //!< boundary traction rhs on immersed cell from cell-ecm interaction of previous iteration
   Teuchos::RCP<Epetra_Vector> penalty_gap_;                      //!< gap inegrated over surface
   Teuchos::RCP<Epetra_Vector> curr_nodal_normals_;               //!< current nodal normals included in cell output for visualization
-  Teuchos::RCP<Epetra_Vector> ecm_adhesion_forces_;              //!< current nodal adhesion forces on ecm
   //@}
 
   //! @name Pointers to Discretizations
@@ -170,16 +157,16 @@ protected:
   //@}
 
   /// cell structure of the immersed problem
-  Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed>    cellstructure_;
+  Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> cellstructure_;
 
   /// poro structure of the immersed problem
-  Teuchos::RCP< ::ADAPTER::FPSIStructureWrapper>            porostructure_;
+  Teuchos::RCP< ::ADAPTER::FPSIStructureWrapper>        porostructure_;
 
   /// pointer to cell subproblem (structure-scatra interaction)
   Teuchos::RCP<SSI::SSI_Base> cell_subproblem_;
 
   /// pointer to poroelast subproblem (poro-scatra interaction)
-  Teuchos::RCP<POROELAST::PoroScatraBase> poroelast_subproblem_;
+  Teuchos::RCP<POROELAST::PoroScatraBase> poroscatra_subproblem_;
 
   /// basic information for parallelism
   int myrank_;
@@ -193,6 +180,9 @@ protected:
 
   /// switch that determines if there are more than one distinct immersed cells
   bool multicellmigration_;  //! distinct cells must be marked with ImmersedSearchbox condition
+
+  /// true if problem is modeled as a quasi 2D problem
+  bool isPseudo2D_;
 
   /// amoeboid or proteolytic migration
   int migrationtype_;
@@ -226,9 +216,6 @@ protected:
   /// number of integration points related to mass conserving adaption of equations
   int degree_gp_fluid_bound_; //!< number of integration points in fluid elements cut by structural boundary
 
-  /// switch between ssi_cell and pure structure
-  bool ssi_cell_; //!< tells if cell subproblem is ssi problem or not
-
   //! @name Interaction Switches
   //@{
   bool fluid_interaction_;  //!< switch for cell-fluid-interaction
@@ -249,8 +236,8 @@ protected:
 
   //! @name current nodal positions of the discretizations
   //@{
-  std::map<int,LINALG::Matrix<3,1> > currpositions_cell_; //!< map of vectors for search tree containing current structural positions
-  std::map<int,LINALG::Matrix<3,1> > currpositions_ECM_;  //!< map of vectors for search tree containing current fluid positions
+  std::map<int,LINALG::Matrix<3,1> >* currpositions_cell_; //!< pointer to map of vectors for search tree containing current structural positions
+  std::map<int,LINALG::Matrix<3,1> >* currpositions_ECM_;  //!< pointer to map of vectors for search tree containing current fluid positions
   //@}
 
   //! @name current subsets of discretizations
@@ -279,7 +266,7 @@ private:
   /// reset element and node information about immersed method
   void ResetImmersedInformation();
 
-};// class ImmersedFSI
-} // namspace IMMERSED
+};// class ImmersedPartitionedCellMigration
+} // namespace IMMERSED
 
 #endif

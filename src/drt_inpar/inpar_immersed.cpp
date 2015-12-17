@@ -166,8 +166,14 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  tuple<int>(1,2,3,4),
                                  &immersedpart);
 
-    setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
-                                 "Coupling variable at the interface",
+    setStringToIntegralParameter<int>("COUPVARIABLE_FSI","Displacement",
+                                 "Coupling variable at the fsi interface",
+                                 tuple<std::string>("Displacement","Force"),
+                                 tuple<int>(0,1),
+                                 &immersedpart);
+
+    setStringToIntegralParameter<int>("COUPVARIABLE_ADHESION","Displacement",
+                                 "Coupling variable at the adhesion interface",
                                  tuple<std::string>("Displacement","Force"),
                                  tuple<int>(0,1),
                                  &immersedpart);

@@ -106,6 +106,8 @@ LOMA_CONTI_REYNOLDS_STRESS      no_reynolds
 -----------------------------------------------------------------CELL DYNAMIC
 MIGRATIONTYPE                   ameboid
 COUPALGO                        iter_stagg_AITKEN_rel_param
+PSEUDO2D                        yes
+SIMTYPE                         pureFSI
 ECM_INTERACTION                 no
 MAXTIME                         1.0
 TIMESTEP                        0.5
@@ -131,7 +133,7 @@ TIMESTATS                       endofsim // everyiter
 -------------------------------------IMMERSED METHOD/PARTITIONED SOLVER
 PARTITIONED                     DirichletNeumann
 PREDICTOR                       d(n)
-COUPVARIABLE                    Displacement
+COUPVARIABLE_FSI                Displacement
 COUPMETHOD                      immersed
 BASETOL                         0.001
 CONVTOL                         1e-06

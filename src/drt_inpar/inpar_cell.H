@@ -39,6 +39,15 @@ typedef enum _CELL_MIGRATION_TYPE
   cell_migration_proteolytic=2
 } CELL_MIGRATION_TYPE;
 
+typedef enum _SIM_TYPE
+{
+  sim_type_pureFSI=0,
+  sim_type_pureAdhesion=1,
+  sim_type_pureCompression=2,
+  sim_type_pureGrowth=3,
+  sim_type_multiphysics=4
+} SIM_TYPE;
+
 typedef enum _SEGREGATION_BY_TYPE
 {
   segregation_by_undefined=0,

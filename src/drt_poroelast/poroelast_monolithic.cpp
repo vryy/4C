@@ -2192,10 +2192,11 @@ void POROELAST::Monolithic::EvalCellMigrationSpecific()
 {
   if(DRT::Problem::Instance()->ProblemType()==prb_immersed_cell)
   {
-    //DRT::ImmersedFieldExchangeManager* exchange_manager = DRT::ImmersedFieldExchangeManager::Instance();
+    DRT::ImmersedFieldExchangeManager* exchange_manager = DRT::ImmersedFieldExchangeManager::Instance();
 
     // add adhesion forces to rhs
-    //Extractor()->AddVector((exchange_manager->GetPointerECMAdhesionForce()),0,rhs_,-1.0);
+    if(exchange_manager->GetPointerECMAdhesionForce() != Teuchos::null)
+      Extractor()->AddVector((exchange_manager->GetPointerECMAdhesionForce()),0,rhs_,1.0);
 
   }
 

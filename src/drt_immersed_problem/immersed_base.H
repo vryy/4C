@@ -77,7 +77,7 @@ public:
                         DRT::AssembleStrategy* strategy,
                         std::map<int,std::set<int> >& elementstoeval,
                         Teuchos::RCP<GEO::SearchTree> structsearchtree,
-                        std::map<int,LINALG::Matrix<3,1> >& currpositions_struct,
+                        std::map<int,LINALG::Matrix<3,1> >* currpositions_struct,
                         int action,
                         bool evaluateonlyboundary=false);
 
@@ -86,7 +86,7 @@ public:
                                                DRT::AssembleStrategy* strategy,
                                                std::map<int,std::set<int> >& elementstoeval,
                                                Teuchos::RCP<GEO::SearchTree> structsearchtree,
-                                               std::map<int,LINALG::Matrix<3,1> >& currpositions_struct,
+                                               std::map<int,LINALG::Matrix<3,1> >* currpositions_struct,
                                                Teuchos::ParameterList& params,
                                                bool evaluateonlyboundary=false);
 

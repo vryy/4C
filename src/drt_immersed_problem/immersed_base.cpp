@@ -788,88 +788,6 @@ IMMERSED::ImmersedBase::ImmersedBase()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedBase::CreateGhosting(const Teuchos::RCP<DRT::Discretization> distobeghosted)
-{
-  if(distobeghosted->Comm().MyPID() == 0)
-  {
-    std::cout<<"################################################################################################"<<std::endl;
-    std::cout<<"###   Ghost discretization "<<distobeghosted->Name()<<" redundantly on all procs ... "<<std::endl;
-    std::cout<<"################################################################################################"<<std::endl;
-  }
-
-  std::vector<int> allproc(distobeghosted->Comm().NumProc());
-  for (int i=0; i<distobeghosted->Comm().NumProc(); ++i) allproc[i] = i;
-
-  // fill my own row node ids
-  const Epetra_Map* noderowmap = distobeghosted->NodeRowMap();
-  std::vector<int> sdata;
-  for (int i=0; i<noderowmap->NumMyElements(); ++i)
-  {
-    int gid = noderowmap->GID(i);
-    DRT::Node* node = distobeghosted->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    sdata.push_back(gid);
-  }
-
-  // gather all master row node gids redundantly
-  std::vector<int> rdata;
-  LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],distobeghosted->Comm());
-
-  // build new node column map (on ALL processors)
-  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,distobeghosted->Comm()));
-  sdata.clear();
-  rdata.clear();
-
-  // fill my own row element ids
-  const Epetra_Map* elerowmap  = distobeghosted->ElementRowMap();
-  sdata.resize(0);
-  for (int i=0; i<elerowmap->NumMyElements(); ++i)
-  {
-    int gid = elerowmap->GID(i);
-    DRT::Element* ele = distobeghosted->gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find element with gid %",gid);
-    sdata.push_back(gid);
-  }
-
-  // gather all gids of elements redundantly
-  rdata.resize(0);
-  LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],distobeghosted->Comm());
-
-  // build new element column map (on ALL processors)
-  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,distobeghosted->Comm()));
-  sdata.clear();
-  rdata.clear();
-  allproc.clear();
-
-  // redistribute the discretization of the interface according to the
-  // new node / element column layout (i.e. master = full overlap)
-  distobeghosted->ExportColumnNodes(*newnodecolmap);
-  distobeghosted->ExportColumnElements(*newelecolmap);
-
-  distobeghosted->FillComplete();
-
-#ifdef DEBUG
-  int nummycolnodes = newnodecolmap->NumMyElements();
-  int nummycolelements = newelecolmap->NumMyElements();
-  int sizelist[distobeghosted->Comm().NumProc()];
-  distobeghosted->Comm().GatherAll(&nummycolnodes,&sizelist[0],1);
-  std::cout<<"PROC "<<distobeghosted->Comm().MyPID()<<" : "<<nummycolnodes<<" colnodes"<<std::endl;
-  distobeghosted->Comm().Barrier();
-  std::cout<<"PROC "<<distobeghosted->Comm().MyPID()<<" : "<<nummycolelements<<" colelements"<<std::endl;
-  distobeghosted->Comm().Barrier();
-  std::cout<<"PROC "<<distobeghosted->Comm().MyPID()<<" : "<<distobeghosted->lColElement(0)->Nodes()[0]->Id()<<" first ID of first node of first colele"<<std::endl;
-  distobeghosted->Comm().Barrier(); // wait for procs
-  for(int k=1;k<distobeghosted->Comm().NumProc();++k)
-  {
-    if(sizelist[k-1]!=nummycolnodes)
-      dserror("Since whole dis is ghosted every processor should have the same number of colnodes. This is not the case! Fix this!");
-  }
-#endif
-
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 //void IMMERSED::ImmersedBase::CreateVolumeCondition(Teuchos::RCP<DRT::Discretization> dis, std::vector<int> dvol_fenode, DRT::Condition::ConditionType condtype, std::string condname)
 //{
 //  // determine id of condition
@@ -915,7 +833,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
                                               DRT::AssembleStrategy* strategy,
                                               std::map<int,std::set<int> >& elementstoeval,
                                               Teuchos::RCP<GEO::SearchTree> structsearchtree,
-                                              std::map<int,LINALG::Matrix<3,1> >& currpositions_struct,
+                                              std::map<int,LINALG::Matrix<3,1> >* currpositions_struct,
                                               int action,
                                               bool evaluateonlyboundary)
 {
@@ -938,7 +856,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
 
       params.set<int>("action",action);
       params.set<Teuchos::RCP<GEO::SearchTree> >("structsearchtree_rcp",structsearchtree);
-      params.set<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct",&currpositions_struct);
+      params.set<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct",currpositions_struct);
       params.set<int>("Physical Type",INPAR::FLUID::poro_p1);
       if(dis->Name()=="fluid")
         params.set<std::string>("immerseddisname","structure");
@@ -981,7 +899,7 @@ void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(Teuchos::RC
                                                                      DRT::AssembleStrategy* strategy,
                                                                      std::map<int,std::set<int> >& elementstoeval,
                                                                      Teuchos::RCP<GEO::SearchTree> structsearchtree,
-                                                                     std::map<int,LINALG::Matrix<3,1> >& currpositions_struct,
+                                                                     std::map<int,LINALG::Matrix<3,1> >* currpositions_struct,
                                                                      Teuchos::ParameterList& params,
                                                                      bool evaluateonlyboundary)
 {
@@ -1005,7 +923,7 @@ void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(Teuchos::RC
       int col = strategy->SecondDofSet();
 
       params.set<Teuchos::RCP<GEO::SearchTree> >("structsearchtree_rcp",structsearchtree);
-      params.set<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct",&currpositions_struct);
+      params.set<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct",currpositions_struct);
       params.set<int>("Physical Type",INPAR::FLUID::poro_p1);
 
       DRT::Element::LocationArray la(dis->NumDofSets());
@@ -1217,9 +1135,91 @@ void IMMERSED::ImmersedBase::EvaluateSubsetElements(Teuchos::ParameterList& para
         Epetra_SerialDenseVector dummyvector;
         ele->Evaluate(params,*dis,la,dummymatrix,dummymatrix,dummyvector,dummyvector,dummyvector);
 
-
     }
   }
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::CreateGhosting(const Teuchos::RCP<DRT::Discretization> distobeghosted)
+{
+  if(distobeghosted->Comm().MyPID() == 0)
+  {
+    std::cout<<"################################################################################################"<<std::endl;
+    std::cout<<"###   Ghost discretization "<<distobeghosted->Name()<<" redundantly on all procs ... "<<std::endl;
+    std::cout<<"################################################################################################"<<std::endl;
+  }
+
+  std::vector<int> allproc(distobeghosted->Comm().NumProc());
+  for (int i=0; i<distobeghosted->Comm().NumProc(); ++i) allproc[i] = i;
+
+  // fill my own row node ids
+  const Epetra_Map* noderowmap = distobeghosted->NodeRowMap();
+  std::vector<int> sdata;
+  for (int i=0; i<noderowmap->NumMyElements(); ++i)
+  {
+    int gid = noderowmap->GID(i);
+    DRT::Node* node = distobeghosted->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    sdata.push_back(gid);
+  }
+
+  // gather all master row node gids redundantly
+  std::vector<int> rdata;
+  LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],distobeghosted->Comm());
+
+  // build new node column map (on ALL processors)
+  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,distobeghosted->Comm()));
+  sdata.clear();
+  rdata.clear();
+
+  // fill my own row element ids
+  const Epetra_Map* elerowmap  = distobeghosted->ElementRowMap();
+  sdata.resize(0);
+  for (int i=0; i<elerowmap->NumMyElements(); ++i)
+  {
+    int gid = elerowmap->GID(i);
+    DRT::Element* ele = distobeghosted->gElement(gid);
+    if (!ele) dserror("ERROR: Cannot find element with gid %",gid);
+    sdata.push_back(gid);
+  }
+
+  // gather all gids of elements redundantly
+  rdata.resize(0);
+  LINALG::Gather<int>(sdata,rdata,(int)allproc.size(),&allproc[0],distobeghosted->Comm());
+
+  // build new element column map (on ALL processors)
+  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,distobeghosted->Comm()));
+  sdata.clear();
+  rdata.clear();
+  allproc.clear();
+
+  // redistribute the discretization of the interface according to the
+  // new node / element column layout (i.e. master = full overlap)
+  distobeghosted->ExportColumnNodes(*newnodecolmap);
+  distobeghosted->ExportColumnElements(*newelecolmap);
+
+  distobeghosted->FillComplete();
+
+#ifdef DEBUG
+  int nummycolnodes = newnodecolmap->NumMyElements();
+  int nummycolelements = newelecolmap->NumMyElements();
+  int sizelist[distobeghosted->Comm().NumProc()];
+  distobeghosted->Comm().GatherAll(&nummycolnodes,&sizelist[0],1);
+  std::cout<<"PROC "<<distobeghosted->Comm().MyPID()<<" : "<<nummycolnodes<<" colnodes"<<std::endl;
+  distobeghosted->Comm().Barrier();
+  std::cout<<"PROC "<<distobeghosted->Comm().MyPID()<<" : "<<nummycolelements<<" colelements"<<std::endl;
+  distobeghosted->Comm().Barrier();
+  std::cout<<"PROC "<<distobeghosted->Comm().MyPID()<<" : "<<distobeghosted->lColElement(0)->Nodes()[0]->Id()<<" first ID of first node of first colele"<<std::endl;
+  distobeghosted->Comm().Barrier(); // wait for procs
+  for(int k=1;k<distobeghosted->Comm().NumProc();++k)
+  {
+    if(sizelist[k-1]!=nummycolnodes)
+      dserror("Since whole dis is ghosted every processor should have the same number of colnodes. This is not the case! Fix this!");
+  }
+#endif
+
 }

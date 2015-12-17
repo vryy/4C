@@ -41,6 +41,35 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     couplabel,
                                     &celldyn);
 
+
+  setStringToIntegralParameter<int>(
+                                    "PSEUDO2D","no",
+                                    "True if a thin quasi 2-dimensional problem is modeled",
+                                    tuple<std::string>(
+                                                       "no",
+                                                       "yes"),
+                                    tuple<int>(
+                                               0,
+                                               1),
+                                    &celldyn);
+
+  setStringToIntegralParameter<int>(
+                                    "SIMTYPE","pureFSI",
+                                    "Simulation Type",
+                                    tuple<std::string>(
+                                                       "pureFSI",
+                                                       "pureAdhesion",
+                                                       "pureCompression",
+                                                       "pureGrowth",
+                                                       "Multiphysics"),
+                                    tuple<int>(
+                                               sim_type_pureFSI,
+                                               sim_type_pureAdhesion,
+                                               sim_type_pureCompression,
+                                               sim_type_pureGrowth,
+                                               sim_type_multiphysics),
+                                    &celldyn);
+
   setStringToIntegralParameter<int>(
                                     "MIGRATIONTYPE","undefined",
                                     "Migration with or without ScaTra.",

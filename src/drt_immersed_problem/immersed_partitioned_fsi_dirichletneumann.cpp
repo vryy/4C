@@ -322,7 +322,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
                                         &fluid_vol_strategy,
                                         curr_subset_of_fluiddis_,
                                         structure_SearchTree_,
-                                        currpositions_struct_,
+                                        &currpositions_struct_,
                                         (int)FLD::interpolate_velocity_to_given_point_immersed,
                                         false);
 
@@ -370,7 +370,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::FluidOp(Teuchos::RCP<Epetra_Ve
                                         &fluid_vol_strategy,
                                         curr_subset_of_fluiddis_,
                                         structure_SearchTree_,
-                                        currpositions_struct_,
+                                        &currpositions_struct_,
                                         (int)FLD::correct_immersed_fluid_bound_vel,
                                         true);
 
