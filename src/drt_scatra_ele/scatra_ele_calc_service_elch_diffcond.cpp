@@ -81,6 +81,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CheckElchElementParamete
 
         if(singlemat->MaterialType() == INPAR::MAT::m_newman)
         {
+          // Newman material must be combined with divi closing equation for electric potential
+          if(myelch::elchparams_->EquPot() != INPAR::ELCH::equpot_divi)
+            dserror("Newman material must be combined with divi closing equation for electric potential!");
+
           // Material Newman is derived for a binary electrolyte utilizing the ENC to condense the non-reacting species
           if(my::numscal_>1)
             dserror("Material Newman is only valid for one scalar (binary electrolyte utilizing the ENC)");
