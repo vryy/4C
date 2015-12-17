@@ -626,6 +626,10 @@ DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ScaTraEleCalcSTIElectrode(
     // utility class supporting element evaluation for electrodes
     utils_(DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(numdofpernode,numscal,disname))
 {
+  // safety check
+  if(numscal != 1 or numdofpernode != 1)
+    dserror("Invalid number of transported scalars or degrees of freedom per node!");
+
   // replace diffusion manager for standard scalar transport by thermo diffusion manager
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerSTIThermo(my::numscal_));
 

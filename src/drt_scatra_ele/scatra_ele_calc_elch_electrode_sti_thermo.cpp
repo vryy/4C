@@ -268,6 +268,10 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::ScaTraEleCalcElchEl
     ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(numdofpernode,numscal,disname),
     ScaTraEleSTIThermo<distype>::ScaTraEleSTIThermo(numscal)
 {
+  // safety check
+  if(numscal != 1 or numdofpernode != 2)
+    dserror("Invalid number of transported scalars or degrees of freedom per node!");
+
   // replace internal variable manager for isothermal electrodes by internal variable manager for thermodynamic electrodes
   my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<my::nsd_, my::nen_>(my::numscal_,myelch::elchparams_));
 

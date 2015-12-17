@@ -681,6 +681,10 @@ DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::ScaTraEleCalcSTIDiffCond(
     // utility class supporting element evaluation for diffusion-conduction formulation
     utils_(DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Instance(numdofpernode,numscal,disname))
 {
+  // safety check
+  if(numscal != 1 or numdofpernode != 1)
+    dserror("Invalid number of transported scalars or degrees of freedom per node!");
+
   // replace diffusion manager for standard scalar transport by thermo diffusion manager
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerSTIThermo(my::numscal_));
 

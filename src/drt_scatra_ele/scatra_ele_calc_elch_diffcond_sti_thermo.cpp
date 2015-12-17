@@ -351,6 +351,10 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ScaTraEleCalcElchDif
     mydiffcond::ScaTraEleCalcElchDiffCond(numdofpernode,numscal,disname),
     mythermo::ScaTraEleSTIThermo(numscal)
 {
+  // safety check
+  if(numscal != 1 or numdofpernode != 2)
+    dserror("Invalid number of transported scalars or degrees of freedom per node!");
+
   // replace internal variable manager for isothermal diffusion-conduction formulation by internal variable manager for thermodynamic diffusion-conduction formulation
   my::scatravarmanager_ = Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<my::nsd_,my::nen_>(my::numscal_,myelch::elchparams_,mydiffcond::diffcondparams_));
 

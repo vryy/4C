@@ -90,6 +90,10 @@ STI::Algorithm::Algorithm(
     islavetomastercoltransformthermood_(Teuchos::null),
     imastertoslaverowtransformthermood_(Teuchos::null)
 {
+  // check input parameters for scatra and thermo fields
+  if(DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*fieldparameters_,"VELOCITYFIELD") != INPAR::SCATRA::velocity_zero)
+    dserror("Scatra-thermo interaction with convection not yet implemented!");
+
   // initialize scatra time integrator
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*fieldparameters_,*fieldparameters_,solverparams))->ScaTraField();
 
