@@ -577,15 +577,15 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
 // =================================================================================
 // Safety Check for usage of DESIGN SURF VOLUMETRIC FLOW CONDITIONS       AN 06/2014
 // =================================================================================
-//  if (NULL != actdis->GetCondition("VolumetricSurfaceFlowCond"))
-//  {
-//      if ( not(prb_fluid_redmodels == probtype or prb_fsi_redmodels == probtype) )
-//      {
-//        dserror("ERROR: Given Volumetric Womersly infow condition only works with Problemtyp Fluid_RedModels or Fluid_Structure_Interaction_RedModels. \n"
-//            " --> If you want to use this conditions change Problemtyp to Fluid_RedModels or Fluid_Structure_Interaction_RedModels. \n"
-//            " --> If you don't want to use this condition comment the respective bcFluid section." );
-//      }
-//  }
+  if (NULL != actdis->GetCondition("VolumetricSurfaceFlowCond"))
+  {
+      if ( not(prb_fluid_redmodels == probtype or prb_fsi_redmodels == probtype) )
+      {
+        dserror("ERROR: Given Volumetric Womersly infow condition only works with Problemtyp Fluid_RedModels or Fluid_Structure_Interaction_RedModels. \n"
+            " --> If you want to use this conditions change Problemtyp to Fluid_RedModels or Fluid_Structure_Interaction_RedModels. \n"
+            " --> If you don't want to use this condition comment the respective bcFluid section." );
+      }
+  }
 
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
@@ -673,7 +673,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         fluid_ = Teuchos::rcp(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
       else if(timeint == INPAR::FLUID::timeint_afgenalpha or
           timeint == INPAR::FLUID::timeint_npgenalpha)
-        fluid_ = Teuchos::rcp(new FLD::TimIntRedModelsGenAlpha (actdis, solver, fluidtimeparams, output, isale));
+        fluid_ = Teuchos::rcp(new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
       else
         dserror("Unknown time integration for this fluid problem type\n");
 
