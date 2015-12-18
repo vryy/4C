@@ -13,7 +13,7 @@ Maintainer: Andy Wirtz
 */
 /*--------------------------------------------------------------------------*/
 
-#include "../drt_lubrication/lubrication_dyn.H"
+#include "lubrication_dyn.H"
 
 #include "../drt_adapter/adapter_lubrication.H"
 
@@ -54,11 +54,6 @@ void lubrication_dyn(int restart)
   // we directly use the elements from the Lubrication elements section
   if (lubricationdis->NumGlobalNodes() == 0)
     dserror("No elements in the ---LUBRICATION ELEMENTS section");
-
-  // add proxy of velocity related degrees of freedom to Lubrication discretization
-  if (lubricationdis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim() + 1, 0, 0,
-      true) != 1)
-    dserror("Lubrication discretization has illegal number of dofsets!");
 
   // finalize discretization
   lubricationdis->FillComplete(true, false, false);

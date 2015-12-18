@@ -130,6 +130,17 @@ public:
   //! general solver call for coupled algorithms (decides if linear/nonlinear internally)
   virtual void Solve();
 
+  //! update the solution after convergence of the nonlinear iteration.
+  virtual void Update(
+      const int            num=0 //!< field number
+  ) = 0;
+
+  //! apply moving mesh data
+  void ApplyMeshMovement(
+    Teuchos::RCP<const Epetra_Vector> dispnp, //!< displacement vector
+    int nds                                   //!< number of the dofset the displacement state belongs to
+  );
+
   //! calculate error compared to analytical solution
   virtual void EvaluateErrorComparedToAnalyticalSol();
 
@@ -162,17 +173,20 @@ public:
   //! return number of newton iterations in last timestep
   double IterNum() const { return iternum_; }
 
+  //! return time step size
+  double Dt() const { return dta_; }
+
   /*========================================================================*/
-  //! @name scalar degrees of freedom and related
+  //! @name pressure degrees of freedom and related
   /*========================================================================*/
 
   /*--- query and output ---------------------------------------------------*/
 
-  //! return scalar field pre at time n+1
+  //! return pressure field pre at time n+1
   Teuchos::RCP<Epetra_Vector> Prenp() { return prenp_; }
 
-  //! output mean values of scalar(s)
-  virtual void OutputMeanScalars(const int num=0);
+  //! output mean values of pressure(s)
+  virtual void OutputMeanPressures(const int num=0);
 
   //! output domain or boundary integrals, i.e., surface areas or volumes of specified nodesets
   void OutputDomainOrBoundaryIntegrals(const std::string condstring);
@@ -332,7 +346,7 @@ protected:
 
   /*--- query and output ---------------------------------------------------*/
 
-  //! flag for printing out mean values of scalars
+  //! flag for printing out mean values of pressures
   const bool outmean_;
 
   //! boolean to write Gmsh postprocessing files (input parameter)
@@ -370,7 +384,7 @@ protected:
   int iternum_;
 
   /*========================================================================*/
-  //! @name scalar degrees of freedom variables
+  //! @name pressure degrees of freedom variables
   /*========================================================================*/
 
   //! number of space dimensions

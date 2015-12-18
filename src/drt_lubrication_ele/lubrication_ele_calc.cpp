@@ -753,19 +753,19 @@ int DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::EvaluateAction(
     break;
   }
 
-  case LUBRICATION::calc_mean_scalars:
+  case LUBRICATION::calc_mean_pressures:
   {
     // get flag for inverting
     bool inverting = params.get<bool>("inverting");
 
-    // need current scalar vector
+    // need current pressure vector
     // -> extract local values from the global vectors
     Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("prenp");
     if (prenp==Teuchos::null) dserror("Cannot get state vector 'prenp'");
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*prenp,eprenp_,lm);
 
-    // calculate scalars and domain integral
-    CalculateScalars(ele,elevec1_epetra,inverting);
+    // calculate pressures and domain integral
+    CalculatePressures(ele,elevec1_epetra,inverting);
 
     break;
   }
@@ -812,7 +812,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnaly
     // analytical solution
     double  pre_exact(0.0);
     double  deltapre(0.0);
-    //! spatial gradient of current scalar value
+    //! spatial gradient of current pressure value
     LINALG::Matrix<nsd_,1>  gradpre(true);
     LINALG::Matrix<nsd_,1>  gradpre_exact(true);
     LINALG::Matrix<nsd_,1>  deltagradpre(true);
@@ -833,9 +833,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnaly
       for (int dim=0; dim<nsd_; ++dim)
         position[dim] = xyzint(dim);
 
-      // scalar at integration point at time step n+1
+      // pressure at integration point at time step n+1
       const double prenp = funct_.Dot(eprenp_);
-      // spatial gradient of current scalar value
+      // spatial gradient of current pressure value
       gradpre.Multiply(derxy_, eprenp_);
 
       pre_exact = DRT::Problem::Instance()->Funct(errorfunctno - 1).Evaluate(0,
@@ -871,25 +871,25 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnaly
       deltapre = prenp - pre_exact;
       deltagradpre.Update(1.0, gradpre, -1.0, gradpre_exact);
 
-      // 0: delta scalar for L2-error norm
-      // 1: delta scalar for H1-error norm
-      // 2: analytical scalar for L2 norm
-      // 3: analytical scalar for H1 norm
+      // 0: delta pressure for L2-error norm
+      // 1: delta pressure for H1-error norm
+      // 2: analytical pressure for L2 norm
+      // 3: analytical pressure for H1 norm
 
       // the error for the L2 and H1 norms are evaluated at the Gauss point
 
-      // integrate delta scalar for L2-error norm
+      // integrate delta pressure for L2-error norm
       errors(0) += deltapre * deltapre * fac;
-      // integrate delta scalar for H1-error norm
+      // integrate delta pressure for H1-error norm
       errors(1) += deltapre * deltapre * fac;
-      // integrate analytical scalar for L2 norm
+      // integrate analytical pressure for L2 norm
       errors(2) += pre_exact * pre_exact * fac;
-      // integrate analytical scalar for H1 norm
+      // integrate analytical pressure for H1 norm
       errors(3) += pre_exact * pre_exact * fac;
 
-      // integrate delta scalar derivative for H1-error norm
+      // integrate delta pressure derivative for H1-error norm
       errors(1) += deltagradpre.Dot(deltagradpre) * fac;
-      // integrate analytical scalar derivative for H1 norm
+      // integrate analytical pressure derivative for H1 norm
       errors(3) += gradpre_exact.Dot(gradpre_exact) * fac;
     } // loop over integration points
 
@@ -902,12 +902,12 @@ void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnaly
 } // DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalErrorComparedToAnalytSolution
 
 /*---------------------------------------------------------------------*
-|  calculate scalar(s) and domain integral                 wirtz 10/15 |
+|  calculate pressure(s) and domain integral               wirtz 10/15 |
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalculateScalars(
+void DRT::ELEMENTS::LubricationEleCalc<distype,probdim>::CalculatePressures(
 const DRT::Element*             ele,
-Epetra_SerialDenseVector&       scalars,
+Epetra_SerialDenseVector&       pressures,
 const bool                      inverting
   )
 {
@@ -919,18 +919,18 @@ const bool                      inverting
   {
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
-    // calculate integrals of (inverted) scalar(s) and domain
+    // calculate integrals of (inverted) pressure(s) and domain
     if (inverting)
     {
       for (int i=0; i<nen_; i++)
       {
         const double fac_funct_i = fac*funct_(i);
         if (std::abs(eprenp_(i,0))> EPS14)
-          scalars[0] += fac_funct_i/eprenp_(i,0);
+          pressures[0] += fac_funct_i/eprenp_(i,0);
         else
           dserror("Division by zero");
         // for domain volume
-        scalars[1] += fac_funct_i;
+        pressures[1] += fac_funct_i;
       }
     }
     else
@@ -938,15 +938,15 @@ const bool                      inverting
       for (int i=0; i<nen_; i++)
       {
         const double fac_funct_i = fac*funct_(i);
-        scalars[0] += fac_funct_i*eprenp_(i,0);
+        pressures[0] += fac_funct_i*eprenp_(i,0);
         // for domain volume
-        scalars[1] += fac_funct_i;
+        pressures[1] += fac_funct_i;
       }
     }
   } // loop over integration points
 
   return;
-} // LubricationEleCalc::CalculateScalars
+} // LubricationEleCalc::CalculatePressures
 
 // template classes
 

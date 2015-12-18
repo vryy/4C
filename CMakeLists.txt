@@ -717,6 +717,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_combust.cpp
   src/drt_inpar/inpar_contact.cpp
   src/drt_inpar/inpar_crack.cpp
+  src/drt_inpar/inpar_ehl.cpp
   src/drt_inpar/inpar_elch.cpp
   src/drt_inpar/inpar_fluid.cpp
   src/drt_inpar/inpar_fpsi.cpp
@@ -1001,7 +1002,10 @@ set(OBJS_DRT_UTILS
   src/pss_full/pss_table_iter.c
 )
 set(OBJS_DRT_EHL
+  src/drt_ehl/ehl_base.cpp
   src/drt_ehl/ehl_dyn.cpp
+  src/drt_ehl/ehl_partitioned.cpp
+  src/drt_ehl/ehl_utils.cpp
 )
 set(OBJS_DRT_LUBRICATION
   src/drt_lubrication/lubrication_dyn.cpp

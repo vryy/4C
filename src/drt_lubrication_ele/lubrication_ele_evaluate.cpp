@@ -57,7 +57,7 @@ int DRT::ELEMENTS::Lubrication::Evaluate(
       break;
     }
     case LUBRICATION::calc_error:
-    case LUBRICATION::calc_mean_scalars:
+    case LUBRICATION::calc_mean_pressures:
     {
       return DRT::ELEMENTS::LubricationFactory::ProvideImpl(Shape(),discretization.Name())->EvaluateService(
                this,

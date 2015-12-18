@@ -127,6 +127,16 @@ void LUBRICATION::TimIntStationary::AddTimeIntegrationSpecificVectors(bool force
 
 
 /*----------------------------------------------------------------------*
+ | update of solution at end of time step                   wirtz 11/15 |
+ *----------------------------------------------------------------------*/
+void LUBRICATION::TimIntStationary::Update(const int num)
+{
+  // for the stationary scheme there is nothing to do
+  return;
+};
+
+
+/*----------------------------------------------------------------------*
  |                                                          wirtz 11/15 |
  -----------------------------------------------------------------------*/
 void LUBRICATION::TimIntStationary::ReadRestart(int step)

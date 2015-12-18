@@ -323,6 +323,7 @@ public:
   const Teuchos::ParameterList& RedAirwayTissueDynamicParams() const { return getParameterList()->sublist("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC"); }
   const Teuchos::ParameterList& PoroelastDynamicParams() const { return getParameterList()->sublist("POROELASTICITY DYNAMIC"); }
   const Teuchos::ParameterList& PoroScatraControlParams() const { return getParameterList()->sublist("POROSCATRA CONTROL"); }
+  const Teuchos::ParameterList& ElastoHydroDynamicParams() const { return getParameterList()->sublist("ELASTO HYDRO DYNAMIC"); }
   const Teuchos::ParameterList& SSIControlParams() const { return getParameterList()->sublist("SSI CONTROL"); }
   const Teuchos::ParameterList& OptimizationControlParams() const { return getParameterList()->sublist("TOPOLOGY OPTIMIZATION CONTROL"); }
   const Teuchos::ParameterList& SearchtreeParams() const { return getParameterList()->sublist("SEARCH TREE"); }

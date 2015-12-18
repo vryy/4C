@@ -320,6 +320,35 @@ void LUBRICATION::TimIntImpl::Solve()
 
 
 /*----------------------------------------------------------------------*
+ | apply moving mesh data                                     gjb 05/09 |
+ *----------------------------------------------------------------------*/
+void LUBRICATION::TimIntImpl::ApplyMeshMovement(
+    Teuchos::RCP<const Epetra_Vector> dispnp,
+    int nds
+)
+{
+  //---------------------------------------------------------------------------
+  // only required in ALE case
+  //---------------------------------------------------------------------------
+  if (isale_)
+  {
+    TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION: apply mesh movement");
+
+    // check existence of displacement vector
+    if (dispnp == Teuchos::null) dserror("Got null pointer for displacements!");
+
+    // store number of dofset associated with displacement related dofs
+    nds_disp_ = nds;
+
+    // provide lubrication discretization with displacement field
+    discret_->SetState(nds_disp_,"dispnp",dispnp);
+  } // if (isale_)
+
+  return;
+} // TimIntImpl::ApplyMeshMovement
+
+
+/*----------------------------------------------------------------------*
  |  print information about current time step to screen     wirtz 11/15 |
  *----------------------------------------------------------------------*/
 inline void LUBRICATION::TimIntImpl::PrintTimeStepInfo()
@@ -353,8 +382,8 @@ void LUBRICATION::TimIntImpl::Output(const int num)
     // write output to Gmsh postprocessing files
     if (outputgmsh_) OutputToGmsh(step_, time_);
 
-    // write mean values of scalar(s)
-    OutputMeanScalars(num);
+    // write mean values of pressure(s)
+    OutputMeanPressures(num);
 
   }
 
@@ -914,8 +943,8 @@ void LUBRICATION::TimIntImpl::EvaluateErrorComparedToAnalyticalSol()
   discret_->ClearState();
 
   // std::vector containing
-  // [0]: relative L2 scalar error
-  // [1]: relative H1 scalar error
+  // [0]: relative L2 pressure error
+  // [1]: relative H1 pressure error
   Teuchos::RCP<std::vector<double> > relerror = Teuchos::rcp(new std::vector<double>(2));
 
     if( std::abs((*errors)[2])>1e-14 )
@@ -975,33 +1004,33 @@ void LUBRICATION::TimIntImpl::OutputToGmsh(
   const bool screen_out = true;
 
   // create Gmsh postprocessing file
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_scalar", step, 500, screen_out, discret_->Comm().MyPID());
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_pressure", step, 500, screen_out, discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
 //  {
 //    // add 'View' to Gmsh postprocessing file
-//    gmshfilecontent << "View \" " << "Phin \" {" << std::endl;
-//    // draw scalar field 'Phindtp' for every element
+//    gmshfilecontent << "View \" " << "Pren \" {" << std::endl;
+//    // draw pressure field 'Prendtp' for every element
 //    IO::GMSH::ScalarFieldToGmsh(discret_,pren_,gmshfilecontent);
 //    gmshfilecontent << "};" << std::endl;
 //  }
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" " << "Prenp \" {" << std::endl;
-    // draw scalar field 'Prenp' for every element
+    // draw pressure field 'Prenp' for every element
     IO::GMSH::ScalarFieldToGmsh(discret_,prenp_,gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 //  {
 //    // add 'View' to Gmsh postprocessing file
-//    gmshfilecontent << "View \" " << "Phidtn \" {" << std::endl;
-//    // draw scalar field 'Phindtn' for every element
+//    gmshfilecontent << "View \" " << "Predtn \" {" << std::endl;
+//    // draw pressure field 'Prendtn' for every element
 //    IO::GMSH::ScalarFieldToGmsh(discret_,predtn_,gmshfilecontent);
 //    gmshfilecontent << "};" << std::endl;
 //  }
 //  {
 //    // add 'View' to Gmsh postprocessing file
-//    gmshfilecontent << "View \" " << "Phidtnp \" {" << std::endl;
-//    // draw scalar field 'Phindtp' for every element
+//    gmshfilecontent << "View \" " << "Predtnp \" {" << std::endl;
+//    // draw pressure field 'Prendtp' for every element
 //    IO::GMSH::ScalarFieldToGmsh(discret_,predtnp_,gmshfilecontent);
 //    gmshfilecontent << "};" << std::endl;
 //  }
@@ -1024,40 +1053,40 @@ void LUBRICATION::TimIntImpl::OutputToGmsh(
 
 
 /*----------------------------------------------------------------------*
- | output mean values of scalar(s)                          wirtz 11/15 |
+ | output mean values of pressure(s)                          wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::OutputMeanScalars(const int num)
+void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
 {
   if(outmean_)
   {
-    // set scalar values needed by elements
+    // set pressure values needed by elements
     discret_->ClearState();
     discret_->SetState("prenp",prenp_);
     // set action for elements
     Teuchos::ParameterList eleparams;
-    eleparams.set<int>("action",LUBRICATION::calc_mean_scalars);
+    eleparams.set<int>("action",LUBRICATION::calc_mean_pressures);
     eleparams.set("inverting",false);
 
     // provide displacement field in case of ALE
     if (isale_)
       eleparams.set<int>("ndsdisp",nds_disp_);
 
-    // evaluate integrals of scalar(s) and domain
-    Teuchos::RCP<Epetra_SerialDenseVector> scalars
+    // evaluate integrals of pressure(s) and domain
+    Teuchos::RCP<Epetra_SerialDenseVector> pressures
     = Teuchos::rcp(new Epetra_SerialDenseVector(2));
-    discret_->EvaluateScalars(eleparams, scalars);
+    discret_->EvaluateScalars(eleparams, pressures);
     discret_->ClearState();   // clean up
 
     // extract domain integral
-    const double domint = (*scalars)[1];
+    const double domint = (*pressures)[1];
 
     // print out results to screen and file
     if (myrank_ == 0)
     {
       // screen output
-      std::cout << "Mean scalar values:" << std::endl;
+      std::cout << "Mean pressure values:" << std::endl;
       std::cout << "+-------------------------------+" << std::endl;
-      std::cout << "| Mean scalar:   " << std::setprecision(6) << (*scalars)[0]/domint << " |" << std::endl;
+      std::cout << "| Mean pressure:   " << std::setprecision(6) << (*pressures)[0]/domint << " |" << std::endl;
       std::cout << "+-------------------------------+" << std::endl << std::endl;
 
       // file output
@@ -1070,15 +1099,15 @@ void LUBRICATION::TimIntImpl::OutputMeanScalars(const int num)
       {
         f.open(fname.c_str(),std::fstream::trunc);
         f << "#| Step | Time | Domain integral |";
-        f << " Total scalar |";
-        f << " Mean scalar |";
+        f << " Total pressure |";
+        f << " Mean pressure |";
         f << "\n";
       }
       else f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
       f << Step() << " " << Time() << " " << std::setprecision (9) << domint;
-      f << " " << std::setprecision (9) << (*scalars)[0];
-      f << " " << std::setprecision (9) << (*scalars)[0]/domint;
+      f << " " << std::setprecision (9) << (*pressures)[0];
+      f << " " << std::setprecision (9) << (*pressures)[0]/domint;
       f << "\n";
       f.flush();
       f.close();
@@ -1087,4 +1116,4 @@ void LUBRICATION::TimIntImpl::OutputMeanScalars(const int num)
   } // if(outmean_)
 
   return;
-} // LUBRICATION::TimIntImpl::OutputMeanScalars
+} // LUBRICATION::TimIntImpl::OutputMeanPressures

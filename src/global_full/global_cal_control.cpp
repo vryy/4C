@@ -68,7 +68,7 @@ void ntacal()
       lubrication_dyn(restart);
       break;
     case prb_ehl:
-      ehl_dyn(restart);
+      ehl_dyn();
       break;
     case prb_cardiac_monodomain:
     case prb_scatra:

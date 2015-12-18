@@ -2,7 +2,7 @@
 /*!
 \file ehl_dyn.cpp
 
-\brief dummy
+\brief control routine for elastohydrodynamic lubrication (lubrication structure interaction)
 
 <pre>
 Maintainer: Andy Wirtz
@@ -13,81 +13,90 @@ Maintainer: Andy Wirtz
 */
 /*--------------------------------------------------------------------------*/
 
-#include "../drt_ehl/ehl_dyn.H"
+#include "ehl_dyn.H"
 
-#include "../drt_adapter/adapter_lubrication.H"
+#include "ehl_partitioned.H"
+#include "ehl_utils.H"
 
-#include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 
-#include "../drt_lubrication/lubrication_timint_implicit.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*
- | Main control routine for EHL problems                    wirtz 11/15 |
+ | Main control routine for EHL problems                    wirtz 12/15 |
  *----------------------------------------------------------------------*/
-void ehl_dyn(int restart)
+void ehl_dyn()
 {
-  // access the communicator
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("lubrication")->Comm();
+  DRT::Problem* problem = DRT::Problem::Instance();
 
-  // print problem type
-  if (comm.MyPID() == 0)
+  //1.- Initialization
+  const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
+
+  //2.- Parameter reading
+  Teuchos::ParameterList& ehlparams = const_cast<Teuchos::ParameterList&>( problem->ElastoHydroDynamicParams() );
+  // access lubrication params list
+  Teuchos::ParameterList& lubricationdyn = const_cast<Teuchos::ParameterList&>( problem->LubricationDynamicParams() );
+  // access structural dynamic params list which will be possibly modified while creating the time integrator
+  Teuchos::ParameterList& sdyn      = const_cast<Teuchos::ParameterList&>( DRT::Problem::Instance()->StructuralDynamicParams() );
+
+//  //Modification of time parameter list
+  EHL::Utils::ChangeTimeParameter(comm, ehlparams, lubricationdyn, sdyn);
+
+  const INPAR::EHL::SolutionSchemeOverFields coupling
+    = DRT::INPUT::IntegralValue<INPAR::EHL::SolutionSchemeOverFields>(ehlparams,"COUPALGO");
+
+
+  //3.- Creation of Lubrication + Structure problem. (Discretization called inside)
+  Teuchos::RCP<EHL::Base> ehl = Teuchos::null;
+
+  //3.1 choose algorithm depending on solution type
+  switch(coupling)
   {
-    std::cout << "###################################################"
-        << std::endl;
-    std::cout << "# YOUR PROBLEM TYPE: "
-        << DRT::Problem::Instance()->ProblemName() << std::endl;
-    std::cout << "###################################################"
-        << std::endl;
+  case INPAR::EHL::ehl_IterStagg:
+    ehl = Teuchos::rcp(new EHL::Partitioned(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
+    break;
+  case INPAR::EHL::ehl_IterStaggFixedRel_LubToStr:
+    ehl = Teuchos::rcp(new EHL::Partitioned_LubToStr_Relax(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
+    break;
+  case INPAR::EHL::ehl_IterStaggFixedRel_StrToLub:
+    ehl = Teuchos::rcp(new EHL::Partitioned_StrToLub_Relax(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
+    break;
+  case INPAR::EHL::ehl_IterStaggAitken_LubToStr:
+    ehl = Teuchos::rcp(new EHL::Partitioned_LubToStr_Aitken(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
+        break;
+  case INPAR::EHL::ehl_IterStaggAitken_StrToLub:
+    ehl = Teuchos::rcp(new EHL::Partitioned_StrToLub_Aitken(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
+    break;
+  default:
+    dserror("unknown coupling algorithm for EHL!");
+    break;
   }
 
-  // access the problem-specific parameter list
-  const Teuchos::ParameterList& lubricationdyn =
-      DRT::Problem::Instance()->LubricationDynamicParams();
+  //3.2- Read restart if needed. (Discretization called inside)
+  const int restart = problem->Restart();
 
-  // access the lubrication discretization
-  Teuchos::RCP<DRT::Discretization> lubricationdis =
-      DRT::Problem::Instance()->GetDis("lubrication");
+  const double restarttime = problem->RestartTime();
+  if (restarttime > 0.0)
+    ehl->ReadRestartfromTime(restarttime);
 
-  lubricationdis->FillComplete();
+  else
+    if (restart)
+      ehl->ReadRestart(restart);
 
-  // we directly use the elements from the Lubrication elements section
-  if (lubricationdis->NumGlobalNodes() == 0)
-    dserror("No elements in the ---LUBRICATION ELEMENTS section");
+  //4.- Run of the actual problem.
 
-  // add proxy of velocity related degrees of freedom to Lubrication discretization
-  if (lubricationdis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim() + 1, 0, 0,
-      true) != 1)
-    dserror("Lubrication discretization has illegal number of dofsets!");
+  // 4.1.- Some setup needed for the elastohydrodynamic lubrication problem.
+  ehl->SetupSystem();
 
-  // finalize discretization
-  lubricationdis->FillComplete(true, false, false);
+  // 4.2.- Solve the whole problem
+  ehl->Timeloop();
 
-  // get linear solver id from LUBRICATION DYNAMIC
-  const int linsolvernumber = lubricationdyn.get<int>("LINEAR_SOLVER");
-  if (linsolvernumber == (-1))
-    dserror(
-        "no linear solver defined for LUBRICATION problem. Please set LINEAR_SOLVER in LUBRICATION DYNAMIC to a valid number!");
+  // 4.3.- Summarize the performance measurements
+  Teuchos::TimeMonitor::summarize();
 
-  // create instance of Lubrication basis algorithm
-  Teuchos::RCP<ADAPTER::LubricationBaseAlgorithm> lubricationonly = Teuchos::rcp(
-      new ADAPTER::LubricationBaseAlgorithm());
+  // 5. - perform the result test
+  ehl->TestResults(comm);
 
-  // setup Lubrication basis algorithm
-  lubricationonly->Setup(lubricationdyn, lubricationdyn,
-          DRT::Problem::Instance()->SolverParams(linsolvernumber));
-
-  // read the restart information, set vectors and variables
-  if (restart)
-    lubricationonly->LubricationField()->ReadRestart(restart);
-
-  // enter time loop to solve problem
-  (lubricationonly->LubricationField())->TimeLoop();
-
-  // perform the result test if required
-  DRT::Problem::Instance()->AddFieldTest(lubricationonly->CreateLubricationFieldTest());
-  DRT::Problem::Instance()->TestAll(comm);
-
-return;
-
-} // end of ehl_dyn()
+}

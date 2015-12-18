@@ -246,7 +246,6 @@ void runEnsightVtuFilter(PostProblem    &problem)
         writer.WriteFiles();
         break;
     }
-    case prb_ehl:
     case prb_lubrication:
     {
         PostField* lubricationfield = problem.get_discretization(0);
@@ -715,6 +714,20 @@ void runEnsightVtuFilter(PostProblem    &problem)
         ScaTraFilter scatrawriter(scatrafield, basename);
         scatrawriter.WriteFiles();
       }
+
+      break;
+    }
+    case prb_ehl:
+    {
+      std::string basename = problem.outname();
+
+      PostField* structfield = problem.get_discretization(0);
+      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+
+      PostField* lubricationfield = problem.get_discretization(1);
+      LubricationFilter lubricationwriter(lubricationfield, basename);
+      lubricationwriter.WriteFiles();
 
       break;
     }

@@ -54,6 +54,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_immersed.H"
 #include "inpar_cell.H"
 #include "inpar_fpsi.H"
+#include "inpar_ehl.H"
 #include "inpar_ssi.H"
 #include "inpar_fs3i.H"
 #include "inpar_cavitation.H"
@@ -621,6 +622,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::FS3I::SetValidParameters(list);
   INPAR::POROELAST::SetValidParameters(list);
   INPAR::PORO_SCATRA::SetValidParameters(list);
+  INPAR::EHL::SetValidParameters(list);
   INPAR::SSI::SetValidParameters(list);
   INPAR::ALE::SetValidParameters(list);
   INPAR::FSI::SetValidParameters(list);

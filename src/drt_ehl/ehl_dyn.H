@@ -2,7 +2,7 @@
 /*!
 \file ehl_dyn.H
 
-\brief dummy
+\brief control routine for elastohydrodynamic lubrication (lubrication structure interaction)
 
 <pre>
 Maintainer: Andy Wirtz
@@ -15,11 +15,7 @@ Maintainer: Andy Wirtz
 #ifndef SRC_DRT_EHL_EHL_DYN_H_
 #define SRC_DRT_EHL_EHL_DYN_H_
 
-
-/*! entry point for the solution of EHL problems */
-void ehl_dyn(
-    int restart        /* do we have to perform a restart?  */
-    );
-
+//! global control routine for elastohydrodynamic lubrication problem (lubrication structure interaction).
+void ehl_dyn();
 
 #endif /* SRC_DRT_EHL_EHL_DYN_H_ */

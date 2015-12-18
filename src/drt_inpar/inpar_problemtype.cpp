@@ -33,7 +33,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Cavitation"]                                       = prb_cavitation;
     string2prbtype["Combustion"]                                       = prb_combust;
     string2prbtype["Crack"]                                            = prb_crack;
-    string2prbtype["Elastohydrodynamic Lubrication"]                   = prb_ehl;
+    string2prbtype["Elastohydrodynamic_Lubrication"]                   = prb_ehl;
     string2prbtype["Electrochemistry"]                                 = prb_elch;
     string2prbtype["Fluid"]                                            = prb_fluid;
     string2prbtype["Fluid_Ale"]                                        = prb_fluid_ale;

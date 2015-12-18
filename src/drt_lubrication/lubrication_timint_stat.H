@@ -38,6 +38,10 @@ public:
   /// initialize time integration scheme
   virtual void Init();
 
+  /// Update the solution after convergence of the nonlinear iteration.
+  /// Current solution becomes old solution of next timestep.
+  virtual void Update(const int num=0);
+
   /// read restart data
   void ReadRestart(int step);
 

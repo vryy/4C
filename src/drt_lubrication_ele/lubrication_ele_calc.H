@@ -164,7 +164,7 @@ namespace ELEMENTS
     /*========================================================================*/
 
     //! extract element based or nodal values
-    //  return extracted values of phinp
+    //  return extracted values of prenp
     virtual void ExtractElementAndNodeValues(
       DRT::Element*                 ele,
       Teuchos::ParameterList&       params,
@@ -212,10 +212,10 @@ namespace ELEMENTS
       Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm
     );
 
-    //! calculate scalar(s) and domain integral
-    virtual void CalculateScalars(
+    //! calculate pressure(s) and domain integral
+    virtual void CalculatePressures(
       const DRT::Element*             ele,       //!< the element we are dealing with
-      Epetra_SerialDenseVector&       scalars,   //!< scalar to be computed
+      Epetra_SerialDenseVector&       pressures,   //!< pressure to be computed
       const bool                      inverting  //!< bool indicating inversion
     );
 

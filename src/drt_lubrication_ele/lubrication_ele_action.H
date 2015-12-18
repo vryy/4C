@@ -30,7 +30,7 @@ enum Action {
   set_general_lubrication_parameter,     // set general parameters for element evaluation
   set_time_parameter,                    // set time-integration parameters for element evaluation
   calc_mat_and_rhs,                      // calc_condif_systemmat_and_residual,
-  calc_mean_scalars,                     // calc_mean_scalars,
+  calc_mean_pressures,                   // calc_mean_pressures,
   calc_error                             // calc_error
 }; // enum Action
 

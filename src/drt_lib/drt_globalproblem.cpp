@@ -247,6 +247,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TSI CONTACT", *list);
   reader.ReadGidSection("--POROELASTICITY DYNAMIC", *list);
   reader.ReadGidSection("--POROSCATRA CONTROL", *list);
+  reader.ReadGidSection("--ELASTO HYDRO DYNAMIC", *list);
+  reader.ReadGidSection("--ELASTO HYDRO DYNAMIC/PARTITIONED", *list);
   reader.ReadGidSection("--SSI CONTROL", *list);
   reader.ReadGidSection("--SSI CONTROL/PARTITIONED", *list);
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
@@ -1272,7 +1274,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
-  case prb_ehl:
   case prb_lubrication:
   {
     // create empty discretizations
@@ -1821,6 +1822,24 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(porofluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
+    break;
+  }
+  case prb_ehl:
+  {
+    // create empty discretizations
+    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+    lubricationdis = Teuchos::rcp(new DRT::Discretization("lubrication",reader.Comm()));
+
+    // create discretization writer - in constructor set into and owned by corresponding discret
+    structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
+    lubricationdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(lubricationdis)));
+
+    AddDis("structure", structdis);
+    AddDis("lubrication", lubricationdis);
+
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(lubricationdis, reader, "--LUBRICATION ELEMENTS")));
+
     break;
   }
   case prb_ssi:
