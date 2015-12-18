@@ -48,10 +48,15 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
 
   //do some checks
   {
+    INPAR::STR::DynamicType structtimealgo = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structparams,"DYNAMICTYP");
+    if ( structtimealgo == INPAR::STR::dyna_statics )
+      dserror("If you use statics as the structural time integrator no velocities will be calculated and hence"
+          "the deformations will not be applied to the scalar transport problem!");
+
     INPAR::SCATRA::ConvForm convform
     = DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams,"CONVFORM");
-    if ( convform != INPAR::SCATRA::convform_conservative )
-      dserror("If the scalar tranport problem is solved on the deforming domain, the conservative form must be"
+    if ( not (convform == INPAR::SCATRA::convform_conservative) )
+      dserror("If the scalar transport problem is solved on the deforming domain, the conservative form must be"
           "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR TRANSPORT DYNAMIC section!");
   }
 }
@@ -61,8 +66,13 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC::Timeloop()
 {
-  //InitialCalculations();
+  //initial output
+  structure_-> PrepareOutput();
+  structure_-> Output();
+  SetStructSolution(structure_->Dispnp(),structure_->Velnp());
+  scatra_->ScaTraField()->Output();
 
+  //time loop
   while (NotFinished())
   {
     PrepareTimeStep();
