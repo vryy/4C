@@ -714,9 +714,6 @@ THETA                           0.66
 // Tolerance for convergence check
 CONVTOL                         1e-06
 //
-// Tolerance for steady state check
-STEADYTOL                       1e-06
-//
 // Time integration factor for starting scheme
 START_THETA                     1
 //

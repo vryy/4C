@@ -123,9 +123,6 @@ START_THETA                     1
 // steady state check every step
 STEADYSTEP                      -1
 //
-// Tolerance for steady state check
-STEADYTOL                       1e-06
-//
 // Flag to (de)activate potential Strong 3D redD coupling
 //                              no,yes
 STRONG_REDD_3D_COUPLING_TYPE    no
