@@ -15,11 +15,32 @@ Maintainers: Andreas Rauch
 #include "../drt_structure/stru_aux.H"
 #include "../drt_poroelast/poro_scatra_base.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
+#include "../drt_adapter/ad_fld_poro.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../linalg/linalg_utils.H"
 
 
 IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTraction(const Teuchos::ParameterList& params, const Epetra_Comm& comm)
   : ImmersedPartitioned(comm)
 {
+  // get pointer to fluid search tree from ParameterList
+  fluid_SearchTree_ = params.get<Teuchos::RCP<GEO::SearchTree> >("RCPToFluidSearchTree");
+
+  // get pointer to cell search tree from ParameterList
+  cell_SearchTree_ = params.get<Teuchos::RCP<GEO::SearchTree> >("RCPToCellSearchTree");
+
+  // get pointer to the current position map of the cell
+  currpositions_cell_ = params.get<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsCell");
+
+  // get pointer to the current position map of the cell
+  currpositions_ECM_ = params.get<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsECM");
+
+  // get pointer to cell structure
+  cellstructure_=params.get<Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> >("RCPToCellStructure");
+
+  // create instance of poroelast subproblem
+  poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
+
   // important variables for parallel simulations
   myrank_  = comm.MyPID();
   numproc_ = comm.NumProc();
@@ -33,6 +54,7 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
 
   // construct immersed exchange manager. singleton class that makes immersed variables comfortably accessible from everywhere in the code
   exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
+  exchange_manager_->SetIsPureAdhesionSimulation(params.get<bool>("IsPureAdhesionSimulation")==true);
 
   // get coupling variable
   displacementcoupling_ = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE_ADHESION") == "Displacement";
@@ -54,7 +76,7 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
 
   // set pointer to adhesion force vector in immersed exchange manager
   exchange_manager_->SetPointerECMAdhesionForce(ecm_adhesion_forces_);
-  curr_subset_of_backgrounddis_=exchange_manager_->GetPointerToCurrentSubsetOfBackgrdDis();
+  //curr_subset_of_backgrounddis_=exchange_manager_->GetPointerToCurrentSubsetOfBackgrdDis(); todo build in global control algo and hand pointer into ParameterList
 
   // get pointer to cell search tree from ParameterList
   cell_SearchTree_ = params.get<Teuchos::RCP<GEO::SearchTree> >("RCPToCellSearchTree");
@@ -101,7 +123,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CouplingOp(const Epetra_Vect
     ////////////////////
     // CALL BackgroundOp
     ////////////////////
-    //PrepareBackgroundOp(); // determine elements cut by the boundary
+    PrepareBackgroundOp();
     BackgroundOp(cell_reactforcen, fillFlag);
 
     ////////////////////
@@ -134,19 +156,19 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::BackgroundOp(Teuchos::RCP<Ep
   }
   else
   {
-//    if(curr_subset_of_backgrounddis_->empty()==false)
-//      EvaluateImmersed(params,
-//          backgroundfluiddis_,
-//          &fluid_vol_strategy,
-//          curr_subset_of_backgrounddis_,
-//          cell_SearchTree_, currpositions_cell_,
-//          (int)FLD::interpolate_velocity_to_given_point_immersed,
-//          false);
-//    else
-//    {
-//      // do nothing : a proc without subset of backgrd dis. does not need to enter evaluation,
-//      //              since cell is ghosted on all procs and no communication has to be performed.
-//    }
+    Teuchos::ParameterList params;
+
+    if(curr_subset_of_backgrounddis_.empty()==false)
+      EvaluateImmersedNoAssembly(params,
+          backgroundfluiddis_,
+          &curr_subset_of_backgrounddis_,
+          cell_SearchTree_, currpositions_cell_,
+          (int)FLD::update_immersed_information);
+    else
+    {
+      // do nothing : a proc without subset of backgrd dis. does not need to enter evaluation,
+      //              since cell is ghosted on all procs and no communication has to be performed.
+    }
 
     DistributeAdhesionForce(backgrd_dirichlet_values);
 
@@ -183,6 +205,69 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedOp(Teuchos::RCP<Epetra_Ve
     return cellstructure_->ExtractImmersedInterfaceDispnp();
   }
 
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedAdhesionTraction::PrepareBackgroundOp()
+{
+
+  immerseddis_->SetState(0,"displacement",cellstructure_->Dispnp());
+  backgroundfluiddis_->SetState(0,"dispnp",poroscatra_subproblem_->FluidField()->Dispnp());
+
+  double structsearchradiusfac = DRT::Problem::Instance()->ImmersedMethodParams().get<double>("STRCT_SRCHRADIUS_FAC");
+
+  // determine subset of fluid discretization which is potentially underlying the immersed discretization
+  //
+  // get state
+  Teuchos::RCP<const Epetra_Vector> celldisplacements = cellstructure_->Dispnp();
+
+  // find current positions for immersed structural discretization
+  std::map<int,LINALG::Matrix<3,1> > my_currpositions_cell;
+  for (int lid = 0; lid < immerseddis_->NumMyRowNodes(); ++lid)
+  {
+    const DRT::Node* node = immerseddis_->lRowNode(lid);
+    LINALG::Matrix<3,1> currpos;
+    std::vector<int> dofstoextract(3);
+    std::vector<double> mydisp(3);
+
+    // get the current displacement
+    immerseddis_->Dof(node,0,dofstoextract);
+    DRT::UTILS::ExtractMyValues(*celldisplacements,mydisp,dofstoextract);
+
+    currpos(0) = node->X()[0]+mydisp.at(0);
+    currpos(1) = node->X()[1]+mydisp.at(1);
+    currpos(2) = node->X()[2]+mydisp.at(2);
+
+    my_currpositions_cell[node->Id()] = currpos;
+  }
+
+  // communicate local currpositions:
+  // map with current cell positions should be same on all procs
+  // to make use of the advantages of ghosting the cell redundantly
+  // on all procs.
+  int procs[Comm().NumProc()];
+  for(int i=0;i<Comm().NumProc();i++)
+    procs[i]=i;
+  LINALG::Gather<int,LINALG::Matrix<3,1> >(my_currpositions_cell,*currpositions_cell_,Comm().NumProc(),&procs[0],Comm());
+
+  // get bounding box of current configuration of structural dis
+  const LINALG::Matrix<3,2> structBox = GEO::getXAABBofDis(*immerseddis_,*currpositions_cell_);
+  double max_radius = sqrt(pow(structBox(0,0)-structBox(0,1),2)+pow(structBox(1,0)-structBox(1,1),2)+pow(structBox(2,0)-structBox(2,1),2));
+  // search for background elements within a certain radius around the center of the immersed bounding box
+  LINALG::Matrix<3,1> boundingboxcenter;
+  boundingboxcenter(0) = structBox(0,0)+(structBox(0,1)-structBox(0,0))*0.5;
+  boundingboxcenter(1) = structBox(1,0)+(structBox(1,1)-structBox(1,0))*0.5;
+  boundingboxcenter(2) = structBox(2,0)+(structBox(2,1)-structBox(2,0))*0.5;
+
+  // search background elements covered by bounding box of cell
+  curr_subset_of_backgrounddis_ = fluid_SearchTree_->searchElementsInRadius(*backgroundfluiddis_,*currpositions_ECM_,boundingboxcenter,structsearchradiusfac*max_radius,0);
+
+  if(curr_subset_of_backgrounddis_.empty() == false)
+    std::cout<<"\nPrepareBackgroundOp returns "<<curr_subset_of_backgrounddis_.begin()->second.size()<<" background elements on Proc "<<Comm().MyPID()<<std::endl;
+
+  return;
 }
 
 
@@ -324,7 +409,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(Teuc
 
     // find ecm element in which adhesion node is immersed
     // every proc that has searchboxgeom elements
-    for(std::map<int, std::set<int> >::const_iterator closele = curr_subset_of_backgrounddis_->begin(); closele != curr_subset_of_backgrounddis_->end(); closele++)
+    for(std::map<int, std::set<int> >::const_iterator closele = curr_subset_of_backgrounddis_.begin(); closele != curr_subset_of_backgrounddis_.end(); closele++)
     {
       if(match)
         break;
@@ -495,4 +580,33 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::ReadRestart(int step)
 {
   dserror("RESTART in ImmersedPartitionedAdhesionTraction not supported, yet.");
   return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedAdhesionTraction::PrepareOutput()
+{
+  poroscatra_subproblem_->PrepareOutput();
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedAdhesionTraction::Output()
+{
+  cellstructure_->Output();
+  poroscatra_subproblem_->Output();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedAdhesionTraction::Update()
+{
+  cellstructure_->Update();
+  poroscatra_subproblem_->Update();
 }

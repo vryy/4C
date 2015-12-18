@@ -3295,9 +3295,13 @@ void STR::TimInt::OutputCell()
 {
   if(porositysplitter_==Teuchos::null and DRT::Problem::Instance()->ProblemType() == prb_immersed_cell)
   {
-    output_->WriteVector("cell_penalty_traction",Teuchos::rcp_static_cast<Epetra_MultiVector>(DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToECMPenaltyTraction()));
-    output_->WriteVector("cell_penalty_gap",Teuchos::rcp_static_cast<Epetra_MultiVector>(DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToGap()));
-    output_->WriteVector("cell_nodal_normals",Teuchos::rcp_static_cast<Epetra_MultiVector>(DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToCurrentNodalNormals()));
+    if(not DRT::ImmersedFieldExchangeManager::Instance()->IsPureAdhesionSimulation())
+    {
+      output_->WriteVector("cell_penalty_traction",Teuchos::rcp_static_cast<Epetra_MultiVector>(DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToECMPenaltyTraction()));
+      output_->WriteVector("cell_penalty_gap",Teuchos::rcp_static_cast<Epetra_MultiVector>(DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToGap()));
+      output_->WriteVector("cell_nodal_normals",Teuchos::rcp_static_cast<Epetra_MultiVector>(DRT::ImmersedFieldExchangeManager::Instance()->GetPointerToCurrentNodalNormals()));
+      output_->WriteVector("cell_adhesion_force",Freact());
+    }
   }
   return;
 }

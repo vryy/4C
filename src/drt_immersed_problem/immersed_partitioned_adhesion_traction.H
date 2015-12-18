@@ -59,6 +59,18 @@ protected:
   Teuchos::RCP<Epetra_Vector> ImmersedOp(Teuchos::RCP<Epetra_Vector> bdry_traction,
       const FillType fillFlag);
 
+  /// preparation of background field solve
+  void PrepareBackgroundOp();
+
+  /// prepare output of data to HD
+  virtual void PrepareOutput();
+
+  /// output of data to HD
+  virtual void Output();
+
+  /// update fields
+  virtual void Update();
+
   /// prepare time step of single fields and print header
   virtual void PrepareTimeStep();
 
@@ -116,12 +128,19 @@ private:
 
   //! @name Search Trees
   //@{
+  Teuchos::RCP<GEO::SearchTree> fluid_SearchTree_;  //!< search tree for fluid domain
   Teuchos::RCP<GEO::SearchTree> cell_SearchTree_;   //!< search tree for cell domain
+  //@}
+
+  //! @name current nodal positions of the discretizations
+  //@{
+  std::map<int,LINALG::Matrix<3,1> >* currpositions_cell_; //!< pointer to map of vectors for search tree containing current structural positions
+  std::map<int,LINALG::Matrix<3,1> >* currpositions_ECM_;  //!< pointer to map of vectors for search tree containing current fluid positions
   //@}
 
   //! @name current subsets of discretizations
   //@{
-  const std::map<int,std::set<int> >* curr_subset_of_backgrounddis_;    //!< background elements covered by immersed discretisation
+  std::map<int,std::set<int> > curr_subset_of_backgrounddis_;    //!< background elements covered by immersed discretisation
   //@}
 
   /// true if problem is modeled as a quasi 2D problem

@@ -404,6 +404,8 @@ void CellMigrationControlAlgorithm()
   }// sim_type_pureFSI
   else if (simtype==INPAR::CELL::sim_type_pureAdhesion)
   {
+    params.set<bool>("IsPureAdhesionSimulation", true);
+
     Teuchos::RCP<IMMERSED::ImmersedPartitionedAdhesionTraction> algo =
         Teuchos::rcp(new IMMERSED::ImmersedPartitionedAdhesionTraction(params,comm));
 
@@ -423,13 +425,13 @@ void CellMigrationControlAlgorithm()
     }
 
     // create result tests for single fields
-    //DRT::Problem::Instance()->AddFieldTest(algo->CellField()->CreateFieldTest());
-    //DRT::Problem::Instance()->AddFieldTest(algo->PoroField()->FluidField()->CreateFieldTest());
-    //DRT::Problem::Instance()->AddFieldTest(algo->PoroField()->StructureField()->CreateFieldTest());
-    //DRT::Problem::Instance()->AddFieldTest(algo->PoroField()->ScaTraFieldBase()->CreateScaTraFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(cellstructure->CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(poroscatra_subproblem->FluidField()->CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(poroscatra_subproblem->StructureField()->CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(poroscatra_subproblem->ScaTraFieldBase()->CreateScaTraFieldTest());
 
     // do the actual testing
-    //DRT::Problem::Instance()->TestAll(comm);
+    DRT::Problem::Instance()->TestAll(comm);
 
   }// sim_type_pureAdhesion
   else if (simtype==INPAR::CELL::sim_type_multiphysics)

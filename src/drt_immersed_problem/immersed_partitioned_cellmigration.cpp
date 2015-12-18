@@ -308,7 +308,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
         EvaluateImmersed(params,
             backgroundfluiddis_,
             &fluid_vol_strategy,
-            curr_subset_of_backgrounddis_,
+            &curr_subset_of_backgrounddis_,
             cell_SearchTree_, currpositions_cell_,
             (int)FLD::interpolate_velocity_to_given_point_immersed,
             false);
@@ -378,7 +378,7 @@ void IMMERSED::ImmersedPartitionedCellMigration::BackgroundOp(Teuchos::RCP<Epetr
           EvaluateScaTraWithInternalCommunication(scatradis_,
               backgroundfluiddis_,
               &scatra_vol_strategy,
-              curr_subset_of_backgrounddis_,
+              &curr_subset_of_backgrounddis_,
               cell_SearchTree_,
               currpositions_cell_,
               sparams_struct,

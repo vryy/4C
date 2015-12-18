@@ -64,6 +64,7 @@ enum Action {
     set_adjoint_time_parameter,
     calc_volume,
     interpolate_velocity_to_given_point_immersed,
+    update_immersed_information,
     interpolate_velgrad_to_given_point,
     calc_artificial_velocity_divergence,
     interpolate_pressure_to_given_point,

@@ -831,7 +831,7 @@ IMMERSED::ImmersedBase::ImmersedBase()
 void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
                                               Teuchos::RCP<DRT::Discretization> dis,
                                               DRT::AssembleStrategy* strategy,
-                                              std::map<int,std::set<int> >& elementstoeval,
+                                              std::map<int,std::set<int> >* elementstoeval,
                                               Teuchos::RCP<GEO::SearchTree> structsearchtree,
                                               std::map<int,LINALG::Matrix<3,1> >* currpositions_struct,
                                               int action,
@@ -840,7 +840,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
   // pointer to element
   DRT::Element* ele;
 
-  for(std::map<int, std::set<int> >::const_iterator closele = elementstoeval.begin(); closele != elementstoeval.end(); closele++)
+  for(std::map<int, std::set<int> >::const_iterator closele = elementstoeval->begin(); closele != elementstoeval->end(); closele++)
   {
     for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
     {
@@ -890,14 +890,63 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
       strategy->AssembleVector1( la[row].lm_, la[row].lmowner_ );
     }
   }
+  return;
 } // EvaluateImmersed
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedBase::EvaluateImmersedNoAssembly(Teuchos::ParameterList& params,
+                                              Teuchos::RCP<DRT::Discretization> dis,
+                                              std::map<int,std::set<int> >* elementstoeval,
+                                              Teuchos::RCP<GEO::SearchTree> structsearchtree,
+                                              std::map<int,LINALG::Matrix<3,1> >* currpositions_struct,
+                                              int action
+                                                        )
+{
+  // pointer to element
+  DRT::Element* ele;
+
+  for(std::map<int, std::set<int> >::const_iterator closele = elementstoeval->begin(); closele != elementstoeval->end(); closele++)
+  {
+    for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
+    {
+      ele=dis->gElement(*eleIter);
+
+      DRT::ELEMENTS::FluidImmersedBase* immersedelebase = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
+      if(immersedelebase==NULL)
+        dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
+
+      // provide important objects to ParameterList
+      params.set<int>("action",action);
+      params.set<Teuchos::RCP<GEO::SearchTree> >("structsearchtree_rcp",structsearchtree);
+      params.set<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct",currpositions_struct);
+      params.set<int>("Physical Type",INPAR::FLUID::poro_p1);
+      if(dis->Name()=="fluid")
+        params.set<std::string>("immerseddisname","structure");
+      else if (dis->Name()=="porofluid")
+        params.set<std::string>("immerseddisname","cell");
+      else
+        dserror("no corresponding immerseddisname set for this type of backgrounddis!");
+
+      // evaluate the element
+      Epetra_SerialDenseMatrix dummymat;
+      Epetra_SerialDenseVector dummyvec;
+
+      DRT::Element::LocationArray la(1);
+      immersedelebase->LocationVector(*dis,la,false);
+
+      immersedelebase->Evaluate(params,*dis,la[0].lm_,dummymat,dummymat,dummyvec,dummyvec,dummyvec);
+    }
+  }
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis,
                                                                      const Teuchos::RCP<const DRT::Discretization> idis,
                                                                      DRT::AssembleStrategy* strategy,
-                                                                     std::map<int,std::set<int> >& elementstoeval,
+                                                                     std::map<int,std::set<int> >* elementstoeval,
                                                                      Teuchos::RCP<GEO::SearchTree> structsearchtree,
                                                                      std::map<int,LINALG::Matrix<3,1> >* currpositions_struct,
                                                                      Teuchos::ParameterList& params,
@@ -907,7 +956,7 @@ void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(Teuchos::RC
   DRT::Element* ele;
   DRT::Element* iele;
 
-  for(std::map<int, std::set<int> >::const_iterator closele = elementstoeval.begin(); closele != elementstoeval.end(); closele++)
+  for(std::map<int, std::set<int> >::const_iterator closele = elementstoeval->begin(); closele != elementstoeval->end(); closele++)
   {
     for(std::set<int>::const_iterator eleIter = (closele->second).begin(); eleIter != (closele->second).end(); eleIter++)
     {

@@ -50,41 +50,29 @@ public:
   /// setup base class for all immersed algorithms
   explicit ImmersedBase();
 
-//  std::vector<int> DetermineImmersionDomain(Teuchos::RCP<DRT::Discretization> backgrounddis,
-//                                            Teuchos::RCP<DRT::Discretization> immerseddis,
-//                                            DRT::AssembleStrategy* strategy,
-//                                            bool firstcall=false
-//                                            );
-
-//  std::vector<int> DetermineImmersionBoundaryDomain(Teuchos::RCP<DRT::Discretization> backgrounddis,
-//                                                    Teuchos::RCP<DRT::Discretization> immerseddis,
-//                                                    const std::string& condname,
-//                                                    bool gpversion = false,
-//                                                    bool firstcall=false,
-//                                                    const Teuchos::RCP<std::map<int,Teuchos::RCP<std::map<int,Teuchos::RCP<std::vector<double> > > > > >& gpmap = Teuchos::null
-//                                                    );
-
   void CreateGhosting(const Teuchos::RCP<DRT::Discretization> distobeghosted);
-
-//  void CreateVolumeCondition(Teuchos::RCP<DRT::Discretization> dis, std::vector<int> dvol_fenode, DRT::Condition::ConditionType condtype, std::string condname);
-
-//  void UpdateVolumeCondition(Teuchos::RCP<DRT::Discretization> dis, std::vector<int> dvol_fenode, DRT::Condition::ConditionType condtype, std::string condname);
-
-//  void DetermineDirichletDofsFromNodes(const Teuchos::RCP<DRT::Discretization>& discret, const std::vector<int>& nodeids, std::vector<int>& vectofill);
 
   void EvaluateImmersed(Teuchos::ParameterList& params,
                         Teuchos::RCP<DRT::Discretization> dis,
                         DRT::AssembleStrategy* strategy,
-                        std::map<int,std::set<int> >& elementstoeval,
+                        std::map<int,std::set<int> >* elementstoeval,
                         Teuchos::RCP<GEO::SearchTree> structsearchtree,
                         std::map<int,LINALG::Matrix<3,1> >* currpositions_struct,
                         int action,
                         bool evaluateonlyboundary=false);
 
+  void EvaluateImmersedNoAssembly(Teuchos::ParameterList& params,
+                                  Teuchos::RCP<DRT::Discretization> dis,
+                                  std::map<int,std::set<int> >* elementstoeval,
+                                  Teuchos::RCP<GEO::SearchTree> structsearchtree,
+                                  std::map<int,LINALG::Matrix<3,1> >* currpositions_struct,
+                                  int action
+                                   );
+
   void EvaluateScaTraWithInternalCommunication(Teuchos::RCP<DRT::Discretization> dis,
                                                const Teuchos::RCP<const DRT::Discretization> idis,
                                                DRT::AssembleStrategy* strategy,
-                                               std::map<int,std::set<int> >& elementstoeval,
+                                               std::map<int,std::set<int> >* elementstoeval,
                                                Teuchos::RCP<GEO::SearchTree> structsearchtree,
                                                std::map<int,LINALG::Matrix<3,1> >* currpositions_struct,
                                                Teuchos::ParameterList& params,
@@ -1494,8 +1482,8 @@ public:
               params.set<int>("calculate_velocity",vel_or_div);
 
               if(action != "none")
-              // evaluate and perform action handed in to this function
-              sourceele->Evaluate(params,*sourcedis,la,dummy1,dummy2,*vectofill ,*xi_dense,dummy3);
+                // evaluate and perform action handed in to this function
+                sourceele->Evaluate(params,*sourcedis,la,dummy1,dummy2,*vectofill ,*xi_dense,dummy3);
               else
               {
                  for(int dim=0;dim<datalength;++dim)

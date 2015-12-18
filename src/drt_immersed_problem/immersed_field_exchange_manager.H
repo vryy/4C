@@ -49,6 +49,7 @@ public:
 
   bool isinitialized_;
   bool isfluidinteraction_;
+  bool isPureAdhesionSimulation_;
 
   int check_counter_;
   int num_isimmersedbry_;
@@ -199,6 +200,10 @@ public:
    void SetPointerToCurrentSubsetOfBackgrdDis(std::map<int,std::set<int> >* pointer){points_to_curr_subset_of_backgrounddis_ = pointer;};
 
    std::map<int,std::set<int> >* GetPointerToCurrentSubsetOfBackgrdDis(){return points_to_curr_subset_of_backgrounddis_;};
+
+   void SetIsPureAdhesionSimulation(bool trueorfalse){isPureAdhesionSimulation_=trueorfalse; return;};
+
+   bool IsPureAdhesionSimulation(){return isPureAdhesionSimulation_;};
 
 private:
 

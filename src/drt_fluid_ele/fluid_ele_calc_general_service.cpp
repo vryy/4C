@@ -158,6 +158,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateService(
       return InterpolateVelocityToNode(params, ele, discretization, lm, elevec1, elevec2);
     }
     break;
+    case FLD::update_immersed_information:
+    {
+      // correct immersed velocities for fluid boundary elements
+      return UpdateImmersedInformation(params, ele, discretization,lm);
+    }
+    break;
     case FLD::correct_immersed_fluid_bound_vel:
     {
       // correct immersed velocities for fluid boundary elements
@@ -3264,6 +3270,164 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityGradientAnd
 //  dudxioJinv.MultiplyNT(dudxi,xji_test);
 
     return 0;
+}
+
+/*-----------------------------------------------------------------------------*
+ | Interpolate velocity                                          rauch 05/2014 |
+ *-----------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
+int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::UpdateImmersedInformation(
+    Teuchos::ParameterList&              params,
+    DRT::ELEMENTS::Fluid*                ele,
+    DRT::Discretization &                discretization,
+    const std::vector<int> &             lm
+    )
+{
+  DRT::Problem* globalproblem = DRT::Problem::Instance();
+  if(globalproblem->ProblemType()==prb_immersed_ale_fsi)
+    dserror("UpdateImmersedInformation() not intended to be used with ProblemType = prb_immersed_ale_fsi");
+
+  //-------------------------------------------------------------------------------
+  //  This method provides the fluid discretization with the information about the
+  //  overlapping immersed and background domains.  This is needed, when the mesh
+  //  positions of at least one participating discretization has changed.
+  //-------------------------------------------------------------------------------
+
+  DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
+
+  std::string backgrddisname(discretization.Name());
+  std::string immerseddisname(params.get<std::string>("immerseddisname"));
+
+  static double searchradiusfac = globalproblem->ImmersedMethodParams().get<double>("FLD_SRCHRADIUS_FAC");
+
+  const Teuchos::RCP<DRT::Discretization> backgrddis  = globalproblem->GetDis(backgrddisname);
+  const Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
+
+
+  // determine whether fluid mesh is deformable or not. True is the standard case for now.
+  // this line is meant to be the reminder to change this.
+  static int isALE = true;
+
+  // initialize vectors for interpolation
+  std::vector<double> dummy(4);
+
+
+  std::vector<double> targeteledisp(nsd_*nen_);
+
+  // update fluid displacements
+  if(isALE)
+  {
+    LINALG::Matrix<nsd_,nen_>       edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
+
+    for(int node=0;node<nen_;++node)
+      for(int dof=0; dof<nsd_;++dof)
+        targeteledisp[node*nsd_+dof] = edispnp(dof,node);
+  }
+  else
+  {
+    // fluid target elements have no displacements in standard case. fill dummy vector.
+    for(int i=0;i<nsd_*nen_;++i)
+      targeteledisp[i]=0.0;
+  }
+
+  // parameter space coordinates of nodes 0 to 7 according to global report
+  std::vector<std::vector<double> >nodalrefcoords(8);
+  nodalrefcoords[0].push_back(-1.0); nodalrefcoords[0].push_back(-1.0); nodalrefcoords[0].push_back(-1.0);
+  nodalrefcoords[1].push_back(1.0);  nodalrefcoords[1].push_back(-1.0); nodalrefcoords[1].push_back(-1.0);
+  nodalrefcoords[2].push_back(1.0);  nodalrefcoords[2].push_back(1.0);  nodalrefcoords[2].push_back(-1.0);
+  nodalrefcoords[3].push_back(-1.0); nodalrefcoords[3].push_back(1.0);  nodalrefcoords[3].push_back(-1.0);
+  nodalrefcoords[4].push_back(-1.0); nodalrefcoords[4].push_back(-1.0); nodalrefcoords[4].push_back(1.0);
+  nodalrefcoords[5].push_back(1.0);  nodalrefcoords[5].push_back(-1.0); nodalrefcoords[5].push_back(1.0);
+  nodalrefcoords[6].push_back(1.0);  nodalrefcoords[6].push_back(1.0);  nodalrefcoords[6].push_back(1.0);
+  nodalrefcoords[7].push_back(-1.0); nodalrefcoords[7].push_back(1.0);  nodalrefcoords[7].push_back(1.0);
+
+  // get immersed structure search tree
+  Teuchos::RCP<GEO::SearchTree> struct_searchtree = params.get<Teuchos::RCP<GEO::SearchTree> >("structsearchtree_rcp");
+
+  // search tree related stuff
+  std::map<int,LINALG::Matrix<3,1> >* currpositions_struct = params.get<std::map<int,LINALG::Matrix<3,1> >* >("currpositions_struct");
+
+  // subset of strucutral elements immersed near the current fluid element
+  std::map<int,std::set<int> > curr_subset_of_structdis;
+
+  {
+    // search radius (diagonal length of targetele (current fluid ele) )
+    double radius = 0.0;
+    LINALG::Matrix<3,1> searchcenter; // center of fluid ele
+    if(isALE)
+    {
+      LINALG::Matrix<nsd_,nen_>       edispnp(true);
+      ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+
+      radius = sqrt(pow((ele->Nodes()[1]->X()[0]+edispnp(0,1))-(ele->Nodes()[7]->X()[0]+edispnp(0,7)),2)+pow((ele->Nodes()[1]->X()[1]+edispnp(1,1))-(ele->Nodes()[7]->X()[1]+edispnp(1,7)),2)+pow((ele->Nodes()[1]->X()[2]+edispnp(2,1))-(ele->Nodes()[7]->X()[2]+edispnp(2,7)),2));
+      searchcenter(0)=(ele->Nodes()[1]->X()[0]+edispnp(0,1))+((ele->Nodes()[7]->X()[0]+edispnp(0,7))- (ele->Nodes()[1]->X()[0]+edispnp(0,1)))*0.5;
+      searchcenter(1)=(ele->Nodes()[1]->X()[1]+edispnp(1,1))+((ele->Nodes()[7]->X()[1]+edispnp(1,7))- (ele->Nodes()[1]->X()[1]+edispnp(1,1)))*0.5;
+      searchcenter(2)=(ele->Nodes()[1]->X()[2]+edispnp(2,1))+((ele->Nodes()[7]->X()[2]+edispnp(2,7))- (ele->Nodes()[1]->X()[2]+edispnp(2,1)))*0.5;
+    }
+    else
+    {
+      radius = sqrt(pow(ele->Nodes()[1]->X()[0]-ele->Nodes()[7]->X()[0],2)+pow(ele->Nodes()[1]->X()[1]-ele->Nodes()[7]->X()[1],2)+pow(ele->Nodes()[1]->X()[2]-ele->Nodes()[7]->X()[2],2));
+      searchcenter(0)=ele->Nodes()[1]->X()[0]+(ele->Nodes()[7]->X()[0] - ele->Nodes()[1]->X()[0])*0.5;
+      searchcenter(1)=ele->Nodes()[1]->X()[1]+(ele->Nodes()[7]->X()[1] - ele->Nodes()[1]->X()[1])*0.5;
+      searchcenter(2)=ele->Nodes()[1]->X()[2]+(ele->Nodes()[7]->X()[2] - ele->Nodes()[1]->X()[2])*0.5;
+    }
+    // search for immersed elements within a certain radius around the searchcenter node
+    curr_subset_of_structdis = struct_searchtree->searchElementsInRadius(*immerseddis,*currpositions_struct,searchcenter,radius*searchradiusfac,0);
+  }
+
+  bool match = false;
+  int  matchnum = 0;
+
+  for (int node=0; node<nen_; node++)
+  {
+    std::vector<double> backgrdxi(nsd_);
+    backgrdxi[0] = nodalrefcoords[node][0];
+    backgrdxi[1] = nodalrefcoords[node][1];
+    backgrdxi[2] = nodalrefcoords[node][2];
+
+  if(static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->IsMatched())
+  {
+    match = true;
+  }
+
+  IMMERSED::InterpolateToBackgrdPoint  <DRT::Element::hex8,                       // source/structure
+                                        DRT::Element::hex8>                       // target/fluid
+                                                       (curr_subset_of_structdis,
+                                                        immerseddis,              // source/structure
+                                                        backgrddis,               // target/fluid
+                                                        *ele,
+                                                        backgrdxi,
+                                                        targeteledisp,
+                                                        "none",
+                                                        dummy,                      // result
+                                                        match,
+                                                        false,
+                                                        false                     // do no communication. immerseddis is ghosted. every proc finds an immersed element to
+                                                       );                         // interpolate to its backgrd nodes.
+
+  if(match)
+  {
+    matchnum++;
+    static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->SetIsMatched(1);
+
+  } // if match
+
+  // reset match to false and check next node in the following loop execution
+  match = false;
+
+  } // loop over all nodes of this element
+
+  // set ele "IsImmersed" if all nodes lie underneath the immersed dis (i.e. matched = true)
+  if(matchnum==nen_)
+    immersedele -> SetIsImmersed(1);
+  // set ele "IsBoundaryImmersed" if 1<=x<8 nodes lie underneath the immersed dis ("HasProjectedDirichlet" is conjunction of "IsImmersed" and "IsBoundaryImmersed")
+  else if (matchnum < nen_ and matchnum > 0)
+  {
+    immersedele -> SetBoundaryIsImmersed(1);
+  }
+
+  return 0;
 }
 
 /*-----------------------------------------------------------------------------*

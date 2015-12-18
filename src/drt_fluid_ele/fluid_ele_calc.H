@@ -214,6 +214,18 @@ public:
       Epetra_SerialDenseVector&            elevec2_epetra
       );
 
+
+  /*! \brief Update information about overlapping immersed and background domains
+   *
+   *  \author rauch \date 12/2015
+   */
+  int UpdateImmersedInformation(
+      Teuchos::ParameterList&              params,
+      DRT::ELEMENTS::Fluid*                ele,
+      DRT::Discretization &                discretization,
+      const std::vector<int> &             lm
+      );
+
   /*! \brief Interpolate velocity to given point
    *
    *  \author rauch \date 05/2014
