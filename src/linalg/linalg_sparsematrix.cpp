@@ -1705,7 +1705,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
         gcindices1[count1] = gcid;
         gvalues1[count1++] = values[j];
       }
-      // column us in A*2
+      // column is in A*2
       else if (selector[cindices[j]] == 1. )
       {
         gcindices2[count2] = gcid;
@@ -1765,9 +1765,6 @@ void LINALG::SparseMatrix::SplitNxN(BlockSparseMatrixBase& ABlock) const
     }
   }
 
-  // extract communicator of BlockSparseMatrix
-  const Epetra_Comm& Comm = ABlock.Comm();
-
   // extract range and domain maps of BlockSparseMatrix
   std::vector<const Epetra_Map*> rangemaps(N,NULL);
   std::vector<const Epetra_Map*> domainmaps(N,NULL);
@@ -1777,47 +1774,48 @@ void LINALG::SparseMatrix::SplitNxN(BlockSparseMatrixBase& ABlock) const
     domainmaps[m] = &ABlock.DomainMap(m);
   }
 
-  // create redundant sets associated with domain maps of BlockSparseMatrix on each processor
-  // we need to do this because we can't rely on SparseMatrix and BlockSparseMatrix having the same parallel distributions
-  std::vector<std::set<int> > domainmapsets(N);
-  for(unsigned m=0; m<N; ++m)
+  // associate each global column ID of SparseMatrix with corresponding block ID of BlockSparseMatrix
+  // this is done via an Epetra_Vector which is filled using domain map information and then exported to column map
+  Epetra_Vector dselector(DomainMap());
+  for(int collid=0; collid<dselector.MyLength(); ++collid)
   {
-    std::vector<int> domainmapgids(domainmaps[m]->NumGlobalElements());
-    int globalcounter(0);
+    // extract global ID of current column
+    const int colgid = DomainMap().GID(collid);
+    if(colgid < 0)
+      dserror("Couldn't find local column ID %d in domain map!",collid);
 
-    for(int processor=0; processor<Comm.NumProc(); ++processor)
+    // determine block ID of BlockSparseMatrix associated with current column
+    unsigned m(0);
+    for(m=0; m<N; ++m)
     {
-      int mycounter(0);
-      if(processor == Comm.MyPID())
-        for(mycounter=0; mycounter<domainmaps[m]->NumMyElements(); ++mycounter)
-          domainmapgids[globalcounter+mycounter] = domainmaps[m]->GID(mycounter);
-      Comm.Broadcast(&mycounter,1,processor);
-      Comm.Broadcast(&domainmapgids[globalcounter],mycounter,processor);
-      globalcounter += mycounter;
+      if(domainmaps[m]->MyGID(colgid))
+      {
+        dselector[collid] = m;
+        break;
+      }
     }
 
     // safety check
-    if(globalcounter != domainmaps[m]->NumGlobalElements())
-      dserror("Redundant reconstruction of domain maps failed!");
-
-    // create redundant set associated with current domain map
-    std::copy(domainmapgids.begin(),domainmapgids.end(),std::inserter(domainmapsets[m],domainmapsets[m].end()));
+    if(m == N)
+      dserror("Matrix column was not found in BlockSparseMatrix!");
   }
+  Epetra_Vector selector(A->ColMap());
+  LINALG::Export(dselector,selector);
 
   // allocate vectors storing global column indexes and values of matrix entries in a given row, separated by blocks
   // allocation is done outside loop over all rows for efficiency
   // to be on the safe side, we allocate more memory than we need for most rows
-  std::vector<std::vector<int> > colids(N,std::vector<int>(A->MaxNumEntries()));
+  std::vector<std::vector<int> > colgids(N,std::vector<int>(A->MaxNumEntries()));
   std::vector<std::vector<double> > rowvalues(N,std::vector<double>(A->MaxNumEntries()));
 
   // fill blocks of BlockSparseMatrix
-  for(int i=0; i<A->NumMyRows(); ++i)
+  for(int rowlid=0; rowlid<A->NumMyRows(); ++rowlid)
   {
     // extract current row of SparseMatrix
     int numentries(0);
     double* values(NULL);
     int* indices(NULL);
-    if(A->ExtractMyRowView(i,numentries,values,indices))
+    if(A->ExtractMyRowView(rowlid,numentries,values,indices))
       dserror("Row of SparseMatrix couldn't be extracted during splitting!");
 
     // initialize counters for number of matrix entries in current row, separated by blocks
@@ -1826,40 +1824,33 @@ void LINALG::SparseMatrix::SplitNxN(BlockSparseMatrixBase& ABlock) const
     // assign matrix entries in current row to associated blocks of BlockSparseMatrix
     for(int j=0; j<numentries; ++j)
     {
+      // extract local column ID of current matrix entry
+      const int collid = indices[j];
+      if(collid >= selector.MyLength())
+        dserror("Invalid local column ID %d!",collid);
+
       // extract global column index of current matrix entry
-      const int colid = A->ColMap().GID(indices[j]);
+      const int colgid = A->ColMap().GID(collid);
 
       // assign current matrix entry to associated block of BlockSparseMatrix
-      unsigned n(0);
-      for(n=0; n<N; ++n)
-      {
-        std::set<int>::const_iterator iterator = domainmapsets[n].find(colid);
-        if(iterator != domainmapsets[n].end())
-        {
-          colids[n][counters[n]] = colid;
-          rowvalues[n][counters[n]++] = values[j];
-          break;
-        }
-      }
-
-      // safety check
-      if(n == N)
-        dserror("Couldn't assign matrix entry to matrix block!");
+      const int blockid = selector[collid];
+      colgids[blockid][counters[blockid]] = colgid;
+      rowvalues[blockid][counters[blockid]++] = values[j];
     }
 
     // extract global index of current matrix row
-    const int rowid = A->GRID(i);
+    const int rowgid = A->GRID(rowlid);
 
     // fill current row of BlockSparseMatrix by copying row entries of SparseMatrix
     unsigned m(0);
     for(m=0; m<N; ++m)
     {
-      if(rangemaps[m]->MyGID(rowid))
+      if(rangemaps[m]->MyGID(rowgid))
       {
         for(unsigned n=0; n<N; ++n)
         {
           if(counters[n])
-            if(ABlocks[m][n]->InsertGlobalValues(rowid,counters[n],&rowvalues[n][0],&colids[n][0]))
+            if(ABlocks[m][n]->InsertGlobalValues(rowgid,counters[n],&rowvalues[n][0],&colgids[n][0]))
               dserror("Couldn't insert matrix entries into BlockSparseMatrix!");
         }
         break;
