@@ -4,10 +4,10 @@
 \brief Helpers to read HDF5 based output.
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -233,6 +233,9 @@ private:
 
   //! number of processors that wrote this set of files
   int num_output_proc_;
+
+  //! file access property list for HDF5 files
+  hid_t H5Plist_;
 };
 }
 

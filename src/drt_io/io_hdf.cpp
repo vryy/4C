@@ -5,10 +5,10 @@
 \brief Helpers to read HDF5 based output.
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
+Maintainer: Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -28,6 +28,11 @@ IO::HDFReader::HDFReader(std::string dir):
   input_dir_(dir),
   num_output_proc_(0)
 {
+  // inhibit delayed closure, throws error if file contents still in use
+  H5Plist_ = H5Pcreate(H5P_FILE_ACCESS);
+  herr_t status = H5Pset_fclose_degree( H5Plist_, H5F_CLOSE_SEMI);
+  if (status < 0)
+    dserror("Failed to set file access list");
 }
 
 /*----------------------------------------------------------------------*
@@ -36,6 +41,9 @@ IO::HDFReader::HDFReader(std::string dir):
 IO::HDFReader::~HDFReader()
 {
   Close();
+  herr_t status = H5Pclose(H5Plist_);
+  if (status < 0)
+    dserror("Failed to close file access list");
 }
 
 /*----------------------------------------------------------------------*
@@ -61,7 +69,7 @@ void IO::HDFReader::Open(std::string basename,int num_output_procs,int new_proc_
     if (i>=start and i<end)
     {
       filenames_.push_back(buf.str());
-      files_.push_back(H5Fopen(buf.str().c_str(), H5F_ACC_RDONLY, H5P_DEFAULT));
+      files_.push_back(H5Fopen(buf.str().c_str(), H5F_ACC_RDONLY, H5Plist_));
       if (files_[i] < 0)
         dserror("Failed to open HDF-file %s", filenames_[i].c_str());
     }
@@ -223,20 +231,22 @@ IO::HDFReader::ReadCharData(std::string path, int start, int end) const
         printf("Failed to read data from dataset %s in HDF-file %s. "
             "This can be tolerated in case you have procs without row elements!",
                 path.c_str(),filenames_[i].c_str());
-      status = H5Sclose(dataspace);
-      if (status < 0)
-        dserror("Failed to close node dataspace",
-                path.c_str(),filenames_[i].c_str());
-      status = H5Dclose(dataset);
-      if (status < 0)
-        dserror("Failed to close node dataset",
-                path.c_str(),filenames_[i].c_str());
       break;
     }
     default:
       dserror("HDF5 rank=%d unsupported", rank);
       break;
     }
+
+    herr_t status = H5Sclose(dataspace);
+    if (status < 0)
+      dserror("Failed to close node dataspace",
+              path.c_str(),filenames_[i].c_str());
+    status = H5Dclose(dataset);
+    if (status < 0)
+      dserror("Failed to close node dataset",
+              path.c_str(),filenames_[i].c_str());
+
   }
   return data;
 }
@@ -283,20 +293,21 @@ IO::HDFReader::ReadIntData(std::string path, int start, int end) const
       if (status < 0)
         dserror("Failed to read data from dataset %s in HDF-file %s",
                 path.c_str(),filenames_[i].c_str());
-      status = H5Sclose(dataspace);
-      if (status < 0)
-        dserror("Failed to close node dataspace %s in HDF-file %s",
-                path.c_str(),filenames_[i].c_str());
-      status = H5Dclose(dataset);
-      if (status < 0)
-        dserror("Failed to close node dataset %s in HDF-file %s",
-                path.c_str(),filenames_[i].c_str());
       break;
     }
     default:
       dserror("HDF5 rank=%d unsupported", rank);
       break;
     }
+
+    herr_t status = H5Sclose(dataspace);
+    if (status < 0)
+      dserror("Failed to close node dataspace %s in HDF-file %s",
+             path.c_str(),filenames_[i].c_str());
+    status = H5Dclose(dataset);
+    if (status < 0)
+      dserror("Failed to close node dataset %s in HDF-file %s",
+               path.c_str(),filenames_[i].c_str());
   }
   return data;
 }
@@ -341,20 +352,22 @@ IO::HDFReader::ReadDoubleData(std::string path, int start, int end, std::vector<
       if (status < 0)
         dserror("Failed to read data from dataset %s in HDF-file %s",
                 path.c_str(),filenames_[i].c_str());
-      status = H5Sclose(dataspace);
-      if (status < 0)
-        dserror("Failed to close node dataspace %s in HDF-file %s",
-                path.c_str(),filenames_[i].c_str());
-      status = H5Dclose(dataset);
-      if (status < 0)
-        dserror("Failed to close node dataset %s in HDF-file %s",
-                path.c_str(),filenames_[i].c_str());
       break;
     }
     default:
       dserror("HDF5 rank=%d unsupported", rank);
       break;
     }
+
+    herr_t status = H5Sclose(dataspace);
+    if (status < 0)
+      dserror("Failed to close node dataspace %s in HDF-file %s",
+              path.c_str(),filenames_[i].c_str());
+    status = H5Dclose(dataset);
+    if (status < 0)
+      dserror("Failed to close node dataset %s in HDF-file %s",
+              path.c_str(),filenames_[i].c_str());
+
   }
   return data;
 }
