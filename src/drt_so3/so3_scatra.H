@@ -1,11 +1,10 @@
 /*!----------------------------------------------------------------------
-\file So3_scatra.H
+\file so3_scatra.H
 
 <pre>
-   Maintainer: Cristobal Bertoglio
-               bertoglio@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
+   Maintainer: Thon Moritz
+               thon@mhpc.mw.tum.de
+               089 - 289-10264
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -46,6 +45,7 @@ class So3_Scatra : public so3_ele
   friend class So_tet10ScatraType;
   friend class So_hex8ScatraType;
   friend class So_hex8fbarScatraType;
+  friend class So_hex27ScatraType;
   friend class So_weg6ScatraType;
   // friend class NStet5ScatraType;
 
@@ -128,9 +128,11 @@ public:
       return So_tet4ScatraType::Instance().UniqueParObjectId();
       // else
        // return NStet5ScatraType::Instance().UniqueParObjectId();
+      break;
     }
     case DRT::Element::tet10:
       return So_tet10ScatraType::Instance().UniqueParObjectId();
+      break;
     case DRT::Element::hex8:
     {
       // cast the most specialised element
@@ -145,9 +147,14 @@ public:
 
       break;
     }
+    case DRT::Element::hex27:
+      return So_hex27ScatraType::Instance().UniqueParObjectId();
+      break;
     case DRT::Element::wedge6:
       return So_weg6ScatraType::Instance().UniqueParObjectId();
-    default: dserror("unknown element type!");
+      break;
+    default:
+      dserror("unknown element type!");
       break;
     }
     // Intel compiler needs a return so
@@ -190,10 +197,12 @@ public:
        return So_tet4ScatraType::Instance();
       // else
       //  return NStet5ScatraType::Instance();
+      break;
     }
       break;
     case DRT::Element::tet10:
       return So_tet10ScatraType::Instance();
+      break;
     case DRT::Element::hex8:
     {
       // cast the most specialised element
@@ -209,8 +218,13 @@ public:
       break;
     }
       return so3_ele::ElementType();
+      break;
+    case DRT::Element::hex27:
+      return So_hex27ScatraType::Instance();
+      break;
     case DRT::Element::wedge6:
       return So_weg6ScatraType::Instance();
+      break;
     default:
       dserror("unknown element type!");
       break;
@@ -312,6 +326,10 @@ protected:
     calc_struct_multidofsetcoupling,//!< structure-fluid coupling: internal force, stiffness for poroelasticity (structural part)
   };
 
+private:
+
+  DRT::UTILS::GaussIntegration intpoints_;
+
   //! vector of inverses of the jacobian in material frame
   //vector<LINALG::Matrix<numdim_,numdim_> >                      invJ_;
   //! determinant of Jacobian in material frame
@@ -319,12 +337,7 @@ protected:
   //! container containing all kind of solid3 thisandthat
   //DRT::Container                                                        data_;
   //! vector of coordinates of current integration point in reference coordinates
-  //vector<LINALG::Matrix<numdim_,1> > xsi_;
-
-
-private:
-
-  DRT::UTILS::GaussIntegration intpoints_;
+  //std::vector<LINALG::Matrix<numdim_,1> > xsi_;
 
   DRT::Node** Nodes();
 

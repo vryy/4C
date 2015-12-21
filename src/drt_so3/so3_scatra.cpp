@@ -1,11 +1,10 @@
 /*!----------------------------------------------------------------------
-\file So3_scatra.cpp
+\file so3_scatra.cpp
 
 <pre>
-   Maintainer: Cristobal Bertoglio
-               bertoglio@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
+   Maintainer: Thon Moritz
+               thon@mhpc.mw.tum.de
+               089 - 289-10264
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -178,6 +177,7 @@ inline int DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Id() const
 
 template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8,DRT::Element::hex8>;
 template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar,DRT::Element::hex8>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27,DRT::Element::hex27>;
 template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4,DRT::Element::tet4>;
 template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10,DRT::Element::tet10>;
 template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6,DRT::Element::wedge6>;

@@ -1,19 +1,16 @@
 /*!----------------------------------------------------------------------
-\file So3_scatra_eletypes.cpp
+\file so3_scatra_eletypes.cpp
 
 <pre>
-   Maintainer: Cristobal Bertoglio
-               bertoglio@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
+   Maintainer: Thon Moritz
+               thon@mhpc.mw.tum.de
+               089 - 289-10264
 </pre>
 
 *----------------------------------------------------------------------*/
 
 #include "so3_scatra_eletypes.H"
 #include "so3_scatra.H"
-
-#include "../drt_lib/drt_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                       |
@@ -144,6 +141,70 @@ int DRT::ELEMENTS::So_hex8fbarScatraType::Initialize(DRT::Discretization& dis)
 {
 
   So_hex8fbarType::Initialize(dis);
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
+ |  HEX 27 Solid Scatra Element                              thon 12/15 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::So_hex27ScatraType DRT::ELEMENTS::So_hex27ScatraType::instance_;
+
+DRT::ELEMENTS::So_hex27ScatraType& DRT::ELEMENTS::So_hex27ScatraType::Instance()
+{
+  return instance_;
+}
+
+DRT::ParObject* DRT::ELEMENTS::So_hex27ScatraType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* object =
+         new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27ScatraType::Create( const std::string eletype,
+                                                            const std::string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDH27SCATRA" )
+  {
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>
+                                                                    (id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27ScatraType::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>
+                                                                        (id,owner));
+  return ele;
+}
+
+void DRT::ELEMENTS::So_hex27ScatraType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >  definitions_hex27;
+  So_hex27Type::SetupElementDefinition(definitions_hex27);
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex27 =
+      definitions_hex27["SOLIDH27"];
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs =
+      definitions["SOLIDH27SCATRA"];
+
+  defs["HEX27"]=defs_hex27["HEX27"];
+}
+
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                           |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_hex27ScatraType::Initialize(DRT::Discretization& dis)
+{
+  So_hex27Type::Initialize(dis);
+
   return 0;
 }
 

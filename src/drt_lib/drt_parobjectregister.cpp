@@ -235,6 +235,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::So_hex8Type::Instance().Name() << " "
     << DRT::ELEMENTS::So_hex20Type::Instance().Name() << " "
     << DRT::ELEMENTS::So_hex27Type::Instance().Name() << " "
+    << DRT::ELEMENTS::So_hex27ScatraType::Instance().Name() << " "
     << DRT::ELEMENTS::So_hex27PoroType::Instance().Name() << " "
     << DRT::ELEMENTS::So_hex27ThermoType::Instance().Name() << " "
     << DRT::ELEMENTS::So_hex20ThermoType::Instance().Name() << " "

@@ -540,9 +540,6 @@ namespace MAT
 
   protected:
 
-    //! current realization of the volumetric growth factor
-    double theta_;
-
   };
 
   namespace PAR

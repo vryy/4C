@@ -181,14 +181,8 @@ namespace MAT
     /// Return determinate of F_e at gauss-point
     double GetdetFe_atgp(int gp) const {return (*detFe_)[gp];}
 
-    /// Return mandel stress
-    Teuchos::RCP<std::vector<double> > Getmandel() const {return mandel_;}
-
     /// Return quick accessible material parameter data
     MAT::PAR::GrowthScd* Parameter() const { return paramsScd_; }
-
-    ///Return concentration
-    double GetConcentration() const {return concentration_;}
 
   protected:
 
@@ -196,8 +190,6 @@ namespace MAT
     Teuchos::RCP<std::vector<double> > detFe_;
     /// time derivative of growth factor theta for each gauss point
     Teuchos::RCP<std::vector<double> > dtheta_;
-    /// concentration (e.g. nutrients)
-    double concentration_;
 
   private:
 
@@ -307,9 +299,6 @@ namespace MAT
     virtual MAT::PAR::GrowthScd* Parameter() const { return paramsScdAC_; }
 
   protected:
-
-    /// pointer to mean concentrations at present timestep
-    Teuchos::RCP<std::vector<double> > concentrations_;
 
   private:
 

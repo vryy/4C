@@ -1,11 +1,10 @@
 /*!----------------------------------------------------------------------
-\file So3_scatra_eletypes.H
+\file so3_scatra_eletypes.H
 
 <pre>
-   Maintainer: Cristobal Bertoglio
-               bertoglio@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
+   Maintainer: Thon Moritz
+               thon@mhpc.mw.tum.de
+               089 - 289-10264
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -14,6 +13,7 @@
 
 #include "so_hex8.H"
 #include "so_hex8fbar.H"
+#include "so_hex27.H"
 #include "so_tet4.H"
 #include "so_tet10.H"
 #include "so_weg6.H"
@@ -85,6 +85,35 @@ private:
   static So_hex8fbarScatraType instance_;
 };
 
+
+/*----------------------------------------------------------------------*
+ |  HEX 27 Solid Scatra Element                              thon 12/15 |
+ *----------------------------------------------------------------------*/
+class So_hex27ScatraType : public So_hex27Type
+{
+public:
+
+  std::string Name() const { return "So_hex27ScatraType"; }
+
+  static So_hex27ScatraType & Instance();
+
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
+                                             const int id,
+                                             const int owner );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
+
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+private:
+
+  static So_hex27ScatraType instance_;
+};
 
 /*----------------------------------------------------------------------*
  |  TET 4 Element                                       |

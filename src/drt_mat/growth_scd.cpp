@@ -86,7 +86,6 @@ MAT::GrowthScd::GrowthScd()
   : GrowthMandel(),
     detFe_(Teuchos::null), //initialized in GrowthScd::Unpack
     dtheta_(Teuchos::null), //initialized in GrowthScd::Unpack
-    concentration_(-1.0),
     paramsScd_(NULL)
 {
 }
@@ -99,7 +98,6 @@ MAT::GrowthScd::GrowthScd(MAT::PAR::GrowthScd* params)
   : GrowthMandel(params),
     detFe_(Teuchos::null), //initialized in GrowthScd::Setup
     dtheta_(Teuchos::null), //initialized in GrowthScd::Setup
-    concentration_(-1.0),
     paramsScd_(params)
 {
 }
@@ -114,7 +112,6 @@ void MAT::GrowthScd::ResetAll(const int numgp)
     detFe_->at(j) = 1.0;
     dtheta_->at(j) = 0.0;
   }
-  concentration_= -1.0;
 
   MAT::GrowthMandel::ResetAll(numgp);
 }
@@ -253,14 +250,6 @@ void MAT::GrowthScd::Evaluate
   const int gp = params.get<int>("gp",-1);
   if (gp == -1) dserror("no Gauss point number provided in material");
 
-  //get pointer vector containing the mean scalar values
-  Teuchos::RCP<std::vector<double> > scalars = params.get< Teuchos::RCP<std::vector<double> > >("mean_concentrations",Teuchos::null);
-  //in this growth law we always assume the first scalar to induce growth!
-  if (scalars != Teuchos::null)
-    concentration_ = scalars->at(0);
-
-  //if(concentration_==-1.0) dserror("no scalar concentration provided for concentration dependent growth law");
-
   GrowthMandel::Evaluate(defgrd,glstrain,params,stress,cmat,eleGID);
 
   // build identity tensor I
@@ -301,10 +290,24 @@ void MAT::GrowthScd::EvaluateGrowth(double* theta,
   MAT::PAR::GrowthScd* matparams=Parameter();
   const double rearate = matparams->rearate_;
   const double satcoeff = matparams->satcoeff_;
+  double concentration=0.0;
 
-  double fac=1.0;
-  // concentration depedent factor
-  fac=rearate * concentration_/(satcoeff+concentration_);
+  //get pointer to vector containing the mean scalar values
+  Teuchos::RCP<std::vector<double> > concentrationsold =
+      params.get< Teuchos::RCP<std::vector<double> > >("mean_concentrations",Teuchos::rcp(new std::vector<double> (10,0.0)) );
+  //TODO: (Thon) there must be a better way to catch the first call of the structure evaluate
+
+  //NOTE: in this growth law we always assume the first scalar to induce growth!
+  concentration=concentrationsold->at(0);
+
+  // get gauss point number
+  const int gp = params.get<int>("gp",-1);
+  if (gp == -1)
+    dserror("no Gauss point number provided in material");
+
+
+  // concentration dependent factor
+  double fac = rearate * concentration/(satcoeff+concentration);
 
   Parameter()->growthlaw_->SetFactor(fac);
   GrowthMandel::EvaluateGrowth(theta,dthetadC,defgrd,glstrain,params,eleGID);
@@ -326,7 +329,7 @@ DRT::ParObject* MAT::GrowthScdACType::Create( const std::vector<char> & data )
  *----------------------------------------------------------------------*/
 MAT::GrowthScdAC::GrowthScdAC()
   : GrowthMandel(),
-    concentrations_(Teuchos::null),
+//    concentrations_(Teuchos::null),
     paramsScdAC_(NULL)
 {
 }
@@ -337,7 +340,6 @@ MAT::GrowthScdAC::GrowthScdAC()
  *----------------------------------------------------------------------*/
 MAT::GrowthScdAC::GrowthScdAC(MAT::PAR::GrowthScd* params)
   : GrowthMandel(params),
-    concentrations_(Teuchos::null),
     paramsScdAC_(params)
 {
 }
@@ -347,8 +349,6 @@ MAT::GrowthScdAC::GrowthScdAC(MAT::PAR::GrowthScd* params)
  *----------------------------------------------------------------------*/
 void MAT::GrowthScdAC::ResetAll(const int numgp)
 {
-  concentrations_ = Teuchos::rcp(new std::vector<double> (10,0.0));
-
   MAT::GrowthMandel::ResetAll(numgp);
 }
 
@@ -370,18 +370,6 @@ void MAT::GrowthScdAC::Pack(DRT::PackBuffer& data) const
   if (params != NULL) matid = params->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
 
-  int numscal=0;
-  if (isinit_)
-  {
-    numscal = concentrations_->size();   // size is number of gausspoints
-  }
-  AddtoPack(data,numscal);
-  // Pack internal variables
-  for (int sc = 0; sc < numscal; ++sc)
-  {
-    AddtoPack(data,concentrations_->at(sc));
-  }
-
   // Pack base class material
   GrowthMandel::Pack(data);
 
@@ -393,8 +381,6 @@ void MAT::GrowthScdAC::Pack(DRT::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void MAT::GrowthScdAC::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
-  concentrations_ = Teuchos::rcp(new std::vector<double> (10,0.0)); //this is just a dummy, since we overwrite this pointer in MAT::GrowthScdAC::Evaluate anyway
-
   //setup base class
   GrowthMandel::Setup(numgp, linedef);
   return;
@@ -429,23 +415,6 @@ void MAT::GrowthScdAC::Unpack(const std::vector<char>& data)
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
     }
 
-  int numscal;
-  ExtractfromPack(position,data,numscal);
-  if (numscal == 0){ // no history data to unpack
-    isinit_=false;
-    if (position != data.size())
-      dserror("Mismatch in size of data %d <-> %d",data.size(),position);
-    return;
-  }
-
-  // unpack growth internal variables
-  concentrations_ = Teuchos::rcp(new std::vector<double> (numscal));
-  for (int sc = 0; sc < numscal; ++sc) {
-    double a;
-    ExtractfromPack(position,data,a);
-    concentrations_->at(sc) = a;
-  }
-
   // extract base class material
   std::vector<char> basedata(0);
   GrowthMandel::ExtractfromPack(position,data,basedata);
@@ -476,14 +445,19 @@ void MAT::GrowthScdAC::Evaluate
   if (gp == -1)
     dserror("no Gauss point number provided in material");
 
-  //get pointer vector containing the mean scalar values
-  concentrations_ = params.get< Teuchos::RCP<std::vector<double> > >("mean_concentrations",Teuchos::rcp(new std::vector<double> (10,0.0)) );
+  //get pointer to vector containing the mean scalar values
+  Teuchos::RCP<std::vector<double> > concentrations =
+      params.get< Teuchos::RCP<std::vector<double> > >("mean_concentrations",Teuchos::rcp(new std::vector<double> (10,0.0)) );
   //TODO: (Thon) there must be a better way to catch the first call of the structure evaluate
+
+  //get pointer to vector containing the scalar values at the gauß points
+  //  Teuchos::RCP<std::vector<std::vector<double> >> concentrations=
+  //      params.get< Teuchos::RCP<std::vector<std::vector<double>>> >("gp_conc");
 
 //  if (concentrations_ == Teuchos::null)
 //    dserror("getting the mean concentrations failed!");
 
-  Parameter()->growthlaw_->SetFactor(*concentrations_);
+  Parameter()->growthlaw_->SetFactor(*concentrations);
   GrowthMandel::Evaluate(defgrd,glstrain,params,stress,cmat,eleGID);
 }
 
@@ -656,9 +630,11 @@ void MAT::GrowthScdACRadial::Evaluate
     dserror("no Gauss point number provided in material");
 
   //get pointer vector containing the mean scalar values
-  concentrations_ = params.get< Teuchos::RCP<std::vector<double> > >("mean_concentrations",Teuchos::rcp(new std::vector<double> (10,0.0)) );
+  Teuchos::RCP<std::vector<double> > concentrations =
+      params.get< Teuchos::RCP<std::vector<double> > >("mean_concentrations",Teuchos::rcp(new std::vector<double> (10,0.0)) );
   //TODO: (Thon) there must be a better way to catch the first call of the structure evaluate
-  Parameter()->growthlaw_->SetFactor(*concentrations_);
+  Parameter()->growthlaw_->SetFactor(*concentrations);
+
   //------------------------------------------------------------------------------------------
   //------------------------------------------------------------------------------------------
 

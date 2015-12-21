@@ -162,6 +162,10 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   else
     dserror("Structure AND ScaTra discretization present. This is not supported.");
 
+  // add proxy of structure scatra degrees of freedom to structure discretization
+  if (structdis->AddDofSet( structscatradis->GetDofSetProxy() )!=1)
+    dserror("Structure discretization has illegal number of dofsets!");
+
   //---------------------------------------------------------------------
   // get FSI coupling algorithm
   //---------------------------------------------------------------------
@@ -215,11 +219,11 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // care for secondary dof sets:
   // add proxy of fluid degrees of freedom to scatra discretization
   if(scatravec_[0]->ScaTraField()->Discretization()->AddDofSet(fsi_->FluidField()->Discretization()->GetDofSetProxy()) != 1)
-    dserror("Scatra discretization has illegal number of dofsets!");
+    dserror("Fluid scatra discretization has illegal number of dofsets!");
 
   // add proxy of structure degrees of freedom to scatra discretization
   if(scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(fsi_->StructureField()->Discretization()->GetDofSetProxy()) != 1)
-    dserror("Scatra discretization has illegal number of dofsets!");
+    dserror("Structure scatra discretization has illegal number of dofsets!");
 
   // build a proxy of the scatra discretization for the structure field
   Teuchos::RCP<DRT::DofSet> scatradofset
@@ -230,11 +234,6 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // fluidscatra dofset 1: fluid dofset
   // structscatra dofset 0: structscatra dofset
   // structscatra dofset 1: structure dofset
-
-
-  // check if scatra field has 2 discretizations, so that two-way coupling is possible
-  if (fsi_->StructureField()->Discretization()->AddDofSet(scatradofset)!=1)
-    dserror("unexpected dof sets in structure field");
 
 
   //---------------------------------------------------------------------
