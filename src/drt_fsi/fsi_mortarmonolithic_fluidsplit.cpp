@@ -2179,7 +2179,7 @@ void FSI::MortarMonolithicFluidSplit::CreateNodeOwnerRelationship(
       int saveNode = -2;
       int foundOwner;
       int sendOwner;
-      int saveOwner;
+      int saveOwner = -2;
       int dofid;
 
       for (int proc = 0; proc < numproc; ++proc){
