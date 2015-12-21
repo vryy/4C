@@ -22,6 +22,18 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 void THR::TimIntGenAlpha::VerifyCoeff()
 {
+  // rho_inf specified --> calculate optimal parameters
+  if (rho_inf_!=-1.)
+  {
+    if ( (rho_inf_ < 0.0) or (rho_inf_ > 1.0) )
+      dserror("rho_inf out of range [0.0,1.0]");
+    if ( (gamma_!=0.5) or (alpham_!=0.5) or (alphaf_!=0.5) )
+      dserror("you may only specify RHO_INF or the other three parameters");
+    alpham_ = 0.5*(3.0-rho_inf_)/(rho_inf_+1.0);
+    alphaf_ = 1.0/(rho_inf_+1.0);
+    gamma_ = 0.5+alpham_-alphaf_;
+  }
+
   // alpha_f
   if ( (alphaf_ < 0.0) or (alphaf_ > 1.0) )
     dserror("alpha_f out of range [0.0,1.0]");
@@ -74,6 +86,7 @@ THR::TimIntGenAlpha::TimIntGenAlpha(
   gamma_(tdynparams.sublist("GENALPHA").get<double>("GAMMA")),
   alphaf_(tdynparams.sublist("GENALPHA").get<double>("ALPHA_F")),
   alpham_(tdynparams.sublist("GENALPHA").get<double>("ALPHA_M")),
+  rho_inf_(tdynparams.sublist("GENALPHA").get<double>("RHO_INF")),
   tempm_(Teuchos::null),
   ratem_(Teuchos::null),
   fint_(Teuchos::null),

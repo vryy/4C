@@ -498,6 +498,7 @@ namespace INPAR
     DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&genalpha);
     DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
     DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&genalpha);
+    DoubleParameter("RHO_INF",-1.0,"Generalised-alpha factor in [0,1]",&genalpha);
 
     /*----------------------------------------------------------------------*/
     /* parameters for one-step-theta structural integrator */

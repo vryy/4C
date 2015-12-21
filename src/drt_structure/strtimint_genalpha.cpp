@@ -28,6 +28,20 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::VerifyCoeff()
 {
+  // rho_inf specified --> calculate optimal parameters
+  if (rho_inf_!=-1.)
+  {
+    if ( (rho_inf_ < 0.0) or (rho_inf_ > 1.0) )
+      dserror("rho_inf out of range [0.0,1.0]");
+    if ( (beta_!=0.25) or (gamma_!=0.5) or (alpham_!=0.5) or (alphaf_!=0.5) )
+      dserror("you may only specify RHO_INF or the other four parameters");
+    alphaf_ = (2.0*rho_inf_-1.0)/(rho_inf_+1.0);
+    alpham_ = rho_inf_/(rho_inf_+1.0);
+    beta_   = 0.25*(1.0-alpham_+alphaf_)*(1.0-alpham_+alphaf_);
+    gamma_  = 0.5-alpham_+alphaf_;
+    std::cout << "   rho = " << rho_inf_ << std::endl;
+  }
+
   // beta
   if ( (beta_ <= 0.0) or (beta_ > 0.5) )
     dserror("beta out of range (0.0,0.5]");
@@ -44,8 +58,8 @@ void STR::TimIntGenAlpha::VerifyCoeff()
   else
     std::cout << "   alpha_f = " << alphaf_ << std::endl;
   // alpha_m
-  if ( (alpham_ < 0.0) or (alpham_ >= 1.0) )
-    dserror("alpha_m out of range [0.0,1.0)");
+  if ( (alpham_ < -1.0) or (alpham_ >= 1.0) )
+    dserror("alpha_m out of range [-1.0,1.0)");
   else
     std::cout << "   alpha_m = " << alpham_ << std::endl;
 
@@ -94,6 +108,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   gamma_(sdynparams.sublist("GENALPHA").get<double>("GAMMA")),
   alphaf_(sdynparams.sublist("GENALPHA").get<double>("ALPHA_F")),
   alpham_(sdynparams.sublist("GENALPHA").get<double>("ALPHA_M")),
+  rho_inf_(sdynparams.sublist("GENALPHA").get<double>("RHO_INF")),
   dism_(Teuchos::null),
   velm_(Teuchos::null),
   accm_(Teuchos::null),

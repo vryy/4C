@@ -244,6 +244,7 @@ namespace THR
     double gamma_;  //!< factor (0,1]
     double alphaf_;  //!< factor [0,1]
     double alpham_;  //!< factor [0,1.5]
+    double rho_inf_; //!< factor[0,1]
     //@}
 
     //! @name Global mid-state vectors

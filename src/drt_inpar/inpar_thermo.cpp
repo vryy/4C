@@ -247,6 +247,7 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("GAMMA",0.5,"Generalised-alpha factor in (0,1]",&tgenalpha);
   DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0.5,1)",&tgenalpha);
   DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0.5,1)",&tgenalpha);
+  DoubleParameter("RHO_INF",-1.0,"Generalised-alpha factor in [0,1]",&tgenalpha);
 
   /*----------------------------------------------------------------------*/
   /* parameters for one-step-theta thermal integrator */

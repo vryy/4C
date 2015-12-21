@@ -287,7 +287,8 @@ namespace STR
     double beta_;  //!< factor (0,1/2]
     double gamma_;  //!< factor (0,1]
     double alphaf_;  //!< factor [0,1)
-    double alpham_;  //!< factor [0,1)
+    double alpham_;  //!< factor [-1,1)
+    double rho_inf_; //!< factor[0,1]
     //@}
 
     //! @name Global mid-state vectors
