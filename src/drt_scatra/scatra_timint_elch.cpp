@@ -546,8 +546,15 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
     }
 
     // evaluate the conditions and separate via ConditionID
-    for(unsigned condid = 0; condid < cond.size()+pointcond.size(); ++condid)
+    for(unsigned icond=0; icond<cond.size()+pointcond.size(); ++icond)
     {
+      // extract condition ID
+      int condid(-1);
+      if(cond.size())
+        condid = cond[icond]->GetInt("ConditionID");
+      else
+        condid = pointcond[icond]->GetInt("ConditionID");
+
       // result vector
       // physical meaning of vector components is described in PostProcessSingleElectrodeInfo routine
       Teuchos::RCP<Epetra_SerialDenseVector> scalars;
@@ -558,7 +565,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
 
       // electrode boundary kinetics point condition
       else
-        scalars = EvaluateSingleElectrodeInfoPoint(pointcond[condid]);
+        scalars = EvaluateSingleElectrodeInfoPoint(pointcond[icond]);
 
       // initialize unused dummy variable
       double dummy(0.);
@@ -574,7 +581,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
           dummy,
           dummy
           );
-    } // loop over condid
+    } // loop over conditions
 
     if(myrank_ == 0)
     {
@@ -882,8 +889,11 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoDomain()
     }
 
     // evaluate electrode domain kinetics conditions
-    for(unsigned condid=0; condid<conditions.size(); ++condid)
+    for(unsigned icond=0; icond<conditions.size(); ++icond)
     {
+      // extract condition ID
+      const int condid = conditions[icond]->GetInt("ConditionID");
+
       Teuchos::RCP<Epetra_SerialDenseVector> scalars = EvaluateSingleElectrodeInfo(condid,condstring);
 
       // initialize unused dummy variable
@@ -940,8 +950,11 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
     }
 
     // loop over conditions for electrode state of charge
-    for(unsigned condid=0; condid<conditions.size(); ++condid)
+    for(unsigned icond=0; icond<conditions.size(); ++icond)
     {
+      // extract condition ID
+      const int condid = conditions[icond]->GetInt("ConditionID");
+
       // add state vector to discretization
       discret_->ClearState();
       discret_->SetState("phinp",phinp_);
@@ -965,8 +978,8 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
       double intdomain = (*scalars)(1);
 
       // extract reference concentrations at 0% and 100% state of charge
-      const double c_0 = conditions[condid]->GetDouble("c_0%");
-      const double c_100 = conditions[condid]->GetDouble("c_100%");
+      const double c_0 = conditions[icond]->GetDouble("c_0%");
+      const double c_100 = conditions[icond]->GetDouble("c_100%");
 
       // compute state of charge for current electrode
       const double soc = (intconcentration/intdomain-c_0)/(c_100-c_0);
@@ -1054,8 +1067,11 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
     std::vector<double> potentials(2,0.);
 
     // loop over both conditions for cell voltage
-    for(unsigned condid=0; condid<conditions.size(); ++condid)
+    for(unsigned icond=0; icond<conditions.size(); ++icond)
     {
+      // extract condition ID
+      const int condid = conditions[icond]->GetInt("ConditionID");
+
       // add state vector to discretization
       discret_->ClearState();
       discret_->SetState("phinp",phinp_);
@@ -1272,9 +1288,8 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
   discret_->GetCondition("ElchBoundaryKinetics",Elchcond);
   if(!Elchcond.size())
     discret_->GetCondition("ElchBoundaryKineticsPoint",Elchcond);
-  int numcond = Elchcond.size();
 
-  for(int icond = 0; icond < numcond; icond++)
+  for(unsigned icond=0; icond<Elchcond.size(); ++icond)
   {
     // check if Nernst-BC is defined on electrode kinetics condition
     if (Elchcond[icond]->GetInt("kinetic model")==INPAR::ELCH::nernst)
@@ -1660,8 +1675,8 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
     // evaluate electrode kinetics conditions if applicable
     if (!conditions.empty())
     {
-      const unsigned condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
-      const unsigned condid_anode = elchparams_->get<int>("GSTATCONDID_ANODE");
+      const int condid_cathode = elchparams_->get<int>("GSTATCONDID_CATHODE");
+      const int condid_anode = elchparams_->get<int>("GSTATCONDID_ANODE");
       int gstatitemax = (elchparams_->get<int>("GSTATITEMAX"));
       double gstatcurrenttol = (elchparams_->get<double>("GSTATCURTOL"));
       const int curvenum = elchparams_->get<int>("GSTATCURVENO");
@@ -1706,15 +1721,18 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       // loop over all BV
       // degenerated to a loop over 2 (user-specified) BV conditions
       // note: only the potential at the boundary with id condid_cathode will be adjusted!
-      for (unsigned int icond = 0; icond < conditions.size(); icond++)
+      for(unsigned icond=0; icond<conditions.size(); ++icond)
       {
+        // extract condition ID
+        const int condid = conditions[icond]->GetInt("ConditionID");
+
         // result vector
         // physical meaning of vector components is described in PostProcessSingleElectrodeInfo routine
         Teuchos::RCP<Epetra_SerialDenseVector> scalars;
 
         // electrode boundary kinetics line/surface condition
         if(condstring != "ElchBoundaryPointKinetics")
-          scalars = EvaluateSingleElectrodeInfo(icond,condstring);
+          scalars = EvaluateSingleElectrodeInfo(condid,condstring);
 
         // electrode boundary kinetics point condition
         else
@@ -1722,35 +1740,42 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
 
         PostProcessSingleElectrodeInfo(
             *scalars,
-            icond,
+            condid,
             false,
-            (*actualcurrent)[icond],
-            (*currtangent)[icond],
-            (*currresidual)[icond],
-            (*electrodesurface)[icond],
-            (*electrodepot)[icond],
-            (*meanoverpot)[icond]
+            (*actualcurrent)[condid],
+            (*currtangent)[condid],
+            (*currresidual)[condid],
+            (*electrodesurface)[condid],
+            (*electrodepot)[condid],
+            (*meanoverpot)[condid]
             );
 
         if(conditions.size()==2)
         {
           // In the case the actual current is zero, we assume that the first electrode is the cathode
-          if((*actualcurrent)[icond]<0.0 and condid_cathode != icond)
+          if((*actualcurrent)[condid]<0.0 and condid_cathode != condid)
             dserror("The defined GSTATCONDID_CATHODE does not match the actual current flow situation!!");
-          else if((*actualcurrent)[icond]>0.0 and condid_anode != icond)
+          else if((*actualcurrent)[condid]>0.0 and condid_anode != condid)
             dserror("The defined GSTATCONDID_ANODE does not match the actual current flow situation!!");
         }
       } // end loop over electrode kinetics
 
       if(conditions.size()==1)
       {
-        if(condid_cathode != 0 or condid_anode!=1)
+        if(condid_cathode != 0 or condid_anode != 1)
           dserror("The defined GSTATCONDID_CATHODE and GSTATCONDID_ANODE is wrong for a setup with only one electrode!!\n"
                   "Choose: GSTATCONDID_CATHODE=0 and GSTATCONDID_ANODE=1");
       }
 
       // get the applied electrode potential of the cathode
-      const double potold = conditions[condid_cathode]->GetDouble("pot");
+      int icond_cathode(-1);
+      for(unsigned icond=0; icond<conditions.size(); ++icond)
+        if(conditions[icond]->GetInt("ConditionID") == condid_cathode)
+        {
+          icond_cathode = icond;
+          break;
+        }
+      const double potold = conditions[icond_cathode]->GetDouble("pot");
       double potnew = potold;
 
       // bulk voltage loss
@@ -1967,7 +1992,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
 //      }
 
       // replace potential value of the boundary condition (on all processors)
-      conditions[condid_cathode]->Add("pot",potnew);
+      conditions[icond_cathode]->Add("pot",potnew);
       gstatnumite_++;
       return false; // not yet converged -> continue Newton iteration with updated potential
     }
