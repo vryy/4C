@@ -14,9 +14,11 @@ Maintainers: Andreas Rauch
 #include "immersed_base.H"
 #include "immersed_partitioned.H"
 #include "immersed_partitioned_fsi.H"
+#include "immersed_partitioned_confine_cell.H"
 #include "immersed_partitioned_cellmigration.H"
 #include "immersed_partitioned_adhesion_traction.H"
 #include "immersed_partitioned_fsi_dirichletneumann.H"
+#include "immersed_partitioned_flow_cell_interaction.H"
 #include "immersed_partitioned_fsi_dirichletneumann_ale.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -374,8 +376,8 @@ void CellMigrationControlAlgorithm()
   //////////////////////////////////////////////
   if(simtype==INPAR::CELL::sim_type_pureFSI)
   {
-    Teuchos::RCP<IMMERSED::ImmersedPartitionedCellMigration> algo =
-        Teuchos::rcp(new IMMERSED::ImmersedPartitionedCellMigration(params,comm));
+    Teuchos::RCP<IMMERSED::ImmersedPartitionedFlowCellInteraction> algo =
+        Teuchos::rcp(new IMMERSED::ImmersedPartitionedFlowCellInteraction(params,comm));
 
     const int restart = DRT::Problem::Instance()->Restart();
     if (restart)
@@ -434,6 +436,38 @@ void CellMigrationControlAlgorithm()
     DRT::Problem::Instance()->TestAll(comm);
 
   }// sim_type_pureAdhesion
+  else if (simtype==INPAR::CELL::sim_type_pureConfinement)
+  {
+    params.set<bool>("IsPureConfinementSimulation", true);
+
+    Teuchos::RCP<IMMERSED::ImmersedPartitionedConfineCell> algo =
+        Teuchos::rcp(new IMMERSED::ImmersedPartitionedConfineCell(params,comm));
+
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
+    {
+      // read the restart information, set vectors and variables
+      algo->ReadRestart(restart);
+    }
+
+    algo->Timeloop(algo);
+
+    if(immersedmethodparams.get<std::string>("TIMESTATS")=="endofsim")
+    {
+      Teuchos::TimeMonitor::summarize();
+      Teuchos::TimeMonitor::zeroOutTimers();
+    }
+
+    // create result tests for single fields
+    DRT::Problem::Instance()->AddFieldTest(cellstructure->CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(poroscatra_subproblem->FluidField()->CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(poroscatra_subproblem->StructureField()->CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(poroscatra_subproblem->ScaTraFieldBase()->CreateScaTraFieldTest());
+
+    // do the actual testing
+    DRT::Problem::Instance()->TestAll(comm);
+
+  }// sim_type_pureCompression
   else if (simtype==INPAR::CELL::sim_type_multiphysics)
   {
     // here the global algo of the fully coupled cell migration will be implemented
