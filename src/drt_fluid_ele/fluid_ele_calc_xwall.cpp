@@ -1002,21 +1002,18 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::CalcMK()
     const unsigned Velx = 0;
     const unsigned Vely = 1;
     const unsigned Velz = 2;
-//    const unsigned Velxy =4;
-//    const unsigned Velxz =5;
-//    const unsigned Velyz = 6;
 
     for (int vi=0; vi<my::nen_; ++vi)
     {
       for (int ui=0; ui<my::nen_; ++ui)
       {
         //(x,x)
+        //mixed derivatives are neglected such that the standard values are recovered for ideal higher order cube elements,
+        //i.e. C_l={12,60} for polynomial orders p={2,3}. See Harari & Hughes 1991
+        //mixed derivatives practically don't have any influence
         Amat(vi, ui) += my::fac_*(my::derxy2_(Velx,vi)*my::derxy2_(Velx,ui))
                         + my::fac_*(my::derxy2_(Vely,vi)*my::derxy2_(Vely,ui))
                         + my::fac_*(my::derxy2_(Velz,vi)*my::derxy2_(Velz,ui));
-//                        + 2.0*my::fac_*(my::derxy2_(Velxy,vi)*my::derxy2_(Velxy,ui))
-//                        + 2.0*my::fac_*(my::derxy2_(Velxz,vi)*my::derxy2_(Velxz,ui))
-//                        + 2.0*my::fac_*(my::derxy2_(Velyz,vi)*my::derxy2_(Velyz,ui));
       }
     }
 
@@ -1043,7 +1040,6 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype,enrtype>::CalcMK()
   }// gauss loop
 
   const double maxeigenvalue = LINALG::GeneralizedEigen(elemat_epetra1,elemat_epetra2);
-
 
   double h_u=0.0;
   if(my::fldpara_->WhichTau()==INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall||my::fldpara_->WhichTau()==INPAR::FLUID::tau_codina||my::fldpara_->WhichTau()==INPAR::FLUID::tau_codina_convscaled)

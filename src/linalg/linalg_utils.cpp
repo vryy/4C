@@ -1038,15 +1038,20 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
   // an upper diagonal matrix
   //--------------------------------------------------------
 
-  char job =
-  { 'S' };
-  char COMPQ =
-  { 'V' };
-  char COMPZ =
-  { 'V' };
+  //balance problem to obtain better accuracy
+  char job = 'P';
+  int ILO;
+  int IHI;
+  double lscale[N];
+  double rscale[N];
+  double work0[6*N];
+  dggbal(&job, &N, a,&N,b,&N, &ILO, &IHI, lscale, rscale, work0, &info);
+  if(info!=0)
+    dserror("error dggbal");
 
-  int ILO = 1;
-  int IHI = N;
+  job ='E';
+  char COMPQ ='I';
+  char COMPZ ='I';
 
   int lwork = 0;
   if (N == 1)
@@ -1079,7 +1084,6 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
   // diagonal matrix and keep B an upper diagonal matrix via a
   // QZ-transformation
   //--------------------------------------------------------
-
   // vectors which contain the eigenvalues of the problem
   Epetra_SerialDenseVector L1(true);
   Epetra_SerialDenseVector L2(true);
@@ -1092,22 +1096,13 @@ double LINALG::GeneralizedEigen(Epetra_SerialDenseMatrix& A,
   double* BETA = L3.A();
 
   int LDH = A_new.LDA();
-  int LDT = B.LDA();
+  int LDT = tmpB.LDA();
 
-  char COMPQ2 =
-  { 'I' };
-  char COMPZ2 =
-  { 'I' };
-
-  Epetra_SerialDenseMatrix Q_2(true);
-  Q_2.Shape(N, N);
-  Epetra_SerialDenseMatrix Z_2(true);
-  Z_2.Shape(N, N);
-  double* q_2 = Q_2.A();
-  double* z_2 = Z_2.A();
+  char COMPQ2 ='V';
+  char COMPZ2 ='V';
 
   dhgeqz(&job, &COMPQ2, &COMPZ2, &N, &ILO, &IHI, a, &LDH, b, &LDT, ALPHAR,
-      ALPHAI, BETA, q_2, &LDQ, z_2, &LDZ, work, &lwork, &info);
+      ALPHAI, BETA, Q, &LDQ, Z, &LDZ, work, &lwork, &info);
 
   if (info < 0)
     std::cout << "Lapack algorithm dhgeqz: The " << info
