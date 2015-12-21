@@ -46,8 +46,8 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
     if (la[1].Size() != numnod_*numscal)
       dserror("calc_struct_nlnstiff: Location vector length for velocities does not match!");
 
-    Teuchos::RCP<std::vector<std::vector<double>>> gpconc =
-        Teuchos::rcp(new std::vector<std::vector<double>>(numgpt_,std::vector<double>(numscal,0.0)));
+    Teuchos::RCP<std::vector<std::vector<double> > > gpconc =
+        Teuchos::rcp(new std::vector<std::vector<double> >(numgpt_,std::vector<double>(numscal,0.0)));
 
     Teuchos::RCP<std::vector<double> > meantemp = Teuchos::rcp(new std::vector<double>(numscal,0.0));
 
@@ -164,7 +164,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
       }
     }
 
-    params.set< Teuchos::RCP<std::vector<std::vector<double>>> >("gp_conc",gpconc);
+    params.set< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc",gpconc);
     params.set< Teuchos::RCP<std::vector<double> > >("mean_concentrations",meantemp);
 
 
