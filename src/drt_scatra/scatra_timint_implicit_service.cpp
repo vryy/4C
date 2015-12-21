@@ -692,7 +692,7 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
       std::cout << "Mean scalar values:" << std::endl;
       std::cout << "+-------------------------------+" << std::endl;
       for(int k = 0; k < numscal_; k++)
-        std::cout << "| Mean scalar " << k+1 << ":   " << std::setprecision(6) << (*scalars)[k]/domint << " |" << std::endl;
+        std::cout << "| Mean scalar " << k+1 << ":   " << std::scientific << std::setprecision(6) << (*scalars)[k]/domint << " |" << std::endl;
       std::cout << "+-------------------------------+" << std::endl << std::endl;
 
       // file output
