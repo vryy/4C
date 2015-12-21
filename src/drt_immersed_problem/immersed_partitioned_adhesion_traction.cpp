@@ -72,6 +72,7 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
 
   // vector of adhesion forces in ecm
   ecm_adhesion_forces_ = Teuchos::rcp(new Epetra_Vector(*(poroscatra_subproblem_->StructureField()->DofRowMap()),true));
+  cell_adhesion_disp_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
   Freact_cell_ = cellstructure_->Freact();
 
   // set pointer to adhesion force vector in immersed exchange manager
@@ -94,7 +95,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CouplingOp(const Epetra_Vect
 
   // DISPLACEMENT COUPLING
   if (displacementcoupling_)
-  {
+  { dserror("COUPVARIABLE 'Displacement' is not tested, yet!!");
     const Teuchos::RCP<Epetra_Vector> idispn = Teuchos::rcp(new Epetra_Vector(x));
 
     ////////////////////
@@ -198,6 +199,8 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedOp(Teuchos::RCP<Epetra_Ve
   {
      //prescribe dirichlet values at cell adhesion nodes
     ApplyAdhesionDisplacements();
+
+    DoImmersedDirichletCond(cellstructure_->WriteAccessDispnp(),cell_adhesion_disp_, cellstructure_->GetDBCMapExtractor()->CondMap());
 
      //solve cell
     cellstructure_->Solve();
@@ -481,7 +484,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(Teuc
           // write pair cell adhesion node id -> xi in backgroundele in map
           adh_nod_param_coords_in_backgrd_ele_.insert(std::pair<int,LINALG::Matrix<3,1> >(anodeid,xi));
           // write pair adhesion node id -> backgrdele id in map
-          adh_nod_backgrd_nod_mapping_.insert(std::pair<int,int>(anodeid,ele->Id()));
+          adh_nod_backgrd_ele_mapping_.insert(std::pair<int,int>(anodeid,ele->Id()));
 
           // spread force to nodes of ecm ele
           std::vector<int> dofs = immerseddis_->Dof(adhesion_node);
@@ -541,32 +544,73 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CalcAdhesionDisplacements()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedAdhesionTraction::ApplyAdhesionDisplacements()
 {
+  double adhesiondispnorm = -1234.0;
+
     if(myrank_ == 0)
     {
       std::cout<<"################################################################################################"<<std::endl;
       std::cout<<"###   Apply Dirichlet to Adhering Nodes                  "<<std::endl;
     }
-//
-//    // loop over all cell adhesion nodes
-//    for (std::map<int,LINALG::Matrix<3,1> >::iterator it=adh_nod_param_coords_in_backgrd_ele_.begin(); it!=adh_nod_param_coords_in_backgrd_ele_.end(); ++it)
-//    {
-//      DRT::Element* backgrdele = backgroundstructuredis_->gElement(adh_nod_backgrd_nod_mapping_.at(it->first));
-//      std::cout<<adh_nod_backgrd_nod_mapping_.at(it->first)<<std::endl;
-//      // 1) extract background element nodal displacements
-//      DRT::Element::LocationArray la(1);
-//      backgrdele->LocationVector(*backgroundstructuredis_,la,false);
-//      std::vector<double> myvalues(la[0].lm_.size());
-//      DRT::UTILS::ExtractMyValues(*(poroscatra_subproblem_->StructureField()->Dispnp()),myvalues,la[0].lm_);
-//
-//      // 2) interpolate displacement to parameter space coordinate occupied by the cell adhesion node prior to deformation.
-//      //    the adhesion node is supposed to be fixed to the same material point.
-//
-//      // 3) apply previously calculated adhesion node displacement to cell
-//
-//    } // for all elements in map adh_nod_param_coords_in_backgrd_ele_
+
+    LINALG::Matrix<3,1> xi(true);        //!< parameter space coordinate of anode in background element
+    LINALG::Matrix<8,1> shapefcts;       //!< shapefunctions must be evaluated at xi
+    LINALG::Matrix<3,1> adhesiondisp;    //!< displacement of ECM element interpolated to adhesion node
+
+    DRT::Element* backgrdele; //! pointer to ECM element
+
+    // loop over all cell adhesion nodes
+    for (std::map<int,LINALG::Matrix<3,1> >::iterator it=adh_nod_param_coords_in_backgrd_ele_.begin(); it!=adh_nod_param_coords_in_backgrd_ele_.end(); ++it)
+    {
+      backgrdele = backgroundstructuredis_->gElement(adh_nod_backgrd_ele_mapping_.at(it->first));
+      adhesiondisp.PutScalar(0.0);
+
+      // 1) extract background element nodal displacements
+      DRT::Element::LocationArray la(1);
+      backgrdele->LocationVector(*backgroundstructuredis_,la,false);
+      std::vector<double> myvalues(la[0].lm_.size());
+      DRT::UTILS::ExtractMyValues(*(poroscatra_subproblem_->StructureField()->Dispnp()),myvalues,la[0].lm_);
+
+
+      // 2) interpolate ECM displacement to parameter space coordinate occupied by the cell adhesion node prior to deformation.
+      //    the adhesion node is supposed to be fixed to the same material point.
+
+      // get parameter space coordinate of cell adhesion node
+      xi=it->second;
+
+      // evaluate shapefcts of ele at point xi
+      DRT::UTILS::shape_function<DRT::Element::hex8>(xi,shapefcts);
+
+      // interpolate
+      for(int node=0;node<backgrdele->NumNode();node++)
+      {
+        adhesiondisp(0)+=shapefcts(node)*myvalues[node*4+0];
+        adhesiondisp(1)+=shapefcts(node)*myvalues[node*4+1];
+        adhesiondisp(2)+=shapefcts(node)*myvalues[node*4+2];
+      }
+
+
+      // 3) apply previously calculated adhesion node displacement to cell
+
+      // get dofs of cell adhesion node
+      std::vector<int> dofs = immerseddis_->Dof(immerseddis_->gNode(it->first));
+      if(dofs.size()!=3)
+        dserror("dofs=3 expected. dofs=%d instead",dofs.size());
+
+      // write displacmement into global vector
+      for(int dof=0;dof<(3-isPseudo2D_);dof++)
+      {
+        int error = cell_adhesion_disp_->SumIntoGlobalValue(dofs[dof],0,0,adhesiondisp(dof));
+        if(error != 0)
+          dserror("SumIntoGlobalValue returned err=%d",error);
+      }
+
+    } // do for all elements in map adh_nod_param_coords_in_backgrd_ele_
+
+    cell_adhesion_disp_->Norm2(&adhesiondispnorm);
 
     if(myrank_ == 0)
     {
+      std::cout<<"###   L2-Norm of Cell Adhesion Disp Vector: "<<std::setprecision(11)<<adhesiondispnorm<<std::endl;
       std::cout<<"################################################################################################"<<std::endl;
     }
 
@@ -610,3 +654,77 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::Update()
   cellstructure_->Update();
   poroscatra_subproblem_->Update();
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedAdhesionTraction::BuildImmersedDirichMap(Teuchos::RCP<DRT::Discretization> dis,
+                                                                        Teuchos::RCP<Epetra_Map>& dirichmap,
+                                                                        const Teuchos::RCP<const Epetra_Map>& dirichmap_original,
+                                                                        int dofsetnum)
+{
+  const Epetra_Map* elerowmap = dis->ElementRowMap();
+  std::vector<int> mydirichdofs(0);
+
+  for(int i=0; i<elerowmap->NumMyElements(); ++i)
+  {
+    // dynamic_cast necessary because virtual inheritance needs runtime information
+    DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis->gElement(elerowmap->GID(i)));
+    if(immersedele->HasProjectedDirichlet())
+    {
+      DRT::Node** nodes = immersedele->Nodes();
+      for (int inode=0; inode<(immersedele->NumNode()); inode++)
+      {
+        if(static_cast<IMMERSED::ImmersedNode* >(nodes[inode])->IsMatched() and nodes[inode]->Owner()==myrank_)
+        {
+          std::vector<int> dofs = dis->Dof(dofsetnum,nodes[inode]);
+
+          for (int dim=0;dim<3;++dim)
+          {
+            if(dirichmap_original->LID(dofs[dim]) == -1) // if not already in original dirich map
+              mydirichdofs.push_back(dofs[dim]);
+          }
+
+        }
+      }
+    }
+  }
+
+  int nummydirichvals = mydirichdofs.size();
+  dirichmap = Teuchos::rcp( new Epetra_Map(-1,nummydirichvals,&(mydirichdofs[0]),0,dis->Comm()) );
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedAdhesionTraction::DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector, Teuchos::RCP<Epetra_Vector> dirichvals, Teuchos::RCP<const Epetra_Map> dbcmap)
+{
+  int mynumvals = dbcmap->NumMyElements();
+  double* myvals = dirichvals->Values();
+
+  for(int i=0;i<mynumvals;++i)
+  {
+    int gid = dbcmap->GID(i);
+
+#ifdef DEBUG
+    int err = -2;
+    int lid = dirichvals->Map().LID(gid);
+    err = statevector -> ReplaceGlobalValue(gid,0,myvals[lid]);
+    if(err==-1)
+      dserror("VectorIndex >= NumVectors()");
+    else if (err==1)
+        dserror("GlobalRow not associated with calling processor");
+    else if (err != -1 and err != 1 and err != 0)
+      dserror("Trouble using ReplaceGlobalValue on fluid state vector. ErrorCode = %d",err);
+#else
+    int lid = dirichvals->Map().LID(gid);
+    statevector -> ReplaceGlobalValue(gid,0,myvals[lid]);
+#endif
+
+  }
+
+  return;
+}
+

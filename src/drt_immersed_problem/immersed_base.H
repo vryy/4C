@@ -52,6 +52,11 @@ public:
 
   void CreateGhosting(const Teuchos::RCP<DRT::Discretization> distobeghosted);
 
+  void CreateVolumeCondition(Teuchos::RCP<DRT::Discretization> dis,
+                             std::vector<int> dvol_fenode,
+                             DRT::Condition::ConditionType condtype,
+                             std::string condname);
+
   void EvaluateImmersed(Teuchos::ParameterList& params,
                         Teuchos::RCP<DRT::Discretization> dis,
                         DRT::AssembleStrategy* strategy,

@@ -65,7 +65,7 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     tuple<int>(
                                                sim_type_pureFSI,
                                                sim_type_pureAdhesion,
-                                               sim_type_pureCompression,
+                                               sim_type_pureConfinement,
                                                sim_type_pureGrowth,
                                                sim_type_multiphysics),
                                     &celldyn);

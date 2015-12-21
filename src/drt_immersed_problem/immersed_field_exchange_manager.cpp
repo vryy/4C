@@ -69,6 +69,9 @@ DRT::ImmersedFieldExchangeManager::ImmersedFieldExchangeManager()
   simple_ecm_interaction_constant = 0.0;
   numnlniter_=0;
   points_to_ecm_adhesion_force_=Teuchos::null;
+  isfluidinteraction_=false;
+  isPureAdhesionSimulation_=false;
+  isPureConfinementSimulation_=false;
 }
 
 

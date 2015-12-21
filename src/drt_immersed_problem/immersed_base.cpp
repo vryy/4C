@@ -788,35 +788,35 @@ IMMERSED::ImmersedBase::ImmersedBase()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-//void IMMERSED::ImmersedBase::CreateVolumeCondition(Teuchos::RCP<DRT::Discretization> dis, std::vector<int> dvol_fenode, DRT::Condition::ConditionType condtype, std::string condname)
-//{
-//  // determine id of condition
-//  std::multimap<std::string,Teuchos::RCP<DRT::Condition> > allconditions;
-//  allconditions = dis->GetAllConditions();
-//  int id = (int)allconditions.size();
-//  id += 1;
-//
-//  // build condition
-//  bool buildgeometry = true; // needed for now to check number of elements in neumannnaumann.cpp
-//  Teuchos::RCP<DRT::Condition> condition =
-//          Teuchos::rcp(new DRT::Condition(id,condtype,buildgeometry,DRT::Condition::Volume));
-//
-//  // add nodes to conditions
-//   condition->Add("Node Ids",dvol_fenode);
-//
-//   // add condition to discretization
-//   dis->SetCondition(condname,condition);
-//
-//   // fill complete if necessary
-//   if (!dis->Filled())
-//     dis -> FillComplete();
-//
-//   //debug
-//#ifdef DEBUG
-//   std::cout<<"PROC "<<dis->Comm().MyPID()<<" : Number of conditioned elements: "<<dis->GetCondition(condname)->Geometry().size()<<" ("<<condname<<")"<<std::endl;
-//#endif
-//
-//}
+void IMMERSED::ImmersedBase::CreateVolumeCondition(Teuchos::RCP<DRT::Discretization> dis, std::vector<int> dvol_fenode, DRT::Condition::ConditionType condtype, std::string condname)
+{
+  // determine id of condition
+  std::multimap<std::string,Teuchos::RCP<DRT::Condition> > allconditions;
+  allconditions = dis->GetAllConditions();
+  int id = (int)allconditions.size();
+  id += 1;
+
+  // build condition
+  bool buildgeometry = true; // needed for now to check number of elements in neumannnaumann.cpp
+  Teuchos::RCP<DRT::Condition> condition =
+          Teuchos::rcp(new DRT::Condition(id,condtype,buildgeometry,DRT::Condition::Volume));
+
+  // add nodes to conditions
+   condition->Add("Node Ids",dvol_fenode);
+
+   // add condition to discretization
+   dis->SetCondition(condname,condition);
+
+   // fill complete if necessary
+   if (!dis->Filled())
+     dis -> FillComplete();
+
+   //debug
+#ifdef DEBUG
+   std::cout<<"PROC "<<dis->Comm().MyPID()<<" : Number of conditioned elements: "<<dis->GetCondition(condname)->Geometry().size()<<" ("<<condname<<")"<<std::endl;
+#endif
+
+}
 
 
 /*----------------------------------------------------------------------*/

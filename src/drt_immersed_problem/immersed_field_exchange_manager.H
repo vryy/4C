@@ -50,6 +50,7 @@ public:
   bool isinitialized_;
   bool isfluidinteraction_;
   bool isPureAdhesionSimulation_;
+  bool isPureConfinementSimulation_;
 
   int check_counter_;
   int num_isimmersedbry_;
@@ -204,6 +205,10 @@ public:
    void SetIsPureAdhesionSimulation(bool trueorfalse){isPureAdhesionSimulation_=trueorfalse; return;};
 
    bool IsPureAdhesionSimulation(){return isPureAdhesionSimulation_;};
+
+   void SetIsPureConfinementSimulation(bool trueorfalse){isPureConfinementSimulation_=trueorfalse; return;};
+
+   bool IsPureConfinementSimulation(){return isPureConfinementSimulation_;};
 
 private:
 

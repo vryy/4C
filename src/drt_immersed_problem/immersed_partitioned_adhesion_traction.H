@@ -1,4 +1,4 @@
-  /*!----------------------------------------------------------------------
+/*!----------------------------------------------------------------------
 \file immersed_partitioned_adhesion_traction.H
 
 \brief partitioned immersed cell-ecm interaction via adhesion traction
@@ -105,13 +105,14 @@ private:
   //! @name Various global vectors
   //@{
   Teuchos::RCP<Epetra_Vector> ecm_adhesion_forces_; //!< current nodal adhesion forces on ecm
+  Teuchos::RCP<Epetra_Vector> cell_adhesion_disp_;  //!< current nodal cell adhesion displacements
   Teuchos::RCP<Epetra_Vector> Freact_cell_;         //!< current nodal reaction force because of dirichlet at adhesions
   //@}
 
   //! @name adhesion dynamics related map to save parameter space coords. of adhesion nodes
   //@{
   std::map<int, LINALG::Matrix<3,1> > adh_nod_param_coords_in_backgrd_ele_;
-  std::map<int, int> adh_nod_backgrd_nod_mapping_;
+  std::map<int, int> adh_nod_backgrd_ele_mapping_;
   //@}
 
   //! @name Pointers to Discretizations
@@ -158,8 +159,20 @@ private:
 
   /// reinitialize the transfer vectors
   void ReinitTransferVectors(){  ecm_adhesion_forces_->PutScalar(0.0);
+                                 cell_adhesion_disp_ ->PutScalar(0.0);
                                  return;
                               };
+
+  /// get immersed nodes and determine their dofs
+  void BuildImmersedDirichMap(Teuchos::RCP<DRT::Discretization> dis,
+                              Teuchos::RCP<Epetra_Map>& dirichmap,
+                              const Teuchos::RCP<const Epetra_Map>& dirichmap_original,
+                              int dofsetnum);
+
+  /// add immersed dirichlet values from immersed dis to systemvector of background dis
+  void DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector,
+                               Teuchos::RCP<Epetra_Vector> dirichvals,
+                               Teuchos::RCP<const Epetra_Map> dbcmap);
 
 };// class ImmersedPartitionedAdhesionTraction
 } // namespace IMMERSED
