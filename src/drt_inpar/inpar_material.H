@@ -66,6 +66,7 @@ namespace INPAR
       m_growth_linear,                         ///< linear growth law
       m_growth_volumetric,                     ///< volumetric growth base material
       m_growth_volumetric_scd,                 ///< integration point based growth (scalar dependent)
+      m_growthremodel_elasthyper,              ///< growth and remodeling
       m_herschelbulkley,                       ///< fluid with nonlinear viscosity according to Herschel-Bulkley
       m_ion,                                   ///< properties of an ion species in an electrolyte solution
       m_lubrication,                           ///< lubrication material
@@ -145,6 +146,8 @@ namespace INPAR
       mes_isovolaaagasser,                     ///< isochoric and volumetric summands for thrombus material (varible stiffness)
       mes_isovolHUdependentneohooke,           ///< isochoric and volumetric summands for HU dependent material
       mes_isoyeoh,                             ///< isochoric Yeoh hyperelastic potential summand
+      mes_remodelfiber,                        ///< general fiber material for remodeling
+      mes_volgrowthpenalty,                    ///< Growth penalty volumetric part of the  hyperelastic potential summand
       mes_vologden,                            ///< Ogden volumetric part of the  hyperelastic potential summand
       mes_volpenalty,                          ///< Penalty volumetric part of the  hyperelastic potential summand
       mes_volsussmanbathe,                     ///< volumetric SussmanBathe hyperelastic potential summand

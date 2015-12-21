@@ -69,6 +69,7 @@ Maintainer: Lena Wiechert
 #include "soret.H"
 #include "growth_ip.H"
 #include "growth_scd.H"
+#include "growthremodel_elasthyper.H"
 #include "scatra_growth_scd.H"
 #include "scatra_reaction_mat.H"
 #include "scatra_chemotaxis_mat.H"
@@ -515,6 +516,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_isoexpopow:
   case INPAR::MAT::mes_isomooneyrivlin:
   case INPAR::MAT::mes_volsussmanbathe:
+  case INPAR::MAT::mes_volgrowthpenalty:
   case INPAR::MAT::mes_volpenalty:
   case INPAR::MAT::mes_vologden:
   case INPAR::MAT::mes_volpow:
@@ -534,6 +536,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_coupmyocard:
   case INPAR::MAT::mes_isoratedep:
   case INPAR::MAT::mes_genmax:
+  case INPAR::MAT::mes_remodelfiber:
   case INPAR::MAT::m_growth_linear:
   case INPAR::MAT::m_growth_exponential:
   case INPAR::MAT::m_growth_ac:
@@ -615,6 +618,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Soret(curmat));
     MAT::PAR::Soret* params = static_cast<MAT::PAR::Soret*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_growthremodel_elasthyper:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::GrowthRemodel_ElastHyper(curmat));
+    MAT::PAR::GrowthRemodel_ElastHyper* params = static_cast<MAT::PAR::GrowthRemodel_ElastHyper*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_growth_volumetric:

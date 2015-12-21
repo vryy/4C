@@ -1342,6 +1342,37 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*----------------------------------------------------------------------*/
+  // general fiber material for remodeling
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_RemodelFiber",
+                                            "General fiber material for remodeling",
+                                            INPAR::MAT::mes_remodelfiber));
+
+    AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
+    AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
+    AddNamedReal(m, "TDECAY", "decay time of Poisson (degradation) process");
+    AddNamedReal(m, "SIGMAPRE", "deposition Cauchy prestress");
+    AddNamedReal(m, "GROWTHFAC", "time constant for collagen growth",0.0,true);
+    AddNamedRealVector(m,"COLMASSFRAC","initial mass fraction of first collagen fiber family in constraint mixture","NUMMAT", 0.0, true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // volumetric growth penalty contribution
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_VolGrowthPenalty",
+                                            "Growth penalty formulation for the volumetric part",
+                                            INPAR::MAT::mes_volgrowthpenalty));
+
+    AddNamedReal(m,"EPSILON","penalty parameter");
+    AddNamedReal(m,"EXPONENT","exponent");
+
+    AppendMaterialDefinition(matlist,m);
+  }
 
   /*--------------------------------------------------------------------*/
   // volumetric contribution of Sussman Bathe
@@ -1695,6 +1726,28 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
+
+  /*----------------------------------------------------------------------*/
+   // growth and remodeling
+   {
+     Teuchos::RCP<MaterialDefinition> m
+       = Teuchos::rcp(new MaterialDefinition("MAT_GrowthRemodel_ElastHyper",
+                                             "growth and remodeling",
+                                             INPAR::MAT::m_growthremodel_elasthyper));
+
+     AddNamedInt(m,"NUMMATRF","number of remodelfiber materials in list",0,true);
+     AddNamedInt(m,"NUMMATEL","number of elastin matrix materials/potentials in list",0,true);
+     AddNamedInt(m,"NUMMATGR","number of ground matrix materials/potentials in list",0,true);
+     AddNamedIntVector(m,"MATIDSRF","the list remodelfiber material IDs","NUMMATRF",-1,true);
+     AddNamedIntVector(m,"MATIDSEL","the list elastin matrix material/potential IDs","NUMMATEL",-1,true);
+     AddNamedIntVector(m,"MATIDSGR","the list ground matrix material/potential IDs","NUMMATGR",-1,true);
+     AddNamedInt(m,"MATIDPENALTY","growth penalty material ID",-1,true);
+     AddNamedRealVector(m,"ELMASSFRAC","initial mass fraction of elastin matrix in constraint mixture","NUMMATEL",-1.0, true);
+     AddNamedRealVector(m,"GRMASSFRAC","initial mass fraction of ground matrix in constraint mixture","NUMMATGR", -1.0, true);
+     AddNamedReal(m,"DENS","material mass density");
+
+     AppendMaterialDefinition(matlist,m);
+   }
 
   /*----------------------------------------------------------------------*/
    // integration point based and scalar dependent growth

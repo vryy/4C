@@ -489,6 +489,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/ferech_pv.cpp
   src/drt_mat/fluidporo.cpp
   src/drt_mat/fourieriso.cpp
+  src/drt_mat/growthremodel_elasthyper.cpp
   src/drt_mat/growth_ip.cpp
   src/drt_mat/growth_law.cpp
   src/drt_mat/growth_scd.cpp
@@ -573,7 +574,9 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_coup2pow.cpp
   src/drt_matelast/elast_isovarga.cpp
   src/drt_matelast/elast_isoyeoh.cpp
+  src/drt_matelast/elast_remodelfiber.cpp
   src/drt_matelast/elast_summand.cpp
+  src/drt_matelast/elast_volgrowthpenalty.cpp
   src/drt_matelast/elast_vologden.cpp
   src/drt_matelast/elast_volpenalty.cpp
   src/drt_matelast/elast_volsussmanbathe.cpp

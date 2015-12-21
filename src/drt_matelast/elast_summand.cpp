@@ -32,6 +32,8 @@ Maintainer: Burkhard Bornemann
 #include "elast_isomooneyrivlin.H"
 #include "elast_isotestmaterial.H"
 #include "elast_coupSaintVenantKirchhoff.H"
+#include "elast_remodelfiber.H"
+#include "elast_volgrowthpenalty.H"
 #include "elast_volsussmanbathe.H"
 #include "elast_volpenalty.H"
 #include "elast_vologden.H"
@@ -223,6 +225,20 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::VolSussmanBathe(curmat));
     MAT::ELASTIC::PAR::VolSussmanBathe* params = static_cast<MAT::ELASTIC::PAR::VolSussmanBathe*>(curmat->Parameter());
     return Teuchos::rcp(new VolSussmanBathe(params));
+  }
+  case INPAR::MAT::mes_remodelfiber:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::RemodelFiber(curmat));
+    MAT::ELASTIC::PAR::RemodelFiber* params = static_cast<MAT::ELASTIC::PAR::RemodelFiber*>(curmat->Parameter());
+    return Teuchos::rcp(new RemodelFiber(params));
+  }
+  case INPAR::MAT::mes_volgrowthpenalty:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::VolGrowthPenalty(curmat));
+    MAT::ELASTIC::PAR::VolGrowthPenalty* params = static_cast<MAT::ELASTIC::PAR::VolGrowthPenalty*>(curmat->Parameter());
+    return Teuchos::rcp(new VolGrowthPenalty(params));
   }
   case INPAR::MAT::mes_volpenalty:
   {
