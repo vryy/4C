@@ -851,7 +851,7 @@ void SCATRA::ScaTraTimIntElch::PostProcessSingleElectrodeInfo(
   // update vectors
   (*electrodeconc_)[id] = cint/boundaryint;
   (*electrodeeta_)[id] = overpotentialint/boundaryint;
-  (*electrodecurr_)[id] = currentsum;
+  (*electrodecurr_)[id] = currentintegral+currentdlintegral;
 
   return;
 } // SCATRA::ScaTraTimIntElch::OutputSingleElectrodeInfoBoundary
