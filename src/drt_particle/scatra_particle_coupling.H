@@ -53,31 +53,31 @@ namespace PARTICLE
       );
 
     /// do initialization of problem
-    void Init(bool restarted);
+    virtual void Init(bool restarted);
 
     /// initialize particle field with particles
-    void InitialSeeding();
+    virtual void InitialSeeding();
 
     /// prepare time step
-    void PrepareTimeStep();
+    virtual void PrepareTimeStep();
 
     /// solve the current particle time step
-    void Integrate();
+    virtual void Integrate();
 
     /// transfer particles into their correct bins and update solution
-    void Update();
+    virtual void Update();
 
     /// correct level-set function using escaped particles
     Teuchos::RCP<Epetra_Vector> CorrectionStep();
 
     /// output particle time step
-    void Output();
+    virtual void Output(bool forced_writerestart = false);
 
     /// compute velocities of particles at intermediate time n+theta
     Teuchos::RCP<Epetra_Vector> GetVelocity(const double theta); /// intermediate point in time
 
     /// set time and step from outside (i.e., particle algorithm is not main algorithm)
-    void SetTimeStepAdditionalParticles(const double time, const int step)
+    virtual void SetTimeStepAdditionalParticles(const double time, const int step)
     {
       SetTimeStep(time,step);
       particles_->SetTimeStep(time,step);
@@ -191,7 +191,7 @@ namespace PARTICLE
 
     double r_max_;                                      ///< maximal radius of particles
 
-    bool fast_;                                         ///< use fast check based on nodal values of scatra elements to determin far-away bins
+    bool fast_;                                         ///< use fast check based on nodal values of scatra elements to determine far-away bins
 
     double delete_more_;                                ///< allows for deleting also escaped particles that moved to far from the interface to be useful
 

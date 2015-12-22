@@ -261,12 +261,33 @@ void PARTICLE::Algorithm::Integrate()
       DRT::INPUT::IntegralValue<INPAR::PARTICLE::ContactStrategy>(particleparams,"CONTACT_STRATEGY");
   if(contact_strategy != INPAR::PARTICLE::None)
   {
-    double maxvel = 0.0;
-    particles_->Veln()->MaxValue(&maxvel);
+    double extrema[2] = {0.0, 0.0};
+    particles_->Veln()->MinValue(&extrema[0]);
+    particles_->Veln()->MaxValue(&extrema[1]);
+    const double maxvel = std::max(-extrema[0], extrema[1]);
     double maxrad = 0.0;
     particles_->Radius()->MaxValue(&maxrad);
     if(maxrad + maxvel*particles_->Dt() > 0.5*cutoff_radius_)
-      dserror("Particles travel more than one bin per time step (%f > %f). Increase bin size or reduce step size", 2.0*(maxrad + maxvel*Dt()), cutoff_radius_);
+    {
+      int lid = -1;
+      // find entry with max velocity
+      for(int i=0; i<particles_->Veln()->MyLength(); ++i)
+      {
+        if((*particles_->Veln())[i] < extrema[0]+1.0e-12 || (*particles_->Veln())[i] > extrema[1]-1.0e-12)
+        {
+          lid = i;
+          break;
+        }
+      }
+
+      particles_->Veln()->Print(std::cout);
+      if(lid != -1)
+      {
+        int gid = particles_->Veln()->Map().GID(lid);
+        dserror("Particle %i (gid) travels more than one bin per time step (%f > %f). Increase bin size or reduce step size."
+            "Max radius is: %f", (int)gid/3, 2.0*(maxrad + maxvel*particles_->Dt()), cutoff_radius_, maxrad);
+      }
+    }
   }
 
   CalculateAndApplyForcesToParticles();
@@ -816,6 +837,10 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
 void PARTICLE::Algorithm::TransferParticles(bool ghosting)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles");
+
+  // leave here in case nothing to do
+  if(particles_->Radius()->GlobalLength() == 0)
+    return;
 
   // set of homeless particles
   std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less> homelessparticles;
@@ -1402,13 +1427,18 @@ void PARTICLE::Algorithm::PrepareOutput()
 /*----------------------------------------------------------------------*
  | output particle time step                                ghamm 10/12  |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::Output()
+void PARTICLE::Algorithm::Output(bool forced_writerestart /*= false*/)
 {
   // INFO regarding output: Bins are not written to file because they cannot
   // be post-processed anyway (no nodes and connectivity available)
-  particles_->OutputStep();
+  particles_->OutputStep(forced_writerestart);
   if(structure_ != Teuchos::null)
+  {
     structure_->Output();
+    // add missing restart information if necessary
+    if(forced_writerestart)
+      structure_->Output(forced_writerestart);
+  }
 
 //  const std::string filename = IO::GMSH::GetFileName("particle_data", Step(), true, Comm().MyPID());
 //  std::ofstream gmshfilecontent(filename.c_str());

@@ -377,6 +377,13 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
     // calculate critical time step for DEM like contact
     dt_krit_ = safety * factor * sqrt( mass_min / k_tkrit );
 
+    double dt = particleparams.get<double>("TIMESTEP");
+    if(dt>dt_krit_ and myrank_==0)
+    {
+      std::cout << "\n\nW A R N I N G : time step larger than critical time step!" << std::endl;
+      std::cout << "W A R N I N G : calculated critical time step: "<<dt_krit_<<" !\n\n" << std::endl;
+    }
+
     // check frictional coefficient
     if(contact_strategy_ == INPAR::PARTICLE::NormalAndTang_DEM)
     {
@@ -445,12 +452,6 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   )
 {
   TEUCHOS_FUNC_TIME_MONITOR("TimeforContactSearchAndCalculation");
-
-  if(dt>dt_krit_ and myrank_==0)
-  {
-    std::cout << "W A R N I N G : time step larger than critical time step!" << std::endl;
-    std::cout << "W A R N I N G : calculated critical time step: "<<dt_krit_<<" !" << std::endl;
-  }
 
   contact_energy_ = 0.0;
 

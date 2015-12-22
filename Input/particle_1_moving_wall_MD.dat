@@ -32,7 +32,7 @@ WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              -1
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
-CUTOFF_RADIUS                   1.0
+CUTOFF_RADIUS                   3.2
 BOUNDINGBOX                     -10.000001 -10.000001 -10.000001 10.000001 10.000001 10.000001
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
@@ -54,8 +54,8 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      ExplicitEuler
 RESULTSEVRY                     1
 RESTARTEVRY                     1000000
-TIMESTEP                        3
-NUMSTEP                         1
+TIMESTEP                        0.5
+NUMSTEP                         6
 GRAVITY_ACCELERATION 0.0 0.0 0.0
 CONTACT_STRATEGY                NormalContact_MD
 NORMAL_CONTACT_LAW              LinearSpring

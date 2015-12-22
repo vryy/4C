@@ -187,9 +187,6 @@ namespace PARTICLE
                          //!< it was written at this time step
     );
 
-    //! Add restart information to OutputState
-    virtual void AddRestartToOutputState();
-
     //! Energy output
     virtual void OutputEnergy();
 
@@ -424,7 +421,7 @@ namespace PARTICLE
 
     //@}
 
-    //! @control flags for special features
+    //! @name control flags for special features
     //@{
 
     const bool variableradius_;   //!< bool to control whether radius is constant or variable

@@ -64,6 +64,7 @@ CAVITATION::Algorithm::Algorithm(
   approxelecoordsinit_((bool)DRT::INPUT::IntegralValue<int>(params,"APPROX_ELECOORDS_INIT")),
   simplebubbleforce_((bool)DRT::INPUT::IntegralValue<int>(params,"SIMPLIFIED_BUBBLE_FORCES")),
   timestepsizeratio_(params.get<int>("TIME_STEP_SIZE_RATIO")),
+  restartparticles_(0),
   inflowradiusblending_((bool)DRT::INPUT::IntegralValue<int>(params,"INFLOW_RADIUS_BLENDING")),
   blendingsteps_(0),
   initbubblevelfromfluid_((bool)DRT::INPUT::IntegralValue<int>(params,"INIT_BUBBLEVEL_FROM_FLUID")),
@@ -155,6 +156,15 @@ CAVITATION::Algorithm::Algorithm(
   if(timestepsizeratio_ < 1)
     dserror("fluid time step must be a multiplicative greater or equal unity. Your choice: %d", timestepsizeratio_);
 
+  if(DRT::Problem::Instance()->Restart() != 0)
+  {
+    // read restart step for particles from input file
+    restartparticles_ = DRT::Problem::Instance()->CavitationParams().get<int>("RESTARTSTEP_PARTICLES");
+    // default assumption of restart with same timestepsizeratio_ as in previous run
+    if(restartparticles_ < 0)
+      restartparticles_ = timestepsizeratio_*DRT::Problem::Instance()->Restart();
+  }
+
   if(computeradiusRPbased_ && myrank_ == 0)
     IO::cout << "Radius is adapted based on Rayleigh-Plesset equation" << IO::endl;
 
@@ -167,9 +177,8 @@ CAVITATION::Algorithm::Algorithm(
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Timeloop()
 {
-  const int nstep_particles = NStep()*timestepsizeratio_;
   // time loop
-  while (NotFinished() || particles_->StepOld() < nstep_particles)
+  while (NotFinished() || (particles_->StepOld()-restartparticles_) % timestepsizeratio_ != 0)
   {
     // counter and print header; predict solution of both fields
     PrepareTimeStep();
@@ -261,7 +270,7 @@ void CAVITATION::Algorithm::InitCavitation()
   const double bubbletimestep = cavitationdyn.get<double>("TIMESTEP") / (double)timestepsizeratio_;
   adaptedcavitationdyn->set<double>("TIMESTEP", bubbletimestep);
   adaptedcavitationdyn->set<int>("NUMSTEP", timestepsizeratio_ * cavitationdyn.get<int>("NUMSTEP"));
-  adaptedcavitationdyn->set<int>("RESTARTEVRY", timestepsizeratio_ * cavitationdyn.get<int>("RESTARTEVRY"));
+  adaptedcavitationdyn->set<int>("RESTARTEVRY", 1000000000);  // very large number as restart is enforced for particles
   adaptedcavitationdyn->set<int>("UPRES", timestepsizeratio_ * cavitationdyn.get<int>("UPRES"));
 
   // create particle time integrator
@@ -455,7 +464,7 @@ void CAVITATION::Algorithm::InitBubbleVelFromFluidVel()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::PrepareTimeStep()
 {
-  if(particles_->StepOld() % timestepsizeratio_ == 0)
+  if((particles_->StepOld()-restartparticles_) % timestepsizeratio_ == 0)
   {
     IncrementTimeAndStep();
     PrintHeader();
@@ -478,7 +487,7 @@ void CAVITATION::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Integrate()
 {
-  if(particles_->StepOld() % timestepsizeratio_ == 0)
+  if((particles_->StepOld()-restartparticles_) % timestepsizeratio_ == 0)
   {
     if(coupalgo_ == INPAR::CAVITATION::TwoWayFull || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
     {
@@ -493,7 +502,15 @@ void CAVITATION::Algorithm::Integrate()
   {
     // some output
     if (myrank_ == 0)
-      IO::cout << "particle substep no. " << (particles_->StepOld() % timestepsizeratio_)+1 << IO::endl;
+    {
+      if(timestepsizeratio_<100)
+        IO::cout << "particle substep no. " << ((particles_->StepOld()-restartparticles_) % timestepsizeratio_)+1 << IO::endl;
+      else
+      {
+        if ( (particles_->StepOld()-restartparticles_)%10 == 0)
+          IO::cout << "particle substep no. " << ((particles_->StepOld()-restartparticles_) % timestepsizeratio_)+1 << IO::endl;
+      }
+    }
   }
 
   if(computeradiusRPbased_ == true)
@@ -551,8 +568,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   acc->Update(-1.0/Dt(), *veln, 1.0/Dt());
 
   double theta = 1.0;
-  if(particles_->Step() % timestepsizeratio_ != 0)
-    theta = (double)((particles_->StepOld()+1) % timestepsizeratio_) / (double)timestepsizeratio_;
+  if((particles_->Step()-restartparticles_) % timestepsizeratio_ != 0)
+    theta = (double)((particles_->Step()-restartparticles_) % timestepsizeratio_) / (double)timestepsizeratio_;
 
   // fluid velocity linearly interpolated between n and n+1 in case of subcycling
   Teuchos::RCP<Epetra_Vector> vel = Teuchos::rcp(new Epetra_Vector(*velnp));
@@ -1098,12 +1115,13 @@ void CAVITATION::Algorithm::ComputeRadius()
 
   // end of bubble time step
   const double particle_timenp = particles_->Time()*TIMESCALE;
-  double subtime = particles_->TimeOld()*TIMESCALE;
+  const double particle_timen = particles_->TimeOld()*TIMESCALE;
 
   // set min/max value of time step sizes allowed during adaptation
   // --> TODO: are these bounds general enough?
   const double dt_min = 1.0e-12*TIMESCALE;
-  const double dt_max = 1.0e-6*TIMESCALE;
+  // time step size for radius adaption should always be smaller than particle time step
+  const double dt_max = particles_->Dt()*0.3*TIMESCALE;
 
   // get needed variables for RP equation for all particles
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispn();
@@ -1162,27 +1180,30 @@ void CAVITATION::Algorithm::ComputeRadius()
     const double pfluidn = elevec1[0]*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
     const double pfluidnp = elevec1[1]*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
 
-    const int particlelid = particledis_->NodeRowMap()->LID(currparticle->Id());
+    const int gid = currparticle->Id();
+    const int lid = particledis_->NodeRowMap()->LID(gid);
+
     // get bubble radii of different sub time steps
-    double r_bub_k = ((*bubbleradiusn)[particlelid])*LENGTHSCALE;
-    const double r_bub_0 = ((*bubbleradius0)[particlelid])*LENGTHSCALE;
+    double r_bub_k = ((*bubbleradiusn)[lid])*LENGTHSCALE;
+    const double r_bub_0 = ((*bubbleradius0)[lid])*LENGTHSCALE;
     // first derivative of bubble radius needed for rk method
-    double r_dot_bub_k = ((*bubbleradiusdot)[particlelid])*LENGTHSCALE/TIMESCALE;
+    double r_dot_bub_k = ((*bubbleradiusdot)[lid])*LENGTHSCALE/TIMESCALE;
     // initialization of bubble radius at new time
     double r_bub_kp = 0.0;
+    // reset time n
+    double subtime = particle_timen;
 
     // get current sub time step size
-    double dtsub = ((*dtsub_)[particlelid])*TIMESCALE;
-
+    double dtsub = ((*dtsub_)[lid])*TIMESCALE;
     // get initial pressure for current bubble
-    const double pg0i = ((*pg0_)[particlelid])*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
+    const double pg0i = ((*pg0_)[lid])*WEIGHTSCALE/(LENGTHSCALE*TIMESCALE*TIMESCALE);
 
     // while far away of the end of the time step
     while(particle_timenp-subtime > 2.0*dtsub)
     {
       const bool allowadaption = true;
       // calculate radius and adapt time step size
-      IntegrateRadius(subtime,pvapor,pg0i,dtsub,rho_l,mu_l,gamma,fluid_timenp,fluid_timen,pfluidnp,pfluidn,r_bub_0,r_bub_k,r_bub_kp,r_dot_bub_k,allowadaption,dt_min,dt_max);
+      IntegrateRadius(gid,subtime,pvapor,pg0i,dtsub,rho_l,mu_l,gamma,fluid_timenp,fluid_timen,pfluidnp,pfluidn,r_bub_0,r_bub_k,r_bub_kp,r_dot_bub_k,allowadaption,dt_min,dt_max);
 
       // warning if relative radius change is large (hard coded values from experience)
       if ((r_bub_kp-r_bub_k) < -0.07*r_bub_kp or (r_bub_kp-r_bub_k) > 0.05*r_bub_kp)
@@ -1205,7 +1226,7 @@ void CAVITATION::Algorithm::ComputeRadius()
     {
       const bool allowadaption = false;
       // calculate radius and adapt time step size
-      IntegrateRadius(subtime,pvapor,pg0i,dtsub,rho_l,mu_l,gamma,fluid_timenp,fluid_timen,pfluidnp,pfluidn,r_bub_0,r_bub_k,r_bub_kp,r_dot_bub_k,allowadaption,dt_min,dt_max);
+      IntegrateRadius(gid,subtime,pvapor,pg0i,dtsub,rho_l,mu_l,gamma,fluid_timenp,fluid_timen,pfluidnp,pfluidn,r_bub_0,r_bub_k,r_bub_kp,r_dot_bub_k,allowadaption,dt_min,dt_max);
 
       // warning if RelStepSize has a large value
       if ((r_bub_kp-r_bub_k) < -0.07*r_bub_kp or (r_bub_kp-r_bub_k) > 0.05*r_bub_kp)
@@ -1224,9 +1245,9 @@ void CAVITATION::Algorithm::ComputeRadius()
     dtsub = std::min(dt_max,std::max(dtsub,dt_min));
 
     // convert variables according to unit system and write to state vectors
-    (*bubbleradiusn)[particlelid] = r_bub_k/LENGTHSCALE;
-    (*bubbleradiusdot)[particlelid] = r_dot_bub_k/LENGTHSCALE*TIMESCALE;
-    (*dtsub_)[particlelid] = dtsub/TIMESCALE;
+    (*bubbleradiusn)[lid] = r_bub_k/LENGTHSCALE;
+    (*bubbleradiusdot)[lid] = r_dot_bub_k/LENGTHSCALE*TIMESCALE;
+    (*dtsub_)[lid] = dtsub/TIMESCALE;
   }
 
   return;
@@ -1237,6 +1258,7 @@ void CAVITATION::Algorithm::ComputeRadius()
  | time integration of bubble radius                        ghamm 06/15 |
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::IntegrateRadius(
+  const int bubbleid,
   double& subtime,
   const double pvapor,
   const double pg0i,
@@ -1344,8 +1366,20 @@ void CAVITATION::Algorithm::IntegrateRadius(
       const double MinScale = 1.0/1.3;
       const double MaxScale = 1.3;
 
-      // adaption of time step due to local truncation error with respect to maximum and minimum time step
-      const double scale = std::min(std::max(SafetyFactor*pow(epsilon/localtruncerr,1.0/3.0),MinScale),MaxScale);
+      // adaption of time step due to local truncation error (in case that it is nonzero)
+      double scale = MaxScale;
+      if(localtruncerr > 1.0e-12)
+      {
+        // standard case
+        scale = std::min(std::max(SafetyFactor*pow(epsilon/localtruncerr,1.0/3.0),MinScale),MaxScale);
+      }
+#ifdef DEBUG
+      else
+      {
+        IO::cout << "local truncation error is zero in radius computation for id: " << bubbleid
+          << " : time step size is increased" << IO::endl;
+      }
+#endif
 
       // adapt time step size
       dtsub = std::min( std::max(scale*dtsub,dt_min), dt_max );
@@ -1421,7 +1455,7 @@ double CAVITATION::Algorithm::f_R_dot(
 void CAVITATION::Algorithm::ParticleInflow()
 {
   // inflow and radius blending only once in fluid time step
-  if(particles_->Step() % timestepsizeratio_ != 0)
+  if((particles_->Step()-restartparticles_) % timestepsizeratio_ != 0)
     return;
 
   std::map<int, std::list<Teuchos::RCP<BubbleSource> > >::const_iterator biniter;
@@ -1696,7 +1730,7 @@ void CAVITATION::Algorithm::Update()
   // here is the transition from n+1 -> n
   PARTICLE::Algorithm::Update();
 
-  if(particles_->StepOld() % timestepsizeratio_ == 0)
+  if((particles_->StepOld()-restartparticles_) % timestepsizeratio_ == 0)
   {
     fluid_->Update();
 
@@ -1713,42 +1747,39 @@ void CAVITATION::Algorithm::Update()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::ReadRestart(int restart)
 {
-  int restart_particles = DRT::Problem::Instance()->CavitationParams().get<int>("RESTARTSTEP_PARTICLES");
-
-  // assumption of restart with same timestepsizeratio_ as in previous run
-  if(restart_particles < 0)
-    restart_particles = timestepsizeratio_*restart;
-
   if(myrank_ == 0)
-    std::cout << "INFO: Restart for particles from step " << restart_particles << " and for fluid from step " << restart
-    << ". Current time step size ratio is: " << timestepsizeratio_ << "." << std::endl;
+    IO::cout << "INFO: Restart for particles from step " << restartparticles_ << " and for fluid from step " << restart
+    << ". Current time step size ratio is: " << timestepsizeratio_ << "." << IO::endl;
 
   // adapt time step properties for particles in case of independent time stepping
-  PARTICLE::Algorithm::ReadRestart(restart_particles);
+  PARTICLE::Algorithm::ReadRestart(restartparticles_);
   fluid_->ReadRestart(restart);
 
   // correct time and step in algorithm base
   SetTimeStep(fluid_->Time(),restart);
 
   // additionally read restart data for fluid fraction
-  IO::DiscretizationReader reader_fl(fluid_->Discretization(),restart);
+  IO::DiscretizationReader reader_fl(fluid_->Discretization(), restart);
   reader_fl.ReadVector(fluidfracn_,"fluid_fraction");
 
-  IO::DiscretizationReader reader_p(particles_->Discretization(),restart_particles);
-
-  Teuchos::RCP<std::vector<int> > in = Teuchos::rcp( new std::vector<int>() );
-  reader_p.ReadRedundantIntVector( in, "latestinflowbubbles" );
-  latestinflowbubbles_.clear();
-  for( unsigned i=0; i< in->size(); i++ )
-    latestinflowbubbles_.insert( (*in)[i] );
-
-  blendingsteps_ = reader_p.ReadInt("blendingsteps");
-
-  if(computeradiusRPbased_ == true and particles_->Radius()->GlobalLength() != 0)
+  if(particles_->Radius()->GlobalLength() != 0)
   {
-    // additionally read restart data for bubbles with radius computation based on RP equ.
-    reader_p.ReadVector(pg0_,"pg0");
-    reader_p.ReadVector(dtsub_,"dtsub");
+    IO::DiscretizationReader reader_p(particles_->Discretization(), restartparticles_);
+
+    Teuchos::RCP<std::vector<int> > in = Teuchos::rcp( new std::vector<int>() );
+    reader_p.ReadRedundantIntVector( in, "latestinflowbubbles" );
+    latestinflowbubbles_.clear();
+    for( unsigned i=0; i< in->size(); i++ )
+      latestinflowbubbles_.insert( (*in)[i] );
+
+    blendingsteps_ = reader_p.ReadInt("blendingsteps");
+
+    if(computeradiusRPbased_ == true)
+    {
+      // additionally read restart data for bubbles with radius computation based on RP equ.
+      reader_p.ReadVector(pg0_,"pg0");
+      reader_p.ReadVector(dtsub_,"dtsub");
+    }
   }
   return;
 }
@@ -1945,22 +1976,26 @@ void CAVITATION::Algorithm::TestResults(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*
  | output particle time step                                ghamm 11/12  |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::Output()
+void CAVITATION::Algorithm::Output(bool forced_writerestart)
 {
   // do we have a restart step?
   const int uprestart = DRT::Problem::Instance()->CavitationParams().get<int>("RESTARTEVRY");
+  bool dofluidrestart = false;
 
-  if(particles_->StepOld() % timestepsizeratio_ == 0)
+  if((particles_->StepOld()-restartparticles_) % timestepsizeratio_ == 0)
   {
     // call fluid output and add restart data for fluid fraction if necessary
     fluid_->StatisticsAndOutput();
-    if( Step()%uprestart == 0 && uprestart != 0 )
+    if(Step()%uprestart == 0 && uprestart != 0)
+    {
+      dofluidrestart = true;
       fluid_->DiscWriter()->WriteVector("fluid_fraction", fluidfracn_, IO::DiscretizationWriter::dofvector);
+    }
   }
 
-  // call particle output and
-  PARTICLE::Algorithm::Output();
-  if(particles_->StepOld() % (timestepsizeratio_ * uprestart) == 0)
+  // call particle output and enforce restart when fluid is writing restart
+  PARTICLE::Algorithm::Output(dofluidrestart);
+  if(dofluidrestart)
   {
     {
       // write out information about blending of inflow bubbles

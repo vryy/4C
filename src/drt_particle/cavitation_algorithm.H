@@ -139,6 +139,7 @@ namespace CAVITATION
 
      /// time integration of bubble radius
     virtual void IntegrateRadius(
+      const int bubbleid,
       double& subtimek,
       const double pvapor,
       const double pg0i,
@@ -177,7 +178,7 @@ namespace CAVITATION
     virtual void Update();
 
     /// output particle time step
-    virtual void Output();
+    virtual void Output(bool forced_writerestart = false);
 
     /// setup of bubble sources in each bin
     virtual void BuildBubbleInflowCondition();
@@ -343,6 +344,8 @@ namespace CAVITATION
     const bool simplebubbleforce_;   ///< bool whether a simplified force computation is applied
 
     const int timestepsizeratio_;   ///< ratio between fluid and particle time step in case of subcycling
+
+    int restartparticles_;   ///< restart step for particle subproblem
 
     bool inflowradiusblending_;   ///< bool whether radius of inflow particles is blended over several time steps
 

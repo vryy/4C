@@ -123,7 +123,7 @@ namespace PARTICLE
     virtual void PrepareOutput();
 
     /// output particle time step
-    virtual void Output();
+    virtual void Output(bool forced_writerestart = false);
 
     /// bins are distributed to the processors
     virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs();

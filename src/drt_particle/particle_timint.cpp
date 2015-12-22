@@ -593,20 +593,6 @@ void PARTICLE::TimInt::PrepareOutput()
 /* output to file */
 void PARTICLE::TimInt::OutputStep(bool forced_writerestart)
 {
-  // special treatment is necessary when restart is forced
-  if(forced_writerestart)
-  {
-    // restart has already been written
-    if((writerestartevery_ and (step_%writerestartevery_ == 0)) or step_==DRT::Problem::Instance()->Restart())
-      return;
-    // if state already exists, add restart information
-    if(writeresultsevery_ and (step_%writeresultsevery_ == 0))
-    {
-      AddRestartToOutputState();
-      return;
-    }
-  }
-
   // this flag is passed along subroutines and prevents
   // repeated initialising of output writer, printing of
   // state vectors, or similar
@@ -721,44 +707,6 @@ void PARTICLE::TimInt::OutputState
   // maps are rebuild in every step so that reuse is not possible
   // keeps memory usage bounded
   output_->ClearMapCache();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/* add restart information to OutputState */
-void PARTICLE::TimInt::AddRestartToOutputState()
-{
-  // add velocity and acceleration if necessary
-  if(!writevelacc_)
-  {
-    output_->WriteVector("acceleration", (*acc_)(0));
-  }
-
-  if(collhandler_ != Teuchos::null)
-  {
-    if(ang_veln_ != Teuchos::null)
-    {
-      output_->WriteVector("ang_velocity", (*ang_vel_)(0));
-      output_->WriteVector("ang_acceleration", (*ang_acc_)(0));
-    }
-
-    if(writeorientation_)
-      output_->WriteVector("orientation", orient_);
-  }
-
-  // info dedicated to user's eyes staring at standard out
-  if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0))
-  {
-    IO::cout << "====== Restart written in step " << step_ << IO::endl;
-  }
-
-  // info dedicated to processor error file
-  if (printerrfile_)
-  {
-    fprintf(errfile_, "====== Restart written in step %d\n", step_);
-    fflush(errfile_);
-  }
 
   return;
 }

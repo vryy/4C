@@ -2617,10 +2617,10 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
 /*----------------------------------------------------------------------*
  | output particle time step                            rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void PARTICLE::ScatraParticleCoupling::Output()
+void PARTICLE::ScatraParticleCoupling::Output(bool forced_writerestart /* = false*/)
 {
   // write data to file
-  Algorithm::Output();
+  PARTICLE::Algorithm::Output(forced_writerestart);
 
   return;
 }
