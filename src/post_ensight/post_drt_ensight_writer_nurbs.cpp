@@ -1982,6 +1982,10 @@ void EnsightWriter::WriteDofResultStepForNurbs(
           coldofset.insert(lm[inode*dim+rr]+offset);
         }
       }
+      else if (name == "temperature")
+      {
+        coldofset.insert(lm[inode]+offset);
+      }
       else
       {
         dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
@@ -2188,6 +2192,11 @@ void EnsightWriter::WriteDofResultStepForNurbs(
           my_data[dim*inode+rr]=(*coldata)[(*coldata).Map().LID(lm[inode*dim+rr]+offset)];
         }
       }
+    }
+    else if (name == "temperature")
+    {
+      for (int inode=0; inode<numnp; ++inode)
+        my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode]+offset)];
     }
     else
     {

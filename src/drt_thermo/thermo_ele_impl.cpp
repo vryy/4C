@@ -28,6 +28,8 @@ Maintainer: Caroline Danowski
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 // material headers
 #include "../drt_mat/fourieriso.H"
@@ -112,8 +114,12 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
   {
     return TemperImpl<DRT::Element::line3>::Instance();
   }*/
+  case DRT::Element::nurbs27 :
+  {
+    return TemperImpl<DRT::Element::nurbs27>::Instance();
+  }
   default:
-    dserror("Element shape %i (%d nodes) not activated. Just do it.", DistypeToString(ele->Shape()).c_str(), ele->NumNode());
+    dserror("Element shape %s (%d nodes) not activated. Just do it.", DistypeToString(ele->Shape()).c_str(), ele->NumNode());
     break;
   }
   return NULL;
@@ -209,6 +215,9 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   // (action == "calc_thermo_energy")
   // (action == "calc_thermo_coupltang")
   // action == "calc_thermo_fintcond"
+
+  // prepare nurbs
+  PrepareNurbsEval(ele,discretization);
 
   // check length
   if (la[0].Size() != nen_*numdofpernode_)
@@ -3399,8 +3408,19 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 
   // shape functions (funct_) and their first derivatives (deriv_)
   // N, N_{,xsi}
-  DRT::UTILS::shape_function<distype>(xsi_,funct_);
-  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+  if (myknots_.size()==0)
+  {
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+  }
+  else
+    DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+      (funct_                ,
+       deriv_                ,
+       xsi_                  ,
+       myknots_              ,
+       weights_              ,
+       distype);
 
   // compute Jacobian matrix and determinant (as presented in FE lecture notes)
   // actually compute its transpose (compared to J in NiliFEM lecture notes)
@@ -3442,6 +3462,38 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   return;
 
 } // EvalShapeFuncAndDerivsAtIntPoint
+
+/*----------------------------------------------------------------------*
+ | evaluate shape functions and derivatives at int. point     gjb 08/08 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
+    DRT::Element* ele,                   // the element whose matrix is calculated
+    DRT::Discretization& discretization  // current discretisation
+  )
+{
+ if (ele->Shape()!=DRT::Element::nurbs27)
+  {
+    myknots_.resize(0);
+    return;
+  }
+
+  myknots_.resize(3); // fixme: dimension
+  // get nurbs specific infos
+    // cast to nurbs discretization
+    DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+    if(nurbsdis==NULL)
+      dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+
+    // zero-sized element
+    if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots_,ele->Id()))
+      return;
+
+    // get weights from cp's
+    for (int inode=0; inode<nen_; inode++)
+      weights_(inode) = dynamic_cast<DRT::NURBS::ControlPoint* > (ele->Nodes()[inode])->W();
+}
 
 
 /*----------------------------------------------------------------------*

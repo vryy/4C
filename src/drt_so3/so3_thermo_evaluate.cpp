@@ -4,10 +4,10 @@
 \brief
 
 <pre>
-   Maintainer: Caroline Danowski
-               danowski@lnm.mw.tum.de
+   Maintainer: Alexander Seitz
+               seitz@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15253
+               089 - 289-15271
 </pre>
 */
 
@@ -19,6 +19,8 @@
 #include "so3_thermo_fwd.hpp"
 
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 // headers of thermo-materials
 #include "../drt_mat/thermostvenantkirchhoff.H"
@@ -226,8 +228,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     // build the location vector only for the structure field
     std::vector<double> mydisp((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
-    std::vector<double> myres((la[0].lm_).size());
-    DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
     // create a dummy element matrix to apply linearised EAS-stuff onto
     LINALG::Matrix<numdofperelement_,numdofperelement_> myemat(true);
 
@@ -271,8 +271,8 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       {
         nln_stifffint_tsi(
           la,  // location array
+          discretization, // discr
           mydisp,  // current displacements
-          myres,  // current residual displ
           mytempnp, // current temperature
           NULL, // element stiffness matrix
           &elevec1,  // element internal force vector
@@ -286,7 +286,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         nln_stifffint_tsi_fbar(
           la,  // location array
           mydisp,  // current displacements
-          myres,  // current residual displ
           mytempnp, // current temperature
           NULL, // element stiffness matrix
           &elevec1,  // element internal force vector
@@ -304,7 +303,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       lin_fint_tsi(
         la,
         mydisp,
-        myres,
         mytempnp,
         &elevec1,
         NULL,
@@ -327,17 +325,13 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     // need current displacement and residual/incremental displacements
     Teuchos::RCP<const Epetra_Vector> disp
       = discretization.GetState(0,"displacement");
-    Teuchos::RCP<const Epetra_Vector> res
-      = discretization.GetState(0,"residual displacement");
 
-    if ( (disp == Teuchos::null) or (res == Teuchos::null) )
-      dserror("Cannot get state vectors 'displacement' and/or residual");
+    if (disp == Teuchos::null)
+      dserror("Cannot get state vectors 'displacement' ");
 
     // build the location vector only for the structure field
     std::vector<double> mydisp((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
-    std::vector<double> myres((la[0].lm_).size());
-    DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
 
     // initialise the vectors
     // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the
@@ -382,8 +376,8 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         {
           nln_stifffint_tsi(
             la,  // location array
+            discretization,// discr
             mydisp,  // current displacements
-            myres,  // current residual displ
             mytempnp, // current temperature
             matptr, // element stiffness matrix
             &elevec1,  // element internal force vector
@@ -397,7 +391,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
           nln_stifffint_tsi_fbar(
             la,  // location array
             mydisp,  // current displacements
-            myres,  // current residual displ
             mytempnp, // current temperature
             matptr, // element stiffness matrix
             &elevec1,  // element internal force vector
@@ -415,7 +408,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         lin_fint_tsi(
           la,
           mydisp,
-          myres,
           mytempnp,
           &elevec1,
           NULL,
@@ -441,17 +433,13 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     // need current displacement and residual/incremental displacements
     Teuchos::RCP<const Epetra_Vector> disp
       = discretization.GetState(0,"displacement");
-    Teuchos::RCP<const Epetra_Vector> res
-      = discretization.GetState(0,"residual displacement");
 
-    if ( (disp == Teuchos::null) or (res == Teuchos::null) )
-      dserror("Cannot get state vectors 'displacement' and/or residual");
+    if (disp == Teuchos::null)
+      dserror("Cannot get state vectors 'displacement'");
 
     // build the location vector only for the structure field
     std::vector<double> mydisp((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
-    std::vector<double> myres((la[0].lm_).size());
-    DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
 
     // initialise the vectors
     // Evaluate() is called the first time in StructureBaseAlgorithm: at this
@@ -494,8 +482,8 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         {
           nln_stifffint_tsi(
             la,  // location array
+            discretization, // discr
             mydisp,  // current displacements
-            myres,  // current residual displ
             mytempnp, // current temperature
             &elemat1, // element stiffness matrix
             &elevec1,  // element internal force vector
@@ -509,7 +497,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
           nln_stifffint_tsi_fbar(
             la,  // location array
             mydisp,  // current displacements
-            myres,  // current residual displ
             mytempnp, // current temperature
             &elemat1, // element stiffness matrix
             &elevec1,  // element internal force vector
@@ -530,7 +517,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
         lin_fint_tsi(
           la,
           mydisp,
-          myres,
           mytempnp,
           &elevec1,
           NULL,
@@ -554,15 +540,11 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     {
       Teuchos::RCP<const Epetra_Vector> disp
         = discretization.GetState(0,"displacement");
-      Teuchos::RCP<const Epetra_Vector> res
-        = discretization.GetState(0,"residual displacement");
-      if ( (disp == Teuchos::null) or (res == Teuchos::null) )
+      if (disp == Teuchos::null)
         dserror("Cannot get state vectors 'displacement'");
 
       std::vector<double> mydisp((la[0].lm_).size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
-      std::vector<double> myres((la[0].lm_).size());
-      DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
 
       Teuchos::RCP<std::vector<char> > couplstressdata
         = params.get<Teuchos::RCP<std::vector<char> > >("couplstress", Teuchos::null);
@@ -620,8 +602,8 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
             // calculate the thermal stress
             nln_stifffint_tsi(
               la,  // location array
+              discretization, //discr
               mydisp,  // current displacements
-              myres,  // current residual displ
               mytempnp, // current temperature
               NULL, // element stiffness matrix
               NULL,  // element internal force vector
@@ -635,7 +617,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
             nln_stifffint_tsi_fbar(
               la,  // location array
               mydisp,  // current displacements
-              myres,  // current residual displ
               mytempnp, // current temperature
               NULL, // element stiffness matrix
               NULL,  // element internal force vector
@@ -661,7 +642,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
           lin_fint_tsi(
             la,
             mydisp,
-            myres,
             mytempnp,
             NULL,
             &couplstress,
@@ -773,7 +753,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       if (!eleFBAR)
       {
         // calculate the mechanical-thermal sub matrix k_dT of K_TSI
-        nln_kdT_tsi(la,mydisp,mytempnp,&stiffmatrix_kdT,params);
+        nln_kdT_tsi(la,discretization,mydisp,mytempnp,&stiffmatrix_kdT,params);
       }  // so3_ele
       else  // Hex8Fbar
       {
@@ -824,7 +804,6 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
   DRT::Element::LocationArray& la,  // location array
   std::vector<double>& disp,  // current displacements
-  std::vector<double>& residual,  // current residual displ
   std::vector<double>& temp, // current temperature
   LINALG::Matrix<numdofperelement_,1>* force,  // element internal force vector
   LINALG::Matrix<numgpt_post,numstr_>* elestress,  // stresses at GP
@@ -1150,8 +1129,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
   DRT::Element::LocationArray& la,  // location array
+  DRT::Discretization&   discretization, ///< discretisation to extract knot vector
   std::vector<double>& disp,  // current displacements
-  std::vector<double>& residual,  // current residual displ
   std::vector<double>& temp, // current temperature
   LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
   LINALG::Matrix<numdofperelement_,1>* force,  // element internal force vector
@@ -1190,14 +1169,49 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
   LINALG::Matrix<nen_,1> shapefunct(false);
   LINALG::Matrix<nsd_,nen_> deriv(false);
 
+  // --------------------------------------------------
+  // Initialisation of nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(3);
+  LINALG::Matrix<27,1> weights;
+
+  // get nurbs specific infos
+  if (so3_ele::Shape()==DRT::Element::nurbs27)
+  {
+    // cast to nurbs discretization
+    DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+    if(nurbsdis==NULL)
+      dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+
+    // zero-sized element
+    if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id()))
+      return;
+
+    // get weights from cp's
+    for (int inode=0; inode<nen_; inode++)
+      weights(inode) = dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode])->W();
+  }
+
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
   for (int gp=0; gp<numgpt_; ++gp)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+    if (so3_ele::Shape()!=DRT::Element::nurbs27)
+    {
+      DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
+      DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+    }
+    // evaluate shape functions NURBS-style
+    else
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+        (shapefunct            ,
+         deriv                 ,
+         xsi_[gp]              ,
+         myknots               ,
+         weights               ,
+         DRT::Element::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1389,6 +1403,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
   DRT::Element::LocationArray& la,
+  DRT::Discretization&   discretization, ///< discretisation to extract knot vector
   std::vector<double>& disp,  // current displacement
   std::vector<double>& temp, // current temperature
   LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT,  // (nsd_*nen_ x nen_)
@@ -1439,14 +1454,49 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
   // build deformation gradient w.r.t. to material configuration
   LINALG::Matrix<nsd_,nsd_> defgrd(false);
 
+  // --------------------------------------------------
+  // Initialisation of nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(3);
+  LINALG::Matrix<27,1> weights;
+
+  // get nurbs specific infos
+  if (so3_ele::Shape()==DRT::Element::nurbs27)
+  {
+    // cast to nurbs discretization
+    DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+    if(nurbsdis==NULL)
+      dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+
+    // zero-sized element
+    if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id()))
+      return;
+
+    // get weights from cp's
+    for (int inode=0; inode<nen_; inode++)
+      weights(inode) = dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode])->W();
+  }
+
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
   for (int gp=0; gp<numgpt_; ++gp)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+    if (so3_ele::Shape()!=DRT::Element::nurbs27)
+    {
+      DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
+      DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+    }
+    // evaluate shape functions NURBS-style
+    else
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+        (shapefunct            ,
+         deriv                 ,
+         xsi_[gp]              ,
+         myknots               ,
+         weights               ,
+         DRT::Element::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1589,7 +1639,6 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi_fbar(
   DRT::Element::LocationArray& la,  // location array
   std::vector<double>& disp,  // current displacements
-  std::vector<double>& residual,  // current residual displ
   std::vector<double>& temp, // current temperature
   LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
   LINALG::Matrix<numdofperelement_,1>* force,  // element internal force vector
@@ -2464,7 +2513,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::GLtoEA(
  | is called once in Initialize() in so3_thermo_eletypes.cpp            |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::InitJacobianMapping()
+void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::InitJacobianMapping(DRT::Discretization& dis)
 {
   // get the material coordinates
   LINALG::Matrix<nen_,nsd_> xrefe;
@@ -2482,6 +2531,30 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::InitJacobianMapping()
 
   // initialise the derivatives of the shape functions
   LINALG::Matrix<nsd_,nen_> deriv;
+  LINALG::Matrix<nen_,1>    funct;
+
+  // --------------------------------------------------
+  // Initialisation of nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(3);
+  LINALG::Matrix<27,1> weights;
+
+  // get nurbs specific infos
+  if (so3_ele::Shape()==DRT::Element::nurbs27)
+  {
+    // cast to nurbs discretization
+    DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+    if(nurbsdis==NULL)
+      dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+
+    // zero-sized element
+    if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id()))
+      return;
+
+    // get weights from cp's
+    for (int inode=0; inode<nen_; inode++)
+      weights(inode) = dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode])->W();
+  }
 
   // coordinates of the current integration point (xsi_)
   for (int gp=0; gp<numgpt_; ++gp)
@@ -2493,7 +2566,16 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::InitJacobianMapping()
       xsi_[gp](idim) = gpcoord[idim];
     }
     // first derivatives of shape functions (deriv)
-    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+    if (so3_ele::Shape()!=DRT::Element::nurbs27)
+      DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+    else
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+        (funct                 ,
+         deriv                 ,
+         xsi_[gp]              ,
+         myknots               ,
+         weights               ,
+         DRT::Element::nurbs27);
 
     // compute Jacobian matrix and determinant
     // actually compute its transpose....

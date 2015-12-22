@@ -3,10 +3,10 @@
 \file so3_thermo.H
 
 <pre>
-   Maintainer: Caroline Danowski
-               danowski@lnm.mw.tum.de
+   Maintainer: Alexander Seitz
+               seitz@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15253
+               089 - 289-15271
 </pre>
 */
 
@@ -52,6 +52,7 @@ namespace ELEMENTS
     friend class So_tet10ThermoType;
     friend class So_hex27ThermoType;
     friend class So_hex20ThermoType;
+    friend class So_nurbs27ThermoType;
 
   public:
 
@@ -202,7 +203,7 @@ namespace ELEMENTS
 
     //! init the inverse of the jacobian and its determinant in the material
     //! configuration
-    virtual void InitJacobianMapping();
+    virtual void InitJacobianMapping(DRT::Discretization& dis);
 
     //@}
 
@@ -272,7 +273,6 @@ namespace ELEMENTS
     virtual void lin_fint_tsi(
       DRT::Element::LocationArray& la,  //!< location array
       std::vector<double>& disp,  //!< current displacements
-      std::vector<double>& residual,  //!< current residual displ
       std::vector<double>& temp, //!< current temperature
       LINALG::Matrix<numdofperelement_,1>* force,  //!< element internal force vector
       LINALG::Matrix<numgpt_post,numstr_>* elestress,  //!< stresses at GP
@@ -292,8 +292,8 @@ namespace ELEMENTS
     //! Calculate nonlinear stiffness and mass matrix with temperature fraction
     virtual void nln_stifffint_tsi(
       DRT::Element::LocationArray& la,  //!< location array
+      DRT::Discretization&   discretization, ///< discretisation to extract knot vector
       std::vector<double>& disp,  //!< current displacements
-      std::vector<double>& residual,  //!< current residual displ
       std::vector<double>& temp, //!< current temperature
       LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
       LINALG::Matrix<numdofperelement_,1>* force,  //!< element internal force vector
@@ -305,6 +305,7 @@ namespace ELEMENTS
     //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
     virtual void nln_kdT_tsi(
       DRT::Element::LocationArray& la,
+      DRT::Discretization&   discretization, ///< discretisation to extract knot vector
       std::vector<double>& disp,  //!< (i): current displacement
       std::vector<double>& temp, //!< current temperature
       LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT,  //!< (o): mechanical thermal stiffness term at current gp
@@ -376,7 +377,6 @@ namespace ELEMENTS
     virtual void nln_stifffint_tsi_fbar(
       DRT::Element::LocationArray& la,  //!< location array
       std::vector<double>& disp,  //!< current displacements
-      std::vector<double>& residual,  //!< current residual displ
       std::vector<double>& temp, //!< current temperature
       LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
       LINALG::Matrix<numdofperelement_,1>* force,  //!< element internal force vector

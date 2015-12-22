@@ -473,6 +473,10 @@ void DatFileReader::ReadKnots(
   {
     field="TRANSPORT";
   }
+  else if(name=="thermo")
+  {
+    field="THERMO";
+  }
   else
   {
     dserror("Unknown discretization name for knotvector input\n");

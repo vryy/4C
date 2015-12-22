@@ -2,10 +2,10 @@
 \file so3_thermo_eletypes.cpp
 
 <pre>
-   Maintainer: Caroline Danowski
-               danowski@lnm.mw.tum.de
+   Maintainer: Alexander Seitz
+               seitz@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15253
+               089 - 289-15271
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -135,7 +135,7 @@ int DRT::ELEMENTS::So_hex8ThermoType::Initialize(DRT::Discretization& dis)
     // initialise all quantities
     actele->So_hex8::InitJacobianMapping();
     // as an alternative we can call: So_hex8Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>::InitJacobianMapping();
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>::InitJacobianMapping(dis);
   }
 
   return 0;
@@ -264,7 +264,7 @@ int DRT::ELEMENTS::So_hex8fbarThermoType::Initialize(DRT::Discretization& dis)
     // initialise all quantities
     actele->So_hex8fbar::InitJacobianMapping();
     // as an alternative we can call: So_hex8fbarType::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>::InitJacobianMapping();
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>::InitJacobianMapping(dis);
   }
 
   return 0;
@@ -387,7 +387,7 @@ int DRT::ELEMENTS::So_tet4ThermoType::Initialize(DRT::Discretization& dis)
 
     actele->So_tet4::InitJacobianMapping();
     // as an alternative we can call: So_tet4Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>::InitJacobianMapping();
+    actele->So3_Thermo<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>::InitJacobianMapping(dis);
   }
 
   return 0;
@@ -509,7 +509,7 @@ int DRT::ELEMENTS::So_tet10ThermoType::Initialize(DRT::Discretization& dis)
 
     actele->So_tet10::InitJacobianMapping();
     // as an alternative we can call: So_tet4Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>::InitJacobianMapping();
+    actele->So3_Thermo<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>::InitJacobianMapping(dis);
   }
 
   return 0;
@@ -632,7 +632,7 @@ int DRT::ELEMENTS::So_hex27ThermoType::Initialize(DRT::Discretization& dis)
 
     actele->So_hex27::InitJacobianMapping();
     // as an alternative we can call: So_hex27Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>::InitJacobianMapping();
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>::InitJacobianMapping(dis);
   }
 
   return 0;
@@ -755,7 +755,7 @@ int DRT::ELEMENTS::So_hex20ThermoType::Initialize(DRT::Discretization& dis)
 
     actele->So_hex20::InitJacobianMapping();
     // as an alternative we can call: So_hex27Type::Initialize(dis);
-    actele->So3_Thermo<DRT::ELEMENTS::So_hex20, DRT::Element::hex20>::InitJacobianMapping();
+    actele->So3_Thermo<DRT::ELEMENTS::So_hex20, DRT::Element::hex20>::InitJacobianMapping(dis);
   }
 
   return 0;
@@ -764,5 +764,128 @@ int DRT::ELEMENTS::So_hex20ThermoType::Initialize(DRT::Discretization& dis)
  | ENDE HEX20 Element
  *----------------------------------------------------------------------------*/
 
+
+/*----------------------------------------------------------------------*
+ |  nurbs 27 Element
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ | build an instance of thermo type                         seitz 12/15 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::So_nurbs27ThermoType DRT::ELEMENTS::So_nurbs27ThermoType::instance_;
+
+DRT::ELEMENTS::So_nurbs27ThermoType& DRT::ELEMENTS::So_nurbs27ThermoType::Instance()
+{
+  return instance_;
+}
+
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                     seitz 12/15 |
+ | is called in ElementRegisterType                                     |
+ *----------------------------------------------------------------------*/
+DRT::ParObject* DRT::ELEMENTS::So_nurbs27ThermoType::Create(
+  const std::vector<char> & data
+  )
+{
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>* object
+    = new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>(-1,-1);
+  object->Unpack(data);
+  return object;
+}  // Create()
+
+
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                     seitz 12/15 |
+ | is called from ParObjectFactory                                      |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27ThermoType::Create(
+  const std::string eletype,
+  const std::string eledistype,
+  const int id,
+  const int owner
+  )
+{
+  if (eletype=="SONURBS27THERMO")
+  {
+    Teuchos::RCP<DRT::Element> ele
+      = Teuchos::rcp(
+          new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>(
+            id,
+            owner
+            )
+          );
+    return ele;
+  }
+  return Teuchos::null;
+}  // Create()
+
+
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                     seitz 12/15 |
+ | virtual method of ElementType                                        |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27ThermoType::Create(
+  const int id,
+  const int owner
+  )
+{
+  Teuchos::RCP<DRT::Element> ele
+    = Teuchos::rcp(
+        new DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>(
+              id,
+              owner
+              )
+        );
+  return ele;
+}  // Create ()
+
+
+/*----------------------------------------------------------------------*
+ | setup the element definition (public)                    seitz 12/15 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_nurbs27ThermoType::SetupElementDefinition(
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions
+  )
+{
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >  definitions_nurbs27;
+  NURBS::So_nurbs27Type::SetupElementDefinition(definitions_nurbs27);
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs_nurbs27
+    = definitions_nurbs27["SONURBS27"];
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs
+    = definitions["SONURBS27THERMO"];
+
+  defs["NURBS27"]=defs_nurbs27["NURBS27"];
+
+}  // SetupElementDefinition()
+
+
+/*----------------------------------------------------------------------*
+ | initialise the element (public)                          seitz 12/15 |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_nurbs27ThermoType::Initialize(DRT::Discretization& dis)
+{
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->ElementType() != *this) continue;
+
+    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>* actele
+      = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27> * >(
+        dis.lColElement(i)
+        );
+    if (!actele)
+      dserror("cast to So_hex20_thermo* failed");
+
+    actele->So_nurbs27::InitJacobianMapping(dis);
+    // as an alternative we can call: So_hex27Type::Initialize(dis);
+    actele->So3_Thermo<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>::InitJacobianMapping(dis);
+  }
+
+  return 0;
+}  // Initialize()
+/*----------------------------------------------------------------------------*
+ | END nurbs27 Element
+ *----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/

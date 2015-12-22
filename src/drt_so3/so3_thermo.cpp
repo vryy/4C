@@ -4,10 +4,10 @@
 \brief
 
 <pre>
-   Maintainer: Caroline Danowski
-               danowski@lnm.mw.tum.de
+   Maintainer: Alexander Seitz
+               seitz@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15253
+               089 - 289-15271
 </pre>
 */
 
@@ -200,6 +200,9 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::UniqueParObjectId() const
   case DRT::Element::hex20:
     return So_hex20ThermoType::Instance().UniqueParObjectId();
     break;
+  case DRT::Element::nurbs27:
+    return So_nurbs27ThermoType::Instance().UniqueParObjectId();
+    break;
   default:
     dserror("unknown element type!");
     break;
@@ -241,6 +244,9 @@ DRT::ElementType& DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::ElementType() cons
     break;
   case DRT::Element::hex20:
     return So_hex20ThermoType::Instance();
+    break;
+  case DRT::Element::nurbs27:
+    return So_nurbs27ThermoType::Instance();
     break;
   default:
     dserror("unknown element type!");

@@ -1402,8 +1402,16 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_tsi:
   case prb_tfsi_aero:
   {
-    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-    thermdis  = Teuchos::rcp(new DRT::Discretization("thermo"   ,reader.Comm()));
+    if(distype == "Nurbs")
+    {
+      structdis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
+      thermdis  = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("thermo"   ,reader.Comm()));
+    }
+    else
+    {
+      structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+      thermdis  = Teuchos::rcp(new DRT::Discretization("thermo"   ,reader.Comm()));
+    }
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));

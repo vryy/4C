@@ -196,6 +196,12 @@ namespace ELEMENTS
       const int eleid  //!< the element id
       );
 
+    //! prepare the evaluation of NURBS shape functions
+    virtual void PrepareNurbsEval(
+        DRT::Element* ele,                   //!< the element whose matrix is calculated
+        DRT::Discretization& discretization  //!< current discretisation
+      );
+
     //! integral of shape functions over the element
     void IntegrateShapeFunctions(
       const DRT::Element* ele,  //!< current element
@@ -422,6 +428,11 @@ namespace ELEMENTS
 
     //! flag plastic material is used
     bool plasticmat_;
+
+    //! nurbs specific: element knots
+    std::vector<Epetra_SerialDenseVector> myknots_;
+    //! nurbs specific: control point weights
+    LINALG::Matrix<nen_,1> weights_;
 
     //@}
 

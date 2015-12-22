@@ -254,6 +254,8 @@ DRT::ELEMENTS::Thermo::Thermo(const DRT::ELEMENTS::Thermo& old)
   distype_(old.distype_),
   data_(old.data_)
 {
+  if (old.Shape()==DRT::Element::nurbs27)
+    SetNurbsElement()=true;
   return;
 }  // copy-ctor
 
@@ -320,6 +322,8 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
   kintype_ = static_cast<INPAR::STR::KinemType>( ExtractInt(position,data) );
   // distype
   distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
+  if (distype_==DRT::Element::nurbs27)
+    SetNurbsElement()=true;
 
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
@@ -538,7 +542,12 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::ThermoBoundary::Shape() const
   case 4: return quad4;
   case 6: return tri6;
   case 8: return quad8;
-  case 9: return quad9;
+  case 9:
+    if (ParentElement()->Shape() == hex27)
+      return quad9;
+    else if (ParentElement()->Shape() == nurbs27)
+      return nurbs9;
+    break;
   default:
     dserror("unexpected number of nodes %d", NumNode());
   }

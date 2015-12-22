@@ -330,7 +330,9 @@ protected:
     calc_stc_matrix           , //! calculate scaled director matrix for thin shell-like structures
     calc_stc_matrix_inverse   , //! calculate inverse scaled director matrix for thin shell-like structures
     calc_struct_reset_istep   ,
-    calc_struct_energy
+    calc_struct_energy,
+    calc_struct_stifftemp,     //!< TSI specific: mechanical-thermal stiffness
+    calc_struct_nlnstifflmass
   };
 
   //! container containing all kind of solid3 thisandthat
@@ -379,6 +381,9 @@ protected:
       DRT::Discretization&   discretization,
       std::vector<double>&   disp,
       Teuchos::ParameterList&         params);
+
+  //! Lump mass matrix (bborn 07/08)
+  void lumpmass(LINALG::Matrix<NUMDOF_SONURBS27,NUMDOF_SONURBS27>* emass);
 
 }; // class So_nurbs27
 

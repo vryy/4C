@@ -131,6 +131,7 @@ namespace ELEMENTS
       case DRT::Element::hex8:
       case DRT::Element::hex20:
       case DRT::Element::hex27:
+      case DRT::Element::nurbs27:
         return 6; break;
       case DRT::Element::tet4:
       case DRT::Element::tet10:

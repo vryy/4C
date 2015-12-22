@@ -30,6 +30,8 @@ Maintainer: Caroline Danowski
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_geometry/position_array.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
 
 /*----------------------------------------------------------------------*
@@ -65,6 +67,13 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
     if (cp9 == NULL)
       cp9 = new TemperBoundaryImpl<DRT::Element::quad9>(numdofpernode);
     return cp9;
+  }
+  case DRT::Element::nurbs9:
+  {
+    static TemperBoundaryImpl<DRT::Element::nurbs9>* cpn9;
+    if (cpn9 == NULL)
+      cpn9 = new TemperBoundaryImpl<DRT::Element::nurbs9>(numdofpernode);
+    return cpn9;
   }
   case DRT::Element::tri3:
   {
@@ -116,7 +125,8 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(
   deriv_(true),
   derxy_(true),
   normal_(true),
-  fac_(0.0)
+  fac_(0.0),
+  normalfac_(1.0)
 {
   return;
 }  // TemperBoundaryImpl()
@@ -143,6 +153,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
   // ( action=="calc_thermo_fextconvection_coupltang" )
   // ( action=="calc_normal_vectors" )
   // ( action=="ba_integrate_shape_functions" )
+
+  // prepare nurbs
+  PrepareNurbsEval(ele,discretization);
 
   // First, do the things that are needed for all actions:
   // get the material (of the parent element)
@@ -604,6 +617,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
   Epetra_SerialDenseVector& elevec1
   )
 {
+  // prepare nurbs
+  PrepareNurbsEval(ele,discretization);
+
   // get node coordinates (we have a nsd_+1 dimensional domain!)
   GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
@@ -1007,8 +1023,19 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
 
   // shape functions and their first derivatives
   // deriv_ == deriv(LENA), dxydrs (LENA)
-  DRT::UTILS::shape_function<distype>(xsi_,funct_);
-  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);  // nsd_ x nen_
+  if (myknots_.size()==0)
+  {
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);  // nsd_ x nen_
+  }
+  else
+    DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+      (funct_                ,
+       deriv_                ,
+       xsi_                  ,
+       myknots_              ,
+       weights_              ,
+       distype);
 
   // the metric tensor and the area of an infinitesimal surface/line element
   // initialise the determinant: drs = srqt( det(metrictensor_) )
@@ -1020,7 +1047,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
     drs);
 
   // set the integration factor = GP_weight * sqrt ( det(metrictensor_) )
-  fac_ = intpoints.IP().qwgt[iquad] * drs;
+  fac_ = intpoints.IP().qwgt[iquad] * drs*normalfac_;
 
   // say goodbye
   return;
@@ -1201,6 +1228,39 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
   return;
 }
 
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::TemperBoundaryImpl<distype>::PrepareNurbsEval(
+    DRT::Element* ele,                   // the element whose matrix is calculated
+    DRT::Discretization& discretization  // current discretisation
+  )
+{
+ if (ele->Shape()!=DRT::Element::nurbs9)
+  {
+    myknots_.resize(0);
+    return;
+  }
 
+  // get nurbs specific infos
+    // cast to nurbs discretization
+    DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+    if(nurbsdis==NULL)
+      dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+
+    std::vector<Epetra_SerialDenseVector> parentknots(3);
+    myknots_.resize(2);
+
+    DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+    (*nurbsdis).GetKnotVector()->GetBoundaryEleAndParentKnots(
+        parentknots,
+        myknots_,
+        normalfac_,
+        faceele->ParentMasterElement()->Id(),
+        faceele->FaceMasterNumber());
+
+    // get weights from cp's
+    for (int inode=0; inode<nen_; inode++)
+      weights_(inode) = dynamic_cast<DRT::NURBS::ControlPoint* > (ele->Nodes()[inode])->W();
+}
 /*----------------------------------------------------------------------*/
 #endif // D_THERMO

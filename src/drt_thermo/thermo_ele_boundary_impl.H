@@ -160,6 +160,12 @@ namespace ELEMENTS
 
   private:
 
+    //! prepare the evaluation of NURBS shape functions
+    virtual void PrepareNurbsEval(
+        DRT::Element* ele,                   //!< the element whose matrix is calculated
+        DRT::Discretization& discretization  //!< current discretisation
+      );
+
     //! evaluate shape functions and derivatives at int. point
     void EvalShapeFuncAndIntFac(
       const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
@@ -250,6 +256,13 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,nsd_>  metrictensor_;
     //! integration factor for current GP: fac = GaussWeight * drs
     double fac_;
+
+    //! nurbs specific: element knots
+    std::vector<Epetra_SerialDenseVector> myknots_;
+    //! nurbs specific: control point weights
+    LINALG::Matrix<nen_,1> weights_;
+    // normal fac
+    double normalfac_;
 
   }; // TemperBoundaryImpl
 

@@ -62,6 +62,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
   else if (action=="calc_stc_matrix_inverse"   ) act = So_nurbs27::calc_stc_matrix_inverse   ;
   else if (action=="calc_struct_reset_istep"   ) act = So_nurbs27::calc_struct_reset_istep   ;
   else if (action=="calc_struct_energy"        ) act = So_nurbs27::calc_struct_energy        ;
+  else if (action=="calc_struct_nlnstifflmass" ) act = So_nurbs27::calc_struct_nlnstifflmass ;
   else dserror("Unknown type of action '%s' for So_nurbs27",action.c_str());
   // what should the element do
   switch(act)
@@ -136,6 +137,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
 
     // nonlinear stiffness, internal force vector, and consistent mass matrix
     case calc_struct_nlnstiffmass:
+    case calc_struct_nlnstifflmass:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -154,6 +156,8 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
           &elemat2      ,
           &elevec1      ,
           params        );
+
+      if (act==calc_struct_nlnstifflmass) lumpmass(&elemat2);
     }
     break;
 
@@ -1304,3 +1308,24 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
   return energy;
 }
 
+/*----------------------------------------------------------------------*
+ |  lump mass matrix (private)                               bborn 07/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::NURBS::So_nurbs27::lumpmass(LINALG::Matrix<NUMDOF_SONURBS27,NUMDOF_SONURBS27>* emass)
+{
+  // lump mass matrix
+  if (emass != NULL)
+  {
+    // we assume #elemat2 is a square matrix
+    for (unsigned int c=0; c<(*emass).N(); ++c)  // parse columns
+    {
+      double d = 0.0;
+      for (unsigned int r=0; r<(*emass).M(); ++r)  // parse rows
+      {
+        d += (*emass)(r,c);  // accumulate row entries
+        (*emass)(r,c) = 0.0;
+      }
+      (*emass)(c,c) = d;  // apply sum of row entries on diagonal
+    }
+  }
+}

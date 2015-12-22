@@ -2,10 +2,10 @@
 \file so3_thermo_eletypes.H
 
 <pre>
-   Maintainer: Caroline Danowski
-               danowski@lnm.mw.tum.de
+   Maintainer: Alexander Seitz
+               seitz@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
-               089 - 289-15253
+               089 - 289-15271
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "so_hex20.H"
 #include "so_tet4.H"
 #include "so_tet10.H"
+#include "so_nurbs27.H"
 
 namespace DRT
 {
@@ -229,6 +230,40 @@ namespace ELEMENTS
   private:
 
     static So_hex20ThermoType instance_;
+
+  };  // class So_hex20ThermoType
+
+  /*----------------------------------------------------------------------*
+   *  NURBS 27 Element
+   *----------------------------------------------------------------------*/
+  class So_nurbs27ThermoType : public NURBS::So_nurbs27Type
+  {
+  public:
+
+    std::string Name() const { return "So_nurbs27ThermoType"; }
+
+    static So_nurbs27ThermoType & Instance();
+
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+    virtual Teuchos::RCP<DRT::Element> Create(
+      const std::string eletype,
+      const std::string eledistype,
+      const int id,
+      const int owner
+      );
+
+    virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+    virtual int Initialize(DRT::Discretization& dis);
+
+    virtual void SetupElementDefinition(
+      std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions
+      );
+
+  private:
+
+    static So_nurbs27ThermoType instance_;
 
   };  // class So_hex20ThermoType
 
