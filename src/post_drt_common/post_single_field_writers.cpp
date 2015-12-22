@@ -115,7 +115,7 @@ void StructureFilter::WriteAllResults(PostField* field)
 
   // Write element and node owners
   WriteElementResults(field);
-  WriteNodeResults(field);
+//  WriteNod eResults(field); // Uncomment to visualize owner proc on a nodal basis
 
   //additional output for cell migration simulation
   writer_->WriteResult("cell_penalty_traction", "penalty_traction", dofbased, field->problem()->num_dim());
@@ -248,7 +248,6 @@ void XFluidFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("fsvelocity", "fsvelocity", dofbased, field->problem()->num_dim());
 
   WriteElementResults(field);
-  WriteNodeResults(field);
 }
 
 
@@ -264,7 +263,6 @@ void InterfaceFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("iaccn", "iaccn", dofbased, field->problem()->num_dim());
   writer_->WriteResult("itrueresnp", "itrueresnp", dofbased, field->problem()->num_dim());
   WriteElementResults(field);
-  WriteNodeResults(field);
 }
 
 
@@ -274,7 +272,6 @@ void AleFilter::WriteAllResults(PostField* field)
 {
   writer_->WriteResult("dispnp", "displacement", dofbased, field->problem()->num_dim());
   WriteElementResults(field);
-  WriteNodeResults(field);
 }
 
 
@@ -344,9 +341,8 @@ void ScaTraFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("k_10","k_10",elementbased,1);
   writer_->WriteResult("concentrationsum","concentrationsum",elementbased,1);
 
-  // write element and node results (e.g. owner)
+  // write element results (e.g. element owner)
   WriteElementResults(field);
-  WriteNodeResults(field);
 }
 
 
@@ -391,9 +387,8 @@ void ElchFilter::WriteAllResults(PostField* field)
   // write magnetic field (always 3D)
   writer_->WriteResult("magnetic_field", "B", nodebased, 3);
 
-  // write element and node results (e.g. owner)
+  // write element results (e.g. element owner)
   WriteElementResults(field);
-  WriteNodeResults(field);
 }
 
 /*----------------------------------------------------------------------*/
@@ -409,9 +404,8 @@ void ThermoFilter::WriteAllResults(PostField* field)
   // write temperature rate
   //writer_->WriteResult("rate", "rate", dofbased, numdofpernode);
 
-  // write element and results (e.g. owner)
+  // write element results (e.g. element owner)
   WriteElementResults(field);
-  WriteNodeResults(field);
 
   if (heatfluxtype_ != "none")
   {
