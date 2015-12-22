@@ -51,23 +51,24 @@ namespace UTILS
   void ExtractMyValues(const Epetra_Vector& global, std::vector<matrix>& local, const std::vector<int>& lm)
   {
     // safety check
-    if (local[0].N() != 1 or local.size()*(unsigned)local[0].M() != lm.size())
+    if(local[0].N() != 1 or local.size()*(unsigned)local[0].M() != lm.size())
       dserror("Received matrix vector of wrong size!");
 
     // loop over all nodes of current element
-    for (int inode=0; inode<(int)local[0].M(); ++inode)
+    for(unsigned inode=0; inode<local[0].M(); ++inode)
     {
       // loop over all dofs of current node
-      for (unsigned idof=0; idof<local.size(); ++idof)
+      for(unsigned idof=0; idof<local.size(); ++idof)
       {
         // extract local ID of current dof
         const int lid = global.Map().LID(lm[inode*local.size()+idof]);
 
         // safety check
-        if (lid<0)
+        if(lid < 0)
           dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),lm[inode*local.size()+idof]);
 
-        // store current dof in local matrix vector
+        // store current dof in local matrix vector consisting of ndof matrices of size nnode x 1, where nnode
+        // denotes the number of element nodes and ndof denotes the number of degrees of freedom per element node.
         local[idof](inode,0) = global[lid];
       }
     }
@@ -79,24 +80,25 @@ namespace UTILS
   void ExtractMyValues(const Epetra_Vector& global, matrix& local, const std::vector<int>& lm)
   {
     // safety check
-    if ((unsigned)(local.M()*local.N()) != lm.size())
+    if((unsigned)(local.M()*local.N()) != lm.size())
       dserror("Received matrix of wrong size!");
 
-    // loop over all nodes of current element
-    for (int inode=0; inode<(int)local.N(); ++inode)
+    // loop over all columns of local matrix
+    for(unsigned icol=0; icol<local.N(); ++icol)
     {
-      // loop over all dofs of current node
-      for (int idof=0; idof<(int)local.M(); ++idof)
+      // loop over all rows of local matrix
+      for(unsigned irow=0; irow<local.M(); ++irow)
       {
         // extract local ID of current dof
-        const int lid = global.Map().LID(lm[inode*local.M()+idof]);
+        const unsigned index = icol*local.M()+irow;
+        const int lid = global.Map().LID(lm[index]);
 
         // safety check
-        if (lid<0)
-          dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),lm[inode*local.M()+idof]);
+        if(lid < 0)
+          dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),lm[index]);
 
-        // store current dof in local matrix
-        local(idof,inode) = global[lid];
+        // store current dof in local matrix, which is filled column-wise with the dofs listed in the lm vector
+        local(irow,icol) = global[lid];
       }
     }
 

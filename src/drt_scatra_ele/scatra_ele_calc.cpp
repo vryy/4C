@@ -287,10 +287,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
       lmpre[inode] = la[ndsvel].lm_[inode*numveldofpernode+nsd_];
 
     // extract local values of pressure field from global state vector
-    std::vector<double> mypre(lmpre.size(),0.);
-    DRT::UTILS::ExtractMyValues(*convel,mypre,lmpre);
-    for (int inode=0; inode<nen_; ++inode)
-      eprenp_(inode) = mypre[inode];
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*convel,eprenp_,lmpre);
   }
 
   // extract local values from the global vectors

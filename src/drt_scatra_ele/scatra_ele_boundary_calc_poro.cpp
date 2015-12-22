@@ -172,10 +172,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::EvaluateAction(
       lmpre[inode] = la[ndsvel].lm_[inode*numveldofpernode+my::nsd_];
 
     // extract local values of pressure field from global state vector
-    std::vector<double> mypre(lmpre.size(),0.);
-    DRT::UTILS::ExtractMyValues(*convel,mypre,lmpre);
-    for (int inode=0; inode<my::nen_; ++inode)
-      eprenp_(inode) = mypre[inode];
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<my::nen_,1> >(*convel,eprenp_,lmpre);
 
     // this is a hack. Check if the structure (assumed to be the dofset 1) has more DOFs than dimension. If so,
     // we assume that this is the porosity

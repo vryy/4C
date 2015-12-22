@@ -36,11 +36,7 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ExtractElementAndNodeValues(
     dserror("Cannot extract thermo state vector from discretization!");
 
   // extract local nodal temperature values from global state vector
-  const std::vector<int>& lm = la[2].lm_;
-  std::vector<double> mytempnp(lm.size());
-  DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,lm);
-  for(int inode=0; inode<nen_; ++inode)
-    etempnp_(inode) = mytempnp[inode];
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*tempnp,etempnp_,la[2].lm_);
 
   return;
 }
