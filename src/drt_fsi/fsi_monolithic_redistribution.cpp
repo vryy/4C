@@ -99,11 +99,11 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(
   std::map<int, DRT::Node*>* slavenodesPtr = NULL;
   std::map<int, DRT::Node*>* mastergnodesPtr = NULL;
 
-  if (coupling == fsi_iter_mortar_monolithicfluidsplit){
+  if (coupling == fsi_iter_mortar_monolithicfluidsplit or coupling == fsi_iter_sliding_monolithicfluidsplit){
     slavenodesPtr = &fluidnodes;
     mastergnodesPtr = &structuregnodes;
   }
-  else if (coupling == fsi_iter_mortar_monolithicstructuresplit){
+  else if (coupling == fsi_iter_mortar_monolithicstructuresplit or coupling == fsi_iter_sliding_monolithicstructuresplit){
     slavenodesPtr = &structurenodes;
     mastergnodesPtr = &fluidgnodes;
   }

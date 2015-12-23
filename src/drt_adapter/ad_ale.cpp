@@ -205,7 +205,9 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
         or coupling == fsi_iter_lung_monolithicfluidsplit
         or coupling == fsi_iter_lung_monolithicstructuresplit
         or coupling == fsi_iter_mortar_monolithicstructuresplit
-        or coupling == fsi_iter_mortar_monolithicfluidsplit)
+        or coupling == fsi_iter_mortar_monolithicfluidsplit
+        or coupling == fsi_iter_sliding_monolithicfluidsplit
+        or coupling == fsi_iter_sliding_monolithicstructuresplit)
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleFsiWrapper(ale));
     }
@@ -266,7 +268,9 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
         or coupling == fsi_iter_constr_monolithicfluidsplit
         or coupling == fsi_iter_constr_monolithicstructuresplit
         or coupling == fsi_iter_mortar_monolithicstructuresplit
-        or coupling == fsi_iter_mortar_monolithicfluidsplit)
+        or coupling == fsi_iter_mortar_monolithicfluidsplit
+        or coupling == fsi_iter_sliding_monolithicfluidsplit
+        or coupling == fsi_iter_sliding_monolithicstructuresplit)
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleFsiWrapper(ale));
     }

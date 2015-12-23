@@ -641,7 +641,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
           coupling == fsi_iter_fluidfluid_monolithicstructuresplit or
           coupling == fsi_iter_fluidfluid_monolithicfluidsplit or
           coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nonox or
-          coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nonox)
+          coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nonox or
+          coupling == fsi_iter_sliding_monolithicfluidsplit or
+          coupling == fsi_iter_sliding_monolithicstructuresplit)
       {
         dirichletcond = false;
       }

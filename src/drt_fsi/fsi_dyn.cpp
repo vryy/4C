@@ -37,6 +37,8 @@ Maintainer: Matthias Mayr
 #include "fsi_fluidfluidmonolithic_fluidsplit_nonox.H"
 #include "fsi_fluidfluidmonolithic_structuresplit.H"
 #include "fsi_fluidfluidmonolithic_fluidsplit.H"
+#include "fsi_slidingmonolithic_fluidsplit.H"
+#include "fsi_slidingmonolithic_structuresplit.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
 #include "fsi_utils.H"
@@ -401,6 +403,8 @@ void fsi_ale_drt()
     case fsi_iter_mortar_monolithicfluidsplit:
     case fsi_iter_fluidfluid_monolithicfluidsplit:
     case fsi_iter_fluidfluid_monolithicstructuresplit:
+    case fsi_iter_sliding_monolithicfluidsplit:
+    case fsi_iter_sliding_monolithicstructuresplit:
     {
       // monolithic solver settings
       const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -450,6 +454,14 @@ void fsi_ale_drt()
       else if ( coupling==fsi_iter_fluidfluid_monolithicstructuresplit)
       {
         fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(comm,fsidyn));
+      }
+      else if (coupling==fsi_iter_sliding_monolithicfluidsplit)
+      {
+        fsi = Teuchos::rcp(new FSI::SlidingMonolithicFluidSplit(comm, fsidyn));
+      }
+      else if (coupling==fsi_iter_sliding_monolithicstructuresplit)
+      {
+        fsi = Teuchos::rcp(new FSI::SlidingMonolithicStructureSplit(comm, fsidyn));
       }
       else
       {
