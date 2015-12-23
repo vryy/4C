@@ -756,7 +756,7 @@ VtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents
   bool zero_ele=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
   if (zero_ele)
     return;
-  double val[numdf];for (int i=0;i<numdf;++i)val[i]=0.;
+  double val[numdf];
   for (int n=0; n<ele->NumNode(); ++n)
   {
     LINALG::Matrix<27,1> funct;
@@ -771,6 +771,7 @@ VtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents
         weights               ,
         DRT::Element::nurbs27);
 
+    for (int i=0;i<numdf;++i)val[i]=0.;
     for (int idf=0; idf<numdf; ++idf)
     {
       Epetra_Vector* column = (*ghostedData)(idf);
