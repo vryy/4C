@@ -558,34 +558,40 @@ void PARTICLE::TimInt::ReadRestartState()
   reader.ReadVector(accn_, "acceleration");
   acc_->UpdateSteps(*accn_);
   reader.ReadVector(radius_, "radius");
-  if(variableradius_ and radius_->GlobalLength() != 0)
-  {
-    reader.ReadVector(radius0_, "radius0");
-    reader.ReadVector(radiusdot_, "radiusdot");
-  }
 
-  // initialize radius
-  for(int lid=0; lid<discret_->NumMyRowNodes(); ++lid)
+  if(radius_->GlobalLength() != 0)
   {
-    // mass-vector: m = rho * 4/3 * PI *r^3
-    (*mass_)[lid] = density_ * 4.0/3.0 * M_PI * pow((*radius_)[lid], 3.0);
-  }
-
-  if(collhandler_ != Teuchos::null)
-  {
-    // initialize inertia
+    // initialize mass
     for(int lid=0; lid<discret_->NumMyRowNodes(); ++lid)
     {
-      // inertia-vector: sphere: I = 2/5 * m * r^2
-      (*inertia_)[lid] = 0.4 * (*mass_)[lid] * pow((*radius_)[lid], 2.0);
+      // mass-vector: m = rho * 4/3 * PI *r^3
+      (*mass_)[lid] = density_ * 4.0/3.0 * M_PI * pow((*radius_)[lid], 3.0);
     }
 
-    reader.ReadVector(ang_veln_, "ang_velocity");
-    ang_vel_->UpdateSteps(*ang_veln_);
-    reader.ReadVector(ang_accn_, "ang_acceleration");
-    ang_acc_->UpdateSteps(*ang_accn_);
-    if(writeorientation_)
-      reader.ReadVector(orient_, "orientation");
+    // read in particle collision relevant data
+    if(collhandler_ != Teuchos::null)
+    {
+      // initialize inertia
+      for(int lid=0; lid<discret_->NumMyRowNodes(); ++lid)
+      {
+        // inertia-vector: sphere: I = 2/5 * m * r^2
+        (*inertia_)[lid] = 0.4 * (*mass_)[lid] * pow((*radius_)[lid], 2.0);
+      }
+
+      reader.ReadVector(ang_veln_, "ang_velocity");
+      ang_vel_->UpdateSteps(*ang_veln_);
+      reader.ReadVector(ang_accn_, "ang_acceleration");
+      ang_acc_->UpdateSteps(*ang_accn_);
+      if(writeorientation_)
+        reader.ReadVector(orient_, "orientation");
+    }
+
+    // read in variable radius relevant data
+    if(variableradius_ == true)
+    {
+      reader.ReadVector(radius0_, "radius0");
+      reader.ReadVector(radiusdot_, "radiusdot");
+    }
   }
 
   return;

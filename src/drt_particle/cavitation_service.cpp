@@ -1243,12 +1243,12 @@ bool CAVITATION::Algorithm::ComputeVelocityAtBubblePosition(
   std::vector<int> lmstride;
   targetfluidele->LocationVector(*fluiddis_,lm_f,lmowner_f,lmstride);
 
-  // set action in order to compute velocity -> state with name "veln" (and "velnp") expected inside
+  // set action in order to compute velocity -> state with name "vel" expected inside
   Teuchos::ParameterList params;
   params.set<int>("action",FLD::interpolate_velocity_to_given_point);
   params.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
 
-  // call the element specific evaluate method (elevec1 = fluid vel n, elevec2 = fluid vel np)
+  // call the element specific evaluate method (elevec1 = fluid vel)
   targetfluidele->Evaluate(params,*fluiddis_,lm_f,elemat1,elemat2,elevec1,elevec2,elevec3);
 
   return true;

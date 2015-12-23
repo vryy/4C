@@ -3922,31 +3922,16 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityToPoint(
   //   Extract velocity from global vectors and compute velocity at point
   //----------------------------------------------------------------------------
 
-  static LINALG::Matrix<nsd_,nen_> eveln;
-  if(discretization.HasState("veln"))
-  {
-    // fill the local element vector with the global values
-    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eveln, NULL,"veln");
-    velint_.Multiply(eveln,funct_);
+  static LINALG::Matrix<nsd_,nen_> evel;
+  // fill the local element vector with the global values
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evel, NULL,"vel");
+  velint_.Multiply(evel,funct_);
 
-    for (int isd=0;isd<nsd_;isd++)
-    {
-      elevec1[isd] = velint_(isd);
-    }
+  for (int isd=0;isd<nsd_;isd++)
+  {
+    elevec1[isd] = velint_(isd);
   }
 
-  static LINALG::Matrix<nsd_,nen_> evelnp;
-  if(discretization.HasState("velnp"))
-  {
-    // fill the local element vector with the global values
-    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnp, NULL,"velnp");
-    velint_.Multiply(evelnp,funct_);
-
-    for (int isd=0;isd<nsd_;isd++)
-    {
-      elevec2[isd] = velint_(isd);
-    }
-  }
 
   return 0;
 }
@@ -3994,10 +3979,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolatePressureToPoint(
 
   static LINALG::Matrix<nen_,1> epre;
 
-  if(discretization.HasState("veln"))
+  if(discretization.HasState("vel"))
   {
     // fill the local element vector with the global values
-    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &epre,"veln");
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &epre,"vel");
     elevec1[0] = funct_.Dot(epre);
   }
 
@@ -4007,7 +3992,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolatePressureToPoint(
     ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &epre,"velnp");
 
     if (elevec1.Length() != 2)
-      dserror("velnp is set, there must be a veln as well");
+      dserror("velnp is set, there must be a vel as well");
 
     elevec1[1] = funct_.Dot(epre);
   }

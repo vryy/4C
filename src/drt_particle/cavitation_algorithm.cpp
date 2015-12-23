@@ -356,7 +356,7 @@ void CAVITATION::Algorithm::InitBubblePressure()
   Teuchos::RCP<const Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(*fluid_->Veln()));
 
   // set state for pressure evaluation in fluid
-  fluiddis_->SetState("veln",veln);
+  fluiddis_->SetState("vel",veln);
 
   // get cavitation material
   int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_cavitation);
@@ -417,12 +417,11 @@ void CAVITATION::Algorithm::InitBubblePressure()
 void CAVITATION::Algorithm::InitBubbleVelFromFluidVel()
 {
   // extract variables
-  Teuchos::RCP<const Epetra_Vector> vel = Teuchos::rcp(new Epetra_Vector(*fluid_->Veln()));
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispn();
   Teuchos::RCP<Epetra_Vector> bubblevelnp = particles_->WriteAccessVelnp();
 
   // set state for velocity evaluation in fluid
-  fluiddis_->SetState("veln",vel);
+  fluiddis_->SetState("vel",fluid_->Veln());
 
   // define element matrices and vectors
   Epetra_SerialDenseMatrix elemat1;
@@ -446,7 +445,7 @@ void CAVITATION::Algorithm::InitBubbleVelFromFluidVel()
     for (int d=0; d<dim_; ++d)
       particleposition(d) = (*bubblepos)[posx+d];
 
-    // state vector of fluid has already been set earlier ("veln")
+    // state vector of fluid has already been set earlier ("vel")
     const bool fluidelefound = ComputeVelocityAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
     if(fluidelefound == false)
       dserror("no underlying fluid element for velocity computation was found for bubble %d at positions %f %f %f on proc %d",
@@ -1134,7 +1133,7 @@ void CAVITATION::Algorithm::ComputeRadius()
 
   // set fluid state vectors to interpolate pressure values
   fluiddis_->SetState("velnp",velnp);
-  fluiddis_->SetState("veln",veln);
+  fluiddis_->SetState("vel",veln);
   const double fluid_timenp = fluid_->Time()*TIMESCALE;
   const double fluid_timen = (fluid_->Time() - fluid_->Dt())*TIMESCALE;
 
@@ -1165,6 +1164,13 @@ void CAVITATION::Algorithm::ComputeRadius()
   for(int i=0; i<particledis_->NodeRowMap()->NumMyElements(); ++i)
   {
     DRT::Node* currparticle = particledis_->lRowNode(i);
+
+    if(latestinflowbubbles_.find(currparticle->Id()) != latestinflowbubbles_.end())
+    {
+      // inflow bubble which is in blending phase does not need radius adaption here
+      continue;
+    }
+
     // fill particle position
     static LINALG::Matrix<3,1> particleposition;
     std::vector<int> lm_b = particledis_->Dof(currparticle);
@@ -1629,6 +1635,21 @@ void CAVITATION::Algorithm::ParticleInflow()
 
   const double density = particles_->ParticleDensity();
 
+  double gamma = 0.0;
+  double pvapor = 0.0;
+  if(computeradiusRPbased_)
+  {
+    // get cavitation material
+    int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_cavitation);
+    if (id == -1)
+      dserror("no cavitation fluid material specified");
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::CavitationFluid* actmat = static_cast<const MAT::PAR::CavitationFluid*>(mat);
+    // get surface tension and vapor pressure
+    gamma = actmat->gamma_;
+    pvapor = actmat->p_vapor_;
+  }
+
   const double invblendingsteps = 1.0 / (double)blendingsteps_;
 
   // if bubbles should start with velocity equal to underlying fluid velocity
@@ -1638,13 +1659,13 @@ void CAVITATION::Algorithm::ParticleInflow()
   Epetra_SerialDenseVector elevec1;
   Epetra_SerialDenseVector elevec2;
   Epetra_SerialDenseVector elevec3;
+  // Reshape element vector for velocity/pressure contribution
+  elevec1.Size(dim_);
+
   if(initbubblevelfromfluid_)
   {
     // set state for velocity evaluation in fluid
-    fluiddis_->SetState("velnp",fluid_->Velnp());
-
-    // Reshape element vector for velocity contribution
-    elevec2.Size(dim_);
+    fluiddis_->SetState("vel",fluid_->Velnp());
   }
 
   for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
@@ -1672,14 +1693,14 @@ void CAVITATION::Algorithm::ParticleInflow()
         for (int d=0; d<dim_; ++d)
           particleposition(d) = currparticle->X()[d];
 
-        // state vector of fluid has already been set earlier ("velnp")
+        // state vector of fluid has already been set earlier ("vel")
         const bool fluidelefound = ComputeVelocityAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
         if(fluidelefound == false)
           dserror("no underlying fluid element for velocity computation was found for bubble %d at positions %f %f %f on proc %d",
               currparticle->Id(), particleposition(0), particleposition(1), particleposition(2), myrank_);
 
         for (int d=0; d<dim_; ++d)
-          (*veln)[lid+d] = elevec2(d);
+          (*veln)[lid+d] = elevec1(d);
       }
       else
       {
@@ -1709,11 +1730,23 @@ void CAVITATION::Algorithm::ParticleInflow()
 
       if(computeradiusRPbased_)
       {
-        // initializing as far as possible (including dummy values)
-        (*bubbleradius0)[lid] = (*particleiter)->inflow_radius_;
+        // initialization at inflow position
+        const double r0_bub = (*particleiter)->inflow_radius_;
+        (*bubbleradius0)[lid] = r0_bub;
         (*bubbleradiusdot)[lid] = 0.0;
-        (*dtsub_)[lid] = (1.0e-2*particles_->Dt());
-        (*pg0_)[lid] = -12345678.9;
+        (*dtsub_)[lid] = 1.0e-2*particles_->Dt();
+
+        LINALG::Matrix<3,1> pos(currparticle->X(), false);
+        // state vector of fluid has already been set earlier ("vel")
+        const bool fluidelefound = ComputePressureAtBubblePosition(currparticle, pos, elemat1, elemat2, elevec1, elevec2, elevec3);
+        if(fluidelefound == false)
+          dserror("no underlying fluid element for pressure computation was found for bubble %d at positions %f %f %f on proc %d",
+              currparticle->Id(), pos(0), pos(1), pos(2), myrank_);
+
+        const double pambient0 = elevec1[0];
+
+        // compute initial equilibrium bubble gas partial pressure
+        (*pg0_)[lid] = pambient0 - pvapor + 2.0*gamma/r0_bub;
       }
     }
   }
