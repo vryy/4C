@@ -54,7 +54,7 @@ PARTICLE::TimInt::TimInt
 )
 : discret_(actdis),
   myrank_(actdis->Comm().MyPID()),
-  dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
+  dbcmaps_(Teuchos::null),
   output_(output),
   printlogo_(true),
   printscreen_(ioparams.get<int>("STDOUTEVRY")),
@@ -127,13 +127,6 @@ void PARTICLE::TimInt::Init()
 {
   Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*DofRowMapView(), true);
 
-   // Map containing Dirichlet DOFs
-   {
-     Teuchos::ParameterList p;
-     p.set("total time", timen_);
-     discret_->EvaluateDirichlet(p, zeros, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
-   }
-
    // displacements D_{n}
    dis_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
    // velocities V_{n}
@@ -157,6 +150,14 @@ void PARTICLE::TimInt::Init()
 
    // set initial fields
    SetInitialFields();
+
+   // Apply Dirichlet BC and create dbc map extractor
+   {
+     dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
+     Teuchos::ParameterList p;
+     p.set("total time", (*time_)[0]);
+     discret_->EvaluateDirichlet(p, (*dis_)(0), (*vel_)(0), (*acc_)(0), Teuchos::null, dbcmaps_);
+   }
 
    // displacements D_{n+1} at t_{n+1}
    disn_ = Teuchos::rcp(new Epetra_Vector(*(*dis_)(0)));
@@ -288,10 +289,19 @@ void PARTICLE::TimInt::SetInitialFields()
 }
 
 /*----------------------------------------------------------------------*/
-/* prepare time step and apply dirichlet boundary conditions */
+/* prepare time step and apply Dirichlet boundary conditions */
 void PARTICLE::TimInt::PrepareTimeStep()
 {
-  ApplyDirichletBC(timen_, disn_, veln_, accn_, true);
+  // Update map containing Dirichlet DOFs if existing
+  if(dbcmaps_ != Teuchos::null && dbcmaps_->CondMap()->NumGlobalElements() != 0)
+  {
+    // apply Dirichlet BC and rebuild map extractor
+    ApplyDirichletBC(timen_, disn_, veln_, accn_, true);
+
+    // do particle business
+    particle_algorithm_->TransferParticles();
+    UpdateStatesAfterParticleTransfer();
+  }
 
   return;
 }
