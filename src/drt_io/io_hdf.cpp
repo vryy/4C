@@ -30,7 +30,7 @@ IO::HDFReader::HDFReader(std::string dir):
 {
   // inhibit delayed closure, throws error if file contents still in use
   H5Plist_ = H5Pcreate(H5P_FILE_ACCESS);
-  herr_t status = H5Pset_fclose_degree( H5Plist_, H5F_CLOSE_SEMI);
+  herr_t status = H5Pset_fclose_degree( H5Plist_, H5F_CLOSE_WEAK);
   if (status < 0)
     dserror("Failed to set file access list");
 }
