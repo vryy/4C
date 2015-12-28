@@ -4,10 +4,10 @@
 \brief Methods for spring and dashpot constraints / boundary conditions
 
 <pre>
-Maintainer: Marc Hirschvogel
-            hirschvogel@mhpc.mw.tum.de
-            http://www.mhpc.mw.tum.de
-            089 - 289-10363
+Maintainer: Martin Pfaller
+            pfaller@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15264
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -99,6 +99,15 @@ namespace UTILS
           Teuchos::RCP<Epetra_Vector> &gap,
           Teuchos::RCP<Epetra_MultiVector> &normals,
           Teuchos::RCP<Epetra_MultiVector> &stress);
+
+      //! select spring stiffness for tensile or compressive spring
+      double SelectStiffness(double gap)
+      {
+        if (gap > 0)
+          return stiff_tens_; // gap positive: tensile spring
+        else
+          return stiff_comp_; // gap negative: compressive spring
+      }
 
       //! output of spring offset
       void OutputPrestrOffset(

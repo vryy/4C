@@ -4,10 +4,10 @@
 \brief Methods for spring and dashpot constraints / boundary conditions:
 
 <pre>
-Maintainer: Marc Hirschvogel
-            hirschvogel@mhpc.mw.tum.de
-            http://www.mhpc.mw.tum.de
-            089 - 289-10363
+Maintainer: Martin Pfaller
+            pfaller@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15264
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -91,11 +91,10 @@ void UTILS::SpringDashpot::Evaluate(
 {
   if (disp==Teuchos::null) dserror("Cannot find displacement state in discretization");
 
-  // reset last newton step (common for all spring types)
+  // reset last Newton step (common for all spring types)
   gap_.clear();
   gapdt_.clear();
   springstress_.clear();
-
 
   // get time integrator properties
   const double gamma = parlist.get("scale_gamma",0.0);
@@ -123,46 +122,22 @@ void UTILS::SpringDashpot::Evaluate(
       // get nodal values
       const double nodalarea = area_[gid]; // nodal area
       const std::vector<double> normal = normals_[gid]; // normalized nodal normal
-      // get nodal displacement values of last time step for MULF offset
-      const std::vector<double> offsetprestr = offset_prestr_[gid];
+      const std::vector<double> offsetprestr = offset_prestr_[gid]; // get nodal displacement values of last time step for MULF offset
 
       const int numdof = actdisc_->NumDof(0,node);
       assert (numdof==3);
       std::vector<int> dofs = actdisc_->Dof(0,node);
 
-      // initialize. calculation of normals and displacements differs for each spring variant
-      std::vector<double> u(numdof); // displacement vector of condition nodes
-      std::vector<double> v(numdof); // velocity vector of condition nodes
-      if (springtype_ == refsurfnormal ||
-          springtype_ == all)
-      {
-        for (int k=0; k<numdof; ++k)
-        {
-          u[k] = (*disp)[disp->Map().LID(dofs[k])]; // extract nodal displacement
-          v[k] = (*velo)[velo->Map().LID(dofs[k])]; // extract nodal velocity
-        }
-      }
+      // initialize
+      double gap = 0.;   // displacement
+      double gapdt = 0.; // velocity
+      double springstiff = 0.; // spring stiffness
 
-      // projection of displacement/velocity onto nodal reference normal
-      if (springtype_ == refsurfnormal)
+      // calculation of normals and displacements differs for each spring variant
+      switch (springtype_)
       {
-        double gap = 0.; // projection of displacement vector to refsurfnormal (u \cdot N) = gap function
-        double gapdt = 0.; // projection of velocity vector to refsurfnormal (v \cdot N) = gap function
-        for (int k=0; k<numdof; ++k)
-        {
-          gap -= (u[k]-offsetprestr[k])*normal[k]; // project displacement on normal
-          gapdt -= v[k]*normal[k]; // project velocity on normal
-        }
-
-        // insert values into class variables for postprocessing
-        gap_.insert(std::pair<int, double>(gid, gap));
-        gapdt_.insert(std::pair<int, double>(gid, gapdt));
-      }
-
-      // assemble into residual and stiffness matrix
-      // spring dashpot acts in every surface dof direction
-      if (springtype_ == all)
-      {
+      case all: // spring dashpot acts in every surface dof direction
+        // assemble into residual and stiffness matrix
         for (int k=0; k<numdof; ++k)
         {
           if (stiff_tens_ != stiff_comp_)
@@ -170,31 +145,35 @@ void UTILS::SpringDashpot::Evaluate(
                 "when specifying 'all' as DIRECTION (no ref surface normal information is calculated for that case)! "
                 "Only possible for DIRECTION 'refsurfnormal' or 'cursurfnormal'.");
 
-          const double val  = nodalarea*(stiff_tens_*(u[k]-offset_-offsetprestr[k]) + viscosity_*v[k]);
+          // extract nodal displacement and velocity
+          const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
+          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
+
+          const double val  = nodalarea*(stiff_tens_*(u-offset_-offsetprestr[k]) + viscosity_*v);
           const double dval = nodalarea*(stiff_tens_ + viscosity_*gamma/(beta*ts_size));
 
           const int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
           if (err) dserror("SumIntoGlobalValues failed!");
           stiff->Assemble(dval,dofs[k],dofs[k]);
         }
-      }
-      // spring dashpot acts in ref/cur normal direction
-      else if (springtype_ == refsurfnormal ||
-               springtype_ == cursurfnormal)
-      {
-        // spring displacement
-        const double gap = gap_[gid];
-        const double gapdt = gapdt_[gid];
+        break;
 
-        // select spring stiffnes
-        double springstiff = 0.0;
-        if (gap > 0)
-          springstiff = stiff_tens_; // gap positive: tensile spring
-        if (gap <= 0)
-          springstiff = stiff_comp_; // gap negative: compressive spring
+      case refsurfnormal: // spring dashpot acts in refnormal direction
+        for (int k=0; k<numdof; ++k)
+        {
+          // extract nodal displacement and velocity
+          const double u = (*disp)[disp->Map().LID(dofs[k])]; // displacement
+          const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
 
-        // assemble
-        std::vector<double> temp(numdof, 0.0);
+          // projection of displacement/velocity onto nodal reference normal
+          gap -= (u-offsetprestr[k])*normal[k]; // gap = (u \cdot N)
+          gapdt -= v*normal[k]; // gapdt = (v \cdot N)
+        }
+
+        // select spring stiffness
+        springstiff = SelectStiffness(gap);
+
+        // assemble into residual vector and stiffness matrix
         for (int k=0; k<numdof; ++k)
         {
           // force
@@ -202,45 +181,59 @@ void UTILS::SpringDashpot::Evaluate(
           const int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
           if (err) dserror("SumIntoGlobalValues failed!");
 
-          // store negative value of internal force for output (=reaction force)
-          temp[k] = - val;
-
           // stiffness
-          if (springtype_ == refsurfnormal)
+          for (int m=0; m<numdof; ++m)
           {
-            // linearize displacement and velocity
-            for (int m=0; m<numdof; ++m)
-            {
-              const double dval = nodalarea*(springstiff + viscosity_*time_scale)*normal[k]*normal[m];
-              stiff->Assemble(dval,dofs[k],dofs[m]);
-            }
-          }
-          else if (springtype_ == cursurfnormal)
-          {
-            std::map<int,double> dgap = dgap_[gid];
-            std::vector<GEN::pairedvector<int,double> > dnormal = dnormals_[gid];
-
-            // check if projection exists
-            if(!dnormal.empty() && !dgap.empty())
-            {
-              // linearize gap
-              for(std::map<int, double>::iterator i = dgap.begin(); i != dgap.end(); ++i)
-              {
-                const double dval = -nodalarea*springstiff*(i->second)*normal[k];
-                stiff->Assemble(dval,dofs[k],i->first);
-              }
-
-              // linearize normal
-              for(GEN::pairedvector<int,double>::iterator i = dnormal[k].begin(); i != dnormal[k].end(); ++i)
-              {
-                const double dval = -nodalarea*springstiff*(gap-offset_)*(i->second);
-                stiff->Assemble(dval,dofs[k],i->first);
-              }
-            }
+            const double dval = nodalarea*(springstiff + viscosity_*time_scale)*normal[k]*normal[m];
+            stiff->Assemble(dval,dofs[k],dofs[m]);
           }
         }
+        break;
+
+      case cursurfnormal: // spring dashpot acts in curnormal direction
+        // spring displacement
+        gap = gap_[gid];
+        gapdt = gapdt_[gid];
+
+        // select spring stiffnes
+        springstiff = SelectStiffness(gap);
+
+        // assemble into residual vector and stiffness matrix
+        std::vector<double> out_vec(numdof, 0.);
+        for (int k=0; k<numdof; ++k)
+        {
+          // force
+          const double val = - nodalarea*(springstiff*(gap-offset_) + viscosity_*gapdt)*normal[k];
+          const int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
+          if (err) dserror("SumIntoGlobalValues failed!");
+
+          // stiffness
+          std::map<int,double> dgap = dgap_[gid];
+          std::vector<GEN::pairedvector<int,double> > dnormal = dnormals_[gid];
+
+          // check if projection exists
+          if(!dnormal.empty() && !dgap.empty())
+          {
+            // linearize gap
+            for(std::map<int, double>::iterator i = dgap.begin(); i != dgap.end(); ++i)
+            {
+              const double dval = -nodalarea*springstiff*(i->second)*normal[k];
+              stiff->Assemble(dval,dofs[k],i->first);
+            }
+
+            // linearize normal
+            for(GEN::pairedvector<int,double>::iterator i = dnormal[k].begin(); i != dnormal[k].end(); ++i)
+            {
+              const double dval = -nodalarea*springstiff*(gap-offset_)*(i->second);
+              stiff->Assemble(dval,dofs[k],i->first);
+            }
+          }
+          // store negative value of internal force for output (=reaction force)
+          out_vec[k] = - val;
+        }
         // add to output
-        springstress_.insert(std::pair<int, std::vector<double> >(gid, temp));
+        springstress_.insert(std::pair<int, std::vector<double> >(gid, out_vec));
+        break;
       }
     } //node owned by processor
   } //loop over nodes
