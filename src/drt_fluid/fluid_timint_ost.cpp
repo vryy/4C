@@ -314,9 +314,12 @@ void FLD::TimIntOneStepTheta::ReadRestart(int step)
   {
     external_loadsn_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
     external_loadsnp_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-    reader.ReadVector(external_loadsn_,"fexternal_n");
-    if(have_fexternal != external_loadsn_->GlobalLength())
-      dserror("reading of external loads failed");
+    if(step_>numstasteps_ && params_->get<double>("theta") != 1.0)
+    {
+      reader.ReadVector(external_loadsn_,"fexternal_n");
+      if(have_fexternal != external_loadsn_->GlobalLength())
+        dserror("reading of external loads failed");
+    }
   }
 
   return;
