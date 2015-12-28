@@ -3,10 +3,11 @@
 \file elasthyper.H
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Anna Birzle
+            birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15255
+Former Maintainer: Burkhard Bornemann
 </pre>
 */
 
@@ -247,12 +248,6 @@ private:
 
     /// return if anisotropic and splitted formulation
     virtual bool AnisotropicModified() const { return anisomod_;}
-
-    /// return if isotropic, splitted and viscos formulation
-    virtual bool IsotropicModifiedVisco() const { return isovisco_;}
-
-    /// return if viscous-genmax (ssl-model) formulation
-    virtual bool ViscoGenMax() const { return viscogenmax_;}
 
     /// get fiber vectors
     virtual void GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs);
@@ -526,14 +521,12 @@ private:
     const int eleGID                ///< element GID
     );
 
-    /// @name Flags to specify the formulations
+    /// @name Flags to specify the elastic formulations
     //@{
     bool isoprinc_; ///< global indicator for isotropic principal formulation
     bool isomod_; ///< global indicator for isotropic splitted formulation
     bool anisoprinc_ ; ///< global indicator for anisotropic principal formulation
     bool anisomod_ ; ///< global indicator for anisotropic splitted formulation
-    bool isovisco_ ; ///< global indicator for isotropic splitted viscous formulation
-    bool viscogenmax_ ; ///< global indicator for viscous contribution according the SLS-Model
     //@}
 
     /// @name Voigt index arrays

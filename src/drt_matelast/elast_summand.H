@@ -497,14 +497,19 @@ namespace MAT
 
       /// Indicator for the chosen formulations
       virtual void SpecifyFormulation(
-          bool& isoprinc_, ///< global indicator for anisotropy
-          bool& isomod_, ///< global indicator for anisotropy
-          bool& anisoprinc_, ///< global indicator for anisotropy
-          bool& anisomod_, ///< global indicator for anisotropy
-          bool& isovisco_, ///< global indicator for isotropic, splitted and viscos formulation
-          bool& viscogenmax_  ///< global indicator for viscous contribution according the SLS-Model
+          bool& isoprinc, ///< global indicator for anisotropy
+          bool& isomod, ///< global indicator for anisotropy
+          bool& anisoprinc, ///< global indicator for anisotropy
+          bool& anisomod, ///< global indicator for anisotropy
+          bool& viscogeneral   ///< global indicator, if one viscoelastic formulation is used
         ) = 0;
 
+      /// Indicator for the chosen viscoelastic formulations
+      virtual void SpecifyViscoFormulation(
+          bool& isovisco, ///< global indicator for isotropic, splitted and viscous formulation
+          bool& viscogenmax  ///< global indicator for viscous contribution according the SLS-Model
+      )
+      {        /* do nothing for non viscoelastic material models */      };
       //@}
 
       //! @name Visualization methods

@@ -86,7 +86,6 @@ MAT::ViscoElastHyper::ViscoElastHyper(MAT::PAR::ViscoElastHyper* params)
 /*----------------------------------------------------------------------*/
 void MAT::ViscoElastHyper::Pack(DRT::PackBuffer& data) const
 {
-//    MAT::ElastHyper::Pack(data);
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
 
@@ -103,7 +102,6 @@ void MAT::ViscoElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,anisomod_);
   AddtoPack(data,isovisco_);
   AddtoPack(data,viscogenmax_);
-
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
@@ -150,7 +148,6 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
   isovisco_ = false;
   viscogenmax_ = false;
 
-
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
@@ -173,26 +170,12 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
     }
   }
 
-  int isoprinc;
-  int isomod;
-  int anisoprinc;
-  int anisomod;
-  int isovisco;
-  int viscogenmax;
-
-  ExtractfromPack(position,data,isoprinc);
-  ExtractfromPack(position,data,isomod);
-  ExtractfromPack(position,data,anisoprinc);
-  ExtractfromPack(position,data,anisomod);
-  ExtractfromPack(position,data,isovisco);
-  ExtractfromPack(position,data,viscogenmax);
-
-  if (isoprinc != 0) isoprinc_ = true;
-  if (isomod != 0) isomod_ = true;
-  if (anisoprinc != 0) anisoprinc_ = true;
-  if (anisomod != 0) anisomod_ = true;
-  if (isovisco != 0) isovisco_ = true;
-  if (viscogenmax != 0) viscogenmax_ =true;
+  isoprinc_=(bool)ExtractInt(position,data);
+  isomod_=(bool)ExtractInt(position,data);
+  anisoprinc_=(bool)ExtractInt(position,data);
+  anisomod_=(bool)ExtractInt(position,data);
+  isovisco_=(bool)ExtractInt(position,data);
+  viscogenmax_=(bool)ExtractInt(position,data);
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
@@ -219,31 +202,25 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
 
     if (histsize == 0) isinitvis_=false;
 
-    histscgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-    histscglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-    histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-    histmodrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<6,1> >);
-    histstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-    histstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-    histartstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-    histartstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+    // initialize current variables
+    histscgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(histsize));
+    histmodrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(histsize));
+    histstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(histsize));
+    histartstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(histsize));
 
-    for (int var=0; var<histsize; var+=1)
+    // initialize last variables
+    histscglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(histsize));
+    histmodrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(histsize));
+    histstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(histsize));
+    histartstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(histsize));
+
+
+    for (int gp=0; gp<histsize; ++gp)
     {
-      LINALG::Matrix<6,1> tmp(true);
-      histscgcurr_->push_back(tmp);
-      histmodrcgcurr_->push_back(tmp);
-      histstresscurr_->push_back(tmp);
-      histartstresscurr_->push_back(tmp);
-
-      ExtractfromPack(position,data,tmp);
-      histscglast_->push_back(tmp);
-      ExtractfromPack(position,data,tmp);
-      histmodrcglast_->push_back(tmp);
-      ExtractfromPack(position,data,tmp);
-      histstresslast_->push_back(tmp);
-      ExtractfromPack(position,data,tmp);
-      histartstresslast_->push_back(tmp);
+      ExtractfromPack(position,data,histscglast_->at(gp));
+      ExtractfromPack(position,data,histmodrcglast_->at(gp));
+      ExtractfromPack(position,data,histstresslast_->at(gp));
+      ExtractfromPack(position,data,histartstresslast_->at(gp));
     }
 
     // in the postprocessing mode, we do not unpack everything we have packed
@@ -258,7 +235,27 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 void MAT::ViscoElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
-  MAT::ElastHyper::Setup(numgp, linedef);
+  // Setup summands
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+  {
+    potsum_[p]->Setup(linedef);
+  }
+
+  // find out which formulations are used
+  isoprinc_ = false ;
+  isomod_ = false ;
+  anisoprinc_ = false ;
+  anisomod_ = false;
+  bool viscogeneral = false;
+  isovisco_ = false;
+  viscogenmax_ = false;
+
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+  {
+    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,viscogeneral);
+    if (viscogeneral)
+      potsum_[p]->SpecifyViscoFormulation(isovisco_, viscogenmax_);
+  }
 
   // Initialise/allocate history variables 09/13
   const LINALG::Matrix<6,1> emptyvec(true);
@@ -323,7 +320,7 @@ void MAT::ViscoElastHyper::Update()
   histstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(numgp,emptyvec));
   histartstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >(numgp,emptyvec));
 
-  return;
+ return;
 }
 
 /*----------------------------------------------------------------------*/

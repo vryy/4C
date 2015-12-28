@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupanisoexpo.cpp
+\file elast_coupanisoexpo.H
 \brief
 
 
@@ -171,8 +171,7 @@ namespace ELASTIC
         bool& isomod, ///< global indicator for isotropic splitted formulation
         bool& anisoprinc, ///< global indicator for anisotropic principal formulation
         bool& anisomod, ///< global indicator for anisotropic splitted formulation
-        bool& isovisco, ///< global indicator for isotropic viscous formulation
-        bool& viscogenmax  ///< global indicator for viscous contribution according the SLS-Model
+        bool& viscogeneral       ///< global indicator, if one viscoelastic formulation is used
       )
     {
       anisoprinc = true;

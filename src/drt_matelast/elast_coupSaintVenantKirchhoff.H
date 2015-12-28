@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_couplogneohooke.H
+\file elast_coupSaintVenantKirchhoff.H
 \brief
 This file contains the routines required for Saint-Venant-Kirchhoff material
 
@@ -107,8 +107,7 @@ namespace ELASTIC
         bool& isomod, ///< global indicator for isotropic splitted formulation
         bool& anisoprinc, ///< global indicator for anisotropic principal formulation
         bool& anisomod, ///< global indicator for anisotropic splitted formulation
-        bool& isovisco, ///< global indicator for isotropic viscous formulation
-        bool& viscogenmax_  ///< global indicator for viscous contribution according the SLS-Model
+        bool& viscogeneral       ///< global indicator, if one viscoelastic formulation is used
       )
     {
       isoprinc = true;

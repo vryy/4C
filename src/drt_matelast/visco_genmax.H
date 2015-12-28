@@ -152,9 +152,18 @@ namespace ELASTIC
         bool& isomod, ///< global indicator for isotropic splitted formulation
         bool& anisoprinc, ///< global indicator for anisotropic principal formulation
         bool& anisomod, ///< global indicator for anisotropic splitted formulation
-        bool& isovisco, ///< global indicator for isotropic viscous formulation
-        bool& viscogenmax  ///< global indicator for viscous contribution according the SLS-Model
+        bool& viscogeneral       ///< general indicator, if one viscoelastic formulation is used
       )
+    {
+      viscogeneral = true;
+      return;
+    };
+
+    /// Indicator for the chosen viscoelastic formulations
+    virtual void SpecifyViscoFormulation(
+        bool& isovisco, ///< global indicator for isotropic, splitted and viscous formulation
+        bool& viscogenmax  ///< global indicator for viscous contribution according the SLS-Model
+    )
     {
       viscogenmax = true;
       return;

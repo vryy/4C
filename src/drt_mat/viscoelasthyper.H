@@ -192,7 +192,7 @@ private:
     virtual void Update();
 
   protected:
-    /// calculates the kinematic quantities and tensors used afterwards for viscos part
+    /// calculates the kinematic quantities and tensors used afterwards for viscous part
     virtual void EvaluateKinQuantVis(
         LINALG::Matrix<6,1> rcg,
         LINALG::Matrix<6,1> scg,
@@ -206,7 +206,7 @@ private:
         LINALG::Matrix<7,1>& modrateinv
       );
 
-    /// calculates the factors associated to the viscos laws
+    /// calculates the factors associated to the viscous laws
     virtual void EvaluateMuXi(
         LINALG::Matrix<3,1> inv,
         LINALG::Matrix<3,1> modinv,
@@ -261,9 +261,15 @@ private:
         Teuchos::ParameterList& params
         );
 
+    /// @name Flags to specify the viscous formulations
+    //@{
+    bool isovisco_ ; ///< global indicator for isotropic splitted viscous formulation
+    bool viscogenmax_ ; ///< global indicator for viscous contribution according the SLS-Model
+    //@}
+
   private:
 
-    /// visco history Cauchy-Green-Tensor
+    /// viscous history Cauchy-Green-Tensor
     Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > histscgcurr_; ///< current Cauchy-Green-Tensor
     Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > histscglast_; ///< Cauchy-Green-Tensor of last converged state
     Teuchos::RCP<std::vector<LINALG::Matrix<6,1> > > histmodrcgcurr_; ///< current decoupled Cauchy-Green-Tensor

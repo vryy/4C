@@ -10,10 +10,11 @@ The input line should read
 MAT 0   MAT_ElastHyper   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 INIT_MODE -1
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Anna Birzle
+            birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15255
+Former Maintainer: Burkhard Bornemann
 </pre>
 */
 
@@ -124,8 +125,6 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,isomod_);
   AddtoPack(data,anisoprinc_);
   AddtoPack(data,anisomod_);
-  AddtoPack(data,isovisco_);
-  AddtoPack(data,viscogenmax_);
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
@@ -150,8 +149,6 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   isomod_ = false;
   anisoprinc_ = false;
   anisomod_ = false;
-  isovisco_ = false;
-  viscogenmax_ = false;
 
   std::vector<char>::size_type position = 0;
   // extract type
@@ -175,26 +172,10 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
     }
   }
 
-  int isoprinc;
-  int isomod;
-  int anisoprinc;
-  int anisomod;
-  int isovisco;
-  int viscogenmax;
-
-  ExtractfromPack(position,data,isoprinc);
-  ExtractfromPack(position,data,isomod);
-  ExtractfromPack(position,data,anisoprinc);
-  ExtractfromPack(position,data,anisomod);
-  ExtractfromPack(position,data,isovisco);
-  ExtractfromPack(position,data,viscogenmax);
-
-  if (isoprinc != 0) isoprinc_ = true;
-  if (isomod != 0) isomod_ = true;
-  if (anisoprinc != 0) anisoprinc_ = true;
-  if (anisomod != 0) anisomod_ = true;
-  if (isovisco != 0) isovisco_ = true;
-  if (viscogenmax != 0) viscogenmax_ = true;
+  isoprinc_=(bool)ExtractInt(position,data);
+  isomod_=(bool)ExtractInt(position,data);
+  anisoprinc_=(bool)ExtractInt(position,data);
+  anisomod_=(bool)ExtractInt(position,data);
 
   if (params_ != NULL) // summands are not accessible in postprocessing mode
   {
@@ -285,18 +266,19 @@ void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   }
 
   // find out which formulations are used
-
   isoprinc_ = false ;
   isomod_ = false ;
   anisoprinc_ = false ;
   anisomod_ = false;
-  isovisco_ = false;
-  viscogenmax_ = false;
+  bool viscogeneral = false;
 
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,isovisco_,viscogenmax_);
+    potsum_[p]->SpecifyFormulation(isoprinc_,isomod_,anisoprinc_,anisomod_,viscogeneral);
   }
+
+  if (viscogeneral)
+    dserror("Never use viscoelastic-materials in Elasthyper-Toolbox. Use Viscoelasthyper-Toolbox instead.");
 
   return;
 }
