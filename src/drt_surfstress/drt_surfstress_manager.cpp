@@ -155,7 +155,7 @@ void UTILS::SurfStressManager::ReadRestart(const int step,
 
 
 /*-------------------------------------------------------------------*
-| (public)						     lw 12/07|
+| (public)                                                   lw 12/07|
 |                                                                    |
 | Call discretization to evaluate additional contributions due to    |
 | interfacial phenomena                                              |
@@ -189,7 +189,7 @@ void UTILS::SurfStressManager::EvaluateSurfStress(Teuchos::ParameterList& p,
 }
 
 /*-------------------------------------------------------------------*
-| (public)						     lw 03/08|
+| (public)                                                   lw 03/08|
 |                                                                    |
 | update surface area and concentration                              |
 *--------------------------------------------------------------------*/
@@ -201,7 +201,7 @@ void UTILS::SurfStressManager::Update()
 }
 
 /*-------------------------------------------------------------------*
-| (public)						     lw 12/07|
+| (public)                                                   lw 12/07|
 |                                                                    |
 | Calculate additional internal forces and corresponding stiffness   |
 | on element level                                                   |
@@ -242,10 +242,21 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
 
     if (time <= t_end)         /* gradual application of surface stress */
     {
-      gamma = gamma_0-m1*con_quot_eq;
+      // start with regime 3 (start with maximal concentration) Birzle 12/15
+      // If one is interested just in the stationary process, use this version.
+      // So no build up time to get in the stationary process is necassary.
+      // For more information see Bachelor Thesis by Elias Lochner Page 19 and 20.
+      gamma = gamma_min;
       dgamma = 0.;
-      (*con_current_)[LID] = con_quot_eq;
+      (*con_current_)[LID] = con_quot_max;
       (*gamma_current_)[LID] = gamma;
+
+      // old version: start with regime 1 (start with equilibrium concentration)
+      // this version is equal to the experiments of Otis
+      // gamma = gamma_0-m1*con_quot_eq;
+      // dgamma = 0.;
+      // (*con_current_)[LID] = con_quot_eq;
+      // (*gamma_current_)[LID] = gamma;
     }
     else
     {
