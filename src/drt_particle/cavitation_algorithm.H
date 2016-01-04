@@ -96,30 +96,30 @@ namespace CAVITATION
     /// initialize bubble pressure
     virtual void InitBubblePressure();
 
-   // initialize bubble velocity from fluid velocity
-   virtual void InitBubbleVelFromFluidVel();
+    // initialize bubble velocity from fluid velocity
+    virtual void InitBubbleVelFromFluidVel();
 
-   /// compute pressure at bubble position
-   virtual bool ComputePressureAtBubblePosition(
-     DRT::Node* currparticle,
-     LINALG::Matrix<3,1>& particleposition,
-     Epetra_SerialDenseMatrix& elemat1,
-     Epetra_SerialDenseMatrix& elemat2,
-     Epetra_SerialDenseVector& elevec1,
-     Epetra_SerialDenseVector& elevec2,
-     Epetra_SerialDenseVector& elevec3
-     );
+    /// compute pressure at bubble position
+    virtual bool ComputePressureAtBubblePosition(
+      DRT::Node* currparticle,
+      LINALG::Matrix<3,1>& particleposition,
+      Epetra_SerialDenseMatrix& elemat1,
+      Epetra_SerialDenseMatrix& elemat2,
+      Epetra_SerialDenseVector& elevec1,
+      Epetra_SerialDenseVector& elevec2,
+      Epetra_SerialDenseVector& elevec3
+      );
 
-    //compute velocity at bubble position
-   virtual bool ComputeVelocityAtBubblePosition(
-     DRT::Node* currparticle,
-     LINALG::Matrix<3,1>& particleposition,
-     Epetra_SerialDenseMatrix& elemat1,
-     Epetra_SerialDenseMatrix& elemat2,
-     Epetra_SerialDenseVector& elevec1,
-     Epetra_SerialDenseVector& elevec2,
-     Epetra_SerialDenseVector& elevec3
-     );
+    /// compute velocity at bubble position
+    virtual bool ComputeVelocityAtBubblePosition(
+      DRT::Node* currparticle,
+      LINALG::Matrix<3,1>& particleposition,
+      Epetra_SerialDenseMatrix& elemat1,
+      Epetra_SerialDenseMatrix& elemat2,
+      Epetra_SerialDenseVector& elevec1,
+      Epetra_SerialDenseVector& elevec2,
+      Epetra_SerialDenseVector& elevec3
+      );
 
     /// prepare time step
     virtual void PrepareTimeStep();
@@ -137,7 +137,7 @@ namespace CAVITATION
     //! For details see Semesterarbeit Christoph Schmidt
     virtual void ComputeRadius();
 
-     /// time integration of bubble radius
+    /// time integration of bubble radius
     virtual void IntegrateRadius(
       const int bubbleid,
       double& subtimek,
@@ -207,7 +207,7 @@ namespace CAVITATION
     /// fluid fraction calculation of dispersed phase in fluid
     virtual void CalculateFluidFraction();
 
-    // use Gaussian integration for solving volume integral to obtain void volume
+    /// use Gaussian integration for solving volume integral to obtain void volume
     virtual void DoGaussianIntegrationFluidFrac(
       DRT::Element*         ele,
       LINALG::Matrix<3,1>&  particleposition,
@@ -215,7 +215,7 @@ namespace CAVITATION
       double&               vol_ele
       );
 
-    // use analytical integration for solving volume integral to obtain void volume
+    /// use analytical integration for solving volume integral to obtain void volume
     virtual void DoAnalyticalIntegrationFluidFrac(
       DRT::Element*         ele,
       LINALG::Matrix<3,1>&  particleposition,
@@ -384,6 +384,8 @@ namespace CAVITATION
     Teuchos::RCP<Epetra_Vector> pg0_;   ///< partial pressure of noncondensable gas at bubble initialization time
 
     //@}
+
+    int count_;   ///< counter for triggering particle transfer
 
   }; // Algorithm
 

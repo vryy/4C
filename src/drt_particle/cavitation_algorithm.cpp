@@ -75,7 +75,8 @@ CAVITATION::Algorithm::Algorithm(
   fluidfracnp_(Teuchos::null),
   computeradiusRPbased_((bool)DRT::INPUT::IntegralValue<int>(params,"COMPUTE_RADIUS_RP_BASED")),
   dtsub_(Teuchos::null),
-  pg0_(Teuchos::null)
+  pg0_(Teuchos::null),
+  count_(0)
 {
   // setup fluid time integrator
   fluiddis_ = DRT::Problem::Instance()->GetDis("fluid");
@@ -189,8 +190,14 @@ void CAVITATION::Algorithm::Timeloop()
     // deal with particle inflow
     ParticleInflow();
 
-    // transfer particles into their correct bins
-    TransferParticles();
+    // transfer particles into their correct bins at least every 10th of the fluid time step size;
+    // underlying assumptions: CFL number will be not too far from one, bubbles have appr. the same
+    // velocity as the fluid
+    if(particles_->Time() > Time()-Dt()+0.1*count_*Dt())
+    {
+      ++count_;
+      TransferParticles();
+    }
 
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
@@ -469,6 +476,7 @@ void CAVITATION::Algorithm::PrepareTimeStep()
     PrintHeader();
 
     fluid_->PrepareTimeStep();
+    count_ = 0;
   }
 
   // apply dirichlet boundary conditions
@@ -476,6 +484,10 @@ void CAVITATION::Algorithm::PrepareTimeStep()
 
   if(structure_ != Teuchos::null)
     structure_->PrepareTimeStep();
+
+  // do rough safety check if bin size is appropriate --> see also Timeloop()
+  const double relevant_dt = Dt() * std::max(0.1, 1.0/timestepsizeratio_);
+  BinSizeSafetyCheck(relevant_dt);
 
   return;
 }
@@ -503,11 +515,11 @@ void CAVITATION::Algorithm::Integrate()
     if (myrank_ == 0)
     {
       if(timestepsizeratio_<100)
-        IO::cout << "particle substep no. " << ((particles_->StepOld()-restartparticles_) % timestepsizeratio_)+1 << IO::endl;
+        IO::cout << "particle substep no. " << (particles_->StepOld()-restartparticles_) % timestepsizeratio_ << IO::endl;
       else
       {
         if ( (particles_->StepOld()-restartparticles_)%10 == 0)
-          IO::cout << "particle substep no. " << ((particles_->StepOld()-restartparticles_) % timestepsizeratio_)+1 << IO::endl;
+          IO::cout << "particle substep no. " << (particles_->StepOld()-restartparticles_) % timestepsizeratio_ << IO::endl;
       }
     }
   }

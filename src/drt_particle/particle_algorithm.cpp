@@ -246,6 +246,9 @@ void PARTICLE::Algorithm::PrepareTimeStep()
   if(structure_ != Teuchos::null)
     structure_->PrepareTimeStep();
 
+  // do rough safety check if bin size is appropriate
+  BinSizeSafetyCheck(particles_->Dt());
+
   return;
 }
 
@@ -255,41 +258,6 @@ void PARTICLE::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::Integrate()
 {
-  // rough safety check whether bin size is large enough for proper contact detection
-  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
-  INPAR::PARTICLE::ContactStrategy contact_strategy =
-      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ContactStrategy>(particleparams,"CONTACT_STRATEGY");
-  if(contact_strategy != INPAR::PARTICLE::None)
-  {
-    double extrema[2] = {0.0, 0.0};
-    particles_->Veln()->MinValue(&extrema[0]);
-    particles_->Veln()->MaxValue(&extrema[1]);
-    const double maxvel = std::max(-extrema[0], extrema[1]);
-    double maxrad = 0.0;
-    particles_->Radius()->MaxValue(&maxrad);
-    if(maxrad + maxvel*particles_->Dt() > 0.5*cutoff_radius_)
-    {
-      int lid = -1;
-      // find entry with max velocity
-      for(int i=0; i<particles_->Veln()->MyLength(); ++i)
-      {
-        if((*particles_->Veln())[i] < extrema[0]+1.0e-12 || (*particles_->Veln())[i] > extrema[1]-1.0e-12)
-        {
-          lid = i;
-          break;
-        }
-      }
-
-      particles_->Veln()->Print(std::cout);
-      if(lid != -1)
-      {
-        int gid = particles_->Veln()->Map().GID(lid);
-        dserror("Particle %i (gid) travels more than one bin per time step (%f > %f). Increase bin size or reduce step size."
-            "Max radius is: %f", (int)gid/3, 2.0*(maxrad + maxvel*particles_->Dt()), cutoff_radius_, maxrad);
-      }
-    }
-  }
-
   CalculateAndApplyForcesToParticles();
 
   Teuchos::RCP<Epetra_Vector> walldisn = Teuchos::null;
@@ -582,6 +550,48 @@ Teuchos::RCP<const Epetra_CrsGraph> PARTICLE::Algorithm::CreateGraph()
   }
 
   return graph;
+}
+
+
+/*----------------------------------------------------------------------*
+ | rough safety check for proper bin size                  ghamm 12/15  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
+{
+  // rough safety check whether bin size is large enough for proper contact detection
+  const Teuchos::ParameterList& particleparams = DRT::Problem::Instance()->ParticleParams();
+  INPAR::PARTICLE::ContactStrategy contact_strategy =
+      DRT::INPUT::IntegralValue<INPAR::PARTICLE::ContactStrategy>(particleparams,"CONTACT_STRATEGY");
+  if(contact_strategy != INPAR::PARTICLE::None)
+  {
+    double extrema[2] = {0.0, 0.0};
+    particles_->Veln()->MinValue(&extrema[0]);
+    particles_->Veln()->MaxValue(&extrema[1]);
+    const double maxvel = std::max(-extrema[0], extrema[1]);
+    double maxrad = 0.0;
+    particles_->Radius()->MaxValue(&maxrad);
+    if(maxrad + maxvel*dt > 0.5*cutoff_radius_)
+    {
+      int lid = -1;
+      // find entry with max velocity
+      for(int i=0; i<particles_->Veln()->MyLength(); ++i)
+      {
+        if((*particles_->Veln())[i] < extrema[0]+1.0e-12 || (*particles_->Veln())[i] > extrema[1]-1.0e-12)
+        {
+          lid = i;
+          break;
+        }
+      }
+
+      particles_->Veln()->Print(std::cout);
+      if(lid != -1)
+      {
+        int gid = particles_->Veln()->Map().GID(lid);
+        dserror("Particle %i (gid) travels more than one bin per time step (%f > %f). Increase bin size or reduce step size."
+            "Max radius is: %f", (int)gid/3, 2.0*(maxrad + maxvel*particles_->Dt()), cutoff_radius_, maxrad);
+      }
+    }
+  }
 }
 
 

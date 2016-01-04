@@ -98,7 +98,7 @@ namespace PARTICLE
     /// get underlyling structural problem
     Teuchos::RCP<ADAPTER::Structure> Structure() { return structure_; }
 
-    // return gravity acceleration
+    /// return gravity acceleration
     LINALG::Matrix<3,1> GetGravityAcc() {return gravity_acc_ ; }
 
     /// particles are checked whether they have moved out of their current bin
@@ -131,8 +131,11 @@ namespace PARTICLE
     // bins are redistributed according to the current fill level with particles
     virtual void DynamicLoadBalancing();
 
-    // create graph for bin distribution
+    /// create graph for bin distribution
     Teuchos::RCP<const Epetra_CrsGraph> CreateGraph();
+
+    /// rough safety check for proper bin size
+    virtual void BinSizeSafetyCheck(const double dt);
 
     /// round robin loop to fill particles into its correct bin on according proc
     virtual void FillParticlesIntoBins(
