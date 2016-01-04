@@ -35,8 +35,8 @@ void STR::TimIntGenAlpha::VerifyCoeff()
       dserror("rho_inf out of range [0.0,1.0]");
     if ( (beta_!=0.25) or (gamma_!=0.5) or (alpham_!=0.5) or (alphaf_!=0.5) )
       dserror("you may only specify RHO_INF or the other four parameters");
-    alphaf_ = (2.0*rho_inf_-1.0)/(rho_inf_+1.0);
-    alpham_ = rho_inf_/(rho_inf_+1.0);
+    alpham_ = (2.0*rho_inf_-1.0)/(rho_inf_+1.0);
+    alphaf_ = rho_inf_/(rho_inf_+1.0);
     beta_   = 0.25*(1.0-alpham_+alphaf_)*(1.0-alpham_+alphaf_);
     gamma_  = 0.5-alpham_+alphaf_;
     std::cout << "   rho = " << rho_inf_ << std::endl;
