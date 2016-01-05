@@ -2442,6 +2442,18 @@ namespace LINALG
     }
 
     template <class value_type, unsigned int i, unsigned int j>
+    inline void crossproduct(value_type* out, const value_type* left, const value_type* right)
+    {
+#ifdef DEBUG
+      if (i!=3 || j!=1) dserror("cross product only for 3x1 matrices available");
+#endif
+      out[0] = left[1]*right[2] - left[2]*right[1];
+      out[1] = left[2]*right[0] - left[0]*right[2];
+      out[2] = left[0]*right[1] - left[1]*right[0];
+      return;
+    }
+
+    template <class value_type, unsigned int i, unsigned int j>
     inline void clearMatrix(value_type* mat)
     {
       //the memset method is needed for arbitrary precision (cln) data types instead of the fill method
@@ -3283,6 +3295,18 @@ public:
    */
   inline value_type Dot(const TMatrix<value_type,rows,cols>& other) const
     { return DENSEFUNCTIONS::dot<value_type, rows, cols>(data_, other.data_); }
+
+  /// Cross product
+  /*!
+    Return the cross product of \e left and \e right.
+
+    \param left
+    \param right
+    \return cross product
+   */
+  inline void CrossProduct(const TMatrix<value_type,rows,cols>& left,
+    const TMatrix<value_type,rows,cols>& right)
+    { DENSEFUNCTIONS::crossproduct<value_type, rows, cols>(data_, left.data_, right.data_); }
 
   /// Compute absolute value
   /*!
