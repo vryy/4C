@@ -29,7 +29,6 @@ Maintainer: Ursula Rasthofer
 
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
-#include "../drt_geometry/intersection_math.H"
 #include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/element_volume.H"
@@ -3098,7 +3097,7 @@ void PARTICLE::ScatraParticleCoupling::GetLSValParticle(
 {
   if (scatraele->Shape() != DRT::Element::hex8)
     dserror("Other element than hex8 not yet supported!"); // -> for adaption see comment above
-  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+  static const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
 
   // get nodal phi values
   std::vector<int> lm;
@@ -3108,16 +3107,11 @@ void PARTICLE::ScatraParticleCoupling::GetLSValParticle(
   lmowner.clear();
   lmstride.clear();
   scatraele->LocationVector(*scatradis_,lm,lmowner,lmstride);
-  std::vector<double> myphinp(lm.size());
-  DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-  // fill all element arrays
-  LINALG::Matrix<numnode,1> ephinp(true);
-  for (int i=0;i<numnode;++i)
-    ephinp(i,0) = myphinp[i];
+  static LINALG::Matrix<numnode,1> ephinp;
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<numnode,1> >(*phinp,ephinp,lm);
 
   // shape functions
-  LINALG::Matrix<numnode,1> funct(true);
-  //fill vectors
+  static LINALG::Matrix<numnode,1> funct;
   DRT::UTILS::shape_function_3D(funct,elecoord(0),elecoord(1),elecoord(2),scatraele->Shape());
 
   // finally compute phi
@@ -3126,10 +3120,10 @@ void PARTICLE::ScatraParticleCoupling::GetLSValParticle(
   // compute normal vector if required
   if (compute_normal)
   {
-    LINALG::Matrix<3,numnode> xyze(true);
+    static LINALG::Matrix<3,numnode> xyze;
     GEO::fillInitialPositionArray<DRT::Element::hex8,3,LINALG::Matrix<3,numnode> >(scatraele,xyze);
 
-    LINALG::Matrix<3,numnode> deriv(true);
+    static LINALG::Matrix<3,numnode> deriv;
     DRT::UTILS::shape_function_3D_deriv1(deriv,elecoord(0),elecoord(1),elecoord(2),scatraele->Shape());
     // get transposed of the jacobian matrix d x / d \xi
     // xjm(i,j) = deriv(i,k)*xyze(j,k)
@@ -3139,10 +3133,10 @@ void PARTICLE::ScatraParticleCoupling::GetLSValParticle(
     if (det < 0.0)
       dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", scatraele->Id(), det);
     // inverse of jacobian
-    LINALG::Matrix<3,3> xji(true);
+    static LINALG::Matrix<3,3> xji;
     xji.Invert(xjm);
     // compute global derivates
-    LINALG::Matrix<3,numnode> derxy(true);
+    static LINALG::Matrix<3,numnode> derxy;
     // derxy(i,j) = xji(i,k) * deriv(k,j)
     derxy.Multiply(xji,deriv);
 
@@ -3167,30 +3161,24 @@ void PARTICLE::ScatraParticleCoupling::GetVelParticle(
 {
   if (scatraele->Shape() != DRT::Element::hex8)
     dserror("Other element than hex8 not yet supported!");
-  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+  static const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
 
-  // get nodal values of velocity field from secondary dofset on scatra discretization
+  // construct location vector for velocity related dofs on scatra discretization
   DRT::Element::LocationArray la(scatra_->Discretization()->NumDofSets());
   scatraele->LocationVector(*scatra_->Discretization(),la,false);
-  const std::vector<int>& lmvel = la[scatra_->NdsVel()].lm_;
-  std::vector<double> myconvel(lmvel.size());
-
-  // extract local values from global vector
-  DRT::UTILS::ExtractMyValues(*lsvel,myconvel,lmvel);
-
-  // determine number of velocity related dofs per node
-  const int numveldofpernode = lmvel.size()/numnode;
-
-  LINALG::Matrix<3,numnode> convel(true);
-
-  // loop over number of nodes
-  for (int inode=0; inode<numnode; ++inode)
-    // loop over number of dimensions
+  const int numveldofpernode = la[scatra_->NdsVel()].lm_.size()/numnode;
+  std::vector<int> lmvel(3*numnode,-1);
+  for(int inode=0; inode<numnode; ++inode)
     for(int idim=0; idim<3; ++idim)
-      convel(idim,inode) = myconvel[idim+(inode*numveldofpernode)];
+      lmvel[inode*3+idim] = la[scatra_->NdsVel()].lm_[inode*numveldofpernode+idim];
+
+  // get nodal values of velocity field from secondary dofset on scatra discretization
+  // extract local values from global vector
+  static LINALG::Matrix<3,numnode> convel;
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,numnode> >(*lsvel,convel,lmvel);
 
   // shape functions
-  LINALG::Matrix<numnode,1> funct(true);
+  static LINALG::Matrix<numnode,1> funct;
   //fill vectors
   DRT::UTILS::shape_function_3D(funct,elecoord(0),elecoord(1),elecoord(2),scatraele->Shape());
 

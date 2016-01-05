@@ -31,7 +31,6 @@ Maintainer: Georg Hammerl
 #include "../drt_inpar/inpar_cavitation.H"
 
 #include "../drt_geometry/searchtree_geometry_service.H"
-#include "../drt_geometry/intersection_math.H"
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_io/io.H"
@@ -1158,13 +1157,13 @@ void PARTICLE::Algorithm::AssignWallElesToBins()
       particlewalldis_->Dof(node,lm_node);
 
       // nodal displacements
-      std::vector<double> node_disn(3);
-      DRT::UTILS::ExtractMyValues(*walldisn, node_disn, lm_node);
+      static LINALG::Matrix<3,1> node_disn;
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*walldisn, node_disn, lm_node);
 
       LINALG::Matrix<3,1> currpos;
       const double* X = node->X();
       for(int dim=0; dim<3; ++dim)
-        currpos(dim) = X[dim] + node_disn[dim];
+        currpos(dim) = X[dim] + node_disn(dim);
       currentpositions[node->Id()] = currpos;
     }
   }

@@ -287,10 +287,10 @@ namespace PARTICLE
   /// calculate tangential contact force
   virtual void CalculateTangentialContactForce(
     double ContactForce,
-    double *normal,
-    double *TangentialContactForce,
+    const LINALG::Matrix<3,1>& normal,
+    LINALG::Matrix<3,1>& TangentialContactForce,
     PARTICLE::Collision &currentColl,
-    double *v_rel_tangential,
+    const LINALG::Matrix<3,1>& v_rel_tangential,
     double m_eff,
     const double dt,
     int owner_i,

@@ -34,10 +34,6 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_parallel.H"
 
-#include "../drt_geometry/searchtree.H"
-#include "../drt_geometry/searchtree_geometry_service.H"
-#include "../drt_geometry/intersection_math.H"
-#include "../drt_geometry/element_coordtrafo.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/element_volume.H"
 #include "../linalg/linalg_utils.H"
@@ -740,16 +736,16 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     }
 
     // get bubble velocity and acceleration
-    std::vector<double> v_bub(lm_b.size());
-    DRT::UTILS::ExtractMyValues(*bubblevel,v_bub,lm_b);
+    static LINALG::Matrix<3,1> v_bub;
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*bubblevel,v_bub,lm_b);
 
     // get bubble radius
     const double r_bub = (*bubbleradius)[ particledis_->NodeRowMap()->LID(currparticle->Id()) ];
 
     // bubble Reynolds number
-    static LINALG::Matrix<3,1> v_rel(false);
+    static LINALG::Matrix<3,1> v_rel;
     for (int d=0; d<dim_; ++d)
-      v_rel(d) = elevector1[d] - v_bub[d];
+      v_rel(d) = elevector1[d] - v_bub(d);
 
     const double v_relabs = v_rel.Norm2();
     const double Re_b = 2.0 * r_bub * v_relabs * rho_l / mu_l;
@@ -760,7 +756,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       std::cout << "id_bub: " << currparticle->Id() << " " << std::endl;
       std::cout << "pos_bub: " << particleposition(0) << " " << particleposition(1) << " " << particleposition(2) << " " << std::endl;
       std::cout << "radius_bub: " << r_bub << std::endl;
-      std::cout << "v_bub: " << v_bub[0] << " " << v_bub[1] << " " << v_bub[2] << " " << std::endl;
+      std::cout << "v_bub: " << v_bub(0) << " " << v_bub(1) << " " << v_bub(2) << " " << std::endl;
       std::cout << "v_fl: " << elevector1[0] << " " << elevector1[1] << " " << elevector1[2] << " " << std::endl;
       std::cout << "v_rel: " << v_rel(0) << " " << v_rel(1) << " " << v_rel(2) << " " << std::endl;
       std::cout << "v_relabs: " << v_relabs << std::endl;
@@ -802,7 +798,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     for (int d=0; d<dim_; ++d)
       rot_u(d) = elevector3(d);
 
-    LINALG::Matrix<3,1> liftforce = GEO::computeCrossProduct(v_rel, rot_u);
+    static LINALG::Matrix<3,1> liftforce;
+    liftforce.CrossProduct(v_rel, rot_u);
 
     const double coeff2 = c_l * rho_l * vol_b;
     liftforce.Scale(coeff2);

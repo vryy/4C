@@ -28,7 +28,7 @@ Maintainer: Georg Hammerl
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/element_coordtrafo.H"
-#include "../drt_geometry/element_normals.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 #include "../drt_mat/stvenantkirchhoff.H"
 
@@ -512,16 +512,16 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
       int owner_i = particle_i->Owner();
 
       //position of particle i
-      std::vector<double> myposition_i(3);
-      DRT::UTILS::ExtractMyValues(*disncol_,myposition_i,lm_i);
+      static LINALG::Matrix<3,1> position_i;
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_,position_i,lm_i);
 
       //velocity of particle i
-      std::vector<double> myvel_i(3);
-      DRT::UTILS::ExtractMyValues(*velncol_,myvel_i,lm_i);
+      static LINALG::Matrix<3,1> vel_i;
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_,vel_i,lm_i);
 
       //angular-velocity of particle i
-      std::vector<double> myangvel_i(3);
-      DRT::UTILS::ExtractMyValues(*ang_velncol_,myangvel_i,lm_i);
+      static LINALG::Matrix<3,1> angvel_i;
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*ang_velncol_,angvel_i,lm_i);
 
       int lid = discret_->NodeColMap()->LID(particle_i->Id());
 
@@ -567,13 +567,6 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
         }
 
         LINALG::Matrix<3,1> nearestPoint;
-        static LINALG::Matrix<3,1> position_i;
-
-        //transfer entries from myposition_i to position_i
-        for(int n=0; n<3; ++n)
-        {
-          position_i(n)=myposition_i[n];
-        }
 
         //-------find point on wall element with smallest distance to particle_i-------------------
         GEO::ObjectType objecttype = GEO::nearest3DObjectOnElement((*w),nodeCoord,position_i,nearestPoint);
@@ -708,58 +701,15 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
         int gid_wall = iter->first;
 
         // distance-vector
-        double r_contact[3] = {0.0};
-
-        // normal-vector
-        double normal[3] = {0.0};
+        static LINALG::Matrix<3,1> r_contact;
+        r_contact.Update(1.,(iter->second).point,-1.,position_i);
 
         // distance between centre of mass of two particles
-        double norm_r_contact = 0.0;
+        const double norm_r_contact(r_contact.Norm2());
 
-        // velocity v_rel = v_i - v_j
-        double v_rel[3] = {0.0};
-
-        // velocity v_rel_tangential
-        double v_rel_tangential[3] = {0.0};
-
-        // part of v_rel in normal-direction
-        double v_rel_normal = 0.0;
-
-        // penetration
-        double g = 0.0;
-
-        // normalised mass
-        double m_eff = mass_i;
-
-        // contact force
-        double normalcontactforce = 0.0;
-        double tangentcontactforce[3] = {0.0};
-
-        //distance-vector and distance--------------------------
-        for(int n=0; n<3; ++n)
-        {
-          //calculate entries of r_contact
-          r_contact[n] = (iter->second).point(n) - myposition_i[n];
-          //length of r_contact
-          norm_r_contact += r_contact[n]*r_contact[n];
-        }
-        norm_r_contact = sqrt(norm_r_contact);
-        //--------------------------------------------------------
-
-        //normal-vector-------------------------------------------
-        for(int n=0; n<3; ++n)
-        {
-          normal[n] = r_contact[n]/norm_r_contact;
-        }
-        //-------------------------------------------------------
-
-        // penetration--------------------------------------------
-        // g = norm_r_contact - radius_i;
-        g = (iter->second).penetration;
-
-        if(std::fabs(g)>g_max_)
-          g_max_ = std::fabs(g);
-        //-------------------------------------------------------
+        // normal vector
+        static LINALG::Matrix<3,1> normal;
+        normal.Update(1./norm_r_contact,r_contact);
 
         //-------get velocity of contact point-----------------------
         LINALG::Matrix<3,1> vel_nearestPoint(true);
@@ -787,12 +737,27 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
         }
         //-----------------------------------------------------------
 
-        // velocity v_rel = v_i - v_wall and v_rel in normal-direction: v_rel * n
-        for(int n=0; n<3; ++n)
-        {
-          v_rel[n] = myvel_i[n] - vel_nearestPoint(n);
-          v_rel_normal += v_rel[n]*normal[n];
-        }
+        // velocity v_rel = v_i - v_wall
+        static LINALG::Matrix<3,1> v_rel;
+        v_rel.Update(1.,vel_i,-1.,vel_nearestPoint);
+
+        // part of v_rel in normal-direction: v_rel * n
+        const double v_rel_normal(v_rel.Dot(normal));
+
+        // penetration
+        // g = norm_r_contact - radius_i;
+        const double g((iter->second).penetration);
+        if(std::fabs(g)>g_max_)
+          g_max_ = std::fabs(g);
+        //-------------------------------------------------------
+
+        // normalised mass
+        const double m_eff = mass_i;
+
+        // contact force
+        double normalcontactforce = 0.0;
+        static LINALG::Matrix<3,1> tangentcontactforce;
+        tangentcontactforce.PutScalar(0.);
 
         // normal contact force between particle and wall (note: owner_j = -1)
         CalculateNormalContactForce(g, v_rel_normal, mass_i, normalcontactforce, owner_i, -1);
@@ -800,12 +765,13 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
         if(contact_strategy_ == INPAR::PARTICLE::NormalAndTang_DEM)
         {
           // velocity v_rel = v_i + omega_i x (r'_i n) - v_wall = (v_i - v_wall) + omega_i x (r'_i n)
-          // and velocity v_rel_tangential
-          for(int n=0; n<3; ++n)
-          {
-            v_rel[n] += (radius_i+g) * (myangvel_i[(n+1)%3] * normal[(n+2)%3] - myangvel_i[(n+2)%3] * normal[(n+1)%3]);
-            v_rel_tangential[n] = v_rel[n] - v_rel_normal * normal[n];
-          }
+          static LINALG::Matrix<3,1> v_rel_rot;
+          v_rel_rot.CrossProduct(angvel_i,normal);
+          v_rel.Update(radius_i+g,v_rel_rot,1.);
+
+          // velocity v_rel_tangential
+          static LINALG::Matrix<3,1> v_rel_tangential;
+          v_rel_tangential.Update(1.,v_rel,-v_rel_normal,normal);
 
           // if g < 0 and g_lasttimestep > 0 -> create history variables
           if(!history_wall.count(gid_wall))
@@ -828,21 +794,24 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
                       history_wall[gid_wall], v_rel_tangential, m_eff, dt,owner_i, -1);
         }
 
-        // assembly of contact forces and moments
-        Epetra_SerialDenseVector val_i(3);
-        Epetra_SerialDenseVector m_i(3);
-        std::vector<int> lmowner_i(3);
+        // calculation of overall contact force
+        static LINALG::Matrix<3,1> contactforce;
+        contactforce.Update(normalcontactforce,normal,1.,tangentcontactforce);
 
-        double r_i = radius_i + g;
-        int owner_i = particle_i->Owner();
+        // calculation of overall contact moment: m_i = (r_i * n) x F_t
+        static LINALG::Matrix<3,1> contactmoment;
+        contactmoment.CrossProduct(normal,tangentcontactforce);
+        contactmoment.Scale(radius_i+g);
+
+        // assembly of contact forces and moments
+        static Epetra_SerialDenseVector val_i(3), m_i(3);
+        static std::vector<int> lmowner_i(3);
 
         for(int n=0; n<3; ++n)
         {
+          val_i[n] = contactforce(n);
+          m_i[n] = contactmoment(n);
           lmowner_i[n] = owner_i;
-          // contact forces
-          val_i[n] = normalcontactforce * normal[n] + tangentcontactforce[n];
-          // moments: m_i = (r_i * n) x F_t
-          m_i[n] = r_i * (normal[(n+1)%3] * tangentcontactforce[(n+2)%3] - normal[(n+2)%3] * tangentcontactforce[(n+1)%3]);
         }
 
         // do assembly of contact moments
@@ -902,16 +871,16 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
         discret_->Dof((*j), lm_j);
 
         // position of particle j
-        std::vector<double> myposition_j(3);
-        DRT::UTILS::ExtractMyValues(*disncol_,myposition_j,lm_j);
+        static LINALG::Matrix<3,1> position_j;
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_,position_j,lm_j);
 
         // velocity of particle j
-        std::vector<double> myvel_j(3);
-        DRT::UTILS::ExtractMyValues(*velncol_,myvel_j,lm_j);
+        static LINALG::Matrix<3,1> vel_j;
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_,vel_j,lm_j);
 
         // angular velocity of particle j
-        std::vector<double> myangvel_j(3);
-        DRT::UTILS::ExtractMyValues(*ang_velncol_,myangvel_j,lm_j);
+        static LINALG::Matrix<3,1> angvel_j;
+        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*ang_velncol_,angvel_j,lm_j);
 
         lid = discret_->NodeColMap()->LID(gid_j);
 
@@ -924,41 +893,33 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
         // normalized mass
         double m_eff = mass_i * mass_j / (mass_i + mass_j);
 
-        // contact force
-        double normalcontactforce = 0.0;
-        double tangentcontactforce[3] = {0.0};
-
         // distance vector and distance between two particles
-        double r_contact[3];
-        double norm_r_contact = 0.0;
-        for(int n=0; n<3; ++n)
-        {
-          r_contact[n] = myposition_j[n]-myposition_i[n];
-          norm_r_contact += r_contact[n]*r_contact[n];
-        }
-        norm_r_contact = sqrt(norm_r_contact);
+        static LINALG::Matrix<3,1> r_contact;
+        r_contact.Update(1.,position_j,-1,position_i);
+        const double norm_r_contact(r_contact.Norm2());
 
         // penetration
-        double g = norm_r_contact - radius_i - radius_j;
+        const double g = norm_r_contact - radius_i - radius_j;
         // in case of penetration contact forces and moments are calculated
         if(g <= 0.0)
         {
+          // contact forces
+          double normalcontactforce = 0.0;
+          static LINALG::Matrix<3,1> tangentcontactforce(true);
+
           if(std::fabs(g)>g_max_)
             g_max_ = std::fabs(g);
 
-          // normal vector and velocity v_rel = v_i - v_j and part of v_rel in normal-direction: v_rel * n
-          // velocity v_rel
-          double v_rel[3];
+          // velocity v_rel = v_i - v_j
+          static LINALG::Matrix<3,1> v_rel;
+          v_rel.Update(1.,vel_i,-1.,vel_j);
+
           // normal vector
-          double normal[3];
-          // part of v_rel in normal-direction
-          double v_rel_normal = 0.0;
-          for(int n=0; n<3; ++n)
-          {
-            normal[n] = r_contact[n]/norm_r_contact;
-            v_rel[n] = myvel_i[n] - myvel_j[n];
-            v_rel_normal += v_rel[n]*normal[n];
-          }
+          static LINALG::Matrix<3,1> normal;
+          normal.Update(1./norm_r_contact,r_contact);
+
+          // part of v_rel in normal- irection: v_rel * n
+          const double v_rel_normal(v_rel.Dot(normal));
 
           // calculation of normal contact force
           CalculateNormalContactForce(g, v_rel_normal, m_eff, normalcontactforce, owner_i, owner_j);
@@ -967,13 +928,15 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
           if(contact_strategy_ == INPAR::PARTICLE::NormalAndTang_DEM)
           {
             // velocity v_rel = v_i - v_j + omega_i x (r'_i n) + omega_j x (r'_j n)
-            // and velocity v_rel_tangential
-            double v_rel_tangential[3];
-            for(int n=0; n<3; ++n)
-            {
-              v_rel[n] += (radius_i+g/2.0) * (myangvel_i[(n+1)%3] * normal[(n+2)%3] - myangvel_i[(n+2)%3] * normal[(n+1)%3]) + (radius_j+g/2.0) * (myangvel_j[(n+1)%3] * normal[(n+2)%3] - myangvel_j[(n+2)%3] * normal[(n+1)%3]);
-              v_rel_tangential[n] = v_rel[n] - v_rel_normal * normal[n];
-            }
+            static LINALG::Matrix<3,1> v_rel_rot;
+            v_rel_rot.CrossProduct(angvel_i,normal);
+            v_rel.Update(radius_i+g/2.,v_rel_rot,1.);
+            v_rel_rot.CrossProduct(angvel_j,normal);
+            v_rel.Update(radius_j+g/2.,v_rel_rot,1.);
+
+            // velocity v_rel_tangential
+            static LINALG::Matrix<3,1> v_rel_tangential;
+            v_rel_tangential.Update(1.,v_rel,-v_rel_normal,normal);
 
             // if history variables does not exist -> create it
             if(!history_particle.count(gid_j))
@@ -995,38 +958,27 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
                       history_particle[gid_j], v_rel_tangential, m_eff, dt, owner_i, owner_j);
           }
 
-          //----------ASSEMBLY---------------------------------------
+          // calculation of overall contact force and moment
+          static LINALG::Matrix<3,1> contactforce_i, contactforce_j, contactmoment_i, contactmoment_j;
+          const double r_i = radius_i + g/2.0;
+          const double r_j = radius_j + g/2.0;
+          contactforce_i.Update(normalcontactforce,normal,1.,tangentcontactforce);
+          contactforce_j.Update(-1.,contactforce_i); // actio = reactio
+          contactmoment_i.CrossProduct(normal,tangentcontactforce);
+          contactmoment_i.Scale(r_i); // m_i = (r_i * n) x F_t
+          contactmoment_j.Update(r_j/r_i,contactmoment_i); // m_j = r_j/r_i * m_i
 
-          Epetra_SerialDenseVector val_i(3);
-          Epetra_SerialDenseVector m_i(3);
-          std::vector<int> lmowner_i(3);
+          static Epetra_SerialDenseVector val_i(3), val_j(3), m_i(3), m_j(3);
+          static std::vector<int> lmowner_i(3), lmowner_j(3);
 
-          Epetra_SerialDenseVector val_j(3);
-          Epetra_SerialDenseVector m_j(3);
-          std::vector<int> lmowner_j(3);
-
-          double r_i = radius_i + g/2.0;
-          double r_j = radius_j + g/2.0;
-
-          // forces
-          for(int n=0; n<3; ++n)
+          for(unsigned n=0; n<3; ++n)
           {
+            val_i[n] = contactforce_i(n);
+            val_j[n] = contactforce_j(n);
+            m_i[n] = contactmoment_i(n);
+            m_j[n] = contactmoment_j(n);
             lmowner_i[n] = owner_i;
             lmowner_j[n] = owner_j;
-
-            val_i[n] = normalcontactforce * normal[n] + tangentcontactforce[n];
-            // actio = reactio
-            val_j[n] = - val_i[n];
-          }
-
-          // moments
-          for(int n=0; n<3; ++n)
-          {
-            // m_i = (r_i * n) x F_t
-            m_i[n] = r_i * (normal[(n+1)%3] * tangentcontactforce[(n+2)%3] - normal[(n+2)%3] * tangentcontactforce[(n+1)%3]);
-
-            // m_j = r_j/r_i * m_i
-            m_j[n] = r_j/r_i * m_i[n];
           }
 
           // assembly of contact moments
@@ -1277,10 +1229,10 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
  *----------------------------------------------------------------------*/
 void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
   double normalcontactforce,
-  double *normal,
-  double *tangentcontactforce,
+  const LINALG::Matrix<3,1>& normal,
+  LINALG::Matrix<3,1>& tangentcontactforce,
   PARTICLE::Collision &currentColl,
-  double *v_rel_tangential,
+  const LINALG::Matrix<3,1>& v_rel_tangential,
   double m_eff,
   const double dt,
   int owner_i,
@@ -1333,7 +1285,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
   for(int n=0; n<3; ++n)
   {
     old_length += currentColl.g_t[n] * currentColl.g_t[n];
-    interime += normal[n] * currentColl.g_t[n];
+    interime += normal(n) * currentColl.g_t[n];
   }
   old_length = sqrt(old_length);
 
@@ -1341,7 +1293,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
   double new_length = 0.0;
   for(int n=0; n<3; ++n)
   {
-    currentColl.g_t[n] += - interime * normal[n];
+    currentColl.g_t[n] += - interime * normal(n);
     new_length += currentColl.g_t[n] * currentColl.g_t[n];
   }
   new_length = sqrt(new_length);
@@ -1361,19 +1313,16 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
   {
     for(int n=0; n<3; ++n)
     {
-      currentColl.g_t[n] += v_rel_tangential[n] * dt;
+      currentColl.g_t[n] += v_rel_tangential(n) * dt;
     }
   }
 
   // calculate tangential test force
-  // norm of tangential contact force
-  double norm_f_t = 0.0;
   for(int n=0; n<3; ++n)
-  {
-    tangentcontactforce[n] = - k * currentColl.g_t[n] - d * v_rel_tangential[n];
-    norm_f_t += tangentcontactforce[n] * tangentcontactforce[n];
-  }
-  norm_f_t = sqrt(norm_f_t);
+    tangentcontactforce(n) = - k * currentColl.g_t[n] - d * v_rel_tangential(n);
+
+  // norm of tangential contact force
+  const double norm_f_t(tangentcontactforce.Norm2());
 
   // Coulomb friction law
 
@@ -1387,18 +1336,13 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
   {
     currentColl.stick = false;
     //calculate tangent vector ( unit vector in (test-)tangentcontactforce-direction )
-    double tangent[3];
-    for(int n=0; n<3; ++n)
-    {
-      tangent[n] = tangentcontactforce[n] / norm_f_t;
-    }
+    static LINALG::Matrix<3,1> tangent;
+    tangent.Update(1./norm_f_t,tangentcontactforce);
 
     // calculate tangent contact force and tangential displacements
+    tangentcontactforce.Update(mu*std::fabs(normalcontactforce),tangent);
     for(int n=0; n<3; ++n)
-    {
-      tangentcontactforce[n] = mu * std::fabs(normalcontactforce) * tangent[n];
-      currentColl.g_t[n] = - 1/k * (tangentcontactforce[n] + d * v_rel_tangential[n]);
-    }
+      currentColl.g_t[n] = - 1./k * (tangentcontactforce(n) + d * v_rel_tangential(n));
   }
   //---------------------------------------------------------------
 
@@ -1755,48 +1699,42 @@ void PARTICLE::ParticleCollisionHandlerMD::HandleCollision(
     discret_->Dof(particle_1, lm_1);
     discret_->Dof(particle_2, lm_2);
 
-    std::vector<double> pos_1(3), pos_2(3), vel_1(3), vel_2(3), pos_1_new(3), pos_2_new(3), vel_1_new(3), vel_2_new(3);
-    DRT::UTILS::ExtractMyValues(*disncol_, pos_1, lm_1);
-    DRT::UTILS::ExtractMyValues(*disncol_, pos_2, lm_2);
-    DRT::UTILS::ExtractMyValues(*velncol_, vel_1, lm_1);
-    DRT::UTILS::ExtractMyValues(*velncol_, vel_2, lm_2);
+    static LINALG::Matrix<3,1> pos_1, pos_2, vel_1, vel_2, pos_1_new, pos_2_new, vel_1_new, vel_2_new;
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_, pos_1, lm_1);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_, pos_2, lm_2);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_, vel_1, lm_1);
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_, vel_2, lm_2);
 
     int lid_1 = ddt_->Map().LID(particle_1->Id());
     int lid_2 = ddt_->Map().LID(particle_2->Id());
 
     // compute particle positions and collision normal at collision time
     static LINALG::Matrix<3,1> unitcollnormal;
-    for (int i=0; i<3; ++i)
-    {
-      pos_1_new[i] = pos_1[i] + (next_event->time - (*ddt_)[lid_1]) * vel_1[i];
-      pos_2_new[i] = pos_2[i] + (next_event->time - (*ddt_)[lid_2]) * vel_2[i];
-      unitcollnormal(i) = pos_2_new[i] - pos_1_new[i];
-    }
-    unitcollnormal.Scale(1.0/unitcollnormal.Norm2());
+    pos_1_new.Update(1.,pos_1,next_event->time-(*ddt_)[lid_1],vel_1);
+    pos_2_new.Update(1.,pos_2,next_event->time-(*ddt_)[lid_2],vel_2);
+    unitcollnormal.Update(1.,pos_2_new,-1.,pos_1_new);
+    unitcollnormal.Scale(1./unitcollnormal.Norm2());
 
     // compute velocities of particles in normal direction
-    double veln1 = vel_1[0] * unitcollnormal(0) + vel_1[1] * unitcollnormal(1) + vel_1[2] * unitcollnormal(2);
-    double veln2 = vel_2[0] * unitcollnormal(0) + vel_2[1] * unitcollnormal(1) + vel_2[2] * unitcollnormal(2);
+    const double veln1(vel_1.Dot(unitcollnormal));
+    const double veln2(vel_2.Dot(unitcollnormal));
 
     // check for collision: normal velocity of particle_1 must be greater than of particle_2
-    double deltaveln = veln1 - veln2;
+    const double deltaveln = veln1 - veln2;
     if (deltaveln > GEO::TOL14)
     {
       // get masses
-      double mass_1 = (*masscol_)[lid_1];
-      double mass_2 = (*masscol_)[lid_2];
-      double mass = mass_1 + mass_2;
+      const double mass_1 = (*masscol_)[lid_1];
+      const double mass_2 = (*masscol_)[lid_2];
+      const double mass = mass_1 + mass_2;
 
       // compute new velocities in normal direction
-      double veln1_new = veln1 - (1.0 + e_) * mass_2 * deltaveln / mass;
-      double veln2_new = veln2 + (1.0 + e_) * mass_1 * deltaveln / mass;
+      const double veln1_new = veln1 - (1.0 + e_) * mass_2 * deltaveln / mass;
+      const double veln2_new = veln2 + (1.0 + e_) * mass_1 * deltaveln / mass;
 
       // compute new velocities
-      for(int i=0; i<3; ++i)
-      {
-        vel_1_new[i] = vel_1[i] + (veln1_new - veln1) * unitcollnormal(i);
-        vel_2_new[i] = vel_2[i] + (veln2_new - veln2) * unitcollnormal(i);
-      }
+      vel_1_new.Update(1.,vel_1,veln1_new-veln1,unitcollnormal);
+      vel_2_new.Update(1.,vel_2,veln2_new-veln2,unitcollnormal);
 
       // update ddt
       (*ddt_)[lid_1] = next_event->time;
@@ -1807,11 +1745,11 @@ void PARTICLE::ParticleCollisionHandlerMD::HandleCollision(
         lid_1 = disncol_->Map().LID(lm_1[i]);
         lid_2 = disncol_->Map().LID(lm_2[i]);
         // update particle positions
-        (*disncol_)[lid_1] = pos_1_new[i];
-        (*disncol_)[lid_2] = pos_2_new[i];
+        (*disncol_)[lid_1] = pos_1_new(i);
+        (*disncol_)[lid_2] = pos_2_new(i);
         // update particle velocities
-        (*velncol_)[lid_1] = vel_1_new[i];
-        (*velncol_)[lid_2] = vel_2_new[i];
+        (*velncol_)[lid_1] = vel_1_new(i);
+        (*velncol_)[lid_2] = vel_2_new(i);
       }
 #ifdef OUTPUT
       std::cout << "New position of particle with GID " << particle_1->Id() << "  x: " << pos_1_new[0] << "  y: " << pos_1_new[1] << "  z: " << pos_1_new[2] << std::endl;
@@ -2799,7 +2737,9 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
 
     if (std::fabs(det) < GEO::TOL14)
     {
-      if(GEO::computeCrossProduct(particle_vel, F_deriv1).Norm1() < GEO::TOL10 and iter>1)
+      static LINALG::Matrix<3,1> crossproduct;
+      crossproduct.CrossProduct(particle_vel, F_deriv1);
+      if(crossproduct.Norm1() < GEO::TOL10 and iter>1)
       {
         coll_solution(1) = -1000.0;
         break;
@@ -3108,8 +3048,9 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
         copy_particle_vel(i) = particle_vel_fad(i).val();
         copy_F_deriv1(i) = F_deriv1(i).val();
       }
-      LINALG::Matrix<3,1> crossprod = GEO::computeCrossProduct(copy_particle_vel, copy_F_deriv1);
-      if(crossprod.Norm1() < GEO::TOL10 and iter>1)
+      static LINALG::Matrix<3,1> crossproduct;
+      crossproduct.CrossProduct(copy_particle_vel, copy_F_deriv1);
+      if(crossproduct.Norm1() < GEO::TOL10 and iter>1)
       {
         coll_solution(1) = -1000.0;
         break;
@@ -3349,19 +3290,11 @@ void PARTICLE::ParticleCollisionHandlerMD::GetCollisionData(
   std::vector<int> lm;
   lm.reserve(3);
   discret_->Dof(particle, lm);
-  std::vector<double> position(3);
-  std::vector<double> velocity(3);
-  DRT::UTILS::ExtractMyValues(*disncol_, position, lm);
-  DRT::UTILS::ExtractMyValues(*velncol_, velocity, lm);
-  int lid = radiusncol_->Map().LID(particle->Id());
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_, pos, lm);
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_, vel, lm);
+  const int lid = radiusncol_->Map().LID(particle->Id());
   rad = (*radiusncol_)[lid];
   ddt = (*ddt_)[lid];
-
-  for(int d=0; d<3; ++d)
-  {
-   pos(d) = position[d];
-   vel(d) = velocity[d];
-  }
 
   return;
 }
