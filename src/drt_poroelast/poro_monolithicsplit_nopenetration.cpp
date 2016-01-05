@@ -435,7 +435,7 @@ void POROELAST::MonolithicSplitNoPenetration::ApplyFluidCouplMatrix(
 
   Teuchos::RCP<Epetra_Vector> disp_interface =
       FluidField()->Interface()->ExtractFSICondVector(FluidField()->Dispnp());
-  mortar_adapter_->IntegrateD("displacement",disp_interface,StructureToFluidAtInterface(lambdanp_));
+  mortar_adapter_->IntegrateLinD("displacement",disp_interface,StructureToFluidAtInterface(lambdanp_));
   tmp_k_D = mortar_adapter_->DMatrix();
 
   //fill off diagonal blocks

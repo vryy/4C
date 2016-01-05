@@ -20,6 +20,7 @@ Maintainer: Philipp Farah
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
+#include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/14 |
@@ -114,10 +115,6 @@ namespace ADAPTER
               Teuchos::RCP<CONTACT::CoInterface>& interface,
               int numcoupleddof);
 
-    virtual void Evaluate(const std::string& statename,
-                          const Teuchos::RCP<Epetra_Vector> vec,
-                          bool onlyD);
-
     virtual void SetupSpringDashpot(
         Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis,
@@ -125,17 +122,59 @@ namespace ADAPTER
         const int coupling_id,
         const Epetra_Comm& comm);
 
-    virtual void IntegrateD(const std::string& statename,
+    virtual void IntegrateLinD(const std::string& statename,
+                            const Teuchos::RCP<Epetra_Vector> vec,
+                            const Teuchos::RCP<Epetra_Vector> veclm);
+
+    virtual void IntegrateLinDM(const std::string& statename,
                             const Teuchos::RCP<Epetra_Vector> vec,
                             const Teuchos::RCP<Epetra_Vector> veclm);
 
     virtual void PrintInterface(std::ostream& os);
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> DMatrix(){return D_;};
-    virtual Teuchos::RCP<LINALG::SparseMatrix> MMatrix(){return M_;};
+    virtual void CreateP();
 
-    virtual Teuchos::RCP<LINALG::SparseMatrix> DLinMatrix(){return DLin_;};
-    virtual Teuchos::RCP<LINALG::SparseMatrix> MLinMatrix(){return MLin_;};
+    virtual Teuchos::RCP<LINALG::SparseMatrix> DMatrix()
+    {
+      if(D_==Teuchos::null)
+        dserror("ERROR: D Matrix is null pointer!");
+      return D_;
+    };
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> DInvMatrix()
+    {
+      if(DInv_==Teuchos::null)
+        dserror("ERROR: DInv Matrix is null pointer!");
+      return DInv_;
+    };
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> MMatrix()
+    {
+      if(M_==Teuchos::null)
+        dserror("ERROR: M Matrix is null pointer!");
+      return M_;
+    };
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> PMatrix()
+    {
+      if(P_==Teuchos::null)
+        dserror("ERROR: P Matrix is null pointer!");
+      return P_;
+    };
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> DLinMatrix()
+    {
+      if(DLin_==Teuchos::null)
+        dserror("ERROR: DLin Matrix is null pointer!");
+      return DLin_;
+    };
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> MLinMatrix()
+    {
+      if(MLin_==Teuchos::null)
+        dserror("ERROR: MLin Matrix is null pointer!");
+      return MLin_;
+    };
 
     /// the mortar interface itself
     Teuchos::RCP<CONTACT::CoInterface> Interface() const { return interface_;}
@@ -149,9 +188,11 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Map>           slavedofrowmap_;  ///< map of slave row dofs
 
     Teuchos::RCP<LINALG::SparseMatrix> D_;
+    Teuchos::RCP<LINALG::SparseMatrix> DInv_;
     Teuchos::RCP<LINALG::SparseMatrix> DLin_;
     Teuchos::RCP<LINALG::SparseMatrix> M_;
     Teuchos::RCP<LINALG::SparseMatrix> MLin_;
+    Teuchos::RCP<LINALG::SparseMatrix> P_;
 
     Teuchos::RCP<CONTACT::CoInterface> interface_;       ///< interface
   };

@@ -25,6 +25,7 @@ Maintainer: Philipp Farah
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_multiply.H"
 
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
@@ -38,7 +39,18 @@ Maintainer: Philipp Farah
 /*----------------------------------------------------------------------*
  |  ctor                                                     farah 10/14|
  *----------------------------------------------------------------------*/
-ADAPTER::CouplingNonLinMortar::CouplingNonLinMortar()
+ADAPTER::CouplingNonLinMortar::CouplingNonLinMortar() :
+  comm_(Teuchos::null),
+  myrank_(-1),
+  masterdofrowmap_(Teuchos::null),
+  slavedofrowmap_(Teuchos::null),
+  D_(Teuchos::null),
+  DInv_(Teuchos::null),
+  DLin_(Teuchos::null),
+  M_(Teuchos::null),
+  MLin_(Teuchos::null),
+  P_(Teuchos::null),
+  interface_(Teuchos::null)
 {
   //empty...
 }
@@ -110,8 +122,6 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(
   // initialize maps for row nodes
   std::map<int, DRT::Node*> masternodes;
   std::map<int, DRT::Node*> slavenodes;
-
-
 
   // Coupling condition is defined by "MORTAR COUPLING CONDITIONS"
   // There is only one discretization (masterdis == slavedis). Therefore, the node set have to be
@@ -493,21 +503,6 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(
 
 
 /*----------------------------------------------------------------------*
- |  setup for nonlinear mortar framework                     farah 10/14|
- *----------------------------------------------------------------------*/
-void ADAPTER::CouplingNonLinMortar::Evaluate(const std::string& statename,
-    const Teuchos::RCP<Epetra_Vector> vec,
-    bool onlyD)
-{
-  interface_->SetState(statename,vec);
-  interface_->Initialize();
-  interface_->Evaluate();
-  interface_->AssembleDM(*D_,*M_,onlyD);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  | setup contact elements for spring dashpot condition     pfaller Apr15|
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(
@@ -694,16 +689,14 @@ void ADAPTER::CouplingNonLinMortar::PrintInterface(std::ostream& os)
 
 
 /*----------------------------------------------------------------------*
- |  setup for nonlinear mortar framework                     farah 10/14|
+ |  Integrate slave-side matrix + linearization (D matrix)   farah 10/14|
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingNonLinMortar::IntegrateD(const std::string& statename,
+void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec,
     const Teuchos::RCP<Epetra_Vector> veclm)
 {
   D_->Zero();
   DLin_->Zero();
-  M_->Zero();
-  MLin_->Zero();
 
   interface_->SetState(statename,vec);
   interface_->SetState("lm",veclm);
@@ -726,6 +719,80 @@ void ADAPTER::CouplingNonLinMortar::IntegrateD(const std::string& statename,
 
   interface_->AssembleDM(*D_,*M_,true);
   interface_->AssembleLinDM(*DLin_,*MLin_,false,true);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Integrate mortar matrices + linearization (D/M matrix)   farah 01/16|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
+    const Teuchos::RCP<Epetra_Vector> vec,
+    const Teuchos::RCP<Epetra_Vector> veclm)
+{
+  D_->Zero();
+  DLin_->Zero();
+  M_->Zero();
+  MLin_->Zero();
+
+  interface_->SetState(statename,vec);
+  interface_->SetState("lm",veclm);
+
+  interface_->Initialize();
+  interface_->SetElementAreas();
+
+  interface_->Evaluate();
+
+  interface_->AssembleDM(*D_,*M_);
+  interface_->AssembleLinDM(*DLin_,*MLin_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  compute projection operator P                            farah 01/16|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::CreateP()
+{
+  // check
+  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(interface_->IParams(),"LM_SHAPEFCN") !=
+      INPAR::MORTAR::shape_dual)
+    dserror("ERROR: Creation of P operator only for dual shape functions!");
+
+  /********************************************************************/
+  /* Multiply Mortar matrices: P = inv(D) * M         A               */
+  /********************************************************************/
+  DInv_ = Teuchos::rcp(new LINALG::SparseMatrix(*D_));
+  Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(
+      *slavedofrowmap_, true);
+  int err = 0;
+
+  // extract diagonal of invd into diag
+  DInv_->ExtractDiagonalCopy(*diag);
+
+  // set zero diagonal values to dummy 1.0
+  for (int i = 0; i < diag->MyLength(); ++i)
+    if (abs((*diag)[i]) < 1e-12)
+    {
+      std::cout << "WARNING: Diagonal entry of D matrix is skipped because it is less than 1e-12!!!" << std::cout;
+      (*diag)[i] = 1.0;
+    }
+
+  // scalar inversion of diagonal values
+  err = diag->Reciprocal(*diag);
+  if (err > 0)
+    dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+  // re-insert inverted diagonal into invd
+  err = DInv_->ReplaceDiagonalValues(*diag);
+  DInv_->Complete();
+
+  // do the multiplication P = inv(D) * M
+  P_ = LINALG::MLMultiply(*DInv_, false,*M_, false, false, false, true);
+
+  P_->Complete(*masterdofrowmap_,*slavedofrowmap_);
 
   return;
 }
