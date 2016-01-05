@@ -776,7 +776,7 @@ void ADAPTER::CouplingNonLinMortar::CreateP()
   for (int i = 0; i < diag->MyLength(); ++i)
     if (abs((*diag)[i]) < 1e-12)
     {
-      std::cout << "WARNING: Diagonal entry of D matrix is skipped because it is less than 1e-12!!!" << std::cout;
+      std::cout << "WARNING: Diagonal entry of D matrix is skipped because it is less than 1e-12!!!" << std::endl;
       (*diag)[i] = 1.0;
     }
 
