@@ -44,12 +44,14 @@ ADAPTER::CouplingNonLinMortar::CouplingNonLinMortar() :
   myrank_(-1),
   masterdofrowmap_(Teuchos::null),
   slavedofrowmap_(Teuchos::null),
+  slavenoderowmap_(Teuchos::null),
   D_(Teuchos::null),
   DInv_(Teuchos::null),
   DLin_(Teuchos::null),
   M_(Teuchos::null),
   MLin_(Teuchos::null),
   P_(Teuchos::null),
+  gap_(Teuchos::null),
   interface_(Teuchos::null)
 {
   //empty...
@@ -472,6 +474,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(
   // store old row maps (before parallel redistribution)
   slavedofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
   masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
+  slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
 
   // print parallel distribution
   interface->PrintParallelDistribution(1);
@@ -498,6 +501,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(
   DLin_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,true,false,LINALG::SparseMatrix::FE_MATRIX));
   M_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
   MLin_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  gap_ = Teuchos::rcp(new Epetra_Vector(*slavenoderowmap_,true));
   return;
 }
 
@@ -793,6 +797,26 @@ void ADAPTER::CouplingNonLinMortar::CreateP()
   P_ = LINALG::MLMultiply(*DInv_, false,*M_, false, false, false, true);
 
   P_->Complete(*masterdofrowmap_,*slavedofrowmap_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Integrate mortar matrices + linearization (D/M matrix) + gap vector |
+ |  + compute projection operator P                         wirtz 01/16 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
+    const Teuchos::RCP<Epetra_Vector> vec,
+    const Teuchos::RCP<Epetra_Vector> veclm)
+{
+
+  IntegrateLinDM(statename, vec, veclm);
+
+  CreateP();
+
+  gap_->PutScalar(0.0);
+  interface_->AssembleG(*gap_);
 
   return;
 }

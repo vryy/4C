@@ -130,6 +130,10 @@ namespace ADAPTER
                             const Teuchos::RCP<Epetra_Vector> vec,
                             const Teuchos::RCP<Epetra_Vector> veclm);
 
+    virtual void IntegrateAll(const std::string& statename,
+                            const Teuchos::RCP<Epetra_Vector> vec,
+                            const Teuchos::RCP<Epetra_Vector> veclm);
+
     virtual void PrintInterface(std::ostream& os);
 
     virtual void CreateP();
@@ -176,6 +180,13 @@ namespace ADAPTER
       return MLin_;
     };
 
+    virtual Teuchos::RCP<Epetra_Vector> Gap()
+    {
+      if(gap_==Teuchos::null)
+      dserror("ERROR: gap vector is null pointer!");
+      return gap_;
+    };
+
     /// the mortar interface itself
     Teuchos::RCP<CONTACT::CoInterface> Interface() const { return interface_;}
 
@@ -186,6 +197,7 @@ namespace ADAPTER
 
     Teuchos::RCP<Epetra_Map>           masterdofrowmap_; ///< map of master row dofs
     Teuchos::RCP<Epetra_Map>           slavedofrowmap_;  ///< map of slave row dofs
+    Teuchos::RCP<Epetra_Map>           slavenoderowmap_; ///< map of slave row nodes
 
     Teuchos::RCP<LINALG::SparseMatrix> D_;
     Teuchos::RCP<LINALG::SparseMatrix> DInv_;
@@ -193,6 +205,8 @@ namespace ADAPTER
     Teuchos::RCP<LINALG::SparseMatrix> M_;
     Teuchos::RCP<LINALG::SparseMatrix> MLin_;
     Teuchos::RCP<LINALG::SparseMatrix> P_;
+
+    Teuchos::RCP<Epetra_Vector>        gap_;
 
     Teuchos::RCP<CONTACT::CoInterface> interface_;       ///< interface
   };
