@@ -30,6 +30,8 @@ namespace LINALG
 namespace DRT
 {
   class Discretization;
+  class Element;
+  class Node;
 }
 
 namespace MORTAR
@@ -72,33 +74,56 @@ namespace ADAPTER
     CouplingMortar();
 
     //! setup the machinery (generalized version)
-    /// master and slave discretization are identical for sliding ale and fluid/scatra meshtying
-    /// ale discretization is Teuchos::null for sliding ale and fluid/scatra meshtying
-    void Setup( Teuchos::RCP<DRT::Discretization>   masterdis,            ///> master discretization
-                Teuchos::RCP<DRT::Discretization>   slavedis,             ///> slave discretization
-                Teuchos::RCP<DRT::Discretization>   aledis,               ///> ale discretization
-                std::vector<int>                    coupleddof,           ///> vector defining coupled degree's of freedom
-                const std::string&                  couplingcond,         ///> string for coupling condition
-                const Epetra_Comm&                  comm,                 ///> communicate
-                bool                                slavewithale=false,   ///> flag defining if slave is ALE
-                bool                                slidingale=false,     ///> flag defining sliding ale case
-                int                                 nds_master=0,         ///> dofset number of master
-                int                                 nds_slave=0           ///> dofset number of slave
-                );
+    /// master and slave discretizations are identical in case of sliding ALE or fluid/scatra meshtying
+    /// ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
+    void Setup(
+        const Teuchos::RCP<DRT::Discretization>&   masterdis,            ///< master discretization
+        const Teuchos::RCP<DRT::Discretization>&   slavedis,             ///< slave discretization
+        const Teuchos::RCP<DRT::Discretization>&   aledis,               ///< ALE discretization
+        const std::vector<int>&                    coupleddof,           ///< vector defining coupled degrees of freedom
+        const std::string&                         couplingcond,         ///< string for coupling condition
+        const Epetra_Comm&                         comm,                 ///< communicator
+        const bool                                 slavewithale=false,   ///< flag defining if slave is ALE
+        const bool                                 slidingale=false,     ///< flag indicating sliding ALE case
+        const int                                  nds_master=0,         ///< master dofset number
+        const int                                  nds_slave=0           ///< slave dofset number
+        );
+
+    //! setup the machinery (generalized version)
+    /// master and slave discretizations are identical in case of sliding ALE or fluid/scatra meshtying
+    /// ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
+    void Setup(
+        const Teuchos::RCP<DRT::Discretization>&           masterdis,            ///< master discretization
+        const Teuchos::RCP<DRT::Discretization>&           slavedis,             ///< slave discretization
+        const Teuchos::RCP<DRT::Discretization>&           aledis,               ///< ALE discretization
+        const std::vector<int>&                            coupleddof,           ///< vector defining coupled degrees of freedom
+        const std::map<int,DRT::Node*>&                    mastergnodes,         ///< master nodes, including ghosted nodes
+        const std::map<int,DRT::Node*>&                    slavegnodes,          ///< slave nodes, including ghosted nodes
+        const std::map<int,Teuchos::RCP<DRT::Element> >&   masterelements,       ///< master elements
+        const std::map<int,Teuchos::RCP<DRT::Element> >&   slaveelements,        ///< slave elements
+        const Epetra_Comm&                                 comm,                 ///< communicator
+        const bool                                         slavewithale=false,   ///< flag defining if slave is ALE
+        const bool                                         slidingale=false,     ///< flag indicating sliding ALE case
+        const int                                          nds_master=0,         ///< master dofset number
+        const int                                          nds_slave=0           ///< slave dofset number
+        );
 
     //! setup the machinery (hack version (used in UQ to obtain surface normals of slave interface ONLY))
-    void SetupForUQAbuseNormalCalculation( Teuchos::RCP<DRT::Discretization>   slavedis,       ///>  discretization
-                const Epetra_Comm&                  comm);           ///> communicate
-
+    void SetupForUQAbuseNormalCalculation(
+        Teuchos::RCP<DRT::Discretization>   slavedis,   ///< slave discretization
+        const Epetra_Comm&                  comm        ///< communicator
+        );
 
     /// perform mesh relocation
-    void MeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,
-                        Teuchos::RCP<DRT::Discretization> aledis,
-                        Teuchos::RCP<Epetra_Map>          masterdofrowmap,
-                        Teuchos::RCP<Epetra_Map>          slavedofrowmap,
-                        Teuchos::RCP<Epetra_Vector>&      idisp,
-                        const Epetra_Comm&                comm,
-                        bool                              slavewithale);
+    void MeshRelocation(
+        Teuchos::RCP<DRT::Discretization> slavedis,
+        Teuchos::RCP<DRT::Discretization> aledis,
+        Teuchos::RCP<Epetra_Map>          masterdofrowmap,
+        Teuchos::RCP<Epetra_Map>          slavedofrowmap,
+        Teuchos::RCP<Epetra_Vector>&      idisp,
+        const Epetra_Comm&                comm,
+        bool                              slavewithale
+        );
 
     /// create integration cells
     std::vector<Teuchos::RCP<MORTAR::IntCell> > EvaluateGeometry();
@@ -110,11 +135,13 @@ namespace ADAPTER
     void Evaluate(Teuchos::RCP<Epetra_Vector> idispma, Teuchos::RCP<Epetra_Vector> idispsl);
 
     //! filling matrices, including mesh correction
-    void EvaluateWithMeshRelocation(Teuchos::RCP<DRT::Discretization> slavedis,  ///> slave discretization
-                                    Teuchos::RCP<DRT::Discretization> aledis,    ///> ale discretization
-                                    Teuchos::RCP<Epetra_Vector>&      idisp, ///> ALE displacements
-                                    const Epetra_Comm&                comm,           ///> communicator
-                                    bool                              slavewithale);   ///> flag defining if slave is ALE
+    void EvaluateWithMeshRelocation(
+        Teuchos::RCP<DRT::Discretization> slavedis,      ///< slave discretization
+        Teuchos::RCP<DRT::Discretization> aledis,        ///< ALE discretization
+        Teuchos::RCP<Epetra_Vector>&      idisp,         ///< ALE displacements
+        const Epetra_Comm&                comm,          ///< communicator
+        bool                              slavewithale   ///< flag defining if slave is ALE
+        );
 
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_Vector> MasterToSlave

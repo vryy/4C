@@ -39,28 +39,21 @@ ADAPTER::CouplingMortar::CouplingMortar()
 
 
 /*----------------------------------------------------------------------*
- * Setup routine for mortar framework                 ehrl 08/13        *
+ | setup routine for mortar framework                        fang 01/16 |
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingMortar::Setup(
-    Teuchos::RCP<DRT::Discretization>   masterdis,
-    Teuchos::RCP<DRT::Discretization>   slavedis,
-    Teuchos::RCP<DRT::Discretization>   aledis,
-    std::vector<int>                    coupleddof,
-    const std::string&                  couplingcond,
-    const Epetra_Comm&                  comm,
-    bool                                slavewithale,
-    bool                                slidingale,
-    int                                 nds_master,
-    int                                 nds_slave)
+    const Teuchos::RCP<DRT::Discretization>&   masterdis,      ///< master discretization
+    const Teuchos::RCP<DRT::Discretization>&   slavedis,       ///< slave discretization
+    const Teuchos::RCP<DRT::Discretization>&   aledis,         ///< ALE discretization
+    const std::vector<int>&                    coupleddof,     ///< vector defining coupled degrees of freedom
+    const std::string&                         couplingcond,   ///< string for coupling condition
+    const Epetra_Comm&                         comm,           ///< communicator
+    const bool                                 slavewithale,   ///< flag defining if slave is ALE
+    const bool                                 slidingale,     ///< flag indicating sliding ALE case
+    const int                                  nds_master,     ///< master dofset number
+    const int                                  nds_slave       ///< slave dofset number
+    )
 {
-  // vector coupleddof defines degree of freedom which are coupled (1: coupled; 0: not coupled), e.g.:
-  // - fluid 3D meshtying: coupleddof = [1, 1, 1, 1] -> all degrees of freedom (velocity and pressure) are coupled
-  // - fluid 3D meshtying: coupleddof = [1, 1, 1, 0] -> only velocity degrees of freedom are coupled
-  // - fsi 3D: coupleddof = [1, 1, 1] -> at the interface only displacements are coupled
-  // - ....
-
-  int myrank  = masterdis->Comm().MyPID();
-
   // initialize maps for row nodes
   std::map<int, DRT::Node*> masternodes;
   std::map<int, DRT::Node*> slavenodes;
@@ -110,6 +103,40 @@ void ADAPTER::CouplingMortar::Setup(
     // Fill maps based on condition for slave side (masterdis != slavedis)
     DRT::UTILS::FindConditionObjects(*slavedis, slavenodes, slavegnodes, slaveelements, couplingcond);
   }
+
+  Setup(masterdis,slavedis,aledis,coupleddof,mastergnodes,slavegnodes,masterelements,slaveelements,comm,slavewithale,slidingale,nds_master,nds_slave);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | setup routine for mortar framework                        ehrl 08/13 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingMortar::Setup(
+    const Teuchos::RCP<DRT::Discretization>&           masterdis,        ///< master discretization
+    const Teuchos::RCP<DRT::Discretization>&           slavedis,         ///< slave discretization
+    const Teuchos::RCP<DRT::Discretization>&           aledis,           ///< ALE discretization
+    const std::vector<int>&                            coupleddof,       ///< vector defining coupled degrees of freedom
+    const std::map<int,DRT::Node*>&                    mastergnodes,     ///< master nodes, including ghosted nodes
+    const std::map<int,DRT::Node*>&                    slavegnodes,      ///< slave nodes, including ghosted nodes
+    const std::map<int,Teuchos::RCP<DRT::Element> >&   masterelements,   ///< master elements
+    const std::map<int,Teuchos::RCP<DRT::Element> >&   slaveelements,    ///< slave elements
+    const Epetra_Comm&                                 comm,             ///< communicator
+    const bool                                         slavewithale,     ///< flag defining if slave is ALE
+    const bool                                         slidingale,       ///< flag indicating sliding ALE case
+    const int                                          nds_master,       ///< master dofset number
+    const int                                          nds_slave         ///< slave dofset number
+    )
+{
+  // vector coupleddof defines degree of freedom which are coupled (1: coupled; 0: not coupled), e.g.:
+  // - fluid 3D meshtying: coupleddof = [1, 1, 1, 1] -> all degrees of freedom (velocity and pressure) are coupled
+  // - fluid 3D meshtying: coupleddof = [1, 1, 1, 0] -> only velocity degrees of freedom are coupled
+  // - fsi 3D: coupleddof = [1, 1, 1] -> at the interface only displacements are coupled
+  // - ....
+
+  // processor ID
+  int myrank  = masterdis->Comm().MyPID();
 
   // get mortar coupling parameters
   const Teuchos::ParameterList& inputmortar = DRT::Problem::Instance()->MortarCouplingParams();
