@@ -507,17 +507,7 @@ void CAVITATION::Algorithm::Integrate()
   }
   else
   {
-    // some output
-    if (myrank_ == 0)
-    {
-      if(timestepsizeratio_<100)
-        IO::cout << "particle substep no. " << (particles_->StepOld()-restartparticles_) % timestepsizeratio_ << IO::endl;
-      else
-      {
-        if ( (particles_->StepOld()-restartparticles_)%10 == 0)
-          IO::cout << "particle substep no. " << (particles_->StepOld()-restartparticles_) % timestepsizeratio_ << IO::endl;
-      }
-    }
+    SubcyclingInfoToScreen();
   }
 
   if(computeradiusRPbased_ == true)
@@ -1473,34 +1463,6 @@ void CAVITATION::Algorithm::ParticleInflow()
   if((particles_->Step()-restartparticles_) % timestepsizeratio_ != 0)
     return;
 
-  std::map<int, std::list<Teuchos::RCP<BubbleSource> > >::const_iterator biniter;
-
-  int timeforinflow = 0;
-  int inflowsteps = 0;
-  for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
-  {
-    // all particles have the same inflow frequency --> it is enough to test one
-    // assumption only valid in case of one condition or conditions with identical inflow frequency
-    if(biniter->second.size() != 0)
-    {
-      double inflowtime = 1.0 / biniter->second.front()->inflow_freq_;
-      inflowsteps = (int)(inflowtime/Dt());
-      if(Step() % inflowsteps == 0)
-      {
-        timeforinflow = 1;
-        break;
-      }
-    }
-  }
-
-  // check globally for inflow -> all or none of the procs must go in here
-  int globaltimeforinflow = 0;
-  particledis_->Comm().MaxAll(&timeforinflow, &globaltimeforinflow, 1);
-
-  // if it is inflow time erase all inflow particles because they have reached their final size
-  if(globaltimeforinflow != 0)
-    latestinflowbubbles_.clear();
-
   {
     //----------------------------------------------
     // do blending of radius of inflow particles
@@ -1536,6 +1498,35 @@ void CAVITATION::Algorithm::ParticleInflow()
       }
     }
   }
+
+  // clear latest inflow particles as they have reached their final size
+  if(latestinflowbubbles_.size() != 0 && (Step()+1) % blendingsteps_ == 0)
+    latestinflowbubbles_.clear();
+
+  // check locally for inflow of new bubbles
+  std::map<int, std::list<Teuchos::RCP<BubbleSource> > >::const_iterator biniter;
+
+  int timeforinflow = 0;
+  int inflowsteps = 0;
+  for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
+  {
+    // all particles have the same inflow frequency --> it is enough to test one
+    // assumption only valid in case of one condition or conditions with identical inflow frequency
+    if(biniter->second.size() != 0)
+    {
+      double inflowtime = 1.0 / biniter->second.front()->inflow_freq_;
+      inflowsteps = (int)(inflowtime/Dt());
+      if(Step() % inflowsteps == 0)
+      {
+        timeforinflow = 1;
+        break;
+      }
+    }
+  }
+
+  // check globally for inflow -> all or none of the procs must go in here
+  int globaltimeforinflow = 0;
+  particledis_->Comm().MaxAll(&timeforinflow, &globaltimeforinflow, 1);
 
   // if no inflow detected -> leave here
   if(globaltimeforinflow == 0)
@@ -1597,11 +1588,17 @@ void CAVITATION::Algorithm::ParticleInflow()
   std::stringstream ss;
   if(inflowradiusblending_)
   {
+    const int initialblendingsteps = blendingsteps_;
+
     // allreduce the ids of inflow bubbles in order to do blending of the radius on all procs later on
     LINALG::GatherAll(latestinflowbubbles_, particledis_->Comm());
     // allreduce the number of steps which are used for blending the bubble radius
     particledis_->Comm().MaxAll(&inflowsteps, &blendingsteps_, 1);
     ss << blendingsteps_;
+
+    // safety check
+    if(initialblendingsteps != 0 && initialblendingsteps != blendingsteps_)
+      dserror("inflow frequency has changed which is not yet supported --> see latestinflowbubbles_");
   }
   else
   {
@@ -2057,6 +2054,37 @@ void CAVITATION::Algorithm::Output(bool forced_writerestart)
     }
   }
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | some output to screen about subcycling                  ghamm 01/16  |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::SubcyclingInfoToScreen()
+{
+  if (myrank_ == 0)
+  {
+    if(timestepsizeratio_<100)
+    {
+      const int substep = (particles_->Step()-restartparticles_) % timestepsizeratio_;
+      if(substep != 0)
+        IO::cout << "particle substep no. " << substep << IO::endl;
+      else
+        IO::cout << "particle substep no. " << timestepsizeratio_ << IO::endl;
+    }
+    else
+    {
+      if ( (particles_->Step()-restartparticles_)%10 == 0)
+      {
+        const int substep = (particles_->Step()-restartparticles_) % timestepsizeratio_;
+        if(substep != 0)
+          IO::cout << "particle substep no. " << substep << IO::endl;
+        else
+          IO::cout << "particle substep no. " << timestepsizeratio_ << IO::endl;
+      }
+    }
+  }
   return;
 }
 

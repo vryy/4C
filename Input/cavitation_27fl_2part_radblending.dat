@@ -40,8 +40,8 @@ GRAVITY_ACCELERATION            0.0 0.0 -9.81
 ----------------------------------------------------------CAVITATION DYNAMIC
 COUPALGO                        cavitation_oneway
 INFLOW_RADIUS_BLENDING          yes
-MAXTIME                         0.5
-NUMSTEP                         5
+MAXTIME                         1.0
+NUMSTEP                         10
 RESTARTEVRY                     3
 SIMPLIFIED_BUBBLE_FORCES        No
 TIMESTEP                        5.0e-2
@@ -165,19 +165,19 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0-9810.0*z  // p_init = \rho_fl * g *
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE 0.00000000000000000e+00 TOLERANCE 1e-12
 FLUID DIS fluid NODE 12 QUANTITY vely VALUE 0.00000000000000000e+00 TOLERANCE 1e-12
 FLUID DIS fluid NODE 12 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-12
-FLUID DIS fluid NODE 12 QUANTITY pressure VALUE 3.17733026070121286e+03 TOLERANCE 1e-08
-PARTICLE DIS particle NODE 2 QUANTITY dispx VALUE 0.0e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 2 QUANTITY dispy VALUE 0.0e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 2 QUANTITY dispz VALUE 8.63682427698287403e-01 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 2 QUANTITY velx VALUE 0.0e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 2 QUANTITY vely VALUE 0.0e+00 TOLERANCE 1.0e-11
-PARTICLE DIS particle NODE 2 QUANTITY velz VALUE 7.69324412418810999e-01 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 6 QUANTITY dispx VALUE 4.27982347265715768e-01 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 12 QUANTITY pressure VALUE 3.27168105860123933e+03 TOLERANCE 1e-08
+PARTICLE DIS particle NODE 3 QUANTITY dispx VALUE -3.58492120474269316e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 3 QUANTITY dispy VALUE -4.0e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 3 QUANTITY dispz VALUE -9.05594994885970728e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 3 QUANTITY velx VALUE 5.90211054819435397e-03 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 3 QUANTITY vely VALUE 0.0e+00 TOLERANCE 1.0e-11
+PARTICLE DIS particle NODE 3 QUANTITY velz VALUE 7.70474753596730122e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 6 QUANTITY dispx VALUE 4.41507879525731006e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 6 QUANTITY dispy VALUE 4.0e-01 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 6 QUANTITY dispz VALUE -9.80767901028293587e-01 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 6 QUANTITY velx VALUE 1.01346745409289798e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 6 QUANTITY dispz VALUE -9.05594994885970617e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 6 QUANTITY velx VALUE 5.90211054819450836e-03 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 6 QUANTITY vely VALUE 0.0e+00 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 6 QUANTITY velz VALUE 6.74351580258033434e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 6 QUANTITY velz VALUE 7.70474753596730455e-01 TOLERANCE 1.0e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -187,7 +187,7 @@ NDPARTICLE                      1
 -----------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 //                              fluid_volume
-E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 1.0 0.0 CURVE none none 1 none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.5 0.0 CURVE none none 1 none FUNCT 0 0 0 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 //                              fluid_volume
@@ -199,9 +199,8 @@ E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 --------------------------------------------DESIGN PARTICLE INFLOW CONDITION
 DPARTICLE                       1
 // particle inflow
-E 1 - vertex1 -0.4 -0.4 -1.0 vertex2 0.4 0.4 -1.0 num_per_dir 2 2 1 inflow_vel 0.2 0.0 0.0 inflow_vel_curve 0 inflow_freq 10
+E 1 - vertex1 -0.4 -0.4 -1.0 vertex2 0.4 0.4 -1.0 num_per_dir 2 2 1 inflow_vel 0.2 0.0 0.0 inflow_vel_curve 0 inflow_freq 5
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
-NODE                            0 DPARTICLE 1
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1

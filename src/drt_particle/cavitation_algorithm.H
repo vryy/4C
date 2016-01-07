@@ -190,6 +190,9 @@ namespace CAVITATION
       std::map<int, std::set<int> >& ghostfluideles   ///< map from bin id to ghost fluid elements in this bin
       );
 
+    /// some output to screen about subcycling
+    virtual void SubcyclingInfoToScreen();
+
     /// build connectivity from fluid elements to bins
     virtual void BuildElementToBinPointers(
       bool wallpointer   ///< bool whether wall element pointer need rebuild
