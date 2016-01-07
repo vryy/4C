@@ -2210,10 +2210,10 @@ void MORTAR::MortarInterface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::
   } // end sele loop
 
   Comm().Barrier();
-  const double evalime = Teuchos::Time::wallTime() - t_start;
+  const double evaltime = Teuchos::Time::wallTime() - t_start;
 
   // time output
-  std::cout << "Required time for geometry evluation: " << evalime << std::endl;
+  std::cout << "Required time for geometry evaluation: " << evaltime << std::endl;
 
   // bye bye
   return;

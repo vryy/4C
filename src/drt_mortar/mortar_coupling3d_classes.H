@@ -196,13 +196,13 @@ public:
   //! @name Access methods
 
   /*!
-  \brief Return ID this intcell
+  \brief Return ID of this intcell
 
   */
   const int& Id() const { return id_; }
 
   /*!
-  \brief Set slave ID this intcell
+  \brief Set slave element ID of this intcell
 
   */
   void SetSlaveId(const int slaveid)
@@ -212,7 +212,7 @@ public:
   }
 
   /*!
-  \brief Return slave element ID this intcell
+  \brief Return slave element ID of this intcell
 
   */
   const int& GetSlaveId() const
@@ -224,7 +224,7 @@ public:
   }
 
   /*!
-  \brief Set master element ID this intcell
+  \brief Set master element ID of this intcell
 
   */
   void SetMasterId(const int masterid)
@@ -233,7 +233,7 @@ public:
     return;
   }
   /*!
-  \brief Return master ID this intcell
+  \brief Return master element ID of this intcell
 
   */
   const int& GetMasterId() const
