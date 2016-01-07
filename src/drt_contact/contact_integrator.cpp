@@ -1893,7 +1893,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     DerivXiGP3DAuxPlane(mele,mxi,cell->Auxn(),dmxigp,mprojalpha,cell->GetDerivAuxn(),lingp);
 
     // scaling specific
-    double jacsele = 0.0;
+    double jacsele = 1.0;
     double derivjacselexi[2] = {0.0, 0.0};
     GEN::pairedvector<int,double> derivjacsele(nrow*ndof);
     if (nodalscale_)
@@ -1948,7 +1948,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 
     // compute segment scaling factor
     if (nodalscale_)
-      GP_3D_Scaling(sele,sval,jac,wgt,sxi);
+      GP_3D_Scaling(sele,sval,jac,wgt,jacsele);
 
     // Creating the WEIGHTED tangential relative slip increment (non-objective)
     if (gpslip_)
@@ -8317,10 +8317,9 @@ void inline CONTACT::CoIntegrator::GP_3D_Scaling(
      MORTAR::MortarElement& sele,
      LINALG::SerialDenseVector& sval,
      double& jac, double& wgt,
-     double* sxi)
+     double& jacsele)
 {
   double nrow = sele.NumNode();
-  double jacsele = sele.Jacobian(sxi);
 
   DRT::Node** snodes = sele.Nodes();
 

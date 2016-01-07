@@ -457,7 +457,7 @@ public:
 
    */
   void inline GP_3D_Scaling(MORTAR::MortarElement& sele,
-      LINALG::SerialDenseVector& sval, double& jac, double& wgt, double* sxi);
+      LINALG::SerialDenseVector& sval, double& jac, double& wgt, double& jacsele);
 
   /*!
    \brief evaluate and lin scaling at GP
