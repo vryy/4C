@@ -18,11 +18,11 @@ Maintainer: Alexander Popp
 #include "mortar_projector.H"
 #include "mortar_integrator.H"
 #include "mortar_defines.H"
-//#include "mortar_calc_utils.H"
+#include "mortar_element.H"
+
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_node.H"
-#include "mortar_element.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/09|
@@ -584,6 +584,8 @@ MORTAR::IntCell::IntCell(int id, int nvertices, LINALG::Matrix<3,3>& coords,
                          std::vector<GEN::pairedvector<int,double> >& linv3,
                          std::vector<GEN::pairedvector<int,double> >& linauxn) :
 id_(id),
+slaveId_(-1),
+masterId_(-1),
 nvertices_(nvertices),
 coords_(coords),
 shape_(shape)
@@ -674,6 +676,21 @@ bool MORTAR::IntCell::LocalToGlobal(const double* xi,
 
   return true;
 }
+
+/*----------------------------------------------------------------------*
+ |  output for integration cell                              farah 01/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::IntCell::Print()
+{
+  std::cout << "Slave  ID= " << GetSlaveId() << std::endl;
+  std::cout << "Master ID= " << GetMasterId() << std::endl;
+  std::cout << "Coordinates for vertex 0 = " << Coords()(0,0) << " " << Coords()(1,0) << " " << Coords()(2,0)<< std::endl;
+  std::cout << "Coordinates for vertex 1 = " << Coords()(0,1) << " " << Coords()(1,1) << " " << Coords()(2,1)<< std::endl;
+  std::cout << "Coordinates for vertex 2 = " << Coords()(0,2) << " " << Coords()(1,2) << " " << Coords()(2,2)<< std::endl;
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  Evaluate shape functions (IntCell)                        popp 11/08|

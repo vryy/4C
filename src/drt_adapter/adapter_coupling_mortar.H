@@ -35,6 +35,7 @@ namespace DRT
 namespace MORTAR
 {
   class MortarInterface;
+  class IntCell;
 }
 
 namespace ADAPTER
@@ -98,6 +99,9 @@ namespace ADAPTER
                         Teuchos::RCP<Epetra_Vector>&      idisp,
                         const Epetra_Comm&                comm,
                         bool                              slavewithale);
+
+    /// create integration cells
+    std::vector<Teuchos::RCP<MORTAR::IntCell> > EvaluateGeometry();
 
     /// filling matrices
     void Evaluate(Teuchos::RCP<Epetra_Vector> idisp);

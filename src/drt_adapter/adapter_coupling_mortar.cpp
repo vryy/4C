@@ -17,6 +17,7 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_utils.H"
+#include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -1121,6 +1122,21 @@ void ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idispma, Teuc
 
   return;
 
+}
+
+
+/*----------------------------------------------------------------------*
+ *  Create integration cells for mortar interface           farah 01/16 |
+ *----------------------------------------------------------------------*/
+std::vector<Teuchos::RCP<MORTAR::IntCell> > ADAPTER::CouplingMortar::EvaluateGeometry()
+{
+  // init integration cell vector
+  std::vector<Teuchos::RCP<MORTAR::IntCell> > intcells(0);
+
+  // evaluate geometry information
+  interface_->EvaluateGeometry(intcells);
+
+  return intcells;
 }
 
 

@@ -199,7 +199,50 @@ public:
   \brief Return ID this intcell
 
   */
-  int Id() const { return id_; }
+  const int& Id() const { return id_; }
+
+  /*!
+  \brief Set slave ID this intcell
+
+  */
+  void SetSlaveId(const int slaveid)
+  {
+    slaveId_ = slaveid;
+    return;
+  }
+
+  /*!
+  \brief Return slave element ID this intcell
+
+  */
+  const int& GetSlaveId() const
+  {
+    if(slaveId_ < 0)
+      dserror("ERROR: Invalid slave element ID for this integration cell!");
+
+    return slaveId_;
+  }
+
+  /*!
+  \brief Set master element ID this intcell
+
+  */
+  void SetMasterId(const int masterid)
+  {
+    masterId_ = masterid;
+    return;
+  }
+  /*!
+  \brief Return master ID this intcell
+
+  */
+  const int& GetMasterId() const
+  {
+    if(masterId_ < 0)
+      dserror("ERROR: Invalid master element ID for this integration cell!");
+
+    return masterId_;
+  }
 
   /*!
   \brief Return number of vertices of this intcell
@@ -272,6 +315,9 @@ public:
   */
   virtual bool LocalToGlobal(const double* xi, double* globcoord, int inttype);
 
+  // output functionality
+  virtual void Print();
+
   /*!
   \brief Evaluate shape functions and derivatives
 
@@ -302,6 +348,8 @@ protected:
   IntCell(const IntCell& old);
 
   int                        id_;              // local ID of this intcell
+  int                        slaveId_;         // id of slave element
+  int                        masterId_;        // id of master element
   int                        nvertices_;       // number of vertices (always 3)
   double                     area_;            // integration cell area
   LINALG::Matrix<3,3>        coords_;          // coords of cell vertices

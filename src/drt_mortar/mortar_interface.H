@@ -49,6 +49,7 @@ class MortarNode;
 class MortarElement;
 class IntElement;
 class BinaryTree;
+class IntCell;
 
 /*!
 \brief One mortar coupling interface
@@ -533,6 +534,13 @@ public:
 
   */
   virtual void SetElementAreas();
+
+
+  /*!
+  \brief Create integration cells for interface
+
+  */
+  virtual void EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCell> >& intcells);
 
   /*!
   \brief Evaluate mortar interface

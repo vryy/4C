@@ -26,6 +26,7 @@ Maintainer: Alexander Popp
 #include "mortar_binarytree.H"
 #include "mortar_defines.H"
 #include "mortar_projector.H"
+
 #include "../drt_contact/contact_node.H"
 #include "../drt_contact/contact_element.H"
 #include "../drt_contact/contact_interpolator.H"
@@ -1952,14 +1953,6 @@ void MORTAR::MortarInterface::EvaluateDistances(const Teuchos::RCP<Epetra_Vector
       melements.push_back(melement);
     }
 
-    //********************************************************************
-    // 1) perform coupling (projection + overlap detection for sl/m pairs)
-    // 2) integrate Mortar matrix M and weighted gap g
-    // 3) compute directional derivative of M and g and store into nodes
-    //********************************************************************
-    //IntegrateCoupling(selement, melements);
-
-
     //**************************************************************
     //                loop over all Slave nodes
     //**************************************************************
@@ -2124,6 +2117,108 @@ void MORTAR::MortarInterface::SetElementAreas()
   }
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate geometric setting (create integration cells)    farah 01/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCell> >& intcells)
+{
+  Comm().Barrier();
+  const double t_start = Teuchos::Time::wallTime();
+
+  // interface needs to be complete
+  if (!Filled() && Comm().MyPID() == 0)
+    dserror("ERROR: FillComplete() not called on interface %", id_);
+
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  // clear vector
+  intcells.clear();
+
+  //**********************************************************************
+  // search algorithm
+  //**********************************************************************
+  if (SearchAlg() == INPAR::MORTAR::search_bfele)
+    EvaluateSearchBruteForce(SearchParam());
+  else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
+    EvaluateSearchBinarytree();
+  else
+    dserror("ERROR: Invalid search algorithm");
+
+  // create normals
+  EvaluateNodalNormals();
+
+  // export nodal normals to slave node column map
+  // this call is very expensive and the computation
+  // time scales directly with the proc number !
+  ExportNodalNormals();
+
+  // loop over proc's slave elements of the interface for integration
+  // use standard column map to include processor's ghosted elements
+  for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
+  {
+    int gid1 = selecolmap_->GID(i);
+    DRT::Element* ele1 = idiscret_->gElement(gid1);
+    if (!ele1)
+      dserror("ERROR: Cannot find slave element with gid %", gid1);
+    MortarElement* selement = dynamic_cast<MortarElement*>(ele1);
+
+    // skip zero-sized nurbs elements (slave)
+    if (selement->ZeroSized())
+      continue;
+
+    // loop over the candidate master elements of sele_
+    // use slave element's candidate list SearchElements !!!
+    for (int j = 0; j < selement->MoData().NumSearchElements(); ++j)
+    {
+      int gid2 = selement->MoData().SearchElements()[j];
+      DRT::Element* ele2 = idiscret_->gElement(gid2);
+      if (!ele2)
+        dserror("ERROR: Cannot find master element with gid %", gid2);
+      MortarElement* melement = dynamic_cast<MortarElement*>(ele2);
+
+      // skip zero-sized nurbs elements (master)
+      if (melement->ZeroSized())
+        continue;
+
+      //********************************************************************
+      // 1) perform coupling (projection + overlap detection for sl/m pairs)
+      //********************************************************************
+      MORTAR::Coupling3d coup(
+          *idiscret_,
+          dim_,
+          false,
+          imortar_,
+          *selement,
+          *melement);
+
+      // do coupling
+      coup.EvaluateCoupling();
+
+      //set sele and mele id and push into global vector
+      for(size_t c=0;c<coup.Cells().size();++c)
+      {
+        coup.Cells()[c]->SetSlaveId(selement->Id());
+        coup.Cells()[c]->SetMasterId(melement->Id());
+        intcells.push_back(coup.Cells()[c]);
+      }
+
+    }
+  } // end sele loop
+
+  Comm().Barrier();
+  const double evalime = Teuchos::Time::wallTime() - t_start;
+
+  // time output
+  std::cout << "Required time for geometry evluation: " << evalime << std::endl;
+
+  // bye bye
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  evaluate mortar coupling (public)                         popp 11/07|
