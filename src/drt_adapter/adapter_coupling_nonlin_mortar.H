@@ -71,50 +71,6 @@ namespace ADAPTER
                std::vector<int>                    coupleddof,
                const std::string&                  couplingcond);
 
-    /*!
-    \brief Read Mortar Condition
-
-    */
-    virtual void ReadMortarCondition(
-        Teuchos::RCP<DRT::Discretization>   masterdis,
-        Teuchos::RCP<DRT::Discretization>   slavedis,
-        std::vector<int>                    coupleddof,
-        const std::string&                  couplingcond,
-        Teuchos::ParameterList&             input,
-        std::map<int, DRT::Node*>& mastergnodes,
-        std::map<int, DRT::Node*>& slavegnodes,
-        std::map<int, Teuchos::RCP<DRT::Element> >& masterelements,
-        std::map<int, Teuchos::RCP<DRT::Element> >& slaveelements);
-
-    /*!
-    \brief Add Mortar Nodes
-
-    */
-    virtual void AddMortarNodes(
-              Teuchos::RCP<DRT::Discretization>   masterdis,
-              Teuchos::RCP<DRT::Discretization>   slavedis,
-              std::vector<int>                    coupleddof,
-              Teuchos::ParameterList&             input,
-              std::map<int, DRT::Node*>& mastergnodes,
-              std::map<int, DRT::Node*>& slavegnodes,
-              std::map<int, Teuchos::RCP<DRT::Element> >& masterelements,
-              std::map<int, Teuchos::RCP<DRT::Element> >& slaveelements,
-              Teuchos::RCP<CONTACT::CoInterface>& interface,
-              int numcoupleddof);
-
-    /*!
-    \brief Add Mortar Elements
-
-    */
-    virtual void AddMortarElements(
-              Teuchos::RCP<DRT::Discretization>   masterdis,
-              Teuchos::RCP<DRT::Discretization>   slavedis,
-              Teuchos::ParameterList&             input,
-              std::map<int, Teuchos::RCP<DRT::Element> >& masterelements,
-              std::map<int, Teuchos::RCP<DRT::Element> >& slaveelements,
-              Teuchos::RCP<CONTACT::CoInterface>& interface,
-              int numcoupleddof);
-
     virtual void SetupSpringDashpot(
         Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis,
@@ -191,22 +147,76 @@ namespace ADAPTER
     Teuchos::RCP<CONTACT::CoInterface> Interface() const { return interface_;}
 
   protected:
-    // communicator
-    Teuchos::RCP<Epetra_Comm>          comm_;            /// communicator
-    int                                myrank_;          /// my proc id
+    /*!
+    \brief Read Mortar Condition
+
+    */
+    virtual void ReadMortarCondition(
+        Teuchos::RCP<DRT::Discretization>   masterdis,
+        Teuchos::RCP<DRT::Discretization>   slavedis,
+        std::vector<int>                    coupleddof,
+        const std::string&                  couplingcond,
+        Teuchos::ParameterList&             input,
+        std::map<int, DRT::Node*>& mastergnodes,
+        std::map<int, DRT::Node*>& slavegnodes,
+        std::map<int, Teuchos::RCP<DRT::Element> >& masterelements,
+        std::map<int, Teuchos::RCP<DRT::Element> >& slaveelements);
+
+    /*!
+    \brief Add Mortar Nodes
+
+    */
+    virtual void AddMortarNodes(
+              Teuchos::RCP<DRT::Discretization>   masterdis,
+              Teuchos::RCP<DRT::Discretization>   slavedis,
+              std::vector<int>                    coupleddof,
+              Teuchos::ParameterList&             input,
+              std::map<int, DRT::Node*>& mastergnodes,
+              std::map<int, DRT::Node*>& slavegnodes,
+              std::map<int, Teuchos::RCP<DRT::Element> >& masterelements,
+              std::map<int, Teuchos::RCP<DRT::Element> >& slaveelements,
+              Teuchos::RCP<CONTACT::CoInterface>& interface,
+              int numcoupleddof);
+
+    /*!
+    \brief Add Mortar Elements
+
+    */
+    virtual void AddMortarElements(
+              Teuchos::RCP<DRT::Discretization>   masterdis,
+              Teuchos::RCP<DRT::Discretization>   slavedis,
+              Teuchos::ParameterList&             input,
+              std::map<int, Teuchos::RCP<DRT::Element> >& masterelements,
+              std::map<int, Teuchos::RCP<DRT::Element> >& slaveelements,
+              Teuchos::RCP<CONTACT::CoInterface>& interface,
+              int numcoupleddof);
+
+    /// check setup call
+    const bool& IsSetup() const { return issetup_; };
+
+    /// check init and setup call
+    void CheckSetup() const
+    {
+      if ( !IsSetup())
+        dserror("ERROR: Call Setup() first!");
+    }
+
+    bool                               issetup_;         ///< check for setup
+    Teuchos::RCP<Epetra_Comm>          comm_;            ///< communicator
+    int                                myrank_;          ///< my proc id
 
     Teuchos::RCP<Epetra_Map>           masterdofrowmap_; ///< map of master row dofs
     Teuchos::RCP<Epetra_Map>           slavedofrowmap_;  ///< map of slave row dofs
     Teuchos::RCP<Epetra_Map>           slavenoderowmap_; ///< map of slave row nodes
 
-    Teuchos::RCP<LINALG::SparseMatrix> D_;
-    Teuchos::RCP<LINALG::SparseMatrix> DInv_;
-    Teuchos::RCP<LINALG::SparseMatrix> DLin_;
-    Teuchos::RCP<LINALG::SparseMatrix> M_;
-    Teuchos::RCP<LINALG::SparseMatrix> MLin_;
-    Teuchos::RCP<LINALG::SparseMatrix> P_;
+    Teuchos::RCP<LINALG::SparseMatrix> D_;               ///< D matrix
+    Teuchos::RCP<LINALG::SparseMatrix> DInv_;            ///< inverted D matrix
+    Teuchos::RCP<LINALG::SparseMatrix> DLin_;            ///< linearization of D matrix
+    Teuchos::RCP<LINALG::SparseMatrix> M_;               ///< M matrix (master side)
+    Teuchos::RCP<LINALG::SparseMatrix> MLin_;            ///< linearization of M matrix
+    Teuchos::RCP<LINALG::SparseMatrix> P_;               ///< projection operator P = DInv * M
 
-    Teuchos::RCP<Epetra_Vector>        gap_;
+    Teuchos::RCP<Epetra_Vector>        gap_;             ///< gap vector
 
     Teuchos::RCP<CONTACT::CoInterface> interface_;       ///< interface
   };

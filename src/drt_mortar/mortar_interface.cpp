@@ -2124,8 +2124,19 @@ void MORTAR::MortarInterface::SetElementAreas()
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::IntCell> >& intcells)
 {
+  // time measurement
   Comm().Barrier();
   const double t_start = Teuchos::Time::wallTime();
+
+  // check
+  if (Dim() == 2)
+    dserror("ERROR: Geometry evaluation for mortar interface only for 3D problems!");
+
+  INPAR::MORTAR::AlgorithmType algo =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+
+  if(algo == INPAR::MORTAR::algorithm_nts)
+    dserror("ERROR: Geometry evaluation only for mortar problems!");
 
   // interface needs to be complete
   if (!Filled() && Comm().MyPID() == 0)
@@ -2187,28 +2198,36 @@ void MORTAR::MortarInterface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::
       //********************************************************************
       // 1) perform coupling (projection + overlap detection for sl/m pairs)
       //********************************************************************
-      MORTAR::Coupling3d coup(
-          *idiscret_,
-          dim_,
-          false,
-          imortar_,
-          *selement,
-          *melement);
-
-      // do coupling
-      coup.EvaluateCoupling();
-
-      //set sele and mele id and push into global vector
-      for(size_t c=0;c<coup.Cells().size();++c)
+      if(selement->IsQuad())
       {
-        coup.Cells()[c]->SetSlaveId(selement->Id());
-        coup.Cells()[c]->SetMasterId(melement->Id());
-        intcells.push_back(coup.Cells()[c]);
+        dserror("ERROR: Geometry evaluation only implemented for first order elements!");
       }
+      // noquad!
+      else
+      {
+        MORTAR::Coupling3d coup(
+            *idiscret_,
+            dim_,
+            false,
+            imortar_,
+            *selement,
+            *melement);
 
+        // do coupling
+        coup.EvaluateCoupling();
+
+        //set sele and mele id and push into global vector
+        for(size_t c=0;c<coup.Cells().size();++c)
+        {
+          coup.Cells()[c]->SetSlaveId(selement->Id());
+          coup.Cells()[c]->SetMasterId(melement->Id());
+          intcells.push_back(coup.Cells()[c]);
+        }
+      }
     }
   } // end sele loop
 
+  // time measurement
   Comm().Barrier();
   const double evaltime = Teuchos::Time::wallTime() - t_start;
 

@@ -65,6 +65,30 @@ namespace ADAPTER
     */
     virtual ~CouplingPoroMortar(){};
 
+    virtual void EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fvel,
+        Teuchos::RCP<Epetra_Vector> svel,
+        Teuchos::RCP<Epetra_Vector> fpres,
+        Teuchos::RCP<Epetra_Vector> sdisp,
+        const Teuchos::RCP<DRT::Discretization> sdis,
+        Teuchos::RCP<LINALG::SparseMatrix>& f,
+        Teuchos::RCP<LINALG::SparseMatrix>& k_fs,
+        Teuchos::RCP<Epetra_Vector>& frhs,
+        ADAPTER::Coupling& coupfs,
+        Teuchos::RCP<const Epetra_Map> fdofrowmap);
+
+    void UpdatePoroMt();
+
+    void RecoverFluidLMPoroMt(Teuchos::RCP<Epetra_Vector> disi,Teuchos::RCP<Epetra_Vector> veli);//h.Willmann
+
+    // return the used poro lagrange strategy
+    Teuchos::RCP<CONTACT::PoroLagrangeStrategy> GetPoroStrategy()
+    {
+      if(porolagstrategy_==Teuchos::null)
+        dserror("GetPoroStrategy(): No strategy set!");
+      return porolagstrategy_;
+    };
+
+  protected:
     /*!
     \brief Read Mortar Condition
 
@@ -93,36 +117,13 @@ namespace ADAPTER
         Teuchos::RCP<CONTACT::CoInterface>& interface,
         int numcoupleddof);
 
-        virtual void EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fvel,
-        Teuchos::RCP<Epetra_Vector> svel,
-        Teuchos::RCP<Epetra_Vector> fpres,
-        Teuchos::RCP<Epetra_Vector> sdisp,
-        const Teuchos::RCP<DRT::Discretization> sdis,
-        Teuchos::RCP<LINALG::SparseMatrix>& f,
-        Teuchos::RCP<LINALG::SparseMatrix>& k_fs,
-        Teuchos::RCP<Epetra_Vector>& frhs,
-        ADAPTER::Coupling& coupfs,
-        Teuchos::RCP<const Epetra_Map> fdofrowmap);
+  private:
 
-        void UpdatePoroMt();
+    //poro lagrange strategy
+    Teuchos::RCP<CONTACT::PoroLagrangeStrategy> porolagstrategy_;
 
-        void RecoverFluidLMPoroMt(Teuchos::RCP<Epetra_Vector> disi,Teuchos::RCP<Epetra_Vector> veli);//h.Willmann
-
-        // return the used poro lagrange strategy
-        Teuchos::RCP<CONTACT::PoroLagrangeStrategy> GetPoroStrategy()
-        {
-          if(porolagstrategy_==Teuchos::null)
-            dserror("GetPoroStrategy(): No strategy set!");
-          return porolagstrategy_;
-        };
-
-private:
-
-        //poro lagrange strategy
-        Teuchos::RCP<CONTACT::PoroLagrangeStrategy> porolagstrategy_;
-
-        //firstinit
-        bool firstinit_;
+    //firstinit
+    bool firstinit_;
   };
 }
 

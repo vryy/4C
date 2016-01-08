@@ -40,6 +40,7 @@ Maintainer: Philipp Farah
  |  ctor                                                     farah 10/14|
  *----------------------------------------------------------------------*/
 ADAPTER::CouplingNonLinMortar::CouplingNonLinMortar() :
+  issetup_(false),
   comm_(Teuchos::null),
   myrank_(-1),
   masterdofrowmap_(Teuchos::null),
@@ -95,6 +96,9 @@ void ADAPTER::CouplingNonLinMortar::Setup(
   AddMortarNodes(masterdis,slavedis,coupleddof,input,mastergnodes,slavegnodes,masterelements,slaveelements,interface,numcoupleddof);
 
   AddMortarElements(masterdis,slavedis,input,masterelements,slaveelements,interface,numcoupleddof);
+
+  // set setup flag
+  issetup_ = true;
 
   return;
 }
@@ -679,6 +683,9 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(
   // in the following two steps MORTAR does all the work
   interface_->Initialize();
 
+  // set setup flag
+  issetup_ = true;
+
   return;
 }
 
@@ -699,6 +706,9 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec,
     const Teuchos::RCP<Epetra_Vector> veclm)
 {
+  // safety check
+  CheckSetup();
+
   D_->Zero();
   DLin_->Zero();
 
@@ -735,22 +745,31 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec,
     const Teuchos::RCP<Epetra_Vector> veclm)
 {
+  // safety check
+  CheckSetup();
+
+  // clear matrices
   D_->Zero();
   DLin_->Zero();
   M_->Zero();
   MLin_->Zero();
 
+  // set current lm and displ state
   interface_->SetState(statename,vec);
   interface_->SetState("lm",veclm);
 
+  // init internal data
   interface_->Initialize();
   interface_->SetElementAreas();
 
+  // call interface evaluate (d,m,gap...)
   interface_->Evaluate();
 
+  // assemble mortar matrices and lin.
   interface_->AssembleDM(*D_,*M_);
   interface_->AssembleLinDM(*DLin_,*MLin_);
 
+  // bye bye
   return;
 }
 
@@ -760,6 +779,9 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingNonLinMortar::CreateP()
 {
+  // safety check
+  CheckSetup();
+
   // check
   if(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(interface_->IParams(),"LM_SHAPEFCN") !=
       INPAR::MORTAR::shape_dual)
@@ -810,6 +832,8 @@ void ADAPTER::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec,
     const Teuchos::RCP<Epetra_Vector> veclm)
 {
+  // safety check
+  CheckSetup();
 
   IntegrateLinDM(statename, vec, veclm);
 

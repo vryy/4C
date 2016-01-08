@@ -32,7 +32,8 @@ Maintainer: Alexander Popp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ADAPTER::CouplingMortar::CouplingMortar()
+ADAPTER::CouplingMortar::CouplingMortar() :
+  issetup_(false)
 {
   return;
 }
@@ -321,6 +322,9 @@ void ADAPTER::CouplingMortar::Setup(
   // finalize the contact interface construction
   interface_->FillComplete();
 
+  // set setup flag!
+  issetup_ = true;
+
   // store old row maps (before parallel redistribution)
   slavedofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface_->SlaveRowDofs()));
   masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface_->MasterRowDofs()));
@@ -493,9 +497,10 @@ void ADAPTER::CouplingMortar::Setup(
  * calculate the surface normals of the slave surface
  * USE with caution; only intended to be used for UQ    jb 07/14        *
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::SetupForUQAbuseNormalCalculation( Teuchos::RCP<DRT::Discretization>   slavedis, const Epetra_Comm&  comm)
+void ADAPTER::CouplingMortar::SetupForUQAbuseNormalCalculation(
+    Teuchos::RCP<DRT::Discretization> slavedis,
+    const Epetra_Comm& comm)
 {
-
   std::vector<int> coupleddof (3,1);
   // initialize maps for row nodes
   std::map<int, DRT::Node*> slavenodes;
@@ -610,6 +615,8 @@ void ADAPTER::CouplingMortar::SetupForUQAbuseNormalCalculation( Teuchos::RCP<DRT
   // store interface
   interface_ = interface;
 
+  // set setup flag
+  issetup_ = true;
 
   // do not check for overlap of slave and Dirichlet boundaries
   // since if we use this setup function we only want to compute the normals
@@ -629,6 +636,9 @@ void ADAPTER::CouplingMortar::MeshRelocation(
     const Epetra_Comm&                comm,
     bool                              slavewithale)
 {
+  // safety check
+  CheckSetup();
+
   // problem dimension
   const int dim = DRT::Problem::Instance()->NDim();
 
@@ -1105,9 +1115,7 @@ void ADAPTER::CouplingMortar::MeshRelocation(
       std::cout << "  --> Mesh relocation was successful. " << std::endl;
   }
 
-
   return;
-
 }
 
 
@@ -1115,6 +1123,9 @@ void ADAPTER::CouplingMortar::MeshRelocation(
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
 {
+  // safety check
+  CheckSetup();
+
   // set new displacement state in mortar interface
   interface_->SetState("displacement", idisp);
   Evaluate();
@@ -1127,6 +1138,8 @@ void ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idispma, Teuchos::RCP<Epetra_Vector> idispsl)
 {
+  // safety check
+  CheckSetup();
 
   const Epetra_BlockMap stdmap = idispsl->Map();
   idispsl->ReplaceMap(*slavedofrowmap_);
@@ -1157,6 +1170,9 @@ void ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idispma, Teuc
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<MORTAR::IntCell> > ADAPTER::CouplingMortar::EvaluateGeometry()
 {
+  // safety check
+  CheckSetup();
+
   // init integration cell vector
   std::vector<Teuchos::RCP<MORTAR::IntCell> > intcells(0);
 
@@ -1171,6 +1187,9 @@ std::vector<Teuchos::RCP<MORTAR::IntCell> > ADAPTER::CouplingMortar::EvaluateGeo
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingMortar::Evaluate()
 {
+  // safety check
+  CheckSetup();
+
   // check for parallel redistribution
   bool parredist = false;
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
@@ -1237,6 +1256,9 @@ void ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
     const Epetra_Comm&                 comm,
     bool                               slavewithale)
 {
+  // safety check
+  CheckSetup();
+
   // set new displacement state in mortar interface
   interface_->SetState("displacement",idisp);
 
@@ -1314,6 +1336,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
   Teuchos::RCP<Epetra_Vector> mv
 ) const
 {
+  // safety check
+  CheckSetup();
+
   dsassert( masterdofrowmap_->SameAs( mv->Map() ),
       "Vector with master dof map expected" );
 
@@ -1337,6 +1362,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
   Teuchos::RCP<Epetra_Vector> sv
 ) const
 {
+  // safety check
+  CheckSetup();
+
   Epetra_Vector tmp = Epetra_Vector(M_->RangeMap());
   std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
@@ -1354,6 +1382,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::MasterToSlave
   Teuchos::RCP<const Epetra_Vector> mv
 ) const
 {
+  // safety check
+  CheckSetup();
+
   dsassert( masterdofrowmap_->SameAs( mv->Map() ),
       "Vector with master dof map expected" );
 
@@ -1377,6 +1408,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
   Teuchos::RCP<const Epetra_Vector> sv
 ) const
 {
+  // safety check
+  CheckSetup();
+
   Epetra_Vector tmp = Epetra_Vector(M_->RangeMap());
   std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 

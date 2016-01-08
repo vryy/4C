@@ -19,9 +19,9 @@ Maintainer: Alexander Popp
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
+#include "../drt_lib/drt_dserror.H"
 
 // forward declarations
-
 namespace LINALG
 {
   class SparseMatrix;
@@ -188,11 +188,24 @@ namespace ADAPTER
     /// return the mortar projection operator \f$P=D^{-1} M\f$
     Teuchos::RCP<LINALG::SparseMatrix> GetMortarTrafo() const { return DinvM_;}
 
+  protected:
+
+    /// check setup call
+    const bool& IsSetup() const { return issetup_; };
+
+    /// check init and setup call
+    void CheckSetup() const
+    {
+      if ( !IsSetup())
+        dserror("ERROR: Call Setup() first!");
+    }
 
   private:
 
     /// filling matrices by using mortar interface
     void Evaluate();
+
+    bool                                  issetup_;         ///< check for setup
 
     Teuchos::RCP<MORTAR::MortarInterface> interface_;       ///< interface
     Teuchos::RCP<Epetra_Map>              masterdofrowmap_; ///< map of master row dofs

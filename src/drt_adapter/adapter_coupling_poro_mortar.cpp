@@ -44,7 +44,8 @@ Maintainer: Anh-Tu Vuong & Christoph Ager
  |  ctor                                                      ager 10/15|
  *----------------------------------------------------------------------*/
 ADAPTER::CouplingPoroMortar::CouplingPoroMortar():
-CouplingNonLinMortar()
+  CouplingNonLinMortar(),
+  firstinit_(false)
 {
   //empty...
 }
@@ -389,6 +390,9 @@ void ADAPTER::CouplingPoroMortar::EvaluatePoroMt(
     ADAPTER::Coupling& coupfs,
     Teuchos::RCP<const Epetra_Map> fdofrowmap)
 {
+  // safety check
+  CheckSetup();
+
   //write interface values into poro contact interface data containers for integration in contact integrator
   porolagstrategy_->SetState("fvelocity",fvel);
   porolagstrategy_->SetState("svelocity",svel);
@@ -416,6 +420,9 @@ void ADAPTER::CouplingPoroMortar::EvaluatePoroMt(
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingPoroMortar::UpdatePoroMt()
 {
+  // safety check
+  CheckSetup();
+
   porolagstrategy_->PoroMtUpdate();
   return;
 }//ADAPTER::CouplingNonLinMortar::UpdatePoroMt()
@@ -425,6 +432,9 @@ void ADAPTER::CouplingPoroMortar::UpdatePoroMt()
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingPoroMortar::RecoverFluidLMPoroMt(Teuchos::RCP<Epetra_Vector> disi,Teuchos::RCP<Epetra_Vector> veli)
 {
+  // safety check
+  CheckSetup();
+
   porolagstrategy_->RecoverPoroNoPen(disi,veli);
   return;
 }//ADAPTER::CouplingNonLinMortar::RecoverFluidLMPoroMt
