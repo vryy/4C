@@ -76,7 +76,14 @@ void MAT::ELASTIC::VolGrowthPenalty::AddDerivativesModified(
     const int eleGID
 )
 {
-  dserror("Not implemented so far!");
+  // No growth adaption so far! Only incompressibility is supported! Therefore chose current volume to 1.0
+  double v=1.0;
+
+
+  dPmodI(2) += eps_*n_*pow(modinv(2)-v,n_-1.0);
+
+  ddPmodII(2) += eps_*n_*(n_-1.0)*pow(modinv(2)-v,n_-2.0);
+
 
   return;
 }

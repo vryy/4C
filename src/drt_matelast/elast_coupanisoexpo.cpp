@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupanisoexpo.H
+\file elast_coupanisoexpo.cpp
 \brief
 
 
@@ -116,6 +116,33 @@ void MAT::ELASTIC::CoupAnisoExpo::Setup(DRT::INPUT::LineDefinition* linedef)
   else
     dserror("INIT mode not implemented");
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupAnisoExpo::GetDerivativesAniso(LINALG::Matrix<2,1>& dPI_aniso,
+                                                      LINALG::Matrix<3,1>& ddPII_aniso,
+                                                      LINALG::Matrix<4,1>& dddPIII_aniso,
+                                                      const LINALG::Matrix<2,1>& prinv_aniso,
+                                                      const int eleGID)
+{
+  double k1 = params_->k1_;
+  double k2 = params_->k2_;
+
+  if (prinv_aniso(0) < 1.0)
+  {
+    k1 = params_->k1comp_;
+    k2 = params_->k2comp_;
+  }
+
+
+  dPI_aniso(0) = k1*(prinv_aniso(0)-1.0)*exp(k2*(prinv_aniso(0)-1.0)*(prinv_aniso(0)-1.0));
+
+  ddPII_aniso(0) = (1.0+2.0*k2*(prinv_aniso(0)-1.0)*(prinv_aniso(0)-1.0))*k1*exp(k2*(prinv_aniso(0)-1.0)*(prinv_aniso(0)-1.0));
+
+  dddPIII_aniso(0) = (3.0 + 2.0*k2*(prinv_aniso(0)-1.0)*(prinv_aniso(0)-1.0))*2.0*k1*k2*(prinv_aniso(0)-1.0)*exp(k2*(prinv_aniso(0)-1.0)*(prinv_aniso(0)-1.0));
+
+  return;
+};
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

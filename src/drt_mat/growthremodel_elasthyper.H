@@ -176,8 +176,8 @@ private:
                           const LINALG::Matrix<6,1>* glstrain,///< Green-Lagrange strain
                           Teuchos::ParameterList& params,     ///< Container for additional information
                           LINALG::Matrix<6,1>* stress,        ///< 2nd Piola-Kirchhoff stresses
-                          LINALG::Matrix<6,6>* cmat,         ///< Constitutive matrix
-                          const int eleGID                    ///< Element GID
+                          LINALG::Matrix<6,6>* cmat,          ///< Constitutive matrix
+                          const int eleGID                    ///< Element ID
                           );
 
     /// setup
@@ -196,6 +196,145 @@ private:
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
   protected:
+
+    /// calculates the kinematic quantities and tensors used afterwards
+    virtual void EvaluateKinQuant(
+      const LINALG::Matrix<6,1>& glstrain,
+      LINALG::Matrix<6,1>& id2,                   ///< Cartesian identity 2-tensor I_{AB}
+      LINALG::Matrix<6,1>& C_stress,              ///< right Cauchy green in stress-like 6-Voigt Voigt notation
+      LINALG::Matrix<6,1>& C_strain,              ///< right Cauchy green in strain-like 6-Voigt Voigt notation
+      LINALG::Matrix<6,1>& iC_stress,             ///< inverse right Cauchy-Green tensor stress-like 6-Voigt Voigt notation
+      LINALG::Matrix<6,6>& id4,                   ///< Cartesian identity 4-tensor in 6-Voigt matrix notation
+      LINALG::Matrix<6,6>& id4sharp,              ///< Cartesian identity 4-tensor in 6x6-matrix notation (stress-like)
+      LINALG::Matrix<3,1>& prinv);                ///< principal invariants of right Cauchy-Green tensor
+
+    /// calculate principal invariants
+    virtual void InvariantsPrincipal(
+      LINALG::Matrix<3,1>& prinv,              ///< principal invariants
+      const LINALG::Matrix<6,1>& C_strain      ///< symmetric Cartesian 2-tensor in strain-like 6-Voigt notation
+      );
+
+    /// calculate modified invariants
+    virtual void InvariantsModified(
+      LINALG::Matrix<3,1>& modinv,           ///< modified invariants
+      const LINALG::Matrix<3,1>& prinv       ///< principal invariants
+      );
+
+    /// calculates the derivatives of the hyperelastic laws with respect to the (modified) invariants
+    virtual void EvaluateInvariantDerivatives(
+        const LINALG::Matrix<3,1>& prinv,               ///< principal invariants of right Cauchy-Green tensor
+        LINALG::Matrix<3,1>& dPI,                       ///< first derivative with respect to invariants
+        LINALG::Matrix<6,1>& ddPII,                     ///< second derivative with respect to invariants
+        Teuchos::ParameterList& params,                 ///< Container for additional information
+        int eleGID                                      ///< Element ID
+        );
+
+    /// converts the derivatives with respect to the modified invariants in derivatives with respect to principal invariants.
+    /// Uses the following conversions:
+    ///\f[
+    ///  \overline{I}_{\boldsymbol{C}} = J^{-2/3} I_{\boldsymbol{C}},
+    ///\f]
+    ///\f[
+    ///  \overline{II}_{\boldsymbol{C}} = J^{-4/3} II_{\boldsymbol{C}},
+    ///\f]
+    ///\f[
+    ///  J = \sqrt{III_{\boldsymbol{C}}}
+    ///\f]
+
+    virtual void ConvertModToPrinc(
+        const LINALG::Matrix<3,1>& prinv,         ///< principal invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<3,1>& dPmodI,        ///< first derivative with respect to modified invariants
+        const LINALG::Matrix<6,1>& ddPmodII,      ///< second derivative with respect to modified invariants
+        LINALG::Matrix<3,1>& dPI,                 ///< first derivative with respect to invariants
+        LINALG::Matrix<6,1>& ddPII                ///< second derivative with respect to invariants
+        );
+
+    /// calculates the isotropic stress and elasticity tensor
+    virtual void EvaluateIsotropicStressCmat(
+        LINALG::Matrix<6,1>& stress,              ///< 2nd Piola Kirchhoff stress
+        LINALG::Matrix<6,6>& cmat,                ///< elasticity tensor
+        LINALG::Matrix<6,1> C_strain,             ///< right Cauchy green in strain-like 6-Voigt Voigt notation
+        LINALG::Matrix<6,1> id2,                  ///< Cartesian identity 2-tensor I_{AB}
+        LINALG::Matrix<6,1> iC_stress,            ///< inverse right Cauchy-Green tensor stress-like 6-Voigt Voigt notation
+        LINALG::Matrix<6,6> id4sharp,             ///< Cartesian identity 4-tensor in 6x6-matrix notation (stress-like)
+        LINALG::Matrix<3,1> prinv,                ///< principal invariants of right Cauchy-Green tensor
+        LINALG::Matrix<3,1> dPI,                  ///< first derivative with respect to invariants
+        LINALG::Matrix<6,1> ddPII                 ///< second derivative with respect to invariants
+        );
+
+    /// calculate coefficients gamma and delta from partial derivatives w.r.t. invariants.
+    /// The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based
+    /// on the summand \f$\Psi(I_{\boldsymbol{C}},II_{\boldsymbol{C}},III_{\boldsymbol{C}})\f$
+    /// in which the principal invariants of the right Cauchy-Green tensor \f$\boldsymbol{C}\f$
+    /// are the arguments, cf. Holzapfel [1],
+    ///\f[
+    ///  I_{\boldsymbol{C}} = C_{AA},
+    ///  \quad
+    ///  II_{\boldsymbol{C}} = 1/2 \big( \mathrm{trace}^2(\boldsymbol{C}) - \mathrm{trace}(\boldsymbol{C}^2) \big),
+    ///  \quad
+    ///  III_{\boldsymbol{C}} = \det(\boldsymbol{C})
+    ///\f]
+    ///
+    /// cf. Holzapfel [1], p. 216 (6.32) and p. 248
+    ///\f[
+    ///  \bold{S} = \gamma_1 \ \bold{Id} + \gamma_2 \ \bold{C} + \gamma_3 \ \bold{C}^{-1}
+    ///\f]
+    ///\f[
+    /// \gamma_1 = 2\left( \frac{\partial \Psi}{\partial I_{\boldsymbol{C}}}
+    ///          + I_{\boldsymbol{C}}\frac{\partial \Psi}{\partial II_{\boldsymbol{C}}} \right);
+    ///\f]
+    ///\f[
+    /// \gamma_2 = -2\frac{\partial \Psi}{\partial II_{\boldsymbol{C}}};
+    ///\f]
+    ///\f[
+    /// \gamma_3 = 2III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}};
+    ///\f]
+    ///
+    /// material constitutive tensor coefficients
+    /// cf. Holzapfel [1], p. 261
+    ///\f[
+    ///  \mathbb{C} = \delta_1 \left( \bold{Id} \otimes \bold{Id} \right) + \delta_2 \left( \bold{Id} \otimes \bold{C} + \bold{C} \otimes \bold{Id} \right)
+    ///  + \delta_3 \left( \bold{Id} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{Id} \right) + \delta_4 \left( \bold{C} \otimes \bold{C} \right)
+    ///  + \delta_5 \left( \bold{C} \otimes \bold{C}^{-1} + \bold{C}^{-1} \otimes \bold{C} \right) + \delta_6 \left( \bold{C}^{-1} \otimes \bold{C}^{-1} \right)
+    ///  + \delta_7 \mathbb{P}
+    ///\f]
+    ///\f[
+    /// \delta_1 = 4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}}^2}
+    ///          + 2 Ic \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}}
+    ///          + \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}}
+    ///          + I_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2} \right)
+    ///\f]
+    ///\f[
+    /// \delta_2 = -4\left( \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial II_{\boldsymbol{C}}}
+    ///          + I_{\boldsymbol{C}}\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2} \right)
+    ///\f]
+    ///\f[
+    /// \delta_3 = 4\left( III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial I_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}}
+    ///          + I_{\boldsymbol{C}} III_{\boldsymbol{C}} \frac{\partial^2 \Psi}{\partial IIc \partial III_{\boldsymbol{C}}} \right)
+    ///\f]
+    ///\f[
+    /// \delta_4 = 4\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}}^2}
+    ///\f]
+    ///\f[
+    /// \delta_5 = -4 III_{\boldsymbol{C}}\frac{\partial^2 \Psi}{\partial II_{\boldsymbol{C}} \partial III_{\boldsymbol{C}}}
+    ///\f]
+    ///\f[
+    /// \delta_6 = 4\left( III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}}
+    ///          + III_{\boldsymbol{C}}^2 \frac{\partial^2 \Psi}{\partial III_{\boldsymbol{C}}^2} \right)
+    ///\f]
+    ///\f[
+    /// \delta_7 = -4 III_{\boldsymbol{C}} \frac{\partial \Psi}{\partial III_{\boldsymbol{C}}}
+    ///\f]
+    ///\f[
+    /// \delta_8 = -4 \frac{\partial \Psi}{\partial II_{\boldsymbol{C}}}
+    ///\f]
+    virtual void CalculateGammaDelta(
+        LINALG::Matrix<3,1>& gamma,             ///< factors for stress calculation
+        LINALG::Matrix<8,1>& delta,             ///< factors for elasticity tensor calculation
+        const LINALG::Matrix<3,1>& prinv,       ///< principal invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<3,1>& dPI,         ///< first derivative with respect to invariants
+        const LINALG::Matrix<6,1>& ddPII        ///< second derivative with respect to invariants
+        );
 
     /// @name Voigt index arrays
     //@{
@@ -220,10 +359,10 @@ private:
     Teuchos::RCP<MAT::ELASTIC::VolGrowthPenalty> potsumpenalty_;
 
     /// current mass fractions of elastin in constraint mixture
-    std::vector<double> current_w_elastin_;
+    std::vector<std::vector<double> > current_w_elastin_;
 
     /// current mass fractions of ground matrix in constraint mixture
-    std::vector<double> current_w_ground_;
+    std::vector<std::vector<double> > current_w_ground_;
 
   };
 

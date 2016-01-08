@@ -103,6 +103,15 @@ namespace ELASTIC
 
     //@}
 
+    /// retrieve coefficients of first and second derivative
+    /// of summand (decoupled form) with respect to modified invariants
+    virtual void AddDerivativesModified(
+        LINALG::Matrix<3,1>& dPmodI,       ///< first derivative with respect to modified invariants
+        LINALG::Matrix<6,1>& ddmodPII,     ///< second derivative with respect to modified invariants
+        const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const int eleGID                   ///< element GID
+        );
+
     ///@name Packing and Unpacking
     //@{
 
@@ -111,14 +120,6 @@ namespace ELASTIC
     virtual void UnpackSummand(const std::vector<char>& data, std::vector<char>::size_type& position);
 
     //@}
-
-    // Add derivatives with respect to modified invariants.
-    virtual void AddDerivativesModified(
-        LINALG::Matrix<3,1>& dPmodI,       ///< first derivative with respect to modified invariants
-        LINALG::Matrix<6,1>& ddmodPII,     ///< second derivative with respect to modified invariants
-        const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
-        const int eleGID                   ///< element GID
-        );
 
     /// @name Access methods
     //@{

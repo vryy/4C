@@ -114,7 +114,16 @@ namespace ELASTIC
     virtual void Update();
 
     /// Setup of summand
-    virtual void Setup(DRT::INPUT::LineDefinition* linedef);
+    virtual void Setup(int numgp,DRT::INPUT::LineDefinition* linedef);
+
+    /// Retrieve stress and cmat
+    virtual void AddStressCmatRemodel(
+      const LINALG::Matrix<3,3>* defgrd,   ///< deformation gradient
+      Teuchos::ParameterList& params,      ///< Container for additional information
+      LINALG::Matrix<6,6>& cmat,           ///< material stiffness matrix
+      LINALG::Matrix<6,1>& stress,         ///< 2nd PK-stress
+      const int eleGID                     ///< element ID
+      );
 
     /// Return names of visualization data
     virtual void VisNames(std::map<std::string,int>& names);
@@ -124,10 +133,10 @@ namespace ELASTIC
 
     /// Indicator for the chosen formulations
     virtual void SpecifyFormulation(
-        bool& isoprinc, ///< global indicator for anisotropy
-        bool& isomod, ///< global indicator for anisotropy
-        bool& anisoprinc, ///< global indicator for anisotropy
-        bool& anisomod, ///< global indicator for anisotropy
+        bool& isoprinc, ///< global indicator for isotropic principal formulation
+        bool& isomod, ///< global indicator for isotropic splitted formulation
+        bool& anisoprinc, ///< global indicator for anisotropic principal formulation
+        bool& anisomod, ///< global indicator for anisotropic splitted formulation
         bool& viscogeneral       ///< global indicator, if one viscoelastic formulation is used
     )
     {
@@ -148,6 +157,9 @@ namespace ELASTIC
 
     /// current mass fractions of each fiber family
     std::vector<std::vector<double> > current_w_collagen_;
+
+    /// current fiber Cauchy stress
+    std::vector<std::vector<double> > stress_;
 
     /// map to materials/potential summands (fibers) which remodel
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsumfiber_;

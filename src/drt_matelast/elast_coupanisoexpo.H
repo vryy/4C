@@ -134,6 +134,13 @@ namespace ELASTIC
     /// Setup of summand
     virtual void Setup(DRT::INPUT::LineDefinition* linedef);
 
+    /// retrieve coefficients of first and second derivative
+    /// of summand with respect to anisotropic invariants
+    virtual void GetDerivativesAniso(LINALG::Matrix<2,1>& dPI_aniso,               ///< first derivative with respect to invariants
+                                     LINALG::Matrix<3,1>& ddPII_aniso,             ///< second derivative with respect to invariants
+                                     LINALG::Matrix<4,1>& dddPIII_aniso,           ///< third derivative with respect to invariants
+                                     const LINALG::Matrix<2,1>& prinv_aniso,       ///< principal anisotropic invariants
+                                     const int eleGID);                            ///< element GID
 
     /// Add anisotropic principal stresses
     virtual void AddStressAnisoPrincipal(

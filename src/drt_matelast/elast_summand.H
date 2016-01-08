@@ -236,6 +236,55 @@ namespace MAT
         return; // do nothing
       };
 
+      /// retrieve coefficients of first, second and third derivative
+      /// of summand with respect to anisotropic invariants
+      ///
+      /// The derivatives of the summand \f$\Psi(IV_{\boldsymbol{C},\boldsymbol{a}},V_{\boldsymbol{C},\boldsymbol{a}})\f$
+      /// in which the principal anisotropic invariants are the arguments are defined as following:
+      ///
+      /// First derivatives:
+      ///
+      ///\f[
+      /// dPI_{0,aniso} = \frac{\partial \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}} ;
+      ///\f]
+      ///\f[
+      /// dPI_{1,aniso} = \frac{\partial \Psi}{\partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+      ///\f]
+      /// Second derivatives:
+      ///\f[
+      /// ddPII_{0,aniso} = \frac{\partial^2 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}^2} ;
+      ///\f]
+      ///\f[
+      /// ddPII_{1,aniso} = \frac{\partial^2 \Psi}{\partial V_{\boldsymbol{C},\boldsymbol{a}}^2} ;
+      ///\f]
+      ///\f[
+      /// ddPII_{2,aniso} = \frac{\partial^2 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
+      /// \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+      ///\f]
+      /// Third derivatives:
+      ///\f[
+      /// dddPIII_{0,aniso} = \frac{\partial^3 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
+      /// \partial IV_{\boldsymbol{C},\boldsymbol{a}} \partial IV_{\boldsymbol{C},\boldsymbol{a}}} ;
+      ///\f]
+      /// dddPIII_{1,aniso} = \frac{\partial^3 \Psi}{\partial V_{\boldsymbol{C},\boldsymbol{a}}
+      /// \partial V_{\boldsymbol{C},\boldsymbol{a}} \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+      ///\f]
+      /// dddPIII_{2,aniso} = \frac{\partial^3 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
+      /// \partial IV_{\boldsymbol{C},\boldsymbol{a}} \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+      ///\f]
+      /// dddPIII_{3,aniso} = \frac{\partial^3 \Psi}{\partial IV_{\boldsymbol{C},\boldsymbol{a}}
+      /// \partial V_{\boldsymbol{C},\boldsymbol{a}} \partial V_{\boldsymbol{C},\boldsymbol{a}}} ;
+      ///\f]
+      virtual void GetDerivativesAniso(LINALG::Matrix<2,1>& dPI_aniso,               ///< first derivative with respect to invariants
+                                       LINALG::Matrix<3,1>& ddPII_aniso,             ///< second derivative with respect to invariants
+                                       LINALG::Matrix<4,1>& dddPIII_aniso,           ///< third derivative with respect to invariants
+                                       const LINALG::Matrix<2,1>& prinv_aniso,       ///< principal anisotropic invariants
+                                       const int eleGID)                             ///< element GID
+      {
+        dserror("Not implemented for this material. Use elast_coupanisoexpo!");
+        return;
+      };
+
       /// retrieve coefficients of first and second derivative
       /// of summand for fiber directions with respect to principal invariants
       ///
@@ -497,11 +546,11 @@ namespace MAT
 
       /// Indicator for the chosen formulations
       virtual void SpecifyFormulation(
-          bool& isoprinc, ///< global indicator for anisotropy
-          bool& isomod, ///< global indicator for anisotropy
-          bool& anisoprinc, ///< global indicator for anisotropy
-          bool& anisomod, ///< global indicator for anisotropy
-          bool& viscogeneral   ///< global indicator, if one viscoelastic formulation is used
+          bool& isoprinc, ///< global indicator for isotropic principal formulation
+          bool& isomod, ///< global indicator for isotropic splitted formulation
+          bool& anisoprinc, ///< global indicator for anisotropic principal formulation
+          bool& anisomod, ///< global indicator for anisotropic splitted formulation
+          bool& viscogeneral       ///< global indicator, if one viscoelastic formulation is used
         ) = 0;
 
       /// Indicator for the chosen viscoelastic formulations
