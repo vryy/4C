@@ -62,6 +62,9 @@ protected:
   /// preparation of background field solve
   void PrepareBackgroundOp();
 
+  /// preparation of immersed field solve
+  void PrepareImmersedOp();
+
   /// prepare output of data to HD
   virtual void PrepareOutput();
 
@@ -77,15 +80,6 @@ protected:
   /// initial guess
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
 
-  /// calculate force from cell adhesion node inside ecm element to ecm element nodes
-  void CalcAdhesionForce();
-
-  /// distribute force from cell adhesion node inside ecm element to ecm element nodes
-  void DistributeAdhesionForce(Teuchos::RCP<Epetra_Vector> adhesionforce);
-
-  /// apply ecm element displacements to cell adhesion node inside element
-  void ApplyAdhesionDisplacements();
-
 
 private:
 
@@ -93,17 +87,24 @@ private:
   int myrank_;
   int numproc_;
 
+  /// global timstep
+  double timestep_;
+
   /// pointer to global problem
   DRT::Problem* globalproblem_;
 
   /// immersed coupling variable
   bool displacementcoupling_;
 
+  /// start penalty parameter at the beginning of each timestep
+  double penalty_start_;
+
   //! @name Various global vectors
   //@{
-  Teuchos::RCP<Epetra_Vector> ecm_adhesion_forces_; //!< current nodal adhesion forces on ecm
-  Teuchos::RCP<Epetra_Vector> cell_adhesion_disp_;  //!< current nodal cell adhesion displacements
-  Teuchos::RCP<Epetra_Vector> Freact_cell_;         //!< current nodal reaction force because of dirichlet at adhesions
+  Teuchos::RCP<Epetra_Vector> penalty_gap_;                 //!< gap integrated over surface
+  Teuchos::RCP<Epetra_Vector> curr_nodal_normals_;          //!< current nodal normals included in cell output for visualization
+  Teuchos::RCP<Epetra_Vector> cell_penalty_traction_;       //!< boundary traction rhs on immersed cell from cell-ecm interaction
+  Teuchos::RCP<Epetra_Vector> cell_delta_penalty_traction_; //!< force increment
   //@}
 
   //! @name adhesion dynamics related map to save parameter space coords. of adhesion nodes
@@ -117,6 +118,14 @@ private:
   Teuchos::RCP<DRT::Discretization> backgroundfluiddis_;
   Teuchos::RCP<DRT::Discretization> backgroundstructuredis_;
   Teuchos::RCP<DRT::Discretization> immerseddis_;
+  //@}
+
+  //! @name cell initialization
+  //@{
+  bool initialize_cell_;
+  double initial_timestep_;
+  double penalty_init_;        //!< init penalty parameter
+  int initialization_steps_;
   //@}
 
   //! @name Manager for data exchange between fields
@@ -155,21 +164,20 @@ private:
   Teuchos::RCP< ::ADAPTER::FPSIStructureWrapper> porostructure_;
 
   /// reinitialize the transfer vectors
-  void ReinitTransferVectors(){  ecm_adhesion_forces_->PutScalar(0.0);
-                                 cell_adhesion_disp_ ->PutScalar(0.0);
+  void ReinitTransferVectors(){
+                                 cell_delta_penalty_traction_->PutScalar(0.0);
+                                 penalty_gap_->PutScalar(0.0);
                                  return;
                               };
 
-  /// get immersed nodes and determine their dofs
-  void BuildImmersedDirichMap(Teuchos::RCP<DRT::Discretization> dis,
-                              Teuchos::RCP<Epetra_Map>& dirichmap,
-                              const Teuchos::RCP<const Epetra_Map>& dirichmap_original,
-                              int dofsetnum);
+  /// calc the current tractions from the ecm to the cell due to confinement
+  void CalcECMTractionOnStructure();
 
-  /// add immersed dirichlet values from immersed dis to systemvector of background dis
-  void DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector,
-                               Teuchos::RCP<Epetra_Vector> dirichvals,
-                               Teuchos::RCP<const Epetra_Map> dbcmap);
+  /// reset element and node information about immersed method
+  void ResetImmersedInformation();
+
+  /// set time step in single fields
+  virtual void SetFieldDt();
 
 };// class ImmersedPartitionedConfineCell
 } // namespace IMMERSED

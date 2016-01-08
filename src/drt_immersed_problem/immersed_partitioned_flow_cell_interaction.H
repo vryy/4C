@@ -112,26 +112,14 @@ protected:
   /// extract the pressure part
   void ExtractPressurePart();
 
-  /// extract the pressure part
-  virtual void SetFieldDt();
-
   /// calc the current fluid tractions interpolated to the structural surface
   void CalcFluidTractionOnStructure();
-
-  /// calc the current fluid tractions interpolated to the structural surface
-  void CalcECMTractionOnStructure();
 
   //! @name Various global vectors
   //@{
   Teuchos::RCP<Epetra_Vector> porofluid_artificial_velocity_;//!< background velocity interpolated from immersed dis
-  Teuchos::RCP<Epetra_Vector> porofluid_artificial_source_;  //!< background mass change interpolated from immersed dis
   Teuchos::RCP<Epetra_Vector> poroscatra_segregated_phi_;    //!< background phi interpolated from immersed dis
   Teuchos::RCP<Epetra_Vector> cell_bdry_traction_;           //!< boundary traction rhs on immersed cell
-  Teuchos::RCP<Epetra_Vector> cell_penalty_traction_;        //!< boundary traction rhs on immersed cell from cell-ecm interaction
-  Teuchos::RCP<Epetra_Vector> cell_delta_penalty_traction_;  //!< boundary traction rhs on immersed cell from cell-ecm interaction
-  Teuchos::RCP<Epetra_Vector> cell_delta_penalty_traction_old_;  //!< boundary traction rhs on immersed cell from cell-ecm interaction of previous iteration
-  Teuchos::RCP<Epetra_Vector> penalty_gap_;                      //!< gap inegrated over surface
-  Teuchos::RCP<Epetra_Vector> curr_nodal_normals_;               //!< current nodal normals included in cell output for visualization
   //@}
 
   //! @name Pointers to Discretizations
@@ -193,31 +181,11 @@ protected:
   int segregationby_;
   //@}
 
-  double penalty_start_; //!< start penalty parameter at the beginning of each timestep
-
-  //! @name cell initialization
-  //@{
-  bool initialize_cell_;
-  double initial_timestep_;
-  double penalty_init_;        //!< init penalty parameter
-  int initialization_steps_;
-  //@}
-
   /// counter for number of unconverged timesteps
   int continued_steps_;
 
-
-  double nu_; //!< AITKEN relaxation parameter
-
   /// number of integration points related to mass conserving adaption of equations
   int degree_gp_fluid_bound_; //!< number of integration points in fluid elements cut by structural boundary
-
-  //! @name Interaction Switches
-  //@{
-  bool fluid_interaction_;  //!< switch for cell-fluid-interaction
-  bool ecm_interaction_;    //!< switch for cell compression by ecm
-  bool adhesion_dynamics_;  //!< switch for cell-ecm interaction at adhesion sites
-  //@}
 
   //! @name Manager for data exchange between fields
   //@{
@@ -253,9 +221,7 @@ private:
   /// reinitialize the transfer vectors
   void ReinitTransferVectors(){  porofluid_artificial_velocity_->PutScalar(0.0);
                                  cell_bdry_traction_->PutScalar(0.0);
-                                 cell_delta_penalty_traction_->PutScalar(0.0);
                                  poroscatra_segregated_phi_->PutScalar(0.0);
-                                 penalty_gap_->PutScalar(0.0);
                                  return;
                               };
 

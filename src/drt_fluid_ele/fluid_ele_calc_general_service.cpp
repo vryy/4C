@@ -4984,10 +4984,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
      )
   {
   DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
-  //int noisimmersed = params.get<int>("NoIsImmersed",0);
 
   // reset element information
-  //if(not noisimmersed)
   immersedele->SetIsImmersed(0);
   immersedele->SetBoundaryIsImmersed(0);
   immersedele->SetHasProjectedDirichlet(0);
@@ -5002,8 +5000,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
   // reset element int point information
   if(immersedele->GetRCPProjectedIntPointDivergence() != Teuchos::null)
     immersedele->DestroyElementRCP();
-
-
 
   return 0;
 }

@@ -1694,7 +1694,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     ////////////////////////////////////////////////////////////////////////////
     // rauch 05/15 for immersed cell migration
     //
-    // this action integrates the ecm interaction force over the structural surface.
+    // this action integrates the ecm interaction force for cell confinement
+    // module over the cell surface.
     //
     // CALC:   /
     //        /
@@ -1704,7 +1705,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     //       /
     //      / d B_t
     //
-    // phi : porosity at integration point
+    // phi    : porosity at integration point
     // f(phi) : modeled interaction force depending on porosity phi
     //
 //#define VELOCITYDEPENENCY // todo get disp_old and build scalarproduct_sip with incrementvector d_n+1 - dn !!!
@@ -2347,61 +2348,11 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   } // calc_ecm_traction
   break;
   case mark_immersed_elements:
-//  {
-//    DRT::Problem* globalproblem = DRT::Problem::Instance();
-//    std::string backgrddisname("fluid");
-//    std::string immerseddisname("structure");
-//
-//    // get integration rule
-//    const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad4>::rule);
-//
-//    const Teuchos::RCP<DRT::Discretization> backgrddis  = globalproblem->GetDis(backgrddisname);
-//    const Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
-//
-//    const int nen = NumNode();
-//    const int globdim = globalproblem->NDim();
-//
-//    // get structural state and element displacements (parent element)
-//    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("displacement");
-//#ifdef DEBUG
-//    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-//#endif
-//    std::vector<double> bdryeledisp(lm.size());
-//    DRT::UTILS::ExtractMyValues(*dispnp,bdryeledisp,lm);
-//
-//    // geometry (surface ele)
-//    LINALG::Matrix<3,4> xrefe; // material coord. of element
-//
-//    DRT::Node** nodes = this->Nodes();
-//    for (int i=0; i<nen; ++i)
-//    {
-//      const double* x = nodes[i]->X();
-//      xrefe(0,i) = x[0];
-//      xrefe(1,i) = x[1];
-//      xrefe(2,i) = x[2];
-//    }
-//
-//    ////////////////////////////////////////////////////////////////////
-//    /////   gauss point loop
-//    ///////////////////////////////////////////////////////////////////
-//    for (int gp=0; gp<intpoints.IP().nquad; gp++)
-//    {
-//      std::vector<double> bdryxi(globdim-1);
-//      bdryxi[0] = intpoints.IP().qxg[gp][0];
-//      bdryxi[1] = intpoints.IP().qxg[gp][1];
-//
-//      IMMERSED::DetermineBackgrdElementsWithImmersedBoundary <DRT::Element::hex8,  // source
-//                                                              DRT::Element::quad4> // target
-//                                                           (backgrddis,
-//                                                            immerseddis,
-//                                                            *this,
-//                                                            bdryxi,
-//                                                            bdryeledisp
-//                                                           );
-//
-//    }// gauss point loop
-//
-//  }
+  {
+
+    // obsolete
+
+  }
   break;
   default:
     dserror("Unimplemented type of action for StructuralSurface");

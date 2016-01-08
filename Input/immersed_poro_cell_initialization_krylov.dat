@@ -1,8 +1,11 @@
-==================================================================
-                  General Data File BACI
-==================================================================
+//
+// Maintainer: Andreas Rauch
+// rauch@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15240
+//
 -------------------------------------------------------------TITLE
-created by pre_exodus
+Circular pseudo2D cell is confined by ECM.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    4929
 //NODES       10224
@@ -48,8 +51,11 @@ ITEMAX                          23
 COUPALGO                        iter_stagg_fixed_rel_param
 MIGRATIONTYPE                   ameboid
 PSEUDO2D                        yes
-SIMTYPE                         pureFSI
+SIMTYPE                         pureCompression
 ECM_INTERACTION                 yes
+FLUID_INTERACTION               no
+ADHESION_DYNAMICS               no
+SSI_CELL                        no
 SEGREGATION                     surface
 SEGREGATION_BY                  dirichlet
 SEGREGATION_LAW                 constant
@@ -89,6 +95,36 @@ MATERIALTANGENT                 analytical
 PREDICT                         ConstDis
 DAMPING                         Material
 LINEAR_SOLVER                   1
+// default parameters
+PRESTRESS                       none
+PRESTRESSTIME                   0.000e+00
+RESEVRYERGY                     0
+M_DAMP                          -1.000e+00
+K_DAMP                          -1.000e+00
+TOLPRE                          1.000e-08
+NORM_PRES                       Abs
+TOLINCO                         1.000e-08
+NORM_INCO                       Abs
+NORMCOMBI_DISPPRES              And
+NORMCOMBI_RESFINCO              And
+STC_SCALING                     no
+STC_LAYER                       1
+PTCDT                           1.000e-01
+TOLCONSTR                       1.000e-08
+CONTROLTYPE                     load
+CONTROLNODE                     -1 -1 -1
+LOADLIN                         yes
+MASSLIN                         No
+UZAWAPARAM                      1.000e+00
+UZAWATOL                        1.000e-08
+UZAWAMAXITER                    50
+UZAWAALGO                       direct
+ADAPTCONV                       No
+ADAPTCONV_BETTER                1.000e-01
+LUMPMASS                        No
+MODIFIEDEXPLEULER               Yes
+YOUNG_IS_TEMP_DEPENDENT         No
+GEOMETRY                        full
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 ------------------------------------------------------FLUID DYNAMIC
@@ -111,6 +147,38 @@ MAXTIME                         7.0
 THETA                           1.0
 CONVTOL                         1e-07
 START_THETA                     1.0
+// default parameters
+SIMPLER_SOLVER                  -1
+WSS_TYPE                        Standard
+WSS_ML_AGR_SOLVER               -1
+OST_CONT_PRESS                  Cont_normal_Press_normal
+GEOMETRY                        full
+OSEENFIELDFUNCNO                -1
+LIFTDRAG                        No
+NONLINEARBC                     no
+MESHTYING                       no
+ALLDOFCOUPLED                   Yes
+CALCERROR                       no
+CALCERRORFUNCNO                 -1
+SIMPLER                         no
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                1.000e-01
+INFNORMSCALING                  no
+GMSH_OUTPUT                     No
+COMPUTE_DIVU                    No
+COMPUTE_EKIN                    No
+NEW_OST                         No
+STEADYSTEP                      -1
+NUMSTASTEPS                     0
+STARTFUNCNO                     -1
+INITSTATITEMAX                  5
+ALPHA_M                         1.000e+00
+ALPHA_F                         1.000e+00
+GAMMA                           1.000e+00
+STRONG_REDD_3D_COUPLING_TYPE    no
+VELGRAD_PROJ_SOLVER             -1
+VELGRAD_PROJ_METHOD             none
+OFF_PROC_ASSEMBLY               No
 ----------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 STAB_BIOT                       No
 STAB_BIOT_SCALING               1
