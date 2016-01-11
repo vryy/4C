@@ -146,6 +146,12 @@ public:
    */
   void Update(Teuchos::RCP<Epetra_Vector> dis){}
 
+  /*!
+   \brief Set time integration parameter from Thermo time integration
+
+   */
+  void SetAlphafThermo(const Teuchos::ParameterList& tdyn);
+
   //@}
 
 protected:

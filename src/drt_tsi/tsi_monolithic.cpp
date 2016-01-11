@@ -154,7 +154,11 @@ TSI::Monolithic::Monolithic(
   // structural and thermal contact
   if (StructureField()->MeshtyingContactBridge() != Teuchos::null)
     if(StructureField()->MeshtyingContactBridge()->HaveContact())
+    {
       cmtman_ = StructureField()->MeshtyingContactBridge()->ContactManager();
+      dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).SetAlphafThermo(tdyn);
+    }
+
 
   // StructureField: check whether we have locsys BCs, i.e. inclined structural
   //  Dirichlet BC

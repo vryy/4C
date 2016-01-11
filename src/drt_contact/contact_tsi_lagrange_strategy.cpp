@@ -21,7 +21,7 @@ Maintainer: Alexander Seitz
 #include "../drt_io/io.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_multiply.H"
-
+#include "../drt_inpar/inpar_thermo.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_fsi/fsi_matrixtransform.H"
 #include "contact_tsi_interface.H"
@@ -41,12 +41,9 @@ CONTACT::CoTSILagrangeStrategy::CoTSILagrangeStrategy(
     Teuchos::RCP<Epetra_Comm> comm,
     double alphaf,
     int maxdof):
-    MonoCoupledLagrangeStrategy(DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof)
+    MonoCoupledLagrangeStrategy(DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+    tsi_alpha_(1.)
 {
-  if (alphaf==0.)
-    tsi_alpha_=1.;
-  else
-    tsi_alpha_ = alphaf_; // use the same time integration parameter for thermal as for structural field
 
   return;
 }
@@ -946,4 +943,24 @@ void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<Epetra_Vector> dis,Teuc
   AddVector(*tmp,*ftcnp_);
 
   ftcn_=ftcnp_;
+}
+
+void CONTACT::CoTSILagrangeStrategy::SetAlphafThermo(const Teuchos::ParameterList& tdyn)
+{
+  INPAR::THR::DynamicType dyn_type = DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP");
+  switch (dyn_type)
+  {
+  case INPAR::THR::dyna_genalpha:
+    tsi_alpha_ = tdyn.sublist("GENALPHA").get<double>("ALPHA_F");
+    break;
+  case INPAR::THR::dyna_onesteptheta:
+    tsi_alpha_ = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
+    break;
+  case INPAR::THR::dyna_statics:
+    tsi_alpha_ = 1.;
+    break;
+  default:
+    dserror("unknown thermal time integration type");
+  }
+  return;
 }
