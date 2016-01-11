@@ -622,7 +622,7 @@ void UTILS::SpringDashpot::GetRefNormals(const std::map<int,Teuchos::RCP<DRT::El
       DRT::Node* node = actdisc_->gNode(gid);
       if (!node) dserror("Cannot find global node %d",gid);
 
-      int numdof = actdisc_->NumDof(node);
+      int numdof = actdisc_->NumDof(0,node);
       std::vector<int> dofs = actdisc_->Dof(node);
 
       assert (numdof==3);
@@ -670,7 +670,7 @@ void UTILS::SpringDashpot::InitializePrestrOffset()
       DRT::Node* node = actdisc_->gNode(gid);
       if (!node) dserror("Cannot find global node %d",gid);
 
-      int numdof = actdisc_->NumDof(node);
+      int numdof = actdisc_->NumDof(0,node);
       std::vector<int> dofs = actdisc_->Dof(node);
 
       assert (numdof==3);
