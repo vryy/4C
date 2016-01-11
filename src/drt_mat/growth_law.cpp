@@ -106,6 +106,7 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit,
       &glstraindach,
       &Sdach,
       &cmatelastic,
+      params,
       eleGID);
 
   // trace of elastic Mandel stress Mdach = Cdach Sdach
@@ -163,6 +164,7 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit,
           &glstraindach,
           &Sdach,
           &cmatelastic,
+          params,
           eleGID);
 
       // trace of mandel stress

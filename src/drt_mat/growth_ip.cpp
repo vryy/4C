@@ -124,7 +124,6 @@ MAT::Growth::Growth()
     isinit_(false),
     params_(NULL),
     matelastic_(Teuchos::null),
-    paramselast_(),
     thetaold_(Teuchos::null),
     histdata_()
 {
@@ -137,7 +136,6 @@ MAT::Growth::Growth(MAT::PAR::Growth* params)
     isinit_(false),
     params_(params),
     matelastic_(Teuchos::null),
-    paramselast_(),
     thetaold_(Teuchos::null),
     histdata_()
 {
@@ -338,9 +336,10 @@ void MAT::Growth::EvaluateElastic(const LINALG::Matrix<3, 3>* defgrd,
     const LINALG::Matrix<6, 1>* glstrain,
     LINALG::Matrix<6, 1>* stress,
     LINALG::Matrix<6, 6>* cmat,
+    Teuchos::ParameterList& params,
     const int eleGID)
 {
-  Matelastic()->Evaluate(defgrd, glstrain, paramselast_, stress, cmat, eleGID);
+  Matelastic()->Evaluate(defgrd, glstrain, params, stress, cmat, eleGID);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -416,11 +415,6 @@ void MAT::GrowthMandel::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
     LINALG::Matrix<6, 6>* cmat,
     const int eleGID)
 {
-  //modify the parameter list to be passed to the elastic material
-  Teuchos::ParameterList paramselast(params);
-  paramselast.remove("matparderiv",false);
-  SetParamsElast(paramselast);
-
   // get gauss point number
   const int gp = params.get<int>("gp", -1);
   if (gp == -1)
@@ -475,6 +469,10 @@ void MAT::GrowthMandel::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
     glstraindach -= Id;
     glstraindach.Scale(0.5);
 
+    //modify the parameter list to be passed to the elastic material
+     Teuchos::ParameterList paramselast(params);
+    paramselast.remove("matparderiv",false);
+
     // elastic 2 PK stress and constitutive matrix
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelastic(true);
     LINALG::Matrix<NUM_STRESS_3D, 1> Sdach(true);
@@ -482,6 +480,7 @@ void MAT::GrowthMandel::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
                     &glstraindach,
                     &Sdach,
                     &cmatelastic,
+                    paramselast,
                     eleGID);
 
 
@@ -562,6 +561,7 @@ void MAT::GrowthMandel::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
                     &glstraindach,
                     &Sdach,
                     &cmatelastic,
+                    params,
                     eleGID);
 
     // 2PK stress S = F_g^-1 Sdach F_g^-T
@@ -582,7 +582,7 @@ void MAT::GrowthMandel::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
   }
   else
   {
-    EvaluateElastic(defgrd, glstrain, stress, cmat, eleGID);
+    EvaluateElastic(defgrd, glstrain, stress, cmat, params, eleGID);
     // build identity tensor I
     LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
     for (int i = 0; i < 3; i++)

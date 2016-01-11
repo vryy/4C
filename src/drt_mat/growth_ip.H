@@ -226,6 +226,8 @@ class GrowthLaw;
      * \param Out
      * cmat - material stiffness matrix
      * \param In
+     * params - a parameter list as handed in from the element
+     * \param In
      * eleGID - the calling element's GID
      *
      *  \author kehl
@@ -235,6 +237,7 @@ class GrowthLaw;
                                  const LINALG::Matrix<6,1>* glstrain,
                                  LINALG::Matrix<6,1>* stress,
                                  LINALG::Matrix<6,6>* cmat,
+                                 Teuchos::ParameterList& params,
                                  const int eleGID );
     //@}
 
@@ -265,13 +268,6 @@ class GrowthLaw;
 
     //@}
 
-    //! @name Set methods
-    //@{
-
-    void SetParamsElast(Teuchos::ParameterList& params) {paramselast_=params;}
-
-    //@}
-
   protected:
 
     /// growth stretch
@@ -287,9 +283,6 @@ class GrowthLaw;
 
     /// elastic material
     Teuchos::RCP<MAT::So3Material> matelastic_;
-
-    /// parameter list for the evaluation of the elastic material
-    Teuchos::ParameterList paramselast_;
 
     /// growth stretch at the time step before
     Teuchos::RCP<std::vector<double> > thetaold_;
