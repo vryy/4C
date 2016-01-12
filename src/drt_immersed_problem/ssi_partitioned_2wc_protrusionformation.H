@@ -16,11 +16,24 @@ Maintainers: Andreas Rauch
 #include "../drt_ssi/ssi_partitioned_2wc.H"
 #include "../drt_inpar/inpar_ssi.H"
 
+namespace ADAPTER
+{
+  class FSIStructureWrapper;
+  class AleFluidWrapper;
+  class Coupling;
+}
+
+namespace DRT
+{
+  class Element;
+}
+
 namespace SSI
 {
   //! specialized class to deal with partitioned 2WC SSI during protrusion formation in cell migration.
   class SSI_Part2WC_PROTRUSIONFORMATION : public SSI_Part2WC
   {
+
   public:
 
     //!explicit constructor
@@ -33,6 +46,77 @@ namespace SSI
 
     //!virtual destructor
     virtual ~SSI_Part2WC_PROTRUSIONFORMATION(){};
+
+  protected:
+
+    //! perform iteration step of ale field
+    void DoAleStep(Teuchos::RCP<Epetra_Vector> growthincrement);
+
+    virtual void DoStructStep();
+
+    //! access to ale field
+    const Teuchos::RCP<ADAPTER::AleFluidWrapper> AleField(){return ale_;};
+
+    //! access to scatra field
+    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>&  ScaTraField(){return scatra_;};
+
+    //! access to scatra field
+    const Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>&  SpecStructureField(){return specialized_structure_;};
+
+    //! return coupling object
+    Teuchos::RCP< ::ADAPTER::Coupling> AleStruCoupling(){return coupalestru_; };
+
+    //! parameter space mapping between configurations
+    void AdvectionMap(
+        double* Xtarget,            // out
+        double* Xsource,            // in
+        DRT::Element** ElementPtr,  // in
+        int numelements,            // in
+        bool spatialtomaterial);    // in
+
+    //! evaluate growth law for cell
+    void EvaluateGrowth();
+
+    //! update material configuration
+    void UpdateMatConf();
+
+    //! update spatial configuration
+    void UpdateSpatConf();
+
+    //! transform from structure to ale dofs
+    virtual Teuchos::RCP<Epetra_Vector> StructureToAle(Teuchos::RCP<Epetra_Vector> vec);
+
+    //! transform from structure to ale dofs
+    virtual Teuchos::RCP<Epetra_Vector> StructureToAle(Teuchos::RCP<const Epetra_Vector> vec);
+
+    //! bettina: transform from ale to structure dofs
+    virtual Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<Epetra_Vector> vec);
+
+    //! bettina: transform from ale to structure dofs
+    virtual Teuchos::RCP<Epetra_Vector> AleToStructure(Teuchos::RCP<const Epetra_Vector> vec);
+
+    //! setup discretizations and dofsets
+    virtual void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname);
+
+
+  private:
+
+    //! growth increment of the growth loop
+    Teuchos::RCP<Epetra_Vector> growthincrement_;
+
+    // yet unknown vector
+    Teuchos::RCP<Epetra_Vector> delta_ale_;
+
+    // coupling objects declaration
+    Teuchos::RCP< ::ADAPTER::Coupling>               coupalestru_;   // ale struct coupling
+    Teuchos::RCP< ::ADAPTER::Coupling>               coupstrualei_;  // ale struct coupling on ale interface
+
+    //! underlying ALE
+    Teuchos::RCP<ADAPTER::AleFluidWrapper> ale_;
+
+    /// underlying structure of the SSI problem
+    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    specialized_structure_;
+
 
   }; // class
 } // namespace SSI

@@ -17,6 +17,7 @@ Maintainers: Andreas Rauch
 #include "immersed_partitioned_confine_cell.H"
 #include "immersed_partitioned_cellmigration.H"
 #include "immersed_partitioned_adhesion_traction.H"
+#include "ssi_partitioned_2wc_protrusionformation.H"
 #include "immersed_partitioned_fsi_dirichletneumann.H"
 #include "immersed_partitioned_protrusion_formation.H"
 #include "immersed_partitioned_flow_cell_interaction.H"
@@ -36,7 +37,6 @@ Maintainers: Andreas Rauch
 #include "../drt_poroelast/poroelast_utils_setup.H"
 #include "../drt_poroelast/poroelast_monolithic.H"
 #include "../drt_poroelast/poro_scatra_part_2wc.H"
-#include "../drt_ssi/ssi_partitioned_2wc.H"
 #include "../linalg/linalg_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -234,22 +234,10 @@ void CellMigrationControlAlgorithm()
     switch(coupling)
     {
     case INPAR::SSI::ssi_IterStagg:
-      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
-      break;
-    case INPAR::SSI::ssi_IterStaggFixedRel_ScatraToSolid:
-      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
-      break;
-    case INPAR::SSI::ssi_IterStaggFixedRel_SolidToScatra:
-      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
-      break;
-    case INPAR::SSI::ssi_IterStaggAitken_ScatraToSolid:
-      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
-      break;
-    case INPAR::SSI::ssi_IterStaggAitken_SolidToScatra:
-      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
+      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_PROTRUSIONFORMATION(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
       break;
     default:
-      dserror("unknown coupling algorithm for SSI!");
+      dserror("unknown coupling algorithm for SSI! Only ssi_IterStagg valid. Fix your *.dat file.");
       break;
     }
 

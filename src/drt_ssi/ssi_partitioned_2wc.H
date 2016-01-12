@@ -43,7 +43,7 @@ namespace SSI
     void PrepareTimeStep();
 
     //! perform iteration step of structure field
-    void DoStructStep();
+    virtual void DoStructStep();
 
     //! perform iteration step of scatra field
     void DoScatraStep();

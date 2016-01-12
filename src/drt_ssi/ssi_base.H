@@ -105,9 +105,10 @@ namespace SSI
     /// setup adapters for transport on boundary if necessary
     void SetupFieldCoupling(const std::string struct_disname, const std::string scatra_disname);
 
-  private:
     /// setup discretizations and dofsets
-    void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname);
+    virtual void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname);
+
+  private:
 
     /// set structure mesh displacement on scatra field
     void SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp ) ;
