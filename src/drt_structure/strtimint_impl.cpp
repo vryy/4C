@@ -1082,6 +1082,10 @@ void STR::TimIntImpl::ApplyForceStiffInternalAndInertial
   discret_->SetState(0,"velocity", vel);
   discret_->SetState(0,"acceleration", acc);
 
+  // Set material displacement state for struct-ale in cell migration
+  if( (dismatn_!=Teuchos::null) )
+    discret_->SetState(0,"material_displacement",dismatn_);
+
   /* Additionally we hand in "fint_str_"
    * This is usually Teuchos::null unless we do line search in
    * combination with elements that perform a local condensation

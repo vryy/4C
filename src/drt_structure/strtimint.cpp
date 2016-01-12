@@ -51,6 +51,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_crack.H"
+#include "../drt_inpar/inpar_cell.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_constraint/windkessel_manager.H"
@@ -382,8 +383,11 @@ void STR::TimInt::createAllEpetraVectors()
   // displacements D_{n+1} at t_{n+1}
   disn_ = LINALG::CreateVector(*DofRowMapView(), true);
 
-  if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
-      (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF")>0.0)
+  if ( (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
+       (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF")>0.0) or
+       (DRT::Problem::Instance()->ProblemType() == prb_immersed_cell and
+        DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams(),"SIMTYPE") == INPAR::CELL::sim_type_pureProtrusionFormation)
+     )
   {
     // material displacements Dm_{n+1} at t_{n+1}
     dismatn_ = LINALG::CreateVector(*DofRowMapView(),true);
