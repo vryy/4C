@@ -182,4 +182,4 @@ private:
 };// class ImmersedPartitionedConfineCell
 } // namespace IMMERSED
 
-#endif
+#endif /* IMMERSED_PARTITIONED_CONFINE_CELL_H */

@@ -44,7 +44,7 @@ typedef enum _SIM_TYPE
   sim_type_pureFSI=0,
   sim_type_pureAdhesion=1,
   sim_type_pureConfinement=2,
-  sim_type_pureGrowth=3,
+  sim_type_pureProtrusionFormation=3,
   sim_type_multiphysics=4
 } SIM_TYPE;
 

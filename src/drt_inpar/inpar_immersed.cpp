@@ -178,6 +178,12 @@ void INPAR::IMMERSED::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  tuple<int>(0,1),
                                  &immersedpart);
 
+    setStringToIntegralParameter<int>("COUPVARIABLE_PROTRUSION","Displacement",
+                                 "Coupling variable at the protruding interface",
+                                 tuple<std::string>("Displacement","Force"),
+                                 tuple<int>(0,1),
+                                 &immersedpart);
+
     setStringToIntegralParameter<int>("COUPMETHOD","immersed",
                                  "Coupling Method Mortar (mtr) or conforming nodes at interface",
                                  tuple<std::string>(

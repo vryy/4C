@@ -18,6 +18,7 @@ Maintainers: Andreas Rauch
 #include "immersed_partitioned_cellmigration.H"
 #include "immersed_partitioned_adhesion_traction.H"
 #include "immersed_partitioned_fsi_dirichletneumann.H"
+#include "immersed_partitioned_protrusion_formation.H"
 #include "immersed_partitioned_flow_cell_interaction.H"
 #include "immersed_partitioned_fsi_dirichletneumann_ale.H"
 
@@ -222,7 +223,7 @@ void CellMigrationControlAlgorithm()
   Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> cellstructure = Teuchos::null;
 
   // pointer to cell subproblem (structure-scatra interaction)
-  Teuchos::RCP<SSI::SSI_Base> cell_subproblem = Teuchos::null;
+  Teuchos::RCP<SSI::SSI_Base> cellscatra_subproblem = Teuchos::null;
 
   bool ssi_cell = DRT::INPUT::IntegralValue<int>(problem->CellMigrationParams(),"SSI_CELL");
   if(ssi_cell)
@@ -233,26 +234,26 @@ void CellMigrationControlAlgorithm()
     switch(coupling)
     {
     case INPAR::SSI::ssi_IterStagg:
-      cell_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
+      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
       break;
     case INPAR::SSI::ssi_IterStaggFixedRel_ScatraToSolid:
-      cell_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
+      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
       break;
     case INPAR::SSI::ssi_IterStaggFixedRel_SolidToScatra:
-      cell_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
+      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
       break;
     case INPAR::SSI::ssi_IterStaggAitken_ScatraToSolid:
-      cell_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
+      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
       break;
     case INPAR::SSI::ssi_IterStaggAitken_SolidToScatra:
-      cell_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
+      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
       break;
     default:
       dserror("unknown coupling algorithm for SSI!");
       break;
     }
 
-    cellstructure = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(cell_subproblem->StructureField());
+    cellstructure = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(cellscatra_subproblem->StructureField());
 
     if(cellstructure==Teuchos::null)
       dserror("dynamic cast from Structure to FSIStructureWrapperImmersed failed");
@@ -366,10 +367,12 @@ void CellMigrationControlAlgorithm()
   // accessible in subproblems
   params.set<Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> >("RCPToCellStructure",cellstructure);
   params.set<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra",poroscatra_subproblem);
+  params.set<Teuchos::RCP<SSI::SSI_Base> >("RCPToCellScatra",cellscatra_subproblem);
   params.set<Teuchos::RCP<GEO::SearchTree> >("RCPToCellSearchTree",cell_SearchTree);
   params.set<Teuchos::RCP<GEO::SearchTree> >("RCPToFluidSearchTree",fluid_SearchTree);
   params.set<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsCell",&currpositions_cell);
   params.set<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsECM",&currpositions_ECM);
+  params.set<Teuchos::RCP<SSI::SSI_Base> >("RCPToCellScatra",cellscatra_subproblem);
 
   //////////////////////////////////////////////
   // query simulation type
@@ -442,6 +445,38 @@ void CellMigrationControlAlgorithm()
 
     Teuchos::RCP<IMMERSED::ImmersedPartitionedConfineCell> algo =
         Teuchos::rcp(new IMMERSED::ImmersedPartitionedConfineCell(params,comm));
+
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
+    {
+      // read the restart information, set vectors and variables
+      algo->ReadRestart(restart);
+    }
+
+    algo->Timeloop(algo);
+
+    if(immersedmethodparams.get<std::string>("TIMESTATS")=="endofsim")
+    {
+      Teuchos::TimeMonitor::summarize();
+      Teuchos::TimeMonitor::zeroOutTimers();
+    }
+
+    // create result tests for single fields
+    DRT::Problem::Instance()->AddFieldTest(cellstructure->CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(poroscatra_subproblem->FluidField()->CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(poroscatra_subproblem->StructureField()->CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(poroscatra_subproblem->ScaTraFieldBase()->CreateScaTraFieldTest());
+
+    // do the actual testing
+    DRT::Problem::Instance()->TestAll(comm);
+
+  }// sim_type_pureCompression
+  else if (simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
+  {
+    params.set<bool>("IsPureProtrusionFormation", true);
+
+    Teuchos::RCP<IMMERSED::ImmersedPartitionedProtrusionFormation> algo =
+        Teuchos::rcp(new IMMERSED::ImmersedPartitionedProtrusionFormation(params,comm));
 
     const int restart = DRT::Problem::Instance()->Restart();
     if (restart)

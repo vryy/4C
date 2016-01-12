@@ -49,8 +49,10 @@ public:
 
   bool isinitialized_;
   bool isfluidinteraction_;
+  bool isprotrusionformation;
   bool isPureAdhesionSimulation_;
   bool isPureConfinementSimulation_;
+  bool isPureProtrusionFormationSimulation_;
 
   int check_counter_;
   int num_isimmersedbry_;
@@ -91,6 +93,10 @@ public:
   void SetIsFluidInteraction(bool trueorfalse){isfluidinteraction_=trueorfalse; return;};
 
   bool IsFluidInteraction(){return isfluidinteraction_;};
+
+  void SetIsProtrusionFormation(bool trueorfalse){isprotrusionformation=trueorfalse; return;};
+
+  bool IsProtrusionFormation(){return isprotrusionformation;};
 
   void SetImmersedSearchTree(Teuchos::RCP<GEO::SearchTree> immersed_SearchTree)
   {
@@ -209,6 +215,10 @@ public:
    void SetIsPureConfinementSimulation(bool trueorfalse){isPureConfinementSimulation_=trueorfalse; return;};
 
    bool IsPureConfinementSimulation(){return isPureConfinementSimulation_;};
+
+   void SetIsPureProtrusionFormationSimulation(bool trueorfalse){isPureProtrusionFormationSimulation_=trueorfalse; return;};
+
+   bool IsPureProtrusionFormationSimulation(){return isPureProtrusionFormationSimulation_;};
 
 private:
 

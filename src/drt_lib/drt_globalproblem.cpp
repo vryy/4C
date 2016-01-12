@@ -1749,11 +1749,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_immersed_cell:
   {
     // create empty discretizations
-    structdis    = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
-    porofluiddis = Teuchos::rcp(new DRT::Discretization("porofluid"   ,reader.Comm()));
-    celldis      = Teuchos::rcp(new DRT::Discretization("cell",reader.Comm()));
-    scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
+    structdis     = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+    porofluiddis  = Teuchos::rcp(new DRT::Discretization("porofluid"   ,reader.Comm()));
+    celldis       = Teuchos::rcp(new DRT::Discretization("cell",reader.Comm()));
+    scatradis     = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
     cellscatradis = Teuchos::rcp(new DRT::Discretization("cellscatra",reader.Comm()));
+    aledis        = Teuchos::rcp(new DRT::Discretization("ale",reader.Comm()));
 
     // create discretization writer - in constructor set into and owned by corresponding discret
     structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
@@ -1761,12 +1762,14 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     celldis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(celldis)));
     scatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(scatradis)));
     cellscatradis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(cellscatradis)));
+    aledis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(aledis)));
 
     AddDis("structure", structdis);
     AddDis("porofluid", porofluiddis);
     AddDis("cell", celldis);
     AddDis("scatra", scatradis);
     AddDis("cellscatra", cellscatradis);
+    AddDis("ale", aledis);
 
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(celldis, reader, "--CELL ELEMENTS")));

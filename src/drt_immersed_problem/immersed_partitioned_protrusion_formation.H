@@ -1,0 +1,143 @@
+  /*!----------------------------------------------------------------------
+\file immersed_partitioned_protrusion_formation.H
+
+\brief partitioned immersed ECM -Cell interaction algorithm
+
+<pre>
+Maintainers: Andreas Rauch
+             rauch@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289 -15240
+</pre>
+*----------------------------------------------------------------------*/
+#ifndef IMMERSED_PARTITIONED_PROTRUSIONFORMATION_H
+#define IMMERSED_PARTITIONED_PROTRUSIONFORMATION_H
+
+#include "immersed_partitioned.H"
+#include "immersed_field_exchange_manager.H"
+
+/*----------------------------------------------------------------------*
+ | forward declarations                                                  |
+ *----------------------------------------------------------------------*/
+namespace POROELAST
+{
+  //class Monolithic;
+  class PoroScatraBase;
+}
+
+namespace ADAPTER
+{
+  class FPSIStructureWrapper;
+  class FSIStructureWrapperImmersed;
+}
+
+namespace SSI
+{
+  class SSI_Base;
+}
+
+/*----------------------------------------------------------------------*/
+
+namespace IMMERSED {
+
+class ImmersedPartitionedProtrusionFormation : public ImmersedPartitioned
+{
+
+public:
+
+  /// setup partitioned immersed cell migration algorithm
+  explicit ImmersedPartitionedProtrusionFormation(const Teuchos::ParameterList& params, const Epetra_Comm& comm);
+
+  /// read restart
+  virtual void ReadRestart(int step);
+
+protected:
+
+  /// composed Field-Field-Interaction operator
+  void CouplingOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
+
+  /// background operator
+  void BackgroundOp(Teuchos::RCP<Epetra_Vector> backgrd_dirichlet_values,
+      const FillType fillFlag);
+
+  /// immersed operator
+  Teuchos::RCP<Epetra_Vector> ImmersedOp(Teuchos::RCP<Epetra_Vector> bdry_traction,
+      const FillType fillFlag);
+
+  /// preparation of background field solve
+  void PrepareBackgroundOp();
+
+  /// preparation of immersed field solve
+  void PrepareImmersedOp();
+
+  /// prepare output of data to HD
+  virtual void PrepareOutput();
+
+  /// output of data to HD
+  virtual void Output();
+
+  /// update fields
+  virtual void Update();
+
+  /// prepare time step of single fields and print header
+  virtual void PrepareTimeStep();
+
+  /// initial guess
+  virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
+
+private:
+
+  //! @name Manager for data exchange between fields
+  //@{
+  DRT::ImmersedFieldExchangeManager* exchange_manager_ ;
+  //@}
+
+  //! @name Search Trees
+  //@{
+  Teuchos::RCP<GEO::SearchTree> fluid_SearchTree_;  //!< search tree for fluid domain
+  Teuchos::RCP<GEO::SearchTree> cell_SearchTree_;   //!< search tree for cell domain
+  //@}
+
+  //! @name current nodal positions of the discretizations
+  //@{
+  std::map<int,LINALG::Matrix<3,1> >* currpositions_cell_; //!< pointer to map of vectors for search tree containing current structural positions
+  std::map<int,LINALG::Matrix<3,1> >* currpositions_ECM_;  //!< pointer to map of vectors for search tree containing current fluid positions
+  //@}
+
+  /// cell structure of the immersed problem
+  Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> cellstructure_;
+
+  /// poro structure of the immersed problem
+  Teuchos::RCP< ::ADAPTER::FPSIStructureWrapper>        porostructure_;
+
+  /// pointer to cell subproblem (structure-scatra interaction)
+  Teuchos::RCP<SSI::SSI_Base> cell_subproblem_;
+
+  /// pointer to poroelast subproblem (poro-scatra interaction)
+  Teuchos::RCP<POROELAST::PoroScatraBase> poroscatra_subproblem_;
+
+  /// pointer to cellscatra subproblem (structure-scatra interaction)
+  Teuchos::RCP<SSI::SSI_Base> cellscatra_subproblem_;
+
+  /// basic information for parallelism
+  int myrank_;
+  int numproc_;
+
+  /// pointer to global problem
+  DRT::Problem* globalproblem_;
+
+  /// coupling scheme
+  bool displacementcoupling_;
+
+  //! @name Pointers to Discretizations
+  //@{
+  Teuchos::RCP<DRT::Discretization> backgroundstructuredis_;
+  Teuchos::RCP<DRT::Discretization> backgroundfluiddis_;
+  Teuchos::RCP<DRT::Discretization> immerseddis_;
+  Teuchos::RCP<DRT::Discretization> scatradis_;
+  //@}
+
+}; // class ImmersedPartitionedProtrusionFormation
+} // namespace IMMERSED
+
+#endif /* IMMERSED_PARTITIONED_PROTRUSIONFORMATION_H */
