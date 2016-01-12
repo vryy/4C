@@ -125,9 +125,10 @@ void SSI::SSI_Part2WC::PrepareTimeStep()
   IncrementTimeAndStep();
   PrintHeader();
 
-  SetStructSolution(structure_->Dispn(),structure_->Veln());
-  structure_-> PrepareTimeStep();
   SetScatraSolution(scatra_->ScaTraField()->Phin());
+  structure_-> PrepareTimeStep();
+
+  SetStructSolution(structure_->Dispn(),structure_->Veln());
   scatra_->ScaTraField()->PrepareTimeStep();
 }
 
@@ -254,7 +255,6 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
     stopnonliniter = true;
     if (Comm().MyPID()==0 )
     {
-      printf("\n");
       printf("|  Outer Iteration loop converged after iteration %3d/%3d !                                                      |\n", itnum,itmax_);
       printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
     }

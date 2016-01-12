@@ -293,7 +293,7 @@ void FS3I::ACFSI::SmallTimeScalePrepareTimeStep()
     std::cout << "\n"<< "TIME:  "    << std::scientific <<std::setprecision(8)<< time_ << "/" << std::scientific << timemax_
              << "     DT = " << std::scientific << dt_
              << "     STEP = " << std::setw(4) << step_ << "/" << std::setw(4) << numstep_
-             << "\n\n";
+             << "\n"<<std::endl;
   }
 
   //iff this is the beginning of a new fsi cycle
@@ -306,9 +306,14 @@ void FS3I::ACFSI::SmallTimeScalePrepareTimeStep()
     }
   }
 
+  // NOTE: We have to set the concentrations here, since the structure does call an
+  // evaluate inside PrepareTimeStep() in order to calculate the predictor error. Hence first:
+  SetStructScatraSolution();
+  // prepare time step for fsi subproblem
   fsi_->PrepareTimeStep();
 
   // prepare time step for both fluid- and structure-based scatra field
+  //SetFSISolution();
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     scatravec_[i]->ScaTraField()->PrepareTimeStep();

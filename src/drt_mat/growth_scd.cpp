@@ -290,24 +290,21 @@ void MAT::GrowthScd::EvaluateGrowth(double* theta,
   MAT::PAR::GrowthScd* matparams=Parameter();
   const double rearate = matparams->rearate_;
   const double satcoeff = matparams->satcoeff_;
-  double concentration=0.0;
-
-  //get pointer to vector containing the mean scalar values
-  Teuchos::RCP<std::vector<double> > concentrationsold =
-      params.get< Teuchos::RCP<std::vector<double> > >("mean_concentrations",Teuchos::rcp(new std::vector<double> (10,0.0)) );
-  //TODO: (Thon) there must be a better way to catch the first call of the structure evaluate
-
-  //NOTE: in this growth law we always assume the first scalar to induce growth!
-  concentration=concentrationsold->at(0);
 
   // get gauss point number
   const int gp = params.get<int>("gp",-1);
   if (gp == -1)
     dserror("no Gauss point number provided in material");
 
+  //get pointer to vector containing the scalar values at the gauß points
+  Teuchos::RCP<std::vector<std::vector<double> > > concentrations=
+      params.get< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc");
+
+  //NOTE: in this growth law we always assume the first scalar to induce growth!
+  double concentration_first=(concentrations->at(gp)).at(0);
 
   // concentration dependent factor
-  double fac = rearate * concentration/(satcoeff+concentration);
+  double fac = rearate * concentration_first/(satcoeff+concentration_first);
 
   Parameter()->growthlaw_->SetFactor(fac);
   GrowthMandel::EvaluateGrowth(theta,dthetadC,defgrd,glstrain,params,eleGID);
@@ -345,14 +342,6 @@ MAT::GrowthScdAC::GrowthScdAC(MAT::PAR::GrowthScd* params)
 }
 
 /*----------------------------------------------------------------------*
- |  ResetAll                                                  Thon 11/14|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScdAC::ResetAll(const int numgp)
-{
-  MAT::GrowthMandel::ResetAll(numgp);
-}
-
-/*----------------------------------------------------------------------*
  |  Pack                                                      Thon 11/14|
  *----------------------------------------------------------------------*/
 void MAT::GrowthScdAC::Pack(DRT::PackBuffer& data) const
@@ -373,16 +362,6 @@ void MAT::GrowthScdAC::Pack(DRT::PackBuffer& data) const
   // Pack base class material
   GrowthMandel::Pack(data);
 
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Setup                                                     Thon 11/14|
- *----------------------------------------------------------------------*/
-void MAT::GrowthScdAC::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
-{
-  //setup base class
-  GrowthMandel::Setup(numgp, linedef);
   return;
 }
 
@@ -428,39 +407,61 @@ void MAT::GrowthScdAC::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Material                                         Thon 11/14|
+ | Evaluate the volumetric growth factor theta               Thon 11/14|
  *----------------------------------------------------------------------*/
-void MAT::GrowthScdAC::Evaluate
-(
-    const LINALG::Matrix<3,3>* defgrd,
-    const LINALG::Matrix<6,1>* glstrain,
-    Teuchos::ParameterList& params,
-    LINALG::Matrix<6,1>* stress,
-    LINALG::Matrix<6,6>* cmat,
-    const int eleGID
-)
+void MAT::GrowthScdAC::EvaluateGrowth(double* theta,
+                      LINALG::Matrix<6,1>* dthetadC,
+                      const LINALG::Matrix<3,3>* defgrd,
+                      const LINALG::Matrix<6,1>* glstrain,
+                      Teuchos::ParameterList& params,
+                      const int eleGID )
 {
   // get gauss point number
   const int gp = params.get<int>("gp",-1);
   if (gp == -1)
     dserror("no Gauss point number provided in material");
 
-  //get pointer to vector containing the mean scalar values
-  Teuchos::RCP<std::vector<double> > concentrations =
-      params.get< Teuchos::RCP<std::vector<double> > >("mean_concentrations",Teuchos::rcp(new std::vector<double> (10,0.0)) );
-  //TODO: (Thon) there must be a better way to catch the first call of the structure evaluate
-
   //get pointer to vector containing the scalar values at the gauß points
-  //  Teuchos::RCP<std::vector<std::vector<double> >> concentrations=
-  //      params.get< Teuchos::RCP<std::vector<std::vector<double>>> >("gp_conc");
+  Teuchos::RCP<std::vector<std::vector<double> > > concentrations=
+      params.get< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc");
 
-//  if (concentrations_ == Teuchos::null)
-//    dserror("getting the mean concentrations failed!");
+  Parameter()->growthlaw_->SetFactor( concentrations->at(gp) );
 
-  Parameter()->growthlaw_->SetFactor(*concentrations);
-  GrowthMandel::Evaluate(defgrd,glstrain,params,stress,cmat,eleGID);
+  /////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
+
+  GrowthMandel::EvaluateGrowth(theta,dthetadC,defgrd,glstrain,params,eleGID);
+
+  /////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
 }
 
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthScdAC::VisNames(std::map<std::string,int>& names)
+{
+  std::string fiber = "Theta";
+  names[fiber] = 1;
+  Matelastic()->VisNames(names);
+}
+
+/*----------------------------------------------------------------------------*/
+bool MAT::GrowthScdAC::VisData(const std::string& name, std::vector<double>& data, int numgp , int eleID)
+{
+  if (name == "Theta")
+  {
+    if ((int)data.size()!=1)
+      dserror("size mismatch");
+    double temp = 0.0;
+    for (int iter=0; iter<numgp; iter++)
+      temp += theta_->at(iter);
+    data[0] = temp/numgp;
+  }
+  else
+  {
+    return Matelastic()->VisData(name, data, numgp, eleID);
+  }
+  return true;
+}
 
 MAT::GrowthScdACRadialType MAT::GrowthScdACRadialType::instance_;
 
@@ -625,36 +626,25 @@ void MAT::GrowthScdACRadial::Evaluate
 )
 {
   // get gauss point number
-  const int gp = params.get<int>("gp",-1);
+  const int gp = params.get<int>("gp", -1);
   if (gp == -1)
     dserror("no Gauss point number provided in material");
 
-  //get pointer vector containing the mean scalar values
-  Teuchos::RCP<std::vector<double> > concentrations =
-      params.get< Teuchos::RCP<std::vector<double> > >("mean_concentrations",Teuchos::rcp(new std::vector<double> (10,0.0)) );
-  //TODO: (Thon) there must be a better way to catch the first call of the structure evaluate
-  Parameter()->growthlaw_->SetFactor(*concentrations);
-
-  //------------------------------------------------------------------------------------------
-  //------------------------------------------------------------------------------------------
-
-  double dt = params.get<double>("delta time", -1.0);
   double time = params.get<double>("total time", -1.0);
-  if(dt==-1.0 or time == -1.0) dserror("no time step or no total time given for growth material!");
+  if( abs(time+1.0) < 1e-14 ) dserror("no time step or no total time given for growth material!");
   std::string action = params.get<std::string>("action", "none");
   bool output = false;
   if (action == "calc_struct_stress")
     output = true;
 
-  double eps = 1.0e-12;
-  MAT::PAR::Growth* growth_params = dynamic_cast<MAT::PAR::Growth*>(Parameter());
-  double endtime = growth_params->endtime_;
-  double starttime = growth_params->starttime_;
-
+  const double eps = 1.0e-14;
+  MAT::PAR::Growth* growth_params = Parameter();
+  const double endtime = growth_params->endtime_;
+  const double starttime = growth_params->starttime_;
   // when stress output is calculated the final parameters already exist
   // we should not do another local Newton iteration, which uses eventually a wrong thetaold
   if (output)
-    time = endtime + dt;
+    time = endtime + 1.0;
 
   if (time > starttime + eps && time <= endtime + eps) //iff growth is active
   {
@@ -668,7 +658,7 @@ void MAT::GrowthScdACRadial::Evaluate
     // evaluation of the volumetric growth factor and its derivative wrt cauchy-green
     //--------------------------------------------------------------------------------------
     LINALG::Matrix<6,1> dthetadC(true);
-    GrowthMandel::EvaluateGrowth(&theta,&dthetadC,defgrd,glstrain,params,eleGID);
+    EvaluateGrowth(&theta,&dthetadC,defgrd,glstrain,params,eleGID);
 
     // store theta
     theta_->at(gp) = theta;

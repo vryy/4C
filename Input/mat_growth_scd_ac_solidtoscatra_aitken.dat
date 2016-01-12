@@ -132,9 +132,9 @@ THETA                           0.666666
 COUPALGO                        ssi_IterStaggAitken_SolidToScatra //ssi_IterStaggAitken_ScatraToSolid //ssi_IterStagg //ssi_IterStaggFixedRel_SolidToScatra //
 ITEMAX                          20
 MAXTIME                         100.0
-NUMSTEP                         20
+NUMSTEP                         3
 RESTARTEVRY                     1
-TIMESTEP                        0.05
+TIMESTEP                        0.1
 UPRES                           1
 SCATRATYPE                      Advanced_Reaction
 --------------------------------------------------------SSI CONTROL/PARTITIONED
@@ -179,7 +179,7 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_GrowthVolumetricScd GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 100.0
+MAT 1 MAT_GrowthVolumetricScd GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.0 ENDTIME 0.2
 
 MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 1.0e-3
 MAT 31 ELAST_IsoYeoh C1 1.74e5 C2 1.88e6 C3 0 //C1 2.2116e4 C2 0.0 C3 6.0901e5 my parameter fit...
@@ -207,12 +207,12 @@ FUNCT 1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION    0.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 3.13490453133615343e-01 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE 3.13490453133614455e-01 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 1.68929922196667831e-01 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 200 QUANTITY phi VALUE 1.68929924347862859e-01 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 100 QUANTITY phi2 VALUE 2.79244039053598625e-01 TOLERANCE 1e-7
-SCATRA DIS scatra NODE 200 QUANTITY phi2 VALUE 2.79244042162879014e-01 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 9.32063298167425253e-02 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE 9.32063298167432053e-02 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 6.01422320358274920e-01 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 200 QUANTITY phi VALUE 6.01422610144559333e-01 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 100 QUANTITY phi2 VALUE 1.71072690778982656e-01 TOLERANCE 1e-7
+SCATRA DIS scatra NODE 200 QUANTITY phi2 VALUE 1.71072791221655224e-01 TOLERANCE 1e-7
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          9

@@ -237,10 +237,6 @@ namespace MAT
     */
     virtual int UniqueParObjectId() const { return GrowthScdACType::Instance().UniqueParObjectId(); }
 
-
-    /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
-    virtual void ResetAll(int numgp);
-
     /*!
       \brief Pack this class so it can be communicated
 
@@ -277,23 +273,19 @@ namespace MAT
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new GrowthScdAC( *this ) ); }
 
-    /// Setup
-    virtual void Setup
-    (
-      int numgp,  ///< number of Gauss points
-      DRT::INPUT::LineDefinition* linedef ///< definition of element line
-    );
+    /// Evaluate the volumetric growth factor theta
+    virtual void EvaluateGrowth(double* theta,
+                         LINALG::Matrix<6,1>* dthetadC,
+                         const LINALG::Matrix<3,3>* defgrd,
+                         const LINALG::Matrix<6,1>* glstrain,
+                         Teuchos::ParameterList& params,
+                         const int eleGID );
 
-    /// Evaluate material
-    virtual void Evaluate
-    (
-        const LINALG::Matrix<3,3>* defgrd,
-        const LINALG::Matrix<6,1>* glstrain,
-        Teuchos::ParameterList& params,
-        LINALG::Matrix<6,1>* stress,
-        LINALG::Matrix<6,6>* cmat,
-        const int eleGID
-     );
+    /// Return names of visualization data
+    virtual void VisNames(std::map<std::string,int>& names);
+
+    /// Return visualization data
+    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::GrowthScd* Parameter() const { return paramsScdAC_; }

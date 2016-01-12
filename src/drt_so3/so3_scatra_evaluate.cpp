@@ -44,15 +44,13 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
     const int numscal = discretization.NumDof(1,Nodes()[0]);
 
     if (la[1].Size() != numnod_*numscal)
-      dserror("calc_struct_nlnstiff: Location vector length for velocities does not match!");
-
-    Teuchos::RCP<std::vector<std::vector<double> > > gpconc =
-        Teuchos::rcp(new std::vector<std::vector<double> >(numgpt_,std::vector<double>(numscal,0.0)));
-
-    Teuchos::RCP<std::vector<double> > meantemp = Teuchos::rcp(new std::vector<double>(numscal,0.0));
+      dserror("calc_struct_nlnstiff: Location vector length for concentrations does not match!");
 
     if (discretization.HasState(1,"temperature")) //if concentrations were set
     {
+      Teuchos::RCP<std::vector<std::vector<double> > > gpconc =
+          Teuchos::rcp(new std::vector<std::vector<double> >(numgpt_,std::vector<double>(numscal,0.0)));
+
       // check if you can get the scalar state
       Teuchos::RCP<const Epetra_Vector> concnp = discretization.GetState(1,"temperature");
 
@@ -60,7 +58,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
         dserror("calc_struct_nlnstiff: Cannot get state vector 'temperature' ");
 
       // extract local values of the global vectors
-
       Teuchos::RCP<std::vector<double> > myconc = Teuchos::rcp(new std::vector<double>(la[1].lm_.size(),0.0) );
 
       DRT::UTILS::ExtractMyValues(*concnp,*myconc,la[1].lm_);
@@ -153,20 +150,8 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
         gpconc->at(gp)=conck;
       }
 
-      //calculate for each scalar the mean scalar value of this element
-      for (int i=0; i<numscal;i++)
-      {
-        double meantempi = 0.0;
-        for (int j=0; j<numnod_; ++j){
-            meantempi +=  (*myconc)[i+numscal*j];
-        }
-        meantemp->at(i) =meantempi/numnod_;
-      }
+      params.set< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc",gpconc);
     }
-
-    params.set< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc",gpconc);
-    params.set< Teuchos::RCP<std::vector<double> > >("mean_concentrations",meantemp);
-
 
     DRT::Problem* problem = DRT::Problem::Instance();
     const std::vector<std::string> disnames = problem->GetDisNames();
@@ -186,8 +171,8 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
         params.set< Teuchos::RCP<MAT::Material> >("scatramat",scatramat);
       }
     }
-
   }
+
   Teuchos::RCP<std::vector<double> >xrefe = Teuchos::rcp(new std::vector<double>(3));
   DRT::Node** nodes = Nodes();
   for (int i=0; i<numnod_; ++i){

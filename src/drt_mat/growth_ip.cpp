@@ -361,7 +361,7 @@ bool MAT::GrowthMandel::VisData(const std::string& name, std::vector<double>& da
       dserror("size mismatch");
     double temp = 0.0;
     for (int iter=0; iter<numgp; iter++)
-      temp += theta_()->at(iter);
+      temp += theta_->at(iter);
     data[0] = temp/numgp;
   }
   else if (name == "Mandel")
@@ -420,22 +420,21 @@ void MAT::GrowthMandel::Evaluate( const LINALG::Matrix<3, 3>* defgrd,
   if (gp == -1)
     dserror("no Gauss point number provided in material");
 
-  double dt = params.get<double>("delta time", -1.0);
   double time = params.get<double>("total time", -1.0);
-  if(dt==-1.0 or time == -1.0) dserror("no time step or no total time given for growth material!");
+  if( abs(time+1.0) < 1e-14 ) dserror("no time step or no total time given for growth material!");
   std::string action = params.get<std::string>("action", "none");
   bool output = false;
   if (action == "calc_struct_stress")
     output = true;
 
-  double eps = 1.0e-12;
+  const double eps = 1.0e-14;
   MAT::PAR::Growth* growth_params = Parameter();
-  double endtime = growth_params->endtime_;
-  double starttime = growth_params->starttime_;
+  const double endtime = growth_params->endtime_;
+  const double starttime = growth_params->starttime_;
   // when stress output is calculated the final parameters already exist
   // we should not do another local Newton iteration, which uses eventually a wrong thetaold
   if (output)
-    time = endtime + dt;
+    time = endtime + 1.0;
 
   if (time > starttime + eps && time <= endtime + eps)
   {
