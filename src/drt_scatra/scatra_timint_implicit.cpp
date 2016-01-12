@@ -1042,7 +1042,7 @@ void SCATRA::ScaTraTimIntImpl::SetWallShearStresses(Teuchos::RCP<const Epetra_Ve
 void SCATRA::ScaTraTimIntImpl::SetPressureField(Teuchos::RCP<const Epetra_Vector> pressure, const int nds_pres)
 {
   if (pressure == Teuchos::null)
-    dserror("Presure state is Teuchos::null");
+    dserror("Pressure state is Teuchos::null");
 
 #ifdef DEBUG
   // We rely on the fact, that the nodal distribution of both fields is the same.

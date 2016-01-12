@@ -716,10 +716,10 @@ void FS3I::PartFPS3I::ExtractWSS(std::vector<Teuchos::RCP<const Epetra_Vector> >
 void FS3I::PartFPS3I::ExtractPressure(std::vector<Teuchos::RCP<const Epetra_Vector> >& pressure)
 {
   //############ Fluid Field ###############
-  pressure.push_back(fpsi_->FluidField()->ExtractPressurePart(fpsi_->FluidField()->Velnp())); //this actually extracts the velocities as well. We sort them out later.
+  pressure.push_back(fpsi_->FluidField()->Velnp()); //we extract the velocities as well. We sort them out later.
 
   //############ Poro Field ###############
-  pressure.push_back(fpsi_->PoroField()->FluidField()->ExtractPressurePart(fpsi_->PoroField()->FluidField()->Velnp())); //this actually extracts the velocities as well. We sort them out later.
+  pressure.push_back(fpsi_->PoroField()->FluidField()->Velnp()); //we extract the velocities as well. We sort them out later.
 }
 
 /*----------------------------------------------------------------------*
