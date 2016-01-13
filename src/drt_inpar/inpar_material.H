@@ -66,6 +66,7 @@ namespace INPAR
       m_growth_linear,                         ///< linear growth law
       m_growth_volumetric,                     ///< volumetric growth base material
       m_growth_volumetric_scd,                 ///< integration point based growth (scalar dependent)
+      m_sc_dep_interp,                         ///< integration point based and scalar dependent interpolation between to materials
       m_growthremodel_elasthyper,              ///< growth and remodeling
       m_herschelbulkley,                       ///< fluid with nonlinear viscosity according to Herschel-Bulkley
       m_ion,                                   ///< properties of an ion species in an electrolyte solution

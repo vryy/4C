@@ -70,6 +70,7 @@ Maintainer: Lena Wiechert
 #include "growth_ip.H"
 #include "growth_scd.H"
 #include "growthremodel_elasthyper.H"
+#include "scalardepinterp.H"
 #include "scatra_growth_scd.H"
 #include "scatra_reaction_mat.H"
 #include "scatra_chemotaxis_mat.H"
@@ -476,6 +477,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::PlasticElastHyper(curmat));
     MAT::PAR::PlasticElastHyper* params = static_cast<MAT::PAR::PlasticElastHyper*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_sc_dep_interp:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ScalarDepInterp(curmat));
+    MAT::PAR::ScalarDepInterp* params = static_cast<MAT::PAR::ScalarDepInterp*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_structporo:

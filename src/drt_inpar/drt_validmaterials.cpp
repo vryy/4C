@@ -1767,6 +1767,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
      AppendMaterialDefinition(matlist,mm);
    }
 
+   /*----------------------------------------------------------------------*/
+    // integration point based and scalar dependent interpolation between to materials
+    {
+      Teuchos::RCP<MaterialDefinition> mm
+        = Teuchos::rcp(new MaterialDefinition("MAT_ScDepInterp",
+                                              "integration point based and scalar dependent interpolation between to materials",
+                                              INPAR::MAT::m_sc_dep_interp));
+
+      AddNamedInt(mm,"IDZEROCONCMAT","material for zero concentrations");
+      AddNamedInt(mm,"IDINFTYCONCMAT","material for infinite concentrations");
+//      AddNamedReal(mm,"ALPHA","size of ",-1.0,true);
+
+      AppendMaterialDefinition(matlist,mm);
+    }
+
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   // linear growth law

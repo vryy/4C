@@ -815,34 +815,54 @@ void MAT::GrowthLawAC::Evaluate(double* theta,
                                 Teuchos::ParameterList& params,
                                 const int eleGID)
 {
-  int Sc1 = Parameter()->Sc1_;
-  double alpha= Parameter()->alpha_;
-  int Sc2 = Parameter()->Sc2_; //if no second scalar is chosen to induce growth, this
-                               //points out the first scalar field
-  double beta= Parameter()->beta_; //if no second scalar is chosen to induce growth,
-                                   //beta is zero and hence has no influence on growth
+  const int Sc1 = Parameter()->Sc1_;
+  const double alpha= Parameter()->alpha_;
+  // NOTE: if no second scalar is chosen to induce growth, this points out the first scalar field
+  const int Sc2 = Parameter()->Sc2_;
+  // NOTE: if no second scalar is chosen to induce growth, beta is zero and hence has no influence on growth
+  const double beta= Parameter()->beta_;
 
-  double J = defgrd->Determinant();
-  *theta = pow(1.0 + alpha * GetCfac().at(Sc1-1) * J + beta * GetCfac().at(Sc2-1) * J ,0.33333333333333333);
+  const double deltagrowth = (alpha*GetCfac().at(Sc1-1) + beta * GetCfac().at(Sc2-1))*defgrd->Determinant();
 
-  double tmp1 = (alpha*GetCfac().at(Sc1-1) + beta * GetCfac().at(Sc2-1))*J;
-  double tmp2 = tmp1/6.0*pow(1+tmp1,-0.66666666666666666);
+  *theta = pow(1.0 + deltagrowth ,0.33333333333333333);
+
+
+  const double tmp = deltagrowth/6.0*pow(1.0+deltagrowth,-0.66666666666666666);
 
   LINALG::Matrix<3, 3> C(true);
   C.MultiplyTN(*defgrd,*defgrd);
+  LINALG::Matrix<3, 3> Cinv(true);
+  Cinv.Invert(C);
 
   // linearization of growth law
-  LINALG::Matrix<3, 3> dThetadC(true);
-  dThetadC.Invert(C);
-  dThetadC.Scale(tmp2);
+  LINALG::Matrix<3, 3> dThetadC(Cinv);
+  dThetadC.Scale(tmp);
 
-  //transform dThetadC into a vector
+  //transform dThetadC into a vector in Voigt notation
   (*dthetadC)(0)=dThetadC(0,0);
   (*dthetadC)(1)=dThetadC(1,1);
   (*dthetadC)(2)=dThetadC(2,2);
   (*dthetadC)(3)=2*dThetadC(0,1);
   (*dthetadC)(4)=2*dThetadC(1,2);
   (*dthetadC)(5)=2*dThetadC(0,2);
+
+  // set ratio for potential linear interpolation between two elastic materials
+  double conc_zero_ratio = 1.0/(1.0+deltagrowth);
+  // linearization of ratio for potential linear interpolation of between two elastic materials
+  Cinv.Scale(-0.5*deltagrowth*pow(1.0+deltagrowth,-2.0));
+
+  //transform into a vector in Voigt notation
+  Teuchos::RCP<LINALG::Matrix<6,1> > dconc_zero_ratio_dC = Teuchos::rcp( new LINALG::Matrix<6,1>(true) );
+  (*dconc_zero_ratio_dC)(0)=Cinv(0,0);
+  (*dconc_zero_ratio_dC)(1)=Cinv(1,1);
+  (*dconc_zero_ratio_dC)(2)=Cinv(2,2);
+  (*dconc_zero_ratio_dC)(3)=2*Cinv(0,1);
+  (*dconc_zero_ratio_dC)(4)=2*Cinv(1,2);
+  (*dconc_zero_ratio_dC)(5)=2*Cinv(0,2);
+
+  // save values in parameter list
+  params.set< double >("conc_zero_ratio",conc_zero_ratio);
+  params.set< Teuchos::RCP<LINALG::Matrix<6,1> > >("dconc_zero_ratio_dC",dconc_zero_ratio_dC);
 }
 
 
@@ -881,29 +901,30 @@ void MAT::GrowthLawACRadial::Evaluate(double* theta,
                                       Teuchos::ParameterList& params,
                                       const int eleGID)
 {
-  int Sc1 = Parameter()->Sc1_;
-  double alpha= Parameter()->alpha_;
-  int Sc2 = Parameter()->Sc2_; //if no second scalar is chosen to induce growth, this
-                               //points out the first scalar field
-  double beta= Parameter()->beta_; //if no second scalar is chosen to induce growth,
-                                   //beta is zero and hence has no influence on growth
+  const int Sc1 = Parameter()->Sc1_;
+  const double alpha= Parameter()->alpha_;
+  // NOTE: if no second scalar is chosen to induce growth, this points out the first scalar field
+  const int Sc2 = Parameter()->Sc2_;
+  // NOTE: if no second scalar is chosen to induce growth, beta is zero and hence has no influence on growth
+  const double beta= Parameter()->beta_;
 
-  double J = 1.0; //defgrd->Determinant();
+  const double deltagrowth = (alpha*GetCfac().at(Sc1-1) + beta * GetCfac().at(Sc2-1))*1.0; //defgrd->Determinant();
 
-  *theta = 1.0 + alpha * GetCfac().at(Sc1-1) * J + beta * GetCfac().at(Sc2-1) * J;
+  *theta = 1.0 + deltagrowth;
 
-  double tmp1 = 0.5 * (alpha*GetCfac().at(Sc1-1) + beta * GetCfac().at(Sc2-1))*J;
 
+  const double tmp = 0.5 * deltagrowth;
 
   LINALG::Matrix<3, 3> C(true);
   C.MultiplyTN(*defgrd,*defgrd);
+  LINALG::Matrix<3, 3> Cinv(true);
+  Cinv.Invert(C);
 
   // linearization of growth law
-  LINALG::Matrix<3, 3> dThetadC(true);
-  dThetadC.Invert(C);
-  dThetadC.Scale(tmp1);
+  LINALG::Matrix<3, 3> dThetadC(Cinv);
+  dThetadC.Scale(tmp);
 
-  //transform dThetadC into a vector
+  //transform dThetadC into a vector in Voigt notation
   (*dthetadC)(0)=dThetadC(0,0);
   (*dthetadC)(1)=dThetadC(1,1);
   (*dthetadC)(2)=dThetadC(2,2);
@@ -911,4 +932,21 @@ void MAT::GrowthLawACRadial::Evaluate(double* theta,
   (*dthetadC)(4)=2*dThetadC(1,2);
   (*dthetadC)(5)=2*dThetadC(0,2);
 
+  // set ratio for potential linear interpolation between two elastic materials
+  double conc_zero_ratio = 1.0/(1.0+deltagrowth);
+  // linearization of ratio for potential linear interpolation of between two elastic materials
+  Cinv.Scale(-0.5*deltagrowth*pow(1.0+deltagrowth,-2.0));
+
+  //transform into a vector in Voigt notation
+  Teuchos::RCP<LINALG::Matrix<6,1> > dconc_zero_ratio_dC = Teuchos::rcp( new LINALG::Matrix<6,1>(true) );
+  (*dconc_zero_ratio_dC)(0)=Cinv(0,0);
+  (*dconc_zero_ratio_dC)(1)=Cinv(1,1);
+  (*dconc_zero_ratio_dC)(2)=Cinv(2,2);
+  (*dconc_zero_ratio_dC)(3)=2*Cinv(0,1);
+  (*dconc_zero_ratio_dC)(4)=2*Cinv(1,2);
+  (*dconc_zero_ratio_dC)(5)=2*Cinv(0,2);
+
+  // save values in parameter list
+  params.set< double >("conc_zero_ratio",conc_zero_ratio);
+  params.set< Teuchos::RCP<LINALG::Matrix<6,1> > >("dconc_zero_ratio_dC",dconc_zero_ratio_dC);
 }
