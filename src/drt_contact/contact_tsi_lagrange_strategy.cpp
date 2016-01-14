@@ -267,7 +267,7 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
   {
     gact = LINALG::CreateVector(*gactivedofs_,true);
     if (gact->GlobalLength())
-      LINALG::Export(*g_,*gact);
+      LINALG::Export(*g_all,*gact);
   }
   else
   {
@@ -642,6 +642,12 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
   // (for the condensation we have constructed copies above)
   sysmat->Reset();
   sysmat->UnComplete();
+
+  // need diagonal block kss with explicitdirichtlet_=true
+  // to be able to apply dirichlet values for contact symmetry condition
+  LINALG::SparseMatrix tmpkss(*gdisprowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX);
+  sysmat->Assign(0,0,LINALG::Copy,tmpkss);
+
   // get references to the blocks (just for convenience)
   LINALG::SparseMatrix& kss_new = sysmat->Matrix(0,0);
   LINALG::SparseMatrix& kst_new = sysmat->Matrix(0,1);
@@ -742,24 +748,12 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
   tmpv->Scale(-1./tsi_alpha_);
   AddVector(*tmpv,*combined_RHS);
 
-
-
-//  kst_new.Reset();
-//  kts_new.Reset();
-//  ktt_new.Reset();
-//  for (int i=0;i<thr_all_dofs->NumGlobalElements();++i)
-//  {
-//    int r = thr_all_dofs->GID(i);
-//    ktt_new.Assemble(1.,r,r);
-//  }
-
   // and were done with the system matrix
   sysmat->Complete();
 
   // we need to return the rhs, not the residual
   combined_RHS->Scale(-1.);
-
-    // re-apply DBC after contact condensation
+  // re-apply DBC after contact condensation
   sysmat->Matrix(0,0).ApplyDirichlet(*str_dbc->CondMap(),true);
   sysmat->Matrix(0,1).ApplyDirichlet(*str_dbc->CondMap(),false);
   sysmat->Matrix(1,0).ApplyDirichlet(*thr_dbc->CondMap(),false);
