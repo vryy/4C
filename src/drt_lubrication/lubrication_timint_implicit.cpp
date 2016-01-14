@@ -77,6 +77,7 @@ LUBRICATION::TimIntImpl::TimIntImpl(
   residual_(Teuchos::null),
   trueresidual_(Teuchos::null),
   increment_(Teuchos::null),
+  prei_(Teuchos::null),
   // Initialization of
   upres_    (params->get<int>("UPRES")),
   uprestart_(params->get<int>("RESTARTEVRY"))
@@ -153,6 +154,10 @@ void LUBRICATION::TimIntImpl::Init()
 
   // incremental solution vector
   increment_ = LINALG::CreateVector(*dofrowmap,true);
+
+  // iterative pressure increments Incp_{n+1}
+  // also known as residual pressures
+  prei_ = LINALG::CreateVector(*dofrowmap, true);
 
   return;
 } // TimIntImpl::Init()
@@ -1117,3 +1122,65 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
 
   return;
 } // LUBRICATION::TimIntImpl::OutputMeanPressures
+
+/*----------------------------------------------------------------------*
+ | return system matrix downcasted as sparse matrix         wirtz 01/16 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> LUBRICATION::TimIntImpl::SystemMatrix()
+{
+  return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+}
+
+
+/*----------------------------------------------------------------------*
+ | build linear system tangent matrix, rhs/force residual   wirtz 01/16 |
+ | Monolithic EHL accesses the linearised lubrication problem           |
+ *----------------------------------------------------------------------*/
+void LUBRICATION::TimIntImpl::Evaluate()
+{
+
+  // call elements to calculate system matrix and rhs and assemble
+  AssembleMatAndRHS();
+
+  // Apply Dirichlet boundary conditions to system of equations
+  // residual values are supposed to be zero at Dirichlet boundaries
+  LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
+
+}
+
+/*----------------------------------------------------------------------*
+ | Update iteration incrementally with prescribed           wirtz 01/16 |
+ | residual pressures                                                   |
+ *----------------------------------------------------------------------*/
+void LUBRICATION::TimIntImpl::UpdateIterIncrementally(
+  const Teuchos::RCP<const Epetra_Vector> prei  //!< input residual temperatures
+  )
+{
+  // select residual temperatures
+  if (prei != Teuchos::null)
+    // tempi_ = \f$\Delta{T}^{<k>}_{n+1}\f$
+    prei_->Update(1.0, *prei, 0.0);  // set the new solution we just got
+  else
+    prei_->PutScalar(0.0);
+
+  // Update using #prei_
+  UpdateIterIncrementally();
+
+  // leave this place
+  return;
+}  // UpdateIterIncrementally()
+
+/*----------------------------------------------------------------------*
+ | update Newton step                                       wirtz 01/16 |
+ *----------------------------------------------------------------------*/
+void LUBRICATION::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> prei)
+{
+  // Yes, this is complicated. But we have to be very careful
+  // here. The field solver always expects an increment only. And
+  // there are Dirichlet conditions that need to be preserved. So take
+  // the sum of increments we get from NOX and apply the latest
+  // increment only.
+  UpdateIterIncrementally(prei);
+  return;
+
+}  // UpdateNewton()

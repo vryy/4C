@@ -1,4 +1,4 @@
-// File: ehl2D_2rings.dat
+// File: ehl2D_2rings_mono.dat
 // Maintainer: Andy Wirtz
 //             wirtz@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de
@@ -93,8 +93,23 @@ DIFFTIMESTEPSIZE                No
 UPRESTIME                       0
 UPRES                           1
 ITEMAX                          10
+ITEMIN                          1
 FIELDCOUPLING                   none
-COUPALGO                        ehl_IterStagg
+COUPALGO                        ehl_Monolithic // ehl_IterStagg // ehl_Monolithic
+-----------------------------------ELASTO HYDRO DYNAMIC/MONOLITHIC
+CONVTOL                         1e-6
+TOLINC                          1e-6
+NORM_INC                        Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFINC               Coupl_And_Singl
+ITERNORM                        Rms
+NLNSOL                          fullnewton
+PTCDT                           0.1
+LINEAR_SOLVER                   4
+ADAPTCONV                       No
+ADAPTCONV_BETTER                0.1
+INFNORMSCALING                  yes
+MERGE_EHL_BLOCK_MATRIX          No
 -----------------------------------ELASTO HYDRO DYNAMIC/PARTITIONED
 MAXOMEGA                        10
 MINOMEGA                        0.1
@@ -177,6 +192,43 @@ PERMUTE_SYSTEM                  none
 --------------------------------------------------------------------SOLVER 3
 NAME                            Direct_Solver
 SOLVER                          Superlu
+--------------------------------------------------------------------SOLVER 4
+NAME                            EHL_MONOLITHIC_SOLVER
+AZBDIAG                         0
+AZCONV                          AZ_r0  // AZ_r0,AZ_rhs,AZ_Anorm,AZ_noscaled,AZ_sol,AZ_weighted,AZ_expected_values,AZTECOO_conv_test,AZ_inf_noscaled
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPOLY                          3
+AZPREC                          BGS2x2  // none,ILU,ILUT,Jacobi,SymmGaussSeidel,Least_Squares,Neumann,ICC,LU,RILU,BILU,ML,MLFLUID,MLFLUID2,MLAPI,GaussSeidel,DownwindGaussSeidel,AMG(Braess-Sarazin),AMG,BGS2x2
+AZREUSE                         0
+AZSCAL                          none   // none,sym,infnorm
+AZSOLVE                         GMRES  // CG,GMRES,GMRESR,CGS,TFQMR,BiCGSTAB,LU
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+BGS2X2_FLIPORDER                block1_block0_order
+IFPACKCOMBINE                   Add  // Add,Insert,Zero
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                1000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1
+SOLVER                          Aztec_MSR  // UMFPACK,Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,LAPACK_sym,LAPACK_nonsym,UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_lubrication VISCOSITY 1.0 DENSITY 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0

@@ -45,6 +45,15 @@ public:
   /// read restart data
   void ReadRestart(int step);
 
+  //! Update iteration incrementally
+  //!
+  //! This update is carried out by computing the new #raten_
+  //! from scratch by using the newly updated #prenp_. The method
+  //! respects the Dirichlet DOFs which are not touched.
+  //! This method is necessary for certain predictors
+  //! (like #PredictConstTempConsistRate)
+  void UpdateIterIncrementally();
+
 protected:
 
   /// don't want = operator and cctor

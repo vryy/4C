@@ -66,4 +66,55 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   BoolParameter("ADAPTCONV","yes","Switch on adaptive control of linear solver tolerance for nonlinear solution",&lubricationdyn);
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&lubricationdyn);
 
+  setStringToIntegralParameter<int>("NORM_PRE","Abs",
+    "type of norm for temperature convergence check",
+    tuple<std::string>(
+      "Abs",
+      "Rel",
+      "Mix"),
+    tuple<int>(
+      convnorm_abs,
+      convnorm_rel,
+      convnorm_mix),
+    &lubricationdyn
+    );
+
+  setStringToIntegralParameter<int>("NORM_RESF","Abs",
+    "type of norm for residual convergence check",
+    tuple<std::string>(
+      "Abs",
+      "Rel",
+      "Mix"),
+    tuple<int>(
+      convnorm_abs,
+      convnorm_rel,
+      convnorm_mix),
+    &lubricationdyn
+    );
+
+  setStringToIntegralParameter<int>("ITERNORM","L2","type of norm to be applied to residuals",
+    tuple<std::string>(
+      "L1",
+      "L2",
+      "Rms",
+      "Inf"),
+    tuple<int>(
+      norm_l1,
+      norm_l2,
+      norm_rms,
+      norm_inf),
+    &lubricationdyn
+    );
+
+  // Iterationparameters
+  DoubleParameter("TOLPRE",1.0E-06,
+    "tolerance in the temperature norm of the Newton iteration",
+    &lubricationdyn
+    );
+
+  DoubleParameter("TOLRES",1.0E-06,
+    "tolerance in the residual norm for the Newton iteration",
+    &lubricationdyn
+    );
+
 }

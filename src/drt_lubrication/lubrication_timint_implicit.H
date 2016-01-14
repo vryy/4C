@@ -19,10 +19,13 @@ Maintainer: Andy Wirtz
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_SerialDenseVector.h>
+#include <Epetra_Map.h>
 
 #include <Teuchos_ParameterList.hpp>
 
 #include "../drt_inpar/inpar_lubrication.H"
+
+#include "../drt_lib/drt_discret.H"
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12
@@ -42,7 +45,6 @@ Maintainer: Andy Wirtz
 
 namespace DRT
 {
-  class Discretization;
   class DofSet;
   class Condition;
 }
@@ -148,6 +150,45 @@ public:
 
   //! print information about current time step to screen
   virtual void PrintTimeStepInfo();
+
+  //! return system matrix downcasted as sparse matrix
+  Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+
+  //! update Newton step
+  virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> prei);
+
+  //! Update iteration incrementally
+  //!
+  //! This update is carried out by computing the new #raten_
+  //! from scratch by using the newly updated #prenp_. The method
+  //! respects the Dirichlet DOFs which are not touched.
+  //! This method is necessary for certain predictors
+  //! (like #PredictConstTempConsistRate)
+  virtual void UpdateIterIncrementally() = 0;
+
+  //! Update iteration incrementally with prescribed residual
+  //! pressures
+  void UpdateIterIncrementally(
+    const Teuchos::RCP<const Epetra_Vector> prei  //!< input residual pressures
+    );
+
+  //! build linear system tangent matrix, rhs/force residual
+  //! Monolithic EHL accesses the linearised lubrication problem
+  void Evaluate();
+
+  //! non-overlapping DOF map for multiple dofsets
+  Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
+    return Teuchos::rcp(new Epetra_Map(*dofrowmap));
+  }
+
+  //! Return MapExtractor for Dirichlet boundary conditions
+  const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const
+  { return dbcmaps_; }
+
+  //! right-hand side alias the dynamic force residual
+  Teuchos::RCP<const Epetra_Vector> RHS() { return residual_; }
 
   //! return flag indicating if an incremental solution approach is used
   const bool IsIncremental() { return incremental_; }
@@ -430,6 +471,9 @@ protected:
 
   //! nonlinear iteration increment vector
   Teuchos::RCP<Epetra_Vector> increment_;
+
+  Teuchos::RCP<Epetra_Vector> prei_;  //!< residual pressures
+                                      //!< \f$\Delta{p}^{<k>}_{n+1}\f$
 
   /*========================================================================*/
   //! @name not classified variables - to be kept clean!!!

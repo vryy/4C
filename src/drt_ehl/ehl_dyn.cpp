@@ -16,6 +16,7 @@ Maintainer: Andy Wirtz
 #include "ehl_dyn.H"
 
 #include "ehl_partitioned.H"
+#include "ehl_monolithic.H"
 #include "ehl_utils.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -47,7 +48,6 @@ void ehl_dyn()
   const INPAR::EHL::SolutionSchemeOverFields coupling
     = DRT::INPUT::IntegralValue<INPAR::EHL::SolutionSchemeOverFields>(ehlparams,"COUPALGO");
 
-
   //3.- Creation of Lubrication + Structure problem. (Discretization called inside)
   Teuchos::RCP<EHL::Base> ehl = Teuchos::null;
 
@@ -68,6 +68,9 @@ void ehl_dyn()
         break;
   case INPAR::EHL::ehl_IterStaggAitken_StrToLub:
     ehl = Teuchos::rcp(new EHL::Partitioned_StrToLub_Aitken(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
+    break;
+  case INPAR::EHL::ehl_Monolithic:
+    ehl = Teuchos::rcp(new EHL::Monolithic(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
     break;
   default:
     dserror("unknown coupling algorithm for EHL!");

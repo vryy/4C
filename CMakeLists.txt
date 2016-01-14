@@ -1008,6 +1008,7 @@ set(OBJS_DRT_UTILS
 set(OBJS_DRT_EHL
   src/drt_ehl/ehl_base.cpp
   src/drt_ehl/ehl_dyn.cpp
+  src/drt_ehl/ehl_monolithic.cpp
   src/drt_ehl/ehl_partitioned.cpp
   src/drt_ehl/ehl_utils.cpp
 )

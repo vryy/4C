@@ -72,7 +72,7 @@ namespace EHL
     const Teuchos::RCP<ADAPTER::Structure>& StructureField(){return structure_;}
 
     //! access to lubrication field
-    //const Teuchos::RCP<ADAPTER::LubricationBaseAlgorithm>&  LubricationField(){return lubrication;}
+//    const Teuchos::RCP<ADAPTER::LubricationBaseAlgorithm>&  LubricationField(){return lubrication_;}
 
     /// set structure solution on lubrication field
     void SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
@@ -94,6 +94,15 @@ namespace EHL
 
     /// setup adapters for EHL on boundary
     void SetupFieldCoupling(const std::string struct_disname, const std::string lubrication_disname);
+
+    //! take current results for converged and save for next time step
+    virtual void Update();
+
+    //! write output
+    virtual void Output(bool forced_writerestart = false);
+
+    /// velocity calculation given the displacements
+    Teuchos::RCP<Epetra_Vector> CalcVelocity( Teuchos::RCP<const Epetra_Vector> dispnp );
 
   private:
     /// setup discretizations and dofsets

@@ -95,6 +95,23 @@ void EHL::Base::ReadRestart( int restart )
 }
 
 /*----------------------------------------------------------------------*
+ | calculate velocities by a FD approximation               wirtz 12/15 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> EHL::Base::CalcVelocity(
+  Teuchos::RCP<const Epetra_Vector> dispnp
+  )
+{
+  Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
+  // copy D_n onto V_n+1
+  vel = Teuchos::rcp(new Epetra_Vector( *(structure_->Dispn()) ) );
+  // calculate velocity with timestep Dt()
+  //  V_n+1^k = (D_n+1^k - D_n) / Dt
+  vel->Update(1./Dt(), *dispnp, -1./Dt());
+
+  return vel;
+}  // CalcVelocity()
+
+/*----------------------------------------------------------------------*
  | read restart information for given time        (public) wirtz 12/15 |
  *----------------------------------------------------------------------*/
 void EHL::Base::ReadRestartfromTime( double restarttime )
@@ -235,3 +252,42 @@ void EHL::Base::SetupFieldCoupling(const std::string struct_disname, const std::
   // todo: here, we need to setup a coupling adapter
 
 }
+
+/*----------------------------------------------------------------------*
+ | update (protected)                                       wirtz 01/16 |
+ *----------------------------------------------------------------------*/
+void EHL::Base::Update()
+{
+  StructureField()->Update();
+  lubrication_->LubricationField()->Update();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | output (protected)                                       wirtz 01/16 |
+ *----------------------------------------------------------------------*/
+void EHL::Base::Output(bool forced_writerestart)
+{
+  // Note: The order in the output is important here!
+
+  // In here control file entries are written. And these entries define the
+  // order in which the filters handle the Discretizations, which in turn
+  // defines the dof number ordering of the Discretizations.
+
+  //===========================
+  // output for structurefield:
+  //===========================
+//  ApplyLubricationCouplingState(lubrication_->LubricationField()->Prenp());
+  StructureField()->Output(forced_writerestart);
+
+  //=============================
+  // output for lubricationfield:
+  //=============================
+//  ApplyStructCouplingState(StructureField()->Dispnp(),StructureField()->Velnp());
+  lubrication_->LubricationField()->Output(forced_writerestart);
+
+  //reset states
+  StructureField()->Discretization()->ClearState(true);
+  lubrication_->LubricationField()->Discretization()->ClearState(true);
+}  // Output()

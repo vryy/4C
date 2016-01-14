@@ -39,7 +39,7 @@ public:
   void SetupSystem(){};
 
   /// time loop of coupled problem
-  void Timeloop();
+  virtual void Timeloop();
 
 protected:
 
@@ -60,9 +60,6 @@ protected:
 
   ///do one inner iteration loop step of the lubrication
   void DoLubricationStep();
-
-  /// velocity calculation given the displacements
-  Teuchos::RCP<Epetra_Vector> CalcVelocity( Teuchos::RCP<const Epetra_Vector> dispnp );
 
   //! pressure increment of the outer loop
   Teuchos::RCP<Epetra_Vector> preincnp_;

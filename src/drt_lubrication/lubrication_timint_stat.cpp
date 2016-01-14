@@ -153,3 +153,17 @@ void LUBRICATION::TimIntStationary::ReadRestart(int step)
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | incremental iteration update of state                    wirtz 01/16 |
+ *----------------------------------------------------------------------*/
+void LUBRICATION::TimIntStationary::UpdateIterIncrementally()
+{
+  //! new end-point temperatures
+  //! T_{n+1}^{<k+1>} := T_{n+1}^{<k>} + IncT_{n+1}^{<k>}
+  prenp_->Update(1.0, *prei_, 1.0);
+
+  //! bye
+  return;
+}  // UpdateIterIncrementally()

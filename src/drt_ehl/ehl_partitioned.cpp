@@ -272,24 +272,6 @@ bool EHL::Partitioned::ConvergenceCheck(int itnum)
 
 
 /*----------------------------------------------------------------------*
- | calculate velocities by a FD approximation               wirtz 12/15 |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> EHL::Partitioned::CalcVelocity(
-  Teuchos::RCP<const Epetra_Vector> dispnp
-  )
-{
-  Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
-  // copy D_n onto V_n+1
-  vel = Teuchos::rcp(new Epetra_Vector( *(structure_->Dispn()) ) );
-  // calculate velocity with timestep Dt()
-  //  V_n+1^k = (D_n+1^k - D_n) / Dt
-  vel->Update(1./Dt(), *dispnp, -1./Dt());
-
-  return vel;
-}  // CalcVelocity()
-
-
-/*----------------------------------------------------------------------*
  | constructor                                              wirtz 12/15 |
  *----------------------------------------------------------------------*/
 EHL::Partitioned_StrToLub_Relax::Partitioned_StrToLub_Relax(const Epetra_Comm& comm,
