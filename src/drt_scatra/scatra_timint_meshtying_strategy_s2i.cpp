@@ -79,6 +79,10 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
   // time measurement: evaluate condition 'S2ICoupling'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'S2ICoupling'");
 
+  // extract scatra-scatra coupling conditions from discretization
+  std::vector<DRT::Condition*> conditions;
+  scatratimint_->Discretization()->GetCondition("S2ICoupling",conditions);
+
   switch(mortartype_)
   {
   case INPAR::S2I::mortar_none:
@@ -102,10 +106,16 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
     if(not slaveonly_)
       imastermatrix_->Zero();
     islaveresidual_->PutScalar(0.);
-    if(not slaveonly_)
-      scatratimint_->Discretization()->EvaluateCondition(condparams,islavematrix_,imastermatrix_,islaveresidual_,Teuchos::null,Teuchos::null,"S2ICouplingSlave");
-    else
-      scatratimint_->Discretization()->EvaluateCondition(condparams,islavematrix_,Teuchos::null,islaveresidual_,Teuchos::null,Teuchos::null,"S2ICouplingSlave");
+    for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
+    {
+      if(conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+      {
+        if(not slaveonly_)
+          scatratimint_->Discretization()->EvaluateCondition(condparams,islavematrix_,imastermatrix_,islaveresidual_,Teuchos::null,Teuchos::null,"S2ICoupling",conditions[icondition]->GetInt("ConditionID"));
+        else
+          scatratimint_->Discretization()->EvaluateCondition(condparams,islavematrix_,Teuchos::null,islaveresidual_,Teuchos::null,Teuchos::null,"S2ICoupling",conditions[icondition]->GetInt("ConditionID"));
+      }
+    }
     scatratimint_->Discretization()->ClearState();
 
     // finalize interface matrices
@@ -376,10 +386,33 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying() const
 void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 {
   // extract scatra-scatra coupling conditions from discretization
-  std::vector<DRT::Condition*> slaveconditions;
-  scatratimint_->Discretization()->GetCondition("S2ICouplingSlave", slaveconditions);
-  std::vector<DRT::Condition*> masterconditions;
-  scatratimint_->Discretization()->GetCondition("S2ICouplingMaster", masterconditions);
+  std::vector<DRT::Condition*> conditions(0,NULL);
+  scatratimint_->Discretization()->GetCondition("S2ICoupling",conditions);
+  std::vector<DRT::Condition*> slaveconditions(0,NULL);
+  std::vector<DRT::Condition*> masterconditions(0,NULL);
+  for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
+  {
+    switch(conditions[icondition]->GetInt("interface side"))
+    {
+      case INPAR::S2I::side_slave:
+      {
+        slaveconditions.push_back(conditions[icondition]);
+        break;
+      }
+
+      case INPAR::S2I::side_master:
+      {
+        masterconditions.push_back(conditions[icondition]);
+        break;
+      }
+
+      default:
+      {
+        dserror("Invalid scatra-scatra interface coupling condition!");
+        break;
+      }
+    }
+  }
 
   // determine type of mortar meshtying
   switch(mortartype_)
@@ -387,6 +420,11 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
   // setup scatra-scatra interface coupling for interfaces with pairwise overlapping interface nodes
   case INPAR::S2I::mortar_none:
   {
+    // overwrite IDs of master-side scatra-scatra interface coupling conditions with the value -1
+    // to prevent them from being evaluated when calling EvaluateCondition on the discretization
+    for(unsigned imastercondition=0; imastercondition<masterconditions.size(); ++imastercondition)
+      masterconditions[imastercondition]->Add("ConditionID",-1);
+
     // initialize int vectors for global ids of slave and master interface nodes
     std::vector<int> islavenodegidvec;
     std::vector<int> imasternodegidvec;

@@ -581,7 +581,11 @@ void STI::Algorithm::AssembleODBlockScatraThermo()
         );
 
     // evaluate scatra-scatra interface coupling
-    scatra_->Discretization()->EvaluateCondition(condparams,strategyscatrathermos2i,"S2ICouplingSlave");
+    std::vector<DRT::Condition*> conditions;
+    scatra_->Discretization()->GetCondition("S2ICoupling",conditions);
+    for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
+      if(conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+        scatra_->Discretization()->EvaluateCondition(condparams,strategyscatrathermos2i,"S2ICoupling",conditions[icondition]->GetInt("ConditionID"));
 
     // finalize auxiliary system matrix
     strategyscatra_->SlaveMatrix()->Complete(*maps_->Map(1),*maps_->Map(0));
@@ -678,7 +682,11 @@ void STI::Algorithm::AssembleODBlockThermoScatra()
         );
 
     // evaluate scatra-scatra interface coupling
-    thermo_->Discretization()->EvaluateCondition(condparams,strategythermoscatras2i,"S2ICouplingSlave");
+    std::vector<DRT::Condition*> conditions;
+    thermo_->Discretization()->GetCondition("S2ICoupling",conditions);
+    for(unsigned icondition=0; icondition<conditions.size(); ++icondition)
+      if(conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+        thermo_->Discretization()->EvaluateCondition(condparams,strategythermoscatras2i,"S2ICoupling",conditions[icondition]->GetInt("ConditionID"));
 
     // finalize auxiliary system matrices
     strategythermo_->SlaveMatrix()->Complete(*icoupscatra_->SlaveDofMap(),*icoupthermo_->SlaveDofMap());

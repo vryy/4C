@@ -91,14 +91,12 @@ DSURF  2
 E 1 - ScaTra 1
 //
 E 2 - ScaTra 2
------------------------DESIGN S2I COUPLING LINE CONDITIONS / SLAVE
-DLINE  2
-E 1 - KineticModel ConstantPermeability numscal 3 permeabilities 1.0 0.0 0.01
-E 2 - KineticModel ConstantPermeability numscal 3 permeabilities 0.01 0.0 1.0
-----------------------DESIGN S2I COUPLING LINE CONDITIONS / MASTER
-DLINE  2
-E 3 -
-E 4 -
+-------------------------------DESIGN S2I COUPLING LINE CONDITIONS
+DLINE  4
+E 1 - 1 Slave KineticModel ConstantPermeability numscal 3 permeabilities 1.0 0.0 0.01
+E 2 - 0 Slave KineticModel ConstantPermeability numscal 3 permeabilities 0.01 0.0 1.0
+E 3 - 1 Master
+E 4 - 0 Master
 ----------------------------------SCATRA FLUX CALC LINE CONDITIONS
 DLINE  4
 E 1 -

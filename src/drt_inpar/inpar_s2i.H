@@ -2,7 +2,7 @@
 /*!
 \file inpar_s2i.H
 
-\brief globally accessible enumerations for scatra-scatra interface coupling
+\brief input quantities and globally accessible enumerations for scatra-scatra interface coupling
 
 <pre>
 Maintainer: Rui Fang
@@ -15,11 +15,29 @@ Maintainer: Rui Fang
 #ifndef INPAR_S2I_H
 #define INPAR_S2I_H
 
-/*----------------------------------------------------------------------*/
+#include "inpar_parameterlist_utils.H"
+
+// forward declaration
+namespace DRT
+{
+  namespace INPUT
+  {
+    class ConditionDefinition;
+  }
+}
+
 namespace INPAR
 {
   namespace S2I
   {
+    //! type of interface side
+    enum InterfaceSides
+    {
+      side_undefined,
+      side_slave,
+      side_master
+    };
+
     //! type of mortar meshtying
     enum MortarType
     {
@@ -56,10 +74,11 @@ namespace INPAR
       equilibration_full
     };
 
-
-    /// set the s2i parameters
+    //! set valid parameters for scatra-scatra interface coupling
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
+    //! set valid conditions for scatra-scatra interface coupling
+    void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
   } // namespace S2I
 } // namespace INPAR
 #endif // #ifndef INPAR_S2I_H

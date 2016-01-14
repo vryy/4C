@@ -58,8 +58,7 @@ std::map<std::string,std::string> STI::ScatraThermoCloneStrategy::ConditionsToCo
   std::map<std::string,std::string> conditions;
 
   // insert thermo conditions
-  conditions.insert(std::pair<std::string,std::string>("S2ICouplingSlave","S2ICouplingSlave"));
-  conditions.insert(std::pair<std::string,std::string>("S2ICouplingMaster","S2ICouplingMaster"));
+  conditions.insert(std::pair<std::string,std::string>("S2ICoupling","S2ICoupling"));
   conditions.insert(std::pair<std::string,std::string>("ScaTraFluxCalc","ScaTraFluxCalc"));
   conditions.insert(std::pair<std::string,std::string>("ThermoDirichlet","Dirichlet"));
   conditions.insert(std::pair<std::string,std::string>("ThermoPointNeumann","PointNeumann"));

@@ -100,7 +100,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   initialvelset_(false),
   fssgd_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
   turbmodel_(INPAR::FLUID::no_model),
-  s2icoupling_(actdis->GetCondition("S2ICouplingSlave") != NULL),
+  s2icoupling_(actdis->GetCondition("S2ICoupling") != NULL),
   writeflux_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params,"WRITEFLUX")),
   writefluxids_(Teuchos::rcp(new std::vector<int>)),
   flux_(Teuchos::null),

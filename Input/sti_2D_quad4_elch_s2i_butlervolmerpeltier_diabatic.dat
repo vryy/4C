@@ -133,14 +133,12 @@ DSURF  3
 E 1 - ScaTra 1
 E 2 - ScaTra 2
 E 3 - ScaTra 3
------------------------DESIGN S2I COUPLING LINE CONDITIONS / SLAVE
-DLINE  2
-E 4 - KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-9 alpha_a 0.5 alpha_c 0.5 peltier -0.28
-E 6 - KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-7 alpha_a 0.5 alpha_c 0.5 peltier -0.38
-----------------------DESIGN S2I COUPLING LINE CONDITIONS / MASTER
-DLINE  2
-E 5 -
-E 7 -
+-------------------------------DESIGN S2I COUPLING LINE CONDITIONS
+DLINE  4
+E 4 - 1 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-9 alpha_a 0.5 alpha_c 0.5 peltier -0.28
+E 5 - 1 Master
+E 6 - 2 Slave KineticModel Butler-Volmer-Peltier numscal 1 stoichiometries -1 e- 1 k_r 6.554939e-7 alpha_a 0.5 alpha_c 0.5 peltier -0.38
+E 7 - 2 Master
 ------------------DESIGN ELECTRODE STATE OF CHARGE SURF CONDITIONS
 DSURF  2
 E 2 - ID 0 c_0% 0.0 c_100% 24.681

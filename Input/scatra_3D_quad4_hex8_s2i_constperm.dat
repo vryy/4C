@@ -74,14 +74,12 @@ NDVOL   0
 DLINE  1
 // curve
 E 3 - NUMDOF 2 ONOFF 1 1 VAL 1.0 1.0 CURVE 1 1 FUNCT 0 0
------------------------DESIGN S2I COUPLING LINE CONDITIONS / SLAVE
-DLINE  1
+-------------------------------DESIGN S2I COUPLING LINE CONDITIONS
+DLINE  2
 // coupling_surface
-E 1 - KineticModel ConstantPermeability numscal 2 permeabilities 1.0 0.1
-----------------------DESIGN S2I COUPLING LINE CONDITIONS / MASTER
-DLINE  1
+E 1 - 1 Slave KineticModel ConstantPermeability numscal 2 permeabilities 1.0 0.1
 // coupling_block
-E 2 -
+E 2 - 1 Master
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1332 DLINE 1

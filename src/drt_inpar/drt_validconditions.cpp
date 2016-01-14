@@ -16,6 +16,7 @@ Maintainer: Martin Kronbichler
 
 #include "drt_validconditions.H"
 #include "../drt_lib/drt_conditiondefinition.H"
+#include "inpar_s2i.H"
 #include "inpar_scatra.H"
 #include "inpar_fluid.H"
 #include "inpar_structure.H"
@@ -1566,6 +1567,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // Finally, add the problem-specific conditions from the various modules
 
   INPAR::MORTAR::SetValidConditions(condlist);
+
+  INPAR::S2I::SetValidConditions(condlist);
 
   INPAR::SCATRA::SetValidConditions(condlist);
 
