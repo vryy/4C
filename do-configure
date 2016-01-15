@@ -158,6 +158,10 @@ if [[ ! "$CONFIGURATION_FILE" ]]; then
 	    TRILINOSDEV=ON
       fi
       echo $CONFIGURATION_FILE
+    elif [ "`grep 'CentOS Linux release 7.2' /etc/system-release`" ]; then
+      echo "Detected CentOS 7.2 (bruteforce Haswell cluster)"
+      CONFIGURATION_FILE=$BACI_HOME/buildconfig/bruteforce_Q12015_gcc53.config
+      echo $CONFIGURATION_FILE
     elif [ "`grep 'CentOS Linux release 7.1' /etc/system-release`" ]; then
       echo "Detected CentOS 7.1 (deep thought Haswell cluster)"
       CONFIGURATION_FILE=$BACI_HOME/buildconfig/haswell_cluster_Q12015_gcc48.config
@@ -203,10 +207,12 @@ if [[ "$CXX" ]]; then
   echo "Overriding C++ compiler with $CXX"
   CXXCOMPILER=$CXX
   CCOMPILER=$CC
+  FCOMPILER=$F90
 else
   echo "No C++ compiler given, using default at $MPIDIR/bin/mpic++"
   CXXCOMPILER=$MPIDIR/bin/mpic++
   CCOMPILER=$MPIDIR/bin/mpicc
+  FCOMPILER=$MPIDIR/bin/mpif90
 fi
 
 Trilinos_DIR="$Trilinos_PREFIX/lib/cmake/Trilinos"
@@ -227,7 +233,7 @@ $CMAKE_COMMAND \
     -D CMAKE_BUILD_TYPE:STRING=$BUILD_TYPE \
     -D CMAKE_CXX_COMPILER:FILEPATH="$CXXCOMPILER" \
     -D CMAKE_C_COMPILER:FILEPATH="$CCOMPILER" \
-    -D CMAKE_Fortran_COMPILER:FILEPATH="$MPIDIR/bin/mpif90" \
+    -D CMAKE_Fortran_COMPILER:FILEPATH="$FCOMPILER" \
     -D CMAKE_CXX_FLAGS:STRING="$CXXFLAGS" \
     -D CMAKE_CXX_FLAGS_RELEASE:STRING="$CXXFLAGSRELEASE" \
     -D CMAKE_C_FLAGS:STRING="$CFLAGS" \
