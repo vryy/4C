@@ -936,6 +936,16 @@ void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<Epetra_Vector> dis,Teuc
   tmp->Scale(-1.);
   AddVector(*tmp,*ftcnp_);
 
+  LINALG::SparseMatrix m_LinDissContactLM(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX);
+  for (unsigned i=0;i<interface_.size();++i)
+    dynamic_cast<CONTACT::CoTSIInterface*>(&(*interface_[i]))->AssembleDM_linDiss(
+        NULL,NULL,NULL,&m_LinDissContactLM,1.);
+  m_LinDissContactLM.Complete(*gactivedofs_,*gmdofrowmap_);
+  tmp = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
+  if (m_LinDissContactLM.Multiply(false,*z_,*tmp)!=0)
+    dserror("multiply went wrong");
+  AddVector(*coupST->MasterToSlave(tmp),*ftcnp_);
+
   ftcn_=ftcnp_;
 }
 

@@ -433,7 +433,8 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(LINALG::SparseMatrix* linD_X,
         const LINALG::Matrix<3,1> lmc(cnode->MoData().lm(),true);
         const LINALG::Matrix<3,1> n(cnode->MoData().n(),true);
         const LINALG::Matrix<3,1> jump(frnode->FriData().jump(),true);
-        double diss =(-lmc.Dot(jump)+lmc.Dot(n)*jump.Dot(n))/dt;
+        const double dval = cnode->MoData().GetD()[cnode->Id()];
+        double diss =(-lmc.Dot(jump)+lmc.Dot(n)*jump.Dot(n))/(dt*dval);
         lm=diss;
       }
       break;
@@ -594,8 +595,14 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(
     for (int i=0;i<3;++i) tang_proj(i,i)=1.;
     tang_proj.MultiplyNT(-1.,n,n,1.);
 
+    // get D entry of this node
+    // remember: D is diagonal
+    int id = cnode->Id();
+    const std::map<int, double>& derivD = cnode->CoData().GetDerivD(id);
+    const double dval = cnode->MoData().GetD()[cnode->Id()];
+
     // get nodal values
-    const LINALG::Matrix<3,1> jump(fnode->FriData().jump());
+    LINALG::Matrix<3,1> jump(fnode->FriData().jump());
     const LINALG::Matrix<3,1> lm(cnode->MoData().lm());
     LINALG::Matrix<3,1> lm_t; lm_t.Multiply(tang_proj,lm);
     const double lm_n = lm.Dot(n);
@@ -615,9 +622,11 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(
       for (int i=0;i<3;++i)
       {
         for (_cim p=derivJump[i].begin();p!=derivJump[i].end();++p)
-          derivDiss[p->first]-=((lm(i) -lm_n*n(i))*p->second)/dt;
+          derivDiss[p->first]-=((lm(i) -lm_n*n(i))*p->second)/(dt*dval);
         for (_cip p=derivN[i].begin();p!=derivN[i].end();++p)
-          derivDiss[p->first]+=((lm_n*jump(i)+jump_n*lm(i))*p->second)/dt;
+          derivDiss[p->first]+=((lm_n*jump(i)+jump_n*lm(i))*p->second)/(dt*dval);
+        for (_cim p=derivD.begin();p!=derivD.end();++p)
+          derivDiss[p->first]+=(-lm.Dot(jump)+lm.Dot(n)*jump.Dot(n))/(dt*dval*dval)*(-p->second);
       }
 
       // put everything together*******************************************
@@ -656,7 +665,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(
           if (!knode) dserror("node not found");
           CONTACT::CoNode*  kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
           for (int d=0;d<3;++d)
-            d_LinDissContactLM->FEAssemble(-fac*k->second*jump_tan(d)/dt,kcnode->Dofs()[0],cnode->Dofs()[d]);
+            d_LinDissContactLM->FEAssemble(-fac*k->second*jump_tan(d)/(dt*dval),kcnode->Dofs()[0],cnode->Dofs()[d]);
         }
 
     /**************************************************** M-matrix ******/
@@ -668,7 +677,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(
           if (!knode) dserror("node not found");
           CONTACT::CoNode*  kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
           for (int d=0;d<3;++d)
-            m_LinDissContactLM->FEAssemble(-fac*k->second*jump_tan(d)/dt,kcnode->Dofs()[0],cnode->Dofs()[d]);
+            m_LinDissContactLM->FEAssemble(-fac*k->second*jump_tan(d)/(dt*dval),kcnode->Dofs()[0],cnode->Dofs()[d]);
           }
   } // loop over all LM slave nodes (row map)
 
