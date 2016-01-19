@@ -176,7 +176,7 @@ Teuchos::RCP<LINALG::SparseOperator> ALE::Meshtying::Setup(std::vector<int> coup
   sysmatsolve_ = matsolve;
 
   // fixing length of nullspace for block matrix (solver/preconditioner ML)
-  string inv = "BMatMerged";
+  std::string inv = "BMatMerged";
   const Epetra_Map& oldmap = *(dofrowmap_);
   const Epetra_Map& newmap = *(mergedmap_);
   solver_.FixMLNullspace(&inv[0], oldmap, newmap, solver_.Params());
