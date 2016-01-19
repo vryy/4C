@@ -68,7 +68,8 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
     maxiter_(params->get<int>("MAXITER")),
     tolres_(params->get<double>("TOLRES")),
     toldisp_(params->get<double>("TOLDISP")),
-    divercont_ (DRT::INPUT::IntegralValue<INPAR::ALE::DivContAct>(*params,"DIVERCONT"))
+    divercont_ (DRT::INPUT::IntegralValue<INPAR::ALE::DivContAct>(*params,"DIVERCONT")),
+    msht_ (DRT::INPUT::IntegralValue<INPAR::ALE::MeshTying>(*params,"MESHTYING"))
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -85,6 +86,11 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
   {
     DRT::Condition* cond = discret_->GetCondition("ALEDirichlet");
     if (cond) dserror("Found a ALE Dirichlet condition. Remove ALE string!");
+  }
+
+  if (msht_ != INPAR::ALE::no_meshtying )
+  {
+    meshtying_ = Teuchos::rcp(new Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim(), NULL));
   }
 
   // ---------------------------------------------------------------------
@@ -108,7 +114,13 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
 void ALE::Ale::CreateSystemMatrix(
     Teuchos::RCP<const ALE::UTILS::MapExtractor> interface)
 {
-  if (interface == Teuchos::null)
+  if (msht_ != INPAR::ALE::no_meshtying )
+  {
+    std::vector<int> coupleddof(DRT::Problem::Instance()->NDim(),1);
+    sysmat_ = meshtying_->Setup(coupleddof);
+    meshtying_->DirichletOnMaster(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
+  }
+  else if (interface == Teuchos::null)
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,false,true));
@@ -141,6 +153,12 @@ void ALE::Ale::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc,
   }
 
   EvaluateElements();
+
+  // prepare meshtying system
+  if (msht_ != INPAR::ALE::no_meshtying)
+  {
+    meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,dispnp_);
+  }
 
   // dispnp_ has zeros at the Dirichlet-entries, so we maintain zeros there.
   if (LocsysManager() != Teuchos::null)
@@ -176,8 +194,11 @@ int ALE::Ale::Solve()
   rhs->Scale(-1.0);
 
   // ToDo (mayr) Why can't we use rhs_ instead of local variable rhs???
-  int errorcode = solver_->Solve(sysmat_->EpetraOperator(), disi_, rhs, true);
-
+  int errorcode = 0;
+  if (msht_== INPAR::ALE::no_meshtying)
+    errorcode = solver_->Solve(sysmat_->EpetraOperator(), disi_, rhs, true);
+  else
+    errorcode = meshtying_->SolveMeshtying(*solver_, sysmat_, disi_, rhs, dispnp_);
   // calc norm
   disi_->Norm2(&normdisi_);
   normdisi_ /= sqrt(disi_->GlobalLength());

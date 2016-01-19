@@ -28,6 +28,8 @@
 
 #include "../drt_inpar/inpar_ale.H"
 
+#include "ale_meshtying.H"
+
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
 namespace LINALG
@@ -478,6 +480,12 @@ private:
 
   //! error handling in case of unconverged nonlinear solver
   const INPAR::ALE::DivContAct divercont_;
+
+  //! flag for mesh-tying
+  const INPAR::ALE::MeshTying msht_;
+
+  //! coupling of ALE-ALE at an internal interface
+  Teuchos::RCP<ALE::Meshtying> meshtying_;
 
   //@}
 

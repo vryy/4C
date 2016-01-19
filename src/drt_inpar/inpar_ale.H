@@ -44,6 +44,13 @@ namespace INPAR
     divcont_continue ///< continue nevertheless
   };
 
+  /// meshtying algorithm
+  enum MeshTying
+  {
+    no_meshtying,
+    yes_meshtying
+  };
+
   /// Defines all valid parameters for acou problem
   void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
