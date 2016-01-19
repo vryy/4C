@@ -92,7 +92,7 @@ namespace ADAPTER
     //! setup the machinery (generalized version)
     /// master and slave discretizations are identical in case of sliding ALE or fluid/scatra meshtying
     /// ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
-    void Setup(
+    void SetupInterface(
         const Teuchos::RCP<DRT::Discretization>&           masterdis,            ///< master discretization
         const Teuchos::RCP<DRT::Discretization>&           slavedis,             ///< slave discretization
         const Teuchos::RCP<DRT::Discretization>&           aledis,               ///< ALE discretization
