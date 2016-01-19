@@ -147,9 +147,6 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   Teuchos::RCP<LINALG::Matrix<6,1> > dconc_zero_ratio_dC =
       params.get< Teuchos::RCP<LINALG::Matrix<6,1> > >( "dconc_zero_ratio_dC",Teuchos::rcp(new LINALG::Matrix<6,1>(true)) );
 
-  //For safety we remove the ratio stuff from the Teuchos::ParameterList
-  params.remove("conc_zero_ratio",true);
-  params.remove("dconc_zero_ratio_dC",true);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////
   // \mym S = 2 \frac{\partial}{\partial \mym C} \left( \Psi(\mym C) \right) = ...

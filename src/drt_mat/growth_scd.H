@@ -395,6 +395,17 @@ namespace MAT
 
   protected:
 
+    ///calculate stresses and elastic material tangent (both in Voigt notation)
+    void GetSAndCmatdach
+    (
+        const double theta,
+        const LINALG::Matrix<3,3>* defgrd,
+        LINALG::Matrix<6,1>* stress,
+        LINALG::Matrix<6,6>* cmatdach,
+        Teuchos::ParameterList& params,
+        const int eleGID
+    );
+
     ///Function which reads in the given fiber value due to the FIBER1 nomenclature
     void ReadFiber(
         DRT::INPUT::LineDefinition* linedef,
@@ -451,6 +462,12 @@ namespace MAT
     //Print Four Tensor
    void PrintFourTensor( double (&FourTensor)[3][3][3][3] );
 
+   /// Return names of visualization data
+   virtual void VisNames(std::map<std::string,int>& names);
+
+   /// Return visualization data
+   virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+
   private:
 
     ///Normal \otime Normal
@@ -458,6 +475,9 @@ namespace MAT
 
     ///T_1 \otimes T_1 + T_2 \otimes T_2
     LINALG::Matrix<3,3> TdT_; //would be fine if it was constant...
+
+    ///Normal direction
+    LINALG::Matrix<3,1> N_; //would be fine if it was constant...
 
 //    /// my material parameters
 //    MAT::PAR::GrowthScd* paramsScdAC_;

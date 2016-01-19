@@ -439,15 +439,16 @@ void MAT::GrowthScdAC::EvaluateGrowth(double* theta,
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthScdAC::VisNames(std::map<std::string,int>& names)
 {
-  std::string fiber = "Theta";
+  std::string fiber = "theta";
   names[fiber] = 1;
+
   Matelastic()->VisNames(names);
 }
 
 /*----------------------------------------------------------------------------*/
 bool MAT::GrowthScdAC::VisData(const std::string& name, std::vector<double>& data, int numgp , int eleID)
 {
-  if (name == "Theta")
+  if (name == "theta")
   {
     if ((int)data.size()!=1)
       dserror("size mismatch");
@@ -478,7 +479,8 @@ DRT::ParObject* MAT::GrowthScdACRadialType::Create( const std::vector<char> & da
 MAT::GrowthScdACRadial::GrowthScdACRadial()
   : GrowthScdAC(),
     NdN_(true),
-    TdT_(true)
+    TdT_(true),
+    N_(true)
 {
 
 }
@@ -490,7 +492,8 @@ MAT::GrowthScdACRadial::GrowthScdACRadial()
 MAT::GrowthScdACRadial::GrowthScdACRadial(MAT::PAR::GrowthScd* params)
   : GrowthScdAC(params),
     NdN_(true),
-    TdT_(true)
+    TdT_(true),
+    N_(true)
 {
 
 }
@@ -501,20 +504,32 @@ MAT::GrowthScdACRadial::GrowthScdACRadial(MAT::PAR::GrowthScd* params)
 void MAT::GrowthScdACRadial::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // CIR-AXI-RAD nomenclature
-  if (not (linedef->HaveNamed("RAD") and linedef->HaveNamed("AXI") and linedef->HaveNamed("CIR")))
-    dserror("If you want growth into the radial direction you need to specifiy AXI, CIR and RAD in your input file!");
+  if (not (linedef->HaveNamed("RAD")))
+    dserror("If you want growth into the radial direction you need to specify RAD in your input file!");
 
-  LINALG::Matrix<3,1> N(true);
-  LINALG::Matrix<3,1> T1(true);
-  LINALG::Matrix<3,1> T2(true);
+  ReadFiber(linedef,"RAD",N_);
+//  ReadFiber(linedef,"AXI",T1);
+//  ReadFiber(linedef,"CIR",T2);
 
-  ReadFiber(linedef,"RAD",N);
-  ReadFiber(linedef,"AXI",T1);
-  ReadFiber(linedef,"CIR",T2);
+  NdN_.MultiplyNT(N_,N_);
+//  TdT_.MultiplyNT(T1,T1);
+//  TdT_.MultiplyNT(1.0,T2,T2,1.0);
 
-  NdN_.MultiplyNT(N,N);
-  TdT_.MultiplyNT(T1,T1);
-  TdT_.MultiplyNT(1.0,T2,T2,1.0);
+  if (   abs(NdN_(0,1)-NdN_(1,0)) > 1e-14
+      or abs(NdN_(0,2)-NdN_(2,0)) > 1e-14
+      or abs(NdN_(2,1)-NdN_(1,2)) > 1e-14 )
+    dserror("The growth matrix is not symmetric. This should not be possible!");
+
+  //NdN_ + TdT_ = Id. Hence:
+  TdT_(0,0) = 1.0 -NdN_(0,0);
+  TdT_(0,1) = -NdN_(0,1);
+  TdT_(0,2) = -NdN_(0,2);
+  TdT_(1,0) = -NdN_(1,0);
+  TdT_(1,1) = 1.0 -NdN_(1,1);
+  TdT_(1,2) = -NdN_(1,2);
+  TdT_(2,0) = -NdN_(2,0);
+  TdT_(2,1) = -NdN_(2,1);
+  TdT_(2,2) = 1.0 -NdN_(2,2);
 
   GrowthScdAC::Setup(numgp, linedef);
   return;
@@ -565,6 +580,7 @@ void MAT::GrowthScdACRadial::Pack(DRT::PackBuffer& data) const
       AddtoPack(data,NdN_(i,j));
       AddtoPack(data,TdT_(i,j));
     }
+    AddtoPack(data,N_(i,0));
   }
 
   // Pack base class material
@@ -598,6 +614,10 @@ void MAT::GrowthScdACRadial::Unpack(const std::vector<char>& data)
       ExtractfromPack(position,data,TdTij);
       TdT_(i,j) =TdTij;
     }
+
+    double Ni;
+    ExtractfromPack(position,data,Ni);
+    N_(i,0) =Ni;
   }
 
   // extract base class material
@@ -648,244 +668,95 @@ void MAT::GrowthScdACRadial::Evaluate
 
   if (time > starttime + eps && time <= endtime + eps) //iff growth is active
   {
-
-    //if the growth law shall be proportional to the scalar in the
-    //spatial configuration on has to set "J" instead of "1" in the following
-    //  //J = det(F);
-    //double J = defgrd->Determinant();
     double theta;
     //--------------------------------------------------------------------------------------
-    // evaluation of the volumetric growth factor and its derivative wrt cauchy-green
+    // calculate \theta and  \frac{\partial \theta}{\partial C}
     //--------------------------------------------------------------------------------------
-    LINALG::Matrix<6,1> dthetadC(true);
-    EvaluateGrowth(&theta,&dthetadC,defgrd,glstrain,params,eleGID);
+    LINALG::Matrix<6,1> dthetadCvec(true);
+    EvaluateGrowth(&theta,&dthetadCvec,defgrd,glstrain,params,eleGID);
 
     // store theta
     theta_->at(gp) = theta;
+
+    LINALG::Matrix<6,1> S(true);
+    LINALG::Matrix<6,6> cmatdach(true);
+
+    GetSAndCmatdach(theta,defgrd,&S,&cmatdach,params,eleGID);
+
+    *stress=S;
+
+    //--------------------------------------------------------------------------------------
+    // calculate elastic material stiffness matrix = \frac{\partial S}{\partial E}
+    //--------------------------------------------------------------------------------------
+
     // calculate growth part F_g of the deformation gradient F
     // F_g = \theta * N \otimes N + T_1 \otimes T_1 + T_2 \otimes T_2
     LINALG::Matrix<3,3> F_g(NdN_);
     F_g.Scale(theta);
-    F_g += TdT_;
+    F_g.Update(1.0,TdT_,1.0);
 
     // calculate F_g^(-1)
     LINALG::Matrix<3,3> F_ginv(true);
     F_ginv.Invert(F_g);
-
-    //elastic deformation gradient F_e = F * F_g^(-1)
-    LINALG::Matrix<3, 3> defgrddach(true);//*defgrd);
-    defgrddach.MultiplyNN(*defgrd,F_ginv); // Scale(1.0 / theta);
-
-    //we need the cauchy-green strain in matrix form, since we want to invert it later. So we calculate it again..
-    LINALG::Matrix<3, 3> C(true);
-    C.MultiplyTN(*defgrd,*defgrd);
-
-    // elastic right Cauchy-Green Tensor Cdach = F_e^T * F_e (= F_g^-T C F_g^-1)
-    LINALG::Matrix<3, 3> Cdach(true);
-    Cdach.MultiplyTN(defgrddach,defgrddach);
-
-    //transform Cdach into a vector
-    LINALG::Matrix<NUM_STRESS_3D, 1> Cdachvec(true);
-    MatrixToVector(Cdach,Cdachvec,MAT::voigt_strain);
-
-    //--------------------------------------------------------------------------------------
-    // call material law with elastic part of defgr and elastic part of glstrain
-    //--------------------------------------------------------------------------------------
-    // build identity tensor I
-    LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
-    for (int i = 0; i < 3; i++)
-      Id(i) = 1.0;
-
-    LINALG::Matrix<NUM_STRESS_3D, 1> glstraindach(Cdachvec);
-    glstraindach -= Id;
-    glstraindach.Scale(0.5);
-
-    LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatdach(true);
-    LINALG::Matrix<NUM_STRESS_3D, 1> Sdachvec(true);
-    // elastic 2 PK stress and constitutive matrix
-    Matelastic()->Evaluate(&defgrddach,
-                          &glstraindach,
-                          params,
-                          &Sdachvec,
-                          &cmatdach,
-                          eleGID);
-
-    // calculate stress
-    // 2PK stress S = F_g^-1 Sdach F_g^-T
-    LINALG::Matrix<3, 3> Sdach(true);
-    VectorToMatrix(Sdach,Sdachvec,MAT::voigt_stress);
-
-    LINALG::Matrix<3, 3> tmp(true);
-    tmp.MultiplyNT(Sdach,F_ginv);
-    LINALG::Matrix<3, 3> S(true);
-    S.MultiplyNN(F_ginv,tmp);
-
-    MatrixToVector(S,*stress,MAT::voigt_stress);
-
-    //--------------------------------------------------------------------------------------
-    // calculate material stiffness matrix = dS/dE
-    //--------------------------------------------------------------------------------------
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
 
     cmatelast = PullBack4Tensor(F_ginv,cmatdach);
 
-//    //if the growth law shall be proportional to the scalar in the
-//    //spatial configuration on has to a lot more. The following works,
-//    //but still has a Bug in the linearization. Good luck finding it :)
-//
-//    // linearization of growth law, dtheta/dC
-//    LINALG::Matrix<3, 3> dThetadC(true);
-//    CalculateThetaDerivC( dThetadC, C , J );
-//
-//    //transform dThetadC into a vector
-//    LINALG::Matrix<6, 1> dThetadCvec(true);
-//    MatrixToVector(dThetadC,dThetadCvec,MAT::voigt_strain);
-//
-//    //calculate dF_g^(-1)/dtheta
-//    LINALG::Matrix<3, 3> dF_ginvdtheta = CalcDerivMatrixInverse(F_ginv,NdN_);
-//
-//    // or do it via an FD approximation
-//    //  double eps=1e-6;
-//    //  LINALG::Matrix<3, 3> tmp1(NdN_);
-//    //  tmp1.Scale(theta+eps);
-//    //  tmp1 += TdT_;
-//    //  // calculate F_g^(-1)
-//    //  LINALG::Matrix<3, 3> dF_ginvdtheta(true);
-//    //  dF_ginvdtheta.Invert(tmp1);
-//    //  dF_ginvdtheta -=F_ginv;
-//    //  dF_ginvdtheta.Scale(1/eps);
-//
-//
-//    LINALG::Matrix<3, 3> tmp11(true);
-//    tmp11.MultiplyNN(Sdach,F_ginv);
-//    LINALG::Matrix<3, 3> tmp1(true);
-//    tmp1.MultiplyNN(dF_ginvdtheta,tmp11);
-//
-//    LINALG::Matrix<3, 3> Stilde1(true);
-//    Stilde1.MultiplyNN(Sdach,dF_ginvdtheta);
-//    LINALG::Matrix<3, 3> Stilde(true);
-//    Stilde.MultiplyNN(F_ginv,Stilde1);
-//
-//    Stilde+=tmp1;
-//    LINALG::Matrix<6, 1> Stildevec(true);
-//    MatrixToVector(Stilde,Stildevec,MAT::voigt_stress);
-//
-//
-//    LINALG::Matrix<3, 3> tmp21(true);
-//    tmp21.MultiplyNN(C,F_ginv);
-//    LINALG::Matrix<3, 3> tmp2(true);
-//    tmp2.MultiplyNN(dF_ginvdtheta,tmp21);
-//
-//    LINALG::Matrix<3, 3> Ctilde1(true);
-//    Ctilde1.MultiplyNN(C,dF_ginvdtheta);
-//    LINALG::Matrix<3, 3> Ctilde(true);
-//    Ctilde.MultiplyNN(F_ginv,Ctilde1);
-//
-//    Ctilde+=tmp2;
-//
-//    LINALG::Matrix<6, 1> Ctildevec(true);
-//    MatrixToVector(Ctilde,Ctildevec,MAT::voigt_strain);
-//
-//    LINALG::Matrix<6, 1> cmatelasC(true);
-//
-//    for (int i = 0; i < 6; i++)
-//    {
-//      cmatelasC(i) =   cmatdach(i, 0) * Ctildevec(0) + cmatdach(i, 1) * Ctildevec(1)
-//                          + cmatdach(i, 2) * Ctildevec(2) + cmatdach(i, 3) * Ctildevec(3)
-//                          + cmatdach(i, 4) * Ctildevec(4) + cmatdach(i, 5) * Ctildevec(5);
-//    }
-//
-//    LINALG::Matrix<3, 3> tmp41(true);
-//    VectorToMatrix(tmp41,cmatelasC,MAT::voigt_strain);
-//    LINALG::Matrix<3, 3> tmp42(true);
-//    tmp42.MultiplyNN(tmp41,F_ginv);
-//    LINALG::Matrix<3, 3> tmp4(true);
-//    tmp4.MultiplyNN(F_ginv,tmp42);
-//
-//    LINALG::Matrix<6, 1> tmp5(true);
-//    MatrixToVector(tmp4,tmp5,MAT::voigt_stress);
-//
-//    for (int i = 0; i < 6; i++)
-//    {
-//      for (int j = 0; j < 6; j++)
-//      {
-//        (*cmat)(i, j) =  cmatelast(i, j) + 2.0 *(Stildevec(i) + tmp5(i)) * dThetadCvec(j);
-//      }
-//    }
+    //if the growth law shall be proportional to the scalar in the
+    //spatial configuration on has to a lot more :-(
 
+    //--------------------------------------------------------------------------------------
+    // calculate \frac{\partial S}{\partial \theta}
+    //--------------------------------------------------------------------------------------
+    // NOTE: we do this by a FD approximation, which is really cheap here due to the fact
+    // that theta is a scalar value (hence only one more material evaluation is needed!)
 
-    *cmat =  cmatelast;
+    const double espilon = 1.0e-8;
+
+    LINALG::Matrix<6,1> SEps(true);
+    LINALG::Matrix<6,6> cmatdachEps(true);
+
+    GetSAndCmatdach(theta+espilon,defgrd,&SEps,&cmatdachEps,params,eleGID);
+
+    //--------------------------------------------------------------------------------------
+    // calculate \frac{d S}{d E} = \frac{\partial S}{\partial E} +
+    //    + 2* \left( \frac{\partial S}{\partial \theta} \times \frac{\partial \theta}{\partial C} \right)
+    //--------------------------------------------------------------------------------------
+    for (int i = 0; i < 6; i++)
+    {
+      for (int j = 0; j < 6; j++)
+      {
+
+        (*cmat)(i, j) =  cmatelast(i, j) + 2.0 *(SEps(i) - S(i))/espilon * dthetadCvec(j);
+      }
+    }
   }
   else if (time > endtime + eps)
   {
-    // turn off growth or calculate stresses for output
     double theta = theta_->at(gp);
+
+    LINALG::Matrix<6,1> S(true);
+    LINALG::Matrix<6,6> cmatdach(true);
+
+    GetSAndCmatdach(theta,defgrd,&S,&cmatdach,params,eleGID);
+
+    *stress=S;
+
+    //--------------------------------------------------------------------------------------
+    // calculate material stiffness matrix = dS/dE
+    //--------------------------------------------------------------------------------------
 
     // calculate growth part F_g of the deformation gradient F
     // F_g = \theta * N \otimes N + T_1 \otimes T_1 + T_2 \otimes T_2
     LINALG::Matrix<3,3> F_g(NdN_);
     F_g.Scale(theta);
-    F_g += TdT_;
+    F_g.Update(1.0,TdT_,1.0);
 
     // calculate F_g^(-1)
     LINALG::Matrix<3,3> F_ginv(true);
     F_ginv.Invert(F_g);
-
-    //elastic deformation gradient F_e = F * F_g^(-1)
-    LINALG::Matrix<3, 3> defgrddach(true);//*defgrd);
-    defgrddach.MultiplyNN(*defgrd,F_ginv); // Scale(1.0 / theta);
-
-    //we need the cauchy-green strain in matrix form, since we want to invert it later. So we calculate it again..
-    LINALG::Matrix<3, 3> C(true);
-    C.MultiplyTN(*defgrd,*defgrd);
-
-    // elastic right Cauchy-Green Tensor Cdach = F_e^T * F_e (= F_g^-T C F_g^-1)
-    LINALG::Matrix<3, 3> Cdach(true);
-    Cdach.MultiplyTN(defgrddach,defgrddach);
-
-    //transform Cdach into a vector
-    LINALG::Matrix<NUM_STRESS_3D, 1> Cdachvec(true);
-    MatrixToVector(Cdach,Cdachvec,MAT::voigt_strain);
-
-    //--------------------------------------------------------------------------------------
-    // call material law with elastic part of defgr and elastic part of glstrain
-    //--------------------------------------------------------------------------------------
-    // build identity tensor I
-    LINALG::Matrix<NUM_STRESS_3D, 1> Id(true);
-    for (int i = 0; i < 3; i++)
-      Id(i) = 1.0;
-
-    LINALG::Matrix<NUM_STRESS_3D, 1> glstraindach(Cdachvec);
-    glstraindach -= Id;
-    glstraindach.Scale(0.5);
-
-    LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatdach(true);
-    LINALG::Matrix<NUM_STRESS_3D, 1> Sdachvec(true);
-    // elastic 2 PK stress and constitutive matrix
-    Matelastic()->Evaluate(&defgrddach,
-                          &glstraindach,
-                          params,
-                          &Sdachvec,
-                          &cmatdach,
-                          eleGID);
-
-    // calculate stress
-    // 2PK stress S = F_g^-1 Sdach F_g^-T
-    LINALG::Matrix<3, 3> Sdach(true);
-    VectorToMatrix(Sdach,Sdachvec,MAT::voigt_stress);
-
-    LINALG::Matrix<3, 3> tmp(true);
-    tmp.MultiplyNT(Sdach,F_ginv);
-    LINALG::Matrix<3, 3> S(true);
-    S.MultiplyNN(F_ginv,tmp);
-
-    MatrixToVector(S,*stress,MAT::voigt_stress);
-
-    //--------------------------------------------------------------------------------------
-    // calculate material stiffness matrix = dS/dE
-    //--------------------------------------------------------------------------------------
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
@@ -902,40 +773,76 @@ void MAT::GrowthScdACRadial::Evaluate
 }
 
 ///*----------------------------------------------------------------------*
-// | transform symmetric matrix to vector                       Thon 01/15|
+// | calculate stresses and elastic material tangent                      |
+// | (both in Voigt notation)                                   Thon 01/16|
 // *----------------------------------------------------------------------*/
-//LINALG::Matrix<3,3> MAT::GrowthScdACRadial::CalcDerivMatrixInverse(const LINALG::Matrix<3,3>& Minv,
-//                    const LINALG::Matrix<3,3>& Mderiv)
-//{
-//  LINALG::Matrix<3,3> result;
-//
-//  result(0,0)=CalcDerivMatrixInverseij(Minv,Mderiv,0,0);
-//  result(0,1)=CalcDerivMatrixInverseij(Minv,Mderiv,0,1);
-//  result(0,2)=CalcDerivMatrixInverseij(Minv,Mderiv,0,2);
-//  result(1,0)=result(0,1);
-//  result(1,1)=CalcDerivMatrixInverseij(Minv,Mderiv,1,1);
-//  result(1,2)=CalcDerivMatrixInverseij(Minv,Mderiv,1,2);
-//  result(2,0)=result(0,2);
-//  result(2,1)=result(1,2);
-//  result(2,2)=CalcDerivMatrixInverseij(Minv,Mderiv,2,2);
-//
-//
-//  return result;
-//}
-//
-//double MAT::GrowthScdACRadial::CalcDerivMatrixInverseij(const LINALG::Matrix<3,3>& Minv,
-//                    const LINALG::Matrix<3,3>& Mderiv,
-//                    const double i,
-//                    const double j)
-//{
-//  double result=0;
-//
-//  for (int k=0;k<3;++k)
-//    for (int l=0;l<3;++l)
-//      result += -0.5 * ( Minv(i,k)*Minv(l,j) + Minv(i,l)*Minv(k,j) ) * Mderiv(k,l);
-//
-//  return result;
-//}
+void MAT::GrowthScdACRadial::GetSAndCmatdach
+(
+    const double theta,
+    const LINALG::Matrix<3,3>* defgrd,
+    LINALG::Matrix<6,1>* stress,
+    LINALG::Matrix<6,6>* cmatdach,
+    Teuchos::ParameterList& params,
+    const int eleGID
+)
+{
+  // calculate growth part F_g of the deformation gradient F
+  // F_g = \theta * N \otimes N + T_1 \otimes T_1 + T_2 \otimes T_2
+
+  LINALG::Matrix<3,3> F_g(NdN_);
+  F_g.Scale(theta);
+  F_g.Update(1.0,TdT_,1.0);
+
+  // calculate F_g^(-1)
+  LINALG::Matrix<3,3> F_ginv(true);
+  F_ginv.Invert(F_g);
+
+  //elastic deformation gradient F_e = F * F_g^(-1)
+  LINALG::Matrix<3, 3> defgrddach(true);//*defgrd);
+  defgrddach.MultiplyNN(*defgrd,F_ginv); // Scale(1.0 / theta);
+
+  // elastic right Cauchy-Green Tensor Cdach = F_e^T * F_e (= F_g^-T C F_g^-1)
+  LINALG::Matrix<3, 3> Cdach(true);
+  Cdach.MultiplyTN(defgrddach,defgrddach);
+
+  //transform Cdach into a vector
+  LINALG::Matrix<6, 1> Cdachvec(true);
+  MatrixToVector(Cdach,Cdachvec,MAT::voigt_strain);
+
+  //--------------------------------------------------------------------------------------
+  // call material law with elastic part of defgr and elastic part of glstrain
+  //--------------------------------------------------------------------------------------
+  // build identity tensor I
+  LINALG::Matrix<6, 1> Id(true);
+  for (int i = 0; i < 3; i++)
+    Id(i) = 1.0;
+
+  LINALG::Matrix<6, 1> glstraindachvec(Cdachvec);
+  glstraindachvec -= Id;
+  glstraindachvec.Scale(0.5);
+
+  LINALG::Matrix<6, 1> Sdachvec(true);
+  // elastic 2 PK stress and constitutive matrix
+  Matelastic()->Evaluate(&defgrddach,
+                        &glstraindachvec,
+                        params,
+                        &Sdachvec,
+                        cmatdach,
+                        eleGID);
+
+  // calculate stress
+  // 2PK stress S = F_g^-1 Sdach F_g^-T
+  LINALG::Matrix<3, 3> Sdach(true);
+  VectorToMatrix(Sdach,Sdachvec,MAT::voigt_stress);
+
+  LINALG::Matrix<3, 3> tmp(true);
+  tmp.MultiplyNT(Sdach,F_ginv);
+  LINALG::Matrix<3, 3> S(true);
+  S.MultiplyNN(F_ginv,tmp);
+
+  MatrixToVector(S,*stress,MAT::voigt_stress);
+}
+
 
 /*----------------------------------------------------------------------*
  |     ///transform vector in voigt notation into symmetric             |
@@ -964,11 +871,11 @@ void MAT::GrowthScdACRadial::VectorToMatrix(LINALG::Matrix<3,3>& Matrix,
   Matrix(0,0)=Vector(0);
   Matrix(0,1)=alpha*Vector(3);
   Matrix(0,2)=alpha*Vector(5);
-  Matrix(1,0)=alpha*Vector(3);
+  Matrix(1,0)=Matrix(0,1);//alpha*Vector(3);
   Matrix(1,1)=Vector(1);
   Matrix(1,2)=alpha*Vector(4);
-  Matrix(2,0)=alpha*Vector(5);
-  Matrix(2,1)=alpha*Vector(4);
+  Matrix(2,0)=Matrix(0,2);//alpha*Vector(5);
+  Matrix(2,1)=Matrix(1,2);//alpha*Vector(4);
   Matrix(2,2)=Vector(2);
 
 }
@@ -1013,11 +920,11 @@ LINALG::Matrix<6,6> MAT::GrowthScdACRadial::PullBack4Tensor(const LINALG::Matrix
 {
   double CMAT[3][3][3][3] = {{{{0.0}}}};
   Setup4Tensor(CMAT,Cmat);
-//  PrintFourTensor(CMMAT);
+//  PrintFourTensor(CMAT);
 
 //This would be the long way....
-
-//  double CResult[3][3][3][3] = {{{{0.0}}}};
+//
+//  double tmp[3][3][3][3] = {{{{0.0}}}};
 //  for(int i=0;i<3;++i)
 //    for(int j=0;j<3;++j)
 //      for(int k=0;k<3;++k)
@@ -1026,8 +933,11 @@ LINALG::Matrix<6,6> MAT::GrowthScdACRadial::PullBack4Tensor(const LINALG::Matrix
 //            for(int B=0;B<3;++B)
 //              for(int C=0;C<3;++C)
 //                for(int D=0;D<3;++D)
-//                  CResult[i][j][k][l] += defgr(i,A)*defgr(j,B)*defgr(k,C)*defgr(l,D)*CMAT[A][B][C][D];
-//  Setup6x6VoigtMatrix(tmp,CResult);
+//                  tmp[i][j][k][l] += defgr(i,A)*defgr(j,B)*defgr(k,C)*defgr(l,D)*CMAT[A][B][C][D];
+//        }
+//  PrintFourTensor(tmp);
+//  LINALG::Matrix<6,6> CResult1(true);
+//  Setup6x6VoigtMatrix(CResult1,tmp1);
 
   //But we can use the fact that CResult(i,j,k,l)=CResult(k,l,i,j) iff we have a hyperelatic material
   LINALG::Matrix<6,6> CResult(true);
@@ -1196,62 +1106,62 @@ void MAT::GrowthScdACRadial::Setup4Tensor(
 
 
 ///*------------------------------------------------------------------------------------------*
-// |  Setup 6x6 matrix in Voigt notation from 4-Tensor          thon  01/15|
+// |  Setup 6x6 matrix in Voigt notation from 4-Tensor                            thon  01/15 |
 // *------------------------------------------------------------------------------------------*/
 //void MAT::GrowthScdACRadial::Setup6x6VoigtMatrix(
 //    LINALG::Matrix<6,6>& VoigtMatrix,
 //    const double (&FourTensor)[3][3][3][3]
 //)
 //{
-///////*  [      C1111                 C1122                C1133                0.5*(C1112+C1121)               0.5*(C1123+C1132)                0.5*(C1113+C1131)      ]
-//////    [      C2211                 C2222                C2233                0.5*(C2212+C2221)               0.5*(C2223+C2232)                0.5*(C2213+C2231)      ]
-//////    [      C3311                 C3322                C3333                0.5*(C3312+C3321)               0.5*(C3323+C3332)                0.5*(C3313+C3331)      ]
-//////    [0.5*(C1211+C2111)    0.5*(C1222+C2122)    0.5*(C1233+C2133)    0.5*(C1212+C2112+C1221+C2121)    0.5*(C1223+C2123+C1232+C2132)    0.5*(C1213+C2113+C1231+C2131)]
-//////    [0.5*(C2311+C3211)    0.5*(C2322+C3222)    0.5*(C2333+C3233)    0.5*(C2312+C3212+C2321+C3221)    0.5*(C2323+C3223+C2332+C3232)    0.5*(C2313+C3213+C2331+C3231)]
-//////    [0.5*(C1322+C3122)    0.5*(C1322+C3122)    0.5*(C1333+C3133)    0.5*(C1312+C3112+C1321+C3121)    0.5*(C1323+C3123+C1332+C3132)    0.5*(C1313+C3113+C1331+C3131)] */
-////
-////  // Setup 4-Tensor from 6x6 Voigt matrix
-////  VoigtMatrix(0,0) = FourTensor[0][0][0][0]; //C1111
-////  VoigtMatrix(0,1) = FourTensor[0][0][1][1]; //C1122
-////  VoigtMatrix(0,2) = FourTensor[0][0][2][2]; //C1133
-////  VoigtMatrix(0,3) = 0.5 * (FourTensor[0][0][0][1] + FourTensor[0][0][1][0]); //0.5*(C1112+C1121)
-////  VoigtMatrix(0,4) = 0.5 * (FourTensor[0][0][1][2] + FourTensor[0][0][2][1]); //0.5*(C1123+C1132)
-////  VoigtMatrix(0,5) = 0.5 * (FourTensor[0][0][0][2] + FourTensor[0][0][2][0]); //0.5*(C1113+C1131)
-////
-////  VoigtMatrix(1,0) = FourTensor[1][1][0][0]; //C2211
-////  VoigtMatrix(1,1) = FourTensor[1][1][1][1]; //C2222
-////  VoigtMatrix(1,2) = FourTensor[1][1][2][2]; //C2233
-////  VoigtMatrix(1,3) = 0.5 * (FourTensor[1][1][0][1] + FourTensor[1][1][1][0]); //0.5*(C2212+C2221)
-////  VoigtMatrix(1,4) = 0.5 * (FourTensor[1][1][1][2] + FourTensor[1][1][2][1]); //0.5*(C2223+C2232)
-////  VoigtMatrix(1,5) = 0.5 * (FourTensor[1][1][0][2] + FourTensor[1][1][2][0]); //0.5*(C2213+C2231)
-////
-////  VoigtMatrix(2,0) = FourTensor[2][2][0][0]; //C3311
-////  VoigtMatrix(2,1) = FourTensor[2][2][1][1]; //C3322
-////  VoigtMatrix(2,2) = FourTensor[2][2][2][2]; //C3333
-////  VoigtMatrix(2,3) = 0.5 * (FourTensor[2][2][0][1] + FourTensor[2][2][1][0]); //0.5*(C3312+C3321)
-////  VoigtMatrix(2,4) = 0.5 * (FourTensor[2][2][1][2] + FourTensor[2][2][2][1]); //0.5*(C3323+C3332)
-////  VoigtMatrix(2,5) = 0.5 * (FourTensor[2][2][0][2] + FourTensor[2][2][2][0]); //0.5*(C3313+C3331)
-////
-////  VoigtMatrix(3,0) = 0.5 * (FourTensor[0][1][0][0] + FourTensor[1][0][0][0]); //0.5*(C1211+C2111)
-////  VoigtMatrix(3,1) = 0.5 * (FourTensor[0][1][1][1] + FourTensor[1][0][1][1]); //0.5*(C1222+C2122)
-////  VoigtMatrix(3,2) = 0.5 * (FourTensor[0][1][2][2] + FourTensor[1][0][2][2]); //0.5*(C1233+C2133)
-////  VoigtMatrix(3,3) = 0.25 * (FourTensor[0][1][0][1] + FourTensor[1][0][0][1] + FourTensor[0][1][1][0] + FourTensor[1][0][1][0]); //0.5*(C1212+C2112+C1221+C2121)
-////  VoigtMatrix(3,4) = 0.25 * (FourTensor[0][1][1][2] + FourTensor[1][0][1][2] + FourTensor[0][1][2][1] + FourTensor[1][0][2][1]); //0.5*(C1223+C2123+C1232+C2132)
-////  VoigtMatrix(3,5) = 0.25 * (FourTensor[0][1][0][2] + FourTensor[1][0][0][2] + FourTensor[0][1][2][0] + FourTensor[1][0][2][0]); //0.5*(C1213+C2113+C1231+C2131)
-////
-////  VoigtMatrix(4,0) = 0.5 * (FourTensor[1][2][0][0] + FourTensor[2][1][0][0]); //0.5*(C2311+C3211)
-////  VoigtMatrix(4,1) = 0.5 * (FourTensor[1][2][1][1] + FourTensor[2][1][1][1]); //0.5*(C2322+C3222)
-////  VoigtMatrix(4,2) = 0.5 * (FourTensor[1][2][2][2] + FourTensor[2][1][2][2]); //0.5*(C2333+C3233)
-////  VoigtMatrix(4,3) = 0.25 * (FourTensor[1][2][0][1] + FourTensor[2][1][0][1] + FourTensor[1][2][1][0] + FourTensor[2][1][1][0]); //0.5*(C2312+C3212+C2321+C3221)
-////  VoigtMatrix(4,4) = 0.25 * (FourTensor[1][2][1][2] + FourTensor[2][1][1][2] + FourTensor[1][2][2][1] + FourTensor[2][1][2][1]); //0.5*(C2323+C3223+C2332+C3232)
-////  VoigtMatrix(4,5) = 0.25 * (FourTensor[1][2][0][2] + FourTensor[2][1][0][2] + FourTensor[1][2][2][0] + FourTensor[2][1][2][0]); //0.5*(C2313+C3213+C2331+C3231)
-////
-////  VoigtMatrix(5,0) = 0.5 * (FourTensor[0][2][0][0] + FourTensor[2][0][0][0]); //0.5*(C1311+C3111)
-////  VoigtMatrix(5,1) = 0.5 * (FourTensor[0][2][1][1] + FourTensor[2][0][1][1]); //0.5*(C1322+C3122)
-////  VoigtMatrix(5,2) = 0.5 * (FourTensor[0][2][2][2] + FourTensor[2][0][2][2]); //0.5*(C1333+C3133)
-////  VoigtMatrix(5,3) = 0.25 * (FourTensor[0][2][0][1] + FourTensor[2][0][0][1] + FourTensor[0][2][1][0] + FourTensor[2][0][1][0]); //0.5*(C1312+C3112+C1321+C3121)
-////  VoigtMatrix(5,4) = 0.25 * (FourTensor[0][2][1][2] + FourTensor[2][0][1][2] + FourTensor[0][2][2][1] + FourTensor[2][0][2][1]); //0.5*(C1323+C3123+C1332+C3132)
-////  VoigtMatrix(5,5) = 0.25 * (FourTensor[0][2][0][2] + FourTensor[2][0][0][2] + FourTensor[0][2][2][0] + FourTensor[2][0][2][0]); //0.5*(C1313+C3113+C1331+C3131)
+/////*  [      C1111                 C1122                C1133                0.5*(C1112+C1121)               0.5*(C1123+C1132)                0.5*(C1113+C1131)      ]
+////    [      C2211                 C2222                C2233                0.5*(C2212+C2221)               0.5*(C2223+C2232)                0.5*(C2213+C2231)      ]
+////    [      C3311                 C3322                C3333                0.5*(C3312+C3321)               0.5*(C3323+C3332)                0.5*(C3313+C3331)      ]
+////    [0.5*(C1211+C2111)    0.5*(C1222+C2122)    0.5*(C1233+C2133)    0.5*(C1212+C2112+C1221+C2121)    0.5*(C1223+C2123+C1232+C2132)    0.5*(C1213+C2113+C1231+C2131)]
+////    [0.5*(C2311+C3211)    0.5*(C2322+C3222)    0.5*(C2333+C3233)    0.5*(C2312+C3212+C2321+C3221)    0.5*(C2323+C3223+C2332+C3232)    0.5*(C2313+C3213+C2331+C3231)]
+////    [0.5*(C1322+C3122)    0.5*(C1322+C3122)    0.5*(C1333+C3133)    0.5*(C1312+C3112+C1321+C3121)    0.5*(C1323+C3123+C1332+C3132)    0.5*(C1313+C3113+C1331+C3131)] */
+//
+//  // Setup 4-Tensor from 6x6 Voigt matrix
+//  VoigtMatrix(0,0) = FourTensor[0][0][0][0]; //C1111
+//  VoigtMatrix(0,1) = FourTensor[0][0][1][1]; //C1122
+//  VoigtMatrix(0,2) = FourTensor[0][0][2][2]; //C1133
+//  VoigtMatrix(0,3) = 0.5 * (FourTensor[0][0][0][1] + FourTensor[0][0][1][0]); //0.5*(C1112+C1121)
+//  VoigtMatrix(0,4) = 0.5 * (FourTensor[0][0][1][2] + FourTensor[0][0][2][1]); //0.5*(C1123+C1132)
+//  VoigtMatrix(0,5) = 0.5 * (FourTensor[0][0][0][2] + FourTensor[0][0][2][0]); //0.5*(C1113+C1131)
+//
+//  VoigtMatrix(1,0) = FourTensor[1][1][0][0]; //C2211
+//  VoigtMatrix(1,1) = FourTensor[1][1][1][1]; //C2222
+//  VoigtMatrix(1,2) = FourTensor[1][1][2][2]; //C2233
+//  VoigtMatrix(1,3) = 0.5 * (FourTensor[1][1][0][1] + FourTensor[1][1][1][0]); //0.5*(C2212+C2221)
+//  VoigtMatrix(1,4) = 0.5 * (FourTensor[1][1][1][2] + FourTensor[1][1][2][1]); //0.5*(C2223+C2232)
+//  VoigtMatrix(1,5) = 0.5 * (FourTensor[1][1][0][2] + FourTensor[1][1][2][0]); //0.5*(C2213+C2231)
+//
+//  VoigtMatrix(2,0) = FourTensor[2][2][0][0]; //C3311
+//  VoigtMatrix(2,1) = FourTensor[2][2][1][1]; //C3322
+//  VoigtMatrix(2,2) = FourTensor[2][2][2][2]; //C3333
+//  VoigtMatrix(2,3) = 0.5 * (FourTensor[2][2][0][1] + FourTensor[2][2][1][0]); //0.5*(C3312+C3321)
+//  VoigtMatrix(2,4) = 0.5 * (FourTensor[2][2][1][2] + FourTensor[2][2][2][1]); //0.5*(C3323+C3332)
+//  VoigtMatrix(2,5) = 0.5 * (FourTensor[2][2][0][2] + FourTensor[2][2][2][0]); //0.5*(C3313+C3331)
+//
+//  VoigtMatrix(3,0) = 0.5 * (FourTensor[0][1][0][0] + FourTensor[1][0][0][0]); //0.5*(C1211+C2111)
+//  VoigtMatrix(3,1) = 0.5 * (FourTensor[0][1][1][1] + FourTensor[1][0][1][1]); //0.5*(C1222+C2122)
+//  VoigtMatrix(3,2) = 0.5 * (FourTensor[0][1][2][2] + FourTensor[1][0][2][2]); //0.5*(C1233+C2133)
+//  VoigtMatrix(3,3) = 0.25 * (FourTensor[0][1][0][1] + FourTensor[1][0][0][1] + FourTensor[0][1][1][0] + FourTensor[1][0][1][0]); //0.5*(C1212+C2112+C1221+C2121)
+//  VoigtMatrix(3,4) = 0.25 * (FourTensor[0][1][1][2] + FourTensor[1][0][1][2] + FourTensor[0][1][2][1] + FourTensor[1][0][2][1]); //0.5*(C1223+C2123+C1232+C2132)
+//  VoigtMatrix(3,5) = 0.25 * (FourTensor[0][1][0][2] + FourTensor[1][0][0][2] + FourTensor[0][1][2][0] + FourTensor[1][0][2][0]); //0.5*(C1213+C2113+C1231+C2131)
+//
+//  VoigtMatrix(4,0) = 0.5 * (FourTensor[1][2][0][0] + FourTensor[2][1][0][0]); //0.5*(C2311+C3211)
+//  VoigtMatrix(4,1) = 0.5 * (FourTensor[1][2][1][1] + FourTensor[2][1][1][1]); //0.5*(C2322+C3222)
+//  VoigtMatrix(4,2) = 0.5 * (FourTensor[1][2][2][2] + FourTensor[2][1][2][2]); //0.5*(C2333+C3233)
+//  VoigtMatrix(4,3) = 0.25 * (FourTensor[1][2][0][1] + FourTensor[2][1][0][1] + FourTensor[1][2][1][0] + FourTensor[2][1][1][0]); //0.5*(C2312+C3212+C2321+C3221)
+//  VoigtMatrix(4,4) = 0.25 * (FourTensor[1][2][1][2] + FourTensor[2][1][1][2] + FourTensor[1][2][2][1] + FourTensor[2][1][2][1]); //0.5*(C2323+C3223+C2332+C3232)
+//  VoigtMatrix(4,5) = 0.25 * (FourTensor[1][2][0][2] + FourTensor[2][1][0][2] + FourTensor[1][2][2][0] + FourTensor[2][1][2][0]); //0.5*(C2313+C3213+C2331+C3231)
+//
+//  VoigtMatrix(5,0) = 0.5 * (FourTensor[0][2][0][0] + FourTensor[2][0][0][0]); //0.5*(C1311+C3111)
+//  VoigtMatrix(5,1) = 0.5 * (FourTensor[0][2][1][1] + FourTensor[2][0][1][1]); //0.5*(C1322+C3122)
+//  VoigtMatrix(5,2) = 0.5 * (FourTensor[0][2][2][2] + FourTensor[2][0][2][2]); //0.5*(C1333+C3133)
+//  VoigtMatrix(5,3) = 0.25 * (FourTensor[0][2][0][1] + FourTensor[2][0][0][1] + FourTensor[0][2][1][0] + FourTensor[2][0][1][0]); //0.5*(C1312+C3112+C1321+C3121)
+//  VoigtMatrix(5,4) = 0.25 * (FourTensor[0][2][1][2] + FourTensor[2][0][1][2] + FourTensor[0][2][2][1] + FourTensor[2][0][2][1]); //0.5*(C1323+C3123+C1332+C3132)
+//  VoigtMatrix(5,5) = 0.25 * (FourTensor[0][2][0][2] + FourTensor[2][0][0][2] + FourTensor[0][2][2][0] + FourTensor[2][0][2][0]); //0.5*(C1313+C3113+C1331+C3131)
 //
 //}  // Setup6x6VoigtMatrix()
 
@@ -1272,4 +1182,31 @@ void MAT::GrowthScdACRadial::PrintFourTensor(
 
   std::cout<<"------------------------------------------------"<<std::endl;
   return;
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthScdACRadial::VisNames(std::map<std::string,int>& names)
+{
+  std::string fiber = "growth_direction";
+  names[fiber] = 3; // 3-dim vector
+
+  GrowthScdAC::VisNames(names);
+}
+
+/*----------------------------------------------------------------------------*/
+bool MAT::GrowthScdACRadial::VisData(const std::string& name, std::vector<double>& data, int numgp , int eleID)
+{
+  if (name == "growth_direction")
+  {
+    if ((int)data.size()!=3)
+      dserror("size mismatch");
+
+    data[0] = N_(0,0);
+    data[1] = N_(1,0);
+    data[2] = N_(2,0);
+  }
+
+  GrowthScdAC::VisData(name,data,numgp,eleID);
+
+  return true;
 }

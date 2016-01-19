@@ -908,7 +908,7 @@ void MAT::GrowthLawACRadial::Evaluate(double* theta,
   // NOTE: if no second scalar is chosen to induce growth, beta is zero and hence has no influence on growth
   const double beta= Parameter()->beta_;
 
-  const double deltagrowth = (alpha*GetCfac().at(Sc1-1) + beta * GetCfac().at(Sc2-1))*1.0; //defgrd->Determinant();
+  const double deltagrowth = (alpha*GetCfac().at(Sc1-1) + beta * GetCfac().at(Sc2-1))*defgrd->Determinant();
 
   *theta = 1.0 + deltagrowth;
 
