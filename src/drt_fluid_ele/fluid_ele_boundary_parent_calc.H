@@ -1,20 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_ele_calc_weak_dbc.H
+\file fluid_ele_boundary_parent_calc.H
 
-\brief weak Dirichlet boundary conditions for fluid problems.
-
-Literature:
-
-    Weak imposition of Dirichlet boundary conditions in fluid mechanics
-    Y. Bazilevs, T.J.R. Hughes
-    Computers & Fluids 36 (2007) 12–26
-
-
-    Weak Dirichlet Boundary Conditions for Wall-Bounded Turbulent Flows
-    Y. Bazilevs, C. Michler, V.M. Calo, and T.J.R. Hughes
-    Computer Methods in Applied Mechanics and Engineering
-    Volume 196, Issues 49-52, 1 November 2007, Pages 4853-4862
+evaluate boundary conditions requiring parent-element evaluations
 
 <pre>
 Maintainers: Ursula Rasthofer & Volker Gravemeier
@@ -249,6 +237,8 @@ namespace DRT
         Epetra_SerialDenseVector&      elevec);
 
       void GetDensityAndViscosity(Teuchos::RCP<const MAT::Material> material,
+                                  const double                      pscaaf,
+                                  const double                      thermpressaf,
                                   const double                      rateofstrain);
 
 

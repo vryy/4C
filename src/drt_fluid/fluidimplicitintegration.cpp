@@ -1532,10 +1532,16 @@ void FLD::FluidImplicitTimeInt::ApplyNonlinearBoundaryConditions()
       // set action for elements
       flowdeppressureparams.set<int>("action",FLD::flow_dep_pressure_bc);
 
+      // set thermodynamic pressure
+      SetCustomEleParamsApplyNonlinearBoundaryConditions(flowdeppressureparams);
+
       // set required state vectors
+      // (no contribution due to pressure or continuity equation for Neumann inflow
+      // -> no difference between af_genalpha and np_genalpha)
+      discret_->ClearState();
+      discret_->SetState("scaaf",scaaf_);
       SetStateTimInt();
-      if (alefluid_)
-        discret_->SetState("dispnp",dispnp_);
+      if (alefluid_) discret_->SetState("dispnp",dispnp_);
 
       // set values for elements
       flowdeppressureparams.set<LINALG::Matrix<4,1> >("flow rate",flowraterel);

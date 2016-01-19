@@ -32,13 +32,17 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/carreauyasuda.H"
+#include "../drt_mat/cavitationfluid.H"
+#include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/herschelbulkley.H"
+#include "../drt_mat/mixfrac.H"
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/permeablefluid.H"
-#include "../drt_mat/cavitationfluid.H"
+#include "../drt_mat/sutherland.H"
 
 #include "../drt_inpar/inpar_fpsi.H"
 #include "../drt_inpar/inpar_material.H"
@@ -181,6 +185,22 @@ template <DRT::Element::DiscretizationType distype>
           elevec);
     }
     else dserror("expected combination line2/quad4 for surface/parent pair");
+    break;
+  }
+  // 3D:
+  case DRT::Element::tri3:
+  {
+    if (surfele->ParentElement()->Shape()==DRT::Element::tet4)
+    {
+      FlowDepPressureBC<DRT::Element::tri3,DRT::Element::tet4>(
+          surfele,
+          params,
+          discretization,
+          lm,
+          elemat,
+          elevec);
+    }
+    else dserror("expected combination tri3/tet4 for surface/parent pair");
     break;
   }
   // 3D:
@@ -635,6 +655,9 @@ template <DRT::Element::DiscretizationType bdistype,
   }
   else dserror("Unknown type of flow-dependent pressure condition: %s",(*condtype).c_str());
 
+  // get thermodynamic pressure at n+1/n+alpha_F
+  const double thermpressaf = params.get<double>("thermpress at n+alpha_F/n+1",1.0);
+
   //---------------------------------------------------------------------
   // get time-integration parameters and flag for linearization scheme
   //---------------------------------------------------------------------
@@ -725,18 +748,24 @@ template <DRT::Element::DiscretizationType bdistype,
   //---------------------------------------------------------------------
   // parent velocity at n+alpha_F
   Teuchos::RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
-  if (velaf==Teuchos::null) dserror("Cannot get state vector 'velaf'");
+  Teuchos::RCP<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
+  if (velaf==Teuchos::null or scaaf==Teuchos::null)
+    dserror("Cannot get state vector 'velaf' and/or 'scaaf'");
 
   std::vector<double> mypvelaf(plm.size());
+  std::vector<double> mypscaaf(plm.size());
   DRT::UTILS::ExtractMyValues(*velaf,mypvelaf,plm);
+  DRT::UTILS::ExtractMyValues(*scaaf,mypscaaf,plm);
 
   LINALG::Matrix<nsd,piel> pevelaf(true);
+  LINALG::Matrix<piel,1>   pescaaf(true);
   for (int inode=0;inode<piel;++inode)
   {
     for (int idim=0; idim<nsd ; ++idim)
     {
-      pevelaf(idim,inode) = mypvelaf[(nsd +1)*inode+idim];
+      pevelaf(idim,inode) = mypvelaf[(nsd+1)*inode+idim];
     }
+    pescaaf(inode) = mypscaaf[(nsd+1)*inode+nsd];
   }
 
   // parent and boundary displacement at n+1
@@ -875,8 +904,31 @@ template <DRT::Element::DiscretizationType bdistype,
       rateofstrain = sqrt(rateofstrain/2.0);
     }
 
-    // get (constant, for the time being) density and viscosity at integration point
-    GetDensityAndViscosity(material,rateofstrain);
+    // computations and settings for low-Mach-number flow:
+    // 1) compute scalar value at this integration point
+    //    and check whether it is positive
+    // 2) compute divergence of velocity
+    // 3) set pre-factor 1/3 (zero for incompressible flow)
+    double pscaaf = 0.0;
+    double pvdiv  = 0.0;
+    double prefac = 0.0;
+    if(fldpara_->PhysicalType() == INPAR::FLUID::loma)
+    {
+      pscaaf = pfunct.Dot(pescaaf);
+      if (pscaaf < 0.0) dserror("Negative scalar in boundary computation for low-Mach-number flow!");
+
+      // compute divergence of velocity from previous iteration
+      for (int idim = 0; idim <nsd; ++idim)
+      {
+        pvdiv += pvderxyaf(idim,idim);
+      }
+
+      // set pre-factor 1/3
+      prefac = 1.0/3.0;
+    }
+
+    // get density and viscosity at integration point
+    GetDensityAndViscosity(material,pscaaf,thermpressaf,rateofstrain);
 
     //---------------------------------------------------------------------
     // contributions to element matrix and element vector
@@ -913,11 +965,11 @@ template <DRT::Element::DiscretizationType bdistype,
 
       // 2) viscous term
       /*
-      //    /                   \
-      //   |           s         |
-      // - |  v , nabla  Du * n  |
-      //   |                     |
-      //    \                   / boundaryele
+      //    /                                    \
+      //   |            s                         |
+      // - |  v , (nabla  Du - (1/3) * div u) * n |
+      //   |                                      |
+      //    \                                    / boundaryele
       //
       */
       const double timefacmu=timefac*fac_*2.0*visc_;
@@ -925,23 +977,29 @@ template <DRT::Element::DiscretizationType bdistype,
       for (int ui=0; ui<piel; ++ui)
       {
         double nabla_u_o_n_lin[3][3];
-        nabla_u_o_n_lin[0][0]=timefacmu*(    pderxy(0,ui)*unitnormal(0)+
-                                         0.5*pderxy(1,ui)*unitnormal(1)+
-                                         0.5*pderxy(2,ui)*unitnormal(2));
-        nabla_u_o_n_lin[0][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(1));
-        nabla_u_o_n_lin[0][2]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(2));
+        nabla_u_o_n_lin[0][0]=timefacmu*( (1.0-prefac)*pderxy(0,ui)*unitnormal(0)
+                                                  +0.5*pderxy(1,ui)*unitnormal(1)
+                                                  +0.5*pderxy(2,ui)*unitnormal(2));
+        nabla_u_o_n_lin[0][1]=timefacmu*(      -prefac*pderxy(1,ui)*unitnormal(0)
+                                                  +0.5*pderxy(0,ui)*unitnormal(1));
+        nabla_u_o_n_lin[0][2]=timefacmu*(      -prefac*pderxy(2,ui)*unitnormal(0)
+                                                  +0.5*pderxy(0,ui)*unitnormal(2));
 
-        nabla_u_o_n_lin[1][0]=timefacmu*(0.5*pderxy(1,ui)*unitnormal(0));
-        nabla_u_o_n_lin[1][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(0)+
-                                             pderxy(1,ui)*unitnormal(1)+
-                                         0.5*pderxy(2,ui)*unitnormal(2));
-        nabla_u_o_n_lin[1][2]=timefacmu*(0.5*pderxy(1,ui)*unitnormal(2));
+        nabla_u_o_n_lin[1][0]=timefacmu*(          0.5*pderxy(1,ui)*unitnormal(0)
+                                               -prefac*pderxy(0,ui)*unitnormal(1));
+        nabla_u_o_n_lin[1][1]=timefacmu*(          0.5*pderxy(0,ui)*unitnormal(0)
+                                         +(1.0-prefac)*pderxy(1,ui)*unitnormal(1)
+                                                  +0.5*pderxy(2,ui)*unitnormal(2));
+        nabla_u_o_n_lin[1][2]=timefacmu*(      -prefac*pderxy(2,ui)*unitnormal(1)
+                                                  +0.5*pderxy(1,ui)*unitnormal(2));
 
-        nabla_u_o_n_lin[2][0]=timefacmu*(0.5*pderxy(2,ui)*unitnormal(0));
-        nabla_u_o_n_lin[2][1]=timefacmu*(0.5*pderxy(2,ui)*unitnormal(1));
-        nabla_u_o_n_lin[2][2]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(0)+
-                                         0.5*pderxy(1,ui)*unitnormal(1)+
-                                             pderxy(2,ui)*unitnormal(2));
+        nabla_u_o_n_lin[2][0]=timefacmu*(          0.5*pderxy(2,ui)*unitnormal(0)
+                                               -prefac*pderxy(0,ui)*unitnormal(2));
+        nabla_u_o_n_lin[2][1]=timefacmu*(          0.5*pderxy(2,ui)*unitnormal(1)
+                                               -prefac*pderxy(1,ui)*unitnormal(2));
+        nabla_u_o_n_lin[2][2]=timefacmu*(          0.5*pderxy(0,ui)*unitnormal(0)
+                                                  +0.5*pderxy(1,ui)*unitnormal(1)
+                                         +(1.0-prefac)*pderxy(2,ui)*unitnormal(2));
 
         for (int vi=0; vi<piel; ++vi)
         {
@@ -1044,26 +1102,26 @@ template <DRT::Element::DiscretizationType bdistype,
 
       // pressure and viscous contribution to element vector on right-hand side:
       /*
-      //    /                             \
-      //   |                   s  n+af     |
-      // + |  v , - p n + nabla  u    * n  |
-      //   |                               |
-      //    \                             / boundaryele
+      //    /                                                \
+      //   |                    s  n+af                       |
+      // + |  v , - p n + (nabla  u     - (1/3) * div u) * n  |
+      //   |                                                  |
+      //    \                                                / boundaryele
       //
       */
       const double timefacmurhs=timefacrhs*fac_*2.0*visc_;
       const double timefacprhs =timefacrhs*fac_*pressure;
 
       double nabla_u_o_n[3];
-      nabla_u_o_n[0]=timefacmurhs*(                    pvderxyaf(0,0) *unitnormal(0)
+      nabla_u_o_n[0]=timefacmurhs*(      (pvderxyaf(0,0)-prefac*pvdiv)*unitnormal(0)
                                   +0.5*(pvderxyaf(0,1)+pvderxyaf(1,0))*unitnormal(1)
                                   +0.5*(pvderxyaf(0,2)+pvderxyaf(2,0))*unitnormal(2));
       nabla_u_o_n[1]=timefacmurhs*(0.5*(pvderxyaf(1,0)+pvderxyaf(0,1))*unitnormal(0)
-                                                      +pvderxyaf(1,1) *unitnormal(1)
+                                        +(pvderxyaf(1,1)-prefac*pvdiv)*unitnormal(1)
                                   +0.5*(pvderxyaf(1,2)+pvderxyaf(2,1))*unitnormal(2));
       nabla_u_o_n[2]=timefacmurhs*(0.5*(pvderxyaf(2,0)+pvderxyaf(0,2))*unitnormal(0)
                                   +0.5*(pvderxyaf(2,1)+pvderxyaf(1,2))*unitnormal(1)
-                                                      +pvderxyaf(2,2) *unitnormal(2));
+                                        +(pvderxyaf(2,2)-prefac*pvdiv)*unitnormal(2));
 
       for (int vi=0; vi<piel; ++vi)
       {
@@ -1102,11 +1160,11 @@ template <DRT::Element::DiscretizationType bdistype,
 
       // 2) viscous term
       /*
-      //    /                   \
-      //   |           s         |
-      // - |  v , nabla  Du * n  |
-      //   |                     |
-      //    \                   / boundaryele
+      //    /                                    \
+      //   |            s                         |
+      // - |  v , (nabla  Du - (1/3) * div u) * n |
+      //   |                                      |
+      //    \                                    / boundaryele
       //
       */
       const double timefacmu=timefac*fac_*2.0*visc_;
@@ -1114,13 +1172,15 @@ template <DRT::Element::DiscretizationType bdistype,
       for (int ui=0; ui<piel; ++ui)
       {
         double nabla_u_o_n_lin[2][2];
-        nabla_u_o_n_lin[0][0]=timefacmu*(    pderxy(0,ui)*unitnormal(0)+
-                                         0.5*pderxy(1,ui)*unitnormal(1));
-        nabla_u_o_n_lin[0][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(1));
+        nabla_u_o_n_lin[0][0]=timefacmu*( (1.0-prefac)*pderxy(0,ui)*unitnormal(0)
+                                                  +0.5*pderxy(1,ui)*unitnormal(1));
+        nabla_u_o_n_lin[0][1]=timefacmu*(      -prefac*pderxy(1,ui)*unitnormal(0)
+                                                  +0.5*pderxy(0,ui)*unitnormal(1));
 
-        nabla_u_o_n_lin[1][0]=timefacmu*(0.5*pderxy(1,ui)*unitnormal(0));
-        nabla_u_o_n_lin[1][1]=timefacmu*(0.5*pderxy(0,ui)*unitnormal(0)+
-                                             pderxy(1,ui)*unitnormal(1));
+        nabla_u_o_n_lin[1][0]=timefacmu*(          0.5*pderxy(1,ui)*unitnormal(0)
+                                               -prefac*pderxy(0,ui)*unitnormal(1));
+        nabla_u_o_n_lin[1][1]=timefacmu*(          0.5*pderxy(0,ui)*unitnormal(0)
+                                         +(1.0-prefac)*pderxy(1,ui)*unitnormal(1));
 
         for (int vi=0; vi<piel; ++vi)
         {
@@ -1209,21 +1269,21 @@ template <DRT::Element::DiscretizationType bdistype,
 
       // pressure and viscous contribution to element vector on right-hand side:
       /*
-      //    /                             \
-      //   |                   s  n+af     |
-      // + |  v , - p n + nabla  u    * n  |
-      //   |                               |
-      //    \                             / boundaryele
+      //    /                                                \
+      //   |                    s  n+af                       |
+      // + |  v , - p n + (nabla  u     - (1/3) * div u) * n  |
+      //   |                                                  |
+      //    \                                                / boundaryele
       //
       */
       const double timefacmurhs=timefacrhs*fac_*2.0*visc_;
       const double timefacprhs =timefacrhs*fac_*pressure;
 
       double nabla_u_o_n[2];
-      nabla_u_o_n[0]=timefacmurhs*(                    pvderxyaf(0,0) *unitnormal(0)
+      nabla_u_o_n[0]=timefacmurhs*(      (pvderxyaf(0,0)-prefac*pvdiv)*unitnormal(0)
                                   +0.5*(pvderxyaf(0,1)+pvderxyaf(1,0))*unitnormal(1));
       nabla_u_o_n[1]=timefacmurhs*(0.5*(pvderxyaf(1,0)+pvderxyaf(0,1))*unitnormal(0)
-                                                    +pvderxyaf(1,1) *unitnormal(1));
+                                        +(pvderxyaf(1,1)-prefac*pvdiv)*unitnormal(1));
 
       for (int vi=0; vi<piel; ++vi)
       {
@@ -1462,7 +1522,7 @@ template <DRT::Element::DiscretizationType bdistype,
     Teuchos::RCP<MAT::Material> material = parent->Material();
 
     // get viscosity at integration point
-    GetDensityAndViscosity(material,rateofstrain);
+    GetDensityAndViscosity(material,0.0,0.0,rateofstrain);
 
     //---------------------------------------------------------------------
     // Contributions to element matrix and element vector
@@ -2281,7 +2341,7 @@ template <DRT::Element::DiscretizationType bdistype,
     }
 
     // get viscosity at integration point
-    GetDensityAndViscosity(material,rateofstrain);
+    GetDensityAndViscosity(material,0.0,0.0,rateofstrain);
 
     // define (initial) penalty parameter
     /*
@@ -4181,7 +4241,7 @@ template <DRT::Element::DiscretizationType bdistype,
     dserror("No non-Newtonian fluid allowed for mixed/hybrid DBCs so far!");
 
   // get viscosity
-  GetDensityAndViscosity(material,rateofstrain);
+  GetDensityAndViscosity(material,0.0,0.0,rateofstrain);
 
   // only constant density of 1.0 allowed, for the time being
   if (densaf_ != 1.0) dserror("Only incompressible flow with density 1.0 allowed for weak DBCs so far!");
@@ -5623,6 +5683,8 @@ template <DRT::Element::DiscretizationType bdistype,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryParent<distype>::GetDensityAndViscosity(
   Teuchos::RCP<const MAT::Material>    material,
+  const double                         pscaaf,
+  const double                         thermpressaf,
   const double                         rateofstrain
 )
 {
@@ -5697,6 +5759,55 @@ else if (material->MaterialType() == INPAR::MAT::m_herschelbulkley)
     visc_ = tau0*((1.0-exp(-mexp*uplimshearrate))/uplimshearrate) + kfac*pow(uplimshearrate,(nexp-1.0));
   else
     visc_ = tau0*((1.0-exp(-mexp*rateofstrain))/rateofstrain) + kfac*pow(rateofstrain,(nexp-1.0));
+}
+else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
+{
+  const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
+
+  // compute dynamic viscosity at n+alpha_F or n+1 based on mixture fraction
+  visc_ = actmat->ComputeViscosity(pscaaf);
+
+  // compute density at n+alpha_F or n+1 based on mixture fraction
+  densaf_ = actmat->ComputeDensity(pscaaf);
+
+}
+else if (material->MaterialType() == INPAR::MAT::m_sutherland)
+{
+  const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
+
+  // compute viscosity according to Sutherland law
+  visc_ = actmat->ComputeViscosity(pscaaf);
+
+  // compute density at n+alpha_F or n+1 based on temperature
+  // and thermodynamic pressure
+  densaf_ = actmat->ComputeDensity(pscaaf,thermpressaf);
+
+}
+else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+{
+  const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+
+  // compute temperature based on progress variable at n+alpha_F or n+1
+  const double tempaf = actmat->ComputeTemperature(pscaaf);
+
+  // compute viscosity according to Sutherland law
+  visc_ = actmat->ComputeViscosity(tempaf);
+
+  // compute density at n+alpha_F or n+1 based on progress variable
+  densaf_ = actmat->ComputeDensity(pscaaf);
+}
+else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
+{
+  const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
+
+  // compute temperature based on progress variable at n+alpha_F or n+1
+  const double tempaf = actmat->ComputeTemperature(pscaaf);
+
+  // compute viscosity according to Sutherland law
+  visc_ = actmat->ComputeViscosity(tempaf);
+
+  // compute density at n+alpha_F or n+1 based on progress variable
+  densaf_ = actmat->ComputeDensity(pscaaf);
 }
 else if (material->MaterialType() == INPAR::MAT::m_cavitation)
 {
