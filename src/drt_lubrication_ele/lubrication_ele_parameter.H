@@ -54,7 +54,7 @@ namespace DRT
             Teuchos::ParameterList& parameters   //!< parameter list
             );
 
-        const double Time() const {return time_;};
+        double Time() const {return time_;};
 
       private:
 

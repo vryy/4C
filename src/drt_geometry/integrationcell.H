@@ -53,7 +53,7 @@ class IntCell
     virtual std::string toString() const;
 
     //! return boolean indicating plus domain
-    const bool getDomainPlus() const {return indomainplus_;}
+    bool getDomainPlus() const {return indomainplus_;}
 
   private:
 
@@ -131,9 +131,9 @@ class DomainIntCell : public IntCell
 
     //! compute volume of cell from local coordinates
     double VolumeInXiDomain(const DRT::Element& ele) const;
-    
+
     //! compute volume of cell from physical coordinates
-    double VolumeInPhysicalDomain() const; 
+    double VolumeInPhysicalDomain() const;
 
     //! return std::string representation of the DomainIntCell
     virtual std::string toString() const;
@@ -216,7 +216,7 @@ class BoundaryIntCell : public IntCell
 
     //! return std::string representation of the BoundaryIntCell
     virtual std::string toString() const;
-    
+
   private:
 
     //! hide default constructor

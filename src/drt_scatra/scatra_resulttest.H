@@ -61,13 +61,13 @@ public:
 protected:
 
   //! get nodal result to be tested
-  const double ResultNode(
+  double ResultNode(
       const std::string   quantity,   //! name of quantity to be tested
       DRT::Node*          node        //! node carrying the result to be tested
       ) const;
 
   //! get special result to be tested
-  virtual const double ResultSpecial(
+  virtual double ResultSpecial(
       const std::string   quantity   //! name of quantity to be tested
       ) const;
 

@@ -181,7 +181,7 @@ int NLNSOL::NlnOperatorFas::ApplyInverse(const Epetra_MultiVector& f_do_not_use,
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorFas::Cycle(
+int NLNSOL::NlnOperatorFas::Cycle(
     Teuchos::RCP<Epetra_MultiVector> x) const
 {
   // error code
@@ -228,7 +228,7 @@ const int NLNSOL::NlnOperatorFas::Cycle(
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorFas::VCycle(Teuchos::RCP<Epetra_MultiVector> xbar,
+int NLNSOL::NlnOperatorFas::VCycle(Teuchos::RCP<Epetra_MultiVector> xbar,
     const int level) const
 {
   if (getVerbLevel() > Teuchos::VERB_LOW)
@@ -305,7 +305,7 @@ const int NLNSOL::NlnOperatorFas::VCycle(Teuchos::RCP<Epetra_MultiVector> xbar,
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorFas::VCycleTwoLevel(
+int NLNSOL::NlnOperatorFas::VCycleTwoLevel(
     Teuchos::RCP<Epetra_MultiVector> x) const
 {
   if (getVerbLevel() > Teuchos::VERB_LOW)
@@ -364,7 +364,7 @@ const int NLNSOL::NlnOperatorFas::VCycleTwoLevel(
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorFas::VCycleThreeLevel(
+int NLNSOL::NlnOperatorFas::VCycleThreeLevel(
     Teuchos::RCP<Epetra_MultiVector> x) const
 {
   if (getVerbLevel() > Teuchos::VERB_LOW)
@@ -450,7 +450,7 @@ const int NLNSOL::NlnOperatorFas::VCycleThreeLevel(
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorFas::WCycle() const
+int NLNSOL::NlnOperatorFas::WCycle() const
 {
   dserror("W-Cycle not implemented, yet.");
 
@@ -458,7 +458,7 @@ const int NLNSOL::NlnOperatorFas::WCycle() const
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorFas::PreSmoothing(
+int NLNSOL::NlnOperatorFas::PreSmoothing(
     Epetra_MultiVector& x, const int level) const
 {
   // evaluate current residual
@@ -471,7 +471,7 @@ const int NLNSOL::NlnOperatorFas::PreSmoothing(
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorFas::PostSmoothing(
+int NLNSOL::NlnOperatorFas::PostSmoothing(
     Epetra_MultiVector& x, const int level) const
 {
   // evaluate current residual
@@ -484,7 +484,7 @@ const int NLNSOL::NlnOperatorFas::PostSmoothing(
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorFas::CoarseLevelSolve(
+int NLNSOL::NlnOperatorFas::CoarseLevelSolve(
     Epetra_MultiVector& x, const int level) const
 {
   if (getVerbLevel() > Teuchos::VERB_LOW)

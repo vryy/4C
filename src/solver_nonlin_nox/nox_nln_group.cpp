@@ -336,7 +336,7 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetPreviousSolutionNorms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const double NOX::NLN::Group::GetObjectiveModelValue(const std::string& name) const
+double NOX::NLN::Group::GetObjectiveModelValue(const std::string& name) const
 {
   return GetNlnReqInterfacePtr()->GetObjectiveModelValue(name);
 }

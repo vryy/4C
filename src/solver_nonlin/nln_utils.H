@@ -86,7 +86,7 @@ namespace UTILS
      *
      *  \author mayr.mt \date 10/2015
      */
-    virtual const bool Setup(const std::string filename ///< file name of xml-file
+    virtual bool Setup(const std::string filename ///< file name of xml-file
         );
 
     //@}
@@ -258,7 +258,7 @@ namespace UTILS
      *
      *  \author mayr.mt \date 03/2015
      */
-    virtual const bool Check(const double norm);
+    virtual bool Check(const double norm);
 
     /*! \brief Get status of stagnation test
      *
@@ -274,7 +274,7 @@ namespace UTILS
      *
      *  \author mayr.mt \date 03/2015
      */
-    virtual const bool Status(
+    virtual bool Status(
         Teuchos::RCP<Teuchos::ParameterList> oparams = Teuchos::null ///< parameter list to provide detailed output
         ) const;
 
@@ -295,7 +295,7 @@ namespace UTILS
     //@{
 
     //! Has stagnation detection been activated?
-    virtual const bool IsActive() const { return active_; }
+    virtual bool IsActive() const { return active_; }
 
     //@}
 
@@ -307,7 +307,7 @@ namespace UTILS
     //@{
 
     //! Has Init() already been called?
-    virtual const bool IsInit() const { return isinit_; }
+    virtual bool IsInit() const { return isinit_; }
 
     //@}
 
@@ -411,7 +411,7 @@ namespace UTILS
    *
    *  \author mayr.mt \date 03/2015
    */
-  const Teuchos::EVerbosityLevel TranslateVerbosityLevelToTeuchos(
+  Teuchos::EVerbosityLevel TranslateVerbosityLevelToTeuchos(
       const std::string verblevel = "default" ///< std::string describing the verosity level
       );
 
@@ -424,7 +424,7 @@ namespace UTILS
    *
    *  \author mayr.mt \date 10/2015
    */
-  const MueLu::MsgType TranslateVerbosityLevelToMueLu(
+  MueLu::MsgType TranslateVerbosityLevelToMueLu(
       const std::string verblevel = "default" ///< std::string describing the verosity level
       );
 #endif

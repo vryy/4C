@@ -238,7 +238,7 @@ namespace DRT
         };
 
         //! Access routine for derivative of diffusion coefficients with respect to concentrations
-        const double GetDerivIsoDiffCoef(const int k,const int iscal){return (derivdiff_[k])[iscal];};
+        double GetDerivIsoDiffCoef(const int k,const int iscal){return (derivdiff_[k])[iscal];};
 
         //! Set conductivity of the electrolyte solution
         void SetCond(const double cond)
@@ -248,7 +248,7 @@ namespace DRT
         };
 
         //! Access routine for conductivity of the electrolyte solution
-        const double GetCond(){return cond_;};
+        double GetCond(){return cond_;};
 
         //! Set derivative of the conductivity with respect to concentrations
         void SetDerivCond(const double derivcond,const int k)
@@ -258,7 +258,7 @@ namespace DRT
         };
 
         //! Access routine for derivative of the conductivity with respect to concentrations
-        const double GetDerivCond(const int k){return derivcond_[k];};
+        double GetDerivCond(const int k){return derivcond_[k];};
 
         /*========================================================================*/
         //! @name output
@@ -343,7 +343,7 @@ namespace DRT
         };
 
         //! return constant parameter 1./F
-        const double InvF(){return invf_;};
+        double InvF(){return invf_;};
 
       protected:
 

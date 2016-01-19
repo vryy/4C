@@ -941,7 +941,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ReadElementCoordinates(
  | evaluate shape functions and derivatives at ele. center   ehrl 12/13 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-const double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvalShapeFuncAndDerivsAtEleCenter()
+double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvalShapeFuncAndDerivsAtEleCenter()
 {
   // use one-point Gauss rule to do calculations at the element center
   const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);

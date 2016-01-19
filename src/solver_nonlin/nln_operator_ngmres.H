@@ -187,7 +187,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 03/2014
      */
-    virtual const int ComputeTentativeIterate
+    virtual int ComputeTentativeIterate
     (
       const Epetra_MultiVector& fbar, ///< current residual
       Epetra_MultiVector& xbar ///< current solution
@@ -213,7 +213,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 03/2014
      */
-    virtual const bool ComputeAcceleratedIterate
+    virtual bool ComputeAcceleratedIterate
     (
       const Teuchos::RCP<const Epetra_MultiVector> xbar, ///< tentative iterate / current solution
       const Teuchos::RCP<const Epetra_MultiVector> fbar, ///< residual based on tentative iterate / current solution
@@ -261,7 +261,7 @@ namespace NLNSOL
     //@{
 
     //! Get the maximally allowed window size
-    virtual const unsigned int GetMaxWindowSize() const;
+    virtual unsigned int GetMaxWindowSize() const;
 
     //@}
 

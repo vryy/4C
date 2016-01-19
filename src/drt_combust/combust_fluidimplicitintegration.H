@@ -108,7 +108,7 @@ public:
   void Init();
 
   /// return type of time integration scheme
-  const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
+  INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
 
   /// Provide title of time integration scheme
   std::string TimIntTitle(){return MapTimIntEnumToString(TimIntScheme());}
@@ -422,7 +422,7 @@ public:
   }
 
   /// return time integration factor
-  const double TimIntParam() const;
+  double TimIntParam() const;
 
   /// calculate lift&drag forces and angular moments
   /*!
@@ -446,7 +446,7 @@ public:
   void LiftDrag() const;
 
 
-  const double EvalTime() const
+  double EvalTime() const
   {
     return dtele_;
   };

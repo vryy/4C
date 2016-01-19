@@ -66,7 +66,7 @@ void NLNSOL::NlnProblemNox::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::NlnProblemNox::SetModelEvaluator()
+bool NLNSOL::NlnProblemNox::SetModelEvaluator()
 {
   if (not Params()->isParameter("NOX Group"))
   {
@@ -87,7 +87,7 @@ const bool NLNSOL::NlnProblemNox::SetModelEvaluator()
 }
 
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::NlnProblemNox::SetJacobianOperator()
+bool NLNSOL::NlnProblemNox::SetJacobianOperator()
 {
   if (not Params()->isParameter("Jacobian Operator"))
   {

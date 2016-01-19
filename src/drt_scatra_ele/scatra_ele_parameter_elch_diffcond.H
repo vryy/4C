@@ -54,15 +54,15 @@ namespace DRT
             );
 
         //! return flag for current as solution variable
-        const bool CurSolVar() const {return cursolvar_;};
+        bool CurSolVar() const {return cursolvar_;};
 
         //! return flag for diffusion potential
-        const bool DiffusionCoeffBased() const {return diffusioncoefbased_;};
+        bool DiffusionCoeffBased() const {return diffusioncoefbased_;};
 
         //! return Newman constants
-        const double NewmanConstA() const {return newmanconsta_;};
-        const double NewmanConstB() const {return newmanconstb_;};
-        const double NewmanConstC() const {return newmanconstc_;};
+        double NewmanConstA() const {return newmanconsta_;};
+        double NewmanConstB() const {return newmanconstb_;};
+        double NewmanConstC() const {return newmanconstc_;};
 
       private:
 

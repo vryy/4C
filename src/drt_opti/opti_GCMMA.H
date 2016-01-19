@@ -116,7 +116,7 @@ namespace OPTI
 
     const Teuchos::RCP<const Epetra_Vector> X() const {return x_mma_;}
     Teuchos::RCP<Epetra_Vector> X() {return x_mma_;}
-    const double Obj() const {return obj_;}
+    double Obj() const {return obj_;}
     double Obj() {return obj_;}
     const Teuchos::RCP<const Epetra_Vector> ObjDeriv() const {return obj_deriv_;}
     Teuchos::RCP<Epetra_Vector> ObjDeriv() {return obj_deriv_;}
@@ -125,9 +125,9 @@ namespace OPTI
     const Teuchos::RCP<const Epetra_MultiVector> ConstrDeriv() const {return constr_deriv_;}
     Teuchos::RCP<Epetra_MultiVector> ConstrDeriv() {return constr_deriv_;}
 
-    const int Iter() const {return total_iter_;}
-    const int OuterIter() const {return outer_iter_;}
-    const int InnerIter() const {return inner_iter_;}
+    int Iter() const {return total_iter_;}
+    int OuterIter() const {return outer_iter_;}
+    int InnerIter() const {return inner_iter_;}
 
 
   private:

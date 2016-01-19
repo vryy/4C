@@ -60,13 +60,13 @@ namespace DRT
           );
 
       //! extract valence of species k from element material
-      virtual const double GetValence(
+      virtual double GetValence(
           const Teuchos::RCP<const MAT::Material>&   material,   //! element material
           const int                                  k           //! species number
           ) const;
 
       //! evaluate factor F/RT
-      virtual const double GetFRT(
+      virtual double GetFRT(
           DRT::Discretization&           discretization,   ///< discretization
           DRT::Element::LocationArray&   la                ///< location array
           ) const;

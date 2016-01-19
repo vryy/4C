@@ -77,38 +77,38 @@ namespace STR
     }
 
     //! Provide number of steps, a single-step method returns 1
-    virtual const int MethodSteps() const { return 1; }
+    virtual int MethodSteps() const { return 1; }
 
     //! Give local order of accuracy of displacement part
-    virtual const int MethodOrderOfAccuracyDis() const
+    virtual int MethodOrderOfAccuracyDis() const
     {
       dserror("Sensible to ask?");
       return 0;
     }
 
     //! Give local order of accuracy of velocity part
-    virtual const int MethodOrderOfAccuracyVel() const
+    virtual int MethodOrderOfAccuracyVel() const
     {
       dserror("Sensible to ask?");
       return 0;
     }
 
     //! Return linear error coefficient of displacements
-    virtual const double MethodLinErrCoeffDis() const
+    virtual double MethodLinErrCoeffDis() const
     {
       dserror("Sensible to ask?");
       return 0.0;
     }
 
     //! Return linear error coefficient of velocities
-    virtual const double MethodLinErrCoeffVel() const
+    virtual double MethodLinErrCoeffVel() const
     {
       dserror("Sensible to ask?");
       return 0.0;
     }
 
     //! return time integration factor
-    virtual const double TimIntParam() const { return 0.0; }
+    virtual double TimIntParam() const { return 0.0; }
 
     //! Consistent predictor with constant displacements
     //! and consistent velocities and displacements

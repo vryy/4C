@@ -33,7 +33,7 @@ namespace SCATRA
     private:
 
       //! get special result to be tested
-      const double ResultSpecial(
+      double ResultSpecial(
           const std::string   quantity   //! name of quantity to be tested
           ) const;
 

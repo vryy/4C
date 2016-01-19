@@ -46,7 +46,7 @@ public:
   /*!
   \brief return scheme-specific time integration parameter
   */
-  virtual const double TimIntParam() const{return 0.0;};
+  virtual double TimIntParam() const{return 0.0;};
 
   /*!
   \brief read restart data

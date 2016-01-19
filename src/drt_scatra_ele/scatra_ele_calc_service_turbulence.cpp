@@ -183,7 +183,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::scatra_apply_box_filter(
  | get density at integration point                                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype,int probdim>
-const double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetDensity(
+double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetDensity(
     const DRT::Element*                 ele,
     Teuchos::RCP<const MAT::Material>   material,
     Teuchos::ParameterList&             params,

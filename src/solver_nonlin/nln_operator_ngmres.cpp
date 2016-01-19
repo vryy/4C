@@ -428,7 +428,7 @@ int NLNSOL::NlnOperatorNGmres::ApplyInverse(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(
+int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(
     const Epetra_MultiVector& fbar, Epetra_MultiVector& xbar) const
 {
   dsassert(xbar.Map().PointSameAs(fbar.Map()), "Maps do not match.");
@@ -455,7 +455,7 @@ const int NLNSOL::NlnOperatorNGmres::ComputeTentativeIterate(
 }
 
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
+bool NLNSOL::NlnOperatorNGmres::ComputeAcceleratedIterate(
     const Teuchos::RCP<const Epetra_MultiVector> xbar,
     const Teuchos::RCP<const Epetra_MultiVector> fbar,
     const std::vector<Teuchos::RCP<const Epetra_MultiVector> >& sol,
@@ -617,7 +617,7 @@ void NLNSOL::NlnOperatorNGmres::PerformLineSearchStep(
 }
 
 /*----------------------------------------------------------------------------*/
-const unsigned int NLNSOL::NlnOperatorNGmres::GetMaxWindowSize() const
+unsigned int NLNSOL::NlnOperatorNGmres::GetMaxWindowSize() const
 {
   return MyGetParameter<int>("NGMRES: max window size");
 }

@@ -279,10 +279,10 @@ void LINALG::BlockSparseMatrixBase::Add(const LINALG::SparseOperator& A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const void LINALG::BlockSparseMatrixBase::AddOther(LINALG::BlockSparseMatrixBase& A,
-                                                   const bool transposeA,
-                                                   const double scalarA,
-                                                   const double scalarB) const
+void LINALG::BlockSparseMatrixBase::AddOther(LINALG::BlockSparseMatrixBase& A,
+                                             const bool transposeA,
+                                             const double scalarA,
+                                             const double scalarB) const
 {
   A.Add(*this, transposeA, scalarA, scalarB);
 }
@@ -290,10 +290,10 @@ const void LINALG::BlockSparseMatrixBase::AddOther(LINALG::BlockSparseMatrixBase
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const void LINALG::BlockSparseMatrixBase::AddOther(LINALG::SparseMatrixBase& A,
-                                                   const bool transposeA,
-                                                   const double scalarA,
-                                                   const double scalarB) const
+void LINALG::BlockSparseMatrixBase::AddOther(LINALG::SparseMatrixBase& A,
+                                             const bool transposeA,
+                                             const double scalarA,
+                                             const double scalarB) const
 {
   dserror("BlockSparseMatrix and SparseMatrix cannot be added");
 }

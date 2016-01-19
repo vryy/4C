@@ -87,12 +87,12 @@ public:
   /*!
   \brief Get gap of this contact pair
   */
-  virtual const double GetGap()=0;
+  virtual double GetGap()=0;
 
   /*!
   \brief Get current augmented lagrange multiplier 'lmuzawa_'
   */
-  virtual const double Getlmuzawa()=0;
+  virtual double Getlmuzawa()=0;
 
   /*!
   \brief Get flag ndicating whether contact is active (true) or inactive (false)
@@ -268,12 +268,12 @@ public:
   /*!
   \brief Get gap of this contact pair
   */
-  const double GetGap() { return BEAMCONTACT::CastToDouble(gap_); };
+  double GetGap() { return BEAMCONTACT::CastToDouble(gap_); };
 
   /*!
   \brief Get current augmented lagrange multiplier 'lmuzawa_'
   */
-  const double Getlmuzawa() { return BEAMCONTACT::CastToDouble(lmuzawa_); };
+  double Getlmuzawa() { return BEAMCONTACT::CastToDouble(lmuzawa_); };
 
   /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)

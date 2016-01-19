@@ -290,7 +290,7 @@ public:
   }
 
 
-  const INPAR::XFEM::AveragingStrategy GetAveragingStrategy(
+  INPAR::XFEM::AveragingStrategy GetAveragingStrategy(
       const int coup_sid, ///< the global id of the coupling side
       const int back_eid  ///< the global element id of the background mesh
   )
@@ -480,24 +480,24 @@ public:
   // TODO: TransformID routines (localToGlobal, GlobalToLocal
 
   // get the side id w.r.t. the cutter discretization
-  const int GetCutterDisEleId(const int coup_sid, const int mc_idx)
+  int GetCutterDisEleId(const int coup_sid, const int mc_idx)
   {
     return coup_sid-mesh_coupl_start_gid_[mc_idx];
   }
 
   // get the global coupling side id for a given mesh coupling and local side-id w.r.t. cutter discretization
-  const int GetGlobalEleId(const int cutterdis_sid, const int mc_idx)
+  int GetGlobalEleId(const int cutterdis_sid, const int mc_idx)
   {
     return cutterdis_sid+mesh_coupl_start_gid_[mc_idx];
   }
 
   // get the global coupling side id for a given mesh coupling and local side-id w.r.t. cutter discretization
-  const int GetMeshCouplingStartGID(const int mc_idx)
+  int GetMeshCouplingStartGID(const int mc_idx)
   {
     return mesh_coupl_start_gid_[mc_idx];
   }
 
-  const EleCoupCond GetCouplingCondition(
+  EleCoupCond GetCouplingCondition(
       const int coup_sid, ///< the global id of the coupling side
       const int back_eid  ///< the global element id of the background mesh
   )

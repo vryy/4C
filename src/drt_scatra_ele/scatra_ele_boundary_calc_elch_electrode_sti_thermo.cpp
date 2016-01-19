@@ -294,7 +294,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Evaluat
  | evaluate factor F/RT                                      fang 08/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-const double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::GetFRT(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::GetFRT(
     DRT::Discretization&           discretization,   ///< discretization
     DRT::Element::LocationArray&   la                ///< location array
     ) const
@@ -308,7 +308,7 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>
  | evaluate factor F/RT²                                     fang 08/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-const double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::GetFRTT(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::GetFRTT(
     DRT::Discretization&           discretization,   ///< discretization
     DRT::Element::LocationArray&   la                ///< location array
     ) const
@@ -325,7 +325,7 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>
  | evaluate local temperature value                          fang 08/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-const double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::GetTemperature(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::GetTemperature(
     DRT::Discretization&           discretization,   ///< discretization
     DRT::Element::LocationArray&   la                ///< location array
     ) const

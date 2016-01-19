@@ -808,7 +808,7 @@ bool FSI::Monolithic::CheckIfDtsSame()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const double FSI::Monolithic::DtPast(const int step) const
+double FSI::Monolithic::DtPast(const int step) const
 {
   return (*dt_)[step];
 }

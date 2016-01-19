@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file aero_tfsi_serv.cpp
+\file aero_tfsi_serv.H
 
 \brief Helper class for coupled simulations (INCA - BACI)
        --> aero_tfsi.H & aero_tfsi.cpp
@@ -195,16 +195,16 @@ namespace FS3I
       );
 
       /// length scaling factor for coupling is returned
-      const double LengthScaling() { return lengthscaling_; }
+      double LengthScaling() { return lengthscaling_; }
 
       /// time scaling factor for coupling is returned
-      const double TimeScaling() { return timescaling_; }
+      double TimeScaling() { return timescaling_; }
 
       /// returns whether mechanical coupling is used
-      const bool MechCoupling() { return mechanicalcoupling_; }
+      bool MechCoupling() { return mechanicalcoupling_; }
 
       /// returns whether thermal coupling is used
-      const bool ThermoCoupling() { return thermalcoupling_; }
+      bool ThermoCoupling() { return thermalcoupling_; }
 
     private:
       const int dim_;   ///< dimension of the problem

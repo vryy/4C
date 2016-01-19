@@ -136,18 +136,18 @@ public:
   /*!
   \brief Get current constraint norm
   */
-  const double GetConstrNorm() { return constrnorm_; }
+  double GetConstrNorm() { return constrnorm_; }
 
   /*!
   \brief Get current Uzawa iteration index
   */
-  const int GetUzawaIter() { return uzawaiter_; }
+  int GetUzawaIter() { return uzawaiter_; }
 
   // \brief Get current penalty parameter
-  const double GetCurrentpp() { return currentpp_; }
+  double GetCurrentpp() { return currentpp_; }
 
   // \brief Get minimal beam/sphere element radius of discretization
-  const double GetMinEleRadius() { return mineleradius_; }
+  double GetMinEleRadius() { return mineleradius_; }
 
   //@}
 

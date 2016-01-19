@@ -132,7 +132,7 @@ public:
   \brief return scheme-specific time integration parameter
 
   */
-  virtual const double TimIntParam() const;
+  virtual double TimIntParam() const;
 
   /*!
   \brief return scaling factor for the residual
@@ -147,7 +147,7 @@ public:
   \brief velocity required for evaluation of related quantites required on element level
 
   */
-  const Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return Teuchos::null;};
+  Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return Teuchos::null;};
 
   /*!
   \brief treat turbulence models in AssembleMatAndRHS
@@ -158,13 +158,13 @@ public:
   //@{
 
   //! Give local order of accuracy of velocity part
-  virtual const int MethodOrderOfAccuracyVel() const { return 1; }
+  virtual int MethodOrderOfAccuracyVel() const { return 1; }
 
   //! Give local order of accuracy of pressure part
-  virtual const int MethodOrderOfAccuracyPres() const { return 1; }
+  virtual int MethodOrderOfAccuracyPres() const { return 1; }
 
   //! Return linear error coefficient of velocity
-  virtual const double MethodLinErrCoeffVel() const { return 1.0; }
+  virtual double MethodLinErrCoeffVel() const { return 1.0; }
 
   //@}
 

@@ -254,7 +254,7 @@ namespace ELEMENTS
     );
 
     //! evaluate shape functions and their derivatives at element center
-    virtual const double EvalShapeFuncAndDerivsAtEleCenter();
+    virtual double EvalShapeFuncAndDerivsAtEleCenter();
 
     //! evaluate shape functions and their derivatives at current integration point
     double EvalShapeFuncAndDerivsAtIntPoint(
@@ -598,7 +598,7 @@ namespace ELEMENTS
     );
 
     //! get density at integration point
-    virtual const double GetDensity(
+    virtual double GetDensity(
         const DRT::Element*                 ele,
         Teuchos::RCP<const MAT::Material>   material,
         Teuchos::ParameterList&             params,

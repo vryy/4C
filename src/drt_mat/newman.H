@@ -141,24 +141,24 @@ namespace MAT
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Newman( *this ) ); }
 
     /// valence (= charge number)
-    const double Valence() const { return params_->valence_; }
+    double Valence() const { return params_->valence_; }
 
     /// computation of the transference number based on the defined curve
-    const double ComputeTransferenceNumber(const double cint) const;
+    double ComputeTransferenceNumber(const double cint) const;
     /// computation of the first derivative of the transference number based on the defined curve
-    const double ComputeFirstDerivTrans (const double cint) const;
+    double ComputeFirstDerivTrans (const double cint) const;
 
     /// computation of the thermodynamic factor based on the defined curve
-    const double ComputeThermFac (const double cint) const ;
+    double ComputeThermFac (const double cint) const ;
     /// computation of the first derivative of the transference number based on the defined curve
-    const double ComputeFirstDerivThermFac(const double cint) const;
+    double ComputeFirstDerivThermFac(const double cint) const;
 
   private:
 
     /// return curve defining the transference number
-    const int TransNrCurve() const { return params_->transnrcurve_; }
+    int TransNrCurve() const { return params_->transnrcurve_; }
     /// return curve defining the thermodynamic factor
-    const int ThermFacCurve() const { return params_->thermfaccurve_; }
+    int ThermFacCurve() const { return params_->thermfaccurve_; }
 
     /// parameter needed for implemented concentration dependence
     const std::vector<double>& TransNrParams() const

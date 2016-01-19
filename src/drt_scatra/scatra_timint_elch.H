@@ -129,10 +129,10 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   void OutputCellVoltage();
 
   //! output type of closing equation for electric potential
-  const INPAR::ELCH::EquPot EquPot() const { return equpot_; }
+  INPAR::ELCH::EquPot EquPot() const { return equpot_; }
 
   //! return constant F/RT
-  const double FRT() const {return frt_;}
+  double FRT() const {return frt_;}
 
   //! return elch parameter list
   Teuchos::RCP<Teuchos::ParameterList> ElchParameterList() { return elchparams_;}
@@ -211,7 +211,7 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   virtual void CalcInitialPotentialField();
 
   //! computes different conductivity expressions for electrolyte solutions (ELCH)
-  const double ComputeConductivity(
+  double ComputeConductivity(
       Epetra_SerialDenseVector&   sigma,               //! result vector
       bool                        effCond = false,     //! flag for computation of effective conductivity
       bool                        specresist = false   //! flag for computation of specific electrolyte resistance

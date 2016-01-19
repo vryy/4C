@@ -195,7 +195,7 @@ namespace ADAPTER {
      *
      *  \author mayr.mt \date 04/2015
      */
-    const double GetTimAdaErrOrder() const;
+    double GetTimAdaErrOrder() const;
 
     /*! \brief Name of auxiliary time integrator
      *
@@ -319,10 +319,10 @@ namespace ADAPTER {
         ) const;
 
     //! return order of accuracy of auxiliary integrator
-    const int AuxMethodOrderOfAccuracy() const;
+    int AuxMethodOrderOfAccuracy() const;
 
     //! return leading error coefficient of velocity of auxiliary integrator
-    const double AuxMethodLinErrCoeffVel() const;
+    double AuxMethodLinErrCoeffVel() const;
 
     Teuchos::RCP<Epetra_Vector> locerrvelnp_; ///< vector of temporal local discretization error
 

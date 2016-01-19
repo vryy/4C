@@ -1321,7 +1321,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ClearAdvancedReaction
  | evaluate shape functions and derivatives at ele. center   jhoer 11/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-const double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::EvalShapeFuncAndDerivsAtEleCenter()
+double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::EvalShapeFuncAndDerivsAtEleCenter()
 {
   const double vol = my::EvalShapeFuncAndDerivsAtEleCenter();
 

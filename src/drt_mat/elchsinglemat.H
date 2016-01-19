@@ -112,24 +112,24 @@ namespace MAT
       //@}
 
       //! compute diffusion coefficient according to curve number
-      const double ComputeDiffusionCoefficient (const double cint) const;
+      double ComputeDiffusionCoefficient (const double cint) const;
 
       //! compute first derivative of diffusion coefficient according to curve number
-      const double ComputeFirstDerivDiffCoeff (const double cint) const;
+      double ComputeFirstDerivDiffCoeff (const double cint) const;
 
       //! compute conductivity according to curve number
-      const double ComputeConductivity (const double cint) const ;
+      double ComputeConductivity (const double cint) const ;
 
       //! compute first derivative of conductivity according to curve number
-      const double ComputeFirstDerivCond(const double cint) const;
+      double ComputeFirstDerivCond(const double cint) const;
 
     protected:
 
       //! return curve number for diffusion coefficient
-      const int DiffCurve() const {return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->diffcurve_;};
+      int DiffCurve() const {return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->diffcurve_;};
 
       //! return curve number for conductivity
-      const int CondCurve() const {return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->condcurve_;};
+      int CondCurve() const {return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->condcurve_;};
 
       //! return parameters for diffusion coefficient
       const std::vector<double>& DiffParams() const {return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->diffpara_;};
@@ -138,14 +138,14 @@ namespace MAT
       const std::vector<double>& CondParams() const {return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->condpara_;};
 
       //! evaluate value of predefined function
-      const double EvalFunctValue(
+      double EvalFunctValue(
           const int                    functnr,
           const double                 cint,
           const std::vector<double>&   functparams
           ) const;
 
       //! evaluate first derivative of predefined function
-      const double EvalFirstDerivFunctValue(
+      double EvalFirstDerivFunctValue(
           const int                    functnr,
           const double                 cint,
           const std::vector<double>&   functparams

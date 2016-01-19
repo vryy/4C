@@ -65,7 +65,7 @@ namespace ADAPTER
     { return structure_->Discretization(); }
 
     /// return time integration factor
-    virtual const double TimIntParam() const
+    virtual double TimIntParam() const
     { return structure_->TimIntParam(); }
 
     /// Access to output object

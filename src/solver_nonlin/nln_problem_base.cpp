@@ -246,7 +246,7 @@ void NLNSOL::NlnProblemBase::WriteVector(const Epetra_MultiVector& vec,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::NlnProblemBase::HaveDebugWriter() const
+bool NLNSOL::NlnProblemBase::HaveDebugWriter() const
 {
   return ((not dbgwriter_.is_null()) and dbgwriter_->IsSetup());
 }

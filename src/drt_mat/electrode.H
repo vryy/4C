@@ -65,7 +65,7 @@ namespace MAT
       private:
 
         //! convert string to model for half cell open circuit potential
-        const OCPModels StringToOCPModel(const std::string& ocpmodelstring) const;
+        OCPModels StringToOCPModel(const std::string& ocpmodelstring) const;
     };  // class MAT::PAR::Electrode
   } // namespace PAR
 
@@ -141,24 +141,24 @@ namespace MAT
       virtual Teuchos::RCP<Material> Clone() const {return Teuchos::rcp(new Electrode(*this));};
 
       //! return saturation value of intercalated Lithium concentration
-      const double CMax() const {return params_->cmax_;};
+      double CMax() const {return params_->cmax_;};
 
       //! compute half cell open circuit potential
-      const double ComputeOpenCircuitPotential(
+      double ComputeOpenCircuitPotential(
           const double concentration,   //!< concentration
           const double faraday,         //!< Faraday constant
           const double frt              //!< factor F/RT
           ) const;
 
       //! compute first derivative of half cell open circuit potential with respect to concentration
-      const double ComputeFirstDerivOpenCircuitPotential(
+      double ComputeFirstDerivOpenCircuitPotential(
           const double concentration,   //!< concentration
           const double faraday,         //!< Faraday constant
           const double frt              //!< factor F/RT
           ) const;
 
       //! compute second derivative of half cell open circuit potential with respect to concentration
-      const double ComputeSecondDerivOpenCircuitPotential(
+      double ComputeSecondDerivOpenCircuitPotential(
           const double concentration,   //!< concentration
           const double faraday,         //!< Faraday constant
           const double frt              //!< factor F/RT

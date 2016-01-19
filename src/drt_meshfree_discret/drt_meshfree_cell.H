@@ -128,7 +128,7 @@ public:
    *
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  Teuchos::ParameterList const * const Params() const { return params_.get(); };
+  Teuchos::ParameterList const * Params() const { return params_.get(); };
 
   /*========================================================================*/
   //! @name Point methods

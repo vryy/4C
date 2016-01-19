@@ -96,19 +96,19 @@ public:
   return values between #lower_bound_ and #upper_bound_
 
   */
-  const bool IsBounded() {return is_bounded_; }
+  bool IsBounded() const {return is_bounded_; }
 
   /*!
   \brief return lower bound of variable
 
   */
-  const double LowerBound() {return lower_bound_;}
+  double LowerBound() const {return lower_bound_;}
 
   /*!
   \brief return upper bound of variable
 
   */
-  const double UpperBound() {return upper_bound_;}
+  double UpperBound() const {return upper_bound_;}
 
 private:
   //! \brief possible pdfs

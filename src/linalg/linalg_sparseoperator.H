@@ -280,10 +280,10 @@ class SparseOperator : public Epetra_Operator
     virtual void Add(const LINALG::SparseOperator& A, const bool transposeA, const double scalarA,  const double scalarB) = 0;
 
     /// Add one SparseMatrixBase to another
-    virtual const void AddOther(LINALG::SparseMatrixBase& A, const bool transposeA, const double scalarA,  const double scalarB) const = 0;
+    virtual void AddOther(LINALG::SparseMatrixBase& A, const bool transposeA, const double scalarA,  const double scalarB) const = 0;
 
     /// Add one BlockSparseMatrix to another
-    virtual const void AddOther(LINALG::BlockSparseMatrixBase& A, const bool transposeA, const double scalarA,  const double scalarB) const = 0;
+    virtual void AddOther(LINALG::BlockSparseMatrixBase& A, const bool transposeA, const double scalarA,  const double scalarB) const = 0;
 
     /// Multiply all values by a constant value (in place: A <- ScalarConstant * A).
     virtual int Scale(double ScalarConstant) = 0;

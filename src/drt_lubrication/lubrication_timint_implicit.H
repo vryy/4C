@@ -191,7 +191,7 @@ public:
   Teuchos::RCP<const Epetra_Vector> RHS() { return residual_; }
 
   //! return flag indicating if an incremental solution approach is used
-  const bool IsIncremental() { return incremental_; }
+  bool IsIncremental() { return incremental_; }
 
   //! return discretization
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }

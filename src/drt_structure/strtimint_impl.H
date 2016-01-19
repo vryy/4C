@@ -96,7 +96,7 @@ namespace STR
     virtual void ResizeMStep() = 0;
 
     //! return time integration factor
-    virtual const double TimIntParam() const = 0;
+    virtual double TimIntParam() const = 0;
 
     //@}
 
@@ -701,19 +701,19 @@ namespace STR
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    virtual const int MethodSteps() const = 0;
+    virtual int MethodSteps() const = 0;
 
     //! Give local order of accuracy of displacement part
-    virtual const int MethodOrderOfAccuracyDis() const = 0;
+    virtual int MethodOrderOfAccuracyDis() const = 0;
 
     //! Give local order of accuracy of velocity part
-    virtual const int MethodOrderOfAccuracyVel() const = 0;
+    virtual int MethodOrderOfAccuracyVel() const = 0;
 
     //! Return linear error coefficient of displacements
-    virtual const double MethodLinErrCoeffDis() const = 0;
+    virtual double MethodLinErrCoeffDis() const = 0;
 
     //! Return linear error coefficient of velocities
-    virtual const double MethodLinErrCoeffVel() const = 0;
+    virtual double MethodLinErrCoeffVel() const = 0;
 
     //! Return bool indicating if constraints are defined
     bool HaveConstraint();

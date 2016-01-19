@@ -122,7 +122,7 @@ void ADAPTER::StructureFSITimIntAda::TimeStepAuxiliar()
 
 /*----------------------------------------------------------------------------*/
 /* Calculate time step size suggestion */
-const double ADAPTER::StructureFSITimIntAda::CalculateDt(const double norm)
+double ADAPTER::StructureFSITimIntAda::CalculateDt(const double norm)
 {
   return StrAda()->CalculateDt(norm);
 }

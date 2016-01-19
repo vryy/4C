@@ -80,19 +80,19 @@ namespace DRT
           );
 
       //! evaluate factor F/RT
-      const double GetFRT(
+      double GetFRT(
           DRT::Discretization&           discretization,   ///< discretization
           DRT::Element::LocationArray&   la                ///< location array
           ) const;
 
       //! evaluate factor F/RT²
-      const double GetFRTT(
+      double GetFRTT(
           DRT::Discretization&           discretization,   ///< discretization
           DRT::Element::LocationArray&   la                ///< location array
           ) const;
 
       //! evaluate local temperature value
-      const double GetTemperature(
+      double GetTemperature(
           DRT::Discretization&           discretization,   ///< discretization
           DRT::Element::LocationArray&   la                ///< location array
           ) const;

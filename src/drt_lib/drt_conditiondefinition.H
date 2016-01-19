@@ -469,7 +469,7 @@ namespace INPUT
                                                  Teuchos::RCP<std::stringstream> condline,
                                                  Teuchos::RCP<DRT::Condition> condition);
 
-    const int Model(){return model_;};
+    int Model(){return model_;};
 
   private:
 

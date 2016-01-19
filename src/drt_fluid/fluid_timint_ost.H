@@ -134,7 +134,7 @@ public:
   \brief return scheme-specific time integration parameter
 
   */
-  virtual const double TimIntParam() const { return 0.0; }
+  virtual double TimIntParam() const { return 0.0; }
 
   /*!
   \brief return scaling factor for the residual
@@ -152,7 +152,7 @@ public:
   \brief velocity required for evaluation of related quantites required on element level
 
   */
-  virtual const Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return velnp_;};
+  virtual Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return velnp_;};
 
   /*!
   \ apply external forces to the fluid
@@ -188,10 +188,10 @@ public:
   //@{
 
   //! Give local order of accuracy of velocity part
-  virtual const int MethodOrderOfAccuracyVel() const;
+  virtual int MethodOrderOfAccuracyVel() const;
 
   //! Give local order of accuracy of pressure part
-  virtual const int MethodOrderOfAccuracyPres() const;
+  virtual int MethodOrderOfAccuracyPres() const;
 
   /*! \brief Return linear error coefficient of velocity
    *
@@ -204,7 +204,7 @@ public:
    *
    *  \author mayr.mt \date 04/2015
    */
-  virtual const double MethodLinErrCoeffVel() const;
+  virtual double MethodLinErrCoeffVel() const;
 
   //@}
 

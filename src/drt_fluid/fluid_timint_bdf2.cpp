@@ -234,7 +234,7 @@ void FLD::TimIntBDF2::SetElementTimeParameter()
 /*----------------------------------------------------------------------*
 | Return linear error coefficient of velocity             mayr.mt 12/13 |
 *-----------------------------------------------------------------------*/
-const double FLD::TimIntBDF2::MethodLinErrCoeffVel() const
+double FLD::TimIntBDF2::MethodLinErrCoeffVel() const
 {
   double nominator = (dta_ + dtp_) * (dta_ + dtp_);
   double denominator = 6 * dta_ * (2 * dta_ + dtp_);

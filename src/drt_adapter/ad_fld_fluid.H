@@ -410,7 +410,7 @@ namespace ADAPTER {
     virtual void LiftDrag() const = 0;
 
     /// this procs element evaluate time
-    virtual const double EvalTime() const = 0;
+    virtual double EvalTime() const = 0;
 
     /// redistribute the fluid discretization and vectors according to nodegraph in std. mode
     virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) = 0;
@@ -469,7 +469,7 @@ namespace ADAPTER {
     virtual double TimeScaling() const = 0;
 
     /// return time integration factor
-    virtual const double TimIntParam() const = 0;
+    virtual double TimIntParam() const = 0;
 
     /// communication object at the interface (neglecting pressure dofs)
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const = 0;
@@ -478,7 +478,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& FPSIInterface() const = 0;
 
     /// return type of time integration scheme
-    virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const = 0;
+    virtual INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const = 0;
 
     //! @name Extract the velocity-related part of a fluid vector (e.g. velnp, veln, residual)
     /// The idea is to have one function that does the extraction and call it
@@ -571,7 +571,7 @@ namespace ADAPTER {
     virtual void CalculateError() = 0;
 
     /// return physical type of fluid algorithm
-    virtual const INPAR::FLUID::PhysicalType PhysicalType() const =0;
+    virtual INPAR::FLUID::PhysicalType PhysicalType() const =0;
   };
 }
 

@@ -126,7 +126,7 @@ namespace DRT
       );
 
       //! extract valence of species k from element material
-      virtual const double GetValence(
+      virtual double GetValence(
           const Teuchos::RCP<const MAT::Material>&   material,   //! element material
           const int                                  k           //! species number
       ) const = 0;

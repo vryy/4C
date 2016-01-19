@@ -136,7 +136,7 @@ void NLNSOL::NlnOperatorBase::PrintIterSummary(const int iter,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::NlnOperatorBase::ContinueIterations(const int iter,
+bool NLNSOL::NlnOperatorBase::ContinueIterations(const int iter,
     const bool converged) const
 {
   // initialize return value
@@ -150,7 +150,7 @@ const bool NLNSOL::NlnOperatorBase::ContinueIterations(const int iter,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::NlnOperatorBase::CheckSuccessfulConvergence(
+bool NLNSOL::NlnOperatorBase::CheckSuccessfulConvergence(
     const int iter,
     const bool converged
     ) const
@@ -179,21 +179,21 @@ const bool NLNSOL::NlnOperatorBase::CheckSuccessfulConvergence(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::NlnOperatorBase::IsSolver() const
+bool NLNSOL::NlnOperatorBase::IsSolver() const
 {
   return MyGetParameter<bool>("Nonlinear Operator: Is Solver");
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorBase::GetMaxIter() const
+int NLNSOL::NlnOperatorBase::GetMaxIter() const
 {
   return MyGetParameter<int>("Nonlinear Operator: Max Iter");
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const NLNSOL::UTILS::OperatorStatus NLNSOL::NlnOperatorBase::ErrorCode(
+NLNSOL::UTILS::OperatorStatus NLNSOL::NlnOperatorBase::ErrorCode(
     const int iter, const bool converged, const bool error,
     const bool stagnation) const
 {

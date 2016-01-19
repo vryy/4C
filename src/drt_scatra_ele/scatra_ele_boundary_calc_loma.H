@@ -84,7 +84,7 @@ namespace DRT
           );
 
       //! get density at integration point
-      const double GetDensity(
+      double GetDensity(
           Teuchos::RCP<const MAT::Material>                 material,
           const std::vector<LINALG::Matrix<my::nen_,1> >&   ephinp,
           const int                                         k

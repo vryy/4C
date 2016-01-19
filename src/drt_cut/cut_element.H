@@ -151,7 +151,7 @@ public:
   /*!
   \brief Return the level set value at the given global coordinate which has to be INSIDE the element.
    */
-  const double GetLevelSetValue( const LINALG::Matrix<3,1> x_element, bool islocal = false);
+  double GetLevelSetValue( const LINALG::Matrix<3,1> x_element, bool islocal = false);
 
   /*!
   \brief Return the level set gradient at the given global coordinate which has to be INSIDE the element.

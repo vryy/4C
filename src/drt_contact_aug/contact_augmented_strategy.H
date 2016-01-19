@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file contact_augmented_strategy.cpp
+\file contact_augmented_strategy.H
 
 <pre>
 Created on: Apr 7, 2014
@@ -49,7 +49,7 @@ class AugmentedLagrangeStrategy : public CoLagrangeStrategy
   \brief Return number of augmented active nodes
 
   */
-  virtual const int NumberOfActiveNodes()
+  virtual int NumberOfActiveNodes()
   {
     if (gAugActiveSlaveNodes_!=Teuchos::null)
       return gAugActiveSlaveNodes_->NumGlobalElements();

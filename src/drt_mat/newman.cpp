@@ -136,7 +136,7 @@ void MAT::Newman::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const double MAT::Newman::ComputeTransferenceNumber(const double cint) const
+double MAT::Newman::ComputeTransferenceNumber(const double cint) const
 {
   double trans=0.0;
 
@@ -151,7 +151,7 @@ const double MAT::Newman::ComputeTransferenceNumber(const double cint) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const double MAT::Newman::ComputeFirstDerivTrans(const double cint) const
+double MAT::Newman::ComputeFirstDerivTrans(const double cint) const
 {
   double firstderiv=0.0;
 
@@ -166,7 +166,7 @@ const double MAT::Newman::ComputeFirstDerivTrans(const double cint) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const double MAT::Newman::ComputeThermFac(const double cint) const
+double MAT::Newman::ComputeThermFac(const double cint) const
 {
   double therm=0.0;
 
@@ -182,7 +182,7 @@ const double MAT::Newman::ComputeThermFac(const double cint) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-const double MAT::Newman::ComputeFirstDerivThermFac(const double cint) const
+double MAT::Newman::ComputeFirstDerivThermFac(const double cint) const
 {
   double firstderiv=0.0;
 

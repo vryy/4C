@@ -289,7 +289,7 @@ public:
   /*!
   \brief Get current augmented lagrange multiplier 'lmuzawa_'
   */
-  const double Getlmuzawa()
+  double Getlmuzawa()
   {
     return 0.0;
   };

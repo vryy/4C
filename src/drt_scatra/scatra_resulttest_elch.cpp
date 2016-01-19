@@ -29,7 +29,7 @@ elchtimint_(elchtimint)
 /*----------------------------------------------------------------------*
  | get special result to be tested                           fang 03/15 |
  *----------------------------------------------------------------------*/
-const double SCATRA::ElchResultTest::ResultSpecial(
+double SCATRA::ElchResultTest::ResultSpecial(
     const std::string   quantity   //! name of quantity to be tested
     ) const
 {

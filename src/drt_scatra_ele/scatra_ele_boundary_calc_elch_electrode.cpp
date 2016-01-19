@@ -288,7 +288,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
  | extract valence of species k from element material                       fang 02/15 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-const double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetValence(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetValence(
     const Teuchos::RCP<const MAT::Material>&   material,   // element material
     const int                                  k           // species number
     ) const
@@ -304,7 +304,7 @@ const double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetVale
  | evaluate factor F/RT                                      fang 08/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-const double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetFRT(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::GetFRT(
     DRT::Discretization&           discretization,   ///< discretization
     DRT::Element::LocationArray&   la                ///< location array
 ) const

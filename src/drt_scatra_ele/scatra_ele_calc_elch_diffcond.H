@@ -490,7 +490,7 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
     };
 
     //! Access routine for transference numbers with respect to single ionic species
-    const double GetTransNum(const int k){return transnum_[k];};
+    double GetTransNum(const int k){return transnum_[k];};
 
     //! Set derivative of transference numbers with respect to concentrations
     void SetDerivTransNum(const double derivtransnum,const int k,const int iscal)
@@ -500,7 +500,7 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
     };
 
     //! Access routine for derivative of transference numbers with respect to concentrations
-    const double GetDerivTransNum(const int k,const int iscal){return (derivtransnum_[k])[iscal];};
+    double GetDerivTransNum(const int k,const int iscal){return (derivtransnum_[k])[iscal];};
 
     //! Set thermodynamic factor for a specific electrolyte solution
     void SetThermFac(const double thermfac)
@@ -510,7 +510,7 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
     };
 
     //! Access routine for the thermodynamic factor for a specific electrolyte solution
-    const double GetThermFac(){return thermfac_;};
+    double GetThermFac(){return thermfac_;};
 
     //! Set derivative of thermodynamic factor with respect to concentrations
     void SetDerivThermFac(const double derivthermfac,const int k)
@@ -520,7 +520,7 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
     };
 
     //! Access routine for derivative of thermodynamic factor with respect to concentrations
-    const double GetDerivThermFac(const int k){return derivthermfac_[k];};
+    double GetDerivThermFac(const int k){return derivthermfac_[k];};
 
     //! Calculate conductivity based on diffusion coefficients
     void CalcConductivity(const int numscal, const double ffrt, const std::vector<double>& conint)
@@ -565,7 +565,7 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
       return;
     };
 
-    const double& InvFVal(const int k) const {return invfval_[k];};
+    double InvFVal(const int k) const {return invfval_[k];};
     const std::vector<double>& InvFVal() const {return invfval_;};
 
     /*========================================================================*/
@@ -579,7 +579,7 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
       return;
     }
 
-    const double GetPhasePoro(const int phase){return eps_[phase];};
+    double GetPhasePoro(const int phase) const {return eps_[phase];};
 
     //! Set transference numbers with respect to single ionic species
     void SetPhaseTort(const double tort,const int phase)
@@ -589,10 +589,10 @@ class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrod
     }
 
     // get geometrical parameter: tortuosity
-    const double GetPhaseTort(const int phase){return tort_[phase];};
+    double GetPhaseTort(const int phase) const {return tort_[phase];};
 
     // get geometrical parameter: porosity*tortuosity
-    const double GetPhasePoroTort(const int phase){
+    double GetPhasePoroTort(const int phase) const {
       double epstort =eps_[phase]*tort_[phase];
       return epstort;};
 
@@ -730,8 +730,8 @@ class ScaTraEleInternalVariableManagerElchDiffCond : public ScaTraEleInternalVar
   //! @name return constant internal variables
   /*========================================================================*/
 
-    const double RTF(){return rtf_;};
-    const double RTFFC(){return rtffc_;};
+    double RTF() const {return rtf_;};
+    double RTFFC() const {return rtffc_;};
 
   /*========================================================================*/
   //! @name return methods for GP values

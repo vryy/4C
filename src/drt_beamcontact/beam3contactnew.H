@@ -178,7 +178,7 @@ public:
   /*!
   \brief Get current augmented lagrange multiplier 'lmuzawa_'
   */
-  const double Getlmuzawa() { return BEAMCONTACT::CastToDouble(lmuzawa_); };
+  double Getlmuzawa() { return BEAMCONTACT::CastToDouble(lmuzawa_); };
 
   /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)

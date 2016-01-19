@@ -55,10 +55,10 @@ namespace COMBUST
     const DRT::Element* Ele() const { return ele_; }
 
     //! remote access method to distype
-    const DRT::Element::DiscretizationType Shape() const { return distype_; }
+    DRT::Element::DiscretizationType Shape() const { return distype_; }
 
     //! remote access method to refinement level
-    const int RefinementLevel() const { return refinementlevel_; }
+    int RefinementLevel() const { return refinementlevel_; }
 
     //! remote access method to bisection state
     bool Bisected() const { return bisected_; }
@@ -79,7 +79,7 @@ namespace COMBUST
     std::vector<std::vector<double> > GetVertexCoord() const { return vertexcoord_; }
 
     //! remote access method to number of children, depends on the tree type, here 8
-    const int NumOfChildren() const { return children_.size(); }
+    int NumOfChildren() const { return children_.size(); }
 
     //! remote access method to children
     const Teuchos::RCP<COMBUST::RefinementCell> GetRefinementCell (const int index) const;

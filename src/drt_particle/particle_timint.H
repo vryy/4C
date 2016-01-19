@@ -269,7 +269,7 @@ namespace PARTICLE
     virtual Teuchos::RCP<const Epetra_Vector> Mass() { return mass_; }
 
     //! Return density
-    virtual const double ParticleDensity() { return density_; }
+    virtual double ParticleDensity() { return density_; }
 
     //@}
 

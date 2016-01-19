@@ -47,7 +47,7 @@ NLNSOL::UTILS::NlnConfig::NlnConfig()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::UTILS::NlnConfig::Setup(const std::string filename)
+bool NLNSOL::UTILS::NlnConfig::Setup(const std::string filename)
 {
   params_ = Teuchos::rcp(new Teuchos::ParameterList());
 
@@ -180,7 +180,7 @@ void NLNSOL::UTILS::StagnationDetection::Init(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::UTILS::StagnationDetection::Check(const double norm)
+bool NLNSOL::UTILS::StagnationDetection::Check(const double norm)
 {
   if (not IsInit()) { dserror("Init() has not been called, yet."); }
 
@@ -214,7 +214,7 @@ const bool NLNSOL::UTILS::StagnationDetection::Check(const double norm)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::UTILS::StagnationDetection::Status(
+bool NLNSOL::UTILS::StagnationDetection::Status(
     Teuchos::RCP<Teuchos::ParameterList> oparams) const
 {
   bool stagnation = false;
@@ -370,7 +370,7 @@ void NLNSOL::UTILS::CreateParamListFromXMLOld(const std::string filename,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const Teuchos::EVerbosityLevel NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(
+Teuchos::EVerbosityLevel NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(
     const std::string verblevelstring)
 {
   Teuchos::EVerbosityLevel verblevel = Teuchos::VERB_DEFAULT;
@@ -396,7 +396,7 @@ const Teuchos::EVerbosityLevel NLNSOL::UTILS::TranslateVerbosityLevelToTeuchos(
 #ifdef HAVE_MueLu
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const MueLu::MsgType NLNSOL::UTILS::TranslateVerbosityLevelToMueLu(
+MueLu::MsgType NLNSOL::UTILS::TranslateVerbosityLevelToMueLu(
     const std::string verblevelstring)
 {
   MueLu::MsgType verblevel = MueLu::Default;

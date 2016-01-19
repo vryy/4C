@@ -315,7 +315,7 @@ class ScaTraEleDiffManagerElch : public ScaTraEleDiffManager
 
     //! Access routine for valence of all ionic species or of single ionic species k
     const std::vector<double> GetValence(){return valence_;};
-    const double GetValence(const int k){return valence_[k];};
+    double GetValence(const int k){return valence_[k];};
 
     //! the length of the vector containing the diffusion coefficients is increased by 1
     //! application: ENC with eliminated species
@@ -402,7 +402,7 @@ class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableMan
   /*========================================================================*/
 
     //! return factor F/RT
-    const double FRT() const {return frt_;};
+    double FRT() const {return frt_;};
 
     //! return 1/concentration of species k
     const double& ConIntInv(const int k) const {return conintinv_[k];};

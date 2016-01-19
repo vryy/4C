@@ -193,8 +193,8 @@ class StrategyBase
     virtual Teuchos::RCP<Epetra_Vector> MeshInitialization() = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> MMatrix() = 0;
     virtual void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) = 0;
-    virtual const int NumberOfActiveNodes() = 0;
-    virtual const int NumberOfSlipNodes() = 0;
+    virtual int NumberOfActiveNodes() = 0;
+    virtual int NumberOfSlipNodes() = 0;
     virtual void OutputStresses() = 0;
     virtual void AugForces(Epetra_Vector& augfs_lm,Epetra_Vector& augfs_g,Epetra_Vector& augfm_lm,Epetra_Vector& augfm_g) = 0;
     virtual void OutputWear() = 0;

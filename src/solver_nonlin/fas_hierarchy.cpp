@@ -219,7 +219,7 @@ void NLNSOL::FAS::AMGHierarchy::SetupMueLuHierarchy()
 }
 
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
+bool NLNSOL::FAS::AMGHierarchy::SetupNlnSolHierarchy()
 {
 #ifdef HAVE_MueLu
   // ---------------------------------------------------------------------------
@@ -475,7 +475,7 @@ void NLNSOL::FAS::AMGHierarchy::PrintNlnLevels(std::ostream& os) const
 }
 
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::FAS::AMGHierarchy::CheckValidity() const
+bool NLNSOL::FAS::AMGHierarchy::CheckValidity() const
 {
   // prepare return value
   bool isvalid = true;
@@ -523,7 +523,7 @@ const bool NLNSOL::FAS::AMGHierarchy::CheckValidity() const
 }
 
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::FAS::AMGHierarchy::CheckLevelID(const int level) const
+bool NLNSOL::FAS::AMGHierarchy::CheckLevelID(const int level) const
 {
   if (level < 0 and level > NumLevels())
   {
@@ -625,7 +625,7 @@ NLNSOL::FAS::AMGHierarchy::GetXpetraNullSpaceFromBaci() const
 #endif
 
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::FAS::AMGHierarchy::CheckAllLevelStagnation() const
+bool NLNSOL::FAS::AMGHierarchy::CheckAllLevelStagnation() const
 {
   int stagcount = 0;
   bool stagnation = false;
@@ -651,7 +651,7 @@ const bool NLNSOL::FAS::AMGHierarchy::CheckAllLevelStagnation() const
 
 #ifdef HAVE_MueLu
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::FAS::AMGHierarchy::CheckNullSpaceProperties() const
+bool NLNSOL::FAS::AMGHierarchy::CheckNullSpaceProperties() const
 {
   *getOStream() << "Check null space conservation properties:" << std::endl;
 

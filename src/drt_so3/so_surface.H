@@ -221,7 +221,7 @@ public:
   {return ParentMasterElement();}
 
   //! Return local surface number
-  const int LSurfNumber() const {return FaceMasterNumber();}
+  int LSurfNumber() const {return FaceMasterNumber();}
 
 public: // changed to public rauch 05/2014
 

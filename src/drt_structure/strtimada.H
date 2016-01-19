@@ -255,10 +255,10 @@ namespace STR
     virtual void UpdateStepSize(const double stpsiznew);
 
     //! Access to current time step size
-    virtual const double Dt() const { return stepsize_; }
+    virtual double Dt() const { return stepsize_; }
 
     //! Access to target time \f$t_{n+1}\f$ of current time step
-    virtual const double Time() const { return time_ + stepsize_; }
+    virtual double Time() const { return time_ + stepsize_; }
 
     //! Check whether step size output file is attached
     bool AttachedFileStepSize()

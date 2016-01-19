@@ -43,9 +43,9 @@ namespace MAT
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-      const double PoroBdDown() const {return poro_bd_down_;};
-      const double PoroBdUp() const {return poro_bd_up_;};
-      const double SmearFac() const {return smear_fac_;};
+      double PoroBdDown() const {return poro_bd_down_;};
+      double PoroBdUp() const {return poro_bd_up_;};
+      double SmearFac() const {return smear_fac_;};
 
       void UpdateSmearFac(const double new_smearfac) {
         smear_fac_=new_smearfac;
@@ -142,13 +142,13 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new TopOptDens( *this ) ); }
 
     /// return upper boundary of porosity field
-    virtual const double MaxPoro() const {return params_->PoroBdUp();}
+    virtual double MaxPoro() const {return params_->PoroBdUp();}
 
     /// return upper boundary of porosity field
-    virtual const double MinPoro() const {return params_->PoroBdDown();}
+    virtual double MinPoro() const {return params_->PoroBdDown();}
 
     /// return upper boundary of porosity field
-    virtual const double SmearFactor() const {return params_->SmearFac();}
+    virtual double SmearFactor() const {return params_->SmearFac();}
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

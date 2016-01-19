@@ -38,7 +38,7 @@ namespace MAT
         virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
         //! return Soret coefficient
-        const double SoretCoefficient() const {return soretcoefficient_;};
+        double SoretCoefficient() const {return soretcoefficient_;};
 
       private:
 
@@ -122,7 +122,7 @@ namespace MAT
       Teuchos::RCP<Material> Clone() const {return Teuchos::rcp(new Soret(*this));};
 
       //! return Soret coefficient
-      const double SoretCoefficient() const {return params_->SoretCoefficient();};
+      double SoretCoefficient() const {return params_->SoretCoefficient();};
 
     private:
 

@@ -293,7 +293,7 @@ public:
   /*!
   \brief get moment of intertia of area Iyy_
   */
-  const double Iyy() const
+  double Iyy() const
   {
     return Iyy_;
   }

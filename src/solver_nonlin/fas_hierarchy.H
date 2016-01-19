@@ -169,7 +169,7 @@ namespace NLNSOL
        *
        *  \return Total number of levels
        */
-      virtual const int NumLevels() const { return nlnlevels_.size(); }
+      virtual int NumLevels() const { return nlnlevels_.size(); }
 
       //@}
 
@@ -188,7 +188,7 @@ namespace NLNSOL
        *
        *  \author mayr.mt \date 06/2014
        */
-      virtual const bool CheckValidity() const;
+      virtual bool CheckValidity() const;
 
       /*! \brief Check if level ID is admissible
        *
@@ -201,7 +201,7 @@ namespace NLNSOL
        *
        *  \author mayr.mt \date 11/2013
        */
-      virtual const bool CheckLevelID(const int level) const;
+      virtual bool CheckLevelID(const int level) const;
 
       /*! \brief Check for stagnation of level smoothers
        *
@@ -212,7 +212,7 @@ namespace NLNSOL
        *
        *  \author mayr.mt \date 03/2015
        */
-      virtual const bool CheckAllLevelStagnation() const;
+      virtual bool CheckAllLevelStagnation() const;
 
       //@}
 
@@ -235,7 +235,7 @@ namespace NLNSOL
        *
        *  \author mayr.mt \date 10/2015
        */
-      virtual const bool SetupNlnSolHierarchy();
+      virtual bool SetupNlnSolHierarchy();
 
       /*! \brief Add new level at the end of level container
        *
@@ -300,7 +300,7 @@ namespace NLNSOL
        *
        *  \author mayr.mt \date 10/2015
        */
-      virtual const bool CheckNullSpaceProperties() const;
+      virtual bool CheckNullSpaceProperties() const;
 #endif
       //@}
 
@@ -320,10 +320,10 @@ namespace NLNSOL
       //@{
 
       //! Has Init() already been called?
-      virtual const bool IsInit() const { return isinit_; }
+      virtual bool IsInit() const { return isinit_; }
 
       //! Has Setup() already been called?
-      virtual const bool IsSetup() const { return issetup_; }
+      virtual bool IsSetup() const { return issetup_; }
 
       //@}
 

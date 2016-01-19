@@ -82,15 +82,15 @@ public:
   //! \brief compute bounding box of discretization
   virtual void ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret);
 
-  bool IsGaussian(){if(marginal_pdf_==normal) return true; else return false;}
+  bool IsGaussian() const {if(marginal_pdf_==normal) return true; else return false;}
 
-  const double LowerBound() {return rf_lower_bound_;}
+  double LowerBound() const {return rf_lower_bound_;}
 
-  const double UpperBound() {return rf_upper_bound_;}
+  double UpperBound() const {return rf_upper_bound_;}
 
-  const bool IsBounded() {return is_bounded_; }
+  bool IsBounded() const {return is_bounded_; }
 
-  const bool HasSpatialMedian() {return has_spatially_variable_median_; }
+  bool HasSpatialMedian() const {return has_spatially_variable_median_; }
 
   //!brief get min corner of bounding box
   std::vector<double> GetMinBB() {return bb_min_;}

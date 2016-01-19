@@ -234,7 +234,7 @@ protected:
   void ClearAdvancedReactionTerms( );
 
   //! evaluate shape functions and their derivatives at element center
-  virtual const double EvalShapeFuncAndDerivsAtEleCenter();
+  virtual double EvalShapeFuncAndDerivsAtEleCenter();
 
   int numcond_;                                               //!< number of homogenous scatra coupling conditions
   std::vector<std::vector<int> > stoich_;                     //!< vector containing the stoichometrie

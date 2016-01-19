@@ -88,7 +88,7 @@ void SCATRA::ScaTraResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& ne
 /*----------------------------------------------------------------------*
  | get nodal result to be tested                             fang 03/15 |
  *----------------------------------------------------------------------*/
-const double SCATRA::ScaTraResultTest::ResultNode(
+double SCATRA::ScaTraResultTest::ResultNode(
     const std::string   quantity,   //! name of quantity to be tested
     DRT::Node*          node        //! node carrying the result to be tested
     ) const
@@ -194,7 +194,7 @@ void SCATRA::ScaTraResultTest::TestSpecial(
 /*----------------------------------------------------------------------*
  | get special result to be tested                           fang 03/15 |
  *----------------------------------------------------------------------*/
-const double SCATRA::ScaTraResultTest::ResultSpecial(
+double SCATRA::ScaTraResultTest::ResultSpecial(
     const std::string   quantity   //! name of quantity to be tested
     ) const
 {

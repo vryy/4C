@@ -160,7 +160,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Mass() = 0;
 
     //! Return density
-    virtual const double ParticleDensity() = 0;
+    virtual double ParticleDensity() = 0;
 
     //@}
 

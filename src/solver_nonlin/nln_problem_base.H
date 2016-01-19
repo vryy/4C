@@ -117,7 +117,7 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
      *
      *  \author mayr.mt \date 11/2015
      */
-    virtual const bool SetModelEvaluator() = 0;
+    virtual bool SetModelEvaluator() = 0;
 
     /*! \brief Set Jacobian operator
      *
@@ -127,7 +127,7 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
      *
      *  \author mayr.mt \date 11/2015
      */
-    virtual const bool SetJacobianOperator() = 0;
+    virtual bool SetJacobianOperator() = 0;
 
     /*! \brief Set coarse level residual modifications for FAS
      *
@@ -223,7 +223,7 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
      *
      *  \author mayr.mt \date 11/2015
      */
-    virtual const int LevelID() const = 0;
+    virtual int LevelID() const = 0;
 
     //@}
 
@@ -292,10 +292,10 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
     //@{
 
     //! Has Init() already been called?
-    virtual const bool IsInit() const { return isinit_; }
+    virtual bool IsInit() const { return isinit_; }
 
     //! Has Setup() already been called?
-    virtual const bool IsSetup() const { return issetup_; }
+    virtual bool IsSetup() const { return issetup_; }
 
     /*! \brief Is there a valid debug writer?
      *
@@ -305,7 +305,7 @@ class NlnProblemBase : public Teuchos::VerboseObject<NlnProblemBase>
      *
      *  \author mayr.mt \date 06/2015
      */
-    virtual const bool HaveDebugWriter() const;
+    virtual bool HaveDebugWriter() const;
 
     //@}
 

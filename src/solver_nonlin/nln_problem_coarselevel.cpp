@@ -72,7 +72,7 @@ void NLNSOL::NlnProblemCoarseLevel::Setup()
 }
 
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::NlnProblemCoarseLevel::SetModelEvaluator()
+bool NLNSOL::NlnProblemCoarseLevel::SetModelEvaluator()
 {
   if (not Params()->isParameter("Field Problem"))
   {

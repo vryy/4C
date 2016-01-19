@@ -70,10 +70,10 @@ namespace COMBUST
     );
 
     //! compute volume of domain minus
-    const double ComputeVolumeMinus();
+    double ComputeVolumeMinus();
 
     //! compute surface of interface
-    const double ComputeSurface();
+    double ComputeSurface();
 
     //! output of domain and boundary integration cells to Gmsh!
     void toGmsh(const int step) const;

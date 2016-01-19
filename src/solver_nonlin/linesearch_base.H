@@ -110,10 +110,10 @@ namespace NLNSOL
     //@{
 
     //! Has Init() already been called?
-    virtual const bool IsInit() const { return isinit_; }
+    virtual bool IsInit() const { return isinit_; }
 
     //! Has SetupLineSearch() already been called?
-    virtual const bool IsSetup() const { return issetup_; }
+    virtual bool IsSetup() const { return issetup_; }
 
     //@}
 
@@ -198,7 +198,7 @@ namespace NLNSOL
     virtual const Epetra_MultiVector& GetXInc() const { return *inc_; }
 
     //! Access to residual norm of last iterate
-    virtual const double GetFNormOld() const { return resnormold_; }
+    virtual double GetFNormOld() const { return resnormold_; }
 
     //! Access to global configuration
     virtual Teuchos::RCP<const NLNSOL::UTILS::NlnConfig> Configuration() const;

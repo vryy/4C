@@ -165,7 +165,7 @@ public:
   Teuchos::RCP<DRT::Discretization> GetCouplingDis(){return coupl_dis_;}
   Teuchos::RCP<DRT::Discretization> GetCondDis(){return cond_dis_;}
 
-  const INPAR::XFEM::AveragingStrategy GetAveragingStrategy(){return averaging_strategy_;}
+  INPAR::XFEM::AveragingStrategy GetAveragingStrategy(){return averaging_strategy_;}
 
   virtual void PrepareSolve(){};
 

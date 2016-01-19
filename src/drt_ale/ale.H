@@ -166,7 +166,7 @@ public:
   virtual void Update();
 
   /// convergence test for newton
-  virtual const bool Converged(const int iter);
+  virtual bool Converged(const int iter);
 
   /// Evaluate all elements
   virtual void EvaluateElements();
@@ -372,7 +372,7 @@ protected:
 
 private:
 
-  virtual const bool UpdateSysMatEveryStep() const { return true; }
+  virtual bool UpdateSysMatEveryStep() const { return true; }
 
   //! @name Misc
 
@@ -572,7 +572,7 @@ protected:
 
 private:
 
-  virtual const bool UpdateSysMatEveryStep() const { return updateeverystep_; }
+  virtual bool UpdateSysMatEveryStep() const { return updateeverystep_; }
 
   //! Is the #sysmat_ valid (true) or does it need to be re-evaluated (false)
   bool validsysmat_;

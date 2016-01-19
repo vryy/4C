@@ -42,16 +42,16 @@ public:
   void PrintFluidParameterPoro() const;
 
   //! partial integration of porosity gradient in continuity equation
-  const bool PoroContiPartInt() const {return poro_conti_partint_;};
+  bool PoroContiPartInt() const {return poro_conti_partint_;};
 
   //! biot stabilization
-  const bool StabBiot() const {return stab_biot_;};
+  bool StabBiot() const {return stab_biot_;};
 
   //! scaling factor for biot stabilization
-  const double StabBiotScaling() const {return stab_biot_scaling_;};
+  double StabBiotScaling() const {return stab_biot_scaling_;};
 
   //! type of time discretization for continuity equation
-  const INPAR::POROELAST::TimeDisTypeConti TimeDisTypeConti() const {return time_distype_conti_;};
+  INPAR::POROELAST::TimeDisTypeConti TimeDisTypeConti() const {return time_distype_conti_;};
 
 
 private:

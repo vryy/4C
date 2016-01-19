@@ -216,7 +216,7 @@ private:
     );
 
     //! get density at integration point
-    const double GetDensity(
+    double GetDensity(
         const DRT::Element*                 ele,
         Teuchos::RCP<const MAT::Material>   material,
         Teuchos::ParameterList&             params,

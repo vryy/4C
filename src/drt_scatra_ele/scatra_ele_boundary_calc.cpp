@@ -885,7 +885,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(
  | get density at integration point                          fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-const double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetDensity(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetDensity(
     Teuchos::RCP<const MAT::Material>             material,
     const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,
     const int                                     k

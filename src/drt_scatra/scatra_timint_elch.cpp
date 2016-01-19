@@ -1570,7 +1570,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 /*----------------------------------------------------------------------*
  |  calculate conductivity of electrolyte solution             gjb 07/09|
  *----------------------------------------------------------------------*/
-const double SCATRA::ScaTraTimIntElch::ComputeConductivity(
+double SCATRA::ScaTraTimIntElch::ComputeConductivity(
     Epetra_SerialDenseVector&   sigma,       //! result vector
     bool                        effCond,     //! flag for computation of effective conductivity
     bool                        specresist   //! flag for computation of specific electrolyte resistance

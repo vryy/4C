@@ -147,7 +147,7 @@ class BinSearch
         ~Bin() {};
         const int& GetBinID() const {return binid_;}
         const std::vector<int>& GetBinMembers() const {return binmembers_;}
-        const int NumBinMembers() const {return (const int)binmembers_.size();}
+        int NumBinMembers() const {return (const int)binmembers_.size();}
         void AddMember(const int& memberid);
       private:
         int binid_;
@@ -163,7 +163,7 @@ class BinSearch
 
     const Bin& GetBin(const int& binid) const {return bins_.at(binfullmap_->LID(binid));}
 
-    const int CalculateBinId(const std::vector<int>& indices);
+    int CalculateBinId(const std::vector<int>& indices);
 
     const std::vector<int> GetSurroundingBins(const std::vector<int> indices);
 

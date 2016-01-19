@@ -168,17 +168,17 @@ public:
   /*!
   \brief Get type of search algorithm
   */
-  virtual const INPAR::MORTAR::SearchAlgorithm SearchAlg() { return searchalgo_; };
+  virtual INPAR::MORTAR::SearchAlgorithm SearchAlg() { return searchalgo_; };
 
   /*!
   \brief Get search algorithm parameter
   */
-  virtual const double SearchParam() { return searchparam_; };
+  virtual double SearchParam() { return searchparam_; };
 
   /*!
   \brief bool whether auxiliary position is used when computing dops
   */
-  virtual const bool SearchUseAuxPos() { return searchuseauxpos_; };
+  virtual bool SearchUseAuxPos() { return searchuseauxpos_; };
 
   /*!
   \brief Get column map of all interface nodes (Filled()==true is prerequisite)

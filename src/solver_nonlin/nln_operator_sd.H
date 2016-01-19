@@ -129,7 +129,7 @@ namespace NLNSOL
     //@{
 
     //! Compute search direction
-    virtual const int ComputeSearchDirection(
+    virtual int ComputeSearchDirection(
         const Epetra_MultiVector& rhs, ///< residual
         Epetra_MultiVector& inc ///< increment (to be filled)
         ) const;

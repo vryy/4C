@@ -357,7 +357,7 @@ void FLD::TimIntOneStepTheta::TreatTurbulenceModels(Teuchos::ParameterList& elep
 /*----------------------------------------------------------------------*
 | Give local order of accuracy of velocity part         mayr.mt 04/2015 |
 *-----------------------------------------------------------------------*/
-const int FLD::TimIntOneStepTheta::MethodOrderOfAccuracyVel() const
+int FLD::TimIntOneStepTheta::MethodOrderOfAccuracyVel() const
 {
   if (theta_ != 0.5)
     return 1;
@@ -368,7 +368,7 @@ const int FLD::TimIntOneStepTheta::MethodOrderOfAccuracyVel() const
 /*----------------------------------------------------------------------*
 | Give local order of accuracy of pressure part         mayr.mt 04/2015 |
 *-----------------------------------------------------------------------*/
-const int FLD::TimIntOneStepTheta::MethodOrderOfAccuracyPres() const
+int FLD::TimIntOneStepTheta::MethodOrderOfAccuracyPres() const
 {
   if (theta_ != 0.5)
     return 1;
@@ -379,7 +379,7 @@ const int FLD::TimIntOneStepTheta::MethodOrderOfAccuracyPres() const
 /*----------------------------------------------------------------------*
 | Return linear error coefficient of velocity           mayr.mt 04/2015 |
 *-----------------------------------------------------------------------*/
-const double FLD::TimIntOneStepTheta::MethodLinErrCoeffVel() const
+double FLD::TimIntOneStepTheta::MethodLinErrCoeffVel() const
 {
   double fac = 0.0;
 

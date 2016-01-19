@@ -147,7 +147,7 @@ public:
   /*!
   \brief Return bool whether node is a cosserat node and therefore has 6 coordinates
   */
-  virtual inline const bool IsCosserat() const { return (x_.size()==(unsigned)6); }
+  virtual inline bool IsCosserat() const { return (x_.size()==(unsigned)6); }
 
   /*!
   \brief Return processor-local number of elements adjacent to this node

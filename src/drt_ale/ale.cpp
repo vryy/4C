@@ -201,7 +201,7 @@ void ALE::Ale::Update()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-const bool ALE::Ale::Converged(const int iter)
+bool ALE::Ale::Converged(const int iter)
 {
   if(iter==0)
     normdisi_ = 0.0;

@@ -263,7 +263,7 @@ void FLD::TimIntStationary::SetElementTimeParameter()
 /*----------------------------------------------------------------------*
 | return time integration factor                               bk 12/13 |
 *-----------------------------------------------------------------------*/
-const double FLD::TimIntStationary::TimIntParam() const
+double FLD::TimIntStationary::TimIntParam() const
 {
   double retval = 0.0;
     // no FSI with stationary time integrator

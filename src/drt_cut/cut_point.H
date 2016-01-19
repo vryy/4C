@@ -208,7 +208,7 @@ public:
   void EraseCutSideEdge( Edge * cutsideedge ){ cut_edges_.erase( cutsideedge ); }
 
   /// Return actual point tolerance
-  const double Tolerance() {return tol_;}
+  double Tolerance() {return tol_;}
 
   /// Set new Tolerance (in case points are merged this is necessary)
   void EnlargeTolerance(double newtol) {if(newtol > tol_){tol_ = newtol;}}

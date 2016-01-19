@@ -420,8 +420,8 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void Initialize() {}
     double Inttime() {return inttime_;};
     void Inttime_init(){inttime_=0.0;};
-    const int NumberOfActiveNodes() {return 0;}
-    const int NumberOfSlipNodes() {return 0;}
+    int NumberOfActiveNodes() {return 0;}
+    int NumberOfSlipNodes() {return 0;}
     void OutputStresses() {}
     void AugForces(Epetra_Vector& augfs_lm,Epetra_Vector& augfs_g,Epetra_Vector& augfm_lm,Epetra_Vector& augfm_g){};
     void OutputWear() {}

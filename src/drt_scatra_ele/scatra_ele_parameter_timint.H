@@ -52,15 +52,15 @@ namespace DRT
         //! print parameters to screen
         void PrintScaTraTimeParameter();
 
-        const bool IsGenAlpha() const {return is_genalpha_;};
-        const bool IsStationary() const {return is_stationary_;};
-        const bool IsIncremental() const {return is_incremental_;};
-        const double Time() const {return time_;};
-        const double Dt() const {return dt_;};
-        const double TimeFac() const {return timefac_;};
-        const double TimeFacRhs() const {return timefacrhs_;};
-        const double TimeFacRhsTau() const {return timefacrhstau_;};
-        const double AlphaF() const {return alphaF_;};
+        bool IsGenAlpha() const {return is_genalpha_;};
+        bool IsStationary() const {return is_stationary_;};
+        bool IsIncremental() const {return is_incremental_;};
+        double Time() const {return time_;};
+        double Dt() const {return dt_;};
+        double TimeFac() const {return timefac_;};
+        double TimeFacRhs() const {return timefacrhs_;};
+        double TimeFacRhsTau() const {return timefacrhstau_;};
+        double AlphaF() const {return alphaF_;};
 
       private:
 

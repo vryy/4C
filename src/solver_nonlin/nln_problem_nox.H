@@ -95,7 +95,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 10/2015
      */
-    virtual const bool SetModelEvaluator();
+    virtual bool SetModelEvaluator();
 
     /*! \brief Set Jacobian operator
      *
@@ -105,7 +105,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 10/2015
      */
-    virtual const bool SetJacobianOperator();
+    virtual bool SetJacobianOperator();
 
     //@}
 

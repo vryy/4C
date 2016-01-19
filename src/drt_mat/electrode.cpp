@@ -56,7 +56,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Electrode::CreateMaterial()
 /*---------------------------------------------------------------------------*
  | convert string to model for half cell open circuit potential   fang 08/15 |
  *---------------------------------------------------------------------------*/
-const MAT::PAR::OCPModels MAT::PAR::Electrode::StringToOCPModel(const std::string& ocpmodelstring) const
+MAT::PAR::OCPModels MAT::PAR::Electrode::StringToOCPModel(const std::string& ocpmodelstring) const
 {
   OCPModels ocpmodelenum(ocp_undefined);
 
@@ -166,7 +166,7 @@ void MAT::Electrode::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | compute half cell open circuit potential                  fang 08/15 |
  *----------------------------------------------------------------------*/
-const double MAT::Electrode::ComputeOpenCircuitPotential(
+double MAT::Electrode::ComputeOpenCircuitPotential(
     const double concentration,   //!< concentration
     const double faraday,         //!< Faraday constant
     const double frt              //!< factor F/RT
@@ -223,7 +223,7 @@ const double MAT::Electrode::ComputeOpenCircuitPotential(
 /*---------------------------------------------------------------------------------------------------------*
  | compute first derivative of half cell open circuit potential with respect to concentration   fang 08/15 |
  *---------------------------------------------------------------------------------------------------------*/
-const double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
+double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
     const double concentration,   //!< concentration
     const double faraday,         //!< Faraday constant
     const double frt              //!< factor F/RT
@@ -277,7 +277,7 @@ const double MAT::Electrode::ComputeFirstDerivOpenCircuitPotential(
 /*----------------------------------------------------------------------------------------------------------*
  | compute second derivative of half cell open circuit potential with respect to concentration   fang 08/15 |
  *----------------------------------------------------------------------------------------------------------*/
-const double MAT::Electrode::ComputeSecondDerivOpenCircuitPotential(
+double MAT::Electrode::ComputeSecondDerivOpenCircuitPotential(
     const double concentration,   //!< concentration
     const double faraday,         //!< Faraday constant
     const double frt              //!< factor F/RT

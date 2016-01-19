@@ -325,7 +325,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupl
  | extract valence of species k from element material                       fang 12/14 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-const double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::GetValence(
+double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::GetValence(
     const Teuchos::RCP<const MAT::Material>&   material,   // element material
     const int                                  k           // species number
     ) const

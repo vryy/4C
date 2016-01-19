@@ -155,7 +155,7 @@ int NLNSOL::NlnOperatorSD::ApplyInverse(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorSD::ComputeSearchDirection(
+int NLNSOL::NlnOperatorSD::ComputeSearchDirection(
     const Epetra_MultiVector& rhs, Epetra_MultiVector& inc) const
 {
   /* Since NlnProblem()->ComputeF() already returns the 'descending' residual

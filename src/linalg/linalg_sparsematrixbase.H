@@ -147,10 +147,10 @@ namespace LINALG
     virtual void Add(const LINALG::SparseOperator& A, const bool transposeA, const double scalarA,  const double scalarB);
 
     /// Add one SparseMatrixBase to another
-    virtual const void AddOther(LINALG::SparseMatrixBase& B, const bool transposeA, const double scalarA,  const double scalarB) const;
+    virtual void AddOther(LINALG::SparseMatrixBase& B, const bool transposeA, const double scalarA,  const double scalarB) const;
 
     /// Add one BlockSparseMatrix to another
-    virtual const void AddOther(LINALG::BlockSparseMatrixBase& B, const bool transposeA, const double scalarA,  const double scalarB) const;
+    virtual void AddOther(LINALG::BlockSparseMatrixBase& B, const bool transposeA, const double scalarA,  const double scalarB) const;
 
   protected:
 

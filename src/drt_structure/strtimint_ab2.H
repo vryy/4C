@@ -98,16 +98,16 @@ namespace STR
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    virtual const int MethodSteps() const { return 2; }
+    virtual int MethodSteps() const { return 2; }
 
     //! Give local order of accuracy of displacement part
-    virtual const int MethodOrderOfAccuracyDis() const { return 2; }
+    virtual int MethodOrderOfAccuracyDis() const { return 2; }
 
     //! Give local order of accuracy of velocity part
-    virtual const int MethodOrderOfAccuracyVel() const { return 2; }
+    virtual int MethodOrderOfAccuracyVel() const { return 2; }
 
     //! Return linear error coefficient of displacements
-    virtual const double MethodLinErrCoeffDis() const
+    virtual double MethodLinErrCoeffDis() const
     {
       const double dt = (*dt_)[0];
       const double dto = (*dt_)[-1];
@@ -115,7 +115,7 @@ namespace STR
     }
 
     //! Return linear error coefficient of velocities
-    virtual const double MethodLinErrCoeffVel() const
+    virtual double MethodLinErrCoeffVel() const
     {
       return MethodLinErrCoeffDis();
     }

@@ -91,7 +91,7 @@ namespace STI
       void ExchangeStateVectors();
 
       //! check termination criterion for Newton-Raphson iteration
-      const bool ExitNewtonRaphson();
+      bool ExitNewtonRaphson();
 
       //! finite difference check for global system matrix
       void FDCheck();

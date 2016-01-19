@@ -209,7 +209,7 @@ public:
 
   virtual void LiftDrag() const
   { return fluid_->LiftDrag(); }
-  virtual const double EvalTime() const { dserror("not implemented!"); return 0.0; }
+  virtual double EvalTime() const { dserror("not implemented!"); return 0.0; }
   virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) { dserror("not implemented!"); return; }
   virtual void TransferVectorsToNewDistribution(Teuchos::RCP<COMBUST::FlameFront> flamefront) { dserror("not implemented!"); return; }
   virtual void Solve()
@@ -238,7 +238,7 @@ public:
   { return fluid_->TimeScaling(); }
 
   /// return time integration factor
-  virtual const double TimIntParam() const
+  virtual double TimIntParam() const
   { return fluid_->TimIntParam(); }
 
   virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const
@@ -252,7 +252,7 @@ public:
         static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
         return ret;
         }
-  virtual const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const
+  virtual INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const
   { return fluid_->TimIntScheme(); }
   virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
         { return fluid_->ExtractVelocityPart(velpres); }
@@ -302,7 +302,7 @@ public:
   { dserror("Not implemented in the base class, may be overridden by a subclass."); }
 
   /// return physical type of fluid algorithm
-  virtual const INPAR::FLUID::PhysicalType PhysicalType() const
+  virtual INPAR::FLUID::PhysicalType PhysicalType() const
   { return fluid_->PhysicalType();}
 
 protected:

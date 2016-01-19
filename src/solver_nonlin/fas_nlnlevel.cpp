@@ -449,7 +449,7 @@ int NLNSOL::FAS::NlnLevel::DoCoarseLevelSolve(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::FAS::NlnLevel::IsCoarsestLevel() const
+bool NLNSOL::FAS::NlnLevel::IsCoarsestLevel() const
 {
   if (LevelID() == NumLevels() - 1)
   {
@@ -542,7 +542,7 @@ NLNSOL::FAS::NlnLevel::GetPostSmoother() const
 }
 
 /*----------------------------------------------------------------------------*/
-const bool NLNSOL::FAS::NlnLevel::CheckStagnation() const
+bool NLNSOL::FAS::NlnLevel::CheckStagnation() const
 {
   bool stagnation = false;
 

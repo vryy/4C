@@ -242,7 +242,7 @@ public:
   bool IsALE() const { return isale_; }
 
   //! Provide enum of time integration scheme
-  const INPAR::SCATRA::TimeIntegrationScheme MethodName() const { return timealgo_; }
+  INPAR::SCATRA::TimeIntegrationScheme MethodName() const { return timealgo_; }
 
   //! Provide title of time integration scheme
   std::string MethodTitle(){ return MapTimIntEnumToString(MethodName()); }
@@ -269,16 +269,16 @@ public:
   Teuchos::RCP<Epetra_Vector> Increment() { return increment_; };
 
   //! return flag indicating if an incremental solution approach is used
-  const bool IsIncremental() { return incremental_; }
+  bool IsIncremental() { return incremental_; }
 
   //! return Krylov projector
   Teuchos::RCP<LINALG::KrylovProjector> Projector() { return projector_; }
 
   //! return number of dofset associated with velocity dofs
-  const int NdsVel() { return nds_vel_; }
+  int NdsVel() { return nds_vel_; }
 
   //! return number of dofset associated with displacement dofs
-  const int NdsDisp() { return nds_disp_; }
+  int NdsDisp() { return nds_disp_; }
 
   //! return flux vector
   Teuchos::RCP<Epetra_MultiVector> Flux() { return flux_; };
@@ -327,9 +327,9 @@ public:
   const Teuchos::RCP<LINALG::Solver>& Solver() const { return solver_; }
 
   //! return parameters for finite difference check
-  const INPAR::SCATRA::FDCheck FDCheckType() const {return fdcheck_;};
-  const double FDCheckEps() const {return fdcheckeps_;};
-  const double FDCheckTol() const {return fdchecktol_;};
+  INPAR::SCATRA::FDCheck FDCheckType() const {return fdcheck_;};
+  double FDCheckEps() const {return fdcheckeps_;};
+  double FDCheckTol() const {return fdchecktol_;};
 
   //! return meshtying strategy (includes standard case without meshtying)
   const Teuchos::RCP<SCATRA::MeshtyingStrategyBase>& Strategy() const {return strategy_;};
@@ -451,7 +451,7 @@ public:
   virtual void RestartProblemSpecific( const int step ){return;};
 
   //! return time for evaluation of elements
-  const double DtEle(){return dtele_;};
+  double DtEle(){return dtele_;};
 
   /*========================================================================*/
   //! @name turbulence and related

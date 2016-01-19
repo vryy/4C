@@ -52,29 +52,29 @@ public:
   //! print parameter to screen
   void PrintAdjointParameter() const;
 
-  const double Density() {return dens_;}
-  const double Viscosity() {return visc_;}
+  double Density() const {return dens_;}
+  double Viscosity() const {return visc_;}
 
-  const double MinPoro() {return min_poro_;}
-  const double MaxPoro() {return max_poro_;}
-  const double SmearFac() {return smear_fac_;}
+  double MinPoro() const {return min_poro_;}
+  double MaxPoro() const {return max_poro_;}
+  double SmearFac() const {return smear_fac_;}
 
-  const INPAR::TOPOPT::ObjectiveDissipation ObjDissipationTerm() {return dissipation_;}
-  const bool ObjPresDropTerm() {return pressure_drop_;}
-  const double ObjDissipationFac() {return dissipation_fac_;}
-  const double ObjPresDropFac() {return pressure_drop_fac_;}
+  INPAR::TOPOPT::ObjectiveDissipation ObjDissipationTerm() const {return dissipation_;}
+  bool ObjPresDropTerm() const {return pressure_drop_;}
+  double ObjDissipationFac() const {return dissipation_fac_;}
+  double ObjPresDropFac() const {return pressure_drop_fac_;}
 
-  const bool IsStationary() {return is_stationary_;}
-  const INPAR::FLUID::TimeIntegrationScheme TimeIntScheme() {return timealgo_;}
-  const bool SUPG() {return supg_;}
-  const bool PSPG() {return pspg_;}
-  const INPAR::FLUID::TauType TauType() {return whichtau_;}
-  const double Dt() {return dt_;}
-  const int NumTimesteps() {return max_timesteps_;}
-  const double ThetaObj() {return theta_obj_;}
-  const double Theta() {return theta_;}
+  bool IsStationary() const {return is_stationary_;}
+  INPAR::FLUID::TimeIntegrationScheme TimeIntScheme() const {return timealgo_;}
+  bool SUPG() const {return supg_;}
+  bool PSPG() const {return pspg_;}
+  INPAR::FLUID::TauType TauType() const {return whichtau_;}
+  double Dt() const {return dt_;}
+  int NumTimesteps() const {return max_timesteps_;}
+  double ThetaObj() const {return theta_obj_;}
+  double Theta() const {return theta_;}
 
-  double VolBd() {return vol_bd_;}
+  double VolBd() const {return vol_bd_;}
 
   INPAR::TOPOPT::DensityField DensType() {return dens_type_;}
 

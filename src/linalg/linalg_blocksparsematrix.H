@@ -184,16 +184,16 @@ class BlockSparseMatrixBase : public SparseOperator
                    const double scalarB);
 
   /// Resolve virtual function of parent class
-  virtual const void AddOther(SparseMatrixBase& A,
-                              const bool transposeA,
-                              const double scalarA,
-                              const double scalarB) const;
+  virtual void AddOther(SparseMatrixBase& A,
+                        const bool transposeA,
+                        const double scalarA,
+                        const double scalarB) const;
 
   /// Resolve virtual function of parent class
-  virtual const void AddOther(BlockSparseMatrixBase& A,
-                              const bool transposeA,
-                              const double scalarA,
-                              const double scalarB) const;
+  virtual void AddOther(BlockSparseMatrixBase& A,
+                        const bool transposeA,
+                        const double scalarA,
+                        const double scalarB) const;
 
   /// Multiply all values in the matrix by a constant value (in place: A <- ScalarConstant * A).
   virtual int Scale(double ScalarConstant);

@@ -281,7 +281,7 @@ int NLNSOL::NlnOperatorNewton::ApplyInverse(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
+int NLNSOL::NlnOperatorNewton::ComputeSearchDirection(
     Teuchos::RCP<Epetra_MultiVector> rhs,
     Teuchos::RCP<Epetra_MultiVector> inc, const bool refactor) const
 {

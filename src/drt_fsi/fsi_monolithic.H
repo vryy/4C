@@ -339,7 +339,7 @@ namespace FSI
     bool computePreconditioner(const Epetra_Vector &x, Epetra_Operator &M, Teuchos::ParameterList *precParams=0);
 
     /// request NOX convergence from outside (needed for coupled problems)
-    const NOX::StatusTest::StatusType NoxStatus() const { return noxstatus_; };
+    NOX::StatusTest::StatusType NoxStatus() const { return noxstatus_; };
 
     //@}
 
@@ -534,24 +534,24 @@ namespace FSI
     //@{
 
     //! access past time step sizes
-    const double DtPast(const int step) const;
+    double DtPast(const int step) const;
 
     // access to time step size suggestions based on different norms
-    const double GetAdaStrDt() const      {return dtstr_;}      ///< \f$\Delta t\f$ based on all structural DOFs
-    const double GetAdaStrFSIDt() const   {return dtstrfsi_;}   ///< \f$\Delta t\f$ based on structural FSI DOFs
-    const double GetAdaStrInnerDt() const {return dtstrinner_;} ///< \f$\Delta t\f$ based on inner structural DOFs
-    const double GetAdaFlDt() const       {return dtfl_;}       ///< \f$\Delta t\f$ based on all fluid DOFs
-    const double GetAdaFlFSIDt() const    {return dtflfsi_;}    ///< \f$\Delta t\f$ based on fluid FSI DOFs
-    const double GetAdaFlInnerDt() const  {return dtflinner_;}  ///< \f$\Delta t\f$ based on inner fluid DOFs
-    const double GetAdaNonLinSolverDt() const { return dtnonlinsolver_; } ///< \f$\Delta t\f$ based on non-convergence of nonlinear solver
+    double GetAdaStrDt() const      {return dtstr_;}      ///< \f$\Delta t\f$ based on all structural DOFs
+    double GetAdaStrFSIDt() const   {return dtstrfsi_;}   ///< \f$\Delta t\f$ based on structural FSI DOFs
+    double GetAdaStrInnerDt() const {return dtstrinner_;} ///< \f$\Delta t\f$ based on inner structural DOFs
+    double GetAdaFlDt() const       {return dtfl_;}       ///< \f$\Delta t\f$ based on all fluid DOFs
+    double GetAdaFlFSIDt() const    {return dtflfsi_;}    ///< \f$\Delta t\f$ based on fluid FSI DOFs
+    double GetAdaFlInnerDt() const  {return dtflinner_;}  ///< \f$\Delta t\f$ based on inner fluid DOFs
+    double GetAdaNonLinSolverDt() const { return dtnonlinsolver_; } ///< \f$\Delta t\f$ based on non-convergence of nonlinear solver
 
     // access to error norms
-    const double GetAdaStrnorm() const      {return strnorm_;}      ///< error norm based on all structural DOFs
-    const double GetAdaStrFSInorm() const   {return strfsinorm_;}   ///< error norm based on structural FSI DOFs
-    const double GetAdaStrInnernorm() const {return strinnernorm_;} ///< error norm based on inner structural DOFs
-    const double GetAdaFlnorm() const       {return flnorm_;}       ///< error norm based on all fluid DOFs
-    const double GetAdaFlFSInorm() const    {return flfsinorm_;}    ///< error norm based on fluid FSI DOFs
-    const double GetAdaFlInnerNorm() const  {return flinnernorm_;}  ///< error norm based on inner fluid DOFs
+    double GetAdaStrnorm() const      {return strnorm_;}      ///< error norm based on all structural DOFs
+    double GetAdaStrFSInorm() const   {return strfsinorm_;}   ///< error norm based on structural FSI DOFs
+    double GetAdaStrInnernorm() const {return strinnernorm_;} ///< error norm based on inner structural DOFs
+    double GetAdaFlnorm() const       {return flnorm_;}       ///< error norm based on all fluid DOFs
+    double GetAdaFlFSInorm() const    {return flfsinorm_;}    ///< error norm based on fluid FSI DOFs
+    double GetAdaFlInnerNorm() const  {return flinnernorm_;}  ///< error norm based on inner fluid DOFs
 
     /*! \brief Select \f$\Delta t_{min}\f$ of all proposed time step sizes based on error estimation
      *
@@ -573,7 +573,7 @@ namespace FSI
     virtual bool SetAccepted() const = 0;
 
     //! return the error action that should be performed
-    virtual const int GetErrorAction() const { return erroraction_; }
+    virtual int GetErrorAction() const { return erroraction_; }
 
     //! Check whether time step sizes are the same among all fields
     virtual bool CheckIfDtsSame();

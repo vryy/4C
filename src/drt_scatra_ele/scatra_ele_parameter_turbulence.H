@@ -54,30 +54,30 @@ namespace DRT
 
         //! @name return turbulence parameters
         //! @{
-        const INPAR::FLUID::TurbModelAction TurbModel(){return turbmodel_;};
-        const INPAR::FLUID::ScalarForcing ScalarForcing(){return scalarforcing_;};
-        const INPAR::SCATRA::FSSUGRDIFF WhichFssgd(){return whichfssgd_;};
-        const bool FSSGD(){return fssgd_;};
-        const double Cs(){return Cs_;};
-        const double TPN(){return tpn_;};
-        const bool CsAv(){return Cs_av_;};
-        const double Csgs_SgVel(){return Csgs_sgvel_;};
-        const double Alpha(){return alpha_;}
-        const bool Calc_N(){return calc_N_;};
-        const double N_Vel(){return N_vel_;};
-        const INPAR::FLUID::RefVelocity RefVel(){return refvel_;};
-        const INPAR::FLUID::RefLength RefLength(){return reflength_;};
-        const double C_Nu(){return c_nu_;};
-        const bool Nwl(){return nwl_;};
-        const bool Nwl_ScaTra(){return nwl_scatra_;};
-        const bool Beta(){return beta_;};
-        const bool BD_Gp(){return BD_gp_;};
-        const double Csgs_SgPhi(){double tmp = 0.0; if(adapt_Csgs_phi_ and nwl_) tmp = Csgs_sgvel_*meanCai_; else tmp = Csgs_sgphi_; return tmp;};
-        const double C_Diff(){return c_diff_;};
-        const bool MfsConservative(){return mfs_conservative_;};
-        const void SetCsgsPhi(double meanCai){meanCai_ = meanCai; return;};
-        const bool AdaptCsgsPhi(){return adapt_Csgs_phi_;};
-        const bool TurbInflow(){return turbinflow_;};
+        INPAR::FLUID::TurbModelAction TurbModel(){return turbmodel_;};
+        INPAR::FLUID::ScalarForcing ScalarForcing(){return scalarforcing_;};
+        INPAR::SCATRA::FSSUGRDIFF WhichFssgd(){return whichfssgd_;};
+        bool FSSGD(){return fssgd_;};
+        double Cs(){return Cs_;};
+        double TPN(){return tpn_;};
+        bool CsAv(){return Cs_av_;};
+        double Csgs_SgVel(){return Csgs_sgvel_;};
+        double Alpha(){return alpha_;}
+        bool Calc_N(){return calc_N_;};
+        double N_Vel(){return N_vel_;};
+        INPAR::FLUID::RefVelocity RefVel(){return refvel_;};
+        INPAR::FLUID::RefLength RefLength(){return reflength_;};
+        double C_Nu(){return c_nu_;};
+        bool Nwl(){return nwl_;};
+        bool Nwl_ScaTra(){return nwl_scatra_;};
+        bool Beta(){return beta_;};
+        bool BD_Gp(){return BD_gp_;};
+        double Csgs_SgPhi(){double tmp = 0.0; if(adapt_Csgs_phi_ and nwl_) tmp = Csgs_sgvel_*meanCai_; else tmp = Csgs_sgphi_; return tmp;};
+        double C_Diff(){return c_diff_;};
+        bool MfsConservative(){return mfs_conservative_;};
+        void SetCsgsPhi(double meanCai){meanCai_ = meanCai; return;};
+        bool AdaptCsgsPhi(){return adapt_Csgs_phi_;};
+        bool TurbInflow(){return turbinflow_;};
         //! @}
 
       private:

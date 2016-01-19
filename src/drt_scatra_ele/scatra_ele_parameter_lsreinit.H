@@ -64,18 +64,18 @@ namespace DRT
         //! @name access-routines
         /*========================================================================*/
 
-        const INPAR::SCATRA::ReInitialAction ReinitType() const {return reinittype_;};
-        const INPAR::SCATRA::SmoothedSignType SignType() const {return signtype_;};
-        const INPAR::SCATRA::CharEleLengthReinit CharEleLengthReinit() const {return charelelengthreinit_;};
-        const double InterfaceThicknessFac() const {return interfacethicknessfac_;};
-        const bool UseProjectedVel() const {return useprojectedreinitvel_;};
-        const INPAR::SCATRA::LinReinit LinForm() const {return linform_;};
-        const INPAR::SCATRA::ArtDiff ArtDiff() const {return artdiff_;};
-        const double PenaltyPara() const {return alphapen_;};
-        const bool Project() const {return project_;};
-        const bool Lumping() const {return lumping_;};
-        const double ProjectDiff() const {return projectdiff_;};
-        const INPAR::SCATRA::DiffFunc DiffFct() const {return difffct_;};
+        INPAR::SCATRA::ReInitialAction ReinitType() const {return reinittype_;};
+        INPAR::SCATRA::SmoothedSignType SignType() const {return signtype_;};
+        INPAR::SCATRA::CharEleLengthReinit CharEleLengthReinit() const {return charelelengthreinit_;};
+        double InterfaceThicknessFac() const {return interfacethicknessfac_;};
+        bool UseProjectedVel() const {return useprojectedreinitvel_;};
+        INPAR::SCATRA::LinReinit LinForm() const {return linform_;};
+        INPAR::SCATRA::ArtDiff ArtDiff() const {return artdiff_;};
+        double PenaltyPara() const {return alphapen_;};
+        bool Project() const {return project_;};
+        bool Lumping() const {return lumping_;};
+        double ProjectDiff() const {return projectdiff_;};
+        INPAR::SCATRA::DiffFunc DiffFct() const {return difffct_;};
 
       private:
 

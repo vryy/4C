@@ -98,7 +98,7 @@ namespace XFEM
       ) const;
 
       // get number of fields
-      const int NumFields() const
+      int NumFields() const
       {
         return paramsLocalEntries_.size();
       };

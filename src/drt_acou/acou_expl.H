@@ -158,7 +158,7 @@ public:
   const Teuchos::RCP<Teuchos::ParameterList> Params() { return params_; }
 
   /// return the protected processor id
-  const int ProcId() { return myrank_; }
+  int ProcId() { return myrank_; }
 
 private:
 

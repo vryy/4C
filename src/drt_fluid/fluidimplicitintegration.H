@@ -447,7 +447,7 @@ public:
   //@{
 
   //! access to time step size of previous time step
-  virtual const double DtPrevious() const { return dtp_; }
+  virtual double DtPrevious() const { return dtp_; }
 
   //! set time step size
   virtual void SetDt (const double dtnew);
@@ -492,26 +492,26 @@ public:
   }
 
   //! Give order of accuracy
-  virtual const int MethodOrderOfAccuracy() const
+  virtual int MethodOrderOfAccuracy() const
   {
     return std::min(MethodOrderOfAccuracyVel(), MethodOrderOfAccuracyPres());
   }
 
   //! Give local order of accuracy of velocity part
-  virtual const int MethodOrderOfAccuracyVel() const
+  virtual int MethodOrderOfAccuracyVel() const
   {
     dserror("Not implemented in base class. May be overwritten by derived class.");
     return 0;
   }
 
   //! Give local order of accuracy of pressure part
-  virtual const int MethodOrderOfAccuracyPres() const
+  virtual int MethodOrderOfAccuracyPres() const
   {
     dserror("Not implemented in base class. May be overwritten by derived class.");
     return 0;
   }
   //! Return linear error coefficient of velocity
-  virtual const double MethodLinErrCoeffVel() const
+  virtual double MethodLinErrCoeffVel() const
   {
     dserror("Not implemented in base class. May be overwritten by derived class.");
     return 0;
@@ -754,7 +754,7 @@ public:
   \brief return scheme-specific time integration parameter
 
   */
-  virtual const double TimIntParam() const=0;
+  virtual double TimIntParam() const=0;
 
   /*!
   \brief compute values at intermediate time steps for gen.-alpha
@@ -1038,7 +1038,7 @@ protected:
   \brief velocity required for evaluation of related quantites required on element level
 
   */
-  virtual const Teuchos::RCP<const Epetra_Vector> EvaluationVel() = 0;
+  virtual Teuchos::RCP<const Epetra_Vector> EvaluationVel() = 0;
 
   /*!
     \brief add problem dependent vectors

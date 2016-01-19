@@ -128,7 +128,7 @@ public:
   /*!
   \brief Get current augmented lagrange multiplier 'lmuzawa_'
   */
-  virtual const double Getlmuzawa()=0;
+  virtual double Getlmuzawa()=0;
 
   /*!
   \brief Get flag ndicating whether contact is active (true) or inactive (false)

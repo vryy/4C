@@ -185,10 +185,10 @@ namespace NLNSOL
       virtual Teuchos::RCP<const Teuchos::ParameterList> GetOutParams() const;
 
       //! Has Init() already been called?
-      virtual const bool IsInit() const { return isinit_; }
+      virtual bool IsInit() const { return isinit_; }
 
       //! Has Setup() already been called?
-      virtual const bool IsSetup() const { return issetup_; }
+      virtual bool IsSetup() const { return issetup_; }
 
       //@}
 
@@ -243,16 +243,16 @@ namespace NLNSOL
        *  operator is a smoother, we do not care about convergence and just
        *  advance with the smoothed solution.
        */
-      virtual const bool IsSolver() const;
+      virtual bool IsSolver() const;
 
       //! Get maximally allowed number of iterations
-      virtual const int GetMaxIter() const;
+      virtual int GetMaxIter() const;
 
       //! Get nested level
-      const int Nested() const { return nested_; }
+      int Nested() const { return nested_; }
 
       //! Get level of indentation for formatted screen output
-      const int Indentation() const { return 4*nested_; }
+      int Indentation() const { return 4*nested_; }
 
       //@}
 
@@ -283,7 +283,7 @@ namespace NLNSOL
        *
        *  \author mayr.mt \date 09/2014
        */
-      virtual const bool ContinueIterations(
+      virtual bool ContinueIterations(
           const int iter, ///< current iteration counter
           const bool converged ///< convergence flag
           ) const;
@@ -301,7 +301,7 @@ namespace NLNSOL
        *
        *  \author mayr.mt \date 03/2015
        */
-      virtual const NLNSOL::UTILS::OperatorStatus ErrorCode(
+      virtual NLNSOL::UTILS::OperatorStatus ErrorCode(
           const int iter, ///< current iteration counter
           const bool converged, ///< convergence status
           const bool error = false, ///< any unspecified error
@@ -353,7 +353,7 @@ namespace NLNSOL
        *
        *  \author mayr.mt \date 09/2014
        */
-      virtual const bool CheckSuccessfulConvergence(
+      virtual bool CheckSuccessfulConvergence(
           const int iter, ///< number of performed iterations
           const bool converged ///< convergence flag
           ) const;

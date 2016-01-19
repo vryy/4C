@@ -54,26 +54,26 @@ namespace DRT
 
         //! @name return general parameters
         //! @{
-        const bool IsAle(){return is_ale_;};
-        const bool IsConservative(){return is_conservative_;};
-        const INPAR::SCATRA::FluxType WriteFlux(){return writeflux_;};
-        const Teuchos::RCP<std::vector<int> > WriteFluxIds(){return writefluxids_;};
-        const INPAR::SCATRA::FDCheck FDCheck(){return fdcheck_;};
-        const double FDCheckEps(){return fdcheckeps_;};
-        const double FDCheckTol(){return fdchecktol_;};
+        bool IsAle() const {return is_ale_;};
+        bool IsConservative() const {return is_conservative_;};
+        INPAR::SCATRA::FluxType WriteFlux() const {return writeflux_;};
+        const Teuchos::RCP<std::vector<int> > WriteFluxIds() const {return writefluxids_;};
+        INPAR::SCATRA::FDCheck FDCheck() const {return fdcheck_;};
+        double FDCheckEps() const {return fdcheckeps_;};
+        double FDCheckTol() const {return fdchecktol_;};
         //! @}
 
         //! @name return stabilization parameters
         //! @{
-        const INPAR::SCATRA::StabType StabType(){return stabtype_;};
-        const INPAR::SCATRA::TauType TauDef(){return whichtau_;};
-        const INPAR::SCATRA::CharEleLength CharEleLength(){return charelelength_;};
-        const double USFEMGLSFac(){return diffreastafac_;};
-        const bool RBSubGrVel(){return sgvel_;};
-        const bool ASSGD(){return assgd_;};
-        const INPAR::SCATRA::AssgdType ASSGDType(){return whichassgd_;};
-        const bool TauGP(){return tau_gp_;};
-        const bool MatGP(){return mat_gp_;};
+        INPAR::SCATRA::StabType StabType() const {return stabtype_;};
+        INPAR::SCATRA::TauType TauDef() const {return whichtau_;};
+        INPAR::SCATRA::CharEleLength CharEleLength() const {return charelelength_;};
+        double USFEMGLSFac() const {return diffreastafac_;};
+        bool RBSubGrVel() const {return sgvel_;};
+        bool ASSGD() const {return assgd_;};
+        INPAR::SCATRA::AssgdType ASSGDType() const {return whichassgd_;};
+        bool TauGP() const {return tau_gp_;};
+        bool MatGP() const {return mat_gp_;};
         //! @}
 
       private:

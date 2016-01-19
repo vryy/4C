@@ -118,11 +118,11 @@ namespace ADJOINT
     /// increment time and step value
     void   IncrementTimeAndStep(){step_ += 1;time_ -= dt_;}
     /// access to time integration scheme
-    const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
+    INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
     //@}
 
     /// access to adjoint type
-    const INPAR::TOPOPT::AdjointType AdjointType() const {return adjointtype_;}
+    INPAR::TOPOPT::AdjointType AdjointType() const {return adjointtype_;}
 
     /// check if time loop has finished
     bool TimeLoopFinished() const;

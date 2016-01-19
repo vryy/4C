@@ -174,7 +174,7 @@ namespace NLNSOL
      *
      *  \author mayr \date 02/2015
      */
-    virtual const int ComputeSearchDirection(
+    virtual int ComputeSearchDirection(
         Teuchos::RCP<Epetra_MultiVector> rhs, ///< residual
         Teuchos::RCP<Epetra_MultiVector> inc, ///< increment (to be filled)
         const bool refactor ///< re-factor Jacobian?

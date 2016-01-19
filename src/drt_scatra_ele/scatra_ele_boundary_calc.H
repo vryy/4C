@@ -281,7 +281,7 @@ public:
       );
 
   //! get density at integration point
-  virtual const double GetDensity(
+  virtual double GetDensity(
       Teuchos::RCP<const MAT::Material>             material,
       const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,
       const int                                     k

@@ -54,7 +54,7 @@ public:
       which we try to minimize and the subjected constraint equations.
       Typical examples are the Lagrangian function value and the augmented Lagrangian
       function value. */
-  virtual const double GetConstrObjectiveModelValue(const NOX::NLN::GlobalData::MeritFctName& name) const = 0;
+  virtual double GetConstrObjectiveModelValue(const NOX::NLN::GlobalData::MeritFctName& name) const = 0;
 
   //! Get the desired linearization terms of the objective model
   virtual Teuchos::RCP<const std::vector<double> >
@@ -63,7 +63,7 @@ public:
       const NOX::NLN::GlobalData::LinType& type=NOX::NLN::GlobalData::lin_wrt_all_dofs) const = 0;
 
   //! Get value of the infeasibility model
-  virtual const double GetInfeasibilityModelValue() const = 0;
+  virtual double GetInfeasibilityModelValue() const = 0;
 
   //! Get the desired linearization terms of the infeasibility model
   virtual Teuchos::RCP<const std::vector<double> >
@@ -76,7 +76,7 @@ public:
   //! @name Basic functions
 
   //! Get the systemtype of the underlying linear system: condensed or saddlepoint
-  virtual const bool IsCondensed() const = 0;
+  virtual bool IsCondensed() const = 0;
 
   //! @}
 

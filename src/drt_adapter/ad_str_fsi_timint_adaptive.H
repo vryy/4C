@@ -82,7 +82,7 @@ namespace ADAPTER {
         );
 
     //! Calculate time step size suggestion
-    virtual const double CalculateDt(const double norm);
+    virtual double CalculateDt(const double norm);
 
     //! Get time step size of adaptive structural time integrator
     virtual double Dt() const;

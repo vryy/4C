@@ -247,7 +247,7 @@ void STI::Algorithm::ExchangeStateVectors()
 /*-----------------------------------------------------------------------*
  | check termination criterion for Newton-Raphson iteration   fang 04/15 |
  *-----------------------------------------------------------------------*/
-const bool STI::Algorithm::ExitNewtonRaphson()
+bool STI::Algorithm::ExitNewtonRaphson()
 {
   // initialize exit flag
   bool exit(false);

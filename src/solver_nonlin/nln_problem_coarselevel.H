@@ -109,7 +109,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 10/2015
      */
-    virtual const bool SetModelEvaluator();
+    virtual bool SetModelEvaluator();
 
     /*! \brief Set Jacobian operator
      *
@@ -119,7 +119,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 10/2015
      */
-    virtual const bool SetJacobianOperator() { /* nothing to do */ return true; }
+    virtual bool SetJacobianOperator() { /* nothing to do */ return true; }
 
     /*! \brief Set coarse level residual modifications for FAS
      *
@@ -194,7 +194,7 @@ namespace NLNSOL
      *
      *  \author mayr.mt \date 03/2015
      */
-    virtual const int LevelID() const { return levelid_; }
+    virtual int LevelID() const { return levelid_; }
 
     //@}
 

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file statmech_search.H
+\file statmech_search_binning.cpp
 \brief volume partitioning/binning search
 <pre>
 Maintainer: Kei Müller
@@ -111,7 +111,7 @@ void STATMECH::SEARCH::BinSearch::AssignPositionsToBins(const Teuchos::RCP<Epetr
   return;
 }
 
-const int STATMECH::SEARCH::BinSearch::CalculateBinId(const std::vector<int>& indices)
+int STATMECH::SEARCH::BinSearch::CalculateBinId(const std::vector<int>& indices)
 {
   if((int)indices.size()<2 || (int)indices.size()>3)
     dserror("Check the size (== %i) of your index vector", indices.size());

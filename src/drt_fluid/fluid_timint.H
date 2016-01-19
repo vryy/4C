@@ -145,7 +145,7 @@ public:
   virtual double TimeScaling() const { dserror("Not implemented in the base class, may be overridden by a subclass."); return 1337.0; }
 
   /// return time integration factor
-  virtual const double TimIntParam() const = 0;
+  virtual double TimIntParam() const = 0;
 
   /// communication object at the interface (neglecting pressure dofs)
   virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { dserror("Implemented in the fluid wrapper and derived classes");
@@ -236,7 +236,7 @@ public:
   virtual void ResetTime(const double dtold) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   virtual void LiftDrag() const = 0;
-  virtual const double EvalTime() const { dserror("Not implemented in the base class, may be overridden by a subclass."); return 0.0; }
+  virtual double EvalTime() const { dserror("Not implemented in the base class, may be overridden by a subclass."); return 0.0; }
   virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
   virtual void TransferVectorsToNewDistribution(Teuchos::RCP<COMBUST::FlameFront> flamefront) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
@@ -264,7 +264,7 @@ public:
   \brief return type of time integration scheme
 
   */
-  const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
+  INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
 
   virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape() { dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
 
@@ -346,7 +346,7 @@ public:
 
   virtual void CalculateError(){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
-  const INPAR::FLUID::PhysicalType PhysicalType() const {return physicaltype_;}
+  INPAR::FLUID::PhysicalType PhysicalType() const {return physicaltype_;}
 
 protected:
 

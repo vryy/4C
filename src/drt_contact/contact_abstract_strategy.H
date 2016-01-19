@@ -346,7 +346,7 @@ public:
    \brief Return number of active nodes
 
    */
-  const int NumberOfActiveNodes()
+  int NumberOfActiveNodes()
   {
     if (gactivenodes_ != Teuchos::null)
       return gactivenodes_->NumGlobalElements();
@@ -357,7 +357,7 @@ public:
    \brief Return number of frictional slip nodes
 
    */
-  const int NumberOfSlipNodes()
+  int NumberOfSlipNodes()
   {
     if (gslipnodes_ != Teuchos::null)
       return gslipnodes_->NumGlobalElements();

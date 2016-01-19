@@ -97,9 +97,9 @@ public:
   //! write access functions
 
   //! get reference to soution vector for write access
-  Teuchos::RCP<Epetra_MultiVector> GetSolution() {return sol_;}
+  Teuchos::RCP<Epetra_MultiVector> GetSolution() const {return sol_;}
 
-  Teuchos::RCP<Epetra_MultiVector> GetGradient() {return objgrad_;}
+  Teuchos::RCP<Epetra_MultiVector> GetGradient() const {return objgrad_;}
 
   //! get write access to objective function value
   double* GetObjFunctVal() {return &objval_;}
@@ -108,37 +108,37 @@ public:
   //! read only access functions
 
   //! get reference to solution vector
-  const Epetra_MultiVector& GetSolutionView() {return *sol_;}
+  const Epetra_MultiVector& GetSolutionView() const {return *sol_;}
 
   //! get reference to the old solution vector
-  const Epetra_MultiVector& GetSolutionOldView() {return *sol_o_;}
+  const Epetra_MultiVector& GetSolutionOldView() const {return *sol_o_;}
 
   //! get reference to the gradient vector
-  const Epetra_MultiVector& GetGradientView() {return *objgrad_;}
+  const Epetra_MultiVector& GetGradientView() const {return *objgrad_;}
 
   //! get reference to the old gradient vector
-  const Epetra_MultiVector& GetGradientOldView() {return *objgrad_o_;}
+  const Epetra_MultiVector& GetGradientOldView() const {return *objgrad_o_;}
 
   //! get "reference" to objective function value
-  const double GetObjFunctValView() {return objval_;}
+  double GetObjFunctValView() const {return objval_;}
 
   //! get "reference" to old objective function value
-  const double GetObjFunctValOldView() {return objval_o_;}
+  double GetObjFunctValOldView() const {return objval_o_;}
 
   //! return the map of the vector layout
-  const Epetra_Map& SolLayoutMap(){return *solcolmap_;}
+  const Epetra_Map& SolLayoutMap() const {return *solcolmap_;}
 
   //! return the unique map of the vector layout
-  const Epetra_Map& SolLayoutMapUnique(){return *solrowmap_;}
+  const Epetra_Map& SolLayoutMapUnique() const {return *solrowmap_;}
 
   //! current run counter
-  int Runc(){return runc_;}
+  int Runc() const {return runc_;}
 
   /*----------------------------------------------------------------------*/
   //! general access functions
 
   //! a reference to the underlying optimization problem
-  Teuchos::RCP<InvanaBase> OptProb(){return optprob_;}
+  Teuchos::RCP<InvanaBase> OptProb() const {return optprob_;}
 
 protected:
 

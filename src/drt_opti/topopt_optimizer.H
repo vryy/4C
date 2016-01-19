@@ -156,7 +156,7 @@ namespace TOPOPT
     Teuchos::RCP<const std::map<int,Teuchos::RCP<Epetra_Vector> > > ExportAdjointData() const {return adjointvel_;} /// fluid velocity
     Teuchos::RCP<Epetra_Vector> Density() const {return dens_;}
 
-    const double ObjectiveValue(){return obj_;};
+    double ObjectiveValue(){return obj_;};
     const Teuchos::RCP<const Epetra_Vector> ObjectiveGradient(){return obj_der_;};
     const Teuchos::RCP<const Epetra_SerialDenseVector> ConstraintValues(){return constr_;};
     const Teuchos::RCP<const Epetra_MultiVector> ConstraintGradients(){return constr_der_;};
@@ -168,7 +168,7 @@ namespace TOPOPT
 
     void AdoptDensityForFD(const double value, const int GID);
 
-    const int Iter() const;
+    int Iter() const;
 
     void ReadRestart(const int step);
 

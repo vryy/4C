@@ -170,22 +170,22 @@ namespace STR
     }
 
     //! Provide number of steps, a single-step method returns 1
-    virtual const int MethodSteps() const { return 1; }
+    virtual int MethodSteps() const { return 1; }
 
     //! Give local order of accuracy of displacement part
-    virtual const int MethodOrderOfAccuracyDis() const
+    virtual int MethodOrderOfAccuracyDis() const
     {
       return fabs(MethodLinErrCoeff1()) < EPS6 ? 2 : 1;
     }
 
     //! Give local order of accuracy of velocity part
-    virtual const int MethodOrderOfAccuracyVel() const
+    virtual int MethodOrderOfAccuracyVel() const
     {
       return MethodOrderOfAccuracyDis();
     }
 
     //! Return linear error coefficient of displacements
-    virtual const double MethodLinErrCoeffDis() const
+    virtual double MethodLinErrCoeffDis() const
     {
       if (MethodOrderOfAccuracyDis() == 1)
         return MethodLinErrCoeff1();
@@ -194,25 +194,25 @@ namespace STR
     }
 
     //! Return linear error coefficient of velocities
-    virtual const double MethodLinErrCoeffVel() const
+    virtual double MethodLinErrCoeffVel() const
     {
       return MethodLinErrCoeffDis();
     }
 
     //! Linear error coefficient if 1st order accurate
-    virtual const double MethodLinErrCoeff1() const
+    virtual double MethodLinErrCoeff1() const
     {
       return 1./2. - theta_;
     }
 
     //! Linear error coefficient if 2nd order accurate
-    virtual const double MethodLinErrCoeff2() const
+    virtual double MethodLinErrCoeff2() const
     {
       return 1./6. - theta_/2.;  // this is -1/12
     }
 
     //! return time integration factor
-    virtual const double TimIntParam() const {return 1.0 - theta_; }
+    virtual double TimIntParam() const {return 1.0 - theta_; }
 
     //! Consistent predictor with constant displacements
     //! and consistent velocities and displacements

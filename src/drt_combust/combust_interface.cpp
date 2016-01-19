@@ -338,7 +338,7 @@ std::size_t COMBUST::InterfaceHandleCombust::NumBoundaryIntCells(
 /*------------------------------------------------------------------------------------------------*
  | compute the volume of the minus domain (mass conservation check)               rasthofer 06/09 |
  *------------------------------------------------------------------------------------------------*/
-const double COMBUST::InterfaceHandleCombust::ComputeVolumeMinus()
+double COMBUST::InterfaceHandleCombust::ComputeVolumeMinus()
 {
   double myvolume = 0.0;
 
@@ -367,7 +367,7 @@ const double COMBUST::InterfaceHandleCombust::ComputeVolumeMinus()
  | compute surface of interface                                                   rasthofer 07/11 |
  |                                                                                    DA wichmann |
  *------------------------------------------------------------------------------------------------*/
-const double COMBUST::InterfaceHandleCombust::ComputeSurface()
+double COMBUST::InterfaceHandleCombust::ComputeSurface()
 {
   double myarea = 0.0;
 

@@ -51,16 +51,16 @@ namespace DRT
             );
 
         //! return type of closing equation for electric potential
-        const INPAR::ELCH::EquPot EquPot() const {return equpot_;};
+        INPAR::ELCH::EquPot EquPot() const {return equpot_;};
 
         //! return Faraday constant
-        const double Faraday() const {return faraday_;};
+        double Faraday() const {return faraday_;};
 
         //! return dielectric constant
-        const double Epsilon() const {return epsilon_;};
+        double Epsilon() const {return epsilon_;};
 
         //! return constant F/RT
-        const double FRT() const {return frt_;};
+        double FRT() const {return frt_;};
 
       private:
 

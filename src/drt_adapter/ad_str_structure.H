@@ -232,7 +232,7 @@ namespace ADAPTER {
     //@{
 
     /// return time integration factor
-    virtual const double TimIntParam() const = 0;
+    virtual double TimIntParam() const = 0;
 
     //! Return current time \f$t_{n}\f$
     virtual double TimeOld() const = 0;

@@ -184,28 +184,28 @@ namespace NLNSOL
     //@{
 
     //! Entry to all kind of multigrid cycles
-    virtual const int Cycle(
+    virtual int Cycle(
         Teuchos::RCP<Epetra_MultiVector> xbar ///< solution from finer level
         ) const;
 
     //! V-Cycle (recursive definition)
-    virtual const int VCycle(
+    virtual int VCycle(
         Teuchos::RCP<Epetra_MultiVector> xbar, ///< solution from finer level
         const int level ///< level ID
         ) const;
 
     //! V-Cycle with 2 levels (explicit definition)
-    virtual const int VCycleTwoLevel(
+    virtual int VCycleTwoLevel(
         Teuchos::RCP<Epetra_MultiVector> x ///< solution on level 0
         ) const;
 
     //! V-Cycle with 3 levels (explicit definition)
-    virtual const int VCycleThreeLevel(
+    virtual int VCycleThreeLevel(
         Teuchos::RCP<Epetra_MultiVector> x ///< solution on level 0
         ) const;
 
     //! W-Cycle // ToDo (mayr) implement W-Cycle
-    virtual const int WCycle() const;
+    virtual int WCycle() const;
 
     //@}
 
@@ -213,19 +213,19 @@ namespace NLNSOL
     //@{
 
     //! Do the presmoothing
-    virtual const int PreSmoothing(
+    virtual int PreSmoothing(
         Epetra_MultiVector& x, ///< solution from finer level
         const int level ///< level ID
         ) const;
 
     //! Do the postsmoothing
-    virtual const int PostSmoothing(
+    virtual int PostSmoothing(
         Epetra_MultiVector& x, ///< solution from finer level
         const int level ///< level ID
         ) const;
 
     //! Do the coarse level solve
-    virtual const int CoarseLevelSolve(
+    virtual int CoarseLevelSolve(
         Epetra_MultiVector& x, ///< solution from finer level
         const int level ///< level ID
         ) const;

@@ -165,9 +165,9 @@ public:
   \brief return scheme-specific time integration parameter
 
   */
-  virtual const double TimIntParam() const { return (1.0 - alphaF_); }
+  virtual double TimIntParam() const { return (1.0 - alphaF_); }
 
-  virtual const double AlphaM() const {return alphaM_;}
+  virtual double AlphaM() const {return alphaM_;}
 
   //! @name methods for fsi
   /// Extrapolation of vectors from mid-point to end-point t_{n+1}
@@ -193,7 +193,7 @@ public:
    *
    *  \author mayr.mt \date 04/2015
    */
-  virtual const int MethodOrderOfAccuracyVel() const;
+  virtual int MethodOrderOfAccuracyVel() const;
 
   /*! \brief Give local order of accuracy of pressure part
    *
@@ -203,7 +203,7 @@ public:
    *
    *  \author mayr.mt \date 04/2015
    */
-  virtual const int MethodOrderOfAccuracyPres() const;
+  virtual int MethodOrderOfAccuracyPres() const;
 
   /*! \brief Return linear error coefficient of velocity
    *
@@ -216,7 +216,7 @@ public:
    *
    *  \author mayr.mt \date 04/2015
    */
-  virtual const double MethodLinErrCoeffVel() const;
+  virtual double MethodLinErrCoeffVel() const;
 
   //@}
 
@@ -252,7 +252,7 @@ protected:
   \brief velocity required for evaluation of related quantites required on element level
 
   */
-  virtual const Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return velaf_;};
+  virtual Teuchos::RCP<const Epetra_Vector> EvaluationVel() {return velaf_;};
 
   /// time factors for generalized-alpha time integration
   double alphaM_;

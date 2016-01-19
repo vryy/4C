@@ -55,7 +55,7 @@ namespace Interface {
         const bool& isScaled = false) const = 0;
 
     //! compute and return some energy representative
-    virtual const double GetObjectiveModelValue(const std::string& name) const = 0;
+    virtual double GetObjectiveModelValue(const std::string& name) const = 0;
 
     //! calculate characteristic/reference norms for forces
     virtual double CalcRefNormForce() = 0;

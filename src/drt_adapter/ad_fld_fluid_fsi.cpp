@@ -696,7 +696,7 @@ double ADAPTER::FluidFSI::CalculateErrorNorm(const Epetra_Vector& vec,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const int ADAPTER::FluidFSI::AuxMethodOrderOfAccuracy() const
+int ADAPTER::FluidFSI::AuxMethodOrderOfAccuracy() const
 {
   if (auxintegrator_ == INPAR::FSI::timada_fld_none)
     return 0;
@@ -713,7 +713,7 @@ const int ADAPTER::FluidFSI::AuxMethodOrderOfAccuracy() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const double ADAPTER::FluidFSI::AuxMethodLinErrCoeffVel() const
+double ADAPTER::FluidFSI::AuxMethodLinErrCoeffVel() const
 {
   if (auxintegrator_ == INPAR::FSI::timada_fld_none)
     return 0.0;
@@ -737,7 +737,7 @@ const double ADAPTER::FluidFSI::AuxMethodLinErrCoeffVel() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const double ADAPTER::FluidFSI::GetTimAdaErrOrder() const
+double ADAPTER::FluidFSI::GetTimAdaErrOrder() const
 {
   if (auxintegrator_ != INPAR::FSI::timada_fld_none)
   {

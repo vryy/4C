@@ -121,7 +121,7 @@ namespace GROUP {
         const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
     //! compute and return some energy representative
-    virtual const double GetObjectiveModelValue(const std::string& name) const;
+    virtual double GetObjectiveModelValue(const std::string& name) const;
 
     //! get the lumped mass matrix
     virtual Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const;

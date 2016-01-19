@@ -174,7 +174,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::ExtractElementAndNodeValues(
  | get density at integration point                                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-const double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(
+double DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity(
     const DRT::Element*                 ele,
     Teuchos::RCP<const MAT::Material>   material,
     Teuchos::ParameterList&             params,

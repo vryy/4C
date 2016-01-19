@@ -110,10 +110,10 @@ namespace UTILS
     //@{
 
     //! Has Init() already been called?
-    virtual const bool IsInit() const { return isinit_; }
+    virtual bool IsInit() const { return isinit_; }
 
     //! Has Setup() already been called?
-    virtual const bool IsSetup() const { return issetup_; }
+    virtual bool IsSetup() const { return issetup_; }
 
     //@}
 
@@ -188,7 +188,7 @@ namespace UTILS
     const std::string& GetName() const { return name_; }
 
     //! Return time step number
-    const unsigned int GetStep() const { return step_; }
+    unsigned int GetStep() const { return step_; }
 
     //! communicator
     virtual Teuchos::RCP<const Epetra_Comm> Comm() const;

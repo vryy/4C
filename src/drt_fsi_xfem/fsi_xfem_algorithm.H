@@ -83,7 +83,7 @@ namespace FSI
     //! access to ale field
     const Teuchos::RCP< ::ADAPTER::AleFpsiWrapper>& AleField(){return ale_;}
 
-    const bool HaveAle() {return (AleField() != Teuchos::null);}
+    bool HaveAle() {return (AleField() != Teuchos::null);}
 
     //@}
 

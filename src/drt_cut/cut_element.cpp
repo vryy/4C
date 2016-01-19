@@ -1544,7 +1544,7 @@ void GEO::CUT::Element::DirectDivergenceGaussRule(Mesh & mesh,
  * Return the level set gradient for a given coordinate.
  * Make sure coordinates are inside the element!                                               winter 07/15
  *---------------------------------------------------------------------------------------------------------*/
-const double GEO::CUT::Element::GetLevelSetValue( const LINALG::Matrix<3,1> x_global, bool islocal)
+double GEO::CUT::Element::GetLevelSetValue( const LINALG::Matrix<3,1> x_global, bool islocal)
 {
   LINALG::Matrix<3,1> xsi;
   if(not islocal)

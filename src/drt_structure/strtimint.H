@@ -559,10 +559,10 @@ namespace STR
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a \f$m\f$-multistep method returns \f$m\f$
-    virtual const int MethodSteps() const = 0;
+    virtual int MethodSteps() const = 0;
 
     //! return time integration factor
-    virtual const double TimIntParam() const = 0;
+    virtual double TimIntParam() const = 0;
 
     //! Give order of accuracy
     int MethodOrderOfAccuracy() const
@@ -571,16 +571,16 @@ namespace STR
     }
 
     //! Give local order of accuracy of displacement part
-    virtual const int MethodOrderOfAccuracyDis() const  = 0;
+    virtual int MethodOrderOfAccuracyDis() const  = 0;
 
     //! Give local order of accuracy of velocity part
-    virtual const int MethodOrderOfAccuracyVel() const  = 0;
+    virtual int MethodOrderOfAccuracyVel() const  = 0;
 
     //! Return linear error coefficient of displacements
-    virtual const double MethodLinErrCoeffDis() const = 0;
+    virtual double MethodLinErrCoeffDis() const = 0;
 
     //! Return linear error coefficient of velocities
-    virtual const double MethodLinErrCoeffVel() const  = 0;
+    virtual double MethodLinErrCoeffVel() const  = 0;
 
     //@}
 
@@ -1033,7 +1033,7 @@ namespace STR
     // set structure displacement vector due to biofilm growth
     void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp);
 
-    virtual const bool HaveBiofilmGrowth() const { return (not strgrdisp_.is_null()) ; }
+    virtual bool HaveBiofilmGrowth() const { return (not strgrdisp_.is_null()) ; }
 
     //@}
 

@@ -163,7 +163,7 @@ int NLNSOL::NlnOperatorDInverse::ApplyInverse(const Epetra_MultiVector& f,
 }
 
 /*----------------------------------------------------------------------------*/
-const int NLNSOL::NlnOperatorDInverse::ComputeSearchDirection(
+int NLNSOL::NlnOperatorDInverse::ComputeSearchDirection(
     const Epetra_MultiVector& rhs, Epetra_MultiVector& inc) const
 {
   int err = 0;

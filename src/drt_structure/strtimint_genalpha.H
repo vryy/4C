@@ -87,22 +87,22 @@ namespace STR
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    virtual const int MethodSteps() const { return 1; }
+    virtual int MethodSteps() const { return 1; }
 
     //! Give linear order of accuracy of displacement part
-    virtual const int MethodOrderOfAccuracyDis() const
+    virtual int MethodOrderOfAccuracyDis() const
     {
       return (fabs(MethodLinErrCoeffDis2()) < EPS6) ? 3 : 2;
     }
 
     //! Give linear order of accuracy of velocity part
-    virtual const int MethodOrderOfAccuracyVel() const
+    virtual int MethodOrderOfAccuracyVel() const
     {
       return (fabs(MethodLinErrCoeffVel1()) < EPS6) ? 2 : 1;
     }
 
     //! Return linear error coefficient of displacements
-    virtual const double MethodLinErrCoeffDis() const
+    virtual double MethodLinErrCoeffDis() const
     {
       if (MethodOrderOfAccuracyDis() == 2)
         return MethodLinErrCoeffDis2();
@@ -111,14 +111,14 @@ namespace STR
     }
 
     //! 2nd order linear error coefficient of displacements
-    virtual const double MethodLinErrCoeffDis2() const
+    virtual double MethodLinErrCoeffDis2() const
     {
       // at least true for am<1/2 and large enough n->infty
       return 1.0/6.0 - beta_ + alphaf_/2.0 - alpham_/2.0;
     }
 
     //! 3rd order linear error coefficient of displacements
-    virtual const double MethodLinErrCoeffDis3() const
+    virtual double MethodLinErrCoeffDis3() const
     {
       // at least true for am<1/2 and large enough n->infty
       return 1./24.
@@ -127,7 +127,7 @@ namespace STR
     }
 
     //! Return linear error coefficient of velocities
-    virtual const double MethodLinErrCoeffVel() const
+    virtual double MethodLinErrCoeffVel() const
     {
       if (MethodOrderOfAccuracyVel() == 1)
         return MethodLinErrCoeffVel1();
@@ -136,14 +136,14 @@ namespace STR
     }
 
     //! 1st order linear error coefficient of velocities
-    virtual const double MethodLinErrCoeffVel1() const
+    virtual double MethodLinErrCoeffVel1() const
     {
       // at least true for am<1/2 and large enough n->infty
       return 1.0/2.0 - gamma_ + alphaf_ - alpham_;
     }
 
     //! 2nd order linear error coefficient of velocities
-    virtual const double MethodLinErrCoeffVel2() const
+    virtual double MethodLinErrCoeffVel2() const
     {
       // at least true for am<1/2 and large enough n->infty
       return 1./6.
@@ -152,7 +152,7 @@ namespace STR
     }
 
     //! return time integration factor
-    virtual const double TimIntParam() const { return alphaf_; }
+    virtual double TimIntParam() const { return alphaf_; }
 
     //! Consistent predictor with constant displacements
     //! and consistent velocities and displacements

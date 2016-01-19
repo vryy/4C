@@ -1122,7 +1122,7 @@ namespace TIMINT {
 
       //@}
 
-      virtual const double GetUpdatedTime()
+      virtual double GetUpdatedTime()
       {
         CheckInitSetup();
         return (*timen_)[0] + (*dt_)[0];

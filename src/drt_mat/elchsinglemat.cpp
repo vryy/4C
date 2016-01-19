@@ -177,7 +177,7 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
 /*----------------------------------------------------------------------*
  | compute diffusion coefficient according to curve number   fang 02/15 |
  *----------------------------------------------------------------------*/
-const double MAT::ElchSingleMat::ComputeDiffusionCoefficient(const double cint) const
+double MAT::ElchSingleMat::ComputeDiffusionCoefficient(const double cint) const
 {
   double diff(0.);
 
@@ -195,7 +195,7 @@ const double MAT::ElchSingleMat::ComputeDiffusionCoefficient(const double cint) 
 /*------------------------------------------------------------------------------------------*
  | compute first derivative of diffusion coefficient according to curve number   fang 02/15 |
  *------------------------------------------------------------------------------------------*/
-const double MAT::ElchSingleMat::ComputeFirstDerivDiffCoeff(const double cint) const
+double MAT::ElchSingleMat::ComputeFirstDerivDiffCoeff(const double cint) const
 {
   double firstderiv(0.);
 
@@ -213,7 +213,7 @@ const double MAT::ElchSingleMat::ComputeFirstDerivDiffCoeff(const double cint) c
 /*----------------------------------------------------------------------*
  | compute conductivity according to curve number            fang 02/15 |
  *----------------------------------------------------------------------*/
-const double MAT::ElchSingleMat::ComputeConductivity(const double cint) const
+double MAT::ElchSingleMat::ComputeConductivity(const double cint) const
 {
   double cond(0.);
 
@@ -230,7 +230,7 @@ const double MAT::ElchSingleMat::ComputeConductivity(const double cint) const
 /*---------------------------------------------------------------------------------*
  | compute first derivative of conductivity according to curve number   fang 02/15 |
  *---------------------------------------------------------------------------------*/
-const double MAT::ElchSingleMat::ComputeFirstDerivCond(const double cint) const
+double MAT::ElchSingleMat::ComputeFirstDerivCond(const double cint) const
 {
   double firstderiv(0.);
 
@@ -247,7 +247,7 @@ const double MAT::ElchSingleMat::ComputeFirstDerivCond(const double cint) const
 /*----------------------------------------------------------------------*
  | evaluate value of predefined function                     fang 02/15 |
  *----------------------------------------------------------------------*/
-const double MAT::ElchSingleMat::EvalFunctValue(
+double MAT::ElchSingleMat::EvalFunctValue(
     const int                    functnr,
     const double                 cint,
     const std::vector<double>&   functparams
@@ -356,7 +356,7 @@ const double MAT::ElchSingleMat::EvalFunctValue(
 /*----------------------------------------------------------------------*
  | evaluate first derivative of predefined function          fang 02/15 |
  *----------------------------------------------------------------------*/
-const double MAT::ElchSingleMat::EvalFirstDerivFunctValue(
+double MAT::ElchSingleMat::EvalFirstDerivFunctValue(
     const int                    functnr,
     const double                 cint,
     const std::vector<double>&   functparams

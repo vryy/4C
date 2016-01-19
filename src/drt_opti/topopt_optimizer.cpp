@@ -895,7 +895,7 @@ void TOPOPT::Optimizer::AdoptDensityForFD(const double value, const int GID)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const int TOPOPT::Optimizer::Iter() const
+int TOPOPT::Optimizer::Iter() const
 {
   return optimizer_->Iter();
 }

@@ -93,7 +93,7 @@ public:
 
   //! get the flag if the simulation is run as pseudo 2D simulation with only one element in the third dimension and
   //! strong Dirichlet condition to fix u_z = 0
-  const bool IsPseudo2D(){return is_pseudo_2D_;};
+  bool IsPseudo2D(){return is_pseudo_2D_;};
 
   //@}
 

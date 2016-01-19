@@ -252,7 +252,7 @@ namespace FLD
     }
 
     /// return time integration factor
-    virtual const double TimIntParam() const;
+    virtual double TimIntParam() const;
 
     /// turbulence statistics manager
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
@@ -278,7 +278,7 @@ namespace FLD
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    const Teuchos::RCP<const Epetra_Vector> EvaluationVel()
+    Teuchos::RCP<const Epetra_Vector> EvaluationVel()
     {
       return Teuchos::null;
     }
@@ -586,7 +586,7 @@ namespace FLD
     void GenAlphaUpdateAcceleration();
 
     /// return type of enforcing interface conditions
-    const INPAR::XFEM::CouplingMethod CouplingMethod() const {return coupling_method_;}
+    INPAR::XFEM::CouplingMethod CouplingMethod() const {return coupling_method_;}
 
     //@}
 

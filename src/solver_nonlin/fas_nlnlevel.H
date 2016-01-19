@@ -183,13 +183,13 @@ namespace FAS
     //@{
 
     //! Current level
-    virtual const int LevelID() const { return levelid_; }
+    virtual int LevelID() const { return levelid_; }
 
     //! Max number of levels
-    virtual const int NumLevels() const { return numlevels_; }
+    virtual int NumLevels() const { return numlevels_; }
 
     //! Is this level the coarsest level?
-    virtual const bool IsCoarsestLevel() const;
+    virtual bool IsCoarsestLevel() const;
 
     //! Get matrix
     virtual Teuchos::RCP<const Epetra_CrsMatrix> GetMatrix() const;
@@ -218,16 +218,16 @@ namespace FAS
     //@{
 
     //! Matrix set?
-    virtual const bool HaveMatrix() const { return (not A_.is_null()); }
+    virtual bool HaveMatrix() const { return (not A_.is_null()); }
 
     //! Restriction operator set?
-    virtual const bool HaveROp() const { return (not rop_.is_null()); }
+    virtual bool HaveROp() const { return (not rop_.is_null()); }
 
     //! Prolongation operator set?
-    virtual const bool HavePOp() const { return (not pop_.is_null()); }
+    virtual bool HavePOp() const { return (not pop_.is_null()); }
 
     //! Null space set?
-    virtual const bool HaveNullSpace() const { return (not nullspace_.is_null()); }
+    virtual bool HaveNullSpace() const { return (not nullspace_.is_null()); }
 
     //@}
 
@@ -284,7 +284,7 @@ namespace FAS
      *
      *  \author mayr.mt \date 03/2015
      */
-    virtual const bool CheckStagnation() const;
+    virtual bool CheckStagnation() const;
 
   protected:
 
@@ -300,10 +300,10 @@ namespace FAS
     virtual const std::string& MyListName() const { return listname_; }
 
     //! Has Init() already been called?
-    virtual const bool IsInit() const { return isinit_; }
+    virtual bool IsInit() const { return isinit_; }
 
     //! Has Setup() already been called?
-    virtual const bool IsSetup() const { return issetup_; }
+    virtual bool IsSetup() const { return issetup_; }
 
     //! @name Initialization
     //@{
