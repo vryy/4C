@@ -627,17 +627,6 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
     }
   }
 
-  ftcnp_=Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
-  Teuchos::RCP<Epetra_Vector> tmpvp=Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-  Teuchos::RCP<Epetra_Vector> tmpvp2=Teuchos::rcp(new Epetra_Vector(*coupST->MasterDofMap()));
-  Epetra_Vector z_act(*gactivedofs_);
-  LINALG::Export(*z_,z_act);
-  if (m_LinDissContactLM.Apply(z_act,*tmpvp)!=0) dserror("sparseMatrix.Apply returned error");
-  LINALG::Export(*tmpvp,*tmpvp2);
-  ftcnp_=coupST->MasterToSlave(tmpvp2);
-  tmpvp=Teuchos::null;tmpvp2=Teuchos::null;
-
-
   // reset the tangent stiffness
   // (for the condensation we have constructed copies above)
   sysmat->Reset();
@@ -941,10 +930,17 @@ void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<Epetra_Vector> dis,Teuc
     dynamic_cast<CONTACT::CoTSIInterface*>(&(*interface_[i]))->AssembleDM_linDiss(
         NULL,NULL,NULL,&m_LinDissContactLM,1.);
   m_LinDissContactLM.Complete(*gactivedofs_,*gmdofrowmap_);
+  Teuchos::RCP<Epetra_Vector> z_act = Teuchos::rcp (new Epetra_Vector(*gactivedofs_));;
+  LINALG::Export(*z_,*z_act);
   tmp = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-  if (m_LinDissContactLM.Multiply(false,*z_,*tmp)!=0)
+  if (m_LinDissContactLM.Multiply(false,*z_act,*tmp)!=0)
     dserror("multiply went wrong");
-  AddVector(*coupST->MasterToSlave(tmp),*ftcnp_);
+  Teuchos::RCP<Epetra_Vector>tmp2 = Teuchos::rcp(new Epetra_Vector(*coupST->MasterDofMap()));
+  LINALG::Export(*tmp,*tmp2);
+  Teuchos::RCP<Epetra_Vector>tmp3 = coupST->MasterToSlave(tmp2);
+  Teuchos::RCP<Epetra_Vector>tmp4 = Teuchos::rcp(new Epetra_Vector(*coupST->MasterToSlaveMap(gmdofrowmap_)));
+  LINALG::Export(*tmp3,*tmp4);
+  AddVector(*tmp4,*ftcnp_);
 
   ftcn_=ftcnp_;
 }
