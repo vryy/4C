@@ -30,6 +30,15 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 INCLUDE(CheckCXXSourceRuns)
 INCLUDE(CheckCXXSourceCompiles)
 
+# define macro to remove duplicate libraries from the link line
+MACRO(REMOVE_DUPLICATES _list)
+  IF(NOT "${${_list}}" STREQUAL "")
+    LIST(REVERSE ${_list})
+    LIST(REMOVE_DUPLICATES ${_list})
+    LIST(REVERSE ${_list})
+  ENDIF()
+ENDMACRO()
+
 # test for svn executable
 FIND_PROGRAM(Subversion_SVN_EXECUTABLE svn
   DOC "subversion command line client")
@@ -318,12 +327,33 @@ endif()
 # trilinos libraries
 # Choose trilinos libraries explicitly.
 if (Trilinos_FOUND)
+  REMOVE_DUPLICATES(Trilinos_LIBRARIES)
+  REMOVE_DUPLICATES(Trilinos_TPL_LIBRARIES)
+  REMOVE_DUPLICATES(Trilinos_INCLUDE_DIRS)
+  REMOVE_DUPLICATES(Trilinos_TPL_INCLUDE_DIRS)
+
+  # convert list of trilinos libraries to full path for consistency with other libraries
+  SET(_libraries "")
+  FOREACH(_library ${Trilinos_LIBRARIES})
+    FIND_LIBRARY(TRILINOS_LIBRARY_${_library}
+      NAMES ${_library}
+      HINTS ${Trilinos_LIBRARY_DIRS}
+      NO_DEFAULT_PATH
+      NO_CMAKE_ENVIRONMENT_PATH
+      NO_CMAKE_PATH
+      NO_SYSTEM_ENVIRONMENT_PATH
+      NO_CMAKE_SYSTEM_PATH
+      NO_CMAKE_FIND_ROOT_PATH
+      )
+    LIST(APPEND _libraries ${TRILINOS_LIBRARY_${_library}})
+  ENDFOREACH()
+
   include_directories(SYSTEM ${Trilinos_INCLUDE_DIRS})
   include_directories(SYSTEM ${Trilinos_TPL_INCLUDE_DIRS})
   link_directories(${Trilinos_LIBRARY_DIRS})
 
   set(LIBRARIES
-    ${Trilinos_LIBRARIES}
+    ${_libraries}
     ${Trilinos_TPL_LIBRARIES}
     ${LIBRARIES}
     )
@@ -402,6 +432,9 @@ if (AMDLIBM_FOUND)
   MESSAGE("II Found AMD libM: ${AMDLIBM_LIBRARIES}")
   MESSAGE("II Found AMD libM: ${AMDLIBM_INCLUDES}")
 endif()
+
+#explicitly remove all duplicate libraries, keeping the rightmost library
+REMOVE_DUPLICATES(LIBRARIES)
 
 ###------------------------------------------------------------------ List of files
 set(OBJS_DRT_ALE_LIB
