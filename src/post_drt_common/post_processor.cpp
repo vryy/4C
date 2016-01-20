@@ -665,26 +665,35 @@ void runEnsightVtuFilter(PostProblem    &problem)
     {
       std::string basename = problem.outname();
 
-      PostField* structfield = problem.get_discretization(1);
-      std::cout<<structfield->name()<<std::endl;
-      StructureFilter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
-      structwriter.WriteFiles();
-
-      PostField* porofluidfield = problem.get_discretization(2);
-      std::cout<<porofluidfield->name()<<std::endl;
-      FluidFilter porofluidwriter(porofluidfield, basename);
-      porofluidwriter.WriteFiles();
-
-      PostField* cellfield = problem.get_discretization(0);
-      std::cout<<cellfield->name()<<std::endl;
-      StructureFilter cellwriter(cellfield, basename);
-      cellwriter.WriteFiles();
-
-      PostField* scatrafield = problem.get_discretization(3);
-      std::cout<<scatrafield->name()<<std::endl;
-      ScaTraFilter scatrawriter(scatrafield, basename);
-      scatrawriter.WriteFiles();
-
+      for(int field=0; field<problem.num_discr(); field++)
+      {
+        PostField* postfield = problem.get_discretization(field);
+        std::cout<<"Write Field "<<field<<": "<<postfield->name()<<std::endl;
+        if(postfield->name() == "cell" or postfield->name() == "structure")
+        {
+          StructureFilter cellwriter(postfield, basename, problem.stresstype(), problem.straintype());
+          cellwriter.WriteFiles();
+        }
+        else if(postfield->name() == "cellscatra" or postfield->name() == "scatra")
+        {
+          ScaTraFilter scatrawriter(postfield, basename);
+          scatrawriter.WriteFiles();
+        }
+        else if(postfield->name() == "ale")
+        {
+          AleFilter alewriter(postfield,basename);
+          alewriter.WriteFiles();
+        }
+        else if(postfield->name() == "porofluid" or postfield->name() == "fluid")
+        {
+          FluidFilter fluidwriter(postfield, basename);
+          fluidwriter.WriteFiles();
+        }
+        else
+        {
+          dserror("unknown field name");
+        }
+      }
 
       break;
     }

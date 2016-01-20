@@ -56,7 +56,7 @@ namespace POROELAST
     virtual void Timeloop()=0;
 
     //! prepare time step for single fields
-    void PrepareTimeStep(){dserror("not implemented in base class. override in subclass.");};
+    virtual void PrepareTimeStep(bool printheader = true){dserror("not implemented in base class. override in subclass.");};
 
     //! perform iteration loop between fields
     virtual void Solve(){dserror("not implemented in base class. override in subclass.");};;

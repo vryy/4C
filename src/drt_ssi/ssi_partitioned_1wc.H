@@ -37,7 +37,7 @@ namespace SSI
 
   protected:
     //! prepare time step for single fields
-    void PrepareTimeStep()=0;
+    void PrepareTimeStep(bool printheader = true)=0;
 
     //! perform one time step of structure field
     void DoStructStep();
@@ -68,7 +68,7 @@ namespace SSI
     void Timeloop();
 
     //! prepare time step for single fields
-    void PrepareTimeStep();
+    void PrepareTimeStep(bool printheader = true);
 
   };
 
@@ -90,7 +90,7 @@ namespace SSI
     void Timeloop();
 
     //! prepare time step for single fields
-    void PrepareTimeStep();
+    void PrepareTimeStep(bool printheader = true);
   };
 
 }

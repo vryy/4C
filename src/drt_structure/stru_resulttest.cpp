@@ -18,7 +18,6 @@ Maintainer: Alexander Popp
 #include "strtimint.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -29,9 +28,9 @@ StruResultTest::StruResultTest(STR::TimInt& tintegrator)
   vel_  = tintegrator.Vel();
   acc_  = tintegrator.Acc();
   strudisc_ = tintegrator.Discretization();
-  if (DRT::Problem::Instance()->ProblemType() == prb_struct_ale and
-      (DRT::Problem::Instance()->WearParams()).get<double>("WEARCOEFF")>0.0)
-    dism_ = tintegrator.Dismat();
+
+  if(tintegrator.DispMat()!=Teuchos::null)
+      dism_ = tintegrator.Dismat();
   else
     dism_=Teuchos::null;
 }

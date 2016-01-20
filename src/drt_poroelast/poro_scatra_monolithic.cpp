@@ -153,12 +153,14 @@ void POROELAST::PoroScatraMono::ReadRestart(int restart)
 /*----------------------------------------------------------------------*/
 //prepare time step
 /*----------------------------------------------------------------------*/
-void POROELAST::PoroScatraMono::PrepareTimeStep()
+void POROELAST::PoroScatraMono::PrepareTimeStep(bool printheader)
 {
   // the global control routine has its own time_ and step_ variables, as well as the single fields
   // keep them in sinc!
   IncrementTimeAndStep();
-  PrintHeader();
+
+  if(printheader)
+    PrintHeader();
 
   SetPoroSolution();
   ScaTraField()->PrepareTimeStep();

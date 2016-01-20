@@ -33,7 +33,7 @@ namespace ADAPTER
 
 namespace SSI
 {
-  class SSI_Base;
+  class SSI_Part2WC_PROTRUSIONFORMATION;
 }
 
 /*----------------------------------------------------------------------*/
@@ -110,14 +110,11 @@ private:
   /// poro structure of the immersed problem
   Teuchos::RCP< ::ADAPTER::FPSIStructureWrapper>        porostructure_;
 
-  /// pointer to cell subproblem (structure-scatra interaction)
-  Teuchos::RCP<SSI::SSI_Base> cell_subproblem_;
-
   /// pointer to poroelast subproblem (poro-scatra interaction)
   Teuchos::RCP<POROELAST::PoroScatraBase> poroscatra_subproblem_;
 
   /// pointer to cellscatra subproblem (structure-scatra interaction)
-  Teuchos::RCP<SSI::SSI_Base> cellscatra_subproblem_;
+  Teuchos::RCP<SSI::SSI_Part2WC_PROTRUSIONFORMATION> cellscatra_subproblem_;
 
   /// basic information for parallelism
   int myrank_;

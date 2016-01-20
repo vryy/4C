@@ -38,9 +38,16 @@ namespace SSI
     //!full time loop
     virtual void Timeloop();
 
-  protected:
+    //! perform iteration loop between fields
+    virtual void OuterLoop();
+
     //! prepare time step for single fields
-    void PrepareTimeStep();
+    void PrepareTimeStep(bool printheader = true);
+
+    // return current iteration step
+    int Itnum(){return itnum_;};
+
+  protected:
 
     //! perform iteration step of structure field
     virtual void DoStructStep();
@@ -48,14 +55,11 @@ namespace SSI
     //! perform iteration step of scatra field
     void DoScatraStep();
 
-    //! perform iteration loop between fields
-    virtual void OuterLoop();
-
     //! update time step and print to screen
     void UpdateAndOutput();
 
     //! convergence check of outer loop
-    bool ConvergenceCheck(int itnum);
+    virtual bool ConvergenceCheck(int itnum);
 
     /// velocity calculation given the displacements
     Teuchos::RCP<Epetra_Vector> CalcVelocity( Teuchos::RCP<const Epetra_Vector> dispnp );
@@ -65,10 +69,16 @@ namespace SSI
     //! displacement increment of the outer loop
     Teuchos::RCP<Epetra_Vector> dispincnp_;
 
-    //! maximum iteration steps
-    int itmax_;
     //! convergence tolerance
     double ittol_;
+    //! maximum iteration steps
+    int itmax_;
+
+  private:
+
+    //! current iteration step
+    int itnum_;
+
   };
 
   //! class to deal with displacement relaxated partioned 2WC SSI. Relaxation parameter is constant

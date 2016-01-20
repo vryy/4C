@@ -104,10 +104,12 @@ void SSI::SSI_Part1WC::DoScatraStep()
 /*----------------------------------------------------------------------*/
 //prepare time step
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part1WC_SolidToScatra::PrepareTimeStep()
+void SSI::SSI_Part1WC_SolidToScatra::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
-  //PrintHeader();
+
+  if(printheader)
+    PrintHeader();
 
   structure_-> PrepareTimeStep();
 
@@ -154,7 +156,7 @@ void SSI::SSI_Part1WC_SolidToScatra::Timeloop()
 
   while (NotFinished())
   {
-    PrepareTimeStep();
+    PrepareTimeStep(false);
     DoStructStep();  // It has its own time and timestep variables, and it increments them by itself.
     if (structure_->Step() % diffsteps == 0)
     {
@@ -213,7 +215,7 @@ void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
 /*----------------------------------------------------------------------*/
 //prepare time step
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part1WC_ScatraToSolid::PrepareTimeStep()
+void SSI::SSI_Part1WC_ScatraToSolid::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
   //PrintHeader();

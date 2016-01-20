@@ -3862,7 +3862,7 @@ void STR::TimIntImpl::PrintPredictor()
   // only master processor
   if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0))
   {
-    IO::cout << "Structural predictor "
+    IO::cout << "Structural predictor for field '"<<discret_->Name()<<"' "
              << INPAR::STR::PredEnumString(pred_)
              << " yields ";
 

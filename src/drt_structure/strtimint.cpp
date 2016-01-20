@@ -1206,10 +1206,6 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     if( dismat_!=Teuchos::null )
       discret_->SetState(0,"material_displacement",(*dismat_)(0));
 
-    // for structure ale
-    if( dismat_!=Teuchos::null )
-      discret_->SetState(0,"material_displacement",(*dismat_)(0));
-
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, fintn_str_);
     discret_->ClearState();
 
@@ -2268,7 +2264,7 @@ void STR::TimInt::OutputStep(bool forced_writerestart)
 
   // output restart (try this first)
   // write restart step
-  if ( (writerestartevery_ and (step_%writerestartevery_ == 0)) or forced_writerestart )
+  if ( (writerestartevery_ and (step_%writerestartevery_ == 0) and step_!=0) or forced_writerestart )
   {
     OutputRestart(datawritten);
   }
@@ -2504,13 +2500,13 @@ void STR::TimInt::OutputRestart
   // info dedicated to user's eyes staring at standard out
   if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0))
   {
-    IO::cout << "====== Restart written in step " << step_ << IO::endl;
+    IO::cout << "====== Restart for field 'Structure' written in step " << step_ << IO::endl;
   }
 
   // info dedicated to processor error file
   if (printerrfile_)
   {
-    fprintf(errfile_, "====== Restart written in step %d\n", step_);
+    fprintf(errfile_, "====== Restart for field 'Structure' written in step %d\n", step_);
     fflush(errfile_);
   }
 
@@ -2639,13 +2635,13 @@ void STR::TimInt::AddRestartToOutputState()
   // info dedicated to user's eyes staring at standard out
   if ( (myrank_ == 0) and printscreen_ and (StepOld()%printscreen_==0))
   {
-    IO::cout << "====== Restart written in step " << step_ << IO::endl;
+    IO::cout << "====== Restart for field 'Structure' written in step " << step_ << IO::endl;
   }
 
   // info dedicated to processor error file
   if (printerrfile_)
   {
-    fprintf(errfile_, "====== Restart written in step %d\n", step_);
+    fprintf(errfile_, "====== Restart for field 'Structure' written in step %d\n", step_);
     fflush(errfile_);
   }
 
@@ -3582,23 +3578,16 @@ void STR::TimInt::SetForceInterface
 }
 
 /*----------------------------------------------------------------------*/
-/* apply the new material_displacements                      mgit 05/11 */
+/* apply the new material_displacements        mgit 05/11 / rauch 01/16 */
 void STR::TimInt::ApplyDisMat(
-  Teuchos::RCP<Epetra_Vector> dismat,
-  bool iterated
+  Teuchos::RCP<Epetra_Vector> dismat
   )
 {
-  // FIXGIT: This is done only for nonzero entries --> try to store the zero-entries to !!!
-  // These values are replaced because here, the new absolute material
-  // displacement has been evaluated (not the increment)
+  // The values in dismatn_ are replaced, because the new absolute material
+  // displacement is provided in the argument (not an increment)
 
    for (int k=0;k<dismat->MyLength();++k)
-   {
-     if ((*dismat)[k] != 0.0)
-     {
-       (*dismatn_)[k]=(*dismat)[k];
-     }
-   }
+     (*dismatn_)[k]=(*dismat)[k];
 
    return;
  }

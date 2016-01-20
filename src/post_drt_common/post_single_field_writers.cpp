@@ -121,6 +121,7 @@ void StructureFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("cell_penalty_traction", "penalty_traction", dofbased, field->problem()->num_dim());
   writer_->WriteResult("cell_penalty_gap", "cell_penalty_gap", dofbased, field->problem()->num_dim());
   writer_->WriteResult("cell_nodal_normals", "cell_nodal_normals", dofbased, field->problem()->num_dim());
+  writer_->WriteResult("cell_adhesion_force", "cell_adhesion_force", dofbased, field->problem()->num_dim());
 
   if (stresstype_!="none")
   {

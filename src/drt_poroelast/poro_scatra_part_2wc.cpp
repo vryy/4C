@@ -154,12 +154,14 @@ void POROELAST::PoroScatraPart2WC::DoScatraStep()
 /*----------------------------------------------------------------------*/
 //prepare time step                                        vuong 08/13  |
 /*----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart2WC::PrepareTimeStep()
+void POROELAST::PoroScatraPart2WC::PrepareTimeStep(bool printheader)
 {
   // the global control routine has its own time_ and step_ variables, as well as the single fields
-  // keep them in sinc!
+  // keep them in sync!
   IncrementTimeAndStep();
-  PrintHeader();
+
+  if(printheader)
+    PrintHeader();
 
   SetPoroSolution();
   ScaTraField()->PrepareTimeStep();

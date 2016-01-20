@@ -39,7 +39,7 @@ namespace POROELAST
     void ReadRestart(int restart);
 
     //! prepare time step for single fields
-    void PrepareTimeStep();
+    void PrepareTimeStep(bool printheader = true);
 
     //! perform iteration loop between fields
     void Solve();

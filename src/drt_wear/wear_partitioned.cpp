@@ -1490,6 +1490,12 @@ void WEAR::Partitioned::AdvectionMap(
   double ge3 = 1e12;
   int gele   = 0;
 
+  // get state
+  Teuchos::RCP<const Epetra_Vector> dispsource =
+      (StructureField()->Discretization())->GetState(sourceconf);
+  Teuchos::RCP<const Epetra_Vector> disptarget =
+      (StructureField()->Discretization())->GetState(targetconf);
+
   // loop over adjacent elements
   for (int jele = 0; jele < numelements; jele++)
   {
@@ -1499,12 +1505,6 @@ void WEAR::Partitioned::AdvectionMap(
     // get element location vector, dirichlet flags and ownerships
     DRT::Element::LocationArray la(1);
     actele->LocationVector(*(StructureField()->Discretization()), la, false);
-
-    // get state
-    Teuchos::RCP<const Epetra_Vector> dispsource =
-        (StructureField()->Discretization())->GetState(sourceconf);
-    Teuchos::RCP<const Epetra_Vector> disptarget =
-        (StructureField()->Discretization())->GetState(targetconf);
 
     if (ndim == 2)
     {
@@ -1528,8 +1528,10 @@ void WEAR::Partitioned::AdvectionMap(
 
       // checks if the spatial coordinate lies within this element
       // if yes, returns the material displacements
-//      w1ele->AdvectionMapElement(XMat1,XMat2,XMesh1,XMesh2,disp,dispmat, la,found,e1,e2);
+      //w1ele->AdvectionMapElement(XMat1,XMat2,XMesh1,XMesh2,disp,dispmat, la,found,e1,e2);
 
+      // if parameter space coord. 'e' does not lie within any element (i.e. found = false),
+      // then jele is the element lying closest near the considered spatial point.
       if (found == false)
       {
         if (abs(ge1) > 1.0 and abs(e[0]) < abs(ge1))
@@ -1564,6 +1566,8 @@ void WEAR::Partitioned::AdvectionMap(
       else
         dserror("ERROR: element type not supported!");
 
+      // if parameter space coord. 'e' does not lie within any element (i.e. found = false),
+      // then 'gele = jele' is the element lying closest near the considered spatial point.
       if (found == false)
       {
         if (abs(ge1) > 1.0 and abs(e[0]) < abs(ge1))
@@ -1590,19 +1594,14 @@ void WEAR::Partitioned::AdvectionMap(
   } // end loop over adj elements
 
   // ****************************************
-  //  if displ not into elements
+  //  if displ not into elements: get
+  //  Xtarget from closest element 'gele'
   // ****************************************
   DRT::Element* actele = ElementPtr[gele];
 
   // get element location vector, dirichlet flags and ownerships
   DRT::Element::LocationArray la(1);
   actele->LocationVector(*(StructureField()->Discretization()), la, false);
-
-  // get state
-  Teuchos::RCP<const Epetra_Vector> dispsource =
-      (StructureField()->Discretization())->GetState(sourceconf);
-  Teuchos::RCP<const Epetra_Vector> disptarget =
-      (StructureField()->Discretization())->GetState(targetconf);
 
   if (ndim == 2)
   {

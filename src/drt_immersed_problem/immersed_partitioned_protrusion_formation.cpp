@@ -12,12 +12,14 @@ Maintainers: Andreas Rauch
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_protrusion_formation.H"
 
+#include "ssi_partitioned_2wc_protrusionformation.H"
+
 #include "../drt_poroelast/poro_scatra_base.H"
-//#include "../drt_poroelast/poroelast_utils_setup.H"
 
+#include "../drt_scatra/scatra_timint_implicit.H"
+
+#include "../drt_adapter/ad_ale_fluid.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
-
-//#include "../drt_inpar/inpar_immersed.H"
 
 
 IMMERSED::ImmersedPartitionedProtrusionFormation::ImmersedPartitionedProtrusionFormation(const Teuchos::ParameterList& params, const Epetra_Comm& comm)
@@ -42,7 +44,7 @@ IMMERSED::ImmersedPartitionedProtrusionFormation::ImmersedPartitionedProtrusionF
   poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
 
   // get pointer structure-scatra interaction (ssi) subproblem
-  cellscatra_subproblem_ = params.get<Teuchos::RCP<SSI::SSI_Base> >("RCPToCellScatra");
+  cellscatra_subproblem_ = params.get<Teuchos::RCP<SSI::SSI_Part2WC_PROTRUSIONFORMATION> >("RCPToCellScatra");
 
   // important variables for parallel simulations
   myrank_  = comm.MyPID();
@@ -60,9 +62,9 @@ IMMERSED::ImmersedPartitionedProtrusionFormation::ImmersedPartitionedProtrusionF
   // get coupling variable
   displacementcoupling_ = globalproblem_->ImmersedMethodParams().sublist("PARTITIONED SOLVER").get<std::string>("COUPVARIABLE_PROTRUSION") == "Displacement";
   if(displacementcoupling_ and myrank_==0)
-    std::cout<<" Coupling variable for partitioned protrusion formation:  Displacements "<<std::endl;
+    std::cout<<"\n Coupling variable for partitioned protrusion formation:  Displacements "<<std::endl;
   else if (!displacementcoupling_ and myrank_==0)
-    std::cout<<" Coupling variable for partitioned protrusion formation :  Force "<<std::endl;
+    std::cout<<"\n Coupling variable for partitioned protrusion formation :  Force "<<std::endl;
 
   // construct immersed exchange manager. singleton class that makes immersed variables comfortably accessible from everywhere in the code
   exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
@@ -108,12 +110,23 @@ void IMMERSED::ImmersedPartitionedProtrusionFormation::PrepareTimeStep()
 
   PrintHeader();
 
-  if(myrank_==0)
-    std::cout<<"Cell Predictor: "<<std::endl;
-  cellstructure_->PrepareTimeStep();
-  if(myrank_==0)
-    std::cout<<"Poro Predictor: "<<std::endl;
-  poroscatra_subproblem_->PrepareTimeStep();
+  cellscatra_subproblem_->PrepareTimeStep(false);
+
+  poroscatra_subproblem_->PrepareTimeStep(false);
+
+  cellscatra_subproblem_->AleField()->PrepareTimeStep();
+
+
+
+  // Extra steps done in SSI 2WC Timeloop().
+  // Timeloop() is not called from outside.
+  // Therefore, the following has to be done here.
+  //initial output
+  //cellscatra_subproblem_->StructureField()-> PrepareOutput();
+  //cellscatra_subproblem_->StructureField()-> Output();
+  //cellscatra_subproblem_->SetStructSolution(cellscatra_subproblem_->StructureField()->Dispnp(),cellscatra_subproblem_->StructureField()->Velnp());
+  //cellscatra_subproblem_->ScaTraField()->ScaTraField()->Output();
+  //cellscatra_subproblem_->AleField()->Output();
 
   return;
 }
@@ -195,9 +208,13 @@ IMMERSED::ImmersedPartitionedProtrusionFormation::ImmersedOp(Teuchos::RCP<Epetra
   {
 
      //solve cell
-    cellstructure_->Solve();
+    if (Comm().MyPID()==0)
+    {
+      std::cout<<"\n****************************************\n          PROTRUSION FORMATION\n****************************************\n";
+    }
+    cellscatra_subproblem_->OuterLoop();
 
-    return cellstructure_->ExtractImmersedInterfaceDispnp();
+    return Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(cellscatra_subproblem_->StructureField())->ExtractImmersedInterfaceDispnp();
   }
 
 }
@@ -228,6 +245,8 @@ void IMMERSED::ImmersedPartitionedProtrusionFormation::PrepareImmersedOp()
 void IMMERSED::ImmersedPartitionedProtrusionFormation::PrepareOutput()
 {
   poroscatra_subproblem_->PrepareOutput();
+  cellscatra_subproblem_->StructureField()->PrepareOutput();
+
   return;
 }
 
@@ -236,8 +255,10 @@ void IMMERSED::ImmersedPartitionedProtrusionFormation::PrepareOutput()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedProtrusionFormation::Output()
 {
-  cellstructure_->Output();
   poroscatra_subproblem_->Output();
+  cellscatra_subproblem_->AleField()->Output();
+  cellscatra_subproblem_->StructureField()->Output();
+  cellscatra_subproblem_->ScaTraField()->ScaTraField()->Output();
 
   return;
 }
@@ -247,7 +268,10 @@ void IMMERSED::ImmersedPartitionedProtrusionFormation::Output()
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedProtrusionFormation::Update()
 {
-  cellstructure_->Update();
   poroscatra_subproblem_->Update();
+  cellscatra_subproblem_->StructureField()->Update();
+  cellscatra_subproblem_->AleField()->Update();
+  cellscatra_subproblem_->ScaTraField()->ScaTraField()->Update();
 
+  return;
 }

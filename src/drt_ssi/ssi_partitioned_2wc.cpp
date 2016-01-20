@@ -31,7 +31,8 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
     const std::string scatra_disname)
   : SSI_Part(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname),
     scaincnp_(LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true)),
-    dispincnp_(LINALG::CreateVector(*structure_->DofRowMap(0),true))
+    dispincnp_(LINALG::CreateVector(*structure_->DofRowMap(0),true)),
+    itnum_(0)
 {
 
   // call the SSI parameter lists
@@ -120,10 +121,11 @@ void SSI::SSI_Part2WC::DoScatraStep()
 /*----------------------------------------------------------------------*/
 //prepare time step
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Part2WC::PrepareTimeStep()
+void SSI::SSI_Part2WC::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
-  PrintHeader();
+  if(printheader)
+    PrintHeader();
 
   SetScatraSolution(scatra_->ScaTraField()->Phin());
   structure_-> PrepareTimeStep();
@@ -153,7 +155,7 @@ void SSI::SSI_Part2WC::UpdateAndOutput()
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC::OuterLoop()
 {
-  int  itnum = 0;
+  int  itnum_ = 0;
   bool stopnonliniter = false;
 
   if (Comm().MyPID()==0)
@@ -163,7 +165,7 @@ void SSI::SSI_Part2WC::OuterLoop()
 
   while (stopnonliniter==false)
   {
-    itnum++;
+    itnum_++;
 
     // store scalar from first solution for convergence check (like in
     // elch_algorithm: use current values)
@@ -173,7 +175,7 @@ void SSI::SSI_Part2WC::OuterLoop()
     // set structure-based scalar transport values
     SetScatraSolution(scatra_->ScaTraField()->Phinp());
 
-    if(itnum!=1)
+    if(itnum_!=1)
       structure_->PreparePartitionStep();
     // solve structural system
     DoStructStep();
@@ -187,7 +189,7 @@ void SSI::SSI_Part2WC::OuterLoop()
 
     // check convergence for all fields and stop iteration loop if
     // convergence is achieved overall
-    stopnonliniter = ConvergenceCheck(itnum);
+    stopnonliniter = ConvergenceCheck(itnum_);
   }
 
   return;

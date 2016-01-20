@@ -223,7 +223,7 @@ void CellMigrationControlAlgorithm()
   Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> cellstructure = Teuchos::null;
 
   // pointer to cell subproblem (structure-scatra interaction)
-  Teuchos::RCP<SSI::SSI_Base> cellscatra_subproblem = Teuchos::null;
+  Teuchos::RCP<SSI::SSI_Part2WC_PROTRUSIONFORMATION> cellscatra_subproblem = Teuchos::null;
 
   bool ssi_cell = DRT::INPUT::IntegralValue<int>(problem->CellMigrationParams(),"SSI_CELL");
   if(ssi_cell)
@@ -247,7 +247,7 @@ void CellMigrationControlAlgorithm()
       dserror("dynamic cast from Structure to FSIStructureWrapperImmersed failed");
 
     if(comm.MyPID()==0)
-      std::cout<<"\n Created Field Cell Structure with intracellular signaling capabilitiy...\n \n"<<std::endl;
+      std::cout<<"\nCreated Field Cell Structure with intracellular signaling capabilitiy...\n \n"<<std::endl;
   }
   else
   {
@@ -360,7 +360,7 @@ void CellMigrationControlAlgorithm()
   params.set<Teuchos::RCP<GEO::SearchTree> >("RCPToFluidSearchTree",fluid_SearchTree);
   params.set<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsCell",&currpositions_cell);
   params.set<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsECM",&currpositions_ECM);
-  params.set<Teuchos::RCP<SSI::SSI_Base> >("RCPToCellScatra",cellscatra_subproblem);
+  params.set<Teuchos::RCP<SSI::SSI_Part2WC_PROTRUSIONFORMATION> >("RCPToCellScatra",cellscatra_subproblem);
 
   //////////////////////////////////////////////
   // query simulation type
@@ -465,6 +465,13 @@ void CellMigrationControlAlgorithm()
 
     Teuchos::RCP<IMMERSED::ImmersedPartitionedProtrusionFormation> algo =
         Teuchos::rcp(new IMMERSED::ImmersedPartitionedProtrusionFormation(params,comm));
+
+    // ghost cellscatra on each proc (for search algorithm)
+    if(comm.NumProc() > 1)
+    {
+      // fill complete inside
+      CreateGhosting(problem->GetDis("cellscatra"));
+    }
 
     const int restart = DRT::Problem::Instance()->Restart();
     if (restart)

@@ -41,10 +41,15 @@ SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(const Epet
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
-  : SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname),
-    growthincrement_(Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->Map(AleField()->Interface()->cond_fsi)), true)),
-    delta_ale_(Teuchos::rcp(new Epetra_Vector(AleField()->Dispnp()->Map(), true)) )
+  : SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname)
 {
+
+  // set communicator
+  myrank_ = comm.MyPID();
+
+  // additional setup for ale
+  SetupDiscretizations(comm,"cell","cellscatra");
+
   specialized_structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(StructureField());
   if(specialized_structure_ == Teuchos::null)
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
@@ -79,6 +84,15 @@ SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(const Epet
       AleField()->Interface()->Map(AleField()->Interface()->cond_fsi),
       "FSICoupling", ndim);
 
+  // initialize growthvector
+  growth_=Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->Map(AleField()->Interface()->cond_fsi)), true),
+
+  // initialize growthincrement vector
+  growthincrement_=Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->Map(AleField()->Interface()->cond_fsi)), true),
+
+  // initialize delta_ale_ vector
+  delta_ale_=Teuchos::rcp(new Epetra_Vector(AleField()->Dispnp()->Map(), true));
+
 }
 
 
@@ -95,12 +109,10 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::DoStructStep()
 
   // Newton-Raphson iteration
   //1. solution
-  StructureField()-> Solve();
-
   EvaluateGrowth();
 
   // do ale step
-  DoAleStep(growthincrement_);
+  DoAleStep(growth_);
 
   // application of mesh displacements to structural field,
   // update material displacements
@@ -116,14 +128,16 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::DoStructStep()
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_PROTRUSIONFORMATION::DoAleStep(Teuchos::RCP<Epetra_Vector> growthincrement)
 {
-  std::cout<<"==================  DoAleStep  ================== "<<std::endl;
+  if(myrank_==0)
+    std::cout<<"==================  DoAleStep  ================== "<<std::endl;
+
   Teuchos::RCP<Epetra_Vector> dispnpstru = StructureToAle(
       StructureField()->Dispnp());
 
   AleField()->WriteAccessDispnp()->Update(1.0, *dispnpstru, 0.0);
 
   // application of interface displacements as dirichlet conditions
-  AleField()->AddInterfaceDisplacements(growthincrement);
+  AleField()->ApplyInterfaceDisplacements(growthincrement);
 
   // solve time step
   AleField()->TimeStep(ALE::UTILS::MapExtractor::dbc_set_part_fsi);
@@ -131,18 +145,17 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::DoAleStep(Teuchos::RCP<Epetra_Vector>
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  |                                                          rauch 01/16 |
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateMatConf()
 {
+  if(myrank_==0)
+    std::cout<<"\n   Update Material Configuration ... "<<std::endl;
 
   // mesh displacement from solution of ALE field in structural dofs
   // first perform transformation from ale to structure dofs
   Teuchos::RCP<Epetra_Vector> disalenp = AleToStructure(AleField()->Dispnp());
-
-  //std::cout<<"disalenp: "<<*disalenp<<std::endl;
 
   // vector of current spatial displacements
   Teuchos::RCP<const Epetra_Vector> dispnp = StructureField()->Dispnp(); // change to ExtractDispn() for overlap
@@ -158,7 +171,14 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateMatConf()
   (StructureField()->Discretization())->SetState(0, "material_displacement",
       StructureField()->DispMat());
 
+  // calc difference between spatial structure deformation and ale deformation
+  // disalenp = d_ale - d_struct
   disalenp->Update(-1.0, *dispnp, 1.0);
+
+  double normdisale = -1234.0;
+  disalenp->Norm2(&normdisale);
+
+  // save the result in delta_ale_
   delta_ale_->Update(1.0, *disalenp, 0.0);
 
   // loop over all row nodes to fill graph
@@ -207,13 +227,15 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateMatConf()
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateSpatConf()
 {
+  if(myrank_==0)
+    std::cout<<"\n   Update Spatial Configuration ... "<<std::endl;
 
   // mesh displacement from solution of ALE field in structural dofs
   // first perform transformation from ale to structure dofs
   Teuchos::RCP<Epetra_Vector> disalenp = AleToStructure(AleField()->Dispnp());
 
   // get structure dispnp vector
-  Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->WriteAccessDispnp(); // change to ExtractDispn() for overlap
+  Teuchos::RCP<Epetra_Vector> dispnp = StructureField()->WriteAccessDispnp();
 
   // update per absolute vector
   dispnp->Update(1.0, *disalenp, 0.0);
@@ -250,6 +272,12 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::AdvectionMap(
     targetconf = "displacement";
   }
 
+  // get state
+  Teuchos::RCP<const Epetra_Vector> dispsource =
+      (StructureField()->Discretization())->GetState(sourceconf);
+  Teuchos::RCP<const Epetra_Vector> disptarget =
+      (StructureField()->Discretization())->GetState(targetconf);
+
   // found element the spatial coordinate lies in
   bool found = false;
 
@@ -269,12 +297,6 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::AdvectionMap(
     // get element location vector, dirichlet flags and ownerships
     DRT::Element::LocationArray la(1);
     actele->LocationVector(*(StructureField()->Discretization()), la, false);
-
-    // get state
-    Teuchos::RCP<const Epetra_Vector> dispsource =
-        (StructureField()->Discretization())->GetState(sourceconf);
-    Teuchos::RCP<const Epetra_Vector> disptarget =
-        (StructureField()->Discretization())->GetState(targetconf);
 
     if (ndim == 2)
     {
@@ -296,10 +318,8 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::AdvectionMap(
       else
         dserror("ERROR: shape function not supported!");
 
-      // checks if the spatial coordinate lies within this element
-      // if yes, returns the material displacements
-//      w1ele->AdvectionMapElement(XMat1,XMat2,XMesh1,XMesh2,disp,dispmat, la,found,e1,e2);
-
+      // if parameter space coord. 'e' does not lie within any element (i.e. found = false),
+      // then jele is the element lying closest near the considered spatial point.
       if (found == false)
       {
         if (abs(ge1) > 1.0 and abs(e[0]) < abs(ge1))
@@ -335,24 +355,22 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::AdvectionMap(
       else
         dserror("ERROR: element type not supported!");
 
+      // if parameter space coord. 'e' does not lie within any element (i.e. found = false),
+      // then jele is the element lying closest near the considered spatial point.
       if (found == false)
       {
-        //std::cout<<"e[0]="<<e[0]<<std::endl;          //Bettina: rausfinden was hier passiert
-        //std::cout<<"ge1="<<ge1<<std::endl;
+
         if (abs(ge1) > 1.0 and abs(e[0]) < abs(ge1))
         {
           ge1 = e[0];
           gele = jele;
         }
-        //std::cout<<"e[1]="<<e[1]<<std::endl;        //Bettina: rausfinden was hier passiert
-        //std::cout<<"ge2="<<ge2<<std::endl;
+
         if (abs(ge2) > 1.0 and abs(e[1]) < abs(ge2))
         {
           ge2 = e[1];
           gele = jele;
         }
-        //std::cout<<"e[2]="<<e[2]<<std::endl;        //Bettina: rausfinden was hier passiert
-        //std::cout<<"ge3="<<ge3<<std::endl;
         if (abs(ge3) > 1.0 and abs(e[2]) < abs(ge3))
         {
           ge3 = e[2];
@@ -368,19 +386,14 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::AdvectionMap(
   } // end loop over adj elements
 
   // ****************************************
-  //  if displ not into elements
+  //  if not displaced into elements: get
+  //  Xtarget from closest element 'gele'
   // ****************************************
   DRT::Element* actele = ElementPtr[gele];
 
   // get element location vector, dirichlet flags and ownerships
   DRT::Element::LocationArray la(1);
   actele->LocationVector(*(StructureField()->Discretization()), la, false);
-  //std::cout<<"FOUND NO ELEMENT! but in the new loop"<<std::endl;      //Bettina: test
-  // get state
-  Teuchos::RCP<const Epetra_Vector> dispsource =
-      (StructureField()->Discretization())->GetState(sourceconf);
-  Teuchos::RCP<const Epetra_Vector> disptarget =
-      (StructureField()->Discretization())->GetState(targetconf);
 
   if (ndim == 2)
   {
@@ -430,7 +443,6 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::AdvectionMap(
 }
 
 
-
 /*----------------------------------------------------------------------*
  | transform from structure to ale map                      rauch 01/16 |
  *----------------------------------------------------------------------*/
@@ -478,8 +490,7 @@ Teuchos::RCP<Epetra_Vector> SSI::SSI_Part2WC_PROTRUSIONFORMATION::AleToStructure
 void SSI::SSI_Part2WC_PROTRUSIONFORMATION::SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname)
 {
   // call SetupDiscretizations in base class
-  SSI::SSI_Base::SetupDiscretizations(comm, struct_disname, scatra_disname);
-
+  // Done in constructor of ssi_base
 
   // new ale part
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -515,36 +526,77 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::SetupDiscretizations(const Epetra_Com
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateGrowth()
 {
+  // Experimental: Prescribed growth value.
+  // Soon to come: Growth is determined in this function by evaluation
+  //               of chemical transport and reaction in cell cytosol
+  //               and at cell membrane. Via a micro-macro approach the
+  //               biochemical concentrations c_i will be mapped to a
+  //               surface growth vector.
+
   // vector management
-  const Epetra_BlockMap& map = growthincrement_->Map();
-  int nummygrowthvecentries = map.NumMyElements();
+  double mylength= growth_->MyLength();
 
   // current step
   int step = StructureField()->Step();
 
   // value of growth
-  double growthinc =   +0.0875013173;                     //negativer Growth -0.00000026445;
+  double growthinc =   0.05;
   double growthvalue = growthinc * step;
 
-  if (step == 1) // todo itnum_ == 1)
+  if (Itnum()==0)
   {
+    if(myrank_==0)
+      std::cout<<"\n  Growth in this time step = "<<growthvalue<<std::endl;
 
     // apply growth to vector
-    for(int i=0; i<nummygrowthvecentries;++i)
+    for(int i=0; i<mylength;++i)
     {
       if( i%3==0 )                                                  //Growth in x
-        growthincrement_->ReplaceMyValue(i,0,growthvalue);
-
+        growth_->ReplaceMyValue(i,0,growthvalue);
     }
   }
   else
   {
-    for (int i=0; i<nummygrowthvecentries; ++i)
-    {
-      growthvalue = 0.0;
-      growthincrement_->ReplaceMyValue(i,0,growthvalue);
-    }
+    if(myrank_==0)
+     std::cout<<"\n  Growth in this time step = "<<growthvalue<<std::endl;
   }
 
+
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | convergence check                                        rauch 01/16 |
+ *----------------------------------------------------------------------*/
+bool SSI::SSI_Part2WC_PROTRUSIONFORMATION::ConvergenceCheck(int itnum)
+{
+  bool stopnonliniter = false;
+  bool SSI_converged = false;
+
+  double growthincnorm = -1234.0;
+
+  SSI_converged = SSI::SSI_Part2WC::ConvergenceCheck(itnum);
+
+  if(SSI_converged)
+     stopnonliniter=true;
+
+  growthincrement_->Norm2(&growthincnorm);
+
+  if(myrank_==0)
+  {
+    printf("<><><><><><><><><><><><><><><><><><><><>\n");
+    printf("Growth increment =  %10.3E ", growthincnorm/growthincrement_->GlobalLength());
+    printf("\n");
+    printf("<><><><><><><><><><><><><><><><><><><><>\n");
+  }
+
+  if(growthincnorm<ittol_)
+  {
+    if(myrank_==0)
+      std::cout<<"Growth is converged. Ignore convergence of SSI."<<std::endl;
+    stopnonliniter=true;
+  }
+
+  return stopnonliniter;
 }

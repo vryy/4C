@@ -57,7 +57,7 @@ namespace POROELAST
     void Timeloop();
 
     //! increment time and step and print header
-    void PrepareTimeStep();
+    void PrepareTimeStep(bool printheader = true);
 
     //! perform iteration loop between fields
     void Solve();
@@ -81,7 +81,7 @@ namespace POROELAST
     void Timeloop();
 
     //! increment time and step and print header
-    void PrepareTimeStep();
+    void PrepareTimeStep(bool printheader = true);
 
     //! perform iteration loop between fields
     void Solve();

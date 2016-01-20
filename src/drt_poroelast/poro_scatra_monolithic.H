@@ -65,7 +65,7 @@ namespace POROELAST
     virtual void ReadRestart(int restart);
 
     //! prepare time step
-    void PrepareTimeStep();
+    void PrepareTimeStep(bool printheader = true);
 
     //! is convergence reached of iterative solution technique?
     bool Converged();

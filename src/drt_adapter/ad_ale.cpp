@@ -329,6 +329,11 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
     ale_ = Teuchos::rcp(new ADAPTER::AleFluidWrapper(ale));
     break;
   }
+  case prb_immersed_cell:
+  {
+    ale_ = Teuchos::rcp(new ADAPTER::AleFluidWrapper(ale));
+    break;
+  }
   default:
     dserror("ALE type not implemented yet!!");
     break;

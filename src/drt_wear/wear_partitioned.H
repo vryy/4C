@@ -81,7 +81,17 @@ namespace WEAR
     /// Application of mesh displacements (frictional contact) to material conf
     void UpdateMatConf();
 
-    /// parameter space mapping between configurations
+    /*!
+    \brief parameter space mapping between configurations
+
+    \param Xtarget           (out) : new material coordinate of considered node (spatialtomaterial=true), or
+                                     new spatial  coordinate of considered node (spatialtomaterial=false)
+    \param Xsource           (in)  : current mesh coordinate of configuration that is NOT supposed to be transported
+    \param ElementPtr        (in)  : pointer to elements adjacent to considered node
+    \param numelements       (in)  : number of elements adjacent to considered node
+    \param spatialtomaterial (in)  : true if considered node already has correct spatial coordinate
+                                     and corresponding material coordinate is to be determined
+     */
     void AdvectionMap(
         double* Xtarget,            // out
         double* Xsource,            // in

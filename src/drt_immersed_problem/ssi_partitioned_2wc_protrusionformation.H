@@ -47,6 +47,12 @@ namespace SSI
     //!virtual destructor
     virtual ~SSI_Part2WC_PROTRUSIONFORMATION(){};
 
+    //! access to ale field
+    const Teuchos::RCP<ADAPTER::AleFluidWrapper> AleField(){return ale_;};
+
+    //! access to scatra field
+    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>&  ScaTraField(){return scatra_;};
+
   protected:
 
     //! perform iteration step of ale field
@@ -54,19 +60,23 @@ namespace SSI
 
     virtual void DoStructStep();
 
-    //! access to ale field
-    const Teuchos::RCP<ADAPTER::AleFluidWrapper> AleField(){return ale_;};
-
-    //! access to scatra field
-    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>&  ScaTraField(){return scatra_;};
-
     //! access to scatra field
     const Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>&  SpecStructureField(){return specialized_structure_;};
 
     //! return coupling object
     Teuchos::RCP< ::ADAPTER::Coupling> AleStruCoupling(){return coupalestru_; };
 
-    //! parameter space mapping between configurations
+    /*!
+    \brief parameter space mapping between configurations
+
+    \param Xtarget           (out) : new material coordinate of considered node (spatialtomaterial=true), or
+                                     new spatial  coordinate of considered node (spatialtomaterial=false)
+    \param Xsource           (in)  : current mesh coordinate of configuration that is NOT supposed to be transported
+    \param ElementPtr        (in)  : pointer to elements adjacent to considered node
+    \param numelements       (in)  : number of elements adjacent to considered node
+    \param spatialtomaterial (in)  : true if considered node already has correct spatial coordinate
+                                     and corresponding material coordinate is to be determined
+     */
     void AdvectionMap(
         double* Xtarget,            // out
         double* Xsource,            // in
@@ -98,13 +108,21 @@ namespace SSI
     //! setup discretizations and dofsets
     virtual void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname);
 
+    //! convergence check of outer loop
+    virtual bool ConvergenceCheck(int itnum);
 
   private:
 
-    //! growth increment of the growth loop
+    //! communicator
+    int myrank_;
+
+    //! growth step increment (increment containing growth from t_n -> t_{n+1})
+    Teuchos::RCP<Epetra_Vector> growth_;
+
+    //! growth iteration increment of the growth loop (increment containing growth from iteration i -> i+1)
     Teuchos::RCP<Epetra_Vector> growthincrement_;
 
-    // yet unknown vector
+    //! yet unknown vector
     Teuchos::RCP<Epetra_Vector> delta_ale_;
 
     // coupling objects declaration

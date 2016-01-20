@@ -447,7 +447,7 @@ void ALE::Ale::OutputRestart(bool& datawritten)
   if (DRT::Problem::Instance()->ProblemType() == prb_ale)
   {
     if (discret_->Comm().MyPID() == 0)
-      IO::cout << "====== Restart written in step " << step_ << IO::endl;
+      IO::cout << "====== Restart for field 'ALE' written in step " << step_ << IO::endl;
   }
 
   return;

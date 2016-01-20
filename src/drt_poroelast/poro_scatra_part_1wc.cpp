@@ -131,10 +131,11 @@ void POROELAST::PoroScatraPart1WCPoroToScatra::Timeloop()
 /*----------------------------------------------------------------------*/
 //prepare time step                                  rauch/vuong 04/15  |
 /*----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WCPoroToScatra::PrepareTimeStep()
+void POROELAST::PoroScatraPart1WCPoroToScatra::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
-  PrintHeader();
+  if(printheader)
+    PrintHeader();
 
   PoroField()->PrepareTimeStep();
   SetPoroSolution();
@@ -219,10 +220,11 @@ void POROELAST::PoroScatraPart1WCScatraToPoro::Timeloop()
 /*----------------------------------------------------------------------*/
 //prepare time step                                  rauch/vuong 04/15  |
 /*----------------------------------------------------------------------*/
-void POROELAST::PoroScatraPart1WCScatraToPoro::PrepareTimeStep()
+void POROELAST::PoroScatraPart1WCScatraToPoro::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
-  PrintHeader();
+  if(printheader)
+    PrintHeader();
 
   ScaTraField()->PrepareTimeStep();
   SetScatraSolution();
