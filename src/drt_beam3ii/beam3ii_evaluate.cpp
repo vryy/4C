@@ -165,23 +165,26 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
             b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
             break;
           }
-          default:
-            dserror("Only Line2 Elements implemented.");
+          case 3:
+          {
+            b3_nlnstiffmass<3>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+            break;
+          }
+          case 4:
+          {
+            b3_nlnstiffmass<4>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+            break;
+          }
+          case 5:
+          {
+            b3_nlnstiffmass<5>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+            break;
+          }
         }
       }
       else if (act == Beam3ii::calc_struct_nlnstifflmass)
       {
-        switch(nnode)
-        {
-          case 2:
-          {
-            b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
-            lumpmass<2>(&elemat2);
-            break;
-          }
-          default:
-            dserror("Only Line2 Elements implemented.");
-        }
+        dserror("Lumped masss matrix not implemented for beam3ii elements so far!");
       }
       else if (act == Beam3ii::calc_struct_nlnstiff)
       {
@@ -192,8 +195,23 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
             b3_nlnstiffmass<2>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
             break;
           }
+          case 3:
+          {
+            b3_nlnstiffmass<3>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+            break;
+          }
+          case 4:
+          {
+            b3_nlnstiffmass<4>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+            break;
+          }
+          case 5:
+          {
+            b3_nlnstiffmass<5>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+            break;
+          }
           default:
-            dserror("Only Line2 Elements implemented.");
+            dserror("Only Line2, Line3, Line4, and Line5 Elements implemented.");
         }
       }
 
@@ -216,154 +234,154 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     Qold_ = Qnew_;
     dispthetaold_= dispthetanew_;
 
-
-    /*
-    //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
-    //correctly or not by means of a numerically approximated stiffness matrix
-    //The code block will work for all higher order elements.
-    if(Id() == 0) //limiting the following tests to certain element numbers
-    {
-      //variable to store numerically approximated stiffness matrix
-      Epetra_SerialDenseMatrix stiff_approx;
-      stiff_approx.Shape(6*nnode,6*nnode);
-
-
-      //relative error of numerically approximated stiffness matrix
-      Epetra_SerialDenseMatrix stiff_relerr;
-      stiff_relerr.Shape(6*nnode,6*nnode);
-
-      //characteristic length for numerical approximation of stiffness
-      double h_rel = 1e-5;
-
-      //flag indicating whether approximation leads to significant relative error
-      int outputflag = 0;
-
-      //calculating strains in new configuration
-      for(int i=0; i<6; i++) //for all dof
-      {
-        for(int k=0; k<nnode; k++)//for all nodes
-        {
-
-          Epetra_SerialDenseVector force_aux;
-          force_aux.Size(6*nnode);
-
-          //create new displacement and velocity vectors in order to store artificially modified displacements
-          vector<double> vel_aux(myvel);
-          vector<double> disp_aux(mydisp);
-
-          //modifying displacement artificially (for numerical derivative of internal forces):
-          disp_aux[6*k + i] += h_rel;
-          vel_aux[6*k + i] += h_rel / params.get<double>("delta time",0.01);
-
-          //b3_nlnstiffmass is a templated function. therefore we need to point out the number of nodes in advance
-          switch(nnode)
-          {
-              case 2:
-              {
-                b3_nlnstiffmass<2>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-                break;
-              }
-              case 3:
-              {
-                b3_nlnstiffmass<3>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-                break;
-              }
-              case 4:
-              {
-                b3_nlnstiffmass<4>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-                break;
-              }
-              case 5:
-              {
-                b3_nlnstiffmass<5>(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-                break;
-              }
-              default:
-                dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
-          }
-
-          //computing derivative d(fint)/du numerically by finite difference
-          for(int u = 0 ; u < 6*nnode ; u++ )
-            stiff_approx(u,k*6+i)= ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );
-
-        } //for(int k=0; k<nnode; k++)//for all nodes
-
-      } //for(int i=0; i<3; i++) //for all dof
-
-
-      for(int line=0; line<6*nnode; line++)
-      {
-        for(int col=0; col<6*nnode; col++)
-        {
-          stiff_relerr(line,col)= fabs( ( pow(elemat1(line,col),2) - pow(stiff_approx(line,col),2) )/ ( (elemat1(line,col) + stiff_approx(line,col)) * elemat1(line,col) ));
-
-          //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
-          if ( fabs( stiff_relerr(line,col) ) < h_rel*500 || isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
-            stiff_relerr(line,col) = 0;
-
-          //if ( stiff_relerr(line,col) > 0)
-            outputflag = 1;
-        } //for(int col=0; col<3*nnode; col++)
-
-      } //for(int line=0; line<3*nnode; line++)
-
-      if(outputflag ==1)
-      {
-
-        std::cout<<"\n\n acutally calculated stiffness matrix\n";
-        for(int line=0; line<6*nnode; line++)
-        {
-          for(int col=0; col<6*nnode; col++)
-          {
-            if(isnan(elemat1(line,col)))
-              std::cout<<"     nan   ";
-            else if(elemat1(line,col) == 0)
-              std::cout<<"     0     ";
-            else if(elemat1(line,col) >= 0)
-              std::cout<<"  "<< std::scientific << std::setprecision(3)<<elemat1(line,col);
-            else
-              std::cout<<" "<< std::scientific << std::setprecision(3)<<elemat1(line,col);
-          }
-          std::cout<<"\n";
-        }
-
-        std::cout<<"\n\n approximated stiffness matrix\n";
-        for(int line=0; line<6*nnode; line++)
-        {
-          for(int col=0; col<6*nnode; col++)
-          {
-            if(isnan(stiff_approx(line,col)))
-              std::cout<<"     nan   ";
-            else if(stiff_approx(line,col) == 0)
-              std::cout<<"     0     ";
-            else if(stiff_approx(line,col) >= 0)
-              std::cout<<"  "<< std::scientific << std::setprecision(3)<<stiff_approx(line,col);
-            else
-              std::cout<<" "<< std::scientific << std::setprecision(3)<<stiff_approx(line,col);
-          }
-          std::cout<<"\n";
-        }
-
-        std::cout<<"\n\n rel error stiffness matrix\n";
-        for(int line=0; line<6*nnode; line++)
-        {
-          for(int col=0; col<6*nnode; col++)
-          {
-            if(isnan(stiff_relerr(line,col)))
-              std::cout<<"     nan   ";
-            else if(stiff_relerr(line,col) == 0)
-              std::cout<<"     0     ";
-            else if(stiff_relerr(line,col) >= 0)
-              std::cout<<"  "<< std::scientific << std::setprecision(3)<<stiff_relerr(line,col);
-            else
-              std::cout<<" "<< std::scientific << std::setprecision(3)<<stiff_relerr(line,col);
-          }
-          std::cout<<"\n";
-        }
-      }
-
-    } //end of section in which numerical approximation for stiffness matrix is computed
-    */
+//    //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
+//    //correctly or not by means of a numerically approximated stiffness matrix
+//    //The code block will work for all higher order elements.
+//    if(Id() == 0) //limiting the following tests to certain element numbers
+//    {
+//      //variable to store numerically approximated stiffness matrix
+//      Epetra_SerialDenseMatrix stiff_approx;
+//      stiff_approx.Shape(6*nnode,6*nnode);
+//
+//      //relative error of numerically approximated stiffness matrix
+//      Epetra_SerialDenseMatrix stiff_relerr;
+//      stiff_relerr.Shape(6*nnode,6*nnode);
+//
+//      //characteristic length for numerical approximation of stiffness
+//      double h_rel = 1e-10;
+//
+//      //flag indicating whether approximation leads to significant relative error
+//      int outputflag = 0;
+//
+//      //calculating strains in new configuration
+//      for(int i=0; i<6; i++) //for all dof
+//      {
+//        for(int k=0; k<nnode; k++)//for all nodes
+//        {
+//          Epetra_SerialDenseVector force_aux;
+//          force_aux.Size(6*nnode);
+//
+//          //create new displacement and velocity vectors in order to store artificially modified displacements
+//          std::vector<double> vel_aux(myvel);
+//          std::vector<double> disp_aux(mydisp);
+//
+//          //modifying displacement artificially (for numerical derivative of internal forces):
+//          disp_aux[6*k + i] += h_rel;
+//          vel_aux[6*k + i] += h_rel / params.get<double>("delta time",0.01);
+//
+//          //b3_nlnstiffmass is a templated function. therefore we need to point out the number of nodes in advance
+//          switch(nnode)
+//          {
+//              case 2:
+//              {
+//                b3_nlnstiffmass<2>(params,myacc,vel_aux,disp_aux,NULL,NULL,&force_aux,NULL);
+//                break;
+//              }
+//              case 3:
+//              {
+//                b3_nlnstiffmass<3>(params,myacc,vel_aux,disp_aux,NULL,NULL,&force_aux,NULL);
+//                break;
+//              }
+//              case 4:
+//              {
+//                b3_nlnstiffmass<4>(params,myacc,vel_aux,disp_aux,NULL,NULL,&force_aux,NULL);
+//                break;
+//              }
+//              case 5:
+//              {
+//                b3_nlnstiffmass<5>(params,myacc,vel_aux,disp_aux,NULL,NULL,&force_aux,NULL);
+//                break;
+//              }
+//              default:
+//                dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+//          }
+//          //computing derivative d(fint)/du numerically by finite difference
+//          for(int u = 0 ; u < 6*nnode ; u++ )
+//          {
+//            stiff_approx(u,k*6+i)= ( force_aux[u] - elevec1(u) )/ h_rel ;
+//            //stiff_approx(u,k*6+i)= ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel * (force_aux[u] + elevec1(u) ) );
+//          }
+//        } //for(int k=0; k<nnode; k++)//for all nodes
+//
+//      } //for(int i=0; i<3; i++) //for all dof
+//
+//      for(int line=0; line<6*nnode; line++)
+//      {
+//        for(int col=0; col<6*nnode; col++)
+//        {
+//          if (fabs(elemat1(line,col)) > 1.0e-10)
+//            stiff_relerr(line,col)= fabs( ( elemat1(line,col) - stiff_approx(line,col) )/ elemat1(line,col) );
+//          else if (fabs(stiff_approx(line,col)) < 1.0e-5)
+//            stiff_relerr(line,col)=0.0;
+//          else
+//            stiff_relerr(line,col)=1000.0;
+//
+//          //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
+//          if ( fabs( stiff_relerr(line,col) ) < h_rel*500 || isnan( stiff_relerr(line,col))) //isnan = is not a number
+//            stiff_relerr(line,col) = 0;
+//
+//          //if ( stiff_relerr(line,col) > 0)
+//            outputflag = 1;
+//        } //for(int col=0; col<3*nnode; col++)
+//
+//      } //for(int line=0; line<3*nnode; line++)
+//
+//      if(outputflag ==1)
+//      {
+//
+//        std::cout<<"\n\n acutally calculated stiffness matrix\n";
+//        for(int line=0; line<6*nnode; line++)
+//        {
+//          for(int col=0; col<6*nnode; col++)
+//          {
+//            if(isnan(elemat1(line,col)))
+//              std::cout<<"     nan   ";
+//            else if(elemat1(line,col) == 0)
+//              std::cout<<"     0     ";
+//            else if(elemat1(line,col) >= 0)
+//              std::cout<<"  "<< std::scientific << std::setprecision(3)<<elemat1(line,col);
+//            else
+//              std::cout<<" "<< std::scientific << std::setprecision(3)<<elemat1(line,col);
+//          }
+//          std::cout<<"\n";
+//        }
+//
+//        std::cout<<"\n\n approximated stiffness matrix\n";
+//        for(int line=0; line<6*nnode; line++)
+//        {
+//          for(int col=0; col<6*nnode; col++)
+//          {
+//            if(isnan(stiff_approx(line,col)))
+//              std::cout<<"     nan   ";
+//            else if(stiff_approx(line,col) == 0)
+//              std::cout<<"     0     ";
+//            else if(stiff_approx(line,col) >= 0)
+//              std::cout<<"  "<< std::scientific << std::setprecision(3)<<stiff_approx(line,col);
+//            else
+//              std::cout<<" "<< std::scientific << std::setprecision(3)<<stiff_approx(line,col);
+//          }
+//          std::cout<<"\n";
+//        }
+//
+//        std::cout<<"\n\n rel error stiffness matrix\n";
+//        for(int line=0; line<6*nnode; line++)
+//        {
+//          for(int col=0; col<6*nnode; col++)
+//          {
+//            if(isnan(stiff_relerr(line,col)))
+//              std::cout<<"     nan   ";
+//            else if(stiff_relerr(line,col) == 0)
+//              std::cout<<"     0     ";
+//            else if(stiff_relerr(line,col) >= 0)
+//              std::cout<<"  "<< std::scientific << std::setprecision(3)<<stiff_relerr(line,col);
+//            else
+//              std::cout<<" "<< std::scientific << std::setprecision(3)<<stiff_relerr(line,col);
+//          }
+//          std::cout<<"\n";
+//        }
+//      }
+//
+//    } //end of section in which numerical approximation for stiffness matrix is computed
 
     }
     break;
@@ -420,18 +438,12 @@ int DRT::ELEMENTS::Beam3ii::EvaluateNeumann(Teuchos::ParameterList& params,
                                         Epetra_SerialDenseVector& elevec1,
                                         Epetra_SerialDenseMatrix* elemat1)
 {
+
   // get element displacements
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-  // get element velocities (UNCOMMENT IF NEEDED)
-  /*
-  Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
-  if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-  std::vector<double> myvel(lm.size());
-  DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-  */
 
   // find out whether we will use a time curve
   bool usetime = true;
@@ -609,42 +621,6 @@ inline void DRT::ELEMENTS::Beam3ii::pushforward(const LINALG::Matrix<3,3>& Lambd
    return;
 } // DRT::ELEMENTS::Beam3ii::pushforward
 
-/*----------------------------------------------------------------------------------------------------------------------*
- |compute convected strain at certain Gauss point with triad rotmat according to Crisfield 1999, eq. (3.4) and eq. (4.9)|
- |                                                                                                           cyron 04/10|
- *----------------------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3ii::computestrain(const LINALG::Matrix<3,1>& rprime, const LINALG::Matrix<3,3>& Lambda,
-                                                  LINALG::Matrix<3,1>& gamma, LINALG::Matrix<3,1>& kappa)
-{
-
-  //convected strain gamma according to Crisfield 1999, eq. (3.4)
-  gamma.MultiplyTN(Lambda,rprime);
-  gamma(0) = gamma(0) - 1.0;
-
-  #ifdef BEAM3IIGAMMAREF
-    gamma -= gammaref_[0];
-  #endif
-
-  /*the below curvature computation is possible for 2-noded elements only; for higher order elements one might replace it by
-   *a computation according to eq. (2.12), Jelenic 1999*/
-  if(NumNode()>2)
-    dserror("computation of curvature in beam3ii element implemented only for 2 nodes!");
-
-  //compute local rotational vectors phi according to Crisfield 1999,(4.6) in quaterion form
-  LINALG::Matrix<4,1> phi12;
-  LARGEROTATIONS::quaternionproduct(Qnew_[1],LARGEROTATIONS::inversequaternion(Qnew_[0]),phi12);
-
-  //according o Crisfield 1999, eq. (4.9), kappa equals the vector corresponding to phi12 divided by the element reference length
-  LARGEROTATIONS::quaterniontoangle(phi12,kappa);
-  kappa.Scale(0.5/jacobi_[0]);
-
-  //mechanically relevant curvature is current curvature minus curvature in reference position
-  kappa -= kapparef_[0];
-
-
-   return;
-} // DRT::ELEMENTS::Beam3ii::computestrain
-
 /*------------------------------------------------------------------------------------------------------------*
  | calculation of elastic energy (private)                                                        cyron 12/10|
  *-----------------------------------------------------------------------------------------------------------*/
@@ -686,8 +662,16 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
     //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the nnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
     std::vector<std::vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
 
-    //r'(x) from (2.1), Jelenic 1999
-    LINALG::Matrix<3,1>  rprime;
+    //rotation angles between nodal triads and refenrece triad according to (3.8), Jelenic 1999
+    std::vector<LINALG::Matrix<3,1> > Psili(nnode);
+
+    //r'(x) from (2.12), Jelenic 1999
+    LINALG::Matrix<3,1>  rprime(true);
+    //psil(x) from (3.11), Jelenic 1999
+    LINALG::Matrix<3,1>  Psil(true);
+    //psil'(x) following from (3.11), Jelenic 1999
+    LINALG::Matrix<3,1>  Psilderiv(true);
+
     //3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
     LINALG::Matrix<3,1>  kappa;
     //3D vector of convected axial and shear strains from (2.1), Jelenic 1999
@@ -715,7 +699,7 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
     DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
 
     //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
-    evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
+    evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass,Psili);
 
     //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
     for(int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -724,10 +708,10 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
       const double wgt = gausspoints.qwgt[numgp];
 
       //compute derivative of line of centroids with respect to curve parameter in reference configuration, i.e. r' from Jelenic 1999, eq. (2.12)
-      curvederivative<nnode,3>(disp,Iprime[numgp],rprime,jacobi_[numgp]);
+      curvederivative<nnode,3>(disp,Psili,I[numgp],Iprime[numgp],jacobi_[numgp],rprime,Psil,Psilderiv);
 
       //compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12)
-      computestrain(rprime,Lambda[numgp],gamma,kappa);
+      computestrain(Psil,Psilderiv,rprime,Lambda[numgp],gammaref_[numgp],kapparef_[numgp],gamma,kappa);
 
       //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
       strainstress(gamma,kappa,stressN,CN,stressM,CM);
@@ -797,8 +781,16 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the nnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
   std::vector<std::vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
 
-  //r'(x) from (2.1), Jelenic 1999
-  LINALG::Matrix<3,1>  rprime;
+  //rotation angles between nodal triads and refenrece triad according to (3.8), Jelenic 1999
+  std::vector<LINALG::Matrix<3,1> > Psili(nnode);
+
+  //r'(x) from (2.12), Jelenic 1999
+  LINALG::Matrix<3,1>  rprime(true);
+  //psil(x) from (3.11), Jelenic 1999
+  LINALG::Matrix<3,1>  Psil(true);
+  //psil'(x) following from (3.11), Jelenic 1999
+  LINALG::Matrix<3,1>  Psilderiv(true);
+
   //3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
   LINALG::Matrix<3,1>  kappa;
   //3D vector of convected axial and shear strains from (2.1), Jelenic 1999
@@ -827,7 +819,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   if(params.isParameter("PERIODLENGTH"))
     NodeShift<nnode,3>(params,disp);
 
-
   //Compute current nodal triads
   for (int node=0; node<nnode; ++node)
   {
@@ -840,7 +831,9 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
     //to recover the multiplicative rotation increment between the last and the current Newton step. This also
     //means that dispthetanew_ has no physical meaning since it is the additive sum of non-additive rotation increments(meier, 03.2014)
     for(int i=0; i<3; i++)
+    {
       dispthetanew_[node](i) = disp[6*node+3+i];
+    }
 
     deltatheta  = dispthetanew_[node];
     deltatheta -= dispthetaold_[node];
@@ -860,14 +853,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
 
   //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
-  evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
-
-//  LINALG::Matrix<3,1> stressNout(true);
-//  LINALG::Matrix<3,1> stressMout(true);
-//  LINALG::Matrix<3,1> gammaout(true);
-//  LINALG::Matrix<3,1> kappaout(true);
-//  stressNout.PutScalar(-1.0);
-//  stressMout.PutScalar(-1.0);
+  evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass,Psili);
 
   //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -877,37 +863,23 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
     const double wgt = gausspoints.qwgt[numgp];
 
     //compute derivative of line of centroids with respect to curve parameter in reference configuration, i.e. r' from Jelenic 1999, eq. (2.12)
-    curvederivative<nnode,3>(disp,Iprime[numgp],rprime,jacobi_[numgp]);
+    curvederivative<nnode,3>(disp,Psili,I[numgp],Iprime[numgp],jacobi_[numgp],rprime,Psil,Psilderiv);
 
     //compute spin matrix related to vector rprime for later use
     LARGEROTATIONS::computespin(rprimehat,rprime);
 
     //compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12)
-    computestrain(rprime,Lambda[numgp],gamma,kappa);
+    computestrain(Psil,Psilderiv,rprime,Lambda[numgp],gammaref_[numgp],kapparef_[numgp],gamma,kappa);
 
     //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
     strainstress(gamma,kappa,stressN,CN,stressM,CM);
-
-//    for(int i=0; i<(int)stressNout.M(); i++)
-//    {
-//      if(fabs(stressN(i))>stressNout(i))
-//      {
-//        stressNout(i) = stressN(i);
-//        gammaout(i) = gamma(i);
-//      }
-//      if(fabs(stressM(i))>stressMout(i))
-//      {
-//        stressMout(i) = stressM(i);
-//        kappaout(i) = kappa(i);
-//      }
-//    }
 
     /*compute spatial stresses and constitutive matrices from convected ones according to Jelenic 1999, page 148, paragraph
      *between (2.22) and (2.23) and Romero 2004, (3.10)*/
     pushforward(Lambda[numgp],stressN,CN,stressM,CM,stressn,cn,stressm,cm);
 
     /*computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up with respect
-     *to single blocks of matrix in eq. (4.3); note that Jacobi determinantn in diagonal blocks cancels out
+     *to single blocks of matrix in eq. (4.3); note that Jacobi determinant in diagonal blocks cancels out
      *in implementation, whereas for the lower left block we have to multiply the weight by the jacobi
      *determinant*/
     if (force != NULL)
@@ -934,11 +906,14 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
         }
      }//if (force != NULL)
 
-
     /*computation of stiffness matrix according to Jelenic 1999, eq. (4.7); computation split up with respect
-    *to single blocks of matrix in eq. (4.3)*/
+     *to single blocks of matrix in eq. (4.3). Here, the jacobi determinant jacobi_[numgp] stemming from ds and
+     *to the inverse determinant 1/jacobi_[numgp] stemming from I^{i'} have to be considered (these two cancel
+     *to out if both appear), while the jacobi determinant of Itildeprime and rprime have already been
+     *to considered in the corresponding calculation of these quantities.*/
     if (stiffmatrix != NULL)
     {
+      //std::cout << "jacobi_[numgp]: " << jacobi_[numgp] << std::endl;
       //auxiliary variables for storing intermediate matrices in computation of entries of stiffness matrix
       LINALG::Matrix<3,3> auxmatrix1;
       LINALG::Matrix<3,3> auxmatrix2;
@@ -976,7 +951,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
           auxmatrix1.Scale(Iprime[numgp](nodei));
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
-              (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) += auxmatrix1(i,j)*wgt/jacobi_[numgp];
+              (*stiffmatrix)(6*nodei+3+i,6*nodej+3+j) += auxmatrix1(i,j)*wgt;
 
           //second summand
           LARGEROTATIONS::computespin(auxmatrix2,stressm);
@@ -999,6 +974,19 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
 
         }
 
+//      //Uncomment for a quick check, if the shape functions Itildeprime fulfill the following essential property:
+//      auxmatrix2.Clear();
+//      for(int node = 0; node < nnode; node++)
+//      {
+//        auxmatrix2+=Itildeprime[numgp][node];
+//      }
+//
+//      for (int i=0;i<3;i++)
+//        for (int j=0;j<3;j++)
+//        {
+//          if (fabs(auxmatrix2(i,j))>1.0e-12)
+//            dserror("Sum of shapefunc derivative Itildeprime has to be zero!!!");
+//        }
     }
   }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
 
@@ -1008,8 +996,8 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   //steps. Since BACI does all displacement updates in an additive manner, the global vector of rotational displacements has no physical meaning and,
   //consequently the global velocity and acceleration vectors resulting from the BACI time integration schemes have no physical meaning, too. Therefore,
   //a mass matrix in combination with this global acceleration vector is meaningless from a physical point of view. For these reasons, we have to apply
-  //our own time integration scheme at element level. Up to now, the only implemented integration scheme is the gen-alpha time integration in combination
-  //with a constdisvelacc predictor. (Christoph Meier, 04.14)
+  //our own time integration scheme at element level. Up to now, the only implemented integration scheme is the gen-alpha Lie group time integration
+  //according to [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and [Brüls, Cardona, Arnold (2012)] in combination with a constdisvelacc predictor. (Christoph Meier, 04.14)
 
   double beta = params.get<double>("rot_beta",1000);
 
@@ -1047,12 +1035,15 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
         break;
       }
 
-      //tensor of mass moments of inertia
+      //tensor of mass moments of inertia and cross-section value. These values are used in order to artificially scale
+      //the the translational and rotational inertia terms with given input parameters if necessary:
       LINALG::Matrix<3,3> Jp(true);
-      Jp(0,0)=Iyy_+Izz_;
-      Jp(1,1)=Iyy_;
-      Jp(2,2)=Izz_;
+      Jp(0,0)=inertscalerot1_*(Iyy_+Izz_);
+      Jp(1,1)=inertscalerot2_*Iyy_;
+      Jp(2,2)=inertscalerot2_*Izz_;
       Jp.Scale(rho);
+
+      double scaledcrosssec=inertscaletrans_*crosssec_;
 
       //Calculate current displacement at gauss points (needed for element intern time integration)
       for (int gp=0; gp<gausspointsmass.nquad; gp++)//loop through Gauss points
@@ -1073,7 +1064,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
 
       for (int gp=0; gp<gausspointsmass.nquad; gp++)//loop through Gauss points
       {
-
         //weight of GP in parameter space
         const double wgtmass = gausspointsmass.qwgt[gp];
 
@@ -1112,9 +1102,11 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
 
         //update angular velocities and accelerations according to Newmark time integration scheme either in
         //material description (see Jelenic, 1999, p. 146, equations (2.8) and (2.9)) or in spatial description
-        //(for testing purposes, not recommended by Jelenic). In the predictor step of the time integration the following
-        //formulas automatically deliver a constant displacement (deltatheta=0), consistent velocity and consistent acceleration predictor.
-        //This fact has to be reflected in a consistent manner by the choice of the predictor in the input file:
+        //(for testing purposes, not recommended by Jelenic). The corresponding equations are adapted according to
+        //the gen-alpha Lie group time integration scheme proposed in [Arnold, Brüls (2007)], [Brüls, Cardona, 2010]
+        //and [Brüls, Cardona, Arnold (2012)]. In the predictor step of the time integration the following
+        //formulas automatically deliver a constant displacement (deltatheta=0), consistent velocity and consistent acceleration
+        //predictor. This fact has to be reflected in a consistent manner by the choice of the predictor in the input file:
         if (materialintegration)
         {
           for (int i=0;i<3;i++)
@@ -1123,7 +1115,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
                           -alpha_f/(1.0-alpha_f)*Aconvmass(i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*Amodconvmass(i);
 
             Wnewmass(i)=gamma/(beta*dt)*deltaTHETA(i)+(1-gamma/beta)*Wconvmass(i)+dt*(1-gamma/(2*beta))*Amodconvmass(i);
-
 
             Amodnewmass(i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*Anewmass(i) + alpha_f*Aconvmass(i) - alpha_m*Amodconvmass(i));
           }
@@ -1159,7 +1150,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
 
           rtnewmass_[gp](i)=gamma/(beta*dt)*deltar(i)+(1-gamma/beta)*rtconvmass_[gp](i)+dt*(1-gamma/(2*beta))*rttmodconvmass_[gp](i);
 
-
           rttmodnewmass_[gp](i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*rttnewmass_[gp](i) + alpha_f*rttconvmass_[gp](i) - alpha_m*rttmodconvmass_[gp](i) );
         }
 
@@ -1182,8 +1172,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
         for (int i=0; i<3; ++i)
           for (int node=0; node<nnode; ++node)
           {
-            //r_tt(i) += acc[6*node+i]*Imass[gp](node);
-            //r_t(i) += vel[6*node+i]*Imass[gp](node);
             r(i) += (Nodes()[node]->X()[i]+disp[6*node+i])*Imass[gp](node);
             r_test(i) += Nodes()[node]->X()[i]*Imass[gp](node);
           }
@@ -1198,16 +1186,15 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
         LINALG::Matrix<3,3> S_r(true);
         LARGEROTATIONS::computespin(S_r,r);
         dL.Multiply(S_r,r_t);
-        dL.Scale(rho*crosssec_);
+        dL.Scale(rho*scaledcrosssec);
         LINALG::Matrix<3,1> Lambdanewmass_Jp_Wnewmass(true);
         Lambdanewmass_Jp_Wnewmass.Multiply(Lambdanewmass,Jp_Wnewmass);
         dL.Update(1.0,Lambdanewmass_Jp_Wnewmass,1.0);
         for (int i=0;i<3;i++)
         {
           L_(i)+=wgtmass*jacobimass_[gp]*dL(i);
-          P_(i)+=wgtmass*jacobimass_[gp]*rho*crosssec_*r_t(i);
+          P_(i)+=wgtmass*jacobimass_[gp]*rho*scaledcrosssec*r_t(i);
         }
-
 
         LINALG::Matrix<3,3> S_Pit(true);
         LARGEROTATIONS::computespin(S_Pit,Pi_t);
@@ -1237,7 +1224,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
           for (int j=0;j<3;j++)
           {
             //translational contribution
-            (*inertia_force)(6*i+j)  += jacobimass_[gp]*wgtmass*rho*crosssec_*Imass[gp](i)*r_tt(j);
+            (*inertia_force)(6*i+j)  += jacobimass_[gp]*wgtmass*rho*scaledcrosssec*Imass[gp](i)*r_tt(j);
             //rotational contribution
             (*inertia_force)(6*i+j+3)+= jacobimass_[gp]*wgtmass*Imass[gp](i)*Pi_t(j);
           }
@@ -1250,7 +1237,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
           for (int i=0;i<nnode;i++)
           {
             for (int k=0;k<3;k++)
-              (*massmatrix)(6*i+k,6*j+k)+=diff_factor_acc*jacobimass_[gp]*wgtmass*rho*crosssec_*Imass[gp](i)*Imass[gp](j);
+              (*massmatrix)(6*i+k,6*j+k)+=diff_factor_acc*jacobimass_[gp]*wgtmass*rho*scaledcrosssec*Imass[gp](i)*Imass[gp](j);
           }
 
           //rotational contribution
@@ -1273,59 +1260,14 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
         LINALG::Matrix<1,1> ekintrans(true);
         ekinrot.MultiplyTN(Wnewmass,Jp_Wnewmass);
         ekintrans.MultiplyTN(r_t,r_t);
-        Ekin_+=0.5*(ekinrot.Norm2() + rho*crosssec_*ekintrans.Norm2())*jacobimass_[gp]*wgtmass;
+        Ekin_+=0.5*(ekinrot.Norm2() + rho*scaledcrosssec*ekintrans.Norm2())*jacobimass_[gp]*wgtmass;
         kintorsionenergy_+=0.5* Wnewmass(0)*Jp_Wnewmass(0)*jacobimass_[gp]*wgtmass;
         kinbendingenergy_+=0.5* Wnewmass(1)*Jp_Wnewmass(1)*jacobimass_[gp]*wgtmass;
         kinbendingenergy_+=0.5* Wnewmass(2)*Jp_Wnewmass(2)*jacobimass_[gp]*wgtmass;
-        kintransenergy_+=0.5*rho*crosssec_*ekintrans.Norm2()*jacobimass_[gp]*wgtmass;
+        kintransenergy_+=0.5*rho*scaledcrosssec*ekintrans.Norm2()*jacobimass_[gp]*wgtmass;
 
         Jp_Wnewmass.Multiply(Jp,Wnewmass);
-
       }//for (int gp=0; gp<gausspointsmass.nquad; gp++)
-
-      //This multiplication inverts the multiplication with (1-alpha_m)/(beta*dt^2) [alpha_m is already assumed to be zero in our implementation]
-      //which is done later on in strtimint_genalpha.cpp. This is necessary, since the time integration factors have allready been considered
-      //in the calcualtion of the mass matrix above.
-
-      #ifdef FDCHECKINERTIA
-        LINALG::Matrix<6*nnode,6*nnode> massmatrix_fd(true);
-        for (int i=0;i<6*nnode;i++)
-        {
-          LINALG::Matrix<6*nnode,1> inertia_force_xplusdx(true);
-          const double delta = 1.0e-8;
-
-          b3_nlnmass_fdcheck<nnode>(params,acc, inertia_force_xplusdx, i, delta);
-
-          for (int j=0;j<6*nnode;j++)
-          {
-            massmatrix_fd(j,i)=(inertia_force_xplusdx(j)-(*inertia_force)(j))/delta;
-          }
-          if (i<3 or (i>5 and i<9))
-          for (int j=0;j<6*nnode;j++)
-          {
-            massmatrix_fd(j,i)=massmatrix_fd(j,i)/(beta*dt*dt);
-          }
-        }
-        std::cout << "massmatrix: " << std::endl;
-        for (int i=0;i<6*nnode;i++)
-        {
-          for (int j=0;j<6*nnode;j++)
-          {
-            std::cout << std::scientific << std::setprecision(4) << std::setw(12) << (*massmatrix)(i,j) << "  ";
-          }
-          std::cout << std::endl;
-        }
-
-        std::cout << "massmatrix_fd: " << std::endl;
-        for (int i=0;i<6*nnode;i++)
-        {
-          for (int j=0;j<6*nnode;j++)
-          {
-            std::cout << std::scientific << std::setprecision(4) << std::setw(12) << massmatrix_fd(i,j) << "  ";
-          }
-          std::cout << std::endl;
-        }
-      #endif
     }
     else
     {
@@ -1333,7 +1275,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
       for (int i=0; i<6*nnode; i++)
         (*massmatrix)(i,i) = 1;
     }
-
   }//if (massmatrix != NULL)
 
   // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
@@ -1450,234 +1391,6 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
 //    fprintf(fp,filecontent.str().c_str());
 //    fclose(fp);
 //  }
-
-  return;
-
-} // DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass
-
-/*------------------------------------------------------------------------------------------------------------*
- | finite difference check of linearization of inertia terms (private)                             meier 04/14|
- *-----------------------------------------------------------------------------------------------------------*/
-template<int nnode>
-void DRT::ELEMENTS::Beam3ii::b3_nlnmass_fdcheck(Teuchos::ParameterList& params,
-                                                std::vector<double>&      acc,
-                                                LINALG::Matrix<6*nnode,1>& inertia_force_xplusdx,
-                                                int& column,
-                                                const double& delta)
-{
-
-  dserror("adapt b3_nlnmass_fdcheck to new class variables such as dispnewmass_ etc before using it!!!");
-
-  //This finite difference check is only implemented for two-noded elements so far!!!
-  if (nnode > 2)
-    dserror("This finite difference check is only implemented for two-noded elements so far!!!");
-
-  LINALG::Matrix<3,1> delta_angle_node1(true);
-  LINALG::Matrix<3,1> delta_angle_node2(true);
-  LINALG::Matrix<6*nnode,1> delta_acc(true);
-
-  if (column<3 or (column>=6 and column<9))
-  {
-    delta_acc(column)=delta;
-  }
-  else if (column<6 and column>=3)
-  {
-    delta_angle_node1(column-3)=delta;
-  }
-  else if (column<12 and column >=9)
-  {
-    delta_angle_node2(column-9)=delta;
-  }
-  else dserror("Anything went wrong in the if-else-condition above!!!");
-
-  //Set disturbed nodal triad orientations and translational accelerations
-  LINALG::Matrix<4,1> delta_Q_node1(true);
-  LINALG::Matrix<4,1> delta_Q_node2(true);
-  LARGEROTATIONS::angletoquaternion(delta_angle_node1, delta_Q_node1);
-  LARGEROTATIONS::angletoquaternion(delta_angle_node2, delta_Q_node2);
-
-  //Store backups of class variables
-  LINALG::Matrix<4,1> Qnewbackup_node1(Qnew_[0]);
-  LINALG::Matrix<4,1> Qnewbackup_node2(Qnew_[1]);
-  std::vector<LINALG::Matrix<3,1> > wnewmassbackup(wnewmass_);
-  std::vector<LINALG::Matrix<3,1> > anewmassbackup(anewmass_);
-  std::vector<LINALG::Matrix<3,1> > amodnewmassbackup(amodnewmass_);
-
-  //Calculate disturbed quaternions and accelerations
-  LARGEROTATIONS::quaternionproduct(Qnew_[0],delta_Q_node1,Qnew_[0]);
-  LARGEROTATIONS::quaternionproduct(Qnew_[1],delta_Q_node2,Qnew_[1]);
-  Qnew_[0].Scale(1.0/Qnew_[0].Norm2());
-  Qnew_[1].Scale(1.0/Qnew_[1].Norm2());
-  for (int i=0;i<6*nnode;i++)
-  {
-    acc[i]+=delta_acc(i);
-  }
-
-  //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
-  std::vector<LINALG::Matrix<1,nnode> > I(nnode-1);
-
-  //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at nnode-1 Gauss points for elasticity
-  std::vector<LINALG::Matrix<1,nnode> > Iprime(nnode-1);
-
-  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at nnode-1 Gauss points for elasticity according to according to (3.18), Jelenic 1999
-  std::vector<std::vector<LINALG::Matrix<3,3> > > Itilde(nnode-1);
-
-  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at nnode-1 Gauss points for elasticity according to according to (3.19), Jelenic 1999
-  std::vector<std::vector<LINALG::Matrix<3,3> > > Itildeprime(nnode-1);
-
-  //vector with rotation matrices at nnode-1 Gauss points for elasticity
-  std::vector<LINALG::Matrix<3,3> > Lambda(nnode-1);
-
-  //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the nnode Gauss points for mass matrix
-  std::vector<LINALG::Matrix<1,nnode> > Imass(nnode);
-
-  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the nnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
-  std::vector<std::vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
-
-  //integration points for elasticity (underintegration) and mass matrix (exact integration)
-  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
-  DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
-
-  //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
-  evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
-
-  double beta = params.get<double>("beam3ii_beta");
-  double gamma = params.get<double>("beam3ii_gamma");
-  double dt = params.get<double>("delta time");
-  bool materialintegration=true;
-
-  LINALG::Matrix<3,3> Lambdanewmass(true);
-  LINALG::Matrix<3,3> Lambdaconvmass(true);
-
-  //first of all we get the material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
-  double rho = 0;
-
-  //assignment of material parameters; only St.Venant material is accepted for this beam
-  switch(currmat->MaterialType())
-  {
-    case INPAR::MAT::m_stvenant:// only linear elastic material supported
-    {
-      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-      rho = actmat->Density();
-    }
-    break;
-    default:
-      dserror("unknown or improper type of material law");
-    break;
-  }
-
-  //tensor of mass moments of inertia
-  LINALG::Matrix<3,3> Jp(true);
-  Jp(0,0)=Iyy_+Izz_;
-  Jp(1,1)=Iyy_;
-  Jp(2,2)=Izz_;
-  Jp.Scale(rho);
-
-  for (int gp=0; gp<gausspointsmass.nquad; gp++)//loop through Gauss points
-  {
-
-    Lambdanewmass.Clear();
-    Lambdaconvmass.Clear();
-    //compute current and old triad at Gauss point
-    LARGEROTATIONS::quaterniontotriad(Qnewmass_[gp],Lambdanewmass);
-    LARGEROTATIONS::quaterniontotriad(Qconvmass_[gp],Lambdaconvmass);
-
-    //rotation between last converged position and current position expressend as a quaternion
-    LINALG::Matrix<4,1>  deltaQ(true);
-    LARGEROTATIONS::quaternionproduct(LARGEROTATIONS::inversequaternion(Qconvmass_[gp]),Qnewmass_[gp],deltaQ);
-
-    //spatial rotation between last converged position and current position expressed as a three element rotation vector
-    LINALG::Matrix<3,1> deltatheta(true);
-    LARGEROTATIONS::quaterniontoangle(deltaQ,deltatheta);
-
-    //compute material counterparts of spatial vectors
-    LINALG::Matrix<3,1> deltaTHETA(true);
-    LINALG::Matrix<3,1> Wconvmass(true);
-    LINALG::Matrix<3,1> Wnewmass(true);
-    LINALG::Matrix<3,1> Aconvmass(true);
-    LINALG::Matrix<3,1> Anewmass(true);
-    deltaTHETA.MultiplyTN(Lambdanewmass,deltatheta);
-    Wconvmass.MultiplyTN(Lambdaconvmass,wconvmass_[gp]);
-    Aconvmass.MultiplyTN(Lambdaconvmass,aconvmass_[gp]);
-
-    //update angular velocities and accelerations according to Newmark time integration scheme either in
-    //material description (see Jelenic, 1999, p. 146, equations (2.8) and (2.9)) or in spatial description:
-    if (materialintegration)
-    {
-      for (int i=0;i<3;i++)
-      {
-        Wnewmass(i)=gamma/(beta*dt)*deltaTHETA(i)+(1-gamma/beta)*Wconvmass(i)+dt*(1-gamma/(2*beta))*Aconvmass(i);
-        Anewmass(i)=1.0/(beta*dt*dt)*(deltaTHETA(i)-dt*Wconvmass(i)-dt*dt*(0.5-beta)*Aconvmass(i));
-      }
-      wnewmass_[gp].Multiply(Lambdanewmass,Wnewmass);
-      anewmass_[gp].Multiply(Lambdanewmass,Anewmass);
-    }
-    else
-    {
-      for (int i=0;i<3;i++)
-      {
-        wnewmass_[gp](i)=gamma/(beta*dt)*deltatheta(i)+(1-gamma/beta)*wconvmass_[gp](i)+dt*(1-gamma/(2*beta))*aconvmass_[gp](i);
-        anewmass_[gp](i)=1.0/(beta*dt*dt)*(deltatheta(i)-dt*wconvmass_[gp](i)-dt*dt*(0.5-beta)*aconvmass_[gp](i));
-      }
-      Wnewmass.MultiplyTN(Lambdanewmass,wnewmass_[gp]);
-      Anewmass.MultiplyTN(Lambdanewmass,anewmass_[gp]);
-    }
-
-    //spin matrix of the material angular velocity, i.e. S(W)
-    LINALG::Matrix<3,3> SWnewmass(true);
-    LARGEROTATIONS::computespin(SWnewmass,Wnewmass);
-    LINALG::Matrix<3,1> Jp_Wnewmass(true);
-    LINALG::Matrix<3,1> auxvector1(true);
-    LINALG::Matrix<3,1> Pi_t(true);
-    Jp_Wnewmass.Multiply(Jp,Wnewmass);
-    for (int i=0;i<3;i++)
-      for (int j=0;j<3;j++)
-        auxvector1(i)+=SWnewmass(i,j)*Jp_Wnewmass(j)+Jp(i,j)*Anewmass(j);
-
-    Pi_t.Multiply(Lambdanewmass,auxvector1);
-    LINALG::Matrix<3,1> r_tt(true);
-    for (int i=0; i<3; ++i)
-      for (int node=0; node<nnode; ++node)
-      {
-        r_tt(i) += acc[6*node+i]*Imass[gp](node);
-      }
-
-    //weight of GP in parameter space
-    const double wgtmass = gausspointsmass.qwgt[gp];
-
-    //inertia forces
-    for (int i=0;i<nnode;i++)
-    {
-      for (int j=0;j<3;j++)
-      {
-        //translational contribution
-        inertia_force_xplusdx(6*i+j)  += jacobimass_[gp]*wgtmass*rho*crosssec_*Imass[gp](i)*r_tt(j);
-        //rotational contribution
-        inertia_force_xplusdx(6*i+j+3)+= jacobimass_[gp]*wgtmass*Imass[gp](i)*Pi_t(j);
-      }
-    }
-
-  }//for (int gp=0; gp<gausspointsmass.nquad; gp++)
-
-  //Set nodal accelerations and quaternions back to their initial values
-  Qnew_[0].Update(1.0,Qnewbackup_node1,0.0);
-  Qnew_[1].Update(1.0,Qnewbackup_node2,0.0);
-  for (int i=0;i<6*nnode;i++)
-    acc[i]-=delta_acc(i);
-
-  //Set all class variables back to their initial values (for some of them this is done in evaluatebasisfunctionsandtriads<nnode>(...))
-  evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
-  wnewmass_.clear();
-  wnewmass_.push_back(wnewmassbackup[0]);
-  wnewmass_.push_back(wnewmassbackup[1]);
-  anewmass_.clear();
-  anewmass_.push_back(anewmassbackup[0]);
-  anewmass_.push_back(anewmassbackup[1]);
-  amodnewmass_.clear();
-  amodnewmass_.push_back(amodnewmassbackup[0]);
-  amodnewmass_.push_back(amodnewmassbackup[1]);
-
 
   return;
 

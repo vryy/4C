@@ -215,11 +215,10 @@ STR::TimIntGenAlpha::TimIntGenAlpha
 
     NonlinearMassSanityCheck(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0), &sdynparams);
 
-    if (HaveNonlinearMass() == INPAR::STR::ml_rotations and !SolelyBeam3Elements(actdis))
+    if(HaveNonlinearMass() == INPAR::STR::ml_rotations and !SolelyBeam3Elements(actdis))
     {
-      dserror("Multiplicative Gen-Alpha time integration scheme only implemented for beam3ii elements so far!");
+      dserror("Multiplicative Gen-Alpha time integration scheme only implemented for beam elements so far!");
     }
-
   }
 
   // init old time step value
@@ -979,13 +978,14 @@ bool STR::TimIntGenAlpha::SolelyBeam3Elements(Teuchos::RCP<DRT::Discretization> 
 {
   bool solelybeameles=true;
 
-  for (int i=0;i<actdis->NumMyRowNodes();i++)
+  for (int i=0;i<actdis->NumMyRowElements();i++)
   {
-    DRT::Node* node = actdis->lColNode(i);
+    DRT::Element* element = actdis->lColElement(i);
+    DRT::Node* node = (element->Nodes())[0];
     int numdof = actdis->NumDof(node);
 
-    //So far we simply check, if we have 6 DoFs per node, which is only true for beam elements
-    if (numdof != 6)
+    //So far we simply check, if we have at least 6 DoFs per node, which is only true for beam elements
+    if (numdof < 6)
       solelybeameles=false;
   }
 

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam3eb_anisotrop.H
+\file beam3eb_anisotrop_evaluate.cpp
 
 \brief three dimensional nonlinear rod based on a C1 curve
 
@@ -1568,22 +1568,24 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
     //In contrast to the Neumann part of the residual force here is NOT a factor of (-1) needed, as elemat1 is directly added to the stiffness matrix
     //without sign change
 
-    for(int i=0; i<3 ; i++)
+    if(elemat1!=NULL)
     {
-      for(int j=0; j<3 ; j++)
+      for(int i=0; i<3 ; i++)
       {
-        (*elemat1)(node*7+3+i,node*7+3+j)+=SM(i,j)/pow(abs_tangent,2.0); //assemble M x into the stiffness matrix, columns: t1 t2 t3, lines: t1 t2 t3
-        (*elemat1)(node*7+3+i,node*7+3+j)+=2*StM(i)*tangent(j)/pow(abs_tangent,4.0); //assemble t x M t^T into the stiffness matrix, columns: t1 t2 t3, lines: t1 t2 t3
+        for(int j=0; j<3 ; j++)
+        {
+          (*elemat1)(node*7+3+i,node*7+3+j)+=SM(i,j)/pow(abs_tangent,2.0); //assemble M x into the stiffness matrix, columns: t1 t2 t3, lines: t1 t2 t3
+          (*elemat1)(node*7+3+i,node*7+3+j)+=2*StM(i)*tangent(j)/pow(abs_tangent,4.0); //assemble t x M t^T into the stiffness matrix, columns: t1 t2 t3, lines: t1 t2 t3
+        }
+      }
+
+      for(int j=0; j<3; j++)
+      {
+        (*elemat1)(node*7+dofgamma,node*7+3+j)+=moment(j)/abs_tangent; //assemble M^T into the stiffness matrix, columns: t1 t2 t3, lines: gamma
+        (*elemat1)(node*7+dofgamma,node*7+3+j)+=-tTM*tangent(j)/pow(abs_tangent,2.0); //assemble M^T t t^T = tTM t^T into the stiffness matrix, columns: t1 t2 t3, lines: gamma
+                                      //pow(...,2) is correct here, since tTM is already multiplied with 1/|t|
       }
     }
-
-    for(int j=0; j<3; j++)
-    {
-      (*elemat1)(node*7+dofgamma,node*7+3+j)+=moment(j)/abs_tangent; //assemble M^T into the stiffness matrix, columns: t1 t2 t3, lines: gamma
-      (*elemat1)(node*7+dofgamma,node*7+3+j)+=-tTM*tangent(j)/pow(abs_tangent,2.0); //assemble M^T t t^T = tTM t^T into the stiffness matrix, columns: t1 t2 t3, lines: gamma
-                                    //pow(...,2) is correct here, since tTM is already multiplied with 1/|t|
-    }
-
   }
 
   //if a line neumann condition needs to be linearized
@@ -1667,7 +1669,6 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
           }
         }
       } // for (int numgp=0; numgp<intpoints.nquad; ++numgp)
-
     }
 
   return 0;

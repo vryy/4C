@@ -1021,7 +1021,6 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
           for (int i=0; i<3; ++i)
             for (int j=0; j<3; ++j)
               fstiffmatrix(6*nodei+3+i,6*nodej+3+j) += auxmatrix1(i,j)*jacobi_[numgp]*wgt;
-
         }
 
        }

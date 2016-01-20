@@ -34,7 +34,7 @@ namespace LARGEROTATIONS
 {
   //!computing spin matrix S from rotation angle vector theta, Crisfield, Vol. 2, equation (16.8)
   void computespin(LINALG::Matrix<3,3>& S, const LINALG::Matrix<3,1>& theta);
-  
+
   //!this is a templated version of the method computespin as declared above in order to also handle
   //!the datatype FAD which is needed for automatic differentiation
   template<typename T>
@@ -56,22 +56,22 @@ namespace LARGEROTATIONS
 
   //!computing rotation matrix R from quaternion q, Crisfield, Vol. 2, equation (16.70)
   void quaterniontotriad(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,3>& R);
-  
+
   //!computing quaternion q from rotation angle theta, Crisfield, Vol. 2, equation (16.67)
   void angletoquaternion(const LINALG::Matrix<3,1>& theta, LINALG::Matrix<4,1>& q);
-  
+
   //!computing rotation matrix R from angle theta, Crisfield Vol. 2, equation (16.22)
   void angletotriad(const LINALG::Matrix<3,1>& theta, LINALG::Matrix<3,3>& R);
 
   //!computing rotation angle vector theta from quaternion q, Crisfield, Vol. 2, equation (16.67)
   void quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& theta);
-  
+
   //!computing from quaternion q the Rodrigues parameters omega, Crisfield, Vol. 2, equation (16.79)
   void quaterniontorodrigues(const LINALG::Matrix<4,1>& q, LINALG::Matrix<3,1>& omega);
-  
+
   //!computing quaternion q from a rotation matrix R, Crisfield, Vol. 2, equation (16.74) - (16.78)
   void triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Matrix<4,1>& q);
-  
+
   //!computing the rotation angle theta rotating the unit direction vector d1 into the unit direction vector d2
   void directionstoangle(const LINALG::Matrix<3,1>& d1,const LINALG::Matrix<3,1>& d2, LINALG::Matrix<3,1>& theta);
 
@@ -80,18 +80,21 @@ namespace LARGEROTATIONS
 
   //!quaternion product q12 = q2*q1, Crisfield, Vol. 2, equation (16.71)
   void quaternionproduct(const LINALG::Matrix<4,1>& q1,const LINALG::Matrix<4,1>& q2,LINALG::Matrix<4,1>& q12);
-  
+
   //!compute inverse quaternion q^{-1} of quaternion q
   LINALG::Matrix<4,1> inversequaternion(const LINALG::Matrix<4,1>& q);
-  
+
   //!matrix T(\theta) from Jelenic 1999, eq. (2.5), equivalent to matrix H^{-1} in Crisfield, (16.94)
   LINALG::Matrix<3,3> Tmatrix(LINALG::Matrix<3,1> theta);
-  
+
   //!matrix T(\theta)^{-1} from Jelenic 1999, eq. (2.5)
   LINALG::Matrix<3,3> Tinvmatrix(LINALG::Matrix<3,1> theta);
-  
+
   //!compute dT^{-1}(\theta)/dx according to the two-lined equation below (3.19) on page 152 of Jelenic 1999
   void computedTinvdx(const LINALG::Matrix<3,1>& Psil, const LINALG::Matrix<3,1>& Psilprime, LINALG::Matrix<3,3>& dTinvdx);
+
+  //!Transformation from node number according to Crisfield 1999 to storage position applied in BACI
+  int NumberingTrafo(const int j, const int numnode);
 
 } // LARGEROTATIONS
 

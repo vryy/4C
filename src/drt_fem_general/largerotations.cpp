@@ -1,5 +1,7 @@
 /*!----------------------------------------------------------------------
-\file \brief A set of preprocessor defines and utility functions for mortar methods.cpp
+\file largerotations.cpp
+
+\brief A set of preprocessor defines and utility functions for mortar methods.cpp
 \brief A set of utility functions for large rotations
 
 
@@ -302,28 +304,31 @@ LINALG::Matrix<3,3> LARGEROTATIONS::Tinvmatrix(LINALG::Matrix<3,1> theta)
   double rootarg = theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2);
   double theta_abs = sqrt(rootarg);
 
-  //in case of theta_abs == 0 the following computation has problems with singularities
-  if(theta_abs > 0)
+  //in case of theta_abs == 0 the following computation has problems with ill-conditioning / singularities
+  if(theta_abs > 1.0e-8)
   {
     //ultimate term in eq. (2.5)
     computespin(result, theta);
     result.Scale((1-cos(theta_abs)) / pow(theta_abs,2));
 
-    //penultimate term in eq. (2.5)
-    for(int i = 0; i<3; i++)
-      result(i,i) += sin(theta_abs)/(theta_abs);
+      //penultimate term in eq. (2.5)
+      for(int i = 0; i<3; i++)
+        result(i,i) += sin(theta_abs)/(theta_abs);
 
-    //first term on the right side in eq. (2.5)
-    for(int i = 0; i<3; i++)
-      for(int j=0; j<3; j++)
-        result(i,j) += theta(i) * theta(j) * (1 - sin(theta_abs)/(theta_abs) )/(theta_abs*theta_abs);
+      //first term on the right side in eq. (2.5)
+      for(int i = 0; i<3; i++)
+        for(int j=0; j<3; j++)
+          result(i,j) += theta(i) * theta(j) * (1 - sin(theta_abs)/(theta_abs) )/(theta_abs*theta_abs);
   }
   //in case of theta_abs == 0 H(theta) is the identity matrix and hence also Hinv
   else
   {
+    //based on the small angle approximation sin(x)=x and 1-cos(x)=x^2/2 we get: Tinv = I + 0.5*S(theta) -> Tinv'=0.5*S(theta')
     result.PutScalar(0.0);
+    LARGEROTATIONS::computespin(result, theta);
+    result.Scale(0.5);
     for(int j=0; j<3; j++)
-      result(j,j) = 1;
+      result(j,j) += 1;
   }
 
   return result;
@@ -337,53 +342,54 @@ void LARGEROTATIONS::computedTinvdx(const LINALG::Matrix<3,1>& Psil, const LINAL
 {
   //auxiliary matrix for storing intermediate results
   LINALG::Matrix<3,3> auxmatrix;
-  
+
   //norm of \Psi^l:
   double normPsil = Psil.Norm2();
-  
+
   //for relative rotations smaller then 1e-12 we use the limit for Psil -> 0 according to the comment above NOTE 4 on page 152, Jelenic 1999
-  if(Psil.Norm2() < 1e-12)
+  if(Psil.Norm2() < 1e-8)
   {
     computespin(dTinvdx,Psilprime);
-    dTinvdx.Scale(0.5); 
+    dTinvdx.Scale(0.5);
   }
   else
-  {  
+  {
+    //TODO: Check this term also in beam3cl
     //scalarproduct \Psi^{l,t} \cdot \Psi^{l,'}
     double scalarproductPsilPsilprime = 0;
     for(int i=0; i<3; i++)
-      for(int j=0; j<3; j++)
-        scalarproductPsilPsilprime += Psil(i)*Psilprime(i);
-    
+      scalarproductPsilPsilprime += Psil(i)*Psilprime(i);
+
     //spin matrices of Psil and Psilprime
     LINALG::Matrix<3,3> spinPsil;
     LINALG::Matrix<3,3> spinPsilprime;
     computespin(spinPsil,Psil);
     computespin(spinPsilprime,Psilprime);
-    
-    //thrid summand
+
+    //third summand
     dTinvdx.Multiply(spinPsilprime,spinPsil);
     auxmatrix.Multiply(spinPsil,spinPsilprime);
     dTinvdx += auxmatrix;
-    dTinvdx.Scale(1-(sin(normPsil)/normPsil)/pow(normPsil,2));
-    
+    //TODO: Check this term also in beam3cl
+    dTinvdx.Scale((1-sin(normPsil)/normPsil)/pow(normPsil,2));
+
     //first summand
     auxmatrix.PutScalar(0);
     auxmatrix += spinPsil;
-    auxmatrix.Scale( scalarproductPsilPsilprime*(normPsil*sin(normPsil) - 2*(1-cos(normPsil)))/pow(normPsil,4) ); 
+    auxmatrix.Scale( scalarproductPsilPsilprime*(normPsil*sin(normPsil) - 2*(1-cos(normPsil)))/pow(normPsil,4) );
     dTinvdx += auxmatrix;
 
     //second summand
     auxmatrix.PutScalar(0);
     auxmatrix += spinPsilprime;
-    auxmatrix.Scale((1-cos(Psilprime.Norm2()))/pow(normPsil,2));
+    //TODO: Check this term also in beam3cl
+    auxmatrix.Scale((1-cos(normPsil))/pow(normPsil,2));
     dTinvdx += auxmatrix;
 
     //fourth summand
     auxmatrix.Multiply(spinPsil,spinPsil);
     auxmatrix.Scale( scalarproductPsilPsilprime*(3*sin(normPsil) - normPsil*(2+cos(normPsil)))/pow(normPsil,5) );
     dTinvdx += auxmatrix;
-
   }
 
    return;
@@ -470,4 +476,28 @@ void LARGEROTATIONS::directionstotriad(const LINALG::Matrix<3,1>& d1,const LINAL
 
 } //LARGEROTATIONS::directionstotriad
 
+//!Transformation from node number according to Crisfield 1999 to storage position applied in BACI
+int LARGEROTATIONS::NumberingTrafo(const int j, const int numnode)
+{
+  //Node numbering j=1,...,NumNode() according to Crisfield 1999:
+  //LIN2  1---2
+  //LIN3  1---2---3
+  //LIN4  1---2---3---4
+  //LIN5  1---2---3---4---5
 
+  //Storage position i=0,...,NumNode()-1 of nodal quantities applied in BACI:
+  //LIN2  (1,2)
+  //LIN3  (1,3,2)
+  //LIN4  (1,4,2,3)
+  //LIN5  (1,5,2,3,4)
+
+  //Initialization
+  int i=0;
+
+  //Transformation
+  if (j==1) i=0;
+  else if (j==numnode) i=1;
+  else i=j;
+
+  return i;
+}

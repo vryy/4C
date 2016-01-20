@@ -348,17 +348,20 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     //all parts have been evaluated at the boundaries which helps simplifying the matrices
     //In contrast to the Neumann part of the residual force here is NOT a factor of (-1) needed, as elemat1 is directly added to the stiffness matrix
     //without sign change.
-    for(int i = 3; i < 6 ; i++)
+    if(elemat1!=NULL)
     {
-      for(int j = 3; j < 6 ; j++)
+      for(int i = 3; i < 6 ; i++)
       {
-#ifndef SIMPLECALC
-        (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= 2.0 * crossxtangent(i-3,j-3) / pow(abs_tangent,4.0);
-        (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= spinmatrix(i-3,j-3) / pow(abs_tangent,2.0);
-#else
-        (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= 2.0 * crossxtangent(i-3,j-3);
-        (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= spinmatrix(i-3,j-3);
-#endif
+        for(int j = 3; j < 6 ; j++)
+        {
+          #ifndef SIMPLECALC
+            (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= 2.0 * crossxtangent(i-3,j-3) / pow(abs_tangent,4.0);
+            (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= spinmatrix(i-3,j-3) / pow(abs_tangent,2.0);
+          #else
+            (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= 2.0 * crossxtangent(i-3,j-3);
+            (*elemat1)(insert*dofpn + i, insert*dofpn + j) -= spinmatrix(i-3,j-3);
+          #endif
+        }
       }
     }
   }
@@ -533,7 +536,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
   #endif
   }//else if(condition.Type() == DRT::Condition::LineNeumann)
 
-  elevec1.Print(std::cout);
+  //elevec1.Print(std::cout);
 
   //Uncomment the next line if the implementation of the Neumann part of the analytical stiffness matrix should be checked by Forward Automatic Differentiation (FAD)
   //FADCheckNeumann(params, discretization, condition, lm, elevec1, elemat1);

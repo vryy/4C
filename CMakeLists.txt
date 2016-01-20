@@ -1399,11 +1399,6 @@ set(OBJS_DRT_FLUID_XFLUID
   src/drt_fluid_xfluid/xfluid_levelset_coupling_algorithm.cpp
   src/drt_fluid_xfluid/xfluid_outputservice.cpp
 )
-set(OBJS_DRT_SR_LIB
-  src/drt_smoothrod/smoothrod.cpp
-  src/drt_smoothrod/smoothrod_evaluate.cpp
-  src/drt_smoothrod/smoothrod_input.cpp
-)
 set(OBJS_DRT_TO2_LIB
   src/drt_torsion2/torsion2.cpp
   src/drt_torsion2/torsion2_evaluate.cpp
@@ -1591,6 +1586,11 @@ set(OBJS_DRT_B3EBANISOTROP_LIB
   src/drt_beam3eb_anisotrop/beam3eb_anisotrop.cpp
   src/drt_beam3eb_anisotrop/beam3eb_anisotrop_evaluate.cpp
   src/drt_beam3eb_anisotrop/beam3eb_anisotrop_input.cpp
+)
+set(OBJS_DRT_B3WK_LIB
+  src/drt_beam3wk/beam3wk.cpp
+  src/drt_beam3wk/beam3wk_evaluate.cpp
+  src/drt_beam3wk/beam3wk_input.cpp
 )
 set(OBJS_DRT_RIGIDSPHERE_LIB
   src/drt_rigidsphere/rigidsphere.cpp
@@ -2323,6 +2323,7 @@ add_library(ele_b3ii ${OBJS_DRT_B3II_LIB})
 add_library(ele_b3eb ${OBJS_DRT_B3EB_LIB})
 add_library(ele_b3ebtor ${OBJS_DRT_B3EBTOR_LIB})
 add_library(ele_b3ebanisotrop ${OBJS_DRT_B3EBANISOTROP_LIB})
+add_library(ele_b3wk ${OBJS_DRT_B3WK_LIB})
 add_library(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
 add_library(ele_b3cl ${OBJS_DRT_B3CL_LIB})
 add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
@@ -2353,6 +2354,7 @@ set(ELEMENT_LIBRARIES
   ele_b3eb
   ele_b3ebtor
   ele_b3ebanisotrop
+  ele_b3wk
   ele_rigidsphere
   ele_b3cl
   ele_bele3

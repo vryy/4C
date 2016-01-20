@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam3ebtor.H
+\file beam3ebtor_evaluate.cpp
 
 \brief three dimensional nonlinear rod based on a C1 curve
 
@@ -336,20 +336,23 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
     //without sign change
     double Factor = ScaleFactorLinetor;
     Factor = Factor * ScaleFactorColumntor;
-    for(int i = 3; i < 6 ; i++)
+
+    if(elemat1!=NULL)
     {
+      for(int i = 3; i < 6 ; i++)
+      {
+        for(int j = 3; j < 6 ; j++)
+        {
+          (*elemat1)(insert*(dofpn+1) + i, insert*(dofpn+1) + j) -= 2.0 * crossxtangent(i-3,j-3) / pow(abs_tangent,4.0)*Factor;
+          (*elemat1)(insert*(dofpn+1) + i, insert*(dofpn+1) + j) -= spinmatrix(i-3,j-3) / pow(abs_tangent,2.0)*Factor;
+        }
+      }
+
       for(int j = 3; j < 6 ; j++)
       {
-        (*elemat1)(insert*(dofpn+1) + i, insert*(dofpn+1) + j) -= 2.0 * crossxtangent(i-3,j-3) / pow(abs_tangent,4.0)*Factor;
-        (*elemat1)(insert*(dofpn+1) + i, insert*(dofpn+1) + j) -= spinmatrix(i-3,j-3) / pow(abs_tangent,2.0)*Factor;
+        (*elemat1)(insert*(dofpn+1) +6, insert*(dofpn+1) + j) -= momentrxrxTNx(0,j-3)*Factor;
       }
     }
-
-    for(int j = 3; j < 6 ; j++)
-    {
-      (*elemat1)(insert*(dofpn+1) +6, insert*(dofpn+1) + j) -= momentrxrxTNx(0,j-3)*Factor;
-    }
-
   }
   //if a line neumann condition needs to be linearized
     else if(condition.Type() == DRT::Condition::LineNeumann)

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam3ebanisotrop.H
+\file beam3eb_anisotrop.cpp
 
 \brief three dimensional nonlinear rod based on a C1 curve
 
@@ -686,7 +686,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::calculate_length(const std::vector<LINALG:
   }
 
   //Get integration points for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebanisotrop);
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_10point);
 
   //Matrices to store the function values of the shape functions
   LINALG::Matrix<1,nnode*vnode> shapefuncderiv;
@@ -696,7 +696,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::calculate_length(const std::vector<LINALG:
   //current value of the derivative at the GP
   LINALG::Matrix<3,1> r_xi;
 
-  while(res>tolerance)
+  while(fabs(res)>tolerance)
   {
     int_length=0;
     deriv_length=0;
@@ -715,22 +715,22 @@ void DRT::ELEMENTS::Beam3ebanisotrop::calculate_length(const std::vector<LINALG:
       deriv_int=0;
       for (int i=0; i<3; i++)
       {
-          r_xi(i)+=xrefe[0](i)*shapefuncderiv(0)+xrefe[1](i)*shapefuncderiv(2)+Tref_[0](i)*shapefuncderiv(1)+Tref_[1](i)*shapefuncderiv(3);
+        r_xi(i)+=xrefe[0](i)*shapefuncderiv(0)+xrefe[1](i)*shapefuncderiv(2)+Tref_[0](i)*shapefuncderiv(1)+Tref_[1](i)*shapefuncderiv(3);
       }
       int_length+=gausspoints.qwgt[numgp]*r_xi.Norm2();
 
       //derivative of the integral of the length at GP
       for (int i=0; i<3; i++)
       {
-          deriv_int+=(Tref_[0](i)*shapefuncderiv(1)/length_+Tref_[1](i)*shapefuncderiv(3)/length_)*r_xi(i);
+        deriv_int+=(Tref_[0](i)*shapefuncderiv(1)/length_+Tref_[1](i)*shapefuncderiv(3)/length_)*r_xi(i);
       }
       deriv_length+=gausspoints.qwgt[numgp]*deriv_int/r_xi.Norm2();
     }
     //cout << endl << "Länge:" << length_ << "\tIntegral:" << int_length << "\tAbleitung:" << deriv_length << endl;
     res=length_-int_length;
+    //Update
     length_=length_-res/(1-deriv_length); //the derivative of f(l)=l-int(|N'd|)dxi=0 is f'(l)=1-int(d/dl(|N'd|))dxi
   }
-  //length_=copt_;
   return;
 }
 

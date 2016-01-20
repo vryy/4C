@@ -1,0 +1,791 @@
+/*!----------------------------------------------------------------------
+\file beam3wk.H
+
+\brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
+
+<pre>
+Maintainer: Christoph Meier
+            meier@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15301
+</pre>
+
+3D nonlinear Kirchhoff-like beam element based on a rotation interpolation that is similar to beam3ii and a
+weak fulfillment of the Kirchhoff constraint. As the beam curve has to be C^1-continous, it is interpolated
+with Hermite polynomials of order 3. Therefore each of the two boundary nodes has 7 dofs. With the flag rotvec_ is can be
+switched between to sets of degrees of freedom on the boundary node. The first set (rotvec_==true) is
+[\v{d}_1, \v{theta}_1, t_1, \v{d}_2, \v{theta}_2, t_2, \alpha_3], where \v{d}_i is the vector of nodal positions
+on the boundary nodes,\v{theta}_i is a pseudo rotation vector describing the nodal triad orientation on the boundary
+nodes (and therewith also the orientation of the boundary tangent vectors), t_i is the length of the boudary
+tangent vectors, and alpha_3 is the scalar relative rotation angle between reference and matrial triad at the
+interior node. In contrary, the second variant (rotvec_==false) of this element has the dofs:
+[\v{d}_1, \v{t}_1, \alpha_1, \v{d}_2, \v{t}_2, \alpha_2, \alpha_3], where \v{t}_i is the nodal tangent vector
+(orientation and length) at the boundary nodes, and alpha_i are the scalar relative rotation angles between
+reference and matrial triad at the boundary nodes and the interior node. Besides these two boundary nodes
+the element has COLLOCATION_POINTS-2 interior nodes which one scalar DoF alpha_i, respectively.
+
+Attention: Since so far linearizations are calculated with FAD, the rotation increments in the case (rotvec_==true)
+are of an additive nature, which is in strong contrast to the beam3ii implementation, where the iterative
+rotation increments are multiplicative. Consequently, the inhomogeneous rotational Dirichlet conditions of beam3wk
+can be interpreted as additive increments added to the initial values (i.e. if the initial value is zero, the
+Dirichlet values in the input file are the total nodal rotation angles). This is not true for beam3ii,
+where prescribed 3D rotation values have no direct physical interpretation. For 2D rotations both variants are identical.
+*----------------------------------------------------------------------*/
+
+
+//header file only included if not yet included!
+#ifndef BEAM3WK_H
+#define BEAM3WK_H
+
+#include "Teuchos_RCP.hpp"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_SerialDenseVector.h"
+#include "Epetra_Vector.h"
+#include "../drt_lib/drt_elementtype.H"
+#include "../drt_lib/drt_node.H"
+#include "../drt_fem_general/largerotations.H"
+#include "Sacado.hpp"
+
+#include <unistd.h>
+#include <sys/times.h>
+
+typedef Sacado::Fad::DFad<double> FAD;
+
+#define REFERENCE_NODE 2      //number of reference-node for the calculation of the rotation of the other triads (local numbering: 0 2 3 4 1)
+//DEFAULT: REFERENCE_NODE 2   //REFERENCE_NODE=2 represents the midpoint node in the case of 3 COLLOCATION_POINTS -> standard choice!
+
+#define mygaussrulebeam3wk intrule_line_4point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented.
+//DEFAULT: intrule_line_4point
+
+#define LENGTHCALCNEWTONTOL 10e-12 //Tolerance for iterative determination of element length.
+//DEFAULT: 10e-12
+
+#define COLLOCATION_POINTS 3      //!defines type of element. 2,3,4 are supported. A value of 3 or 4 means that further inner nodes are introduced
+//DEFAULT: COLLOCATION_POINTS 3   //to interpolate the torsional degree of freedom alpha_. Furthermore, it specifies the number of collocation
+                                  //points defining the number of material triads used to interpolate the triad field.
+
+//! \brief DRT: namespace of the ccarat discretization module
+namespace DRT
+{
+namespace ELEMENTS
+{
+
+class Beam3wkType : public DRT::ElementType
+{
+public:
+
+  std::string Name() const { return "Beam3wkType"; }
+
+  static Beam3wkType & Instance();
+
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
+                                             const int id,
+                                             const int owner );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
+
+  virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
+
+  virtual void ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns );
+
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+private:
+
+  static Beam3wkType instance_;
+};
+
+/*!
+\brief 3D nonlinear Kirchhoff-like beam element that can display initially curved beams.
+
+author meier (meier@lnm.mw.tum.de)
+*/
+class Beam3wk : public DRT::Element
+{
+public:
+
+  //! @name Friends
+  friend class Beam3wkType;
+
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  \param id    (in): A globally unique element id
+  \param etype (in): Type of element
+  \param owner (in): owner processor of the element
+  */
+  Beam3wk(int id, int owner);
+
+  /*!
+  \brief Copy Constructor
+
+  Makes a deep copy of a Element
+  */
+  Beam3wk(const Beam3wk& old);
+
+  /*!
+  \brief Destructor
+  */
+  virtual ~Beam3wk();
+
+  /*!
+  \brief Deep copy this instance of Beam3wk and return pointer to the copy
+
+  The Clone() method is used by the virtual base class Element in cases
+  where the type of the derived class is unknown and a copy-ctor is needed
+.
+  */
+  virtual DRT::Element* Clone() const;
+
+   /*!
+  \brief Get shape type of element
+  */
+  virtual DiscretizationType Shape() const;
+
+
+  /*!
+  \brief Return unique ParObject id
+
+  Every class implementing ParObject needs a unique id defined at the
+  top of drt_parobject.H
+  */
+  virtual int UniqueParObjectId() const { return Beam3wkType::Instance().UniqueParObjectId(); }
+
+  /*!
+  \brief Pack this class so it can be communicated
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Pack(DRT::PackBuffer& data) const;
+
+  /*!
+  \brief Unpack data from a char vector into this class
+
+  \ref Pack and \ref Unpack are used to communicate this element
+
+  */
+  virtual void Unpack(const std::vector<char>& data);
+
+  virtual DRT::ElementType & ElementType() const
+  { return Beam3wkType::Instance(); }
+
+  //@}
+
+  /*!
+  \brief Return number of lines to this element
+  */
+  virtual int NumLine() const {return 1;}
+
+
+  /*!
+  \brief Get vector of RCPs to the lines of this element
+  */
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
+
+
+  /*!
+  \brief Get number of degrees of freedom of a single node
+  */
+  virtual int NumDofPerNode(const DRT::Node & node) const
+  {
+    /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
+    *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
+    *number of DOF to this node requested by any element connected to this node*/
+
+    int dofpn_aux=0.0;
+
+    if (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id())
+    {
+      dofpn_aux = 7;
+    }
+    else
+    {
+      dofpn_aux = 1;
+    }
+
+    const int dofpn = dofpn_aux;
+    return dofpn;
+  }
+
+  /*!
+  \brief Get number of degrees of freedom per element not including nodal degrees of freedom
+  */
+  virtual int NumDofPerElement() const { return 0;}
+
+  /*!
+  \brief Print this element
+  */
+  virtual void Print(std::ostream& os) const;
+
+  //@}
+
+  //! @name Construction
+
+
+  /*!
+  \brief Read input for this element
+
+  This class implements a dummy of this method that prints a warning and
+  returns false. A derived class would read one line from the input file and
+  store all necessary information.
+
+  */
+  //virtual bool ReadElement();
+
+  /*!
+  \brief Read input for this element
+  */
+  bool ReadElement(const std::string& eletype,
+                   const std::string& distype,
+                   DRT::INPUT::LineDefinition* linedef);
+
+  //@}
+
+
+  //! @name Evaluation methods
+
+  /*!
+  \brief Evaluate an element
+
+  An element derived from this class uses the Evaluate method to receive commands
+  and parameters from some control routine in params and evaluates element matrices and
+  vectors accoring to the command in params.
+
+  \note This class implements a dummy of this method that prints a warning and
+        returns false.
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : matrix to be filled by element depending on commands
+                              given in params
+  \param elemat2 (out)      : matrix to be filled by element depending on commands
+                              given in params
+  \param elevec1 (out)      : vector to be filled by element depending on commands
+                              given in params
+  \param elevec2 (out)      : vector to be filled by element depending on commands
+                              given in params
+  \param elevec3 (out)      : vector to be filled by element depending on commands
+                              given in params
+  \return 0 if successful, negative otherwise
+  */
+  virtual int Evaluate(Teuchos::ParameterList&   params,
+                       DRT::Discretization&      discretization,
+                       std::vector<int>&         lm,
+                       Epetra_SerialDenseMatrix& elemat1,
+                       Epetra_SerialDenseMatrix& elemat2,
+                       Epetra_SerialDenseVector& elevec1,
+                       Epetra_SerialDenseVector& elevec2,
+                       Epetra_SerialDenseVector& elevec3);
+
+  /*!
+  \brief Evaluate a Neumann boundary condition
+
+  An element derived from this class uses the EvaluateNeumann method to receive commands
+  and parameters from some control routine in params and evaluates a Neumann boundary condition
+  given in condition
+
+  \note This class implements a dummy of this method that prints a warning and
+        returns false.
+
+  \param params (in/out)    : ParameterList for communication between control routine
+                              and elements
+  \param discretization (in): A reference to the underlying discretization
+  \param condition (in)     : The condition to be evaluated
+  \param lm (in)            : location vector of this element
+  \param elevec1 (out)      : Force vector to be filled by element
+
+  \return 0 if successful, negative otherwise
+  */
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
+                              DRT::Discretization&      discretization,
+                              DRT::Condition&           condition,
+                              std::vector<int>&              lm,
+                              Epetra_SerialDenseVector& elevec1,
+                              Epetra_SerialDenseMatrix* elemat1);
+  //@}
+
+private:
+
+  //! action parameters recognized by Beam3wk
+  enum ActionType
+  {
+    calc_none,
+    calc_struct_linstiff,
+    calc_struct_nlnstiff,
+    calc_struct_internalforce,
+    calc_struct_linstiffmass,
+    calc_struct_nlnstiffmass,
+    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
+    calc_struct_stress,
+    calc_struct_eleload,
+    calc_struct_fsiload,
+    calc_struct_reset_istep,
+    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
+    calc_struct_energy, // calculate strain energy
+    calc_struct_update_istep,    // two actions necessary to update element data at the end of the
+    calc_struct_update_imrlike,  // step. The difference between the two methods is only relevant for EAS technology.
+  };
+
+  //Variables
+
+  //! variable saving whether element has already been initialized (then isinit_ == true)
+  bool isinit_;
+
+  //! cross section area
+  double crosssec_;
+
+  //!moment of inertia of area around y-axis(orthognoal to rod axis in yz-plane)
+  double Iyy_;
+
+  //!moment of inertia of area around z-axis(forming cartesian system with rod- and y-axis)
+  double Izz_;
+
+  //!polar moment of inertia of area
+  double Irr_;
+
+  //!quaternion describing the nodal reference triads (for the case BEAM3EK_ROT ==false) of the last time step
+  std::vector<LINALG::Matrix<4,1> > qrefconv_;
+  //Variables needed by all local triads
+  //! Matrix holding pseudo rotation vectors describing the material triads in the reference configuration at each collocation point (CP)
+  std::vector<LINALG::Matrix<3,1> > theta0_;
+  //! Matrix with the material curvature in the initial configuration at each gp
+  std::vector<LINALG::Matrix<3,1> > kappa0_;
+
+  //! Length of the element
+  double length_;
+  //! Jacobi determinant of the element at the Gauss points
+  std::vector<double> jacobi_;
+
+  //! Jacobi determinant at collocation points
+  std::vector<double> jacobi_cp_;
+
+  //! bool indicating, if the DoFs at the element boundary are described by rotation vectors or tangent vectors plus relative angle
+  bool rotvec_;
+
+  //! bool recognizing first element call
+  bool firstcall_;
+
+  //******************************Begin: Class variables required for time integration**************************************************//
+  //! triads at Gauss points for exact integration in quaternion at the end of the preceeding time step (required for computation of angular velocity)
+  std::vector<LINALG::Matrix<4,1> > Qconvmass_;
+  //! current triads at Gauss points for exact integration in quaternion (required for computation of angular velocity)
+  std::vector<LINALG::Matrix<4,1> > Qnewmass_;
+  //! spatial angular velocity vector at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > wconvmass_;
+  //! current spatial angular velocity vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > wnewmass_;
+  //! spatial angular acceleration vector at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > aconvmass_;
+  //! current spatial angular acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > anewmass_;
+  //! modified spatial angular acceleration vector (according to gen-alpha time integration) at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > amodconvmass_;
+  //! current modified spatial angular acceleration vector (according to gen-alpha time integration) at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > amodnewmass_;
+  //! translational acceleration vector at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rttconvmass_;
+  //! current translational acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rttnewmass_;
+  //! modified translational acceleration vector at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rttmodconvmass_;
+  //! modified current translational acceleration vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rttmodnewmass_;
+  //! translational velocity vector at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rtconvmass_;
+  //! current translational velocity vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rtnewmass_;
+  //! translational displacement vector at Gauss points for exact integration at the end of the preceeding time step (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rconvmass_;
+  //! current translational displacement vector at Gauss points for exact integration (required for computation of inertia terms)
+  std::vector<LINALG::Matrix<3,1> > rnewmass_;
+
+  //! scale factor for translational inertia terms
+  double inertscaletrans_;
+  //! scale factor for tangential component of rotational inertia terms
+  double inertscalerot1_;
+  //! scale factor for remaining components of rotational inertia terms
+  double inertscalerot2_;
+  //******************************End: Class variables required for time integration**************************************************//
+
+  //Functions
+
+  //! @name methods for initilization of the element
+
+  //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
+  void SetUpReferenceGeometry(const std::vector<LINALG::Matrix<3,1> >& xrefe,const bool secondinit = false);
+
+  //@}
+
+  //! @name auxiliary computation methods for non-additive, large rotation variables
+
+  //@}
+
+  //! @name Internal calculation methods
+
+  //! Calculate stiffness matrix via FAD
+  void CalculateInternalForces( Teuchos::ParameterList& params,
+                                std::vector<double>&      disp,
+                                Epetra_SerialDenseMatrix* stiffmatrix,
+                                Epetra_SerialDenseMatrix* massmatrix,
+                                Epetra_SerialDenseVector* force,
+                                Epetra_SerialDenseVector* inertia_force,
+                                bool update);
+
+  //Computes the crossproduct of two vectors(TMatrices)
+  void CrossProduct(LINALG::TMatrix<FAD,3,1> T1,LINALG::TMatrix<FAD,3,1> T2,LINALG::TMatrix<FAD,3,1>& T3);
+
+  //!compute the relative angle theta between triad_ref and triad so that exp theta = triad_ref^T triad via triadtoquaternion and quaterniontoangle, see largerotations
+   void triadtoangle(LINALG::Matrix<3,1>& theta,LINALG::Matrix<3,3> triad_ref,LINALG::Matrix<3,3> triad);
+
+   //!compute the relative angle theta between triad_ref and triad so that exp theta = triad_ref^T triad via triadtoquaternion and quaterniontoangle, see largerotations
+   void triadtoangle(LINALG::TMatrix<FAD,3,1>& theta,LINALG::TMatrix<FAD,3,3> triad_ref,LINALG::TMatrix<FAD,3,3> triad);
+
+   //!compute a triad with an (interpolated) relative angle between triad_ref and triad
+   void angletotriad(LINALG::Matrix<3,1> theta,LINALG::Matrix<3,3> triad_ref,LINALG::Matrix<3,3>& triad);
+
+   //!compute a triad with an (interpolated) relative angle between triad_ref and triad
+   void angletotriad(LINALG::TMatrix<FAD,3,1> theta,LINALG::TMatrix<FAD,3,3> triad_ref,LINALG::TMatrix<FAD,3,3>& triad);
+
+   //!this is a templated version of the method Tinvmatrix as declared in LARGEROTATIONS in order to also handle
+   //!the datatype FAD which is needed for automatic differentiation
+   template<typename T>
+   LINALG::TMatrix<T,3,3> Tinvmatrix(LINALG::TMatrix<T,3,1> theta)
+   {
+
+     LINALG::TMatrix<T,3,3> result;
+     T theta_abs = pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
+
+     //in case of theta_abs == 0 the following computation has problems with ill-conditioning / singularities
+     if(theta_abs > 1e-8)
+     {
+       //ultimate term in eq. (2.5)
+       LARGEROTATIONS::computespin(result, theta);
+       result.Scale((1-cos(theta_abs)) / pow(theta_abs,2));
+
+       //penultimate term in eq. (2.5)
+       for(int i = 0; i<3; i++)
+         result(i,i) += sin(theta_abs)/(theta_abs);
+
+       //first term on the right side in eq. (2.5)
+       for(int i = 0; i<3; i++)
+         for(int j=0; j<3; j++)
+           result(i,j) += theta(i) * theta(j) * (1 - sin(theta_abs)/(theta_abs) )/pow(theta_abs,2);
+     }
+     //in case of theta_abs == 0 H(theta) is the identity matrix and hence also Hinv
+     else
+     {
+       //based on the small angle approximation sin(x)=x and 1-cos(x)=x^2/2 we get: Tinv = I + 0.5*S(theta) -> Tinv'=0.5*S(theta')
+       result.PutScalar(0.0);
+       LARGEROTATIONS::computespin(result, theta);
+       result.Scale(0.5);
+       for(int j=0; j<3; j++)
+         result(j,j) += 1;
+     }
+
+     return result;
+   }//Tinvmatrix
+
+   //!this is a templated version of the method quaterniontotriad as in LARGEROTATIONS in order to also handle
+   //!the datatype FAD which is needed for automatic differentiation
+   template<typename T>
+   void quaterniontotriad(const LINALG::TMatrix<T,4,1>& q, LINALG::TMatrix<T,3,3>& R)
+   {
+     //separate storage of vector part of q
+     LINALG::TMatrix<T,3,1> qvec;
+     for(int i = 0; i<3; i++)
+       qvec(i) = q(i);
+
+     //setting R to third summand of equation (16.70)
+     LARGEROTATIONS::computespin(R, qvec);
+     R.Scale(2*q(3));
+
+     //adding second summand of equation (16.70)
+     for(int i = 0; i<3; i++)
+       for(int j = 0; j<3; j++)
+         R(i,j) += 2*q(i)*q(j);
+
+     //adding diagonal entries according to first summand of equation (16.70)
+     R(0,0) = 1 - 2*(q(1)*q(1) + q(2)*q(2));
+     R(1,1) = 1 - 2*(q(0)*q(0) + q(2)*q(2));
+     R(2,2) = 1 - 2*(q(0)*q(0) + q(1)*q(1));
+
+     return;
+   } //quaterniontotriad
+
+   //!this is a templated version of the method angletoquaternion as declared in LARGEROTATIONS in order to also handle
+   //!the datatype FAD which is needed for automatic differentiation
+   template<typename T>
+   void angletoquaternion(const LINALG::TMatrix<T,3,1>& theta, LINALG::TMatrix<T,4,1>& q)
+   {
+     //absolute value of rotation angle theta
+     T abs_theta = 0.0;
+     for(int i=0; i<3; i++)
+       abs_theta+=theta(i)*theta(i);
+
+     abs_theta=pow(abs_theta,0.5);
+
+     //computing quaterion for rotation by angle theta, Crisfield, Vol. 2, equation (16.67)
+     if (abs_theta > 1e-12)
+     {
+       q(0) = theta(0) * sin(abs_theta / 2) / abs_theta;
+       q(1) = theta(1) * sin(abs_theta / 2) / abs_theta;
+       q(2) = theta(2) * sin(abs_theta / 2) / abs_theta;
+       q(3) = cos(abs_theta / 2);
+     }
+     else //altered due to FAD - with theta->0 the equations above simplify in the manner below
+       //NOTE: the equations below are chosen in a way that the linearisation (with FAD) is the same
+       //of the equations above for the case theta->0
+     {
+         q(0) = 0.5*theta(0);
+         q(1) = 0.5*theta(1);
+         q(2) = 0.5*theta(2);
+         q(3) = cos(abs_theta / 2);
+     }
+
+     return;
+   }//angletoquaternion
+
+   //!this is a templated version of the method quaterniontoangle as declared above in LARGEROTATIONS to also handle
+   //!the datatype FAD which is needed for automatic differentiation
+   template<typename T>
+   void quaterniontoangle(const LINALG::TMatrix<T,4,1>& q, LINALG::TMatrix<T,3,1>& theta)
+   {
+     /*the following function computes from a quaternion q an angle theta within [-PI; PI]; such an interval is
+        * imperative for the use of the resulting angle together with formulae like Crisfield, Vol. 2, equation (16.90);
+        * note that these formulae comprise not only trigonometric functions, but rather the angle theta directly. Hence
+        * they are not 2*PI-invariant !!! */
+
+       //if the rotation angle is pi we have q(3) == 0 and the rotation angle vector can be computed by
+       if(q(3) == 0)
+       {
+         //note that with q(3) == 0 the first three elements of q represent the unit direction vector of the angle
+         //according to Crisfield, Vol. 2, equation (16.67)
+         for(int i = 0; i<3; i++)
+           theta(i) = q(i) * M_PI;
+       }
+       else
+       {
+         //otherwise the angle can be computed from a quaternion via Crisfield, Vol. 2, eq. (16.79)
+         LINALG::TMatrix<T,3,1> omega;
+         T abs_omega=0.0;
+         for(int i = 0; i<3; i++)
+         {
+           omega(i) = q(i)*2/q(3);
+           abs_omega+=omega(i)*omega(i);
+         }
+
+         abs_omega=pow(abs_omega,0.5);
+         T tanhalf = abs_omega / 2;
+         T thetaabs = atan(tanhalf)*2;
+
+         //if the rotation angle is zero we return a zero rotation angle vector at once
+         if(abs_omega < 1e-12)
+         {
+           for(int i = 0; i<3; i++)
+             theta(i) = 2*q(i);  //altered due to FAD, the equations simplify in that way for theta->0
+         }
+         else
+           for(int i = 0; i<3; i++)
+             theta(i) = thetaabs* omega(i) / abs_omega;
+       }
+
+       return;
+   }
+
+   //!this is a templated version of the method triadtoquaternion as declared in LARGEROTATIONS in order to also handle
+   //!the datatype FAD which is needed for automatic differentiation
+   template<typename T>
+   void triadtoquaternion(const LINALG::TMatrix<T,3,3>& R, LINALG::TMatrix<T,4,1>& q)
+   {
+     T trace = R(0,0) + R(1,1) + R(2,2);
+
+     if(trace>R(0,0)  && trace>R(1,1) && trace>R(2,2))
+     {
+       q(3) = 0.5 * pow(1 + trace, 0.5);
+       /*note: if trace is greater than each element on diagonal, all diagonal elements are positive
+        *and hence also the trace is positive and thus q(3) > 0 so that division by q(3) is allowed*/
+       q(0) = (R(2,1) - R(1,2)) / (4*q(3));
+       q(1) = (R(0,2) - R(2,0)) / (4*q(3));
+       q(2) = (R(1,0) - R(0,1)) / (4*q(3));
+     }
+     else
+     {
+       for(int i = 0 ; i<3 ; i++)
+       {
+         int j = (i+1)% 3;
+         int k = (i+2)% 3;
+
+         if(R(i,i) >= R(j,j) && R(i,i) >= R(k,k))
+         {
+           //equation (16.78a)
+           q(i) = pow(0.5*R(i,i) + 0.25*(1 - trace) , 0.5);
+
+           //equation (16.78b)
+           q(3) = 0.25*(R(k,j) - R(j,k)) / q(i);
+
+           //equation (16.78c)
+           q(j) = 0.25*(R(j,i) + R(i,j)) / q(i);
+           q(k) = 0.25*(R(k,i) + R(i,k)) / q(i);
+          }
+        }
+      }
+     return;
+   }
+
+   //!compute (material) strain Kappa
+   void computestrain(LINALG::Matrix<3,1>& theta, LINALG::Matrix<3,1>& theta_deriv, LINALG::Matrix<3,1>& kappa);
+
+   //!compute (material) strain Kappa
+   void computestrain(LINALG::TMatrix<FAD,3,1>& theta, LINALG::TMatrix<FAD,3,1>& theta_deriv, LINALG::TMatrix<FAD,3,1>& kappa);
+
+   //! calculate material stress resultants M,N from material strain resultants kappa, epsilon
+   void straintostress(LINALG::TMatrix<FAD,3,1>& kappa, FAD epsilon, LINALG::TMatrix<FAD,3,1>& M, FAD& f_par);
+
+   //! Rotate an arbitrary triad around its first base vector (tangent)
+   void RotateTriad(LINALG::TMatrix<FAD,3,3> triad, FAD alpha, LINALG::TMatrix<FAD,3,3>& triad_rot);
+
+  //! Calculate the SR mapping for a given reference system triad_ref and a given tangent vector r_s
+  template<typename T>
+  void CalculateSRTriads(LINALG::TMatrix<T,3,1> r_s,LINALG::Matrix<3,3> triad_ref,LINALG::TMatrix<T,3,3>& triad)
+  {
+
+    //In this calculation, r_s does not necessarily have to be a unit vector.
+    T temp_scalar1=0.0;
+    T temp_scalar2=0.0;
+    T temp_scalar3=0.0;
+    T fac_n0=0.0;
+    T fac_b0=0.0;
+    T abs_r_s = Norm<T>(r_s);
+
+    for (int i=0; i<3; i++)
+    {
+      temp_scalar1+=triad_ref(i,1)*r_s(i);
+      temp_scalar2+=triad_ref(i,2)*r_s(i);
+      temp_scalar3+=triad_ref(i,0)*r_s(i);
+    }
+
+    fac_n0=temp_scalar1/(abs_r_s+temp_scalar3);
+    fac_b0=temp_scalar2/(abs_r_s+temp_scalar3);
+
+    for (int i=0; i<3; i++)
+    {
+      triad(i,0)=r_s(i)/abs_r_s;
+      triad(i,1)=triad_ref(i,1)-fac_n0*(r_s(i)/abs_r_s+triad_ref(i,0));
+      triad(i,2)=triad_ref(i,2)-fac_b0*(r_s(i)/abs_r_s+triad_ref(i,0));
+     }
+
+    return;
+  }
+
+  //! Assembles the four shape functions of an element into a 3*dofs_per_element block matrix.
+  //The same is done for the twist shape functions and the corresponding derivatives.
+  void AssembleShapefunctions( LINALG::TMatrix<FAD,1,4> N_i_xi,
+                                                       LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> C_i,
+                                                       LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> C_i_xi,
+                                                       FAD jacobi_local,
+                                                       LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N_s,
+                                                       LINALG::TMatrix<FAD,1,2*6+COLLOCATION_POINTS>& C,
+                                                       LINALG::TMatrix<FAD,1,2*6+COLLOCATION_POINTS>& C_s);
+
+  void AssembleShapefunctions(LINALG::TMatrix<FAD,1,4> N_i_xi,
+                              FAD jacobi_local,
+                              LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N_s);
+
+  void AssembleShapefunctions(LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> C_i,
+                            LINALG::TMatrix<FAD,1,2*6+COLLOCATION_POINTS>& C);
+
+  void AssembleShapefunctionsN( LINALG::TMatrix<FAD,1,4> N_i,
+                                LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N);
+
+  //! Calculates the Norm of a FAD vector, since .Norm2() is not available for FAD vectors
+  template<typename T>
+  T Norm(LINALG::TMatrix<T,3,1> v)
+  {
+    T norm = 0.0;
+    for (int i=0;i<3;i++)
+    {
+      norm+=v(i)*v(i);
+    }
+    norm = sqrt(norm);
+
+    return norm;
+  }
+
+  //! Delivers the tangent vector of the reference configuration at the boundary node "node=1,2" (necessary to calculate the centerline of the reference geometry)
+  LINALG::Matrix<3,1> GetNodalRefTangent(const int node)
+  {
+    if(node!=0 and node!=1)
+      dserror("Method can only deliver tangents for boundary nodes with IDs 0 or 1!!!");
+
+    LINALG::Matrix<3,1> nodal_tangent(true);
+    LINALG::Matrix<3,3> nodal_triad(true);
+    LARGEROTATIONS::angletotriad(theta0_[node],nodal_triad);
+    for(int i=0;i<3;i++)
+      nodal_tangent(i)=nodal_triad(i,0);
+
+    return nodal_tangent;
+  }
+
+  //! Calculates nodal positions, tangents and relative twist angles out of the corresponding displacements
+  void UpdateDispTotlag(std::vector<double> disp, std::vector<FAD>& disp_totlag);
+
+  //!Set positions vectors and tangents at boundary nodes and triads at all CPs
+  void SetNodalVariables(std::vector<FAD>& disp_totlag,
+                         std::vector<FAD>& disp_totlag_centerline,
+                         std::vector<LINALG::TMatrix<FAD,3,3> >& triad_mat_cp);
+
+
+  //!Pre-multiply trafo matrix if rotvec_==true: \tilde{\vec{f}_int}=\mat{T}^T*\vec{f}_int
+  void ApplyRotVecTrafo( std::vector<FAD>& disp_totlag_centerline,
+                         LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,1>& f_int);
+
+  //!Calculates derivative r' at certain point xi
+  void Calculate_r_s( std::vector<FAD> disp_totlag_centerline,
+                      double xi,
+                      double jacobi_local,
+                      LINALG::TMatrix<FAD,3,1>& r_s);
+
+  //!Update the reference triads qrefconv_
+  void UpdateRefTriads(std::vector<FAD> disp_totlag_centerline);
+
+  //!Update the triads at the end of the time-step
+  void UpdateTriads( Teuchos::ParameterList& params,
+                     std::vector<double>& vel,
+                     std::vector<double>& disp);
+
+  //! lump mass matrix
+  void lumpmass(Epetra_SerialDenseMatrix* emass);
+
+  //! Computes the length of the element and its Jacobi based upon a hermitian interpolation of the geometry
+  void calculate_length(const std::vector<LINALG::Matrix<3,1> >& xrefe, const std::vector<LINALG::Matrix<3,1> >& trefe, double tolerance);
+
+  //! Computes the initial curvature at a specified point
+  LINALG::Matrix<3,1> calculate_curvature(const LINALG::Matrix<3,1>& r_s, const LINALG::Matrix<3,1>& r_ss);
+
+  //! Computes the jacobi at a specified point
+  std::vector<double> calculate_jacobi(const LINALG::Matrix<3,1>& r_xi, const LINALG::Matrix<3,1>& r_xixi, const LINALG::Matrix<3,1>& r_xixixi);
+
+  // don't want = operator
+  Beam3wk& operator = (const Beam3wk& old);
+
+
+}; // class Beam3wk
+
+// << operator
+std::ostream& operator << (std::ostream& os, const DRT::Element& ele);
+
+} // namespace Elements
+} // namespace DRT
+
+#endif  // #ifndef BEAM3WK_H

@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
 \file beam3ii.cpp
-\brief three dimensional nonlinear corotational Timoshenko beam element
+\brief 3D nonlinear Reissner beam element oy type II
 
 <pre>
 Maintainer: Christoph Meier
@@ -82,6 +82,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedDouble("IYY")
     .AddNamedDouble("IZZ")
     .AddNamedDouble("IRR")
+    .AddNamedDouble("IT")
+    .AddNamedDouble("IR1")
+    .AddNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",6)
     ;
 
@@ -93,6 +96,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedDouble("IYY")
     .AddNamedDouble("IZZ")
     .AddNamedDouble("IRR")
+    .AddNamedDouble("IT")
+    .AddNamedDouble("IR1")
+    .AddNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",6)
     ;
 
@@ -104,6 +110,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedDouble("IYY")
     .AddNamedDouble("IZZ")
     .AddNamedDouble("IRR")
+    .AddNamedDouble("IT")
+    .AddNamedDouble("IR1")
+    .AddNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",9)
     ;
 
@@ -115,6 +124,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedDouble("IYY")
     .AddNamedDouble("IZZ")
     .AddNamedDouble("IRR")
+    .AddNamedDouble("IT")
+    .AddNamedDouble("IR1")
+    .AddNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",9)
     ;
 
@@ -126,6 +138,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedDouble("IYY")
     .AddNamedDouble("IZZ")
     .AddNamedDouble("IRR")
+    .AddNamedDouble("IT")
+    .AddNamedDouble("IR1")
+    .AddNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",12)
     ;
 
@@ -137,6 +152,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedDouble("IYY")
     .AddNamedDouble("IZZ")
     .AddNamedDouble("IRR")
+    .AddNamedDouble("IT")
+    .AddNamedDouble("IR1")
+    .AddNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",12)
     ;
 
@@ -148,6 +166,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedDouble("IYY")
     .AddNamedDouble("IZZ")
     .AddNamedDouble("IRR")
+    .AddNamedDouble("IT")
+    .AddNamedDouble("IR1")
+    .AddNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",15)
     ;
 
@@ -159,6 +180,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedDouble("IYY")
     .AddNamedDouble("IZZ")
     .AddNamedDouble("IRR")
+    .AddNamedDouble("IT")
+    .AddNamedDouble("IR1")
+    .AddNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",15)
     ;
 }
@@ -187,7 +211,10 @@ L_(0.0),
 P_(0.0),
 kintorsionenergy_(0.0),
 kinbendingenergy_(0.0),
-kintransenergy_(0.0)
+kintransenergy_(0.0),
+inertscaletrans_(0.0),
+inertscalerot1_(0.0),
+inertscalerot2_(0.0)
 {
   return;
 }
@@ -242,7 +269,10 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  P_(old.P_),
  kintorsionenergy_(old.kintorsionenergy_),
  kinbendingenergy_(old.kinbendingenergy_),
- kintransenergy_(old.kintransenergy_)
+ kintransenergy_(old.kintransenergy_),
+ inertscaletrans_(old.inertscaletrans_),
+ inertscalerot1_(old.inertscalerot1_),
+ inertscalerot2_(old.inertscalerot2_)
 {
   return;
 }
@@ -298,7 +328,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3ii::Shape() const
       return line5;
       break;
     default:
-      dserror("Only Line2, Line3 and Line4 elements are implemented.");
+      dserror("Only Line2, Line3, Line4 and Line5 elements are implemented.");
       break;
   }
 
@@ -365,6 +395,9 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,amodconvmass_);
   AddtoPack<3,1>(data,rttmodnewmass_);
   AddtoPack<3,1>(data,rttmodconvmass_);
+  AddtoPack(data,inertscaletrans_);
+  AddtoPack(data,inertscalerot1_);
+  AddtoPack(data,inertscalerot2_);
 
   return;
 }
@@ -430,6 +463,9 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,amodconvmass_);
   ExtractfromPack<3,1>(position,data,rttmodnewmass_);
   ExtractfromPack<3,1>(position,data,rttmodconvmass_);
+  ExtractfromPack(position,data,inertscaletrans_);
+  ExtractfromPack(position,data,inertscalerot1_);
+  ExtractfromPack(position,data,inertscalerot2_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -544,6 +580,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3ii::MyGaussRule(int nnode, Integrati
     }
     default:
       dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+    break;
   }
 
   return gaussrule;
@@ -614,6 +651,7 @@ int DRT::ELEMENTS::Beam3iiType::Initialize(DRT::Discretization& dis)
         }
         default:
           dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
+        break;
       }
 
     } //for (int num=0; num<dis_.NumMyColElements(); ++num)

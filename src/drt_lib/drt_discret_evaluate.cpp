@@ -346,11 +346,6 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
          systemmatrix->Assemble(currele->Id(),lmstride,elematrix,lm,lmowner);
        }//for (int i=0; i<nnode; ++i)
      }
-     else
-     {
-       dserror("For the linearization of the point moment conditions the stiffness matrix is needed"
-                " and the LOADLIN flag has to be set to Yes!");
-     }
    }
 
   return;
