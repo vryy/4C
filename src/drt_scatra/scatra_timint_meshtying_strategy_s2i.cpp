@@ -32,6 +32,7 @@ Maintainer: Rui Fang
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_scatra_ele/scatra_ele_calc_utils.H"
+#include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
 
 #include "../linalg/linalg_solver.H"
 
@@ -545,6 +546,26 @@ void SCATRA::MeshtyingStrategyS2I::MortarCellCalc(
     case DRT::Element::tri3:
     {
       SCATRA::MortarCellCalc<distypeS,DRT::Element::tri3>::Instance()->Evaluate(
+          *islavematrix_,
+          *imastermatrix_,
+          *islaveresidual_,
+          *imasterresidual_,
+          iphinp,
+          idiscret,
+          condition,
+          slaveelement,
+          masterelement,
+          cell,
+          la_slave,
+          la_master
+          );
+
+      break;
+    }
+
+    case DRT::Element::quad4:
+    {
+      SCATRA::MortarCellCalc<distypeS,DRT::Element::quad4>::Instance()->Evaluate(
           *islavematrix_,
           *imastermatrix_,
           *islaveresidual_,
@@ -1434,8 +1455,103 @@ void SCATRA::MortarCellCalc<distypeS,distypeM>::CalcMatAndRhs(
     DRT::Element::LocationArray&                                                                       la_master          //!< master-side location array
     ) const
 {
-  // TODO: implement and activate!
-  dserror("Not yet implemented!");
+  // safety check
+  if(slaveelement.NumDofPerNode(*slaveelement.Nodes()[0]) != 1 or masterelement.NumDofPerNode(*masterelement.Nodes()[0]) != 1)
+    dserror("Invalid number of degrees of freedom per node!");
+
+  // number of element nodes
+  static const int nen_slave = DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
+  static const int nen_master = DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
+
+  // access input parameters associated with current condition
+  const int kineticmodel = condition.GetInt("kinetic model");
+  if(kineticmodel != INPAR::S2I::kinetics_constperm)
+    dserror("Invalid kinetic model for scatra-scatra interface coupling!");
+  const std::vector<double>* permeabilities = condition.GetMutable<std::vector<double> >("permeabilities");
+  if(permeabilities == NULL)
+    dserror("Cannot access vector of permeabilities for scatra-scatra interface coupling!");
+  if(permeabilities->size() != 1)
+    dserror("Number of permeabilities does not match number of scalars!");
+
+  // determine quadrature rule
+  const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
+
+  // loop over all integration points
+  for(int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // evaluate shape functions and domain integration factor at current integration point
+    static LINALG::Matrix<nen_slave,1> funct_slave;
+    static LINALG::Matrix<nen_master,1> funct_master;
+    const double fac = MortarCellCalc<distypeS,distypeM>::EvalShapeFuncAndDomIntFacAtIntPoint(funct_slave,funct_master,slaveelement,masterelement,cell,intpoints,iquad);
+
+    // overall integration factors
+    const double timefacfac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac()*fac;
+    const double timefacrhsfac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs()*fac;
+    if(timefacfac < 0. or timefacrhsfac < 0.)
+      dserror("Integration factor is negative!");
+
+    // evaluate state variables at current integration point
+    const double eslavephiint = funct_slave.Dot(ephinp_slave[0]);
+    const double emasterphiint = funct_master.Dot(ephinp_master[0]);
+
+    // core residual
+    const double N = timefacrhsfac*(*permeabilities)[0]*(eslavephiint-emasterphiint);
+
+    // core linearizations
+    const double dN_dc_slave = timefacfac*(*permeabilities)[0];
+    const double dN_dc_master = -dN_dc_slave;
+
+    for (int vi=0; vi<nen_slave; ++vi)
+    {
+      if(la_slave[0].lmowner_[vi] == idiscret.Comm().MyPID())
+      {
+        const int row_slave = la_slave[0].lm_[vi];
+
+        for (int ui=0; ui<nen_slave; ++ui)
+        {
+          const int col_slave = la_slave[0].lm_[ui];
+
+          islavematrix.Assemble(funct_slave(vi)*dN_dc_slave*funct_slave(ui),row_slave,col_slave);
+        }
+
+        for(int ui=0; ui<nen_master; ++ui)
+        {
+          const int col_master = la_master[0].lm_[ui];
+
+          islavematrix.Assemble(funct_slave(vi)*dN_dc_master*funct_master(ui),row_slave,col_master);
+        }
+
+        if(islaveresidual.SumIntoGlobalValue(row_slave,0,-funct_slave(vi)*N))
+          dserror("Assembly into slave-side residual vector not successful!");
+      }
+    }
+
+    for(int vi=0; vi<nen_master; ++vi)
+    {
+      if(slaveelement.Owner() == idiscret.Comm().MyPID())
+      {
+        const int row_master = la_master[0].lm_[vi];
+
+        for (int ui=0; ui<nen_slave; ++ui)
+        {
+          const int col_slave = la_slave[0].lm_[ui];
+
+          imastermatrix.FEAssemble(-funct_master(vi)*dN_dc_slave*funct_slave(ui),row_master,col_slave);
+        }
+
+        for(int ui=0; ui<nen_master; ++ui)
+        {
+          const int col_master = la_master[0].lm_[ui];
+
+          imastermatrix.FEAssemble(-funct_master(vi)*dN_dc_master*funct_master(ui),row_master,col_master);
+        }
+
+        const double residual_master = funct_master(vi)*N;
+        if(imasterresidual.SumIntoGlobalValues(1,&row_master,&residual_master))
+          dserror("Assembly into master-side residual vector not successful!");
+      }
+    }
+  }
 
   return;
 }
