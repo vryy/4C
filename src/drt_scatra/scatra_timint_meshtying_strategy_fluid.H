@@ -55,7 +55,7 @@ class MeshtyingStrategyFluid : public MeshtyingStrategyBase
     virtual ~MeshtyingStrategyFluid(){return;};
 
     //! compute meshtying residual terms and their linearizations
-    void EvaluateMeshtying() const;
+    void EvaluateMeshtying();
 
     //! include Dirichlet conditions into condensation
     void IncludeDirichletInCondensation() const;

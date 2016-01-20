@@ -47,7 +47,7 @@ class MeshtyingStrategyStd : public MeshtyingStrategyBase
     virtual ~MeshtyingStrategyStd(){return;};
 
     //! compute meshtying residual terms and their linearizations
-    void EvaluateMeshtying() const;
+    void EvaluateMeshtying();
 
     //! initialize meshtying objects
     void InitMeshtying(){return;};

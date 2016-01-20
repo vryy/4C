@@ -50,7 +50,7 @@ class MeshtyingStrategyS2IElch : public MeshtyingStrategyS2I
     virtual ~MeshtyingStrategyS2IElch(){return;};
 
     //! compute meshtying residual terms and their linearizations
-    void EvaluateMeshtying() const;
+    void EvaluateMeshtying();
 
   private:
 
@@ -68,6 +68,69 @@ class MeshtyingStrategyS2IElch : public MeshtyingStrategyS2I
 
     //! build null spaces associated with blocks of global system matrix
     void BuildBlockNullSpaces() const;
+
+    //! evaluate single mortar integration cell
+    void MortarCellCalc(
+        MORTAR::MortarElement&         slaveelement,    //!< slave-side mortar element
+        MORTAR::MortarElement&         masterelement,   //!< master-side mortar element
+        MORTAR::IntCell&               cell,            //!< mortar integration cell
+        DRT::Condition&                condition,       //!< scatra-scatra interface coupling condition
+        const Epetra_Vector&           iphinp,          //!< interface state vector
+        const DRT::Discretization&     idiscret,        //!< interface discretization
+        DRT::Element::LocationArray&   la_slave,        //!< slave-side location array
+        DRT::Element::LocationArray&   la_master        //!< master-side location array
+        ) const;
+
+    //! evaluate single mortar integration cell of particular slave-side discretization type
+    template<DRT::Element::DiscretizationType distypeS>
+    void MortarCellCalcElch(
+        MORTAR::MortarElement&         slaveelement,    //!< slave-side mortar element
+        MORTAR::MortarElement&         masterelement,   //!< master-side mortar element
+        MORTAR::IntCell&               cell,            //!< mortar integration cell
+        DRT::Condition&                condition,       //!< scatra-scatra interface coupling condition
+        const Epetra_Vector&           iphinp,          //!< interface state vector
+        const DRT::Discretization&     idiscret,        //!< interface discretization
+        DRT::Element::LocationArray&   la_slave,        //!< slave-side location array
+        DRT::Element::LocationArray&   la_master        //!< master-side location array
+        ) const;
 }; // class MeshtyingStrategyS2IElch
+
+
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+class MortarCellCalcElch : public MortarCellCalc<distypeS,distypeM>
+{
+  public:
+
+    //! singleton access method
+    static MortarCellCalcElch<distypeS,distypeM>* Instance(bool create = true);
+
+    //! singleton destruction
+    virtual void Done();
+
+  private:
+
+    //! private constructor for singletons
+    MortarCellCalcElch(){return;};
+
+    //! private destructor for singletons
+    virtual ~MortarCellCalcElch(){return;};
+
+    //! evaluate and assemble interface linearizations and residuals
+    void CalcMatAndRhs(
+        LINALG::SparseMatrix&                                                                              islavematrix,      //!< linearizations of slave-side residuals
+        LINALG::SparseMatrix&                                                                              imastermatrix,     //!< linearizations of master-side residuals
+        Epetra_Vector&                                                                                     islaveresidual,    //!< slave-side residual vector
+        Epetra_FEVector&                                                                                   imasterresidual,   //!< master-side residual vector
+        const DRT::Discretization&                                                                         idiscret,          //!< interface discretization
+        DRT::Condition&                                                                                    condition,         //!< scatra-scatra interface coupling condition
+        MORTAR::MortarElement&                                                                             slaveelement,      //!< slave-side mortar element
+        MORTAR::MortarElement&                                                                             masterelement,     //!< master-side mortar element
+        MORTAR::IntCell&                                                                                   cell,              //!< mortar integration cell
+        std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement,1> >&   ephinp_slave,      //!< state variables at slave-side nodes
+        std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement,1> >&   ephinp_master,     //!< state variables at master-side nodes
+        DRT::Element::LocationArray&                                                                       la_slave,          //!< slave-side location array
+        DRT::Element::LocationArray&                                                                       la_master          //!< master-side location array
+        ) const;
+}; // class MortarCellCalcElch
 } // namespace SCATRA
 #endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_H

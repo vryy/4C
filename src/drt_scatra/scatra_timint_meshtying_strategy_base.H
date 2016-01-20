@@ -61,7 +61,7 @@ class MeshtyingStrategyBase
     virtual ~MeshtyingStrategyBase(){return;};
 
     //! compute meshtying residual terms and their linearizations
-    virtual void EvaluateMeshtying() const = 0;
+    virtual void EvaluateMeshtying() = 0;
 
     //! include Dirichlet conditions into condensation
     virtual void IncludeDirichletInCondensation() const {return;};

@@ -39,7 +39,7 @@ type_(INPAR::FLUID::no_meshtying)
 /*----------------------------------------------------------------------*
  | evaluate fluid-fluid meshtying                            fang 12/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyFluid::EvaluateMeshtying() const
+void SCATRA::MeshtyingStrategyFluid::EvaluateMeshtying()
 {
 
   // need to complete system matrix due to subsequent matrix-matrix multiplications

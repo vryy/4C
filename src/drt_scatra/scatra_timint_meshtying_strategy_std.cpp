@@ -35,7 +35,7 @@ MeshtyingStrategyBase(scatratimint)
 /*----------------------------------------------------------------------*
  | dummy meshtying evaluate for standard scalar transport    fang 12/14 |
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyStd::EvaluateMeshtying() const
+void SCATRA::MeshtyingStrategyStd::EvaluateMeshtying()
 {
   return;
 } // SCATRA::MeshtyingStrategyStd::EvaluateMeshtying

@@ -14,19 +14,29 @@ Maintainer: Rui Fang
 #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
 #define SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
 
+#include "scatra_timint_meshtying_strategy_base.H"
+
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
 #include "../drt_inpar/inpar_s2i.H"
 
-#include "scatra_timint_meshtying_strategy_base.H"
+#include <Epetra_FEVector.h>
 
 // forward declarations
 namespace ADAPTER
 {
   class Coupling;
+  class CouplingMortar;
 }
 
 namespace DRT
 {
   class Condition;
+
+  namespace UTILS
+  {
+    template<const int NSD> class IntPointsAndWeights;
+  }
 }
 
 namespace FSI
@@ -43,6 +53,12 @@ namespace LINALG
 {
   class MultiMapExtractor;
   class SparseMatrix;
+}
+
+namespace MORTAR
+{
+  class IntCell;
+  class MortarElement;
 }
 
 namespace SCATRA
@@ -80,7 +96,7 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     const Teuchos::RCP<const ADAPTER::Coupling> CouplingAdapter() const {return icoup_;};
 
     //! compute meshtying residual terms and their linearizations
-    virtual void EvaluateMeshtying() const;
+    virtual void EvaluateMeshtying();
 
     //! initialize meshtying objects
     void InitMeshtying();
@@ -119,6 +135,39 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! build null spaces associated with blocks of global system matrix
     virtual void BuildBlockNullSpaces() const;
 
+    //! evaluate single mortar integration cell
+    void EvaluateMortarCell(
+        MORTAR::IntCell&             cell,        //!< mortar integration cell
+        DRT::Condition&              condition,   //!< scatra-scatra interface coupling condition
+        const Epetra_Vector&         iphinp,      //!< interface state vector
+        const DRT::Discretization&   idiscret     //!< interface discretization
+        ) const;
+
+    //! evaluate single mortar integration cell
+    virtual void MortarCellCalc(
+        MORTAR::MortarElement&         slaveelement,    //!< slave-side mortar element
+        MORTAR::MortarElement&         masterelement,   //!< master-side mortar element
+        MORTAR::IntCell&               cell,            //!< mortar integration cell
+        DRT::Condition&                condition,       //!< scatra-scatra interface coupling condition
+        const Epetra_Vector&           iphinp,          //!< interface state vector
+        const DRT::Discretization&     idiscret,        //!< interface discretization
+        DRT::Element::LocationArray&   la_slave,        //!< slave-side location array
+        DRT::Element::LocationArray&   la_master        //!< master-side location array
+        ) const;
+
+    //! evaluate single mortar integration cell of particular slave-side discretization type
+    template<DRT::Element::DiscretizationType distypeS>
+    void MortarCellCalc(
+        MORTAR::MortarElement&         slaveelement,    //!< slave-side mortar element
+        MORTAR::MortarElement&         masterelement,   //!< master-side mortar element
+        MORTAR::IntCell&               cell,            //!< mortar integration cell
+        DRT::Condition&                condition,       //!< scatra-scatra interface coupling condition
+        const Epetra_Vector&           iphinp,          //!< interface state vector
+        const DRT::Discretization&     idiscret,        //!< interface discretization
+        DRT::Element::LocationArray&   la_slave,        //!< slave-side location array
+        DRT::Element::LocationArray&   la_master        //!< master-side location array
+        ) const;
+
     //! interface map extractor (0: other, 1: slave, 2: master)
     Teuchos::RCP<LINALG::MultiMapExtractor> interfacemaps_;
 
@@ -127,11 +176,21 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_slave_;
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmaps_master_;
 
-    //! interface coupling adapter
+    //! non-mortar interface coupling adapter
     Teuchos::RCP<ADAPTER::Coupling> icoup_;
 
-    //! auxiliary system matrices for linearizations of slave fluxes w.r.t. slave and master dofs, respectively
+    //! mortar interface coupling adapters
+    std::map<int,Teuchos::RCP<ADAPTER::CouplingMortar> > icoupmortar_;
+
+    //! mortar integration cells
+    std::map<int,std::vector<Teuchos::RCP<MORTAR::IntCell> > > imortarcells_;
+
+    //! auxiliary system matrix for linearizations of slave fluxes w.r.t. slave dofs (non-mortar case)
+    //! or for linearizations of slave fluxes w.r.t. slave and master dofs (mortar case)
     Teuchos::RCP<LINALG::SparseMatrix> islavematrix_;
+
+    //! auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs (non-mortar case)
+    //! or for linearizations of master fluxes w.r.t. slave and master dofs (mortar case)
     Teuchos::RCP<LINALG::SparseMatrix> imastermatrix_;
 
     //! transformation operators for auxiliary system matrices
@@ -142,6 +201,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! auxiliary residual vector for slave residuals
     Teuchos::RCP<Epetra_Vector> islaveresidual_;
+
+    //! auxiliary residual vector for master residuals
+    Teuchos::RCP<Epetra_FEVector> imasterresidual_;
 
     //! master dofs transformed to slave side of scatra-scatra interface
     Teuchos::RCP<Epetra_Vector> imasterphinp_;
@@ -201,6 +263,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
         const Teuchos::RCP<Epetra_Vector>&   increment   //! increment vector
         ) const;
 
+    //! slave-side scatra-scatra interface coupling conditions
+    std::map<const int,DRT::Condition* const> slaveconditions_;
+
     //! flag for row equilibration of global system of equations
     const bool rowequilibration_;
 
@@ -213,5 +278,79 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! flag for evaluation of interface linearizations and residuals on slave side only
     bool slaveonly_;
 }; // class MeshtyingStrategyS2I
+
+
+template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
+class MortarCellCalc : public DRT::SingletonDestruction
+{
+  public:
+
+    //! singleton access method
+    static MortarCellCalc<distypeS,distypeM>* Instance(bool create = true);
+
+    //! singleton destruction
+    virtual void Done();
+
+    //! evaluate single mortar integration cell of particular slave-side and master-side discretization types
+    void Evaluate(
+        LINALG::SparseMatrix&          islavematrix,      //!< linearizations of slave-side residuals
+        LINALG::SparseMatrix&          imastermatrix,     //!< linearizations of master-side residuals
+        Epetra_Vector&                 islaveresidual,    //!< slave-side residual vector
+        Epetra_FEVector&               imasterresidual,   //!< master-side residual vector
+        const Epetra_Vector&           iphinp,            //!< interface state vector
+        const DRT::Discretization&     idiscret,          //!< interface discretization
+        DRT::Condition&                condition,         //!< scatra-scatra interface coupling condition
+        MORTAR::MortarElement&         slaveelement,      //!< slave-side mortar element
+        MORTAR::MortarElement&         masterelement,     //!< master-side mortar element
+        MORTAR::IntCell&               cell,              //!< mortar integration cell
+        DRT::Element::LocationArray&   la_slave,          //!< slave-side location array
+        DRT::Element::LocationArray&   la_master          //!< master-side location array
+        ) const;
+
+  protected:
+
+    //! protected constructor for singletons
+    MortarCellCalc();
+
+    //! protected destructor for singletons
+    virtual ~MortarCellCalc(){return;};
+
+    //! evaluate and assemble interface linearizations and residuals
+    virtual void CalcMatAndRhs(
+        LINALG::SparseMatrix&                                                                              islavematrix,      //!< linearizations of slave-side residuals
+        LINALG::SparseMatrix&                                                                              imastermatrix,     //!< linearizations of master-side residuals
+        Epetra_Vector&                                                                                     islaveresidual,    //!< slave-side residual vector
+        Epetra_FEVector&                                                                                   imasterresidual,   //!< master-side residual vector
+        const DRT::Discretization&                                                                         idiscret,          //!< interface discretization
+        DRT::Condition&                                                                                    condition,         //!< scatra-scatra interface coupling condition
+        MORTAR::MortarElement&                                                                             slaveelement,      //!< slave-side mortar element
+        MORTAR::MortarElement&                                                                             masterelement,     //!< master-side mortar element
+        MORTAR::IntCell&                                                                                   cell,              //!< mortar integration cell
+        std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement,1> >&   ephinp_slave,      //!< state variables at slave-side nodes
+        std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement,1> >&   ephinp_master,     //!< state variables at master-side nodes
+        DRT::Element::LocationArray&                                                                       la_slave,          //!< slave-side location array
+        DRT::Element::LocationArray&                                                                       la_master          //!< master-side location array
+        ) const;
+
+    //! extract nodal state variables associated with slave and master elements
+    void ExtractNodeValues(
+        std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement,1> >&   ephinp_slave,    //!< state variables at slave-side nodes
+        std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement,1> >&   ephinp_master,   //!< state variables at master-side nodes
+        const Epetra_Vector&                                                                               iphinp,          //!< interface state vector
+        DRT::Element::LocationArray&                                                                       la_slave,        //!< slave-side location array
+        DRT::Element::LocationArray&                                                                       la_master        //!< master-side location array
+        ) const;
+
+    //! evaluate shape functions and domain integration factor at integration point
+    const double EvalShapeFuncAndDomIntFacAtIntPoint(
+        LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement,1>&   funct_slave,     //!< slave-side shape function values
+        LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement,1>&   funct_master,    //!< master-side shape function values
+        MORTAR::MortarElement&                                                               slaveelement,    //!< slave-side mortar element
+        MORTAR::MortarElement&                                                               masterelement,   //!< master-side mortar element
+        MORTAR::IntCell&                                                                     cell,            //!< mortar integration cell
+        const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distypeS>::dim>&      intpoints,       //!< quadrature rule
+        const int                                                                            iquad            //!< ID of integration point
+        ) const;
+}; // class MortarCellCalc
 } // namespace SCATRA
 #endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H

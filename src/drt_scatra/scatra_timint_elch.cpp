@@ -47,7 +47,7 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
   : ScaTraTimIntImpl(dis,solver,sctratimintparams,extraparams,output),
     elchparams_     (params),
     equpot_         (DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(*elchparams_,"EQUPOT")),
-    frt_            (0.),
+    frt_            (INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const * elchparams_->get<double>("TEMPERATURE"))),
     gstatnumite_    (0),
     gstatincrement_ (0.),
     dlcapexists_    (false),
@@ -59,6 +59,10 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(
     electrodecurr_  (Teuchos::null),
     cellvoltage_    (0.)
 {
+  // safety check
+  if(frt_ <= 0.)
+    dserror("Factor F/RT is non-positive!");
+
   return;
 }
 
@@ -92,8 +96,6 @@ void SCATRA::ScaTraTimIntElch::Init()
   // a safety check for the solver type
   if ((numscal_ > 1) && (solvtype_!=INPAR::SCATRA::solvertype_nonlinear))
     dserror("Solver type has to be set to >>nonlinear<< for ion transport.");
-
-  frt_ = INPAR::ELCH::faraday_const/(INPAR::ELCH::gas_const * elchparams_->get<double>("TEMPERATURE"));
 
   if (myrank_==0)
   {
