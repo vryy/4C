@@ -499,9 +499,9 @@ void SCATRA::MeshtyingStrategyS2I::MortarCellCalc(
 {
   switch(slaveelement.Shape())
   {
-    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::tri3:
     {
-      MortarCellCalc<DRT::Element::DiscretizationType::tri3>(
+      MortarCellCalc<DRT::Element::tri3>(
           slaveelement,
           masterelement,
           cell,
@@ -542,9 +542,9 @@ void SCATRA::MeshtyingStrategyS2I::MortarCellCalc(
 {
   switch(masterelement.Shape())
   {
-    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::tri3:
     {
-      SCATRA::MortarCellCalc<distypeS,DRT::Element::DiscretizationType::tri3>::Instance()->Evaluate(
+      SCATRA::MortarCellCalc<distypeS,DRT::Element::tri3>::Instance()->Evaluate(
           *islavematrix_,
           *imastermatrix_,
           *islaveresidual_,
@@ -1442,4 +1442,4 @@ void SCATRA::MortarCellCalc<distypeS,distypeM>::CalcMatAndRhs(
 
 
 // forward declaration
-template class SCATRA::MortarCellCalc<DRT::Element::DiscretizationType::tri3,DRT::Element::DiscretizationType::tri3>;
+template class SCATRA::MortarCellCalc<DRT::Element::tri3,DRT::Element::tri3>;

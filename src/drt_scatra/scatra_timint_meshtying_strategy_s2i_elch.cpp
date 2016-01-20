@@ -193,9 +193,9 @@ void SCATRA::MeshtyingStrategyS2IElch::MortarCellCalc(
 {
   switch(slaveelement.Shape())
   {
-    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::tri3:
     {
-      MortarCellCalcElch<DRT::Element::DiscretizationType::tri3>(
+      MortarCellCalcElch<DRT::Element::tri3>(
           slaveelement,
           masterelement,
           cell,
@@ -236,9 +236,9 @@ void SCATRA::MeshtyingStrategyS2IElch::MortarCellCalcElch(
 {
   switch(masterelement.Shape())
   {
-    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::tri3:
     {
-      SCATRA::MortarCellCalcElch<distypeS,DRT::Element::DiscretizationType::tri3>::Instance()->Evaluate(
+      SCATRA::MortarCellCalcElch<distypeS,DRT::Element::tri3>::Instance()->Evaluate(
           *islavematrix_,
           *imastermatrix_,
           *islaveresidual_,
