@@ -1325,9 +1325,6 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
     // we keep the current ghosting, but we want to (formally) include
     // all processors, even if they do not own or ghost a single node or
     // element in the natural distribution of idiscret_
-    std::vector<int> allproc(Comm().NumProc());
-    for (int i = 0; i < Comm().NumProc(); ++i)
-      allproc[i] = i;
     std::vector<int> rdata;
 
     // fill my own slave and master column node ids (non-redundant)
@@ -1355,7 +1352,6 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
     Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
         new Epetra_Map(-1, (int) rdata.size(), &rdata[0], 0, Comm()));
     rdata.clear();
-    allproc.clear();
 
     // redistribute the discretization of the interface according to the
     // new (=old) node / element column layout
