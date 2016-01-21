@@ -832,12 +832,9 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForces( Teuchos::ParameterList& pa
           }
         }
       }
-      if(inertia_force!=NULL)
+      for (int i=0; i< 6*nnode+COLLOCATION_POINTS; i++)
       {
-        for (int i=0; i< 6*nnode+COLLOCATION_POINTS; i++)
-        {
-          (*inertia_force)(i)=f_inert(i).val();
-        }
+        (*inertia_force)(i)=f_inert(i).val();
       }
     }
     else

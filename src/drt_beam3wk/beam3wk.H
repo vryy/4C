@@ -24,6 +24,7 @@ interior node. In contrary, the second variant (rotvec_==false) of this element 
 reference and matrial triad at the boundary nodes and the interior node. Besides these two boundary nodes
 the element has COLLOCATION_POINTS-2 interior nodes which one scalar DoF alpha_i, respectively.
 
+
 Attention: Since so far linearizations are calculated with FAD, the rotation increments in the case (rotvec_==true)
 are of an additive nature, which is in strong contrast to the beam3ii implementation, where the iterative
 rotation increments are multiplicative. Consequently, the inhomogeneous rotational Dirichlet conditions of beam3wk

@@ -318,11 +318,11 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     //add moments to Res_external according to (5.56). There is a factor (-1) needed, as fext is multiplied by (-1) in BACI
     for(int i = 3; i < 6 ; i++)
     {
-#ifndef SIMPLECALC
-      elevec1(insert*dofpn + i) -= crossproduct(i-3) / pow(abs_tangent,2.0);
-#else
-      elevec1(insert*dofpn + i) -= crossproduct(i-3) *ScaleFactorLine;
-#endif
+      #ifndef SIMPLECALC
+        elevec1(insert*dofpn + i) -= crossproduct(i-3) / pow(abs_tangent,2.0);
+      #else
+        elevec1(insert*dofpn + i) -= crossproduct(i-3) *ScaleFactorLine;
+      #endif
     }
 
     //assembly for stiffnessmatrix

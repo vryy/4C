@@ -449,8 +449,10 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
     break;
     case calc_struct_stress:
       dserror("No stress output implemented for beam3 elements");
+    break;
     default:
       dserror("Unknown type of action for Beam3 %d", act);
+    break;
   }
   return 0;
 

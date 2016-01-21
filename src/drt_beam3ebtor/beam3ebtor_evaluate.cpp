@@ -355,95 +355,94 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
     }
   }
   //if a line neumann condition needs to be linearized
-    else if(condition.Type() == DRT::Condition::LineNeumann)
+  else if(condition.Type() == DRT::Condition::LineNeumann)
+  {
+
+    // gaussian points
+    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebtor);
+    LINALG::Matrix<1,4> N_i;
+
+    //integration loops
+    for (int numgp=0; numgp<gausspoints.nquad; ++numgp)
     {
 
-      // gaussian points
-      DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebtor);
-      LINALG::Matrix<1,4> N_i;
+      //cout << "numgp: " << numgp + 1 << endl;
+      //integration points in parameter space and weights
+      const double xi = gausspoints.qxg[numgp][0];
+      const double wgt = gausspoints.qwgt[numgp];
 
-      //integration loops
-      for (int numgp=0; numgp<gausspoints.nquad; ++numgp)
+      //Get DiscretizationType of beam element
+      const DRT::Element::DiscretizationType distype = Shape();
+
+      //Clear matrix for shape functions
+      N_i.Clear();
+
+      //evaluation of shape funcitons at Gauss points
+      //Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
+      DRT::UTILS::shape_function_hermite_1D(N_i,xi,jacobi_*2.0,distype);
+
+      //position vector at the gauss point at reference configuration needed for function evaluation
+      std::vector<double> X_ref(3,0.0);
+      //calculate coordinates of corresponding Guass point in reference configuration
+      for (int node=0;node<2;node++)
       {
-
-        //cout << "numgp: " << numgp + 1 << endl;
-        //integration points in parameter space and weights
-        const double xi = gausspoints.qxg[numgp][0];
-        const double wgt = gausspoints.qwgt[numgp];
-
-        //Get DiscretizationType of beam element
-        const DRT::Element::DiscretizationType distype = Shape();
-
-        //Clear matrix for shape functions
-        N_i.Clear();
-
-        //evaluation of shape funcitons at Gauss points
-        //Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
-        DRT::UTILS::shape_function_hermite_1D(N_i,xi,jacobi_*2.0,distype);
-
-        //position vector at the gauss point at reference configuration needed for function evaluation
-        std::vector<double> X_ref(3,0.0);
-        //calculate coordinates of corresponding Guass point in reference configuration
-        for (int node=0;node<2;node++)
+        for (int dof=0;dof<3;dof++)
         {
-          for (int dof=0;dof<3;dof++)
+          X_ref[dof]+=Nodes()[node]->X()[dof]*N_i(2*node)+Tref_[node](dof)*N_i(2*node + 1);
+        }
+      }
+
+      double fac=0.0;
+      fac = wgt * jacobi_;
+
+      // load vector ar
+      double ar[6];
+
+      // loop the dofs of a node
+      for (int dof=0; dof<6; ++dof)
+        ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac[dof];
+      double functionfac = 1.0;
+      int functnum = -1;
+
+      //Check if also moment line Neumann conditions are implemented accidentally and throw error
+      for (int dof=3; dof<6; ++dof)
+      {
+        if (functions) functnum = (*functions)[dof];
+        else functnum = -1;
+
+        if (functnum>0)
+        {
+          dserror("Line Neumann conditions for distributed moments are not implemented for beam3eb so far! Only the function flag 1, 2 and 3 can be set!");
+        }
+      }
+
+      //sum up load components
+      for (int dof=0; dof<3; ++dof)
+      {
+        if (functions) functnum = (*functions)[dof];
+        else functnum = -1;
+
+        if (functnum>0)
+        {
+          // evaluate function at the position of the current node       --> dof here correct?
+          functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof, &X_ref[0], time, NULL);
+        }
+        else functionfac = 1.0;
+
+        for (int node=0; node<4; ++node)
+        {
+          if (node < 2)
           {
-            X_ref[dof]+=Nodes()[node]->X()[dof]*N_i(2*node)+Tref_[node](dof)*N_i(2*node + 1);
+            elevec1[node*3 + dof] += N_i(node) *ar[dof] *functionfac;
+          }
+          else
+          {
+            elevec1[node*3 + dof + 1] += N_i(node) *ar[dof] *functionfac;
           }
         }
-
-        double fac=0.0;
-        fac = wgt * jacobi_;
-
-        // load vector ar
-        double ar[6];
-
-        // loop the dofs of a node
-        for (int dof=0; dof<6; ++dof)
-          ar[dof] = fac * (*onoff)[dof]*(*val)[dof]*curvefac[dof];
-        double functionfac = 1.0;
-        int functnum = -1;
-
-        //Check if also moment line Neumann conditions are implemented accidentally and throw error
-        for (int dof=3; dof<6; ++dof)
-        {
-          if (functions) functnum = (*functions)[dof];
-          else functnum = -1;
-
-          if (functnum>0)
-          {
-            dserror("Line Neumann conditions for distributed moments are not implemented for beam3eb so far! Only the function flag 1, 2 and 3 can be set!");
-          }
-        }
-
-        //sum up load components
-        for (int dof=0; dof<3; ++dof)
-        {
-          if (functions) functnum = (*functions)[dof];
-          else functnum = -1;
-
-          if (functnum>0)
-          {
-            // evaluate function at the position of the current node       --> dof here correct?
-            functionfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof, &X_ref[0], time, NULL);
-          }
-          else functionfac = 1.0;
-
-          for (int node=0; node<4; ++node)
-          {
-            if (node < 2)
-            {
-              elevec1[node*3 + dof] += N_i(node) *ar[dof] *functionfac;
-            }
-            else
-            {
-              elevec1[node*3 + dof + 1] += N_i(node) *ar[dof] *functionfac;
-            }
-          }
-        }
-      } // for (int numgp=0; numgp<intpoints.nquad; ++numgp)
-
-    }
+      }
+    } // for (int numgp=0; numgp<intpoints.nquad; ++numgp)
+  }
 
   //Uncomment the next line if the implementation of the Neumann part of the analytical stiffness matrix should be checked by Forward Automatic Differentiation (FAD)
   //FADCheckNeumann(params, discretization, condition, lm, elevec1, elemat1);
