@@ -294,59 +294,63 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
   // loop through Point Moment EB conditions and evaluate them
   //--------------------------------------------------------
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-   {
-     if (fool->first != (std::string)"PointNeumannEB") continue;
-     DRT::Condition& cond = *(fool->second);
-     const std::vector<int>* nodeids = cond.Nodes();
-     if (!nodeids) dserror("Point Moment condition does not have nodal cloud");
-     const int nnode = (*nodeids).size();
+  {
+    if (fool->first != (std::string)"PointNeumannEB") continue;
+    DRT::Condition& cond = *(fool->second);
+    const std::vector<int>* nodeids = cond.Nodes();
+    if (!nodeids) dserror("Point Moment condition does not have nodal cloud");
+    const int nnode = (*nodeids).size();
 
-     //-----if the stiffness matrix was given in-------
-     if (assemblemat)
-     {
-       for (int i=0; i<nnode; ++i)
-       {
-         //create matrices for fext and fextlin
-         Epetra_SerialDenseVector elevector;
-         Epetra_SerialDenseMatrix elematrix;
 
-         std::vector<int> lm;
-         std::vector<int> lmowner;
-         std::vector<int> lmstride;
+    for (int i=0; i<nnode; ++i)
+    {
+      //create matrices for fext and fextlin
+      Epetra_SerialDenseVector elevector;
+      Epetra_SerialDenseMatrix elematrix;
 
-         // do only nodes in my row map
-         if (!NodeRowMap()->MyGID((*nodeids)[i])) continue;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
 
-         //get global node
-         DRT::Node* actnode = gNode((*nodeids)[i]);
-         if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
+      // do only nodes in my row map
+      if (!NodeRowMap()->MyGID((*nodeids)[i])) continue;
 
-         //get elements attached to global node
-         DRT::Element** curreleptr = actnode->Elements();
+      //get global node
+      DRT::Node* actnode = gNode((*nodeids)[i]);
+      if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
 
-         //find element from pointer
-         //please note, that external force will be applied to the first element [0] attached to a node
-         //this needs to be done, otherwise it will be applied several times on several elements.
-         DRT::Element* currele = curreleptr[0];
+      //get elements attached to global node
+      DRT::Element** curreleptr = actnode->Elements();
 
-         //get information from location
-         currele->LocationVector(*this,lm,lmowner,lmstride);
-         elevector.Size((int)lm.size());
+      //find element from pointer
+      //please note, that external force will be applied to the first element [0] attached to a node
+      //this needs to be done, otherwise it will be applied several times on several elements.
+      DRT::Element* currele = curreleptr[0];
 
-         //evaluate linearized point moment conditions and assemble matrices
-         const int size = (int)lm.size();
+      //get information from location
+      currele->LocationVector(*this,lm,lmowner,lmstride);
+      const int size = (int)lm.size();
+      elevector.Size(size);
 
-         //resize f_ext_lin matrix
-         if (elematrix.M() != size) elematrix.Shape(size,size);
-         else memset(elematrix.A(),0,size*size*sizeof(double));
-
-         //evaluate linearized point moment conditions and assemble f_ext and f_ext_lin into global matrix
-         currele->EvaluateNeumann(params,*this,cond,lm,elevector,&elematrix);
-         LINALG::Assemble(systemvector,elevector,lm,lmowner);
-         systemmatrix->Assemble(currele->Id(),lmstride,elematrix,lm,lmowner);
-       }//for (int i=0; i<nnode; ++i)
-     }
-   }
+      // evaluate linearized point moment conditions and assemble f_ext and f_ext_lin into global matrix
+      //-----if the stiffness matrix was given in-------
+      if (assemblemat)
+      {
+        //resize f_ext_lin matrix
+        if (elematrix.M() != size)
+          elematrix.Shape(size,size);
+        else
+          memset(elematrix.A(),0,size*size*sizeof(double));
+        //evaluate linearized point moment conditions and assemble matrices
+        currele->EvaluateNeumann(params,*this,cond,lm,elevector,&elematrix);
+        systemmatrix->Assemble(currele->Id(),lmstride,elematrix,lm,lmowner);
+      }
+      //-----if no stiffness matrix was given in-------
+      else
+        currele->EvaluateNeumann(params,*this,cond,lm,elevector);
+      LINALG::Assemble(systemvector,elevector,lm,lmowner);
+    }//for (int i=0; i<nnode; ++i)
+  }
 
   return;
 }

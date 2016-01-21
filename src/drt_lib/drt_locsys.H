@@ -189,43 +189,43 @@ public:
   void RotateGlobalToLocal(
     Teuchos::RCP<LINALG::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
     Teuchos::RCP<Epetra_Vector> rhs  ///< right-hand-side vector, will be transformed
-    );
+    ) const;
 
   /*!
    * \brief Apply forward transformation of a single matrix
    *
    */
-  void RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseMatrix> sysmat);
+  void RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseMatrix> sysmat) const;
 
   /*!
    * \brief Apply forward transformation of a single vector
    *
    */
-  void RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> vec, bool offset=false);
+  void RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> vec, bool offset=false) const;
 
   /*!
    * \brief Apply backward transformation of result and linear system of equations
    *
    */
-  void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> result, Teuchos::RCP<LINALG::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
+  void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> result, Teuchos::RCP<LINALG::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const;
 
   /*!
    * \brief Apply backward transformation of a single vector
    *
    */
-  void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> vec, bool offset=false);
+  void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> vec, bool offset=false) const;
 
   /*!
    * \brief Apply backward transformation of a matrix
    *
    */
-  void RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseMatrix> sysmat);
+  void RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseMatrix> sysmat) const;
 
   /*!
    * \brief Add displacement offset value in order to apply Dirichlet conditions on local systems
    *
    */
-  void AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool inverse);
+  void AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool inverse) const;
 
   /*!
    * \brief Calculate rotation vector for (mass-consistent) normal system

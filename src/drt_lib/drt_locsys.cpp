@@ -796,8 +796,9 @@ void DRT::UTILS::LocsysManager::Print() const
  |  Transform system global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
-  Teuchos::RCP<LINALG::SparseMatrix> sysmat,
-  Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<LINALG::SparseMatrix> sysmat,
+    Teuchos::RCP<Epetra_Vector> rhs)
+    const
 {
   // transform rhs vector
   RotateGlobalToLocal(rhs);
@@ -815,6 +816,7 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
  |  Transform system matrix global -> local (public)       mueller 05/10|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseMatrix> sysmat)
+    const
 {
   // selective multiplication from left
   Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
@@ -828,6 +830,7 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseM
  |  Transform vector global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> vec, bool offset)
+    const
 {
   //Add an offset value to the displacement vector. This offsett value is needed for Kirchhoff type
   //beam elements, where tangent vectors and not position vectors are rotated!!!
@@ -846,9 +849,10 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> 
  |  Transform result + system local -> global (public)        popp 09/08|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateLocalToGlobal(
-  Teuchos::RCP<Epetra_Vector> result,
-  Teuchos::RCP<LINALG::SparseMatrix> sysmat,
-  Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<Epetra_Vector> result,
+    Teuchos::RCP<LINALG::SparseMatrix> sysmat,
+    Teuchos::RCP<Epetra_Vector> rhs)
+    const
 {
   // transform result
   RotateLocalToGlobal(result);
@@ -876,6 +880,7 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(
  |  Transform vector local -> global (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> vec, bool offset)
+    const
 {
   Epetra_Vector tmp(*vec);
   trafo_->Multiply(true,tmp,*vec);
@@ -894,6 +899,7 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> 
  |  Transform matrix local -> global (public)              mueller 05/10|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseMatrix> sysmat)
+    const
 {
 
   Teuchos::RCP<LINALG::SparseMatrix> temp;
@@ -908,6 +914,7 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseM
  |  Add displacement offset value                            meier 06/13|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::LocsysManager::AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool inverse)
+    const
 {
   // get dof row map of discretization
   const Epetra_Map* dofrowmap = discret_.DofRowMap();
