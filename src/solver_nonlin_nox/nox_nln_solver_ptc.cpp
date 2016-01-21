@@ -18,6 +18,8 @@
 #include "nox_nln_group.H"
 #include "nox_nln_linearsystem.H"
 #include "nox_nln_statustest_normf.H"
+#include "nox_nln_group_prepostoperator.H"
+#include "nox_nln_linearsystem_prepostoperator.H"
 
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_utils.H"
@@ -192,21 +194,21 @@ void NOX::NLN::Solver::PseudoTransient::createLinSystemPrePostOperator()
     // set the new pre/post operator for the linear system in the parameter list
     Teuchos::ParameterList& p_linsolver = paramsPtr->sublist("Direction").
         sublist(dir_str).sublist("Linear Solver");
-    p_linsolver.set<Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> >
-        ("User Defined Pre/Post Operator",prePostLinSysPtr_);
+    // get the current map. If there is no map, return a new empty one. (reference)
+    NOX::NLN::LinSystem::PrePostOperator::Map& prePostLinSystemMap =
+        NOX::NLN::LinSystem::PrePostOp::GetMutableMap(p_linsolver);
+    // insert/replace the old pointer in the map
+    prePostLinSystemMap[NOX::NLN::LinSystem::prepost_ptc] = prePostLinSysPtr_;
     /* Now the last thing to do is, that we have to reset the pre/post-operator in
      * the nln linear system class with the ptc pre/post-operator. */
     // Get the linear system
-    Teuchos::RCP<NOX::Epetra::Group> epetra_soln =
-        Teuchos::rcp_dynamic_cast<NOX::Epetra::Group>(solnPtr);
-    Teuchos::RCP<NOX::NLN::LinearSystem>linsys =
-        Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(epetra_soln->getLinearSystem());
-    if (linsys.is_null())
-      throwError("init()","The linear system cast failed!");
-    /* Call reset on the linear system
-     * This resets also the pre/post-operator to the
-     * NOX::NLN::LinSystem::PrePostOp::PseudoTransient() pre/post operator. */
-    linsys->reset();
+    Teuchos::RCP<NOX::NLN::Group> nlnSolnPtr =
+        Teuchos::rcp_dynamic_cast<NOX::NLN::Group>(solnPtr);
+    if (nlnSolnPtr.is_null())
+      throwError("createLinSystemPrePostOperator","The group cast failed!");
+    /* Call the reset function of the nox nln linear system to reset the
+     * corresponding pre/post operator map. */
+    nlnSolnPtr->ResetLinSysPrePostOperator(p_linsolver,true);
   }
   else
   {
@@ -223,13 +225,18 @@ void NOX::NLN::Solver::PseudoTransient::createLinSystemPrePostOperator()
  *----------------------------------------------------------------------------*/
 void NOX::NLN::Solver::PseudoTransient::createGroupPrePostOperator()
 {
-  prePostGroupPtr_ = Teuchos::rcp(new NOX::NLN::GROUP::PrePostOp::
-      PseudoTransient(scalingDiagOpPtr_,*this));
-
-  // set the new pre/post operator for the group in the parameter list
+  // ---------------------------------------------------------------------------
+  // set the new pre/post operator for the nox nln group in the parameter list
+  // ---------------------------------------------------------------------------
   Teuchos::ParameterList& p_grpOpt = paramsPtr->sublist("Group Options");
-  p_grpOpt.set<Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> >
-      ("User Defined Pre/Post Operator",prePostGroupPtr_);
+  // get the current map. If there is no map, return a new empty one. (reference)
+  NOX::NLN::GROUP::PrePostOperator::Map& prePostGroupMap =
+      NOX::NLN::GROUP::PrePostOp::GetMutableMap(p_grpOpt);
+  // insert or replace the old pointer in the map
+  prePostGroupPtr_ = Teuchos::rcp(new NOX::NLN::GROUP::PrePostOp::
+        PseudoTransient(scalingDiagOpPtr_,*this));
+  // set the modified map
+  prePostGroupMap[NOX::NLN::GROUP::prepost_ptc] = prePostGroupPtr_;
   /* Now the last thing to do is, that we have to reset the pre/post-operator in
    * the nln group class with the ptc pre/post-operator. */
   // Get the nln group
@@ -238,9 +245,8 @@ void NOX::NLN::Solver::PseudoTransient::createGroupPrePostOperator()
   if (nlnSoln.is_null())
     throwError("createGroupPrePostOperator","The group cast failed!");
   /* Call the reset function of the nox nln group to reset the corresponding
-   * pre/post operator. The new pre/post operator is the
-   * NOX::NLN::GROUP::PrePostOp::PseudoTransient pre/post operator. */
-  nlnSoln->ResetPrePostOpertator();
+   * pre/post operator map. */
+  nlnSoln->ResetPrePostOperator(p_grpOpt,true);
 
   return;
 }
@@ -271,7 +277,7 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
       utilsPtr->out() << "Warning: NOX::Solver::PseudoTransient::init() - "
               << "The solution passed into the solver (either "
               << "through constructor or reset method) "
-              << "is already converged!  The solver will not "
+              << "is already converged! The solver will not "
               << "attempt to solve this system since status is "
               << "flagged as converged." << std::endl;
     }
@@ -390,7 +396,6 @@ void NOX::NLN::Solver::PseudoTransient::evalModelReductionRatio()
   double modelnew = globalDataPtr->getMeritFunction()->computeQuadraticModel(*sdirPtr,*oldSolnPtr);
 
   modelReductionRatio_ = (fref-fnew)/(fref-modelnew);
-  std::cout << "Model Reduction Ratio (MRR): " << modelReductionRatio_ << std::endl;
 
   return;
 }
@@ -399,8 +404,8 @@ void NOX::NLN::Solver::PseudoTransient::evalModelReductionRatio()
  *----------------------------------------------------------------------*/
 NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::solve()
 {
+  isPtcSolve_ = true;
   prePostOperator.runPreSolve(*this);
-
   // Iterate until converged or failed
   while (status == NOX::StatusTest::Unconverged)
     step();
@@ -410,7 +415,7 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::solve()
   outputParams.set("2-Norm of Residual", solnPtr->getNormF());
 
   prePostOperator.runPostSolve(*this);
-
+  isPtcSolve_ = false;
   return status;
 }
 
@@ -441,17 +446,30 @@ void NOX::NLN::Solver::PseudoTransient::adjustPseudoTimeStep()
   /* Check the step-length. If the step-length is not equal 1.0,
    * we adjust the pseudo time step size by using a least squares
    * approximation. */
-  std::cout << "delta_: " << delta_ << std::endl;
-  if (stepSize != 1.0)
+  if (stepSize == 1.0)
+    return;
+
+  if (utilsPtr->isPrintType(NOX::Utils::Details))
   {
-    Teuchos::RCP<NOX::NLN::Group> oldNlnSolnPtr =
-        Teuchos::rcp_dynamic_cast<NOX::NLN::Group>(oldSolnPtr);
-    if (oldNlnSolnPtr.is_null())
-      throwError("updatePseudoTimeStep",
-          "Dynamic cast to NOX::NLN::Group failed!");
-    oldNlnSolnPtr->adjustPseudoTimeStep(delta_,stepSize,*dirPtr,*this);
+    utilsPtr->out() << "*--- Adjust Pseudo Time Step ---*" << std::endl
+        << "| Previous dt_ptc:    " << std::setw(9) << std::setprecision(3)
+        << std::scientific << delta_ << " |" << std::endl;
   }
-  std::cout << "Corrected delta_: " << delta_ << std::endl;
+
+  Teuchos::RCP<NOX::NLN::Group> oldNlnSolnPtr =
+      Teuchos::rcp_dynamic_cast<NOX::NLN::Group>(oldSolnPtr);
+  if (oldNlnSolnPtr.is_null())
+    throwError("updatePseudoTimeStep",
+        "Dynamic cast to NOX::NLN::Group failed!");
+  oldNlnSolnPtr->adjustPseudoTimeStep(delta_,stepSize,*dirPtr,*this);
+
+  if (utilsPtr->isPrintType(NOX::Utils::Details))
+  {
+    utilsPtr->out() << "| Corrected dt_ptc:   " << std::setw(9)
+        << std::setprecision(3) << std::scientific << delta_
+        << " |"<< std::endl
+        << "*-------------------------------*" << std::endl;
+  }
 
   return;
 }
@@ -482,7 +500,6 @@ void NOX::NLN::Solver::PseudoTransient::updatePseudoTimeStep()
           normF = epetraScaledRHS.norm(normType_);
         }
         deltaInit_ = 1.0 / (normF*normF);
-        std::cout << "normF: " << normF << std::endl;
       }
       delta_ = deltaInit_;
     }
@@ -493,7 +510,9 @@ void NOX::NLN::Solver::PseudoTransient::updatePseudoTimeStep()
       // -----------------------------------------------------------------
       switch (tscType_)
       {
+        // ---------------------------------------------------------------
         // switched evolution relaxation
+        // ---------------------------------------------------------------
         case tsc_ser:
         {
           if (normType_ == NOX::Abstract::Vector::TwoNorm)
@@ -504,13 +523,17 @@ void NOX::NLN::Solver::PseudoTransient::updatePseudoTimeStep()
                 solnPtr->getF().norm(normType_);
           break;
         }
+        // ---------------------------------------------------------------
         // temporal truncation error
+        // ---------------------------------------------------------------
         case tsc_tte:
         {
           throwError("UpdatePseudoTimeStep()","The \"Temporal Truncation Error\" method is not yet implemented!");
           break;
         }
+        // ---------------------------------------------------------------
         // model reduction ratio
+        // ---------------------------------------------------------------
         case tsc_mrr:
         {
           double normFOld = oldSolnPtr->getF().norm(normType_);
@@ -519,21 +542,39 @@ void NOX::NLN::Solver::PseudoTransient::updatePseudoTimeStep()
           // calculated the corrected old inverse mu
           double muinv = deltaOld_ * normFOld;
 
-          /* If the normF Status test is already converged and no additional step length
-           * modification has been necessary, we will just increase the pseudo time step.
+          /* If the normF Status test is already converged and no additional
+           * step length modification has been necessary, we will just increase
+           * the pseudo time step.
            * This is meant to speed up the convergence close to the solution. */
-          if (stepSize == 1.0 and GetStatus<NOX::NLN::StatusTest::NormF>() == NOX::StatusTest::Converged)
+          if (stepSize == 1.0 and
+              GetStatus<NOX::NLN::StatusTest::NormF>() == NOX::StatusTest::Converged)
             muinv *= 4.0;
-          // if the model performed badly: reduce the pseudo time step
+          /* if the model performed badly: reduce the pseudo time step by a
+           * factor tau_red, where 0.25 <= tau_red <= 0.8. */
           else if (modelReductionRatio_ < 0.2)
             muinv *=  std::min(std::max(0.25,ratioF),0.8);
-          // if the model performed well: increase the pseudo time step
+          /* if the model performed well: increase the pseudo time step by a
+           * factory tau_inc, where 1.25 <= tau_inc <= 4.0. */
           else if (modelReductionRatio_ > 0.8)
             muinv *= std::max(std::min(4.0,ratioF),1.25);
 
           // update the pseudo time step
           delta_ = muinv / normF;
-          std::cout << deltaOld_ << " --> (muinv * normFinv = " << muinv << " * " << 1.0/normF << ") --> " << delta_ << std::endl;
+          if (utilsPtr->isPrintType(NOX::Utils::Details))
+          {
+            utilsPtr->out() << "*--- Model Reduction Ratio -----------------------------*" << std::endl
+                << "| MRR: "<< std::setw(9)
+                << std::setprecision(3) << std::scientific << modelReductionRatio_
+                << std::setw(41) << "|" << std::endl
+                << "| dt_ptc(k-1) --> (    muinv *  normFinv) --> dt_ptc(k) |" << std::endl
+                << "| " << std::setw(11) << std::setprecision(3)
+                << std::scientific << deltaOld_ << " --> ("
+                << std::setw(9) << std::setprecision(3) << std::scientific
+                << muinv << " * " << std::setw(9) << std::setprecision(3)
+                << std::scientific <<1.0/normF << ") --> " << std::setw(9)
+                << std::setprecision(3) << std::scientific << delta_ << " |" << std::endl
+                << "*-------------------------------------------------------*" << std::endl;
+          }
           break;
         }
         default:
@@ -544,9 +585,11 @@ void NOX::NLN::Solver::PseudoTransient::updatePseudoTimeStep()
       }
     }
 
-    invDelta_ = 1.0 / delta_;
+    // invert delta_ and check possible thresholds
     if (delta_ > deltaMax_)
       invDelta_ = 0.0;
+    else
+      invDelta_ = 1.0 / delta_;
 
     if (delta_ < deltaMin_)
     {
@@ -554,8 +597,11 @@ void NOX::NLN::Solver::PseudoTransient::updatePseudoTimeStep()
       invDelta_ = 1.0 / delta_;
     }
 
+    // increase the pseudoTime_ counter
     pseudoTime_ += delta_;
   }
+  /* if the maximum PTC iteration number is reached, we switch PTC off and
+   * use a standard line search based solution procedure. */
   else
   {
     delta_ = std::numeric_limits<double>::max();
@@ -598,6 +644,13 @@ const Epetra_Vector&
 bool NOX::NLN::Solver::PseudoTransient::usePseudoTransientResidual() const
 {
   return usePseudoTransientResidual_;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool NOX::NLN::Solver::PseudoTransient::isPtcSolve() const
+{
+  return isPtcSolve_;
 }
 
 /*----------------------------------------------------------------------*
@@ -689,6 +742,9 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::
     const Epetra_Vector& x,
     const NOX::NLN::LinearSystem& linsys)
 {
+  if (not ptcsolver_.isPtcSolve())
+    return;
+
   // get the type of the jacobian
   const enum NOX::NLN::LinearSystem::OperatorType& jactype =
       linsys.getJacobianOperatorType();
@@ -823,6 +879,9 @@ void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPostComputeF(
     Epetra_Vector& F,
     const NOX::NLN::Group& grp)
 {
+  if (not ptcsolver_.isPtcSolve())
+    return;
+
   const bool usePseudoTransientResidual =
       ptcsolver_.usePseudoTransientResidual();
 
@@ -849,6 +908,9 @@ void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPreComputeF(
     Epetra_Vector& F,
     const NOX::NLN::Group& grp)
 {
+  if (not ptcsolver_.isPtcSolve())
+    return;
+
   // If the current rhs has not been calculated, yet.
   if (!grp.isF())
   {

@@ -47,20 +47,23 @@ NOX::NLN::StatusTest::NormUpdate::NormUpdate(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::NLN::StatusTest::NormUpdate::ComputeNorm(
-    const NOX::Abstract::Group& grp)
+    const NOX::Abstract::Group& grp,
+    const NOX::Solver::Generic& problem)
 {
   // cast the nox_abstract_group to nox_nln_group
   const NOX::NLN::Group* nlngrp = dynamic_cast<const NOX::NLN::Group*>(&grp);
-
   if (nlngrp == NULL)
     throwError("ComputeNorm","Dynamic cast to NOX::NLN::Group failed!");
 
+  // get the old solution vector
+  const NOX::Abstract::Vector& xOld = problem.getPreviousSolutionGroup().getX();
+
   // (1) of the increment of the given quantities
   normUpdate_ = nlngrp->GetSolutionUpdateNorms(
-      normType_,checkList_,Teuchos::rcp(&scaleType_,false));
+      xOld,normType_,checkList_,Teuchos::rcp(&scaleType_,false));
   // (2) of the last accepted Newton step
   normRefSol_ = nlngrp->GetPreviousSolutionNorms(
-      normType_,checkList_,Teuchos::rcp(&scaleType_,false));
+      xOld,normType_,checkList_,Teuchos::rcp(&scaleType_,false));
 
   for (std::size_t i=0;i<nChecks_;++i)
   {
@@ -115,7 +118,7 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormUpdate::checkStatus(
 
   // get the specified norms from the underlying interface classes.
   // update of the truetolerance variable.
-  ComputeNorm(soln);
+  ComputeNorm(soln,problem);
 
   // loop over all quantities
   for (std::size_t i=0;i<nChecks_;++i)

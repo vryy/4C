@@ -30,7 +30,6 @@ NOX::NLN::Group::Group(Teuchos::ParameterList& printParams,
     const NOX::Epetra::Vector& x,
     const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys)
     : NOX::Epetra::Group(printParams,i,x,linSys),
-      grpOptionParams_(grpOptionParams),
       prePostOperatorPtr_(Teuchos::rcp(new NOX::NLN::GROUP::PrePostOperator(grpOptionParams)))
 {
   // empty constructor
@@ -40,7 +39,6 @@ NOX::NLN::Group::Group(Teuchos::ParameterList& printParams,
  *----------------------------------------------------------------------------*/
 NOX::NLN::Group::Group(const NOX::NLN::Group& source, CopyType type)
     : NOX::Epetra::Group(source,type),
-      grpOptionParams_(source.grpOptionParams_),
       prePostOperatorPtr_(source.prePostOperatorPtr_)
 {
   // no new variables, pointers or references
@@ -84,9 +82,9 @@ void NOX::NLN::Group::computeX(
   // -------------------------------------
   // We have to remove the const state, because we want to change class variables
   // of the required interface.
-  Teuchos::RCP<NOX::NLN::Interface::Required> iReq =
-      Teuchos::rcp_const_cast<NOX::NLN::Interface::Required>(GetNlnReqInterfacePtr());
-  iReq->SetPrimarySolution(grp.xVector,d,step);
+//  Teuchos::RCP<NOX::NLN::Interface::Required> iReq =
+//      Teuchos::rcp_const_cast<NOX::NLN::Interface::Required>(GetNlnReqInterfacePtr());
+//  iReq->SetPrimarySolution(grp.xVector,d,step);
   // -------------------------------------
   // Update the nox internal variables
   // -------------------------------------
@@ -129,10 +127,22 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeF()
 {
   prePostOperatorPtr_->runPreComputeF(RHSVector.getEpetraVector(),*this);
 
-  NOX::Abstract::Group::ReturnType ret = Epetra::Group::computeF();
+  if (isF())
+    return NOX::Abstract::Group::Ok;
+
+  bool status = false;
+
+  status = userInterfacePtr->computeF(xVector.getEpetraVector(), RHSVector.getEpetraVector(), NOX::Epetra::Interface::Required::Residual);
+
+  if (status == false)
+  {
+    throw "NOX Error: Fill Failed";
+  }
+
+  isValidRHS = true;
 
   prePostOperatorPtr_->runPostComputeF(RHSVector.getEpetraVector(),*this);
-  return ret;
+  return NOX::Abstract::Group::Ok;
 }
 
 /*----------------------------------------------------------------------------*
@@ -210,8 +220,8 @@ Teuchos::RCP<const std::vector<double> > NOX::NLN::Group::GetRHSNorms(
   double rval = -1.0;
   for (std::size_t i=0;i<chQ.size();++i)
   {
-    rval = GetNlnReqInterfacePtr()->GetPrimaryRHSNorms(chQ[i],type[i],
-        (*scale)[i]==NOX::StatusTest::NormF::Scaled);
+    rval = GetNlnReqInterfacePtr()->GetPrimaryRHSNorms(RHSVector.getEpetraVector(),
+        chQ[i],type[i],(*scale)[i]==NOX::StatusTest::NormF::Scaled);
     if (rval>=0.0)
     {
       norms->push_back(rval);
@@ -233,16 +243,20 @@ Teuchos::RCP<const std::vector<double> > NOX::NLN::Group::GetRHSNorms(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetSolutionUpdateRMS(
+    const NOX::Abstract::Vector& xOld,
     const std::vector<double>& aTol, const std::vector<double>& rTol,
     const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
     const std::vector<bool>& disable_implicit_weighting) const
 {
+  const NOX::Epetra::Vector& xOldEpetra =
+      dynamic_cast<const NOX::Epetra::Vector&>(xOld);
   Teuchos::RCP<std::vector<double> > rms = Teuchos::rcp(new std::vector<double>(0));
 
   double rval = -1.0;
   for (std::size_t i=0;i<chQ.size();++i)
   {
     rval = GetNlnReqInterfacePtr()->GetPrimarySolutionUpdateRMS(
+        xVector.getEpetraVector(),xOldEpetra.getEpetraVector(),
         aTol[i],rTol[i],chQ[i],disable_implicit_weighting[i]);
     if (rval>=0.0)
     {
@@ -265,10 +279,13 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetSolutionUpdateRMS(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetSolutionUpdateNorms(
+    const NOX::Abstract::Vector& xOld,
     const std::vector<NOX::Abstract::Vector::NormType>& type,
     const std::vector<StatusTest::QuantityType>& chQ,
     Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const
 {
+  const NOX::Epetra::Vector& xOldEpetra =
+      dynamic_cast<const NOX::Epetra::Vector&>(xOld);
   if (scale.is_null())
     scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(chQ.size(),
         StatusTest::NormUpdate::Unscaled));
@@ -278,7 +295,8 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetSolutionUpdateNorms(
   double rval = -1.0;
   for (std::size_t i=0;i<chQ.size();++i)
   {
-    rval = GetNlnReqInterfacePtr()->GetPrimarySolutionUpdateNorms(chQ[i],type[i],
+    rval = GetNlnReqInterfacePtr()->GetPrimarySolutionUpdateNorms(
+        xVector.getEpetraVector(),xOldEpetra.getEpetraVector(),chQ[i],type[i],
         (*scale)[i]==StatusTest::NormUpdate::Scaled);
     if (rval>=0.0)
     {
@@ -301,10 +319,13 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetSolutionUpdateNorms(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetPreviousSolutionNorms(
+    const NOX::Abstract::Vector& xOld,
     const std::vector<NOX::Abstract::Vector::NormType>& type,
     const std::vector<StatusTest::QuantityType>& chQ,
     Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const
 {
+  const NOX::Epetra::Vector& xOldEpetra =
+      dynamic_cast<const NOX::Epetra::Vector&>(xOld);
   if (scale.is_null())
     scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(chQ.size(),
         StatusTest::NormUpdate::Unscaled));
@@ -314,7 +335,8 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetPreviousSolutionNorms(
   double rval = -1.0;
   for (std::size_t i=0;i<chQ.size();++i)
   {
-    rval = GetNlnReqInterfacePtr()->GetPreviousPrimarySolutionNorms(chQ[i],type[i],
+    rval = GetNlnReqInterfacePtr()->GetPreviousPrimarySolutionNorms(
+        xOldEpetra.getEpetraVector(),chQ[i],type[i],
         (*scale)[i]==StatusTest::NormUpdate::Scaled);
     if (rval>=0.0)
     {
@@ -338,14 +360,39 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::Group::GetPreviousSolutionNorms(
  *----------------------------------------------------------------------------*/
 double NOX::NLN::Group::GetObjectiveModelValue(const std::string& name) const
 {
-  return GetNlnReqInterfacePtr()->GetObjectiveModelValue(name);
+  return GetNlnReqInterfacePtr()->GetObjectiveModelValue(xVector.getEpetraVector(),
+      RHSVector.getEpetraVector(),name);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::Group::ResetPrePostOpertator()
+void NOX::NLN::Group::ResetPrePostOperator(
+    Teuchos::ParameterList& grpOptionParams,
+    const bool& resetIsValidFlags)
 {
-  prePostOperatorPtr_->reset(grpOptionParams_);
+  if (resetIsValidFlags)
+    resetIsValid();
+
+  prePostOperatorPtr_->reset(grpOptionParams);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::Group::ResetLinSysPrePostOperator(
+    Teuchos::ParameterList& linearSolverParams,
+    const bool& resetIsValidFlags)
+{
+  if (resetIsValidFlags)
+    resetIsValid();
+
+  Teuchos::RCP<NOX::NLN::LinearSystem> nlnLinsysPtr =
+      Teuchos::rcp_dynamic_cast<NOX::NLN::LinearSystem>(getLinearSystem());
+
+  if (nlnLinsysPtr.is_null())
+    throwError("ResetLinSysPrePostOperator",
+        "The linear system cast failed!");
+
+  nlnLinsysPtr->resetPrePostOperator(linearSolverParams);
 }
 
 /*----------------------------------------------------------------------*
@@ -402,4 +449,11 @@ void NOX::NLN::Group::throwError(
       << " - " << errorMsg << std::endl;
 
   dserror(msg.str());
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+const Epetra_BlockMap& NOX::NLN::Group::getDofMap() const
+{
+  return xVector.getEpetraVector().Map();
 }

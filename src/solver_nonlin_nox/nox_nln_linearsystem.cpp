@@ -42,8 +42,7 @@ NOX::NLN::LinearSystem::LinearSystem(
     const Teuchos::RCP<LINALG::SparseOperator>& preconditioner,
     const NOX::Epetra::Vector& cloneVector,
     const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
-    : linParams_(linearSolverParams),
-      utils_(printParams),
+    : utils_(printParams),
       solvers_(solvers),
       reqInterfacePtr_(iReq),
       jacInterfacePtr_(iJac),
@@ -64,7 +63,7 @@ NOX::NLN::LinearSystem::LinearSystem(
   // Jacobian operator is supplied
   jacType_ = getOperatorType(*jacPtr_);
 
-  reset();
+  reset(linearSolverParams);
 }
 
 /*----------------------------------------------------------------------*
@@ -79,8 +78,7 @@ NOX::NLN::LinearSystem::LinearSystem(
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
     const Teuchos::RCP<LINALG::SparseOperator>& preconditioner,
     const NOX::Epetra::Vector& cloneVector)
-    : linParams_(linearSolverParams),
-      utils_(printParams),
+    : utils_(printParams),
       solvers_(solvers),
       reqInterfacePtr_(iReq),
       jacInterfacePtr_(iJac),
@@ -101,7 +99,7 @@ NOX::NLN::LinearSystem::LinearSystem(
   // Jacobian operator is supplied
   jacType_ = getOperatorType(*jacPtr_);
 
-  reset();
+  reset(linearSolverParams);
 }
 
 /*----------------------------------------------------------------------*
@@ -115,8 +113,7 @@ NOX::NLN::LinearSystem::LinearSystem(
     const Teuchos::RCP<LINALG::SparseOperator>& jacobian,
     const NOX::Epetra::Vector& cloneVector,
     const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
-    : linParams_(linearSolverParams),
-      utils_(printParams),
+    : utils_(printParams),
       solvers_(solvers),
       reqInterfacePtr_(iReq),
       jacInterfacePtr_(iJac),
@@ -137,7 +134,7 @@ NOX::NLN::LinearSystem::LinearSystem(
   // Jacobian operator is supplied
   jacType_ = getOperatorType(*jacPtr_);
 
-  reset();
+  reset(linearSolverParams);
 }
 
 /*----------------------------------------------------------------------*
@@ -150,8 +147,7 @@ NOX::NLN::LinearSystem::LinearSystem(
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<LINALG::SparseOperator>& jacobian,
     const NOX::Epetra::Vector& cloneVector)
-    : linParams_(linearSolverParams),
-      utils_(printParams),
+    : utils_(printParams),
       solvers_(solvers),
       reqInterfacePtr_(iReq),
       jacInterfacePtr_(iJac),
@@ -172,32 +168,40 @@ NOX::NLN::LinearSystem::LinearSystem(
   // Jacobian operator is supplied
   jacType_ = getOperatorType(*jacPtr_);
 
-  reset();
+  reset(linearSolverParams);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::reset()
+void NOX::NLN::LinearSystem::reset(Teuchos::ParameterList& p)
 {
-  zeroInitialGuess_ = linParams_.get("Zero Initial Guess", false);
+  zeroInitialGuess_ = p.get("Zero Initial Guess", false);
 
-  manualScaling_ = linParams_.get("Compute Scaling Manually", true);
+  manualScaling_ = p.get("Compute Scaling Manually", true);
 
   // Place linear solver details in the "Output" sublist of the
   // "Linear Solver" parameter list
-  outputSolveDetails_ = linParams_.get("Output Solver Details", true);
+  outputSolveDetails_ = p.get("Output Solver Details", true);
 
   // set the pre/post-operator
-  if (prePostOperatorPtr_.is_null())
-    prePostOperatorPtr_ =
-        Teuchos::rcp(new NOX::NLN::LinSystem::PrePostOperator(linParams_));
-  else
-    prePostOperatorPtr_->reset(linParams_);
+  resetPrePostOperator(p);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::LinearSystem::OperatorType NOX::NLN::LinearSystem::getOperatorType(const LINALG::SparseOperator& op) const
+void NOX::NLN::LinearSystem::resetPrePostOperator(Teuchos::ParameterList& p)
+{
+  if (prePostOperatorPtr_.is_null())
+    prePostOperatorPtr_ =
+        Teuchos::rcp(new NOX::NLN::LinSystem::PrePostOperator(p));
+  else
+    prePostOperatorPtr_->reset(p);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+NOX::NLN::LinearSystem::OperatorType NOX::NLN::LinearSystem::
+    getOperatorType(const LINALG::SparseOperator& op) const
 {
   const Epetra_Operator* testOperator = 0;
 
@@ -298,7 +302,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
   NOX::NLN::SolutionType solType = GetCurrentLinSolver(solvers_,currSolver);
 
   // set solver options if necessary
-  SetSolverOptions(currSolver,solType);
+  SetSolverOptions(linearSolverParams,currSolver,solType);
 
   // solve
   int iter = linearSolverParams.get<int>("Number of Nonlinear Iterations",-10);
@@ -376,7 +380,8 @@ Teuchos::RCP< NOX::Epetra::Scaling> NOX::NLN::LinearSystem::getScaling()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::resetScaling(const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject)
+void NOX::NLN::LinearSystem::resetScaling(
+    const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject)
 {
   scaling_ = scalingObject;
   return;
@@ -429,9 +434,9 @@ void NOX::NLN::LinearSystem::adjustPseudoTimeStep(
   vec_2->Dot(*vec_1,&numerator);
   vec_1->Dot(*vec_1,&denominator);
 
-  // ----------------------------------------------------
+  // ---------------------------------------------------------------------
   // show the error (L2-norm)
-  // ----------------------------------------------------
+  // ---------------------------------------------------------------------
   Teuchos::RCP<Epetra_Vector> vec_err = LINALG::CreateVector(jac->RowMap(),true);
   vec_err->Update(delta,*vec_1,1.0,*vec_2,0.0);
   double error_start = 0.0;
@@ -439,13 +444,19 @@ void NOX::NLN::LinearSystem::adjustPseudoTimeStep(
 
   delta = - numerator/denominator;
 
-  // ----------------------------------------------------
+  // ---------------------------------------------------------------------
   // show the actual remaining error (L2-norm)
-  // ----------------------------------------------------
+  // ---------------------------------------------------------------------
   vec_err->Update(delta,*vec_1,1.0,*vec_2,0.0);
   double error_end = 0.0;
   vec_err->Norm2(&error_end);
-  std::cout << "error: " << error_start << " --> " << error_end << std::endl;
+  if (utils_.isPrintType(NOX::Utils::Details))
+  {
+    utils_.out() << "| Error: " << std::setw(5)
+    << std::setprecision(3) << std::scientific << error_start << " -> "
+    << std::setw(5) << std::setprecision(3) << std::scientific
+    << error_end << " |" << std::endl;
+  }
 
 
 }
@@ -465,28 +476,32 @@ void NOX::NLN::LinearSystem::throwError(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const NOX::Epetra::Interface::Required> NOX::NLN::LinearSystem::getRequiredInterface() const
+Teuchos::RCP<const NOX::Epetra::Interface::Required>
+    NOX::NLN::LinearSystem::getRequiredInterface() const
 {
   return reqInterfacePtr_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const NOX::Epetra::Interface::Jacobian> NOX::NLN::LinearSystem::getJacobianInterface() const
+Teuchos::RCP<const NOX::Epetra::Interface::Jacobian>
+    NOX::NLN::LinearSystem::getJacobianInterface() const
 {
   return jacInterfacePtr_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const NOX::Epetra::Interface::Preconditioner> NOX::NLN::LinearSystem::getPrecInterface() const
+Teuchos::RCP<const NOX::Epetra::Interface::Preconditioner>
+    NOX::NLN::LinearSystem::getPrecInterface() const
 {
   return precInterfacePtr_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Operator> NOX::NLN::LinearSystem::getJacobianOperator() const
+Teuchos::RCP<const Epetra_Operator>
+    NOX::NLN::LinearSystem::getJacobianOperator() const
 {
   return jacPtr_;
 }
@@ -508,7 +523,8 @@ const enum NOX::NLN::LinearSystem::OperatorType& NOX::NLN::LinearSystem::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::setJacobianOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
+void NOX::NLN::LinearSystem::setJacobianOperatorForSolve(
+    const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
 {
   const Teuchos::RCP<const LINALG::SparseOperator>& linalgSprOp =
       Teuchos::rcp_dynamic_cast<const LINALG::SparseOperator>(solveJacOp);
@@ -521,7 +537,8 @@ void NOX::NLN::LinearSystem::setJacobianOperatorForSolve(const Teuchos::RCP<cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::SetJacobianOperatorForSolve(const Teuchos::RCP<const LINALG::SparseOperator>& solveJacOp)
+void NOX::NLN::LinearSystem::SetJacobianOperatorForSolve(
+    const Teuchos::RCP<const LINALG::SparseOperator>& solveJacOp)
 {
   if (jacType_ != getOperatorType(*solveJacOp))
     throwError("SetJacobianOperatorForSolve","wrong operator type!");
@@ -532,9 +549,10 @@ void NOX::NLN::LinearSystem::SetJacobianOperatorForSolve(const Teuchos::RCP<cons
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::NLN::LinearSystem::createPreconditioner(const NOX::Epetra::Vector& x,
-                                                  Teuchos::ParameterList& p,
-                                                  bool recomputeGraph) const
+bool NOX::NLN::LinearSystem::createPreconditioner(
+    const NOX::Epetra::Vector& x,
+    Teuchos::ParameterList& p,
+    bool recomputeGraph) const
 {
   return false;
 }
@@ -549,8 +567,9 @@ bool NOX::NLN::LinearSystem::destroyPreconditioner() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::NLN::LinearSystem::recomputePreconditioner(const NOX::Epetra::Vector& x,
-                                                     Teuchos::ParameterList& linearSolverParams) const
+bool NOX::NLN::LinearSystem::recomputePreconditioner(
+    const NOX::Epetra::Vector& x,
+    Teuchos::ParameterList& linearSolverParams) const
 {
   return false;
 }
@@ -593,7 +612,8 @@ Teuchos::RCP<Epetra_Operator> NOX::NLN::LinearSystem::getGeneratedPrecOperator()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::LinearSystem::setPrecOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solvePrecOp)
+void NOX::NLN::LinearSystem::setPrecOperatorForSolve(
+    const Teuchos::RCP<const Epetra_Operator>& solvePrecOp)
 {
   throwError("setPrecOperatorForSolve", "no preconditioner supported");
   return;

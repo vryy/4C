@@ -86,7 +86,8 @@ namespace StatusTest {
     virtual std::ostream& print(std::ostream& stream, int indent = 0) const;
   protected:
     virtual void ComputeNorm(
-        const NOX::Abstract::Group& grp);
+        const NOX::Abstract::Group& grp,
+        const NOX::Solver::Generic& problem);
 
   private:
     //! throws an NOX error

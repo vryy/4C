@@ -168,7 +168,7 @@ namespace Interface {
      *  inclusive the pre-conditioner interface
      */
     GlobalData(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& noxParams,
+        Teuchos::ParameterList& noxParams,
         const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
         const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
         const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
@@ -181,7 +181,7 @@ namespace Interface {
      * without a pre-conditioner interface
      */
     GlobalData(const Epetra_Comm& comm,
-        const Teuchos::ParameterList& noxParams,
+        Teuchos::ParameterList& noxParams,
         const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
         const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
         const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
@@ -193,7 +193,7 @@ namespace Interface {
      *  inclusive the pre-conditioner interface
      */
     GlobalData(const Epetra_Comm& comm,
-            const Teuchos::ParameterList& noxParams,
+            Teuchos::ParameterList& noxParams,
             const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
             const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
@@ -204,7 +204,7 @@ namespace Interface {
      *  without a pre-conditioner interface
      */
     GlobalData(const Epetra_Comm& comm,
-            const Teuchos::ParameterList& noxParams,
+            Teuchos::ParameterList& noxParams,
             const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
             const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac);

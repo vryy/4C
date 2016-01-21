@@ -29,7 +29,8 @@ NOX::NLN::CONSTRAINT::Group::Group(Teuchos::ParameterList& printParams,
     const NOX::Epetra::Vector& x,
     const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys,
     const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr)
-    : NOX::NLN::Group(printParams,grpOptionParams,i,x,linSys),
+    : NOX::Epetra::Group(printParams,i,x,linSys),
+      NOX::NLN::Group(printParams,grpOptionParams,i,x,linSys),
       userConstraintInterfaces_(iConstr)
 {
   return;
@@ -39,7 +40,8 @@ NOX::NLN::CONSTRAINT::Group::Group(Teuchos::ParameterList& printParams,
  *----------------------------------------------------------------------------*/
 NOX::NLN::CONSTRAINT::Group::Group(const NOX::NLN::CONSTRAINT::Group& source,
     CopyType type)
-    : NOX::NLN::Group(source,type),
+    : NOX::Epetra::Group(source,type),
+      NOX::NLN::Group(source,type),
       userConstraintInterfaces_(source.userConstraintInterfaces_)
 {
   // empty
@@ -159,7 +161,8 @@ Teuchos::RCP<const std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetRHSNorm
   double rval = -1.0;
   for (std::size_t i=0;i<chQ.size();++i)
   {
-    rval = GetNlnReqInterfacePtr()->GetPrimaryRHSNorms(chQ[i],type[i],
+    rval = GetNlnReqInterfacePtr()->GetPrimaryRHSNorms(
+        RHSVector.getEpetraVector(),chQ[i],type[i],
         (*scale)[i]==NOX::StatusTest::NormF::Scaled);
     if (rval>=0.0)
     {
@@ -192,16 +195,20 @@ Teuchos::RCP<const std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetRHSNorm
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetSolutionUpdateRMS(
+    const NOX::Abstract::Vector& xOld,
     const std::vector<double>& aTol, const std::vector<double>& rTol,
     const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
     const std::vector<bool>& disable_implicit_weighting) const
 {
+  const NOX::Epetra::Vector& xOldEpetra =
+      dynamic_cast<const NOX::Epetra::Vector&>(xOld);
   Teuchos::RCP<std::vector<double> > rms = Teuchos::rcp(new std::vector<double>(0));
 
   double rval = -1.0;
   for (std::size_t i=0;i<chQ.size();++i)
   {
     rval = GetNlnReqInterfacePtr()->GetPrimarySolutionUpdateRMS(
+        xVector.getEpetraVector(),xOldEpetra.getEpetraVector(),
         aTol[i],rTol[i],chQ[i],disable_implicit_weighting[i]);
     if (rval>=0.0)
     {

@@ -21,7 +21,7 @@
 namespace NOX {
 namespace NLN {
 namespace Interface {
-  class Required : public NOX::Epetra::Interface::Required
+  class Required : public virtual NOX::Epetra::Interface::Required
   {
   public:
     //! Constructor
@@ -32,30 +32,37 @@ namespace Interface {
 
     //! returns the right-hand-side norms of the primary DoF fields
     virtual double GetPrimaryRHSNorms(
+        const Epetra_Vector& F,
         const NOX::NLN::StatusTest::QuantityType& checkQuantity,
         const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
         const bool& isScaled = false) const = 0;
 
     //! Returns the Root Mean Squares (abbr.: RMS) of the primary solution updates
     virtual double GetPrimarySolutionUpdateRMS(
+        const Epetra_Vector& xNew, const Epetra_Vector& xOld,
         const double& aTol, const double& rTol,
         const NOX::NLN::StatusTest::QuantityType& checkQuantity,
         const bool& disable_implicit_weighting = false) const = 0;
 
     //! Returns the increment norm of the primary DoF fields
     virtual double GetPrimarySolutionUpdateNorms(
+        const Epetra_Vector& xNew, const Epetra_Vector& xOld,
         const NOX::NLN::StatusTest::QuantityType& checkQuantity,
         const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
         const bool& isScaled = false) const = 0;
 
     //! Returns the previous solution norm of primary DoF fields
     virtual double GetPreviousPrimarySolutionNorms(
+        const Epetra_Vector& xOld,
         const NOX::NLN::StatusTest::QuantityType& checkQuantity,
         const NOX::Abstract::Vector::NormType& type = NOX::Abstract::Vector::TwoNorm,
         const bool& isScaled = false) const = 0;
 
     //! compute and return some energy representative
-    virtual double GetObjectiveModelValue(const std::string& name) const = 0;
+    virtual double GetObjectiveModelValue(
+        const Epetra_Vector& x,
+        const Epetra_Vector& F,
+        const std::string& name) const = 0;
 
     //! calculate characteristic/reference norms for forces
     virtual double CalcRefNormForce() = 0;

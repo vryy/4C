@@ -19,21 +19,18 @@
 namespace NOX {
 namespace NLN {
 namespace StatusTest {
-/*!
-  \brief Arbitrary combination of status tests.
-
-  Please see "NOX_StatusTest_Combo.H for more information. This
-  is a restatement with no changes to the functionality of the class.
-
-  \author Michael Hiermeier
-*/
+/*! \brief Arbitrary combination of status tests.
+ *
+ * Please see "NOX_StatusTest_Combo.H" for more information. This
+ * is a restatement with no changes to the functionality of the class.
+ *
+ * \author Michael Hiermeier
+ */
 
   class Combo : public NOX::StatusTest::Combo
   {
-
   public:
-
-    //! Constructor.  Optional argument is the error stream for output.
+    //! Constructor. Optional argument is the error stream for output.
     Combo(ComboType t, const NOX::Utils* u = NULL);
 
     //! Constructor with a single test.
@@ -64,12 +61,11 @@ namespace StatusTest {
 
   protected:
 
-    //! Vector of generic status tests
-    /*!
-       This a copy of the base class vector. It generates almost no overhead,
-       because it is a vector of pointers and we need it, because we have no
-       direct access to the base class vector (private).
-     */
+    /*! \brief Vector of generic status tests
+     *
+     * This a copy of the base class vector. It generates almost no overhead,
+     * because it is a vector of pointers and we need it, because we have no
+     * direct access to the base class vector (private). */
     std::vector<Teuchos::RCP<NOX::StatusTest::Generic> > tests_;
 
     //! Ostream used to print errors

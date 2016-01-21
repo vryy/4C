@@ -30,8 +30,13 @@ NOX::NLN::LineSearch::Backtrack::Backtrack(
     const Teuchos::RCP<NOX::StatusTest::Generic> outerTests,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
           Teuchos::ParameterList& params)
-    : stepPtr_(NULL),
+    : allowExceptions_(false),
+      lsIters_(0),
+      stepPtr_(NULL),
+      defaultStep_(0.0),
+      reductionFactor_(0.0),
       checkType_(NOX::StatusTest::Complete),
+      status_(NOX::NLN::INNER::StatusTest::status_unevaluated),
       outerTestsPtr_(outerTests),
       innerTestsPtr_(innerTests)
 {
@@ -63,6 +68,7 @@ bool NOX::NLN::LineSearch::Backtrack::reset
         << "Value must be greater than zero and less than 1.0.";
     throwError("reset",msg.str());
   }
+  allowExceptions_ = p.get("Allow Exceptions",false);
 
   return true;
 }
@@ -86,6 +92,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute
      const NOX::Abstract::Vector& dir,
      const NOX::Solver::Generic& s)
 {
+  DisableInternalExceptionChecks();
   // -------------------------------------------------
   // (re)set important line search parameters
   // -------------------------------------------------
@@ -129,26 +136,48 @@ bool NOX::NLN::LineSearch::Backtrack::compute
   // update the solution vector and get a trial point
   // -------------------------------------------------
   grp.computeX(oldGrp, dir, step);
+  NOX::Abstract::Group::ReturnType rtype = NOX::Abstract::Group::Ok;
+  bool failed = false;
+  try
+  {
+    failed = false;
+    rtype = grp.computeF();
+    if (rtype != NOX::Abstract::Group::Ok)
+      throwError("compute","Unable to compute F!");
 
-  NOX::Abstract::Group::ReturnType rtype = grp.computeF();
-  if (rtype != NOX::Abstract::Group::Ok)
-    throwError("compute","Unable to compute F!");
+    /* Safe-guarding of the inner status test:
+     * If the outer NormF test is converged for a full step length,
+     * we don't have to reduce the step length any further.
+     * This additional check becomes necessary, because of cancellation
+     * errors and related numerical artifacts. */
+    // check the outer status test for the full step length
+    outerTestsPtr_->checkStatus(s,checkType_);
+    const NOX::NLN::Solver::LineSearchBased& lsSolver =
+        dynamic_cast<const NOX::NLN::Solver::LineSearchBased&>(s);
+    NOX::StatusTest::StatusType ostatus = lsSolver.
+        GetStatus<NOX::NLN::StatusTest::NormF>();
+    /* Skip the inner status test, if the outer NormF test is
+     * already converged! */
+    if (ostatus == NOX::StatusTest::Converged)
+    {
+      EnableInternalExceptionChecks();
+      return true;
+    }
+  }
+  // catch error of the computeF method
+  catch (const char* e)
+  {
+    if (not allowExceptions_)
+      dserror("An exception occurred: %s",e);
 
-  /* Safe-guarding of the inner status test:
-   * If the outer NormF test is converged for a full step length,
-   * we don't have to reduce the step length any further.
-   * This additional check becomes necessary, because of cancellation
-   * errors and related numerical artifacts. */
-  // check the outer status test for the full step length
-  outerTestsPtr_->checkStatus(s,checkType_);
-  const NOX::NLN::Solver::LineSearchBased& lsSolver =
-      dynamic_cast<const NOX::NLN::Solver::LineSearchBased&>(s);
-  NOX::StatusTest::StatusType ostatus = lsSolver.
-      GetStatus<NOX::NLN::StatusTest::NormF>();
-  /* Skip the inner status test, if the outer NormF test is
-   * already converged! */
-  if (ostatus == NOX::StatusTest::Converged)
-    return true;
+    if (utils_->isPrintType(NOX::Utils::Warning))
+        utils_->out() << "WARNING: Error caught = " << e << "\n";
+
+    status_ = NOX::NLN::INNER::StatusTest::status_step_too_long;
+    failed = true;
+  }
+  // clear the exception checks after the try/catch block
+  ClearInternalExceptionChecks();
 
   // -------------------------------------------------
   // print header if desired
@@ -159,8 +188,11 @@ bool NOX::NLN::LineSearch::Backtrack::compute
         << "-- Backtrack Line Search -- \n";
   }
 
-  status_ = innerTestsPtr_->CheckStatus(*this,grp,checkType_);
-  PrintUpdate();
+  if (not failed)
+  {
+    status_ = innerTestsPtr_->CheckStatus(*this,grp,checkType_);
+    PrintUpdate();
+  }
   // -------------------------------------------------
   // inner backtracking loop
   // -------------------------------------------------
@@ -176,11 +208,27 @@ bool NOX::NLN::LineSearch::Backtrack::compute
     // -------------------------------------------------
     grp.computeX(oldGrp, dir, step);
 
-    rtype = grp.computeF();
-    if (rtype != NOX::Abstract::Group::Ok)
-      throwError("compute","Unable to compute F!");
-    status_ = innerTestsPtr_->CheckStatus(*this,grp,checkType_);
-    PrintUpdate();
+    try
+    {
+      rtype = grp.computeF();
+      if (rtype != NOX::Abstract::Group::Ok)
+        throwError("compute","Unable to compute F!");
+      status_ = innerTestsPtr_->CheckStatus(*this,grp,checkType_);
+      PrintUpdate();
+    }
+    // catch error of the computeF method
+    catch (const char* e)
+    {
+      if (not allowExceptions_)
+        dserror("An exception occurred!");
+
+      if (utils_->isPrintType(NOX::Utils::Warning))
+          utils_->out() << "WARNING: Error caught = " << e << "\n";
+
+      status_ = NOX::NLN::INNER::StatusTest::status_step_too_long;
+    }
+    // clear the exception checks after the try/catch block
+    ClearInternalExceptionChecks();
   }
   // -------------------------------------------------
   // print footer if desired
@@ -196,6 +244,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute
   else if (status_ == NOX::NLN::INNER::StatusTest::status_no_descent_direction)
     throwError("compute()","The given search direction is no descent direction!");
 
+  EnableInternalExceptionChecks();
   return (status_ == NOX::NLN::INNER::StatusTest::status_converged ? true : false);
 }
 
@@ -260,6 +309,36 @@ void NOX::NLN::LineSearch::Backtrack::PrintUpdate()
     innerTestsPtr_->Print(utils_->out());
     utils_->out() << NOX::Utils::fill(72,'-') << "\n";
   }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::LineSearch::Backtrack::DisableInternalExceptionChecks() const
+{
+  if (not allowExceptions_)
+    return;
+
+  fedisableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::LineSearch::Backtrack::ClearInternalExceptionChecks() const
+{
+  if (not allowExceptions_)
+    return;
+
+  feclearexcept(FE_ALL_EXCEPT);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void NOX::NLN::LineSearch::Backtrack::EnableInternalExceptionChecks() const
+{
+  if (not allowExceptions_)
+    return;
+
+  feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW);
 }
 
 /*----------------------------------------------------------------------*

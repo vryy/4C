@@ -23,6 +23,7 @@
 #include "nox_nln_statustest_normupdate.H"
 
 // forward declarations
+class Epetra_BlockMap;
 namespace NOX {
 namespace NLN {
 namespace Solver {
@@ -35,7 +36,7 @@ namespace GROUP {
   class PrePostOperator;
 } // namespace GROUP
 
-  class Group : public NOX::Epetra::Group
+  class Group : public virtual NOX::Epetra::Group
   {
   public:
     //! Standard Constructor
@@ -79,9 +80,6 @@ namespace GROUP {
     //! set jacobian operator
     virtual NOX::Abstract::Group::ReturnType setJacobianOperator(const Teuchos::RCP<const Epetra_Operator> jacOperator);
 
-    //! reset the prepostoperator for the nln group
-    void ResetPrePostOpertator();
-
     //! returns the nox_nln_interface_required pointer
     Teuchos::RCP<const NOX::NLN::Interface::Required> GetNlnReqInterfacePtr() const;
 
@@ -93,6 +91,7 @@ namespace GROUP {
 
     //! returns the Root Mean Squares (abbr.: RMS) of the primary solution updates
     virtual Teuchos::RCP<std::vector<double> > GetSolutionUpdateRMS(
+        const NOX::Abstract::Vector& xOld,
         const std::vector<double>& aTol,
         const std::vector<double>& rTol,
         const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
@@ -100,16 +99,49 @@ namespace GROUP {
 
     //! returns the desired norm of the primary solution updates
     virtual Teuchos::RCP<std::vector<double> > GetSolutionUpdateNorms(
+        const NOX::Abstract::Vector& xOld,
         const std::vector<NOX::Abstract::Vector::NormType>& type,
         const std::vector<StatusTest::QuantityType>& chQ,
         Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale = Teuchos::null) const;
 
     //! returns the desired norm of the previous solution
     virtual Teuchos::RCP<std::vector<double> > GetPreviousSolutionNorms(
+        const NOX::Abstract::Vector& xOld,
         const std::vector<NOX::Abstract::Vector::NormType>& type,
         const std::vector<StatusTest::QuantityType>& chQ,
         Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const;
 
+    //! @name reset the pre/post operator wrapper objects
+    //! @{
+    /*! \brief Resets the pre/post operator for the nln group
+     *  Default call to the two parameter version, without resetting the isValid flags.
+     *  @param[in] grpOptionParams   ParameterList which holds the new pre/post operator. */
+    void ResetPrePostOperator(Teuchos::ParameterList& grpOptionParams)
+    { ResetPrePostOperator(grpOptionParams,false); };
+
+    /*! \brief Resets the pre/post operator wrapper for the nln group
+     *  @param[in] grpOptionsParams   ParameterList which holds the new pre/post operator
+     *  @param[in] resetIsValidFlag   If true, this forces the computeJacobian(), computeF() etc. routines to
+     *                                reevaluate the linear system after setting a new pre/post operator. */
+    void ResetPrePostOperator(Teuchos::ParameterList& grpOptionParams,
+        const bool& resetIsValidFlags);
+
+    /*! \brief Resets the pre/post operator wrapper for the nln linear system
+     *  Default call to the two parameter version, without resetting the isValid flags.
+     *  @param[in] linearSolverParams ParameterList which holds the new pre/post operator. */
+    void ResetLinSysPrePostOperator(Teuchos::ParameterList& linearSolverParams)
+    { ResetLinSysPrePostOperator(linearSolverParams,false); };
+
+    /*! \brief Resets the pre/post operator wrapper for the nln linear system
+     *  @param[in] linearSolverParams   ParameterList which holds the new pre/post operator.
+     *  @param[in] resetIsValidFlag     If true, this forces the computeJacobian(), computeF() etc. routines to
+     *                                  reevaluate the linear system after setting a new pre/post operator. */
+    void ResetLinSysPrePostOperator(Teuchos::ParameterList& linearSolverParams,
+        const bool& resetIsValidFlags);
+    //! @}
+
+    //! @name PTC related methods
+    //! @{
     //! adjust the pseudo time step length for the ptc nln solver
     void adjustPseudoTimeStep(double& delta,
         const double& stepSize,
@@ -120,20 +152,20 @@ namespace GROUP {
         const NOX::Epetra::Vector& dir,
         const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
+    //! get the lumped mass matrix
+    virtual Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const;
+    //! @}
+
     //! compute and return some energy representative
     virtual double GetObjectiveModelValue(const std::string& name) const;
 
-    //! get the lumped mass matrix
-    virtual Teuchos::RCP<const Epetra_Vector> GetLumpedMassMatrixPtr() const;
+    const Epetra_BlockMap& getDofMap() const;
 
   private:
     //! Throw an NOX_error
     void throwError(const std::string& functionName,const std::string& errorMsg) const;
 
-  protected:
-    //! reference to the group options parameterlist
-    Teuchos::ParameterList& grpOptionParams_;
-
+  private:
     //! pointer to an user defined wrapped NOX::NLN::Abstract::PrePostOperator object.
     Teuchos::RCP<NOX::NLN::GROUP::PrePostOperator> prePostOperatorPtr_;
   };  // class Group

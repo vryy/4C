@@ -92,8 +92,12 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
   std::vector<NOX::StatusTest::StatusType> criteria =
       std::vector<NOX::StatusTest::StatusType>(3,NOX::StatusTest::Converged);
 
+  // get the solution vector of the last step
+  const NOX::Abstract::Vector& xOld =
+      problem.getPreviousSolutionGroup().getX();
+
   // get the root mean square from the underlying interface classes
-  normWRMS_ = nlnGrp->GetSolutionUpdateRMS(atol_,rtol_,checkList_,disable_implicit_weighting_);
+  normWRMS_ = nlnGrp->GetSolutionUpdateRMS(xOld,atol_,rtol_,checkList_,disable_implicit_weighting_);
 
   // loop over all quantities
   for (std::size_t i=0;i<nChecks_;++i)

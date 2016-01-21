@@ -34,6 +34,13 @@ namespace Abstract {
 namespace NLN {
   class LinearSystem;
 namespace LinSystem {
+  //! currently supported pre/post operators
+  enum PrePostOpType
+  {
+    prepost_ptc,    //!< pseudo transient continuation pre/post operator
+    prepost_dbc     //!< dirichlet boundary condition pre/post operator
+  };
+
 /*!
   @brief Functor to process the pre/post operator object in the parameter list for the linear system.
 
@@ -49,6 +56,8 @@ namespace LinSystem {
 */
   class PrePostOperator
   {
+  public:
+    typedef std::map<enum PrePostOpType, Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> > Map;
   private:
     //! Disallow default constructor.
     PrePostOperator();
@@ -145,8 +154,15 @@ namespace LinSystem {
     bool havePrePostOperator_;
 
     //! Points to user defined pre/post operator for the linear system.
-    Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prePostOperatorPtr_;
+    Teuchos::RCP<Map> prePostOperatorMapPtr_;
   };  // class PrePostOperator
+namespace PrePostOp {
+  // non-member function
+  /*! Returns the inherent pre/post operator std::map of the "Linear Solver" sublist.
+   *  If the corresponding parameter called "User Defined Pre/Post Operator" is not yet
+   *  defined, a empty std::map is generated and set into the parameter list first. */
+  NOX::NLN::LinSystem::PrePostOperator::Map& GetMutableMap(Teuchos::ParameterList& p_linsolver);
+} // namespace PrePostOp
 } // namespace LinSystem
 } // namespace NLN
 } // namespace NOX
@@ -157,7 +173,11 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPreApplyJacobianInverse(
     const NOX::NLN::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
-    prePostOperatorPtr_->runPreApplyJacobianInverse(rhs,jac,linsys);
+  {
+    Map::iterator it;
+    for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
+      it->second->runPreApplyJacobianInverse(rhs,jac,linsys);
+  }
 }
 
 inline void NOX::NLN::LinSystem::PrePostOperator::runPostApplyJacobianInverse(
@@ -166,7 +186,11 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPostApplyJacobianInverse(
     const NOX::NLN::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
-    prePostOperatorPtr_->runPostApplyJacobianInverse(rhs,jac,linsys);
+  {
+    Map::iterator it;
+    for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
+      it->second->runPostApplyJacobianInverse(rhs,jac,linsys);
+  }
 }
 
 inline void NOX::NLN::LinSystem::PrePostOperator::runPreComputeJacobian(
@@ -175,7 +199,11 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPreComputeJacobian(
     const NOX::NLN::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
-    prePostOperatorPtr_->runPreComputeJacobian(jac,x,linsys);
+  {
+    Map::iterator it;
+    for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
+      it->second->runPreComputeJacobian(jac,x,linsys);
+  }
 }
 
 inline void NOX::NLN::LinSystem::PrePostOperator::runPostComputeJacobian(
@@ -184,7 +212,11 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPostComputeJacobian(
     const NOX::NLN::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
-    prePostOperatorPtr_->runPostComputeJacobian(jac,x,linsys);
+  {
+    Map::iterator it;
+    for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
+      it->second->runPostComputeJacobian(jac,x,linsys);
+  }
 }
 
 inline void NOX::NLN::LinSystem::PrePostOperator::runPreComputeFandJacobian(
@@ -194,7 +226,11 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPreComputeFandJacobian(
     const NOX::NLN::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
-    prePostOperatorPtr_->runPreComputeFandJacobian(rhs,jac,x,linsys);
+  {
+    Map::iterator it;
+    for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
+      it->second->runPreComputeFandJacobian(rhs,jac,x,linsys);
+  }
 }
 
 inline void NOX::NLN::LinSystem::PrePostOperator::runPostComputeFandJacobian(
@@ -204,7 +240,11 @@ inline void NOX::NLN::LinSystem::PrePostOperator::runPostComputeFandJacobian(
     const NOX::NLN::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
-    prePostOperatorPtr_->runPostComputeFandJacobian(rhs,jac,x,linsys);
+  {
+    Map::iterator it;
+    for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
+      it->second->runPostComputeFandJacobian(rhs,jac,x,linsys);
+  }
 }
 
 #endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_LINEARSYSTEM_PREPOSTOPERATOR_H_ */

@@ -20,6 +20,13 @@ namespace Teuchos {
 namespace NOX {
 namespace NLN {
 namespace GROUP {
+  //! Currently supported group pre/post operators.
+  enum PrePostOpType
+  {
+    prepost_ptc,        //!< pseudo transient continuation pre/post operator
+    prepost_tangdis     //!< tangdis (predictor) pre/post operator
+  };
+
 /*!
   @brief Functor to process the pre/post operator object in the parameter list for the NOX::NLN::Group objects.
 
@@ -29,12 +36,14 @@ namespace GROUP {
   the constructor and if a ppo is found will wrap the object.
 
   For instructions on how to implement a PrePostOperator, see
-  NOX::NLN::Abstract::PrePostOperator.
+  NOX::NLN::Abstract::PrePostOperator or one of the currently supported implementations (enum list).
 
   \author Michael Hiermeier
 */
   class PrePostOperator
   {
+  public:
+    typedef std::map<enum PrePostOpType, Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> > Map;
   private:
     //! Disallow default constructor.
     PrePostOperator();
@@ -77,8 +86,15 @@ namespace GROUP {
     bool havePrePostOperator_;
 
     //! Points to user defined pre/post operator for the linear system.
-    Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prePostOperatorPtr_;
+    Teuchos::RCP<Map> prePostOperatorMapPtr_;
   };  // class PrePostOperator
+namespace PrePostOp {
+  // non-member function
+  /*! Returns the inherent pre/post operator std::map of the "Group Options" sublist.
+   *  If the corresponding parameter called "User Defined Pre/Post Operator" is not yet
+   *  defined, a empty std::map is generated and set into the parameter list first. */
+  NOX::NLN::GROUP::PrePostOperator::Map& GetMutableMap(Teuchos::ParameterList& p_grp_opt);
+} // namespace PrePostOp
 } // namespace GROUP
 } // namespace NLN
 } // namespace NOX
@@ -88,7 +104,11 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPreComputeF(
     const NOX::NLN::Group& grp)
 {
   if (havePrePostOperator_)
-    prePostOperatorPtr_->runPreComputeF(F,grp);
+  {
+    Map::iterator it;
+    for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
+      it->second->runPreComputeF(F,grp);
+  }
 }
 
 inline void NOX::NLN::GROUP::PrePostOperator::runPostComputeF(
@@ -96,7 +116,11 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPostComputeF(
     const NOX::NLN::Group& grp)
 {
   if (havePrePostOperator_)
-    prePostOperatorPtr_->runPostComputeF(F,grp);
+  {
+    Map::iterator it;
+    for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
+      it->second->runPostComputeF(F,grp);
+  }
 }
 
 

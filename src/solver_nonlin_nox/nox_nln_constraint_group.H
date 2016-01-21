@@ -27,8 +27,7 @@ namespace STR {
 namespace NOX {
 namespace NLN {
 namespace CONSTRAINT {
-
-  class Group : public NOX::NLN::Group
+  class Group : public virtual NOX::NLN::Group
   {
   public:
     //! Standard constructor
@@ -83,6 +82,7 @@ namespace CONSTRAINT {
 
     //! Returns the root mean square norm of the primary and Lagrange multiplier updates
     virtual Teuchos::RCP<std::vector<double> > GetSolutionUpdateRMS(
+        const NOX::Abstract::Vector& xOld,
         const std::vector<double>& aTol,
         const std::vector<double>& rTol,
         const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,

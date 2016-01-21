@@ -34,15 +34,15 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& noxParams,
+    Teuchos::ParameterList& noxParams,
     const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
     const NOX::NLN::GlobalData::OptimizationProblemType& type,
     const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr,
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec)
-    : comm_(Teuchos::rcp(& comm,false)),
-      nlnparams_(Teuchos::rcp(new Teuchos::ParameterList(noxParams))),
+    : comm_(Teuchos::rcp(&comm,false)),
+      nlnparams_(Teuchos::rcp(&noxParams,false)),
       optType_(type),
       linSolvers_(linSolvers),
       iReqPtr_(iReq),
@@ -61,14 +61,14 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& noxParams,
+    Teuchos::ParameterList& noxParams,
     const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
     const OptimizationProblemType& type,
     const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr)
-    : comm_(Teuchos::rcp(& comm,false)),
-      nlnparams_(Teuchos::rcp(new Teuchos::ParameterList(noxParams))),
+    : comm_(Teuchos::rcp(&comm,false)),
+      nlnparams_(Teuchos::rcp(&noxParams,false)),
       optType_(type),
       linSolvers_(linSolvers),
       iReqPtr_(iReq),
@@ -87,13 +87,13 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& noxParams,
+    Teuchos::ParameterList& noxParams,
     const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec)
-    : comm_(Teuchos::rcp(& comm,false)),
-      nlnparams_(Teuchos::rcp(new Teuchos::ParameterList(noxParams))),
+    : comm_(Teuchos::rcp(&comm,false)),
+      nlnparams_(Teuchos::rcp(&noxParams,false)),
       optType_(opt_unconstrained),
       linSolvers_(linSolvers),
       iReqPtr_(iReq),
@@ -111,12 +111,12 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
-    const Teuchos::ParameterList& noxParams,
+    Teuchos::ParameterList& noxParams,
     const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac)
-    : comm_(Teuchos::rcp(& comm,false)),
-      nlnparams_(Teuchos::rcp(new Teuchos::ParameterList(noxParams))),
+    : comm_(Teuchos::rcp(&comm,false)),
+      nlnparams_(Teuchos::rcp(&noxParams,false)),
       optType_(opt_unconstrained),
       linSolvers_(linSolvers),
       iReqPtr_(iReq),
@@ -271,7 +271,16 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
 
   if (xmlfilename.length() && xmlfilename.rfind(".xml"))
   {
-    xmlParams = *(Teuchos::getParametersFromXmlFile(xmlfilename));
+    try
+    {
+      xmlParams = *(Teuchos::getParametersFromXmlFile(xmlfilename));
+    }
+    catch (std::runtime_error& e)
+    {
+      dserror("The \"Status Test\"->\"XML File\" was not found! "
+          "Please check the path in your input file! \n"
+          "CURRENT PATH = %s",xmlfilename.c_str());
+    }
   }
   else
     dserror("The file name '%s' is not a valid XML file name.",

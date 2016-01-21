@@ -5,10 +5,6 @@
  *      Author: hiermeier
  */
 
-#ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_GROUP_PREPOSTOPERATOR_CPP_
-#define SRC_SOLVER_NONLIN_NOX_NOX_NLN_GROUP_PREPOSTOPERATOR_CPP_
-
-
 #include "nox_nln_group_prepostoperator.H"
 
 #include <Teuchos_ParameterList.hpp>
@@ -42,7 +38,8 @@ operator=(const PrePostOperator& ppo)
  *----------------------------------------------------------------------------*/
 NOX::NLN::GROUP::PrePostOperator::PrePostOperator(
     Teuchos::ParameterList& groupOptionsSubList)
-    : havePrePostOperator_(false)
+    : havePrePostOperator_(false),
+      prePostOperatorMapPtr_(Teuchos::null)
 {
   reset(groupOptionsSubList);
 }
@@ -54,19 +51,28 @@ void NOX::NLN::GROUP::PrePostOperator::reset(
 {
   havePrePostOperator_ = false;
 
-  /* Check if a pre/post processor for the linear system is provided
-   * by the user.
-   */
+  /* Check if a pre/post operator for the group is provided
+   * by the user. */
   if (groupOptionsSubList.INVALID_TEMPLATE_QUALIFIER
-      isType< Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> >
-      ("User Defined Pre/Post Operator"))
+      isType< Teuchos::RCP<Map> > ("User Defined Pre/Post Operator"))
   {
-    prePostOperatorPtr_ = groupOptionsSubList.INVALID_TEMPLATE_QUALIFIER
-      get< Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> >
-      ("User Defined Pre/Post Operator");
+    prePostOperatorMapPtr_ = groupOptionsSubList.INVALID_TEMPLATE_QUALIFIER
+      get< Teuchos::RCP<Map> >("User Defined Pre/Post Operator");
     havePrePostOperator_ = true;
   }
 }
 
+// non-member function
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::GROUP::PrePostOperator::Map& NOX::NLN::GROUP::PrePostOp::
+    GetMutableMap(Teuchos::ParameterList& p_grp_opt)
+{
+  Teuchos::RCP<NOX::NLN::GROUP::PrePostOperator::Map>& mapptr =
+      p_grp_opt.get<Teuchos::RCP<NOX::NLN::GROUP::PrePostOperator::Map> >(
+          "User Defined Pre/Post Operator",
+          Teuchos::rcp(new NOX::NLN::GROUP::PrePostOperator::Map()));
 
-#endif /* SRC_SOLVER_NONLIN_NOX_NOX_NLN_GROUP_PREPOSTOPERATOR_CPP_ */
+  return *mapptr;
+}
+

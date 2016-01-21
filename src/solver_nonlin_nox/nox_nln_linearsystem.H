@@ -151,6 +151,12 @@ namespace LinSystem {
     //! Destructor.
     virtual ~LinearSystem(){};
 
+    //! reset the linear solver parameters
+    void reset(Teuchos::ParameterList& p);
+
+    //! reset PrePostOperator wrapper object
+    void resetPrePostOperator(Teuchos::ParameterList& p);
+
     //! Evaluate the Jacobian
     bool computeJacobian(const NOX::Epetra::Vector& x);
 
@@ -187,9 +193,6 @@ namespace LinSystem {
         const NOX::Epetra::Vector& dir,
         const NOX::Epetra::Vector& rhs,
         const NOX::NLN::Solver::PseudoTransient& ptcsolver);
-
-    //! reset the linear solver parameters
-    void reset();
 
     //! NOX::Epetra::Interface::Required accessor
     Teuchos::RCP<const NOX::Epetra::Interface::Required> getRequiredInterface() const;
@@ -257,7 +260,9 @@ namespace LinSystem {
     //! problem specific subclasses.
 
     //! sets the options of the underlying solver
-    virtual void SetSolverOptions(Teuchos::RCP<LINALG::Solver>& solverPtr,
+    virtual void SetSolverOptions(
+        Teuchos::ParameterList& p,
+        Teuchos::RCP<LINALG::Solver>& solverPtr,
         const NOX::NLN::SolutionType& solverType) = 0;
 
     //! Returns a pointer to linear solver, which has to be used
@@ -272,9 +277,6 @@ namespace LinSystem {
         const std::string& errorMsg) const;
 
   protected:
-    //! linear solver params
-    Teuchos::ParameterList& linParams_;
-
     //! Printing Utilities object
     NOX::Utils utils_;
 

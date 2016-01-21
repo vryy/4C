@@ -21,8 +21,6 @@
 #include <NOX_StatusTest_Generic.H>
 
 // forward declaration
-class Epetra_Vector;
-
 namespace Teuchos {
   class ParameterList;
 }
@@ -56,25 +54,27 @@ namespace StatusTest {
 } // namespace StatusTest
 } // namespace INNER
 
-  class NoxProblem
+  class Problem
   {
+    typedef std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> > ConstraintMap;
+
   public:
     //! constructor
-    NoxProblem(Teuchos::RCP<NOX::NLN::GlobalData>& nlnGlobalData,
-        Teuchos::RCP<Epetra_Vector>& x,
+    Problem(Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData,
+        Teuchos::RCP<NOX::Epetra::Vector>& x,
         Teuchos::RCP<LINALG::SparseOperator> A);
 
     //! destructor
-    virtual ~NoxProblem(){};
+    virtual ~Problem(){};
 
     //! initialize stuff (can be overloaded in derived classes)
-    virtual void Initialize(Teuchos::RCP<Epetra_Vector>& x, Teuchos::RCP<LINALG::SparseOperator> A);
+    virtual void Initialize(Teuchos::RCP<NOX::Epetra::Vector>& x, Teuchos::RCP<LINALG::SparseOperator> A);
 
     //! create the linear system for the NOX framework
     virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem() const;
 
     //! create a nox group
-    virtual Teuchos::RCP<NOX::Abstract::Group> CreateNoxGroup(
+    virtual Teuchos::RCP<NOX::Abstract::Group> CreateGroup(
         const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys
         ) const;
 
@@ -92,7 +92,7 @@ namespace StatusTest {
         const std::string& errorMsg) const;
 
   protected:
-    Teuchos::RCP<NOX::NLN::GlobalData> nlnGlobalData_;
+    Teuchos::RCP<NOX::NLN::GlobalData> noxNlnGlobalData_;
 
     Teuchos::RCP<NOX::Epetra::Vector> xVector_;
 

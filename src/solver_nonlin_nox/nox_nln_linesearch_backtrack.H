@@ -17,6 +17,7 @@
 #include "nox_nln_linesearch_generic.H" // base class
 #include "nox_nln_inner_statustest_generic.H"
 
+#include <fenv.h>
 #include <NOX_StatusTest_Generic.H>
 
 // forward declaration
@@ -72,10 +73,19 @@ namespace LineSearch {
     //! get current step length
     const double& GetStepLength() const;
 
-    //@}
+    //!@}
   protected:
-    // print inner status test results
+    //! print inner status test results
     void PrintUpdate();
+
+    //! Disable the internal exception checks during the evaluation
+    void DisableInternalExceptionChecks() const;
+
+    //! Clear the internal exception storage
+    void ClearInternalExceptionChecks() const;
+
+    //! Enable the internal exception checks during the evaluation
+    void EnableInternalExceptionChecks() const;
 
   private:
     //! throw NOX error
@@ -84,6 +94,9 @@ namespace LineSearch {
         const std::string& errorMsg) const;
 
   private:
+    //! allow exceptions during the evaluate procedure
+    bool allowExceptions_;
+
     //! inner iteration counter
     int lsIters_;
 

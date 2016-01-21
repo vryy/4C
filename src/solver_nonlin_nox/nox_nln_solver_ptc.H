@@ -42,7 +42,7 @@ namespace Solver {
  * During the line search routine we use always the transient residual [3] for the
  * current iteration point x_{n}
  * \f[
- *   r_{t}(x) = \delta_{n}^{-1} V_{n} (x - x{n}) + F(x)
+ *   r_{t}(x) = \delta_{n}^{-1} V_{n} (x - x_{n}) + F(x)
  * \f]
  * and a desired merit function (e.g. the sum of squares merit function).
  *
@@ -144,32 +144,35 @@ namespace Solver {
 
     void createGroupPrePostOperator();
 
-    //! derived
+    //! Evaluated the current nonlinear solver step. (derived)
     virtual NOX::StatusTest::StatusType step();
 
-    //! derived
+    //! Solve the stated non-linear problem of the current load/time step (derived)
     virtual NOX::StatusTest::StatusType solve();
 
-    //! returns the inverse pseudo time step
+    //! Returns the inverse pseudo time step
     const double& getInversePseudoTimeStep() const;
 
-    //! returns the scaling operator type
+    //! Returns the scaling operator type
     const enum ScaleOpType& getScalingOperatorType() const;
 
-    //! returns the scaling diagonal operator
+    //! Returns the scaling diagonal operator
     const Epetra_Vector& getScalingDiagOperator() const;
 
-    //! returns the usePseudoTransientResidual status
+    //! Returns the usePseudoTransientResidual status
     bool usePseudoTransientResidual() const;
 
+    //! Returns the pseudo transient continuation status
+    bool isPtcSolve() const;
+
   protected:
-    //! initialize the PTC specific variables and call the init function of the base class
+    //! Initialize the PTC specific variables and call the init function of the base class
     virtual void init();
 
-    //! print the non-linear solver update
+    //! Print the non-linear solver update
     virtual void printUpdate();
 
-    //! compute the nodal pseudo velocity for the CFL update
+    //! Compute the nodal pseudo velocity for the CFL update
     void computePseudoVelocity();
 
     /*! \brief Evaluate the model reduction ratio
@@ -227,17 +230,17 @@ namespace Solver {
 
     /*! \brief Update the pseudo time step
      *
-     *  There are two different options:
-     *  - The switched evolution relaxation
-     *    In the most simple case
-     *
+     *  There are three different options:
+     *  - The switched evolution relaxation\n
+     *    (in the most simple case)
+     *    \f[
      *       \delta_{n} = \delta_{0} \frac{\|\underline{F}(\underline{x}_{0})\|}{\|\underline{F}(\underline{x}_{n})\|}
-     *
-     *  - The temporal truncation error
+     *    \f]
+     *  - The temporal truncation error\n
      *
      *       MISSING AT THE MOMENT
      *
-     *  - The model reduction ratio
+     *  - The model reduction ratio.\n
      *    See the evalModelReductionRatio() routine for more detail on how to evaluate the ratio.
      *
      *    If rho is smaller than 0.2, the pseudo time step is decreased,
@@ -245,10 +248,11 @@ namespace Solver {
      *    otherwise we keep the current pseudo time step unchanged. */
     void updatePseudoTimeStep();
 
+    //! Returns true if the scaling operator has been evaluated.
     bool IsScalingOperator() const { return isScalingOperator_; };
 
   private:
-    //! throw class specific error
+    //! Throw class specific error
     void throwError(
         const std::string& functionName,
         const std::string& errorMsg) const;
@@ -257,10 +261,12 @@ namespace Solver {
     //! Inner Stopping test
     Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> iTestPtr_;
 
-    //! Pointer to a linear system pre/post operator, which is used
-    //! to modify the jacobian directly from the non-linear solver.
+    /*! Pointer to a linear system pre/post operator, which is used
+     *  to modify the jacobian directly from the non-linear solver. */
     Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prePostLinSysPtr_;
 
+    /*! Pointer to a nln group pre/post operator, which is used
+     *  to modify the right-hand-side directly from the non-linear solver. */
     Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prePostGroupPtr_;
 
     Teuchos::RCP<Epetra_Vector> scalingDiagOpPtr_;
@@ -284,6 +290,9 @@ namespace Solver {
     //! solution time derivative used for scaling operator V in pseudo-transient paper.
     Teuchos::RCP<NOX::Abstract::Vector> xDot_;
 
+    //! Are we solving the pseudo transient continuation problem at the moment?
+    bool isPtcSolve_;
+
     /** \brief If set to true, the computeF function is used to modify the residual during the line search call.
      *
      *  The pseudo transient residual is defined as
@@ -293,8 +302,10 @@ namespace Solver {
      */
     bool usePseudoTransientResidual_;
 
+    //! if it's true, we compute automatically an initial pseudo time step.
     bool calcDeltaInit_;
 
+    //! Has the scaling operator been evaluated, yet?
     bool isScalingOperator_;
 
     //! Maximum number of iterations before pseudo-transient is disabled and the algorithm switches to a line search-based direct to steady state solve.
@@ -309,6 +320,7 @@ namespace Solver {
     //! vector norm type (necessary for the time step control)
     enum NOX::Abstract::Vector::NormType normType_;
 
+    //! The current model reduction ratio.
     double modelReductionRatio_;
     //@}
 
@@ -322,8 +334,7 @@ namespace PrePostOp {
  * and its wrapper the NOX::NLN::LinSystem::PrePostOperator classes. The PTC solver uses them to modify
  * the linear system or to be even more precise the jacobian.
  *
- * \author Michael Hiermeier
- */
+ * \author Michael Hiermeier */
   class PseudoTransient : public NOX::NLN::Abstract::PrePostOperator
   {
   public:
@@ -365,7 +376,8 @@ namespace PrePostOp {
 /*! \brief Pseudo Transient Continuation (PTC) non-linear solver helper class
  *
  * The PTC solver uses this helper class to modify the right hand side.
- */
+ *
+ * \author Michael Hiermeier */
   class PseudoTransient : public NOX::NLN::Abstract::PrePostOperator
   {
   public:
