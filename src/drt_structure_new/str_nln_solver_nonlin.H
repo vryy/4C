@@ -64,9 +64,6 @@ namespace SOLVER {
     //! non-linear operator to solve the non-linear problem
     Teuchos::RCP<NLNSOL::NlnOperatorBase> nlnoperator_;
 
-    //! nox epetra group for the computeF() and computeJacobian() call
-    Teuchos::RCP<NOX::Epetra::Group> noxgrp_;
-
     //! nox solution vector
     Teuchos::RCP<NOX::Epetra::Vector> noxsoln_;
 

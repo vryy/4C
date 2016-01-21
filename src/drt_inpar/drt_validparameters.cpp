@@ -67,6 +67,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_bio.H"
 #include "inpar_volmortar.H"
 #include "inpar_windkessel.H"
+#include "inpar_loca_continuation.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -602,6 +603,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::POTENTIAL::SetValidParameters(list);
   INPAR::STATMECH::SetValidParameters(list);
   INPAR::CRACK::SetValidParameters(list);
+  INPAR::LOCA::SetValidParameters(list);
 
   INPAR::THR::SetValidParameters(list);
   INPAR::TSI::SetValidParameters(list);

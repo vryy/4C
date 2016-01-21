@@ -94,7 +94,8 @@ void STR::NLN::SOLVER::FullNewton::SetFullNewtonParams()
   {
     std::set<enum NOX::NLN::StatusTest::QuantityType> qtypes;
     CreateQuantityTypes(qtypes,DataSDyn());
-    SetStatusTestParams(DataSDyn().GetMutableNoxParams(),DataSDyn(),qtypes);
+    SetStatusTestParams(DataSDyn().GetMutableNoxParams().sublist("Status Test"),
+        DataSDyn(),qtypes);
   }
 
   return;

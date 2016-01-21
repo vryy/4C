@@ -1,13 +1,24 @@
-/*
- * str_predict_constdisvelaccpress.cpp
- *
- *  Created on: Sep 1, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_predict_constdisvelaccpress.cpp
+
+\maintainer Michael Hiermeier
+
+\date Sep 1, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 
 #include "str_predict_constdisvelaccpress.H"
-#include "../drt_lib/drt_dserror.H"
+#include "str_timint_base.H"
+#include "str_impl_generic.H"
+#include "str_predict_factory.H"
+
+#include <Epetra_Vector.h>
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -21,10 +32,13 @@ STR::PREDICT::ConstDisVelAccPress::ConstDisVelAccPress()
  *----------------------------------------------------------------------------*/
 void  STR::PREDICT::ConstDisVelAccPress::Setup()
 {
-  if (not IsInit())
-    dserror("Init() has not been called, yet!");
+  CheckInit();
 
-  // nothing to do till now
+  // fallback predictor
+  tangdis_ptr_ = STR::PREDICT::BuildPredictor(INPAR::STR::pred_tangdis);
+  tangdis_ptr_->Init(GetType(),ImplIntPtr(),DbcPtr(),
+      GlobalStatePtr(),IODataPtr(),NoxParamsPtr());
+  tangdis_ptr_->Setup();
 
   issetup_ = true;
 
@@ -34,7 +48,52 @@ void  STR::PREDICT::ConstDisVelAccPress::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::ConstDisVelAccPress::Predict()
+void STR::PREDICT::ConstDisVelAccPress::Compute(NOX::Abstract::Group& grp)
 {
+  CheckInitSetup();
+
+  Teuchos::RCP<Epetra_Vector>& disnp_ptr = GlobalState().GetMutableDisNp();
+  Teuchos::RCP<Epetra_Vector>& velnp_ptr = GlobalState().GetMutableVelNp();
+  Teuchos::RCP<Epetra_Vector>& accnp_ptr = GlobalState().GetMutableAccNp();
+
+  bool ok = true;
+  switch (GetType())
+  {
+    case INPAR::STR::pred_constdis:
+    case INPAR::STR::pred_constdispres:
+    {
+      ImplInt().PredictConstDisConsistVelAcc(*disnp_ptr,*velnp_ptr,*accnp_ptr);
+      break;
+    }
+    case INPAR::STR::pred_constvel:
+    {
+      ok = ImplInt().PredictConstVelConsistAcc(*disnp_ptr,*velnp_ptr,*accnp_ptr);
+      break;
+    }
+    case INPAR::STR::pred_constacc:
+    {
+      ok = ImplInt().PredictConstAcc(*disnp_ptr,*velnp_ptr,*accnp_ptr);
+      break;
+    }
+    case INPAR::STR::pred_constdisvelacc:
+    case INPAR::STR::pred_constdisvelaccpres:
+    {
+      disnp_ptr->Update(1.0,*GlobalState().GetDisN(),0.0);
+      velnp_ptr->Update(1.0,*GlobalState().GetVelN(),0.0);
+      accnp_ptr->Update(1.0,*GlobalState().GetAccN(),0.0);
+      break;
+    }
+    default:
+    {
+      dserror("Unsupported ConstDisVelAccPress predictor!");
+      break;
+    }
+  }
+
+  // If the const predictors failed e.g. due to too little history information,
+  // we use the tangdis predictor as fallback predictor.
+  if (not ok)
+    tangdis_ptr_->Compute(grp);
+
   return;
 }

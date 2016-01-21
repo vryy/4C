@@ -1,9 +1,16 @@
-/*
- * str_solver_factory.H
- *
- *  Created on: Sep 9, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_solver_factory.H
+
+\maintainer Michael Hiermeier
+
+\date Sep 9, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
 
 #ifndef STR_SOLVER_FACTORY_H_
 #define STR_SOLVER_FACTORY_H_
@@ -22,6 +29,10 @@ class ParameterList;
 }
 namespace STR {
 namespace SOLVER {
+  /*! \brief Factory to build the desired linear solver std::map corresponding
+   *  to the active model types.
+   *
+   *  \author Michael Hiermeier */
   class Factory
   {
   public:
@@ -64,12 +75,12 @@ namespace SOLVER {
         DRT::Discretization& actdis) const;
   }; // class Factory
 
-  //! non-member function
+  /*! Non-member function, which relates to the STR::SOLVER::Factory class
+   *  Please call this method from outside! */
   Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > >
       BuildLinSolvers(const std::set<enum INPAR::STR::ModelType>& modeltypes,
                       const Teuchos::ParameterList& sdyn,
                       DRT::Discretization& actdis);
-
 } // namespace SOLVER
 } // namespace STR
 

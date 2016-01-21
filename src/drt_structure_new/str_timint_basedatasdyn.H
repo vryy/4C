@@ -1,0 +1,717 @@
+/*-----------------------------------------------------------*/
+/*!
+\file str_timint_basedatasdyn.H
+
+\maintainer Michael Hiermeier
+
+\date Jan 12, 2016
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
+
+#ifndef SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATASDYN_H_
+#define SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATASDYN_H_
+
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_inpar/inpar_structure.H"
+
+// include of nox nln enumerators (ToDo: Can be moved to the nonlinear solver inpar section)
+#include "../solver_nonlin_nox/nox_nln_statustest_factory.H"
+// include of enumerators of the nox abstract vector class
+#include <NOX_Abstract_Vector.H>
+
+// forward declaration
+class Epetra_Time;
+namespace LINALG {
+  class Solver;
+} // namespace LINALG
+namespace DRT {
+  class Discretization;
+} // namespace DRT
+namespace STR {
+namespace TIMINT {
+  /*! \brief Structural dynamics data container for the structural (time) integration
+   *
+   * This data container holds everything, which refers directly to the
+   * control mechanisms of the structural dynamics algorithms. The input parameters
+   * are transformed into enumerators. Furthermore, the maximum time and step number
+   * can be found here.
+   *
+   * \author Michael Hiermeier */
+  class BaseDataSDyn
+  {
+  public:
+    /// constructor
+    BaseDataSDyn();
+
+    /// destructor
+    virtual ~BaseDataSDyn() {};
+
+    /// initialize class variables (already existing)
+    virtual void Init(
+            const Teuchos::RCP<DRT::Discretization> discret,
+            const Teuchos::ParameterList& sDynParams,
+            const Teuchos::ParameterList& xparams,
+            const Teuchos::RCP<std::set<enum INPAR::STR::ModelType> > modeltypes,
+            const Teuchos::RCP<std::set<enum INPAR::STR::EleTech> > eletechs,
+            const Teuchos::RCP<std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers
+            );
+
+    /// setup new class variables
+    virtual void Setup();
+
+  protected:
+    /// get the indicator state
+    inline const bool& IsInit() const { return isinit_; };
+
+    /// get the indicator state
+    inline const bool& IsSetup() const { return issetup_; };
+
+    /// Check if Init() and Setup() have been called, yet.
+    inline void CheckInitSetup() const
+    {
+      if (!IsInit() or !IsSetup())
+        dserror("Call Init() and Setup() first!");
+    }
+
+  public:
+    /// @name Get general control parameters (read only access)
+    ///@{
+
+    /// Returns final time \f$t_\text{fin}\f$
+    const double& GetTimeMax() const
+    {
+      CheckInitSetup();
+      return timemax_;
+    };
+
+    /// Returns final time step \f$N\f$
+    const int& GetStepMax() const
+    {
+      CheckInitSetup();
+      return stepmax_;
+    };
+
+    /// Returns timer for solution technique
+    Teuchos::RCP<const Epetra_Time>  GetTimer() const
+    {
+      CheckInitSetup();
+      return timer_;
+    };
+
+    /// Returns dynamic type
+    const enum INPAR::STR::DynamicType& GetDynamicType() const
+    {
+      CheckInitSetup();
+      return dyntype_;
+    };
+
+    const enum INPAR::STR::STC_Scale GetSTCAlgoType() const
+    {
+      CheckInitSetup();
+      return stcscale_;
+    };
+
+    /// Returns minimal non-linear iteration number
+    const int& GetIterMin() const
+    {
+      CheckInitSetup();
+      return itermin_;
+    };
+
+    /// Returns maximal non-linear iteration number
+    const int& GetIterMax() const
+    {
+      CheckInitSetup();
+      return itermax_;
+    };
+
+    /// Returns true if the external load should be linearized
+    const bool& GetLoadLin() const
+    {
+      CheckInitSetup();
+      return loadlin_;
+    }
+
+    /// Returns prestress type
+    const enum INPAR::STR::PreStress& GetPreStressType() const
+    {
+      CheckInitSetup();
+      return prestresstype_;
+    };
+
+    /// Returns predictor type
+    const enum INPAR::STR::PredEnum& GetPredictorType() const
+    {
+      CheckInitSetup();
+      return predtype_;
+    };
+
+    /// Returns nonlinear solver type
+    const enum INPAR::STR::NonlinSolTech& GetNlnSolverType() const
+    {
+      CheckInitSetup();
+      return nlnsolvertype_;
+    };
+
+    /// Returns the divergence action
+    /// Short: What to do if the non-linear solver fails.
+    const enum INPAR::STR::DivContAct& GetDivergenceAction() const
+    {
+      CheckInitSetup();
+      return divergenceaction_;
+    };
+
+    /// Returns nox parameters
+    const Teuchos::ParameterList& GetNoxParams() const
+    {
+      CheckInitSetup();
+      return *noxparams_;
+    }
+
+    /// Returns loca parameters
+    const Teuchos::ParameterList& GetLocaParams() const
+    {
+      CheckInitSetup();
+      return *locaparams_;
+    }
+
+    /// Returns the inital pseudo time step for the PTC method
+    const double& GetInitialPTCPseudoTimeStep() const
+    {
+      return ptc_delta_init_;
+    }
+    ///@}
+
+    /// @name Get mutable linear solver variables (read only access)
+    ///@{
+
+    /// Returns linear solvers pointer
+    const std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& GetLinSolvers() const
+    {
+      CheckInitSetup();
+      return *linsolvers_;
+    }
+    ///@}
+
+
+    /// @name Get damping control parameters (read only access)
+    ///@{
+    /// Returns damping type
+    const enum INPAR::STR::DampKind& GetDampingType() const
+    {
+      CheckInitSetup();
+      return damptype_;
+    };
+
+    /// Returns damping factor for stiffness \f$c_\text{K}\f$
+    const double& GetDampingStiffnessFactor() const
+    {
+      CheckInitSetup();
+      return dampk_;
+    };
+
+    /// Returns damping factor for mass \f$c_\text{M}\f$
+    const double& GetDampingMassFactor() const
+    {
+      CheckInitSetup();
+      return dampm_;
+    };
+    ///@}
+
+    /// @name Get mass and inertia control parameters (read only access)
+    ///@{
+    /// Returns mass linearization type
+    const enum INPAR::STR::MassLin& GetMassLinType() const
+    {
+      CheckInitSetup();
+      return masslintype_;
+    };
+    ///@}
+
+    /// @name Get model evaluator control parameters (read only access)
+    ///@{
+    /// Returns types of the current models
+    const std::set<enum INPAR::STR::ModelType>& GetModelTypes() const
+    {
+      CheckInitSetup();
+      return *modeltypes_;
+    };
+
+    /// Returns current active element technologies
+    const std::set<enum INPAR::STR::EleTech>& GetElementTechnologies() const
+    {
+      CheckInitSetup();
+      return *eletechs_;
+    };
+    ///@}
+
+    /// @name Get the different status test control parameters (read only)
+    ///@{
+    /// Returns the STR vector norm type
+    const enum INPAR::STR::VectorNorm& GetNormType() const
+    {
+      CheckInitSetup();
+      return normtype_;
+    }
+
+    /// Returns the NOX normtype
+    const enum NOX::Abstract::Vector::NormType& GetNoxNormType() const
+    {
+      CheckInitSetup();
+      return nox_normtype_;
+    }
+
+    /// @name Get residual and increment related parameters
+    ///@{
+    /// Returns the combination type of the two quantities
+    enum INPAR::STR::BinaryOp GetResIncrComboType(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype_res,
+        const enum NOX::NLN::StatusTest::QuantityType& qtype_incr) const;
+    ///@}
+
+    /// @name Get residual related parameters
+    ///@{
+    /// Returns the tolerance values for the different quantities
+    double GetResTolerance(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+
+    /// Returns the tolerance type of the different quantities
+    enum INPAR::STR::ConvNorm GetResToleranceType(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+
+    /// Returns the combination type of the different quantities
+    enum INPAR::STR::BinaryOp GetResComboType(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+
+    enum INPAR::STR::BinaryOp GetResComboType(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
+        const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const;
+    ///@}
+
+    /// @name Get increment related parameters
+    ///@{
+    /// Returns the tolerance values for the different quantities
+    double GetIncrTolerance(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+
+    /// Returns the tolerance type of the different quantities
+    enum INPAR::STR::ConvNorm GetIncrToleranceType(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+
+    enum INPAR::STR::ConvNorm GetIncrToleranceType(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
+        const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const;
+
+    /// Returns the combination type of the different quantities
+    enum INPAR::STR::BinaryOp GetIncrComboType(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+
+    enum INPAR::STR::BinaryOp GetIncrComboType(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
+        const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const;
+    ///@}
+    ///@}
+
+    /// @name Get mutable general control parameters (read and write access)
+    ///@{
+
+    /// Returns final time \f$t_\text{fin}\f$
+    double& GetMutableTimeMax()
+    {
+      CheckInitSetup();
+      return timemax_;
+    };
+
+    /// Returns final time step \f$N\f$
+    int& GetMutableStepMax()
+    {
+      CheckInitSetup();
+      return stepmax_; };
+
+    /// Returns timer for solution technique
+    Teuchos::RCP<Epetra_Time>& GetMutableTimer()
+    {
+      CheckInitSetup();
+      return timer_;
+    };
+
+    /// Returns minimal non-linear iteration number
+    int& GetMutableIterMin()
+    {
+      CheckInitSetup();
+      return itermin_;
+    };
+
+    /// Returns maximal non-linear iteration number
+    int& GetMutableIterMax()
+    {
+      CheckInitSetup();
+      return itermax_;
+    };
+
+    /// Returns prestress type
+    enum INPAR::STR::PreStress& GetMutablePreStressType()
+    {
+      CheckInitSetup();
+      return prestresstype_;
+    };
+
+    /// Returns predictor type
+    enum INPAR::STR::PredEnum& GetMutablePredictorType()
+    {
+      CheckInitSetup();
+      return predtype_;
+    };
+
+    /// Returns dynamic type
+    enum INPAR::STR::DynamicType& GetMutableDynamicType()
+    {
+      CheckInitSetup();
+      return dyntype_;
+    };
+
+    /// Returns nonlinear solver type
+    enum INPAR::STR::NonlinSolTech& GetMutableNlnSolverType()
+    {
+      CheckInitSetup();
+      return nlnsolvertype_;
+    };
+
+    /// Returns the divergence action
+    /// Short: What to do if the non-linear solver fails.
+    enum INPAR::STR::DivContAct& GetMutableDivergenceAction()
+    {
+      CheckInitSetup();
+      return divergenceaction_;
+    };
+
+    /// Returns nox parameters
+    Teuchos::ParameterList& GetMutableNoxParams()
+    {
+      CheckInitSetup();
+      return *noxparams_;
+    }
+
+    /// Returns nox parameters
+    Teuchos::RCP<Teuchos::ParameterList> GetMutableNoxParamsPtr()
+    {
+      CheckInitSetup();
+      return noxparams_;
+    }
+
+    /// Returns loca parameters
+    Teuchos::ParameterList& GetMutableLocaParams()
+    {
+      CheckInitSetup();
+      return *locaparams_;
+    }
+
+    ///@}
+
+    /// @name Get mutable linear solver variables (read and write access)
+    ///@{
+    /// Returns linear solvers pointer
+    Teuchos::RCP<std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > GetLinSolversPtr()
+    {
+      CheckInitSetup();
+      return linsolvers_;
+    }
+
+    /// Returns linear solvers pointer
+    std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& GetMutableLinSolvers()
+    {
+      CheckInitSetup();
+      return *linsolvers_;
+    }
+    ///@}
+
+
+    /// @name Get mutable damping control parameters (read and write access)
+    ///@{
+    /// Returns damping type
+    enum INPAR::STR::DampKind& GetMutableDampingType()
+    {
+      CheckInitSetup();
+      return damptype_;
+    };
+
+    /// Returns damping factor for stiffness \f$c_\text{K}\f$
+    double& GetMutableDampingStiffnessFactor()
+    {
+      CheckInitSetup();
+      return dampk_;
+    };
+
+    /// Returns damping factor for mass \f$c_\text{M}\f$
+    double& GetMutableDampingMassFactor()
+    {
+      CheckInitSetup();
+      return dampm_;
+    };
+    ///@}
+
+    /// @name Get mutable mass and inertia control parameters (read and write access)
+    ///@{
+    /// Returns mass linearization type
+    enum INPAR::STR::MassLin& GetMutableMassLinType()
+    {
+      CheckInitSetup();
+      return masslintype_;
+    };
+    ///@}
+
+    /// @name Get model evaluator control parameters (read and write access)
+    ///@{
+    /// Returns types of the current active models
+    std::set<enum INPAR::STR::ModelType>& GetMutableModelTypes()
+    {
+      CheckInitSetup();
+      return *modeltypes_;
+    };
+
+    /// Returns the current active element technologies
+    std::set<enum INPAR::STR::EleTech>& GetMutableElementTechnologies()
+    {
+      CheckInitSetup();
+      return *eletechs_;
+    };
+    ///@}
+
+  protected:
+    /// @name variables for internal use only
+    ///@{
+    /// init flag
+    bool isinit_;
+
+    /// setup flag
+    bool issetup_;
+    ///@}
+
+  private:
+
+    /// @name General control parameters
+    ///@{
+
+    /// final time \f$t_\text{fin}\f$
+    double timemax_;
+
+    /// final time step \f$N\f$
+    int stepmax_;
+
+    ///@}
+
+    /// @name Time measurement
+    ///@{
+    /// timer for solution technique
+    Teuchos::RCP<Epetra_Time> timer_;
+
+    ///@}
+
+    /// @name Damping control parameters
+    /// Rayleigh damping means \f${C} = c_\text{K} {K} + c_\text{M} {M}\f$
+    ///@{
+    /// damping type
+    enum INPAR::STR::DampKind damptype_;
+
+    /// damping factor for stiffness \f$c_\text{K}\f$
+    double dampk_;
+
+    /// damping factor for mass \f$c_\text{M}\f$
+    double dampm_;
+    ///@}
+
+    /// @name Mass and inertia control parameters
+    ///@{
+    /// have inertia forces to be linearized?
+    enum INPAR::STR::MassLin masslintype_;
+    ///@}
+
+    /// @name Model evaluator control parameters
+    ///@{
+
+    /// current active model types for the model evaluator
+    Teuchos::RCP<std::set<enum INPAR::STR::ModelType> > modeltypes_;
+
+    /// current active element technologies
+    Teuchos::RCP<std::set<enum INPAR::STR::EleTech> > eletechs_;
+
+    ///@}
+
+    /// @name implicit and explicit time integrator parameters
+    ///@{
+    /// dynamic type
+    enum INPAR::STR::DynamicType dyntype_;
+
+    /// scaled thickness conditioning type (necessary for shells)
+    enum INPAR::STR::STC_Scale stcscale_;
+
+    ///@}
+
+    /// @name implicit time integrator parameters
+    ///@{
+    /// minimal non-linear iteration number
+    int itermin_;
+
+    /// maximal non-linear iteration number
+    int itermax_;
+
+    /// linearization of external follower load in Newton
+    bool loadlin_;
+
+    /// type of pre-stressing
+    enum INPAR::STR::PreStress prestresstype_;
+
+    /// type of the predictor
+    enum INPAR::STR::PredEnum predtype_;
+
+    /// type of nonlinear solver
+    enum INPAR::STR::NonlinSolTech nlnsolvertype_;
+
+    /// action to be performed when the non-linear solver diverges
+    enum INPAR::STR::DivContAct divergenceaction_;
+
+    /// nox parameters list
+    Teuchos::RCP<Teuchos::ParameterList> noxparams_;
+
+    /// loca parameter list
+    Teuchos::RCP<Teuchos::ParameterList> locaparams_;
+
+    /// initial pseudo time step for the pseudo transient continuation (PTC) method
+    double ptc_delta_init_;
+    ///@}
+
+    /// @name linear solver variables
+    ///@{
+
+    /// pointer to the linear solvers map
+    Teuchos::RCP<std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers_;
+    ///@}
+
+    /// @name status test control parameters
+    ///@{
+
+    /// vector norm type for the status/convergence test
+    enum INPAR::STR::VectorNorm normtype_;
+
+    /// vector norm type for the status/convergence test
+    enum NOX::Abstract::Vector::NormType nox_normtype_;
+
+    /// @name primary variables
+    ///@{
+    /// tolerance residual displacements
+    double tol_disp_incr_;
+
+    /// tolerance type for the convergence check of the displacement vector
+    enum INPAR::STR::ConvNorm toltype_disp_incr_;
+
+    /// tolerance force residual
+    double tol_fres_;
+
+    /// tolerance type for the convergence check of the force residual
+    enum INPAR::STR::ConvNorm toltype_fres_;
+
+    /// tolerance pressure residual
+    double tol_pres_;
+
+    /// tolerance type for the convergence check of the pressure residual
+    enum INPAR::STR::ConvNorm toltype_pres_;
+
+    /// tolerance incompressible residual/ residual pressure forces
+    double tol_inco_;
+
+    /// tolerance type for the convergence check if the incompressible residual/ residual pressure forces
+    enum INPAR::STR::ConvNorm toltype_inco_;
+
+    /// tolerance plasticity residual
+    double tol_plast_res_;
+
+    /// tolerance type for the convergence check of the plasticity residual
+    enum INPAR::STR::ConvNorm toltype_plast_res_;
+
+    /// tolerance plasticity increment
+    double tol_plast_incr_;
+
+    /// tolerance type for the convergence check of the plasticity increment
+    enum INPAR::STR::ConvNorm toltype_plast_incr_;
+
+    /// tolerance EAS residual
+    double tol_eas_res_;
+
+    /// tolerance type for the convergence check of the EAS residual
+    enum INPAR::STR::ConvNorm toltype_eas_res_;
+
+    /// tolerance EAS increment
+    double tol_eas_incr_;
+
+    /// tolerance type for the convergence check of the EAS increment
+    enum INPAR::STR::ConvNorm toltype_eas_incr_;
+
+    /// type of combination of the displacement and the pressure test
+    enum INPAR::STR::BinaryOp normcombo_disp_pres_;
+
+    /// type of combination of the force and the pressure residual test
+    enum INPAR::STR::BinaryOp normcombo_fres_inco_;
+
+    /// type of combination of the force and the EAS residual
+    enum INPAR::STR::BinaryOp normcombo_fres_eas_res_;
+
+    /// type of combination of the displacement and the EAS increment
+    enum INPAR::STR::BinaryOp normcombo_disp_eas_incr_;
+
+    /// type of combination of the force and the plasticity residual
+    enum INPAR::STR::BinaryOp normcombo_fres_plast_res_;
+
+    /// type of combination of the displacement and the plasticity increment
+    enum INPAR::STR::BinaryOp normcombo_disp_plast_incr_;
+
+    /// type of combination of the force and the displacement test
+    enum INPAR::STR::BinaryOp normcombo_fres_disp_;
+    ///@}
+
+    /// @name constraint variables
+    ///@{
+    /// tolerance type for the convergence check of the constraint residual
+    enum INPAR::STR::ConvNorm toltype_constr_res_;
+
+    /// tolerance constraint residual
+    double tol_constr_res_;
+
+    /// tolerance type for the convergence check of the windkessel residual
+    enum INPAR::STR::ConvNorm toltype_windk_res_;
+
+    /// tolerance windkessel residual
+    double tol_windk_res_;
+
+    /// tolerance type for the convergence check of the windkessel increment
+    enum INPAR::STR::ConvNorm toltype_windk_incr_;
+
+    /// tolerance windkessel increment
+    double tol_windk_incr_;
+
+    /// tolerance type for the convergence check of the contact residual
+    enum INPAR::STR::ConvNorm toltype_contact_res_;
+
+    /// tolerance contact constraint residual
+    double tol_contact_res_;
+
+    /// tolerance type  for the convergence check of the contact lagrange increment
+    enum INPAR::STR::ConvNorm toltype_contact_lm_incr_;
+
+    /// tolerance contact lagrange increment
+    double tol_contact_lm_incr_;
+
+    /// type of combination of the force and the contact residual
+    enum INPAR::STR::BinaryOp normcombo_fres_contact_res_;
+
+    /// type of combination of the displacement and the contact lagrange multiplier increment test
+    enum INPAR::STR::BinaryOp normcombo_disp_contact_lm_incr_;
+
+    ///@}
+    ///@}
+  };  // class BaseDataSDyn
+} // namespace TIMINT
+} // namespace STR
+
+
+#endif /* SRC_DRT_STRUCTURE_NEW_STR_TIMINT_BASEDATASDYN_H_ */

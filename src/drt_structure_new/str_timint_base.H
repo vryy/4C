@@ -2,7 +2,7 @@
 /*!
 \file str_timint_base.H
 
-\maintainer Philipp Farah
+\maintainer Michael Hiermeier
 
 \date Aug 12, 2015
 
@@ -11,1224 +11,71 @@
 */
 /*-----------------------------------------------------------*/
 
-#ifndef STR_TI_TIMINT_H_
-#define STR_TI_TIMINT_H_
+#ifndef STR_TIMINT_BASE_H_
+#define STR_TIMINT_BASE_H_
 
 #include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_timestepping/timintmstep.H"
 
-#include "../solver_nonlin_nox/nox_nln_statustest_factory.H"
+// structural data containers
+#include "str_timint_basedataio.H"
+#include "str_timint_basedataglobalstate.H"
+#include "str_timint_basedatasdyn.H"
 
 
 // forward declaration
 class Epetra_Vector;
-class Epetra_Time;
 class Epetra_Map;
 
 namespace Teuchos {
   class ParameterList;
-}
+} // namespace Teuchos
 namespace LINALG {
-  class SparseOperator;
-  class SparseMatrix;
   class BlockSparseMatrixBase;
-}
-namespace IO {
-  class DiscretizationWriter;
-}
-namespace DRT {
-  class Discretization;
-}
+} // namespace LINALG
 
 namespace STR {
+  class ModelEvaluator;
+  class Dbc;
+  class Integrator;
 namespace MODELEVALUATOR {
   class Generic;
 } // namespace  ModelEvaluator
 namespace TIMINT {
-  class BaseDataIO
-  {
-  public:
-    BaseDataIO();
 
-    virtual ~BaseDataIO() {};
-
-  public:
-
-    void Init(const Teuchos::ParameterList& IOParams,
-        const Teuchos::ParameterList& sDynParams,
-        const Teuchos::ParameterList& xParams,
-        Teuchos::RCP<IO::DiscretizationWriter> output);
-
-    void Setup();
-
-    const bool& GetPrintIntermediateIterations() const
-    {
-      CheckInitSetup();
-      return printiter_;
-    }
-
-  protected:
-    virtual const bool& IsInit() const { return isinit_; };
-
-    virtual const bool& IsSetup() const { return issetup_; };
-
-    virtual void CheckInitSetup() const
-    {
-      if (!IsInit() or !IsSetup())
-        dserror("Call Init() and Setup() first!");
-    }
-
-  protected:
-    //! @name variables for internal use only
-    //@{
-
-    bool isinit_;
-
-    bool issetup_;
-    //@}
-
-  private:
-    //! @name Printing and output
-    //@{
-
-    //! binary output
-    Teuchos::RCP<IO::DiscretizationWriter> output_;
-
-    //! outputfile for energy
-    Teuchos::RCP<std::ofstream> energyfile_;
-
-    //! error file handle
-    FILE* errfile_;
-
-    //! Is GMSH output of displacements required?
-    bool gmsh_out_;
-
-    //! print the logo (or not)?
-    bool printlogo_;
-
-    //! print infos to error file #errfile_
-    bool printerrfile_;
-
-    //! print intermediate iterations during solution
-    bool printiter_;
-
-    //! switch
-    bool outputeveryiter_;
-
-    //! write surfactant output
-    bool writesurfactant_;
-
-    //! write state on/off
-    bool writestate_;
-
-    //! write velocity and acceleration on/off
-    bool writevelacc_;
-
-    //! print infos to standard out every n steps
-    int printscreen_;
-
-    //! filename counter
-    int oei_filecounter_;
-
-    //! output counter for OutputEveryIter
-    int outputcounter_;
-
-    //! write restart every given step. if 0, restart is not written
-    int writerestartevery_;
-
-    //! Write reduced Restart Data i.e no mesh for mlmc purposes
-    int writereducedrestart_;
-
-    //! write state/stress/strain every given step
-    int writeresultsevery_;
-
-    //! write system energy every given step
-    int writeenergyevery_;
-
-    //! kinetic energy of system
-    double kinergy_;
-
-    //! internal energy of system
-    double intergy_;
-
-    //! external energy of system
-    double extergy_;
-
-    //! stress output type
-    INPAR::STR::StressType writestress_;
-
-    //! output type of coupling stress
-    INPAR::STR::StressType writecouplstress_;
-
-    //! strain output type
-    INPAR::STR::StrainType writestrain_;
-
-    //!< plastic strain output type
-    INPAR::STR::StrainType writeplstrain_;
-
-    //@}
-  };  // BaseDataIO
-
-
-  class BaseDataSDyn
-  {
-  public:
-    BaseDataSDyn();
-
-    virtual ~BaseDataSDyn() {};
-
-    virtual void Init(
-            const Teuchos::RCP<DRT::Discretization> discret,
-            const Teuchos::ParameterList& sDynParams,
-            const Teuchos::ParameterList& xparams,
-            const Teuchos::RCP<std::set<enum INPAR::STR::ModelType> > modeltypes,
-            const Teuchos::RCP<std::set<enum INPAR::STR::EleTech> > eletechs,
-            const Teuchos::RCP<std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers
-            );
-
-    virtual void Setup();
-
-  protected:
-    virtual const bool& IsInit() const { return isinit_; };
-
-    virtual const bool& IsSetup() const { return issetup_; };
-
-    virtual void CheckInitSetup() const
-    {
-      if (!IsInit() or !IsSetup())
-        dserror("Call Init() and Setup() first!");
-    }
-
-  public:
-
-    //! @name Get general control parameters (read only access)
-    //@{
-
-    //! Return final time \f$t_\text{fin}\f$
-    const double& GetTimeMax() const
-    {
-      CheckInitSetup();
-      return timemax_;
-    };
-
-    //! Return final time step \f$N\f$
-    const int& GetStepMax() const
-    {
-      CheckInitSetup();
-      return stepmax_;
-    };
-
-    //! Return timer for solution technique
-    Teuchos::RCP<const Epetra_Time>  GetTimer() const
-    {
-      CheckInitSetup();
-      return timer_;
-    };
-
-    //! Return dynamic type
-    const enum INPAR::STR::DynamicType& GetDynamicType() const
-    {
-      CheckInitSetup();
-      return dyntype_;
-    };
-
-    //! Return minimal non-linear iteration number
-    const int& GetIterMin() const
-    {
-      CheckInitSetup();
-      return itermin_;
-    };
-
-    //! Return maximal non-linear iteration number
-    const int& GetIterMax() const
-    {
-      CheckInitSetup();
-      return itermax_;
-    };
-
-    //! Return prestress type
-    const enum INPAR::STR::PreStress& GetPreStressType() const
-    {
-      CheckInitSetup();
-      return prestresstype_;
-    };
-
-    //! Return predictor type
-    const enum INPAR::STR::PredEnum& GetPredictorType() const
-    {
-      CheckInitSetup();
-      return predtype_;
-    };
-
-    //! Return nonlinear solver type
-    const enum INPAR::STR::NonlinSolTech& GetNlnSolverType() const
-    {
-      CheckInitSetup();
-      return nlnsolvertype_;
-    };
-
-    //! Return the divergence action
-    //! Short: What to do if the non-linear solver fails.
-    const enum INPAR::STR::DivContAct& GetDivergenceAction() const
-    {
-      CheckInitSetup();
-      return divergenceaction_;
-    };
-
-    //! Return nox parameters
-    const Teuchos::ParameterList& GetNoxParams() const
-    {
-      CheckInitSetup();
-      return *noxparams_;
-    }
-
-    //! Returns the inital pseudo time step for the PTC method
-    const double& GetInitialPTCPseudoTimeStep() const
-    {
-      return ptc_delta_init_;
-    }
-    //@}
-
-    //! @name Get mutable linear solver variables (read only access)
-    //@{
-
-    //! Return linear solvers pointer
-    const std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& GetLinSolvers() const
-    {
-      CheckInitSetup();
-      return *linsolvers_;
-    }
-    //@}
-
-
-    //! @name Get damping control parameters (read only access)
-    //@{
-    //! Return damping type
-    const enum INPAR::STR::DampKind& GetDampingType() const
-    {
-      CheckInitSetup();
-      return damptype_;
-    };
-
-    //! Return damping factor for stiffness \f$c_\text{K}\f$
-    const double& GetDampingStiffnessFactor() const
-    {
-      CheckInitSetup();
-      return dampk_;
-    };
-
-    //! Return damping factor for mass \f$c_\text{M}\f$
-    const double& GetDampingMassFactor() const
-    {
-      CheckInitSetup();
-      return dampm_;
-    };
-    //@}
-
-    //! @name Get mass and inertia control parameters (read only access)
-    //@{
-    //! Return mass linearization type
-    const enum INPAR::STR::MassLin& GetMassLinType() const
-    {
-      CheckInitSetup();
-      return masslintype_;
-    };
-    //@}
-
-    //! @name Get model evaluator control parameters (read only access)
-    //@{
-    //! Return types of the current models
-    const std::set<enum INPAR::STR::ModelType>& GetModelTypes() const
-    {
-      CheckInitSetup();
-      return *modeltypes_;
-    };
-
-    //! Return current active element technologies
-    const std::set<enum INPAR::STR::EleTech>& GetElementTechnologies() const
-    {
-      CheckInitSetup();
-      return *eletechs_;
-    };
-    //@}
-
-    //! @name Get the different status test control parameters (read only)
-    //@{
-
-    const enum INPAR::STR::VectorNorm& GetNormType() const
-    {
-      CheckInitSetup();
-      return normtype_;
-    }
-
-    //! @name Get residual and increment related parameters
-    //@{
-    //! Returns the combination type of the two quantities
-    enum INPAR::STR::BinaryOp GetResIncrComboType(
-        const enum NOX::NLN::StatusTest::QuantityType& qtype_res,
-        const enum NOX::NLN::StatusTest::QuantityType& qtype_incr) const;
-    //@}
-
-    //! @name Get residual related parameters
-    //@{
-    //! Returns the tolerance values for the different quantities
-    double GetResTolerance(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
-
-    //! Returns the tolerance type of the different quantities
-    enum INPAR::STR::ConvNorm GetResToleranceType(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
-
-    //! Returns the combination type of the different quantities
-    enum INPAR::STR::BinaryOp GetResComboType(
-        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
-
-    enum INPAR::STR::BinaryOp GetResComboType(
-        const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
-        const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const;
-    //@}
-
-    //! @name Get increment related parameters
-    //@{
-    //! Returns the tolerance values for the different quantities
-    double GetIncrTolerance(const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
-
-    //! Returns the tolerance type of the different quantities
-    enum INPAR::STR::ConvNorm GetIncrToleranceType(
-        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
-
-    enum INPAR::STR::ConvNorm GetIncrToleranceType(
-        const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
-        const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const;
-
-    //! Returns the combination type of the different quantities
-    enum INPAR::STR::BinaryOp GetIncrComboType(
-        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
-
-    enum INPAR::STR::BinaryOp GetIncrComboType(
-        const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
-        const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const;
-    //@}
-    //@}
-
-    //! @name Get mutable general control parameters (read and write access)
-    //@{
-
-    //! Return final time \f$t_\text{fin}\f$
-    double& GetMutableTimeMax()
-    {
-      CheckInitSetup();
-      return timemax_;
-    };
-
-    //! Return final time step \f$N\f$
-    int& GetMutableStepMax()
-    {
-      CheckInitSetup();
-      return stepmax_; };
-
-    //! Return timer for solution technique
-    Teuchos::RCP<Epetra_Time>& GetMutableTimer()
-    {
-      CheckInitSetup();
-      return timer_;
-    };
-
-    //! Return minimal non-linear iteration number
-    int& GetMutableIterMin()
-    {
-      CheckInitSetup();
-      return itermin_;
-    };
-
-    //! Return maximal non-linear iteration number
-    int& GetMutableIterMax()
-    {
-      CheckInitSetup();
-      return itermax_;
-    };
-
-    //! Return prestress type
-    enum INPAR::STR::PreStress& GetMutablePreStressType()
-    {
-      CheckInitSetup();
-      return prestresstype_;
-    };
-
-    //! Return predictor type
-    enum INPAR::STR::PredEnum& GetMutablePredictorType()
-    {
-      CheckInitSetup();
-      return predtype_;
-    };
-
-    //! Return dynamic type
-    enum INPAR::STR::DynamicType& GetMutableDynamicType()
-    {
-      CheckInitSetup();
-      return dyntype_;
-    };
-
-    //! Return nonlinear solver type
-    enum INPAR::STR::NonlinSolTech& GetMutableNlnSolverType()
-    {
-      CheckInitSetup();
-      return nlnsolvertype_;
-    };
-
-    //! Return the divergence action
-    //! Short: What to do if the non-linear solver fails.
-    enum INPAR::STR::DivContAct& GetMutableDivergenceAction()
-    {
-      CheckInitSetup();
-      return divergenceaction_;
-    };
-
-    //! Return nox parameters
-    Teuchos::ParameterList& GetMutableNoxParams()
-    {
-      CheckInitSetup();
-      return *noxparams_;
-    }
-
-    //@}
-
-    //! @name Get mutable linear solver variables (read and write access)
-    //@{
-    //! Return linear solvers pointer
-    Teuchos::RCP<std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > GetLinSolversPtr()
-    {
-      CheckInitSetup();
-      return linsolvers_;
-    }
-
-    //! Return linear solvers pointer
-    std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& GetMutableLinSolvers()
-    {
-      CheckInitSetup();
-      return *linsolvers_;
-    }
-    //@}
-
-
-    //! @name Get mutable damping control parameters (read and write access)
-    //@{
-    //! Return damping type
-    enum INPAR::STR::DampKind& GetMutableDampingType()
-    {
-      CheckInitSetup();
-      return damptype_;
-    };
-
-    //! Return damping factor for stiffness \f$c_\text{K}\f$
-    double& GetMutableDampingStiffnessFactor()
-    {
-      CheckInitSetup();
-      return dampk_;
-    };
-
-    //! Return damping factor for mass \f$c_\text{M}\f$
-    double& GetMutableDampingMassFactor()
-    {
-      CheckInitSetup();
-      return dampm_;
-    };
-    //@}
-
-    //! @name Get mutable mass and inertia control parameters (read and write access)
-    //@{
-    //! Return mass linearization type
-    enum INPAR::STR::MassLin& GetMutableMassLinType()
-    {
-      CheckInitSetup();
-      return masslintype_;
-    };
-    //@}
-
-    //! @name Get model evaluator control parameters (read and write access)
-    //@{
-    //! Return types of the current active models
-    std::set<enum INPAR::STR::ModelType>& GetMutableModelTypes()
-    {
-      CheckInitSetup();
-      return *modeltypes_;
-    };
-
-    //! Return the current active element technologies
-    std::set<enum INPAR::STR::EleTech>& GetMutableElementTechnologies()
-    {
-      CheckInitSetup();
-      return *eletechs_;
-    };
-
-    //@}
-
-  protected:
-    //! @name variables for internal use only
-    //@{
-    //! init flag
-    bool isinit_;
-
-    //! setup flag
-    bool issetup_;
-    //@}
-
-  private:
-
-    //! @name General control parameters
-    //@{
-
-    //! final time \f$t_\text{fin}\f$
-    double timemax_;
-
-    //! final time step \f$N\f$
-    int stepmax_;
-
-    //@}
-
-    //! @name Time measurement
-    //@{
-    //! timer for solution technique
-    Teuchos::RCP<Epetra_Time> timer_;
-
-    //@}
-
-    //! @name Damping control parameters
-    //! Rayleigh damping means \f${C} = c_\text{K} {K} + c_\text{M} {M}\f$
-    //@{
-    //! damping type
-    enum INPAR::STR::DampKind damptype_;
-
-    //! damping factor for stiffness \f$c_\text{K}\f$
-    double dampk_;
-
-    //! damping factor for mass \f$c_\text{M}\f$
-    double dampm_;
-    //@}
-
-    //! @name Mass and inertia control parameters
-    //@{
-    //! have inertia forces to be linearized?
-    enum INPAR::STR::MassLin masslintype_;
-    //@}
-
-    //! @name Model evaluator control parameters
-    //@{
-
-    //! current active model types for the model evaluator
-    Teuchos::RCP<std::set<enum INPAR::STR::ModelType> > modeltypes_;
-
-    //! current active element technologies
-    Teuchos::RCP<std::set<enum INPAR::STR::EleTech> > eletechs_;
-
-    //@}
-
-    //! @name implicit and explicit time integrator parameters
-    //@{
-    //! dynamic type
-    enum INPAR::STR::DynamicType dyntype_;
-
-    //@}
-
-    //! @name implicit time integrator parameters
-    //@{
-    //! minimal non-linear iteration number
-    int itermin_;
-
-    //! maximal non-linear iteration number
-    int itermax_;
-
-    //! type of pre-stressing
-    enum INPAR::STR::PreStress prestresstype_;
-
-    //! type of the predictor
-    enum INPAR::STR::PredEnum predtype_;
-
-    //! type of nonlinear solver
-    enum INPAR::STR::NonlinSolTech nlnsolvertype_;
-
-    //! action to be performed when the non-linear solver diverges
-    enum INPAR::STR::DivContAct divergenceaction_;
-
-    //! nox parameters list
-    Teuchos::RCP<Teuchos::ParameterList> noxparams_;
-
-    //! initial pseudo time step for the pseudo transient continuation (PTC) method
-    double ptc_delta_init_;
-    //@}
-
-    //! @name linear solver variables
-    //@{
-
-    //! pointer to the linear solvers map
-    Teuchos::RCP<std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> > > linsolvers_;
-    //@}
-
-    //! @name status test control parameters
-    //@{
-
-    //! vector norm type for the status/convergence test
-    enum INPAR::STR::VectorNorm normtype_;
-
-    //! @name primary variables
-    //@{
-    //! tolerance residual displacements
-    double tol_disp_incr_;
-
-    //! tolerance type for the convergence check of the displacement vector
-    enum INPAR::STR::ConvNorm toltype_disp_incr_;
-
-    //! tolerance force residual
-    double tol_fres_;
-
-    //! tolerance type for the convergence check of the force residual
-    enum INPAR::STR::ConvNorm toltype_fres_;
-
-    //! tolerance pressure residual
-    double tol_pres_;
-
-    //! tolerance type for the convergence check of the pressure residual
-    enum INPAR::STR::ConvNorm toltype_pres_;
-
-    //! tolerance incompressible residual/ residual pressure forces
-    double tol_inco_;
-
-    //! tolerance type for the convergence check if the incompressible residual/ residual pressure forces
-    enum INPAR::STR::ConvNorm toltype_inco_;
-
-    //! tolerance plasticity residual
-    double tol_plast_res_;
-
-    //! tolerance type for the convergence check of the plasticity residual
-    enum INPAR::STR::ConvNorm toltype_plast_res_;
-
-    //! tolerance plasticity increment
-    double tol_plast_incr_;
-
-    //! tolerance type for the convergence check of the plasticity increment
-    enum INPAR::STR::ConvNorm toltype_plast_incr_;
-
-    //! tolerance EAS residual
-    double tol_eas_res_;
-
-    //! tolerance type for the convergence check of the EAS residual
-    enum INPAR::STR::ConvNorm toltype_eas_res_;
-
-    //! tolerance EAS increment
-    double tol_eas_incr_;
-
-    //! tolerance type for the convergence check of the EAS increment
-    enum INPAR::STR::ConvNorm toltype_eas_incr_;
-
-    //! type of combination of the displacement and the pressure test
-    enum INPAR::STR::BinaryOp normcombo_disp_pres_;
-
-    //! type of combination of the force and the pressure residual test
-    enum INPAR::STR::BinaryOp normcombo_fres_inco_;
-
-    //! type of combination of the force and the EAS residual
-    enum INPAR::STR::BinaryOp normcombo_fres_eas_res_;
-
-    //! type of combination of the displacement and the EAS increment
-    enum INPAR::STR::BinaryOp normcombo_disp_eas_incr_;
-
-    //! type of combination of the force and the plasticity residual
-    enum INPAR::STR::BinaryOp normcombo_fres_plast_res_;
-
-    //! type of combination of the displacement and the plasticity increment
-    enum INPAR::STR::BinaryOp normcombo_disp_plast_incr_;
-
-    //! type of combination of the force and the displacement test
-    enum INPAR::STR::BinaryOp normcombo_fres_disp_;
-    //@}
-
-    //! @name constraint variables
-    //@{
-    //! tolerance type for the convergence check of the constraint residual
-    enum INPAR::STR::ConvNorm toltype_constr_res_;
-
-    //! tolerance constraint residual
-    double tol_constr_res_;
-
-    //! tolerance type for the convergence check of the windkessel residual
-    enum INPAR::STR::ConvNorm toltype_windk_res_;
-
-    //! tolerance windkessel residual
-    double tol_windk_res_;
-
-    //! tolerance type for the convergence check of the windkessel increment
-    enum INPAR::STR::ConvNorm toltype_windk_incr_;
-
-    //! tolerance windkessel increment
-    double tol_windk_incr_;
-
-    //! tolerance type for the convergence check of the contact residual
-    enum INPAR::STR::ConvNorm toltype_contact_res_;
-
-    //! tolerance contact constraint residual
-    double tol_contact_res_;
-
-    //! tolerance type  for the convergence check of the contact lagrange increment
-    enum INPAR::STR::ConvNorm toltype_contact_lm_incr_;
-
-    //! tolerance contact lagrange increment
-    double tol_contact_lm_incr_;
-
-    //! type of combination of the force and the contact residual
-    enum INPAR::STR::BinaryOp normcombo_fres_contact_res_;
-
-    //! type of combination of the displacement and the contact lagrange multiplier increment test
-    enum INPAR::STR::BinaryOp normcombo_disp_contact_lm_incr_;
-
-    //@}
-    //@}
-
-  };  // class BaseDataSDyn
-
-
-  class BaseDataGlobalState
-  {
-    public:
-      BaseDataGlobalState();
-
-      virtual ~BaseDataGlobalState() {};
-
-      void Init(const Teuchos::RCP<DRT::Discretization> discret,
-                const Teuchos::RCP<const BaseDataSDyn> datasdyn);
-
-      void Setup();
-
-    protected:
-      const bool& IsInit() const
-      { return isinit_; };
-
-      const bool& IsSetup() const
-      { return issetup_; };
-
-      virtual void CheckInitSetup() const
-      {
-        if (!IsInit() or !IsSetup())
-          dserror("Call Init() and Setup() first!");
-      }
-
-    public:
-      //! @name Get general purpose algorithm members (read only access)
-      //@{
-
-      //! attached discretisation
-      Teuchos::RCP<const DRT::Discretization> GetDiscret() const
-      {
-        CheckInitSetup();
-        return discret_;
-      };
-
-      //! communicator
-      Teuchos::RCP<const Epetra_Comm> GetCommPtr()
-      {
-        CheckInitSetup();
-        return comm_;
-      };
-
-      const Epetra_Comm& GetComm() const
-      {
-        CheckInitSetup();
-        return *comm_;
-      };
-
-      //! ID of actual processor in parallel
-      const int GetMyRank() const
-      {
-        CheckInitSetup();
-        return myRank_;
-      };
-
-      //@}
-
-      //! @name Get discretization related stuff (read only access)
-      //@{
-
-      //! dof map of vector of unknowns
-      Teuchos::RCP<const Epetra_Map> DofRowMap() const;
-
-      //! dof map of vector of unknowns
-      //! method for multiple dofsets
-      Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) const;
-
-      //! view of dof map of vector of unknowns
-      const Epetra_Map* DofRowMapView() const;
-      //@}
-
-      //! @name Get general control parameters (read only access)
-      //@{
-
-      //! Return target time \f$t_{n+1}\f$
-      const double& GetTimeNp() const
-      {
-        CheckInitSetup();
-        return timenp_;
-      };
-
-      //! Return time step index for \f$t_{n+1}\f$
-      const int& GetStepNp() const
-      {
-        CheckInitSetup();
-        return stepnp_;
-      };
-
-      //! Return time for lin solver
-      const double& GetLinearSolverTime() const
-      {
-        CheckInitSetup();
-        return dtsolve_;
-      };
-
-      //! Return element evaluation time
-      const double& GetElementEvaluationTime() const
-      {
-        CheckInitSetup();
-        return dtele_;
-      };
-
-      //! Return time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP<const ::TIMINT::TimIntMStep<double> > GetTimeN() const
-      {
-        CheckInitSetup();
-        return timen_;
-      };
-
-      //! Return time step size \f$\Delta t\f$
-      Teuchos::RCP<const ::TIMINT::TimIntMStep<double> > GetDeltaTime() const
-      {
-        CheckInitSetup();
-        return dt_;
-      };
-
-      //! Return timer for solution technique
-      Teuchos::RCP<const Epetra_Time>  GetTimer() const
-      {
-        CheckInitSetup();
-        return timer_;
-      };
-
-      //@}
-
-      //! @name Get state variables (read only access)
-      //@{
-
-      //! Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> GetDisNp() const
-      {
-        CheckInitSetup();
-        return disnp_;
-      }
-
-      //! Return displacements \f$D_{n}\f$
-      Teuchos::RCP<const Epetra_Vector> GetDisN() const
-      {
-        CheckInitSetup();
-        return (*dis_)(0);
-      }
-
-      //! Return velocities \f$V_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> GetVelNp() const
-      {
-        CheckInitSetup();
-        return velnp_;
-      }
-
-      //! Return velocities \f$V_{n}\f$
-      Teuchos::RCP<const Epetra_Vector> GetVelN() const
-      {
-        CheckInitSetup();
-        return (*vel_)(0);
-      }
-
-      //! Return accelerations \f$A_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> GetAccNp() const
-      {
-        CheckInitSetup();
-        return accnp_;
-      }
-
-      //! Return accelerations \f$A_{n}\f$
-      Teuchos::RCP<const Epetra_Vector> GetAccN() const
-      {
-        CheckInitSetup();
-        return (*acc_)(0);
-      }
-
-      //@}
-
-      //! @name Get system matrices (read only access)
-      //@{
-      Teuchos::RCP<const LINALG::SparseOperator> GetStiffMatrix() const
-      {
-        CheckInitSetup();
-        return stiff_;
-      }
-
-      //! mass matrix (constant)
-      Teuchos::RCP<const LINALG::SparseOperator> GetMassMatrix() const
-      {
-        CheckInitSetup();
-        return mass_;
-      }
-
-      //! damping matrix
-      Teuchos::RCP<const LINALG::SparseOperator> GetDampMatrix() const
-      {
-        CheckInitSetup();
-        return damp_;
-      }
-      //@}
-
-      //! @name Get mutable general control parameters (read and write access)
-      //@{
-
-      //! Return target time \f$t_{n+1}\f$
-      double& GetMutableTimeNp()
-      {
-        CheckInitSetup();
-        return timenp_;
-      };
-
-      //! Return time step index for \f$t_{n+1}\f$
-      int& GetMutableStepNp()
-      {
-        CheckInitSetup();
-        return stepnp_;
-      };
-
-      //! Return time for lin solver
-      double& GetMutableLinearSolverTime()
-      {
-        CheckInitSetup();
-        return dtsolve_;
-      };
-
-      //! Return element evaluation time
-      double& GetMutableElementEvaluationTime()
-      {
-        CheckInitSetup();
-        return dtele_;
-      };
-
-      //! Return time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP< ::TIMINT::TimIntMStep<double> >& GetMutableTimeN()
-      {
-        CheckInitSetup();
-        return timen_;
-      };
-
-      //! Return time step size \f$\Delta t\f$
-      Teuchos::RCP< ::TIMINT::TimIntMStep<double> >& GetMutableDeltaTime()
-      {
-        CheckInitSetup();
-        return dt_;
-      };
-
-      //! Return timer for solution technique
-      Teuchos::RCP<Epetra_Time>& GetMutableTimer()
-      {
-        CheckInitSetup();
-        return timer_;
-      };
-
-      //@}
-
-      //! @name Get mutable state variables (read and write access)
-      //@{
-
-      //! Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableDisNp()
-      {
-        CheckInitSetup();
-        return disnp_;
-      }
-
-      //! Return displacements \f$D_{n}\f$
-      Teuchos::RCP<Epetra_Vector> GetMutableDisN()
-      {
-        CheckInitSetup();
-        return (*dis_)(0);
-      }
-
-      //! Return velocities \f$V_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableVelNp()
-      {
-        CheckInitSetup();
-        return velnp_;
-      }
-
-      //! Return velocities \f$V_{n}\f$
-      Teuchos::RCP<Epetra_Vector> GetMutableVelN()
-      {
-        CheckInitSetup();
-        return (*vel_)(0);
-      }
-
-      //! Return accelerations \f$A_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableAccNp()
-      {
-        CheckInitSetup();
-        return accnp_;
-      }
-
-      //! Return accelerations \f$A_{n}\f$
-      Teuchos::RCP<Epetra_Vector> GetMutableAccN()
-      {
-        CheckInitSetup();
-        return (*acc_)(0);
-      }
-
-      //@}
-
-      //! @name Get mutable system matrices
-      //@{
-      Teuchos::RCP<LINALG::SparseOperator> GetMutableStiffMatrix()
-      {
-        CheckInitSetup();
-        return stiff_;
-      }
-
-      //! mass matrix (constant)
-      Teuchos::RCP<LINALG::SparseOperator> GetMutableMassMatrix()
-      {
-        CheckInitSetup();
-        return mass_;
-      }
-
-      //! damping matrix
-      Teuchos::RCP<LINALG::SparseOperator> GetMutableDampMatrix()
-      {
-        CheckInitSetup();
-        return damp_;
-      }
-      //@}
-
-      //! @name Set general control parameters
-      //@{
-      //! Sets the current time \f$t_{n}\f$
-      virtual void SetTimen(const double time)
-      {
-        CheckInitSetup();
-        (*timen_)[0]=time;
-      }
-
-      //! Sets the target time \f$t_{n+1}\f$ of this time step
-      virtual void SetTimenp(const double time)
-      {
-        CheckInitSetup();
-        timenp_ = time;
-      }
-
-      //@}
-
-      virtual double GetUpdatedTime()
-      {
-        CheckInitSetup();
-        return (*timen_)[0] + (*dt_)[0];
-      }
-
-    protected:
-      //! @name variables for internal use only
-      //@{
-
-      bool isinit_;
-
-      bool issetup_;
-
-      // read only access
-      Teuchos::RCP<const BaseDataSDyn> datasdyn_;
-      //@}
-
-    private:
-      //! @name General purpose algorithm members
-      //@{
-
-      //! attached discretisation
-      Teuchos::RCP<DRT::Discretization> discret_;
-
-      //! communicator
-      Teuchos::RCP<const Epetra_Comm> comm_;
-
-      //! ID of actual processor in parallel
-      int myRank_;
-
-      //@}
-
-      //! @name General control parameters
-      //@{
-      //! target time \f$t_{n+1}\f$
-      double timenp_;
-
-      //! time \f$t_{n}\f$ of last converged step
-      Teuchos::RCP< ::TIMINT::TimIntMStep<double> > timen_;
-
-      //! time step size \f$\Delta t\f$
-      Teuchos::RCP< ::TIMINT::TimIntMStep<double> > dt_;
-
-      //! time step index \f$n\f$
-      int stepn_;
-
-      //! time step index \f$n+1\f$
-      int stepnp_;
-      //@}
-
-      //! @name Global state vectors
-      //@{
-
-      //! global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> > dis_;
-
-      //! global velocities \f${V}_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> > vel_;
-
-      //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP< ::TIMINT::TimIntMStep<Epetra_Vector> > acc_;
-
-      //! global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> disnp_;
-
-      //! global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> velnp_;
-
-      //! global accelerations \f${A}_{n+1}\f$ at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> accnp_;
-
-      //! @name System matrices
-      //@{
-      Teuchos::RCP<LINALG::SparseOperator> stiff_;
-
-      //! mass matrix (constant)
-      Teuchos::RCP<LINALG::SparseOperator> mass_;
-
-      //! damping matrix
-      Teuchos::RCP<LINALG::SparseOperator> damp_;
-      //@}
-
-      //! @name Time measurement
-      //@{
-      //! timer for solution technique
-      Teuchos::RCP<Epetra_Time> timer_;
-
-      //! linear solver time
-      double dtsolve_;
-
-      //! element evaluation time
-      double dtele_;
-      //@}
-    };  // class BaseDataGlobalState
-
-
+  /** \brief Abstract class for all time integration strategies
+   *
+   *  \author Michael Hiermeier */
   class Base : public ::ADAPTER::StructureNew
   {
   public:
-    //! constructor
+    /// constructor
     Base();
 
-    //! destructor
+    /// destructor
     virtual ~Base() {};
 
-    virtual int IntegrateStep() = 0;
+    /// initialize (all already existing) class variables
+    virtual void Init(
+        const Teuchos::RCP<STR::TIMINT::BaseDataIO> dataio,
+        const Teuchos::RCP<STR::TIMINT::BaseDataSDyn> datasdyn,
+        const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate
+        );
+
+    /// setup of the new class variables
+    virtual void Setup();
+
+    /// tests if there are more time steps to do
+    virtual bool NotFinished() const;
+
+    ///reset everything (needed for biofilm simulations)
+    virtual void Reset();
+
+    /** \brief reset step configuration after time step
+     *
+     *  This function is supposed to reset all variables which are directly related
+     *  to the current new step n+1. To be more precise all variables ending with "Np"
+     *  have to be reseted. */
+    virtual void ResetStep();
 
     /// wrapper for things that should be done before PrepareTimeStep is called
     virtual void PrePredict() {};
@@ -1240,13 +87,7 @@ namespace TIMINT {
     virtual void PreSolve() {};
 
     /// wrapper for things that should be done after solving the nonlinear iterations
-    virtual void PostSolve();
-
-    /// wrapper for things that should be done before updating
-    virtual void PreUpdate() {};
-
-    /// wrapper for things that should be done after solving the update
-    virtual void PostUpdate() {};
+    virtual void PostSolve() {};
 
     /// wrapper for things that should be done before the output
     virtual void PreOutput() {};
@@ -1254,85 +95,535 @@ namespace TIMINT {
     /// wrapper for things that should be done after convergence of Newton scheme (like crack propagation)
     virtual void PostOutput() {};
 
-    // Get TimIntBase data for global state quantities (read access)
-    Teuchos::RCP<const BaseDataGlobalState> GetDataGlobalStatePtr() const
+    /// things that should be done after the actual time loop is finished
+    virtual void PostTimeLoop() { /* FixMe HaveMicroMat() is doing something here */ };
+
+    /// @name General access methods
+    ///@{
+    /// Access discretization (structure only)
+    virtual Teuchos::RCP<DRT::Discretization> Discretization()
     {
       CheckInitSetup();
+      return dataglobalstate_->GetMutableDiscret();
+    }
+
+    /// Access to pointer to DoF row map of the discretization (structure only)
+    virtual const Epetra_Map* DofRowMapView()
+    {
+      CheckInitSetup();
+      return dataglobalstate_->DofRowMapView();
+    }
+
+    /// DoF map of structural vector of unknowns
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
+    {
+      CheckInitSetup();
+      return dataglobalstate_->DofRowMap();
+    }
+
+    //! DoF map of vector of unknowns
+    // Alternative method capable of multiple DoF sets
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
+    {
+      CheckInitSetup();
+      return dataglobalstate_->DofRowMap(nds);
+    }
+
+    /// Access linear structural solver
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver()
+    {
+      CheckInitSetup();
+      return datasdyn_->GetMutableLinSolvers()[INPAR::STR::model_structure];
+    }
+
+    /// Return MapExtractor for Dirichlet boundary conditions
+    virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
+
+    //! Return locsys manager
+    virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager();
+
+    ///@}
+
+    /// Return domain map of the mass matrix (implicit and explicit)
+    virtual const Epetra_Map& GetMassDomainMap() const;
+
+    /// @name Coupled problem routines
+    /// @{
+    /// wrapper for things that should be done before updating
+    virtual void PreUpdate();
+
+    /// Update routine for coupled problems with monolithic approach
+    virtual void Update();
+
+    /// Update time and step counter
+    virtual void UpdateStepTime();
+
+    /// wrapper for things that should be done after solving the update
+    virtual void PostUpdate();
+    /// @}
+
+    /// @name Access global state from outside via adapter (needed for coupled problems)
+    ///@{
+    /// unknown displacements at \f$t_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> DispNp() const
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetDisNp();
+    }
+
+    /// write access to displacements at \f$t^{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispNp()
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetMutableDisNp();
+    }
+
+    /// known displacements at \f$t_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> DispN() const
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetDisN();
+    }
+
+    /// write access to displacements at \f$t^{n}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispN()
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetMutableDisN();
+    }
+
+    /// unknown velocities at \f$t_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> VelNp() const
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetVelNp();
+    }
+
+    /// write access to velocities at \f$t^{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelNp()
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetMutableVelNp();
+    }
+
+    /// unknown velocities at \f$t_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> VelN() const
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetVelN();
+    }
+
+    /// write access to velocities at \f$t^{n}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelN()
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetMutableVelN();
+    }
+
+    /// known velocities at \f$t_{n-1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> VelNm() const
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetVelNm();
+    }
+
+    /// unknown accelerations at \f$t_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> AccNp() const
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetAccNp();
+    }
+
+    //! known accelerations at \f$t_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> AccN() const
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetAccN();
+    }
+    ///@}
+
+    /// @name set global state variables via adapter
+    /// @{
+    /** \brief Set forces due to interface with fluid
+     *
+     *  The force is expected to be external force like. */
+    virtual void SetForceInterface(
+        Teuchos::RCP<Epetra_MultiVector> iforce   ///< the force on interface
+        ){ dserror( "Not yet considered!" ); };
+    /// @}
+
+    /// @name access and modify model evaluator stuff via adapter
+    /// @{
+    /// are there any algebraic constraints?
+    virtual bool HaveConstraint()
+    {
+      CheckInitSetup();
+      return HaveModelType(INPAR::STR::model_lag_pen_constraint);
+    }
+
+    /// do we need a semi-smooth Newton-type plasticity algorithm
+    virtual bool HaveSemiSmoothPlasticity()
+    {
+      CheckInitSetup();
+      return HaveEleTech(INPAR::STR::eletech_plasticity);
+    }
+
+    /// FixMe get constraint manager defined in the structure
+    virtual const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager()
+    { dserror("Not yet implemented!"); return Teuchos::null; }
+
+    /// FixMe get plasticity manager defined in the structure
+    virtual const Teuchos::RCP<DRT::UTILS::PlastSsnManager> GetPlasticityManager()
+    { dserror("Not yet implemented!"); return Teuchos::null; }
+
+    /// FixMe get contact/meshtying manager
+    virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> MeshtyingContactBridge()
+    { dserror("Not yet implemented!"); return Teuchos::null; }
+
+    /// Add residual increment to Lagrange multipliers stored in Constraint manager (derived)
+    /// FixMe Different behavior for the implicit and explicit case!!!
+    virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr)
+    { dserror("Not yet implemented!"); return; }
+
+    /// Add residual increment to pressures stored in Windkessel manager (derived)
+    /// FixMe Different behavior for the implicit and explicit case!!!
+    virtual void UpdateIterIncrWindkessel(Teuchos::RCP<Epetra_Vector> presincr)
+    { dserror("Not yet implemented!"); return; }
+    /// @}
+
+    virtual Teuchos::RCP<STATMECH::StatMechManager> StatMechManager()
+    { dserror("Not yet sure how to handle the statmech manager."); return Teuchos::null; };
+
+    //! return statmech managerbilayer
+    virtual Teuchos::RCP<STATMECH::StatMechManagerBilayer> StatMechManagerBilayer()
+    { dserror("Not yet sure how to handle the statmech manager."); return Teuchos::null; }
+
+    /// @name Time step helpers
+    ///@{
+    /// Return current time \f$t_{n}\f$ (derived)
+    virtual double GetTimeN() const
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetTimeN();
+    }
+
+    /// Sets the current time \f$t_{n}\f$ (derived)
+    virtual void SetTimeN(const double time_n)
+    {
+      CheckInitSetup();
+      dataglobalstate_->GetMutableTimeN() = time_n;
+    }
+
+    /// Return target time \f$t_{n+1}\f$ (derived)
+    virtual double GetTimeNp() const
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetTimeNp();
+    }
+
+    /// Sets the target time \f$t_{n+1}\f$ of this time step (derived)
+    virtual void SetTimeNp(const double time_np)
+    {
+      CheckInitSetup();
+      dataglobalstate_->GetMutableTimeNp() = time_np;
+    }
+
+    /// Get upper limit of time range of interest (derived)
+    virtual double GetTimeEnd() const
+    {
+      CheckInitSetup();
+      return datasdyn_->GetTimeMax();
+    }
+
+    /// Get upper limit of time range of interest (derived)
+    virtual void SetTimeEnd(double timemax)
+    {
+      CheckInitSetup();
+      datasdyn_->GetMutableTimeMax() = timemax;
+    }
+
+    /// Get time step size \f$\Delta t_n\f$
+    virtual double GetDeltaTime() const
+    {
+      CheckInitSetup();
+      return (*dataglobalstate_->GetDeltaTime())[0];
+    }
+
+    /// Set time step size \f$\Delta t_n\f$
+    virtual void SetDeltaTime(const double dt)
+    {
+      CheckInitSetup();
+      (*dataglobalstate_->GetMutableDeltaTime())[0] = dt;
+    }
+
+    /// Return time integration factor
+    virtual double TimIntParam() const;
+
+    /// Return current step number \f$n\f$
+    virtual int GetStepN() const
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetStepN();
+    }
+
+    /// Sets the current step \f$n\f$
+    virtual void SetStepN(int step_n)
+    {
+      CheckInitSetup();
+      dataglobalstate_->GetMutableStepN() =step_n;
+    }
+
+    /// Return current step number $n+1$
+    virtual int GetStepNp() const
+    {
+      CheckInitSetup();
+      return dataglobalstate_->GetStepNp();
+    }
+
+    /// Sets the current step number \f$n+1\f$
+    virtual void SetStepNp(int step_np)
+    {
+      dataglobalstate_->GetMutableStepNp()=step_np;
+    }
+
+    //! Get number of time steps
+    virtual int GetStepEnd() const
+    {
+      CheckInitSetup();
+      return datasdyn_->GetStepMax();
+    }
+    ///@}
+
+    /// @name Structure with ale specific methods
+    ///@{
+    /// FixMe set/apply material displacements to structure field (structure with ale)
+    virtual void SetDispMatNp(Teuchos::RCP<Epetra_Vector> dispmatnp)
+    { dserror("Not supported at the moment!"); }
+
+    /// FixMe write access to material displacements (strutcure with ale) at \f$t^{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispMatNp()
+    {
+      CheckInitSetup();
+      dserror("Not yet supported!");
+      return Teuchos::null;
+    }
+    ///@}
+
+
+    /// Time adaptivity (derived pure virtual functionality)
+    /// @{
+    /// Resize MStep Object due to time adaptivity in FSI (derived)
+    virtual void ResizeMStepTimAda();
+
+    /// do something in case nonlinear solution does not converge for some reason
+    /// FixMe Should be implemented in the STR::TIMINT::Implicit class.
+    /// All other derived branches are satisfied with a short error message!
+    virtual INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv)
+    { dserror("Not yet implemented!"); return INPAR::STR::conv_success; }
+    /// @}
+
+    /// Output writer related routines (file and screen output)
+    /// @{
+    /// Access output object
+    virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
+    { dserror("Not yet implemented!"); return Teuchos::null;}
+
+    /// Calculate all output quantities depending on the constitutive model
+    /// (and, hence, on a potential material history)
+    virtual void PrepareOutput()
+    {
+      if (dataglobalstate_->GetMyRank() == 0)
+        std::cout << "PrepareOutput is not yet implemented!" << std::endl;
+    };
+
+    /// Write Gmsh output for structural field
+    virtual void writeGmshStrucOutputStep();
+
+    /// FixMe Check if there are any elements with the micro material definition.
+    /// Maybe the detection can be moved to the element loop in the ad_str_structure_new.cpp.
+    /// There is already one.
+    virtual bool HaveMicroMat()
+    { dserror ("Not yet considered!"); return false; };
+
+    /// create result test for encapsulated structure algorithm
+    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
+    /** \brief Get data that is written during restart
+     *
+     *  This routine is only for simple structure problems!
+     *  \author biehler \data 06/13 */
+    virtual void GetRestartData(
+        Teuchos::RCP<int> step,
+        Teuchos::RCP<double> time,
+        Teuchos::RCP<Epetra_Vector> disnp,
+        Teuchos::RCP<Epetra_Vector> velnp,
+        Teuchos::RCP<Epetra_Vector> accnp,
+        Teuchos::RCP<std::vector<char> > elementdata,
+        Teuchos::RCP<std::vector<char> > nodedata
+      );
+
+    //! Read restart values
+    virtual void ReadRestart(
+      const int stepn //!< //!< restart step at \f${n}\f$
+    );
+
+    /// Set restart values (deprecated)
+    virtual void SetRestart(
+        int stepn,   //!< restart step at \f${n}\f$
+        double timen, //!< restart time at \f$t_{n}\f$
+        Teuchos::RCP<Epetra_Vector> disn, //!< restart displacements at \f$t_{n}\f$
+        Teuchos::RCP<Epetra_Vector> veln, //!< restart velocities at \f$t_{n}\f$
+        Teuchos::RCP<Epetra_Vector> accn, //!< restart accelerations at \f$t_{n}\f$
+        Teuchos::RCP<std::vector<char> > elementdata,  //!< restart element data
+        Teuchos::RCP<std::vector<char> > nodedata  //!< restart element data
+        );
+    /// @}
+
+    /// Biofilm related stuff
+    /// @{
+    /// FixMe set structure displacement vector due to biofilm growth
+    virtual void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
+    { dserror("Currently unsupported!"); }
+    /// @}
+
+    /// Crack related stuff
+    /// @{
+    /// FixMe Return the current crack tip nodes
+    /// Do we really need a hard copy? Why no const reference?
+    virtual std::vector<int> GetCrackTipNodes()
+    { dserror("Not yet implemented!"); return std::vector<int>(0); }
+
+    /// FixMe  Get map of newly introduced node ids with their corresponding old node ids
+    /// Do we really need a hard copy? Why no const reference?
+    virtual std::map<int,int> getOldNewCrackNodes()
+    { dserror("Not yet implemented!"); return std::map<int,int>(); }
+
+    /// FixMe Propagate crack within the structure and accordingly modify the discretization
+    virtual bool UpdateCrackInformation(Teuchos::RCP<const Epetra_Vector> displace)
+    { dserror("Not yet implemented!"); return false; }
+    /// @}
+
+    /// @name Pure virtual adapter functions (have to be implemented in the derived classes)
+    /// @{
+    /// Take the time and integrate (time loop) (implicit and explicit)
+    virtual int Integrate() = 0;
+    /// integrate the current step (implicit and explicit)
+    virtual int IntegrateStep() = 0;
+    /// nonlinear solve (implicit and explicit)
+    virtual INPAR::STR::ConvergenceStatus Solve() = 0;
+    /// output results (implicit and explicit)
+    virtual void Output(bool forced_writerestart = false) = 0;
+    //! print summary after step (implicit and explicit)
+    virtual void PrintStep() = 0;
+    /// start new time step (implicit and explicit)
+    virtual void PrepareTimeStep() = 0;
+    /// specific method for iterative staggered partitioned TSI (implicit and explicit)
+    virtual void PreparePartitionStep() = 0;
+    /// update displacement and evaluate elements (implicit only)
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) = 0;
+    /// Update routine for coupled problems with monolithic approach with time adaptivity (implicit only)
+    virtual void Update(double endtime) = 0;
+    /// linear structure solve with just a interface load (implicit only)
+    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() = 0;
+    /// Get type of thickness scaling for thin shell structures (implicit only)
+    virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
+    /// Access to scaling matrix for STC (implicit only)
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat() = 0;
+    /// initial guess of Newton's method (implicit only)
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
+    /// right-hand-side of Newton's method (implicit only)
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
+    /// Return reaction forces at \f$t_{n+1}\f$ (read and write) (implicit only)
+    virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
+    //! Return stiffness (implicit only)
+    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
+    /// Return stiffness (implicit only)
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() = 0;
+    ///! Switch structure field to block matrix in fsi simulations (implicit only)
+    virtual void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps) = 0;
+    /// @}
+
+  public:
+    /// @name External accessors for the class variables
+    ///@{
+    /// Get TimIntBase data for global state quantities (read access)
+    Teuchos::RCP<const BaseDataGlobalState> GetDataGlobalStatePtr() const
+    {
+      CheckInit();
       return dataglobalstate_;
     };
 
     const BaseDataGlobalState& GetDataGlobalState() const
     {
-      CheckInitSetup();
+      CheckInit();
       return *dataglobalstate_;
     };
 
-    // Get TimIntBase data for io quantities (read access)
+    /// Get TimIntBase data for io quantities (read access)
     Teuchos::RCP<const BaseDataIO> GetDataIOPtr() const
     {
-      CheckInitSetup();
+      CheckInit();
       return dataio_;
     }
 
     const BaseDataIO& GetDataIO() const
     {
-      CheckInitSetup();
+      CheckInit();
       return *dataio_;
     }
 
-    // Get TimIntBase data or struct dynamics quantitites (read access)
+    /// Get TimIntBase data or struct dynamics quantitites (read access)
     Teuchos::RCP<const BaseDataSDyn> GetDataSDynPtr() const
     {
-      CheckInitSetup();
+      CheckInit();
       return datasdyn_;
     }
 
     const BaseDataSDyn& GetDataSDyn() const
     {
-      CheckInitSetup();
+      CheckInit();
       return *datasdyn_;
     }
 
+    /// return a reference to the Dirichlet Boundary Condition handler (read access)
+    const STR::Dbc& GetDBC() const
+    {
+      CheckInitSetup();
+      return *dbc_ptr_;
+    }
 
-
-    virtual void Init(
-        const Teuchos::RCP<STR::TIMINT::BaseDataIO> dataio,
-        const Teuchos::RCP<STR::TIMINT::BaseDataSDyn> datasdyn,
-        const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate
-        );
-
-    virtual void Setup() = 0;
-
-    //! Read restart values
-    void ReadRestart
-    (
-      const int step //!< restart step
-    );
-
-    // TODO
-    //! Calculate all output quantities depending on the constitutive model
-    //  (and, hence, on a potential material history)
-    void PrepareOutput(){return;};
-
+    /// return a pointer to the Dirichlet Boundary Condition handler (read access)
+    Teuchos::RCP<const STR::Dbc> GetDBCPtr() const
+    {
+      CheckInitSetup();
+      return dbc_ptr_;
+    }
+    ///@}
   protected:
+    /// get the indicator state
+    inline const bool& IsInit() const
+    { return isinit_; };
 
-    const bool& IsInit() const { return isinit_; };
+    /// get the indicator state
+    inline const bool& IsSetup() const
+    { return issetup_; };
 
-    const bool& IsSetup() const { return issetup_; };
-
-    virtual void CheckInitSetup() const
+    /// Check if Init() and Setup() have been called, yet.
+    inline void CheckInitSetup() const
     {
       if (!IsInit() or !IsSetup())
         dserror("Call Init() and Setup() first!");
     }
 
-    virtual void CheckInit() const
+    /// Check if Init() has been called
+    inline void CheckInit() const
     {
       if (not IsInit())
         dserror("Call Init() first!");
     }
 
-    // Get internal TimIntBase data for global state quantities (read and write access)
+    /// Get internal TimIntBase data for global state quantities (read and write access)
     BaseDataGlobalState& DataGlobalState()
     {
       CheckInit();
@@ -1345,71 +636,103 @@ namespace TIMINT {
       return dataglobalstate_;
     };
 
-    // Get internal TimIntBase data for io quantities (read and write access)
+    /// Get internal TimIntBase data for io quantities (read and write access)
     BaseDataIO& DataIO()
     {
       CheckInit();
       return *dataio_;
     };
 
+    /// return a pointer to the input/output data container (read and write access)
     const Teuchos::RCP<BaseDataIO>& DataIOPtr()
     {
       CheckInit();
       return dataio_;
     };
 
-    // Get internal TimIntBase data for struct dynamics quantitites (read and write access)
+    /// Get internal TimIntBase data for structural dynamics quantities (read and write access)
     BaseDataSDyn& DataSDyn()
     {
       CheckInit();
       return *datasdyn_;
     };
 
+    /// return a pointer to the structural dynamic data container (read and write access)
     const Teuchos::RCP<BaseDataSDyn>& DataSDynPtr()
     {
       CheckInit();
       return datasdyn_;
     };
 
-    std::map<enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> >& ModelEvaluators()
+    /// return a reference to the model evaluator wrapper (read and write access)
+    STR::ModelEvaluator& ModelEvaluator()
     {
       CheckInitSetup();
-      return *modelevaluators_;
+      return *modelevaluator_ptr_;
     }
 
-    const Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > > ModelEvaluatorsPtr()
+    /// return a pointer to the model evaluator wrapper (read and write access)
+    const Teuchos::RCP<STR::ModelEvaluator>& ModelEvaluatorPtr()
     {
       CheckInitSetup();
-      return modelevaluators_;
+      return modelevaluator_ptr_;
     }
 
-    //! @name Derived field accessor functions
-    //!@{
-    // Get dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap();
+    /// return a reference to the Dirichlet Boundary Condition handler (read and write access)
+    STR::Dbc& DBC()
+    {
+      CheckInitSetup();
+      return *dbc_ptr_;
+    }
 
-    // Return stiffness matrix as LINALG::SparseMatrix
-    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+    /// return a pointer to the Dirichlet Boundary Condition handler (read and write access)
+    const Teuchos::RCP<STR::Dbc>& DBCPtr()
+    {
+      CheckInitSetup();
+      return dbc_ptr_;
+    }
 
-    // Return stiffness matrix as LINALG::BlockSparseMatrixBase
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    /// return a reference to the integrator (read and write access)
+    STR::Integrator& Integrator()
+    {
+      CheckInitSetup();
+      return *int_ptr_;
+    }
 
-    //!@}
+    /// return a pointer to the integrator (read and write access)
+    const Teuchos::RCP<STR::Integrator>& IntegratorPtr()
+    {
+      CheckInitSetup();
+      return int_ptr_;
+    }
+
+    /// check if the given model type is active.
+    bool HaveModelType(const INPAR::STR::ModelType& modeltype) const;
+
+    /// check if the given element technology is active.
+    bool HaveEleTech(const INPAR::STR::EleTech& eletech) const;
 
   protected:
+    /// flag indicating if Init() has been called
     bool isinit_;
 
+    /// flag indicating if Setup() has been called
     bool issetup_;
 
   private:
-    //! pointer to the different data containers
+    /// pointer to the different data containers
     Teuchos::RCP<BaseDataIO>          dataio_;
     Teuchos::RCP<BaseDataSDyn>        datasdyn_;
     Teuchos::RCP<BaseDataGlobalState> dataglobalstate_;
 
-    //! ptr to the model evaluator map
-    Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > > modelevaluators_;
+    /// pointer to the model evaluator
+    Teuchos::RCP<STR::ModelEvaluator> modelevaluator_ptr_;
 
+    /// pointer to the integrator (implicit or explicit)
+    Teuchos::RCP<STR::Integrator> int_ptr_;
+
+    /// pointer to the dirichlet boundary condition handler
+    Teuchos::RCP<STR::Dbc> dbc_ptr_;
   };  // class Base
 } // namespace TIMINT
 } // namespace STR

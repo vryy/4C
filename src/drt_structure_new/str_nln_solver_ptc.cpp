@@ -48,22 +48,22 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
 {
   CheckInit();
 
-  // get the nox parameter list and set the necessary parameters for a
-  // pseudo transient solution procedure
-  Teuchos::ParameterList& p = DataSDyn().GetMutableNoxParams();
+  /* get the nox parameter list and set the necessary parameters for a
+   * pseudo transient solution procedure */
+  Teuchos::ParameterList& pnox = DataSDyn().GetMutableNoxParams();
 
   // ---------------------------------------------------------------------------
   // Set-up the pseudo transient method
   // ---------------------------------------------------------------------------
   // Non-linear solver
-  p.set("Nonlinear Solver","Pseudo Transient");
+  pnox.set("Nonlinear Solver","Pseudo Transient");
 
   // Direction
-  Teuchos::ParameterList& pdir = p.sublist("Direction",true);
+  Teuchos::ParameterList& pdir = pnox.sublist("Direction",true);
   pdir.set("Method","Newton");
 
   // Line Search
-  Teuchos::ParameterList& plinesearch = p.sublist("Line Search",true);
+  Teuchos::ParameterList& plinesearch = pnox.sublist("Line Search",true);
 
   // Line Search/Full Step (line search is deactivated)
   Teuchos::ParameterList& pfullstep = plinesearch.sublist("Full Step",true);
@@ -82,9 +82,8 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
    * solver which is equivalent to the old BACI implementation.
    *
    * If you are keen on using the new features, please use the corresponding
-   * input section "STUCT NOX/Pseudo Transient" in your input file.
-   */
-  Teuchos::ParameterList& pptc = p.sublist("Pseudo Transient");
+   * input section "STUCT NOX/Pseudo Transient" in your input file. */
+  Teuchos::ParameterList& pptc = pnox.sublist("Pseudo Transient");
 
   pptc.set<double>("deltaInit",DataSDyn().GetInitialPTCPseudoTimeStep());
   pptc.set<double>("deltaMax",std::numeric_limits<double>::max());

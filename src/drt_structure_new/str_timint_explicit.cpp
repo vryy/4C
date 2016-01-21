@@ -1,9 +1,15 @@
-/*
- * str_timint_explicit.cpp
- *
- *  Created on: Aug 13, 2015
- *      Author: farah
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_timint_explicit.cpp
+
+\maintainer Philipp Farah
+
+\date Aug 13, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 
 #include "str_timint_explicit.H"
@@ -26,6 +32,183 @@ void STR::TIMINT::Explicit::Setup()
   if (!IsInit())
     dserror("Init() has not been called, yet!");
 
+  Base::Setup();
+
   // set isSetup flag
   issetup_ = true;
 }
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Explicit::PrepareTimeStep()
+{
+  // things that need to be done before Predict
+  PrePredict();
+
+  // ToDo prepare contact for new time step
+  // PrepareStepContact();
+
+  // things that need to be done after Predict
+  PostPredict();
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Explicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+{
+  dserror("All monolithically coupled problems work with implicit time "
+      "integration schemes. Thus, calling Evaluate() in an explicit scheme "
+      "is not possible.");
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+INPAR::STR::ConvergenceStatus STR::TIMINT::Explicit::Solve()
+{
+  IntegrateStep();
+  return INPAR::STR::conv_success;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Explicit::PreparePartitionStep()
+{
+  // do nothing for explicit time integrators
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Explicit::Update(double endtime)
+{
+  dserror("Not implemented. No time adaptivity available for explicit time integration.");
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Explicit::Output(bool forced_writerestart)
+{
+  PreOutput();
+  // FixMe
+  if (DataGlobalState().GetMyRank() == 0)
+    std::cout << "FixMe: The Output() routine is not yet implemented!" << std::endl;
+  //OutputStep(forced_writerestart);
+  // write Gmsh output
+  //writeGmshStrucOutputStep();
+  return;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Explicit::PrintStep()
+{
+  // FixMe
+  if (DataGlobalState().GetMyRank() == 0)
+    std::cout << "FixMe: The PrintStep() routine is not yet implemented!" << std::endl;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+INPAR::STR::STC_Scale STR::TIMINT::Explicit::GetSTCAlgo()
+{
+  dserror("GetSTCAlgo() has not been tested for explicit time integration.");
+  return INPAR::STR::stc_none;
+};
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::Explicit::GetSTCMat()
+{
+  dserror("GetSTCMat() has not been tested for explicit time integration.");
+  return Teuchos::null;
+};
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::TIMINT::Explicit::Integrate()
+{
+  dserror("The function is unused since the ADAPTER::StructureTimeLoop "
+      "wrapper gives you all the flexibility you need.");
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::TIMINT::Explicit::IntegrateStep()
+{
+  dserror("Not yet implemented!");
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> STR::TIMINT::Explicit::SolveRelaxationLinear()
+{
+  dserror("SolveRelaxationLinear() is not avaible for explicit time integration!");
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> STR::TIMINT::Explicit::InitialGuess()
+{
+  dserror("InitialGuess() is not available for explicit time integration");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> STR::TIMINT::Explicit::RHS()
+{
+  dserror("RHS() is not available for explicit time integration");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> STR::TIMINT::Explicit::Freact()
+{
+  dserror("Not implemented!");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::Explicit::SystemMatrix()
+{
+  dserror("SystemMatrix() is not available for explicit time integration");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> STR::TIMINT::Explicit::BlockSystemMatrix()
+{
+  dserror("BlockSystemMatrix() is not available for explicit time integration");
+  return Teuchos::null;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Explicit::UseBlockMatrix(
+    Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+    Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps)
+{
+  dserror("UseBlockMatrix() is not available for explicit time integration");
+}
+///@}

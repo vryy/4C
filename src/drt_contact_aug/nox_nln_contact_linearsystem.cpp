@@ -124,17 +124,19 @@ void NOX::NLN::CONTACT::LinearSystem::Init()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(Teuchos::RCP<LINALG::Solver>& solverPtr,
+void NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(
+    Teuchos::ParameterList& p,
+    Teuchos::RCP<LINALG::Solver>& solverPtr,
     const NOX::NLN::SolutionType& solverType)
 {
-  bool isAdaptiveControl          = linParams_.get<bool>("Adaptive Control");
-  double adaptiveControlObjective = linParams_.get<double>("Adaptive Control Objective");
+  bool isAdaptiveControl          = p.get<bool>("Adaptive Control");
+  double adaptiveControlObjective = p.get<double>("Adaptive Control Objective");
   // This value is specified in the underlying time integrator
   // (i.e. RunPreNoxNlnSolve())
-  int step = linParams_.get<int>("Current Time Step");
+  int step = p.get<int>("Current Time Step");
   // This value is specified in the PrePostOperator object of
   // the non-linear solver (i.e. runPreIterate())
-  int nlnIter = linParams_.get<int>("Number of Nonlinear Iterations");
+  int nlnIter = p.get<int>("Number of Nonlinear Iterations");
 
   if (isAdaptiveControl)
   {
@@ -147,7 +149,7 @@ void NOX::NLN::CONTACT::LinearSystem::SetSolverOptions(Teuchos::RCP<LINALG::Solv
     double worst  = iNlnReq->CalcRefNormForce();
     // This value has to be specified in the PrePostOperator object of
     // the non-linear solver (i.e. runPreSolve())
-    double wanted = linParams_.get<double>("Wanted Tolerance");
+    double wanted = p.get<double>("Wanted Tolerance");
     solverPtr->AdaptTolerance(wanted,worst,adaptiveControlObjective);
   }
 

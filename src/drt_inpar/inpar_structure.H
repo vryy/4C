@@ -114,6 +114,13 @@ namespace INPAR
       }
     };
 
+    enum IntegrationStrategy
+    {
+      int_old,            // old structure (FixMe deprecated and should be deleted, as soon as the clean-up is finished!)
+      int_standard,       // standard time integration (implicit or explicit)
+      int_loca            // path following with LOCA
+    };
+
     /// Type of time integrator including statics
     enum DynamicType
     {

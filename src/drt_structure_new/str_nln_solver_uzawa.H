@@ -1,9 +1,15 @@
-/*
- * str_nln_solver_Uzawa.H
- *
- *  Created on: Aug 13, 2015
- *      Author: farah
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_nln_solver_uzawa.H
+
+\maintainer Michael Hiermeier
+
+\date Aug 13, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef STR_NLN_SOLVER_UZAWA_H_
 #define STR_NLN_SOLVER_UZAWA_H_
@@ -13,6 +19,7 @@
 namespace STR {
 namespace NLN {
 namespace SOLVER {
+  // Can be deleted in an upcoming commit, since unnecessary/deprecated   Hiermeier 01/12/2015
   class Uzawa : public Generic
   {
   public:

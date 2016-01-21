@@ -95,8 +95,20 @@ namespace INPAR
 
     Teuchos::ParameterList& sdyn = list->sublist("STRUCTURAL DYNAMIC",false,"");
 
+    setStringToIntegralParameter<int>("INT_STRATEGY","Old",
+                                 "global type of the used integration strategy",
+                                 tuple<std::string>(
+                                   "Old",
+                                   "Standard",
+                                   "LOCA"),
+                                 tuple<int>(
+                                   int_old,
+                                   int_standard,
+                                   int_loca),
+                                 &sdyn);
+
     setStringToIntegralParameter<int>("DYNAMICTYP","GenAlpha",
-                                 "type of time integration control",
+                                 "type of the specific dynamic time integration scheme",
                                  tuple<std::string>(
                                    "Statics",
                                    "GenAlpha",
@@ -139,6 +151,7 @@ namespace INPAR
     // Time loop control
     DoubleParameter("TIMESTEP",0.05,"time step size",&sdyn);
     IntParameter("NUMSTEP",200,"maximum number of steps",&sdyn);
+    DoubleParameter("TIMEINIT",0.0,"initial time",&sdyn);
     DoubleParameter("MAXTIME",5.0,"maximum time",&sdyn);
     // Damping
     setStringToIntegralParameter<int>("DAMPING","No",

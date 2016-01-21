@@ -73,7 +73,9 @@ namespace CONTACT {
     virtual ~LinearSystem(){};
 
     //! sets the options of the underlying solver
-    virtual void SetSolverOptions(Teuchos::RCP<LINALG::Solver>& solverPtr,
+    virtual void SetSolverOptions(
+        Teuchos::ParameterList& p,
+        Teuchos::RCP<LINALG::Solver>& solverPtr,
         const NOX::NLN::SolutionType& solverType);
 
     //! Returns a pointer to linear solver, which has to be used

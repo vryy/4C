@@ -1,79 +1,98 @@
-/*
- * str_model_evaluator_generic.H
- *
- *  Created on: Aug 11, 2015
- *      Author: farah
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_model_evaluator_generic.H
+
+\maintainer Michael Hiermeier
+
+\date Aug 11, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
 
 #ifndef STR_MODEL_EVALUATOR_GENERIC_H_
 #define STR_MODEL_EVALUATOR_GENERIC_H_
 
 #include <Teuchos_RCP.hpp>
-#include "../drt_lib/drt_dserror.H"
 
 // forward declaration
 class Epetra_Vector;
 namespace LINALG {
   class SparseOperator;
-}
-
+} // namespace LINALG
 namespace Teuchos {
   class ParameterList;
-}
-
+} // namespace Teuchos
 namespace DRT {
   class Discretization;
-}
-
-
+} // namespace DRT
 namespace STR {
+namespace TIMINT {
+  class BaseDataGlobalState;
+  class Base;
+} // namespace TIMINT
 namespace MODELEVALUATOR {
-
   class Generic
   {
   public:
     //! constructor
-    Generic()
-    {
-      isinit_ = false;
-      issetup_ = false;
-    };
+    Generic();
 
     //! destructor
     virtual ~Generic() {};
 
     //! initialize the class variables
-    virtual void Init() = 0;
+    virtual void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
+        const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
 
     //! setup class variables
     virtual void Setup() = 0;
 
   protected:
+    //! reset class variables (without jacobian)
+    virtual void Reset(const Epetra_Vector& x) = 0;
+    //! reset jacobian and call Reset(x)
+    virtual void Reset(const Epetra_Vector& x,LINALG::SparseOperator& jac) = 0;
+
     //! Returns true, if Init() has been called
-    virtual const bool& IsInit() const { return isinit_; };
+    inline const bool& IsInit() const { return isinit_; };
 
     //! Returns true, if Setup() has been called
-    virtual const bool& IsSetup() const { return issetup_; };
+    inline const bool& IsSetup() const { return issetup_; };
 
     //! Checks, if Init() and Setup() have been called
-    virtual void CheckInitSetup() const
-    {
-      if (!IsInit() or !IsSetup())
-        dserror("Call Init() and Setup() first!");
-    }
+    void CheckInitSetup() const;
+
+    void CheckInit() const;
+
+    /*! \brief Check the evaluation procedures for possible errors.
+     *
+     *  In the standard case we check for exceptions like overflow, invalid results
+     *  or divide by zero operations. Furthermore, we look in the parameter-list for
+     *  an (optional) parameter named "eval_error". This is universal and should be
+     *  usable by all model evaluators. */
+    virtual bool EvalErrorCheck(const Teuchos::ParameterList& p) const;
 
   public:
-    virtual void ApplyForce(
-        const double& time,
-        const Teuchos::RCP<Epetra_Vector>& fresnp,
-        Teuchos::RCP<const Epetra_Vector> disnp,
-        Teuchos::RCP<const Epetra_Vector> disn = Teuchos::null) = 0;
 
-    virtual void ApplyForceAndJacobian(
-        const Teuchos::RCP<LINALG::SparseOperator>& stiff,
-        const Teuchos::RCP<Epetra_Vector>& fresnp,
-        Teuchos::RCP<const Epetra_Vector> disnp,
-        Teuchos::RCP<const Epetra_Vector> disn = Teuchos::null) = 0;
+    virtual bool ApplyForce(
+        const Epetra_Vector& x,
+        Epetra_Vector& f) = 0;
+
+    virtual bool ApplyStiff(
+        const Epetra_Vector& x,
+        LINALG::SparseOperator& jac) = 0;
+
+    virtual bool ApplyForceStiff(
+        const Epetra_Vector& x,
+        Epetra_Vector& f,
+        LINALG::SparseOperator& jac) = 0;
+
+    virtual void UpdateStepState() = 0;
+
+    virtual void UpdateStepElement() = 0;
 
   protected:
     //! init flag
@@ -82,6 +101,12 @@ namespace MODELEVALUATOR {
     //! setup flag
     bool issetup_;
 
+    Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+
+    //! problem discretization
+    Teuchos::RCP<DRT::Discretization> discret_ptr_;
+
+    Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
   }; // class Generic
 
 } // namespace MODELEVALUATOR

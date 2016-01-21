@@ -64,6 +64,16 @@ namespace TIMINT
       return state_[IndexByStep(step)];
     }
 
+    //! Access state object by time step index (read-only)
+    const STATE& operator[]
+    (
+      const int step  //!< inquiry step
+    ) const
+    {
+      if (not StepExists(step)) dserror("Step %d is not admissible", step);
+      return state_[IndexByStep(step)];
+    }
+
     //! Access state object by time step index and wrap into Teuchos::RCP
     Teuchos::RCP<STATE> operator()
     (
@@ -140,7 +150,7 @@ namespace TIMINT
     bool StepExists
     (
       const int step  //!< inquired step
-    )
+    ) const
     {
       return ( (step >= steppast_) and (step <= stepfuture_) );
     }
@@ -167,7 +177,7 @@ namespace TIMINT
     int IndexByStep
     (
       const int step  //!< step number
-    )
+    ) const
     {
       int index = step - steppast_;
       dsassert(IndexExists(index), "step is not permissible!");

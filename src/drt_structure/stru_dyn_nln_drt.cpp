@@ -21,6 +21,8 @@ Maintainer: Alexander Popp
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
+#include "../drt_adapter/ad_str_factory.H"
+#include "../drt_adapter/ad_str_structure_new.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "stru_dyn_nln_drt.H"
 #include "../drt_io/io.H"
@@ -93,16 +95,43 @@ void dyn_nlnstructural_drt()
   }
 
   // create an adapterbase and adapter
-  ADAPTER::StructureBaseAlgorithm adapterbase(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
-  Teuchos::RCP<ADAPTER::Structure> structadaptor = adapterbase.StructureField();
-
+  Teuchos::RCP<ADAPTER::Structure> structadaptor = Teuchos::null;
+  // FixMe The following switch is just a temporal hack, such we can jump between the new and the
+  // old structure implementation. Has to be deleted after the clean-up has been finished!
+  const enum INPAR::STR::IntegrationStrategy intstrat =
+        DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn,"INT_STRATEGY");
+  switch (intstrat)
+  {
+    // -------------------------------------------------------------------
+    // old implementation
+    // -------------------------------------------------------------------
+    case INPAR::STR::int_old:
+    {
+      Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> adapterbase_old_ptr =
+          Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(sdyn,
+              const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+      structadaptor = adapterbase_old_ptr->StructureField();
+      break;
+    }
+    // -------------------------------------------------------------------
+    // new implementation
+    // -------------------------------------------------------------------
+    default:
+    {
+      Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> adapterbase_ptr =
+          ADAPTER::STR::BuildStructureAlgorithm(sdyn);
+      adapterbase_ptr->Init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+      adapterbase_ptr->Setup();
+      structadaptor = adapterbase_ptr->StructureField();
+      break;
+    }
+  }
   // do restart
   const int restart = DRT::Problem::Instance()->Restart();
   if (restart)
   {
     structadaptor->ReadRestart(restart);
   }
-
   // write output at beginnning of calc
   else
   {

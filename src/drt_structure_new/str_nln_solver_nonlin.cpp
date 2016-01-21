@@ -43,7 +43,6 @@
 STR::NLN::SOLVER::Nonlin::Nonlin()
     : nlnproblem_(Teuchos::null),
       nlnoperator_(Teuchos::null),
-      noxgrp_(Teuchos::null),
       noxsoln_(Teuchos::null),
       noxutils_(Teuchos::null),
       params_(Teuchos::null)
@@ -81,7 +80,7 @@ void STR::NLN::SOLVER::Nonlin::Reset()
   // do a hard reset at the beginning to be on the safe side
   nlnproblem_ = Teuchos::null;
   nlnoperator_ = Teuchos::null;
-  noxgrp_ = Teuchos::null;
+  GroupPtr() = Teuchos::null;
   noxsoln_ = Teuchos::null;
 
   // FixMe add the solution vector, right-hand-side vector and the complete
@@ -104,8 +103,8 @@ void STR::NLN::SOLVER::Nonlin::Reset()
   /* use NOX::STR::Group to enable access to time integration
    * Note: NOX::Epetra::Group would be sufficient. */
   const Teuchos::RCP<NOX::Epetra::Interface::Required> ireq =
-        ImplicitTimIntPtr();
-  noxgrp_ = Teuchos::rcp(new NOX::Epetra::Group(
+        NoxInterfacePtr();
+  GroupPtr() = Teuchos::rcp(new NOX::Epetra::Group(
       params_->sublist("Nonlinear Problem"), ireq,
       *noxsoln_,linsys));
 
@@ -114,7 +113,7 @@ void STR::NLN::SOLVER::Nonlin::Reset()
   // ---------------------------------------------------------------------------
   nlnproblem_ = Teuchos::rcp(new NLNSOL::NlnProblem());
   nlnproblem_->Init(DataGlobalState().GetComm(),
-      params_->sublist("Nonlinear Problem"), *noxgrp_, jac);
+      params_->sublist("Nonlinear Problem"), *GroupPtr(), jac);
   nlnproblem_->Setup();
 
   /* Evaluate once more to guarantee valid quantities inside of the
@@ -172,8 +171,8 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> STR::NLN::SOLVER::Nonlin::NoxCreateLinea
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-  Teuchos::RCP<NOX::Epetra::Interface::Required> ireq = ImplicitTimIntPtr();
-  Teuchos::RCP<NOX::Epetra::Interface::Jacobian> ijac = ImplicitTimIntPtr();
+  Teuchos::RCP<NOX::Epetra::Interface::Required> ireq = NoxInterfacePtr();
+  Teuchos::RCP<NOX::Epetra::Interface::Jacobian> ijac = NoxInterfacePtr();
 
   // FixMe insert jacobian
   const Teuchos::RCP<LINALG::SparseOperator> jac = Teuchos::null;

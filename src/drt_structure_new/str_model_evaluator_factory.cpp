@@ -1,9 +1,15 @@
-/*
- * str_model_evaluator_factory.cpp
- *
- *  Created on: Sep 10, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_model_evaluator_factory.cpp
+
+\maintainer Michael Hiermeier
+
+\date Sep 10, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 
 #include "str_model_evaluator_factory.H"
@@ -23,14 +29,13 @@ STR::MODELEVALUATOR::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > >
-STR::MODELEVALUATOR::Factory::BuildModelEvaluators(
-    const std::set<enum INPAR::STR::ModelType>& modeltypes
+Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
+    BuildModelEvaluators(const std::set<enum INPAR::STR::ModelType>& modeltypes
     ) const
 {
   // create a new standard map
-  Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > > models =
-      Teuchos::rcp(new std::map<enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> >());
+  Teuchos::RCP<STR::ModelEvaluator::Map> models =
+      Teuchos::rcp(new STR::ModelEvaluator::Map());
 
   std::set<enum INPAR::STR::ModelType>::const_iterator mt_iter;
   for (mt_iter=modeltypes.begin();mt_iter!=modeltypes.end();++mt_iter)
@@ -38,7 +43,7 @@ STR::MODELEVALUATOR::Factory::BuildModelEvaluators(
     switch(*mt_iter)
     {
       case INPAR::STR::model_structure:
-//        (*models)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Structure());
+        (*models)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Structure());
         break;
       case INPAR::STR::model_contact:
       case INPAR::STR::model_meshtying:
@@ -57,9 +62,8 @@ STR::MODELEVALUATOR::Factory::BuildModelEvaluators(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > >
-STR::MODELEVALUATOR::BuildModelEvaluators(
-    const std::set<enum INPAR::STR::ModelType>& modeltypes
+Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::
+    BuildModelEvaluators(const std::set<enum INPAR::STR::ModelType>& modeltypes
     )
 {
   Factory factory;

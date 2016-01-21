@@ -1,0 +1,60 @@
+/*-----------------------------------------------------------*/
+/*!
+\file str_utils.H
+
+\maintainer Michael Hiermeier
+
+\date Dec 2, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
+
+#ifndef SRC_DRT_STRUCTURE_NEW_STR_UTILS_H_
+#define SRC_DRT_STRUCTURE_NEW_STR_UTILS_H_
+
+#include <NOX_Abstract_Vector.H>
+#include "../solver_nonlin_nox/nox_nln_globaldata.H"
+#include "../drt_inpar/inpar_structure.H"
+
+// forward declaration
+class Epetra_Vector;
+
+namespace STR {
+  //! Assemble the force right hand side vector
+  void AssembleForce(Epetra_Vector& target,
+      const Epetra_Vector& source, const double& scalar_source);
+
+namespace NLN {
+  //! Convert the structural vector types to a corresponding nox norm type
+  const enum NOX::Abstract::Vector::NormType Convert2NoxNormType(
+      const enum INPAR::STR::VectorNorm& normtype);
+
+  /*! Convert the structural model type enums to nox nln solution
+   *  type enums
+   *
+   *  Convert the model type enums to the nox internal solution type
+   *  enums. This is necessary, because the nox framework is not
+   *  supposed to be restricted to structural problems only.
+   */
+  void ConvertModelType2SolType(
+      std::vector<enum NOX::NLN::SolutionType>& soltypes,
+      std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& slinsolvers,
+      const std::set<enum INPAR::STR::ModelType>& modeltypes,
+      const std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& mlinsolvers);
+
+  //! Returns the optimization type of the underlying structural problem
+  const enum NOX::NLN::GlobalData::OptimizationProblemType
+      OptimizationType(const std::vector<enum NOX::NLN::SolutionType>& soltypes);
+
+  //! Set the constraint interfaces
+  void CreateConstraintInterfaces(
+      std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iconstr,
+      const std::vector<enum NOX::NLN::SolutionType>& soltypes);
+} // namespace NLN
+} // namespace STR
+
+
+#endif /* SRC_DRT_STRUCTURE_NEW_STR_UTILS_H_ */

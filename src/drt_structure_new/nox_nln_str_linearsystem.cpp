@@ -89,11 +89,13 @@ NOX::NLN::STR::LinearSystem::LinearSystem(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::NLN::STR::LinearSystem::SetSolverOptions(Teuchos::RCP<LINALG::Solver>& solverPtr,
+void NOX::NLN::STR::LinearSystem::SetSolverOptions(
+    Teuchos::ParameterList& p,
+    Teuchos::RCP<LINALG::Solver>& solverPtr,
     const NOX::NLN::SolutionType& solverType)
 {
-  bool isAdaptiveControl          = linParams_.get<bool>("Adaptive Control");
-  double adaptiveControlObjective = linParams_.get<double>("Adaptive Control Objective");
+  bool isAdaptiveControl          = p.get<bool>("Adaptive Control");
+  double adaptiveControlObjective = p.get<double>("Adaptive Control Objective");
 
   if (isAdaptiveControl)
   {
@@ -106,7 +108,7 @@ void NOX::NLN::STR::LinearSystem::SetSolverOptions(Teuchos::RCP<LINALG::Solver>&
     double worst  = iNlnReq->CalcRefNormForce();
     // This value has to be specified in the PrePostOperator object of
     // the non-linear solver (i.e. runPreSolve())
-    double wanted = linParams_.get<double>("Wanted Tolerance");
+    double wanted = p.get<double>("Wanted Tolerance");
     solverPtr->AdaptTolerance(wanted,worst,adaptiveControlObjective);
   }
 

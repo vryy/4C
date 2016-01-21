@@ -27,7 +27,7 @@ bool STR::NLN::SOLVER::IsXMLStatusTestFile(
 
   Teuchos::ParameterList pxml;
   const std::string& xmlfilename =
-      pstatus.get<const std::string>("XML File");
+      pstatus.get<std::string>("XML File");
 
   // check the input: path to the "Status Test" xml-file
   if (xmlfilename != "none")
@@ -235,7 +235,7 @@ void STR::NLN::SOLVER::SetStatusTestParams(
   // ---------------------------------------------------------------------------
   Teuchos::ParameterList& pmaxiters = postatus.sublist("Test 1");
   pmaxiters.set("Test Type","MaxIters");
-  pmaxiters.set("Maximum Iterations",datasdyn.GetIterMax());
+  pmaxiters.set<int>("Maximum Iterations",datasdyn.GetIterMax());
 
   return;
 }
@@ -373,7 +373,7 @@ void STR::NLN::SOLVER::SplitAndOrCombo(
     if (testname=="NormF")
       combotype = datasdyn.GetResComboType(*qtiter);
     else if (testname!="NormUpdate")
-      dserror("The given test \"%s\" name is not supported!",testname);
+      dserror("The given test \"%s\" name is not supported!",testname.c_str());
 
     switch (combotype)
     {

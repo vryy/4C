@@ -1,9 +1,15 @@
-/*
- * str_predict_factory.cpp
- *
- *  Created on: Aug 31, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_predict_factory.cpp
+
+\maintainer Michael Hiermeier
+
+\date Aug 31, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 
 #include "str_predict_factory.H"

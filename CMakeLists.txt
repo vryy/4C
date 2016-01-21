@@ -689,7 +689,11 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
   src/drt_adapter/adapter_particle.cpp
   src/drt_adapter/ad_str_structure.cpp
-#  src/drt_adapter/ad_str_structure_new.cpp
+  src/drt_structure/stru_dyn_nln_drt.cpp
+  src/drt_adapter/ad_str_factory.cpp
+  src/drt_adapter/ad_str_structure_new.cpp
+  src/drt_adapter/ad_str_loca.cpp  
+  src/drt_adapter/ad_str_loca_wrapper.cpp
   src/drt_adapter/ad_str_constr_merged.cpp
   src/drt_adapter/ad_str_lung.cpp
   src/drt_adapter/ad_str_redairway.cpp
@@ -763,6 +767,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_immersed.cpp
   src/drt_inpar/inpar_invanalysis.cpp
   src/drt_inpar/inpar_levelset.cpp
+  src/drt_inpar/inpar_loca_continuation.cpp
   src/drt_inpar/inpar_lubrication.cpp
   src/drt_inpar/inpar_meshfree.cpp
   src/drt_inpar/inpar_mlmc.cpp
@@ -1658,28 +1663,45 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/strtimint_statics.cpp
   src/drt_structure/strtimint_prestress.cpp
   src/drt_structure/stru_aux.cpp
-  src/drt_structure/stru_dyn_nln_drt.cpp
   src/drt_structure/stru_resulttest.cpp
   src/drt_structure/strtimint_statmech.cpp
-#  src/drt_structure_new/str_impl_factory.cpp
-#  src/drt_structure_new/str_model_evaluator_factory.cpp
-#  src/drt_structure_new/str_model_evaluator_structure.cpp
-#  src/drt_structure_new/str_nln_solver_factory.cpp
-#  src/drt_structure_new/str_nln_solver_utils.cpp
-#  src/drt_structure_new/str_nln_solver_generic.cpp
-#  src/drt_structure_new/str_nln_solver_fullnewton.cpp
-#  src/drt_structure_new/str_nln_solver_nox.cpp
-#  src/drt_structure_new/str_nln_solver_ptc.cpp
+  src/drt_structure_new/str_utils.cpp
+  src/drt_structure_new/str_dbc.cpp
+  src/drt_structure_new/str_resulttest.cpp
+  src/drt_structure_new/str_factory.cpp
+  src/drt_structure_new/str_impl_statics.cpp
+  src/drt_structure_new/str_impl_genalpha.cpp
+  src/drt_structure_new/str_impl_gemm.cpp
+  src/drt_structure_new/str_impl_ost.cpp
+  src/drt_structure_new/str_integrator.cpp
+  src/drt_structure_new/str_model_evaluator.cpp
+  src/drt_structure_new/str_model_evaluator_factory.cpp
+  src/drt_structure_new/str_model_evaluator_generic.cpp
+  src/drt_structure_new/str_model_evaluator_structure.cpp
+  src/drt_structure_new/str_nln_solver_factory.cpp
+  src/drt_structure_new/str_nln_solver_utils.cpp
+  src/drt_structure_new/str_nln_solver_generic.cpp
+  src/drt_structure_new/str_nln_solver_fullnewton.cpp
+  src/drt_structure_new/str_nln_solver_nox.cpp
+  src/drt_structure_new/str_nln_solver_ptc.cpp
 #  src/drt_structure_new/str_nln_solver_nonlin.cpp
-#  src/drt_structure_new/str_predict_factory.cpp
-#  src/drt_structure_new/str_predict_generic.cpp
-#  src/drt_structure_new/str_predict_constdisvelaccpress.cpp
-#  src/drt_structure_new/str_predict_tangdis.cpp
-#  src/drt_structure_new/str_solver_factory.cpp
-#  src/drt_structure_new/str_timint_factory.cpp
-#  src/drt_structure_new/str_timint_base.cpp
-#  src/drt_structure_new/str_timint_explicit.cpp
-#  src/drt_structure_new/str_timint_implicit.cpp
+  src/drt_structure_new/str_predict_factory.cpp
+  src/drt_structure_new/str_predict_generic.cpp
+  src/drt_structure_new/str_predict_constdisvelaccpress.cpp
+  src/drt_structure_new/str_predict_tangdis.cpp
+  src/drt_structure_new/str_solver_factory.cpp
+  src/drt_structure_new/str_timint_factory.cpp
+  src/drt_structure_new/str_timint_base.cpp
+  src/drt_structure_new/str_timint_basedataio.cpp
+  src/drt_structure_new/str_timint_basedataglobalstate.cpp
+  src/drt_structure_new/str_timint_basedatasdyn.cpp
+  src/drt_structure_new/str_timint_explicit.cpp
+  src/drt_structure_new/str_timint_implicit.cpp
+  src/drt_structure_new/str_timint_implicitbase.cpp
+  src/drt_structure_new/str_timint_noxinterface.cpp
+  src/drt_structure_new/str_timint_loca_continuation.cpp
+  src/drt_structure_new/str_timint_locainterface.cpp
+#  src/drt_structure_new/loca_str_constraint_arclength.cpp
 )
 set(OBJS_POST_DRT_S8CONVERT
   src/post_s8convert/post_drt_s8convert.cpp
@@ -1812,7 +1834,6 @@ set(OBJS_SOLVER_NONLIN
 set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_aux.cpp
   src/solver_nonlin_nox/nox_nln_globaldata.cpp
-  src/solver_nonlin_nox/nox_nln_problem_factory.cpp
   src/solver_nonlin_nox/nox_nln_problem.cpp
   src/solver_nonlin_nox/nox_nln_linearsystem.cpp
   src/solver_nonlin_nox/nox_nln_linearsystem_factory.cpp
@@ -1826,7 +1847,6 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_solver_prepostop_generic.cpp
   src/solver_nonlin_nox/nox_nln_solver_linesearchbased.cpp
   src/solver_nonlin_nox/nox_nln_solver_ptc.cpp
-  src/solver_nonlin_nox/nox_nln_constraint_problem.cpp
   src/solver_nonlin_nox/nox_nln_constraint_group.cpp
   src/solver_nonlin_nox/nox_nln_linesearch_backtrack.cpp
   src/solver_nonlin_nox/nox_nln_meritfunction_lagrangian.cpp
@@ -1842,6 +1862,13 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_inner_statustest_armijo.cpp
   src/drt_structure_new/nox_nln_str_linearsystem.cpp
   src/drt_contact_aug/nox_nln_contact_linearsystem.cpp
+)
+
+set(OBJS_LOCA_CONTINUATION
+  src/loca_continuation/loca_nln_problem.cpp
+  src/loca_continuation/loca_nln_group.cpp
+  src/loca_continuation/loca_nln_stepper.cpp
+  src/loca_continuation/loca_nln_statustest_factory.cpp
 )
 
 set(OBJS_DRT_CONSTRAINT
@@ -2053,11 +2080,6 @@ set(OBJS_DRT_CONTACT_AUG
   src/drt_contact_aug/contact_augmented_interface.cpp
   src/drt_contact_aug/contact_augmented_interface_tools.cpp
   src/drt_contact_aug/contact_augmented_integrator.cpp
-#  src/drt_contact_aug/nln_contact_strategy.cpp
-#  src/drt_contact_aug/nln_contact_strategy_nox.cpp
-#  src/drt_contact_aug/nln_steepest_ascent_strategy.cpp
-#  src/drt_contact_aug/nln_augmented_strategy.cpp
-#  src/drt_contact_aug/nln_lagrange_strategy.cpp
 )
 set(OBJS_DRT_CRACK_LIB
   src/drt_crack/InsertCohesiveElements.cpp
@@ -2548,6 +2570,9 @@ add_library(post_drt_vtk_lib ${OBJS_POST_DRT_VTK})
 add_library(linalg ${OBJS_LINALG})
 add_library(libsolver ${OBJS_SOLVER})
 
+# continuation method
+add_library(locacontinuation ${OBJS_LOCA_CONTINUATION})
+
 # nonlinear solver objects
 add_library(nlnsolver ${OBJS_SOLVER_NONLIN})
 add_library(nlnsolver_nox ${OBJS_SOLVER_NONLIN_NOX})
@@ -2580,6 +2605,7 @@ target_link_libraries (${baciname}
   drt_micromat
   drt_mat
   drt_lib_utils
+  locacontinuation
   nlnsolver
   nlnsolver_nox
   libsolver

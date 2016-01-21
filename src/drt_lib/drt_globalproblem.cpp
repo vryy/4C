@@ -335,6 +335,16 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadSection("--STRUCT NOX/Status Test", *list);
   reader.ReadSection("--STRUCT NOX/Solver Options", *list);
 
+  reader.ReadSection("--LOCA", *list);
+  reader.ReadSection("--LOCA/Stepper", *list);
+  reader.ReadSection("--LOCA/Stepper/Eigensolver", *list);
+  reader.ReadSection("--LOCA/Bifurcation", *list);
+  reader.ReadSection("--LOCA/Predictor", *list);
+  reader.ReadSection("--LOCA/Predictor/First Step Predictor", *list);
+  reader.ReadSection("--LOCA/Predictor/Last Step Predictor", *list);
+  reader.ReadSection("--LOCA/Step Size", *list);
+  reader.ReadSection("--LOCA/Constraints", *list);
+
   // read in solver sections
   // Note: the maximum number of solver blocks in dat files is hardwired here.
   // If you change this do not forget to edit the corresponding parts in
@@ -401,6 +411,26 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
     ss << "--RANDOM VARIABLE " << i;
     reader.ReadGidSection(ss.str(), *list);
   }
+
+  // read in STRUCT NOX/Status Test and modify the xml file name, if there
+  // is one.
+  if (list->sublist("STRUCT NOX").sublist("Status Test").isParameter("XML File"))
+  {
+    // adapt path of XML file if necessary
+    Teuchos::ParameterList& sublist = list->sublist("STRUCT NOX").sublist("Status Test");
+    std::string* statustest_xmlfile = sublist.getPtr<std::string>("XML File");
+    // make path relative to input file path if it is not an absolute path
+    if (((*statustest_xmlfile)[0]!='/') and ((*statustest_xmlfile) != "none"))
+    {
+      std::string filename = reader.MyInputfileName();
+      std::string::size_type pos = filename.rfind('/');
+      if (pos!=std::string::npos)
+      {
+        std::string tmp = filename.substr(0,pos+1);
+        statustest_xmlfile->insert(statustest_xmlfile->begin(), tmp.begin(), tmp.end());
+      }
+    }
+  } // STRUCT NOX/Status Test
 
   // check for invalid parameters
   setParameterList(list);

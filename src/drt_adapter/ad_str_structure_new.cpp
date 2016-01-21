@@ -1,9 +1,15 @@
-/*
- * ad_str_structure_new.cpp
- *
- *  Created on: Sep 2, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file ad_str_structure_new.cpp
+
+\maintainer Michael Hiermeier
+
+\date Sep 2, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #include "ad_str_structure_new.H"
 #include "ad_str_timint_adaptive.H"
@@ -54,28 +60,12 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-ADAPTER::StructureNew::StructureNew()
-{
-  // empty constructor
-}
-
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-ADAPTER::StructureNew::~StructureNew()
-{
-  // empty
-}
-
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-ADAPTER::StructureBaseAlgorithmNew::StructureBaseAlgorithmNew() :
-    structure_(Teuchos::null),
-    prbdyn_(Teuchos::null),
-    sdyn_(Teuchos::null),
-    isinit_(false),
-    issetup_(false)
+ADAPTER::StructureBaseAlgorithmNew::StructureBaseAlgorithmNew()
+    : str_wrapper_(Teuchos::null),
+      prbdyn_(Teuchos::null),
+      sdyn_(Teuchos::null),
+      isinit_(false),
+      issetup_(false)
 {
   // empty
 }
@@ -147,36 +137,36 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // get the restart step
   const int restart = problem->Restart();
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Define, initialize and start the timer
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   Teuchos::RCP<Teuchos::Time> t
     = Teuchos::TimeMonitor::getNewTimer(
         "ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure");
   Teuchos::TimeMonitor monitor(*t);
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Setup a model type set by checking
   // the different conditions
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // define and initial with default value
   Teuchos::RCP<std::set<enum INPAR::STR::ModelType> > modeltypes =
       Teuchos::rcp(new std::set<enum INPAR::STR::ModelType>());
   modeltypes->insert(INPAR::STR::model_structure);
   SetModelTypes(*modeltypes);
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Setup a element technology set by checking
   // the elements of the discretization
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   Teuchos::RCP<std::set<enum INPAR::STR::EleTech> > eletechs =
       Teuchos::rcp(new std::set<enum INPAR::STR::EleTech>());
   DetectElementTechnologies(*eletechs);
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Here we read the discretization at the current
   // time step from restart files
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   if ( restart and probtype == prb_crack )
   {
     IO::DiscretizationReader reader(actdis_, restart);
@@ -186,10 +176,10 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   else if (not actdis_->Filled() || not actdis_->HaveDofs())
     actdis_->FillComplete();
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Setup the parameter lists for structural
   // time integration
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> ioflags
     = Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
   Teuchos::RCP<Teuchos::ParameterList> taflags
@@ -198,15 +188,15 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
     = Teuchos::rcp(new Teuchos::ParameterList());
   SetParams(*ioflags,*xparams,*taflags);
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Setup and create model specific linear solvers
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > > linsolvers =
       STR::SOLVER::BuildLinSolvers(*modeltypes,*sdyn_,*actdis_);
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Checks in case of multi-scale simulations
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   {
     // make sure we IMR-like generalised-alpha requested for multi-scale
     // simulations
@@ -227,10 +217,10 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
     }
   }
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Add cohesive elements in case of crack
   // propagation simulations
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   {
     const Teuchos::ParameterList& crackparam = DRT::Problem::Instance()->CrackParams();
     if (DRT::INPUT::IntegralValue<INPAR::CRACK::crackModel>(crackparam,"CRACK_MODEL")
@@ -244,52 +234,52 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
     }
   }
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Create context for output and restart
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   Teuchos::RCP<IO::DiscretizationWriter> output = actdis_->Writer();
   if (DRT::INPUT::IntegralValue<int>(*ioflags,"OUTPUT_BIN"))
   {
     output->WriteMesh(0, 0.0);
   }
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // initialize/setup the input/output data container
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TIMINT::BaseDataIO> dataio =
       Teuchos::rcp(new STR::TIMINT::BaseDataIO());
   dataio->Init(*ioflags,*sdyn_,*xparams,output);
   dataio->Setup();
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // initialize/setup the structural dynamics data
   // container
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TIMINT::BaseDataSDyn> datasdyn =
       Teuchos::rcp(new STR::TIMINT::BaseDataSDyn());
   datasdyn->Init(actdis_,*sdyn_,*xparams,modeltypes,eletechs,linsolvers);
   datasdyn->Setup();
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // initialize/setup the global state data container
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> dataglobalstate =
       Teuchos::rcp(new STR::TIMINT::BaseDataGlobalState());
-  dataglobalstate->Init(actdis_,datasdyn);
+  dataglobalstate->Init(actdis_,*sdyn_,datasdyn);
   dataglobalstate->Setup();
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // Build time integrator
-  // ------------------------------------------------
-  Teuchos::RCP<STR::TIMINT::Base> timint =
-      STR::TIMINT::BuildTimeIntegrator(*sdyn_);
-  timint->Init(dataio,datasdyn,dataglobalstate);
-  timint->Setup();
+  // ---------------------------------------------------------------------------
+  Teuchos::RCP<STR::TIMINT::Base> ti_strategy =
+      STR::TIMINT::BuildStrategy(*sdyn_);
+  ti_strategy->Init(dataio,datasdyn,dataglobalstate);
+  ti_strategy->Setup();
 
-  // ------------------------------------------------
-  // Create wrapper for the time integrator timint
-  // ------------------------------------------------
-  SetStructure(*ioflags,*sdyn_,*xparams,*taflags,timint);
+  // ---------------------------------------------------------------------------
+  // Create wrapper for the time integration strategy
+  // ---------------------------------------------------------------------------
+  SetStructureWrapper(*ioflags,*sdyn_,*xparams,*taflags,ti_strategy);
 
   // see you
   return;
@@ -304,9 +294,9 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   if (not IsInit())
     dserror("You have to call Init() first!");
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // check for meshtying and contact conditions
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // --- contact conditions
   std::vector<DRT::Condition*> ccond(0);
   actdis_->GetCondition("Contact",ccond);
@@ -317,9 +307,9 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   actdis_->GetCondition("Mortar", mtcond);
   if (mtcond.size())
     modeltypes.insert(INPAR::STR::model_meshtying);
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // check for windkessel conditions
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   std::vector<DRT::Condition*> wkcond_std(0);
   std::vector<DRT::Condition*> wkcond_heartvalvearterial(0);
   std::vector<DRT::Condition*> wkcond_heartvalvearterial_proxdist(0);
@@ -336,9 +326,9 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
       wkcond_heartvalvearterial_proxdist.size() or
       wkcond_heartvalvecardiovascular_full.size())
     modeltypes.insert(INPAR::STR::model_windkessel);
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // check for constraint conditions
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   bool have_lag_constraint = false;
   bool have_pen_constraint = false;
   // --- enforcement by Lagrange multiplier
@@ -378,9 +368,9 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
     have_pen_constraint = true;
   if (have_lag_constraint or have_pen_constraint)
     modeltypes.insert(INPAR::STR::model_lag_pen_constraint);
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // check for spring dashpot conditions
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   std::vector<DRT::Condition*> sdp_cond(0);
   actdis_->GetCondition("SpringDashpot",sdp_cond);
   if (sdp_cond.size())
@@ -412,11 +402,11 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
   {
     DRT::Element* actele = actdis_->lRowElement(i);
     // Detect plasticity
-    if (   actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance()
-        || actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance()
-        || actele->ElementType() == DRT::ELEMENTS::So_sh8PlastType::Instance()
-        || actele->ElementType() == DRT::ELEMENTS::So_hex18PlastType::Instance()
-        || actele->ElementType() == DRT::ELEMENTS::So_sh18PlastType::Instance()
+    if (actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance() or
+        actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance() or
+        actele->ElementType() == DRT::ELEMENTS::So_sh8PlastType::Instance() or
+        actele->ElementType() == DRT::ELEMENTS::So_hex18PlastType::Instance() or
+        actele->ElementType() == DRT::ELEMENTS::So_sh18PlastType::Instance()
        )
     {
       isplasticity_local=true;
@@ -476,23 +466,23 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(
   DRT::Problem* problem = DRT::Problem::Instance();
   PROBLEM_TYP probtype = problem->ProblemType();
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // show default parameters
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   if ((actdis_->Comm()).MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(IO::cout, *sdyn_);
 
-  // ------------------------------------------------
+  // ---------------------------------------------------------------------------
   // get input parameter lists and copy them,
   // because a few parameters are overwritten
-  // ------------------------------------------------
-  Teuchos::RCP<Teuchos::ParameterList> snox
-    = Teuchos::rcp(new Teuchos::ParameterList(problem->StructuralNoxParams()));
-
-  // add extra parameters (a kind of work-around)
-  xparams.set<FILE*>("err file", problem->ErrorFile()->Handle());
+  // ---------------------------------------------------------------------------
+  // nox parameter list
+  Teuchos::RCP<Teuchos::ParameterList> snox =
+      Teuchos::rcp(new Teuchos::ParameterList(problem->StructuralNoxParams()));
   Teuchos::ParameterList& nox = xparams.sublist("NOX");
   nox = *snox;
+  // add extra parameters (a kind of work-around)
+    xparams.set<FILE*>("err file", problem->ErrorFile()->Handle());
   // Parameter to determine if MLMC is on/off
   Teuchos::RCP<Teuchos::ParameterList> mlmcp
       = Teuchos::rcp(new Teuchos::ParameterList (problem->MultiLevelMonteCarloParams()));
@@ -593,21 +583,21 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ADAPTER::StructureBaseAlgorithmNew::SetStructure(
+void ADAPTER::StructureBaseAlgorithmNew::SetStructureWrapper(
     const Teuchos::ParameterList& ioflags,
     const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams,
     const Teuchos::ParameterList& taflags,
-    Teuchos::RCP<STR::TIMINT::Base> timint)
+    Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
   // create a adaptive wrapper
-  CreateAdaptiveWrapper(ioflags,sdyn,xparams,taflags,timint);
+  CreateAdaptiveWrapper(ioflags,sdyn,xparams,taflags,ti_strategy);
 
   // if no adaptive wrapper was found, we try to create a standard one
-  if (structure_.is_null())
-    CreateWrapper(timint);
+  if (str_wrapper_.is_null())
+    CreateWrapper(ti_strategy);
 
-  if (structure_.is_null())
+  if (str_wrapper_.is_null())
     dserror("No proper time integration found!");
 
   return;
@@ -621,15 +611,15 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
     const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams,
     const Teuchos::ParameterList& taflags,
-    Teuchos::RCP<STR::TIMINT::Base> timint)
+    Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
   // get the problem instance and the problem type
   DRT::Problem* problem = DRT::Problem::Instance();
   PROBLEM_TYP probtype = problem->ProblemType();
 
-  // create auxiliary time integrator, can be seen as a wrapper for timint
+  // create auxiliary time integrator, can be seen as a wrapper for ti_strategy
   Teuchos::RCP<STR::TimAda> wrapper_adaptive =
-      STR::TimAdaCreate(ioflags, sdyn, xparams, taflags, timint);
+      STR::TIMINT::BuildAdaptiveWrapper(ioflags, sdyn, xparams, taflags, ti_strategy);
 
   if (wrapper_adaptive.is_null())
     return;
@@ -640,7 +630,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
     case prb_statmech:
     case prb_crack:
     {
-      structure_ = Teuchos::rcp(new StructureTimIntAda(wrapper_adaptive, timint));
+      str_wrapper_ = Teuchos::rcp(new StructureTimIntAda(wrapper_adaptive, ti_strategy));
       break;
     }
     case prb_fsi: // structure based time adaptivity within an FSI simulation
@@ -650,8 +640,8 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
         IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
 
       Teuchos::RCP<FSIStructureWrapper> fsiwrapperwithadaptivity =
-          Teuchos::rcp(new StructureFSITimIntAda(wrapper_adaptive, Teuchos::rcp(new StructureNOXCorrectionWrapper(timint))));
-      structure_ = fsiwrapperwithadaptivity;
+          Teuchos::rcp(new StructureFSITimIntAda(wrapper_adaptive, Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
+      str_wrapper_ = fsiwrapperwithadaptivity;
       break;
     }
     default:
@@ -668,7 +658,7 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateAdaptiveWrapper(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
-    Teuchos::RCP<STR::TIMINT::Base> timint)
+    Teuchos::RCP<STR::TIMINT::Base> ti_strategy)
 {
   // get the problem instance and the problem type
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -693,30 +683,30 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
       if ((actdis_->Comm()).MyPID()==0)
         IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
       // Are there any constraint conditions active?
-      const std::set<INPAR::STR::ModelType>& modeltypes = timint->GetDataSDyn().GetModelTypes();
+      const std::set<INPAR::STR::ModelType>& modeltypes = ti_strategy->GetDataSDyn().GetModelTypes();
       if (modeltypes.find(INPAR::STR::model_lag_pen_constraint)!=modeltypes.end())
       {
         if (coupling == fsi_iter_constr_monolithicstructuresplit or
             coupling == fsi_iter_constr_monolithicfluidsplit)
-          structure_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(timint))));
+          str_wrapper_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
         else
-          structure_ = Teuchos::rcp(new StructureConstrMerged(Teuchos::rcp(new StructureNOXCorrectionWrapper(timint))));
+          str_wrapper_ = Teuchos::rcp(new StructureConstrMerged(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
       }
       else
       {
         if (coupling == fsi_iter_lung_monolithicstructuresplit or
             coupling == fsi_iter_lung_monolithicfluidsplit)
-          structure_ = Teuchos::rcp(new StructureLung(Teuchos::rcp(new StructureNOXCorrectionWrapper(timint))));
+          str_wrapper_ = Teuchos::rcp(new StructureLung(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
         else
-          structure_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(timint))));
+          str_wrapper_ = Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))));
       }
       break;
     }
     case prb_fsi_crack:
-      structure_ = Teuchos::rcp(new FSICrackingStructure(Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(timint))))));
+      str_wrapper_ = Teuchos::rcp(new FSICrackingStructure(Teuchos::rcp(new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(ti_strategy))))));
       break;
     case prb_redairways_tissue:
-      structure_ = Teuchos::rcp(new StructureRedAirway(timint));
+      str_wrapper_ = Teuchos::rcp(new StructureRedAirway(ti_strategy));
       break;
     case prb_poroelast:
     case prb_poroscatra:
@@ -729,35 +719,35 @@ void ADAPTER::StructureBaseAlgorithmNew::CreateWrapper(
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =
             DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(porodyn, "COUPALGO");
       // Are there any constraint conditions active?
-      const std::set<INPAR::STR::ModelType>& modeltypes = timint->GetDataSDyn().GetModelTypes();
+      const std::set<INPAR::STR::ModelType>& modeltypes = ti_strategy->GetDataSDyn().GetModelTypes();
       if (modeltypes.find(INPAR::STR::model_lag_pen_constraint)!=modeltypes.end())
       {
         if (   coupling == INPAR::POROELAST::Monolithic_structuresplit
             or coupling == INPAR::POROELAST::Monolithic_fluidsplit
             or coupling == INPAR::POROELAST::Monolithic_nopenetrationsplit
             )
-          structure_ = Teuchos::rcp(new FPSIStructureWrapper(timint));
+          str_wrapper_ = Teuchos::rcp(new FPSIStructureWrapper(ti_strategy));
         else
-          structure_ = Teuchos::rcp(new StructureConstrMerged(timint));
+          str_wrapper_ = Teuchos::rcp(new StructureConstrMerged(ti_strategy));
       }
       else
       {
-          structure_ = Teuchos::rcp(new FPSIStructureWrapper(timint));
+          str_wrapper_ = Teuchos::rcp(new FPSIStructureWrapper(ti_strategy));
       }
       break;
     }
     case prb_struct_ale:
-      structure_ = Teuchos::rcp(new FSIStructureWrapper(timint));
+      str_wrapper_ = Teuchos::rcp(new FSIStructureWrapper(ti_strategy));
       break;
     case prb_statmech:
-      structure_ = (Teuchos::rcp(new StructureStatMech(timint)));
+      str_wrapper_ = (Teuchos::rcp(new StructureStatMech(ti_strategy)));
       break;
     case prb_invana:
-      structure_ = (Teuchos::rcp(new StructureInvana(timint)));
+      str_wrapper_ = (Teuchos::rcp(new StructureInvana(ti_strategy)));
       break;
     default:
       /// wrap time loop for pure structure problems
-      structure_ = (Teuchos::rcp(new StructureTimeLoop(timint)));
+      str_wrapper_ = (Teuchos::rcp(new StructureTimeLoop(ti_strategy)));
       break;
   }
 

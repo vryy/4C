@@ -1,9 +1,15 @@
-/*
- * str_predict_constdisvelaccpress.H
- *
- *  Created on: Aug 13, 2015
- *      Author: farah
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_predict_constdisvelaccpress.H
+
+\maintainer Michael Hiermeier
+
+\date Aug 13, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef STR_PREDICT_CONSTDIS_H_
 #define STR_PREDICT_CONSTDIS_H_
@@ -21,13 +27,15 @@ namespace PREDICT {
     //! destructor
     virtual ~ConstDisVelAccPress() {};
 
-    //! do the class specific predictor step
-    virtual void Predict();
-
-  protected:
     //! setup class specific stuff
     virtual void Setup();
-  };
+
+    //! do the class specific predictor step
+    virtual void Compute(NOX::Abstract::Group& grp);
+
+  private:
+    Teuchos::RCP<STR::PREDICT::Generic> tangdis_ptr_;
+  };  // class ConstDisVelAccPress
 } // namespace PREDICT
 } // namespace STR
 

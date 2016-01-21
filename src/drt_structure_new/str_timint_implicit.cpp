@@ -1,15 +1,22 @@
-/*
- * str_timint_implicit.cpp
- *
- *  Created on: Aug 13, 2015
- *      Author: farah
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_timint_implicit.cpp
+
+\maintainer Michael Hiermeier
+
+\date Aug 13, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
 
 #include "str_timint_implicit.H"
 #include "str_impl_generic.H"
-#include "str_impl_factory.H"
 #include "str_predict_generic.H"
 #include "str_nln_solver_generic.H"
+#include "str_timint_noxinterface.H"
 
 // factories
 #include "str_predict_factory.H"
@@ -18,9 +25,9 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::TIMINT::Implicit::Implicit()
-    : STR::TIMINT::Base(),
-      implint_(Teuchos::null),
-      nlnsolver_(Teuchos::null)
+    : implint_ptr_(Teuchos::null),
+      nlnsolver_ptr_(Teuchos::null),
+      grp_ptr_(Teuchos::null)
 {
   // empty
 }
@@ -34,73 +41,101 @@ void STR::TIMINT::Implicit::Setup()
   if (!IsInit())
     dserror("Init() has not been called, yet!");
 
-  // ---------------------------------------------
-  // build implicit integrator
-  // ---------------------------------------------
-  // get local references to the enums
-  const enum INPAR::STR::DynamicType& dynType =
-      DataSDyn().GetDynamicType();
-  const enum INPAR::STR::PreStress& preStressType =
-      DataSDyn().GetPreStressType();
-  implint_ = STR::IMPLICIT::BuildImplicitIntegrator(dynType,preStressType);
-  implint_->Init();
-  implint_->Setup();
+  STR::TIMINT::Base::Setup();
 
-  // ---------------------------------------------
+  // ---------------------------------------------------------------------------
+  // cast the base class integrator
+  // ---------------------------------------------------------------------------
+  implint_ptr_ = Teuchos::rcp_dynamic_cast<STR::IMPLICIT::Generic>(IntegratorPtr());
+
+  // ---------------------------------------------------------------------------
+  // build NOX interface
+  // ---------------------------------------------------------------------------
+  Teuchos::RCP<STR::TIMINT::NoxInterface> noxinterface_ptr =
+      Teuchos::rcp(new STR::TIMINT::NoxInterface());
+  noxinterface_ptr->Init(DataGlobalStatePtr(),
+      implint_ptr_,DBCPtr(),Teuchos::rcp(this,false));
+  noxinterface_ptr->Setup();
+
+  /* Set NOX::Epetra::Interface::Required
+   * This interface is necessary for the evaluation of basic things
+   * which are evaluated outside of the nox framework, but
+   * are strictly required. A simple example is the right-hand-side
+   * F. (see computeF) */
+  const Teuchos::RCP<NOX::Epetra::Interface::Required> ireq =
+      noxinterface_ptr;
+
+  // ---------------------------------------------------------------------------
   // build predictor
-  // ---------------------------------------------
+  // ---------------------------------------------------------------------------
   const enum INPAR::STR::PredEnum& predtype =
       DataSDyn().GetPredictorType();
-  predictor_ = STR::PREDICT::BuildPredictor(predtype);
-  predictor_->Init(predtype);
-  predictor_->Setup();
+  predictor_ptr_ = STR::PREDICT::BuildPredictor(predtype);
+  predictor_ptr_->Init(predtype,implint_ptr_,DBCPtr(),DataGlobalStatePtr(),
+      DataIOPtr(),DataSDyn().GetMutableNoxParamsPtr());
+  predictor_ptr_->Setup();
 
-  // ---------------------------------------------
+  // ---------------------------------------------------------------------------
   // build non-linear solver
-  // ---------------------------------------------
+  // ---------------------------------------------------------------------------
   const enum INPAR::STR::NonlinSolTech& nlnSolverType =
       DataSDyn().GetNlnSolverType();
-  nlnsolver_ = STR::NLN::SOLVER::BuildNlnSolver(nlnSolverType);
-  nlnsolver_->Init(DataGlobalStatePtr(), DataSDynPtr(), Teuchos::rcp(this,false));
-  nlnsolver_->Setup();
+  nlnsolver_ptr_ = STR::NLN::SOLVER::BuildNlnSolver(nlnSolverType);
+  nlnsolver_ptr_->Init(DataGlobalStatePtr(),
+      DataSDynPtr(), noxinterface_ptr);
+  nlnsolver_ptr_->Setup();
 
-  // set isSetup flag
+  // set setup flag
   issetup_ = true;
 
   return;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Implicit::PreparePartitionStep()
+{
+  dserror("Not yet implemented!");
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Implicit::PrepareTimeStep()
 {
   // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
-  DataGlobalStatePtr()->SetTimenp(DataGlobalStatePtr()->GetUpdatedTime());
+  /* ToDo Check if this is still necessary. I moved this part to the Update(const double endtime)
+   * routine, such it becomes consistent with non-adaptive update routine! See the
+   * UpdateStepTime() routine for more information.                             hiermeier 12/2015
+   *
+  double& time_np = DataGlobalState().GetMutableTimeNp();
+  time_np = DataGlobalState().GetTimeN() + (*DataGlobalState().GetDeltaTime())[0]; */
 
-  // things that need to be done before Predict
-  PrePredict();
-
-  // TODO prepare contact for new time step
+  // ToDo prepare contact for new time step
   // PrepareStepContact();
-  Predictor().Predict();
-
-  // things that need to be done after Predict
-  PostPredict();
+  NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
+  Predictor().Predict(grp);
 
   return;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::TIMINT::Implicit::Integrate()
+{
+  dserror("The function is unused since the ADAPTER::StructureTimeLoop "
+      "wrapper gives you all the flexibility you need.");
+  return 0;
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::Implicit::IntegrateStep()
 {
   // do the predictor step
-  Predictor().Predict();
+  NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
+  Predictor().Predict(grp);
   return Solve();
 }
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -110,4 +145,20 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::Solve()
   NlnSolver().Reset();
   // solve the non-linear problem
   return NlnSolver().Solve();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const NOX::Abstract::Group& STR::TIMINT::Implicit::GetSolutionGroup() const
+{
+  CheckInitSetup();
+  return NlnSolver().GetSolutionGroup();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> STR::TIMINT::Implicit::SolveRelaxationLinear()
+{
+  dserror("FixMe: SolveRelaxationLinear() should be implemented here!");
+  return Teuchos::null;
 }

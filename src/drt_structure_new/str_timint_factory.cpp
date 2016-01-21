@@ -1,9 +1,16 @@
-/*
- * str_timint_factory.cpp
- *
- *  Created on: Sep 4, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_timint_factory.cpp
+
+\maintainer Michael Hiermeier
+
+\date Sep 4, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
 
 #include "str_timint_factory.H"
 
@@ -15,6 +22,9 @@
 // supported time integrator
 #include "str_timint_implicit.H"
 #include "str_timint_explicit.H"
+#include "str_timint_loca_continuation.H"
+
+#include "../drt_structure/strtimada.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -24,32 +34,100 @@ STR::TIMINT::Factory::Factory()
   // empty
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::TimAda> STR::TIMINT::Factory::BuildAdaptiveWrapper(
+    const Teuchos::ParameterList& ioflags,         //!< input-output-flags
+    const Teuchos::ParameterList& sdyn,            //!< structural dynamic flags
+    const Teuchos::ParameterList& xparams,         //!< extra flags
+    const Teuchos::ParameterList& taflags,         //!< adaptive input flags
+    Teuchos::RCP<STR::TIMINT::Base> ti_strategy //!< marching time integrator
+    ) const
+{
+  Teuchos::RCP<STR::TimAda> adaintegrator= Teuchos::null;
+
+  /*
+  // auxiliary time integrator
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::TimAdaKind>(taflags,"KIND"))
+  {
+
+  case INPAR::STR::timada_kind_none :
+    // No adaptivity in time
+    adaintegrator = Teuchos::null;
+    break;
+
+  case INPAR::STR::timada_kind_zienxie :
+    // Zienkiewicz-Xie error indicator for generalised-alpha
+    adaintegrator = Teuchos::rcp(new STR::TimAdaZienXie(sdyn, taflags, timeintegrator));
+    break;
+
+  case INPAR::STR::timada_kind_ab2 :
+    // Adams-Bashforth 2nd order
+    adaintegrator = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntAB2>(
+        ioflags, sdyn, xparams, taflags, timeintegrator));
+    break;
+
+  case INPAR::STR::timada_kind_expleuler :
+    // Adams-Bashforth 2nd order
+    adaintegrator = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntExplEuler>(
+        ioflags, sdyn, xparams, taflags, timeintegrator));
+    break;
+
+  case INPAR::STR::timada_kind_centraldiff :
+    // Adams-Bashforth 2nd order
+    adaintegrator = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntCentrDiff>(
+        ioflags, sdyn, xparams, taflags, timeintegrator));
+    break;
+
+  default :
+    dserror("Auxiliary adaptive time integrator is not available.");
+    break;
+
+  }
+  */
+  // return the auxiliary integrator
+  return adaintegrator;
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildTimeIntegrator(
+Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildStrategy(
     const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<STR::TIMINT::Base> timeintegrator = Teuchos::null;
+  Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
 
-  // Check first if a implicit time integrator is desired
-  timeintegrator = BuildImplicitTimeIntegrator(sdyn);
+  const enum INPAR::STR::IntegrationStrategy intstrat =
+        DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(sdyn,"INT_STRATEGY");
 
-  // If there was no suitable implicit time integrator check for the
-  // explicit case
-  if (timeintegrator.is_null())
-    timeintegrator = BuildExplicitTimeIntegrator(sdyn);
+  switch (intstrat)
+  {
+    case INPAR::STR::int_standard:
+    {
+      // Check first if a implicit integration strategy is desired
+      ti_strategy = BuildImplicitStrategy(sdyn);
+      // If there was no suitable implicit time integrator check for the
+      // explicit case
+      if (ti_strategy.is_null())
+        ti_strategy = BuildExplicitStrategy(sdyn);
+      break;
+    }
+    case INPAR::STR::int_loca:
+      ti_strategy = Teuchos::rcp(new STR::TIMINT::LOCAContinuation());
+      break;
+    default:
+      dserror("Unknown integration strategy!");
+  }
 
-  return timeintegrator;
+  return ti_strategy;
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitTimeIntegrator(
+Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
     const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<STR::TIMINT::Base> timeintegrator = Teuchos::null;
+  Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
 
   // get the prestress type
   const enum INPAR::STR::PreStress pstype =
@@ -65,18 +143,18 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitTimeIntegrato
       dyntype == INPAR::STR::dyna_onesteptheta or
       dyntype == INPAR::STR::dyna_gemm         or
       dyntype == INPAR::STR::dyna_statmech)
-    timeintegrator = Teuchos::rcp(new STR::TIMINT::Implicit());
+    ti_strategy = Teuchos::rcp(new STR::TIMINT::Implicit());
 
-  return timeintegrator;
+  return ti_strategy;
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildExplicitTimeIntegrator(
+Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildExplicitStrategy(
     const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<STR::TIMINT::Base> timeintegrator = Teuchos::null;
+  Teuchos::RCP<STR::TIMINT::Base> ti_strategy = Teuchos::null;
 
   // what's the current problem type?
   PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
@@ -96,17 +174,32 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildExplicitTimeIntegrato
   if (dyntype == INPAR::STR::dyna_expleuler or
       dyntype == INPAR::STR::dyna_centrdiff or
       dyntype == INPAR::STR::dyna_ab2)
-    timeintegrator = Teuchos::rcp(new STR::TIMINT::Explicit());
+//    ti_strategy = Teuchos::rcp(new STR::TIMINT::Explicit());
+    dserror("Explicit time integration scheme is not yet implemented!");
 
-  return timeintegrator;
+  return ti_strategy;
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::BuildTimeIntegrator(
+Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::BuildStrategy(
     const Teuchos::ParameterList& sdyn)
 {
   Factory factory;
-  return factory.BuildTimeIntegrator(sdyn);
+  return factory.BuildStrategy(sdyn);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::TimAda> STR::TIMINT::BuildAdaptiveWrapper(
+    const Teuchos::ParameterList& ioflags,         //!< input-output-flags
+    const Teuchos::ParameterList& sdyn,            //!< structural dynamic flags
+    const Teuchos::ParameterList& xparams,         //!< extra flags
+    const Teuchos::ParameterList& taflags,         //!< adaptive input flags
+    Teuchos::RCP<STR::TIMINT::Base> ti_strategy    //!< marching time integrator
+    )
+{
+  Factory factory;
+  return factory.BuildAdaptiveWrapper(ioflags,sdyn,xparams,taflags,ti_strategy);
 }

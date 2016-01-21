@@ -1,9 +1,15 @@
-/*
- * str_predict_factory.H
- *
- *  Created on: Aug 13, 2015
- *      Author: farah
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_predict_factory.H
+
+\maintainer Michael Hiermeier
+
+\date Aug 31, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef STR_PREDICT_FACTORY_H_
 #define STR_PREDICT_FACTORY_H_
@@ -15,6 +21,9 @@ namespace STR {
 namespace PREDICT {
   class Generic;
 
+  /*! \brief Factory to build the desired predictor
+   *
+   *  \author Michael Hiermeier */
   class Factory
   {
   public:
@@ -28,7 +37,8 @@ namespace PREDICT {
     Teuchos::RCP<STR::PREDICT::Generic>  BuildPredictor(const enum INPAR::STR::PredEnum& predType) const;
   };
 
-  //! non-member function
+  /*! Non-member function, which relates to the STR::PREDICT::Factory class
+   *  Please call this method from outside! */
   Teuchos::RCP<STR::PREDICT::Generic> BuildPredictor(const enum INPAR::STR::PredEnum& predType);
 } // namespace PREDICT
 } // namespace STR

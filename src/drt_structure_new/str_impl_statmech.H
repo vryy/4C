@@ -1,9 +1,15 @@
-/*
- * str_impl_statmech.H
- *
- *  Created on: Sep 2, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_impl_statmech.H
+
+\maintainer Michael Hiermeier
+
+\date Sep 2, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef STR_IMPL_STATMECH_H_
 #define STR_IMPL_STATMECH_H_
@@ -16,7 +22,7 @@ namespace IMPLICIT {
   {
   public:
     //! constructor
-    StatMech();
+    StatMech() {};
 
     //! destructor
     virtual ~StatMech() {};

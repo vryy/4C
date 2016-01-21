@@ -1,9 +1,15 @@
-/*
- * str_model_evaluator_factory.H
- *
- *  Created on: Sep 10, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_model_evaluator_factory.H
+
+\maintainer Michael Hiermeier
+
+\date Sep 10, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef STR_MODEL_EVALUATOR_FACTORY_H_
 #define STR_MODEL_EVALUATOR_FACTORY_H_
@@ -11,11 +17,15 @@
 
 #include <Teuchos_RCP.hpp>
 #include "../drt_inpar/inpar_structure.H"
+#include "str_model_evaluator.H"  // typedef
 
 namespace STR {
 namespace MODELEVALUATOR {
-class Generic;
+  class Generic;
 
+  /*! Factory to build the desired model evaluator std::map
+   *
+   *  \author Michael Hiermeier */
   class Factory
   {
   public:
@@ -25,14 +35,15 @@ class Generic;
     //! destructor
     virtual ~Factory() {};
 
-    Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > >
+
+    Teuchos::RCP<STR::ModelEvaluator::Map>
     BuildModelEvaluators(const std::set<enum INPAR::STR::ModelType>& modeltypes) const;
 
   private:
   };  // class Factory
 
-  //! non-member function
-  Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > >
+  //! non-member function, which relates to the STR::MODELEVALUATOR::Factory
+  Teuchos::RCP<STR::ModelEvaluator::Map>
   BuildModelEvaluators(const std::set<enum INPAR::STR::ModelType>& modeltypes);
 
 } // namespace MODELEVALUATOR

@@ -1,9 +1,16 @@
-/*
- * str_timint_explicit.H
- *
- *  Created on: Aug 12, 2015
- *      Author: farah
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_timint_explicit.H
+
+\maintainer Philipp Farah
+
+\date Aug 12, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
 
 #ifndef STR_TIMINT_EXPLICIT_H_
 #define STR_TIMINT_EXPLICIT_H_
@@ -13,6 +20,9 @@
 
 namespace STR {
 namespace TIMINT {
+  /** \brief Explicit time integration strategy
+   *
+   * \author Michael Hiermeier */
   class Explicit : public Base
   {
   public:
@@ -22,73 +32,71 @@ namespace TIMINT {
     //! destructor
     virtual ~Explicit() {};
 
-    virtual int IntegrateStep(){return 0;};
+    virtual void Setup();
 
-    //! RHS() is not available for explicit time integrators
-    virtual Teuchos::RCP<const Epetra_Vector> RHS()
-    {
-      dserror("RHS() is not available for explicit time integrators");
-      return Teuchos::null;
-    }
+    virtual int Integrate();
+
+    virtual int IntegrateStep();
 
     //! Prepare time step
-    virtual void PrepareTimeStep()
-    {
-      // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
-      DataGlobalStatePtr()->SetTimenp(DataGlobalStatePtr()->GetUpdatedTime());
+    virtual void PrepareTimeStep();
 
-      // things that need to be done before Predict
-      PrePredict();
-
-      // TODO prepare contact for new time step
-      // PrepareStepContact();
-
-      // things that need to be done after Predict
-      PostPredict();
-
-      return;
-    }
 
     //!  Evaluate routine for coupled problems with monolithic approach
-    virtual void Evaluate(
-      Teuchos::RCP<const Epetra_Vector> disiterinc ///< iterative solution increment
-    )
-    {
-      dserror("All monolithically coupled problems work with implicit time "
-          "integration schemes. Thus, calling Evaluate() in an explicit scheme "
-          "is not possible.");
-    }
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
 
-    //! Update routine for coupled problems with monolithic approach
-    // TODO: do we need this?
-    virtual void Update()
-    {
-      PreUpdate();
-      //UpdateStepState();
-      //UpdateStepTime();
-      //UpdateStepElement();
-      PostUpdate();
-      return;
-    }
+    /*! Do the nonlinear solve, i.e. (multiple) corrector,
+     *  for the time step. All boundary conditions have
+     *  been set. */
+    virtual INPAR::STR::ConvergenceStatus Solve();
+
+    /* Linear structure solve with just an interface load */
+    virtual Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear();
+
+    //! prepare partiton step
+    virtual void PreparePartitionStep();
 
     //! Update routine for coupled problems with monolithic approach with time adaptivity
-    virtual void Update(const double endtime)
-    {
-      dserror("Not implemented. No time adaptivity available for explicit time integration.");
-    }
+    virtual void Update(double endtime);
 
     /// has to be renamed either here or PrintStep()
-    virtual void Output(bool forced_writerestart)
-    {
-      PreOutput();
-      //OutputStep(forced_writerestart);
-      // write Gmsh output
-      //writeGmshStrucOutputStep();
-      return;
-    }
+    virtual void Output(bool forced_writerestart);
 
-  protected:
-    virtual void Setup();
+    //! print summary after step
+    virtual void PrintStep();
+
+    //! Get type of thickness scaling for thin shell structures
+    virtual INPAR::STR::STC_Scale GetSTCAlgo();
+
+    //! Access to scaling matrix for STC
+    virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat();
+
+    /// @name Access linear system of equation via adapter (implicit only!)
+    ///@{
+    /// initial guess of Newton's method
+    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
+
+    /// right-hand-side of Newton's method
+    virtual Teuchos::RCP<const Epetra_Vector> RHS();
+
+    /// Return reaction forces at \f$t_{n+1}\f$ (read and write)
+    virtual Teuchos::RCP<Epetra_Vector> Freact();
+
+    //! Return stiffness,
+    //! i.e. force residual differentiated by displacements
+    //!      (structural block only)
+    virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+
+    /// Return stiffness,
+    /// i.e. force residual differentiated by displacements
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+
+    ///! FixMe switch structure field to block matrix in fsi simulations
+    virtual void UseBlockMatrix(
+        Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
+
+    ///@}
   };
 } // namespace TimInt
 } // namespace STR

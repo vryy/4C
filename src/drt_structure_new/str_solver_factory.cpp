@@ -1,9 +1,16 @@
-/*
- * str_solver_factory.cpp
- *
- *  Created on: Sep 9, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file str_solver_factory.cpp
+
+\maintainer Michael Hiermeier
+
+\date Sep 9, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
 
 #include "str_solver_factory.H"
 
@@ -53,7 +60,7 @@ Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> >
         break;
       // ToDo Check if this makes sense for simulations where both, meshtying and
       //      contact, are present. If we need two linsolvers, please adjust the
-      //      the implementation (maps for pre-conditioning, etc.).
+      //      implementation (maps for pre-conditioning, etc.).
       case INPAR::STR::model_contact:
       case INPAR::STR::model_meshtying:
         (*linsolvers)[*mt_iter] = BuildMeshtyingContactLinSolver(sdyn,actdis);

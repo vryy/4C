@@ -19,7 +19,8 @@ Maintainer: Matthias Mayr
 #include "inpar_solver_nonlin.H"
 
 
-
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
   using namespace DRT::INPUT;
@@ -31,9 +32,9 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   DRT::INPUT::StringParameter("XML_FILE", "none", "Filename of XML file with configuration of nonlinear solver", &nlnsol);
 
-  /*--------------------------------------------------------------------*/
-  /* parameters for NOX - non-linear solution */
-  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*
+   * parameters for NOX - non-linear solution
+   *----------------------------------------------------------------------*/
   Teuchos::ParameterList& snox = list->sublist("STRUCT NOX",false,"");
   SetPrintEqualSign(snox, true);
 
@@ -180,6 +181,7 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
     DoubleParameter("Recovery Step",1.0,"step to take when the line search fails (defaults to value for \"Default Step\")",&backtrack);
     IntParameter("Max Iters",50,"maximum number of iterations (i.e., RHS computations)",&backtrack);
     DoubleParameter("Reduction Factor",0.5,"A multiplier between zero and one that reduces the step size between line search iterations",&backtrack);
+    BoolParameter("Allow Exceptions","No","Set to true, if exceptions during the force evaluation and backtracking routine should be allowed.",&backtrack);
   }
 
   // sub-sub-list "Polynomial"
@@ -280,7 +282,7 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
     BoolParameter("Inner Iteration","Yes","",&printing);
     BoolParameter("Parameters","No","",&printing);
     BoolParameter("Details","No","",&printing);
-    BoolParameter("Outer Iteration StatusTest","No","",&printing);
+    BoolParameter("Outer Iteration StatusTest","Yes","",&printing);
     BoolParameter("Linear Solver Details","No","",&printing);
     BoolParameter("Test Details","No","",&printing);
     /*  // for LOCA
@@ -317,7 +319,7 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         "Minimal",
         "None");
     Teuchos::setStringToIntegralParameter<int>(
-        "Status Test Check Type","Minimal","",
+        "Status Test Check Type","Complete","",
         scTestType,Teuchos::tuple<int>( 0, 1, 2),
         &solverOptions);
   }

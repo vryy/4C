@@ -26,7 +26,7 @@ namespace Epetra {
   class LinearSystem;
 } // class LinearSystem;
 namespace NLN {
-  class NoxProblem;
+  class Problem;
 namespace INNER {
 namespace StatusTest {
   class Generic;
@@ -61,23 +61,6 @@ namespace SOLVER {
     virtual INPAR::STR::ConvergenceStatus Solve();
 
   protected:
-    // returns the optimization type of the underlying structural
-    // problem
-    const enum NOX::NLN::GlobalData::OptimizationProblemType
-        OptimizationType() const;
-
-    /*! Convert the structural model type enums to nox nln solution
-     *  type enums
-     *
-     *  Convert the model type enums to the nox internal solution type
-     *  enums. This is necessary, because the nox framework is not
-     *  supposed to be restricted to structural problems only.
-     */
-    void ConvertModelType2SolType();
-
-    //! Set the constraint interfaces
-    void SetConstraintInterfaces();
-
     //! Reset the non-linear solver parameters and variables
     void ResetParams();
 
@@ -88,15 +71,6 @@ namespace SOLVER {
   private:
     //! @name Variables which stay constant after Init() and Setup() call
     //!@{
-    //! vector of currently present solution types
-    std::vector<enum NOX::NLN::SolutionType> soltypes_;
-
-    //! map of linear solvers, the key is the solution type
-    std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> > linsolvers_;
-
-    //! map of constraint interfaces, the key is the solution type
-    std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> > iconstr_;
-
     //! pointer to the nox nln global data container
     Teuchos::RCP<NOX::NLN::GlobalData> nlnglobaldata_;
     //!@}
@@ -105,13 +79,10 @@ namespace SOLVER {
     //!@{
     //! NOX non-linear problem class
     //! The main task is to manage the non-linear solver creation
-    Teuchos::RCP<NOX::NLN::NoxProblem> problem_;
+    Teuchos::RCP<NOX::NLN::Problem> problem_;
 
     //! linear system class
     Teuchos::RCP<NOX::Epetra::LinearSystem> linsys_;
-
-    //! nox group
-    Teuchos::RCP<NOX::Abstract::Group> group_;
 
     //! outer status test
     Teuchos::RCP<NOX::StatusTest::Generic> ostatus_;
