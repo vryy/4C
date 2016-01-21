@@ -1043,6 +1043,32 @@ void ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
 /*!
  \brief Apply dirichlet boundary condition to a linear system of equations
 
+ This is a flexible routine. The vectors b and dbcval might have different
+ maps. The map does not need to contain all Dirichlet dofs.
+
+ The purpose is to set Dirichlet values at a subset of all Dirichlet
+ boundaries.
+
+ Special in this routine is the ability to insert rows of general rotation
+ matrices (stored in #trafo) rather than simply put ones and zeros
+ at the rows associated Dirichlet DOFs.
+
+ \param A (in/out)         : Matrix of Ax=b
+ \param b (in/out)         : vector b of Ax=b
+ \param trafo (in)         : global matrix holding rotation matrices to convert
+ from global to local co-ordinate systems
+ \param dbcval (in)        : vector holding values that are supposed to be prescribed
+ \param dbcmap (in)        : unique map of all dofs that should be constrained
+
+ \pre The map dbcmap must be subset of the maps of the vectors.
+ */
+void ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
+    Teuchos::RCP<Epetra_Vector>& b, Teuchos::RCP<const LINALG::SparseMatrix> trafo,
+    const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap);
+
+/*!
+ \brief Apply dirichlet boundary condition to a linear system of equations
+
 
  \param x (in/out)         : vector x of Ax=b
  \param b (in/out)         : vector b of Ax=b
@@ -1194,6 +1220,19 @@ Teuchos::RCP<Epetra_Map> SplitMap(const Epetra_Map& Amap,
  */
 Teuchos::RCP<Epetra_Map> MergeMap(const Epetra_Map& map1,
     const Epetra_Map& map2, bool overlap = true);
+
+/*!
+ \brief find the intersection set of two given Epetra_Maps
+
+ Find the insection set of input map1 and input map2.
+
+ \param map1         : first map
+ \param map2         : second map
+ \return the (sorted) intersection map of input maps map1 and map2
+ */
+Teuchos::RCP<Epetra_Map> IntersectMap(const Epetra_Map& map1,
+    const Epetra_Map& map2);
+
 
 /*!
  \brief merges two given Epetra_Maps

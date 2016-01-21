@@ -1316,6 +1316,21 @@ void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void LINALG::ApplyDirichlettoSystem(Teuchos::RCP<LINALG::SparseOperator> A,
+    Teuchos::RCP<Epetra_Vector>& b, Teuchos::RCP<const LINALG::SparseMatrix> trafo,
+    const Teuchos::RCP<const Epetra_Vector>& dbcval, const Epetra_Map& dbcmap)
+{
+  if (trafo != Teuchos::null)
+    Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A)->ApplyDirichletWithTrafo(
+        trafo, dbcmap);
+  else
+    // trafo==Teuchos::null
+    A->ApplyDirichlet(dbcmap);
+  ApplyDirichlettoSystem(b, dbcval, dbcmap);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::MapExtractor> LINALG::ConvertDirichletToggleVectorToMaps(
     const Teuchos::RCP<const Epetra_Vector>& dbctoggle)
 {
@@ -1597,6 +1612,39 @@ Teuchos::RCP<Epetra_Map> LINALG::MergeMap(
 
   // wrapped call to non-Teuchos::RCP version of MergeMap
   return LINALG::MergeMap(*map1, *map2, overlap);
+}
+
+/*----------------------------------------------------------------------*
+ | Find the intersection of two maps                     hiermeier 10/14|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map> LINALG::IntersectMap(const Epetra_Map& map1,
+    const Epetra_Map& map2)
+{
+  // check if the maps are identical
+  if (map1.SameAs(map2))
+  {
+    return Teuchos::rcp(new Epetra_Map(map1));
+  }
+
+  std::vector<int> mygids(std::min(map1.NumMyElements(),map2.NumMyElements()),-1);
+  int count = 0;
+
+  for (int i = 0; i < map1.NumMyElements(); ++i)
+  {
+    // check for intersecting gids
+    if (map2.MyGID(map1.GID(i)))
+    {
+      mygids[count] = map1.GID(i);
+      ++count;
+    }
+  }
+  mygids.resize(count);
+
+  // sort merged map
+  sort(mygids.begin(), mygids.end());
+
+  return Teuchos::rcp(
+      new Epetra_Map(-1, (int) mygids.size(), &mygids[0], 0, map1.Comm()));
 }
 
 /*----------------------------------------------------------------------*
