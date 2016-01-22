@@ -92,6 +92,9 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("MATCHGRID_FLUIDALE", "Yes", "is matching grid (fluid-ale)",
       &fsidyn);
 
+  BoolParameter("MATCHALL", "Yes", "is matching grid (fluid-ale) and is full fluid-ale (without euler part)",
+      &fsidyn);
+
   DoubleParameter("MAXTIME", 1000.0, "Total simulation time", &fsidyn);
   IntParameter("NUMSTEP", 200, "Total number of Timesteps", &fsidyn);
 

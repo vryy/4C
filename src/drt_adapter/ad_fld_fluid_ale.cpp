@@ -53,7 +53,8 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                                    *AleField()->Discretization(),
                                    *fluidnodemap,
                                    *alenodemap,
-                                   ndim);
+                                   ndim,
+                                   DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->FSIDynamicParams(),"MATCHALL"));
    coupfa_ = coupfa_matching;
   }
   else
