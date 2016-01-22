@@ -77,6 +77,10 @@ public:
   Teuchos::RCP<Epetra_Vector> cell_current_nodal_normals_;
   Teuchos::RCP<Epetra_Vector> points_to_ecm_adhesion_force_;
 
+  Teuchos::RCP<Epetra_MultiVector> points_to_phinp_;
+  Teuchos::RCP<Epetra_MultiVector> points_to_Rates_;
+  Teuchos::RCP<Epetra_MultiVector> points_to_Rates_Actin_;
+
   LINALG::Matrix<3,1> max_gap_searchdirection_;
   LINALG::Matrix<3,1> max_gap_spacepoint_;
   LINALG::Matrix<3,1> min_gap_searchdirection_;
@@ -219,6 +223,18 @@ public:
    void SetIsPureProtrusionFormationSimulation(bool trueorfalse){isPureProtrusionFormationSimulation_=trueorfalse; return;};
 
    bool IsPureProtrusionFormationSimulation(){return isPureProtrusionFormationSimulation_;};
+
+   void SetPointerToPhinps(const Teuchos::RCP<Epetra_MultiVector> vector){points_to_phinp_=vector; return;};
+
+   Teuchos::RCP<Epetra_MultiVector> GetPointerToPhinps(){return points_to_phinp_;};
+
+   void SetPointerToRates(const Teuchos::RCP<Epetra_MultiVector> vector){points_to_Rates_=vector; return;};
+
+   Teuchos::RCP<Epetra_MultiVector> GetPointerToRates(){return points_to_Rates_;};
+
+   void SetPointerToRatesActin(const Teuchos::RCP<Epetra_MultiVector> vector){points_to_Rates_Actin_=vector; return;};
+
+   Teuchos::RCP<Epetra_MultiVector> GetPointerToRatesActin(){return points_to_Rates_Actin_;};
 
 private:
 

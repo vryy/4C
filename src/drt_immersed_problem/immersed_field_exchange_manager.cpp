@@ -68,10 +68,20 @@ DRT::ImmersedFieldExchangeManager::ImmersedFieldExchangeManager()
   currpositions_immerseddis_ = NULL;
   simple_ecm_interaction_constant = 0.0;
   numnlniter_=0;
+
   points_to_ecm_adhesion_force_=Teuchos::null;
-  isfluidinteraction_=false;
-  isPureAdhesionSimulation_=false;
-  isPureConfinementSimulation_=false;
+  points_to_curr_subset_of_backgrounddis_ = NULL;
+
+  isfluidinteraction_ = false;
+  isprotrusionformation = false;
+  isPureAdhesionSimulation_ = false;
+  isPureConfinementSimulation_ = false;
+  isPureProtrusionFormationSimulation_ = false;
+
+  points_to_phinp_=Teuchos::null;
+  points_to_Rates_=Teuchos::null;
+  points_to_Rates_Actin_=Teuchos::null;
+
 }
 
 

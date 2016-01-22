@@ -633,6 +633,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/acoustic.cpp
   src/drt_mat/acoustic_sol.cpp
   src/drt_mat/activefiber.cpp
+  src/drt_mat/biochemo_mechano_cell_activefiber.cpp
 )
 set(OBJS_DRT_STATMECH
   src/drt_statmech/statmech_dirichlet.cpp

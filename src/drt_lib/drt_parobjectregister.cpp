@@ -148,6 +148,7 @@
 #include "../drt_acou/acou_sol_ele.H"
 #include "../drt_inv_analysis/smc_particle.H"
 #include "../drt_mat/activefiber.H"
+#include "../drt_mat/biochemo_mechano_cell_activefiber.H"
 #include "../drt_immersed_problem/immersed_node.H"
 #include "../drt_mat/maxwell_0d_acinus.H"
 #include "../drt_mat/maxwell_0d_acinus_NeoHookean.H"
@@ -350,6 +351,7 @@ std::string DRT::ParObjectList()
     << CONTACT::FriNodeType::Instance().Name() << " "
     << CONTACT::CoElementType::Instance().Name() << " "
     << MAT::ActiveFiberType::Instance().Name() << " "
+    << MAT::BioChemoMechanoCellActiveFiberType::Instance().Name() << " "
     // only compile this on the workstation as kaisers boost version is outdated an cant run this code
 #if (BOOST_MAJOR_VERSION == 1) && (BOOST_MINOR_VERSION >= 47)
     << INVANA::SMCParticleType::Instance().Name() << " "

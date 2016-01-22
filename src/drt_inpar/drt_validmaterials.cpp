@@ -2272,6 +2272,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
       AppendMaterialDefinition(matlist,m);
     }
+
+    /*----------------------------------------------------------------------*/
+    // biochemo-mechano coupled active stress fiber formation for cells
+    {
+      Teuchos::RCP<MaterialDefinition> m
+        = Teuchos::rcp(new MaterialDefinition("MAT_BIOCHEMOMECHANO",
+                                              "biochemo-mechano coupled active stress fiber formation for cells",
+                                               INPAR::MAT::m_biochemomechano));
+
+          AddNamedReal(m,"DENS","Density");
+          AddNamedInt(m,"IDMATPASSIVE","number of passive material in input file: MAT IDMATPASSIVE ...");
+          AddNamedReal(m,"KFOR","formation rate parameter kforwards");
+          AddNamedReal(m,"KBACK","dissociation rate parameter kbackwards");
+          AddNamedReal(m,"KROCKETA","rate constant for Nfil to ROCK");
+          AddNamedReal(m,"KACTIN","rate constant for Nfil to actin");
+          AddNamedReal(m,"RATEMAX","maximum rate");
+          AddNamedReal(m,"NMAX","maximum filament concentration");
+          AddNamedReal(m,"KSTRESS","proportionality constant between Acto-Mysion-Activation and stress");
+          AddNamedReal(m,"SOURCE","Constant for the Source for Stress-dependent Surface Scatra Condition");
+          AddNamedString(m,"METHOD","Method for evaluating the material specific integral","2DGauss");
+          AppendMaterialDefinition(matlist,m);
+    }
+
   // deliver
   return vm;
 }
