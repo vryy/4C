@@ -68,31 +68,6 @@ class MeshtyingStrategyS2IElch : public MeshtyingStrategyS2I
 
     //! build null spaces associated with blocks of global system matrix
     void BuildBlockNullSpaces() const;
-
-    //! evaluate single mortar integration cell
-    void MortarCellCalc(
-        MORTAR::MortarElement&         slaveelement,    //!< slave-side mortar element
-        MORTAR::MortarElement&         masterelement,   //!< master-side mortar element
-        MORTAR::IntCell&               cell,            //!< mortar integration cell
-        DRT::Condition&                condition,       //!< scatra-scatra interface coupling condition
-        const Epetra_Vector&           iphinp,          //!< interface state vector
-        const DRT::Discretization&     idiscret,        //!< interface discretization
-        DRT::Element::LocationArray&   la_slave,        //!< slave-side location array
-        DRT::Element::LocationArray&   la_master        //!< master-side location array
-        ) const;
-
-    //! evaluate single mortar integration cell of particular slave-side discretization type
-    template<DRT::Element::DiscretizationType distypeS>
-    void MortarCellCalcElch(
-        MORTAR::MortarElement&         slaveelement,    //!< slave-side mortar element
-        MORTAR::MortarElement&         masterelement,   //!< master-side mortar element
-        MORTAR::IntCell&               cell,            //!< mortar integration cell
-        DRT::Condition&                condition,       //!< scatra-scatra interface coupling condition
-        const Epetra_Vector&           iphinp,          //!< interface state vector
-        const DRT::Discretization&     idiscret,        //!< interface discretization
-        DRT::Element::LocationArray&   la_slave,        //!< slave-side location array
-        DRT::Element::LocationArray&   la_master        //!< master-side location array
-        ) const;
 }; // class MeshtyingStrategyS2IElch
 
 
@@ -116,7 +91,7 @@ class MortarCellCalcElch : public MortarCellCalc<distypeS,distypeM>
     virtual ~MortarCellCalcElch(){return;};
 
     //! evaluate and assemble interface linearizations and residuals
-    void CalcMatAndRhs(
+    void EvaluateCondition(
         LINALG::SparseMatrix&                                                                              islavematrix,      //!< linearizations of slave-side residuals
         LINALG::SparseMatrix&                                                                              imastermatrix,     //!< linearizations of master-side residuals
         Epetra_Vector&                                                                                     islaveresidual,    //!< slave-side residual vector

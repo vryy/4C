@@ -177,96 +177,6 @@ void SCATRA::MeshtyingStrategyS2IElch::BuildBlockNullSpaces() const
 } // SCATRA::MeshtyingStrategyS2IElch::BuildBlockNullSpaces
 
 
-/*----------------------------------------------------------------------------------------*
- | evaluate single mortar integration cell                                     fang 01/16 |
- *----------------------------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2IElch::MortarCellCalc(
-    MORTAR::MortarElement&         slaveelement,    //!< slave-side mortar element
-    MORTAR::MortarElement&         masterelement,   //!< master-side mortar element
-    MORTAR::IntCell&               cell,            //!< mortar integration cell
-    DRT::Condition&                condition,       //!< scatra-scatra interface coupling condition
-    const Epetra_Vector&           iphinp,          //!< interface state vector
-    const DRT::Discretization&     idiscret,        //!< interface discretization
-    DRT::Element::LocationArray&   la_slave,        //!< slave-side location array
-    DRT::Element::LocationArray&   la_master        //!< master-side location array
-    ) const
-{
-  switch(slaveelement.Shape())
-  {
-    case DRT::Element::tri3:
-    {
-      MortarCellCalcElch<DRT::Element::tri3>(
-          slaveelement,
-          masterelement,
-          cell,
-          condition,
-          iphinp,
-          idiscret,
-          la_slave,
-          la_master
-          );
-      break;
-    }
-
-    default:
-    {
-      dserror("Invalid slave-side discretization type!");
-      break;
-    }
-  }
-
-  return;
-}
-
-
-/*---------------------------------------------------------------------------------------------------*
- | evaluate single mortar integration cell of particular slave-side discretization type   fang 01/16 |
- *---------------------------------------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distypeS>
-void SCATRA::MeshtyingStrategyS2IElch::MortarCellCalcElch(
-    MORTAR::MortarElement&         slaveelement,    //!< slave-side mortar element
-    MORTAR::MortarElement&         masterelement,   //!< master-side mortar element
-    MORTAR::IntCell&               cell,            //!< mortar integration cell
-    DRT::Condition&                condition,       //!< scatra-scatra interface coupling condition
-    const Epetra_Vector&           iphinp,          //!< interface state vector
-    const DRT::Discretization&     idiscret,        //!< interface discretization
-    DRT::Element::LocationArray&   la_slave,        //!< slave-side location array
-    DRT::Element::LocationArray&   la_master        //!< master-side location array
-    ) const
-{
-  switch(masterelement.Shape())
-  {
-    case DRT::Element::tri3:
-    {
-      SCATRA::MortarCellCalcElch<distypeS,DRT::Element::tri3>::Instance()->Evaluate(
-          *islavematrix_,
-          *imastermatrix_,
-          *islaveresidual_,
-          *imasterresidual_,
-          iphinp,
-          idiscret,
-          condition,
-          slaveelement,
-          masterelement,
-          cell,
-          la_slave,
-          la_master
-          );
-
-      break;
-    }
-
-    default:
-    {
-      dserror("Invalid master-side discretization type!");
-      break;
-    }
-  }
-
-  return;
-}
-
-
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 01/16 |
  *----------------------------------------------------------------------*/
@@ -308,7 +218,7 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::Done()
  | evaluate and assemble interface linearizations and residuals   fang 01/16 |
  *---------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
-void SCATRA::MortarCellCalcElch<distypeS,distypeM>::CalcMatAndRhs(
+void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
     LINALG::SparseMatrix&                                                                              islavematrix,      //!< linearizations of slave-side residuals
     LINALG::SparseMatrix&                                                                              imastermatrix,     //!< linearizations of master-side residuals
     Epetra_Vector&                                                                                     islaveresidual,    //!< slave-side residual vector
@@ -497,3 +407,8 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::CalcMatAndRhs(
 
   return;
 }
+
+
+// forward declarations
+template class SCATRA::MortarCellCalcElch<DRT::Element::tri3,DRT::Element::tri3>;
+template class SCATRA::MortarCellCalcElch<DRT::Element::tri3,DRT::Element::quad4>;

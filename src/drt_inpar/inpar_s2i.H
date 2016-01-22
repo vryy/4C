@@ -74,6 +74,13 @@ namespace INPAR
       equilibration_full
     };
 
+    //! actions for mortar cell evaluation
+    enum EvaluationActions
+    {
+      evaluate_mortar_matrices,
+      evaluate_condition
+    };
+
     //! set valid parameters for scatra-scatra interface coupling
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
