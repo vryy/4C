@@ -234,10 +234,6 @@ void CAVITATION::Algorithm::InitCavitation()
   std::map<int, std::set<int> > ghostfluideles;
   Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcsBasedOnUnderlyingDiscret(fluiddis_, rowfluideles, ghostfluideles);
 
-  // read out bubble inflow condition and set bubble inflows in corresponding bins
-  // assumption: only row bins are available up to here
-  BuildBubbleInflowCondition();
-
   //--------------------------------------------------------------------
   // -> 1) create a set of homeless particles that are not in a bin on this proc
   std::set<Teuchos::RCP<DRT::Node>,BINSTRATEGY::Less> homelessparticles;
@@ -263,6 +259,9 @@ void CAVITATION::Algorithm::InitCavitation()
   // assign wall elements based on the fluid discretization to bins initially once
   SetupParticleWalls(fluiddis_);
   AssignWallElesToBins();
+
+  // read out bubble inflow condition and set bubble inflows in corresponding row bins
+  BuildBubbleInflowCondition();
 
   // copy structural dynamic params list and adapt particle specific entries
   const Teuchos::ParameterList& cavitationdyn = DRT::Problem::Instance()->CavitationParams();
@@ -540,6 +539,11 @@ void CAVITATION::Algorithm::SetFluidFraction()
   const double invdt = 1.0/Dt();
   Teuchos::RCP<Epetra_Vector> fluidfracdtam = Teuchos::rcp(new Epetra_Vector(*fluidfracnp_));
   fluidfracdtam->Update(-invdt, *fluidfracn_, invdt);
+
+  // suppress time derivative of fluid fraction for inflowing bubbles
+  const double zero = 0.0;
+  for(std::set<int>::const_iterator it=inflowfluiddofs_.begin(); it!=inflowfluiddofs_.end(); ++it)
+    fluidfracdtam->ReplaceMyValues(1, &zero, &(*it));
 
   // set fluid fraction in fluid for computation
   fluid_->SetIterScalarFields(fluidfracaf, fluidfracam, fluidfracdtam, Teuchos::null);
@@ -1215,8 +1219,9 @@ void CAVITATION::Algorithm::ComputeRadius()
       {
         std::cout << "WARNING: large change in radius per time step:" << std::endl;
         std::cout << "bubble-id: " << currparticle->Id() << " at position: x: " << particleposition(0) << " y: "
-            << particleposition(1) << " z: " << particleposition(2) << " , current radius: " << r_bub_kp
-            << " has a relative change of radius of: " << (r_bub_kp-r_bub_k)/r_bub_kp << std::endl << std::endl;
+            << particleposition(1) << " z: " << particleposition(2) << " , at time: " << std::setprecision(12) << subtime
+            << " current radius: " << r_bub_kp << " has a relative change of radius of: "
+            << (r_bub_kp-r_bub_k)/r_bub_kp << std::endl << std::endl;
       }
 
       // update bubble radius
@@ -1238,8 +1243,9 @@ void CAVITATION::Algorithm::ComputeRadius()
       {
         std::cout << "WARNING: large change in radius per time step:" << std::endl;
         std::cout << "bubble-id: " << currparticle->Id() << " at position: x: " << particleposition(0) << " y: "
-            << particleposition(1) << " z: " << particleposition(2) << " , current radius: " << r_bub_kp
-            << " has a relative change of radius of: " << (r_bub_kp-r_bub_k)/r_bub_kp << std::endl << std::endl;
+            << particleposition(1) << " z: " << particleposition(2) << " , at time: " << std::setprecision(12) << subtime
+            << " current radius: " << r_bub_kp << " has a relative change of radius of: "
+            << (r_bub_kp-r_bub_k)/r_bub_kp << std::endl << std::endl;
       }
 
       // update variables
@@ -1702,7 +1708,8 @@ void CAVITATION::Algorithm::ParticleInflow()
         // state vector of fluid has already been set earlier ("vel")
         const bool fluidelefound = ComputeVelocityAtBubblePosition(currparticle, particleposition, elemat1, elemat2, elevec1, elevec2, elevec3);
         if(fluidelefound == false)
-          dserror("no underlying fluid element for velocity computation was found for bubble %d at positions %f %f %f on proc %d",
+          dserror("no underlying fluid element for velocity computation was found for bubble %d "
+              "at positions %f %f %f on proc %d. Check whether init vel from fluid is desired?",
               currparticle->Id(), particleposition(0), particleposition(1), particleposition(2), myrank_);
 
         for (int d=0; d<dim_; ++d)
@@ -2198,24 +2205,24 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
     }
 
     // loop over all bubble inflow positions and fill them into bin when they are on this proc;
-    // up to here, only row bins are available
+    int globalfound = 0;
     std::vector<double> source_pos(3);
     for(int z=0; z<(*num_per_dir)[2]; ++z)
     {
-      double dist_z = ((*vertex2)[2] - (*vertex1)[2]) / ((((*num_per_dir)[2]-1)!=0) ? ((*num_per_dir)[2]-1) : 1);
+      const double dist_z = ((*vertex2)[2] - (*vertex1)[2]) / ((((*num_per_dir)[2]-1)!=0) ? ((*num_per_dir)[2]-1) : 1);
       source_pos[2] = (*vertex1)[2] + z * dist_z;
       for(int y=0; y<(*num_per_dir)[1]; ++y)
       {
-        double dist_y = ((*vertex2)[1] - (*vertex1)[1]) / ((((*num_per_dir)[1]-1)!=0) ? ((*num_per_dir)[1]-1) : 1);
+        const double dist_y = ((*vertex2)[1] - (*vertex1)[1]) / ((((*num_per_dir)[1]-1)!=0) ? ((*num_per_dir)[1]-1) : 1);
         source_pos[1] = (*vertex1)[1] + y * dist_y;
         for(int x=0; x<(*num_per_dir)[0]; ++x)
         {
-          double dist_x = ((*vertex2)[0] - (*vertex1)[0]) / ((((*num_per_dir)[0]-1)!=0) ? ((*num_per_dir)[0]-1) : 1);
+          const double dist_x = ((*vertex2)[0] - (*vertex1)[0]) / ((((*num_per_dir)[0]-1)!=0) ? ((*num_per_dir)[0]-1) : 1);
           source_pos[0] = (*vertex1)[0] + x * dist_x;
           // check whether this source position is on this proc
-          int binId = ConvertPosToGid(source_pos);
-          bool found = particledis_->HaveGlobalElement(binId);
-          if(found == true)
+          const int binId = ConvertPosToGid(source_pos);
+          const int found = particledis_->ElementRowMap()->LID(binId);
+          if(found != -1)
           {
             Teuchos::RCP<BubbleSource> bubbleinflow = Teuchos::rcp(new BubbleSource(
                                                                           bubbleinflowid,
@@ -2226,13 +2233,75 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
                                                                           inflow_freq,
                                                                           timedelay));
             bubble_source_[binId].push_back(bubbleinflow);
-#ifdef DEBUG
-            if(particledis_->gElement(binId)->Owner() != myrank_)
-              dserror("Only row bins should show up here. Either add additional if-case or move ghosting to a later point in time.");
-#endif
+            globalfound = 1;
           }
           bubbleinflowid++;
         }
+      }
+    }
+
+    // safety check
+    int check = 0;
+    Comm().MaxAll(&globalfound,&check,1);
+    if(check == 0)
+      dserror("Weird! Inflow condition found but could not be assigned to bins. Source outside of bins?");
+  }
+
+  // gather all fluid nodes close to the inflow section
+  // because time derivative of fluid fraction should not be considered close to the inflow
+  {
+    // variable to store all fluid elements in neighborhood
+    std::set<DRT::Element*> neighboringfluideles;
+
+    for(std::map<int, std::list<Teuchos::RCP<BubbleSource> > >::const_iterator biniter = bubble_source_.begin();
+        biniter != bubble_source_.end(); ++biniter)
+    {
+      // get an ijk-range that is large enough
+      int ijk[3];
+      ConvertGidToijk(biniter->first, ijk);
+
+      // this number is chosen from experience but larger number could be beneficial/necessary
+      const int ibinrange = 1;
+      int ijk_range[] = {ijk[0]-ibinrange, ijk[0]+ibinrange, ijk[1]-ibinrange, ijk[1]+ibinrange, ijk[2]-ibinrange, ijk[2]+ibinrange};
+
+      // variable to store bin ids of surrounding bins
+      std::set<int> binIds;
+
+      // get corresponding bin ids in ijk range and fill them into binIds
+      GidsInijkRange(&ijk_range[0], binIds, true);
+
+      for(std::set<int>::const_iterator i=binIds.begin(); i!=binIds.end(); ++i)
+      {
+        // extract bins from discretization
+        DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>( particledis_->gElement(*i) );
+        DRT::Element** currfluideles = currbin->AssociatedFluidEles();
+
+        for(int ifluidele=0; ifluidele<currbin->NumAssociatedFluidEle(); ++ifluidele)
+        {
+          neighboringfluideles.insert(currfluideles[ifluidele]);
+        }
+      }
+    }
+
+    // loop all elements and find adjacent fluid row nodes, more exactely the last (=pressure) dof of this node
+    // current implementation is not prepared for repartitioning of fluid domain
+    // (remedy: GatherAll fluid nodes close to inflow and check for gid when applying zeros to the vector)
+    for(std::set<DRT::Element*>::const_iterator iter = neighboringfluideles.begin(); iter != neighboringfluideles.end(); ++iter)
+    {
+      for(int i=0; i<(*iter)->NumNode(); ++i)
+      {
+        // get only row nodes
+        DRT::Node* node = (*iter)->Nodes()[i];
+        if(node->Owner() != myrank_)
+          continue;
+        // get global and processor's local pressure dof id (using the map!)
+        // this must be in sync with what happens when applying the fluid fraction to the fluid!
+        const int numdof = fluiddis_->NumDof(0,node);
+        const int globaldofid = fluiddis_->Dof(0,node,numdof-1);
+        const int localdofid = fluid_->Veln()->Map().LID(globaldofid);
+        if (localdofid < 0)
+          dserror("localdofid not found in map for given globaldofid");
+        inflowfluiddofs_.insert(localdofid);
       }
     }
   }

@@ -369,6 +369,8 @@ namespace CAVITATION
 
     std::set<int> latestinflowbubbles_;   ///< store latest inflow particle ids
 
+    std::set<int> inflowfluiddofs_;  /// variable to store all dofs of fluid nodes close to the inflow
+
     Teuchos::RCP<Epetra_Vector> ele_volume_;   ///< element row map containing the volume of each element
 
     Teuchos::RCP<Epetra_Vector> fluidfracn_;   ///< fluid fraction in pressure dof of dofrowmap at t_n
