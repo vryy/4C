@@ -159,7 +159,7 @@ namespace TIMINT
     bool IndexExists
     (
       const int index //!< inquired index
-    )
+    ) const
     {
       return ( (index >= 0) and (index < (int) state_.size()) );
     }
@@ -177,7 +177,7 @@ namespace TIMINT
     int IndexByStep
     (
       const int step  //!< step number
-    )
+    ) const
     {
       int index = step - steppast_;
       dsassert(IndexExists(index), "step is not permissible!");
