@@ -170,29 +170,44 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::AddStressAnisoPrincipal(
     const int eleGID
 )
 {
-   double dt = params.get("delta time",1.0);
+  double dt = params.get("delta time",1.0);
 
-   double activationFunction = 0.0;
-   Teuchos::RCP<MAT::Material> scatramat;
-   if(params_->sourceactiv_==0) activationFunction=params.get<double>("scalar",0.0);
-   else if(params_->sourceactiv_==-1){
-     scatramat= params.get< Teuchos::RCP<MAT::Material> >("scatramat",Teuchos::null);
-     if(scatramat !=Teuchos::null) {
-       double excitContractCoupingVariable = scatramat->GetInternalState(-1);
-       if(excitContractCoupingVariable >= params_->activationthreshold_) activationFunction = 1.0;
-     }
-   }
-   else{
-     double time_ = params.get<double>("total time",0.0);
-     Teuchos::RCP<std::vector<double> >  pos_ = params.get<Teuchos::RCP<std::vector<double> > >("position");
-     const double* coordgpref_ = &(*pos_)[0];
-     activationFunction = DRT::Problem::Instance()->Funct(params_->sourceactiv_-1).Evaluate(0,coordgpref_,time_,NULL);
-   }
-   activationFunction = activationFunction*(params_->maxactiv_-params_->minactiv_)+params_->minactiv_;
-   double abs_u_ = abs(activationFunction);
-   double absplus_u_ = abs_u_*(activationFunction>0.0);
-   tauc_ =  (tauc_last_/dt + params_->sigma_*absplus_u_)/(1/dt + abs_u_);
-   stress.Update(tauc_, A_, 1.0);
+  double activationFunction = 0.0;
+  Teuchos::RCP<MAT::Material> scatramat;
+  if(params_->sourceactiv_==0)
+    activationFunction=params.get<double>("scalar",0.0);
+  else if(params_->sourceactiv_==-1)
+  {
+    if (params.isParameter("gp_conc"))
+    {
+      // get pointer to vector containing the scalar values at the Gauss points
+      Teuchos::RCP<std::vector<std::vector<double> > > conc =
+          params.get< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc");
+      // safety check
+      if (conc == Teuchos::null)
+        dserror("No concentration from scatra provided for the activation");
+      // get Gauss point number
+      const int gp = params.get<int>("gp",-1);
+      // safety check
+      if (gp == -1)
+        dserror("No Gauss point number provided in material");
+      // check if activation is above the given threshold
+      if(conc->at(gp)[0] >= params_->activationthreshold_)
+        activationFunction = 1.0;
+    }
+  }
+  else
+  {
+    double time_ = params.get<double>("total time",0.0);
+    Teuchos::RCP<std::vector<double> >  pos_ = params.get<Teuchos::RCP<std::vector<double> > >("position");
+    const double* coordgpref_ = &(*pos_)[0];
+    activationFunction = DRT::Problem::Instance()->Funct(params_->sourceactiv_-1).Evaluate(0,coordgpref_,time_,NULL);
+  }
+  activationFunction = activationFunction*(params_->maxactiv_-params_->minactiv_)+params_->minactiv_;
+  double abs_u_ = abs(activationFunction);
+  double absplus_u_ = abs_u_*(activationFunction>0.0);
+  tauc_ =  (tauc_last_/dt + params_->sigma_*absplus_u_)/(1/dt + abs_u_);
+  stress.Update(tauc_, A_, 1.0);
 
    // no contribution to cmat
   // double delta = 0.0;
