@@ -49,7 +49,7 @@ STR::TIMINT::BaseDataGlobalState::BaseDataGlobalState()
       fintnp_(Teuchos::null),
       fextnp_(Teuchos::null),
       freactnp_(Teuchos::null),
-      stiff_(Teuchos::null),
+      jac_(Teuchos::null),
       mass_(Teuchos::null),
       damp_(Teuchos::null),
       timer_(Teuchos::null),
@@ -107,8 +107,7 @@ void STR::TIMINT::BaseDataGlobalState::Init(
 void STR::TIMINT::BaseDataGlobalState::Setup()
 {
   // safety check
-  if (!IsInit())
-    dserror("Init() has not been called, yet!");
+  CheckInit();
 
   // --------------------------------------
   // control parameters
@@ -144,7 +143,7 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
   // --------------------------------------
   // sparse operators
   // --------------------------------------
-  stiff_ = CreateJacobian();
+  jac_ = CreateJacobian();
   mass_  = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
   if (datasdyn_->GetDampingType() != INPAR::STR::damp_none)
   {
@@ -180,6 +179,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
 Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
     CreateGlobalVector(const enum VecInitType& vecinittype)
 {
+  CheckInit();
   Teuchos::RCP<Epetra_Vector> xvec = Teuchos::null;
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -224,7 +224,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
     } // end of the switch-case statement
   } // end of the pure structural problem case
   // ---------------------------------------------------------------------------
-  // if there are more than one active model types
+  // if there are more than one active model type
   // ---------------------------------------------------------------------------
   else
   {
@@ -270,6 +270,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
 Teuchos::RCP<LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::
     CreateJacobian()
 {
+  CheckInit();
   Teuchos::RCP<LINALG::SparseOperator> jac = Teuchos::null;
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -326,9 +327,10 @@ Teuchos::RCP<LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::
 Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::DofRowMap()
     const
 {
-    const Epetra_Map* dofrowmap_ptr = discret_->DofRowMap();
-    // since its const, we do not need to copy the map
-    return Teuchos::rcp(dofrowmap_ptr,false);
+  CheckInit();
+  const Epetra_Map* dofrowmap_ptr = discret_->DofRowMap();
+  // since it's const, we do not need to copy the map
+  return Teuchos::rcp(dofrowmap_ptr,false);
 }
 
 
@@ -337,8 +339,9 @@ Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::DofRowMap()
 Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::DofRowMap(
     unsigned nds) const
 {
+  CheckInit();
   const Epetra_Map* dofrowmap_ptr = discret_->DofRowMap(nds);
-  // since its const, we do not need to copy the map
+  // since it's const, we do not need to copy the map
   return Teuchos::rcp(dofrowmap_ptr,false);
 }
 
@@ -347,6 +350,7 @@ Teuchos::RCP<const Epetra_Map> STR::TIMINT::BaseDataGlobalState::DofRowMap(
  *----------------------------------------------------------------------------*/
 const Epetra_Map* STR::TIMINT::BaseDataGlobalState::DofRowMapView() const
 {
+  CheckInit();
   return discret_->DofRowMap();
 }
 
@@ -426,5 +430,5 @@ Teuchos::RCP<const LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
 Teuchos::RCP<const LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
     GetJacobianDisplBlock() const
 {
-  return ExtractDisplBlock(*stiff_);
+  return ExtractDisplBlock(*jac_);
 }

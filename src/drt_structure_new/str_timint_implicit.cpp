@@ -38,8 +38,7 @@ STR::TIMINT::Implicit::Implicit()
 void STR::TIMINT::Implicit::Setup()
 {
   // safety check
-  if (!IsInit())
-    dserror("Init() has not been called, yet!");
+  CheckInit();
 
   STR::TIMINT::Base::Setup();
 
@@ -95,6 +94,7 @@ void STR::TIMINT::Implicit::Setup()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Implicit::PreparePartitionStep()
 {
+  CheckInitSetup();
   dserror("Not yet implemented!");
 }
 
@@ -102,6 +102,7 @@ void STR::TIMINT::Implicit::PreparePartitionStep()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Implicit::PrepareTimeStep()
 {
+  CheckInitSetup();
   // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
   /* ToDo Check if this is still necessary. I moved this part to the Update(const double endtime)
    * routine, such it becomes consistent with non-adaptive update routine! See the
@@ -122,6 +123,7 @@ void STR::TIMINT::Implicit::PrepareTimeStep()
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::Implicit::Integrate()
 {
+  CheckInitSetup();
   dserror("The function is unused since the ADAPTER::StructureTimeLoop "
       "wrapper gives you all the flexibility you need.");
   return 0;
@@ -131,6 +133,7 @@ int STR::TIMINT::Implicit::Integrate()
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::Implicit::IntegrateStep()
 {
+  CheckInitSetup();
   // do the predictor step
   NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
   Predictor().Predict(grp);
@@ -141,6 +144,7 @@ int STR::TIMINT::Implicit::IntegrateStep()
  *----------------------------------------------------------------------------*/
 INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::Solve()
 {
+  CheckInitSetup();
   // reset the non-linear solver
   NlnSolver().Reset();
   // solve the non-linear problem
@@ -159,6 +163,7 @@ const NOX::Abstract::Group& STR::TIMINT::Implicit::GetSolutionGroup() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> STR::TIMINT::Implicit::SolveRelaxationLinear()
 {
+  CheckInitSetup();
   dserror("FixMe: SolveRelaxationLinear() should be implemented here!");
   return Teuchos::null;
 }

@@ -123,7 +123,8 @@ NOX::NLN::SolutionType NOX::NLN::STR::LinearSystem::GetCurrentLinSolver(
 {
   // check input
   if (solvers.size()>1)
-    throwError("GetCurrentLinSolver","There have to be exactly one LINALG::Solvers (structure)!");
+    throwError("GetCurrentLinSolver","There has to be exactly one "
+        "LINALG::Solver (structure)!");
 
   currSolver = solvers.at(NOX::NLN::sol_structure);
   return NOX::NLN::sol_structure;

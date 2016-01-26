@@ -70,6 +70,7 @@ void STR::PREDICT::Generic::PrePredict(NOX::Abstract::Group& grp)
  *----------------------------------------------------------------------------*/
 void STR::PREDICT::Generic::Predict(NOX::Abstract::Group& grp)
 {
+  CheckInitSetup();
   // pre-process the prediction step
   PrePredict(grp);
 
@@ -85,7 +86,6 @@ void STR::PREDICT::Generic::Predict(NOX::Abstract::Group& grp)
 void STR::PREDICT::Generic::PostPredict(NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
-
   // ToDo The pressure dofs need an extra treatment.
 
   Dbc().ApplyDirichletBC(GlobalState().GetTimeNp(),

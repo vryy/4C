@@ -39,17 +39,17 @@ namespace DRT {
 } // namespace DRT
 
 namespace STR {
-  // enum, which specifies the desired global vector initialization during creation
+  /// enum, which specifies the desired global vector initialization during creation
   enum VecInitType
   {
-    vec_init_zero,                // fill the vector with zeros
-    vec_init_last_time_step,      // use the last converged time step state
-    vec_init_current_state        // use the current state
+    vec_init_zero,                ///< fill the vector with zeros
+    vec_init_last_time_step,      ///< use the last converged time step state
+    vec_init_current_state        ///< use the current state
   };
 namespace TIMINT {
   class BaseDataSDyn;
 
-  /*! \brief Global state data container for the structural (time) integration
+  /** \brief Global state data container for the structural (time) integration
    *
    * This data container holds everything, which refers directly to the
    * structural problem state, e.g. current step counter, time, forces, displacements,
@@ -110,6 +110,12 @@ namespace TIMINT {
     {
       if (!IsInit() or !IsSetup())
         dserror("Call Init() and Setup() first!");
+    }
+
+    inline void CheckInit() const
+    {
+      if (!IsInit())
+        dserror("Init() has not been called, yet!");
     }
 
   public:
@@ -319,10 +325,11 @@ namespace TIMINT {
 
     /// @name Get system matrices (read only access)
     ///@{
-    Teuchos::RCP<const LINALG::SparseOperator> GetStiffMatrix() const
+    /// returns the entire structural jacobian
+    Teuchos::RCP<const LINALG::SparseOperator> GetJacobian() const
     {
       CheckInitSetup();
-      return stiff_;
+      return jac_;
     }
 
     /// mass matrix (constant)
@@ -524,10 +531,11 @@ namespace TIMINT {
 
     /// @name Get mutable system matrices
     ///@{
-    Teuchos::RCP<LINALG::SparseOperator> GetMutableStiffMatrix()
+    /// returns the entire structural jacobian
+    Teuchos::RCP<LINALG::SparseOperator> GetMutableJacobian()
     {
       CheckInitSetup();
-      return stiff_;
+      return jac_;
     }
 
     /// mass matrix (constant)
@@ -630,7 +638,8 @@ namespace TIMINT {
     ///@}
     /// @name System matrices
     ///@{
-    Teuchos::RCP<LINALG::SparseOperator> stiff_;
+    /// supposed to hold the entire jacobian (saddle point system if desired)
+    Teuchos::RCP<LINALG::SparseOperator> jac_;
 
     /// mass matrix (constant)
     Teuchos::RCP<LINALG::SparseOperator> mass_;

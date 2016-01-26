@@ -29,8 +29,7 @@ STR::TIMINT::Explicit::Explicit()
 void STR::TIMINT::Explicit::Setup()
 {
   // safety check
-  if (!IsInit())
-    dserror("Init() has not been called, yet!");
+  CheckInit();
 
   Base::Setup();
 
@@ -43,6 +42,7 @@ void STR::TIMINT::Explicit::Setup()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Explicit::PrepareTimeStep()
 {
+  CheckInitSetup();
   // things that need to be done before Predict
   PrePredict();
 
@@ -59,6 +59,7 @@ void STR::TIMINT::Explicit::PrepareTimeStep()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Explicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
+  CheckInitSetup();
   dserror("All monolithically coupled problems work with implicit time "
       "integration schemes. Thus, calling Evaluate() in an explicit scheme "
       "is not possible.");
@@ -68,6 +69,7 @@ void STR::TIMINT::Explicit::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
  *----------------------------------------------------------------------------*/
 INPAR::STR::ConvergenceStatus STR::TIMINT::Explicit::Solve()
 {
+  CheckInitSetup();
   IntegrateStep();
   return INPAR::STR::conv_success;
 }
@@ -84,6 +86,7 @@ void STR::TIMINT::Explicit::PreparePartitionStep()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Explicit::Update(double endtime)
 {
+  CheckInitSetup();
   dserror("Not implemented. No time adaptivity available for explicit time integration.");
 }
 
@@ -92,6 +95,7 @@ void STR::TIMINT::Explicit::Update(double endtime)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Explicit::Output(bool forced_writerestart)
 {
+  CheckInitSetup();
   PreOutput();
   // FixMe
   if (DataGlobalState().GetMyRank() == 0)
@@ -107,6 +111,7 @@ void STR::TIMINT::Explicit::Output(bool forced_writerestart)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Explicit::PrintStep()
 {
+  CheckInitSetup();
   // FixMe
   if (DataGlobalState().GetMyRank() == 0)
     std::cout << "FixMe: The PrintStep() routine is not yet implemented!" << std::endl;
@@ -117,6 +122,7 @@ void STR::TIMINT::Explicit::PrintStep()
  *----------------------------------------------------------------------------*/
 INPAR::STR::STC_Scale STR::TIMINT::Explicit::GetSTCAlgo()
 {
+  CheckInitSetup();
   dserror("GetSTCAlgo() has not been tested for explicit time integration.");
   return INPAR::STR::stc_none;
 };
@@ -126,6 +132,7 @@ INPAR::STR::STC_Scale STR::TIMINT::Explicit::GetSTCAlgo()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::Explicit::GetSTCMat()
 {
+  CheckInitSetup();
   dserror("GetSTCMat() has not been tested for explicit time integration.");
   return Teuchos::null;
 };
@@ -145,6 +152,7 @@ int STR::TIMINT::Explicit::Integrate()
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::Explicit::IntegrateStep()
 {
+  CheckInitSetup();
   dserror("Not yet implemented!");
   return 0;
 }
@@ -180,6 +188,7 @@ Teuchos::RCP<const Epetra_Vector> STR::TIMINT::Explicit::RHS()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> STR::TIMINT::Explicit::Freact()
 {
+  CheckInitSetup();
   dserror("Not implemented!");
   return Teuchos::null;
 }

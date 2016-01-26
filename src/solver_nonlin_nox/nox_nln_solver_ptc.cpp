@@ -334,9 +334,9 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
    * You have to specify an inner status test to use it, otherwise
    * it will do nothing, but updating x with the specified default
    * step length (same behavior as for the "Full Step" case). */
-  // Do line search and compute new soln.
   // Use the pseudo transient residual during the line search procedure.
   usePseudoTransientResidual_ = true;
+  // Do line search and compute new soln.
   ok = lineSearchPtr->compute(soln, stepSize, *dirPtr, *this);
   usePseudoTransientResidual_ = false;
   // evaluate the model reduction ratio if desired
@@ -550,11 +550,13 @@ void NOX::NLN::Solver::PseudoTransient::updatePseudoTimeStep()
               GetStatus<NOX::NLN::StatusTest::NormF>() == NOX::StatusTest::Converged)
             muinv *= 4.0;
           /* if the model performed badly: reduce the pseudo time step by a
-           * factor tau_red, where 0.25 <= tau_red <= 0.8. */
+           * factor tau_red, where 0.25 <= tau_red <= 0.8.
+           * (ToDo supposed to become an input parameter) */
           else if (modelReductionRatio_ < 0.2)
             muinv *=  std::min(std::max(0.25,ratioF),0.8);
           /* if the model performed well: increase the pseudo time step by a
-           * factory tau_inc, where 1.25 <= tau_inc <= 4.0. */
+           * factor tau_inc, where 1.25 <= tau_inc <= 4.0.
+           * (ToDo supposed to become an input parameter) */
           else if (modelReductionRatio_ > 0.8)
             muinv *= std::max(std::min(4.0,ratioF),1.25);
 
@@ -753,7 +755,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::
   {
     case NOX::NLN::LinearSystem::LinalgSparseMatrix:
     {
-      // First cast the LINALG::SparseOperator and do an additional safety
+      // First cast the LINALG::SparseOperator and do an additional sanity
       // check.
       LINALG::SparseMatrix* jacPtr = dynamic_cast<LINALG::SparseMatrix*>(&jac);
       if (jacPtr == NULL)
@@ -805,7 +807,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modifyJacobian(
       /* Build the scaling operator V and multiply it with the inverse
        * pseudo time step. Finally, we modify the jacobian.
        *
-       *        $ (\delta^{-1} \boldsymbol{I} + \boldsymbol{J})$ */
+       *        (\delta^{-1} \boldsymbol{I} + \boldsymbol{J}) */
       Teuchos::RCP<Epetra_Vector> v =
           Teuchos::rcp(new Epetra_Vector(*scalingDiagOpPtr_));
       v->Scale(deltaInv);
@@ -815,8 +817,6 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::modifyJacobian(
       diag->Update(1.0,*v,1.0);
       // Finally modify the jacobian
       jac.ReplaceDiagonalValues(*diag);
-      // NOTE: Since we modify only the diagonal terms the Dirichlet
-      // conditions can be neglected.
       break;
     }
     case NOX::NLN::Solver::PseudoTransient::scale_op_cfl_diagonal:
@@ -896,7 +896,7 @@ void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPostComputeF(
   // add the transient part
   F.Update(1.0,fUpdate->getEpetraVector(),1.0);
 
-  // set the flagg
+  // set the flag
   isPseudoTransientResidual_ = true;
 
   return;
@@ -930,7 +930,7 @@ void NOX::NLN::GROUP::PrePostOp::PseudoTransient::runPreComputeF(
   // subtract the transient part
   F.Update(-1.0,fUpdate->getEpetraVector(),1.0);
 
-  // set flagg
+  // set flag
   isPseudoTransientResidual_ = false;
 
   return;

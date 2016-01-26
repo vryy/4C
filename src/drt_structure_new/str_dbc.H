@@ -51,20 +51,31 @@ namespace TIMINT {
     //! Setup class variables
     virtual void Setup();
 
-    /*! Apply the DBC to system of equations in the local coordinate system. */
+    /*! \brief Apply the DBC to system of equations
+     *
+     *  Note: Stay in the local coordinate system and do not rotate back (if locSys is defined).*/
     void ApplyDirichletToLocalSystem(Teuchos::RCP<LINALG::SparseOperator> A,
         Teuchos::RCP<Epetra_Vector>& b) const;
 
+    /*! \brief Apply the DBC to a vector
+     *
+     *  Note: Stay in the global coordinate system (Rotation: global-->local-->global).*/
     void ApplyDirichletToVector(Teuchos::RCP<Epetra_Vector>& vec) const;
 
+    /*! \brief Apply the DBC to the rhs vector and calculate and save the reaction forces
+     *
+     *  Note: Stay in the global coordinate system (Rotation: global-->local-->global).*/
     void ApplyDirichletToRhs(Teuchos::RCP<Epetra_Vector>& b);
 
-    //! update the locsys manager
+    //! Update the locsys manager
     void UpdateLocSysManager();
 
-    //! calculate the dirichlet increment of the current (time) step
+    //! Calculate the dirichlet increment of the current (time) step
     Teuchos::RCP<Epetra_Vector> GetDirichletIncrement();
 
+    /*! \brief Evaluate and apply the DBC
+     *
+     * Note: Stay in the global coordinate system (Rotation: global-->local-->global).*/
     void ApplyDirichletBC(
         const double& time,
         Teuchos::RCP<Epetra_Vector> dis,
@@ -72,7 +83,7 @@ namespace TIMINT {
         Teuchos::RCP<Epetra_Vector> acc,
         bool recreatemap);
 
-    //! @nameAccess functions
+    //! @name Access functions
     //!@{
     //! Get the Dirichlet Boundary Condition map extractor
     Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const;
@@ -164,6 +175,14 @@ namespace NOX {
 namespace NLN {
 namespace LinSystem {
 namespace PrePostOp {
+  /*! \brief PrePostOperator class to modify the linear system before the linear system is going to be solved.
+   *
+   * We use this pre/post operator to apply the DBC on the linear system of equations before the
+   * linear system is going to be solved. This gives us the opportunity to rotate the matrix only
+   * once, if locSys is defined and to apply possible modifications to the linear system at different
+   * places without the need to re-apply the DBC (see PTC for an example).
+   *
+   * \author Hiermeier */
   class Dbc : public NOX::NLN::Abstract::PrePostOperator
   {
   public:

@@ -73,7 +73,7 @@ namespace STR {
         Teuchos::RCP<LINALG::Solver>& solverPtr,
         const NOX::NLN::SolutionType& solverType);
 
-    //! Returns a pointer to linear solver, which has to be used
+    //! Returns a pointer to the linear solver, which has to be used
     virtual NOX::NLN::SolutionType GetCurrentLinSolver(
         const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
         Teuchos::RCP<LINALG::Solver>& currSolver);

@@ -881,7 +881,8 @@ void STR::TimIntImpl::ApplyForceStiffExternal
     discret_->SetState(0,"velocity", vel);
   // get load vector
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  bool loadlin = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "LOADLIN");
+  bool loadlin = (DRT::INPUT::IntegralValue<int>(sdyn, "LOADLIN") == 1);
+
   if (!loadlin)
     discret_->EvaluateNeumann(p, *fext);
   else

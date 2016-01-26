@@ -52,7 +52,7 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::SystemMatrix()
 {
   CheckInitSetup();
   return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>
-      (DataGlobalState().GetMutableStiffMatrix());
+      (DataGlobalState().GetMutableJacobian());
 }
 
 
@@ -62,7 +62,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> STR::TIMINT::ImplicitBase::BlockSyst
 {
   CheckInitSetup();
   return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>
-      (DataGlobalState().GetMutableStiffMatrix());
+      (DataGlobalState().GetMutableJacobian());
 }
 
 /*----------------------------------------------------------------------------*
@@ -97,6 +97,7 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::GetSTCMat()
 void STR::TIMINT::ImplicitBase::Evaluate(
     Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
+  CheckInitSetup();
   dserror("Not yet implemented!");
 }
 
@@ -104,6 +105,7 @@ void STR::TIMINT::ImplicitBase::Evaluate(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::InitialGuess()
 {
+  CheckInitSetup();
   dserror("Not yet imlemented!");
   return Teuchos::null;
 }
@@ -125,6 +127,7 @@ void STR::TIMINT::ImplicitBase::Update(double endtime)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::ImplicitBase::Output(bool forced_writerestart)
 {
+  CheckInitSetup();
   PreOutput();
   // FixMe
   if (DataGlobalState().GetMyRank() == 0)
@@ -138,6 +141,7 @@ void STR::TIMINT::ImplicitBase::Output(bool forced_writerestart)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::ImplicitBase::PrintStep()
 {
+  CheckInitSetup();
   // FixMe
   if (DataGlobalState().GetMyRank() == 0)
     std::cout << "FixMe: The PrintStep() routine is not yet implemented!" << std::endl;

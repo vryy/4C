@@ -334,6 +334,7 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffInternal()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::UpdateStepState()
 {
+  CheckInitSetup();
   // update state
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}
@@ -352,6 +353,7 @@ void STR::MODELEVALUATOR::Structure::UpdateStepState()
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::UpdateStepElement()
 {
+  CheckInitSetup();
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // other parameters that might be needed by the elements

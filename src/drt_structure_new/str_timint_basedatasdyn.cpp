@@ -279,6 +279,7 @@ void STR::TIMINT::BaseDataSDyn::Setup()
 double STR::TIMINT::BaseDataSDyn::GetResTolerance(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
+  CheckInitSetup();
   switch (qtype)
   {
     case NOX::NLN::StatusTest::quantity_structure:
@@ -318,6 +319,7 @@ double STR::TIMINT::BaseDataSDyn::GetResTolerance(
 double STR::TIMINT::BaseDataSDyn::GetIncrTolerance(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
+  CheckInitSetup();
   switch (qtype)
   {
     case NOX::NLN::StatusTest::quantity_structure:
@@ -354,6 +356,7 @@ double STR::TIMINT::BaseDataSDyn::GetIncrTolerance(
 enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetResToleranceType(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
+  CheckInitSetup();
   switch (qtype)
   {
     case NOX::NLN::StatusTest::quantity_structure:
@@ -393,6 +396,7 @@ enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetResToleranceType(
 enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetIncrToleranceType(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {
+  CheckInitSetup();
   switch (qtype)
   {
     case NOX::NLN::StatusTest::quantity_structure:
@@ -439,6 +443,7 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResComboType(
     const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
     const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const
 {
+  CheckInitSetup();
   // combination: STRUCTURE <--> PRESSURE
   if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
        qtype_2==NOX::NLN::StatusTest::quantity_pressure) or
@@ -489,6 +494,7 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetIncrComboType(
     const enum NOX::NLN::StatusTest::QuantityType& qtype_1,
     const enum NOX::NLN::StatusTest::QuantityType& qtype_2) const
 {
+  CheckInitSetup();
   // combination: STRUCTURE <--> PRESSURE
   if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
        qtype_2==NOX::NLN::StatusTest::quantity_pressure) or
@@ -530,6 +536,7 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResIncrComboType(
         const enum NOX::NLN::StatusTest::QuantityType& qtype_res,
         const enum NOX::NLN::StatusTest::QuantityType& qtype_incr) const
 {
+  CheckInitSetup();
   // combination: STRUCTURE (force/res) <--> STRUCTURE (displ/incr)
   if ((qtype_res==NOX::NLN::StatusTest::quantity_structure and
        qtype_incr==NOX::NLN::StatusTest::quantity_structure))

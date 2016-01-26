@@ -33,7 +33,7 @@ namespace DRT {
 } // namespace DRT
 namespace STR {
 namespace TIMINT {
-  /*! \brief Structural dynamics data container for the structural (time) integration
+  /** \brief Structural dynamics data container for the structural (time) integration
    *
    * This data container holds everything, which refers directly to the
    * control mechanisms of the structural dynamics algorithms. The input parameters

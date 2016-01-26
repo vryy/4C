@@ -45,8 +45,8 @@ DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     200
 NLNSOL                          lsnewton                    // fullnewton modnewton matfreenewton nlncg ptc
-TIMESTEP                        100.0
-NUMSTEP                         3
+TIMESTEP                        50.0
+NUMSTEP                         6
 MAXTIME                         300.0
 DAMPING                         No
 M_DAMP                          0.00001

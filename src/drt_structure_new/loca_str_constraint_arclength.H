@@ -144,17 +144,19 @@ namespace MultiContinuation {
     void Setup();
 
   protected:
-    //! check the isinit_ flagg
+    //! check the isinit_ flag
     void CheckInit() const;
 
     //! check the isinit_ and issetup_
     void CheckInitSetup() const;
 
-    //! reset the isvalid flaggs
+    //! reset the isvalid flags
     void resetIsValid();
 
+    //! returns the initialization indicator
     const bool& IsInit() const { return isinit_; };
 
+    //! returns the setup indicator
     const bool& IsSetup() const { return issetup_; };
 
   protected:

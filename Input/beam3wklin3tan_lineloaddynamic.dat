@@ -58,6 +58,7 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 MAXITER                         80
 MASSLIN                         rotations
+LOADLIN                         Yes
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 ALPHA_F         0.487179487179

@@ -115,6 +115,7 @@ double STR::IMPLICIT::Statics::GetIntParam() const
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::PreUpdate()
 {
+  CheckInitSetup();
   const STR::TIMINT::Implicit* impl_ptr =
       dynamic_cast<const STR::TIMINT::Implicit*>(&TimInt());
   if (impl_ptr == NULL)
@@ -178,6 +179,7 @@ void STR::IMPLICIT::Statics::PredictConstDisConsistVelAcc(
     Epetra_Vector& velnp,
     Epetra_Vector& accnp) const
 {
+  CheckInitSetup();
   // constant predictor : displacement in domain
   disnp.Update(1.0,*GlobalState().GetDisN(),0.0);
   // new end-point velocities, these stay zero in static calculation
@@ -193,6 +195,7 @@ bool STR::IMPLICIT::Statics::PredictConstVelConsistAcc(
     Epetra_Vector& velnp,
     Epetra_Vector& accnp) const
 {
+  CheckInitSetup();
   // If there is not enough history information, return a fail status.
   if (GlobalState().GetStepN()==0)
     return false;
@@ -219,6 +222,7 @@ bool STR::IMPLICIT::Statics::PredictConstAcc(
     Epetra_Vector& velnp,
     Epetra_Vector& accnp) const
 {
+  CheckInitSetup();
   // If there is not enough history information try a different predictor with
   // less requirements.
   if (GlobalState().GetStepN()<2)

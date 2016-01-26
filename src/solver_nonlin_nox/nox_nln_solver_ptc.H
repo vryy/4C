@@ -40,7 +40,7 @@ namespace Solver {
  * interface package.
  *
  * During the line search routine we use always the transient residual [3] for the
- * current iteration point x_{n}
+ * current iteration point \f$x_{n}\f$
  * \f[
  *   r_{t}(x) = \delta_{n}^{-1} V_{n} (x - x_{n}) + F(x)
  * \f]
@@ -177,7 +177,7 @@ namespace Solver {
 
     /*! \brief Evaluate the model reduction ratio
      *
-     *  We use the transient residual and the corresponding (quadratic) model $m(\eta_{n}^{*})$.
+     *  We use the transient residual and the corresponding (quadratic) model \f$m(\eta_{n}^{*})\f$.
      *  If we choose the Sum of Squares merit function, we get
      *
      *  \f[
@@ -200,20 +200,20 @@ namespace Solver {
      *  We use a least squares approximation based on the following idea.
      *  The pseudo time step is modified in such a way, that it represents in a least squares
      *  sense the actual used step, i.e. the direction vector scaled by the step length
-     *  parameter $\eta_{n}^{*}$. The corresponding pseudo time step is called
-     *  $\delta_{n}^{*}$:
+     *  parameter \f$\eta_{n}^{*}\f$. The corresponding pseudo time step is called
+     *  \f$\delta_{n}^{*}\f$:
      *
      *  \f[
      *    [(\delta_{n}^{*})^{-1} V_{n} + \nabla_{x} F_{n}^{T}] (x(t_{n}+\delta^{*}_{n}) - x_{n}) = -F_{n},
      *  \f]
      *
-     *  where we replace $(x(t_{n}+\delta^{*}_{n})$ by $\eta_{n}^{*} d_{n}$ and reformulate the equation
+     *  where we replace \f$(x(t_{n}+\delta^{*}_{n})\f$ by \f$\eta_{n}^{*} d_{n}\f$ and reformulate the equation
      *
      *  \f[
      *    V_{n} d_{n} = - \delta_{n}^{*} ((\eta_{n}^{*})^{-1} F_{n} + \nabla_{x} F_{n}^{T} d_{n}).
      *  \f]
      *
-     *  Since we cannot find a suitable scalar $\delta_{n}^{*}$, which solves the problem exactly, we
+     *  Since we cannot find a suitable scalar \f$\delta_{n}^{*}\f$, which solves the problem exactly, we
      *  formulate a least squares problem to minimize the error:
      *
      *  \f[
@@ -243,8 +243,8 @@ namespace Solver {
      *  - The model reduction ratio.\n
      *    See the evalModelReductionRatio() routine for more detail on how to evaluate the ratio.
      *
-     *    If rho is smaller than 0.2, the pseudo time step is decreased,
-     *    else if rho is larger than 0.9, the pseudo time step is increased,
+     *    If \f$\rho\f$ is smaller than 0.2, the pseudo time step is decreased,
+     *    else if \f$\rho\f$ is larger than 0.9, the pseudo time step is increased,
      *    otherwise we keep the current pseudo time step unchanged. */
     void updatePseudoTimeStep();
 
@@ -407,7 +407,7 @@ namespace PrePostOp {
     //! reference to the scaling diagonal operator
     Teuchos::RCP<Epetra_Vector>& scalingDiagOpPtr_;
 
-    //! reference to the flagg which indicates, if the current right-hand-side is the transient right-hand-side
+    //! reference to the flag which indicates, if the current right-hand-side is the transient right-hand-side
     bool isPseudoTransientResidual_;
 
   }; // class PseudoTransient

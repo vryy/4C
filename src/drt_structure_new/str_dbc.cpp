@@ -173,6 +173,7 @@ void STR::Dbc::ApplyDirichletBC(
     bool recreatemap
   )
 {
+  CheckInitSetup();
   // We have to rotate forward ...
   // ---------------------------------------------------------------------------
   if (!dis.is_null())

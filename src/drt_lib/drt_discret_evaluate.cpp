@@ -211,7 +211,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
   {
     if (fool->first != (std::string)"PointNeumann") continue;
     if (assemblemat && !systemvector.Comm().MyPID())
-      std::cout << "WARNING: System matrix handled in but no linearization of PointNeumann conditions implemented. "
+      std::cout << "WARNING: System matrix handed in but no linearization of PointNeumann conditions implemented. "
                    "Did you set the LOADLIN-flag accidentally?" << std::endl;
     DRT::Condition& cond = *(fool->second);
     const std::vector<int>* nodeids = cond.Nodes();

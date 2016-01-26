@@ -102,7 +102,7 @@ void STR::NLN::SOLVER::Nox::Setup()
   Teuchos::RCP<NOX::Epetra::Vector> soln =
       DataGlobalState().CreateGlobalVector();
   Teuchos::RCP<LINALG::SparseOperator> jac =
-      DataGlobalState().GetMutableStiffMatrix();
+      DataGlobalState().GetMutableJacobian();
   problem_ = Teuchos::rcp(new NOX::NLN::Problem(nlnglobaldata_,soln,jac));
 
   // -------------------------------------------------------------------------

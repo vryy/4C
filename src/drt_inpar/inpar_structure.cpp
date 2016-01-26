@@ -398,7 +398,7 @@ namespace INPAR
                               "for methods other than load control: [node(fortran numbering)] [dof(c-numbering)] [curve(fortran numbering)]",
                               &sdyn);
 
-    setStringToIntegralParameter<int>("LOADLIN","yes",
+    setStringToIntegralParameter<int>("LOADLIN","No",
                                       "Use linearization of external follower load in Newton",
                                       yesnotuple,yesnovalue,&sdyn);
 

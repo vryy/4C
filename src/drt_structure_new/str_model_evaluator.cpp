@@ -92,6 +92,7 @@ void STR::ModelEvaluator::Setup()
 bool STR::ModelEvaluator::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
     const
 {
+  CheckInitSetup();
   Map::iterator me_iter;
   bool ok = true;
   // initialize right hand side to zero
@@ -109,6 +110,7 @@ bool STR::ModelEvaluator::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
 bool STR::ModelEvaluator::ApplyStiff(const Epetra_Vector& x,
     LINALG::SparseOperator& jac) const
 {
+  CheckInitSetup();
   Map::iterator me_iter;
   bool ok = true;
   // initialize stiffness matrix to zero
@@ -128,6 +130,7 @@ bool STR::ModelEvaluator::ApplyStiff(const Epetra_Vector& x,
 bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x,
     Epetra_Vector& f, LINALG::SparseOperator& jac) const
 {
+  CheckInitSetup();
   Map::iterator me_iter;
   bool ok = true;
   // initialize stiffness matrix and right hand side to zero
@@ -148,7 +151,6 @@ bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x,
 const STR::TIMINT::BaseDataGlobalState& STR::ModelEvaluator::GetGlobalState() const
 {
   CheckInitSetup();
-
   return *gstate_ptr_;
 }
 

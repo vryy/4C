@@ -80,6 +80,7 @@ void STR::TIMINT::Base::Init(
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::Setup()
 {
+  CheckInit();
   // ---------------------------------------------------------------------------
   // build model evaluator
   // ---------------------------------------------------------------------------
@@ -135,6 +136,7 @@ void STR::TIMINT::Base::ResetStep()
  *----------------------------------------------------------------------------*/
 bool STR::TIMINT::Base::NotFinished() const
 {
+  CheckInitSetup();
   // check the current time
   const double& timenp = dataglobalstate_->GetTimeNp();
   const double& timemax = datasdyn_->GetTimeMax();
@@ -150,7 +152,8 @@ bool STR::TIMINT::Base::NotFinished() const
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::ReadRestart(const int stepn)
 {
-   Teuchos::RCP<DRT::Discretization> actdis = DataGlobalState().GetMutableDiscret();
+  CheckInitSetup();
+  Teuchos::RCP<DRT::Discretization> actdis = DataGlobalState().GetMutableDiscret();
   IO::DiscretizationReader reader(actdis, stepn);
   if (stepn != reader.ReadInt("step"))
     dserror("Time step on file not equal to given step");
@@ -265,6 +268,7 @@ void STR::TIMINT::Base::ResizeMStepTimAda()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::PreUpdate()
 {
+  CheckInitSetup();
   int_ptr_->PreUpdate();
 }
 
@@ -286,6 +290,7 @@ void STR::TIMINT::Base::Update()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::PostUpdate()
 {
+  CheckInitSetup();
   int_ptr_->PostUpdate();
 }
 
@@ -293,6 +298,7 @@ void STR::TIMINT::Base::PostUpdate()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::UpdateStepTime()
 {
+  CheckInitSetup();
   double& timenp = dataglobalstate_->GetMutableTimeNp();
   int& stepnp = dataglobalstate_->GetMutableStepNp();
   int& stepn  = dataglobalstate_->GetMutableStepN();
@@ -335,6 +341,7 @@ void STR::TIMINT::Base::GetRestartData(
     Teuchos::RCP<std::vector<char> > elementdata,
     Teuchos::RCP<std::vector<char> > nodedata)
 {
+  CheckInitSetup();
   // at some point we have to create a copy
   *step = dataglobalstate_->GetStepN();
   *time = dataglobalstate_->GetTimeN();
@@ -356,6 +363,7 @@ void STR::TIMINT::Base::GetRestartData(
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::writeGmshStrucOutputStep()
 {
+  CheckInitSetup();
   if (!dataio_->IsGmsh())
     return;
 

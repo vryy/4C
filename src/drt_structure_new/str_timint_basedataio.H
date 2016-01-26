@@ -26,7 +26,7 @@ namespace IO {
 } // namespace IO
 namespace STR {
 namespace TIMINT {
-  /*! \brief Input/output data container for the structural (time) integration
+  /** \brief Input/output data container for the structural (time) integration
    *
    * This data container holds everything, which refers directly to the
    * input/output writer and the screen output.

@@ -131,7 +131,7 @@ void STR::TIMINT::LOCAContinuation::Setup()
       Teuchos::rcp(new NOX::Epetra::Vector(DataGlobalState().GetMutableDisNp(),
       NOX::Epetra::Vector::CreateView));
   Teuchos::RCP<LINALG::SparseOperator> jac_ptr =
-      DataGlobalState().GetMutableStiffMatrix();
+      DataGlobalState().GetMutableJacobian();
 
   // ---------------------------------------------------------------------------
   // Build linear system, loca group, outer/inner/loca status tests
@@ -239,6 +239,7 @@ int STR::TIMINT::LOCAContinuation::Integrate()
  *----------------------------------------------------------------------------*/
 int STR::TIMINT::LOCAContinuation::IntegrateStep()
 {
+  CheckInitSetup();
   dserror("Not yet implemented!"); return 0;
 }
 
@@ -246,6 +247,7 @@ int STR::TIMINT::LOCAContinuation::IntegrateStep()
  *----------------------------------------------------------------------------*/
 INPAR::STR::ConvergenceStatus STR::TIMINT::LOCAContinuation::Solve()
 {
+  CheckInitSetup();
   dserror("Currently unsupported!");
   return INPAR::STR::conv_success;
 }
@@ -254,6 +256,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::LOCAContinuation::Solve()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> STR::TIMINT::LOCAContinuation::SolveRelaxationLinear()
 {
+  CheckInitSetup();
   dserror("SolveRelaxationLinear() is not avaible for LOCA!");
   return Teuchos::null;
 }
