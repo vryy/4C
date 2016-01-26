@@ -177,7 +177,7 @@ namespace TIMINT
     int IndexByStep
     (
       const int step  //!< step number
-    ) const
+    )
     {
       int index = step - steppast_;
       dsassert(IndexExists(index), "step is not permissible!");
