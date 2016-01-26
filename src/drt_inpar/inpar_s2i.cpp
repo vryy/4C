@@ -63,14 +63,16 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "NoMortar",
           "StandardMortar",
           "SaddlePointMortar",
-          "CondensedMortar"
+          "CondensedMortar_Petrov",
+          "CondensedMortar_Bubnov"
           ),
       tuple<int>(
           mortar_undefined,
           mortar_none,
           mortar_standard,
           mortar_saddlepoint,
-          mortar_condensed
+          mortar_condensed_petrov,
+          mortar_condensed_bubnov
           ),
       &s2icoupling
       );

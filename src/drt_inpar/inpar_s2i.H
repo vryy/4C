@@ -45,7 +45,8 @@ namespace INPAR
       mortar_none,
       mortar_standard,
       mortar_saddlepoint,
-      mortar_condensed
+      mortar_condensed_petrov,
+      mortar_condensed_bubnov
     };
 
     //! models for interface kinetics
