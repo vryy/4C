@@ -430,10 +430,14 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(LINALG::SparseMatrix* linD_X,
         lm=0.;
       else
       {
+        double dval = 1.;
+        if (cnode->MoData().GetD().size()==0)
+          continue;
+        else
+          cnode->MoData().GetD()[cnode->Id()];
         const LINALG::Matrix<3,1> lmc(cnode->MoData().lm(),true);
         const LINALG::Matrix<3,1> n(cnode->MoData().n(),true);
         const LINALG::Matrix<3,1> jump(frnode->FriData().jump(),true);
-        const double dval = cnode->MoData().GetD()[cnode->Id()];
         double diss =(-lmc.Dot(jump)+lmc.Dot(n)*jump.Dot(n))/(dt*dval);
         lm=diss;
       }
@@ -679,7 +683,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(
           for (int d=0;d<3;++d)
             m_LinDissContactLM->FEAssemble(-fac*k->second*jump_tan(d)/(dt*dval),kcnode->Dofs()[0],cnode->Dofs()[d]);
           }
-  } // loop over all LM slave nodes (row map)
+  } // loop over all active LM slave nodes (row map)
 
 }
 

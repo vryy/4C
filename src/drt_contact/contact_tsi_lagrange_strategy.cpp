@@ -232,6 +232,7 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
     {
       tsi_interface->AssembleTN(dcsdLMc,Teuchos::null);
       tsi_interface->AssembleTNderiv(dcsdd,Teuchos::null);
+      tsi_interface->AssembleTangrhs(*rcsa);
     }
 
     // linearized thermal contact (heat conduction)
