@@ -66,6 +66,8 @@ namespace IMPLICIT {
 
     //! Update everything on element level after time step and after output (derived)
     virtual void UpdateStepElement();
+
+    virtual void OutputStepState();
     //! @}
 
     //! @name Predictor routines (dependent on the implicit integration scheme)

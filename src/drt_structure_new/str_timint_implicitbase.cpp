@@ -128,13 +128,7 @@ void STR::TIMINT::ImplicitBase::Update(double endtime)
 void STR::TIMINT::ImplicitBase::Output(bool forced_writerestart)
 {
   CheckInitSetup();
-  PreOutput();
-  // FixMe
-  if (DataGlobalState().GetMyRank() == 0)
-    std::cout << "FixMe: The Output() routine is not yet implemented!" << std::endl;
-//  OutputStep(forced_writerestart);
-//  // write Gmsh output
-//  writeGmshStrucOutputStep();
+  Integrator().OutputStepState();
 }
 
 /*----------------------------------------------------------------------------*

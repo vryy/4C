@@ -87,7 +87,7 @@ void STR::TIMINT::Base::Setup()
   modelevaluator_ptr_ =
       Teuchos::rcp(new STR::ModelEvaluator());
   modelevaluator_ptr_->Init(DataSDyn().GetModelTypes(),
-      DataGlobalStatePtr(),Teuchos::rcp(this,false));
+      DataGlobalStatePtr(),DataIOPtr(),Teuchos::rcp(this,false));
   modelevaluator_ptr_->Setup();
 
   // ---------------------------------------------------------------------------

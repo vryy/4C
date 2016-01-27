@@ -66,15 +66,15 @@ namespace TIMINT {
 
   public:
 
-    /// @name Get printing and output parameters/files (read only access)
-    ///@{
     /// get the binary output writer
-    Teuchos::RCP<const IO::DiscretizationWriter> GetOutputPtr() const
+    Teuchos::RCP<IO::DiscretizationWriter> GetMutableOutputPtr()
     {
       CheckInitSetup();
       return output_;
     };
 
+    /// @name Get printing and output parameters/files (read only access)
+    ///@{
     /// get the output file for energy (read only access)
     Teuchos::RCP<const std::ostream> GetEnergyFilePtr() const
     {

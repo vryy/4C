@@ -31,6 +31,7 @@ namespace DRT {
 namespace STR {
 namespace TIMINT {
   class BaseDataGlobalState;
+  class BaseDataIO;
   class Base;
 } // namespace TIMINT
 namespace MODELEVALUATOR {
@@ -45,6 +46,7 @@ namespace MODELEVALUATOR {
 
     //! initialize the class variables
     virtual void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
+        const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
         const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
 
     //! setup class variables
@@ -94,6 +96,10 @@ namespace MODELEVALUATOR {
 
     virtual void UpdateStepElement() = 0;
 
+    //! output routine for model evlaluator
+    virtual void OutputStepState() = 0;
+
+
   protected:
     //! init flag
     bool isinit_;
@@ -102,6 +108,8 @@ namespace MODELEVALUATOR {
     bool issetup_;
 
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+
+    Teuchos::RCP<STR::TIMINT::BaseDataIO> gio_ptr_;
 
     //! problem discretization
     Teuchos::RCP<DRT::Discretization> discret_ptr_;

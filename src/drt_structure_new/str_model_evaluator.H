@@ -28,6 +28,7 @@ namespace STR {
 namespace TIMINT {
   class Base;
   class BaseDataGlobalState;
+  class BaseDataIO;
 } // namespace TIMINT
 namespace MODELEVALUATOR {
   class Generic;
@@ -46,6 +47,7 @@ namespace MODELEVALUATOR {
     //! initialize
     void Init(const std::set<enum INPAR::STR::ModelType>& mt,
         const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
+        const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
         const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
 
     //! setup
@@ -80,6 +82,8 @@ namespace MODELEVALUATOR {
 
     //! Update everything on element level after time step and after output
     void UpdateStepElement();
+
+    void OutputStepState();
     //! @}
 
   protected:
@@ -105,6 +109,8 @@ namespace MODELEVALUATOR {
     Teuchos::RCP<STR::ModelEvaluator::Map> modelevaluators_ptr_;
 
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+
+    Teuchos::RCP<STR::TIMINT::BaseDataIO> gio_ptr_;
 
     Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
   };  // class ModelEvaluator

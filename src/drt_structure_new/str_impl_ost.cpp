@@ -43,6 +43,14 @@ void STR::IMPLICIT::OneStepTheta::SetState(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::OneStepTheta::OutputStepState()
+{
+  dserror("Output not yet implemented for ost!");
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::OneStepTheta::ApplyForce(const Epetra_Vector& x,
         Epetra_Vector& f)
 {

@@ -25,6 +25,7 @@ STR::MODELEVALUATOR::Generic::Generic()
     : isinit_(false),
       issetup_(false),
       gstate_ptr_(Teuchos::null),
+      gio_ptr_(Teuchos::null),
       discret_ptr_(Teuchos::null),
       timint_ptr_(Teuchos::null)
 {
@@ -35,12 +36,14 @@ STR::MODELEVALUATOR::Generic::Generic()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Generic::Init(
     const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
+    const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
     const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr)
 {
   // call setup after init()
   issetup_ = false;
 
   gstate_ptr_ = gstate_ptr;
+  gio_ptr_ = gio_ptr;
   discret_ptr_ = gstate_ptr->GetMutableDiscret();
   timint_ptr_ = timint_ptr;
 

@@ -44,6 +44,13 @@ void STR::IMPLICIT::Gemm::SetState(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Gemm::OutputStepState()
+{
+  dserror("Output not yet implemented for GEMM!");
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::Gemm::ApplyForce(const Epetra_Vector& x,
         Epetra_Vector& f)
 {

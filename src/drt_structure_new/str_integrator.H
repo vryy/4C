@@ -68,6 +68,9 @@ namespace TIMINT {
      *  time step. */
     virtual void UpdateStepElement() = 0;
 
+    //TODO comment...
+    virtual void OutputStepState() = 0;
+
     /// things that should be done after updating
     virtual void PostUpdate() = 0;
     //!@}

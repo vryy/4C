@@ -59,6 +59,9 @@ namespace MODELEVALUATOR{
     //! derived
     virtual void UpdateStepElement();
 
+    //! derived
+    virtual void OutputStepState();
+
   protected:
     //! derived
     virtual void Reset(const Epetra_Vector& x);

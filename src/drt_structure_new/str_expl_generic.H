@@ -51,6 +51,8 @@ namespace EXPLICIT {
     //! Update everything on element level after time step and after output (derived)
     virtual void UpdateStepElement() = 0;
 
+    virtual void OutputStepstate(){;};
+
     //! things that should be done after updating (derived)
     virtual void PostUpdate() {/* do nothing for now */};
     //! @}

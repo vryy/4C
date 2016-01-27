@@ -45,6 +45,13 @@ void STR::IMPLICIT::GenAlpha::SetState(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::GenAlpha::OutputStepState()
+{
+  dserror("Output not yet implemented for genalpha!");
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 bool STR::IMPLICIT::GenAlpha::ApplyForce(const Epetra_Vector& x,
         Epetra_Vector& f)
 {

@@ -24,6 +24,8 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../drt_io/io.H"
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Structure::Structure()
@@ -365,4 +367,25 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
   // go to elements
   discret_ptr_->ClearState();
   discret_ptr_->SetState("displacement",gstate_ptr_->GetDisN());
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::OutputStepState()
+{
+  CheckInitSetup();
+
+  // write now
+  if (gio_ptr_->IsOutputEveryIter())
+  {
+    dserror("Not yet implemented!");
+    gio_ptr_->GetMutableOutputPtr()->NewStep(gio_ptr_->GetOEI_OutputCounter(), (double) gio_ptr_->GetOEI_OutputCounter());
+    gio_ptr_->GetMutableOutputPtr()->WriteVector("displacement",Teuchos::rcp_static_cast<Epetra_MultiVector>(gstate_ptr_->GetMutableDisNp()));
+  }
+  else
+  {
+    gio_ptr_->GetMutableOutputPtr()->NewStep(gstate_ptr_->GetStepN(), gstate_ptr_->GetTimeNp());
+    gio_ptr_->GetMutableOutputPtr()->WriteVector("displacement", gstate_ptr_->GetDisN());
+  }
 }

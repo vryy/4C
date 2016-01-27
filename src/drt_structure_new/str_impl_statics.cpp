@@ -172,6 +172,15 @@ void STR::IMPLICIT::Statics::UpdateStepElement()
   ModelEval().UpdateStepElement();
 }
 
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Statics::OutputStepState()
+{
+  CheckInitSetup();
+  ModelEval().OutputStepState();
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::PredictConstDisConsistVelAcc(

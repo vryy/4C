@@ -30,6 +30,7 @@ STR::ModelEvaluator::ModelEvaluator()
       modeltypes_ptr_(Teuchos::null),
       modelevaluators_ptr_(Teuchos::null),
       gstate_ptr_(Teuchos::null),
+      gio_ptr_(Teuchos::null),
       timint_ptr_(Teuchos::null)
 {
   // empty constructor
@@ -55,12 +56,14 @@ void STR::ModelEvaluator::CheckInit() const
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::Init(const std::set<enum INPAR::STR::ModelType>& mt,
     const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
+    const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
     const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr)
 {
   issetup_ = false;
 
   modeltypes_ptr_ = Teuchos::rcp(&mt,false);
   gstate_ptr_ = gstate_ptr;
+  gio_ptr_ = gio_ptr;
   timint_ptr_ = timint_ptr;
 
 
@@ -80,7 +83,7 @@ void STR::ModelEvaluator::Setup()
   for (me_iter=modelevaluators_ptr_->begin();
       me_iter!=modelevaluators_ptr_->end();++me_iter)
   {
-    me_iter->second->Init(gstate_ptr_,timint_ptr_);
+    me_iter->second->Init(gstate_ptr_,gio_ptr_,timint_ptr_);
     me_iter->second->Setup();
   }
 
@@ -191,4 +194,16 @@ void STR::ModelEvaluator::UpdateStepElement()
   for (me_iter=modelevaluators_ptr_->begin();
       me_iter!=modelevaluators_ptr_->end();++me_iter)
     me_iter->second->UpdateStepElement();
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::OutputStepState()
+{
+  CheckInitSetup();
+  Map::iterator me_iter;
+  for (me_iter=modelevaluators_ptr_->begin();
+      me_iter!=modelevaluators_ptr_->end();++me_iter)
+    me_iter->second->OutputStepState();
 }
