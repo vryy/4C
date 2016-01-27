@@ -112,6 +112,28 @@ void SSI::SSI_Base::ReadRestart( int restart )
     SetTimeStep(structure_->TimeOld(), restart);
   }
 
+  // Material pointers to other field were deleted during ReadRestart().
+  // They need to be reset.
+  switch(fieldcoupling_)
+  {
+  case INPAR::SSI::coupling_match:
+    SetMaterialPointersMatchingGrid( structure_->Discretization(),scatra_->ScaTraField()->Discretization() );
+    break;
+  case INPAR::SSI::coupling_volmortar:
+    volcoupl_structurescatra_->AssignMaterials(
+                      structure_->Discretization(),
+                      scatra_->ScaTraField()->Discretization());
+    break;
+  case INPAR::SSI::coupling_meshtying:
+    //nothing to do in this case, since
+    //transfering scalar state to structure discretization not implemented for
+    //transport on structural boundary. Only SolidToScatra coupling available.
+    break;
+  default:
+    dserror("unknown field coupling type in SetScatraSolution()");
+    break;
+  }
+
   return;
 }
 
@@ -130,6 +152,28 @@ void SSI::SSI_Base::ReadRestartfromTime( double restarttime )
     structure_->ReadRestart(restartstructure);
     SetTimeStep(structure_->TimeOld(), restartstructure);
 
+  }
+
+  // Material pointers to other field were deleted during ReadRestart().
+  // They need to be reset.
+  switch(fieldcoupling_)
+  {
+  case INPAR::SSI::coupling_match:
+    SetMaterialPointersMatchingGrid( structure_->Discretization(),scatra_->ScaTraField()->Discretization() );
+    break;
+  case INPAR::SSI::coupling_volmortar:
+    volcoupl_structurescatra_->AssignMaterials(
+                      structure_->Discretization(),
+                      scatra_->ScaTraField()->Discretization());
+    break;
+  case INPAR::SSI::coupling_meshtying:
+    //nothing to do in this case, since
+    //transfering scalar state to structure discretization not implemented for
+    //transport on structural boundary. Only SolidToScatra coupling available.
+    break;
+  default:
+    dserror("unknown field coupling type in SetScatraSolution()");
+    break;
   }
 
   return;
@@ -202,6 +246,8 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm, const std::str
       dserror("unexpected dof sets in scatra field");
     if (structdis->AddDofSet(scatradofset)!=1)
       dserror("unexpected dof sets in structure field");
+
+    SetMaterialPointersMatchingGrid(structdis,scatradis);
   }
   else
   {
@@ -229,7 +275,29 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm, const std::str
     structdis->FillComplete(true, false,false);
     scatradis->FillComplete(true, false,false);
   }
+}
 
+/*----------------------------------------------------------------------*
+ | Set material pointers for matching grids                  thon 01/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Base::SetMaterialPointersMatchingGrid(
+    Teuchos::RCP<const DRT::Discretization> sourcedis,
+    Teuchos::RCP<const DRT::Discretization> targetdis
+    )
+{
+  const int numelements = targetdis->NumMyColElements();
+
+  for (int i=0; i<numelements; ++i)
+  {
+    DRT::Element* targetele = targetdis->lColElement(i);
+    const int gid = targetele->Id();
+
+    DRT::Element* sourceele = sourcedis->gElement(gid);
+
+    //for coupling we add the source material to the target element and vice versa
+    targetele->AddMaterial(sourceele->Material());
+    sourceele->AddMaterial(targetele->Material());
+  }
 }
 
 /*----------------------------------------------------------------------*/

@@ -153,37 +153,25 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
       params.set< Teuchos::RCP<std::vector<std::vector<double> > > >("gp_conc",gpconc);
     }
 
-    DRT::Problem* problem = DRT::Problem::Instance();
-    const std::vector<std::string> disnames = problem->GetDisNames();
-    int numfield = 0;
-    numfield = problem->NumFields();
-
-    for (int i=0; i<numfield; ++i)
-    {
-      std::string name = problem->GetDis(disnames[i])->Name();
-      if (name =="scatra")
-      {
-        // Get pointer for scatra material in the same element
-        Teuchos::RCP<DRT::Discretization> scatradis = Teuchos::null;
-        scatradis = problem->GetDis("scatra");
-        DRT::Element* scatraele = scatradis->gElement(Id());
-        Teuchos::RCP<MAT::Material> scatramat = Teuchos::rcp_dynamic_cast<MAT::Material>(scatraele->Material());
-        params.set< Teuchos::RCP<MAT::Material> >("scatramat",scatramat);
-      }
-    }
+    //If you need a pointer to the scatra material, use these lines:
+    //we assume that the second material of the structure is the scatra element material
+    //Teuchos::RCP<MAT::Material> scatramat = so3_ele::Material(1);
+    //params.set< Teuchos::RCP<MAT::Material> >("scatramat",scatramat);
   }
 
+  //TODO: (thon) actually we do not want this here, since it has nothing to do with scatra specific stuff. But for now we let it be...
   Teuchos::RCP<std::vector<double> >xrefe = Teuchos::rcp(new std::vector<double>(3));
   DRT::Node** nodes = Nodes();
-  for (int i=0; i<numnod_; ++i){
-      const double* x = nodes[i]->X();
-      (*xrefe)[0] +=  x[0]/numnod_;
-      (*xrefe)[1] +=  x[1]/numnod_;
-      (*xrefe)[2] +=  x[2]/numnod_;
+  for (int i=0; i<numnod_; ++i)
+  {
+    const double* x = nodes[i]->X();
+    (*xrefe)[0] +=  x[0]/numnod_;
+    (*xrefe)[1] +=  x[1]/numnod_;
+    (*xrefe)[2] +=  x[2]/numnod_;
+  }
+  params.set<Teuchos::RCP<std::vector<double> > >("position",xrefe);
 
-   }
-   params.set<Teuchos::RCP<std::vector<double> > >("position",xrefe);
-   return;
+  return;
 }
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |

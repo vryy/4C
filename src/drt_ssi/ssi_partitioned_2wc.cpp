@@ -127,10 +127,10 @@ void SSI::SSI_Part2WC::PrepareTimeStep(bool printheader)
   if(printheader)
     PrintHeader();
 
-  SetScatraSolution(scatra_->ScaTraField()->Phin());
+  SetScatraSolution(scatra_->ScaTraField()->Phinp());
   structure_-> PrepareTimeStep();
 
-  SetStructSolution(structure_->Dispn(),structure_->Veln());
+  SetStructSolution(structure_->Dispnp(),structure_->Velnp());
   scatra_->ScaTraField()->PrepareTimeStep();
 }
 

@@ -16,6 +16,8 @@
 
 #include "../drt_adapter/adapter_algorithmbase.H"
 
+#include "../drt_lib/drt_discret.H"
+
 #include <Epetra_Vector.h>
 
 #include "../drt_inpar/inpar_ssi.H"
@@ -107,6 +109,9 @@ namespace SSI
 
     /// setup discretizations and dofsets
     virtual void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname);
+
+    ///Set material pointers for matching structure and scatra grids
+    void SetMaterialPointersMatchingGrid( Teuchos::RCP<const DRT::Discretization> sourcedis, Teuchos::RCP<const DRT::Discretization> targetdis);
 
   private:
 
