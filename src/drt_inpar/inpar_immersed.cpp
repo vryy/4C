@@ -14,11 +14,12 @@ Maintainer: Andreas Rauch
 /*----------------------------------------------------------------------*/
 
 
+#include "inpar_immersed.H"
+
+#include "inpar_fsi.H"
+#include "inpar_structure.H"
 
 #include "drt_validparameters.H"
-#include "inpar_immersed.H"
-#include "inpar_structure.H"
-#include "inpar_fsi.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 
 

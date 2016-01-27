@@ -42,7 +42,7 @@ namespace SSI
     virtual void OuterLoop();
 
     //! prepare time step for single fields
-    void PrepareTimeStep(bool printheader = true);
+    virtual void PrepareTimeStep(bool printheader = true);
 
     // return current iteration step
     int Itnum(){return itnum_;};
@@ -53,7 +53,7 @@ namespace SSI
     virtual void DoStructStep();
 
     //! perform iteration step of scatra field
-    void DoScatraStep();
+    virtual void DoScatraStep();
 
     //! update time step and print to screen
     void UpdateAndOutput();

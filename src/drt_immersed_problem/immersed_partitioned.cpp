@@ -329,8 +329,6 @@ IMMERSED::ImmersedPartitioned::CreateStatusTest(Teuchos::ParameterList& nlParams
     converged->addStatusTest(relresid);
   }
 
-  //Teuchos::RCP<NOX::StatusTest::NormWRMS> wrms     = Teuchos::rcp(new NOX::StatusTest::NormWRMS(1.0e-2, 1.0e-8));
-  //converged->addStatusTest(wrms);
 }
 
 

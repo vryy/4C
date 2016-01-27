@@ -274,7 +274,8 @@ public:
     RedAirwayEvalLungVolCond,
     SPRboundary,
     TransportRobin,
-    ThermoRobin
+    ThermoRobin,
+    CellFocalAdhesion
   };
 
   /*!

@@ -600,6 +600,18 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(
         );
     break;
   }
+  case SCATRA::bd_calc_mechanotransduction:
+  {
+    CalcMechanotransduction(
+        ele,
+        params,
+        discretization,
+        lm,
+        elevec1_epetra
+        );
+    break;
+  }
+
 
   default:
   {
@@ -1585,6 +1597,299 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WSSinfluence(LINALG::Matrix<
       f_ewss(i) = 1.0;
   }
 }
+
+
+/*----------------------------------------------------------------------*
+ | computes mechanoresponsive scalar transport              rauch 01/16 |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcMechanotransduction(
+    DRT::FaceElement*                 ele,
+    Teuchos::ParameterList&           params,
+    DRT::Discretization&              discretization,
+    std::vector<int>&                 lm,
+    Epetra_SerialDenseVector&         elevec1_epetra
+    )
+{
+  const double time = scatraparamstimint_->Time();
+  params.set<double>("total time",time);
+  params.set<int>("FromSactraBoundary",1);
+  const double dt = scatraparamstimint_->Dt();
+  params.set<double>("delta time",dt);
+  const int scalar_num = 3;
+  //double constant = 4.0e-4;
+
+
+  DRT::ELEMENTS::TransportBoundary* transp_brdyele = dynamic_cast<DRT::ELEMENTS::TransportBoundary*>(ele);
+  if(transp_brdyele == NULL)
+    dserror("cast from FaceElement to TransportBoundary element failed");
+
+  // the id of the parent scatra element
+  //int parentid=ele->ParentElementId();
+
+  // get structdis from parameterlist
+  //Teuchos::RCP<DRT::Discretization> structdis = params.get<Teuchos::RCP<DRT::Discretization> >("structdis");
+
+//  if(structdis==Teuchos::null)
+//    dserror("could not get RCP to structural discretization");
+
+//  const Teuchos::RCP<const Epetra_MultiVector> struct_parent_dispnp = params.get< Teuchos::RCP<const Epetra_Vector> >("struct_parent_dispnp",Teuchos::null);
+
+  const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
+  if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
+
+  // get struct element with same id as scatra element
+  DRT::Element* parentele = ele->ParentElement();
+//  std::cout <<"parentele\n "<< parentele << '\n';
+//  std::cout <<"parentele value \n "<< *parentele << '\n';
+//  dserror("t=5sec");
+//  DRT::Element::LocationArray pla(2);
+//  parentele->LocationVector(discretization,pla,false);
+
+  // static const  int nenparent = struct_parentele->NumNode(); // does not work with initializaition of xrefe and xcurr
+  static const int nenparent = 8;
+
+  LINALG::Matrix<nsd_+1,nenparent> mydispnp;
+  DRT::UTILS::ExtractMyNodeBasedValues(parentele,mydispnp,dispnp,nsd_+1);
+
+  //dserror("stop 0");
+  // integration points and weights for boundary (!) gp
+  const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // get coordinates of gauss points w.r.t. local parent coordinate system
+  LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad,nsd_+1);
+
+  LINALG::Matrix<nsd_+1,1> pxsi(true);
+
+  LINALG::Matrix<nsd_+1,nsd_+1>  derivtrafo(true);
+
+  DRT::UTILS::BoundaryGPToParentGP<nsd_+1>( pqxg,
+      derivtrafo,
+      intpoints ,
+      parentele->Shape(),
+      distype   ,
+      transp_brdyele->SurfaceNumber());
+
+
+  //std::cout <<"number of parent nodes (should be 8): "<< nenparent << '\n';
+
+
+  // number of dof per node
+  // static int numdofpernode = struct_parentele->NumDofPerNode(nodes);  // does not work..
+  // static const int numdofpernode=3;
+  // std::cout <<"number of dof per node (should be 3): "<< numdofpernode << '\n';
+
+
+  //LINALG::Matrix<nsd_+1,nenparent>  xrefe; // material coord. of parent element
+  LINALG::Matrix<3,nenparent>  xrefe;
+  LINALG::Matrix<3,nenparent> xcurr; // current  coord. of parent element
+  DRT::Node** nodes = parentele->Nodes();
+
+  // update element geometry of parent element
+  for (int i=0; i<nenparent; ++i)
+  {
+    const double* x = nodes[i]->X();
+    for (int j=0; j<nsd_+1; ++j)
+    {
+      xrefe(j,i) = x[j];
+      xcurr(j,i) = xrefe(j,i) + mydispnp(j,i);
+    }
+  }
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(parentele->Material(1));
+  if(so3mat==Teuchos::null) dserror("cast to MAT::So3Material failed");
+
+  params.set<int>("iostress", 0); // needed for activefiber material; if output is requested only active stresses are written
+
+  double averagestress;
+  averagestress=0.0;
+  //double area=0.0;
+  // loop over all integration points
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    // get integration factor and normal at current boundary gp
+    const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,&normal_);
+    //std::cout <<"at gp: "<< iquad << '\n';
+
+
+    // (Jo) coordinates of the current integration point in parent coordinate system
+    for (int idim=0;idim<nsd_+1 ;idim++)
+    {
+      pxsi(idim) = pqxg(iquad,idim);
+    }
+    //std::cout <<"pxsi: "<< pxsi<< '\n';
+    LINALG::Matrix<3,8> pderiv_loc(true); // derivatives of parent element shape functions in parent element coordinate system //LINALG::Matrix<dim,numnodes> pderiv_loc(true);
+
+    // evaluate derivatives of parent element shape functions at current integration point in parent coordinate system
+    DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(pxsi,pderiv_loc);
+
+
+    const int NUMDIM_SOH8 = 3;
+    const int NUMNOD_SOH8 = 8;
+
+    /* get the inverse of the Jacobian matrix which looks like:
+    **            [ x_,r  y_,r  z_,r ]^-1
+    **     J^-1 = [ x_,s  y_,s  z_,s ]
+    **            [ x_,t  y_,t  z_,t ]
+    */
+//    std::cout <<"pderiv_loc"<< std::setprecision(3) << pderiv_loc << '\n';
+//    std::cout <<"xref: "<< std::setprecision(3) << xrefe << '\n';
+    LINALG::Matrix<3,3>   invJ;
+    //LINALG::Matrix<3,3>   Jmat;
+    invJ.MultiplyNT(pderiv_loc,xrefe);
+    invJ.Invert();
+    //Jmat.MultiplyNT(pderiv_loc,xrefe);
+
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8>   N_XYZ;
+    N_XYZ.Multiply(invJ,pderiv_loc);
+
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    // build deformation gradient wrt to material configuration
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd(false);
+    defgrd.MultiplyNT(xcurr,N_XYZ);
+
+
+    // Right Cauchy-Green tensor = F^T * F
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen;
+    cauchygreen.MultiplyTN(defgrd,defgrd);
+
+    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
+
+      // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+      glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+      glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+      glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+      glstrain(3) = cauchygreen(0,1);
+      glstrain(4) = cauchygreen(1,2);
+      glstrain(5) = cauchygreen(2,0);
+
+
+    if(parentele->NumMaterial()<2)
+      dserror("only one material defined for scatra element");
+    // evaluate the material to obtain stress
+
+
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
+    params.set<LINALG::Matrix<nsd_+1,1> >("xsi",pxsi);
+    params.set<int>("gp", iquad);
+    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,parentele->Id());
+
+//    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> stressmatrix;
+
+
+    // transform PK2 to Cauchy
+    LINALG::Matrix<3,3> cauchystress(true);
+    LINALG::Matrix<3,3> PK2stress;
+    // calculate the Jacobi-determinant
+    //const double detF = defgrd.Determinant();   // const???
+    double detF = defgrd.Determinant();
+    if (abs(detF)<1.0e-10)
+    {
+      std::cout<<"Error: detF in PK2toCauchy =  \n"<<detF<<std::endl;
+    }
+    // Convert stress like 6x1-Voigt vector to 3x3 matrix
+    PK2stress(0,0) = stress(0);
+    PK2stress(0,1) = stress(3);
+    PK2stress(0,2) = stress(5);
+    PK2stress(1,0) = PK2stress(0,1);
+    PK2stress(1,1) = stress(1);
+    PK2stress(1,2) = stress(4);
+    PK2stress(2,0) = PK2stress(0,2);
+    PK2stress(2,1) = PK2stress(1,2);
+    PK2stress(2,2) = stress(2);
+
+    // sigma = 1/J * F * sigma * F^{T}
+    LINALG::Matrix<3,3> temp(true);
+    //LINALG::Matrix<3,3> sigma(true);
+    temp.MultiplyNN(defgrd,PK2stress);
+    cauchystress.MultiplyNT(temp,defgrd);
+    cauchystress.Scale(1./detF);
+
+
+    //std::cout <<"stress: "<< std::setprecision(3) << stress << '\n';
+//    stressmatrix(0,0) = stress(0);
+//    stressmatrix(1,1) = stress(1);
+//    stressmatrix(2,2) = stress(2);
+//    stressmatrix(1,0) = stress(3);
+//    stressmatrix(0,1) = stress(3);
+//    stressmatrix(1,2) = stress(4);
+//    stressmatrix(2,1) = stress(4);
+//    stressmatrix(2,0) = stress(5);
+//    stressmatrix(0,2) = stress(5);
+    LINALG::Matrix<3,1> normalstress(true);
+    LINALG::Matrix<3,1> normal(true);
+    normal(0)=normal_(0);
+    normal(1)=normal_(1);
+    normal(2)=normal_(2);
+    normalstress.Multiply(cauchystress,normal);
+    //std::cout <<"boundary stress: "<< std::setprecision(3) << normalstress << '\n';
+
+    double forcemagnitude = 1.0* sqrt(normalstress(0)*normalstress(0)+normalstress(1)*normalstress(1)+normalstress(2)*normalstress(2));
+
+    const double timefac = scatraparamstimint_->TimeFacRhs();
+
+   // TODO
+   if (forcemagnitude>1.0e-15){
+   for (int node=0; node<nen_; ++node)
+   {
+     averagestress += fac*forcemagnitude*funct_(node)*timefac;
+     //area += fac*funct_(node);
+   }
+   }
+   //
+//   const double time = scatraparamstimint_->Time();
+//   if (time>5.0){
+//     if(iquad>2){
+//     std::cout <<"boundary stress: "<< std::setprecision(3) << normalstress << '\n';
+//     std::cout <<"normalvector: "<< std::setprecision(3) << normal_ << '\n';
+//     std::cout <<"stress matrix: "<< std::setprecision(3) << stressmatrix << '\n';
+//     std::cout <<"forcemagnitude: "<< std::setprecision(3) << forcemagnitude << '\n';
+//     std::cout <<"funct_: "<< std::setprecision(3) << funct_<< '\n';
+//     std::cout <<"fac: "<< std::setprecision(3) << fac<< '\n';
+//     std::cout <<"averagestress/area: "<< std::setprecision(3) << averagestress/area << '\n';
+//     //dserror("t=5sec");
+//   }
+//  }
+
+  }// end gp loop
+
+  //Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(parentele->Material(1));
+  double constant = params.get<double>("source const",-1);
+  if (time>0.0){
+    if (constant==-1)
+    dserror("source const not available in scatra");
+  }
+
+  double source;// = averagestress/area*constant;
+  source = averagestress*constant;
+//  //test loop
+//  for (int node=0; node<nen_*numdofpernode_; ++node)
+//  {
+//    const int dof = node;
+//    elevec1_epetra[dof] += source;
+//  }
+//right loop
+  if (abs(source)>1.0e-15){
+  for (int node=0; node<nen_; ++node)
+  {
+    const int dof = node*numdofpernode_+scalar_num;
+    elevec1_epetra[dof] += source;
+  }
+  }
+
+//  const double time = scatraparamstimint_->Time();
+//  if (time>2.0){
+//    std::cout <<"averagestress: "<< std::setprecision(3) << averagestress << '\n';
+//    std::cout <<"elevec1_epetra: "<< std::setprecision(3) << elevec1_epetra << '\n';
+//    dserror("t=2sec");
+//  }
+
+  return;
+} // CalcMechanotransduction
 
 
 /*----------------------------------------------------------------------*

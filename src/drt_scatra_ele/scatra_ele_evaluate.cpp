@@ -289,6 +289,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_integr_pat_rhsvec:
     case SCATRA::calc_immersed_element_source:
     case SCATRA::calc_elch_boundary_kinetics_point:
+    case SCATRA::calc_cell_mechanotransduction:
     {
       return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateService(
                this,

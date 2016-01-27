@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file immersed_problem_dyn.cpp
 
-\brief global algorithm control class for all immersed algorithms
+\brief global algorithm control class for all immersed and cell migration algorithms
 
 <pre>
 Maintainers: Andreas Rauch
@@ -16,6 +16,7 @@ Maintainers: Andreas Rauch
 #include "immersed_partitioned_fsi.H"
 #include "immersed_partitioned_confine_cell.H"
 #include "immersed_partitioned_cellmigration.H"
+#include "ssi_partitioned_2wc_biochemomechano.H"
 #include "immersed_partitioned_adhesion_traction.H"
 #include "ssi_partitioned_2wc_protrusionformation.H"
 #include "immersed_partitioned_fsi_dirichletneumann.H"
@@ -226,7 +227,7 @@ void CellMigrationControlAlgorithm()
   Teuchos::RCP<SSI::SSI_Part2WC_PROTRUSIONFORMATION> cellscatra_subproblem = Teuchos::null;
 
   bool ssi_cell = DRT::INPUT::IntegralValue<int>(problem->CellMigrationParams(),"SSI_CELL");
-  if(ssi_cell)
+  if(ssi_cell and simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
   {
     const INPAR::SSI::SolutionSchemeOverFields coupling
     = DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(problem->SSIControlParams(),"COUPALGO");
@@ -249,7 +250,7 @@ void CellMigrationControlAlgorithm()
     if(comm.MyPID()==0)
       std::cout<<"\nCreated Field Cell Structure with intracellular signaling capabilitiy...\n \n"<<std::endl;
   }
-  else
+  else if(not ssi_cell)
   {
     cellstructure = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(problem->CellMigrationParams(), const_cast<Teuchos::ParameterList&>(problem->StructuralDynamicParams()), problem->GetDis("cell")))->StructureField());
 
@@ -259,6 +260,11 @@ void CellMigrationControlAlgorithm()
     if(comm.MyPID()==0)
       std::cout<<"\n Created Field Cell Structure without intracellular signaling capabilitiy... \n \n"<<std::endl;
   }
+  else
+  {
+    if(comm.MyPID()==0)
+      std::cout<<"\n Skipped Construction of CellScatra Subproblem ... \n \n"<<std::endl;
+  }
 
   // create instance of poroelast subproblem
   Teuchos::RCP<POROELAST::PoroScatraBase> poroscatra_subproblem = POROELAST::UTILS::CreatePoroScatraAlgorithm(problem->CellMigrationParams(),comm);
@@ -266,7 +272,7 @@ void CellMigrationControlAlgorithm()
   // setup of poro monolithic algorithm
   poroscatra_subproblem->SetupSystem();
   if(comm.MyPID()==0)
-    std::cout<<" Created Field Poroelast ... \n"<<std::endl;
+    std::cout<<" Created Field PoroScatra ... \n"<<std::endl;
 
 
 
@@ -355,7 +361,6 @@ void CellMigrationControlAlgorithm()
   // accessible in subproblems
   params.set<Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> >("RCPToCellStructure",cellstructure);
   params.set<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra",poroscatra_subproblem);
-  params.set<Teuchos::RCP<SSI::SSI_Base> >("RCPToCellScatra",cellscatra_subproblem);
   params.set<Teuchos::RCP<GEO::SearchTree> >("RCPToCellSearchTree",cell_SearchTree);
   params.set<Teuchos::RCP<GEO::SearchTree> >("RCPToFluidSearchTree",fluid_SearchTree);
   params.set<std::map<int,LINALG::Matrix<3,1> >* >("PointerToCurrentPositionsCell",&currpositions_cell);
@@ -497,7 +502,37 @@ void CellMigrationControlAlgorithm()
     // do the actual testing
     DRT::Problem::Instance()->TestAll(comm);
 
-  }// sim_type_pureCompression
+  }// sim_type_pureProtrusionFormation
+  else if (simtype==INPAR::CELL::sim_type_pureContraction)
+  {
+    if(comm.MyPID()==0)
+      std::cout<<"\n Simulation Type : Pure Biochemo-Mechano Coupled Cell Contraction  \n"<<std::endl;
+
+    params.set<bool>("IsPureContraction", true);
+
+    Teuchos::RCP<SSI::SSI_Part2WC_BIOCHEMOMECHANO> algo =
+        Teuchos::rcp(new SSI::SSI_Part2WC_BIOCHEMOMECHANO(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
+
+    const int restart = DRT::Problem::Instance()->Restart();
+    if (restart)
+    {
+      // read the restart information, set vectors and variables
+      algo->ReadRestart(restart);
+    }
+
+    // run the problem
+    algo->Timeloop();
+
+    if(immersedmethodparams.get<std::string>("TIMESTATS")=="endofsim")
+    {
+      Teuchos::TimeMonitor::summarize();
+      Teuchos::TimeMonitor::zeroOutTimers();
+    }
+
+    // perform the result test
+    algo->TestResults(comm);
+
+  }// sim_type_pureContraction
   else if (simtype==INPAR::CELL::sim_type_multiphysics)
   {
     // here the global algo of the fully coupled cell migration will be implemented

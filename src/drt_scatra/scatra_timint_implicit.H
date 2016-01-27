@@ -658,6 +658,11 @@ protected:
     Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
   );
 
+  //! compute contribution of mechanical state to eq. system
+  void EvaluateStructSolutionDependingConditions(
+    Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
+  );
+
   /*--- query and output ---------------------------------------------------*/
 
   //! helper function to get algorithm title

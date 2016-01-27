@@ -1742,7 +1742,8 @@ if (time>0.0){
     stress ->Update(1.0,Stot,0.0);
   }
   // only active stress as output
-  else{
+  else
+  {
     if (time >0){
       int error=0;
     for (int j=0;j<nphi;j++){
@@ -1759,11 +1760,25 @@ if (time>0.0){
     //ToDo Adpated for other Integration methods
     double deltaphi = 2.0*M_PI/((double)(nphi));
     // Calculate percentage
-    nsfhor_->at(gp) = (etanewphi(0)*deltaphi+etanewphi(10)*deltaphi)/Nfil;
-    nsfver_->at(gp) = (etanewphi(5)*deltaphi+etanewphi(15)*deltaphi)/Nfil;
-    nsfdiagup_->at(gp) = deltaphi*(etanewphi(2)+etanewphi(3) +etanewphi(12)+ etanewphi(13))/Nfil;
-    nsfdiagdown_->at(gp) = deltaphi*(etanewphi(7)+etanewphi(8) +etanewphi(17)+ etanewphi(18))/Nfil;
-    // nsfdiag_->at(gp) = (etanewphi(5)*deltaphi+etanewphi(15)*deltaphi)/Nfil;
+    if(Nfil<0)
+      dserror("Number of Filaments is smaller than zero NFil=%f",Nfil);
+
+    if(Nfil>0)
+    {
+      nsfhor_->at(gp) = (etanewphi(0)*deltaphi+etanewphi(10)*deltaphi)/Nfil;
+      nsfver_->at(gp) = (etanewphi(5)*deltaphi+etanewphi(15)*deltaphi)/Nfil;
+      nsfdiagup_->at(gp) = deltaphi*(etanewphi(2)+etanewphi(3) +etanewphi(12)+ etanewphi(13))/Nfil;
+      nsfdiagdown_->at(gp) = deltaphi*(etanewphi(7)+etanewphi(8) +etanewphi(17)+ etanewphi(18))/Nfil;
+      // nsfdiag_->at(gp) = (etanewphi(5)*deltaphi+etanewphi(15)*deltaphi)/Nfil;
+    }
+    else
+    {
+      nsfhor_->at(gp) = 0.0;
+      nsfver_->at(gp) = 0.0;
+      nsfdiagup_->at(gp) = 0.0;
+      nsfdiagdown_->at(gp) = 0.0;
+      // nsfdiag_->at(gp) = (etanewphi(5)*deltaphi+etanewphi(15)*deltaphi)/Nfil;
+    }
 
 
     Stot.Update(1.0,Sactive,0.0);

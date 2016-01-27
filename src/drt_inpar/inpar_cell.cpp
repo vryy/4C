@@ -13,10 +13,10 @@ Maintainers: Andreas Rauch
 /*----------------------------------------------------------------------*/
 
 
-
-#include "drt_validparameters.H"
 #include "inpar_cell.H"
 
+#include "drt_validparameters.H"
+#include "../drt_lib/drt_conditiondefinition.H"
 
 
 void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -61,12 +61,14 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                                        "pureAdhesion",
                                                        "pureCompression",
                                                        "pureProtrusionFormation",
+                                                       "pureContraction",
                                                        "Multiphysics"),
                                     tuple<int>(
                                                sim_type_pureFSI,
                                                sim_type_pureAdhesion,
                                                sim_type_pureConfinement,
                                                sim_type_pureProtrusionFormation,
+                                               sim_type_pureContraction,
                                                sim_type_multiphysics),
                                     &celldyn);
 
@@ -193,4 +195,43 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("ECM_FIBER_RADIUS",0.3,"Average radius of ECM fibers",&celldyn);
 
   IntParameter("INITIALIZATION_STEPS",1,"Num of time steps for initialization (pre-simulation)",&celldyn);
+}
+
+
+void INPAR::CELL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist)
+{
+  using namespace DRT::INPUT;
+
+    /*--------------------------------------------------------------------*/
+      // FOCAL ADHESION
+
+    std::vector<Teuchos::RCP<ConditionComponent> > facomponents;
+
+    facomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+    Teuchos::RCP<ConditionDefinition> linefa =
+      Teuchos::rcp(new ConditionDefinition("DESIGN FOCAL ADHESION LINE CONDITIONS",
+                                           "CellFocalAdhesion",
+                                           "Cell Focal Adhesion",
+                                           DRT::Condition::CellFocalAdhesion,
+                                           true,
+                                           DRT::Condition::Line));
+    Teuchos::RCP<ConditionDefinition> surffa =
+      Teuchos::rcp(new ConditionDefinition("DESIGN FOCAL ADHESION SURF CONDITIONS",
+                                           "CellFocalAdhesion",
+                                           "Cell Focal Adhesion",
+                                           DRT::Condition::CellFocalAdhesion,
+                                           true,
+                                           DRT::Condition::Surface));
+
+    for (unsigned i=0; i<facomponents.size(); ++i)
+    {
+      linefa->AddComponent(facomponents[i]);
+      surffa->AddComponent(facomponents[i]);
+    }
+
+    condlist.push_back(linefa);
+    condlist.push_back(surffa);
+
+
 }

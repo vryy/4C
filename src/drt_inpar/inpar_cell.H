@@ -13,7 +13,8 @@ Maintainers: Andreas Rauch
 
 #include "inpar_parameterlist_utils.H"
 
-/*----------------------------------------------------------------------*/
+// forward declaration
+namespace DRT { namespace INPUT { class ConditionDefinition; } }
 
 namespace INPAR
 {
@@ -45,7 +46,8 @@ typedef enum _SIM_TYPE
   sim_type_pureAdhesion=1,
   sim_type_pureConfinement=2,
   sim_type_pureProtrusionFormation=3,
-  sim_type_multiphysics=4
+  sim_type_pureContraction=4,
+  sim_type_multiphysics=5
 } SIM_TYPE;
 
 typedef enum _SEGREGATION_BY_TYPE
@@ -71,6 +73,9 @@ typedef enum _SEGREGATION_LAW_TYPE
 
 /// set the cell parameters
 void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+/// set specific cell conditions
+void SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist);
 
 } // CELL
 } // INPAR

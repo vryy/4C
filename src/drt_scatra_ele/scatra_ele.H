@@ -598,6 +598,11 @@ public:
     return static_cast<DRT::ELEMENTS::Transport*>(parent);
   }
 
+  //! get number of element face
+  int SurfaceNumber()
+  {
+    return FaceMasterNumber();
+  }
 
   /*!
   \brief Get number of degrees of freedom per element

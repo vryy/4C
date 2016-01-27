@@ -31,6 +31,8 @@ Maintainer: Andreas Ehrl
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
+#include "../drt_immersed_problem/immersed_field_exchange_manager.H" // for cell migration
+
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
@@ -655,6 +657,38 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+  case SCATRA::calc_cell_mechanotransduction:
+   {
+
+       int NumPhi=6;
+       int NumPhiActin=8;
+
+       DRT::ImmersedFieldExchangeManager* immersedmanager = DRT::ImmersedFieldExchangeManager::Instance();
+       Teuchos::RCP<Epetra_MultiVector> rates = immersedmanager->GetPointerToRates();
+       Teuchos::RCP<Epetra_MultiVector> ratesActin = immersedmanager->GetPointerToRatesActin();
+       if(rates == Teuchos::null)
+         dserror("rates = Teuchos::null");
+       double timefacrhs = scatraparatimint_->TimeFacRhs();
+         const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+         for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+         {
+         double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+         for (int inode=0;inode<nen_;inode++){
+         const int fvi = inode*numdofpernode_ + NumPhi;
+         const int fviActin = inode*numdofpernode_ + NumPhiActin;
+         int mylid = discretization.ElementColMap()->LID(ele->Id());
+         // DEBUG
+         if(mylid==-1)
+           dserror("no corresponding LID found for EleGID %i",ele->Id());
+
+         elevec1_epetra[fvi]+= funct_(inode)*( ((rates->Pointers())[iquad][mylid]) )*fac*timefacrhs;
+         elevec1_epetra[fviActin]+= funct_(inode)*( ((ratesActin->Pointers())[iquad][mylid]) )*fac*timefacrhs;
+         } // Node loop
+         } // GP loop
+
+     break;
+   }
   default:
   {
     dserror("Not acting on this action. Forgot implementation?");

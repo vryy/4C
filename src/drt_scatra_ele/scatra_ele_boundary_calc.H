@@ -189,6 +189,15 @@ public:
       const bool                         wssonoff,      ///<flag if WSS has influence on interface permeability
       const std::vector<double>*         coeffs);       ///<coefficients of the log law to determine the influence of WSS on concentration flux
 
+  //! computes mechanoresponsive scalar transport
+  void CalcMechanotransduction(
+      DRT::FaceElement*                 ele,
+      Teuchos::ParameterList&           params,
+      DRT::Discretization&              discretization,
+      std::vector<int>&                 lm,
+      Epetra_SerialDenseVector&         elevec1_epetra
+      );
+
   protected:
 
   //! calculate normal vectors

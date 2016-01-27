@@ -1,0 +1,75 @@
+/*!----------------------------------------------------------------------
+\file ssi_partitioned_2wc_biochemomechano.H
+
+\brief specialization of ssi2wc for biochemo-mechano coupled active cell material
+
+<pre>
+Maintainers: Andreas Rauch
+             rauch@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289 -15240
+</pre>
+*----------------------------------------------------------------------*/
+#ifndef SSI_PARTITIONED2_WC_BIOCHEMOMECHANO_H_
+#define SSI_PARTITIONED2_WC_BIOCHEMOMECHANO_H_
+
+#include "../drt_ssi/ssi_partitioned_2wc.H"
+
+namespace ADAPTER
+{
+  class FSIStructureWrapper;
+}
+
+namespace DRT
+{
+  class Element;
+  class ImmersedFieldExchangeManager;
+}
+
+namespace SSI
+{
+  //! specialized class to deal with partitioned 2WC SSI during cell contraction in cell migration.
+  class SSI_Part2WC_BIOCHEMOMECHANO : public SSI_Part2WC
+  {
+
+  public:
+
+    //!explicit constructor
+    explicit SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams,
+        const Teuchos::ParameterList& structparams,
+        const std::string struct_disname,
+        const std::string scatra_disname);
+
+    //!virtual destructor
+    virtual ~SSI_Part2WC_BIOCHEMOMECHANO(){};
+
+
+  protected:
+
+    //! update Phinp
+    void UpdateScalars();
+
+    //! perform iteration step of scatra field
+    virtual void DoScatraStep();
+
+    //! prepare time step for single fields
+    virtual void PrepareTimeStep(bool printheader = true);
+
+  private:
+
+    //! communicator
+    int myrank_;
+
+    //! underlying structure of the SSI problem
+    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    specialized_structure_;
+
+    //! pointer to ImmersedFieldExchangeManager singleton object
+    DRT::ImmersedFieldExchangeManager* exchange_manager_ ;
+
+
+  }; // class
+} // namespace SSI
+
+#endif /* SSI_PARTITIONED2_WC_BIOCHEMOMECHANO_H_ */
