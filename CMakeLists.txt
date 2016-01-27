@@ -2267,6 +2267,7 @@ src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann.cpp
 src/drt_immersed_problem/immersed_partitioned_flow_cell_interaction.cpp
 src/drt_immersed_problem/immersed_partitioned_fsi_dirichletneumann_ale.cpp
 src/drt_immersed_problem/ssi_partitioned_2wc_protrusionformation.cpp
+src/drt_immersed_problem/ssi_partitioned_2wc_biochemomechano.cpp
 src/drt_immersed_problem/fsi_partitioned_immersed.cpp
 )
 ###------------------------------------------------------------------ Element flags
