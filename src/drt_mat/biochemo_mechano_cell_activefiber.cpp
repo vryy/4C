@@ -8,7 +8,7 @@
 
  example input line
 
- MAT 1 MAT_CELLCONTRACTION DENS 1.0 IDMATPASSIVE 2 KFOR 10.0 KBACK 10.0 NMAX 1.0 KSTRESS 1.0
+MAT 1 MAT_BIOCHEMOMECHANO DENS 1.0 IDMATPASSIVE 2 KFOR 1.0 KBACK 10.0 KROCKETA 1.0e-1 KACTIN 3.0e-1 RATEMAX -1.0e-6 NMAX 3 KSTRESS 14.0 SOURCE 25.0e-5 METHOD 2DTrapez
 
 <pre>
 Maintainer: Andreas Rauch
@@ -41,6 +41,7 @@ Maintainer: Andreas Rauch
 
 #include <Epetra_SerialDenseSolver.h>
 
+
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -61,6 +62,10 @@ MAT::PAR::BioChemoMechanoCellActiveFiber::BioChemoMechanoCellActiveFiber(
   sourceconst_(    matdata->GetDouble("SOURCE")   ),
   myintmethod_(*(matdata->Get<std::string>("METHOD")))
 {
+  if(DRT::Problem::Instance()->ProblemType()!=prb_immersed_cell)
+    dserror("Material 'BioChemoMechanoCellActiveFiber' is only available in problems of type Immersed_CellMigration.\n"
+            "If you want to use it in a different context, have a look at the necessary setup in immersed_problem_dyn.cpp.");
+
   if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StructuralDynamicParams(),"MATERIALTANGENT"))
     analyticalmaterialtangent_ = false;
   else
@@ -327,6 +332,7 @@ void MAT::BioChemoMechanoCellActiveFiber::Unpack(const std::vector<char>& data)
 
 }   // Unpack()
 
+
 /*----------------------------------------------------------------------*
  | initialize / allocate internal variables (public)        rauch  01/16|
  *----------------------------------------------------------------------*/
@@ -431,6 +437,7 @@ void MAT::BioChemoMechanoCellActiveFiber::Setup(int numgp, DRT::INPUT::LineDefin
 
 }   // Setup()
 
+
 /*----------------------------------------------------------------------*
  |  ResetAll                                                rauch  01/16|
  *----------------------------------------------------------------------*/
@@ -530,6 +537,7 @@ void MAT::BioChemoMechanoCellActiveFiber::ResetAll(const int numgp)
 
 }   // ResetAll()
 
+
 /*----------------------------------------------------------------------*
  |  Update internal variables                               rauch  01/16|
  *----------------------------------------------------------------------*/
@@ -603,6 +611,7 @@ void MAT::BioChemoMechanoCellActiveFiber::Update()
 
 }   // Update()
 
+
 /*----------------------------------------------------------------------*
  |  Reset internal variables                                rauch  01/16|
  *----------------------------------------------------------------------*/
@@ -626,10 +635,7 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
                            LINALG::Matrix<6,6>* cmat,
                            const int eleGID)
 {
-
-  //const Teuchos::ParameterList& ssiparams =  DRT::Problem::Instance()->SSIControlParams();
   const Teuchos::ParameterList& strucdynparams =  DRT::Problem::Instance()->StructuralDynamicParams();
-
 
   // Set source constant for Scatra Boundary Surface stress dependent calculation
   double sourceconst =   params_->sourceconst_;
@@ -656,7 +662,7 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
 
   bool analyticalmaterialtangent = params_->analyticalmaterialtangent_;
   if (analyticalmaterialtangent)
-    dserror("no analytical material tangent calculation possible for this material at the moment");
+    dserror("no analytical material tangent calculation possible for this material at the moment.");
 
 
   DRT::ImmersedFieldExchangeManager* immersedmanager = DRT::ImmersedFieldExchangeManager::Instance();
@@ -667,14 +673,15 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
   }
 
   LINALG::Matrix<1,8> myphinp;
-  DRT::Element* scatraele = DRT::Problem::Instance()->GetDis("scatra")->gElement(eleGID);
+  DRT::Element* scatraele = DRT::Problem::Instance()->GetDis("cellscatra")->gElement(eleGID);
+  if(scatraele == NULL)
+    dserror("could not get 'cellscatra' element with gid %d",eleGID);
 
-  const Teuchos::RCP<DRT::Discretization> discretization = DRT::Problem::Instance()->GetDis("scatra");
+  const Teuchos::RCP<DRT::Discretization> discretization = DRT::Problem::Instance()->GetDis("cellscatra");
   DRT::Element::LocationArray la(1);
   scatraele->LocationVector(*discretization, la,false);
   const std::vector<int>&      lm = la[0].lm_;
   std::vector<double> myphinp2(lm.size());
-
 
   const int numofnodes= scatraele->NumNode();
   const int numofphis = scatraele->NumDofPerNode(*scatraele->Nodes()[0]);
@@ -1350,21 +1357,21 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
     etanewphi.Update(etanewphisolver);
 
 
-    #ifdef DEBUG
-      //  Check result:
-      LINALG::Matrix<nphi,1> tempvector(true);
-      LINALG::Matrix<nphi,1> res(true);
-      res.MultiplyNN(A,etanewphi);
-      res.Update(1.0,b,-1.0);
-      double absres = abs(res(0))+abs(res(1))+abs(res(2))+abs(res(3))+abs(res(4))+abs(res(5));
-      if (absres>(1.0e-12)/3){
-        std::cout<<"A "<<A<<std::endl;
-        std::cout<<"Ainv "<<Ainv<<std::endl;
-        std::cout<<"b "<<b<<std::endl;
-        std::cout<<"res "<<res<<std::endl;
-        dserror("calculation of eta_(ij)^(n+1) went wrong");
-      }
-    #endif
+//    #ifdef DEBUG
+//      //  Check result:
+//      LINALG::Matrix<nphi,1> tempvector(true);
+//      LINALG::Matrix<nphi,1> res(true);
+//      res.MultiplyNN(A,etanewphi);
+//      res.Update(1.0,b,-1.0);
+//      double absres = abs(res(0))+abs(res(1))+abs(res(2))+abs(res(3))+abs(res(4))+abs(res(5));
+//      if (absres>(1.0e-12)/3){
+//        std::cout<<"A "<<A<<std::endl;
+//        //std::cout<<"Ainv "<<Ainv<<std::endl;
+//        std::cout<<"b "<<b<<std::endl;
+//        std::cout<<"res "<<res<<std::endl;
+//        dserror("calculation of eta_(ij)^(n+1) went wrong");
+//      }
+//    #endif
     Nfil=0.0;
     Daverage=0.0;
     for (int i=0; i<nphi; i++){
@@ -1474,21 +1481,21 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
     etanewphi.Update(etanewphisolver);
 
 
-    #ifdef DEBUG
-      //  Check result:
-      LINALG::Matrix<nphi,1> tempvector(true);
-      LINALG::Matrix<nphi,1> res(true);
-      res.MultiplyNN(A,etanewphi);
-      res.Update(1.0,b,-1.0);
-      double absres = abs(res(0))+abs(res(1))+abs(res(2))+abs(res(3))+abs(res(4))+abs(res(5));
-      if (absres>(1.0e-12)/3){
-        std::cout<<"A "<<A<<std::endl;
-        std::cout<<"Ainv "<<Ainv<<std::endl;
-        std::cout<<"b "<<b<<std::endl;
-        std::cout<<"res "<<res<<std::endl;
-        dserror("calculation of eta_(ij)^(n+1) went wrong");
-      }
-    #endif
+//    #ifdef DEBUG
+//      //  Check result:
+//      LINALG::Matrix<nphi,1> tempvector(true);
+//      LINALG::Matrix<nphi,1> res(true);
+//      res.MultiplyNN(A,etanewphi);
+//      res.Update(1.0,b,-1.0);
+//      double absres = abs(res(0))+abs(res(1))+abs(res(2))+abs(res(3))+abs(res(4))+abs(res(5));
+//      if (absres>(1.0e-12)/3){
+//        std::cout<<"A "<<A<<std::endl;
+//        std::cout<<"Ainv "<<Ainv<<std::endl;
+//        std::cout<<"b "<<b<<std::endl;
+//        std::cout<<"res "<<res<<std::endl;
+//        dserror("calculation of eta_(ij)^(n+1) went wrong");
+//      }
+//    #endif
 
     for (int i=0; i<nphi; i++){
       phi  = M_PI * gausspoints.qxg[i][0] + M_PI;
@@ -1803,6 +1810,7 @@ if (time>0.0){
 
 } // end mat evaluate
 
+
 /*----------------------------------------------------------------------*
  | Calculate Dissociation                                   rauch 01/16 |
  *----------------------------------------------------------------------*/
@@ -1840,7 +1848,6 @@ void MAT::BioChemoMechanoCellActiveFiber::Dissociation(
 }  // Dissociation
 
 
-
 /*----------------------------------------------------------------------*
  | Calculation of Nodal values from GP values               rauch 01/16 |
  *----------------------------------------------------------------------*/
@@ -1875,6 +1882,7 @@ void MAT::BioChemoMechanoCellActiveFiber::GPtoNodes(
     outvalue.MultiplyNN(Sinv,invalue);
 
 }
+
 
 /*----------------------------------------------------------------------*
 | Calculation of Nodal values from GP values for eta        rauch 01/16 |
@@ -1988,6 +1996,7 @@ void MAT::BioChemoMechanoCellActiveFiber::DefGradGPtoNodes(
      atnode.Clear();
    }
    }
+
 
 /*----------------------------------------------------------------------*
 | Calculation of deformation gradient at specific Boundary GP xsi       |
@@ -2192,13 +2201,13 @@ void MAT::BioChemoMechanoCellActiveFiber::CauchytoPK2(
   S.MultiplyNT(temp,invdefgrd);
   S.Scale(detF);
 
-#ifdef DEBUG
-  if(abs(S(1,2)-S(2,1))>1e-13 or abs(S(0,2)-S(2,0))>1e-13 or abs(S(0,1)-S(1,0))>1e-13)
-  {
-    std::cout<<S<<std::endl;
-    dserror("PK2 not symmetric!!");
-  }
-#endif
+//#ifdef DEBUG
+//  if(abs(S(1,2)-S(2,1))>1e-13 or abs(S(0,2)-S(2,0))>1e-13 or abs(S(0,1)-S(1,0))>1e-13)
+//  {
+//    std::cout<<S<<std::endl;
+//    dserror("PK2 not symmetric!!");
+//  }
+//#endif
 
 
   // Sactive is stress like 6x1-Voigt vector
