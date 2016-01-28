@@ -1822,7 +1822,10 @@ void CAVITATION::Algorithm::ReadRestart(int restart)
 
     if(computeradiusRPbased_ == true)
     {
-      // additionally read restart data for bubbles with radius computation based on RP equ.
+      // setup correct layout of vectors ...
+      pg0_ = LINALG::CreateVector(*particledis_->NodeRowMap(), false);
+      dtsub_ = LINALG::CreateVector(*particledis_->NodeRowMap(), false);
+      // ... and overwrite with data from restart file
       reader_p.ReadVector(pg0_,"pg0");
       reader_p.ReadVector(dtsub_,"dtsub");
     }

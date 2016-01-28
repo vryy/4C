@@ -587,7 +587,7 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
       {
         int gid = particles_->Veln()->Map().GID(lid);
         dserror("Particle %i (gid) travels more than one bin per time step (%f > %f). Increase bin size or reduce step size."
-            "Max radius is: %f", (int)gid/3, 2.0*(maxrad + maxvel*particles_->Dt()), cutoff_radius_, maxrad);
+            "Max radius is: %f", (int)gid/3, 2.0*(maxrad + maxvel*dt), cutoff_radius_, maxrad);
       }
     }
   }
