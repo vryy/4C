@@ -2026,7 +2026,7 @@ baci_test(immersed_poro_moving_cylindrical_cell_proteolytic2WC_forcecoup_h8 3 ""
 baci_test(immersed_poro_moving_cylindrical_cell_proteolytic2WC_surfacesegregation_forcecoup_h8 3 "")
 baci_test(immersed_poro_cell_initialization_krylov 3 "" )
 baci_test(immersed_ale_two_bending_struct_part_forcecoup_h8 1 "" )
-baci_test(immersed_cell_contraction_mature_focal_adhesion 1 "" )
+baci_test(immersed_cell_contraction_mature_focal_adhesion 3 "" )
 baci_test(immersed_cell_pure_protrusion_part_dispcoup_h8 3 "" )
 baci_test(immersed_cell_biochemo_mechano_pureContraction_dashpot_h8 3 "" )
 baci_test(scatra_beltrami_8x8x8_ost_conv 2 "")
