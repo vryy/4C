@@ -679,6 +679,8 @@ double DRT::Container::GetDouble(const std::string& name) const
   return (*vecptr)[0];
 }
 
-
-
+int DRT::Container::UniqueParObjectId() const
+{
+  return ContainerType::Instance().UniqueParObjectId();
+}
 

@@ -112,7 +112,10 @@ void DRT::ELEMENTS::PreStress::Unpack(const std::vector<char>& data)
   return;
 }
 
-
+int DRT::ELEMENTS::PreStress::UniqueParObjectId() const
+{
+  return PreStressType::Instance().UniqueParObjectId();
+}
 
 
 

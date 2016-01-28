@@ -127,7 +127,10 @@ void DRT::ELEMENTS::InvDesign::Unpack(const std::vector<char>& data)
 }
 
 
-
+int DRT::ELEMENTS::InvDesign::UniqueParObjectId() const
+{
+  return InvDesignType::Instance().UniqueParObjectId();
+}
 
 
 

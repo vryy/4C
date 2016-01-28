@@ -329,17 +329,17 @@ void DRT::ELEMENTS::So_hex20::soh20_expol
   }
 
   // "assembly" of extrapolated nodal stresses
-  for (int i=0;i<NUMNOD_SOH20;++i)
+  for (int i=0; i<NUMNOD_SOH20; ++i)
   {
-    int gid = NodeIds()[i];
-    if (expolstresses.Map().MyGID(NodeIds()[i])) // rownode
+    const int lid = expolstresses.Map().LID(NodeIds()[i]);
+    if (lid >= 0) // rownode
     {
-      int lid = expolstresses.Map().LID(gid);
-      int adjele = Nodes()[i]->NumElement();
-      for (int j=0;j<6;j++)
-        (*(expolstresses(j)))[lid] += nodalstresses(i,j)/adjele;
+      const double invmyadjele = 1.0/Nodes()[i]->NumElement();
+      for (int j=0; j<MAT::NUM_STRESS_3D; ++j)
+        (*(expolstresses(j)))[lid] += nodalstresses(i,j)*invmyadjele;
     }
   }
+  return;
 }
 
 

@@ -356,18 +356,20 @@ void DRT::ELEMENTS::So_weg6::soweg6_expol
   nodalstresses.Multiply(expol, stresses);
 
   // "assembly" of extrapolated nodal stresses
-  for (int i=0;i<NUMNOD_WEG6;++i)
+  for (int i=0; i<NUMNOD_WEG6; ++i)
   {
-    int gid = NodeIds()[i];
-    if (expolstresses.Map().MyGID(NodeIds()[i])) // rownode
+    const int lid = expolstresses.Map().LID(NodeIds()[i]);
+    if (lid >= 0) // rownode
     {
-      int lid = expolstresses.Map().LID(gid);
-      int myadjele = Nodes()[i]->NumElement();
-      for (int j=0;j<6;j++)
-        (*(expolstresses(j)))[lid] += nodalstresses(i,j)/myadjele;
+      const double invmyadjele = 1.0/Nodes()[i]->NumElement();
+      for (int j=0; j<MAT::NUM_STRESS_3D; ++j)
+        (*(expolstresses(j)))[lid] += nodalstresses(i,j)*invmyadjele;
     }
   }
+  return;
 }
+
+
 std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
 {
 

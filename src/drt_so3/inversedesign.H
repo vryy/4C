@@ -74,8 +74,9 @@ public:
 
   every class implementing ParObject needs a unique id defined at the
   top of this file.
+
   */
-  virtual int UniqueParObjectId() const { return InvDesignType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const;
 
   /*!
   \brief Pack this class so it can be communicated
