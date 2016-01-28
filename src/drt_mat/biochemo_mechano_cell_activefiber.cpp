@@ -55,7 +55,6 @@ MAT::PAR::BioChemoMechanoCellActiveFiber::BioChemoMechanoCellActiveFiber(
   kbackwards_(  matdata->GetDouble("KBACK")    ),
   kRockEta_(  matdata->GetDouble("KROCKETA")    ),
   kActin_(  matdata->GetDouble("KACTIN")    ),
-  //DissCoupling_(  matdata->GetDouble("DISSCOUPLING")    ),
   ratemax_(  matdata->GetDouble("RATEMAX")    ),
   nmax_(   matdata->GetDouble("NMAX")     ),
   kstress_(    matdata->GetDouble("KSTRESS")   ),
@@ -100,7 +99,8 @@ DRT::ParObject* MAT::BioChemoMechanoCellActiveFiberType::Create( const std::vect
  |  Constructor                                             rauch  01/16|
  *----------------------------------------------------------------------*/
 MAT::BioChemoMechanoCellActiveFiber::BioChemoMechanoCellActiveFiber()
-  : params_(NULL)
+  : params_(NULL),
+    isinit_(false)
 {
 }
 
@@ -109,7 +109,8 @@ MAT::BioChemoMechanoCellActiveFiber::BioChemoMechanoCellActiveFiber()
  |  Copy-Constructor                                        rauch  01/16|
  *----------------------------------------------------------------------*/
 MAT::BioChemoMechanoCellActiveFiber::BioChemoMechanoCellActiveFiber(MAT::PAR::BioChemoMechanoCellActiveFiber* params)
-  : params_(params)
+  : params_(params),
+    isinit_(false)
 {
 }
 
@@ -125,9 +126,6 @@ void MAT::BioChemoMechanoCellActiveFiber::Pack(DRT::PackBuffer& data) const
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
   AddtoPack(data,type);
-
-  // analytical or fd material tangent
-  //AddtoPack(data,analyticalmaterialtangent_);
 
   // matid
   int matid = -1;
@@ -191,8 +189,6 @@ void MAT::BioChemoMechanoCellActiveFiber::Unpack(const std::vector<char>& data)
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
-
-  //analyticalmaterialtangent_ = ExtractInt(position,data);
 
   // matid and recover params_
   int matid;
@@ -1372,6 +1368,7 @@ void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* de
 //        dserror("calculation of eta_(ij)^(n+1) went wrong");
 //      }
 //    #endif
+
     Nfil=0.0;
     Daverage=0.0;
     for (int i=0; i<nphi; i++){

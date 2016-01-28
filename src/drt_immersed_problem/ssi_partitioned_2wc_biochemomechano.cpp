@@ -22,12 +22,15 @@ Maintainers: Andreas Rauch
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
+#include "../drt_poroelast/poro_scatra_base.H"
+
 #include "../drt_immersed_problem/immersed_field_exchange_manager.H"
 
 /*----------------------------------------------------------------------*
- | constructor                                               rauch 01/16 |
+ | constructor                                              rauch 01/16 |
  *----------------------------------------------------------------------*/
 SSI::SSI_Part2WC_BIOCHEMOMECHANO::SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& params,
     const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams,
     const Teuchos::ParameterList& structparams,
@@ -36,6 +39,9 @@ SSI::SSI_Part2WC_BIOCHEMOMECHANO::SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm&
   : SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname)
 {
 
+  // get pointer poroelast-scatra interaction subproblem
+  poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
+
   // set communicator
   myrank_ = comm.MyPID();
 
@@ -43,32 +49,133 @@ SSI::SSI_Part2WC_BIOCHEMOMECHANO::SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm&
   if(specialized_structure_ == Teuchos::null)
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
-  // Initialize pointers for exchange between ScaTra and Structure
-  exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
-
   Teuchos::RCP<Epetra_MultiVector> phinp = scatra_->ScaTraField()->Phinp();
   const Epetra_Map* colmap = scatra_->ScaTraField()->Discretization()->DofColMap(0);
-  Teuchos::RCP<Epetra_MultiVector> tmp = LINALG::CreateVector(*colmap,true);
-  LINALG::Export(*phinp,*tmp);
+  phi_ = LINALG::CreateVector(*colmap,true);
+  LINALG::Export(*phinp,*phi_);
 
-  // Set pointer for the first time
-  exchange_manager_->SetPointerToPhinps(tmp);
-
-
-  // Initialize Pointers for exchange between Structure --> ScaTra
+  // Construct vectors for exchange between Structure --> Scatra
   const Epetra_Map* elementcolmap = scatra_->ScaTraField()->Discretization()->ElementColMap();
 
-  Teuchos::RCP<Epetra_MultiVector> ratesactin = LINALG::CreateVector(*elementcolmap,true);
-  ratesactin.reset(new Epetra_MultiVector(*elementcolmap,8));
+  ratesactin_ = LINALG::CreateVector(*elementcolmap,true);
+  ratesactin_.reset(new Epetra_MultiVector(*elementcolmap,8));
 
-  Teuchos::RCP<Epetra_MultiVector> rates = LINALG::CreateVector(*elementcolmap,true);
-  rates.reset(new Epetra_MultiVector(*elementcolmap,8));
-  // Set pointer for the first time
-  exchange_manager_->SetPointerToRates(rates);
-  exchange_manager_->SetPointerToRatesActin(ratesactin);
+  rates_ = LINALG::CreateVector(*elementcolmap,true);
+  rates_.reset(new Epetra_MultiVector(*elementcolmap,8));
 
+
+  // get pointer to the ImmersedFieldExchangeManager
+  exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
+
+  // Set pointers to multivectors for the rates
+  exchange_manager_->SetPointerToRates(rates_);
+  exchange_manager_->SetPointerToRatesActin(ratesactin_);
+
+  // Set pointer to the concentrations
+  exchange_manager_->SetPointerToPhinps(phi_);
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+| update time step and print to screen                      rauch 01/16 |
+------------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_BIOCHEMOMECHANO::UpdateAndOutput()
+{
+  SSI::SSI_Part2WC::UpdateAndOutput();
+
+  // also for dummy poroscatra problem
+  poroscatra_subproblem_->PrepareTimeStep(false);
+  poroscatra_subproblem_->PrepareOutput();
+  poroscatra_subproblem_->Update();
+  poroscatra_subproblem_->Output();
+}
+
+
+/*----------------------------------------------------------------------*
+ | convergence check                                        rauch 01/16 |
+ *----------------------------------------------------------------------*/
+bool SSI::SSI_Part2WC_BIOCHEMOMECHANO::ConvergenceCheck(int itnum)
+{
+
+  // convergence check based on the scalar increment
+  bool stopnonliniter = false;
+
+  //    | scalar increment |_2
+  //  -------------------------------- < Tolerance
+  //     | scalar+1 |_2
+  //
+  // AND
+  //
+  //    | scalar increment |_2
+  //  -------------------------------- < Tolerance
+  //             dt * n
+
+  // variables to save different L2 - Norms
+  // define L2-norm of incremental scalar and scalar
+  double scaincnorm_L2(0.0);
+  double scanorm_L2(0.0);
+  double dispincnorm_L2(0.0);
+  double dispnorm_L2(0.0);
+
+  // build the current scalar increment Inc T^{i+1}
+  // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
+  scaincnp_->Update(1.0,*(scatra_->ScaTraField()->Phinp()),-1.0);
+  dispincnp_->Update(1.0,*(structure_->Dispnp()),-1.0);
+
+  // build the L2-norm of the scalar increment and the scalar
+  scaincnp_->Norm2(&scaincnorm_L2);
+  scatra_->ScaTraField()->Phinp()->Norm2(&scanorm_L2);
+  dispincnp_->Norm2(&dispincnorm_L2);
+  structure_->Dispnp()->Norm2(&dispnorm_L2);
+
+  // care for the case that there is (almost) zero scalar
+  if (scanorm_L2 < 1e-6) scanorm_L2 = 1.0;
+  if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
+
+  // print the incremental based convergence check to the screen
+  if (Comm().MyPID()==0 )
+  {
+    std::cout<<"\n";
+    std::cout<<"***********************************************************************************\n";
+    std::cout<<"    OUTER BIOCHEMO-MECHANO STRESS FIBER MODEL ITERATION STEP    \n";
+    std::cout<<"***********************************************************************************\n";
+    printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
+    printf("|-  step/max  -|-  tol      [norm]  -|-  scalar-inc  -|-  disp-inc      -|-  scalar-rel-inc  -|-  disp-rel-inc  -|\n");
+    printf("|   %3d/%3d    |  %10.3E[L_2 ]   |  %10.3E    |  %10.3E      |  %10.3E        |  %10.3E      |",
+         itnum,itmax_,ittol_,scaincnorm_L2/Dt()/sqrt(scaincnp_->GlobalLength()),dispincnorm_L2/Dt()/sqrt(dispincnp_->GlobalLength()),scaincnorm_L2/scanorm_L2,dispincnorm_L2/dispnorm_L2);
+    printf("\n");
+    printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
+  }
+
+  // converged
+  if (  ( ((scaincnorm_L2/scanorm_L2) <= ittol_) and ((dispincnorm_L2/dispnorm_L2) <= ittol_) ) or ( ((dispincnorm_L2/Dt()/sqrt(dispincnp_->GlobalLength()))<=ittol_) and ((scaincnorm_L2/Dt()/sqrt(scaincnp_->GlobalLength()))<=ittol_) ) )
+  {
+    stopnonliniter = true;
+    if (Comm().MyPID()==0 )
+    {
+      printf("|  Outer Iteration loop converged after iteration %3d/%3d !                                                      |\n", itnum,itmax_);
+      printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
+    }
+  }
+
+  // stop if itemax is reached without convergence
+  // timestep
+  if ( (itnum==itmax_) and (  ( ((scaincnorm_L2/scanorm_L2) > ittol_) and ((dispincnorm_L2/dispnorm_L2) > ittol_) ) or ( ((dispincnorm_L2/Dt()/sqrt(dispincnp_->GlobalLength()))>ittol_) and ((scaincnorm_L2/Dt()/sqrt(scaincnp_->GlobalLength()))>ittol_) ) ))
+  {
+    stopnonliniter = true;
+    if ((Comm().MyPID()==0) )
+    {
+      printf("|     >>>>>> not converged in itemax steps!                                                                      |\n");
+      printf("+--------------+---------------------+----------------+------------------+--------------------+------------------+\n");
+      printf("\n");
+      printf("\n");
+    }
+    dserror("The partitioned SSI solver did not converge in ITEMAX steps!");
+  }
+
+  return stopnonliniter;
 }
 
 
@@ -95,6 +202,22 @@ void SSI::SSI_Part2WC_BIOCHEMOMECHANO::UpdateScalars()
 
 
 /*----------------------------------------------------------------------*
+ | Solve structure filed                                    rauch 01/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_BIOCHEMOMECHANO::DoStructStep()
+{
+  if (Comm().MyPID() == 0)
+  {
+    std::cout
+        << "\n***********************\n CELL SOLVER \n***********************\n";
+  }
+
+  // Newton-Raphson iteration
+  structure_-> Solve();
+}
+
+
+/*----------------------------------------------------------------------*
  | Solve Scatra field                                       rauch 01/16 |
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_BIOCHEMOMECHANO::DoScatraStep()
@@ -102,7 +225,7 @@ void SSI::SSI_Part2WC_BIOCHEMOMECHANO::DoScatraStep()
   if (Comm().MyPID() == 0)
   {
     std::cout
-        << "\n***********************\n  TRANSPORT SOLVER \n***********************\n";
+        << "\n*******************************\n  BIOCHEMO TRANSPORT SOLVER \n*******************************\n";
   }
 
   // -------------------------------------------------------------------
@@ -131,3 +254,5 @@ void SSI::SSI_Part2WC_BIOCHEMOMECHANO::PrepareTimeStep(bool printheader)
 
   UpdateScalars();
 }
+
+

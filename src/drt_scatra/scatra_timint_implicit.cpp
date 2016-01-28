@@ -2272,8 +2272,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateStructSolutionDependingConditions(Teuchos
     params.set<int>("action",SCATRA::calc_cell_mechanotransduction);
     params.set<int>("ndsdisp",nds_disp_);
 
-    discret_->AddMultiVectorToParameterList(params,"dispnp",discret_->GetState(nds_disp_,"dispnp"));
-
     // add element parameters and set state vectors according to time-integration scheme
     AddTimeIntegrationSpecificVectors();
     discret_->Evaluate(params,Teuchos::null,Teuchos::null,nodalrates,Teuchos::null,Teuchos::null);

@@ -56,7 +56,7 @@ namespace SSI
     virtual void DoScatraStep();
 
     //! update time step and print to screen
-    void UpdateAndOutput();
+    virtual void UpdateAndOutput();
 
     //! convergence check of outer loop
     virtual bool ConvergenceCheck(int itnum);

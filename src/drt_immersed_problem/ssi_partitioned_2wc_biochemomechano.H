@@ -15,6 +15,12 @@ Maintainers: Andreas Rauch
 
 #include "../drt_ssi/ssi_partitioned_2wc.H"
 
+namespace POROELAST
+{
+  //class Monolithic;
+  class PoroScatraBase;
+}
+
 namespace ADAPTER
 {
   class FSIStructureWrapper;
@@ -36,6 +42,7 @@ namespace SSI
 
     //!explicit constructor
     explicit SSI_Part2WC_BIOCHEMOMECHANO(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& params,
         const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& structparams,
@@ -51,13 +58,25 @@ namespace SSI
     //! update Phinp
     void UpdateScalars();
 
-    //! perform iteration step of scatra field
+    //! perform iteration step of cell structure field
+    virtual void DoStructStep();
+
+    //! perform iteration step of biochemo scatra field
     virtual void DoScatraStep();
 
     //! prepare time step for single fields
     virtual void PrepareTimeStep(bool printheader = true);
 
+    //! update time step and print to screen
+    virtual void UpdateAndOutput();
+
+    //! check convergence (absolute OR relative increments)
+    virtual bool ConvergenceCheck(int itnum);
+
   private:
+
+    //! pointer to poroelast subproblem (poro-scatra interaction)
+    Teuchos::RCP<POROELAST::PoroScatraBase> poroscatra_subproblem_;
 
     //! communicator
     int myrank_;
@@ -67,6 +86,15 @@ namespace SSI
 
     //! pointer to ImmersedFieldExchangeManager singleton object
     DRT::ImmersedFieldExchangeManager* exchange_manager_ ;
+
+    //! vector containing rate of change in actin concentration
+    Teuchos::RCP<Epetra_MultiVector> ratesactin_;
+
+    //! vector containing rate of change in 'ROCK' concentration
+    Teuchos::RCP<Epetra_MultiVector> rates_;
+
+    //! vector containing concentrations
+    Teuchos::RCP<Epetra_MultiVector> phi_;
 
 
   }; // class

@@ -285,7 +285,7 @@ void CellMigrationControlAlgorithm()
   Teuchos::RCP<GEO::SearchTree> cell_SearchTree = Teuchos::rcp(new GEO::SearchTree(5));
 
   // ghost structure on each proc (for search algorithm)
-  if(comm.NumProc() > 1)
+  if(comm.NumProc() > 1 and simtype!=INPAR::CELL::sim_type_pureContraction)
   {
     // fill complete inside
     CreateGhosting(problem->GetDis("cell"));
@@ -511,7 +511,7 @@ void CellMigrationControlAlgorithm()
     params.set<bool>("IsPureContraction", true);
 
     Teuchos::RCP<SSI::SSI_Part2WC_BIOCHEMOMECHANO> algo =
-        Teuchos::rcp(new SSI::SSI_Part2WC_BIOCHEMOMECHANO(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
+        Teuchos::rcp(new SSI::SSI_Part2WC_BIOCHEMOMECHANO(comm, params, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
 
     const int restart = DRT::Problem::Instance()->Restart();
     if (restart)
