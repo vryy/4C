@@ -1617,52 +1617,39 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcMechanotransduction(
   const double dt = scatraparamstimint_->Dt();
   params.set<double>("delta time",dt);
   const int scalar_num = 3;
-  //double constant = 4.0e-4;
 
-
+  // cast FaceElement to TransportBoundary
   DRT::ELEMENTS::TransportBoundary* transp_brdyele = dynamic_cast<DRT::ELEMENTS::TransportBoundary*>(ele);
   if(transp_brdyele == NULL)
     dserror("cast from FaceElement to TransportBoundary element failed");
 
-  // the id of the parent scatra element
-  //int parentid=ele->ParentElementId();
+  // get number of dof-set associated with displacement related dofs
+   const int ndsdisp = params.get<int>("ndsdisp");
 
-  // get structdis from parameterlist
-  //Teuchos::RCP<DRT::Discretization> structdis = params.get<Teuchos::RCP<DRT::Discretization> >("structdis");
-
-//  if(structdis==Teuchos::null)
-//    dserror("could not get RCP to structural discretization");
-
-//  const Teuchos::RCP<const Epetra_MultiVector> struct_parent_dispnp = params.get< Teuchos::RCP<const Epetra_Vector> >("struct_parent_dispnp",Teuchos::null);
-
-  const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
+  // get displacement state from scatra discretization
+  Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState(ndsdisp, "dispnp");
   if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 
-  // get struct element with same id as scatra element
+  // get parent element
   DRT::Element* parentele = ele->ParentElement();
-//  std::cout <<"parentele\n "<< parentele << '\n';
-//  std::cout <<"parentele value \n "<< *parentele << '\n';
-//  dserror("t=5sec");
-//  DRT::Element::LocationArray pla(2);
-//  parentele->LocationVector(discretization,pla,false);
+  static const int nenparent = parentele->NumNode();
+  if(nenparent!=8)
+    dserror("only implemented for hex8 elements");
 
-  // static const  int nenparent = struct_parentele->NumNode(); // does not work with initializaition of xrefe and xcurr
-  static const int nenparent = 8;
+  DRT::Element::LocationArray parent_la(discretization.NumDofSets());
+  parentele->LocationVector(discretization,parent_la,false);
 
-  LINALG::Matrix<nsd_+1,nenparent> mydispnp;
-  DRT::UTILS::ExtractMyNodeBasedValues(parentele,mydispnp,dispnp,nsd_+1);
+  LINALG::Matrix<nsd_+1,8> myeledispnp;
+  // extract local values of displacement field from global state vector
+  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_+1,8> >(*dispnp,myeledispnp,parent_la[ndsdisp].lm_);
 
-  //dserror("stop 0");
   // integration points and weights for boundary (!) gp
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
   LINALG::SerialDenseMatrix pqxg(intpoints.IP().nquad,nsd_+1);
-
   LINALG::Matrix<nsd_+1,1> pxsi(true);
-
   LINALG::Matrix<nsd_+1,nsd_+1>  derivtrafo(true);
-
   DRT::UTILS::BoundaryGPToParentGP<nsd_+1>( pqxg,
       derivtrafo,
       intpoints ,
@@ -1670,19 +1657,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcMechanotransduction(
       distype   ,
       transp_brdyele->SurfaceNumber());
 
-
-  //std::cout <<"number of parent nodes (should be 8): "<< nenparent << '\n';
-
-
-  // number of dof per node
-  // static int numdofpernode = struct_parentele->NumDofPerNode(nodes);  // does not work..
-  // static const int numdofpernode=3;
-  // std::cout <<"number of dof per node (should be 3): "<< numdofpernode << '\n';
-
-
   //LINALG::Matrix<nsd_+1,nenparent>  xrefe; // material coord. of parent element
-  LINALG::Matrix<3,nenparent>  xrefe;
-  LINALG::Matrix<3,nenparent> xcurr; // current  coord. of parent element
+  LINALG::Matrix<3,8>  xrefe;
+  LINALG::Matrix<3,8>  xcurr; // current  coord. of parent element
   DRT::Node** nodes = parentele->Nodes();
 
   // update element geometry of parent element
@@ -1692,7 +1669,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcMechanotransduction(
     for (int j=0; j<nsd_+1; ++j)
     {
       xrefe(j,i) = x[j];
-      xcurr(j,i) = xrefe(j,i) + mydispnp(j,i);
+      xcurr(j,i) = xrefe(j,i) + myeledispnp(j,i);
     }
   }
   Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(parentele->Material(1));
@@ -1702,7 +1679,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcMechanotransduction(
 
   double averagestress;
   averagestress=0.0;
-  //double area=0.0;
+
   // loop over all integration points
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
@@ -1721,7 +1698,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcMechanotransduction(
 
     // evaluate derivatives of parent element shape functions at current integration point in parent coordinate system
     DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(pxsi,pderiv_loc);
-
 
     const int NUMDIM_SOH8 = 3;
     const int NUMNOD_SOH8 = 8;
@@ -1769,23 +1745,19 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcMechanotransduction(
 
     if(parentele->NumMaterial()<2)
       dserror("only one material defined for scatra element");
+
     // evaluate the material to obtain stress
-
-
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
     params.set<LINALG::Matrix<nsd_+1,1> >("xsi",pxsi);
     params.set<int>("gp", iquad);
     so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat,parentele->Id());
 
-//    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> stressmatrix;
-
-
     // transform PK2 to Cauchy
     LINALG::Matrix<3,3> cauchystress(true);
     LINALG::Matrix<3,3> PK2stress;
+
     // calculate the Jacobi-determinant
-    //const double detF = defgrd.Determinant();   // const???
     double detF = defgrd.Determinant();
     if (abs(detF)<1.0e-10)
     {
@@ -1804,13 +1776,20 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcMechanotransduction(
 
     // sigma = 1/J * F * sigma * F^{T}
     LINALG::Matrix<3,3> temp(true);
-    //LINALG::Matrix<3,3> sigma(true);
     temp.MultiplyNN(defgrd,PK2stress);
     cauchystress.MultiplyNT(temp,defgrd);
     cauchystress.Scale(1./detF);
 
+    LINALG::Matrix<3,1> normalstress(true);
+    LINALG::Matrix<3,1> normal(true);
+    normal(0)=normal_(0);
+    normal(1)=normal_(1);
+    normal(2)=normal_(2);
+    normalstress.Multiply(cauchystress,normal);
 
-    //std::cout <<"stress: "<< std::setprecision(3) << stress << '\n';
+//    // DEBUG output
+//    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> stressmatrix;
+//    std::cout <<"stress: "<< std::setprecision(3) << stress << '\n';
 //    stressmatrix(0,0) = stress(0);
 //    stressmatrix(1,1) = stress(1);
 //    stressmatrix(2,2) = stress(2);
@@ -1820,73 +1799,40 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcMechanotransduction(
 //    stressmatrix(2,1) = stress(4);
 //    stressmatrix(2,0) = stress(5);
 //    stressmatrix(0,2) = stress(5);
-    LINALG::Matrix<3,1> normalstress(true);
-    LINALG::Matrix<3,1> normal(true);
-    normal(0)=normal_(0);
-    normal(1)=normal_(1);
-    normal(2)=normal_(2);
-    normalstress.Multiply(cauchystress,normal);
-    //std::cout <<"boundary stress: "<< std::setprecision(3) << normalstress << '\n';
+//    std::cout <<"boundary stress: "<< std::setprecision(3) << normalstress << '\n';
 
     double forcemagnitude = 1.0* sqrt(normalstress(0)*normalstress(0)+normalstress(1)*normalstress(1)+normalstress(2)*normalstress(2));
 
     const double timefac = scatraparamstimint_->TimeFacRhs();
 
-   // TODO
-   if (forcemagnitude>1.0e-15){
-   for (int node=0; node<nen_; ++node)
-   {
-     averagestress += fac*forcemagnitude*funct_(node)*timefac;
-     //area += fac*funct_(node);
-   }
-   }
-   //
-//   const double time = scatraparamstimint_->Time();
-//   if (time>5.0){
-//     if(iquad>2){
-//     std::cout <<"boundary stress: "<< std::setprecision(3) << normalstress << '\n';
-//     std::cout <<"normalvector: "<< std::setprecision(3) << normal_ << '\n';
-//     std::cout <<"stress matrix: "<< std::setprecision(3) << stressmatrix << '\n';
-//     std::cout <<"forcemagnitude: "<< std::setprecision(3) << forcemagnitude << '\n';
-//     std::cout <<"funct_: "<< std::setprecision(3) << funct_<< '\n';
-//     std::cout <<"fac: "<< std::setprecision(3) << fac<< '\n';
-//     std::cout <<"averagestress/area: "<< std::setprecision(3) << averagestress/area << '\n';
-//     //dserror("t=5sec");
-//   }
-//  }
+    if (forcemagnitude>1.0e-15)
+    {
+      for (int node=0; node<nen_; ++node)
+      {
+        averagestress += fac*forcemagnitude*funct_(node)*timefac;
+      }
+    }
 
   }// end gp loop
 
-  //Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(parentele->Material(1));
   double constant = params.get<double>("source const",-1);
-  if (time>0.0){
+  if (time>0.0)
+  {
     if (constant==-1)
-    dserror("source const not available in scatra");
+      dserror("source const not available in scatra");
   }
 
   double source;// = averagestress/area*constant;
   source = averagestress*constant;
-//  //test loop
-//  for (int node=0; node<nen_*numdofpernode_; ++node)
-//  {
-//    const int dof = node;
-//    elevec1_epetra[dof] += source;
-//  }
-//right loop
-  if (abs(source)>1.0e-15){
-  for (int node=0; node<nen_; ++node)
-  {
-    const int dof = node*numdofpernode_+scalar_num;
-    elevec1_epetra[dof] += source;
-  }
-  }
 
-//  const double time = scatraparamstimint_->Time();
-//  if (time>2.0){
-//    std::cout <<"averagestress: "<< std::setprecision(3) << averagestress << '\n';
-//    std::cout <<"elevec1_epetra: "<< std::setprecision(3) << elevec1_epetra << '\n';
-//    dserror("t=2sec");
-//  }
+  if (abs(source)>1.0e-15)
+  {
+    for (int node=0; node<nen_; ++node)
+    {
+      int dof = node*numdofpernode_+scalar_num;
+      elevec1_epetra[dof] += source;
+    }
+  }
 
   return;
 } // CalcMechanotransduction
