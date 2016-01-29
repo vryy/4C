@@ -167,7 +167,6 @@ public:
     AreaMonitor_3D,
     AreaMonitor_2D,
     WindkesselStructure,
-    WindkesselHeartValveArterialStructure,
     WindkesselHeartValveArterialProxDistStructure,
     WindkesselHeartValveCardiovascularFullStructure,
     WindkesselStructureCoupling,

@@ -3128,7 +3128,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
 
     //print Windkessel output
     if (windkman_->HaveWindkessel())
-      windkman_->PrintPresFlux();
+      windkman_->PrintPresFlux(false);
 
     return 0;
   }

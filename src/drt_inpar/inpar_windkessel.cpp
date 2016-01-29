@@ -85,42 +85,6 @@ void INPAR::WINDKESSEL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::
 
   condlist.push_back(windkesselcondition);
 
-
-  /*--------------------------------------------------------------------*/
-  // Monolithic coupling of structure and a special heart valve arterial four-element Windkessel - mhv 02/14
-
-  Teuchos::RCP<ConditionDefinition> windkesselheartvalvearterialcond =
-    Teuchos::rcp(new ConditionDefinition("DESIGN SURF HEART VALVE ARTERIAL WINDKESSEL CONDITIONS",
-                                         "WindkesselHeartValveArterialStructureCond",
-                                         "Surface heart valve arterial Windkessel",
-                                         DRT::Condition::WindkesselHeartValveArterialStructure,
-                                         true,
-                                         DRT::Condition::Surface));
-
-  AddNamedInt(windkesselheartvalvearterialcond,"id");
-  AddNamedReal(windkesselheartvalvearterialcond,"R_arvalve_max");
-  AddNamedReal(windkesselheartvalvearterialcond,"R_arvalve_min");
-  AddNamedReal(windkesselheartvalvearterialcond,"R_atvalve_max");
-  AddNamedReal(windkesselheartvalvearterialcond,"R_atvalve_min");
-  AddNamedReal(windkesselheartvalvearterialcond,"k_p");
-  AddNamedReal(windkesselheartvalvearterialcond,"C");
-  AddNamedReal(windkesselheartvalvearterialcond,"R_p");
-  AddNamedReal(windkesselheartvalvearterialcond,"Z_c");
-  AddNamedReal(windkesselheartvalvearterialcond,"L");
-  AddNamedReal(windkesselheartvalvearterialcond,"p_ref");
-  AddNamedReal(windkesselheartvalvearterialcond,"p_ar_0");
-  windkesselheartvalvearterialcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("P_AT")));
-  AddNamedReal(windkesselheartvalvearterialcond,"fac");
-  windkesselheartvalvearterialcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("crv")));
-  windkesselheartvalvearterialcond->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
-  windkesselheartvalvearterialcond->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VALVE")));
-  windkesselheartvalvearterialcond->AddComponent(Teuchos::rcp(new StringConditionComponent("valvelaw", "smooth",
-                                                                                       Teuchos::tuple<std::string>("smooth","pwlin"),
-                                                                                       Teuchos::tuple<std::string>("smooth","pwlin"),
-                                                                                       true)));
-
-  condlist.push_back(windkesselheartvalvearterialcond);
-
   /*--------------------------------------------------------------------*/
   // Monolithic coupling of structure and a heart valve arterial Windkessel accounting for proximal and distal arterial pressure
   // formulation proposed by Cristobal Bertoglio - mhv 03/14
@@ -145,6 +109,7 @@ void INPAR::WINDKESSEL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"C_ard");
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"R_ard");
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"p_ref");
+  AddNamedReal(windkesselheartvalvearterialproxdistcond,"p_v_0");
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"p_arp_0");
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"y_arp_0");
   AddNamedReal(windkesselheartvalvearterialproxdistcond,"p_ard_0");
@@ -184,13 +149,16 @@ void INPAR::WINDKESSEL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"R_ven"); // venous resistance
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"L_ven"); // venous inertance
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"p_at_0"); // initial atrial pressure
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"q_v_in_0"); // initial ventricular in-flux
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"q_v_out_0"); // initial ventricular out-flux
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"p_v_0"); // initial ventricular pressure
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"p_ar_0"); // initial arterial pressure
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"q_ar_0"); // initial arterial flux
   AddNamedReal(windkesselheartvalvecardiovascularfullcond,"p_ven_0"); // initial venous pressure
-  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"q_ar_0"); // initial arterial flow
-  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"q_ven_0"); // initial venous flow
-  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_at_0"); // initial volume of atrium
-  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_ar_0"); // initial volume of arteries and capillaries
-  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_ven_0"); // initial volume of veins
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"q_ven_0"); // initial venous flux
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_at_0"); // initial volume of atrium - only for postprocessing matters!
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_ar_0"); // initial volume of arteries and capillaries - only for postprocessing matters!
+  AddNamedReal(windkesselheartvalvecardiovascularfullcond,"V_ven_0"); // initial volume of veins - only for postprocessing matters!
 
   condlist.push_back(windkesselheartvalvecardiovascularfullcond);
 

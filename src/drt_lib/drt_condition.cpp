@@ -156,7 +156,6 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==AreaMonitor_3D)                os << "Area monitor condition: ";
   else if (Type()==AreaMonitor_2D)                os << "Area monitor condition: ";
   else if (Type()==WindkesselStructure)           os << "Surface Windkessel condition: ";
-  else if (Type()==WindkesselHeartValveArterialStructure) os << "Surface heart valve arterial Windkessel condition: ";
   else if (Type()==WindkesselHeartValveArterialProxDistStructure) os << "Surface heart valve arterial prox dist Windkessel condition: ";
   else if (Type()==WindkesselHeartValveCardiovascularFullStructure) os << "Surface heart valve cardiovascular full Windkessel condition: ";
   else if (Type()==WindkesselStructureCoupling)   os << "Surface Windkessel structure coupling condition: ";

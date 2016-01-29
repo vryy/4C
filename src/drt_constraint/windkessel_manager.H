@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file windkessel_manager.cpp
+\file windkessel_manager.H
 
 \brief Monolithic coupling of 3D structure 0D Windkessel models
 
@@ -244,7 +244,7 @@ namespace UTILS
       return;
     }
 
-    void PrintPresFlux() const;
+    void PrintPresFlux(bool init) const;
 
     /// Return Reference base values to write restart
     Teuchos::RCP<Epetra_Vector> GetRefVolValue() const
@@ -326,6 +326,7 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> windk_rhs_ddQ_; ///< Windkessel rhs associated with ds/dt
     Teuchos::RCP<Epetra_Vector> windk_rhs_1_; ///< Windkessel rhs associated with 1
     Teuchos::RCP<Epetra_Vector> compvolm_; ///< compartment volume vector (V_at, V_ar, V_ven) at mid-point
+    Teuchos::RCP<Epetra_Vector> compvol_; ///< compartment volume vector (V_at, V_ar, V_ven) at t_n
     int WindkesselID_;  ///< smallest Windkessel bc id
     int offsetID_;  ///< smallest Windkessel bc id
     int numWindkesselID_;  ///< number of Windkessel bcs
@@ -335,7 +336,6 @@ namespace UTILS
     Teuchos::RCP<LINALG::SparseMatrix> windkesselstiffness_;  ///< additional rectangular matrix
     bool havewindkessel_;  ///< are there Windkessel bcs at all?
     Teuchos::RCP<Windkessel> wk_std_;
-    Teuchos::RCP<Windkessel> wk_heartvalvearterial_;
     Teuchos::RCP<Windkessel> wk_heartvalvearterial_proxdist_;
     Teuchos::RCP<Windkessel> wk_heartvalvecardiovascular_full_;
     int myrank_;
