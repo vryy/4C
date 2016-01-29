@@ -87,15 +87,15 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                  tuple<std::string>(
                    "none",
                    "patopti",
-                   "patoptiacou",
-                   "patoptiacouident",
-                   "patsegm"),
+                   "patoptisplit",
+                   "patoptisplitacousplit",
+                   "patoptisplitacouident"),
                  tuple<int>(
                    pat_none,
                    pat_opti,
-                   pat_optiacou,
-                   pat_optiacouident,
-                   pat_segm),
+                   pat_optisplit,
+                   pat_optisplitacousplit,
+                   pat_optisplitacouident),
                  &acousticdyn);
 
 
@@ -110,6 +110,19 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                       inv_gd,
                                       inv_lbfgs),
                                     &acou_inv);
+  setStringToIntegralParameter<int>("REGULATYPE","none",
+                                    "types of regularization",
+                                    tuple<std::string>(
+                                      "none",
+                                      "tikh",
+                                      "tvd",
+                                      "tikhtvd"),
+                                    tuple<int>(
+                                      pat_regula_none,
+                                      pat_regula_tikh,
+                                      pat_regula_tvd,
+                                      pat_regula_tikhtvd),
+                                    &acou_inv);
 
   StringParameter("MONITORFILE","none.monitor","Filename of file containing measured pressure values",&acou_inv);
   BoolParameter("FDCHECK","No","Finite difference check",&acou_inv);
@@ -118,12 +131,18 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   IntParameter("INV_LS_MAX_RUN",10,"Maximal run number for line search in inverse pat analysis",&acou_inv);
   DoubleParameter("EPSILON",-1.0,"tolerated distance in which measured curve=nod curve",&acou_inv);
   StringParameter("ACOUPARAMLIST","none","list of std::string of acoustical parameters to be optimized",&acou_inv);
+  StringParameter("OPTIPARAMLIST","none","list of std::string of optical parameters to be optimized",&acou_inv);
   StringParameter("SEGMENTATIONMATS","none.material","Filename of file containing table of materials",&acou_inv);
   DoubleParameter("EQUALITYPENALTY",1.0,"penalty coefficient for the equality constraint for segmentation",&acou_inv);
   IntParameter("SEQUENZE",-1,"sequential optimization for penalty and the rest",&acou_inv);
   BoolParameter("GRADWEIGHTING","No","Weighting of gradient with reaction contribution",&acou_inv);
   BoolParameter("TIMEREVERSAL","No","Initial reaction guess with time reversal",&acou_inv);
+  BoolParameter("REDUCEDBASIS","No","Reduce basis according to absorption gradient and values",&acou_inv);
   BoolParameter("SAMPLEOBJECTIVE","No","Sample objective function for several parameters (need be implemented)",&acou_inv);
+  DoubleParameter("TIKHWEIGHT",1.0,"tikhonow weight",&acou_inv);
+  DoubleParameter("TVDWEIGHT",1.0,"tvd weight",&acou_inv);
+  DoubleParameter("TVDEPS",0.01,"tvd eps",&acou_inv);
+
 }
 
 

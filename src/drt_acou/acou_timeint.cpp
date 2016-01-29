@@ -628,10 +628,10 @@ void ACOU::AcouTimeInt::WriteRestart()
 
   discret_->SetState(1,"intvelnp",intvelnp);
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  Teuchos::RCP<const Epetra_Vector> matrix_state = discret_->GetState(1,"intvelnp");
+  output_->WriteVector("intvelnp",matrix_state);
   discret_->ClearState(true);
-
-  output_->WriteVector("intvelnp",intvelnp);
-
   return;
 } // WriteRestart
 

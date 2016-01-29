@@ -26,6 +26,10 @@ namespace ACOU
 {
   class PatImageReconstruction;
 }
+namespace DRT
+{
+  class Discretization;
+}
 
 namespace ACOU
 {
@@ -37,10 +41,10 @@ public:
   PATSearchDirection(INPAR::ACOU::OptimizationType opti);
 
   //! setup for lbfgs
-  void Setup(Teuchos::RCP<Epetra_Map> map, Teuchos::RCP<Epetra_Map> uniquemap, int numvecs);
+  void Setup(const Epetra_Map* map, const Epetra_Map* uniquemap);
 
   //! computation of direction
-  Teuchos::RCP<Epetra_MultiVector> ComputeDirection(Teuchos::RCP<Epetra_MultiVector> gradient, Teuchos::RCP<Epetra_MultiVector> params, int iter);
+  Teuchos::RCP<Epetra_Vector> ComputeDirection(Teuchos::RCP<Epetra_Vector> gradient, Teuchos::RCP<Epetra_Vector> params, int iter);
 
 private:
    //! maximum size of storage
@@ -48,9 +52,6 @@ private:
 
   //! current size of the storage
   int actsize_;
-
-  //! number of vectors in parameter vector
-  int numvecs_;
 
   //! storage of solution delta
   Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > sstore_;
@@ -65,10 +66,10 @@ private:
   Teuchos::RCP<Epetra_Map> uniquemap_;
 
   //! previous parameters
-  Teuchos::RCP<Epetra_MultiVector> oldparams_;
+  Teuchos::RCP<Epetra_Vector> oldparams_;
 
   //! previous gradient
-  Teuchos::RCP<Epetra_MultiVector> oldgradient_;
+  Teuchos::RCP<Epetra_Vector> oldgradient_;
 
   //! search direction type
   INPAR::ACOU::OptimizationType opti_;
@@ -81,7 +82,7 @@ public:
   PATLineSearch(Teuchos::RCP<PatImageReconstruction> imagereconstruction);
 
   //! initialization
-  void Init(double J0, Teuchos::RCP<Epetra_MultiVector> gradient, Teuchos::RCP<Epetra_MultiVector> direction, Teuchos::RCP<Epetra_MultiVector> state, Teuchos::RCP<Epetra_Map> uniquemap);
+  void Init(double J0, Teuchos::RCP<Epetra_Vector> gradient, Teuchos::RCP<Epetra_Vector> direction, Teuchos::RCP<Epetra_Vector> state, const Epetra_Map* uniquemap);
 
   //! run
   bool Run();
@@ -131,13 +132,13 @@ private:
   double normgradphi_i_;
 
   //! direction
-  Teuchos::RCP<Epetra_MultiVector> dir_;
+  Teuchos::RCP<Epetra_Vector> dir_;
 
   //! direction
-  Teuchos::RCP<Epetra_MultiVector> step_;
+  Teuchos::RCP<Epetra_Vector> step_;
 
   //! state
-  Teuchos::RCP<Epetra_MultiVector> state_;
+  Teuchos::RCP<Epetra_Vector> state_;
 
   //! unique map
   Teuchos::RCP<Epetra_Map> uniquemap_;
@@ -149,6 +150,42 @@ private:
   double Zoom(double alpha_lo, double alpha_hi, double J_alpha_lo, bool turn);
 
 }; // class PATLineSearch
+
+class PATRegula
+{
+public:
+
+  //! standard constructor
+  PATRegula(INPAR::ACOU::RegulaType regulatype, double tikhweight, double tvdweight, double tvdeps, Teuchos::RCP<DRT::Discretization> discret);
+
+  //! type
+  INPAR::ACOU::RegulaType type_;
+
+  //! tikhonov weight
+  double tikhweight_;
+
+  //! total variation weight
+  double tvdweight_;
+
+  //! epsilon
+  double tvdeps_;
+
+  //! evaluation of objective function
+  void Evaluate(Teuchos::RCP<Epetra_Vector> params, double* val);
+
+  //! evaluation of gradient
+  void EvaluateGradient(Teuchos::RCP<Epetra_Vector> params, Teuchos::RCP<Epetra_Vector> gradient);
+
+private:
+
+  //! matrix holding weights
+  Teuchos::RCP<Epetra_CrsMatrix> tvdmatrix_;
+
+  //! fill tvd matrix
+  void FillTvdMatrix();
+
+  Teuchos::RCP<DRT::Discretization> discret_;
+};
 
 }
 

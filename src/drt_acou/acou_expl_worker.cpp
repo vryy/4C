@@ -1084,7 +1084,7 @@ local_apply_boundary_face (const MatrixFree<dim,value_type> &,
         }
       }
       else if(int_boundary_id==3) // free boundary
-        lambda = VectorizedArray<value_type>();
+        lambda = 1./tau*normal_v_plus+p_plus; // VectorizedArray<value_type>();
       else if(int_boundary_id==4) // dbc from time reversal
       {
         if(source_adjoint_meas!=Teuchos::null)

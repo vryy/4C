@@ -55,6 +55,47 @@ void printacouinvlogo()
   return;
 }
 
+void redistributescatradis(Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<DRT::Discretization> acoudis)
+{
+  const Teuchos::ParameterList& acouparams = DRT::Problem::Instance()->AcousticParams();
+  bool meshconform = DRT::INPUT::IntegralValue<bool>(acouparams,"MESHCONFORM");
+  if(meshconform==false)
+    dserror("at the moment only implemented for conforming meshes.");
+
+  // redistribute scatra discretization, since it usually has way less dofs than acou and does not need as many processors
+  //if(DRT::INPUT::IntegralValue<bool>(acouparams,"REDISTRIBUTESCATRA"))
+  if(1)
+  {
+    std::vector<int> rownodeids;
+    std::vector<int> colnodeids;
+
+    int minacounodegid = acoudis->NodeRowMap()->MinAllGID();
+    int minscanodegid = scatradis->NodeRowMap()->MinAllGID();
+
+    for(int i=minscanodegid; i<minscanodegid+scatradis->NumGlobalNodes(); ++i)
+    {
+      // check who owns the acoustical node
+      int lidrownode = acoudis->NodeRowMap()->LID(i-minscanodegid+minacounodegid);
+      int lidcolnode = acoudis->NodeColMap()->LID(i-minscanodegid+minacounodegid);
+
+      if(lidrownode>=0)
+        rownodeids.push_back(i);
+      if(lidcolnode>=0)
+        colnodeids.push_back(i);
+    }
+
+    // create new maps
+    Teuchos::RCP<Epetra_Map> newnoderowmap = Teuchos::rcp(new Epetra_Map(scatradis->NumGlobalNodes(),rownodeids.size(),&rownodeids[0],0,acoudis->Comm()));
+    Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,colnodeids.size(),&colnodeids[0],0,acoudis->Comm()));
+
+    // redistribute
+    scatradis->Redistribute(*newnoderowmap,*newnodecolmap,true,true,true,true,true);
+    std::cout<<"warning: this function is not tested for empty processors or processors which accidently only get one or two elements, test it and implement something better"<<std::endl;
+  }
+
+  return;
+}
+
 void acoustics_drt()
 {
   // get input lists
@@ -188,6 +229,7 @@ void acoustics_drt()
 
       // access the scatra discretization
       Teuchos::RCP<DRT::Discretization> scatradis = DRT::Problem::Instance()->GetDis("scatra");
+      redistributescatradis(scatradis,acoudishdg);
       scatradis->FillComplete();
 
       if(scatradis->NumGlobalElements()==0)
@@ -313,16 +355,16 @@ void acoustics_drt()
       dserror("you should not be here");
     break;
     case INPAR::ACOU::pat_opti:
-      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOpti(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
+      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstruction(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
     break;
-    case INPAR::ACOU::pat_optiacou:
-      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiAcou(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
+    case INPAR::ACOU::pat_optisplit:
+      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplit(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
     break;
-    case INPAR::ACOU::pat_optiacouident:
-      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiAcouIdent(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
+    case INPAR::ACOU::pat_optisplitacousplit:
+      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplitAcouSplit(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
     break;
-    case INPAR::ACOU::pat_segm:
-      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionSegmentation(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
+    case INPAR::ACOU::pat_optisplitacouident:
+      myinverseproblem = Teuchos::rcp(new ACOU::PatImageReconstructionOptiSplitAcouIdent(scatradis,acoudishdg,scatraparams,params,scatrasolver,solver,scatraoutput,output));
     break;
     default:
       dserror("other pat types not listed");

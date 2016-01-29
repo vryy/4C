@@ -47,10 +47,10 @@ namespace INPAR
     enum InvAnalysisType
     {
       pat_none,       // no inverse analysis
-      pat_opti,       // photoacoustic inverse analysis for optical parameters
-      pat_optiacou,   // photoacoustic inverse analysis for optical and acoustical parameters
-      pat_optiacouident, // use optical parameters to identify acoustical ones (what julia fischer did in her master's thesis)
-      pat_segm        // photoacoustic inverse analysis with segmentation
+      pat_opti,       // only for absorption
+      pat_optisplit,  // for absorption and diffusion
+      pat_optisplitacousplit, // for absorption diffusion, sos and density
+      pat_optisplitacouident // use optical parameters to identify acoustical ones (what julia fischer did in her master's thesis)
     };
 
     /// Type of Algorithm
@@ -59,6 +59,16 @@ namespace INPAR
       inv_lbfgs,        // limited memory BFGS
       inv_gd            // gradient descent
     };
+
+    /// Type of Regularization
+    enum RegulaType
+    {
+      pat_regula_none,
+      pat_regula_tikh,        // tikhonov
+      pat_regula_tvd,         // total variation
+      pat_regula_tikhtvd      // both
+    };
+
 
     /// Defines all valid parameters for acou problem
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);

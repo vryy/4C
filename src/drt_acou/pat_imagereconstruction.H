@@ -22,17 +22,18 @@ Maintainer: Svenja Schoeder
 #include "../drt_inpar/inpar_acou.H"
 #include "../drt_lib/drt_dserror.H"
 
+
 //{ forward declarations
 namespace DRT
 {
   class Discretization;
   class DiscretizationHDG;
   class ResultTest;
+  class Element;
 }
 namespace ACOU
 {
   class AcouTimeInt;
-  class PatMatParManager;
 }
 namespace SCATRA
 {
@@ -47,11 +48,6 @@ namespace IO
 {
   class DiscretizationWriter;
 }
-namespace INVANA
-{
-  class MatParManager;
-  class RegularizationBase;
-}
 //} forward declarations
 
 namespace ACOU
@@ -59,6 +55,7 @@ namespace ACOU
 
 class PATSearchDirection;
 class PATLineSearch;
+class PATRegula;
 
 class PatImageReconstruction
 {
@@ -83,14 +80,14 @@ public:
   //! iterative optimization loop
   virtual void Optimize();
 
-  //! first solve with given material parameters
-  virtual void SampleObjectiveFunction();
+  //! sample objective function
+  virtual void SampleObjectiveFunction() { dserror("not implemented for base class"); }
 
   //! first solve with given material parameters
   virtual void InitialRun();
 
   //! read restart from given iteration
-  virtual void ReadRestart(int restartiteration) = 0;
+  virtual void ReadRestart(int restartiteration) { return; }
 
   //! create test field
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
@@ -102,7 +99,10 @@ public:
   const Teuchos::RCP<Epetra_MultiVector> ElementMatVec();
 
   //! replace parameters
-  virtual void ReplaceParams(Teuchos::RCP<Epetra_MultiVector> params) = 0;
+  virtual void ReplaceParams(Teuchos::RCP<Epetra_Vector> params);
+
+  //! finite difference gradient check
+  virtual void FDCheck();
 
 protected:
 
@@ -148,6 +148,9 @@ protected:
   //@}
 
   //@{ general
+  //! vector holding the mat ids
+  std::vector<int> opti_matids_;
+
   //! output name given in command line
   std::string name_;
 
@@ -177,6 +180,12 @@ protected:
 
   //! time reversal as initial guess
   bool timereversal_;
+
+  //! reduce basis for parameter update according to absorption gradient or values respectively.
+  bool reducedbasis_;
+
+  //! fdcheck
+  bool fdcheck_;
 
   //! the objective function value
   double J_;
@@ -218,14 +227,21 @@ protected:
   //@}
 
   //@{ helper classes
-  //! class to calculate directions
-  Teuchos::RCP<PATSearchDirection> searchdirection_;
-
-  //! line search class
+  //! line search
   Teuchos::RCP<PATLineSearch> linesearch_;
 
-  //! material handling for scatra parameters
-  Teuchos::RCP<INVANA::MatParManager> scatra_matman_;
+  //! material handling for acoustic parameters
+  Teuchos::RCP<Epetra_Vector> reac_vals_;
+
+  //! gradient of the objective function with respect to acoustic parameters
+  Teuchos::RCP<Epetra_Vector> reac_objgrad_;
+
+  //! class to calculate directions (needs an additional one for the different parameter layouts)
+  Teuchos::RCP<PATSearchDirection> reac_searchdirection_;
+
+  //! regularization for reaction
+  Teuchos::RCP<PATRegula> reac_regula_;
+
   //@}
 
   //@{ read of monitored values and helper functions
@@ -264,19 +280,19 @@ protected:
   void UpdateAbsorptionCoefficientFromTimeReversal();
 
   //! calculate the value of the objective function
-  virtual double EvalulateObjectiveFunction() = 0;
+  virtual double EvalulateObjectiveFunction();
 
   //! calculate the value of the error in the objective function
   void EvaluateError();
 
   //! build the gradient
-  virtual void EvaluateGradient() = 0;
+  virtual void EvaluateGradient();
 
   //! calculate the norm of the dot product of the gradient and a given direction
-  virtual void CalculateGradDirNorm(const Epetra_MultiVector& bvector, const Epetra_Map& uniquemap, double* result) = 0;
+  virtual void CalculateGradDirNorm(const Epetra_Vector& bvector, const Epetra_Map& uniquemap, double* result);
 
   //! perform one iteration
-  virtual bool PerformIteration() = 0;
+  virtual bool PerformIteration();
 
   //! output of optical material parameters
   virtual void OutputReactionAndDiffusion();
@@ -290,16 +306,22 @@ protected:
   //! output statistics
   void OutputStats();
 
-  //! return sequenze
-  virtual int GetSequenze() {return -1;}
+  //! evaluate absorption coefficient
+  void EvaluateReacGrad();
+
+  //! build basis patches
+  void CheckNeighborsReacGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
+
+  //! calculation of error in parameter field for analytic examples
+  virtual void ComputeParameterError() { std::cout<<"here could be a parameter error calculation"<<std::endl; return; }
 };
 
-class PatImageReconstructionOpti : public PatImageReconstruction
+class PatImageReconstructionOptiSplit : public PatImageReconstruction
 {
 public:
 
   //! standard constructor
-  PatImageReconstructionOpti(
+  PatImageReconstructionOptiSplit(
     Teuchos::RCP<DRT::Discretization>      scatradis,
     Teuchos::RCP<DRT::DiscretizationHDG>   acoudis,
     Teuchos::RCP<Teuchos::ParameterList>   scatrapara,
@@ -310,21 +332,33 @@ public:
     Teuchos::RCP<IO::DiscretizationWriter> acouout);
 
   //! standard destructor
-  virtual ~PatImageReconstructionOpti() {}
+  virtual ~PatImageReconstructionOptiSplit() {}
 
   //! read restart from given iteration
   virtual void ReadRestart(int restartiteration) {return;}
 
   //! replace parameters
-  virtual void ReplaceParams(Teuchos::RCP<Epetra_MultiVector> params);
+  virtual void ReplaceParams(Teuchos::RCP<Epetra_Vector> params);
+
+  //! finite difference gradient check
+  virtual void FDCheck();
 
 protected:
 
-  //! regularization for scatra parameters
-  Teuchos::RCP<INVANA::RegularizationBase> scatra_regman_;
+  //! number of iterations for sequential optimization
+  int sequenzeiter_;
 
-  //! gradient of the objective function with respect to scatra parameters
-  Teuchos::RCP<Epetra_MultiVector> scatra_objgrad_;
+  //! material handling for acoustic parameters
+  Teuchos::RCP<Epetra_Vector> diff_vals_;
+
+  //! gradient of the objective function with respect to acoustic parameters
+  Teuchos::RCP<Epetra_Vector> diff_objgrad_;
+
+  //! class to calculate directions (needs an additional one for the different parameter layouts)
+  Teuchos::RCP<PATSearchDirection> diff_searchdirection_;
+
+  //! regularization for diffusion
+  Teuchos::RCP<PATRegula> diff_regula_;
 
   //! build the gradient
   virtual void EvaluateGradient();
@@ -333,20 +367,33 @@ protected:
   virtual double EvalulateObjectiveFunction();
 
   //! calculate the norm of the dot product of the gradient and a given direction
-  virtual void CalculateGradDirNorm(const Epetra_MultiVector& bvector, const Epetra_Map& uniquemap, double* result);
-
-private:
+  virtual void CalculateGradDirNorm(const Epetra_Vector& bvector, const Epetra_Map& uniquemap, double* result);
 
   //! perform one iteration
   virtual bool PerformIteration();
+
+  //! evaluate diffusion coefficient gradient
+  Teuchos::RCP<Epetra_Vector> EvaluateDiffGrad();
+
+  //! build basis patches
+  void CheckNeighborsDiffGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
+
+  //! indicator if reaction or diffusion or speed of sound or density is optimized
+  int reacordifforcorrho_;
+
+  //! calculation of error in parameter field for analytic examples
+  virtual void ComputeParameterError() { std::cout<<"here could be a parameter error evaluation"<<std::endl; return; }
+
+private:
+
 };
 
-class PatImageReconstructionOptiAcou : public PatImageReconstructionOpti
+class PatImageReconstructionOptiSplitAcouSplit : public PatImageReconstructionOptiSplit
 {
 public:
 
   //! standard constructor
-  PatImageReconstructionOptiAcou(
+  PatImageReconstructionOptiSplitAcouSplit(
     Teuchos::RCP<DRT::Discretization>      scatradis,
     Teuchos::RCP<DRT::DiscretizationHDG>   acoudis,
     Teuchos::RCP<Teuchos::ParameterList>   scatrapara,
@@ -357,53 +404,84 @@ public:
     Teuchos::RCP<IO::DiscretizationWriter> acouout);
 
   //! standard destructor
-  virtual ~PatImageReconstructionOptiAcou() {}
+  virtual ~PatImageReconstructionOptiSplitAcouSplit() {}
 
   //! read restart from given iteration
   virtual void ReadRestart(int restartiteration) {return;}
 
   //! replace parameters
-  virtual void ReplaceParams(Teuchos::RCP<Epetra_MultiVector> params);
+  virtual void ReplaceParams(Teuchos::RCP<Epetra_Vector> params);
 
-  //! first solve with given material parameters
+  //! sample objective function
   virtual void SampleObjectiveFunction();
 
-private:
+  //! finite difference gradient check
+  virtual void FDCheck();
+
+protected:
+
+  //! vector indicating if element is optimized or not
+  Teuchos::RCP<Epetra_Vector> opt_ind_;
 
   //! material handling for acoustic parameters
-  Teuchos::RCP<INVANA::MatParManager> acou_matman_;
-
-  //! regularization for acoustic parameters
-  Teuchos::RCP<INVANA::RegularizationBase> acou_regman_;
+  Teuchos::RCP<Epetra_Vector> c_vals_;
 
   //! gradient of the objective function with respect to acoustic parameters
-  Teuchos::RCP<Epetra_MultiVector> acou_objgrad_;
+  Teuchos::RCP<Epetra_Vector> c_objgrad_;
 
   //! class to calculate directions (needs an additional one for the different parameter layouts)
-  Teuchos::RCP<PATSearchDirection> acou_searchdirection_;
+  Teuchos::RCP<PATSearchDirection> c_searchdirection_;
 
-  //! indicator if acoustic or optic material is optimized (true for acou)
-  bool optoracou_;
+  //! regularization for c
+  Teuchos::RCP<PATRegula> c_regula_;
 
-  //! calculate the value of the objective function
-  virtual double EvalulateObjectiveFunction();
+  //! material handling for acoustic parameters
+  Teuchos::RCP<Epetra_Vector> rho_vals_;
+
+  //! gradient of the objective function with respect to acoustic parameters
+  Teuchos::RCP<Epetra_Vector> rho_objgrad_;
+
+  //! class to calculate directions (needs an additional one for the different parameter layouts)
+  Teuchos::RCP<PATSearchDirection> rho_searchdirection_;
+
+  //! regularization for density
+  Teuchos::RCP<PATRegula> rho_regula_;
+
+  //! vector holding the mat ids
+  std::vector<int> acou_matids_;
 
   //! build the gradient
   virtual void EvaluateGradient();
 
+  //! calculate the value of the objective function
+  virtual double EvalulateObjectiveFunction();
+
+  //! calculate the norm of the dot product of the gradient and a given direction
+  virtual void CalculateGradDirNorm(const Epetra_Vector& bvector, const Epetra_Map& uniquemap, double* result);
+
+  //! build basis patches
+  void CheckNeighborsAcouGrads(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
+
+  //! calculation of error in parameter field for analytic examples
+  virtual void ComputeParameterError();
+
+private:
+
   //! perform one iteration
   virtual bool PerformIteration();
 
-  //! calculate the norm of the dot product of the gradient and a given direction
-  virtual void CalculateGradDirNorm(const Epetra_MultiVector& bvector, const Epetra_Map& uniquemap, double* result);
+  //! evaluate c gradient and rho gradient
+  void EvaluateCGrad();
+  void EvaluateRhoGrad();
+
 };
 
-class PatImageReconstructionOptiAcouIdent : public PatImageReconstructionOpti
+class PatImageReconstructionOptiSplitAcouIdent : public PatImageReconstructionOptiSplit
 {
 public:
 
   //! standard constructor
-  PatImageReconstructionOptiAcouIdent(
+  PatImageReconstructionOptiSplitAcouIdent(
     Teuchos::RCP<DRT::Discretization>      scatradis,
     Teuchos::RCP<DRT::DiscretizationHDG>   acoudis,
     Teuchos::RCP<Teuchos::ParameterList>   scatrapara,
@@ -414,7 +492,10 @@ public:
     Teuchos::RCP<IO::DiscretizationWriter> acouout);
 
   //! standard destructor
-  virtual ~PatImageReconstructionOptiAcouIdent() {}
+  virtual ~PatImageReconstructionOptiSplitAcouIdent() {}
+
+  //! replace parameters
+  virtual void ReplaceParams(Teuchos::RCP<Epetra_Vector> params);
 
 private:
 
@@ -428,7 +509,13 @@ private:
   int sequenzeiter_;
 
   //! material handling for acoustic parameters
-  Teuchos::RCP<INVANA::MatParManager> acou_matman_;
+  Teuchos::RCP<Epetra_Vector> c_vals_;
+
+  //! material handling for acoustic parameters
+  Teuchos::RCP<Epetra_Vector> rho_vals_;
+
+  //! vector holding the mat ids
+  std::vector<int> acou_matids_;
 
   //! perform one iteration
   virtual bool PerformIteration();
@@ -438,109 +525,9 @@ private:
 
   //! read of predefined materials
   void ReadMaterials(std::string materialfilename);
-};
 
-class PatImageReconstructionSegmentation : public PatImageReconstruction
-{
-public:
-
-  //! standard constructor
-  PatImageReconstructionSegmentation(
-    Teuchos::RCP<DRT::Discretization>      scatradis,
-    Teuchos::RCP<DRT::DiscretizationHDG>   acoudis,
-    Teuchos::RCP<Teuchos::ParameterList>   scatrapara,
-    Teuchos::RCP<Teuchos::ParameterList>   acoupara,
-    Teuchos::RCP<LINALG::Solver>           scatrasolv,
-    Teuchos::RCP<LINALG::Solver>           acousolv,
-    Teuchos::RCP<IO::DiscretizationWriter> scatraout,
-    Teuchos::RCP<IO::DiscretizationWriter> acouout);
-
-  //! standard destructor
-  virtual ~PatImageReconstructionSegmentation() {}
-
-  //! read restart from given iteration
-  virtual void ReadRestart(int restartiteration) {return;}
-
-  //! replace parameters
-  virtual void ReplaceParams(Teuchos::RCP<Epetra_MultiVector> params);
-
-  //! first solve with given material parameters
-  virtual void InitialRun();
-
-private:
-
-  //! number of materials
-  unsigned int nummats_;
-
-  // table holding the material values
-  std::vector<std::vector<double> > materialtable_;
-
-  //! penalty parameter
-  double penaltyparam_;
-
-  //! regularization for scatra parameters
-  Teuchos::RCP<INVANA::RegularizationBase> scatra_regman_;
-
-  //! material handling for acoustic parameters
-  Teuchos::RCP<INVANA::MatParManager> acou_matman_;
-
-  //! dummy material handler for concentrations
-  Teuchos::RCP<INVANA::MatParManager> k_dummy_matman_;
-
-  //! regularization for acoustic parameters
-  Teuchos::RCP<INVANA::RegularizationBase> acou_regman_;
-
-  //! regularization for acoustic parameters
-  Teuchos::RCP<INVANA::RegularizationBase> k_regman_;
-
-  //! vector holding the concentration values
-  Teuchos::RCP<Epetra_MultiVector> k_;
-
-  //! gradient of the objective function with respect to the concentrations
-  Teuchos::RCP<Epetra_MultiVector> k_objgrad_;
-
-  //! penalty contribution to objective function
-  double penalty_;
-
-  //! regularization contribution to objective function
-  double regularization_;
-
-  //! weighting of the gradient
-  bool gradweight_;
-
-  //! number of iterations for sequential optimization
-  int sequenzeiter_;
-
-  //! sequenze (what is updated)
-  int sequenze_;
-
-  //! calculate the value of the objective function
-  virtual double EvalulateObjectiveFunction();
-
-  //! build the gradient
-  virtual void EvaluateGradient();
-
-  //! read of predefined materials
-  void ReadMaterials(std::string materialfilename);
-
-  //! initialization of concentrations
-  void InitConcentrations();
-
-  //! perform one iteration
-  virtual bool PerformIteration();
-
-  //! calculate the norm of the dot product of the gradient and a given direction
-  virtual void CalculateGradDirNorm(const Epetra_MultiVector& bvector, const Epetra_Map& uniquemap, double* result);
-
-  //! overwrite output to write concentrations
-  virtual void OutputReactionAndDiffusion();
-
-  //! return sequenze
-  virtual int GetSequenze() {return sequenze_;}
-
-  //! equality
-  void EqualityCompensation();
-
+  //! calculation of error in parameter field for analytic examples
+  virtual void ComputeParameterError();
 };
 
 } // namespace ACOU

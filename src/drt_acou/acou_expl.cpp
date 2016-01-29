@@ -1029,7 +1029,8 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Te
 
   // write baci output
   write_deal_cell_values();
-  bacitimeint->Output(history,splitter);
+  if(!adjoint)
+    bacitimeint->Output(history,splitter);
 
   return;
 }
