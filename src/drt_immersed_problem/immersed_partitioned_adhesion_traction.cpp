@@ -41,6 +41,9 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
   // create instance of poroelast subproblem
   poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
 
+  // set pointer to poro fpsi structure
+  porostructure_ = poroscatra_subproblem_->PoroField()->StructureField();
+
   // important variables for parallel simulations
   myrank_  = comm.MyPID();
   numproc_ = comm.NumProc();
@@ -63,13 +66,6 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
   else if (!displacementcoupling_ and myrank_==0)
     std::cout<<" Coupling variable for partitioned Cell-ECM Adhesion Dynamics scheme :  Force "<<std::endl;
 
-  // get pointer to cell structure
-  cellstructure_=params.get<Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> >("RCPToCellStructure");
-  // create instance of poroelast subproblem
-  poroscatra_subproblem_ = params.get<Teuchos::RCP<POROELAST::PoroScatraBase> >("RCPToPoroScatra");
-  // set pointer to poro fpsi structure
-  porostructure_ = poroscatra_subproblem_->PoroField()->StructureField();
-
   // vector of adhesion forces in ecm
   ecm_adhesion_forces_ = Teuchos::rcp(new Epetra_Vector(*(poroscatra_subproblem_->StructureField()->DofRowMap()),true));
   cell_adhesion_disp_ = Teuchos::rcp(new Epetra_Vector(*(cellstructure_->DofRowMap()),true));
@@ -78,9 +74,6 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
   // set pointer to adhesion force vector in immersed exchange manager
   exchange_manager_->SetPointerECMAdhesionForce(ecm_adhesion_forces_);
   //curr_subset_of_backgrounddis_=exchange_manager_->GetPointerToCurrentSubsetOfBackgrdDis(); todo build in global control algo and hand pointer into ParameterList
-
-  // get pointer to cell search tree from ParameterList
-  cell_SearchTree_ = params.get<Teuchos::RCP<GEO::SearchTree> >("RCPToCellSearchTree");
 
   // PSEUDO2D switch
   isPseudo2D_ = DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"PSEUDO2D");
@@ -599,9 +592,11 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::ApplyAdhesionDisplacements()
       // write displacmement into global vector
       for(int dof=0;dof<(3-isPseudo2D_);dof++)
       {
-        int error = cell_adhesion_disp_->SumIntoGlobalValue(dofs[dof],0,0,adhesiondisp(dof));
+        // get lid of current gid in 'dofs'
+        int lid = immerseddis_->DofRowMap()->LID(dofs[dof]);
+        int error = cell_adhesion_disp_->SumIntoMyValue(lid,0,adhesiondisp(dof));
         if(error != 0)
-          dserror("SumIntoGlobalValue returned err=%d",error);
+          dserror("SumIntoMyValue returned err=%d",error);
       }
 
     } // do for all elements in map adh_nod_param_coords_in_backgrd_ele_
@@ -631,6 +626,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::ReadRestart(int step)
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedAdhesionTraction::PrepareOutput()
 {
+  cellstructure_->PrepareOutput();
   poroscatra_subproblem_->PrepareOutput();
   return;
 }
