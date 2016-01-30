@@ -60,15 +60,11 @@ NORMCOMBI_RESFDISP              And
 TOLDISP                         1.0E-08
 TOLRES                          1.0E-08
 MAXITER                         50
-TIMESTEP                        0.5
-RESULTSEVRY                     1
-RESTARTEVRY                     2
 NLNSOL                          fullnewton
 DAMPING                         No
 ------------------------CELL DYNAMIC/STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
 ----------------------------------------------------IMMERSED METHOD
-COUPALGO                        iter_stagg_AITKEN_rel_param
 COUPALGO                        partitioned
 SCHEME                          dirichletneumann
 PROJECTION                      shapefunctions
