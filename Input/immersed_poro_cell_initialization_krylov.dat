@@ -52,9 +52,6 @@ PENALTY_START                   250.0
 ECM_FIBER_RADIUS                3.5
 -------------------------------------CELL DYNAMIC/STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
-TIMESTEP                        0.5
-NUMSTEP                         7
-MAXTIME                         7.0
 TOLDISP                         1e-06
 NORM_DISP                       Abs
 TOLRES                          1e-06
