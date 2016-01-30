@@ -85,7 +85,7 @@ void ADAPTER::LubricationBaseAlgorithm::Setup(
   // restart
   lubricationtimeparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
   // solution output
-  lubricationtimeparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
+  lubricationtimeparams->set           ("RESULTSEVRY"       ,prbdyn.get<int>("RESULTSEVRY"));
 
   // -------------------------------------------------------------------
   // list for extra parameters

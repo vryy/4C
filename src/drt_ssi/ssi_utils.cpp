@@ -1,5 +1,5 @@
 /*!------------------------------------------------------------------------------------------------*
- \file ssi_utils.H
+ \file ssi_utils.cpp
 
  <pre>
    Maintainer: Julia Hoermann
@@ -80,13 +80,13 @@ void SSI::Utils::ChangeTimeParameter(const Epetra_Comm& comm,
     sdyn.set<int>      ("NUMSTEP"     ,ssiparams.get<int>("NUMSTEP"));
   }
 
-  // Check correct input of restart. Code relies that both time value RESTARTEVRYTIME and UPRESTIME are
+  // Check correct input of restart. Code relies that both time value RESTARTEVRYTIME and RESULTSEVRYTIME are
   // given if restart from time is applied
   double restarttime = ssiparams.get<double>("RESTARTEVRYTIME");
-  double updatetime  = ssiparams.get<double>("UPRESTIME");
+  double updatetime  = ssiparams.get<double>("RESULTSEVRYTIME");
   if ((updatetime > 0.0) or (restarttime > 0.0))
     if (!(updatetime > 0.0) and !(restarttime > 0.0))
-      dserror("If time controlled output and restart is desired, both parameters RESTARTEVRYTIME and UPRESTIME has to be set");
+      dserror("If time controlled output and restart is desired, both parameters RESTARTEVRYTIME and RESULTSEVRYTIME has to be set");
 
   // set restart params
   int scatrarestart;
@@ -116,7 +116,7 @@ void SSI::Utils::ChangeTimeParameter(const Epetra_Comm& comm,
   }
   else
   {
-    int update       = ssiparams.get<int>("UPRES");
+    int update       = ssiparams.get<int>("RESULTSEVRY");
     scatraupres      = update;
     structureupres   = update;
   }
@@ -125,7 +125,7 @@ void SSI::Utils::ChangeTimeParameter(const Epetra_Comm& comm,
   scatradyn.set<int> ("RESTARTEVRY" ,scatrarestart);
   sdyn.set<int>      ("RESTARTEVRY" ,structurerestart);
   // solution output
-  scatradyn.set<int> ("UPRES"       ,scatraupres);
+  scatradyn.set<int> ("RESULTSEVRY"       ,scatraupres);
   sdyn.set<int>      ("RESULTSEVRY" ,structureupres);
 
   if (comm.MyPID() == 0)
@@ -134,7 +134,7 @@ void SSI::Utils::ChangeTimeParameter(const Epetra_Comm& comm,
         << "====================== Overview of chosen time stepping: ==============================\n"
         << "\t Timestep scatra:           "<< scatradyn.get<double>("TIMESTEP") << "\n"
         << "\t Timestep structure:        "<< sdyn.get<double>("TIMESTEP") << "\n"
-        << "\t Result step scatra:        "<< scatradyn.get<int>("UPRES") << "\n"
+        << "\t Result step scatra:        "<< scatradyn.get<int>("RESULTSEVRY") << "\n"
         << "\t Result step structure:     "<< sdyn.get<int>("RESULTSEVRY") << "\n"
         << "\t Restart step scatra:       "<< scatradyn.get<int>("RESTARTEVRY") << "\n"
         << "\t Restart step structure:    "<< sdyn.get<int>("RESTARTEVRY") << "\n"

@@ -39,7 +39,7 @@ Maintainer: Alexander Popp
 /* Constructor */
 STR::TimAda::TimAda
 (
-  const Teuchos::ParameterList& sdyn, //!< TIS input parameters
+  const Teuchos::ParameterList& timeparams, //!< TIS input parameters
   const Teuchos::ParameterList& tap, //!< adaptive input flags
   Teuchos::RCP<TimInt> tis //!< marching time integrator
 )
@@ -50,11 +50,11 @@ STR::TimAda::TimAda
   output_(tis->DiscWriter()),
   //
   timeinitial_(0.0),
-  timefinal_(sdyn.get<double>("MAXTIME")),
+  timefinal_(timeparams.get<double>("MAXTIME")),
   timedirect_(Sign(timefinal_-timeinitial_)),
   timestepinitial_(0),
-  timestepfinal_(sdyn.get<int>("NUMSTEP")),
-  stepsizeinitial_(sdyn.get<double>("TIMESTEP")),
+  timestepfinal_(timeparams.get<int>("NUMSTEP")),
+  stepsizeinitial_(timeparams.get<double>("TIMESTEP")),
   //
   stepsizemax_(tap.get<double>("STEPSIZEMAX")),
   stepsizemin_(tap.get<double>("STEPSIZEMIN")),
@@ -70,7 +70,7 @@ STR::TimAda::TimAda
   time_(timeinitial_),
   timestep_(0),
   stepsizepre_(stepsizeinitial_),
-  stepsize_(sdyn.get<double>("TIMESTEP")),
+  stepsize_(timeparams.get<double>("TIMESTEP")),
   locerrdisn_(Teuchos::null),
   adaptstep_(0),
   //

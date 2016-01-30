@@ -124,17 +124,7 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
   adyn->set<double>("MAXTIME", prbdyn.get<double>("MAXTIME"));
   adyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
   adyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
-
-  if (probtype == prb_ale or probtype == prb_struct_ale
-      or probtype == prb_structure or probtype == prb_redairways_tissue
-      or probtype == prb_particle or probtype == prb_crack
-      or probtype == prb_statmech
-  // uq for now means either airway or structures hence
-      or probtype == prb_uq) {
-    adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
-  } else {
-    adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
-  }
+  adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
 
   if (probtype == prb_fpsi or
       probtype == prb_fpsi_xfem) {

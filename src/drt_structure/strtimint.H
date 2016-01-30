@@ -159,6 +159,7 @@ namespace STR
     //! Constructor
     TimInt
     (
+      const Teuchos::ParameterList& timeparams,
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags

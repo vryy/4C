@@ -35,7 +35,7 @@ void INPAR::LEVELSET::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   IntParameter("NUMSTEP",24,"Total number of time steps",&levelsetcontrol);
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&levelsetcontrol);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&levelsetcontrol);
-  IntParameter("UPRES",1,"Increment for writing solution",&levelsetcontrol);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&levelsetcontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&levelsetcontrol);
 
   setStringToIntegralParameter<int>("CALCERROR","No",

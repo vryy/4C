@@ -38,7 +38,7 @@ void INPAR::COMBUST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   IntParameter("ITEMAX",1,"Total number of FG iterations",&combustcontrol);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&combustcontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&combustcontrol);
-  IntParameter("UPRES",1,"Increment for writing solution",&combustcontrol);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&combustcontrol);
 
   //Redistribution parameter, redistributes according to "expensive" XFEM elements to processors.
   // Currently out of use!

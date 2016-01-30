@@ -106,7 +106,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   //Restart
   airwaystimeparams.set                  ("write restart every"       ,rawdyn.get<int>("RESTARTEVRY"));
   //Solution output
-  airwaystimeparams.set                  ("write solution every"      ,rawdyn.get<int>("UPRES"));
+  airwaystimeparams.set                  ("write solution every"      ,rawdyn.get<int>("RESULTSEVRY"));
 
   //Solver type
   airwaystimeparams.set                  ("solver type"             ,rawdyn.get<std::string>("SOLVERTYPE"));

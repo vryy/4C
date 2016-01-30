@@ -494,19 +494,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(
   // overrule certain parameters
   sdyn_->set<int>("NUMSTEP", prbdyn_->get<int>("NUMSTEP"));
   sdyn_->set<int>("RESTARTEVRY", prbdyn_->get<int>("RESTARTEVRY"));
-  const int* step1 = prbdyn_->getPtr<int>("RESULTSEVRY");
-  if(step1 != NULL)
-  {
-    sdyn_->set<int>("RESULTSEVRY",*step1);
-  }
-  else
-  {
-    const int* step2 = prbdyn_->getPtr<int>("UPRES");
-    if(step2 != NULL)
-      sdyn_->set<int>("RESULTSEVRY", *step2);
-    else
-      dserror("missing input parameter RESULTSEVRY or UPRES");
-  }
+  sdyn_->set<int>("RESULTSEVRY", prbdyn_->get<int>("RESULTSEVRY"));
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the .dat file
   if (DRT::INPUT::IntegralValue<INPAR::STR::DampKind>(*sdyn_,"DAMPING") == INPAR::STR::damp_rayleigh)

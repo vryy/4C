@@ -287,6 +287,17 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--IMMERSED METHOD", *list);
   reader.ReadGidSection("--IMMERSED METHOD/PARTITIONED SOLVER", *list);
   reader.ReadGidSection("--CELL DYNAMIC", *list);
+  reader.ReadGidSection("--CELL DYNAMIC/STRUCTURAL DYNAMIC", *list);
+  reader.ReadGidSection("--CELL DYNAMIC/STRUCTURAL DYNAMIC/ONESTEPTHETA", *list);
+  reader.ReadGidSection("--CELL DYNAMIC/STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);
+  reader.ReadGidSection("--CELL DYNAMIC/SCALAR TRANSPORT", *list);
+  reader.ReadGidSection("--CELL DYNAMIC/SCALAR TRANSPORT/NONLINEAR", *list);
+  reader.ReadGidSection("--CELL DYNAMIC/SCALAR TRANSPORT/STABILIZATION", *list);
+  reader.ReadGidSection("--CELL DYNAMIC/PROTEOLYSIS MODULE", *list);
+  reader.ReadGidSection("--CELL DYNAMIC/CONFINEMENT MODULE", *list);
+  reader.ReadGidSection("--CELL DYNAMIC/ADHESION MODULE", *list);
+  reader.ReadGidSection("--CELL DYNAMIC/PROTRUSION MODULE", *list);
+  reader.ReadGidSection("--CELL DYNAMIC/FLOW INTERACTION MODULE", *list);
   reader.ReadGidSection("--FPSI DYNAMIC", *list);
   reader.ReadGidSection("--ARTERIAL DYNAMIC", *list);
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS DYNAMIC", *list);

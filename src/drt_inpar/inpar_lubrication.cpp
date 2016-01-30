@@ -32,7 +32,7 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&lubricationdyn);
   IntParameter("NUMSTEP",20,"Total number of time steps",&lubricationdyn);
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&lubricationdyn);
-  IntParameter("UPRES",1,"Increment for writing solution",&lubricationdyn);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&lubricationdyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&lubricationdyn);
 
   setStringToIntegralParameter<int>("CALCERROR","No",

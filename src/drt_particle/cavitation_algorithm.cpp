@@ -273,7 +273,7 @@ void CAVITATION::Algorithm::InitCavitation()
   adaptedcavitationdyn->set<double>("TIMESTEP", bubbletimestep);
   adaptedcavitationdyn->set<int>("NUMSTEP", timestepsizeratio_ * cavitationdyn.get<int>("NUMSTEP"));
   adaptedcavitationdyn->set<int>("RESTARTEVRY", 1000000000);  // very large number as restart is enforced for particles
-  adaptedcavitationdyn->set<int>("UPRES", timestepsizeratio_ * cavitationdyn.get<int>("UPRES"));
+  adaptedcavitationdyn->set<int>("RESULTSEVRY", timestepsizeratio_ * cavitationdyn.get<int>("RESULTSEVRY"));
 
   // create particle time integrator
   Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =

@@ -36,7 +36,7 @@ void INPAR::CAVITATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&cavitationdyn);
   IntParameter("NUMSTEP",20,"Total number of time steps",&cavitationdyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&cavitationdyn);
-  IntParameter("UPRES",1,"Increment for writing solution",&cavitationdyn);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&cavitationdyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&cavitationdyn);
   IntParameter("RESTARTSTEP_PARTICLES",-1,"Step for restarting particles in cavitation problem",&cavitationdyn);
 

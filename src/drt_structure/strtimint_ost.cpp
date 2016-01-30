@@ -39,6 +39,7 @@ void STR::TimIntOneStepTheta::VerifyCoeff()
 /* constructor */
 STR::TimIntOneStepTheta::TimIntOneStepTheta
 (
+  const Teuchos::ParameterList& timeparams,
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
   const Teuchos::ParameterList& xparams,
@@ -49,6 +50,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
 )
 : TimIntImpl
   (
+    timeparams,
     ioparams,
     sdynparams,
     xparams,

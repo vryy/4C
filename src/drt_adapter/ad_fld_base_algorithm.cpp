@@ -1304,7 +1304,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   // restart
   fluidtimeparams->set<int>("write restart every", prbdyn.get<int>("RESTARTEVRY"));
   // solution output
-  fluidtimeparams->set<int>("write solution every", prbdyn.get<int>("UPRES"));
+  fluidtimeparams->set<int>("write solution every", prbdyn.get<int>("RESULTSEVRY"));
   // flag for writing stresses
   fluidtimeparams->set<int>("write stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_STRESS"));
   // flag for writing wall shear stress

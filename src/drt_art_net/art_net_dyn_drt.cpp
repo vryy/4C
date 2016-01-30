@@ -131,7 +131,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // restart
   arterytimeparams.set                  ("write restart every"       ,artdyn.get<int>("RESTARTEVRY"));
   // solution output
-  arterytimeparams.set                  ("write solution every"      ,artdyn.get<int>("UPRES"));
+  arterytimeparams.set                  ("write solution every"      ,artdyn.get<int>("RESULTSEVRY"));
 
   // solution output
   if (artdyn.get<std::string>("SOLVESCATRA")=="yes")

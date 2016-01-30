@@ -93,7 +93,7 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
   DoubleParameter("TIMESTEP",0.05,"time step size dt",&poroelastdyn);
   IntParameter("ITEMAX",10,"maximum number of iterations over fields",&poroelastdyn);
   IntParameter("ITEMIN",1,"minimal number of iterations over fields",&poroelastdyn);
-  IntParameter("UPRES",1,"increment for writing solution",&poroelastdyn);
+  IntParameter("RESULTSEVRY",1,"increment for writing solution",&poroelastdyn);
 
   // Iterationparameters
   DoubleParameter("TOLRES_GLOBAL",1e-8,"tolerance in the residual norm for the Newton iteration",&poroelastdyn);

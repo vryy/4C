@@ -112,7 +112,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // restart
   scatratimeparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
   // solution output
-  scatratimeparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
+  scatratimeparams->set           ("RESULTSEVRY"       ,prbdyn.get<int>("RESULTSEVRY"));
 
   // -------------------------------------------------------------------
   // overrule flags for solid-based scalar transport!
@@ -284,7 +284,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
       // restart
       lsparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
       // solution output
-      lsparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
+      lsparams->set           ("RESULTSEVRY"       ,prbdyn.get<int>("RESULTSEVRY"));
 
       if (probtype == prb_two_phase_flow)
       {

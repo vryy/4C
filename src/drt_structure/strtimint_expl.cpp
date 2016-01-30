@@ -33,16 +33,18 @@ Maintainer: Alexander Popp
 /* constructor */
 STR::TimIntExpl::TimIntExpl
 (
-  const Teuchos::ParameterList& ioparams,  //!< ioflags
-  const Teuchos::ParameterList& sdynparams,  //!< input parameters
-  const Teuchos::ParameterList& xparams,  //!< extra flags
-  Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-  Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
-  Teuchos::RCP<LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
+  const Teuchos::ParameterList& timeparams,   //! time parameters
+  const Teuchos::ParameterList& ioparams,     //!< ioflags
+  const Teuchos::ParameterList& sdynparams,   //!< input parameters
+  const Teuchos::ParameterList& xparams,      //!< extra flags
+  Teuchos::RCP<DRT::Discretization> actdis,   //!< current discretisation
+  Teuchos::RCP<LINALG::Solver> solver,        //!< the solver
+  Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
   Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
 )
 : TimInt
   (
+    timeparams,
     ioparams,
     sdynparams,
     xparams,

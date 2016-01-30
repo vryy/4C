@@ -65,7 +65,7 @@ STR::TimIntStatMech::TimIntStatMech(const Teuchos::ParameterList& params,
                                     Teuchos::RCP<LINALG::Solver> solver,
                                     Teuchos::RCP<LINALG::Solver> contactsolver,
                                     Teuchos::RCP<IO::DiscretizationWriter> output) :
-TimIntOneStepTheta(params,sdynparams, xparams, actdis,solver,contactsolver,output),
+TimIntOneStepTheta(sdynparams,params,sdynparams, xparams, actdis,solver,contactsolver,output),
 isconverged_(false),
 iterges_(0)
 {

@@ -39,7 +39,7 @@ void INPAR::PORO_SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   IntParameter("NUMSTEP",200,"maximum number of Timesteps",&poroscatradyn);
   DoubleParameter("MAXTIME",1000.0,"total simulation time",&poroscatradyn);
   DoubleParameter("TIMESTEP",0.05,"time step size dt",&poroscatradyn);
-  IntParameter("UPRES",1,"increment for writing solution",&poroscatradyn);
+  IntParameter("RESULTSEVRY",1,"increment for writing solution",&poroscatradyn);
   IntParameter("ITEMAX",10,"maximum number of iterations over fields",&poroscatradyn);
   IntParameter("ITEMIN",1,"minimal number of iterations over fields",&poroscatradyn);
 

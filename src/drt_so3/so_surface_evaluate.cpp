@@ -2016,7 +2016,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       //    <r^2>= R^2*alpha*((1.0-eta)/eta)^2*(1.0-exp(alpha)*sqrt(pi*alpha)*(1.0-Erf(sqrt(alpha))))
       //
       ///////////////////////////////////////////////////////////////
-      static double R = DRT::Problem::Instance()->CellMigrationParams().get<double>("ECM_FIBER_RADIUS");
+      static double R = DRT::Problem::Instance()->CellMigrationParams().sublist("CONFINEMENT MODULE").get<double>("ECM_FIBER_RADIUS");
       double penalty = params.get<double>("penalty",-1234.0);
       if(penalty == -1234.0)
         dserror("could not get penalty parameter from parameter list");

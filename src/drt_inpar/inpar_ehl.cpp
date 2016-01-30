@@ -43,8 +43,8 @@ void INPAR::EHL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("MAXTIME",1000.0,"total simulation time",&ehldyn);
   DoubleParameter("TIMESTEP",-1,"time step size dt",&ehldyn);
   BoolParameter("DIFFTIMESTEPSIZE","No","use different step size for lubrication and solid",&ehldyn);
-  DoubleParameter("UPRESTIME",0,"increment for writing solution",&ehldyn);
-  IntParameter("UPRES",1,"increment for writing solution",&ehldyn);
+  DoubleParameter("RESULTSEVRYTIME",0,"increment for writing solution",&ehldyn);
+  IntParameter("RESULTSEVRY",1,"increment for writing solution",&ehldyn);
   IntParameter("ITEMAX",10,"maximum number of iterations over fields",&ehldyn);
   IntParameter("ITEMIN",1,"minimal number of iterations over fields",&ehldyn);
 

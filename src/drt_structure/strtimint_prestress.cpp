@@ -24,6 +24,7 @@ Maintainer: Sebastian Kehl
 /* constructor */
 STR::TimIntPrestress::TimIntPrestress
 (
+  const Teuchos::ParameterList& timeparams,
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
   const Teuchos::ParameterList& xparams,
@@ -34,6 +35,7 @@ STR::TimIntPrestress::TimIntPrestress
 )
 : TimIntStatics
   (
+    timeparams,
     ioparams,
     sdynparams,
     xparams,

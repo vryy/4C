@@ -84,13 +84,13 @@ void EHL::Utils::ChangeTimeParameter(const Epetra_Comm& comm,
     sdyn.set<int>      ("NUMSTEP"     ,ehlparams.get<int>("NUMSTEP"));
   }
 
-  // Check correct input of restart. Code relies that both time value RESTARTEVRYTIME and UPRESTIME are
+  // Check correct input of restart. Code relies that both time value RESTARTEVRYTIME and RESULTSEVRYTIME are
   // given if restart from time is applied
   double restarttime = ehlparams.get<double>("RESTARTEVRYTIME");
-  double updatetime  = ehlparams.get<double>("UPRESTIME");
+  double updatetime  = ehlparams.get<double>("RESULTSEVRYTIME");
   if ((updatetime > 0.0) or (restarttime > 0.0))
     if (!(updatetime > 0.0) and !(restarttime > 0.0))
-      dserror("If time controlled output and restart is desired, both parameters RESTARTEVRYTIME and UPRESTIME has to be set");
+      dserror("If time controlled output and restart is desired, both parameters RESTARTEVRYTIME and RESULTSEVRYTIME has to be set");
 
   // set restart params
   int lubricationrestart;
@@ -120,7 +120,7 @@ void EHL::Utils::ChangeTimeParameter(const Epetra_Comm& comm,
   }
   else
   {
-    int update       = ehlparams.get<int>("UPRES");
+    int update       = ehlparams.get<int>("RESULTSEVRY");
     lubricationupres      = update;
     structureupres   = update;
   }
@@ -129,7 +129,7 @@ void EHL::Utils::ChangeTimeParameter(const Epetra_Comm& comm,
   lubricationdyn.set<int> ("RESTARTEVRY" ,lubricationrestart);
   sdyn.set<int>      ("RESTARTEVRY" ,structurerestart);
   // solution output
-  lubricationdyn.set<int> ("UPRES"       ,lubricationupres);
+  lubricationdyn.set<int> ("RESULTSEVRY"       ,lubricationupres);
   sdyn.set<int>      ("RESULTSEVRY" ,structureupres);
 
   if (comm.MyPID() == 0)
@@ -138,7 +138,7 @@ void EHL::Utils::ChangeTimeParameter(const Epetra_Comm& comm,
         << "====================== Overview of chosen time stepping: ==============================\n"
         << "\t Timestep lubrication:           "<< lubricationdyn.get<double>("TIMESTEP") << "\n"
         << "\t Timestep structure:        "<< sdyn.get<double>("TIMESTEP") << "\n"
-        << "\t Result step lubrication:        "<< lubricationdyn.get<int>("UPRES") << "\n"
+        << "\t Result step lubrication:        "<< lubricationdyn.get<int>("RESULTSEVRY") << "\n"
         << "\t Result step structure:     "<< sdyn.get<int>("RESULTSEVRY") << "\n"
         << "\t Restart step lubrication:       "<< lubricationdyn.get<int>("RESTARTEVRY") << "\n"
         << "\t Restart step structure:    "<< sdyn.get<int>("RESTARTEVRY") << "\n"

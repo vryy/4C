@@ -35,7 +35,7 @@ void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&fs3idyn);
   IntParameter("NUMSTEP",20,"Total number of time steps",&fs3idyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fs3idyn);
-  IntParameter("UPRES",1,"Increment for writing solution",&fs3idyn);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&fs3idyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&fs3idyn);
   setStringToIntegralParameter<int>("SCATRA_SOLVERTYPE","nonlinear",
                                "type of scalar transport solver",

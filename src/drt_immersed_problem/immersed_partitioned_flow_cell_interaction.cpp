@@ -99,9 +99,9 @@ IMMERSED::ImmersedPartitionedFlowCellInteraction::ImmersedPartitionedFlowCellInt
     dserror("set MIGRATIONTYPE to 'ameboid' or 'proteolytic' in --CELL DYNAMICS section in your .dat file.");
 
   // initialize segregation variables
-  segregationconstant_=globalproblem_->CellMigrationParams().get<double>("SEGREGATION_CONST");
-  segregationtype_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"SEGREGATION");
-  segregationby_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"SEGREGATION_BY");
+  segregationconstant_=globalproblem_->CellMigrationParams().sublist("PROTEOLYSIS MODULE").get<double>("SEGREGATION_CONST");
+  segregationtype_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams().sublist("PROTEOLYSIS MODULE"),"SEGREGATION");
+  segregationby_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams().sublist("PROTEOLYSIS MODULE"),"SEGREGATION_BY");
 
   // setup the relaxation parameters
   SetupRelaxation();
@@ -699,7 +699,7 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::SetupRelaxation()
     forcerelax_         = globalproblem_->ImmersedMethodParams().get<double>("FORCE_RELAX");
     velrelax_           = globalproblem_->ImmersedMethodParams().get<double>("VEL_RELAX");
 
-    if(globalproblem_->CellMigrationParams().get<std::string>("COUPALGO") == "iter_stagg_fixed_rel_param")
+    if(globalproblem_->CellMigrationParams().sublist("FLOW INTERACTION MODULE").get<std::string>("COUPALGO") == "iter_stagg_fixed_rel_param")
     {
       coupalgo_= INPAR::IMMERSED::fixed;
       if(myrank_==0)
@@ -707,7 +707,7 @@ void IMMERSED::ImmersedPartitionedFlowCellInteraction::SetupRelaxation()
                  " Relax Force globally = "<<relaxforceglobally_<<" with relaxation parameter = "<<forcerelax_<<"\n"
                  " Relax Vel   globally = "<<relaxvelglobally_  <<" with relaxation parameter = "<<velrelax_<<"\n"<<std::endl;
     }
-    else if(globalproblem_->CellMigrationParams().get<std::string>("COUPALGO") == "iter_stagg_AITKEN_rel_param")
+    else if(globalproblem_->CellMigrationParams().sublist("FLOW INTERACTION MODULE").get<std::string>("COUPALGO") == "iter_stagg_AITKEN_rel_param")
     {
       coupalgo_ = INPAR::IMMERSED::aitken;
       if(myrank_==0)

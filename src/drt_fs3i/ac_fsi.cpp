@@ -73,8 +73,8 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
   const Teuchos::ParameterList& fs3idynpart = fs3idyn.sublist("PARTITIONED");
   const Teuchos::ParameterList& fs3idynac = fs3idyn.sublist("AC");
 
-  if ( fs3idyn.get<int>("UPRES") != 1 )
-    dserror("If you want the fsi problem to be periodically repeated from some point, you have to have UPRES set to 1!");
+  if ( fs3idyn.get<int>("RESULTSEVRY") != 1 )
+    dserror("If you want the fsi problem to be periodically repeated from some point, you have to have RESULTSEVRY set to 1!");
   if ( fs3idyn.get<int>("RESTARTEVRY") != 1 )
     dserror("If you want the fsi problem to be periodically repeated from some point, you have to have RESTARTEVRY set to 1!");
 

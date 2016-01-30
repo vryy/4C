@@ -103,7 +103,7 @@ gamma_up_(params_.get<double>("GAMMA_UP")),
 gamma_down_(params_.get<double>("GAMMA_DOWN")),
 facmin_(params_.get<double>("FACMIN")),
 s_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
-upres_(params_.get<int>("UPRES")),
+upres_(params_.get<int>("RESULTSEVRY")),
 uprestart_(params.get<int>("RESTARTEVRY")),
 output_(output)
 {

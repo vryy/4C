@@ -1582,7 +1582,7 @@ void FSI::MortarMonolithicFluidSplit::OutputLambda()
   Teuchos::RCP<Epetra_Vector> lambdafull =
       FluidField()->Interface()->InsertFSICondVector(lambda_);
   const int uprestart = timeparams_.get<int>("RESTARTEVRY");
-  const int upres = timeparams_.get<int>("UPRES");
+  const int upres = timeparams_.get<int>("RESULTSEVRY");
   if ((uprestart != 0 && FluidField()->Step() % uprestart == 0)
       || FluidField()->Step() % upres == 0)
     FluidField()->DiscWriter()->WriteVector("fsilambda", lambdafull);

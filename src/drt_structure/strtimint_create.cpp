@@ -41,6 +41,7 @@ Maintainer: Alexander Popp
 /* create marching time integrator */
 Teuchos::RCP<STR::TimInt> STR::TimIntCreate
 (
+  const Teuchos::ParameterList& timeparams,
   const Teuchos::ParameterList& ioflags,
   const Teuchos::ParameterList& sdyn,
   const Teuchos::ParameterList& xparams,
@@ -54,11 +55,11 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate
   // set default output
   Teuchos::RCP<STR::TimInt> sti = Teuchos::null;
   // try implicit integrators
-  sti = TimIntImplCreate(ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
+  sti = TimIntImplCreate(timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
   // if nothing found try explicit integrators
   if (sti == Teuchos::null)
   {
-    sti = TimIntExplCreate(ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
+    sti = TimIntExplCreate(timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
   }
 
   // deliver
@@ -69,6 +70,7 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate
 /* create implicit marching time integrator */
 Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
 (
+  const Teuchos::ParameterList& timeparams,
   const Teuchos::ParameterList& ioflags,
   const Teuchos::ParameterList& sdyn,
   const Teuchos::ParameterList& xparams,
@@ -86,7 +88,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
   INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
   if (pstype==INPAR::STR::prestress_mulf || pstype==INPAR::STR::prestress_id)
   {
-    sti = Teuchos::rcp(new STR::TimIntPrestress(ioflags, sdyn, xparams, actdis,
+    sti = Teuchos::rcp(new STR::TimIntPrestress(timeparams, ioflags, sdyn, xparams, actdis,
             solver, contactsolver, output));
     return sti;
   }
@@ -97,7 +99,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     // Static analysis
     case INPAR::STR::dyna_statics :
     {
-      sti = Teuchos::rcp(new STR::TimIntStatics(ioflags, sdyn, xparams,
+      sti = Teuchos::rcp(new STR::TimIntStatics(timeparams, ioflags, sdyn, xparams,
                                                 actdis, solver, contactsolver, output));
       break;
     }
@@ -105,7 +107,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     // Generalised-alpha time integration
     case INPAR::STR::dyna_genalpha :
     {
-      sti = Teuchos::rcp(new STR::TimIntGenAlpha(ioflags, sdyn, xparams,
+      sti = Teuchos::rcp(new STR::TimIntGenAlpha(timeparams, ioflags, sdyn, xparams,
                                                  actdis, solver, contactsolver, output));
       break;
     }
@@ -113,7 +115,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     // One-step-theta (OST) time integration
     case INPAR::STR::dyna_onesteptheta :
     {
-      sti = Teuchos::rcp(new STR::TimIntOneStepTheta(ioflags, sdyn, xparams,
+      sti = Teuchos::rcp(new STR::TimIntOneStepTheta(timeparams, ioflags, sdyn, xparams,
                                                      actdis, solver, contactsolver, output));
       break;
     }
@@ -121,7 +123,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     // Generalised energy-momentum method (GEMM)
     case INPAR::STR::dyna_gemm :
     {
-      sti = Teuchos::rcp(new STR::TimIntGEMM(ioflags, sdyn, xparams,
+      sti = Teuchos::rcp(new STR::TimIntGEMM(timeparams, ioflags, sdyn, xparams,
                                              actdis, solver, contactsolver, output));
       break;
     }
@@ -150,6 +152,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
 /* create explicit marching time integrator */
 Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
 (
+  const Teuchos::ParameterList& timeparams,
   const Teuchos::ParameterList& ioflags,
   const Teuchos::ParameterList& sdyn,
   const Teuchos::ParameterList& xparams,
@@ -181,21 +184,21 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
     // forward Euler time integration
     case INPAR::STR::dyna_expleuler :
     {
-      sti = Teuchos::rcp(new STR::TimIntExplEuler(ioflags, sdyn, xparams,
+      sti = Teuchos::rcp(new STR::TimIntExplEuler(timeparams, ioflags, sdyn, xparams,
                                             actdis, solver, contactsolver, output));
       break;
     }
     // central differences time integration
     case INPAR::STR::dyna_centrdiff:
     {
-      sti = Teuchos::rcp(new STR::TimIntCentrDiff(ioflags, sdyn, xparams,
+      sti = Teuchos::rcp(new STR::TimIntCentrDiff(timeparams, ioflags, sdyn, xparams,
                                             actdis, solver, contactsolver, output));
       break;
     }
     // Adams-Bashforth 2nd order (AB2) time integration
     case INPAR::STR::dyna_ab2 :
     {
-      sti = Teuchos::rcp(new STR::TimIntAB2(ioflags, sdyn, xparams,
+      sti = Teuchos::rcp(new STR::TimIntAB2(timeparams, ioflags, sdyn, xparams,
                                             actdis, solver, contactsolver, output));
       break;
     }

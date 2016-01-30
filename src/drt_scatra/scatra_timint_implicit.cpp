@@ -172,7 +172,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   updateprojection_(false),
   projector_ (Teuchos::null),
   // Initialization of
-  upres_    (params->get<int>("UPRES")),
+  upres_    (params->get<int>("RESULTSEVRY")),
   uprestart_(params->get<int>("RESTARTEVRY")),
   neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
   convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),

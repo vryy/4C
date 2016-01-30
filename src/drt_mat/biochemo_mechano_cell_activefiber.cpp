@@ -1823,6 +1823,75 @@ if (time>0.0){
 } // end mat evaluate
 
 
+///*----------------------------------------------------------------------*
+// | Dummy Evaluate Material                                  rauch  01/16|
+// *----------------------------------------------------------------------*
+// The stress response is decomposed into a passive and an active part:
+//     \sigma = \sigma_{passive} + \sigma_{active}
+// */
+//void MAT::BioChemoMechanoCellActiveFiber::Evaluate(const LINALG::Matrix<3,3>* defgrd,
+//                           const LINALG::Matrix<6,1>* glstrain,
+//                           Teuchos::ParameterList& params,
+//                           LINALG::Matrix<6,1>* stress,
+//                           LINALG::Matrix<6,6>* cmat,
+//                           const int eleGID)
+//{
+//  //******************
+//  // PASSIVE PART
+//  //******************
+//  // Initialize passive stress and elasticity tensor
+//  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatpassive(true);
+//  LINALG::Matrix<NUM_STRESS_3D,1> Spassive(true);
+//
+//  //if (cmat != NULL)
+//  //{
+//    // Evaluate passive PK2 stress Spassive and passive elasticity tensor cmatpassive
+//    matpassive_->Evaluate(defgrd,glstrain,params,&Spassive,&cmatpassive,eleGID);
+//  //}
+//
+//  //********************
+//  // DUMMY ACTIVE PART
+//  //********************
+//
+//  // Setup inverse of deformation gradient
+//  LINALG::Matrix<3,3> invdefgrd(*defgrd);
+//  invdefgrd.Invert();
+//
+//  LINALG::Matrix<NUM_STRESS_3D,1> sigma(true);//6x1
+//  LINALG::Matrix<3,3> cauchystress(true);//3x3
+//
+//  sigma(0)=0.001;
+//  sigma(1)=0.0;
+//  sigma(2)=0.0;
+//  sigma(3)=0.0;
+//  sigma(4)=0.0;
+//  sigma(5)=0.0;
+//
+//  // Transform Cauchy stress to PK2 stress
+//  // S = J * F^{-1} sigma F^{-T}
+//  LINALG::Matrix<NUM_STRESS_3D,1> Sactive(true);//6x1
+//  CauchytoPK2(Sactive,cauchystress,*defgrd,invdefgrd,sigma);
+//
+//  LINALG::Matrix<NUM_STRESS_3D,1> Stot(true);//6x1
+//
+//  // Stress including active and passive part
+//  if(params.get<int>("iostress")==0)
+//  {
+//    Stot.Update(1.0,Sactive,0.0);
+//    Stot.Update(1.0,Spassive,1.0);
+//    stress ->Update(1.0,Stot,0.0);
+//  }
+//  // only active stress as output
+//  else
+//  {
+//    Stot.Update(1.0,Sactive,0.0);
+//    stress ->Update(1.0,Stot,0.0);
+//  }
+//
+//
+//} // end mat evaluate
+
+
 /*----------------------------------------------------------------------*
  | Calculate Dissociation                                   rauch 01/16 |
  *----------------------------------------------------------------------*/

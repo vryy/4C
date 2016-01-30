@@ -146,9 +146,9 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   timintpara.set<int>("RESTARTEVRY",params_->get<int>("RESTARTEVRY"));
   // for large problems, it might be useful to only write the restart data
   if (DRT::INPUT::IntegralValue<bool>(params_->sublist("PARTICLE"),"RESTARTDATA"))
-    timintpara.set<int>("UPRES",params_->get<int>("RESTARTEVRY"));
+    timintpara.set<int>("RESULTSEVRY",params_->get<int>("RESTARTEVRY"));
   else
-    timintpara.set<int>("UPRES",params_->get<int>("UPRES"));
+    timintpara.set<int>("RESULTSEVRY",params_->get<int>("RESULTSEVRY"));
   Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
       Teuchos::rcp(new ADAPTER::ParticleBaseAlgorithm(timintpara, particledis_));
   particles_ = particles->ParticleField();

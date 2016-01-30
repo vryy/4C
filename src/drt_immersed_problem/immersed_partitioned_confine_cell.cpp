@@ -95,8 +95,8 @@ IMMERSED::ImmersedPartitionedConfineCell::ImmersedPartitionedConfineCell(const T
   isPseudo2D_ = DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"PSEUDO2D");
 
   // penalty constraint enforcement parameters
-  penalty_start_ = globalproblem_->CellMigrationParams().get<double>("PENALTY_START");
-  penalty_init_  = globalproblem_->CellMigrationParams().get<double>("PENALTY_INIT");
+  penalty_start_ = globalproblem_->CellMigrationParams().sublist("CONFINEMENT MODULE").get<double>("PENALTY_START");
+  penalty_init_  = globalproblem_->CellMigrationParams().sublist("CONFINEMENT MODULE").get<double>("PENALTY_INIT");
 
   // initialize the parameter initialize_cell_ which determines whether or not first time step is pre-simulation
   initialize_cell_=DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"INITIALIZE_CELL");

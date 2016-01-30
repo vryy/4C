@@ -28,6 +28,7 @@ Maintainer: Alexander Popp
 /* Constructor */
 STR::TimIntAB2::TimIntAB2
 (
+  const Teuchos::ParameterList& timeparams,
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
   const Teuchos::ParameterList& xparams,
@@ -39,6 +40,7 @@ STR::TimIntAB2::TimIntAB2
 )
 : TimIntExpl
   (
+    timeparams,
     ioparams,
     sdynparams,
     xparams,

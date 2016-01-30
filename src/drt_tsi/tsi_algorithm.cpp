@@ -147,7 +147,7 @@ void TSI::Algorithm::Output(bool forced_writerestart)
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
   // Get the parameters for the Newton iteration
-  int upres = tsidyn.get<int>("UPRES");
+  int upres = tsidyn.get<int>("RESULTSEVRY");
   int uprestart = tsidyn.get<int>("RESTARTEVRY");
 
   // mapped temperatures for structure field

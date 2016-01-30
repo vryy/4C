@@ -80,6 +80,7 @@ namespace STR
     //! Constructor
     TimIntImpl
     (
+      const Teuchos::ParameterList& timeparams,
       const Teuchos::ParameterList& ioparams,  //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
       const Teuchos::ParameterList& xparams,  //!< extra flags

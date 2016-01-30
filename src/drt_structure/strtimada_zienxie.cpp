@@ -29,11 +29,11 @@ Maintainer: Alexander Popp
 /* Constructor */
 STR::TimAdaZienXie::TimAdaZienXie
 (
-  const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
+  const Teuchos::ParameterList& timeparams,  //!< TIS input parameters
   const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
   Teuchos::RCP<TimInt> tis  //!< marching time integrator
 )
-: TimAda(sdynparams, adaparams, tis)
+: TimAda(timeparams, adaparams, tis)
 {
   // check if marching TIS is second order accurate
   if (sti_->MethodOrderOfAccuracyDis() != 2)

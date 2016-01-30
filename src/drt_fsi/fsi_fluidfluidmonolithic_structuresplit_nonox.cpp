@@ -707,7 +707,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Output()
 
     const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
-    const int upres = fsidyn.get<int>("UPRES");
+    const int upres = fsidyn.get<int>("RESULTSEVRY");
     if((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
       StructureField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
   }

@@ -31,7 +31,7 @@ void INPAR::TWOPHASE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&twophasedyn);
   DoubleParameter("MAXTIME",0.0,"Total simulation time",&twophasedyn);
   DoubleParameter("CONVTOL",1E-6,"Tolerance for convergence check",&twophasedyn);
-  IntParameter("UPRES",1,"Increment for writing solution",&twophasedyn);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&twophasedyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&twophasedyn);
   IntParameter("ITEMAX",1,"Maximum number of iterations in levelset-fluid loop",&twophasedyn);
   BoolParameter("WRITE_CENTER_OF_MASS","No","Write center of mass to file",&twophasedyn);

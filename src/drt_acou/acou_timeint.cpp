@@ -50,7 +50,7 @@ ACOU::AcouTimeInt::AcouTimeInt(
   maxtime_        (params_->get<double>("MAXTIME")),
   stepmax_        (params_->get<int>("NUMSTEP")),
   uprestart_      (params_->get<int>("RESTARTEVRY", -1)),
-  upres_          (params_->get<int>("UPRES", -1)),
+  upres_          (params_->get<int>("RESULTSEVRY", -1)),
   numdim_         (DRT::Problem::Instance()->NDim()),
   dtp_            (params_->get<double>("TIMESTEP")),
   adjoint_rhs_    (Teuchos::null)

@@ -59,7 +59,7 @@ XFLUIDLEVELSET::Algorithm::Algorithm(
   ittol_ = prbdyn.get<double>("CONVTOL");
   itmax_ = prbdyn.get<int>("ITEMAX");
 
-  upres_ = prbdyn.get<int>("UPRES");
+  upres_ = prbdyn.get<int>("RESULTSEVRY");
 
   SetProblemSpecificParameters(prbdyn);
 
@@ -491,7 +491,7 @@ bool XFLUIDLEVELSET::Algorithm::ConvergenceCheck(int itnum)
 void XFLUIDLEVELSET::Algorithm::Output()
 {
 
-  if(Step()%upres_ == 0) //Only perform output for given UPRES in Control Algo section of input.
+  if(Step()%upres_ == 0) //Only perform output for given RESULTSEVRY in Control Algo section of input.
   {
     FluidField()->Output();
     ScaTraField()->Output();

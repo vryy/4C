@@ -305,7 +305,7 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("COMPUTE_DIVU","No","Compute divergence of velocity field at the element center",&fdyn);
   BoolParameter("COMPUTE_EKIN","No","Compute kinetic energy at the end of each time step and write it to file.",&fdyn);
   BoolParameter("NEW_OST","No","Solve the Navier-Stokes equation with the new One Step Theta algorithm",&fdyn);  //TODO: To be removed.
-  IntParameter("UPRES",1,"Increment for writing solution",&fdyn);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&fdyn);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&fdyn);
   IntParameter("NUMSTEP",1,"Total number of Timesteps",&fdyn);
   IntParameter("STEADYSTEP",-1,"steady state check every step",&fdyn);
@@ -1730,7 +1730,7 @@ void INPAR::LOMA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   IntParameter("ITEMAX",10,"Maximum number of outer iterations",&lomacontrol);
   IntParameter("ITEMAX_BEFORE_SAMPLING",1,"Maximum number of outer iterations before sampling (for turbulent flows only)",&lomacontrol);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&lomacontrol);
-  IntParameter("UPRES",1,"Increment for writing solution",&lomacontrol);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&lomacontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&lomacontrol);
   setStringToIntegralParameter<int>("CONSTHERMPRESS","Yes",
                                "treatment of thermodynamic pressure in time",

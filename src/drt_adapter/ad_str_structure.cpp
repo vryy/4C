@@ -68,7 +68,7 @@ ADAPTER::Structure::~Structure()
 /*----------------------------------------------------------------------*/
 ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(
   const Teuchos::ParameterList& prbdyn,
-  Teuchos::ParameterList& sdyn,
+  const Teuchos::ParameterList& sdyn,
   Teuchos::RCP<DRT::Discretization> actdis
 )
 {
@@ -86,7 +86,7 @@ ADAPTER::StructureBaseAlgorithm::~StructureBaseAlgorithm()
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithm::SetupStructure(
   const Teuchos::ParameterList& prbdyn,
-  Teuchos::ParameterList& sdyn,
+  const Teuchos::ParameterList& sdyn,
   Teuchos::RCP<DRT::Discretization> actdis
 )
 {
@@ -116,7 +116,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   const Teuchos::ParameterList& prbdyn,
-  Teuchos::ParameterList& sdyn,
+  const Teuchos::ParameterList& sdyn,
   Teuchos::RCP<DRT::Discretization> actdis
 )
 {
@@ -191,25 +191,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       = Teuchos::rcp(new Teuchos::ParameterList (problem->MultiLevelMonteCarloParams()));
   // Needed for reduced restart output
   xparams->set<int>("REDUCED_OUTPUT",Teuchos::getIntegralValue<int>((*mlmcp),"REDUCED_OUTPUT"));
-
-  sdyn.set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
-
-  // overrule certain parameters
-  sdyn.set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
-  sdyn.set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
-  const int* step1 = prbdyn.getPtr<int>("RESULTSEVRY");
-  if(step1 != NULL)
-  {
-    sdyn.set<int>("RESULTSEVRY",*step1);
-  }
-  else
-  {
-    const int* step2 = prbdyn.getPtr<int>("UPRES");
-    if(step2 != NULL)
-      sdyn.set<int>("RESULTSEVRY", *step2);
-    else
-      dserror("missing input parameter RESULTSEVRY or UPRES");
-  }
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the .dat file
   if (DRT::INPUT::IntegralValue<INPAR::STR::DampKind>(sdyn,"DAMPING") == INPAR::STR::damp_rayleigh)
@@ -361,7 +342,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   }
 
   // create marching time integrator
-  Teuchos::RCP<STR::TimInt> tmpstr = STR::TimIntCreate(*ioflags, sdyn, *xparams, actdis, solver, contactsolver, output);
+  Teuchos::RCP<STR::TimInt> tmpstr = STR::TimIntCreate(prbdyn,*ioflags, sdyn, *xparams, actdis, solver, contactsolver, output);
 
   // ---------------------------------------------------------------------------
   // ---------------------------------------------------------------------------

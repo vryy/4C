@@ -34,7 +34,7 @@ void INPAR::TOPOPT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   IntParameter("NUMSTEP",100,"Total number of timesteps",&topoptcontrol);
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&topoptcontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&topoptcontrol);
-  IntParameter("UPRES",1,"Increment for writing solution",&topoptcontrol);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&topoptcontrol);
 
   setStringToIntegralParameter<int>("DENS_TYPE","node_based","type of optimization = density = porosity field",
       tuple<std::string>(
@@ -178,7 +178,7 @@ void INPAR::TOPOPT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // output parameter
   BoolParameter("GMSH_OUTPUT","No","Write Gmsh files",&topoptoptimizer);
-  IntParameter("UPRES",1,"Increment for writing solution",&topoptoptimizer);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&topoptoptimizer);
 
   // parameter of optimization algorithm GCMMA
   DoubleParameter("X_DIFF_MIN",1.0e-5,"minimal difference of upper and lower boundary of optimization variable",&topoptoptimizer);

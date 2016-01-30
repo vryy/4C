@@ -30,7 +30,7 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("MAXTIME",1.0,"Total simulation time",&acousticdyn);
   IntParameter("CALCERRORFUNCNO",-1,"Function for Error Calculation",&acousticdyn);
 
-  IntParameter("UPRES",1,"Increment for writing solution",&acousticdyn);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&acousticdyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&acousticdyn);
   IntParameter("LINEAR_SOLVER",-1,"Number of linear solver used for acoustical problem",&acousticdyn);
   IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&acousticdyn);

@@ -133,20 +133,9 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(
   tdyn->set<int>("NUMSTEP",prbdyn.get<int>("NUMSTEP"));
   // restart
   tdyn->set<int>("RESTARTEVRY",prbdyn.get<int>("RESTARTEVRY"));
-  // solution output
-  const int* step1 = prbdyn.getPtr<int>("UPRES");
-  if(step1 != NULL)
-  {
-    tdyn->set<int>("RESEVRYGLOB",*step1);
-  }
-  else
-  {
-    const int* step2 = prbdyn.getPtr<int>("RESEVRYGLOB");
-    if(step2 != NULL)
-      tdyn->set<int>("RESEVRYGLOB", *step2);
-    else
-      dserror("missing input parameter RESEVRYGLOB or UPRES");
-  }
+  // write results every <RESULTSEVRY> steps
+  tdyn->set<int>("RESULTSEVRY",prbdyn.get<int>("RESULTSEVRY"));
+
   // get the solver number used for thermal solver
   const int linsolvernumber = tdyn->get<int>("LINEAR_SOLVER");
   // check if the THERMAL solver has a valid solver number

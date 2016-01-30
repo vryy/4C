@@ -79,7 +79,7 @@ LUBRICATION::TimIntImpl::TimIntImpl(
   increment_(Teuchos::null),
   prei_(Teuchos::null),
   // Initialization of
-  upres_    (params->get<int>("UPRES")),
+  upres_    (params->get<int>("RESULTSEVRY")),
   uprestart_(params->get<int>("RESTARTEVRY"))
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)

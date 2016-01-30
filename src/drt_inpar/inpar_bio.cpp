@@ -40,7 +40,7 @@ void INPAR::ARTDYN::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&andyn);
   IntParameter("NUMSTEP",0,"Number of Time Steps",&andyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&andyn);
-  IntParameter("UPRES",1,"Increment for writing solution",&andyn);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&andyn);
   setStringToIntegralParameter<int>("SOLVESCATRA",
                              "no",
                              "Flag to (de)activate solving scalar transport in blood",
@@ -480,7 +480,7 @@ void INPAR::REDAIRWAYS::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
   DoubleParameter("TIMESTEP",0.01,"Time increment dt",&redawdyn);
   IntParameter("NUMSTEP",0,"Number of Time Steps",&redawdyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&redawdyn);
-  IntParameter("UPRES",1,"Increment for writing solution",&redawdyn);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&redawdyn);
   DoubleParameter("THETA",1.0,"One-step-theta time integration factor",&redawdyn);
 
   IntParameter("MAXITERATIONS",1,"maximum iteration steps",&redawdyn);

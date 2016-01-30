@@ -122,7 +122,7 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&fsidyn);
 
-  IntParameter("UPRES",1,"Increment for writing solution",&fsidyn);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&fsidyn);
 
   setStringToIntegralParameter<int>("VERBOSITY","full",
                                  "Verbosity of the FSI problem.",

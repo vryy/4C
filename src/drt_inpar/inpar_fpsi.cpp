@@ -142,7 +142,7 @@ void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   IntParameter("ITEMIN",1,"minimal number of iterations over fields",&fpsidyn);
   IntParameter("NUMSTEP",200,"Total number of Timesteps",&fpsidyn);
   IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&fpsidyn);
-  IntParameter("UPRES",1,"Increment for writing solution",&fpsidyn);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&fpsidyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&fpsidyn);
 
   IntParameter("FDCheck_row",0,"print row value during FDCheck",&fpsidyn);

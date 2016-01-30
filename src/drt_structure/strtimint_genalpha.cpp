@@ -85,6 +85,7 @@ void STR::TimIntGenAlpha::VerifyCoeff()
 /* constructor */
 STR::TimIntGenAlpha::TimIntGenAlpha
 (
+  const Teuchos::ParameterList& timeparams,
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
   const Teuchos::ParameterList& xparams,
@@ -95,6 +96,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
 )
 : TimIntImpl
   (
+    timeparams,
     ioparams,
     sdynparams,
     xparams,

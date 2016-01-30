@@ -354,7 +354,7 @@ void IMMERSED::ImmersedPartitioned::SetDefaultParameters(const Teuchos::Paramete
 {
   // extract sublist with settings for partitioned solver
   const Teuchos::ParameterList& immersedpart = immerseddyn.sublist("PARTITIONED SOLVER");
-  const Teuchos::ParameterList& celldyn = DRT::Problem::Instance()->CellMigrationParams();
+  const Teuchos::ParameterList& celldyn = DRT::Problem::Instance()->CellMigrationParams().sublist("FLOW INTERACTION MODULE");
 
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = list;

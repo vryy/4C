@@ -83,15 +83,7 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
   partdyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
   partdyn->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   partdyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
-
-  if(probtype == prb_particle)
-  {
-    partdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
-  }
-  else
-  {
-    partdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
-  }
+  partdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
 
   // switch to different time integrators
   INPAR::PARTICLE::DynamicType timinttype = DRT::INPUT::IntegralValue<INPAR::PARTICLE::DynamicType>(*partdyn,"DYNAMICTYP");

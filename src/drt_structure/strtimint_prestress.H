@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file strtimint_statics.H
+\file strtimint_prestress.H
 \brief Static Prestress  analysis
 
 <pre>
@@ -47,12 +47,13 @@ namespace STR
     //! Constructor
     TimIntPrestress
     (
-      const Teuchos::ParameterList& ioparams,  //!< ioflags
+      const Teuchos::ParameterList& timeparams,  //!< ioflags
+      const Teuchos::ParameterList& ioparams,    //!< ioflags
       const Teuchos::ParameterList& sdynparams,  //!< input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
+      const Teuchos::ParameterList& xparams,     //!< extra flags
       Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
-      Teuchos::RCP<LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
+      Teuchos::RCP<LINALG::Solver> solver,       //!< the solver
+      Teuchos::RCP<LINALG::Solver> contactsolver,    //!< the solver for contact meshtying
       Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 

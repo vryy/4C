@@ -235,7 +235,7 @@ void CellMigrationControlAlgorithm()
     switch(coupling)
     {
     case INPAR::SSI::ssi_IterStagg:
-      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_PROTRUSIONFORMATION(comm, problem->CellMigrationParams(), problem->ScalarTransportDynamicParams(), problem->StructuralDynamicParams(), "cell", "cellscatra"));
+      cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_PROTRUSIONFORMATION(comm, problem->CellMigrationParams(), problem->CellMigrationParams().sublist("SCALAR TRANSPORT"), problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"), "cell", "cellscatra"));
       break;
     default:
       dserror("unknown coupling algorithm for SSI! Only ssi_IterStagg valid. Fix your *.dat file.");
@@ -252,7 +252,9 @@ void CellMigrationControlAlgorithm()
   }
   else if(not ssi_cell)
   {
-    cellstructure = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(problem->CellMigrationParams(), const_cast<Teuchos::ParameterList&>(problem->StructuralDynamicParams()), problem->GetDis("cell")))->StructureField());
+    cellstructure = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(problem->CellMigrationParams(),
+                                                                                                                                     (problem->CellMigrationParams()).sublist("STRUCTURAL DYNAMIC"),
+                                                                                                                                     problem->GetDis("cell")))->StructureField() );
 
     if(cellstructure==Teuchos::null)
       dserror("dynamic cast from Structure to FSIStructureWrapperImmersed failed");

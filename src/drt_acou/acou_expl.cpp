@@ -625,7 +625,7 @@ WaveEquationProblem<dim>::WaveEquationProblem(Teuchos::RCP<DRT::DiscretizationHD
 
   // get some parameters:
   final_time = params->get<double>("MAXTIME");
-  up_res = params->get<int>("UPRES", -1);
+  up_res = params->get<int>("RESULTSEVRY", -1);
   step_max = params->get<int>("NUMSTEP");
   dyna = DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(*params,"TIMEINT");
   exactsolutionfuncno = (params->get<int>("CALCERRORFUNCNO"))-1;

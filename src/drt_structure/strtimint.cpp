@@ -99,6 +99,7 @@ void STR::TimInt::Logo()
 /* constructor */
 STR::TimInt::TimInt
 (
+  const Teuchos::ParameterList& timeparams,
   const Teuchos::ParameterList& ioparams,
   const Teuchos::ParameterList& sdynparams,
   const Teuchos::ParameterList& xparams,
@@ -126,11 +127,11 @@ STR::TimInt::TimInt
   printiter_(true),  // ADD INPUT PARAMETER
   outputeveryiter_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"OUTPUT_EVERY_ITER")),
   oei_filecounter_(ioparams.get<int>("OEI_FILE_COUNTER")),
-  writerestartevery_(sdynparams.get<int>("RESTARTEVRY")),
+  writerestartevery_(timeparams.get<int>("RESTARTEVRY")),
   writereducedrestart_(xparams.get<int>("REDUCED_OUTPUT")),
   writestate_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_DISP")),
   writevelacc_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_VEL_ACC")),
-  writeresultsevery_(sdynparams.get<int>("RESULTSEVRY")),
+  writeresultsevery_(timeparams.get<int>("RESULTSEVRY")),
   writestress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_STRESS")),
   writecouplstress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_COUPLING_STRESS")),
   writestrain_(DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_STRAIN")),
@@ -159,8 +160,8 @@ STR::TimInt::TimInt
   time_(Teuchos::null),
   timen_(0.0),
   dt_(Teuchos::null),
-  timemax_(sdynparams.get<double>("MAXTIME")),
-  stepmax_(sdynparams.get<int>("NUMSTEP")),
+  timemax_(timeparams.get<double>("MAXTIME")),
+  stepmax_(timeparams.get<int>("NUMSTEP")),
   step_(0),
   stepn_(0),
   rand_tsfac_(1.0),
@@ -203,7 +204,7 @@ STR::TimInt::TimInt
 
   // time state
   time_ = Teuchos::rcp(new TIMINT::TimIntMStep<double>(0, 0, 0.0));  // HERE SHOULD BE SOMETHING LIKE (sdynparams.get<double>("TIMEINIT"))
-  dt_ = Teuchos::rcp(new TIMINT::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
+  dt_ = Teuchos::rcp(new TIMINT::TimIntMStep<double>(0, 0, timeparams.get<double>("TIMESTEP")));
   step_ = 0;
   timen_ = (*time_)[0] + (*dt_)[0];  // set target time to initial time plus step size
   stepn_ = step_ + 1;

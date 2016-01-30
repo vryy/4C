@@ -112,7 +112,7 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("TIMESTEP",0.05,"time step size dt",&tsidyn);
   IntParameter("ITEMAX",10,"maximum number of iterations over fields",&tsidyn);
   IntParameter("ITEMIN",1,"minimal number of iterations over fields",&tsidyn);
-  IntParameter("UPRES",1,"increment for writing solution",&tsidyn);
+  IntParameter("RESULTSEVRY",1,"increment for writing solution",&tsidyn);
 
   setStringToIntegralParameter<int>("NORM_INC","Abs",
     "type of norm for convergence check of primary variables in TSI",

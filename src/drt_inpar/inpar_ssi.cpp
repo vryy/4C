@@ -39,8 +39,8 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("MAXTIME",1000.0,"total simulation time",&ssidyn);
   DoubleParameter("TIMESTEP",-1,"time step size dt",&ssidyn);
   BoolParameter("DIFFTIMESTEPSIZE","No","use different step size for scatra and solid",&ssidyn);
-  DoubleParameter("UPRESTIME",0,"increment for writing solution",&ssidyn);
-  IntParameter("UPRES",1,"increment for writing solution",&ssidyn);
+  DoubleParameter("RESULTSEVRYTIME",0,"increment for writing solution",&ssidyn);
+  IntParameter("RESULTSEVRY",1,"increment for writing solution",&ssidyn);
   IntParameter("ITEMAX",10,"maximum number of iterations over fields",&ssidyn);
   BoolParameter("SCATRA_FROM_RESTART_FILE","No","read scatra result from restart files (use option 'restartfromfile' during execution of baci)",&ssidyn);
   StringParameter("SCATRA_FILENAME","nil","Control-file name for reading scatra results in SSI",&ssidyn);

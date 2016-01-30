@@ -71,7 +71,7 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   DoubleParameter("ALPHA_F",0.5,"Generalized-alpha time integration factor",&scatradyn);
   DoubleParameter("GAMMA",0.5,"Generalized-alpha time integration factor",&scatradyn);
   //IntParameter("WRITESOLEVRY",1,"Increment for writing solution",&scatradyn);
-  IntParameter("UPRES",1,"Increment for writing solution",&scatradyn);
+  IntParameter("RESULTSEVRY",1,"Increment for writing solution",&scatradyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&scatradyn);
   IntParameter("MATID",-1,"Material ID for automatic mesh generation",&scatradyn);
 

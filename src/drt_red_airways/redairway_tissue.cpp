@@ -494,7 +494,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   // Restart
   airwaystimeparams.set                  ("write restart every"       ,rawdyn.get<int>("RESTARTEVRY"));
   // Solution output
-  airwaystimeparams.set                  ("write solution every"      ,rawdyn.get<int>("UPRES"));
+  airwaystimeparams.set                  ("write solution every"      ,rawdyn.get<int>("RESULTSEVRY"));
 
   // Solver parameters
   // Solver type
