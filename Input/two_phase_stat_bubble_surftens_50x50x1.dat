@@ -36,7 +36,7 @@ MAXTIME                         1000.0
 NUMSTEP                         15
 RESTARTEVRY                     20
 TIMESTEP                        50.0
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow_Surf
 XFEMSTABILIZATION               no
@@ -78,7 +78,7 @@ NONLINITER                      Newton
 ITEMAX                          20                              // 20
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-10
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTASTEPS                     0
 THETA                           1.0
@@ -121,7 +121,7 @@ TIMESTEP                        50.0
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
-UPRES                           1
+RESULTSEVRY                           1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No

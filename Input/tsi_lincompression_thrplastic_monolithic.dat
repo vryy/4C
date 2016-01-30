@@ -111,7 +111,7 @@ NUMSTEP                         2000
 NORM_INC                        Abs  // Rel,Mix
 RESTARTEVRY                     1
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-06
 TOLINC                          1e-07

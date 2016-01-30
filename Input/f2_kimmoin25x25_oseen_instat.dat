@@ -34,7 +34,7 @@ NONLINITER                      fixed_point_like
 ITEMAX                          2 // crucial! Oseen problem has to be linear!
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-13
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     0
 NUMSTEP                         3
 NUMSTASTEPS                     0

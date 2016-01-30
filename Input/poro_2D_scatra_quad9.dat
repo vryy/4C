@@ -24,7 +24,7 @@ INITIALFIELD                    zero_field
 PREDICTOR                       steady_state
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta //One_Step_Theta Stationary
-UPRES                           1
+RESULTSEVRY                           1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
@@ -58,7 +58,7 @@ THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
-UPRES                           1
+RESULTSEVRY                           1
 LINEAR_SOLVER                   1
 SECONDORDER                     no
 CONTIPARTINT                    no
@@ -74,7 +74,7 @@ SHAPEFCT                        Polynomial
 LINEAR_SOLVER                   4
 SOLVERTYPE                      linear_incremental
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 THETA                           0.66
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
@@ -109,7 +109,7 @@ LINEAR_SOLVER                   2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 ----------------------------------------------------------POROSCATRA CONTROL
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTEP                         100
 MAXTIME                         8.0

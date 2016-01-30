@@ -70,7 +70,7 @@ SEARCH_PARAM                    0.3
 MAXTIME                         1.0
 NUMSTEP                         3
 TIMESTEP                        0.001
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 CALCERROR                       No // No error_by_function
 CALCERRORNO                     2
@@ -90,8 +90,8 @@ NUMSTEP                         3
 MAXTIME                         1.0
 TIMESTEP                        0.001
 DIFFTIMESTEPSIZE                No
-UPRESTIME                       0
-UPRES                           1
+RESULTSEVRYTIME                       0
+RESULTSEVRY                           1
 ITEMAX                          10
 ITEMIN                          1
 FIELDCOUPLING                   none

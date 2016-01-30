@@ -90,7 +90,7 @@ MAXTIME                         1.0
 NUMSTEP                         1
 RESTARTEVRY                     1
 TIMESTEP                        1.0
-UPRES                           1
+RESULTSEVRY                           1
 MATCHINGGRID                    no
 -----------------------------------------------------TSI DYNAMIC/PARTITIONED
 CONVTOL                         1e-06

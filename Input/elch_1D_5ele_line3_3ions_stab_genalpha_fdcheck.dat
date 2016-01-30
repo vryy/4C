@@ -27,7 +27,7 @@ NUMTHERMDIS                     0
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      Gen_Alpha
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     7                   // test writing of restart data
 NUMSTEP                         10                  // series of stationary solutions from Pe=0 up to Pe=200
 MAXTIME                         1000.0

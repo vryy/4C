@@ -25,7 +25,7 @@ MAXTIME                         100.0
 NUMSTEP                         5
 RESTARTEVRY                     1
 TIMESTEP                        0.02
-UPRES                           1
+RESULTSEVRY                           1
 ---------------------------------------------------TWO PHASE FLOW/SMEARED
 ENHANCED_GAUSSRULE              No
 INTERFACE_THICKNESS             0.09375  //0.03125  //3eps=0.09375
@@ -44,7 +44,7 @@ NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-10
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2
 NUMSTASTEPS                     0
 THETA                           0.66
@@ -90,7 +90,7 @@ TIMESTEP                        0.02
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       No
-UPRES                           1
+RESULTSEVRY                           1
 ALPHA_F                         1.0 //0.5
 ALPHA_M                         1.0 //0.5
 CALCERROR                       No

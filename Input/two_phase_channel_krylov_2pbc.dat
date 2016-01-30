@@ -34,7 +34,7 @@ MAXTIME                         1000000
 NUMSTEP                         5
 RESTARTEVRY                     3
 TIMESTEP                        0.06
-UPRES                           3
+RESULTSEVRY                           3
 PARALLEL_REDIST_RATIO_FAC       1.2
 RESTART_SCATRA_INPUT            No
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
@@ -74,7 +74,7 @@ SOLVERTYPE                      nonlinear                       // linear_full, 
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta                  // Stationary, One_Step_Theta, BDF2, Gen_Alpha
 TIMESTEP                        0.06
-UPRES                           1
+RESULTSEVRY                           1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes                   // zero, function, function_and_curve, Navier_Stokes
 WRITEFLUX                       No                              // No, totalflux_domain, diffusiveflux_domain, totalflux_boundary, diffusiveflux_boundary
@@ -108,7 +108,7 @@ ITEMAX                          20
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-14
-UPRES                           1
+RESULTSEVRY                           1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

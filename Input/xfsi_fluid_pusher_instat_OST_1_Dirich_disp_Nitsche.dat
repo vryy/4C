@@ -57,7 +57,7 @@ LINEAR_SOLVER                   1
 MAXTIME                         0.8
 TIMESTEP                        0.1
 NUMSTEP                         130
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     5
 COUPALGO                        iter_stagg_AITKEN_rel_param
 SECONDORDER                     No
@@ -77,7 +77,7 @@ NONLINITER                      Newton
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-13
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     5
 NUMSTEP                         8
 NUMSTASTEPS                     1

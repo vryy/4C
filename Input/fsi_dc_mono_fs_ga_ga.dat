@@ -53,7 +53,7 @@ UPDATEMATRIX                    no
 MAXTIME                         1
 TIMESTEP                        0.1
 NUMSTEP                         10
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2
 COUPALGO                        iter_monolithicfluidsplit
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER

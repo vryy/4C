@@ -60,7 +60,7 @@ RESTARTEVRY                     10
 SECONDORDER                     Yes
 SLIDEALEPROJ                    RotZSphere
 TIMESTEP                        0.5
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ALEPCITER                       1 1 1
 ALEPCOMEGA                      0.8 0.8 1.0

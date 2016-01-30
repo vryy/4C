@@ -25,7 +25,7 @@ GAMMA                           0.666666
 TIMESTEP                        0.1
 NUMSTEP                         3
 CONVTOL                         1e-04
-UPRES                           1
+RESULTSEVRY                           1
 INITIALFIELD                    zero_field
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver

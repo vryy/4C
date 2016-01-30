@@ -22,7 +22,7 @@ RESTART                         0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      One_Step_Theta
-UPRES                           10
+RESULTSEVRY                           10
 RESTARTEVRY                     1
 MAXTIME                         1.0
 NUMSTEP                         1000

@@ -31,7 +31,7 @@ NONLINITER Newton //fixed_point_like
 ITEMAX                          3
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-4
-UPRES                           2
+RESULTSEVRY                           2
 RESTARTEVRY                     5
 NUMSTEP                         6
 NUMSTASTEPS                     0

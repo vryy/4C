@@ -58,7 +58,7 @@ MAXTIME                         0.002
 NUMSTEP                         10
 RESTARTEVRY                     3
 TIMESTEP                        0.0001
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 BASETOL                         1e-6
 CONVTOL                         1.0E-6

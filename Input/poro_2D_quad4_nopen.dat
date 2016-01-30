@@ -58,7 +58,7 @@ MAXTIME                         500
 TIMESTEP                        0.01
 ITEMAX                          500
 ITEMIN                          1
-UPRES                           1
+RESULTSEVRY                           1
 SECONDORDER                     Yes
 CONTIPARTINT                    yes
 LINEAR_SOLVER                   1

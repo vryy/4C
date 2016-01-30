@@ -188,7 +188,7 @@ MAXTIME                         10
 NUMSTEP                         20
 RESTARTEVRY                     15
 TIMESTEP                        0.01
-UPRES                           10
+RESULTSEVRY                           10
 ITEMIN                          1
 NORM_INC                        Abs
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC

@@ -68,7 +68,7 @@ CONVCHECK                       L_2_norm
 INCONSISTENT_RESIDUAL           no
 INITIALFIELD                    zero_field
 CONVFORM                        convective
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2
 NUMSTEP                         2
 ITEMAX                          10
@@ -99,7 +99,7 @@ EVALUATION_MAT                  integration_point
 COUPALGO                        iter_stagg_AITKEN_rel_param
 DEBUGOUTPUT                     No
 SECONDORDER                     No
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2
 NUMSTEP                         3
 TIMESTEP                        0.01

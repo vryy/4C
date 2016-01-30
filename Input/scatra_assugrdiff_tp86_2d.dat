@@ -24,7 +24,7 @@ LINEAR_SOLVER                   1
 SKIPINITDER                     yes
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      Stationary
-UPRES                           1
+RESULTSEVRY                           1
 NUMSTEP                         1
 MAXTIME                         1000.0
 TIMESTEP                        0.0001

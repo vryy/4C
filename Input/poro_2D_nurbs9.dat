@@ -61,7 +61,7 @@ RESTARTEVRY                     100
 TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-06
 TIMESTEP                        0.01
-UPRES                           1
+RESULTSEVRY                           1
 LINEAR_SOLVER                   3
 SECONDORDER                     no
 CONTIPARTINT                    yes

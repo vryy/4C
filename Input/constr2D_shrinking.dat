@@ -63,7 +63,7 @@ BETA                            0.44444444444//0.308641975
 GAMMA                           0.83333333333//0.611111111
 ---------------------------------------------------------------FLUID DYNAMIC
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 MAXTIME                         1000.0
 NUMSTEP                         1000
@@ -99,7 +99,7 @@ COUPALGO                        iter_stagg_AITKEN_rel_param
 MAXTIME                         35.0
 NUMSTEP                         350
 RESTARTEVRY                     1
-UPRES                           1
+RESULTSEVRY                           1
 TIMESTEP                        0.1
 ----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-7

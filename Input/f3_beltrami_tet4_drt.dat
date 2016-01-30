@@ -28,7 +28,7 @@ NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      Af_Gen_Alpha   //Np_Gen_Alpha //BDF2                          // identical results with: Np_Gen_Alpha
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2
 MAXTIME                         0.1
 NUMSTEP                         4

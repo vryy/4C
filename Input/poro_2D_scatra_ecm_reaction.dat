@@ -51,7 +51,7 @@ STEADYSTEP                      -1
 THETA                           0.66
 TIMEINTEGR                      Stationary
 TIMESTEP                        0.01
-UPRES                           1
+RESULTSEVRY                           1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
@@ -143,7 +143,7 @@ ADAPTCONV_BETTER                0.1
 LINEAR_SOLVER                   4
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTEP                         2
 MAXTIME                         4.0 //hill reaches point of departure (x0=2/15)
@@ -168,7 +168,7 @@ EVALUATION_TAU                  integration_point
 STABTYPE                        no_stabilization
 SUGRVEL                         no
 ----------------------------------------------------------POROSCATRA CONTROL
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     5
 NUMSTEP                         2
 MAXTIME                         4.0

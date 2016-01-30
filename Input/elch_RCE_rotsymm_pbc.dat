@@ -32,7 +32,7 @@ NONLINITER                      Newton
 ITEMAX                          20
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTEP                         30
 NUMSTASTEPS                     0
@@ -70,7 +70,7 @@ VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_boundary
 WRITEFLUX_IDS                   1 2                           // do flux output only for scalar field 1 and 2, omit field 3!!
-UPRES                           1
+RESULTSEVRY                           1
 MATID                           5
 SOLVERTYPE                      nonlinear
 OUTMEAN                         Yes

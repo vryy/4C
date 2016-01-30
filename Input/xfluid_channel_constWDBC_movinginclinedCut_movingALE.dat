@@ -59,7 +59,7 @@ NONLINITER                      Newton
 ITEMAX                          2
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-13
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2
 NUMSTEP                         10
 NUMSTASTEPS                     0

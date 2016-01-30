@@ -90,7 +90,7 @@ THETA                           1.0
 LINEAR_SOLVER                   2
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 NUMSTEP                         20
 MAXTIME                         5.0
@@ -114,7 +114,7 @@ DEFINITION_TAU                  Zero
 EVALUATION_MAT                  element_center
 EVALUATION_TAU                  integration_point
 -----------------------------------------------------------------SSI CONTROL
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 NUMSTEP                         20
 MAXTIME                         1.0

@@ -100,7 +100,7 @@ NORM_INC                        Abs  // Rel,Mix
 NUMSTEP                         2000
 RESTARTEVRY                     1
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 ---------------------------------------------TSI DYNAMIC/MONOLITHIC
 TOLINC                          1e-07
 ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled

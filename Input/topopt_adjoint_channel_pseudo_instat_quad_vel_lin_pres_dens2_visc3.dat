@@ -53,7 +53,7 @@ RESTARTEVRY                     100000
 RESTOL                          1e-6
 RESTART_ACTION                  Fluid_Time_Step
 TIMESTEP                        0.3
-UPRES                           1
+RESULTSEVRY                           1
 ----------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER
 MAX_ITER                        1
 MATID                           2

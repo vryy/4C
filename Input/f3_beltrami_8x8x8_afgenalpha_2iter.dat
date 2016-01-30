@@ -53,7 +53,7 @@ NUMSTASTEPS                     0
 THETA                           0.66
 TIMEINTEGR                      Af_Gen_Alpha
 TIMESTEP                        0.05
-UPRES                           8
+RESULTSEVRY                           8
 MESHTYING                       no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross                        // Cross stress term not available in combust fluid

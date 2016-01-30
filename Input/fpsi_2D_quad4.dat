@@ -38,7 +38,7 @@ COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
 ITEMAX                          1
 ITEMIN                          1
-UPRES                           1
+RESULTSEVRY                           1
 SECONDORDER                     Yes
 CONTIPARTINT                    Yes
 ------------------------------------------------------FLUID DYNAMIC
@@ -121,7 +121,7 @@ LINEAR_SOLVER                   1
 ITEMAX                          100
 ITEMIN                          1
 NUMSTEP                         5
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 FDCheck_row                     -1
 FDCheck_column                  -1

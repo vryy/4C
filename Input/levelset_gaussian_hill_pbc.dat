@@ -46,7 +46,7 @@ FILESTEPS                       1000
 NUMSTEP                         100
 MAXTIME                         1.0 //hill reaches point of departure (x0=2/15)
 TIMESTEP                        0.01
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 -----------------------------------LEVEL-SET CONTROL/PARTICLE
 INCLUDE_PARTICLE                no //yes //no
@@ -60,7 +60,7 @@ DYNAMICTYP                      RK2
 LINEAR_SOLVER                   1
 SOLVERTYPE                      linear_full
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTEP                         100
 MAXTIME                         1.0 //hill reaches point of departure (x0=2/15)

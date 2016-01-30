@@ -65,7 +65,7 @@ FLUID DIS fluid NODE 3043 QUANTITY pressure VALUE 2.673499982e+04 TOLERANCE 1e-3
 MAXTIME                         1000.0
 TIMESTEP                        0.0001
 NUMSTEP                         5
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_stagg_AITKEN_rel_param
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER

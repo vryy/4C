@@ -37,7 +37,7 @@ NUMSTEP                         8
 RESTARTEVRY                     10
 //TIMEINT                         BDF2
 TIMESTEP                        0.05
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Premixed_Combustion
 XFEMSTABILIZATION               no
@@ -78,7 +78,7 @@ START_THETA                     1.0 //0.66
 THETA                           1.0 //0.66
 TIMEINTEGR                      BDF2 //One_Step_Theta
 TIMESTEP                        0.05
-UPRES                           8
+RESULTSEVRY                           8
 MESHTYING                       no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross                        // Cross stress term not available in combust fluid
@@ -106,7 +106,7 @@ TIMESTEP                        0.01
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
-UPRES                           1
+RESULTSEVRY                           1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No

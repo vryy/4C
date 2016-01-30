@@ -46,7 +46,7 @@ RESTARTSTEP_PARTICLES           30
 SIMPLIFIED_BUBBLE_FORCES        No
 TIMESTEP                        5.0e-2
 TIME_STEP_SIZE_RATIO            10
-UPRES                           1
+RESULTSEVRY                           1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       yes
@@ -65,7 +65,7 @@ START_THETA                     0.66
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
-UPRES                           1
+RESULTSEVRY                           1
 MESHTYING                       no
 INITIALFIELD                    field_by_function
 VELGRAD_PROJ_SOLVER             9

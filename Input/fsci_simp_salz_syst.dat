@@ -28,7 +28,7 @@ ITEMAX           10
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-6
 GRIDVEL          BDF2
-UPRES            1
+RESULTSEVRY            1
 RESTARTEVRY      2000
 NUMSTEP          150
 NUMSTASTEPS      0
@@ -126,7 +126,7 @@ RESTARTEVRY                     1
 DEBUGOUTPUT                     No
 SECONDORDER                     Yes
 SLIDEALEPROJ                    None
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    1e-03
 BASETOL                         1e-05

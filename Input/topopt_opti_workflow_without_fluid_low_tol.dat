@@ -30,14 +30,14 @@ RESTARTEVRY                     100000
 RESTART_ACTION                  Fluid_Time_Step
 RESTOL                          1e-6
 TIMESTEP                        0.5
-UPRES                           1
+RESULTSEVRY                           1
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function
 MATID                           2
 TESTCASE                        test_workflow_without_fluiddata
 VOLUME_BOUNDARY                 0.2
-UPRES                           1
+RESULTSEVRY                           1
 TOL_KKT                         1.0e-14
 TOL_SUB                         1.0e-15
 RHO_INIT                        1.0e-02

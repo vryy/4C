@@ -24,7 +24,7 @@ RESTARTEVRY                     100000
 RESTART_ACTION                  Fluid_Time_Step
 RESTOL                          1e-6
 TIMESTEP                        0.5
-UPRES                           1
+RESULTSEVRY                           1
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER
 GMSH_OUTPUT                     no
 INITFUNCNO                      2
@@ -37,7 +37,7 @@ TESTCASE                        test_lin_poro // test_workflow_without_fluiddata
 THETA                           0.8
 TOL_KKT                         1e-05
 TOL_SUB                         1e-10
-UPRES                           1
+RESULTSEVRY                           1
 VOLUME_BOUNDARY                 0.4
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
 INITFUNCNO                      3

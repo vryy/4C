@@ -57,7 +57,7 @@ NUMSTEP                         5
 RESTARTEVRY                     1
 SECONDORDER                     No
 TIMESTEP                        2.5
-UPRES                           1
+RESULTSEVRY                           1
 SLIDEALEPROJ                    Curr
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 BASETOL                         0.001

@@ -137,7 +137,7 @@ NORM_INC                        Abs
 NUMSTEP                         200
 RESTARTEVRY                     1
 TIMESTEP                        1.0  // 0.05
-UPRES                           1
+RESULTSEVRY                           1
 ---------------------------------------------TSI DYNAMIC/MONOLITHIC
 CALC_NECKING_TSI_VALUES         No
 CONVTOL                         1e-06

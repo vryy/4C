@@ -46,7 +46,7 @@ TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
 WRITEFLUX                       totalflux_domain
-UPRES                           1
+RESULTSEVRY                           1
 CALCERROR                       No
 MESHTYING                       Condensed_Smat
 OUTMEAN                         yes

@@ -43,7 +43,7 @@ MAXTIME                         1.0
 NUMSTEP                         30
 RESTARTEVRY                     20
 TIMESTEP                        0.00001
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow_Jumps            // Two_Phase_Flow
 START_VAL_SEMILAGRANGE          No                              // No
@@ -86,7 +86,7 @@ NONLINITER                      Newton                          // fixed_point_l
 ITEMAX                          20                              // 20
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-8
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTASTEPS                     0
 THETA                           1.0
@@ -129,7 +129,7 @@ TIMESTEP                        0.00001
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
-UPRES                           1
+RESULTSEVRY                           1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No

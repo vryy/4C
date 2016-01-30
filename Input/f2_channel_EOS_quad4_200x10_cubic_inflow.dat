@@ -39,7 +39,7 @@ PHYSICAL_TYPE    Stokes //Incompressible //Stokes //Stokes
 ITEMAX           3
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-12
-UPRES            1
+RESULTSEVRY            1
 RESTARTEVRY      5
 NUMSTEP          1//2
 NUMSTASTEPS      0

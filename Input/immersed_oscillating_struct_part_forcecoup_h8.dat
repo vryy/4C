@@ -84,7 +84,7 @@ EVALUATION_MAT                  integration_point
 MAXTIME                         0.02
 TIMESTEP                        0.01
 NUMSTEP                         2
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_stagg_fixed_rel_param
 -------------------------------------FSI DYNAMIC/PARTITIONED SOLVER

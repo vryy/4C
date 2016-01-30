@@ -42,7 +42,7 @@ MAXTIME                         0.1
 NUMSTEP                         5
 RESTARTEVRY                     100000
 TIMESTEP                        0.0002
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Premixed_Combustion
 XFEMSTABILIZATION               no
@@ -67,7 +67,7 @@ NONLINITER                      Newton                          // fixed_point_l
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-08
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTASTEPS                     0
 THETA                           0.66
@@ -110,7 +110,7 @@ TIMESTEP                        0.01
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
-UPRES                           1
+RESULTSEVRY                           1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No

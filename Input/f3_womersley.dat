@@ -72,7 +72,7 @@ TIMESTEP                        0.01
 MAXTIME                         0.5
 NUMSTEP       122 //120
 RESTARTEVRY                     1
-UPRES                           1
+RESULTSEVRY                           1
 NONLINITER                      Newton                        // fixed_point_like,Newton,minimal
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.01
@@ -89,7 +89,7 @@ DYNAMICTYP                      OneStepTheta
 NUMSTEP                         100
 TIMESTEP                        1.0e-2
 RESTARTEVRY                     5
-UPRES                           5
+RESULTSEVRY                           5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

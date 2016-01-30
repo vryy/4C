@@ -100,7 +100,7 @@ MAXTIME                         1000
 TIMESTEP                        0.05
 ITEMAX                          50
 ITEMIN                          1
-UPRES                           1
+RESULTSEVRY                           1
 TOLRES_GLOBAL                   1e-08
 TOLINC_GLOBAL                   1e-08
 NORM_INC                        AbsGlobal

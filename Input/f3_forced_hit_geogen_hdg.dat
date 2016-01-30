@@ -40,7 +40,7 @@ PREDICTOR                       steady_state
 RESTARTEVRY                     10000
 TIMEINTEGR                      Af_Gen_Alpha
 TIMESTEP                        0.04
-UPRES                           1
+RESULTSEVRY                           1
 //INITIALFIELD                    forced_hit_numeric_spectrum
 INITIALFIELD                    forced_hit_simple_algebraic_spectrum
 LINEAR_SOLVER                   1

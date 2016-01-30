@@ -36,7 +36,7 @@ NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-13
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTASTEPS                     0
 THETA                           1.0
@@ -123,7 +123,7 @@ TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
-UPRES                           1
+RESULTSEVRY                           1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No

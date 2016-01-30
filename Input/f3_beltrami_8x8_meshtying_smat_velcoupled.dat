@@ -41,7 +41,7 @@ ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 TIMESTEP                        0.01
-UPRES                           5
+RESULTSEVRY                           5
 MESHTYING                       Condensed_Smat
 ALLDOFCOUPLED                   no
 INITIALFIELD                    BELTRAMI-FLOW

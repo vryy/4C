@@ -36,7 +36,7 @@ NONLINITER                      fixed_point_like
 NUMSTEP                         3
 PREDICTOR                       steady_state
 RESTARTEVRY                     200
-UPRES                           50
+RESULTSEVRY                           50
 INCONSISTENT_RESIDUAL           yes
 ----------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based

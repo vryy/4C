@@ -87,7 +87,7 @@ MAXTIME                         1.5
 NUMSTEP                         20000
 RESTARTEVRY                     1
 TIMESTEP                        1.5
-UPRES                           1
+RESULTSEVRY                           1
 ITEMAX                          10 // 11.02.10
 COUPALGO                        tsi_monolithic
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC

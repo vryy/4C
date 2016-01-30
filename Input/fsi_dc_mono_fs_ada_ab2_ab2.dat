@@ -59,7 +59,7 @@ NUMSTEP                         15
 RESTARTEVRY                     2
 SECONDORDER                     yes
 TIMESTEP                        0.002
-UPRES                           2
+RESULTSEVRY                           2
 --------------------------------------------------FSI DYNAMIC/TIMEADAPTIVITY
 ADAPTSTEPMAX                    5
 AUXINTEGRATORFLUID              AB2

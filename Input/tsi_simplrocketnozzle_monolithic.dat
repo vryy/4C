@@ -113,7 +113,7 @@ NORM_INC                        Abs
 NUMSTEP                         4  // 200000
 RESTARTEVRY                     50
 TIMESTEP                        0.05
-UPRES                           1  // 10
+RESULTSEVRY                           1  // 10
 ------------------------------------------------------TSI DYNAMIC/MONOLITHIC
 CONVTOL                         1e-06
 TOLINC                          1e-06

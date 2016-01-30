@@ -22,7 +22,7 @@ MAXTIME                         2.0
 NUMSTEP                         5 //10
 RESTARTEVRY                     1
 TIMESTEP                        8.0e-04  //6.0e-04 XFEM
-UPRES                           1
+RESULTSEVRY                           1
 RESTART_SCATRA_INPUT            no
 ---------------------------------------------------TWO PHASE FLOW/SMEARED
 ENHANCED_GAUSSRULE              No
@@ -47,7 +47,7 @@ ALPHA_F                         1.0
 ALPHA_M                         1.0
 GAMMA                           0.5
 TIMESTEP                        3.0e-4
-UPRES                           5
+RESULTSEVRY                           5
 GMSH_OUTPUT                     no
 NONLINEARBC                     no
 ----------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
@@ -79,7 +79,7 @@ SOLVERTYPE                      nonlinear
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        3.0e-4
-UPRES                           1
+RESULTSEVRY                           1
 VELOCITYFIELD                   Navier_Stokes
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 //ABSTOLRES                       1e-5

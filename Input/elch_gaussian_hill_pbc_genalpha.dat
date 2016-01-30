@@ -30,7 +30,7 @@ NUMTHERMDIS                     0
 LINEAR_SOLVER                   1
 SOLVERTYPE nonlinear //linear_incremental
 TIMEINTEGR                      Gen_Alpha
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2
 NUMSTEP                         10                              // shorter run for nightly test case! //100
 MAXTIME                         1.0 //hill reaches point of departure (x0=2/15) for 100 steps

@@ -41,7 +41,7 @@ GAMMA                           0.5
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 MAXTIME                         1000.0
 NUMSTEP                         1

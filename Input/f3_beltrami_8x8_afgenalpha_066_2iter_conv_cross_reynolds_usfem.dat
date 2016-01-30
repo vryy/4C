@@ -49,7 +49,7 @@ START_THETA                     0.66
 THETA                           0.66
 TIMEINTEGR                      Af_Gen_Alpha
 TIMESTEP                        0.00625
-UPRES                           4
+RESULTSEVRY                           4
 MESHTYING                       no
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow

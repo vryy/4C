@@ -36,7 +36,7 @@ DYNAMICTYP                      CentrDiff
 GRAVITY_ACCELERATION            0.0 0.0 -980.0
 ----------------------------------------------------------CAVITATION DYNAMIC
 COUPALGO                        cavitation_twowayfull
-UPRES                           5
+RESULTSEVRY                           5
 RESTARTEVRY                     18
 TIMESTEP                        5.0e-3
 NUMSTEP                         20

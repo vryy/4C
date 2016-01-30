@@ -54,7 +54,7 @@ STARTFUNCNO                     2
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta                //BDF2
 TIMESTEP                        1
-UPRES                           1
+RESULTSEVRY                           1
 NONLINEARBC                     no
 LINEAR_SOLVER                   1
 -----------------------------------------------------------------ALE DYNAMIC
@@ -68,7 +68,7 @@ MAXTIME                         4.0
 NUMSTEP                         4
 RESTARTEVRY                     2
 TIMESTEP                        1.0                           //0.01
-UPRES                           1
+RESULTSEVRY                           1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen  //Barrenechea_Franca_Valentin_Wall

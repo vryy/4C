@@ -59,7 +59,7 @@ MAXTIME                         0.2
 NUMSTEP                         20
 RESTARTEVRY                     1000//20
 TIMESTEP                        0.01
-UPRES                           5
+RESULTSEVRY                           5
 ---------------------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE                   Incompressible
 LINEAR_SOLVER                   2
@@ -83,7 +83,7 @@ ADAPTCONV_BETTER                0.1
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     20
 NUMSTEP                         20
 STEADYSTEP                      -1
@@ -139,7 +139,7 @@ TIMESTEP                        0.01
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
-UPRES                           1
+RESULTSEVRY                           1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No

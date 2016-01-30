@@ -7,8 +7,8 @@
 -------------------------------------------------------------TITLE
 BioChemo-Mechano Coupled Model for Active Cell Contractibility.
 Basic Pseudo2D test.
-Square Cell fixed inbetween two dashpots in the midle of upper
-and lower cell surface.
+Square Cell fixed inbetween two dashpots in the middle of upper
+and lower cell surfaces.
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    625
 //NODES       1352
@@ -27,28 +27,117 @@ PROBLEMTYP                      Immersed_CellMigration
 RESTART                         0
 --------------------------------------------------------CELL DYNAMIC
 MIGRATIONTYPE                   ameboid
-COUPALGO                        iter_stagg_fixed_rel_param
 PSEUDO2D                        yes
 SIMTYPE                         pureContraction
 SSI_CELL                        yes
 ECM_INTERACTION                 no
 FLUID_INTERACTION               no
 ADHESION_DYNAMICS               no
-SEGREGATION                     surface // volume surface
-SEGREGATION_BY                  neumann //dirichlet neumann
-SEGREGATION_LAW                 constant
-SEGREGATION_CONST               0.01
-ECM_FIBER_RADIUS                100.0 // very large -> no ecm interaction
-PENALTY_START                   1000
 INITIALIZE_CELL                 no
 INITIAL_TIMESTEP                1.000e-01
-PENALTY_INIT                    1.000e+02
 INITIALIZATION_STEPS            0
-UPRES                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     100
 NUMSTEP                         2
 TIMESTEP                        0.5
 MAXTIME                         2.0
+-------------------------------------CELL DYNAMIC/PROTEOLYSIS MODULE
+COUPALGO                        iter_stagg_fixed_rel_param
+SEGREGATION                     surface // volume surface
+SEGREGATION_BY                  neumann //dirichlet neumann
+SEGREGATION_LAW                 constant
+SEGREGATION_CONST               0.01
+-------------------------------------CELL DYNAMIC/CONFINEMENT MODULE
+COUPALGO                        iter_stagg_fixed_rel_param
+PENALTY_INIT                    1.000e+02
+ECM_FIBER_RADIUS                100.0 // very large -> no ecm interaction
+PENALTY_START                   1000
+-------------------------------------CELL DYNAMIC/STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+DAMPING                         No
+DIVERCONT                       continue
+DYNAMICTYP                      OneStepTheta
+ITERNORM                        L2
+LOADLIN                         no
+MASSLIN                         no
+MATERIALTANGENT                 finitedifferences
+MINITER                         0
+NLNSOL                          fullnewton
+MAXITER                         20
+NORMCOMBI_DISPPRES              And
+NORMCOMBI_RESFDISP              And
+NORMCOMBI_RESFINCO              And
+NORM_DISP                       Abs
+NORM_INCO                       Abs
+NORM_PRES                       Abs
+NORM_RESF                       Abs
+PREDICT                         ConstVel //ConstDis
+TOLCONSTR                       1.0e-07
+TOLDISP                         1.0e-06
+TOLINCO                         1.0e-07
+TOLPRE                          1.0e-07
+TOLRES                          1.0e-07
+K_DAMP                          -1.0
+M_DAMP                          -1.0
+UZAWAALGO                       uzawa
+UZAWAMAXITER                    50
+UZAWAPARAM                      1
+UZAWATOL                        1e-08
+ADAPTCONV                       No
+ADAPTCONV_BETTER                0.1
+CONTROLNODE                     -1 -1 -1
+CONTROLTYPE                     load
+INT_STRATEGY                    Old
+PRESTRESS                       none
+PRESTRESSTIME                   0.000e+00
+STC_SCALING                     no
+STC_LAYER                       1
+PTCDT                           1.000e-01
+LSMAXITER                       30
+ALPHA_LS                        5.000e-01
+SIGMA_LS                        1.000e-04
+LUMPMASS                        No
+MODIFIEDEXPLEULER               Yes
+YOUNG_IS_TEMP_DEPENDENT         No
+GEOMETRY                        full
+------------------------CELL DYNAMIC/STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           1.0
+---------------------------------------CELL DYNAMIC/SCALAR TRANSPORT
+CONVFORM                        conservative
+CONV_HEAT_TRANS                 no
+FSSUGRDIFF                      No
+INITFUNCNO                      1
+INITIALFIELD                    field_by_function
+LINEAR_SOLVER                   1
+MESHTYING                       no
+NEUMANNINFLOW                   no
+OUTMEAN                         No
+OUTPUT_GMSH                     No
+SKIPINITDER                     yes
+SOLVERTYPE                      nonlinear
+THETA                           1.0
+TIMEINTEGR                      One_Step_Theta
+VELCURVENO                      -1
+VELFUNCNO                       -1
+VELOCITYFIELD                   Navier_Stokes
+WRITEFLUX                       No
+WRITEFLUX_IDS                   -1
+-----------------------------CELL DYNAMIC/SCALAR TRANSPORT/NONLINEAR
+ABSTOLRES                       1e-14
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.1
+CONVTOL                         1e-06
+EXPLPREDICT                     no
+ITEMAX                          10
+-------------------------CELL DYNAMIC/SCALAR TRANSPORT/STABILIZATION
+ASSUGRDIFF                      no
+CONSISTENCY                     no
+DEFINITION_ASSGD                artificial_linear
+DEFINITION_TAU                  Franca_Valentin
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  integration_point
+STABTYPE                        SUPG
+SUGRVEL                         no
 ----------------------------------------------------IMMERSED METHOD
 COUPALGO                        partitioned
 SCHEME                          dirichletneumann
@@ -78,7 +167,7 @@ ITEMAX                          25
 -----------------------------------------SSI CONTROL
 COUPALGO                        ssi_IterStagg
 ITEMAX                          30
-UPRES                           1
+RESULTSEVRY                           1
 SCATRATYPE                      Advanced_Reaction
 TIMESTEP                        999999
 MAXTIME                         999999
@@ -109,7 +198,7 @@ SKIPINITDER                     yes
 SOLVERTYPE                      nonlinear
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 VELCURVENO                      -1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
@@ -219,7 +308,7 @@ GAMMA                           1.0
 NUMSTEP                         999999999
 MAXTIME                         999999999
 TIMESTEP                        999999999
-UPRES                           999999999
+RESULTSEVRY                           999999999
 RESTARTEVRY                     0
 // default values to avoid printing
 SIMPLER_SOLVER                  -1
@@ -269,11 +358,11 @@ VECTORNORM_INC                  L2
 NUMSTEP                         999999999
 MAXTIME                         999999999
 TIMESTEP                        999999999
-UPRES                           999999999
+RESULTSEVRY                           999999999
 RESTARTEVRY                     0
 ----------------------------------------------------------POROSCATRA CONTROL
 LINEAR_SOLVER                   1
-UPRES                           1
+RESULTSEVRY                           1
 COUPALGO                        two_way // monolithic scatra_to_solid solid_to_scatra two_way
 NORM_INC                        AbsGlobal
 NORM_RESF                       AbsGlobal

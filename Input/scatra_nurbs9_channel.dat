@@ -28,7 +28,7 @@ NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 TIMEINTEGR                      Np_Gen_Alpha
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2
 MAXTIME                         1000.0
 NUMSTEP                         10
@@ -60,7 +60,7 @@ LINEAR_SOLVER                   1
 // all three solver types have to deliver IDENTICAL results !!!!!!!!!!!!!!!
 SOLVERTYPE linear_full //linear_incremental //nonlinear
 TIMEINTEGR                      Gen_Alpha
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 MAXTIME                         1000.0
 NUMSTEP                         10

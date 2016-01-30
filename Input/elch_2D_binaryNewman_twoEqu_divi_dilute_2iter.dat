@@ -38,7 +38,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
-UPRES                           1
+RESULTSEVRY                           1
 MATID                           1
 WRITEFLUX                       No
 OUTMEAN                         No

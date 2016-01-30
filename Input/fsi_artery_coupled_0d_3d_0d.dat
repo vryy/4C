@@ -19,7 +19,7 @@ DYNAMICTYP                      OneStepTheta
 NUMSTEP                         40000
 TIMESTEP                        0.00025
 RESTARTEVRY                     1
-UPRES                           1
+RESULTSEVRY                           1
 SOLVERTYPE                      Nonlinear                       // Linear Nonlinear
 MAXITERATIONS                   40
 TOLERANCE                       1E-4
@@ -46,7 +46,7 @@ STRONG_REDD_3D_COUPLING_TYPE    yes
 MAXTIME                         0.100
 TIMESTEP                        0.001
 NUMSTEP                         5
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_monolithicstructuresplit
 SECONDORDER                     Yes

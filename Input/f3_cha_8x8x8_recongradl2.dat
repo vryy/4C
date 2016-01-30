@@ -33,7 +33,7 @@ INITIALFIELD                    field_by_function
 CONVFORM                        convective
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1000
 NUMSTEP                         1
 STARTFUNCNO                     1

@@ -50,7 +50,7 @@ START_THETA                     0.66
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
-UPRES                           8
+RESULTSEVRY                           8
 MESHTYING                       no
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow
@@ -70,7 +70,7 @@ EVALUATION_TAU                  integration_point
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 MAXTIME                         1000.0
 NUMSTEP                         8

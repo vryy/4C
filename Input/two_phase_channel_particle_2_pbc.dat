@@ -23,7 +23,7 @@ MAXTIME                         2.0
 NUMSTEP                         5
 RESTARTEVRY                     4
 TIMESTEP                        0.05
-UPRES                           1
+RESULTSEVRY                           1
 WRITE_CENTER_OF_MASS            yes
 --------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow_Jumps
@@ -63,7 +63,7 @@ RESTARTEVRY                     1
 START_THETA                     1.0
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 NONLINEARBC                     yes
 ----------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 GRAD_DIV                        yes
@@ -91,7 +91,7 @@ RESTARTEVRY                     1
 SOLVERTYPE                      nonlinear
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 VELOCITYFIELD                   Navier_Stokes
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ADAPTCONV                       yes

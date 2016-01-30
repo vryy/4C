@@ -32,7 +32,7 @@ LINEAR_SOLVER                   1
 TIMESTEP                        0.001
 NUMSTEP                         250
 MAXTIME                         1.0
-UPRES                           10
+RESULTSEVRY                           10
 RESTARTEVRY                     0
 STARTFUNCNO                     1
 PHOTOACOU                       No

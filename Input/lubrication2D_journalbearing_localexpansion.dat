@@ -36,7 +36,7 @@ FILESTEPS                       1000
 MAXTIME                         0.03
 NUMSTEP                         3
 TIMESTEP                        0.01
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 CALCERROR                       No // No error_by_function
 CALCERRORNO                     2

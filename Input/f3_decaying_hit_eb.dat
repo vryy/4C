@@ -40,7 +40,7 @@ PREDICTOR                       steady_state
 RESTARTEVRY                     10000
 TIMEINTEGR                      Af_Gen_Alpha
 TIMESTEP                        0.5
-UPRES                           1
+RESULTSEVRY                           1
 INITIALFIELD                    hit_comte_bellot_corrsin_initial_field
 //INITIALFIELD                    forced_hit_numeric_spectrum
 //INITIALFIELD                    forced_hit_simple_algebraic_spectrum

@@ -100,7 +100,7 @@ NUMSTEP                         2000
 NORM_INC                        Abs  // Rel
 RESTARTEVRY                     1
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------------------TSI DYNAMIC/PARTITIONED
 CONVTOL                         1e-06
 COUPVARIABLE                    Temperature  // Displacement,Temperature

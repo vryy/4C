@@ -32,7 +32,7 @@ SOLVERTYPE linear_full //linear_incremental
 //MASSMAT consistent //row_sum //_including_stab
 SKIPINITDER                     yes
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 NUMSTEP                         1
 MAXTIME                         1000.0
 TIMESTEP                        0.01

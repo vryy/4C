@@ -45,7 +45,7 @@ W_COMPLIANCE                    linear
 LINEAR_SOLVER                   1
 TIMEINTEGR                      Stationary
 PHYSICAL_TYPE                   Stokes
-UPRES                           1
+RESULTSEVRY                           1
 NUMSTEP                         1
 ITEMAX                          2
 CONVCHECK                       L_2_norm

@@ -35,7 +35,7 @@ GAMMA                           0.66666666666666
 TIMESTEP                        0.01
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
-UPRES                           1
+RESULTSEVRY                           1
 MATID                           1
 WRITEFLUX                       diffusiveflux_boundary
 OUTMEAN                         Yes

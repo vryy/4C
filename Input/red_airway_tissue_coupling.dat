@@ -71,7 +71,7 @@ DYNAMICTYP                      OneStepTheta
 NUMSTEP                         750
 TIMESTEP                        0.002
 RESTARTEVRY                     100
-UPRES                           10
+RESULTSEVRY                           10
 SOLVERTYPE                      Nonlinear                     // Linear Nonlinear
 MAXITERATIONS                   40
 TOLERANCE                       1E-7

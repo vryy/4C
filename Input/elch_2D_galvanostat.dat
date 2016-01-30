@@ -32,7 +32,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.5
 VELFUNCNO                       0
 VELOCITYFIELD                   zero
-UPRES                           10
+RESULTSEVRY                           10
 MATID                           1
 WRITEFLUX                       totalflux_boundary
 OUTMEAN                         Yes

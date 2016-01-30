@@ -40,7 +40,7 @@ THETA                           0.5
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     20
 NUMSTEP                         20
 MAXTIME                         2.0
@@ -62,7 +62,7 @@ CONVTOL                         1e-14
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 -----------------------------------------------------------------SSI CONTROL
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 NUMSTEP                         20
 MAXTIME                         2.0

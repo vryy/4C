@@ -27,7 +27,7 @@ RESTARTEVRY                     3
 RESTART_FROM_FLUID              No
 RESTART_SCATRA_INPUT            No
 TIMESTEP                        0.001
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow_Surf
 XFEMSTABILIZATION               no
@@ -67,7 +67,7 @@ STEADYSTEP                      -1
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.001
-UPRES                           1
+RESULTSEVRY                           1
 GMSH_OUTPUT                     no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
@@ -101,7 +101,7 @@ SOLVERTYPE                      linear_full
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.001
-UPRES                           1
+RESULTSEVRY                           1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       No
 WRITEFLUX_IDS                   -1

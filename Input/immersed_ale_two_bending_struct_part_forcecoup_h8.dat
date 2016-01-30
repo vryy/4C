@@ -83,7 +83,7 @@ NONLINEARBC                     no
 MESHTYING                       no
 GRIDVEL                         BE
 ALLDOFCOUPLED                   Yes
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     3000
 NUMSTEP                         2
 ITEMAX                          10
@@ -130,7 +130,7 @@ COUPALGO                        iter_stagg_fixed_rel_param
 DEBUGOUTPUT                     No
 SECONDORDER                     No
 NUMSTEP                         2
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     3000
 TIMESTEP                        0.1
 MAXTIME                         0.2

@@ -96,7 +96,7 @@ MAXTIME                         3
 NUMSTEP                         200
 RESTARTEVRY                     1
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------------------TSI DYNAMIC/PARTITIONED
 CONVTOL                         1e-06
 COUPVARIABLE                    Displacement  // Displacement,Temperature

@@ -36,7 +36,7 @@ GRIDVEL                         BE
 INITIALFIELD                    zero_field
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
@@ -70,7 +70,7 @@ THERM_TEMPGRAD                  None
 ------------------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
-UPRES                           1
+RESULTSEVRY                           1
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
@@ -101,7 +101,7 @@ EVALUATION_TAU                  integration_point
 STABTYPE                        no_stabilization
 SUGRVEL                         no
 ----------------------------------------------------------POROSCATRA CONTROL
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     5
 NUMSTEP                         10
 MAXTIME                         4.0

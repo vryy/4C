@@ -49,7 +49,7 @@ NUMSTEP                         5
 RESTARTEVRY                     1
 SECONDORDER                     No
 TIMESTEP                        10.0
-UPRES                           1
+RESULTSEVRY                           1
 SLIDEALEPROJ                    Curr
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0

@@ -38,7 +38,7 @@ MAXTIME                         1000.0
 NUMSTEP                         5
 RESTARTEVRY                     1 //20
 TIMESTEP                        0.02 //3.0e-03
-UPRES                           1
+RESULTSEVRY                           1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    zero_field //zero_field
@@ -48,7 +48,7 @@ NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-8
-UPRES                           5
+RESULTSEVRY                           5
 RESTARTEVRY                     10
 NUMSTASTEPS                     0
 THETA                           1.0
@@ -132,7 +132,7 @@ TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
-UPRES                           5
+RESULTSEVRY                           5
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No

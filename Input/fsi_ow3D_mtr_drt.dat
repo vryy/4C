@@ -56,7 +56,7 @@ NUMSTEP                         4
 RESTARTEVRY                     1
 SECONDORDER                     No
 TIMESTEP                        0.05
-UPRES                           1
+RESULTSEVRY                           1
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 BASETOL                         0.001
 CONVTOL                         1.0E-06

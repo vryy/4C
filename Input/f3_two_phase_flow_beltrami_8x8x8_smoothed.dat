@@ -35,7 +35,7 @@ MAXTIME                         0.5
 NUMSTEP                         8
 RESTARTEVRY                     10
 TIMESTEP                        0.05
-UPRES                           1
+RESULTSEVRY                           1
 ---------------------------------------------------TWO PHASE FLOW/SMEARED
 ENHANCED_GAUSSRULE              No
 INTERFACE_THICKNESS             0.0
@@ -61,7 +61,7 @@ START_THETA                     0.66
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
-UPRES                           8
+RESULTSEVRY                           8
 MESHTYING                       no
 INITIALFIELD                    BELTRAMI-FLOW                   // INITIALFIELD field_by_function with INITFUNCNO 1 would do the same
 //INITFUNCNO                      -1                              // 1 // Beltrami function
@@ -93,7 +93,7 @@ TIMESTEP                        0.01
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
-UPRES                           1
+RESULTSEVRY                           1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No

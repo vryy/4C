@@ -75,7 +75,7 @@ VECTORNORM_INC                  L2
 NUMSTEP                         10
 RESTARTEVRY                     100
 TIMESTEP                        0.01
-UPRES                           1
+RESULTSEVRY                           1
 LINEAR_SOLVER                   1
 SECONDORDER                     yes
 CONTIPARTINT                    yes

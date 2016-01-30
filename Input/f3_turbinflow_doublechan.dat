@@ -52,7 +52,7 @@ RESTARTEVRY                     2
 STARTFUNCNO                     1
 START_THETA                     1
 STEADYSTEP                      -1
-UPRES                           1
+RESULTSEVRY                           1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

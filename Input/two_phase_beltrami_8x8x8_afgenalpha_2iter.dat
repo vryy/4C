@@ -36,7 +36,7 @@ MAXTIME                         0.5
 NUMSTEP                         8
 RESTARTEVRY                     10
 TIMESTEP                        0.05
-UPRES                           8
+RESULTSEVRY                           8
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow
 XFEMSTABILIZATION               no
@@ -76,7 +76,7 @@ NUMSTASTEPS                     0
 THETA                           0.66
 TIMEINTEGR                      Af_Gen_Alpha
 TIMESTEP                        0.05
-UPRES                           8
+RESULTSEVRY                           8
 MESHTYING                       no
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross                        // Cross stress term not available in combust fluid
@@ -104,7 +104,7 @@ TIMESTEP                        0.01
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
-UPRES                           1
+RESULTSEVRY                           1
 ALPHA_F                         0.666666
 ALPHA_M                         0.833333
 CALCERROR                       No

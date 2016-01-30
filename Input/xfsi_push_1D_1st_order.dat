@@ -39,7 +39,7 @@ FILESTEPS                       1000
 MAXTIME                         0.4
 TIMESTEP                        0.1
 NUMSTEP                         20
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     5
 COUPALGO                        iter_stagg_AITKEN_rel_param
 SECONDORDER                     No
@@ -57,7 +57,7 @@ NONLINITER                      Newton
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-13
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     5
 NUMSTEP                         2
 NUMSTASTEPS                     1

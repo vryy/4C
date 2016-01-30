@@ -36,7 +36,7 @@ MAXTIME                         9
 NUMSTEP                         5
 RESTARTEVRY                     2
 TIMESTEP                        0.02
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow
 XFEMSTABILIZATION               no
@@ -64,7 +64,7 @@ ITEMAX                          15
 CONVCHECK                       L_2_norm
 //CONVTOL                       1.0E-5
 CONVTOL                         1.0E-12
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTASTEPS                     0
 THETA                           0.65
@@ -109,7 +109,7 @@ TIMESTEP                        0.02
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       No
-UPRES                           1
+RESULTSEVRY                           1
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No

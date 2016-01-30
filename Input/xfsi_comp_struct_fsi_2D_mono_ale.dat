@@ -88,7 +88,7 @@ LINEAR_SOLVER                   2
 MAXTIME                         20.0
 TIMESTEP                        0.01//0.02
 NUMSTEP                         4
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2
 COUPALGO                        iter_xfem_monolithic          //iter_stagg_AITKEN_rel_param // iter_stagg_MFNK_FSI ////iter_stagg_fixed_rel_param // //iter_stagg_fixed_rel_param //
 SECONDORDER                     No                            //No

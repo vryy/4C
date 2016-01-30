@@ -16,7 +16,7 @@ DYNAMICTYP                      ExpTaylorGalerkin
 NUMSTEP                         10000
 TIMESTEP                        1.0e-4
 RESTARTEVRY                     1
-UPRES                           1
+RESULTSEVRY                           1
 SOLVESCATRA                     no
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
@@ -26,7 +26,7 @@ NONLINITER                      Newton
 ITEMAX                          12
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 NUMSTEP                         3270
 NUMSTASTEPS                     1

@@ -65,7 +65,7 @@ SOLVERTYPE                      nonlinear
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 VELCURVENO                      -1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
@@ -136,7 +136,7 @@ MAXTIME                         100.0
 NUMSTEP                         10
 RESTARTEVRY                     1
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 SCATRATYPE                      Advanced_Reaction
 --------------------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1e-06

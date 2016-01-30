@@ -143,7 +143,7 @@ NUMSTEP                         10
 RESTARTEVRY                     100
 SECONDORDER                     yes
 TIMESTEP                        25.0
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 BASETOL                         1.0e-06
 CONVTOL                         1.0e-06
@@ -182,7 +182,7 @@ MAXTIME                         10000.0
 TIMESTEP                        12.5
 NUMSTEP                         20
 RESTARTEVRY                     10
-UPRES                           1
+RESULTSEVRY                           1
 INF_PERM                        No
 SCATRA_SOLVERTYPE               linear
 COUPLED_LINEAR_SOLVER           1                             // FS3I problem
@@ -216,7 +216,7 @@ SOLVERTYPE                      linear_incremental
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        25.0
-UPRES                           1
+RESULTSEVRY                           1
 VELCURVENO                      -1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes

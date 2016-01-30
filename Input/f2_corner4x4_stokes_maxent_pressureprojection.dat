@@ -48,7 +48,7 @@ W_COMPLIANCE                    linear
 LINEAR_SOLVER                   1
 TIMEINTEGR                      Stationary
 PHYSICAL_TYPE                   Stokes
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     20
 MAXTIME                         1000.0
 NUMSTEP                         1

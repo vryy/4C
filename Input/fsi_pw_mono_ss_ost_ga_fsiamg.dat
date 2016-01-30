@@ -42,7 +42,7 @@ THETA                           0.66
 MAXTIME                         0.001
 TIMESTEP                        0.00025
 NUMSTEP                         4
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_monolithicstructuresplit
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER

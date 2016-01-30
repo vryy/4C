@@ -60,7 +60,7 @@ NUMSTEP                         8
 RESTARTEVRY                     5
 SECONDORDER                     Yes
 TIMESTEP                        0.3
-UPRES                           1
+RESULTSEVRY                           1
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2

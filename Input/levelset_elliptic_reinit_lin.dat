@@ -24,7 +24,7 @@ NUMFLUIDDIS                     1
 NUMSTEP                         0
 MAXTIME                         15.0
 TIMESTEP                        0.25
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     100
 -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
 REINITIALIZATION                EllipticEq

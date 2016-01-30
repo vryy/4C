@@ -37,7 +37,7 @@ INITFUNCNO                      -1
 FSSUGRDIFF                      No
 VELOCITYFIELD                   function
 VELFUNCNO                       1
-UPRES                           1
+RESULTSEVRY                           1
 WRITEFLUX                       No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver

@@ -51,7 +51,7 @@ START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
-UPRES                           1
+RESULTSEVRY                           1
 LINEAR_SOLVER                   2
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
@@ -74,7 +74,7 @@ NUMSTEP                         10
 RESTARTEVRY                     1
 SECONDORDER                     No
 TIMESTEP                        0.05
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 BASETOL                         1e-8
 CONVTOL                         1e-8

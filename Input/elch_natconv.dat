@@ -32,7 +32,7 @@ NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTEP                         10
 NUMSTASTEPS                     0
@@ -87,7 +87,7 @@ VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
 OUTMEAN                         Yes
-UPRES                           1
+RESULTSEVRY                           1
 MATID                           5
 NATURAL_CONVECTION              Yes
 NATCONVITEMAX                   10

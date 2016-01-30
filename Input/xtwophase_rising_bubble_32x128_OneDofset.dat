@@ -42,7 +42,7 @@ MAXTIME                         1000.0
 NUMSTEP                         5
 RESTARTEVRY                     1000//20
 TIMESTEP                        3.0e-03
-UPRES                           5
+RESULTSEVRY                           5
 //INTERFACE_THICKNESS             0.0 //0.04  //Initial: 0.04, h=0.02
 //ENHANCED_GAUSSRULE              No  //No Yes
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -54,7 +54,7 @@ NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-UPRES                           5
+RESULTSEVRY                           5
 RESTARTEVRY                     10
 NUMSTASTEPS                     0
 THETA                           1.0
@@ -133,7 +133,7 @@ TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
-UPRES                           5
+RESULTSEVRY                           5
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No

@@ -50,7 +50,7 @@ START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.0008
-UPRES                           1
+RESULTSEVRY                           1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
@@ -67,7 +67,7 @@ TIMESTEP                        0.0008
 VELFUNCNO                       1
 VELOCITYFIELD Navier_Stokes //function
 WRITEFLUX                       diffusiveflux_boundary        // do not use totalflux_boundary due to introduction of mesh convection!
-UPRES                           1
+RESULTSEVRY                           1
 MATID                           2
 SOLVERTYPE                      nonlinear
 OUTMEAN                         Yes

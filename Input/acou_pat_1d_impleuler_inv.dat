@@ -28,7 +28,7 @@ LINEAR_SOLVER                   1
 TIMESTEP                        1e-8
 NUMSTEP                         600000
 MAXTIME                         0.0000059999
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 STARTFUNCNO                     1
 PHOTOACOU                       Yes
@@ -48,7 +48,7 @@ OPTIPARAMLIST                   2 a
 LINEAR_SOLVER                   2
 SOLVERTYPE                      linear_full
 TIMEINTEGR                      Stationary
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTEP                         1
 MAXTIME 1.0 //hill reaches point of departure (x0=2/15)

@@ -130,7 +130,7 @@ MAXTIME                         5
 TIMESTEP                        0.5
 ITEMAX                          10
 ITEMIN                          1
-UPRES                           1
+RESULTSEVRY                           1
 TOLRES_GLOBAL                   1e-10
 TOLINC_GLOBAL                   1e-10
 NORM_INC                        AbsGlobal
@@ -154,7 +154,7 @@ MESHTYING                       no
 GRIDVEL                         OST
 ALLDOFCOUPLED                   Yes
 COMPUTE_DIVU                    No
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     20
 NUMSTEP                         1
 STEADYSTEP                      -1

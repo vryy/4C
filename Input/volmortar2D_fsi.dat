@@ -51,7 +51,7 @@ ALE_TYPE                        solid
 MAXTIME                         20.0
 TIMESTEP                        0.1
 NUMSTEP                         200
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2
 COUPALGO                        iter_stagg_fixed_rel_param //iter_monolithicstructuresplit
 MATCHGRID_FLUIDALE              no

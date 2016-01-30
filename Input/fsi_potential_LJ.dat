@@ -32,7 +32,7 @@ MAXTIME                         10
 NUMSTEP                         5
 RESTARTEVRY                     20
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 LAMINAR_FLAMESPEED              1
 MARKSTEIN_LENGTH                0
@@ -66,7 +66,7 @@ START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
-UPRES                           1
+RESULTSEVRY                           1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
@@ -94,7 +94,7 @@ NUMSTEP                         5
 RESTARTEVRY                     1
 SECONDORDER                     No
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 BASETOL                         0.001
 CONVTOL                         1.0E-6
@@ -131,7 +131,7 @@ RESTARTEVRY                     1
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
 WRITEFLUX                       No

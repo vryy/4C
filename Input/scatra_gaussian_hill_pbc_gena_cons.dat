@@ -32,7 +32,7 @@ NUMTHERMDIS                     0
 LINEAR_SOLVER                   1
 SOLVERTYPE                      linear_full
 TIMEINTEGR                      Gen_Alpha
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTEP                         100
 MAXTIME                         1.0 //hill reaches point of departure (x0=2/15)

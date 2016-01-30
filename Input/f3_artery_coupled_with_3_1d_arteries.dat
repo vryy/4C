@@ -32,7 +32,7 @@ DYNAMICTYP                      ExpTaylorGalerkin
 NUMSTEP                         50000
 TIMESTEP                        1.0e-3
 RESTARTEVRY                     50
-UPRES                           50
+RESULTSEVRY                           50
 LINEAR_SOLVER                   4
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
@@ -43,7 +43,7 @@ NONLINITER                      Newton
 ITEMAX                          12
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 NUMSTEP                         1000
 NUMSTASTEPS                     1 //0

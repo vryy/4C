@@ -86,7 +86,7 @@ LINEAR_SOLVER                   1
 COUPALGO                        iter_stagg_AITKEN_rel_param
 SECONDORDER                     yes
 NUMSTEP                         3
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 TIMESTEP                        0.7
 -------------------------------------FSI DYNAMIC/PARTITIONED SOLVER

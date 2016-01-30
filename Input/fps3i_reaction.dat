@@ -71,7 +71,7 @@ STRONG_REDD_3D_COUPLING_TYPE    no
 THETA                           0.9
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 ----------------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
@@ -110,7 +110,7 @@ RESTARTEVRY                     1
 SHAPEDERIVATIVES                Yes // linearization with respect to ale mesh motion (obligatory for fpsi-problems)
 USESHAPEDERIVATIVES             Yes
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 MAXTIME                         1.0
 ALPHABJ                         1.0
 LINEAR_SOLVER                   1
@@ -129,7 +129,7 @@ MAXTIME                         100.0
 TIMESTEP                        0.1
 NUMSTEP                         3
 RESTARTEVRY                     1
-UPRES                           1
+RESULTSEVRY                           1
 INF_PERM                        No
 SCATRA_SOLVERTYPE               nonlinear
 COUPLED_LINEAR_SOLVER           6                             // FS3I problem
@@ -148,7 +148,7 @@ SUGRVEL                         no
 LINEAR_SOLVER                   6
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 NUMSTEP                         3
 MAXTIME                         4.0 //hill reaches point of departure (x0=2/15)
@@ -191,7 +191,7 @@ EVALUATION_TAU                  integration_point
 STABTYPE                        no_stabilization
 SUGRVEL                         no
 ----------------------------------------------------------POROSCATRA CONTROL
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 NUMSTEP                         3
 MAXTIME                         4.0
@@ -226,7 +226,7 @@ MAXTIME                         2.0
 NUMSTEP                         3
 RESTARTEVRY                     1
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 LINEAR_SOLVER                   1
 SECONDORDER                     yes
 CONTIPARTINT                    yes

@@ -111,7 +111,7 @@ MAXTIME                         10
 NUMSTEP                         8
 RESTARTEVRY                     1
 TIMESTEP                        5e-3
-UPRES                           1
+RESULTSEVRY                           1
 ITEMAX                          100 // 11.02.10
 COUPALGO         tsi_monolithic //               tsi_iterstagg  //
 ---------------------------------------------------TSI DYNAMIC/PARTITIONED

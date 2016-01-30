@@ -51,7 +51,7 @@ MAXTIME                         10000.0
 TIMESTEP                        0.01 //0.01
 NUMSTEP                         1
 RESTARTEVRY                     1
-UPRES                           1
+RESULTSEVRY                           1
 INF_PERM                        No
 SCATRA_SOLVERTYPE               nonlinear //linear
 COUPLED_LINEAR_SOLVER           4                             // FS3I problem
@@ -92,7 +92,7 @@ SOLVERTYPE                      nonlinear //linear_incremental //
 THETA                           0.666666
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        25.0
-UPRES                           1
+RESULTSEVRY                           1
 VELCURVENO                      -1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
@@ -195,7 +195,7 @@ ADAPTCONV_BETTER                0.1 //How much better must linear residual be co
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
 COMPUTE_DIVU                    No
-UPRES                           1 //write every ... step in output
+RESULTSEVRY                           1 //write every ... step in output
 RESTARTEVRY                     500
 NUMSTEP                         3000
 STEADYSTEP                      -1
@@ -247,7 +247,7 @@ COUPALGO                        iter_monolithicfluidsplit //iter_stagg_AITKEN_re
 DEBUGOUTPUT                     No
 SECONDORDER                     No //
 NUMSTEP                         3000
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     20
 TIMESTEP                        0.01
 MAXTIME                         3

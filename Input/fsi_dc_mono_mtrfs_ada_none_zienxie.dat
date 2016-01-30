@@ -58,7 +58,7 @@ UPDATEMATRIX                    no
 MAXTIME                         1.0
 TIMESTEP                        0.002
 NUMSTEP                         14
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2
 COUPALGO                        iter_mortar_monolithicfluidsplit
 --------------------------------------------------FSI DYNAMIC/TIMEADAPTIVITY

@@ -65,7 +65,7 @@ GAMMA                           0.83333333333
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
 TIMEINTEGR                      One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 MAXTIME                         1000.0
 NUMSTEP                         1000
@@ -104,7 +104,7 @@ MAXTIME                         0.2
 NUMSTEP                         2
 RESTARTEVRY                     1
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 ----------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
 CONVTOL                         1.0E-6
 ITEMAX                          100

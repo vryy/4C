@@ -25,7 +25,7 @@ RESTART                         0
 NUMSTEP                         20
 MAXTIME                         40.0
 TIMESTEP                        0.4
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 EXTRACT_INTERFACE_VEL           No
 NUM_CONVEL_LAYERS               -1
@@ -50,7 +50,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.4
 VELFUNCNO                       1
 VELOCITYFIELD                   function
-UPRES                           1
+RESULTSEVRY                           1
 CONVFORM                        convective
 MATID                           1
 LINEAR_SOLVER                   1

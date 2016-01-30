@@ -41,7 +41,7 @@ TIMESTEP                        0.0006
 VELFUNCNO                       1
 VELOCITYFIELD                   function
 WRITEFLUX                       totalflux_boundary
-UPRES                           1
+RESULTSEVRY                           1
 MATID                           5
 SOLVERTYPE                      nonlinear
 OUTMEAN                         Yes

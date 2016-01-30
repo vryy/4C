@@ -52,7 +52,7 @@ ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 TIMESTEP                         0.1
-UPRES                           1
+RESULTSEVRY                           1
 MESHTYING                       Condensed_Bmat_merged
 INITIALFIELD                    zero_field
 CALCERROR                       no

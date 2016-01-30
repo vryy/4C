@@ -37,7 +37,7 @@ ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 INFNORMSCALING                  no
 GMSH_OUTPUT                     No
-UPRES                           1
+RESULTSEVRY                           1
 THETA                           1
 NUMSTEP                         5
 ITEMAX                          10

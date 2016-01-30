@@ -67,7 +67,7 @@ SOLVERTYPE                      nonlinear
 THETA                           0.66
 TIMEINTEGR                      Stationary
 TIMESTEP                        0.1
-UPRES                           1
+RESULTSEVRY                           1
 VELCURVENO                      -1
 VELFUNCNO                       2
 VELOCITYFIELD                   function

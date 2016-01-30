@@ -21,7 +21,7 @@ RESTART                         0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      Np_Gen_Alpha
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2
 MAXTIME                         1000.0
 NUMSTEP                         10

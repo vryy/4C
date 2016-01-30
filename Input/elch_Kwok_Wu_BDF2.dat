@@ -47,7 +47,7 @@ TIMESTEP                        0.005
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
 WRITEFLUX                       totalflux_domain
-UPRES                           1
+RESULTSEVRY                           1
 CALCERROR                       Kwok_Wu
 MATID                           4
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

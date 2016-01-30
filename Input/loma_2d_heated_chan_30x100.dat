@@ -27,7 +27,7 @@ NONLINITER                      fixed_point_like
 ITEMAX                          1
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-5
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2000
 NUMSTEP                         20
 NUMSTASTEPS                     0
@@ -84,7 +84,7 @@ TIMESTEP                        1.0
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       diffusiveflux_boundary
-UPRES                           10
+RESULTSEVRY                           10
 CONVFORM                        convective
 MATID                           1
 OUTMEAN                         Yes
@@ -101,7 +101,7 @@ TIMESTEP                        1.0
 MAXTIME                         350.0
 ITEMAX                          1
 CONVTOL                         1.0E-4
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10                            // 2000
 CONSTHERMPRESS                  Yes
 --------------------------------------------------------------------SOLVER 1

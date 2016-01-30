@@ -43,7 +43,7 @@ ALPHA_F                         1.00 //BDF2
 ALPHA_M                         1.50 //BDF2
 GAMMA                           1.00 //BDF2
 TIMESTEP       0.01
-UPRES                           5
+RESULTSEVRY                           5
 MESHTYING  Condensed_Bmat
 INITIALFIELD   BELTRAMI-FLOW
 CALCERROR      beltrami_flow

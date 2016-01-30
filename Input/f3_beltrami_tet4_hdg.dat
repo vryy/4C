@@ -27,7 +27,7 @@ NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      BDF2
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     2
 MAXTIME                         10
 NUMSTEP                         5

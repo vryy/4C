@@ -24,7 +24,7 @@ LINEAR_SOLVER                   1
 TIMESTEP                        0.0125
 MAXTIME                         0.5
 NUMSTEP                         10000
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     1
 STARTFUNCNO                     2
 SOURCETERMFUNCNO                3

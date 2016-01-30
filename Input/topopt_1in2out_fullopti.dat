@@ -38,7 +38,7 @@ PRESSURE_DROP_FAC               1.0
 RESTARTEVRY                     10
 RESTOL                          1e-6
 TIMESTEP                        1.0
-UPRES                           1
+RESULTSEVRY                           1
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER
 GMSH_OUTPUT                     no
 INITFUNCNO                      2
@@ -49,7 +49,7 @@ MAX_INNER_ITER                  20
 MAX_ITER                        100
 TESTCASE                        test_no
 TOL_KKT                         1e-08
-UPRES                           1
+RESULTSEVRY                           1
 VOLUME_BOUNDARY                 0.6
 FACMIN    1e-09
 RHOMIN    1e-05

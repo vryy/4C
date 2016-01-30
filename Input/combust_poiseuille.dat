@@ -48,7 +48,7 @@ MAXTIME                         1000.0
 NUMSTEP                         10
 RESTARTEVRY                     1
 TIMESTEP                        1.0
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow
 LAMINAR_FLAMESPEED              1.0
@@ -68,7 +68,7 @@ NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-14
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     10
 NUMSTEP                         10
 NUMSTASTEPS                     0
@@ -113,7 +113,7 @@ VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
 OUTMEAN                         No
-UPRES                           1
+RESULTSEVRY                           1
 MATID                           2
 ALPHA_F                         1.0
 ALPHA_M                         1.0

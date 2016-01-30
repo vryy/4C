@@ -20,7 +20,7 @@ RANDSEED                        1
 NUMSTEP                         50
 MAXTIME                         100.0
 TIMESTEP                        0.4
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     5
 -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
 REINITIALIZATION                None
@@ -49,7 +49,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.4
 VELFUNCNO                       1
 VELOCITYFIELD                   function
-UPRES                           1
+RESULTSEVRY                           1
 CONVFORM                        convective
 MATID                           1
 LINEAR_SOLVER                   1

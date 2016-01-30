@@ -47,7 +47,7 @@ NUMSTEP                         4
 RESTARTEVRY                     1
 SECONDORDER                     Yes
 TIMESTEP                        0.05
-UPRES                           1
+RESULTSEVRY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0
 BASETOL                         1.0e-8

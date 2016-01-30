@@ -86,7 +86,7 @@ NONLINITER                      Newton
 ITEMAX                          5
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-UPRES                           1
+RESULTSEVRY                           1
 RESTARTEVRY                     20
 NUMSTEP                         3
 NUMSTASTEPS                     0

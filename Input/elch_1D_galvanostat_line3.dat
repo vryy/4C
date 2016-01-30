@@ -24,7 +24,7 @@ THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.5
 VELOCITYFIELD                   zero
-UPRES                           10
+RESULTSEVRY                           10
 OUTMEAN                         Yes
 MAXTIME                         10
 NUMSTEP                         20

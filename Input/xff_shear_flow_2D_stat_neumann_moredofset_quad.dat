@@ -55,7 +55,7 @@ STARTFUNCNO                     2
 STEADYSTEP                      -1
 THETA                           1.00
 TIMEINTEGR                      Stationary                    //One_Step_Theta
-UPRES                           1
+RESULTSEVRY                           1
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt
