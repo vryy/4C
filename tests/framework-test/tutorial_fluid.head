@@ -138,7 +138,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 //
 // Increment for writing solution
-UPRES                           1
+RESULTSEVRY                     1
 //
 LINEAR_SOLVER                   1
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION

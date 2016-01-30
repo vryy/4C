@@ -670,7 +670,7 @@ COMPUTE_EKIN                    No
 NEW_OST                         No
 //
 // Increment for writing solution
-UPRES                           1
+RESULTSEVRY                      1
 //
 // Increment for writing restart
 RESTARTEVRY                     20
@@ -904,7 +904,7 @@ SECONDORDER                     No
 NUMSTEP                         50
 //
 // Increment for writing solution
-UPRES                           1
+RESULTSEVRY                     1
 //
 // Increment for writing restart
 RESTARTEVRY                     1

@@ -221,7 +221,7 @@ TIMEINTEGR                      Np_Gen_Alpha
 TIMESTEP                        0.01
 //
 // Increment for writing solution
-UPRES                           1
+RESULTSEVRY                     1
 //
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 //
@@ -370,7 +370,7 @@ SLIDEALEPROJ                    None
 TIMESTEP                        0.1
 //
 // Increment for writing solution
-UPRES                           1
+RESULTSEVRY                     1
 //
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 //
