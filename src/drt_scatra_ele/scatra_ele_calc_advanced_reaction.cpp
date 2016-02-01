@@ -443,7 +443,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeff(
     {
       double rcfac= CalcReaCoeffFac(stoich,couplingtype,couprole,k);
 
-      if (reacstart>0 and rcfac>0)
+      if (reacstart>0 and std::abs(rcfac)>1e-16)
         ReacStartForReaCoeff(k,condnum,reacstart,rcfac,couplingtype);
 
       reactermK += -reaccoeff*stoich[k]*rcfac; // scalar at integration point np
@@ -755,7 +755,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTer
     {
       double bftfac = CalcReaBodyForceTermFac(stoich,couplingtype,couprole,k);// scalar at integration point np
 
-      if (reacstart>0 and bftfac>0)
+      if (reacstart>0 and std::abs(bftfac)>1e-16)
         ReacStartForReaBF(k,condnum,reacstart,bftfac);
 
       bodyforcetermK += reaccoeff*stoich[k]*bftfac;
@@ -866,7 +866,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceDer
     {
       double bfdmfac = CalcReaBodyForceDerivFac(stoich,couplingtype,couprole,j,k);
 
-      if (reacstart>0 and bfdmfac>0)
+      if (reacstart>0 and std::abs(bfdmfac)>1e-16)
         ReacStartForReaBFDeriv(k,j,condnum,reacstart,bfdmfac,stoich,couplingtype);
 
       reabodyforcederivmatrixKJ += reaccoeff*stoich[k]*bfdmfac;
