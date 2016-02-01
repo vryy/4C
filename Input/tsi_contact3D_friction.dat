@@ -67,7 +67,7 @@ NUMSTEP                         200
 PREDICT                     ConstAcc //    ConstDis
 RESULTSEVRY                     1
 RESTARTEVRY                     1
-TIMESTEP                        2.5e-3
+TIMESTEP                        999999.0
 TOLCONSTR                       1e-08
 TOLDISP                         1e-08
 TOLINCO                         1e-08
@@ -100,7 +100,7 @@ NUMSTEP                         1
 PREDICT               ConstTempRate //          ConstTemp
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
-TIMESTEP                        2.5e-3
+TIMESTEP                        999999.0
 TOLRES                          1e-08
 TOLTEMP                         1e-10
 LINEAR_SOLVER                   1

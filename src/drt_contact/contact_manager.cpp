@@ -1163,7 +1163,15 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   cparams.setParameters(contact);
   cparams.setParameters(wearlist);
   cparams.setParameters(tsic);
-  cparams.set<double>("TIMESTEP", stru.get<double>("TIMESTEP"));
+  if(problemtype==prb_tsi)
+    cparams.set<double>("TIMESTEP", DRT::Problem::Instance()->TSIDynamicParams().get<double>("TIMESTEP"));
+  else
+  {
+    // rauch 01/16
+    if(Comm().MyPID()==0)
+      std::cout<<"\n \n  Warning: CONTACT::CoManager::ReadAndCheckInput() reads TIMESTEP = "<<stru.get<double>("TIMESTEP")<<" from --STRUCTURAL DYNAMIC \n"<<std::endl;
+    cparams.set<double>("TIMESTEP", stru.get<double>("TIMESTEP"));
+  }
 
   // geometrically decoupled elements cannot be given via input file
   cparams.set<bool>("GEO_DECOUPLED", false);
