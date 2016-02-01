@@ -1165,7 +1165,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   cparams.setParameters(tsic);
   if(problemtype==prb_tsi)
     cparams.set<double>("TIMESTEP", DRT::Problem::Instance()->TSIDynamicParams().get<double>("TIMESTEP"));
-  else
+  else if (problemtype != prb_structure)
   {
     // rauch 01/16
     if(Comm().MyPID()==0)
