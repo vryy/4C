@@ -1172,6 +1172,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       std::cout<<"\n \n  Warning: CONTACT::CoManager::ReadAndCheckInput() reads TIMESTEP = "<<stru.get<double>("TIMESTEP")<<" from --STRUCTURAL DYNAMIC \n"<<std::endl;
     cparams.set<double>("TIMESTEP", stru.get<double>("TIMESTEP"));
   }
+  else
+    cparams.set<double>("TIMESTEP", stru.get<double>("TIMESTEP"));
 
   // geometrically decoupled elements cannot be given via input file
   cparams.set<bool>("GEO_DECOUPLED", false);
