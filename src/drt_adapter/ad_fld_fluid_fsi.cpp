@@ -49,6 +49,7 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   output_(output),
   dirichletcond_(dirichletcond),
   interface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
+  fsiinterface_(Teuchos::rcp(new FLD::UTILS::FsiMapExtractor())),
   meshmap_(Teuchos::rcp(new LINALG::MapExtractor())),
   locerrvelnp_(Teuchos::null),
   auxintegrator_(INPAR::FSI::timada_fld_none),
@@ -78,6 +79,7 @@ void ADAPTER::FluidFSI::Init()
 
   // create fluid map extractor
   SetupInterface();
+  SetupFsiInterface();
 
   fluidimpl_->SetSurfaceSplitter(&(*interface_));
 
@@ -793,6 +795,13 @@ void ADAPTER::FluidFSI::SetupInterface()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::SetupFsiInterface()
+{
+  fsiinterface_->Setup(*dis_);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::BuildInnerVelMap()
 {
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
@@ -800,4 +809,11 @@ void ADAPTER::FluidFSI::BuildInnerVelMap()
   maps.push_back(Interface()->OtherMap());
   maps.push_back(GetDBCMapExtractor()->OtherMap());
   innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(maps);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f)
+{
+  fluidimpl_->UpdateSlaveDOF(f);
 }
