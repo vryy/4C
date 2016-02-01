@@ -170,7 +170,15 @@ void LINALG::Solver::AdaptTolerance(const double desirednlnres,
     printf("                --- Aztec input   relative tolerance %10.3E\n",tol);
   if (currentnlnres*tol < desirednlnres)
   {
+
     double tolnew = desirednlnres*better/currentnlnres;
+    if (tolnew > 0.0){
+      tolnew = 1.0;
+      if (!myrank && output){
+          printf("WARNING:  Computed adapted relative tolerance bigger than 1\n"
+                 "          Value constrained to 1, but consider adapting Parameter ADAPTCONV_BETTER\n");
+      }
+    }
     if (tolnew<tol) tolnew = tol;
     if (!myrank && output && tolnew > tol)
       printf("                *** Aztec adapted relative tolerance %10.3E\n",tolnew);
