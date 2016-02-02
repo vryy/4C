@@ -97,6 +97,22 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &s2icoupling
       );
 
+  // flag for interface side underlying Lagrange multiplier definition
+  setStringToIntegralParameter<int>(
+      "LMSIDE",
+      "slave",
+      "flag for interface side underlying Lagrange multiplier definition",
+      tuple<std::string>(
+          "slave",
+          "master"
+          ),
+      tuple<int>(
+          side_slave,
+          side_master
+          ),
+      &s2icoupling
+      );
+
   // flag for evaluation of interface linearizations and residuals on slave side only
   BoolParameter("SLAVEONLY","No","flag for evaluation of interface linearizations and residuals on slave side only",&s2icoupling);
 }

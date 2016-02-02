@@ -182,10 +182,11 @@ void SCATRA::MeshtyingStrategyS2IElch::BuildBlockNullSpaces() const
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
 SCATRA::MortarCellCalcElch<distypeS,distypeM>* SCATRA::MortarCellCalcElch<distypeS,distypeM>::Instance(
-    const INPAR::S2I::MortarType&   mortartype,             //!< flag for meshtying method
-    const int&                      numdofpernode_slave,    //!< number of slave-side degrees of freedom per node
-    const int&                      numdofpernode_master,   //!< number of master-side degrees of freedom per node
-    bool                            create                  //!< creation flag
+    const INPAR::S2I::MortarType&       mortartype,             //!< flag for meshtying method
+    const INPAR::S2I::InterfaceSides&   lmside,                 //!< flag for interface side underlying Lagrange multiplier definition
+    const int&                          numdofpernode_slave,    //!< number of slave-side degrees of freedom per node
+    const int&                          numdofpernode_master,   //!< number of master-side degrees of freedom per node
+    bool                                create                  //!< creation flag
     )
 {
   static MortarCellCalcElch<distypeS,distypeM>* instance;
@@ -193,7 +194,7 @@ SCATRA::MortarCellCalcElch<distypeS,distypeM>* SCATRA::MortarCellCalcElch<distyp
   if(create)
   {
     if(instance == NULL)
-      instance = new MortarCellCalcElch<distypeS,distypeM>(mortartype,numdofpernode_slave,numdofpernode_master);
+      instance = new MortarCellCalcElch<distypeS,distypeM>(mortartype,lmside,numdofpernode_slave,numdofpernode_master);
   }
 
   else if(instance != NULL)
@@ -213,7 +214,7 @@ template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationT
 void SCATRA::MortarCellCalcElch<distypeS,distypeM>::Done()
 {
   // delete singleton
-  Instance(INPAR::S2I::mortar_undefined,0,0,false);
+  Instance(INPAR::S2I::mortar_undefined,INPAR::S2I::side_undefined,0,0,false);
 
   return;
 }
@@ -224,11 +225,12 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::Done()
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
 SCATRA::MortarCellCalcElch<distypeS,distypeM>::MortarCellCalcElch(
-    const INPAR::S2I::MortarType&   mortartype,            //!< flag for meshtying method
-    const int&                      numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
-    const int&                      numdofpernode_master   //!< number of master-side degrees of freedom per node
+    const INPAR::S2I::MortarType&       mortartype,            //!< flag for meshtying method
+    const INPAR::S2I::InterfaceSides&   lmside,                //!< flag for interface side underlying Lagrange multiplier definition
+    const int&                          numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
+    const int&                          numdofpernode_master   //!< number of master-side degrees of freedom per node
     ) :
-    my::MortarCellCalc(mortartype,numdofpernode_slave,numdofpernode_master)
+    my::MortarCellCalc(mortartype,lmside,numdofpernode_slave,numdofpernode_master)
 {
   return;
 }
@@ -344,41 +346,46 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
     const double di_dpot_slave = fns*timefacfac*i0*(alphaa*frt*expterm1+alphac*frt*expterm2);
     const double di_dpot_master = -di_dpot_slave;
 
-    for (int vi=0; vi<my::nen_slave_; ++vi)
+    if(islavematrix != Teuchos::null and islaveresidual != Teuchos::null)
     {
-      if(la_slave[0].lmowner_[vi*2] == idiscret.Comm().MyPID())
+      for (int vi=0; vi<my::nen_slave_; ++vi)
       {
-        const int row_conc_slave = la_slave[0].lm_[vi*2];
-        const int row_pot_slave = row_conc_slave+1;
-
-        for (int ui=0; ui<my::nen_slave_; ++ui)
+        if(la_slave[0].lmowner_[vi*2] == idiscret.Comm().MyPID())
         {
-          const int col_conc_slave = la_slave[0].lm_[ui*2];
-          const int col_pot_slave = col_conc_slave+1;
+          const int row_conc_slave = la_slave[0].lm_[vi*2];
+          const int row_pot_slave = row_conc_slave+1;
 
-          islavematrix->Assemble(my::funct_slave_(vi)*di_dc_slave*my::funct_slave_(ui),row_conc_slave,col_conc_slave);
-          islavematrix->Assemble(my::funct_slave_(vi)*nume*di_dc_slave*my::funct_slave_(ui),row_pot_slave,col_conc_slave);
-          islavematrix->Assemble(my::funct_slave_(vi)*di_dpot_slave*my::funct_slave_(ui),row_conc_slave,col_pot_slave);
-          islavematrix->Assemble(my::funct_slave_(vi)*nume*di_dpot_slave*my::funct_slave_(ui),row_pot_slave,col_pot_slave);
+          for (int ui=0; ui<my::nen_slave_; ++ui)
+          {
+            const int col_conc_slave = la_slave[0].lm_[ui*2];
+            const int col_pot_slave = col_conc_slave+1;
+
+            islavematrix->Assemble(my::funct_slave_(vi)*di_dc_slave*my::funct_slave_(ui),row_conc_slave,col_conc_slave);
+            islavematrix->Assemble(my::funct_slave_(vi)*nume*di_dc_slave*my::funct_slave_(ui),row_pot_slave,col_conc_slave);
+            islavematrix->Assemble(my::funct_slave_(vi)*di_dpot_slave*my::funct_slave_(ui),row_conc_slave,col_pot_slave);
+            islavematrix->Assemble(my::funct_slave_(vi)*nume*di_dpot_slave*my::funct_slave_(ui),row_pot_slave,col_pot_slave);
+          }
+
+          for(int ui=0; ui<my::nen_master_; ++ui)
+          {
+            const int col_conc_master = la_master[0].lm_[ui*2];
+            const int col_pot_master = col_conc_master+1;
+
+            islavematrix->Assemble(my::funct_slave_(vi)*di_dc_master*my::funct_master_(ui),row_conc_slave,col_conc_master);
+            islavematrix->Assemble(my::funct_slave_(vi)*nume*di_dc_master*my::funct_master_(ui),row_pot_slave,col_conc_master);
+            islavematrix->Assemble(my::funct_slave_(vi)*di_dpot_master*my::funct_master_(ui),row_conc_slave,col_pot_master);
+            islavematrix->Assemble(my::funct_slave_(vi)*nume*di_dpot_master*my::funct_master_(ui),row_pot_slave,col_pot_master);
+          }
+
+          if(islaveresidual->SumIntoGlobalValue(row_conc_slave,0,-my::funct_slave_(vi)*i))
+            dserror("Assembly into slave-side residual vector not successful!");
+          if(islaveresidual->SumIntoGlobalValue(row_pot_slave,0,-my::funct_slave_(vi)*nume*i))
+            dserror("Assembly into slave-side residual vector not successful!");
         }
-
-        for(int ui=0; ui<my::nen_master_; ++ui)
-        {
-          const int col_conc_master = la_master[0].lm_[ui*2];
-          const int col_pot_master = col_conc_master+1;
-
-          islavematrix->Assemble(my::funct_slave_(vi)*di_dc_master*my::funct_master_(ui),row_conc_slave,col_conc_master);
-          islavematrix->Assemble(my::funct_slave_(vi)*nume*di_dc_master*my::funct_master_(ui),row_pot_slave,col_conc_master);
-          islavematrix->Assemble(my::funct_slave_(vi)*di_dpot_master*my::funct_master_(ui),row_conc_slave,col_pot_master);
-          islavematrix->Assemble(my::funct_slave_(vi)*nume*di_dpot_master*my::funct_master_(ui),row_pot_slave,col_pot_master);
-        }
-
-        if(islaveresidual->SumIntoGlobalValue(row_conc_slave,0,-my::funct_slave_(vi)*i))
-          dserror("Assembly into slave-side residual vector not successful!");
-        if(islaveresidual->SumIntoGlobalValue(row_pot_slave,0,-my::funct_slave_(vi)*nume*i))
-          dserror("Assembly into slave-side residual vector not successful!");
       }
     }
+    else if(islavematrix != Teuchos::null or islaveresidual != Teuchos::null)
+      dserror("Must provide both slave-side matrix and slave-side vector or none of them!");
 
     if(imastermatrix != Teuchos::null and imasterresidual != Teuchos::null)
     {

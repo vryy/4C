@@ -201,8 +201,8 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! inverse sums of absolute values of column entries in global system matrix
     Teuchos::RCP<Epetra_Vector> invcolsums_;
 
-    //! input parameters for scatra-scatra interface coupling
-    Teuchos::RCP<Teuchos::ParameterList> parameters_;
+    //! flag for interface side underlying Lagrange multiplier definition
+    const INPAR::S2I::InterfaceSides lmside_;
 
     //! type of global system matrix in global system of equations
     const INPAR::S2I::MatrixType matrixtype_;
@@ -290,16 +290,20 @@ class MortarCellInterface : public DRT::SingletonDestruction
 
     //! protected constructor for singletons
     MortarCellInterface(
-        const INPAR::S2I::MortarType&   mortartype,            //!< flag for meshtying method
-        const int&                      numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
-        const int&                      numdofpernode_master   //!< number of master-side degrees of freedom per node
+        const INPAR::S2I::MortarType&       mortartype,            //!< flag for meshtying method
+        const INPAR::S2I::InterfaceSides&   lmside,                //!< flag for interface side underlying Lagrange multiplier definition
+        const int&                          numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
+        const int&                          numdofpernode_master   //!< number of master-side degrees of freedom per node
         );
 
     //! protected destructor for singletons
     virtual ~MortarCellInterface(){return;};
 
+    //! flag for interface side underlying Lagrange multiplier definition
+    const INPAR::S2I::InterfaceSides lmside_;
+
     //! flag for meshtying method
-    INPAR::S2I::MortarType mortartype_;
+    const INPAR::S2I::MortarType mortartype_;
 
     //! number of slave-side degrees of freedom per node
     const int numdofpernode_slave_;
@@ -316,10 +320,11 @@ class MortarCellCalc : public MortarCellInterface
 
     //! singleton access method
     static MortarCellCalc<distypeS,distypeM>* Instance(
-        const INPAR::S2I::MortarType&   mortartype,             //!< flag for meshtying method
-        const int&                      numdofpernode_slave,    //!< number of slave-side degrees of freedom per node
-        const int&                      numdofpernode_master,   //!< number of master-side degrees of freedom per node
-        bool                            create = true           //!< creation flag
+        const INPAR::S2I::MortarType&       mortartype,             //!< flag for meshtying method
+        const INPAR::S2I::InterfaceSides&   lmside,                 //!< flag for interface side underlying Lagrange multiplier definition
+        const int&                          numdofpernode_slave,    //!< number of slave-side degrees of freedom per node
+        const int&                          numdofpernode_master,   //!< number of master-side degrees of freedom per node
+        bool                                create = true           //!< creation flag
         );
 
     //! singleton destruction
@@ -356,9 +361,10 @@ class MortarCellCalc : public MortarCellInterface
 
     //! protected constructor for singletons
     MortarCellCalc(
-        const INPAR::S2I::MortarType&   mortartype,            //!< flag for meshtying method
-        const int&                      numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
-        const int&                      numdofpernode_master   //!< number of master-side degrees of freedom per node
+        const INPAR::S2I::MortarType&       mortartype,            //!< flag for meshtying method
+        const INPAR::S2I::InterfaceSides&   lmside,                //!< flag for interface side underlying Lagrange multiplier definition
+        const int&                          numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
+        const int&                          numdofpernode_master   //!< number of master-side degrees of freedom per node
         );
 
     //! protected destructor for singletons
@@ -418,7 +424,10 @@ class MortarCellCalc : public MortarCellInterface
     LINALG::Matrix<nen_master_,1> funct_master_;
 
     //! shape function values associated with slave-side Lagrange multipliers at integration point
-    LINALG::Matrix<nen_slave_,1> funct_lm_;
+    LINALG::Matrix<nen_slave_,1> funct_lm_slave_;
+
+    //! shape function values associated with master-side Lagrange multipliers at integration point
+    LINALG::Matrix<nen_master_,1> funct_lm_master_;
 }; // class MortarCellCalc
 
 
@@ -437,7 +446,8 @@ class MortarCellFactory
         const MORTAR::MortarElement&        slaveelement,    //!< slave-side mortar element
         const MORTAR::MortarElement&        masterelement,   //!< master-side mortar element
         const MeshtyingStrategyS2I* const   strategy,        //!< scatra-scatra interface coupling strategy
-        const INPAR::S2I::MortarType&       mortartype       //!< flag for meshtying method
+        const INPAR::S2I::MortarType&       mortartype,      //!< flag for meshtying method
+        const INPAR::S2I::InterfaceSides&   lmside           //!< flag for interface side underlying Lagrange multiplier definition
         );
 
   private:
@@ -448,6 +458,7 @@ class MortarCellFactory
         const MORTAR::MortarElement&        masterelement,        //!< master-side mortar element
         const MeshtyingStrategyS2I* const   strategy,             //!< scatra-scatra interface coupling strategy
         const INPAR::S2I::MortarType&       mortartype,           //!< flag for meshtying method
+        const INPAR::S2I::InterfaceSides&   lmside,               //!< flag for interface side underlying Lagrange multiplier definition
         const int&                          numdofpernode_slave   //!< number of slave-side degrees of freedom per node
         );
 
@@ -456,6 +467,7 @@ class MortarCellFactory
     static MortarCellInterface* MortarCellCalc(
         const MeshtyingStrategyS2I* const   strategy,              //!< scatra-scatra interface coupling strategy
         const INPAR::S2I::MortarType&       mortartype,            //!< flag for meshtying method
+        const INPAR::S2I::InterfaceSides&   lmside,                //!< flag for interface side underlying Lagrange multiplier definition
         const int&                          numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
         const int&                          numdofpernode_master   //!< number of master-side degrees of freedom per node
         );

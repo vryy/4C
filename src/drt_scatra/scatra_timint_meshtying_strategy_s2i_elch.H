@@ -78,10 +78,11 @@ class MortarCellCalcElch : public MortarCellCalc<distypeS,distypeM>
 
     //! singleton access method
     static MortarCellCalcElch<distypeS,distypeM>* Instance(
-        const INPAR::S2I::MortarType&   mortartype,             //!< flag for meshtying method
-        const int&                      numdofpernode_slave,    //!< number of slave-side degrees of freedom per node
-        const int&                      numdofpernode_master,   //!< number of master-side degrees of freedom per node
-        bool                            create = true           //!< creation flag
+        const INPAR::S2I::MortarType&       mortartype,             //!< flag for meshtying method
+        const INPAR::S2I::InterfaceSides&   lmside,                 //!< flag for interface side underlying Lagrange multiplier definition
+        const int&                          numdofpernode_slave,    //!< number of slave-side degrees of freedom per node
+        const int&                          numdofpernode_master,   //!< number of master-side degrees of freedom per node
+        bool                                create = true           //!< creation flag
         );
 
     //! singleton destruction
@@ -94,9 +95,10 @@ class MortarCellCalcElch : public MortarCellCalc<distypeS,distypeM>
 
     //! private constructor for singletons
     MortarCellCalcElch(
-        const INPAR::S2I::MortarType&   mortartype,            //!< flag for meshtying method
-        const int&                      numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
-        const int&                      numdofpernode_master   //!< number of master-side degrees of freedom per node
+        const INPAR::S2I::MortarType&       mortartype,            //!< flag for meshtying method
+        const INPAR::S2I::InterfaceSides&   lmside,                //!< flag for interface side underlying Lagrange multiplier definition
+        const int&                          numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
+        const int&                          numdofpernode_master   //!< number of master-side degrees of freedom per node
         );
 
     //! private destructor for singletons
