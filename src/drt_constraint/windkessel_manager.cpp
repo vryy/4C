@@ -253,8 +253,6 @@ UTILS::WindkesselManager::WindkesselManager
     strparams_ = strparams;
     wkparams_ = wkparams;
 
-    PrintPresFlux(true);
-
   }
 
   return;
@@ -476,6 +474,8 @@ void UTILS::WindkesselManager::ReadRestart(IO::DiscretizationReader& reader,cons
     reader.ReadVector(tempvec, "refddfluxval");
     SetRefDDFluxValue(tempvec);
   }
+
+  if(restartwithwindkessel) PrintPresFlux(true);
 
   return;
 }
