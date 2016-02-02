@@ -92,6 +92,13 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! destructor
     virtual ~MeshtyingStrategyS2I(){return;};
 
+    //! condense global system of equations
+    void CondenseMatAndRHS(
+        const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,              //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>&            residual,                  //!< residual vector
+        const bool                                    calcinittimederiv = false  //!< flag for calculation of initial time derivative
+        ) const;
+
     //! return interface coupling adapter
     const Teuchos::RCP<const ADAPTER::Coupling> CouplingAdapter() const {return icoup_;};
 
@@ -139,6 +146,7 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     void EvaluateMortarCell(
         Teuchos::RCP<LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
         Teuchos::RCP<LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
+        Teuchos::RCP<LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
         Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual vector
         Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side residual vector
         MORTAR::IntCell&                     cell,              //!< mortar integration cell
@@ -179,6 +187,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! mortar projector P
     Teuchos::RCP<LINALG::SparseMatrix> P_;
+
+    //! mortar projector Q
+    Teuchos::RCP<LINALG::SparseMatrix> Q_;
 
     //! transformation operators for auxiliary system matrices
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> imastertoslaverowtransform_;
@@ -275,6 +286,7 @@ class MortarCellInterface : public DRT::SingletonDestruction
     virtual void Evaluate(
         Teuchos::RCP<LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
         Teuchos::RCP<LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
+        Teuchos::RCP<LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
         Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual vector
         Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side residual vector
         const DRT::Discretization&           idiscret,          //!< interface discretization
@@ -334,6 +346,7 @@ class MortarCellCalc : public MortarCellInterface
     void Evaluate(
         Teuchos::RCP<LINALG::SparseMatrix>   imatrix1,          //!< interface matrix 1
         Teuchos::RCP<LINALG::SparseMatrix>   imatrix2,          //!< interface matrix 2
+        Teuchos::RCP<LINALG::SparseMatrix>   imatrix3,          //!< interface matrix 3
         Teuchos::RCP<Epetra_Vector>          islaveresidual,    //!< slave-side residual vector
         Teuchos::RCP<Epetra_FEVector>        imasterresidual,   //!< master-side residual vector
         const DRT::Discretization&           idiscret,          //!< interface discretization
@@ -372,14 +385,15 @@ class MortarCellCalc : public MortarCellInterface
 
     //! evaluate mortar matrices
     void EvaluateMortarMatrices(
-        LINALG::SparseMatrix&          D,               //!< mortar matrix D
-        LINALG::SparseMatrix&          M,               //!< mortar matrix M
-        const DRT::Discretization&     idiscret,        //!< interface discretization
-        MORTAR::MortarElement&         slaveelement,    //!< slave-side mortar element
-        MORTAR::MortarElement&         masterelement,   //!< master-side mortar element
-        MORTAR::IntCell&               cell,            //!< mortar integration cell
-        DRT::Element::LocationArray&   la_slave,        //!< slave-side location array
-        DRT::Element::LocationArray&   la_master        //!< master-side location array
+        Teuchos::RCP<LINALG::SparseMatrix>   D,               //!< mortar matrix D
+        Teuchos::RCP<LINALG::SparseMatrix>   M,               //!< mortar matrix M
+        Teuchos::RCP<LINALG::SparseMatrix>   E,               //!< mortar matrix E
+        const DRT::Discretization&           idiscret,        //!< interface discretization
+        MORTAR::MortarElement&               slaveelement,    //!< slave-side mortar element
+        MORTAR::MortarElement&               masterelement,   //!< master-side mortar element
+        MORTAR::IntCell&                     cell,            //!< mortar integration cell
+        DRT::Element::LocationArray&         la_slave,        //!< slave-side location array
+        DRT::Element::LocationArray&         la_master        //!< master-side location array
         );
 
     //! evaluate and assemble interface linearizations and residuals
@@ -424,10 +438,16 @@ class MortarCellCalc : public MortarCellInterface
     LINALG::Matrix<nen_master_,1> funct_master_;
 
     //! shape function values associated with slave-side Lagrange multipliers at integration point
-    LINALG::Matrix<nen_slave_,1> funct_lm_slave_;
+    LINALG::Matrix<nen_slave_,1> shape_lm_slave_;
 
     //! shape function values associated with master-side Lagrange multipliers at integration point
-    LINALG::Matrix<nen_master_,1> funct_lm_master_;
+    LINALG::Matrix<nen_master_,1> shape_lm_master_;
+
+    //! test function values associated with slave-side Lagrange multipliers at integration point
+    LINALG::Matrix<nen_slave_,1> test_lm_slave_;
+
+    //! test function values associated with master-side Lagrange multipliers at integration point
+    LINALG::Matrix<nen_master_,1> test_lm_master_;
 }; // class MortarCellCalc
 
 

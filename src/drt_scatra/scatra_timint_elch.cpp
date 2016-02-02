@@ -1445,6 +1445,7 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 
     // assemble global system matrix and residual vector
     AssembleMatAndRHS();
+    strategy_->CondenseMatAndRHS(sysmat_,residual_);
 
     // project residual, such that only part orthogonal to nullspace is considered
     if (projector_!=Teuchos::null)

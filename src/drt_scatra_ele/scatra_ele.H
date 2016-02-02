@@ -296,7 +296,7 @@ public:
   void SetImplType(const INPAR::SCATRA::ImplType impltype);
 
   //! return implementation type
-  INPAR::SCATRA::ImplType ImplType(){return impltype_;};
+  const INPAR::SCATRA::ImplType ImplType() const {return impltype_;};
   //@}
 
   //! @name Input and Creation

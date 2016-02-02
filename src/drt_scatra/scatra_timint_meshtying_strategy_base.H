@@ -60,6 +60,13 @@ class MeshtyingStrategyBase
     //! destructor
     virtual ~MeshtyingStrategyBase(){return;};
 
+    //! condense global system of equations
+    virtual void CondenseMatAndRHS(
+        const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,              //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>&            residual,                  //!< residual vector
+        const bool                                    calcinittimederiv = false  //!< flag for calculation of initial time derivative
+        ) const {return;};
+
     //! compute meshtying residual terms and their linearizations
     virtual void EvaluateMeshtying() = 0;
 

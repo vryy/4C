@@ -360,10 +360,10 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
             const int col_conc_slave = la_slave[0].lm_[ui*2];
             const int col_pot_slave = col_conc_slave+1;
 
-            islavematrix->Assemble(my::funct_slave_(vi)*di_dc_slave*my::funct_slave_(ui),row_conc_slave,col_conc_slave);
-            islavematrix->Assemble(my::funct_slave_(vi)*nume*di_dc_slave*my::funct_slave_(ui),row_pot_slave,col_conc_slave);
-            islavematrix->Assemble(my::funct_slave_(vi)*di_dpot_slave*my::funct_slave_(ui),row_conc_slave,col_pot_slave);
-            islavematrix->Assemble(my::funct_slave_(vi)*nume*di_dpot_slave*my::funct_slave_(ui),row_pot_slave,col_pot_slave);
+            islavematrix->Assemble(my::test_lm_slave_(vi)*di_dc_slave*my::funct_slave_(ui),row_conc_slave,col_conc_slave);
+            islavematrix->Assemble(my::test_lm_slave_(vi)*nume*di_dc_slave*my::funct_slave_(ui),row_pot_slave,col_conc_slave);
+            islavematrix->Assemble(my::test_lm_slave_(vi)*di_dpot_slave*my::funct_slave_(ui),row_conc_slave,col_pot_slave);
+            islavematrix->Assemble(my::test_lm_slave_(vi)*nume*di_dpot_slave*my::funct_slave_(ui),row_pot_slave,col_pot_slave);
           }
 
           for(int ui=0; ui<my::nen_master_; ++ui)
@@ -371,15 +371,15 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
             const int col_conc_master = la_master[0].lm_[ui*2];
             const int col_pot_master = col_conc_master+1;
 
-            islavematrix->Assemble(my::funct_slave_(vi)*di_dc_master*my::funct_master_(ui),row_conc_slave,col_conc_master);
-            islavematrix->Assemble(my::funct_slave_(vi)*nume*di_dc_master*my::funct_master_(ui),row_pot_slave,col_conc_master);
-            islavematrix->Assemble(my::funct_slave_(vi)*di_dpot_master*my::funct_master_(ui),row_conc_slave,col_pot_master);
-            islavematrix->Assemble(my::funct_slave_(vi)*nume*di_dpot_master*my::funct_master_(ui),row_pot_slave,col_pot_master);
+            islavematrix->Assemble(my::test_lm_slave_(vi)*di_dc_master*my::funct_master_(ui),row_conc_slave,col_conc_master);
+            islavematrix->Assemble(my::test_lm_slave_(vi)*nume*di_dc_master*my::funct_master_(ui),row_pot_slave,col_conc_master);
+            islavematrix->Assemble(my::test_lm_slave_(vi)*di_dpot_master*my::funct_master_(ui),row_conc_slave,col_pot_master);
+            islavematrix->Assemble(my::test_lm_slave_(vi)*nume*di_dpot_master*my::funct_master_(ui),row_pot_slave,col_pot_master);
           }
 
-          if(islaveresidual->SumIntoGlobalValue(row_conc_slave,0,-my::funct_slave_(vi)*i))
+          if(islaveresidual->SumIntoGlobalValue(row_conc_slave,0,-my::test_lm_slave_(vi)*i))
             dserror("Assembly into slave-side residual vector not successful!");
-          if(islaveresidual->SumIntoGlobalValue(row_pot_slave,0,-my::funct_slave_(vi)*nume*i))
+          if(islaveresidual->SumIntoGlobalValue(row_pot_slave,0,-my::test_lm_slave_(vi)*nume*i))
             dserror("Assembly into slave-side residual vector not successful!");
         }
       }
@@ -401,10 +401,10 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
             const int col_conc_slave = la_slave[0].lm_[ui*2];
             const int col_pot_slave = col_conc_slave+1;
 
-            imastermatrix->FEAssemble(-my::funct_master_(vi)*di_dc_slave*my::funct_slave_(ui),row_conc_master,col_conc_slave);
-            imastermatrix->FEAssemble(-my::funct_master_(vi)*nume*di_dc_slave*my::funct_slave_(ui),row_pot_master,col_conc_slave);
-            imastermatrix->FEAssemble(-my::funct_master_(vi)*di_dpot_slave*my::funct_slave_(ui),row_conc_master,col_pot_slave);
-            imastermatrix->FEAssemble(-my::funct_master_(vi)*nume*di_dpot_slave*my::funct_slave_(ui),row_pot_master,col_pot_slave);
+            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*di_dc_slave*my::funct_slave_(ui),row_conc_master,col_conc_slave);
+            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*nume*di_dc_slave*my::funct_slave_(ui),row_pot_master,col_conc_slave);
+            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*di_dpot_slave*my::funct_slave_(ui),row_conc_master,col_pot_slave);
+            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*nume*di_dpot_slave*my::funct_slave_(ui),row_pot_master,col_pot_slave);
           }
 
           for(int ui=0; ui<my::nen_master_; ++ui)
@@ -412,13 +412,13 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
             const int col_conc_master = la_master[0].lm_[ui*2];
             const int col_pot_master = col_conc_master+1;
 
-            imastermatrix->FEAssemble(-my::funct_master_(vi)*di_dc_master*my::funct_master_(ui),row_conc_master,col_conc_master);
-            imastermatrix->FEAssemble(-my::funct_master_(vi)*nume*di_dc_master*my::funct_master_(ui),row_pot_master,col_conc_master);
-            imastermatrix->FEAssemble(-my::funct_master_(vi)*di_dpot_master*my::funct_master_(ui),row_conc_master,col_pot_master);
-            imastermatrix->FEAssemble(-my::funct_master_(vi)*nume*di_dpot_master*my::funct_master_(ui),row_pot_master,col_pot_master);
+            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*di_dc_master*my::funct_master_(ui),row_conc_master,col_conc_master);
+            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*nume*di_dc_master*my::funct_master_(ui),row_pot_master,col_conc_master);
+            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*di_dpot_master*my::funct_master_(ui),row_conc_master,col_pot_master);
+            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*nume*di_dpot_master*my::funct_master_(ui),row_pot_master,col_pot_master);
           }
 
-          const double residual_conc_master = my::funct_master_(vi)*i;
+          const double residual_conc_master = my::test_lm_master_(vi)*i;
           if(imasterresidual->SumIntoGlobalValues(1,&row_conc_master,&residual_conc_master))
             dserror("Assembly into master-side residual vector not successful!");
           const double residual_pot_master = nume*residual_conc_master;

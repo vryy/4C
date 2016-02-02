@@ -13,6 +13,7 @@ Maintainer: Andreas Ehrl
 /*----------------------------------------------------------------------*/
 
 #include "scatra_timint_implicit.H"
+#include "scatra_timint_meshtying_strategy_base.H"
 
 #include "../drt_adapter/adapter_coupling.H"
 
@@ -565,6 +566,9 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
   // modify global system of equations as explained above
   discret_->Evaluate(eleparams,sysmat_,residual_);
   discret_->ClearState();
+
+  // apply condensation to global system of equations if necessary
+  strategy_->CondenseMatAndRHS(sysmat_,residual_,true);
 
   // finalize assembly of global mass matrix
   sysmat_->Complete();
