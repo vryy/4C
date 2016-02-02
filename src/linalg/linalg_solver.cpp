@@ -172,7 +172,7 @@ void LINALG::Solver::AdaptTolerance(const double desirednlnres,
   {
 
     double tolnew = desirednlnres*better/currentnlnres;
-    if (tolnew > 0.0){
+    if (tolnew > 1.0){
       tolnew = 1.0;
       if (!myrank && output){
           printf("WARNING:  Computed adapted relative tolerance bigger than 1\n"
