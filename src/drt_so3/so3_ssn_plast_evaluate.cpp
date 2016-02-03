@@ -1454,13 +1454,12 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
       }
 
       // elastic heating ******************************************************
+      plmat->HepDiss(gp)=0.;
+      plmat->dHepDT(gp) =0.;
+      plmat->dHepDissDd(gp).Size(numdofperelement_);
+      plmat->dHepDissDd(gp).Scale(0.);
       if (eastype_==soh8p_easnone)
       {
-        plmat->HepDiss(gp)=0.;
-        plmat->dHepDT(gp) =0.;
-        plmat->dHepDissDd(gp).Size(numdofperelement_);
-        plmat->dHepDissDd(gp).Scale(0.);
-
         if (fbar_)
         {
           LINALG::Matrix<3,3> defgrd_rate_0;
@@ -1480,7 +1479,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
             for (int j=0;j<3;++j)
               j_dot += detF_0 * invdefgrd_0(j,i)*defgrd_rate_0(i,j);
 
-          double He=-he_fac *gp_temp * j_dot;
+          double He=he_fac *gp_temp * j_dot;
 
           plmat->HepDiss(gp)=He;
 
@@ -1499,19 +1498,18 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
           tmp.Multiply(invdefgrd_0,defgrd_rate_0);
           LINALG::Matrix<3,3> tmp2;
           tmp2.Multiply(tmp,invdefgrd_0);
-          tmp.UpdateT(tmp2);
 
           deriv_jdot_d.Update(fiddfdot,deriv_j_d,1.);
           for (int i=0;i<3;++i)
             for (int n=0;n<numdofperelement_;++n)
               deriv_jdot_d(n) +=
                                  detF_0 * invdefgrd_0(i,n%3) * N_XYZ_0(i,n/3) * timefac_d
-                                -detF_0 * tmp        (i,n%3) * N_XYZ_0(i,n/3)
+                                -detF_0 * tmp2       (i,n%3) * N_XYZ_0(i,n/3)
                                 ;
 
           LINALG::Matrix<numdofperelement_,1> dHedd(true);
-          dHedd.Update(-gp_temp*he_fac,deriv_jdot_d,1.);
-          dHedd.Update(-he_fac_deriv*gp_temp*j_dot,deriv_j_d,1.);
+          dHedd.Update(gp_temp*he_fac,deriv_jdot_d,1.);
+          dHedd.Update(he_fac_deriv*gp_temp*j_dot,deriv_j_d,1.);
 
           LINALG::DENSEFUNCTIONS::update<double,numdofperelement_,1>(plmat->dHepDissDd(gp).A(),dHedd.A());
         }
@@ -1535,7 +1533,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
             for (int j=0;j<3;++j)
               j_dot += detF * invdefgrd(j,i)*defgrd_rate(i,j);
 
-          double He=-he_fac *gp_temp * j_dot;
+          double He=he_fac *gp_temp * j_dot;
 
           plmat->HepDiss(gp)=He;
 
@@ -1554,19 +1552,18 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
           tmp.Multiply(invdefgrd,defgrd_rate);
           LINALG::Matrix<3,3> tmp2;
           tmp2.Multiply(tmp,invdefgrd);
-          tmp.UpdateT(tmp2);
 
           deriv_jdot_d.Update(fiddfdot,deriv_j_d,1.);
           for (int i=0;i<3;++i)
             for (int n=0;n<numdofperelement_;++n)
               deriv_jdot_d(n) +=
                                  detF * invdefgrd(i,n%3) * N_XYZ(i,n/3) * timefac_d
-                                -detF * tmp        (i,n%3) * N_XYZ(i,n/3)
+                                -detF * tmp2     (i,n%3) * N_XYZ(i,n/3)
                                 ;
 
           LINALG::Matrix<numdofperelement_,1> dHedd(true);
-          dHedd.Update(-gp_temp*he_fac,deriv_jdot_d,1.);
-          dHedd.Update(-he_fac_deriv*gp_temp*j_dot,deriv_j_d,1.);
+          dHedd.Update(gp_temp*he_fac,deriv_jdot_d,1.);
+          dHedd.Update(he_fac_deriv*gp_temp*j_dot,deriv_j_d,1.);
 
           LINALG::DENSEFUNCTIONS::update<double,numdofperelement_,1>(plmat->dHepDissDd(gp).A(),dHedd.A());
         }
@@ -1622,7 +1619,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
         }// enhance the deformation rate
 
         // heating ************************************************************
-        double He=-.5*gp_temp*cTvol.Dot(RCGrateVec);
+        double He=.5*gp_temp*cTvol.Dot(RCGrateVec);
 
         plmat->HepDiss(gp)=He;
 
@@ -1636,18 +1633,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
 
         LINALG::Matrix<6,1> tmp61;
         tmp61.MultiplyTN(dcTvoldE,RCGrateVec);
-        if (fbar_)
-        {
-          dHedd.MultiplyTN(-.5*gp_temp*f_bar_factor*f_bar_factor,bop,tmp61,1.);
-          dHedd.Update(-.5*gp_temp * 2./3.*f_bar_factor*f_bar_factor * tmp61.Dot(RCG),htensor,1.);
-        }
-        else
-        {
-          dHedd.MultiplyTN(-.5*gp_temp,bop,tmp61,1.);
-        }
+        dHedd.MultiplyTN(.5*gp_temp,bop,tmp61,1.);
 
-        dHedd.MultiplyTN(-timefac_d*gp_temp,bop,cTvol,1.);
-        dHedd.MultiplyTN(-gp_temp,boprate,cTvol,1.);
+        dHedd.MultiplyTN(timefac_d*gp_temp,bop,cTvol,1.);
+        dHedd.MultiplyTN(gp_temp,boprate,cTvol,1.);
 
         // derivative of elastic heating w.r.t. EAS alphas *******************
         if (eastype_!=soh8p_easnone)
@@ -1656,15 +1645,15 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
           {
           case soh8p_easmild:
             LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>
-              (0.,dHda[gp].A(),-.5*gp_temp,M.A(),tmp61.A());
+              (0.,dHda[gp].A(),.5*gp_temp,M.A(),tmp61.A());
             LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easmild,numstr_,1>
-              (1.,dHda[gp].A(),-gp_temp*timefac_d,M.A(),cTvol.A());
+              (1.,dHda[gp].A(),gp_temp*timefac_d,M.A(),cTvol.A());
             break;
           case soh8p_easfull:
             LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,1>
-              (0.,dHda[gp].A(),-.5*gp_temp,M.A(),tmp61.A());
+              (0.,dHda[gp].A(),.5*gp_temp,M.A(),tmp61.A());
             LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_easfull,numstr_,1>
-              (1.,dHda[gp].A(),-gp_temp*timefac_d,M.A(),cTvol.A());
+              (1.,dHda[gp].A(),gp_temp*timefac_d,M.A(),cTvol.A());
             break;
           case soh8p_easnone: break;
           default: dserror("Don't know what to do with EAS type %d", eastype_); break;

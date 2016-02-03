@@ -1706,7 +1706,7 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
       }// enhance the deformation rate
 
       // heating ************************************************************
-      double He=-.5*gp_temp*cTvol.Dot(RCGrateVec);
+      double He=.5*gp_temp*cTvol.Dot(RCGrateVec);
 
       plmat->HepDiss(gp)=He;
 
@@ -1721,19 +1721,19 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
       LINALG::Matrix<6,1> tmp61;
       tmp61.MultiplyTN(dcTvoldE,RCGrateVec);
 
-      dHedd.MultiplyTN(-.5*gp_temp,bop,tmp61,1.);
+      dHedd.MultiplyTN(.5*gp_temp,bop,tmp61,1.);
 
       if (anstype_==ansnone_p)
       {
-        dHedd.MultiplyTN(-timefac_d*gp_temp,bop,cTvol,1.);
-        dHedd.MultiplyTN(-gp_temp,boprate,cTvol,1.);
+        dHedd.MultiplyTN(timefac_d*gp_temp,bop,cTvol,1.);
+        dHedd.MultiplyTN(gp_temp,boprate,cTvol,1.);
       }
       else if (anstype_==anssosh8_p)
       {
         LINALG::Matrix<6,nen_*nsd_> bop_disp(false);  // (6x24)
         CalculateBop(&bop_disp, &defgrd, &N_XYZ);
-        dHedd.MultiplyTN(-timefac_d*gp_temp,bop_disp,cTvol,1.);
-        dHedd.MultiplyTN(-gp_temp,boprate,cTvol,1.);
+        dHedd.MultiplyTN(timefac_d*gp_temp,bop_disp,cTvol,1.);
+        dHedd.MultiplyTN(gp_temp,boprate,cTvol,1.);
       }
       else
         dserror("don't know what to do with anstype %d",anstype_);
@@ -1746,9 +1746,9 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(
         {
         case soh8p_eassosh8:
           LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_eassosh8,numstr_,1>
-            (0.,dHda[gp].A(),-.5*gp_temp,M.A(),tmp61.A());
+            (0.,dHda[gp].A(),.5*gp_temp,M.A(),tmp61.A());
           LINALG::DENSEFUNCTIONS::multiplyTN<double,soh8p_eassosh8,numstr_,1>
-            (1.,dHda[gp].A(),-gp_temp*timefac_d,M.A(),cTvol.A());
+            (1.,dHda[gp].A(),gp_temp*timefac_d,M.A(),cTvol.A());
           break;
         case soh8p_easnone: break;
         default: dserror("Don't know what to do with EAS type %d", eastype_); break;
