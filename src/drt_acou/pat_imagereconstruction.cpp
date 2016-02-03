@@ -1356,7 +1356,7 @@ ACOU::PatImageReconstructionOptiSplitAcouSplit::PatImageReconstructionOptiSplitA
       int lid = scatra_discret_->ElementRowMap()->LID(i);
 
       // get element center coordinates
-      std::vector<double> xyz = scatra_discret_->lRowElement(lid)->ElementCenterRefeCoords();
+      std::vector<double> xyz = DRT::UTILS::ElementCenterRefeCoords(scatra_discret_->lRowElement(lid));
 
       // check first circle:
       double p = sqrt((xyz[0]-2.)*(xyz[0]-2.)+(xyz[1]-1.5)*(xyz[1]-1.5));
@@ -1958,7 +1958,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::SampleObjectiveFunction()
       int lid = scatra_discret_->ElementRowMap()->LID(i);
 
       // get element center coordinates
-      std::vector<double> xyz = scatra_discret_->lRowElement(lid)->ElementCenterRefeCoords();
+      std::vector<double> xyz = DRT::UTILS::ElementCenterRefeCoords(scatra_discret_->lRowElement(lid));
 
       // check first circle:
       double p = sqrt((xyz[0]-2.)*(xyz[0]-2.)+(xyz[1]-1.5)*(xyz[1]-1.5));
@@ -2074,7 +2074,7 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::ComputeParameterError()
     int lid = scatra_discret_->ElementRowMap()->LID(i);
 
     // get element center coordinates
-    std::vector<double> xyz = scatra_discret_->lRowElement(lid)->ElementCenterRefeCoords();
+    std::vector<double> xyz = DRT::UTILS::ElementCenterRefeCoords(scatra_discret_->lRowElement(lid));
 
     // check if the center of this element is in the rectangular region
     double g1 = (1.96568+0.086284)/(2.476838+3.161328)*(xyz[0]+3.161328)-0.086284;

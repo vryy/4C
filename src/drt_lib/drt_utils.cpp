@@ -1081,3 +1081,27 @@ void DRT::UTILS::Random::SetMeanVariance(const double mean, const double var)
 #endif
 }
 
+
+/*-----------------------------------------------------------------------------*
+*------------------------------------------------------------------------------*/
+std::vector<double> DRT::UTILS::ElementCenterRefeCoords(const DRT::Element* const ele)
+{
+  // get nodes of element
+  const Node*const* nodes = ele->Nodes();
+  const int numnodes = ele->NumNode();
+
+  //calculate mean of node coordinates
+  std::vector<double> centercoords(3,0.0);
+  for (int i=0; i<3; ++i)
+  {
+    double var = 0.0;
+    for (int j=0; j<numnodes; ++j )
+    {
+      const double* x = nodes[j]->X();
+      var += x[i];
+    }
+    centercoords[i] = var/numnodes;
+  }
+
+  return centercoords;
+}

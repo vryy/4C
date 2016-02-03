@@ -688,36 +688,6 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Transport::Volumes()
   }
 }
 
-/*-----------------------------------------------------------------------------*
-*------------------------------------------------------------------------------*/
-std::vector<double> DRT::ELEMENTS::Transport::ElementCenterRefeCoords()
-{
-//  // update element geometry
-  DRT::Node** nodes = Nodes();
-
-  Epetra_SerialDenseMatrix mat(NumNode(),3, false);
-  for (int i=0; i<NumNode(); ++i)
-  {
-    const double* x = nodes[i]->X();
-    mat(i,0) = x[0];
-    mat(i,1) = x[1];
-    mat(i,2) = x[2];
-  }
-
-  std::vector<double> centercoords(3,0);
-  for (int i=0; i<3; ++i)
-  {
-    double var = 0;
-    for (int j=0; j<NumNode(); ++j )
-    {
-      var = var + mat(j,i);
-    }
-    centercoords[i] = var/NumNode();
-  }
-
-  return centercoords;
-}
-
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                gjb 01/09|
  *----------------------------------------------------------------------*/

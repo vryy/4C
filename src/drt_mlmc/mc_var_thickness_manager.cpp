@@ -627,8 +627,7 @@ double UQ::MCVarThicknessManager::EvalThicknessAtLocation(
   int corresponding_min_dist_id =-1;
 
   std::vector<double> myloc(3,0.0);
-  myloc = discret_->gElement(ele_GID)->ElementCenterRefeCoords();
-
+  myloc = DRT::UTILS::ElementCenterRefeCoords(discret_->gElement(ele_GID));
 
   if(closest_uncertain_node_.find(ele_GID)==closest_uncertain_node_.end())
   {

@@ -307,11 +307,6 @@ public:
   virtual int NumFace() const;
 
   /*!
-    \brief Return Element center coordinates
-  */
-  virtual std::vector<double> ElementCenterRefeCoords();
-
-  /*!
   \brief Return id's of nodes adjacent to this element
   */
   virtual const int* NodeIds() const

@@ -23,6 +23,7 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils.H"
 
 //TODO: (thon) delete this header if the lower to-do is done!
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -160,15 +161,8 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
   }
 
   //TODO: (thon) actually we do not want this here, since it has nothing to do with scatra specific stuff. But for now we let it be...
-  Teuchos::RCP<std::vector<double> >xrefe = Teuchos::rcp(new std::vector<double>(3));
-  DRT::Node** nodes = Nodes();
-  for (int i=0; i<numnod_; ++i)
-  {
-    const double* x = nodes[i]->X();
-    (*xrefe)[0] +=  x[0]/numnod_;
-    (*xrefe)[1] +=  x[1]/numnod_;
-    (*xrefe)[2] +=  x[2]/numnod_;
-  }
+  std::vector<double> center = DRT::UTILS::ElementCenterRefeCoords(this);
+  Teuchos::RCP<std::vector<double> >xrefe = Teuchos::rcp(new std::vector<double>(center));
   params.set<Teuchos::RCP<std::vector<double> > >("position",xrefe);
 
   return;

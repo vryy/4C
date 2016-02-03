@@ -251,7 +251,7 @@ void UQ::MCMatParManager::ComputeMatParamsMultivectorFromRandomFields(
       continue;
 
     std::vector<double> ele_center;
-    ele_center = actele->ElementCenterRefeCoords();
+    ele_center = DRT::UTILS::ElementCenterRefeCoords(actele);
     std::vector<int> actparapos = stochparaid_r_field_.at( elematid );
 
     std::vector<int>::const_iterator it;

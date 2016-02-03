@@ -912,14 +912,6 @@ int DRT::Element::EvaluateNeumann(Teuchos::ParameterList& params,
 }
 #endif
 
-std::vector<double> DRT::Element::ElementCenterRefeCoords()
-{
-  dserror("subclass implementations missing");
-  std::vector<double> return_stuff(0);
-  return_stuff[0]=1;
-  return return_stuff;
-}
-
 int DRT::Element::Degree() const
 {
   return DRT::UTILS::getDegree(Shape());

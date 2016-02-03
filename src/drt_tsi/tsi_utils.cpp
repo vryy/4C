@@ -311,16 +311,37 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
   // kintype is passed to the corresponding thermo element
   INPAR::STR::KinemType kintype = INPAR::STR::kinem_linear;
 
-  //default strategy: take only material of first element found
-  DRT::Element* Aele = dis1->gElement(ids_1[0]);
+  //default strategy: take material of element with closest center in reference coordinates
+  DRT::Element* ele1 = NULL;
+  double mindistance = 1e10;
+  {
+    std::vector<double> centercoords2 = DRT::UTILS::ElementCenterRefeCoords(ele2);
+
+    for (unsigned i=0; i<ids_1.size(); ++i)
+    {
+      DRT::Element* actele1= dis1->gElement(ids_1[i]);
+      std::vector<double> centercoords1 = DRT::UTILS::ElementCenterRefeCoords(actele1);
+
+      LINALG::Matrix<3,1> diffcoords(true);
+
+      for (int j=0; j<3; ++j)
+        diffcoords(j,0)=centercoords1[j]-centercoords2[j];
+
+      if(diffcoords.Norm2()-mindistance<1e-16)
+      {
+        mindistance=diffcoords.Norm2();
+        ele1 = actele1;
+      }
+    }
+  }
 
   // if Aele is a so3_base element
   DRT::ELEMENTS::So_base* so_base =
-      dynamic_cast<DRT::ELEMENTS::So_base*>(Aele);
+      dynamic_cast<DRT::ELEMENTS::So_base*>(ele1);
   if (so_base != NULL)
     kintype = so_base->KinematicType();
   else
-    dserror("Aele is not a so3_thermo element!");
+    dserror("ele1 is not a so3_thermo element!");
 
   DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele2);
   if (therm != NULL)

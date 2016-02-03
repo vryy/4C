@@ -19,6 +19,7 @@ Maintainer: Sudhakar
 #include "Epetra_Map.h"
 
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_utils.H"
 
 //------------------------------------------------------------------------------------------------
 //
@@ -474,7 +475,7 @@ void DRT::CRACK::InitiateCrack::nodal_release( int & start_new_node_id )
       for (int jEle = 0; jEle < NumElement; jEle++)
       {
         DRT::Element* Element = ElementsPtr[jEle];
-        std::vector<double> cencord = Element->ElementCenterRefeCoords();
+        std::vector<double> cencord = DRT::UTILS::ElementCenterRefeCoords(Element);
 
         double cenAng = atan2( (cencord[ind2]-splcord[ind2]), (cencord[ind1]-splcord[ind1]) );
         DRT::CRACK::UTILS::convertAngleTo_02PI_range( cenAng );

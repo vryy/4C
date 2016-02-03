@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file PropagateTip.cpp
+\file propagateTip.cpp
 
 \brief After each time step, check the structure field and propagate
 this crack tip segment in the structure if necessary.
@@ -1750,7 +1750,7 @@ std::vector<double> DRT::CRACK::PropagateTip::getLimitAngles( const std::vector<
  *------------------------------------------------------------------------------------*/
 bool DRT::CRACK::PropagateTip::toReplaceNode( DRT::Element * ele, DRT::Node * tip, const std::vector<double>& lmtAngle )
 {
-  std::vector<double> cen = ele->ElementCenterRefeCoords();
+  std::vector<double> cen = DRT::UTILS::ElementCenterRefeCoords(ele);
   const double * tipcord = tip->X();
 
   // construct vector from tip node to middle of this element
@@ -1878,7 +1878,7 @@ void DRT::CRACK::PropagateTip::CheckCompleteSplit( int & start_new_node_id )
         if( DRT::CRACK::UTILS::ElementHasThisNodeId( Element, old_tipid1 ) or
             DRT::CRACK::UTILS::ElementHasThisNodeId( Element, old_tipid2 ) )
         {
-          std::vector<double> cenco = Element->ElementCenterRefeCoords();
+          std::vector<double> cenco = DRT::UTILS::ElementCenterRefeCoords(Element);
           double cen[3];
           for( unsigned ice=0; ice<3; ice++ )
             cen[ice] = cenco[ice];

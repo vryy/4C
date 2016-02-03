@@ -262,6 +262,11 @@ namespace UTILS
     );
 
 
+  /*!
+    \brief Return Element center coordinates
+  */
+  std::vector<double> ElementCenterRefeCoords(const DRT::Element* const ele);
+
 /*!
 \brief handles random numbers through boost
 

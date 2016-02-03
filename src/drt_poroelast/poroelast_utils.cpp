@@ -482,8 +482,29 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
   //call default assignment
   VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(volmortar,ele1,ids_2,dis1,dis2);
 
-  //default strategy: take only material of first element found
-  DRT::Element* ele2 = dis2->gElement(ids_2[0]);
+  //default strategy: take material of element with closest center in reference coordinates
+  DRT::Element* ele2 = NULL;
+  double mindistance = 1e10;
+  {
+    std::vector<double> centercoords1 = DRT::UTILS::ElementCenterRefeCoords(ele1);
+
+    for (unsigned i=0; i<ids_2.size(); ++i)
+    {
+      DRT::Element* actele2 = dis2->gElement(ids_2[i]);
+      std::vector<double> centercoords2 = DRT::UTILS::ElementCenterRefeCoords(actele2);
+
+      LINALG::Matrix<3,1> diffcoords(true);
+
+      for (int j=0; j<3; ++j)
+        diffcoords(j,0)=centercoords1[j]-centercoords2[j];
+
+      if(diffcoords.Norm2()-mindistance<1e-16)
+      {
+        mindistance=diffcoords.Norm2();
+        ele2 = actele2;
+      }
+    }
+  }
 
   // if Bele is a fluid element
   DRT::ELEMENTS::FluidPoro* fluid = dynamic_cast<DRT::ELEMENTS::FluidPoro*>(ele2);
@@ -520,8 +541,29 @@ void POROELAST::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
   if(ids_1.empty())
     return;
 
-  //default strategy: take only material of first element found
-  DRT::Element* ele1 = dis1->gElement(ids_1[0]);
+  //default strategy: take material of element with closest center in reference coordinates
+  DRT::Element* ele1 = NULL;
+  double mindistance = 1e10;
+  {
+    std::vector<double> centercoords2 = DRT::UTILS::ElementCenterRefeCoords(ele2);
+
+    for (unsigned i=0; i<ids_1.size(); ++i)
+    {
+      DRT::Element* actele1= dis1->gElement(ids_1[i]);
+      std::vector<double> centercoords1 = DRT::UTILS::ElementCenterRefeCoords(actele1);
+
+      LINALG::Matrix<3,1> diffcoords(true);
+
+      for (int j=0; j<3; ++j)
+        diffcoords(j,0)=centercoords1[j]-centercoords2[j];
+
+      if(diffcoords.Norm2()-mindistance<1e-16)
+      {
+        mindistance=diffcoords.Norm2();
+        ele1 = actele1;
+      }
+    }
+  }
 
   // if Aele is a so3_base element
   DRT::ELEMENTS::So_base*  so_base  = dynamic_cast<DRT::ELEMENTS::So_base*>(ele1);
