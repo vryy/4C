@@ -40,6 +40,7 @@ namespace STR
   Teuchos::RCP<STR::TimAda> TimAdaCreate
   (
     const Teuchos::ParameterList& ioflags,  //!< input-output-flags
+    const Teuchos::ParameterList& timeparams,  //!< structural dynamic flags
     const Teuchos::ParameterList& sdyn,  //!< structural dynamic flags
     const Teuchos::ParameterList& xparams,  //!< extra flags
     const Teuchos::ParameterList& tap,  //!< adaptive input flags

@@ -91,8 +91,9 @@ namespace STR
     TimAdaJoint
     (
       const Teuchos::ParameterList& ioparams,  //!< ioflags
-      const Teuchos::ParameterList& timeparams,  //!< TIS input parameters
-      const Teuchos::ParameterList& xparams,  //!< extra flags
+      const Teuchos::ParameterList& timeparams,//!< TIS input parameters
+      const Teuchos::ParameterList& sdyn,      //!< structural dynamic
+      const Teuchos::ParameterList& xparams,   //!< extra flags
       const Teuchos::ParameterList& adaparams,  //!< adaptive input flags
       Teuchos::RCP<TimInt>& sti  //!< marching time integrator
     )
@@ -106,7 +107,7 @@ namespace STR
       sta_(Teuchos::null)
     {
       // allocate auxiliary integrator
-      sta_ = Teuchos::rcp(new T(timeparams, ioparams, timeparams, xparams,
+      sta_ = Teuchos::rcp(new T(timeparams, ioparams, sdyn, xparams,
                                 sti->Discretization(),
                                 sti->Solver(),
                                 Teuchos::null, // no contact solver

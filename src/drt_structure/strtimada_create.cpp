@@ -34,6 +34,7 @@ Maintainer: Alexander Popp
 Teuchos::RCP<STR::TimAda> STR::TimAdaCreate
 (
   const Teuchos::ParameterList& ioflags,
+  const Teuchos::ParameterList& timeparams,
   const Teuchos::ParameterList& sdyn,
   const Teuchos::ParameterList& xparams,
   const Teuchos::ParameterList& tap,  //!< adaptive input flags
@@ -53,22 +54,22 @@ Teuchos::RCP<STR::TimAda> STR::TimAdaCreate
 
   case INPAR::STR::timada_kind_zienxie :
     // Zienkiewicz-Xie error indicator for generalised-alpha
-    sta = Teuchos::rcp(new STR::TimAdaZienXie(sdyn, tap, tis));
+    sta = Teuchos::rcp(new STR::TimAdaZienXie(timeparams, tap, tis));
     break;
 
   case INPAR::STR::timada_kind_ab2 :
     // Adams-Bashforth 2nd order
-    sta = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntAB2>(ioflags, sdyn, xparams, tap, tis));
+    sta = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntAB2>(ioflags,timeparams, sdyn, xparams, tap, tis));
     break;
 
   case INPAR::STR::timada_kind_expleuler :
     // Adams-Bashforth 2nd order
-    sta = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntExplEuler>(ioflags, sdyn, xparams, tap, tis));
+    sta = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntExplEuler>(ioflags,timeparams, sdyn, xparams, tap, tis));
     break;
 
   case INPAR::STR::timada_kind_centraldiff :
     // Adams-Bashforth 2nd order
-    sta = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntCentrDiff>(ioflags, sdyn, xparams, tap, tis));
+    sta = Teuchos::rcp(new STR::TimAdaJoint<STR::TimIntCentrDiff>(ioflags,timeparams, sdyn, xparams, tap, tis));
     break;
 
   default :

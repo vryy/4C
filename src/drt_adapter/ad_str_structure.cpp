@@ -403,7 +403,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   // ---------------------------------------------------------------------------
 
   // create auxiliary time integrator, can be seen as a wrapper for tmpstr
-  Teuchos::RCP<STR::TimAda> sta = STR::TimAdaCreate(*ioflags, sdyn, *xparams, *tap, tmpstr);
+  Teuchos::RCP<STR::TimAda> sta = STR::TimAdaCreate(*ioflags, prbdyn, sdyn, *xparams, *tap, tmpstr);
 
   if (sta!=Teuchos::null)
   {
