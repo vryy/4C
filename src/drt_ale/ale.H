@@ -334,9 +334,6 @@ public:
   //! Return (rotatory) transformation matrix of local co-ordinate systems
   Teuchos::RCP<const LINALG::SparseMatrix> GetLocSysTrafo() const;
 
-  //! Update slave dofs for multifield simulations with ale
-  void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a);
-
   //! Return locsys manager
   Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() { return locsysman_; }
 

@@ -18,8 +18,6 @@ Maintainer: Andy Wirtz
 
 #include "../drt_inpar/inpar_ale.H"
 
-#include "../linalg/linalg_mapextractor.H"
-
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
@@ -116,17 +114,6 @@ class Meshtying
     void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>&   inc,
                         Teuchos::RCP<Epetra_Vector>&   dispnp);
 
-    //! Set the flag for multifield problems
-    void IsMultifield(const LINALG::MultiMapExtractor& interface,         ///< interface maps for split of ale matrix
-                      bool ismultifield                                   ///< flag for multifield problems
-                      );
-
-    //! Use the split of the ale mesh tying for the sysmat
-    void MshtSplit(Teuchos::RCP<LINALG::SparseOperator>& sysmat);
-
-    //! Use the split of the multifield problem for the sysmat
-    void MultifieldSplit(Teuchos::RCP<LINALG::SparseOperator>& sysmat);
-
   private:
 
     //! Prepare condensation for a block matrix (including ALE case)
@@ -213,12 +200,6 @@ class Meshtying
 
     //! number of space dimensions
     int nsd_;
-
-    //! interface maps for split of ale matrix in multifield simulation
-    LINALG::MultiMapExtractor multifield_interface_;
-
-    //! flag for multifield problems in multifield simulation
-    bool is_multifield_;
 
 };  // end  class Meshtying
 } // end namespace ALE

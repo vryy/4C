@@ -932,9 +932,6 @@ public:
   ///< Add contribution to external load vector ( add possibly pre-existing external_loads_);
   void AddContributionToExternalLoads(const Teuchos::RCP<const Epetra_Vector> contributing_vector);
 
-  ///< Update slave dofs for multifield simulations with fluid mesh tying
-  void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f);
-
 protected:
 
   // don't want = operator and cctor

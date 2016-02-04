@@ -29,7 +29,6 @@ namespace ALE
 namespace UTILS
 {
   class MapExtractor;
-  class FsiMapExtractor;
 }
 }
 
@@ -65,9 +64,6 @@ public:
   //! communicate object at the interface
   Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const;
 
-  //! communicate object at the interface
-  Teuchos::RCP<const ALE::UTILS::FsiMapExtractor> FsiInterface() const;
-
   //! apply interface displacements
   void ApplyInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp)
   {
@@ -83,8 +79,6 @@ public:
 private:
 
   Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;
-
-  Teuchos::RCP<ALE::UTILS::FsiMapExtractor> fsiinterface_;
 
 }; // class AleFsiWrapper
 } // namespace ADAPTER

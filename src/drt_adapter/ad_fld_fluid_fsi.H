@@ -47,7 +47,6 @@ namespace FLD
   namespace UTILS
   {
     class MapExtractor;
-    class FsiMapExtractor;
   }
 }
 
@@ -91,12 +90,6 @@ namespace ADAPTER {
 
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
-
-    /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::FsiMapExtractor>const& FsiInterface() const { return fsiinterface_; }
-
-    /// update slave dofs for multifield simulations with fluid mesh tying
-    virtual void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f);
 
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap();
 
@@ -229,9 +222,6 @@ namespace ADAPTER {
     /// create conditioned dof-map extractor for the fluid
     virtual void SetupInterface();
 
-    /// create conditioned dof-map extractor for the fluid
-    virtual void SetupFsiInterface();
-
     /*! \brief Build inner velocity map
      *
      *  Only DOFs in the interior of the fluid domain are considered. DOFs at
@@ -255,11 +245,6 @@ namespace ADAPTER {
     //!
     //! Note: full map contains velocity AND pressure DOFs
     Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
-
-    //! \brief interface map setup for fsi interface and other
-    //!
-    //! Note: full map contains velocity AND pressure DOFs
-    Teuchos::RCP<FLD::UTILS::FsiMapExtractor> fsiinterface_;
 
     /// interface force at old time level t_n
     Teuchos::RCP<Epetra_Vector>            interfaceforcen_;

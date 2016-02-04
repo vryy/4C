@@ -302,12 +302,6 @@ public:
     ale_->CreateSystemMatrix(interface);
   }
 
-  //! update slave dofs for fsi simulations with ale mesh tying
-  void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a)
-  {
-    ale_->UpdateSlaveDOF(a);
-  }
-
 private:
 
   Teuchos::RCP<Ale> ale_; //!< underlying ALE time integration
