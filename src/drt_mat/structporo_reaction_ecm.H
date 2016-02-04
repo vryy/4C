@@ -160,7 +160,8 @@ public:
       const double press, ///< (i) pressure at gauss point
       const double J, ///< (i) determinant of jacobian at gauss point
       int EleID, ///< (i) element GID
-      double& psi ///< (o) chemical potential
+      double& psi, ///< (o) chemical potential
+      const int gp
       );
 
   /// Update of GP data (e.g., history variables)
@@ -190,10 +191,10 @@ protected:
   double refporositydot_old_;
 
   /// chemical potential
-  double chempot_;
+  std::vector <double> chempot_;
 
   /// initial chemical potential
-  double chempot_init_;
+  std::vector <double> chempot_init_;
 
   /// my material parameters
   MAT::PAR::StructPoroReactionECM* params_;

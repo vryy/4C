@@ -339,16 +339,16 @@ void POROELAST::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
       //Ghost the parent element additionally
       if (elecolmap->LID(volgid) == -1 && allredelecolmap->LID(volgid) != -1) //Volume Discretization has not Element on this proc but on another
         rdata.push_back(volgid);
-      }
+    }
 
-      // re-build element column map
-      Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
-          new Epetra_Map(-1, (int) rdata.size(), &rdata[0], 0, voldis[disidx]->Comm()));
-      rdata.clear();
+    // re-build element column map
+    Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
+        new Epetra_Map(-1, (int) rdata.size(), &rdata[0], 0, voldis[disidx]->Comm()));
+    rdata.clear();
 
-      // redistribute the volume discretization according to the
-      // new (=old) element column layout & and ghost also nodes!
-      voldis[disidx]->ExtendedGhosting(*newelecolmap,true,true,true,false); //no check!!!
+    // redistribute the volume discretization according to the
+    // new (=old) element column layout & and ghost also nodes!
+    voldis[disidx]->ExtendedGhosting(*newelecolmap,true,true,true,false); //no check!!!
   }
 
   //2 Reconnect Face Element -- Porostructural Parent Element Pointers!

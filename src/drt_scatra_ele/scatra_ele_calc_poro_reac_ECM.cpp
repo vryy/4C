@@ -135,7 +135,8 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetMaterialParams(
  *----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetAdvancedReactionCoefficients(
-    const Teuchos::RCP<const MAT::Material> material //!< pointer to current material
+    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+    const int           iquad
   )
 {
   const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
@@ -168,7 +169,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetAdvancedReactionCoeffi
         Teuchos::RCP<MAT::StructPoroReactionECM> structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoroReactionECM>(my::ele_->Material(1));
         if(structmat == Teuchos::null)
           dserror("cast to MAT::StructPoroReactionECM failed!");
-        double structpot = ComputeStructChemPotential(structmat);
+        double structpot = ComputeStructChemPotential(structmat,iquad);
 
         scatramat->ComputeReacCoeff(structpot);
       }
@@ -193,7 +194,8 @@ void DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::GetAdvancedReactionCoeffi
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ComputeStructChemPotential(
-    Teuchos::RCP<MAT::StructPoroReactionECM>& structmat
+    Teuchos::RCP<MAT::StructPoroReactionECM>& structmat,
+    const int gp
   )
 {
 
@@ -262,7 +264,7 @@ double DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::ComputeStructChemPotent
 
   double pot = 0.0;
 
-  structmat->ChemPotential(glstrain,poro::DiffManager()->GetPorosity(0),pres,J,my::eid_,pot);
+  structmat->ChemPotential(glstrain,poro::DiffManager()->GetPorosity(0),pres,J,my::eid_,pot,gp);
 
   return pot;
 }

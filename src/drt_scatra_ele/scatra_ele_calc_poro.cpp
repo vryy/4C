@@ -385,7 +385,7 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
   const Teuchos::RCP<const MAT::ScatraMat>& actmat
     = Teuchos::rcp_dynamic_cast<const MAT::ScatraMat>(material);
 
-  if(k<NO_CONVECTION_NR)
+//  if(k<NO_CONVECTION_NR)
   {
     // set diffusivity (scaled with porosity)
     SetDiffusivity(actmat,k,porosity);
@@ -393,14 +393,14 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::MatScaTra(
     // set densities (scaled with porosity)
     SetDensities(porosity,densn,densnp,densam);
   }
-  else
-  {
-    // set diffusivity (scaled with porosity)
-    SetDiffusivity(actmat,k,1.0);
-
-    // set densities (scaled with porosity)
-    SetDensities(1.0,densn,densnp,densam);
-  }
+//  else
+//  {
+//    // set diffusivity (scaled with porosity)
+//    SetDiffusivity(actmat,k,1.0);
+//
+//    // set densities (scaled with porosity)
+//    SetDensities(1.0,densn,densnp,densam);
+//  }
 
   return;
 } // ScaTraEleCalcPoro<distype>::MatScaTra

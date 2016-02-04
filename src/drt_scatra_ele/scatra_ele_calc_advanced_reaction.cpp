@@ -233,7 +233,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetMaterialParams(
     const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
     if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
 
-    GetAdvancedReactionCoefficients(actmat); // read all reaction input from material and copy it into local variables
+    GetAdvancedReactionCoefficients(actmat,iquad); // read all reaction input from material and copy it into local variables
 
     for (int k = 0;k<my::numscal_;++k)
     {
@@ -1237,7 +1237,8 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcMatReact(
  *----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetAdvancedReactionCoefficients(
-    const Teuchos::RCP<const MAT::Material> material //!< pointer to current material
+    const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+    const int           iquad
   )
 {
   const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);

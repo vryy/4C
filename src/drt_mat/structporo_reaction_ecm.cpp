@@ -52,8 +52,8 @@ DRT::ParObject* MAT::StructPoroReactionECMType::Create(const std::vector<char> &
 MAT::StructPoroReactionECM::StructPoroReactionECM() :
   refporosity_old_(-1.0),
   refporositydot_old_(0.0),
-  chempot_(0.0),
-  chempot_init_(0.0),
+  chempot_(0),
+  chempot_init_(0),
   params_(NULL)
 {
 }
@@ -64,8 +64,8 @@ MAT::StructPoroReactionECM::StructPoroReactionECM(MAT::PAR::StructPoroReactionEC
   StructPoroReaction(params),
   refporosity_old_(-1.0),
   refporositydot_old_(0.0),
-  chempot_(0.0),
-  chempot_init_(0.0),
+  chempot_(0),
+  chempot_init_(0),
   params_(params)
 {
 }
@@ -94,7 +94,11 @@ void MAT::StructPoroReactionECM::Setup(int numgp,DRT::INPUT::LineDefinition* lin
   const double initphi = params_->initporosity_;
   const double deltaphi = refporosity_ - initphi;
 
-  chempot_init_=-(1.0-deltaphi/(1.0-initphi))/mat_->Density()*dpsidphiref;
+  chempot_.resize(numgp,0.0);
+  chempot_init_.resize(numgp,0.0);
+
+  for(std::vector<double>::size_type i=0; i<chempot_init_.size(); i++)
+    chempot_init_[i] = -(1.0-deltaphi/(1.0-initphi))/mat_->Density()*dpsidphiref;
 }
 
 /*----------------------------------------------------------------------*/
@@ -120,6 +124,8 @@ void MAT::StructPoroReactionECM::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, refporositydot_old_);
   // chempot_init_
   AddtoPack(data, chempot_init_);
+  // chempot_
+  AddtoPack(data, chempot_);
 
   // add base class material
   StructPoroReaction::Pack(data);
@@ -155,6 +161,7 @@ void MAT::StructPoroReactionECM::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,refporosity_old_);
   ExtractfromPack(position,data,refporositydot_old_);
   ExtractfromPack(position,data,chempot_init_);
+  ExtractfromPack(position,data,chempot_);
 
   // extract base class material
   std::vector<char> basedata(0);
@@ -218,7 +225,8 @@ bool MAT::StructPoroReactionECM::VisData(const std::string& name, std::vector<do
   if (name=="chemical_potential")
   {
     if ((int)data.size()!=1) dserror("size mismatch");
-    data[0] = chempot_;
+    for(std::vector<double>::size_type i=0; i<chempot_.size(); i++)
+      data[0] += chempot_[i]/chempot_.size();
     return true;
   }
   return false;
@@ -232,9 +240,12 @@ void MAT::StructPoroReactionECM::ChemPotential(
     const double press,                     ///< (i) pressure at gauss point
     const double J,                         ///< (i) determinant of jacobian at gauss point
     int EleID,                              ///< (i) element GID
-    double& pot                             ///< (o) chemical potential
+    double& pot,                             ///< (o) chemical potential
+    const int gp
   )
 {
+  dsassert(gp<(int)chempot_.size(),"invalid gauss point number for calculation of chemical potential!");
+  dsassert(gp<(int)chempot_init_.size(),"invalid gauss point number for calculation of chemical potential!");
 
   Teuchos::ParameterList params;
 
@@ -259,9 +270,8 @@ void MAT::StructPoroReactionECM::ChemPotential(
   const double initphi = params_->initporosity_;
   const double deltaphi = refporosity_ - initphi;
 
-  pot=1.0/Density()*psi-(1.0-deltaphi/(1.0-initphi))/mat_->Density()*dpsidphiref-chempot_init_;
-
-  chempot_=pot;
+  pot=1.0/Density()*psi-(1.0-deltaphi/(1.0-initphi))/mat_->Density()*dpsidphiref-chempot_init_[gp];
+  chempot_[gp]=pot;
 
   return;
 }

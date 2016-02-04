@@ -221,7 +221,8 @@ protected:
 
   //! Get numcond, stoich list, reaction coefficient, couplingtpye from material
   virtual void GetAdvancedReactionCoefficients(
-      const Teuchos::RCP<const MAT::Material> material //!< pointer to current material
+      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+      const int           iquad
   );
 
   //! Set reac. body force, reaction coefficient and derivatives

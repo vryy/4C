@@ -40,7 +40,9 @@
 POROELAST::PoroScatraBase::PoroScatraBase(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams):
     AlgorithmBase(comm, timeparams),
-    matchinggrid_(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->PoroScatraControlParams(),"MATCHINGGRID"))
+    matchinggrid_(DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->PoroScatraControlParams(),"MATCHINGGRID")),
+    volcoupl_structurescatra_(Teuchos::null),
+    volcoupl_fluidscatra_(Teuchos::null)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
   const Teuchos::ParameterList& scatradyn  = problem->ScalarTransportDynamicParams();

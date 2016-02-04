@@ -124,7 +124,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
     const Teuchos::RCP<const MAT::MatListReactions>& actmat = Teuchos::rcp_dynamic_cast<const MAT::MatListReactions>(material);
     if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
 
-    advreac::GetAdvancedReactionCoefficients(actmat); // read all reaction input from material and copy it into local variables
+    advreac::GetAdvancedReactionCoefficients(actmat,iquad); // read all reaction input from material and copy it into local variables
 
     for (int k = 0;k<my::numscal_;++k)
     {
@@ -161,7 +161,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype,probdim>::GetMaterialParams(
     if (actmat->NumMat() != my::numscal_) dserror("Not enough materials in MatList.");
 
     chemo::GetChemotaxisCoefficients(actmat); // read all chemotaxis input from material and copy it into local variables
-    advreac::GetAdvancedReactionCoefficients(actmat); // read all reaction input from material and copy it into local variables
+    advreac::GetAdvancedReactionCoefficients(actmat,iquad); // read all reaction input from material and copy it into local variables
 
     for (int k = 0;k<my::numscal_;++k)
     {

@@ -66,7 +66,8 @@ public:
 
   //! Get numcond, stoich list, reaction coefficient, couplingtpye from material
   virtual void GetAdvancedReactionCoefficients(
-      const Teuchos::RCP<const MAT::Material> material //!< pointer to current material
+      const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
+      const int           iquad
   );
 
   //! evaluate material
@@ -82,7 +83,8 @@ public:
 
   //! ComputeStructChemPotential
   double ComputeStructChemPotential(
-      Teuchos::RCP<MAT::StructPoroReactionECM>& structmat);
+      Teuchos::RCP<MAT::StructPoroReactionECM>& structmat,
+      const int gp);
 };
 
 /// Scatra reaction manager for Advanced_Reaction

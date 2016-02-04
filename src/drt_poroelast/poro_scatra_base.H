@@ -128,8 +128,8 @@ namespace POROELAST
     const bool matchinggrid_;
 
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
-    Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volcoupl_fluidscatra_;
+    Teuchos::RCP<ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
+    Teuchos::RCP<ADAPTER::MortarVolCoupl> volcoupl_fluidscatra_;
     //@}
 
   private:
