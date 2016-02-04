@@ -12,6 +12,7 @@ Maintainers: Andreas Rauch
 *----------------------------------------------------------------------*/
 #include "immersed_problem_dyn.H"
 #include "immersed_base.H"
+#include "immersed_node.H"
 #include "immersed_partitioned.H"
 #include "immersed_partitioned_fsi.H"
 #include "immersed_partitioned_confine_cell.H"
@@ -57,6 +58,7 @@ void immersed_problem_drt()
   // declare general ParameterList that can be handed into Algorithm
   Teuchos::ParameterList params;
 
+
   switch (coupling)
   {
   case INPAR::IMMERSED::partitioned:
@@ -76,6 +78,16 @@ void immersed_problem_drt()
       {
         algo = Teuchos::null;
         dserror("unknown coupling scheme");
+      }
+
+      {
+        // check if INODE is defined in input file
+        IMMERSED::ImmersedNode* inode =
+            dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("fluid")->gElement(problem->GetDis("fluid")->ElementRowMap()->GID(0)))->Nodes()[0]);
+
+            if(inode == NULL)
+              dserror("dynamic cast from Node to ImmersedNode failed.\n"
+                      "Make sure you defined INODE instead of NODE in your input file.");
       }
 
       // PARTITIONED FSI ALGORITHM
@@ -128,8 +140,8 @@ void immersed_problem_drt()
       {
         if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
           dserror("Fluid and ALE nodes have the same node numbers. "
-              "This it not allowed since it causes problems with Dirichlet BCs. "
-              "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
+                  "This it not allowed since it causes problems with Dirichlet BCs. "
+                  "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
       }
 
       // create algorithm
@@ -140,6 +152,16 @@ void immersed_problem_drt()
       {
         algo = Teuchos::null;
         dserror("unknown coupling scheme");
+      }
+
+      {
+        // check if INODE is defined in input file
+        IMMERSED::ImmersedNode* inode =
+            dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("fluid")->gElement(problem->GetDis("fluid")->ElementRowMap()->GID(0)))->Nodes()[0]);
+
+            if(inode == NULL)
+              dserror("dynamic cast from Node to ImmersedNode failed.\n"
+                      "Make sure you defined INODE instead of NODE in your input file.");
       }
 
       // PARTITIONED FSI ALGORITHM
@@ -217,6 +239,16 @@ void CellMigrationControlAlgorithm()
   //use PoroelastImmersedCloneStrategy to build FluidPoroImmersed elements
   POROELAST::UTILS::SetupPoroScatraDiscretizations
   <POROELAST::UTILS::PoroelastImmersedCloneStrategy,POROELAST::UTILS::PoroScatraCloneStrategy>();
+
+  {
+    // check if INODE is defined in input file
+    IMMERSED::ImmersedNode* inode =
+        dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("porofluid")->gElement(problem->GetDis("porofluid")->ElementRowMap()->GID(0)))->Nodes()[0]);
+
+        if(inode == NULL)
+          dserror("dynamic cast from Node to ImmersedNode failed.\n"
+                  "Make sure you defined INODE instead of NODE in your input file.");
+  }
 
   problem->GetDis("cell")->FillComplete(true,true,true);
 

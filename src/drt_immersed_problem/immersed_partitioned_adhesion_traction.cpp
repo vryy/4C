@@ -1,5 +1,6 @@
 /*!----------------------------------------------------------------------
 \file immersed_partitioned_adhesion_traction.cpp
+\level 2
 
 \brief partitioned immersed cell-ecm interaction via adhesion traction
 
@@ -78,6 +79,9 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
   // PSEUDO2D switch
   isPseudo2D_ = DRT::INPUT::IntegralValue<int>(globalproblem_->CellMigrationParams(),"PSEUDO2D");
 
+  // initial invalid immersed information
+  immersed_information_invalid_=true;
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -94,7 +98,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CouplingOp(const Epetra_Vect
     ////////////////////
     // CALL BackgroundOp
     ////////////////////
-    //PrepareBackgroundOp();
+    PrepareBackgroundOp();
     BackgroundOp(Teuchos::null, fillFlag);
 
     ////////////////////
@@ -152,16 +156,21 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::BackgroundOp(Teuchos::RCP<Ep
   {
     Teuchos::ParameterList params;
 
-    if(curr_subset_of_backgrounddis_.empty()==false)
-      EvaluateImmersedNoAssembly(params,
-          backgroundfluiddis_,
-          &curr_subset_of_backgrounddis_,
-          cell_SearchTree_, currpositions_cell_,
-          (int)FLD::update_immersed_information);
-    else
+    if(immersed_information_invalid_)
     {
-      // do nothing : a proc without subset of backgrd dis. does not need to enter evaluation,
-      //              since cell is ghosted on all procs and no communication has to be performed.
+      if(curr_subset_of_backgrounddis_.empty()==false)
+        EvaluateImmersedNoAssembly(params,
+            backgroundfluiddis_,
+            &curr_subset_of_backgrounddis_,
+            cell_SearchTree_, currpositions_cell_,
+            (int)FLD::update_immersed_information);
+      else
+      {
+        // do nothing : a proc without subset of backgrd dis. does not need to enter evaluation,
+        //              since cell is ghosted on all procs and no communication has to be performed.
+      }
+
+      immersed_information_invalid_=false;
     }
 
     DistributeAdhesionForce(backgrd_dirichlet_values);
@@ -190,10 +199,12 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedOp(Teuchos::RCP<Epetra_Ve
   }
   else
   {
-     //prescribe dirichlet values at cell adhesion nodes
-    ApplyAdhesionDisplacements();
-
+    //prescribe dirichlet values at cell adhesion nodes
+    CalcAdhesionDisplacements();
     DoImmersedDirichletCond(cellstructure_->WriteAccessDispnp(),cell_adhesion_disp_, cellstructure_->GetDBCMapExtractor()->CondMap());
+
+    if(IterationCounter()[0]>1)
+      cellstructure_->PreparePartitionStep();
 
      //solve cell
     cellstructure_->Solve();
@@ -343,9 +354,15 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(Teuc
 
   // get reaction forces at cell surface
   double* freact_values = freact->Values();
+  double freactnorm=-1234.0;
+  freact->Norm2(&freactnorm);
+  if(myrank_ == 0)
+  {
+    std::cout<<"###   L2-Norm of Cell Reaction Force Vector: "<<std::setprecision(11)<<freactnorm<<std::endl;
+  }
 
   // get condition which marks adhesion nodes
-  DRT::Condition* condition = immerseddis_->GetCondition("NeumannIntegration");
+  DRT::Condition* condition = immerseddis_->GetCondition("CellFocalAdhesion");
   const std::vector<int>* adhesion_nodes = condition->Nodes();
   int adhesion_nodesize = adhesion_nodes->size();
   DRT::Node* adhesion_node;
@@ -451,7 +468,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(Teuc
 
           // get parameter space coords xi in source element of global point anode
           // NOTE: if the anode is very far away from the source element ele
-          //       it is unnecessary to jump into this functon and invoke a newton iteration.
+          //       it is unnecessary to jump into this method and invoke a newton iteration.
           // Therefore: only call GlobalToCurrentLocal if distance is smaller than factor*characteristic element length
           if(distance < 2.5*diagonal)
           {
@@ -517,7 +534,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(Teuc
 
   if(myrank_ == 0)
   {
-    std::cout<<"###   L2-Norm of ECM Adhesion Force Vector: "<<std::setprecision(11)<<adhesionforcenorm<<std::endl;
+    std::cout<<"###   L2-Norm of  ECM Adhesion Force Vector: "<<std::setprecision(11)<<adhesionforcenorm<<std::endl;
     std::cout<<"################################################################################################"<<std::endl;
   }
   return;
@@ -527,15 +544,6 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(Teuc
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IMMERSED::ImmersedPartitionedAdhesionTraction::CalcAdhesionDisplacements()
-{
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void IMMERSED::ImmersedPartitionedAdhesionTraction::ApplyAdhesionDisplacements()
 {
   double adhesiondispnorm = -1234.0;
 

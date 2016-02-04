@@ -1,5 +1,6 @@
 /*!----------------------------------------------------------------------
 \file immersed_partitioned_adhesion_traction.H
+\level 2
 
 \brief partitioned immersed cell-ecm interaction via adhesion traction
 
@@ -80,14 +81,55 @@ protected:
   /// calculate force from cell adhesion node inside ecm element to ecm element nodes
   void CalcAdhesionForce();
 
-  /// distribute force from cell adhesion node inside ecm element to ecm element nodes
+  /*!
+  \brief Distribute force from cell adhesion node inside ecm element to ecm element nodes.
+
+   Requires immersed cell discretization to have 'CellFocalAdhesion' defined in the input
+   file (via '--DESIGN FOCAL ADHESION SURF CONDITIONS'). Requires the same surface/s to
+   have also defined Dirichlet conditions to be able to retrieve the reaction forces from
+   the immersed cell.
+
+   1) Loop over all nodes with 'CellFocalAdhesion' condition.
+     -> 1.1 get displacement of current node.
+
+     -> 1.2 Loop over curr_subset_of_backgrounddis_.
+        -> 1.2.1 find backgrd. ECM element in which current node is immersed.
+        -> 1.2.2 get parameter space coord. of current node in backgrd. element.
+        -> 1.2.3 write pair 'cell adhesion node id' <-> 'xi' in adh_nod_param_coords_in_backgrd_ele_.
+        -> 1.2.4 write pair 'adhesion node id' <-> 'backgrdele id' in map adh_nod_backgrd_ele_mapping_.
+        -> 1.2.5 spread reaction force at current node to nodes of backgrd. element by the ratio of
+                 shapefcts. value at current 'xi' and add those contributions to ecm_adhesion_forces_.
+
+  \param adhesionforce  (in) : Force at adhesion nodes of immersed cell discretization
+
+  \note This method uses member variables and cannot be used stand-alone
+
+  \warning none
+  \return void
+  */
   void DistributeAdhesionForce(Teuchos::RCP<Epetra_Vector> adhesionforce);
 
-  /// interpolate ecm element displacements to cell adhesion node inside element
-  void CalcAdhesionDisplacements();
+  /*!
+  \brief Interpolate backgrd. ecm element displacements to immersed cell adhesion node inside element.
 
-  /// apply ecm element displacements to cell adhesion node inside element
-  void ApplyAdhesionDisplacements();
+   Requires immersed cell discretization to have 'CellFocalAdhesion' defined in the input
+   file (via '--DESIGN FOCAL ADHESION SURF CONDITIONS'). Requires the same surface/s to
+   have also defined Dirichlet conditions to be able to retrieve the reaction forces from
+   the immersed cell.
+
+   1) Loop over all nodes in adh_nod_param_coords_in_backgrd_ele_.
+     -> 1.1 extract background ECM element nodal displacements.
+     -> 1.2 interpolate ECM displacement to parameter space coordinate occupied by the cell adhesion node
+            prior to the ECM deformation. Thereby the adhesion node is supposed to be fixed to the same
+            material point.
+     -> 1.3 save the interpolated displacements in cell_adhesion_disp_.
+
+  \note this method uses member variables and cannot be used stand-alone
+
+  \warning none
+  \return void
+  */
+  void CalcAdhesionDisplacements();
 
 
 private:
@@ -146,6 +188,9 @@ private:
 
   /// true if problem is modeled as a quasi 2D problem
   bool isPseudo2D_;
+
+  /// do we need an update of our immersed information (e.g. isimmersed_ in nodes)
+  bool immersed_information_invalid_;
 
   /// cell structure of the immersed problem
   Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> cellstructure_;
