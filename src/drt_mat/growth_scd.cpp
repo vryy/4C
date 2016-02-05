@@ -478,9 +478,10 @@ DRT::ParObject* MAT::GrowthScdACRadialType::Create( const std::vector<char> & da
  *----------------------------------------------------------------------*/
 MAT::GrowthScdACRadial::GrowthScdACRadial()
   : GrowthScdAC(),
-    NdN_(true),
-    TdT_(true),
-    N_(true)
+    N_(true),
+    n_(Teuchos::null),
+    n_for_update_(Teuchos::null),
+    F_g_hist_(Teuchos::null)
 {
 
 }
@@ -491,9 +492,10 @@ MAT::GrowthScdACRadial::GrowthScdACRadial()
  *----------------------------------------------------------------------*/
 MAT::GrowthScdACRadial::GrowthScdACRadial(MAT::PAR::GrowthScd* params)
   : GrowthScdAC(params),
-    NdN_(true),
-    TdT_(true),
-    N_(true)
+    N_(true),
+    n_(Teuchos::null),
+    n_for_update_(Teuchos::null),
+    F_g_hist_(Teuchos::null)
 {
 
 }
@@ -508,28 +510,13 @@ void MAT::GrowthScdACRadial::Setup(int numgp, DRT::INPUT::LineDefinition* linede
     dserror("If you want growth into the radial direction you need to specify RAD in your input file!");
 
   ReadFiber(linedef,"RAD",N_);
-//  ReadFiber(linedef,"AXI",T1);
-//  ReadFiber(linedef,"CIR",T2);
+  n_=std::vector<LINALG::Matrix<3,1> >(numgp,N_);
+  n_for_update_=std::vector<LINALG::Matrix<3,1> >(numgp,N_);
 
-  NdN_.MultiplyNT(N_,N_);
-//  TdT_.MultiplyNT(T1,T1);
-//  TdT_.MultiplyNT(1.0,T2,T2,1.0);
-
-  if (   abs(NdN_(0,1)-NdN_(1,0)) > 1e-14
-      or abs(NdN_(0,2)-NdN_(2,0)) > 1e-14
-      or abs(NdN_(2,1)-NdN_(1,2)) > 1e-14 )
-    dserror("The growth matrix is not symmetric. This should not be possible!");
-
-  //NdN_ + TdT_ = Id. Hence:
-  TdT_(0,0) = 1.0 -NdN_(0,0);
-  TdT_(0,1) = -NdN_(0,1);
-  TdT_(0,2) = -NdN_(0,2);
-  TdT_(1,0) = -NdN_(1,0);
-  TdT_(1,1) = 1.0 -NdN_(1,1);
-  TdT_(1,2) = -NdN_(1,2);
-  TdT_(2,0) = -NdN_(2,0);
-  TdT_(2,1) = -NdN_(2,1);
-  TdT_(2,2) = 1.0 -NdN_(2,2);
+  LINALG::Matrix<3,3> Id(true);
+  for (int i = 0; i < 3; i++)
+    Id(i,i) = 1.0;
+  F_g_hist_ = std::vector<LINALG::Matrix<3,3> >(numgp,Id);
 
   GrowthScdAC::Setup(numgp, linedef);
   return;
@@ -575,12 +562,31 @@ void MAT::GrowthScdACRadial::Pack(DRT::PackBuffer& data) const
   // Pack internal variables
   for (int i = 0; i < 3; ++i)
   {
-    for (int j = 0; j < 3; ++j)
-    {
-      AddtoPack(data,NdN_(i,j));
-      AddtoPack(data,TdT_(i,j));
-    }
     AddtoPack(data,N_(i,0));
+  }
+
+  int numgp=0;
+  if (isinit_)
+  {
+    numgp = theta_->size();;   // size is number of gausspoints
+  }
+  AddtoPack(data,numgp);
+
+  for (int gp=0; gp<numgp; gp++)
+  {
+    LINALG::Matrix<3,3> F_g_hist = F_g_hist_.at(gp);
+    LINALG::Matrix<3,1> n = n_.at(gp);
+    LINALG::Matrix<3,1> n_for_update = n_for_update_.at(gp);
+
+    for (int i = 0; i < 3; ++i)
+    {
+      for (int j = 0; j < 3; ++j)
+      {
+        AddtoPack(data,F_g_hist(i,j));
+      }
+      AddtoPack(data,n(i,0));
+      AddtoPack(data,n_for_update(i,0));
+    }
   }
 
   // Pack base class material
@@ -604,20 +610,45 @@ void MAT::GrowthScdACRadial::Unpack(const std::vector<char>& data)
   // Pack internal variables
   for (int i = 0; i < 3; ++i)
   {
-    for (int j = 0; j < 3; ++j)
-    {
-      double NdNij;
-      ExtractfromPack(position,data,NdNij);
-      NdN_(i,j) =NdNij;
-
-      double TdTij;
-      ExtractfromPack(position,data,TdTij);
-      TdT_(i,j) =TdTij;
-    }
-
     double Ni;
     ExtractfromPack(position,data,Ni);
     N_(i,0) =Ni;
+  }
+
+  int numgp;
+  ExtractfromPack(position,data,numgp);
+  if (not numgp == 0)
+  {
+    F_g_hist_ = std::vector<LINALG::Matrix<3,3> >(numgp,LINALG::Matrix<3,3>(true));
+    n_ = std::vector<LINALG::Matrix<3,1> >(numgp,LINALG::Matrix<3,1>(true));
+    n_for_update_ = std::vector<LINALG::Matrix<3,1> >(numgp,LINALG::Matrix<3,1>(true));
+
+    for (int gp=0; gp<numgp; gp++)
+    {
+      LINALG::Matrix<3,3> F_g_hist(true);
+      LINALG::Matrix<3,1> n(true);
+      LINALG::Matrix<3,1> n_for_update(true);
+
+      for (int i = 0; i < 3; ++i)
+      {
+        for (int j = 0; j < 3; ++j)
+        {
+          double F_g_hist_ij;
+          ExtractfromPack(position,data,F_g_hist_ij);
+          F_g_hist(i,j) =F_g_hist_ij;
+        }
+        double n_i;
+        ExtractfromPack(position,data,n_i);
+        n(i,0) =n_i;
+
+        double n_for_update_i;
+        ExtractfromPack(position,data,n_for_update_i);
+        n_for_update(i,0) =n_for_update_i;
+      }
+      F_g_hist_.at(gp)=F_g_hist;
+      n_.at(gp)=n;
+      n_for_update_.at(gp)=n_for_update;
+    }
   }
 
   // extract base class material
@@ -630,6 +661,27 @@ void MAT::GrowthScdACRadial::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+|  Time update of material                                   Thon 01/15|
+*----------------------------------------------------------------------*/
+void MAT::GrowthScdACRadial::Update()
+{
+  const int numgp = theta_->size();
+
+  for (int gp=0; gp<numgp; gp++)
+  {
+    LINALG::Matrix<3,3> F_g_hist_new(true);
+
+    CalcFg(theta_->at(gp),gp,F_g_hist_new);
+
+    F_g_hist_.at(gp) = F_g_hist_new;
+
+    n_.at(gp)=n_for_update_.at(gp);
+  }
+
+  GrowthScdAC::Update();
 }
 
 /*----------------------------------------------------------------------*
@@ -668,15 +720,22 @@ void MAT::GrowthScdACRadial::Evaluate
 
   if (time > starttime + eps && time <= endtime + eps) //iff growth is active
   {
-    double theta;
+    //push-forward of N
+    LINALG::Matrix<3,3> defgrdinv(true);
+    defgrdinv.Invert(*defgrd);
+    LINALG::Matrix<3,1> n_for_update(true);
+    n_for_update.MultiplyTN(defgrd->Determinant(),defgrdinv,N_);
+    //scale n to length of one
+    n_for_update.Scale(1.0/n_for_update.Norm2());
+    //save for time update
+    n_for_update_.at(gp)=n_for_update;
+
     //--------------------------------------------------------------------------------------
     // calculate \theta and  \frac{\partial \theta}{\partial C}
     //--------------------------------------------------------------------------------------
+    double theta;
     LINALG::Matrix<6,1> dthetadCvec(true);
     EvaluateGrowth(&theta,&dthetadCvec,defgrd,glstrain,params,eleGID);
-
-    // store theta
-    theta_->at(gp) = theta;
 
     LINALG::Matrix<6,1> S(true);
     LINALG::Matrix<6,6> cmatdach(true);
@@ -690,10 +749,8 @@ void MAT::GrowthScdACRadial::Evaluate
     //--------------------------------------------------------------------------------------
 
     // calculate growth part F_g of the deformation gradient F
-    // F_g = \theta * N \otimes N + T_1 \otimes T_1 + T_2 \otimes T_2
-    LINALG::Matrix<3,3> F_g(NdN_);
-    F_g.Scale(theta);
-    F_g.Update(1.0,TdT_,1.0);
+    LINALG::Matrix<3,3> F_g(true);
+    CalcFg(theta,gp,F_g);
 
     // calculate F_g^(-1)
     LINALG::Matrix<3,3> F_ginv(true);
@@ -702,6 +759,7 @@ void MAT::GrowthScdACRadial::Evaluate
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
 
+//    *cmat = PullBack4Tensor(F_ginv,cmatdach);
     cmatelast = PullBack4Tensor(F_ginv,cmatdach);
 
     //if the growth law shall be proportional to the scalar in the
@@ -732,6 +790,8 @@ void MAT::GrowthScdACRadial::Evaluate
         (*cmat)(i, j) =  cmatelast(i, j) + 2.0 *(SEps(i) - S(i))/espilon * dthetadCvec(j);
       }
     }
+    // store theta
+    theta_->at(gp) = theta;
   }
   else if (time > endtime + eps)
   {
@@ -749,10 +809,8 @@ void MAT::GrowthScdACRadial::Evaluate
     //--------------------------------------------------------------------------------------
 
     // calculate growth part F_g of the deformation gradient F
-    // F_g = \theta * N \otimes N + T_1 \otimes T_1 + T_2 \otimes T_2
-    LINALG::Matrix<3,3> F_g(NdN_);
-    F_g.Scale(theta);
-    F_g.Update(1.0,TdT_,1.0);
+    LINALG::Matrix<3,3> F_g(true);
+    CalcFg(theta,gp,F_g);
 
     // calculate F_g^(-1)
     LINALG::Matrix<3,3> F_ginv(true);
@@ -773,6 +831,22 @@ void MAT::GrowthScdACRadial::Evaluate
 }
 
 ///*----------------------------------------------------------------------*
+// | calculate growth part of deformation gradient              Thon 01/16|
+// *----------------------------------------------------------------------*/
+void MAT::GrowthScdACRadial::CalcFg( const double& theta, const int& gp, LINALG::Matrix<3,3>& F_g )
+{
+  LINALG::Matrix<3,3> ndn(true);
+  ndn.MultiplyNT(n_.at(gp),n_.at(gp));
+
+  LINALG::Matrix<3,3> F_g_incr(true);
+  for (int i = 0; i < 3; i++)
+    F_g_incr(i,i) = 1.0;
+  F_g_incr.Update((theta-ThetaOld()->at(gp))/ThetaOld()->at(gp),ndn,1.0);
+
+  F_g.MultiplyNN(F_g_incr,F_g_hist_.at(gp));
+}
+
+///*----------------------------------------------------------------------*
 // | calculate stresses and elastic material tangent                      |
 // | (both in Voigt notation)                                   Thon 01/16|
 // *----------------------------------------------------------------------*/
@@ -786,12 +860,14 @@ void MAT::GrowthScdACRadial::GetSAndCmatdach
     const int eleGID
 )
 {
-  // calculate growth part F_g of the deformation gradient F
-  // F_g = \theta * N \otimes N + T_1 \otimes T_1 + T_2 \otimes T_2
+   // get gauss point number
+    const int gp = params.get<int>("gp", -1);
+    if (gp == -1)
+      dserror("no Gauss point number provided in material");
 
-  LINALG::Matrix<3,3> F_g(NdN_);
-  F_g.Scale(theta);
-  F_g.Update(1.0,TdT_,1.0);
+  // calculate growth part F_g of the deformation gradient F
+  LINALG::Matrix<3,3> F_g(true);
+  CalcFg(theta,gp,F_g);
 
   // calculate F_g^(-1)
   LINALG::Matrix<3,3> F_ginv(true);
@@ -1201,9 +1277,23 @@ bool MAT::GrowthScdACRadial::VisData(const std::string& name, std::vector<double
     if ((int)data.size()!=3)
       dserror("size mismatch");
 
-    data[0] = N_(0,0);
-    data[1] = N_(1,0);
-    data[2] = N_(2,0);
+    LINALG::Matrix<3,1> temp(true);
+    for (int gp=0; gp<numgp; gp++)
+    {
+      if ( (abs((n_. at(gp)).Norm2())-1.0)>1e-14 )
+      {
+        dserror("length of n_ is not one. This should not be possible!");
+      }
+
+      temp.Update(1.0/(double)numgp,n_.at(gp),1.0);
+    }
+    // we fix the length, since the mean of all n's must not have length one, even if
+    // all n's individually have length one! So:
+    temp.Scale(1.0/temp.Norm2());
+
+    data[0] = temp(0,0);
+    data[1] = temp(1,0);
+    data[2] = temp(2,0);
   }
 
   GrowthScdAC::VisData(name,data,numgp,eleID);

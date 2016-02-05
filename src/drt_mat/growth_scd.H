@@ -395,6 +395,12 @@ namespace MAT
 
   protected:
 
+    ///Time update of material
+    virtual void Update();
+
+    ///calculate growth part of deformation gradient
+    void CalcFg( const double& theta, const int& gp, LINALG::Matrix<3,3>& F_g);
+
     ///calculate stresses and elastic material tangent (both in Voigt notation)
     void GetSAndCmatdach
     (
@@ -470,14 +476,17 @@ namespace MAT
 
   private:
 
-    ///Normal \otime Normal
-    LINALG::Matrix<3,3> NdN_; //would be fine if it was constant...
-
-    ///T_1 \otimes T_1 + T_2 \otimes T_2
-    LINALG::Matrix<3,3> TdT_; //would be fine if it was constant...
-
     ///Normal direction
     LINALG::Matrix<3,1> N_; //would be fine if it was constant...
+
+    ///Normal direction
+    std::vector<LINALG::Matrix<3,1> > n_;
+
+    ///Normal direction
+    std::vector<LINALG::Matrix<3,1> > n_for_update_;
+
+    /// history of growth matrix
+    std::vector<LINALG::Matrix<3,3> > F_g_hist_;
 
 //    /// my material parameters
 //    MAT::PAR::GrowthScd* paramsScdAC_;
