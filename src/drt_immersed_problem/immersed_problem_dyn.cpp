@@ -242,12 +242,16 @@ void CellMigrationControlAlgorithm()
 
   {
     // check if INODE is defined in input file
-    IMMERSED::ImmersedNode* inode =
-        dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("porofluid")->gElement(problem->GetDis("porofluid")->ElementRowMap()->GID(0)))->Nodes()[0]);
+    int lid = problem->GetDis("porofluid")->ElementRowMap()->GID(0);
+    if(lid!=-1)
+    {
+      IMMERSED::ImmersedNode* inode =
+          dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("porofluid")->gElement(lid))->Nodes()[0]);
 
-        if(inode == NULL)
-          dserror("dynamic cast from Node to ImmersedNode failed.\n"
-                  "Make sure you defined INODE instead of NODE in your input file.");
+      if(inode == NULL)
+        dserror("dynamic cast from Node to ImmersedNode failed.\n"
+            "Make sure you defined INODE instead of NODE in your input file.");
+    }
   }
 
   problem->GetDis("cell")->FillComplete(true,true,true);
