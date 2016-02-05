@@ -61,7 +61,8 @@ MAT::ScalarDepInterp::ScalarDepInterp()
   : params_(NULL),
     isinit_(false),
     zero_conc_mat_(Teuchos::null),
-    infty_conc_mat_(Teuchos::null)
+    infty_conc_mat_(Teuchos::null),
+    zero_conc_ratio_(Teuchos::null)
 {
 }
 
@@ -72,7 +73,8 @@ MAT::ScalarDepInterp::ScalarDepInterp(MAT::PAR::ScalarDepInterp* params)
   : params_(params),
     isinit_(false),
     zero_conc_mat_(Teuchos::null),
-    infty_conc_mat_(Teuchos::null)
+    infty_conc_mat_(Teuchos::null),
+    zero_conc_ratio_(Teuchos::null)
 {
 }
 
@@ -97,6 +99,8 @@ void MAT::ScalarDepInterp::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   if (abs(density1-density2)>1e-14)
     dserror("The densities of the materials specified in IDZEROCONCMAT and IDINFTYCONCMAT must be equal!");
 
+  zero_conc_ratio_ = std::vector<double >(numgp,1.0);
+
   //initialization done
   isinit_ = true;
 
@@ -112,6 +116,11 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3,3>* defgrd,
                                LINALG::Matrix<6,6>* cmat,
                                const int eleGID)
 {
+  // get gauss point number
+  const int gp = params.get<int>("gp", -1);
+  if (gp == -1)
+    dserror("no Gauss point number provided in material");
+
   //evaluate elastic material corresponding to zero concentration
   LINALG::Matrix<6,1> stress_zero_conc = *stress;
   LINALG::Matrix<6,6> cmat_zero_conc = *cmat;
@@ -128,20 +137,30 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   infty_conc_mat_->Evaluate(defgrd, glstrain, params, &stress_infty_conc, &cmat_infty_conc,eleGID);
   infty_conc_mat_->StrainEnergy(*glstrain,psi_infty_conc,eleGID);
 
+  double conc_zero_ratio;
   //get the ratio of interpolation
   // NOTE: if no ratio is available, we use the conc_zero material!
-  double conc_zero_ratio = params.get< double >("conc_zero_ratio",1.0);
+  if (params.isParameter("conc_zero_ratio"))
+  {
+    conc_zero_ratio = params.get< double >("conc_zero_ratio");
 
-  // NOTE: this would be nice, but since negative concentrations can occur,
-  // we have to catch 'unnatural' cases different...
-//  if ( conc_zero_ratio < -1.0e-14 or conc_zero_ratio > (1.0+1.0e-14) )
-//      dserror("The conc_zero_ratio must be in [0,1]!");
+    // NOTE: this would be nice, but since negative concentrations can occur,
+    // we have to catch 'unnatural' cases different...
+    //  if ( conc_zero_ratio < -1.0e-14 or conc_zero_ratio > (1.0+1.0e-14) )
+    //      dserror("The conc_zero_ratio must be in [0,1]!");
 
-  // e.g. like that:
-  if ( conc_zero_ratio < -1.0e-14 )
-    conc_zero_ratio = 0.0;
-  if ( conc_zero_ratio > (1.0+1.0e-14) )
-    conc_zero_ratio = 1.0;
+    // e.g. like that:
+    if ( conc_zero_ratio < -1.0e-14 )
+      conc_zero_ratio = 0.0;
+    if ( conc_zero_ratio > (1.0+1.0e-14) )
+      conc_zero_ratio = 1.0;
+
+    zero_conc_ratio_.at(gp)=conc_zero_ratio;
+  }
+  else
+  {
+    conc_zero_ratio=zero_conc_ratio_.at(gp);
+  }
 
   //get derivative of interpolation ratio w.r.t. glstrain
   Teuchos::RCP<LINALG::Matrix<6,1> > dconc_zero_ratio_dC =
@@ -178,6 +197,18 @@ void MAT::ScalarDepInterp::Pack(DRT::PackBuffer& data) const
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
+
+  int numgp=0;
+  if (isinit_)
+  {
+    numgp = zero_conc_ratio_.size();;   // size is number of gausspoints
+  }
+  AddtoPack(data,numgp);
+
+  for (int gp=0; gp<numgp; gp++)
+  {
+    AddtoPack(data,zero_conc_ratio_.at(gp));
+  }
 
   // Pack data of both elastic materials
   if (zero_conc_mat_!=Teuchos::null and infty_conc_mat_!=Teuchos::null)
@@ -216,10 +247,23 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
     }
 
+  int numgp;
+  ExtractfromPack(position,data,numgp);
+  if (not numgp == 0)
+  {
+    zero_conc_ratio_ = std::vector<double>(numgp,1.0);
+
+    for (int gp=0; gp<numgp; gp++)
+    {
+      double zero_conc_ratio=1.0;
+      ExtractfromPack(position,data,zero_conc_ratio);
+      zero_conc_ratio_.at(gp)=zero_conc_ratio;
+    }
+  }
+
   // Unpack data of elastic material (these lines are copied from drt_element.cpp)
   std::vector<char> dataelastic;
   ExtractfromPack(position,data,dataelastic);
-
   if (dataelastic.size()>0)
   {
     DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
@@ -276,6 +320,9 @@ void MAT::ScalarDepInterp::ResetStep()
 /*----------------------------------------------------------------------*/
 void MAT::ScalarDepInterp::VisNames(std::map<std::string,int>& names)
 {
+  std::string fiber = "zero_conc_ratio";
+  names[fiber] = 1; // 1-dim vector
+
   zero_conc_mat_->VisNames(names);
   infty_conc_mat_->VisNames(names);
 }
@@ -284,6 +331,20 @@ void MAT::ScalarDepInterp::VisNames(std::map<std::string,int>& names)
 /*----------------------------------------------------------------------*/
 bool MAT::ScalarDepInterp::VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID)
 {
+  if (name == "zero_conc_ratio")
+  {
+    if ((int)data.size()!=1)
+      dserror("size mismatch");
+
+    double temp = 0.0;
+    for (int gp=0; gp<numgp; gp++)
+    {
+      temp += zero_conc_ratio_.at(gp);
+    }
+
+    data[0] = temp/((double)numgp);
+  }
+
   bool tmp1 = zero_conc_mat_->VisData(name, data, numgp, eleID);
   bool tmp2 = infty_conc_mat_->VisData(name, data, numgp, eleID);
   return (tmp1 and tmp2);

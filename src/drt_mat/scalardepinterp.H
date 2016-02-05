@@ -211,7 +211,7 @@ private:
     /// Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
 
-  protected:
+  private:
 
     /// my material parameters
     MAT::PAR::ScalarDepInterp* params_;
@@ -224,6 +224,8 @@ private:
 
     /// elastic material for infinity concentration
     Teuchos::RCP<MAT::So3Material> infty_conc_mat_;
+
+    std::vector<double> zero_conc_ratio_;
   };
 
 
