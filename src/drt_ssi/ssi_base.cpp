@@ -104,11 +104,24 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
  *----------------------------------------------------------------------*/
 void SSI::SSI_Base::ReadRestart( int restart )
 {
-
   if (restart)
   {
-    scatra_->ScaTraField()->ReadRestart(restart);
     structure_->ReadRestart(restart);
+
+    const Teuchos::ParameterList& ssidyn = DRT::Problem::Instance()->SSIControlParams();
+    const bool restartfromstructure = DRT::INPUT::IntegralValue<int>(ssidyn,"RESTART_FROM_STRUCTURE");
+
+    if (not restartfromstructure) //standard restart
+    {
+        scatra_->ScaTraField()->ReadRestart(restart);
+    }
+    else //restart from structure simulation
+    {
+      // Since there is no restart output for the scatra fiels available, we only have to fix the
+      // time and step counter
+      scatra_->ScaTraField()->SetTimeStep(structure_->TimeOld(),restart);
+    }
+
     SetTimeStep(structure_->TimeOld(), restart);
   }
 
@@ -144,14 +157,26 @@ void SSI::SSI_Base::ReadRestartfromTime( double restarttime )
 {
   if ( restarttime > 0.0 )
   {
+    const int restartstructure = SSI::Utils::CheckTimeStepping(structure_->Dt(), restarttime);
+    const int restartscatra    = SSI::Utils::CheckTimeStepping(scatra_->ScaTraField()->Dt(), restarttime);
 
-    int restartstructure = SSI::Utils::CheckTimeStepping(structure_->Dt(), restarttime);
-    int restartscatra    = SSI::Utils::CheckTimeStepping(scatra_->ScaTraField()->Dt(), restarttime);
-
-    scatra_->ScaTraField()->ReadRestart(restartscatra);
     structure_->ReadRestart(restartstructure);
-    SetTimeStep(structure_->TimeOld(), restartstructure);
 
+    const Teuchos::ParameterList& ssidyn = DRT::Problem::Instance()->SSIControlParams();
+    const bool restartfromstructure = DRT::INPUT::IntegralValue<int>(ssidyn,"RESTART_FROM_STRUCTURE");
+
+    if (not restartfromstructure) //standard restart
+    {
+      scatra_->ScaTraField()->ReadRestart(restartscatra);
+    }
+    else //restart from structure simulation
+    {
+      // Since there is no restart output for the scatra fiels available, we only have to fix the
+      // time and step counter
+      scatra_->ScaTraField()->SetTimeStep(structure_->TimeOld(),restartscatra);
+    }
+
+    SetTimeStep(structure_->TimeOld(), restartstructure);
   }
 
   // Material pointers to other field were deleted during ReadRestart().

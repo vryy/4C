@@ -108,6 +108,9 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  INPAR::SCATRA::impltype_chemoreac),
                                  &ssidyn);
 
+  //Restart from Structure problem instead of SSI
+  BoolParameter("RESTART_FROM_STRUCTURE","no","restart from structure problem (e.g. from prestress calculations) instead of ssi",&ssidyn);
+
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned SSI */
   /*----------------------------------------------------------------------*/

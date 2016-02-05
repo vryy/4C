@@ -128,6 +128,7 @@ void SSI::SSI_Part2WC::PrepareTimeStep(bool printheader)
     PrintHeader();
 
   SetScatraSolution(scatra_->ScaTraField()->Phinp());
+  //NOTE: the predictor of the structure is called in here
   structure_-> PrepareTimeStep();
 
   SetStructSolution(structure_->Dispnp(),structure_->Velnp());
@@ -176,7 +177,12 @@ void SSI::SSI_Part2WC::OuterLoop()
     SetScatraSolution(scatra_->ScaTraField()->Phinp());
 
     if(itnum_!=1)
+    {
+      //NOTE: the predictor is NOT called in here. Just the screen output is not correct.
+      // we only get norm of the evaluation of the structure problem
       structure_->PreparePartitionStep();
+    }
+
     // solve structural system
     DoStructStep();
 
