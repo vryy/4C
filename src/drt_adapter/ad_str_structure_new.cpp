@@ -146,6 +146,19 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   Teuchos::TimeMonitor monitor(*t);
 
   // ---------------------------------------------------------------------------
+  // Here we read the discretization at the current
+  // time step from restart files
+  // ---------------------------------------------------------------------------
+  if ( restart and probtype == prb_crack )
+  {
+    IO::DiscretizationReader reader(actdis_, restart);
+    reader.ReadMesh(restart);
+  }
+  // set degrees of freedom in the discretization
+  else if (not actdis_->Filled() || not actdis_->HaveDofs())
+    actdis_->FillComplete();
+
+  // ---------------------------------------------------------------------------
   // Setup a model type set by checking
   // the different conditions
   // ---------------------------------------------------------------------------
@@ -162,19 +175,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   Teuchos::RCP<std::set<enum INPAR::STR::EleTech> > eletechs =
       Teuchos::rcp(new std::set<enum INPAR::STR::EleTech>());
   DetectElementTechnologies(*eletechs);
-
-  // ---------------------------------------------------------------------------
-  // Here we read the discretization at the current
-  // time step from restart files
-  // ---------------------------------------------------------------------------
-  if ( restart and probtype == prb_crack )
-  {
-    IO::DiscretizationReader reader(actdis_, restart);
-    reader.ReadMesh(restart);
-  }
-  // set degrees of freedom in the discretization
-  else if (not actdis_->Filled() || not actdis_->HaveDofs())
-    actdis_->FillComplete();
 
   // ---------------------------------------------------------------------------
   // Setup the parameter lists for structural
