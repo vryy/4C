@@ -18,6 +18,7 @@ Maintainer: Matthias Mayr
 #include "ad_ale_crack.H"
 #include "ad_ale_fluid.H"
 #include "ad_ale_fpsi.H"
+#include "ad_ale_fsi_msht.H"
 #include "ad_ale_fsi.H"
 #include "ad_ale_wear.H"
 #include "ad_ale_xffsi.H"
@@ -195,11 +196,14 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
         or coupling == fsi_iter_lung_monolithicfluidsplit
         or coupling == fsi_iter_lung_monolithicstructuresplit
         or coupling == fsi_iter_mortar_monolithicstructuresplit
-        or coupling == fsi_iter_mortar_monolithicfluidsplit
-        or coupling == fsi_iter_sliding_monolithicfluidsplit
-        or coupling == fsi_iter_sliding_monolithicstructuresplit)
+        or coupling == fsi_iter_mortar_monolithicfluidsplit)
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleFsiWrapper(ale));
+    }
+    else if (coupling == fsi_iter_sliding_monolithicfluidsplit
+        or coupling == fsi_iter_sliding_monolithicstructuresplit)
+    {
+      ale_ = Teuchos::rcp(new ADAPTER::AleFsiMshtWrapper(ale));
     }
     else if (coupling == fsi_iter_fluidfluid_monolithicstructuresplit
         or coupling == fsi_iter_fluidfluid_monolithicfluidsplit

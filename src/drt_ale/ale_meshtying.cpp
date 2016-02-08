@@ -53,7 +53,8 @@ ALE::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization>      dis,
   pcoupled_ (true),
   dconmaster_(false),
   firstnonliniter_(false),
-  nsd_(nsd)
+  nsd_(nsd),
+  is_multifield_(false)
 {
   // get the processor ID from the communicator
   myrank_  = discret_->Comm().MyPID();
@@ -664,3 +665,115 @@ void ALE::Meshtying::UpdateSlaveDOF(
   return;
 }
 
+/*-------------------------------------------------------*/
+/*  Set the flag for multifield problems     wirtz 01/16 */
+/*                                                       */
+/*-------------------------------------------------------*/
+void ALE::Meshtying::IsMultifield(const LINALG::MultiMapExtractor& interface,         ///< interface maps for split of ale matrix
+                  bool ismultifield                                    ///< flag for multifield problems
+                  )
+{
+
+  multifield_interface_ = interface;
+  is_multifield_ = ismultifield;
+
+  return;
+
+}
+
+/*-------------------------------------------------------*/
+/*  Use the split of the ale mesh tying for the sysmat   */
+/*                                           wirtz 01/16 */
+/*-------------------------------------------------------*/
+void ALE::Meshtying::MshtSplit(Teuchos::RCP<LINALG::SparseOperator>& sysmat)
+{
+
+  if (is_multifield_)
+  {
+    // generate map for blockmatrix
+    std::vector<Teuchos::RCP<const Epetra_Map> > alemaps;
+    alemaps.push_back(gndofrowmap_);
+    alemaps.push_back(gmdofrowmap_);
+    alemaps.push_back(gsdofrowmap_);
+
+    LINALG::MultiMapExtractor extractor;
+
+    extractor.Setup(*dofrowmap_,alemaps);
+
+    // check, if extractor maps are valid
+    extractor.CheckForValidMapExtractor();
+
+    // allocate 3x3 block sparse matrix with the interface split strategy
+    // the interface split strategy speeds up the assembling process,
+    // since the information, which nodes are part of the interface, is available
+    // -------------------
+    // | knn | knm | kns |
+    // | kmn | kmm | kms |
+    // | ksn | ksm | kss |
+    // -------------------
+
+    Teuchos::RCP<LINALG::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy> > mat;
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>(extractor,extractor,108,false,true));
+    // nodes on the interface
+    Teuchos::RCP<std::set<int> > condelements = surfacesplitter_->ConditionedElementMap(*discret_);
+    mat->SetCondElements(condelements);
+
+    sysmat = mat;
+  }
+
+}
+
+/*-------------------------------------------------------*/
+/*  Use the split of the multifield problem for the      */
+/*  sysmat                                   wirtz 01/16 */
+/*-------------------------------------------------------*/
+void ALE::Meshtying::MultifieldSplit(Teuchos::RCP<LINALG::SparseOperator>& sysmat)
+{
+
+  if (is_multifield_)
+  {
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmatnew =
+        Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat);
+
+    Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(
+        new Epetra_Vector(sysmatnew->Matrix(2, 2).RowMap()));
+    ones->PutScalar(1.0);
+
+    Teuchos::RCP<LINALG::SparseMatrix> onesdiag = Teuchos::rcp(
+        new LINALG::SparseMatrix(*ones));
+    onesdiag->Complete();
+
+    sysmatnew->Matrix(0, 2).UnComplete();
+    sysmatnew->Matrix(0, 2).Zero();
+
+    sysmatnew->Matrix(1, 2).UnComplete();
+    sysmatnew->Matrix(1, 2).Zero();
+
+    sysmatnew->Matrix(2, 2).UnComplete();
+    sysmatnew->Matrix(2, 2).Zero();
+    sysmatnew->Matrix(2, 2).Add(*onesdiag, false, 1.0, 1.0);
+
+    sysmatnew->Matrix(2, 0).UnComplete();
+    sysmatnew->Matrix(2, 0).Zero();
+
+    sysmatnew->Matrix(2, 1).UnComplete();
+    sysmatnew->Matrix(2, 1).Zero();
+
+    sysmatnew->Complete();
+
+    Teuchos::RCP<LINALG::SparseMatrix> mergedmatrix = sysmatnew->Merge();
+
+    Teuchos::RCP<LINALG::MapExtractor> extractor = Teuchos::rcp(
+        new LINALG::MapExtractor(*multifield_interface_.FullMap(),
+            multifield_interface_.Map(1)));
+
+    Teuchos::RCP<LINALG::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy> > mat =
+        mergedmatrix->Split<ALE::UTILS::InterfaceSplitStrategy>(*extractor,
+            *extractor);
+
+    mat->Complete();
+
+    sysmat = mat;
+  }
+
+}

@@ -917,7 +917,16 @@ void FLD::FluidImplicitTimeInt::PrepareSolve()
 
   // prepare meshtying system
   if (msht_ != INPAR::FLUID::no_meshtying)
+  {
     meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,velnp_);
+    meshtying_->MultifieldSplit(sysmat_);
+
+    if (shapederivatives_ != Teuchos::null)
+    {
+      meshtying_->CondensationOperationBlockMatrixShape(shapederivatives_);
+      meshtying_->MultifieldSplitShape(shapederivatives_);
+    }
+  }
 
   // update local coordinate systems for ALE fluid case
   // (which may be time and displacement dependent)
@@ -2894,6 +2903,13 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> stepi
     discret_->SetState("scaaf",scaaf_);
     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
     discret_->ClearState();
+  }
+
+  if (msht_ != INPAR::FLUID::no_meshtying)
+  {
+    meshtying_->MshtSplit(sysmat_);
+    if (shapederivatives_ != Teuchos::null)
+       meshtying_->MshtSplitShape(shapederivatives_);
   }
 
   PrepareSolve();
@@ -5184,34 +5200,41 @@ void FLD::FluidImplicitTimeInt::UseBlockMatrix(Teuchos::RCP<std::set<int> >     
                                                const LINALG::MultiMapExtractor& rangemaps_shape,
                                                bool splitmatrix)
 {
-  Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
-
-  if (splitmatrix)
+  if (msht_ != INPAR::FLUID::no_meshtying)
   {
-    if(off_proc_assembly_)
-      dserror("Off proc assembly does not work with Block Matrices currently. Use structure split if you do an FSI.");
+    meshtying_->IsMultifield(condelements, domainmaps, rangemaps, condelements_shape, domainmaps_shape, rangemaps_shape, splitmatrix, true);
+  }
+  else
+  {
+    Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy> > mat;
 
-    // (re)allocate system matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
-    mat->SetCondElements(condelements);
-    sysmat_ = mat;
-
-    if (nonlinearbc_)
+    if (splitmatrix)
     {
-      if (isimpedancebc_)
+      if(off_proc_assembly_)
+        dserror("Off proc assembly does not work with Block Matrices currently. Use structure split if you do an FSI.");
+
+      // (re)allocate system matrix
+      mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps,rangemaps,108,false,true));
+      mat->SetCondElements(condelements);
+      sysmat_ = mat;
+
+      if (nonlinearbc_)
       {
-        impedancebc_->UseBlockMatrix(condelements,domainmaps,rangemaps,splitmatrix);
+        if (isimpedancebc_)
+        {
+          impedancebc_->UseBlockMatrix(condelements,domainmaps,rangemaps,splitmatrix);
+        }
       }
     }
-  }
 
-  // if we never build the matrix nothing will be done
-  if (params_->get<bool>("shape derivatives"))
-  {
-    // allocate special mesh moving matrix
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps_shape,rangemaps_shape,108,false,true));
-    mat->SetCondElements(condelements_shape);
-    shapederivatives_ = mat;
+    // if we never build the matrix nothing will be done
+    if (params_->get<bool>("shape derivatives"))
+    {
+      // allocate special mesh moving matrix
+      mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(domainmaps_shape,rangemaps_shape,108,false,true));
+      mat->SetCondElements(condelements_shape);
+      shapederivatives_ = mat;
+    }
   }
 }
 
@@ -6680,4 +6703,18 @@ void FLD::FluidImplicitTimeInt::InitForcing()
       dserror("forcing interface doesn't know this flow");
   }
   return;
+}
+
+/*----------------------------------------------------------------------*
+ * Update slave dofs for multifield simulations with fluid mesh tying   |
+ *                                                          wirtz 01/16 |
+ *----------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f)
+{
+
+  if (msht_ != INPAR::FLUID::no_meshtying)
+  {
+    meshtying_->UpdateSlaveDOF(f, velnp_);
+  }
+
 }

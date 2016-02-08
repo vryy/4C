@@ -801,3 +801,10 @@ void ADAPTER::FluidFSI::BuildInnerVelMap()
   maps.push_back(GetDBCMapExtractor()->OtherMap());
   innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(maps);
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f)
+{
+  fluidimpl_->UpdateSlaveDOF(f);
+}

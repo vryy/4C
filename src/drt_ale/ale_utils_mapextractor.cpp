@@ -65,6 +65,16 @@ Teuchos::RCP<std::set<int> > ALE::UTILS::MapExtractor::ConditionedElementMap(con
   return condelements;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ALE::UTILS::FsiMapExtractor::Setup(const DRT::Discretization& dis)
+{
+  const int ndim = DRT::Problem::Instance()->NDim();
+  DRT::UTILS::MultiConditionSelector mcs;
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"FSICoupling",0,ndim)));
+  mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
+}
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void ALE::UTILS::XFluidFluidMapExtractor::Setup(const DRT::Discretization& dis)

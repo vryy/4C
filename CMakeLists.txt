@@ -672,6 +672,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_fld_lung.cpp
   src/drt_adapter/ad_fld_moving_boundary.cpp
   src/drt_adapter/ad_fld_poro.cpp
+  src/drt_adapter/ad_fld_fluid_fsi_msht.cpp
   src/drt_adapter/ad_fld_fluid_fsi.cpp
   src/drt_adapter/ad_fld_fluid_ac_fsi.cpp
   src/drt_adapter/ad_fld_fluid_fpsi.cpp
@@ -713,6 +714,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_ale_crack.cpp
   src/drt_adapter/ad_ale_fluid.cpp
   src/drt_adapter/ad_ale_fpsi.cpp
+  src/drt_adapter/ad_ale_fsi_msht.cpp
   src/drt_adapter/ad_ale_fsi.cpp
   src/drt_adapter/ad_ale_wear.cpp
   src/drt_adapter/ad_ale_wrapper.cpp

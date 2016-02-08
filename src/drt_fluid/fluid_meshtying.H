@@ -16,6 +16,8 @@ Maintainers: Benjamin Krank & Martin Kronbichler
 
 #include "../drt_inpar/inpar_fluid.H"
 
+#include "../linalg/linalg_mapextractor.H"
+
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
@@ -167,6 +169,32 @@ class Meshtying
     void UpdateSlaveDOF(const Teuchos::RCP<Epetra_Vector>&   inc,
                         const Teuchos::RCP<Epetra_Vector>&   velnp);
 
+    //! Set the flag for multifield problems
+    void IsMultifield(Teuchos::RCP<std::set<int> > condelements,           ///< conditioned elements of fluid
+                      const LINALG::MultiMapExtractor& domainmaps,         ///< domain maps for split of fluid matrix
+                      const LINALG::MultiMapExtractor& rangemaps,          ///< range maps for split of fluid matrix
+                      Teuchos::RCP<std::set<int> >     condelements_shape, ///< conditioned elements
+                      const LINALG::MultiMapExtractor& domainmaps_shape,   ///< domain maps for split of shape deriv. matrix
+                      const LINALG::MultiMapExtractor& rangemaps_shape,    ///< domain maps for split of shape deriv. matrix
+                      bool splitmatrix,                                    ///< flag for split of matrices
+                      bool ismultifield                                    ///< flag for multifield problems
+                      );
+
+    //! Use the split of the fluid mesh tying for the sysmat
+    void MshtSplit(Teuchos::RCP<LINALG::SparseOperator>& sysmat);
+
+    //! Use the split of the fluid mesh tying for the shape derivatives
+    void MshtSplitShape(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& shapederivatives);
+
+    //! Use the split of the multifield problem for the sysmat
+    void MultifieldSplit(Teuchos::RCP<LINALG::SparseOperator>& sysmat);
+
+    //! Use the split of the multifield problem for the shape derivatives
+    void MultifieldSplitShape(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& shapederivatives);
+
+    //! Prepare condensation of the shape derivatives
+    void CondensationOperationBlockMatrixShape(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& shapederivatives);
+
   private:
 
     //! Prepare condensation for sparse matrix (including ALE case)
@@ -282,6 +310,30 @@ class Meshtying
 
     //! number of space dimensions
     int nsd_;
+
+    //! conditioned elements of fluid in multifield simulation
+    Teuchos::RCP<std::set<int> > multifield_condelements_;
+
+    //! domain maps for split of fluid matrix in multifield simulation
+    LINALG::MultiMapExtractor multifield_domainmaps_;
+
+    //! range maps for split of fluid matrix in multifield simulation
+    LINALG::MultiMapExtractor multifield_rangemaps_;
+
+    //! conditioned elements in multifield simulation
+    Teuchos::RCP<std::set<int> > multifield_condelements_shape_;
+
+    //! domain maps for split of shape deriv. matrix in multifield simulation
+    LINALG::MultiMapExtractor multifield_domainmaps_shape_;
+
+    //! domain maps for split of shape deriv. matrix in multifield simulation
+    LINALG::MultiMapExtractor multifield_rangemaps_shape_;
+
+    //! flag for split of matrices in multifield simulation
+    bool multifield_splitmatrix_;
+
+    //! flag for multifield problems in multifield simulation
+    bool is_multifield_;
 
 };  // end  class Meshtying
 } // end namespace FLD

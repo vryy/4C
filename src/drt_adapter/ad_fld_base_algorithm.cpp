@@ -61,6 +61,7 @@ Maintainer: Ulrich Kuettler
 
 #include "ad_fld_fluid_fluid_fsi.H"
 #include "ad_fld_fluid_fpsi.H"
+#include "ad_fld_fluid_fsi_msht.H"
 #include "ad_fld_fluid_fsi.H"
 #include "ad_fld_fluid_ac_fsi.H"
 #include "ad_fld_lung.H"
@@ -877,6 +878,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       else
         dserror("Unknown time integration for this fluid problem type\n");
 
+      const Teuchos::ParameterList& fsidyn =
+          DRT::Problem::Instance()->FSIDynamicParams();
+      int coupling = DRT::INPUT::IntegralValue<int>(fsidyn, "COUPALGO");
+
       if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID"))
       {
         fluidtimeparams->set<bool>("shape derivatives",false);
@@ -886,6 +891,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
             tmpfluid,xfluiddis,solver,fluidtimeparams,false,isale));
         fluid_ = Teuchos::rcp(new FluidFluidFSI(xffluid,tmpfluid,solver,fluidtimeparams,isale,dirichletcond));
       }
+      else if ( coupling == fsi_iter_sliding_monolithicfluidsplit
+          or coupling == fsi_iter_sliding_monolithicstructuresplit)
+        fluid_ = Teuchos::rcp(new FluidFSIMsht(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
       else
         fluid_ = Teuchos::rcp(new FluidFSI(tmpfluid,actdis,solver,fluidtimeparams,output,isale,dirichletcond));
     }

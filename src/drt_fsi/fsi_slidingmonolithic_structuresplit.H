@@ -19,6 +19,8 @@ Maintainer: Andy Wirtz
 
 #include "fsi_monolithic.H"
 #include "../drt_inpar/inpar_fsi.H"
+#include "../drt_adapter/ad_fld_fluid_fsi_msht.H"
+#include "../drt_adapter/ad_ale_fsi_msht.H"
 
 // forward declarations
 namespace ADAPTER
@@ -217,6 +219,10 @@ namespace FSI
         Teuchos::RCP<DRT::Discretization> fluiddis,
         const INPAR::FSI::Redistribute domain
         );
+
+    const Teuchos::RCP<ADAPTER::FluidFSIMsht> FsiFluidField() { return Teuchos::rcp_static_cast<ADAPTER::FluidFSIMsht> (FluidField()); }
+
+    const Teuchos::RCP<ADAPTER::AleFsiMshtWrapper> FsiAleField() { return Teuchos::rcp_static_cast<ADAPTER::AleFsiMshtWrapper> (AleField()); }
 
   protected:
 

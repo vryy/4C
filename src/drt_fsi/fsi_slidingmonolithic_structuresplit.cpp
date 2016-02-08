@@ -252,7 +252,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupSystem()
     // build ale system matrix in splitted system
     AleField()->CreateSystemMatrix(AleField()->Interface());
 
-    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->OtherMap()));
+    aleresidual_ = Teuchos::rcp(new Epetra_Vector(*FsiAleField()->FsiInterface()->OtherMap()));
 
     // -------------------------------------------------------------------------
     // Build the global Dirichlet map extractor
@@ -293,7 +293,7 @@ void FSI::SlidingMonolithicStructureSplit::CreateCombinedDofRowMap()
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
   vecSpaces.push_back(StructureField()->Interface()->OtherMap());
   vecSpaces.push_back(FluidField()->DofRowMap());
-  vecSpaces.push_back(AleField()->Interface()->OtherMap());
+  vecSpaces.push_back(FsiAleField()->FsiInterface()->OtherMap());
 
   if (vecSpaces[0]->NumGlobalElements() == 0)
     dserror("No inner structural equations. Splitting not possible. Panic.");
@@ -314,7 +314,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupDBCMapExtractor()
    */
   std::vector<Teuchos::RCP<const Epetra_Map> > aleintersectionmaps;
   aleintersectionmaps.push_back(AleField()->GetDBCMapExtractor()->CondMap());
-  aleintersectionmaps.push_back(AleField()->Interface()->OtherMap());
+  aleintersectionmaps.push_back(FsiAleField()->FsiInterface()->OtherMap());
   Teuchos::RCP<Epetra_Map> aleintersectionmap =
       LINALG::MultiMapExtractor::IntersectMaps(aleintersectionmaps);
 
@@ -365,7 +365,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupRHSResidual(Epetra_Vector& f)
 
   // extract only inner DOFs from structure (=slave) and ALE field
   Teuchos::RCP<const Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
-  Teuchos::RCP<const Epetra_Vector> aov = AleField()->Interface()->ExtractOtherVector(av);
+  Teuchos::RCP<const Epetra_Vector> aov = FsiAleField()->FsiInterface()->ExtractOtherVector(av);
 
   // add structure interface residual to fluid interface residual considering temporal scaling
   Teuchos::RCP<const Epetra_Vector> scv = StructureField()->Interface()->ExtractFSICondVector(sv);
@@ -516,7 +516,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
     fmig.Apply(*fveln, *rhs);
 
     rhs->Scale(-Dt());
-    rhs = FluidField()->Interface()->InsertOtherVector(rhs);
+    rhs = FsiFluidField()->FsiInterface()->InsertOtherVector(rhs);
 
     Extractor().AddVector(*rhs, 1, f);
   }
@@ -640,7 +640,7 @@ void FSI::SlidingMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmfsig.RowMap(), true));
       fmfsig.Apply(*fveln, *rhs);
-      Teuchos::RCP<Epetra_Vector> veln = FluidField()->Interface()->InsertOtherVector(rhs);
+      Teuchos::RCP<Epetra_Vector> veln = FsiFluidField()->FsiInterface()->InsertOtherVector(rhs);
 
       rhs = Teuchos::rcp(new Epetra_Vector(fmfsgg.RowMap(), true));
       fmfsgg.Apply(*fveln, *rhs);
@@ -1366,7 +1366,9 @@ void FSI::SlidingMonolithicStructureSplit::ExtractFieldVectors(
   // process fluid unknowns
   // ---------------------------------------------------------------------------
   // extract fluid solution increment from NOX increment
-  fx = Extractor().ExtractVector(x,1);
+  Teuchos::RCP<Epetra_Vector> f = Extractor().ExtractVector(x,1);
+  FluidField()->UpdateSlaveDOF(f);
+  fx = f;
 
   // ---------------------------------------------------------------------------
   // process ale unknowns
@@ -1380,7 +1382,7 @@ void FSI::SlidingMonolithicStructureSplit::ExtractFieldVectors(
   Teuchos::RCP<Epetra_Vector> acx = FluidToAleInterface(fcx);
 
   // put inner and interface ALE solution increments together
-  Teuchos::RCP<Epetra_Vector> a = AleField()->Interface()->InsertOtherVector(aox);
+  Teuchos::RCP<Epetra_Vector> a = FsiAleField()->FsiInterface()->InsertOtherVector(aox);
   AleField()->Interface()->InsertFSICondVector(acx, a);
 
   // if there is a free surface
@@ -1393,6 +1395,7 @@ void FSI::SlidingMonolithicStructureSplit::ExtractFieldVectors(
     AleField()->Interface()->InsertFSCondVector(acx, a);
   }
 
+  AleField()->UpdateSlaveDOF(a);
   ax = a;
 
   // ---------------------------------------------------------------------------
@@ -1799,7 +1802,7 @@ void FSI::SlidingMonolithicStructureSplit::CombineFieldVectors(Epetra_Vector& v,
     Teuchos::RCP<Epetra_Vector> sov =
         StructureField()->Interface()->ExtractOtherVector(sv);
     Teuchos::RCP<Epetra_Vector> aov =
-        AleField()->Interface()->ExtractOtherVector(av);
+        FsiAleField()->FsiInterface()->ExtractOtherVector(av);
 
     // put them together
     Extractor().AddVector(*sov,0,v);

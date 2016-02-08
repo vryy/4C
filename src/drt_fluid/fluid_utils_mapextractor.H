@@ -116,6 +116,25 @@ namespace UTILS
     MAP_EXTRACTOR_VECTOR_METHODS(Pressure, 1)
   };
 
+  /// specific MultiMapExtractor to handle the fsi and ale meshtying at the same time
+  class FsiMapExtractor : public LINALG::MultiMapExtractor
+  {
+  public:
+
+    enum {
+      cond_other       = 0,
+      cond_fsi         = 1
+    };
+
+    /// setup the whole thing
+    void Setup(const DRT::Discretization& dis);
+
+    void Setup(Teuchos::RCP<const Epetra_Map>& additionalothermap, const FLD::UTILS::FsiMapExtractor& extractor);
+
+    MAP_EXTRACTOR_VECTOR_METHODS(Other,cond_other)
+    MAP_EXTRACTOR_VECTOR_METHODS(FSI,cond_fsi)
+  };
+
   /// specific MultiMapExtractor to handle the fluid field
   class XFluidFluidMapExtractor : public LINALG::MultiMapExtractor
   {

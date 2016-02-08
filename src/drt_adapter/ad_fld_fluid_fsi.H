@@ -91,6 +91,9 @@ namespace ADAPTER {
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::MapExtractor>const& Interface() const { return interface_; }
 
+    /// update slave dofs for multifield simulations with fluid mesh tying
+    virtual void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& f);
+
     virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap();
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();

@@ -119,6 +119,11 @@ void ALE::Ale::CreateSystemMatrix(
     std::vector<int> coupleddof(DRT::Problem::Instance()->NDim(),1);
     sysmat_ = meshtying_->Setup(coupleddof);
     meshtying_->DirichletOnMaster(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
+
+    if (interface != Teuchos::null)
+    {
+      meshtying_->IsMultifield(*interface, true);
+    }
   }
   else if (interface == Teuchos::null)
   {
@@ -152,12 +157,18 @@ void ALE::Ale::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc,
     dispnp_->Update(1.0, *stepinc, 1.0, *dispn_, 0.0);
   }
 
+  if (msht_ != INPAR::ALE::no_meshtying)
+  {
+    meshtying_->MshtSplit(sysmat_);
+  }
+
   EvaluateElements();
 
   // prepare meshtying system
   if (msht_ != INPAR::ALE::no_meshtying)
   {
     meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,dispnp_);
+    meshtying_->MultifieldSplit(sysmat_);
   }
 
   // dispnp_ has zeros at the Dirichlet-entries, so we maintain zeros there.
@@ -725,6 +736,18 @@ Teuchos::RCP<const LINALG::SparseMatrix> ALE::Ale::GetLocSysTrafo() const
     return locsysman_->Trafo();
 
   return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+void ALE::Ale::UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a)
+{
+
+  if (msht_ != INPAR::ALE::no_meshtying)
+  {
+    meshtying_->UpdateSlaveDOF(a, dispnp_);
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
