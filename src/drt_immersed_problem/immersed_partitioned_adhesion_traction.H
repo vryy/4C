@@ -192,6 +192,9 @@ private:
   /// do we need an update of our immersed information (e.g. isimmersed_ in nodes)
   bool immersed_information_invalid_;
 
+  /// write output after every fixed-point iteration
+  bool output_evry_nlniter_;
+
   /// cell structure of the immersed problem
   Teuchos::RCP< ::ADAPTER::FSIStructureWrapperImmersed> cellstructure_;
 
