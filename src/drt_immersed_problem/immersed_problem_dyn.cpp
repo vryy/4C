@@ -82,8 +82,9 @@ void immersed_problem_drt()
 
       {
         // check if INODE is defined in input file
+        int gid = problem->GetDis("fluid")->ElementRowMap()->GID(0);
         IMMERSED::ImmersedNode* inode =
-            dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("fluid")->gElement(problem->GetDis("fluid")->ElementRowMap()->GID(0)))->Nodes()[0]);
+            dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("fluid")->gElement(gid)->Nodes()[0]));
 
             if(inode == NULL)
               dserror("dynamic cast from Node to ImmersedNode failed.\n"
@@ -156,12 +157,16 @@ void immersed_problem_drt()
 
       {
         // check if INODE is defined in input file
-        IMMERSED::ImmersedNode* inode =
-            dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("fluid")->gElement(problem->GetDis("fluid")->ElementRowMap()->GID(0)))->Nodes()[0]);
+        int gid = problem->GetDis("fluid")->ElementRowMap()->GID(0);
+        if(gid!=-1)
+        {
+          IMMERSED::ImmersedNode* inode =
+              dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("fluid")->gElement(gid)->Nodes()[0]));
 
             if(inode == NULL)
               dserror("dynamic cast from Node to ImmersedNode failed.\n"
                       "Make sure you defined INODE instead of NODE in your input file.");
+        }
       }
 
       // PARTITIONED FSI ALGORITHM
@@ -242,11 +247,11 @@ void CellMigrationControlAlgorithm()
 
   {
     // check if INODE is defined in input file
-    int lid = problem->GetDis("porofluid")->ElementRowMap()->GID(0);
-    if(lid!=-1)
+    int gid = problem->GetDis("porofluid")->ElementRowMap()->GID(0);
+    if(gid!=-1)
     {
       IMMERSED::ImmersedNode* inode =
-          dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("porofluid")->gElement(lid))->Nodes()[0]);
+          dynamic_cast<IMMERSED::ImmersedNode* >((problem->GetDis("porofluid")->gElement(gid))->Nodes()[0]);
 
       if(inode == NULL)
         dserror("dynamic cast from Node to ImmersedNode failed.\n"

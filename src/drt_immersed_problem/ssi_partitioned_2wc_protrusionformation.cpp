@@ -189,7 +189,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateMatConf()
     DRT::Element** ElementPtr = node->Elements();
     int numelement = node->NumElement();
 
-    const int numdof = StructureField()->Discretization()->NumDof(node);
+    const int numdof = StructureField()->Discretization()->NumDof(0,node);
 
     // create Xmat for 3D problems
     double XMat[numdof];
@@ -197,7 +197,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateMatConf()
 
     for(int dof = 0; dof < numdof; ++dof)
     {
-      int dofgid = StructureField()->Discretization()->Dof(node,dof);
+      int dofgid = StructureField()->Discretization()->Dof(0,node,dof);
       int doflid = (dispnp->Map()).LID(dofgid);
       XMesh[dof] = node->X()[dof] + (*dispnp)[doflid] + (*disalenp)[doflid];
     }
@@ -208,7 +208,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateMatConf()
     // store in dispmat
     for(int dof = 0; dof < numdof; ++dof)
     {
-      int dofgid = StructureField()->Discretization()->Dof(node,dof);
+      int dofgid = StructureField()->Discretization()->Dof(0,node,dof);
       int doflid = (dispnp->Map()).LID(dofgid);
       (*dismat)[doflid] = XMat[dof] - node->X()[dof];
     }

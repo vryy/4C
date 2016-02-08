@@ -82,6 +82,9 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
   // initial invalid immersed information
   immersed_information_invalid_=true;
 
+  // output after every fixed-point iteration?
+  output_evry_nlniter_=false;
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -136,6 +139,17 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CouplingOp(const Epetra_Vect
       dserror("Vector update of FSI-residual returned err=%d",err);
 
   } // displacement / force coupling
+
+  // write output after every solve of ECM and Cell
+  // current limitations:
+  // max 100 partitioned iterations and max 100 timesteps in total
+  if(output_evry_nlniter_)
+  {
+    int iter = ((FSI::Partitioned::IterationCounter())[0]);
+    Teuchos::rcp_dynamic_cast<ADAPTER::FluidAleImmersed>(MBFluidField())->Output((Step()*100)+(iter-1),Time()-Dt()*((100-iter)/100.0));
+    StructureField()->PrepareOutput();
+    Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(StructureField())->Output(false,(Step()*100)+(iter-1),Time()-Dt()*((100-iter)/100.0));
+  }
 
   return;
 }
@@ -497,7 +511,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(Teuc
           adh_nod_backgrd_ele_mapping_.insert(std::pair<int,int>(anodeid,ele->Id()));
 
           // spread force to nodes of ecm ele
-          std::vector<int> dofs = immerseddis_->Dof(adhesion_node);
+          std::vector<int> dofs = immerseddis_->Dof(0,adhesion_node);
           if(dofs.size()!=3)
             dserror("dofs=3 expected. dofs=%d instead",dofs.size());
 
@@ -513,7 +527,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(Teuc
             DRT::Node** spreadnodes = ele->Nodes();
             for(int snode=0;snode<8;snode++)
             {
-              std::vector<int> sdofs = backgroundstructuredis_->Dof(spreadnodes[snode]);
+              std::vector<int> sdofs = backgroundstructuredis_->Dof(0,spreadnodes[snode]);
               if(sdofs.size()!=4)
                 dserror("dofs=4 expected. dofs=%d instead",sdofs.size()); // 4 dofs per node in porostructure
 
@@ -593,7 +607,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CalcAdhesionDisplacements()
       // 3) apply previously calculated adhesion node displacement to cell
 
       // get dofs of cell adhesion node
-      std::vector<int> dofs = immerseddis_->Dof(immerseddis_->gNode(it->first));
+      std::vector<int> dofs = immerseddis_->Dof(0,immerseddis_->gNode(it->first));
       if(dofs.size()!=3)
         dserror("dofs=3 expected. dofs=%d instead",dofs.size());
 
