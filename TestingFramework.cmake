@@ -1699,10 +1699,8 @@ baci_test(wear3D_structale_impl_gpslip 1 "")
 baci_test(wear3D_structale_impl_gpslip 2 "")
 baci_test(windkessel_std_struct_coupling_monolithic 1 "")
 baci_test(windkessel_std_struct_coupling_monolithic 2 "" minimal)
-baci_test(windkessel_heartvalvearterialproxdist_struct_coupling_monolithic_prestress 1 "")
-baci_test_restartonly(windkessel_heartvalvearterialproxdist_struct_coupling_monolithic 1 10) #this one MUST be placed behind test case 'windkessel_heartvalvearterialproxdist_struct_coupling_monolithic_prestress'
-baci_test(windkessel_heartvalvearterialproxdist_struct_coupling_monolithic_prestress 2 "")
-baci_test_restartonly(windkessel_heartvalvearterialproxdist_struct_coupling_monolithic 2 10) #this one MUST be placed behind test case 'windkessel_heartvalvearterialproxdist_struct_coupling_monolithic_prestress'
+baci_test(windkessel_heartvalvearterialproxdist_struct_coupling_monolithic 1 "")
+baci_test(windkessel_heartvalvearterialproxdist_struct_coupling_monolithic 2 "")
 baci_test(windkessel_heartvalvecardiovascularfull_struct_coupling_monolithic_prestress 1 "")
 baci_test_restartonly(windkessel_heartvalvecardiovascularfull_struct_coupling_monolithic_direct 1 10) #this one MUST be placed behind test case 'windkessel_heartvalvecardiovascularfull_struct_coupling_monolithic_prestress'
 baci_test(windkessel_heartvalvecardiovascularfull_struct_coupling_monolithic_prestress 2 "")

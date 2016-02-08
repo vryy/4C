@@ -50,7 +50,7 @@ TIMINT_THETA                    0.5
 TOLWINDKESSEL                   1e-06
 TOLWINDKESSELDOFINCR            1e-06
 SOLALGORITHM                    direct
-RESTART_WITH_WINDKESSEL         Yes
+RESTART_WITH_WINDKESSEL         No
 LINEAR_WINDK_STRUCT_SOLVER      1
 ENHANCED_OUTPUT                 No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
@@ -67,7 +67,7 @@ LINEAR_SOLVER                   1
 LOADLIN                         yes
 LUMPMASS                        no
 MAXITER                         200
-MAXTIME                         1.9
+MAXTIME                         0.9
 MINITER                         0
 MODIFIEDEXPLEULER               Yes
 M_DAMP                          0.0
@@ -85,7 +85,7 @@ PRESTRESS                       None
 PRESTRESSTIME                   1.001
 PTCDT                           0.3
 RESEVRYERGY                     0
-RESTARTEVRY                     110
+RESTARTEVRY                     0
 RESULTSEVRY                     10
 STC_LAYER                       1
 TIMESTEP                        0.009
@@ -130,26 +130,18 @@ MAT 13 ELAST_VolSussmanBathe KAPPA 1000.0
 MAT 14 ELAST_CoupAnisoNeoHooke_ActiveStress SIGMA 70.0 TAUC0 0.0 MAX_ACTIVATION 20.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0
 --------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------CURVE1
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.599950804034 0.599950804034 //preload prestressing LV
-CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 999.0 FACTOR 0.0 0.0 //hold pressure at zero
+CURVE1 on EXPR FUNC 0.0+0.5*(0.5-0.0)*(1.0-cos(pi*(t)/0.18)) t1 0.0 t2 0.18 //atrial pressure curve LV for windkessel
+CURVE1 on EXPR FUNC (0.5-0.0)*exp(-(t-0.18)/0.18)+0.0 t1 0.18 t2 0.9
 ----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0933256806275 0.0933256806275 //preload prestressing RV
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 999.0 FACTOR 0.0 0.0 //hold pressure at zero
-----------------------------------------------------------------------CURVE3
-CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0 //hold LV windkessel pressure at zero while prestressing
-CURVE3 on EXPR FUNC 0.599950804034+0.5*(0.899926206051-0.599950804034)*(1.0-cos(pi*(t-1.0)/0.18)) t1 1.0 t2 1.18 //atrial pressure curve LV for windkessel
-CURVE3 on EXPR FUNC (0.899926206051-0.599950804034)*exp(-(t-1.18)/0.18)+0.599950804034 t1 1.18 t2 1.9
-----------------------------------------------------------------------CURVE4
-CURVE4 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0 //hold RV windkessel pressure at zero while prestressing
-CURVE4 on EXPR FUNC 0.0933256806275+0.5*(0.139988520941-0.0933256806275)*(1.0-cos(pi*(t-1.0)/0.18)) t1 1.0 t2 1.18 //atrial pressure curve RV for windkessel
-CURVE4 on EXPR FUNC (0.139988520941-0.0933256806275)*exp(-(t-1.18)/0.18)+0.0933256806275 t1 1.18 t2 1.9
+CURVE2 on EXPR FUNC 0.0+0.5*(0.1-0.0)*(1.0-cos(pi*(t)/0.18)) t1 0.0 t2 0.18 //atrial pressure curve RV for windkessel
+CURVE2 on EXPR FUNC (0.1-0.0)*exp(-(t-0.18)/0.18)+0.0 t1 0.18 t2 0.9
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION (5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)*heaviside(5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)-5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0))))))-5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0))))))+(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)*heaviside(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)
+FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION (5.0*(t-(0.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)*heaviside(5.0*(t-(0.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)-5.0*(t-(0.18+20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(0.18+20.0/(5.0*(20.0-(-30.0))))))-5.0*(t-(0.52-20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(0.52-20.0/(5.0*(20.0-(-30.0))))))+(5.0*(t-(0.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)*heaviside(5.0*(t-(0.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE 1.57273298865432037e-01 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE 6.49023400966116770e-01 TOLERANCE 1e-5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -170,8 +162,8 @@ E 6 - 0
 E 7 - 1
 ----------------------DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS
 DSURF                           2
-E 6 - id 0 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 k_p 0.0001 L_arp 6.67e-07 C_arp 8592.86096617 R_arp 0.00012 C_ard 8592.86096617 R_ard 0.00012 p_ref 2.13315841434 p_v_0 0.599950804034 p_arp_0 9.68378038166 y_arp_0 0.0 p_ard_0 9.68378038166 P_AT fac 1.0 crv 3
-E 7 - id 1 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 k_p 0.0001 L_arp 0.0 C_arp 20000.0 R_arp 1.5e-05 C_ard 20000.0 R_ard 1.5e-05 p_ref 1.59986881076 p_v_0 0.0933256806275 p_arp_0 3.22792679389 y_arp_0 0.0 p_ard_0 3.22792679389 P_AT fac 1.0 crv 4
+E 6 - id 0 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 k_p 0.0001 L_arp 6.67e-07 C_arp 7500.0 R_arp 120.0e-6 C_ard 10000.0 R_ard 120.0e-6 p_ref 2.0 p_v_0 0.0 p_arp_0 9.68378038166 y_arp_0 0.0 p_ard_0 9.68378038166 P_AT fac 1.0 crv 1
+E 7 - id 1 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 k_p 0.0001 L_arp 0.0 C_arp 20000.0 R_arp 100.0e-6 C_ard 30000.0 R_ard 100.0e-6 p_ref 1.5 p_v_0 0.0 p_arp_0 3.22792679389 y_arp_0 0.0 p_ard_0 3.22792679389 P_AT fac 1.0 crv 2
 ------------------------DESIGN SURF WINDKESSEL STRUCTURE COUPLING CONDITIONS
 DSURF                           2
 E 8 - coupling_id 0

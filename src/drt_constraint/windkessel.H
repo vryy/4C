@@ -198,6 +198,13 @@ namespace UTILS
     );
 
     //! Evaluate Windkessel conditions and assemble the results
+    void EvaluateDStructDp
+    (
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::RCP<LINALG::SparseOperator> sysmat ///< Windkessel offdiagonal matrix dfext/dp
+    );
+
+    //! Evaluate Windkessel conditions and assemble the results
     void EvaluateHeartValveCardiovascularFullWindkessel
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
