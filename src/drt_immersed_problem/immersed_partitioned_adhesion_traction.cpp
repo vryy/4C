@@ -145,10 +145,9 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CouplingOp(const Epetra_Vect
   // max 100 partitioned iterations and max 100 timesteps in total
   if(output_evry_nlniter_)
   {
-    int iter = ((FSI::Partitioned::IterationCounter())[0]);
-    Teuchos::rcp_dynamic_cast<ADAPTER::FluidAleImmersed>(MBFluidField())->Output((Step()*100)+(iter-1),Time()-Dt()*((100-iter)/100.0));
-    StructureField()->PrepareOutput();
-    Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(StructureField())->Output(false,(Step()*100)+(iter-1),Time()-Dt()*((100-iter)/100.0));
+    //int iter = ((IterationCounter())[0]);
+    cellstructure_->Output();
+    poroscatra_subproblem_->Output();
   }
 
   return;
