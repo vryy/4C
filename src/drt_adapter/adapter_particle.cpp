@@ -56,9 +56,6 @@ void ADAPTER::ParticleBaseAlgorithm::SetupTimInt(
     = Teuchos::TimeMonitor::getNewTimer("ADAPTER::ParticleBaseAlgorithm::SetupParticle");
   Teuchos::TimeMonitor monitor(*t);
 
-  // what's the current problem type?
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
-
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------

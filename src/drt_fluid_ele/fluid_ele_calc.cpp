@@ -261,7 +261,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::Evaluate(DRT::ELEMENTS::Fluid*
   escabofoaf_.Clear();
   BodyForce(ele,ebofoaf_,eprescpgaf_,escabofoaf_);
   if (params.get("forcing",false))
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &ebofoaf_, NULL, "forcing");
+  {
+    static LINALG::Matrix<nsd_, nen_> interiorebofoaf;
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &interiorebofoaf, NULL, "forcing");
+    ebofoaf_.Update(1.0, interiorebofoaf, 1.0);
+  }
 
   ebofon_.Clear();
   eprescpgn_.Clear();
