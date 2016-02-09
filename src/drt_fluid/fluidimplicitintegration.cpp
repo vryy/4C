@@ -917,16 +917,7 @@ void FLD::FluidImplicitTimeInt::PrepareSolve()
 
   // prepare meshtying system
   if (msht_ != INPAR::FLUID::no_meshtying)
-  {
-    meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,velnp_);
-    meshtying_->MultifieldSplit(sysmat_);
-
-    if (shapederivatives_ != Teuchos::null)
-    {
-      meshtying_->CondensationOperationBlockMatrixShape(shapederivatives_);
-      meshtying_->MultifieldSplitShape(shapederivatives_);
-    }
-  }
+    meshtying_->PrepareMeshtying(sysmat_, residual_, velnp_, shapederivatives_);
 
   // update local coordinate systems for ALE fluid case
   // (which may be time and displacement dependent)
@@ -2906,11 +2897,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> stepi
   }
 
   if (msht_ != INPAR::FLUID::no_meshtying)
-  {
-    meshtying_->MshtSplit(sysmat_);
-    if (shapederivatives_ != Teuchos::null)
-       meshtying_->MshtSplitShape(shapederivatives_);
-  }
+    meshtying_->MshtSplit(sysmat_, shapederivatives_);
 
   PrepareSolve();
 

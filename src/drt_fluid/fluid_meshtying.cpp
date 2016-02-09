@@ -447,6 +447,27 @@ void FLD::Meshtying::EvaluateWithMeshRelocation(
   return;
 }
 
+/*---------------------------------------------------*/
+/*  Prepare Meshtying                    wirtz 02/16 */
+/*---------------------------------------------------*/
+void FLD::Meshtying::PrepareMeshtying(
+    Teuchos::RCP<LINALG::SparseOperator>&        sysmat,
+    const Teuchos::RCP<Epetra_Vector>&           residual,
+    const Teuchos::RCP<Epetra_Vector>&           velnp,
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase>& shapederivatives)
+{
+
+  PrepareMeshtyingSystem(sysmat,residual,velnp);
+  MultifieldSplit(sysmat);
+
+  if (shapederivatives != Teuchos::null)
+  {
+    CondensationOperationBlockMatrixShape(shapederivatives);
+    MultifieldSplitShape(shapederivatives);
+  }
+
+}
+
 
 /*---------------------------------------------------*/
 /*  Prepare Meshtying system            ehrl (04/11) */
@@ -1613,7 +1634,7 @@ void FLD::Meshtying::IsMultifield(Teuchos::RCP<std::set<int> > condelements,    
 /*  Use the split of the fluid mesh tying for the sysmat */
 /*                                           wirtz 01/16 */
 /*-------------------------------------------------------*/
-void FLD::Meshtying::MshtSplit(Teuchos::RCP<LINALG::SparseOperator>& sysmat)
+void FLD::Meshtying::MshtSplit(Teuchos::RCP<LINALG::SparseOperator>& sysmat, Teuchos::RCP<LINALG::BlockSparseMatrixBase>& shapederivatives)
 {
 
   if (is_multifield_)
@@ -1647,6 +1668,9 @@ void FLD::Meshtying::MshtSplit(Teuchos::RCP<LINALG::SparseOperator>& sysmat)
     mat->SetCondElements(condelements);
 
     sysmat = mat;
+
+    if (shapederivatives != Teuchos::null)
+      MshtSplitShape(shapederivatives);
   }
 
 }
@@ -1658,8 +1682,6 @@ void FLD::Meshtying::MshtSplit(Teuchos::RCP<LINALG::SparseOperator>& sysmat)
 void FLD::Meshtying::MshtSplitShape(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& shapederivatives)
 {
 
-  if (is_multifield_)
-  {
     // generate map for blockmatrix
     std::vector<Teuchos::RCP<const Epetra_Map> > fluidmaps;
     fluidmaps.push_back(gndofrowmap_);
@@ -1689,7 +1711,6 @@ void FLD::Meshtying::MshtSplitShape(Teuchos::RCP<LINALG::BlockSparseMatrixBase>&
     mat->SetCondElements(condelements);
 
     shapederivatives = mat;
-  }
 
 }
 

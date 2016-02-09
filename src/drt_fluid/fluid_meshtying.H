@@ -118,6 +118,13 @@ class Meshtying
     //! evaluation of matrix P with potential mesh relocation in ALE case
     void EvaluateWithMeshRelocation(Teuchos::RCP<Epetra_Vector>& dispnp); ///> current ALE displacement vector
 
+    //! Prepare matrix, shapederivatives and residual for meshtying
+    void PrepareMeshtying(
+        Teuchos::RCP<LINALG::SparseOperator>&        sysmat,            ///> sysmat established by the element routine
+        const Teuchos::RCP<Epetra_Vector>&           residual,          ///> residual established by the element routine
+        const Teuchos::RCP<Epetra_Vector>&           velnp,             ///> current ALE displacement vector
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase>& shapederivatives); ///> shapederivatives established by the element routine
+
     //! Prepare matrix and residual for meshtying
     void PrepareMeshtyingSystem(const Teuchos::RCP<LINALG::SparseOperator>&  sysmat,     ///> sysmat established by the element routine
                       const Teuchos::RCP<Epetra_Vector>&                     residual, ///> residual established by the element routine
@@ -181,7 +188,7 @@ class Meshtying
                       );
 
     //! Use the split of the fluid mesh tying for the sysmat
-    void MshtSplit(Teuchos::RCP<LINALG::SparseOperator>& sysmat);
+    void MshtSplit(Teuchos::RCP<LINALG::SparseOperator>& sysmat, Teuchos::RCP<LINALG::BlockSparseMatrixBase>& shapederivatives);
 
     //! Use the split of the fluid mesh tying for the shape derivatives
     void MshtSplitShape(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& shapederivatives);
