@@ -1188,7 +1188,7 @@ void COMM_UTILS::CompareVectors(
     int tag = 1336;
     MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
     if(lengthRecv == 0)
-      dserror("Length of data received from second run is incorrect.");
+      dserror("Length of name received from second run is zero.");
 
     //second: receive name
     tag = 2672;
@@ -1205,7 +1205,8 @@ void COMM_UTILS::CompareVectors(
     //first: receive length of data
     tag = 1337;
     MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
-    if(lengthRecv == 0)
+    // also enable comparison of empty vectors
+    if(lengthRecv == 0 && fullvec->MyLength() != lengthRecv)
       dserror("Length of data received from second run is incorrect.");
 
     //second: receive data
@@ -1350,7 +1351,7 @@ void COMM_UTILS::CompareSparseMatrices(
     int tag = 1336;
     MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
     if(lengthRecv == 0)
-      dserror("Length of data received from second run is incorrect.");
+      dserror("Length of name received from second run is zero.");
 
     // second: receive name
     tag = 2672;
@@ -1367,7 +1368,8 @@ void COMM_UTILS::CompareSparseMatrices(
     // first: receive length of data
     tag = 1337;
     MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
-    if(lengthRecv == 0)
+    // also enable comparison of empty matrices
+    if(lengthRecv == 0 && (int)data_indices.size() != lengthRecv)
       dserror("Length of data received from second run is incorrect.");
 
     // second: receive data
@@ -1397,8 +1399,9 @@ void COMM_UTILS::CompareSparseMatrices(
     //first: receive length of data
     tag = 1338;
     MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc()-1, tag, mpi_gcomm, &status);
-    if(lengthRecv == 0)
-      dserror("Length of data received from second run is zero. It seems as if matrices are empty.");
+    // also enable comparison of empty matrices
+    if(lengthRecv == 0 && (int)data_values.size() != lengthRecv)
+      dserror("Length of data received from second run is incorrect.");
 
     //second: receive data
     tag = 2676;
