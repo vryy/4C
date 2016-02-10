@@ -144,7 +144,7 @@ namespace TIMINT {
     };
 
     /// ID of actual processor in parallel
-    const int GetMyRank() const
+    const int& GetMyRank() const
     {
       CheckInitSetup();
       return myRank_;

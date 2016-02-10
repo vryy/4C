@@ -29,7 +29,7 @@ namespace STR {
 
 namespace NLN {
   //! Convert the structural vector types to a corresponding nox norm type
-  const enum NOX::Abstract::Vector::NormType Convert2NoxNormType(
+  enum NOX::Abstract::Vector::NormType Convert2NoxNormType(
       const enum INPAR::STR::VectorNorm& normtype);
 
   /*! Convert the structural model type enums to nox nln solution
@@ -46,7 +46,7 @@ namespace NLN {
       const std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& mlinsolvers);
 
   //! Returns the optimization type of the underlying structural problem
-  const enum NOX::NLN::GlobalData::OptimizationProblemType
+  enum NOX::NLN::GlobalData::OptimizationProblemType
       OptimizationType(const std::vector<enum NOX::NLN::SolutionType>& soltypes);
 
   //! Set the constraint interfaces

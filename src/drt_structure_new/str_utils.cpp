@@ -22,7 +22,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const enum NOX::Abstract::Vector::NormType STR::NLN::Convert2NoxNormType(
+enum NOX::Abstract::Vector::NormType STR::NLN::Convert2NoxNormType(
     const enum INPAR::STR::VectorNorm& normtype)
 {
   enum NOX::Abstract::Vector::NormType nox_normtype =
@@ -91,7 +91,7 @@ void STR::NLN::ConvertModelType2SolType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const enum NOX::NLN::GlobalData::OptimizationProblemType
+enum NOX::NLN::GlobalData::OptimizationProblemType
     STR::NLN::OptimizationType(
     const std::vector<enum NOX::NLN::SolutionType>& soltypes)
 {

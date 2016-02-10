@@ -109,7 +109,7 @@ namespace TIMINT {
       return dyntype_;
     };
 
-    const enum INPAR::STR::STC_Scale GetSTCAlgoType() const
+    const enum INPAR::STR::STC_Scale& GetSTCAlgoType() const
     {
       CheckInitSetup();
       return stcscale_;
