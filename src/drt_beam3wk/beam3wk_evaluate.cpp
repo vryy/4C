@@ -1756,9 +1756,9 @@ void DRT::ELEMENTS::Beam3wk::straintostress(LINALG::TMatrix<FAD,3,1>& kappa, FAD
   M(2)=ym*Izz_*kappa(2);
 
 }
-/*-----------------------------------------------------------------------------------------------------------*
- |  Update of the nodal triads at the end of time step (public)                                   meier 05/13|
- *-----------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------------------------------------*
+ |  Update of the nodal triads at the end of time step (public)                                  meier 05/13|
+ *----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3wk::UpdateTriads( Teuchos::ParameterList& params,
                                               std::vector<double>& vel,
                                               std::vector<double>& disp)
@@ -1767,9 +1767,9 @@ void DRT::ELEMENTS::Beam3wk::UpdateTriads( Teuchos::ParameterList& params,
 
   return;
 }
-///*-----------------------------------------------------------------------------------------------------------*
-// |  Cross product of two Tmatrices (public)                                   meier 05/13|
-// *-----------------------------------------------------------------------------------------------------------*/
+///*--------------------------------------------------------------------------------------------------------*
+// |  Cross product of two Tmatrices (public)                                                    meier 05/13|
+// *--------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3wk::CrossProduct(LINALG::TMatrix<FAD,3,1> T1,LINALG::TMatrix<FAD,3,1> T2,LINALG::TMatrix<FAD,3,1>& T3)
 {
   T3(0,0) = (T1(1,0)*T2(2,0)) - (T1(2,0)*T2(1,0));
@@ -1777,4 +1777,23 @@ void DRT::ELEMENTS::Beam3wk::CrossProduct(LINALG::TMatrix<FAD,3,1> T1,LINALG::TM
   T3(2,0) = (T1(0,0)*T2(1,0)) - (T1(1,0)*T2(0,0));
 }
 
+/*----------------------------------------------------------------------------------------------------------*
+ | Get position vector at xi for given nodal displacements                                        popp 02/16|
+ *----------------------------------------------------------------------------------------------------------*/
+LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3wk::GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const
+{
+  LINALG::Matrix<3,1> r(true);
+  LINALG::Matrix<4,1> N_i(true);
 
+  DRT::UTILS::shape_function_hermite_1D(N_i,xi,length_,line2);
+
+  for (int n=0;n<4;n++)
+  {
+    for (int i=0;i<3;i++)
+    {
+      r(i)+=N_i(n)*disp_totlag(3*n+i);
+    }
+  }
+
+  return (r);
+}

@@ -182,6 +182,35 @@ public:
   //@}
 
   /*!
+   \brief Get bool inidcating usage of rotation vectors
+   */
+  const bool& RotVec() const
+  {
+    return rotvec_;
+  }
+
+  /*!
+  \brief get reference rotation vector i.e. theta0_
+  */
+  std::vector<LINALG::Matrix<3,1> > Theta0() const
+  {
+    return theta0_;
+  }
+
+  /*!
+  \brief get moment of inertia Iyy
+  */
+  const double& Iyy() const
+  {
+    return Iyy_;
+  }
+
+  /*!
+   \brief Get centerline position at given parameter coordinate xi
+  */
+  LINALG::Matrix<3,1> GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const;
+
+  /*!
   \brief Return number of lines to this element
   */
   virtual int NumLine() const {return 1;}

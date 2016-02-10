@@ -28,6 +28,7 @@ Maintainer: Christoph Meier
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
+#include "../drt_beam3wk/beam3wk.H"
 #include "../drt_beam3ebtor/beam3ebtor.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "../drt_inpar/inpar_structure.H"
@@ -1186,7 +1187,7 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
     }
     else
     {
-      std::cout << "Warning: Calculation of kappa_max only implemented for beam3eb elements so far!" << std::endl;
+      //std::cout << "Warning: Calculation of kappa_max only implemented for beam3eb elements so far!" << std::endl;
       kappa_max=0.0;
     }
   }
@@ -1991,10 +1992,10 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
     //TODO: shall we allow for larger displacements in the first time step in general?
     if(maxdeltadisp_>maxdeltadisscalefac*mineleradius_ and timestep!=1)
     {
-      std::cout << "Minimal element radius: " << mineleradius_ << std::endl;
-      std::cout << "Maximal displacement per time step: " << maxdeltadisp_ << std::endl;
-      dserror("Displacement increment per time step larger than smallest beam element radius, "
-              "but newgapfunction_ flag is not set. Choose smaller time step!");
+      //std::cout << "Minimal element radius: " << mineleradius_ << std::endl;
+      //std::cout << "Maximal displacement per time step: " << maxdeltadisp_ << std::endl;
+      //dserror("Displacement increment per time step larger than smallest beam element radius, "
+      //        "but newgapfunction_ flag is not set. Choose smaller time step!");
     }
   }
   //std::cout << "mineleradius_: " << mineleradius_ << std::endl;
@@ -2333,7 +2334,12 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
         const DRT::ElementType & eot = element->ElementType();
 
         //No output for solid elements so far!
-        if (eot != DRT::ELEMENTS::Beam3ebType::Instance() and eot != DRT::ELEMENTS::Beam3ebtorType::Instance() and eot != DRT::ELEMENTS::Beam3Type::Instance() and eot != DRT::ELEMENTS::Beam3iiType::Instance() and eot != DRT::ELEMENTS::RigidsphereType::Instance())
+        if (eot != DRT::ELEMENTS::Beam3ebType::Instance() and
+            eot != DRT::ELEMENTS::Beam3ebtorType::Instance() and
+            eot != DRT::ELEMENTS::Beam3Type::Instance() and
+            eot != DRT::ELEMENTS::Beam3iiType::Instance() and
+            eot != DRT::ELEMENTS::Beam3wkType::Instance()and
+            eot != DRT::ELEMENTS::RigidsphereType::Instance())
           continue;
 
         // standard procedure for Reissner beams or rigid spheres
@@ -2438,6 +2444,82 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
           else
           {
             dserror("Only 2-noded Kirchhoff elements possible so far!");
+          }
+          if(N_CIRCUMFERENTIAL!=0)
+            GMSH_N_noded(n,n_axial,coord,element,gmshfilecontent);
+          else
+            GMSH_N_nodedLine(n,n_axial,coord,element,gmshfilecontent);
+        }
+        // weak Kirchhoff beams need a special treatment
+        else if (eot == DRT::ELEMENTS::Beam3wkType::Instance())
+        {
+          // this cast is necessary in order to use the method ->Tref()
+          const DRT::ELEMENTS::Beam3wk* ele = dynamic_cast<const DRT::ELEMENTS::Beam3wk*>(element);
+          // prepare storage for nodal coordinates
+          int nnodes = element->NumNode();
+          LINALG::SerialDenseMatrix nodalcoords(3,nnodes);
+          LINALG::SerialDenseMatrix nodaltangents(3,nnodes);
+          LINALG::SerialDenseMatrix coord(3,n_axial);
+
+          // compute current nodal positions
+          for (int i=0;i<3;++i)
+          {
+            for (int j=0;j<element->NumNode();++j)
+            {
+              double referenceposition = ((element->Nodes())[j])->X()[i];
+              std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
+              double displacement = disccol[BTSolDiscret().DofColMap()->LID(dofnode[i])];
+              nodalcoords(i,j) =  referenceposition + displacement;
+              if (ele->RotVec())
+                nodaltangents(i,j) = ((ele->Theta0())[j])(i) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3+i])];
+              else
+                dserror("ERROR: Gmsh output not yet implemented for beam3wk with tangent vector DoFs");
+            }
+          }
+
+          // compute tangents from rotation vectors
+          LINALG::Matrix<3,1> theta;
+          LINALG::Matrix<3,3> R;
+          for (int j=0;j<element->NumNode();++j)
+          {
+            theta(0) = nodaltangents(0,j);
+            theta(1) = nodaltangents(1,j);
+            theta(2) = nodaltangents(2,j);
+            R.Clear();
+            LARGEROTATIONS::angletotriad(theta,R);
+            std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
+            double lt = disccol[BTSolDiscret().DofColMap()->LID(dofnode[6])];
+            nodaltangents(0,j) = (1.0+lt) * R(0,0);
+            nodaltangents(1,j) = (1.0+lt) * R(1,0);
+            nodaltangents(2,j) = (1.0+lt) * R(2,0);
+          }
+
+          // remember that the beam3wk is a 3-noded element only(!) due to the fact the
+          // rotation interpolation needs a third node. With regard to the centerline that is
+          // of interest here, the beam3wk element is a 2-noded element with Hermite interpolation
+          if (nnodes ==3)
+          {
+            LINALG::Matrix<12,1> disp_totlag(true);
+            for (int i=0;i<3;i++)
+            {
+              disp_totlag(i)=nodalcoords(i,0);
+              disp_totlag(i+6)=nodalcoords(i,1);
+              disp_totlag(i+3)=nodaltangents(i,0);
+              disp_totlag(i+9)=nodaltangents(i,1);
+            }
+            //Calculate axial positions within the element by using the Hermite interpolation of Kirchhoff beams
+            for (int i=0;i<n_axial;i++)
+            {
+              double xi=-1.0 + i*2.0/(n_axial -1); // parameter coordinate of position vector on beam centerline
+              LINALG::Matrix<3,1> r = ele->GetPos(xi, disp_totlag); //position vector on beam centerline
+
+              for (int j=0;j<3;j++)
+                coord(j,i)=r(j);
+            }
+          }
+          else
+          {
+            dserror("Only 3-noded weak Kirchhoff elements possible so far!");
           }
           if(N_CIRCUMFERENTIAL!=0)
             GMSH_N_noded(n,n_axial,coord,element,gmshfilecontent);
@@ -4259,6 +4341,11 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
   else if ( eot == DRT::ELEMENTS::Beam3ebtorType::Instance() )
   {
     const DRT::ELEMENTS::Beam3ebtor* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ebtor*>(thisele);
+    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
+  }
+  else if ( eot == DRT::ELEMENTS::Beam3wkType::Instance() )
+  {
+    const DRT::ELEMENTS::Beam3wk* thisbeam = static_cast<const DRT::ELEMENTS::Beam3wk*>(thisele);
     eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
   }
 

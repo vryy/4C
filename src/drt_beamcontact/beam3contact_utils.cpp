@@ -16,6 +16,7 @@ Maintainer: Christoh Meier
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
+#include "../drt_beam3wk/beam3wk.H"
 #include "../drt_beam3ebtor/beam3ebtor.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "beam3contact_manager.H"
@@ -96,7 +97,10 @@ bool BEAMCONTACT::BeamElement(DRT::Element& element)
 {
   const DRT::ElementType& ele_type = element.ElementType();
 
-  if (ele_type == DRT::ELEMENTS::Beam3ebType::Instance() or ele_type ==DRT::ELEMENTS::Beam3Type::Instance() or ele_type ==DRT::ELEMENTS::Beam3iiType::Instance())
+  if (ele_type == DRT::ELEMENTS::Beam3ebType::Instance() or
+      ele_type == DRT::ELEMENTS::Beam3Type::Instance() or
+      ele_type == DRT::ELEMENTS::Beam3iiType::Instance() or
+      ele_type == DRT::ELEMENTS::Beam3wkType::Instance())
     return true; //TODO: Print Warning, that only these three types of beam elements are supported!!!
   else
     return false;
