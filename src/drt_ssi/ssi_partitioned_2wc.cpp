@@ -351,8 +351,7 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
 
     // store scalars and displacements for the convergence check later
     scaincnp_->Update(1.0,*scatra_->ScaTraField()->Phinp(),0.0);
-    dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);
-
+    dispincnp_->Update(1.0,*dispnp,0.0);
 
     // begin nonlinear solver / outer iteration ***************************
 
@@ -368,9 +367,6 @@ void SSI::SSI_Part2WC_SolidToScatra_Relax::OuterLoop()
     //prepare a partitioned structure step
     if(itnum!=1)
       structure_->PreparePartitionStep();
-
-    //update variable whic is going to be relaxed later
-    dispnp->Update(1.0,*structure_()->Dispnp(),0.0);
 
     // solve structural system
     DoStructStep();
@@ -416,19 +412,8 @@ SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::SSI_Part2WC_SolidToScatra_Relax_Ait
     const std::string struct_disname,
     const std::string scatra_disname)
   : SSI_Part2WC_SolidToScatra_Relax(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname),
-    del_(LINALG::CreateVector(*structure_->DofRowMap(0),true)),
-    delhist_(LINALG::CreateVector(*structure_->DofRowMap(0),true))
+    dispincnpold_(LINALG::CreateVector(*structure_->DofRowMap(0),true))
 {
-  const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");;
-
-  //Get maximal relaxation parameter from input file
-  maxomega_ = ssicontrolpart.get<double>("MAXOMEGA");
-
-  //Get minimal relaxation parameter from input file
-  minomega_ = ssicontrolpart.get<double>("MINOMEGA");
-
-  del_->PutScalar(1.0e05);
-  delhist_->PutScalar(0.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -436,47 +421,52 @@ SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::SSI_Part2WC_SolidToScatra_Relax_Ait
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_SolidToScatra_Relax_Aitken::CalcOmega(double& omega, const int itnum)
 {
+  const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");;
+  //Get maximal relaxation parameter from input file
+  const double maxomega = ssicontrolpart.get<double>("MAXOMEGA");
+  //Get minimal relaxation parameter from input file
+  const double minomega = ssicontrolpart.get<double>("MINOMEGA");
+
   // calculate difference of current (i+1) and old (i) residual vector
-  // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
-  // update history vector old increment r^i_{n+1}
+  // dispincnpdiff = ( r^{i+1}_{n+1} - r^i_{n+1} )
+  Teuchos::RCP<Epetra_Vector> dispincnpdiff = LINALG::CreateVector(*(structure_->DofRowMap(0)), true);
+  dispincnpdiff->Update(1.0,*dispincnp_,(-1.0),*dispincnpold_,0.0);  // update r^{i+1}_{n+1} - r^i_{n+1}
 
-  delhist_->Update(1.0,*dispincnp_,(-1.0),*del_,0.0);  // update r^{i+1}_{n+1} - r^i_{n+1}
-
-  // del_ = r^{i+1}_{n+1} = Phi^{i+1}_{n+1} - Phi^{i}_{n+1}
-  del_->Update(1.0,*dispincnp_,0.0);
-
-  double delhistnorm = 0.0;
-  delhist_->Norm2(&delhistnorm);
-  if ( delhistnorm <=1e-05 and Comm().MyPID()==0 )
+  double dispincnpdiffnorm = 0.0;
+  dispincnpdiff->Norm2(&dispincnpdiffnorm);
+  if ( dispincnpdiffnorm <=1e-06 and Comm().MyPID()==0 )
     std::cout<<"Warning: The structure increment is to small in order to use it for Aitken relaxation. Using the previous Omega instead!"<<std::endl;
 
   // calculate dot product
-  double delsdot = 0.0; //delsdot = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
-  delhist_->Dot(*del_,&delsdot);
+  double dispincsdot = 0.0; //delsdot = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
+  dispincnpdiff->Dot(*dispincnp_,&dispincsdot);
 
-  if (itnum != 1 and delhistnorm > 1e-05)
+  if (itnum != 1 and dispincnpdiffnorm > 1e-06)
   { // relaxation parameter
     // omega^{i+1} = 1- mu^{i+1} and nu^{i+1} = nu^i + (nu^i -1) . (r^{i+1} - r^i)^T . (-r^{i+1}) / |r^{i+1} - r^{i}|^2 results in
-    omega = omega*(1  - (delsdot)/(delhistnorm * delhistnorm)); //compare e.g. PhD thesis U. Kuettler
+    omega = omega*(1  - (dispincsdot)/(dispincnpdiffnorm * dispincnpdiffnorm)); //compare e.g. PhD thesis U. Kuettler
 
     //we force omega to be in the range defined in the input file
-    if (omega < minomega_)
+    if (omega < minomega)
     {
       if (Comm().MyPID()==0)
         std::cout<<"Warning: The calculation of the relaxation parameter omega via Aitken did lead to a value smaller than MINOMEGA!"<<std::endl;
-      omega= minomega_;
+      omega= minomega;
     }
-    if (omega > maxomega_)
+    if (omega > maxomega)
     {
       if (Comm().MyPID()==0)
         std::cout<<"Warning: The calculation of the relaxation parameter omega via Aitken did lead to a value bigger than MAXOMEGA!"<<std::endl;
-      omega= maxomega_;
+      omega= maxomega;
     }
   }
 
   //else //if itnum==1 nothing is to do here since we want to take the last omega from the previous step
   if (Comm().MyPID()==0 )
     std::cout<<"Using Aitken the relaxation parameter omega was estimated to: " <<omega<<std::endl;
+
+  // update history vector old increment r^i_{n+1}
+  dispincnpold_->Update(1.0,*dispincnp_,0.0);
 }
 
 
@@ -531,7 +521,7 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::OuterLoop()
     }
 
     // store scalars and displacements for the convergence check later
-    scaincnp_->Update(1.0,*scatra_->ScaTraField()->Phinp(),0.0);
+    scaincnp_->Update(1.0,*phinp,0.0);
     dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);
 
 
@@ -549,9 +539,6 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax::OuterLoop()
 
     // set mesh displacement and velocity fields
     SetStructSolution( structure_->Dispnp() , structure_->Velnp() );
-
-    //update variable whic is going to be relaxed later
-    phinp->Update(1.0,*scatra_->ScaTraField()->Phinp(),0.0);
 
     // solve scalar transport equation
     DoScatraStep();
@@ -590,19 +577,8 @@ SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::SSI_Part2WC_ScatraToSolid_Relax_Ait
     const std::string struct_disname,
     const std::string scatra_disname)
   : SSI_Part2WC_ScatraToSolid_Relax(comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname),
-    del_(LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true)),
-    delhist_(LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0),true))
+    scaincnpold_(LINALG::CreateVector(*structure_->DofRowMap(0),true))
 {
-  const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");;
-
-  //Get maximal relaxation parameter from input file
-  maxomega_ = ssicontrolpart.get<double>("MAXOMEGA");
-
-  //Get minimal relaxation parameter from input file
-  minomega_ = ssicontrolpart.get<double>("MINOMEGA");
-
-  del_->PutScalar(1.0e05);
-  delhist_->PutScalar(0.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -610,39 +586,43 @@ SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::SSI_Part2WC_ScatraToSolid_Relax_Ait
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::CalcOmega(double& omega, const int itnum)
 {
-  //delhist =  r^{i+1}_{n+1} - r^i_{n+1}
-  delhist_->Update(1.0,*scaincnp_,(-1.0),*del_,0.0);
+  const Teuchos::ParameterList& ssicontrolpart = DRT::Problem::Instance()->SSIControlParams().sublist("PARTITIONED");;
+  //Get maximal relaxation parameter from input file
+  const double maxomega = ssicontrolpart.get<double>("MAXOMEGA");
+  //Get minimal relaxation parameter from input file
+  const double minomega = ssicontrolpart.get<double>("MINOMEGA");
 
-  // del_ = r^{i+1}_{n+1} = Phi^{i+1}_{n+1} - Phi^{i}_{n+1}
-  del_->Update(1.0,*scaincnp_,0.0);
+  //scaincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
+  Teuchos::RCP<Epetra_Vector> scaincnpdiff = LINALG::CreateVector(*scatra_->ScaTraField()->Discretization()->DofRowMap(0), true);
+  scaincnpdiff->Update(1.0,*scaincnp_,(-1.0),*scaincnpold_,0.0);
 
-  double delhistnorm = 0.0;
-  delhist_->Norm2(&delhistnorm);
+  double scaincnpdiffnorm = 0.0;
+  scaincnpdiff->Norm2(&scaincnpdiffnorm);
 
-  if (delhistnorm <=1e-05 and Comm().MyPID()==0 )
+  if (scaincnpdiffnorm <=1e-06 and Comm().MyPID()==0 )
     std::cout<<"Warning: The scalar increment is to small in order to use it for Aitken relaxation. Using the previous omega instead!"<<std::endl;
 
   // calculate dot product
-  double delsdot = 0.0; //delsdot = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
-  delhist_->Dot(*del_,&delsdot);
+  double scaincsdot = 0.0; //delsdot = ( r^{i+1}_{n+1} - r^i_{n+1} )^T . r^{i+1}_{n+1}
+  scaincnpdiff->Dot(*scaincnp_,&scaincsdot);
 
-  if (itnum != 1 and delhistnorm > 1e-05)
+  if (itnum != 1 and scaincnpdiffnorm > 1e-06)
   { // relaxation parameter
     // omega^{i+1} = 1- mu^{i+1} and nu^{i+1} = nu^i + (nu^i -1) . (r^{i+1} - r^i)^T . (-r^{i+1}) / |r^{i+1} - r^{i}|^2 results in
-    omega = omega*(1  - (delsdot)/(delhistnorm * delhistnorm)); //compare e.g. PhD thesis U. Kuettler
+    omega = omega*(1  - (scaincsdot)/(scaincnpdiffnorm * scaincnpdiffnorm)); //compare e.g. PhD thesis U. Kuettler
 
     //we force omega to be in the range defined in the input file
-    if (omega < minomega_)
+    if (omega < minomega)
     {
       if (Comm().MyPID()==0)
         std::cout<<"Warning: The calculation of the relaxation parameter omega via Aitken did lead to a value smaller than MINOMEGA!"<<std::endl;
-      omega= minomega_;
+      omega= minomega;
     }
-    if (omega > maxomega_)
+    if (omega > maxomega)
     {
       if (Comm().MyPID()==0)
         std::cout<<"Warning: The calculation of the relaxation parameter omega via Aitken did lead to a value bigger than MAXOMEGA!"<<std::endl;
-      omega= maxomega_;
+      omega= maxomega;
     }
   }
 
@@ -650,4 +630,6 @@ void SSI::SSI_Part2WC_ScatraToSolid_Relax_Aitken::CalcOmega(double& omega, const
   if (Comm().MyPID()==0 )
     std::cout<<"Using Aitken the relaxation parameter omega was estimated to: " <<omega<<std::endl;
 
+  // update history vector old increment r^i_{n+1}
+  scaincnpold_->Update(1.0,*scaincnp_,0.0);
 }

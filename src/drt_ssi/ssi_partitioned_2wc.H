@@ -129,17 +129,9 @@ namespace SSI
     //! Calculate relaxation parameter via Aitken
     virtual void CalcOmega( double& omega , const int itnum );
 
-    //! displacement increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> del_;
+    //! old displacement increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> dispincnpold_;
 
-    //! displacement increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> delhist_;
-
-    //! maximal relaxation parameter
-    double maxomega_;
-
-    //! minimal relaxation parameter
-    double minomega_;
   };
 
   //! class to deal with scalar relaxated 2WC partioned SSI. Relaxation parameter is constant
@@ -190,17 +182,9 @@ namespace SSI
     //! Calculate relaxation parameter via Aitken
     virtual void CalcOmega( double& omega , const int itnum );
 
-    //! displacement increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> del_;
+    //! old scatra increment of the outer loop
+    Teuchos::RCP<Epetra_Vector> scaincnpold_;
 
-    //! displacement increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> delhist_;
-
-    //! maximal relaxation parameter
-    double maxomega_;
-
-    //! minimal relaxation parameter
-    double minomega_;
   };
 
 

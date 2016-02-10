@@ -12,7 +12,6 @@ General Data File BACI
 -----------------------------------------------------------------------TITLE
 
 Test for SolidScatra Material with Tet4 Elements
-Maintainer: C. Bertoglio
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4153
 //NODES                         928
@@ -132,7 +131,7 @@ RESTARTEVRY                     1
 NUMSTEP                         10000
 MAXTIME                         0.5
 TIMESTEP                        0.1
-COUPALGO                        ssi_IterStaggFixedRel_SolidToScatra //   ssi_IterStagg // ssi_IterStaggFixedRel_SolidToScatra //    scatra_to_solid //  solid_to_scatra // scatra_to_solid one_way two_way
+COUPALGO                        ssi_IterStaggAitken_SolidToScatra //   ssi_IterStagg // ssi_IterStaggFixedRel_SolidToScatra //    scatra_to_solid //  solid_to_scatra // scatra_to_solid one_way two_way
 ITEMAX                          10
 SCATRATYPE                      Cardiac_Monodomain
 --------------------------------------------------------SSI CONTROL/PARTITIONED
