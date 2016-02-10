@@ -139,7 +139,7 @@ LINEAR_WINDK_STRUCT_SOLVER      1
 ENHANCED_OUTPUT                 No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       Yes
-ADAPTCONV_BETTER                0.1
+ADAPTCONV_BETTER                0.001
 CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         Rayleigh

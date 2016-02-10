@@ -151,6 +151,8 @@ UTILS::WindkesselManager::WindkesselManager
     // if we want to do some modifications when prestressing is on... currently nothing is done!
     pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(strparams,"PRESTRESS");
     pstime_ = strparams.get("PRESTRESSTIME",0.0);
+    tolres_struct_ = strparams.get("TOLRES",1.0e-8);
+    tolres_windk_ = wkparams.get("TOLWINDKESSEL",1.0e-8);
 
     const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
     //build Epetra_Map used as domainmap and rowmap for result vectors
@@ -475,6 +477,8 @@ void UTILS::WindkesselManager::ReadRestart(IO::DiscretizationReader& reader,cons
     SetRefDDFluxValue(tempvec);
   }
 
+  totaltime_ = time;
+
   if(restartwithwindkessel) PrintPresFlux(true);
 
   return;
@@ -683,6 +687,14 @@ void UTILS::WindkesselManager::SolverSetup
 {
 
   solver_ = Teuchos::rcp(&solver,false);
+
+  // different setup for #adapttol_
+  isadapttol_ = true;
+  isadapttol_ = (DRT::INPUT::IntegralValue<int>(params,"ADAPTCONV") == 1);
+
+  // simple parameters
+  adaptolbetter_ = params.get<double>("ADAPTCONV_BETTER", 0.01);
+
   counter_ = 0;
 
   return;
@@ -818,6 +830,18 @@ int UTILS::WindkesselManager::Solve
 #endif
 
   linsolveerror_ = 0;
+
+  double norm_res_full;
+  mergedrhs->Norm2(&norm_res_full);
+
+  // solve for disi
+  // Solve K . IncD = -R  ===>  IncD_{n+1}
+  if (isadapttol_ && counter_)
+  {
+    double worst = norm_res_full;
+    double wanted = tolres_struct_;
+    solver_->AdaptTolerance(wanted,worst,adaptolbetter_);
+  }
 
   // solve with merged matrix
   //solver_->Solve(mergedmatrix->EpetraMatrix(),mergedsol,mergedrhs,true,counter_==0);

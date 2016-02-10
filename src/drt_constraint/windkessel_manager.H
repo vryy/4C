@@ -341,6 +341,10 @@ namespace UTILS
     int myrank_;
     Teuchos::RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counts how often #Solve is called
+    bool isadapttol_;  ///< adaptive tolerance for solver?
+    double adaptolbetter_; ///< adaptive tolerance for solver useful?
+    double tolres_struct_; ///< tolerace for structural residual
+    double tolres_windk_; ///< tolerace for windkessel residual
     INPAR::WINDKESSEL::WindkSolveAlgo algochoice_;
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle -- monitor its target change!
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
