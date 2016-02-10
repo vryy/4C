@@ -261,6 +261,12 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   IntParameter("ITEMAX", 100, "Maximum allowed number of nonlinear iterations",
       &fsimono);
 
+  IntParameter("KRYLOV_ITEMAX", 1000,
+      "Max Iterations for linear solver.", &fsimono);
+
+  IntParameter("KRYLOV_SIZE", 50,
+      "Size of Krylov Subspace.", &fsimono);
+
   setStringToIntegralParameter<int>(
       "LINEARBLOCKSOLVER", "PreconditionedKrylov",
       "Linear block preconditioner for block system in monolithic FSI.",

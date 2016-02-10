@@ -342,8 +342,8 @@ void FSI::MonolithicMainFS::SetDefaultParameters(const Teuchos::ParameterList& f
 
   // be explicit about linear solver parameters
   lsParams.set<std::string>("Aztec Solver","GMRES");
-  lsParams.set<int>("Size of Krylov Subspace",50);
-  lsParams.set<int>("Max Iterations",400);
+  lsParams.set<int>("Size of Krylov Subspace",fsimono.get<int>("KRYLOV_SIZE"));
+  lsParams.set<int>("Max Iterations",fsimono.get<int>("KRYLOV_ITEMAX"));
   lsParams.set<std::string>("Preconditioner","User Defined");
   lsParams.set<int>("Output Frequency",10);
   lsParams.set<bool>("Output Solver Details",true);

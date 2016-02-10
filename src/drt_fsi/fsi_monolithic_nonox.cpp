@@ -462,8 +462,8 @@ void FSI::MonolithicNoNOX::SetDefaultParameters(const Teuchos::ParameterList& fs
   // "r0", "rhs", "norm", "no scaling", "sol"
   lsParams.set<std::string>("Convergence Test","r0");
 
-  lsParams.set<int>("Size of Krylov Subspace",50);
-  lsParams.set<int>("Max Iterations",1000);
+  lsParams.set<int>("Size of Krylov Subspace",fsimono.get<int>("KRYLOV_SIZE"));
+  lsParams.set<int>("Max Iterations",fsimono.get<int>("KRYLOV_ITEMAX"));
   lsParams.set<std::string>("Preconditioner","User Defined");
   lsParams.set<int>("Output Frequency",10);
   lsParams.set<bool>("Output Solver Details",true);
