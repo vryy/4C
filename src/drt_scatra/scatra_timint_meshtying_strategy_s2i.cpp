@@ -28,6 +28,7 @@ Maintainer: Rui Fang
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_projector.H"
+#include "../drt_mortar/mortar_utils.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_scatra_ele/scatra_ele_calc_utils.H"
@@ -57,7 +58,13 @@ imastermatrix_(Teuchos::null),
 mortartype_(DRT::INPUT::IntegralValue<INPAR::S2I::MortarType>(parameters,"MORTARTYPE")),
 D_(Teuchos::null),
 M_(Teuchos::null),
+E_(Teuchos::null),
 P_(Teuchos::null),
+Q_(Teuchos::null),
+lm_(Teuchos::null),
+extendedmaps_(Teuchos::null),
+lmresidual_(Teuchos::null),
+lmincrement_(Teuchos::null),
 imastertoslaverowtransform_(Teuchos::null),
 islavetomastercoltransform_(Teuchos::null),
 islavetomasterrowtransform_(Teuchos::null),
@@ -227,6 +234,7 @@ void SCATRA::MeshtyingStrategyS2I::CondenseMatAndRHS(
 
     case INPAR::S2I::mortar_none:
     case INPAR::S2I::mortar_standard:
+    case INPAR::S2I::mortar_saddlepoint_petrov:
     case INPAR::S2I::mortar_condensed_petrov:
     {
       // do nothing in these cases
@@ -525,81 +533,20 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
   }
 
   case INPAR::S2I::mortar_standard:
-  {
-    // initialize auxiliary system matrices and vectors
-    islavematrix_->Zero();
-    imastermatrix_->Zero();
-    islaveresidual_->PutScalar(0.);
-    imasterresidual_->PutScalar(0.);
-
-    // loop over all scatra-scatra coupling interfaces
-    for(std::map<const int,DRT::Condition* const>::iterator islavecondition=slaveconditions_.begin(); islavecondition!=slaveconditions_.end(); ++islavecondition)
-    {
-      // extract mortar interface discretization
-      DRT::Discretization& idiscret = icoupmortar_[islavecondition->first]->Interface()->Discret();
-
-      // export global state vector to mortar interface
-      Teuchos::RCP<Epetra_Vector> iphinp = Teuchos::rcp(new Epetra_Vector(*idiscret.DofColMap(),false));
-      LINALG::Export(*scatratimint_->Phiafnp(),*iphinp);
-      idiscret.SetState("iphinp",iphinp);
-
-      // create parameter list for mortar integration cells
-      Teuchos::ParameterList params;
-
-      // set action
-      params.set<int>("action",INPAR::S2I::evaluate_condition);
-
-      // add current condition to parameter list
-      params.set<DRT::Condition*>("condition",islavecondition->second);
-
-      // loop over all mortar integration cells at current interface
-      for(unsigned icell=0; icell<imortarcells_[islavecondition->first].size(); ++icell)
-      {
-        // safety check
-        if(imortarcells_[islavecondition->first][icell] == Teuchos::null)
-          dserror("Invalid mortar integration cell!");
-
-        // evaluate current cell
-        EvaluateMortarCell(islavematrix_,imastermatrix_,Teuchos::null,islaveresidual_,imasterresidual_,*imortarcells_[islavecondition->first][icell],params,idiscret);
-      }
-    }
-
-    // finalize auxiliary system matrices
-    islavematrix_->Complete(*interfacemaps_->FullMap(),*interfacemaps_->Map(1));
-    imastermatrix_->Complete(*interfacemaps_->FullMap(),*interfacemaps_->Map(2));
-
-    // finalize auxiliary residual vector for master residuals
-    if(imasterresidual_->GlobalAssemble(Add,true))
-      dserror("Assembly of auxiliary residual vector for master residuals not successful!");
-
-    // assemble interface contributions into global system of equations
-    const Teuchos::RCP<LINALG::SparseMatrix> systemmatrix = scatratimint_->SystemMatrix();
-    if(systemmatrix == Teuchos::null)
-      dserror("System matrix is not a sparse matrix!");
-    systemmatrix->Add(*islavematrix_,false,1.,1.);
-    systemmatrix->Add(*imastermatrix_,false,1.,1.);
-    interfacemaps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
-    interfacemaps_->AddVector(*imasterresidual_,2,*scatratimint_->Residual());
-
-    break;
-  }
-
-  case INPAR::S2I::mortar_saddlepoint:
-  {
-    dserror("Not yet implemented!");
-    break;
-  }
-
+  case INPAR::S2I::mortar_saddlepoint_petrov:
+  case INPAR::S2I::mortar_saddlepoint_bubnov:
   case INPAR::S2I::mortar_condensed_petrov:
   case INPAR::S2I::mortar_condensed_bubnov:
   {
-    // initialize auxiliary system matrix and vector
-    if(lmside_ == INPAR::S2I::side_slave)
+    // initialize auxiliary system matrix and vector for slave side
+    if(mortartype_ == INPAR::S2I::mortar_standard or lmside_ == INPAR::S2I::side_slave)
     {
       islavematrix_->Zero();
       islaveresidual_->PutScalar(0.);
     }
-    else
+
+    // initialize auxiliary system matrix and vector for master side
+    if(mortartype_ == INPAR::S2I::mortar_standard or lmside_ == INPAR::S2I::side_master)
     {
       imastermatrix_->Zero();
       imasterresidual_->PutScalar(0.);
@@ -637,10 +584,12 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       }
     }
 
-    // finalize auxiliary system matrix and residual vector
-    if(lmside_ == INPAR::S2I::side_slave)
+    // finalize auxiliary system matrix and residual vector for slave side
+    if(mortartype_ == INPAR::S2I::mortar_standard or lmside_ == INPAR::S2I::side_slave)
       islavematrix_->Complete(*interfacemaps_->FullMap(),*interfacemaps_->Map(1));
-    else
+
+    // finalize auxiliary system matrix and residual vector for master side
+    if(mortartype_ == INPAR::S2I::mortar_standard or lmside_ == INPAR::S2I::side_master)
     {
       imastermatrix_->Complete(*interfacemaps_->FullMap(),*interfacemaps_->Map(2));
       if(imasterresidual_->GlobalAssemble(Add,true))
@@ -653,37 +602,83 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       dserror("System matrix is not a sparse matrix!");
 
     // assemble interface contributions into global system of equations
-    if(mortartype_ == INPAR::S2I::mortar_condensed_petrov)
+    switch(mortartype_)
     {
-      // Petrov-Galerkin case
-      if(lmside_ == INPAR::S2I::side_slave)
+      case INPAR::S2I::mortar_standard:
       {
         systemmatrix->Add(*islavematrix_,false,1.,1.);
-        systemmatrix->Add(*LINALG::MLMultiply(*P_,true,*islavematrix_,false,false,false,true),false,-1.,1.);
-        interfacemaps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
-        Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
-        if(P_->Multiply(true,*islaveresidual_,imasterresidual))
-          dserror("Matrix-vector multiplication failed!");
-        interfacemaps_->AddVector(imasterresidual,2,*scatratimint_->Residual(),-1.);
-      }
-      else
-      {
-        systemmatrix->Add(*LINALG::MLMultiply(*P_,true,*imastermatrix_,false,false,false,true),false,-1.,1.);
         systemmatrix->Add(*imastermatrix_,false,1.,1.);
+        interfacemaps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
+        interfacemaps_->AddVector(*imasterresidual_,2,*scatratimint_->Residual());
+
+        break;
+      }
+
+      case INPAR::S2I::mortar_saddlepoint_petrov:
+      {
+        // assemble slave-side interface contributions into global residual vector
         Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
-        if(P_->Multiply(true,*imasterresidual_,islaveresidual))
+        if(D_->Multiply(true,*lm_,islaveresidual))
           dserror("Matrix-vector multiplication failed!");
         interfacemaps_->AddVector(islaveresidual,1,*scatratimint_->Residual(),-1.);
-        interfacemaps_->AddVector(*imasterresidual_,2,*scatratimint_->Residual());
-      }
-    }
 
-    else
-    {
-      // Bubnov-Galerkin case
-      // during calculation of initial time derivative, condensation must not be performed here, but after assembly of the modified global system of equations
-      if(scatratimint_->Step() > 0)
-        CondenseMatAndRHS(systemmatrix,scatratimint_->Residual());
+        // assemble master-side interface contributions into global residual vector
+        Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
+        if(M_->Multiply(true,*lm_,imasterresidual))
+          dserror("Matrix-vector multiplication failed!");
+        interfacemaps_->AddVector(imasterresidual,2,*scatratimint_->Residual());
+
+        // build constraint residual vector associated with Lagrange multiplier dofs
+        Epetra_Vector ilmresidual(*islaveresidual_);
+        ilmresidual.ReplaceMap(*extendedmaps_->Map(1));
+        lmresidual_->Update(1.,ilmresidual,0.);
+        if(E_->Multiply(true,*lm_,ilmresidual))
+          dserror("Matrix-vector multiplication failed!");
+        lmresidual_->Update(1.,ilmresidual,1.);
+
+        break;
+      }
+
+      case INPAR::S2I::mortar_condensed_petrov:
+      {
+        if(lmside_ == INPAR::S2I::side_slave)
+        {
+          systemmatrix->Add(*islavematrix_,false,1.,1.);
+          systemmatrix->Add(*LINALG::MLMultiply(*P_,true,*islavematrix_,false,false,false,true),false,-1.,1.);
+          interfacemaps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
+          Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
+          if(P_->Multiply(true,*islaveresidual_,imasterresidual))
+            dserror("Matrix-vector multiplication failed!");
+          interfacemaps_->AddVector(imasterresidual,2,*scatratimint_->Residual(),-1.);
+        }
+        else
+        {
+          systemmatrix->Add(*LINALG::MLMultiply(*P_,true,*imastermatrix_,false,false,false,true),false,-1.,1.);
+          systemmatrix->Add(*imastermatrix_,false,1.,1.);
+          Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
+          if(P_->Multiply(true,*imasterresidual_,islaveresidual))
+            dserror("Matrix-vector multiplication failed!");
+          interfacemaps_->AddVector(islaveresidual,1,*scatratimint_->Residual(),-1.);
+          interfacemaps_->AddVector(*imasterresidual_,2,*scatratimint_->Residual());
+        }
+
+        break;
+      }
+
+      case INPAR::S2I::mortar_condensed_bubnov:
+      {
+        // during calculation of initial time derivative, condensation must not be performed here, but after assembly of the modified global system of equations
+        if(scatratimint_->Step() > 0)
+          CondenseMatAndRHS(systemmatrix,scatratimint_->Residual());
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Not yet implemented!");
+        break;
+      }
     }
 
     break;
@@ -855,7 +850,7 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
  *------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::InitConvCheckStrategy()
 {
-  if(mortartype_ == INPAR::S2I::mortar_saddlepoint)
+  if(mortartype_ == INPAR::S2I::mortar_saddlepoint_petrov or mortartype_ == INPAR::S2I::mortar_saddlepoint_bubnov)
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyS2ILM(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   else
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStd(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
@@ -1028,7 +1023,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 
   // setup scatra-scatra interface coupling for interfaces with non-overlapping interface nodes
   case INPAR::S2I::mortar_standard:
-  case INPAR::S2I::mortar_saddlepoint:
+  case INPAR::S2I::mortar_saddlepoint_petrov:
+  case INPAR::S2I::mortar_saddlepoint_bubnov:
   case INPAR::S2I::mortar_condensed_petrov:
   case INPAR::S2I::mortar_condensed_bubnov:
   {
@@ -1123,24 +1119,24 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 
     switch(mortartype_)
     {
+      case INPAR::S2I::mortar_saddlepoint_petrov:
+      case INPAR::S2I::mortar_saddlepoint_bubnov:
       case INPAR::S2I::mortar_condensed_petrov:
       case INPAR::S2I::mortar_condensed_bubnov:
       {
-        // initialize temporary mortar matrices D, M, and E
-        Teuchos::RCP<LINALG::SparseMatrix> D(Teuchos::null), M(Teuchos::null), E(Teuchos::null);
         if(lmside_ == INPAR::S2I::side_slave)
         {
-          D = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(1),81));
-          M = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(1),81));
-          if(mortartype_ == INPAR::S2I::mortar_condensed_bubnov)
-            E = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(1),81));
+          D_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(1),81));
+          M_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(1),81));
+          if(mortartype_ == INPAR::S2I::mortar_saddlepoint_bubnov or mortartype_ == INPAR::S2I::mortar_condensed_bubnov)
+            E_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(1),81));
         }
         else
         {
-          D = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(2),81,true,false,LINALG::SparseMatrix::FE_MATRIX));
-          M = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(2),81,true,false,LINALG::SparseMatrix::FE_MATRIX));
-          if(mortartype_ == INPAR::S2I::mortar_condensed_bubnov)
-            E = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(2),81,true,false,LINALG::SparseMatrix::FE_MATRIX));
+          D_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(2),81,true,false,LINALG::SparseMatrix::FE_MATRIX));
+          M_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(2),81,true,false,LINALG::SparseMatrix::FE_MATRIX));
+          if(mortartype_ == INPAR::S2I::mortar_saddlepoint_bubnov or mortartype_ == INPAR::S2I::mortar_condensed_bubnov)
+            E_ = Teuchos::rcp(new LINALG::SparseMatrix(*interfacemaps_->Map(2),81,true,false,LINALG::SparseMatrix::FE_MATRIX));
         }
 
         // loop over all scatra-scatra coupling interfaces
@@ -1164,9 +1160,9 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 
             // evaluate current cell
             EvaluateMortarCell(
-                D,
-                M,
-                E,
+                D_,
+                M_,
+                E_,
                 Teuchos::null,
                 Teuchos::null,
                 *imortarcells_[islavecondition->first][icell],
@@ -1176,36 +1172,109 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
           }
         }
 
-        // finalize temporary mortar matrices D and M
-        D->Complete();
+        // finalize mortar matrices D, M, and E
+        D_->Complete();
         if(lmside_ == INPAR::S2I::side_slave)
-          M->Complete(*interfacemaps_->Map(2),*interfacemaps_->Map(1));
+          M_->Complete(*interfacemaps_->Map(2),*interfacemaps_->Map(1));
         else
-          M->Complete(*interfacemaps_->Map(1),*interfacemaps_->Map(2));
+          M_->Complete(*interfacemaps_->Map(1),*interfacemaps_->Map(2));
+        if(mortartype_ == INPAR::S2I::mortar_saddlepoint_bubnov or mortartype_ == INPAR::S2I::mortar_condensed_bubnov)
+          E_->Complete();
 
-        // set up mortar projector P
-        Teuchos::RCP<Epetra_Vector> D_diag(Teuchos::null);
-        if(lmside_ == INPAR::S2I::side_slave)
-          D_diag = LINALG::CreateVector(*interfacemaps_->Map(1));
-        else
-          D_diag = LINALG::CreateVector(*interfacemaps_->Map(2));
-        if(D->ExtractDiagonalCopy(*D_diag))
-          dserror("Couldn't extract main diagonal from mortar matrix D!");
-        if(D_diag->Reciprocal(*D_diag))
-          dserror("Couldn't invert main diagonal entries of mortar matrix D!");;
-        P_ = Teuchos::rcp(new LINALG::SparseMatrix(*M));
-        if(P_->LeftScale(*D_diag))
-          dserror("Setup of mortar projector P failed!");
-
-        if(mortartype_ == INPAR::S2I::mortar_condensed_bubnov)
+        switch(mortartype_)
         {
-          // finalize temporary mortar matrix E
-          E->Complete();
+          case INPAR::S2I::mortar_condensed_petrov:
+          case INPAR::S2I::mortar_condensed_bubnov:
+          {
+            // set up mortar projector P
+            Teuchos::RCP<Epetra_Vector> D_diag(Teuchos::null);
+            if(lmside_ == INPAR::S2I::side_slave)
+              D_diag = LINALG::CreateVector(*interfacemaps_->Map(1));
+            else
+              D_diag = LINALG::CreateVector(*interfacemaps_->Map(2));
+            if(D_->ExtractDiagonalCopy(*D_diag))
+              dserror("Couldn't extract main diagonal from mortar matrix D!");
+            if(D_diag->Reciprocal(*D_diag))
+              dserror("Couldn't invert main diagonal entries of mortar matrix D!");;
+            P_ = Teuchos::rcp(new LINALG::SparseMatrix(*M_));
+            if(P_->LeftScale(*D_diag))
+              dserror("Setup of mortar projector P failed!");
 
-          // set up mortar projector Q
-          Q_ = Teuchos::rcp(new LINALG::SparseMatrix(*E));
-          if(Q_->LeftScale(*D_diag))
-            dserror("Setup of mortar projector Q failed!");
+            // free memory
+            D_ = Teuchos::null;
+            M_ = Teuchos::null;
+
+            if(mortartype_ == INPAR::S2I::mortar_condensed_bubnov)
+            {
+              // set up mortar projector Q
+              Q_ = Teuchos::rcp(new LINALG::SparseMatrix(*E_));
+              if(Q_->LeftScale(*D_diag))
+                dserror("Setup of mortar projector Q failed!");
+
+              // free memory
+              E_ = Teuchos::null;
+            }
+
+            break;
+          }
+
+          case INPAR::S2I::mortar_saddlepoint_petrov:
+          case INPAR::S2I::mortar_saddlepoint_bubnov:
+          {
+            // determine number of slave-side dofs, or number of Lagrange multiplier dofs, owned by each processor
+            const Epetra_Comm& comm(scatratimint_->Discretization()->Comm());
+            const int numproc(comm.NumProc());
+            const int mypid(comm.MyPID());
+            std::vector<int> localnumlmdof(numproc,0);
+            std::vector<int> globalnumlmdof(numproc,0);
+            localnumlmdof[mypid] = interfacemaps_->Map(1)->NumMyElements();
+            comm.SumAll(&localnumlmdof[0],&globalnumlmdof[0],numproc);
+
+            // for each processor, determine offset of minimum Lagrange multiplier dof GID w.r.t. maximum standard dof GID
+            int offset(0);
+            for(int ipreviousproc=0; ipreviousproc<mypid; ++ipreviousproc)
+              offset += globalnumlmdof[ipreviousproc];
+
+            // for each processor, determine Lagrange multiplier dof GIDs
+            std::vector<int> lmdofgids(globalnumlmdof[mypid],0);
+            for(int lmdoflid=0; lmdoflid<globalnumlmdof[mypid]; ++lmdoflid)
+              lmdofgids[lmdoflid] = scatratimint_->DofRowMap()->MaxAllGID()+1+offset+lmdoflid;
+
+            // build Lagrange multiplier dofrowmap
+            const Teuchos::RCP<Epetra_Map> lmdofrowmap = Teuchos::rcp(new Epetra_Map(-1,(int) lmdofgids.size(),&lmdofgids[0],0,comm));
+
+            // initialize vectors associated with Lagrange multiplier dofs
+            lm_ = Teuchos::rcp(new Epetra_Vector(*lmdofrowmap));
+            lmresidual_ = Teuchos::rcp(new Epetra_Vector(*lmdofrowmap));
+            lmincrement_ = Teuchos::rcp(new Epetra_Vector(*lmdofrowmap));
+
+            // initialize extended map extractor
+            Teuchos::RCP<Epetra_Map> extendedmap = LINALG::MergeMap(*(scatratimint_->Discretization()->DofRowMap()),*lmdofrowmap,false);
+            extendedmaps_ = Teuchos::rcp(new LINALG::MapExtractor(*extendedmap,lmdofrowmap,scatratimint_->Discretization()->DofRowMap()));
+            extendedmaps_->CheckForValidMapExtractor();
+
+            // transform range map of mortar matrices D and M from slave-side dofrowmap to Lagrange multiplier dofrowmap
+            D_ = MORTAR::MatrixRowTransformGIDs(D_,lmdofrowmap);
+            M_ = MORTAR::MatrixRowTransformGIDs(M_,lmdofrowmap);
+
+            if(mortartype_ == INPAR::S2I::mortar_saddlepoint_petrov)
+            {
+              // transform domain map of mortar matrix D from slave-side dofrowmap to Lagrange multiplier dofrowmap and store transformed matrix as mortar matrix E
+              E_ = MORTAR::MatrixColTransformGIDs(D_,lmdofrowmap);
+            }
+            else
+            {
+              dserror("Not yet implemented!");
+            }
+
+            break;
+          }
+
+          default:
+          {
+            dserror("Invalid type of mortar meshtying!");
+            break;
+          }
         }
 
         break;
@@ -1436,20 +1505,69 @@ void SCATRA::MeshtyingStrategyS2I::Solve(
     const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //! Krylov projector
     ) const
 {
-  if(mortartype_ != INPAR::S2I::mortar_saddlepoint)
+  switch(mortartype_)
   {
-    // equilibrate global system of equations if necessary
-    EquilibrateSystem(systemmatrix,residual);
+    case INPAR::S2I::mortar_none:
+    case INPAR::S2I::mortar_standard:
+    case INPAR::S2I::mortar_condensed_petrov:
+    case INPAR::S2I::mortar_condensed_bubnov:
+    {
+      // equilibrate global system of equations if necessary
+      EquilibrateSystem(systemmatrix,residual);
 
-    // solve global system of equations
-    solver->Solve(systemmatrix->EpetraOperator(),increment,residual,true,iteration==1,projector);
+      // solve global system of equations
+      solver->Solve(systemmatrix->EpetraOperator(),increment,residual,true,iteration==1,projector);
 
-    // unequilibrate global increment vector if necessary
-    UnequilibrateIncrement(increment);
+      // unequilibrate global increment vector if necessary
+      UnequilibrateIncrement(increment);
+
+      break;
+    }
+
+    case INPAR::S2I::mortar_saddlepoint_petrov:
+    case INPAR::S2I::mortar_saddlepoint_bubnov:
+    {
+      // check scalar transport system matrix
+      Teuchos::RCP<LINALG::SparseMatrix> sparsematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix);
+      if(sparsematrix == Teuchos::null)
+        dserror("System matrix is not a sparse matrix!");
+
+      // assemble extended system matrix including rows and columns associated with Lagrange multipliers
+      LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> extendedsystemmatrix(*extendedmaps_,*extendedmaps_);
+      extendedsystemmatrix.Assign(0,0,LINALG::View,*sparsematrix);
+      extendedsystemmatrix.Matrix(0,1).Add(*D_,true,1.,0.);
+      extendedsystemmatrix.Matrix(0,1).Add(*M_,true,-1.,1.);
+      extendedsystemmatrix.Matrix(1,0).Add(*MORTAR::MatrixRowTransformGIDs(islavematrix_,extendedmaps_->Map(1)),false,1.,0.);
+      extendedsystemmatrix.Matrix(1,1).Add(*E_,true,-1.,0.);
+      extendedsystemmatrix.Complete();
+
+      Teuchos::RCP<Epetra_Vector> extendedresidual = LINALG::CreateVector(*extendedmaps_->FullMap());
+      extendedmaps_->InsertVector(scatratimint_->Residual(),0,extendedresidual);
+      extendedmaps_->InsertVector(lmresidual_,1,extendedresidual);
+
+      Teuchos::RCP<Epetra_Vector> extendedincrement = LINALG::CreateVector(*extendedmaps_->FullMap());
+      extendedmaps_->InsertVector(scatratimint_->Increment(),0,extendedincrement);
+      extendedmaps_->InsertVector(lmincrement_,1,extendedincrement);
+
+      // solve extended system of equations
+      solver->Solve(extendedsystemmatrix.EpetraOperator(),extendedincrement,extendedresidual,true,iteration==1,projector);
+
+      // store solution
+      extendedmaps_->ExtractVector(extendedincrement,0,scatratimint_->Increment());
+      extendedmaps_->ExtractVector(extendedincrement,1,lmincrement_);
+
+      // update Lagrange multipliers
+      lm_->Update(1.,*lmincrement_,1.);
+
+      break;
+    }
+
+    default:
+    {
+      dserror("Type of mortar meshtying for scatra-scatra interface coupling not recognized!");
+      break;
+    }
   }
-
-  else
-    dserror("Not yet implemented!");
 
   return;
 } // SCATRA::MeshtyingStrategyS2I::Solve
@@ -1881,6 +1999,7 @@ const double SCATRA::MortarCellCalc<distypeS,distypeM>::EvalShapeFuncAndDomIntFa
       break;
     }
 
+    case INPAR::S2I::mortar_saddlepoint_petrov:
     case INPAR::S2I::mortar_condensed_petrov:
     {
       // dual Lagrange multiplier shape functions combined with standard Lagrange multiplier test functions
@@ -1898,6 +2017,7 @@ const double SCATRA::MortarCellCalc<distypeS,distypeM>::EvalShapeFuncAndDomIntFa
       break;
     }
 
+    case INPAR::S2I::mortar_saddlepoint_bubnov:
     case INPAR::S2I::mortar_condensed_bubnov:
     {
       // dual Lagrange multiplier shape functions combined with dual Lagrange multiplier test functions

@@ -62,7 +62,8 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "Undefined",
           "NoMortar",
           "StandardMortar",
-          "SaddlePointMortar",
+          "SaddlePointMortar_Petrov",
+          "SaddlePointMortar_Bubnov",
           "CondensedMortar_Petrov",
           "CondensedMortar_Bubnov"
           ),
@@ -70,7 +71,8 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           mortar_undefined,
           mortar_none,
           mortar_standard,
-          mortar_saddlepoint,
+          mortar_saddlepoint_petrov,
+          mortar_saddlepoint_bubnov,
           mortar_condensed_petrov,
           mortar_condensed_bubnov
           ),

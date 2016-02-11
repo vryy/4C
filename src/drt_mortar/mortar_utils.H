@@ -67,8 +67,8 @@ namespace MORTAR
   is simply a processor-local 1:1 matching of old and new GIDs.
 
   */
-  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowTransformGIDs(Teuchos::RCP<LINALG::SparseMatrix> inmat,
-                                                            Teuchos::RCP<Epetra_Map> newrowmap);
+  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowTransformGIDs(Teuchos::RCP<const LINALG::SparseMatrix> inmat,
+                                                            Teuchos::RCP<const Epetra_Map> newrowmap);
 
   /*!
   \brief Transform the column map of a matrix (only GIDs)
@@ -80,8 +80,8 @@ namespace MORTAR
   1:1 matching of old and new GIDs.
 
   */
-  Teuchos::RCP<LINALG::SparseMatrix> MatrixColTransformGIDs(Teuchos::RCP<LINALG::SparseMatrix> inmat,
-                                                            Teuchos::RCP<Epetra_Map> newdomainmap);
+  Teuchos::RCP<LINALG::SparseMatrix> MatrixColTransformGIDs(Teuchos::RCP<const LINALG::SparseMatrix> inmat,
+                                                            Teuchos::RCP<const Epetra_Map> newdomainmap);
 
   /*!
   \brief Transform the row and column maps of a matrix (only GIDs)
@@ -93,9 +93,9 @@ namespace MORTAR
   a processor-local 1:1 matching of old and new GIDs.
 
   */
-  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowColTransformGIDs(Teuchos::RCP<LINALG::SparseMatrix> inmat,
-                                                               Teuchos::RCP<Epetra_Map> newrowmap,
-                                                               Teuchos::RCP<Epetra_Map> newdomainmap);
+  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowColTransformGIDs(Teuchos::RCP<const LINALG::SparseMatrix> inmat,
+                                                               Teuchos::RCP<const Epetra_Map> newrowmap,
+                                                               Teuchos::RCP<const Epetra_Map> newdomainmap);
 
   /*!
   \brief Transform the row map of a matrix (parallel distribution)
@@ -104,8 +104,8 @@ namespace MORTAR
   row map with identical GIDs but different parallel distribution.
 
   */
-  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowTransform(Teuchos::RCP<LINALG::SparseMatrix> inmat,
-                                                        Teuchos::RCP<Epetra_Map> newrowmap);
+  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowTransform(Teuchos::RCP<const LINALG::SparseMatrix> inmat,
+                                                        Teuchos::RCP<const Epetra_Map> newrowmap);
 
   /*!
   \brief Transform the column map of a matrix (parallel distribution)
@@ -115,8 +115,8 @@ namespace MORTAR
   (and the domain map, accordingly).
 
   */
-  Teuchos::RCP<LINALG::SparseMatrix> MatrixColTransform(Teuchos::RCP<LINALG::SparseMatrix> inmat,
-                                                        Teuchos::RCP<Epetra_Map> newdomainmap);
+  Teuchos::RCP<LINALG::SparseMatrix> MatrixColTransform(Teuchos::RCP<const LINALG::SparseMatrix> inmat,
+                                                        Teuchos::RCP<const Epetra_Map> newdomainmap);
 
   /*!
   \brief Transform the row and column maps of a matrix (parallel distribution)
@@ -126,9 +126,9 @@ namespace MORTAR
   parallel distribution (and the domain map, accordingly).
 
   */
-  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowColTransform(Teuchos::RCP<LINALG::SparseMatrix> inmat,
-                                                           Teuchos::RCP<Epetra_Map> newrowmap,
-                                                           Teuchos::RCP<Epetra_Map> newdomainmap);
+  Teuchos::RCP<LINALG::SparseMatrix> MatrixRowColTransform(Teuchos::RCP<const LINALG::SparseMatrix> inmat,
+                                                           Teuchos::RCP<const Epetra_Map> newrowmap,
+                                                           Teuchos::RCP<const Epetra_Map> newdomainmap);
 
   /*!
   \brief Parallel redistribution of a sparse matrix

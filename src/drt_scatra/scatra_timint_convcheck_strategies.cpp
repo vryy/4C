@@ -21,6 +21,7 @@ Maintainer: Rui Fang
 /*----------------------------------------------------------------------*/
 #include "scatra_timint_convcheck_strategies.H"
 #include "scatra_timint_implicit.H"
+#include "scatra_timint_meshtying_strategy_s2i.H"
 
 #include "../drt_lib/drt_discret.H"
 
@@ -309,8 +310,137 @@ bool SCATRA::ConvCheckStrategyS2ILM::AbortNonlinIter(
     double&                   actresidual     //!< return maximum current residual value
     ) const
 {
-  dserror("Not yet implemented!");
+  // extract processor ID
+  const int mypid = scatratimint.Discretization()->Comm().MyPID();
 
+  // extract current Newton-Raphson iteration step
+  const int itnum = scatratimint.IterNum();
+
+  // compute L2 norm of concentration state vector
+  double conc_state_L2(0.0);
+  scatratimint.Phinp()->Norm2(&conc_state_L2);
+
+  // compute L2 norm of concentration residual vector
+  double conc_res_L2(0.);
+  scatratimint.Residual()->Norm2(&conc_res_L2);
+
+  // compute infinity norm of concentration residual vector
+  double conc_res_inf(0.);
+  scatratimint.Residual()->NormInf(&conc_res_inf);
+
+  // compute L2 norm of concentration increment vector
+  double conc_inc_L2(0.);
+  scatratimint.Increment()->Norm2(&conc_inc_L2);
+
+  // extract meshtying strategy from scalar transport time integrator
+  const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategys2i = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(scatratimint.Strategy());
+  if(meshtyingstrategys2i == Teuchos::null)
+    dserror("Invalid scalar transport meshtying strategy!");
+
+  // compute L2 norm of Lagrange multiplier state vector
+  double lm_state_L2(0.0);
+  meshtyingstrategys2i->LM()->Norm2(&lm_state_L2);
+
+  // compute L2 norm of Lagrange multiplier residual vector
+  double lm_res_L2(0.);
+  meshtyingstrategys2i->LMResidual()->Norm2(&lm_res_L2);
+
+  // compute L2 norm of Lagrange multiplier increment vector
+  double lm_inc_L2(0.);
+  meshtyingstrategys2i->LMIncrement()->Norm2(&lm_inc_L2);
+
+  // safety checks
+  if(std::isnan(conc_state_L2) or std::isnan(conc_res_L2) or std::isnan(conc_inc_L2))
+    dserror("Calculated vector norm for concentration is not a number!");
+  if(std::isinf(conc_state_L2) or std::isinf(conc_res_L2) or std::isinf(conc_inc_L2))
+    dserror("Calculated vector norm for concentration is infinity!");
+  if(std::isnan(lm_state_L2) or std::isnan(lm_res_L2) or std::isnan(lm_inc_L2))
+    dserror("Calculated vector norm for Lagrange multipliers is not a number!");
+  if(std::isinf(lm_state_L2) or std::isinf(lm_res_L2) or std::isinf(lm_inc_L2))
+    dserror("Calculated vector norm for Lagrange multipliers is infinity!");
+
+  // care for the case that nothing really happens in the concentration or Lagrange multiplier fields
+  if(conc_state_L2 < 1.e-5)
+    conc_state_L2 = 1.;
+  if(lm_state_L2 < 1.e-5)
+    lm_state_L2 = 1.;
+
+  // special case: very first iteration step --> solution increment is not yet available
+  if(itnum == 1)
+  {
+    if(mypid == 0)
+    {
+      // print header of convergence table to screen
+      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl;
+      std::cout << "|- step/max -|- tol      [norm] -|-- con-res ---|--- lm-res ---|-- con-inc ---|--- lm-inc ---|-- con-res-inf ---|" << std::endl;
+
+      // print first line of convergence table to screen
+      std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itmax_ << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << ittol_ << "[L_2 ]  | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << conc_res_L2 << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << lm_res_L2 << "   |      --      |      --      | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << conc_res_inf << "       | (      --     ,te="
+                << std::setw(10) << std::setprecision(3) << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+    }
+  }
+
+  // ordinary case: later iteration steps --> solution increment can be printed and convergence check should be done
+  else
+  {
+    if(mypid == 0)
+      // print current line of convergence table to screen
+      std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itmax_ << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << ittol_ << "[L_2 ]  | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << conc_res_L2 << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << lm_res_L2 << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << conc_inc_L2/conc_state_L2 << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << lm_inc_L2/lm_state_L2 << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << conc_res_inf << "       | (ts="
+                << std::setw(10) << std::setprecision(3) << std::scientific << scatratimint.DtSolve() << ",te="
+                << std::setw(10) << std::setprecision(3) << std::scientific << scatratimint.DtEle() << ")" << std::endl;
+
+    // convergence check
+    if(conc_res_L2 <= ittol_ and conc_inc_L2/conc_state_L2 <= ittol_ and lm_res_L2 <= ittol_ and lm_inc_L2/lm_state_L2 <= ittol_)
+    {
+      if(mypid == 0)
+        // print finish line of convergence table to screen
+        std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
+
+      return true;
+    }
+  }
+
+  // abort iteration when there is nothing more to do --> better robustness
+  // absolute tolerance determines whether residual is already zero
+  // prevents additional solver calls that will not improve the solution anymore
+  if(conc_res_L2 < abstolres_ and lm_res_L2 < abstolres_)
+  {
+    if(mypid == 0)
+      // print finish line of convergence table to screen
+      std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
+
+    return true;
+  }
+
+  // output warning in case maximum number of iteration steps is reached without convergence, and proceed to next time step
+  if(itnum == itmax_)
+  {
+    if (mypid == 0)
+    {
+      std::cout << "+---------------------------------------------------------------+" << std::endl;
+      std::cout << "|       >>>>>> Newton-Raphson iteration did not converge!       |" << std::endl;
+      std::cout << "+---------------------------------------------------------------+" << std::endl << std::endl;
+    }
+
+    return true;
+  }
+
+  // return maximum residual value for adaptivity of linear solver tolerance
+  actresidual = std::max(conc_res_L2,conc_inc_L2/conc_state_L2);
+  actresidual = std::max(actresidual,lm_res_L2);
+  actresidual = std::max(actresidual,lm_inc_L2/lm_state_L2);
+
+  // proceed with next iteration step
   return false;
 } // SCATRA::ConvCheckStrategyS2ILM::AbortNonlinIter()
 

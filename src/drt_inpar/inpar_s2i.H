@@ -44,7 +44,8 @@ namespace INPAR
       mortar_undefined,
       mortar_none,
       mortar_standard,
-      mortar_saddlepoint,
+      mortar_saddlepoint_petrov,
+      mortar_saddlepoint_bubnov,
       mortar_condensed_petrov,
       mortar_condensed_bubnov
     };

@@ -181,7 +181,7 @@ void SCATRA::MeshtyingStrategyS2IElch::BuildBlockNullSpaces() const
  *------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2IElch::InitConvCheckStrategy()
 {
-  if(mortartype_ == INPAR::S2I::mortar_saddlepoint)
+  if(mortartype_ == INPAR::S2I::mortar_saddlepoint_petrov or mortartype_ == INPAR::S2I::mortar_saddlepoint_bubnov)
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyS2ILMElch(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   else
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));

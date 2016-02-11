@@ -51,6 +51,7 @@ namespace FSI
 
 namespace LINALG
 {
+  class MapExtractor;
   class MultiMapExtractor;
   class SparseMatrix;
 }
@@ -110,6 +111,15 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! initialize system matrix
     Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
+
+    //! return vector of Lagrange multiplier dofs
+    const Teuchos::RCP<const Epetra_Vector> LM() const {return lm_;};
+
+    //! return constraint residual vector associated with Lagrange multiplier dofs
+    const Teuchos::RCP<const Epetra_Vector> LMResidual() const {return lmresidual_;};
+
+    //! return constraint increment vector associated with Lagrange multiplier dofs
+    const Teuchos::RCP<const Epetra_Vector> LMIncrement() const {return lmincrement_;};
 
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs
     const Teuchos::RCP<LINALG::SparseMatrix>& MasterMatrix() const {return imastermatrix_;};
@@ -191,11 +201,26 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! mortar matrix M
     Teuchos::RCP<LINALG::SparseMatrix> M_;
 
+    //! mortar matrix E
+    Teuchos::RCP<LINALG::SparseMatrix> E_;
+
     //! mortar projector P
     Teuchos::RCP<LINALG::SparseMatrix> P_;
 
     //! mortar projector Q
     Teuchos::RCP<LINALG::SparseMatrix> Q_;
+
+    //! vector of Lagrange multiplier dofs
+    Teuchos::RCP<Epetra_Vector> lm_;
+
+    //! extended map extractor (0: standard dofs, 1: Lagrange multiplier dofs)
+    Teuchos::RCP<LINALG::MapExtractor> extendedmaps_;
+
+    //! constraint residual vector associated with Lagrange multiplier dofs
+    Teuchos::RCP<Epetra_Vector> lmresidual_;
+
+    //! constraint increment vector associated with Lagrange multiplier dofs
+    Teuchos::RCP<Epetra_Vector> lmincrement_;
 
     //! transformation operators for auxiliary system matrices
     Teuchos::RCP<FSI::UTILS::MatrixRowTransform> imastertoslaverowtransform_;
