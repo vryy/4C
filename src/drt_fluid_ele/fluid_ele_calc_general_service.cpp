@@ -5033,19 +5033,22 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcVelGradientEleCenter(
   // evaluate shape functions and derivatives element center
   EvalShapeFuncAndDerivsAtEleCenter();
 
-  // extract element velocities
-  LINALG::Matrix<nsd_,nen_> evel(true);
-  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evel, NULL,"vel");
-
-  // get gradient of velocity at element center
-  vderxy_.MultiplyNT(evel,derxy_);
-
-  // write values into element vector (same order as in VelGradientProjection())
-  for (int i=0; i<nsd_; ++i) // loop rows of vderxy
+  if(discretization.HasState("vel"))
   {
-    for (int j=0; j<nsd_; ++j) // loop columns of vderxy
+    // extract element velocities
+    LINALG::Matrix<nsd_,nen_> evel(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evel, NULL,"vel");
+
+    // get gradient of velocity at element center
+    vderxy_.MultiplyNT(evel,derxy_);
+
+    // write values into element vector (same order as in VelGradientProjection())
+    for (int i=0; i<nsd_; ++i) // loop rows of vderxy
     {
-      elevec1[i*nsd_+j] = vderxy_(i,j);
+      for (int j=0; j<nsd_; ++j) // loop columns of vderxy
+      {
+        elevec1[i*nsd_+j] = vderxy_(i,j);
+      }
     }
   }
 

@@ -245,15 +245,15 @@ namespace UTILS
     );
 
   /*!
-    \brief compute gradient via superconvergent patch recovery
+    \brief reconstruct nodal values via superconvergent patch recovery
 
     \return an Epetra_MultiVector based on the discret's node row map containing numvec vectors
-            with the projected state
+            with the reconstruced state
 
     \author Georg Hammerl
     \date 05/15
    */
-  Teuchos::RCP<Epetra_MultiVector> ComputePatchReconstructedVelGradient(
+  Teuchos::RCP<Epetra_MultiVector> ComputeSuperconvergentPatchRecovery(
       Teuchos::RCP<DRT::Discretization> dis,   ///< underlying discretization
       Teuchos::RCP<const Epetra_Vector> state, ///< state vector needed on element level
       const std::string statename,             ///< name of state which will be set

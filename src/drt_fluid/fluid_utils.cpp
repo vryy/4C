@@ -1276,7 +1276,13 @@ void FLD::UTILS::WriteDoublesToFile(
 /*----------------------------------------------------------------------*|
  | Set Eleparams for turbulence models                          bk 05/15 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::ProjectGradientAndSetParam(Teuchos::RCP<DRT::Discretization> discret, Teuchos::ParameterList& eleparams, Teuchos::RCP<Epetra_Vector> vel, const std::string paraname, bool alefluid)
+void FLD::UTILS::ProjectGradientAndSetParam(
+  Teuchos::RCP<DRT::Discretization> discret,
+  Teuchos::ParameterList& eleparams,
+  Teuchos::RCP<Epetra_Vector> vel,
+  const std::string paraname,
+  bool alefluid
+  )
 {
   //reconstruction of second derivatives for fluid residual
   INPAR::FLUID::GradientReconstructionMethod recomethod = DRT::INPUT::IntegralValue<INPAR::FLUID::GradientReconstructionMethod>(DRT::Problem::Instance()->FluidDynamicParams(),"VELGRAD_PROJ_METHOD");
@@ -1296,9 +1302,9 @@ void FLD::UTILS::ProjectGradientAndSetParam(Teuchos::RCP<DRT::Discretization> di
     if(alefluid)
       dserror("ale fluid is currently not supported everywhere for superconvergent patch recovery, but it is easy to implement");
     params.set<int>("action",FLD::calc_velgrad_ele_center);
-    // project velocity gradient of fluid to nodal level via L2 projection and store it in a ParameterList
+    // project velocity gradient of fluid to nodal level via superconvergent patch recovery and store it in a ParameterList
     Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
-        DRT::UTILS::ComputePatchReconstructedVelGradient(discret, vel, "vel", numvec, params);
+        DRT::UTILS::ComputeSuperconvergentPatchRecovery(discret, vel, "vel", numvec, params);
     discret->AddMultiVectorToParameterList(eleparams,paraname,projected_velgrad);
   }
   else if(recomethod == INPAR::FLUID::gradreco_l2)

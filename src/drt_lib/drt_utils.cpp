@@ -479,31 +479,42 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
 }
 
 /*----------------------------------------------------------------------*
- | compute node based L2 projection originating from a dof based        |
- | state vector                                             ghamm 06/14 |
+ | compute superconvergent patch recovery by polynomial of degree p = 1 |
+ | (identical order as shape functions)for a given vector (either       |
+ | dof or element based)                                    ghamm 06/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradient(
+Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery(
   Teuchos::RCP<DRT::Discretization> dis,
   Teuchos::RCP<const Epetra_Vector> state,
   const std::string statename,
   const int numvec,
   Teuchos::ParameterList& params
   )
-// Superconvergent patch recovery by polynomial of degree p = 1 (identical order as shape functions)
 {
   // check whether action type is set
   if(params.getEntryRCP("action") == Teuchos::null)
     dserror("action type for element is missing");
 
-  if(not state->Map().SameAs(*dis->DofRowMap()))
-    dserror("input map is not a dof row map of the fluid");
+  // decide whether a dof or an element based map is given
+  bool dofmaptoreconstruct = false;
+  if(state->Map().SameAs(*dis->DofRowMap()))
+    dofmaptoreconstruct = true;
+  else if(state->Map().SameAs(*dis->ElementRowMap()))
+  {
+    dofmaptoreconstruct = false;
+    if(numvec != state->NumVectors())
+      dserror("numvec and number of vectors of state vector must match");
+  }
+  else
+  {
+    dserror("input map is neither a dof row map nor an element row map of the given discret");
+  }
 
   const int myrank = dis->Comm().MyPID();
 
   const int dim = DRT::Problem::Instance()->NDim();
   if(dim!=3)
     dserror("2D implementation missing");
-  const int dimsquare = dim*dim;
 
   // handle pbcs if existing
   // build inverse map from slave to master nodes
@@ -551,13 +562,17 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
   Epetra_Map nodecolmap(-1,(int)reducednodecolmap.size(),&reducednodecolmap[0],0,fullnodecolmap->Comm());
 
 
-  //step 1: get velocity gradient at element centers (for linear elements the centers are the superconvergent sampling points!)
+  //step 1: get state to be reconstruced (e.g. velocity gradient) at element
+  // centers (for linear elements the centers are the superconvergent sampling points!)
   dis->ClearState();
   // Set ALE displacements here
-  dis->SetState(statename, state);
+  if(dofmaptoreconstruct)
+  {
+    dis->SetState(statename, state);
+  }
 
   const Epetra_Map* elementrowmap = dis->ElementRowMap();
-  Teuchos::RCP<Epetra_MultiVector> velgrad = Teuchos::rcp(new Epetra_MultiVector(*elementrowmap,dimsquare,true));
+  Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered = Teuchos::rcp(new Epetra_MultiVector(*elementrowmap,numvec,true));
   Teuchos::RCP<Epetra_MultiVector> centercoords = Teuchos::rcp(new Epetra_MultiVector(*elementrowmap,dim,true));
 
   std::vector<int> lm;
@@ -574,44 +589,52 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
   // get number of elements
    const int numele = dis->NumMyRowElements();
 
-   // loop column elements
-   for (int i=0; i<numele; ++i)
-   {
-     DRT::Element* actele = dis->lRowElement(i);
+  // loop only row elements
+  for (int i=0; i<numele; ++i)
+  {
+    DRT::Element* actele = dis->lRowElement(i);
 
-     // get element location vector
-     DRT::Element::LocationArray la(1);
-     actele->LocationVector(*dis,la,false);
+    // get element location vector
+    DRT::Element::LocationArray la(1);
+    actele->LocationVector(*dis,la,false);
 
-     // Reshape element matrices and vectors and initialize to zero
-     elevector1.Size(dimsquare);
-     elevector2.Size(dim);
+    // Reshape element matrices and vectors and initialize to zero
+    elevector1.Size(numvec);
+    elevector2.Size(dim);
 
-     // call the element specific evaluate method (elevec1 = velocity gradient, elevec2 = element centroid)
-     actele->Evaluate(params,*dis,la[0].lm_,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+    // call the element specific evaluate method (elevec1 = velocity gradient, elevec2 = element centroid)
+    actele->Evaluate(params,*dis,la[0].lm_,elematrix1,elematrix2,elevector1,elevector2,elevector3);
 
-     // store computed velocity gradient for each element
-     for (int j=0; j<dimsquare; ++j)
-     {
-       int err = velgrad->ReplaceMyValue(i, j, elevector1(j));
-       if(err < 0) dserror("multi vector insertion failed");
-     }
-     // store corresponding element centroid
-     for (int j=0; j<dim; ++j)
-     {
-       int err = centercoords->ReplaceMyValue(i, j, elevector2(j));
-       if(err < 0) dserror("multi vector insertion failed");
-     }
-   } //end element loop
+    // store computed values (e.g. velocity gradient) for each element
+    for (int j=0; j<numvec; ++j)
+    {
+      double val = 0.0;
+      if(dofmaptoreconstruct)
+        val = elevector1(j);
+      else
+        val = (*(*state)(j))[i];
 
-  Teuchos::RCP<Epetra_MultiVector> velgrad_col = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementColMap()),dimsquare,true));
-  LINALG::Export(*velgrad,*velgrad_col);
+      int err = elevec_toberecovered->ReplaceMyValue(i, j, val);
+      if(err < 0) dserror("multi vector insertion failed");
+    }
+
+    // store corresponding element centroid
+    for (int j=0; j<dim; ++j)
+    {
+      int err = centercoords->ReplaceMyValue(i, j, elevector2(j));
+      if(err < 0) dserror("multi vector insertion failed");
+    }
+  } //end element loop
+
+  Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered_col =
+      Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementColMap()),numvec,true));
+  LINALG::Export(*elevec_toberecovered,*elevec_toberecovered_col);
   Teuchos::RCP<Epetra_MultiVector> centercoords_col = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementColMap()),3,true));
   LINALG::Export(*centercoords,*centercoords_col);
 
-  // step 2: use precalculated velocity gradient for patch-recovery of gradient
+  // step 2: use precalculated (velocity) gradient for patch-recovery of gradient
   // solution vector based on reduced node row map
-  Teuchos::RCP<Epetra_FEVector> nodevec = Teuchos::rcp(new Epetra_FEVector(noderowmap,dimsquare));
+  Teuchos::RCP<Epetra_FEVector> nodevec = Teuchos::rcp(new Epetra_FEVector(noderowmap,numvec));
 
   std::vector<DRT::Condition*> conds;
   dis->GetCondition("SPRboundary", conds);
@@ -646,7 +669,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
         int numadjacent = node->NumElement();
 
         // patch-recovery for each entry of the velocity gradient
-        for(int j=0; j<dimsquare; ++j)
+        for(int j=0; j<numvec; ++j)
         {
           static LINALG::Matrix<4,1> p;
           p(0) = 1.0;
@@ -660,7 +683,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
           // loop over all surrounding elements
           for (int k=0; k<numadjacent; ++k)
           {
-            const int elelid = velgrad_col->Map().LID(adjacentele[k]->Id());
+            const int elelid = elevec_toberecovered_col->Map().LID(adjacentele[k]->Id());
             p(1) = (*(*centercoords_col)(0))[elelid] - node->X()[0] /* + ALE_DISP*/;
             p(2) = (*(*centercoords_col)(1))[elelid] - node->X()[1] /* + ALE_DISP*/;
             p(3) = (*(*centercoords_col)(2))[elelid] - node->X()[2] /* + ALE_DISP*/;
@@ -668,7 +691,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
             // compute outer product of p x p and add to A
             A.MultiplyNT(1.0,p,p,1.0);
 
-            b.Update((*(*velgrad_col)(j))[elelid], p, 1.0);
+            b.Update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
           }
 
           // solve for coefficients of interpolation
@@ -714,7 +737,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
         numadjacenteles[numslavenodes] = node->NumElement();
 
         // patch-recovery for each entry of the velocity gradient
-        for(int j=0; j<dimsquare; ++j)
+        for(int j=0; j<numvec; ++j)
         {
           static LINALG::Matrix<4,1> p;
           p(0) = 1.0;
@@ -730,7 +753,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
           {
             for (int k=0; k<numadjacenteles[s]; ++k)
             {
-              const int elelid = velgrad_col->Map().LID(adjacenteles[s][k]->Id());
+              const int elelid = elevec_toberecovered_col->Map().LID(adjacenteles[s][k]->Id());
               p(1) = (*(*centercoords_col)(0))[elelid] + eleoffsets[s][0] - node->X()[0] /* + ALE_DISP*/;
               p(2) = (*(*centercoords_col)(1))[elelid] + eleoffsets[s][1] - node->X()[1] /* + ALE_DISP*/;
               p(3) = (*(*centercoords_col)(2))[elelid] + eleoffsets[s][2] - node->X()[2] /* + ALE_DISP*/;
@@ -738,7 +761,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
               // compute outer product of p x p and add to A
               A.MultiplyNT(1.0,p,p,1.0);
 
-              b.Update((*(*velgrad_col)(j))[elelid], p, 1.0);
+              b.Update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
             }
           }
 
@@ -809,7 +832,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
           continue;
 
         // patch-recovery for each entry of the velocity gradient
-        for(int j=0; j<dimsquare; ++j)
+        for(int j=0; j<numvec; ++j)
         {
           static LINALG::Matrix<4,1> p;
           p(0) = 1.0;
@@ -823,7 +846,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
           // loop over all surrounding elements
           for (int k=0; k<numadjacent; ++k)
           {
-            const int elelid = velgrad_col->Map().LID(closestnodeadjacentele[k]->Id());
+            const int elelid = elevec_toberecovered_col->Map().LID(closestnodeadjacentele[k]->Id());
             p(1) = (*(*centercoords_col)(0))[elelid] - closestnode->X()[0]; /* + ALE_DISP*/
             p(2) = (*(*centercoords_col)(1))[elelid] - closestnode->X()[1]; /* + ALE_DISP*/
             p(3) = (*(*centercoords_col)(2))[elelid] - closestnode->X()[2]; /* + ALE_DISP*/
@@ -831,7 +854,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
             // compute outer product of p x p and add to A
             A.MultiplyNT(1.0,p,p,1.0);
 
-            b.Update((*(*velgrad_col)(j))[elelid], p, 1.0);
+            b.Update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
           }
 
           // solve for coefficients of interpolation
@@ -945,7 +968,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
         numadjacenteles[numslavenodes] = closestnode->NumElement();
 
         // patch-recovery for each entry of the velocity gradient
-        for(int j=0; j<dimsquare; ++j)
+        for(int j=0; j<numvec; ++j)
         {
           static LINALG::Matrix<4,1> p;
           p(0) = 1.0;
@@ -961,7 +984,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
           {
             for (int k=0; k<numadjacenteles[s]; ++k)
             {
-              const int elelid = velgrad_col->Map().LID(closestnodeadjacenteles[s][k]->Id());
+              const int elelid = elevec_toberecovered_col->Map().LID(closestnodeadjacenteles[s][k]->Id());
               p(1) = (*(*centercoords_col)(0))[elelid] + eleoffsets[s][0] - closestnode->X()[0]; /* + ALE_DISP*/
               p(2) = (*(*centercoords_col)(1))[elelid] + eleoffsets[s][1] - closestnode->X()[1]; /* + ALE_DISP*/
               p(3) = (*(*centercoords_col)(2))[elelid] + eleoffsets[s][2] - closestnode->X()[2]; /* + ALE_DISP*/
@@ -969,7 +992,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
               // compute outer product of p x p and add to A
               A.MultiplyNT(1.0,p,p,1.0);
 
-              b.Update((*(*velgrad_col)(j))[elelid], p, 1.0);
+              b.Update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
             }
           }
 
@@ -1002,7 +1025,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
     return nodevec;
 
   // solution vector based on full row map in which the solution of the master node is inserted into slave nodes
-  Teuchos::RCP<Epetra_MultiVector> fullnodevec = Teuchos::rcp(new Epetra_MultiVector(*fullnoderowmap,dimsquare));
+  Teuchos::RCP<Epetra_MultiVector> fullnodevec = Teuchos::rcp(new Epetra_MultiVector(*fullnoderowmap,numvec));
 
   for(int i=0; i<fullnoderowmap->NumMyElements(); ++i)
   {
@@ -1013,13 +1036,13 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputePatchReconstructedVelGradien
     {
       const int mastergid = slavemasterpair->second;
       const int masterlid = noderowmap.LID(mastergid);
-      for(int j=0; j<dimsquare; ++j)
+      for(int j=0; j<numvec; ++j)
         fullnodevec->ReplaceMyValue(i, j, ((*(*nodevec)(j))[masterlid]));
     }
     else
     {
       const int lid = noderowmap.LID(nodeid);
-      for(int j=0; j<dimsquare; ++j)
+      for(int j=0; j<numvec; ++j)
         fullnodevec->ReplaceMyValue(i, j, ((*(*nodevec)(j))[lid]));
     }
   }
@@ -1089,6 +1112,7 @@ std::vector<double> DRT::UTILS::ElementCenterRefeCoords(const DRT::Element* cons
   // get nodes of element
   const Node*const* nodes = ele->Nodes();
   const int numnodes = ele->NumNode();
+  const double invnumnodes = 1.0 / numnodes;
 
   //calculate mean of node coordinates
   std::vector<double> centercoords(3,0.0);
@@ -1100,7 +1124,7 @@ std::vector<double> DRT::UTILS::ElementCenterRefeCoords(const DRT::Element* cons
       const double* x = nodes[j]->X();
       var += x[i];
     }
-    centercoords[i] = var/numnodes;
+    centercoords[i] = var*invnumnodes;
   }
 
   return centercoords;

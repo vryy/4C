@@ -374,7 +374,7 @@ namespace INPAR
       cfl_number
     };
 
-    //! physical type of the fluid flow (incompressible, Boussinesq approximation, varying density, loma)
+    //! reconstruction type of gradients (e.g. velocity gradient)
     enum GradientReconstructionMethod
     {
       gradreco_none,
