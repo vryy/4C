@@ -2522,22 +2522,14 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
     RecomputeMeanCsgsB();
 
-  // print header of convergence table to screen
-  PrintConvergenceHeader();
-
-  // ---------------------------------------------- nonlinear iteration
-  // stop nonlinear iteration when increment-norm is below this bound
-  const double  ittol = params_->sublist("NONLINEAR").get<double>("CONVTOL");
-
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = (DRT::INPUT::IntegralValue<int>(params_->sublist("NONLINEAR"),"ADAPTCONV"));
+  const double ittol = params_->sublist("NONLINEAR").get<double>("CONVTOL");
+  const bool   isadapttol = (DRT::INPUT::IntegralValue<int>(params_->sublist("NONLINEAR"),"ADAPTCONV"));
   const double adaptolbetter = params_->sublist("NONLINEAR").get<double>("ADAPTCONV_BETTER");
-  const double abstolres = params_->sublist("NONLINEAR").get<double>("ABSTOLRES");
   double       actresidual(0.0);
 
   // prepare Newton-Raphson iteration
   iternum_ = 0;
-  int itemax = params_->sublist("NONLINEAR").get<int>("ITEMAX");
 
   // perform explicit predictor step (-> better starting point for nonlinear solver)
   const bool explpredictor = (DRT::INPUT::IntegralValue<int>(params_->sublist("NONLINEAR"),"EXPLPREDICT") == 1);
@@ -2570,7 +2562,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     }
 
     // abort nonlinear iteration if desired
-    if (AbortNonlinIter(iternum_,itemax,ittol,abstolres,actresidual))
+    if(strategy_->AbortNonlinIter(*this,actresidual))
       break;
 
     // initialize increment vector
@@ -2613,231 +2605,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 } // ScaTraTimIntImpl::NonlinearSolve
 
 
-/*----------------------------------------------------------------------*
- | check if to stop the nonlinear iteration                    gjb 09/08|
- *----------------------------------------------------------------------*/
-bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
-    const int itnum,
-    const int itemax,
-    const double ittol,
-    const double abstolres,
-    double& actresidual)
-{
-  //----------------------------------------------------- compute norms
-  double incconnorm_L2(0.0);
-  double incpotnorm_L2(0.0);
-
-  double connorm_L2(0.0);
-  double potnorm_L2(0.0);
-
-  double conresnorm(0.0);
-  double potresnorm(0.0);
-
-  double conresnorminf(0.0);
-
-  // Calculate problem-specific norms
-  CalcProblemSpecificNorm(conresnorm,incconnorm_L2,connorm_L2,incpotnorm_L2,potnorm_L2,potresnorm,conresnorminf);
-
-  // care for the case that nothing really happens in the concentration
-  // or potential field
-  if (connorm_L2 < 1e-5)
-  {
-    connorm_L2 = 1.0;
-  }
-  if (potnorm_L2 < 1e-5)
-  {
-    potnorm_L2 = 1.0;
-  }
-
-  //-------------------------------------------------- output to screen
-  // special case of very first iteration step: solution increment is not yet available
-  if (itnum == 1)
-    // print first line of convergence table to screen
-    PrintConvergenceValuesFirstIter(itnum,itemax,ittol,conresnorm,potresnorm,conresnorminf);
-
-  // ordinary case later iteration steps: solution increment can be printed and convergence check should be done
-  else
-  {
-    // print current line of convergence table to screen
-    PrintConvergenceValues(itnum,itemax,ittol,conresnorm,potresnorm,incconnorm_L2,connorm_L2,incpotnorm_L2,potnorm_L2,conresnorminf);
-
-    // convergence check
-    if (conresnorm <= ittol and potresnorm <= ittol and
-        incconnorm_L2/connorm_L2 <= ittol and incpotnorm_L2/potnorm_L2 <= ittol)
-    {
-      // print finish line of convergence table to screen
-      PrintConvergenceFinishLine();
-
-      // write info to error file
-      if (myrank_ == 0)
-        if (errfile_!=NULL)
-          fprintf(errfile_,"elch solve:   %3d/%3d  tol=%10.3E[L_2 ]  cres=%10.3E  pres=%10.3E  cinc=%10.3E  pinc=%10.3E\n",
-              itnum,itemax,ittol,conresnorm,potresnorm,
-              incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
-
-      return true;
-    }
-  }
-
-  // abort iteration, when there's nothing more to do! -> more robustness
-  // absolute tolerance for deciding if residual is (already) zero
-  // prevents additional solver calls that will not improve the residual anymore
-  if ((conresnorm < abstolres) && (potresnorm < abstolres))
-  {
-    // print finish line of convergence table to screen
-    PrintConvergenceFinishLine();
-
-    return true;
-  }
-
-  // warn if itemax is reached without convergence, but proceed to
-  // next timestep...
-  if ((itnum == itemax))
-  {
-    if (myrank_ == 0)
-    {
-      std::cout << "+---------------------------------------------------------------+" << std::endl;
-      std::cout << "|            >>>>>> not converged in itemax steps!              |" << std::endl;
-      std::cout << "+---------------------------------------------------------------+" << std::endl << std::endl;
-
-      if (errfile_!=NULL)
-      {
-        fprintf(errfile_,"elch divergent solve:   %3d/%3d  tol=%10.3E[L_2 ]  cres=%10.3E  pres=%10.3E  cinc=%10.3E  pinc=%10.3E\n",
-            itnum,itemax,ittol,conresnorm,potresnorm,
-            incconnorm_L2/connorm_L2,incpotnorm_L2/potnorm_L2);
-      }
-    }
-    // yes, we stop the iteration
-    return true;
-  }
-
-  // return the maximum residual value -> used for adaptivity of linear solver tolerance
-  actresidual = std::max(conresnorm,potresnorm);
-  actresidual = std::max(actresidual,incconnorm_L2/connorm_L2);
-  actresidual = std::max(actresidual,incpotnorm_L2/potnorm_L2);
-
-  // check for INF's and NaN's before going on...
-  if (std::isnan(incconnorm_L2) or
-      std::isnan(incpotnorm_L2) or
-      std::isnan(connorm_L2) or
-      std::isnan(potnorm_L2) or
-      std::isnan(conresnorm) or
-      std::isnan(potresnorm))
-    dserror("calculated vector norm is NaN.");
-
-  if (std::isinf(incconnorm_L2) or
-      std::isinf(incpotnorm_L2)  or
-      std::isinf(connorm_L2)  or
-      std::isinf(potnorm_L2)  or
-      std::isinf(conresnorm)  or
-      std::isinf(potresnorm) )
-    dserror("calculated vector norm is INF.");
-
-  return false;
-} // ScaTraTimIntImpl::AbortNonlinIter
-
-
-/*----------------------------------------------------------------------*
- | Calculate problem specific norm                            ehrl 01/14|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CalcProblemSpecificNorm(
-    double& conresnorm,
-    double& incconnorm_L2,
-    double& connorm_L2,
-    double& incpotnorm_L2,
-    double& potnorm_L2,
-    double& potresnorm,
-    double& conresnorminf)
-{
-  residual_ ->Norm2(&conresnorm);
-  increment_->Norm2(&incconnorm_L2);
-  phinp_    ->Norm2(&connorm_L2);
-  residual_ ->NormInf(&conresnorminf);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | print header of convergence table to screen               fang 11/14 |
- *----------------------------------------------------------------------*/
-inline void SCATRA::ScaTraTimIntImpl::PrintConvergenceHeader()
-{
-  if (myrank_ == 0)
-    std::cout << "+------------+-------------------+--------------+--------------+------------------+\n"
-             << "|- step/max -|- tol      [norm] -|-- con-res ---|-- con-inc ---|-- con-res-inf ---|" << std::endl;
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::PrintConvergenceHeader
-
-
-/*----------------------------------------------------------------------*
- | print first line of convergence table to screen           fang 11/14 |
- *----------------------------------------------------------------------*/
-inline void SCATRA::ScaTraTimIntImpl::PrintConvergenceValuesFirstIter(
-    const int&              itnum,          //!< current Newton-Raphson iteration step
-    const int&              itemax,         //!< maximum number of Newton-Raphson iteration steps
-    const double&           ittol,          //!< relative tolerance for Newton-Raphson scheme
-    const double&           conresnorm,     //!< L2 norm of concentration residual
-    const double&           potresnorm,     //!< L2 norm of potential residual (only relevant for electrochemistry)
-    const double&           conresnorminf   //!< infinity norm of concentration residual
-)
-{
-  if (myrank_ == 0)
-    std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << conresnorm << "   |      --      | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << conresnorminf << "       | (      --     ,te="
-             << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::PrintConvergenceValuesFirstIter
-
-
-/*----------------------------------------------------------------------*
- | print current line of convergence table to screen         fang 11/14 |
- *----------------------------------------------------------------------*/
-inline void SCATRA::ScaTraTimIntImpl::PrintConvergenceValues(
-    const int&              itnum,           //!< current Newton-Raphson iteration step
-    const int&              itemax,          //!< maximum number of Newton-Raphson iteration steps
-    const double&           ittol,           //!< relative tolerance for Newton-Raphson scheme
-    const double&           conresnorm,      //!< L2 norm of concentration residual
-    const double&           potresnorm,      //!< L2 norm of potential residual (only relevant for electrochemistry)
-    const double&           incconnorm_L2,   //!< L2 norm of concentration increment
-    const double&           connorm_L2,      //!< L2 norm of concentration state vector
-    const double&           incpotnorm_L2,   //!< L2 norm of potential increment
-    const double&           potnorm_L2,      //!< L2 norm of potential state vector
-    const double&           conresnorminf    //!< infinity norm of concentration residual
-)
-{
-  if (myrank_ == 0)
-    std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << conresnorm << "   | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << incconnorm_L2/connorm_L2 << "   | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << conresnorminf << "       | (ts="
-             << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_ << ",te="
-             << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::PrintConvergenceValues
-
-
-/*----------------------------------------------------------------------*
- | print finish line of convergence table to screen          fang 11/14 |
- *----------------------------------------------------------------------*/
-inline void SCATRA::ScaTraTimIntImpl::PrintConvergenceFinishLine()
-{
-  if (myrank_ == 0)
-    std::cout << "+------------+-------------------+--------------+--------------+------------------+" << std::endl << std::endl;
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::PrintConvergenceFinishLine
-
-
-/*----------------------------------------------------------------------*
+/*--------------------------------------------------------------------------*
 | returns matching std::string for each time integration scheme   gjb 08/08 |
-*----------------------------------------------------------------------*/
+*---------------------------------------------------------------------------*/
 std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
 (
    const enum INPAR::SCATRA::TimeIntegrationScheme term

@@ -14,6 +14,10 @@ Maintainer: Rui Fang
 #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H
 #define SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H
 
+#include "scatra_timint_convcheck_strategies.H"
+
+#include "../drt_lib/drt_dserror.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
@@ -27,6 +31,7 @@ namespace LINALG
 
 namespace SCATRA
 {
+  class ConvCheckStrategyBase;
   class ScaTraTimIntImpl;
 
 /*!
@@ -53,12 +58,25 @@ class MeshtyingStrategyBase
     explicit MeshtyingStrategyBase(
         SCATRA::ScaTraTimIntImpl* scatratimint
         ) :
+    convcheckstrategy_(Teuchos::null),
     scatratimint_(scatratimint)
     {return;}
 
 
     //! destructor
     virtual ~MeshtyingStrategyBase(){return;};
+
+    //! perform convergence check for Newton-Raphson iteration
+    bool AbortNonlinIter(
+        const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
+        double&                   actresidual     //!< return maximum current residual value
+        ) const
+    {
+      if(convcheckstrategy_ == Teuchos::null)
+        dserror("Strategy for Newton-Raphson convergence check has not been instantiated!");
+
+      return convcheckstrategy_->AbortNonlinIter(scatratimint,actresidual);
+    }
 
     //! condense global system of equations
     virtual void CondenseMatAndRHS(
@@ -91,6 +109,12 @@ class MeshtyingStrategyBase
         ) const = 0;
 
   protected:
+
+    //! instantiate strategy for Newton-Raphson convergence check
+    virtual void InitConvCheckStrategy() = 0;
+
+    //! strategy for Newton-Raphson convergence check called by scalar transport time integrator
+    Teuchos::RCP<SCATRA::ConvCheckStrategyBase> convcheckstrategy_;
 
     //! scalar transport time integrator
     SCATRA::ScaTraTimIntImpl* scatratimint_;

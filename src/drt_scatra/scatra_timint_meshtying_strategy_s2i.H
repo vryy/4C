@@ -154,6 +154,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
         const DRT::Discretization&           idiscret           //!< interface discretization
         ) const;
 
+    //! instantiate strategy for Newton-Raphson convergence check
+    virtual void InitConvCheckStrategy();
+
     //! interface map extractor (0: other, 1: slave, 2: master)
     Teuchos::RCP<LINALG::MultiMapExtractor> interfacemaps_;
 
@@ -178,6 +181,9 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     //! auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs (non-mortar case)
     //! or for linearizations of master fluxes w.r.t. slave and master dofs (mortar case)
     Teuchos::RCP<LINALG::SparseMatrix> imastermatrix_;
+
+    //! flag for meshtying method
+    const INPAR::S2I::MortarType mortartype_;
 
     //! mortar matrix D
     Teuchos::RCP<LINALG::SparseMatrix> D_;
@@ -269,9 +275,6 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! flag for column equilibration of global system of equations
     const bool colequilibration_;
-
-    //! flag for meshtying method
-    const INPAR::S2I::MortarType mortartype_;
 
     //! flag for evaluation of interface linearizations and residuals on slave side only
     bool slaveonly_;

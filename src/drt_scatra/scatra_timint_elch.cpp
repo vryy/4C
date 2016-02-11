@@ -209,41 +209,6 @@ void SCATRA::ScaTraTimIntElch::AssembleMatAndRHS()
 
 
 /*----------------------------------------------------------------------*
- | Calculate problem specific norm                            ehrl 01/14|
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::CalcProblemSpecificNorm(
-    double& conresnorm,
-    double& incconnorm_L2,
-    double& connorm_L2,
-    double& incpotnorm_L2,
-    double& potnorm_L2,
-    double& potresnorm,
-    double& conresnorminf)
-{
-  Teuchos::RCP<Epetra_Vector> onlycon = splitter_->ExtractOtherVector(residual_);
-  onlycon->Norm2(&conresnorm);
-  onlycon->NormInf(&conresnorminf);
-
-  splitter_->ExtractOtherVector(increment_,onlycon);
-  onlycon->Norm2(&incconnorm_L2);
-
-  splitter_->ExtractOtherVector(phinp_,onlycon);
-  onlycon->Norm2(&connorm_L2);
-
-  Teuchos::RCP<Epetra_Vector> onlypot = splitter_->ExtractCondVector(residual_);
-  onlypot->Norm2(&potresnorm);
-
-  splitter_->ExtractCondVector(increment_,onlypot);
-  onlypot->Norm2(&incpotnorm_L2);
-
-  splitter_->ExtractCondVector(phinp_,onlypot);
-  onlypot->Norm2(&potnorm_L2);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  | prepare time loop                                         fang 10/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::PrepareTimeLoop()
@@ -1458,17 +1423,24 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     // to hold initial concentrations constant when solving for initial potential field
     LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(splitter_->OtherMap()));
 
-    // calculate vector norms
-    // vector norms associated with concentration are not used, but still computed to avoid code redundancy
-    double dummy(0.);
-    double incpotnorm_L2(0.);
-    double potnorm_L2(0.);
-    double potresnorm(0.);
-    CalcProblemSpecificNorm(dummy,dummy,dummy,incpotnorm_L2,potnorm_L2,potresnorm,dummy);
+    // compute L2 norm of electric potential state vector
+    Teuchos::RCP<Epetra_Vector> pot_vector = splitter_->ExtractCondVector(phinp_);
+    double pot_state_L2(0.0);
+    pot_vector->Norm2(&pot_state_L2);
+
+    // compute L2 norm of electric potential residual vector
+    splitter_->ExtractCondVector(residual_,pot_vector);
+    double pot_res_L2(0.);
+    pot_vector->Norm2(&pot_res_L2);
+
+    // compute L2 norm of electric potential increment vector
+    splitter_->ExtractCondVector(increment_,pot_vector);
+    double pot_inc_L2(0.);
+    pot_vector->Norm2(&pot_inc_L2);
 
     // care for the case that nothing really happens in the potential field
-    if (potnorm_L2 < 1e-5)
-      potnorm_L2 = 1.0;
+    if(pot_state_L2 < 1e-5)
+      pot_state_L2 = 1.0;
 
     // first iteration step: solution increment is not yet available
     if (iternum_ == 1)
@@ -1477,12 +1449,12 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
       if (myrank_ == 0)
         std::cout << "|  " << std::setw(3) << iternum_ << "/" << std::setw(3) << itermax << "   | "
                   << std::setw(10) << std::setprecision(3) << std::scientific << itertol << "[L_2 ]  | "
-                  << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   |      --      | (      --     ,te="
+                  << std::setw(10) << std::setprecision(3) << std::scientific << pot_res_L2 << "   |      --      | (      --     ,te="
                   << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
 
       // absolute tolerance for deciding if residual is already zero
       // prevents additional solver calls that will not improve the residual anymore
-      if(potresnorm < restol)
+      if(pot_res_L2 < restol)
       {
         // print finish line of convergence table to screen
         if (myrank_ == 0)
@@ -1500,13 +1472,13 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
       if (myrank_ == 0)
         std::cout << "|  " << std::setw(3) << iternum_ << "/" << std::setw(3) << itermax << "   | "
                   << std::setw(10) << std::setprecision(3) << std::scientific << itertol << "[L_2 ]  | "
-                  << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   | "
-                  << std::setw(10) << std::setprecision(3) << std::scientific << incpotnorm_L2/potnorm_L2 << "   | (ts="
+                  << std::setw(10) << std::setprecision(3) << std::scientific << pot_res_L2 << "   | "
+                  << std::setw(10) << std::setprecision(3) << std::scientific << pot_inc_L2/pot_state_L2 << "   | (ts="
                   << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_ << ",te="
                   << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
 
       // convergence check
-      if((potresnorm <= itertol and incpotnorm_L2/potnorm_L2 <= itertol) or potresnorm < restol)
+      if((pot_res_L2 <= itertol and pot_inc_L2/pot_state_L2 <= itertol) or pot_res_L2 < restol)
       {
         // print finish line of convergence table to screen
         if (myrank_ == 0)
@@ -1532,9 +1504,9 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
     }
 
     // safety checks
-    if(std::isnan(incpotnorm_L2) or std::isnan(potnorm_L2) or std::isnan(potresnorm))
+    if(std::isnan(pot_inc_L2) or std::isnan(pot_state_L2) or std::isnan(pot_res_L2))
       dserror("calculated vector norm is NaN.");
-    if(std::isinf(incpotnorm_L2) or std::isinf(potnorm_L2) or std::isinf(potresnorm))
+    if(std::isinf(pot_inc_L2) or std::isinf(pot_state_L2) or std::isinf(pot_res_L2))
       dserror("calculated vector norm is INF.");
 
     // zero out increment vector
@@ -2309,83 +2281,3 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
   // so much code for a simple check!
   return;
 } // ScaTraTimIntImpl::CheckConcentrationValues
-
-
-/*----------------------------------------------------------------------*
- | print header of convergence table to screen               fang 11/14 |
- *----------------------------------------------------------------------*/
-inline void SCATRA::ScaTraTimIntElch::PrintConvergenceHeader()
-{
-  if (myrank_ == 0)
-    std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+\n"
-             << "|- step/max -|- tol      [norm] -|-- con-res ---|-- pot-res ---|-- con-inc ---|-- pot-inc ---|-- con-res-inf ---|" << std::endl;
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::PrintConvergenceHeader
-
-
-/*----------------------------------------------------------------------*
- | print first line of convergence table to screen           fang 11/14 |
- *----------------------------------------------------------------------*/
-inline void SCATRA::ScaTraTimIntElch::PrintConvergenceValuesFirstIter(
-    const int&              itnum,          //!< current Newton-Raphson iteration step
-    const int&              itemax,         //!< maximum number of Newton-Raphson iteration steps
-    const double&           ittol,          //!< relative tolerance for Newton-Raphson scheme
-    const double&           conresnorm,     //!< L2 norm of concentration residual
-    const double&           potresnorm,     //!< L2 norm of potential residual (only relevant for electrochemistry)
-    const double&           conresnorminf   //!< infinity norm of concentration residual
-)
-{
-  if (myrank_ == 0)
-    std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << conresnorm << "   | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   |      --      |      --      | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << conresnorminf << "       | (      --     ,te="
-             << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::PrintConvergenceValuesFirstIter
-
-
-/*----------------------------------------------------------------------*
- | print current line of convergence table to screen         fang 11/14 |
- *----------------------------------------------------------------------*/
-inline void SCATRA::ScaTraTimIntElch::PrintConvergenceValues(
-    const int&              itnum,           //!< current Newton-Raphson iteration step
-    const int&              itemax,          //!< maximum number of Newton-Raphson iteration steps
-    const double&           ittol,           //!< relative tolerance for Newton-Raphson scheme
-    const double&           conresnorm,      //!< L2 norm of concentration residual
-    const double&           potresnorm,      //!< L2 norm of potential residual (only relevant for electrochemistry)
-    const double&           incconnorm_L2,   //!< L2 norm of concentration increment
-    const double&           connorm_L2,      //!< L2 norm of concentration state vector
-    const double&           incpotnorm_L2,   //!< L2 norm of potential increment
-    const double&           potnorm_L2,      //!< L2 norm of potential state vector
-    const double&           conresnorminf    //!< infinity norm of concentration residual
-)
-{
-  if (myrank_ == 0)
-    std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << conresnorm << "   | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << incconnorm_L2/connorm_L2 << "   | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << incpotnorm_L2/potnorm_L2 << "   | "
-             << std::setw(10) << std::setprecision(3) << std::scientific << conresnorminf << "       | (ts="
-             << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_ << ",te="
-             << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::PrintConvergenceValues
-
-
-/*----------------------------------------------------------------------*
- | print finish line of convergence table to screen          fang 11/14 |
- *----------------------------------------------------------------------*/
-inline void SCATRA::ScaTraTimIntElch::PrintConvergenceFinishLine()
-{
-  if (myrank_ == 0)
-    std::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << std::endl << std::endl;
-
-  return;
-} // SCATRA::ScaTraTimIntImpl::PrintConvergenceFinishLine

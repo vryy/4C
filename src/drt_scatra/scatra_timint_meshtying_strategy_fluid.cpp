@@ -11,6 +11,7 @@ Maintainer: Rui Fang
 </pre>
 
 *----------------------------------------------------------------------*/
+#include "scatra_timint_meshtying_strategy_fluid.H"
 
 #include "../drt_fluid/fluid_meshtying.H"
 
@@ -19,8 +20,6 @@ Maintainer: Rui Fang
 #include "../drt_scatra/scatra_timint_implicit.H"
 
 #include "../linalg/linalg_sparseoperator.H"
-
-#include "scatra_timint_meshtying_strategy_fluid.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
@@ -68,6 +67,9 @@ void SCATRA::MeshtyingStrategyFluid::IncludeDirichletInCondensation() const
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyFluid::InitMeshtying()
 {
+  // instantiate strategy for Newton-Raphson convergence check
+  InitConvCheckStrategy();
+
   // Important: Meshtying for scalar transport is not well tested!
   // get meshtying type
   type_ = DRT::INPUT::IntegralValue<INPAR::FLUID::MeshTying>(*(scatratimint_->ScatraParameterList()),"MESHTYING");
@@ -116,3 +118,14 @@ void SCATRA::MeshtyingStrategyFluid::Solve(
 
   return;
 } // SCATRA::MeshtyingStrategyFluid::Solve
+
+
+/*------------------------------------------------------------------------*
+ | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
+ *------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyFluid::InitConvCheckStrategy()
+{
+  convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStd(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+
+  return;
+} // SCATRA::MeshtyingStrategyFluid::InitConvCheckStrategy

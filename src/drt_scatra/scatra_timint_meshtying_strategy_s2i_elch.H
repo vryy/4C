@@ -68,6 +68,9 @@ class MeshtyingStrategyS2IElch : public MeshtyingStrategyS2I
 
     //! build null spaces associated with blocks of global system matrix
     void BuildBlockNullSpaces() const;
+
+    //! instantiate strategy for Newton-Raphson convergence check
+    void InitConvCheckStrategy();
 }; // class MeshtyingStrategyS2IElch
 
 

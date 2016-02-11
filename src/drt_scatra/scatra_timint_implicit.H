@@ -260,13 +260,13 @@ public:
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
   //! return residual vector
-  Teuchos::RCP<Epetra_Vector> Residual() { return residual_; };
+  Teuchos::RCP<Epetra_Vector> Residual() const { return residual_; };
 
   //! return trueresidual vector
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
 
   //! return increment vector
-  Teuchos::RCP<Epetra_Vector> Increment() { return increment_; };
+  Teuchos::RCP<Epetra_Vector> Increment() const { return increment_; };
 
   //! return flag indicating if an incremental solution approach is used
   bool IsIncremental() { return incremental_; }
@@ -302,10 +302,10 @@ public:
   Teuchos::RCP<const Epetra_Map> DofRowMap(int nds);
 
   //! return discretization
-  Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
+  Teuchos::RCP<DRT::Discretization> Discretization() const { return discret_; }
 
   //! return the parameter lists
-  Teuchos::RCP<Teuchos::ParameterList> ScatraParameterList() { return params_;}
+  Teuchos::RCP<Teuchos::ParameterList> ScatraParameterList() const { return params_;}
   Teuchos::RCP<Teuchos::ParameterList> ScatraExtraParameterList() { return extraparams_;}
   virtual Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList() = 0;
 
@@ -313,7 +313,7 @@ public:
   IO::DiscretizationWriter& DiscWriter() { return *output_; }
 
   //! returns map extractor used for convergence check either in ELCH or LOMA case
-  Teuchos::RCP<LINALG::MapExtractor> Splitter() { return splitter_; }
+  Teuchos::RCP<LINALG::MapExtractor> Splitter() const { return splitter_; }
 
   //! output solution and restart data to file
   virtual void Output(const int num =0);
@@ -353,7 +353,7 @@ public:
   int NStep() const { return stepmax_;}
 
   //! return number of newton iterations in last timestep
-  double IterNum() const { return iternum_; }
+  const int& IterNum() const { return iternum_; }
 
   //! return time step size
   double Dt() const { return dta_; }
@@ -404,7 +404,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Phin() { return phin_; }
 
   //! return scalar field phi at time n+1
-  Teuchos::RCP<Epetra_Vector> Phinp() { return phinp_; }
+  Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; }
 
   //! return values of scalar field phi at nodes (meshfree)
   Teuchos::RCP<Epetra_Vector> Phiatmeshfreenodes() { return phiatmeshfreenodes_; }
@@ -451,7 +451,10 @@ public:
   virtual void RestartProblemSpecific( const int step ){return;};
 
   //! return time for evaluation of elements
-  double DtEle(){return dtele_;};
+  const double& DtEle() const {return dtele_;};
+
+  //! return time for solution of linear system of equations
+  const double& DtSolve() const {return dtsolve_;};
 
   /*========================================================================*/
   //! @name turbulence and related
@@ -617,27 +620,7 @@ protected:
   //! contains the nonlinear iteration loop
   virtual void NonlinearSolve();
 
-  //! check convergence (or divergence) of nonlinear iteration
-  bool AbortNonlinIter(
-    const int itnum,        //!< current value of iteration step counter
-    const int itmax,        //!< maximum number of iteration steps
-    const double ittol,     //!< relative tolerance for increments
-    const double abstolres, //!< absolute tolerance for the residual norm
-    double& actresidual     //!< return value of the current residual
-  );
-
-  //! Calculate problem specific norm
-  virtual void CalcProblemSpecificNorm(
-      double& conresnorm,
-      double& incconnorm_L2,
-      double& connorm_L2,
-      double& incpotnorm_L2,
-      double& potnorm_L2,
-      double& potresnorm,
-      double& conresnorminf
-  );
-
-//  //! Calculate the reconstructed nodal gradient of phi
+  //! Calculate the reconstructed nodal gradient of phi
   Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
     Teuchos::RCP<const Epetra_Vector> state,
     const std::string statename,
@@ -699,36 +682,6 @@ protected:
   void OutputFlux(
     Teuchos::RCP<Epetra_MultiVector> flux //!< flux vector
   );
-
-  //! print header of convergence table to screen
-  virtual void PrintConvergenceHeader();
-
-  //! print first line of convergence table to screen
-  virtual void PrintConvergenceValuesFirstIter(
-      const int&              itnum,          //!< current Newton-Raphson iteration step
-      const int&              itemax,         //!< maximum number of Newton-Raphson iteration steps
-      const double&           ittol,          //!< relative tolerance for Newton-Raphson scheme
-      const double&           conresnorm,     //!< L2 norm of concentration residual
-      const double&           potresnorm,     //!< L2 norm of potential residual (only relevant for electrochemistry)
-      const double&           conresnorminf   //!< infinity norm of concentration residual
-  );
-
-  //! print current line of convergence table to screen
-  virtual void PrintConvergenceValues(
-      const int&              itnum,           //!< current Newton-Raphson iteration step
-      const int&              itemax,          //!< maximum number of Newton-Raphson iteration steps
-      const double&           ittol,           //!< relative tolerance for Newton-Raphson scheme
-      const double&           conresnorm,      //!< L2 norm of concentration residual
-      const double&           potresnorm,      //!< L2 norm of potential residual (only relevant for electrochemistry)
-      const double&           incconnorm_L2,   //!< L2 norm of concentration increment
-      const double&           connorm_L2,      //!< L2 norm of concentration state vector
-      const double&           incpotnorm_L2,   //!< L2 norm of potential increment
-      const double&           potnorm_L2,      //!< L2 norm of potential state vector
-      const double&           conresnorminf    //!< infinity norm of concentration residual
-  );
-
-  //! print finish line of convergence table to screen
-  virtual void PrintConvergenceFinishLine();
 
   /*========================================================================*/
   //! @name Time, time-step and related methods
@@ -917,6 +870,7 @@ protected:
 
   //! time measurement element
   double dtele_;
+
   //! time measurement solve
   double dtsolve_;
 

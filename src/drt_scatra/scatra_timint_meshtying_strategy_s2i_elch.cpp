@@ -11,7 +11,6 @@ Maintainer: Rui Fang
 </pre>
 
 *----------------------------------------------------------------------*/
-
 #include "scatra_timint_meshtying_strategy_s2i_elch.H"
 
 #include "../drt_lib/drt_discret.H"
@@ -175,6 +174,20 @@ void SCATRA::MeshtyingStrategyS2IElch::BuildBlockNullSpaces() const
 
   return;
 } // SCATRA::MeshtyingStrategyS2IElch::BuildBlockNullSpaces
+
+
+/*------------------------------------------------------------------------*
+ | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
+ *------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2IElch::InitConvCheckStrategy()
+{
+  if(mortartype_ == INPAR::S2I::mortar_saddlepoint)
+    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyS2ILMElch(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  else
+    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+
+  return;
+} // SCATRA::MeshtyingStrategyS2IElch::InitConvCheckStrategy
 
 
 /*----------------------------------------------------------------------*

@@ -61,6 +61,9 @@ class MeshtyingStrategyFluidElch : public MeshtyingStrategyFluid
 
     //! return pointer to elch time integrator after cast
     SCATRA::ScaTraTimIntElch* ElchTimInt() const {return dynamic_cast<SCATRA::ScaTraTimIntElch*>(scatratimint_);};
+
+    //! instantiate strategy for Newton-Raphson convergence check
+    void InitConvCheckStrategy();
 }; // class MeshtyingStrategyFluidElch
 } // namespace SCATRA
 #endif // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_ELCH_H

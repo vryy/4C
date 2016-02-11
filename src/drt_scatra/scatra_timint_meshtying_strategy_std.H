@@ -50,7 +50,7 @@ class MeshtyingStrategyStd : public MeshtyingStrategyBase
     void EvaluateMeshtying();
 
     //! initialize meshtying objects
-    void InitMeshtying(){return;};
+    void InitMeshtying();
 
     //! initialize system matrix
     virtual Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
@@ -65,6 +65,11 @@ class MeshtyingStrategyStd : public MeshtyingStrategyBase
         const int&                                     iteration,      //! number of current Newton-Raphson iteration
         const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //! Krylov projector
         ) const;
+
+  protected:
+
+    //! instantiate strategy for Newton-Raphson convergence check
+    virtual void InitConvCheckStrategy();
 
   private:
 

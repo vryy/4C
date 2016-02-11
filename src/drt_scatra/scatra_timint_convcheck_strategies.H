@@ -1,0 +1,205 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file scatra_timint_convcheck_strategies.H
+
+\brief strategies for Newton-Raphson convergence check for scalar transport problems
+
+To keep the scalar transport time integrator class and derived classes as plain as possible,
+the convergence check for the Newton-Raphson iteration has been encapsulated within separate
+strategy classes. Every specific convergence check strategy (e.g., for standard scalar transport
+or electrochemistry problems with or without scatra-scatra interface coupling involving Lagrange
+multipliers) computes, checks, and outputs different relevant vector norms and is implemented
+in a subclass derived from an abstract, purely virtual interface class.
+
+<pre>
+Maintainer: Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
+</pre>
+ */
+/*----------------------------------------------------------------------*/
+#ifndef SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
+#define SCATRA_TIMINT_CONVCHECK_STRATEGIES_H
+
+// forward declaration
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+namespace SCATRA
+{
+  // forward declaration
+  class ScaTraTimIntImpl;
+
+  /*!
+  \brief abstract strategy for Newton-Raphson convergence check for scalar transport problems
+
+  \author fang (fang@lnm.mw.tum.de)
+  */
+
+  class ConvCheckStrategyBase
+  {
+    public:
+
+      //! constructor
+      ConvCheckStrategyBase(
+          const Teuchos::ParameterList&   parameters   //!< parameter list for Newton-Raphson iteration
+          );
+
+      //! destructor
+      virtual ~ConvCheckStrategyBase(){return;};
+
+      //! perform convergence check for Newton-Raphson iteration
+      virtual bool AbortNonlinIter(
+          const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
+          double&                   actresidual     //!< return maximum current residual value
+          ) const = 0;
+
+    protected:
+
+      //! maximum number of Newton-Raphson iteration steps
+      const int itmax_;
+
+      //! relative tolerance for Newton-Raphson scheme
+      const double ittol_;
+
+      //! absolute tolerance for residuals
+      const double abstolres_;
+
+    private:
+
+      //! copy constructor
+      ConvCheckStrategyBase(const ConvCheckStrategyBase& old);
+  }; // class ConvCheckStrategyBase
+
+  /*!
+  \brief specific strategy for Newton-Raphson convergence check for standard scalar transport problems without scatra-scatra interface coupling involving Lagrange multipliers
+
+  \author fang (fang@lnm.mw.tum.de)
+  */
+
+  class ConvCheckStrategyStd : public ConvCheckStrategyBase
+  {
+    public:
+
+      //! constructor
+      ConvCheckStrategyStd(
+          const Teuchos::ParameterList&   parameters   //!< parameter list for Newton-Raphson iteration
+          ) :
+      ConvCheckStrategyBase(parameters)
+      {return;};
+
+      //! destructor
+      virtual ~ConvCheckStrategyStd(){return;};
+
+      //! perform convergence check for Newton-Raphson iteration
+      bool AbortNonlinIter(
+          const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
+          double&                   actresidual     //!< return maximum current residual value
+          ) const;
+
+    private:
+
+      //! copy constructor
+      ConvCheckStrategyStd(const ConvCheckStrategyStd& old);
+  }; // class ConvCheckStrategyStd
+
+  /*!
+  \brief specific strategy for Newton-Raphson convergence check for electrochemistry problems without scatra-scatra interface coupling involving Lagrange multipliers
+
+  \author fang (fang@lnm.mw.tum.de)
+  */
+
+  class ConvCheckStrategyStdElch : public ConvCheckStrategyBase
+  {
+    public:
+
+      //! constructor
+      ConvCheckStrategyStdElch(
+          const Teuchos::ParameterList&   parameters   //!< parameter list for Newton-Raphson iteration
+          ) :
+      ConvCheckStrategyBase(parameters)
+      {return;};
+
+      //! destructor
+      virtual ~ConvCheckStrategyStdElch(){return;};
+
+      //! perform convergence check for Newton-Raphson iteration
+      bool AbortNonlinIter(
+          const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
+          double&                   actresidual     //!< return maximum current residual value
+          ) const;
+
+    private:
+
+      //! copy constructor
+      ConvCheckStrategyStdElch(const ConvCheckStrategyStdElch& old);
+  }; // class ConvCheckStrategyStdElch
+
+  /*!
+  \brief specific strategy for Newton-Raphson convergence check for standard scalar transport problems with scatra-scatra interface coupling involving Lagrange multipliers
+
+  \author fang (fang@lnm.mw.tum.de)
+  */
+
+  class ConvCheckStrategyS2ILM : public ConvCheckStrategyBase
+  {
+    public:
+
+      //! constructor
+      ConvCheckStrategyS2ILM(
+          const Teuchos::ParameterList&   parameters   //!< parameter list for Newton-Raphson iteration
+          ) :
+      ConvCheckStrategyBase(parameters)
+      {return;};
+
+      //! destructor
+      virtual ~ConvCheckStrategyS2ILM(){return;};
+
+      //! perform convergence check for Newton-Raphson iteration
+      bool AbortNonlinIter(
+          const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
+          double&                   actresidual     //!< return maximum current residual value
+          ) const;
+
+    private:
+
+      //! copy constructor
+      ConvCheckStrategyS2ILM(const ConvCheckStrategyS2ILM& old);
+  }; // class ConvCheckStrategyS2ILM
+
+  /*!
+  \brief specific strategy for Newton-Raphson convergence check for electrochemistry problems with scatra-scatra interface coupling involving Lagrange multipliers
+
+  \author fang (fang@lnm.mw.tum.de)
+  */
+
+  class ConvCheckStrategyS2ILMElch : public ConvCheckStrategyBase
+  {
+    public:
+
+      //! constructor
+      ConvCheckStrategyS2ILMElch(
+          const Teuchos::ParameterList&   parameters   //!< parameter list for Newton-Raphson iteration
+          ) :
+      ConvCheckStrategyBase(parameters)
+      {return;};
+
+      //! destructor
+      virtual ~ConvCheckStrategyS2ILMElch(){return;};
+
+      //! perform convergence check for Newton-Raphson iteration
+      bool AbortNonlinIter(
+          const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
+          double&                   actresidual     //!< return maximum current residual value
+          ) const;
+
+    private:
+
+      //! copy constructor
+      ConvCheckStrategyS2ILMElch(const ConvCheckStrategyS2ILMElch& old);
+  }; // class ConvCheckStrategyS2ILMElch
+} // namespace SCATRA
+#endif // #ifndef SCATRA_TIMINT_CONVCHECK_STRATEGIES_H

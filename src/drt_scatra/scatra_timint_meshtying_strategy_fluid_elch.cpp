@@ -11,12 +11,9 @@ Maintainer: Rui Fang
 </pre>
 
 *----------------------------------------------------------------------*/
+#include "scatra_timint_meshtying_strategy_fluid_elch.H"
 
 #include "../drt_fluid/fluid_meshtying.H"
-
-#include "../drt_lib/drt_dserror.H"
-
-#include "scatra_timint_meshtying_strategy_fluid_elch.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |
@@ -67,3 +64,14 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyFluidElch::InitSys
 
   return meshtying_->Setup(coupleddof);
 } // SCATRA::MeshtyingStrategyFluidElch::InitSystemMatrix
+
+
+/*------------------------------------------------------------------------*
+ | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
+ *------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyFluidElch::InitConvCheckStrategy()
+{
+  convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+
+  return;
+} // SCATRA::MeshtyingStrategyFluidElch::InitConvCheckStrategy

@@ -11,7 +11,6 @@ Maintainer: Rui Fang
 </pre>
 
 *----------------------------------------------------------------------*/
-
 #include "scatra_timint_meshtying_strategy_s2i.H"
 #include "scatra_timint_implicit.H"
 #include "scatra_timint_meshtying_strategy_s2i_elch.H"
@@ -55,6 +54,7 @@ icoupmortar_(),
 imortarcells_(),
 islavematrix_(Teuchos::null),
 imastermatrix_(Teuchos::null),
+mortartype_(DRT::INPUT::IntegralValue<INPAR::S2I::MortarType>(parameters,"MORTARTYPE")),
 D_(Teuchos::null),
 M_(Teuchos::null),
 P_(Teuchos::null),
@@ -80,7 +80,6 @@ colequilibration_(
     or
     DRT::INPUT::IntegralValue<INPAR::S2I::EquilibrationMethods>(parameters,"EQUILIBRATION") == INPAR::S2I::equilibration_full
     ),
-mortartype_(DRT::INPUT::IntegralValue<INPAR::S2I::MortarType>(parameters,"MORTARTYPE")),
 slaveonly_(DRT::INPUT::IntegralValue<bool>(parameters,"SLAVEONLY"))
 {
   return;
@@ -851,11 +850,28 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
 }
 
 
+/*------------------------------------------------------------------------*
+ | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
+ *------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::InitConvCheckStrategy()
+{
+  if(mortartype_ == INPAR::S2I::mortar_saddlepoint)
+    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyS2ILM(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  else
+    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStd(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+
+  return;
+} // SCATRA::MeshtyingStrategyS2I::InitConvCheckStrategy
+
+
 /*----------------------------------------------------------------------*
  | perform setup of scatra-scatra interface coupling         fang 10/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 {
+  // instantiate strategy for Newton-Raphson convergence check
+  InitConvCheckStrategy();
+
   // extract scatra-scatra coupling conditions from discretization
   std::vector<DRT::Condition*> conditions(0,NULL);
   scatratimint_->Discretization()->GetCondition("S2ICoupling",conditions);

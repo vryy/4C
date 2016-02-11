@@ -79,6 +79,9 @@ class MeshtyingStrategyFluid : public MeshtyingStrategyBase
 
   protected:
 
+    //! instantiate strategy for Newton-Raphson convergence check
+    virtual void InitConvCheckStrategy();
+
     //! fluid-fluid meshtying algorithm for internal interface
     Teuchos::RCP<FLD::Meshtying> meshtying_;
 

@@ -170,16 +170,6 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! assemble global system of equations
   void AssembleMatAndRHS();
 
-  //! Calculate problem specific norm
-  void CalcProblemSpecificNorm(
-      double& conresnorm,
-      double& incconnorm_L2,
-      double& connorm_L2,
-      double& incpotnorm_L2,
-      double& potnorm_L2,
-      double& potresnorm,
-      double& conresnorminf);
-
   //! prepare time loop
   void PrepareTimeLoop();
 
@@ -251,36 +241,6 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   void CheckConcentrationValues(
     Teuchos::RCP<Epetra_Vector> vec //!< current phi vector to be checked
   );
-
-  //! print header of convergence table to screen
-  void PrintConvergenceHeader();
-
-  //! print first line of convergence table to screen
-  void PrintConvergenceValuesFirstIter(
-      const int&              itnum,          //!< current Newton-Raphson iteration step
-      const int&              itemax,         //!< maximum number of Newton-Raphson iteration steps
-      const double&           ittol,          //!< relative tolerance for Newton-Raphson scheme
-      const double&           conresnorm,     //!< L2 norm of concentration residual
-      const double&           potresnorm,     //!< L2 norm of potential residual (only relevant for electrochemistry)
-      const double&           conresnorminf   //!< infinity norm of concentration residual
-  );
-
-  //! print current line of convergence table to screen
-  void PrintConvergenceValues(
-      const int&              itnum,           //!< current Newton-Raphson iteration step
-      const int&              itemax,          //!< maximum number of Newton-Raphson iteration steps
-      const double&           ittol,           //!< relative tolerance for Newton-Raphson scheme
-      const double&           conresnorm,      //!< L2 norm of concentration residual
-      const double&           potresnorm,      //!< L2 norm of potential residual (only relevant for electrochemistry)
-      const double&           incconnorm_L2,   //!< L2 norm of concentration increment
-      const double&           connorm_L2,      //!< L2 norm of concentration state vector
-      const double&           incpotnorm_L2,   //!< L2 norm of potential increment
-      const double&           potnorm_L2,      //!< L2 norm of potential state vector
-      const double&           conresnorminf    //!< infinity norm of concentration residual
-  );
-
-  //! print finish line of convergence table to screen
-  void PrintConvergenceFinishLine();
 
   /*========================================================================*/
   //! @name ELCH variables

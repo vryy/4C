@@ -1071,6 +1071,7 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_timint_bdf2.cpp
   src/drt_scatra/scatra_timint_cardiac_monodomain_scheme.cpp
   src/drt_scatra/scatra_timint_cardiac_monodomain.cpp
+  src/drt_scatra/scatra_timint_convcheck_strategies.cpp
   src/drt_scatra/scatra_timint_genalpha.cpp
   src/drt_scatra/scatra_timint_implicit.cpp
   src/drt_scatra/scatra_timint_implicit_service.cpp
