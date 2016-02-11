@@ -219,6 +219,38 @@ template <DRT::Element::DiscretizationType distype>
     else dserror("expected combination quad4/hex8 for surface/parent pair");
     break;
   }
+  // 3D:
+  case DRT::Element::quad8:
+  {
+    if (surfele->ParentElement()->Shape()==DRT::Element::hex20)
+    {
+      FlowDepPressureBC<DRT::Element::quad8,DRT::Element::hex20>(
+          surfele,
+          params,
+          discretization,
+          lm,
+          elemat,
+          elevec);
+    }
+    else dserror("expected combination quad8/hex20 for surface/parent pair");
+    break;
+  }
+  // 3D:
+  case DRT::Element::quad9:
+  {
+    if (surfele->ParentElement()->Shape()==DRT::Element::hex27)
+    {
+      FlowDepPressureBC<DRT::Element::quad9,DRT::Element::hex27>(
+          surfele,
+          params,
+          discretization,
+          lm,
+          elemat,
+          elevec);
+    }
+    else dserror("expected combination quad9/hex27 for surface/parent pair");
+    break;
+  }
   default:
   {
     dserror("not implemented yet\n");
@@ -393,6 +425,38 @@ template <DRT::Element::DiscretizationType distype>
           elevec);
     }
     else dserror("expected combination quad4/hex8 for surface/parent pair");
+    break;
+  }
+  // 3D:
+  case DRT::Element::quad8:
+  {
+    if (surfele->ParentElement()->Shape()==DRT::Element::hex20)
+    {
+      EvaluateWeakDBC<DRT::Element::quad8,DRT::Element::hex20>(
+          surfele,
+          params,
+          discretization,
+          lm,
+          elemat,
+          elevec);
+    }
+    else dserror("expected combination quad8/hex20 for surface/parent pair");
+    break;
+  }
+  // 3D:
+  case DRT::Element::quad9:
+  {
+    if (surfele->ParentElement()->Shape()==DRT::Element::hex27)
+    {
+      EvaluateWeakDBC<DRT::Element::quad9,DRT::Element::hex27>(
+          surfele,
+          params,
+          discretization,
+          lm,
+          elemat,
+          elevec);
+    }
+    else dserror("expected combination quad9/hex27 for surface/parent pair");
     break;
   }
   default:
