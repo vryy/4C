@@ -50,7 +50,7 @@ public:
   virtual void SetInitialField(int startfuncno);
 
   /// run a complete simulation
-  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<Epetra_Map> splitter = Teuchos::null);
+  virtual void Integrate(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null);
 
   /// solve the system for trace and interior variables
   virtual void Solve();
@@ -60,9 +60,6 @@ public:
 
   /// apply Dirichlet boudnary conditions to system
   void ApplyDirichletToSystem();
-
-  /// output
-  virtual void Output(Teuchos::RCP<Epetra_MultiVector> history = Teuchos::null, Teuchos::RCP<Epetra_Map> splitter = Teuchos::null);
 
   /// function to output user information
   void OutputToScreen();
@@ -77,7 +74,7 @@ public:
   virtual void UpdateInteriorVariablesAndAssemebleRHS();
 
   /// Output nodal internal pressure field at new time step
-  void NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec);
+  virtual void NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec);
 
   /// Fill Touch Count Vector (needed for inverse analysis)
   //virtual void FillTouchCountVec(Teuchos::RCP<Epetra_Vector> touchcount);
@@ -98,7 +95,6 @@ protected:
 
   bool acouopt_;                        /// is optimization also with respect to acoustical parameters?
   int outputcount_;                     /// output count in inverse analysis
-  bool writestress_;                    /// flag indicating if a stresses or -if no- the displacment gradient is written to the output
   bool errormaps_;                      /// flag indicating whether error maps are calculated
   double padapttol_;                    /// p-adaptivity error tolerance
   bool calcerr_;                        /// flag for error calculation

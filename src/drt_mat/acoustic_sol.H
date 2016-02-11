@@ -135,13 +135,11 @@ public:
   /// return copy of this material object
   virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AcousticSolMat( *this ) ); }
 
-
+  /// density
+  virtual double Density() const { return params_->density_; }
 
   /// speed of sound
   double SpeedofSound() const { return params_->c_; }
-
-  /// density
-  virtual double Density() const { return params_->density_; }
 
   /// combined solosities 4/3 mu + mu_B
   double Viscosity() const { return params_->visc_; }

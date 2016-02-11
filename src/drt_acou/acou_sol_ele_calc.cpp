@@ -979,7 +979,7 @@ void DRT::ELEMENTS::AcouSolEleCalc<distype>::NodeBasedValues(
                           Epetra_SerialDenseVector&            elevec1,
                           bool                                 writestress)
 {
-  dsassert(elevec1.M() == (int)nen_*(2*nsd_+2+6)+2, "Vector does not have correct size");
+  dsassert(elevec1.M() == (int)nen_*(2*nsd_+2+nsd_*nsd_)+2, "Vector does not have correct size");
   elevec1.Scale(0.0);
 
   const MAT::AcousticSolMat* actmat = static_cast<const MAT::AcousticSolMat*>(mat.get());
@@ -1034,7 +1034,7 @@ void DRT::ELEMENTS::AcouSolEleCalc<distype>::NodeBasedValues(
     if(!writestress)
     {
       for( unsigned int d=0; d<nsd_; ++d)
-        for(unsigned int e=0; e<=d; ++e)
+        for(unsigned int e=0; e<nsd_; ++e)
         {
           double sumstress = 0.0;
           for (unsigned int k=0; k<shapes_->ndofs_; ++k)
@@ -1095,7 +1095,6 @@ void DRT::ELEMENTS::AcouSolEleCalc<distype>::NodeBasedValues(
       }
     }
   }
-
   for(unsigned int i=0; i<nen_*nsd_; ++i)
     elevec1(nsd_*nen_+i) /= temp(nsd_*nen_+i);
 

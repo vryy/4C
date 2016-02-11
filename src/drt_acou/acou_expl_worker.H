@@ -40,6 +40,7 @@ namespace ACOU
   namespace internal
   {
     template <int,int,typename> struct InverseMassMatrixData;
+    template <int,int,typename> struct InverseMassMatrixDataSolid;
   }
 
 
@@ -87,6 +88,7 @@ namespace ACOU
   protected:
     unsigned int timestep_source_number;
     bool         adjoint_eval;
+    bool         solid;
   };
 
 
@@ -101,6 +103,7 @@ namespace ACOU
                           Teuchos::RCP<DRT::DiscretizationHDG> &discret,
                           Teuchos::RCP<Function<dim> > boundary_conditions,
                           Teuchos::RCP<Function<dim> > source_term,
+                          bool sol_in,
                           Teuchos::RCP<Epetra_MultiVector> source_adjoint = Teuchos::null);
 
     virtual ~WaveEquationOperation();
@@ -126,7 +129,7 @@ namespace ACOU
       data.initialize_dof_vector(src);
     }
 
-    AlignedVector<VectorizedArray<value_type> > densities, speeds, densities_grad, speeds_grad;
+    AlignedVector<VectorizedArray<value_type> > densities, speeds, densities_grad, speeds_grad, viscs;
 
     MatrixFree<dim,value_type> data;
 
@@ -138,8 +141,8 @@ namespace ACOU
     Table<3,unsigned int>                    table_node_ids;
     mutable Teuchos::RCP<Epetra_MultiVector> source_adjoint_meas;
 
-    void apply_mass_matrix(const std::vector<parallel::distributed::Vector<value_type> > &src,
-                           std::vector<parallel::distributed::Vector<value_type> >       &dst);
+    //void apply_mass_matrix(const std::vector<parallel::distributed::Vector<value_type> > &src,
+    //                       std::vector<parallel::distributed::Vector<value_type> >       &dst);
 
     void local_apply_mass_matrix(const MatrixFree<dim,value_type>                             &data,
                                  std::vector<parallel::distributed::Vector<value_type> >       &dst,
@@ -150,7 +153,6 @@ namespace ACOU
                              std::vector<parallel::distributed::Vector<value_type> >        &dst,
                              const std::vector<parallel::distributed::Vector<value_type> >  &src,
                              const std::pair<unsigned int,unsigned int>                &cell_range) const;
-
     void local_apply_face (const MatrixFree<dim,value_type>       &data,
                            std::vector<parallel::distributed::Vector<value_type> >         &dst,
                            const std::vector<parallel::distributed::Vector<value_type> >   &src,
@@ -160,6 +162,24 @@ namespace ACOU
                                     const std::vector<parallel::distributed::Vector<value_type> >  &src,
                                     const std::pair<unsigned int,unsigned int>              &cell_range) const;
 
+    void local_apply_solid_mass_matrix(const MatrixFree<dim,value_type>                             &data,
+                                       std::vector<parallel::distributed::Vector<value_type> >       &dst,
+                                       const std::vector<parallel::distributed::Vector<value_type> > &src,
+                                       const std::pair<unsigned int,unsigned int>               &cell_range) const;
+    void local_apply_solid_domain(const MatrixFree<dim,value_type>                              &data,
+                                   std::vector<parallel::distributed::Vector<value_type> >        &dst,
+                                   const std::vector<parallel::distributed::Vector<value_type> >  &src,
+                                   const std::pair<unsigned int,unsigned int>                &cell_range) const;
+    void local_apply_solid_face (const MatrixFree<dim,value_type>       &data,
+                                  std::vector<parallel::distributed::Vector<value_type> >         &dst,
+                                  const std::vector<parallel::distributed::Vector<value_type> >   &src,
+                                  const std::pair<unsigned int,unsigned int>                 &cell_range) const;
+    void local_apply_solid_boundary_face (const MatrixFree<dim,value_type>                              &data,
+                                           std::vector<parallel::distributed::Vector<value_type> >        &dst,
+                                           const std::vector<parallel::distributed::Vector<value_type> >  &src,
+                                           const std::pair<unsigned int,unsigned int>              &cell_range) const;
+
+
     value_type evaluate_source_adjoint(const Point<dim> &p, const std::vector<std::vector<value_type> > nodes, std::vector<value_type> values) const;
     value_type evaluate_source_timereversal(const Point<dim> &p, const std::vector<std::vector<value_type> > nodes, std::vector<value_type> values) const;
 
@@ -167,6 +187,7 @@ namespace ACOU
     mutable Teuchos::RCP<Function<dim> > source_term;
 
     mutable Threads::ThreadLocalStorage<internal::InverseMassMatrixData<dim,fe_degree,value_type> > mass_matrix_data;
+    mutable Threads::ThreadLocalStorage<internal::InverseMassMatrixDataSolid<dim,fe_degree,value_type> > mass_matrix_data_solid;
   };
 
 
@@ -199,6 +220,34 @@ namespace ACOU
       AlignedVector<FEEvaluation<dim,fe_degree,fe_degree+1,dim+1,Number> > phi;
       AlignedVector<VectorizedArray<Number> > coefficients;
       MatrixFreeOperators::CellwiseInverseMassMatrix<dim,fe_degree,dim+1,Number> inverse;
+    };
+
+    /// Collect all data for the inverse mass matrix operation in a struct in
+    /// order to avoid allocating the memory repeatedly.
+    template <int dim, int fe_degree, typename Number>
+    struct InverseMassMatrixDataSolid
+    {
+      InverseMassMatrixDataSolid(const MatrixFree<dim,Number> &data)
+        :
+        phi(1, FEEvaluation<dim,fe_degree,fe_degree+1,dim+1+dim*dim,Number>(data)),
+        coefficients(FEEvaluation<dim,fe_degree,fe_degree+1,dim+1+dim*dim,Number>::n_q_points),
+        inverse(phi[0])
+      {}
+
+      // Manually implement the copy operator because CellwiseInverseMassMatrix
+      // must point to the object 'phi'
+      InverseMassMatrixDataSolid(const InverseMassMatrixDataSolid &other)
+        :
+        phi(other.phi),
+        coefficients(other.coefficients),
+        inverse(phi[0])
+      {}
+
+      // For memory alignment reasons, need to place the FEEvaluation object
+      // into an aligned vector
+      AlignedVector<FEEvaluation<dim,fe_degree,fe_degree+1,dim+1+dim*dim,Number> > phi;
+      AlignedVector<VectorizedArray<Number> > coefficients;
+      MatrixFreeOperators::CellwiseInverseMassMatrix<dim,fe_degree,dim+1+dim*dim,Number> inverse;
     };
   }
 }

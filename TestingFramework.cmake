@@ -134,9 +134,9 @@ macro(codetesting arg)
 endmacro(codetesting)
 
 ###------------------------------------------------------------------ List of tests
+baci_test(acou_pat_1d_impleuler 2 "" minimal)
 baci_test(acou_pat_1d_impleuler_inv 2 "")
 baci_test(acou_pat_1d_impleuler_inv_sol 2 "")
-baci_test(acou_sol_conv10 1 "" minimal)
 baci_test(ale2d_laplace_material 2 1)
 baci_test(ale2d_laplace_spatial 2 "")
 baci_test(ale2d_solid_lin 1 "")
@@ -2110,6 +2110,7 @@ baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_4x4 3 "")
 endif (HAVE_MueLu)
 
 if (HAVE_DEAL_II)
+baci_test(acou_sol_conv10 1 "")
 baci_test(acou_2d_lsrk33reg2 2 "")
 baci_test(acou_2d_ssprk 2 "")
 baci_test(acou_pat_2d_classrk4 2 "")

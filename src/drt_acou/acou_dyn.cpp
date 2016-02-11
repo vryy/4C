@@ -64,7 +64,6 @@ void redistributescatradis(Teuchos::RCP<DRT::Discretization> scatradis, Teuchos:
 
   // redistribute scatra discretization, since it usually has way less dofs than acou and does not need as many processors
   //if(DRT::INPUT::IntegralValue<bool>(acouparams,"REDISTRIBUTESCATRA"))
-  if(1)
   {
     std::vector<int> rownodeids;
     std::vector<int> colnodeids;
@@ -229,8 +228,12 @@ void acoustics_drt()
 
       // access the scatra discretization
       Teuchos::RCP<DRT::Discretization> scatradis = DRT::Problem::Instance()->GetDis("scatra");
-      redistributescatradis(scatradis,acoudishdg);
       scatradis->FillComplete();
+      if(0)
+      {
+        redistributescatradis(scatradis,acoudishdg);
+        scatradis->FillComplete();
+      }
 
       if(scatradis->NumGlobalElements()==0)
         dserror("you said you want to do photoacoustics but you did not supply TRANSP elements");

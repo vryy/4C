@@ -44,6 +44,7 @@ ACOU::AcouTimeInt::AcouTimeInt(
   adjoint_        (params_->get<bool>("adjoint")),
   myrank_         (actdis->Comm().MyPID()),
   writemonitor_   (DRT::INPUT::IntegralValue<bool>(*params_,"WRITEMONITOR")),
+  writestress_    (DRT::INPUT::IntegralValue<bool>(*params_,"WRITESTRESS")),
   time_           (0.0),
   step_           (0),
   restart_        (params_->get<int>("restart")),
@@ -682,6 +683,298 @@ void ACOU::AcouTimeInt::OutputDensityAndSpeedOfSound()
 
   return;
 }
+
+namespace
+{
+  void getNodeVectorsHDG (DRT::Discretization               &dis,
+                          const Teuchos::RCP<Epetra_Vector> &traceValues,
+                          const int                          ndim,
+                          Teuchos::RCP<Epetra_MultiVector>  &velocity,
+                          Teuchos::RCP<Epetra_Vector>       &pressure,
+                          Teuchos::RCP<Epetra_Vector>       &tracevel,
+                          Teuchos::RCP<Epetra_Vector>       &cellPres,
+                          INPAR::ACOU::PhysicalType         phys,
+                          bool                              padapt)
+  {
+    //if (pressure.get() == NULL || pressure->MyLength() != dis.NumMyRowNodes())
+    {
+      const Epetra_Map* nodemap = dis.NodeRowMap();
+      pressure.reset(new Epetra_Vector(*nodemap));
+      velocity.reset(new Epetra_MultiVector(*nodemap,3));
+      tracevel.reset(new Epetra_Vector(pressure->Map()));
+      cellPres.reset(new Epetra_Vector(*dis.ElementRowMap()));
+    }
+
+    // call element routine for interpolate HDG to elements
+    Teuchos::ParameterList params;
+    params.set<int>("action",ACOU::interpolate_hdg_to_node);
+    params.set<int>("useacouoptvecs",-1);
+    dis.SetState(0,"trace",traceValues);
+    params.set<INPAR::ACOU::PhysicalType>("physical type",phys);
+    params.set<bool>("padaptivity",padapt);
+
+    DRT::Element::LocationArray la(2);
+
+    Epetra_SerialDenseMatrix dummyMat;
+    Epetra_SerialDenseVector dummyVec;
+    Epetra_SerialDenseVector interpolVec;
+    std::vector<unsigned char> touchCount(pressure->MyLength());
+    velocity->PutScalar(0.);
+    pressure->PutScalar(0.);
+
+    for (int el=0; el<dis.NumMyColElements();++el)
+    {
+      DRT::Element *ele = dis.lColElement(el);
+      ele->LocationVector(dis,la,false);
+      if (interpolVec.M() == 0)
+        interpolVec.Resize(ele->NumNode()*(ndim+2)+1);
+
+      ele->Evaluate(params,dis,la[0].lm_,dummyMat,dummyMat,interpolVec,dummyVec,dummyVec);
+
+      // sum values on nodes into vectors and record the touch count (build average of values)
+      for (int i=0; i<ele->NumNode(); ++i)
+      {
+        DRT::Node* node = ele->Nodes()[i];
+        const int localIndex = pressure->Map().LID(node->Id());
+
+        if (localIndex < 0)
+          continue;
+
+        touchCount[localIndex]++;
+        for (int d=0; d<ndim; ++d)
+        {
+          velocity->SumIntoMyValue(localIndex,d,interpolVec(i+d*ele->NumNode()));
+        }
+        (*pressure)[localIndex] += interpolVec(i+ndim*ele->NumNode());
+        (*tracevel)[localIndex] += interpolVec(i+(ndim+1)*ele->NumNode());
+      }
+
+      const int eleIndex = dis.ElementRowMap()->LID(ele->Id());
+      if (eleIndex >= 0)
+        (*cellPres)[eleIndex] += interpolVec((ndim+2)*ele->NumNode());
+    }
+
+    for (int i=0; i<pressure->MyLength(); ++i)
+    {
+      (*pressure)[i] /= touchCount[i];
+      for (int d=0; d<ndim; ++d)
+        (*velocity)[d][i] /= touchCount[i];
+      (*tracevel)[i] /= touchCount[i];
+    }
+    dis.ClearState(true);
+
+    return;
+  } // getNodeVectorsHDG
+
+  void getNodeVectorsHDGSolid(DRT::Discretization              &dis,
+                            const Teuchos::RCP<Epetra_Vector> &traceValues,
+                            const int                          ndim,
+                            Teuchos::RCP<Epetra_MultiVector>  &velocitygradient,
+                            Teuchos::RCP<Epetra_MultiVector>  &velocity,
+                            Teuchos::RCP<Epetra_Vector>       &pressure,
+                            Teuchos::RCP<Epetra_MultiVector>  &tracevelocity,
+                            Teuchos::RCP<Epetra_Vector>       &cellPres,
+                            INPAR::ACOU::PhysicalType         phys,
+                            bool                              writestress)
+  {
+    {
+      const Epetra_Map* nodemap = dis.NodeRowMap();
+      velocity.reset(new Epetra_MultiVector(*nodemap,3));
+      velocitygradient.reset(new Epetra_MultiVector(*nodemap,ndim*ndim));
+      pressure.reset(new Epetra_Vector(*nodemap));
+      tracevelocity.reset(new Epetra_MultiVector(*nodemap,3));
+      cellPres.reset(new Epetra_Vector(*dis.ElementRowMap()));
+    }
+
+    // call element routine for interpolate HDG to elements
+    Teuchos::ParameterList params;
+    params.set<int>("action",ACOU::interpolate_hdg_to_node);
+    params.set<INPAR::ACOU::PhysicalType>("physical type",phys);
+    params.set<bool>("writestress",writestress);
+    dis.SetState(0,"trace",traceValues);
+
+    std::vector<int> dummy;
+    DRT::Element::LocationArray la(2);
+
+    Epetra_SerialDenseMatrix dummyMat;
+    Epetra_SerialDenseVector dummyVec;
+    Epetra_SerialDenseVector interpolVec;
+    std::vector<unsigned char> touchCount(pressure->MyLength());
+
+    velocity->PutScalar(0.0);
+    pressure->PutScalar(0.0);
+    tracevelocity->PutScalar(0.0);
+    cellPres->PutScalar(0.0);
+
+    for (int el=0; el<dis.NumMyColElements();++el)
+    {
+      DRT::Element *ele = dis.lColElement(el);
+      ele->LocationVector(dis,la,false);
+      if (interpolVec.M() == 0)
+        interpolVec.Resize(ele->NumNode()*(2*ndim+2+ndim*ndim)+2);
+
+      ele->Evaluate(params,dis,la[0].lm_,dummyMat,dummyMat,interpolVec,dummyVec,dummyVec);
+
+      // sum values on nodes into vectors and record the touch count (build average of values)
+      for (int i=0; i<ele->NumNode(); ++i)
+      {
+        DRT::Node* node = ele->Nodes()[i];
+        const int localIndex = pressure->Map().LID(node->Id());
+
+        if (localIndex < 0)
+          continue;
+
+        touchCount[localIndex]++;
+        for (int d=0; d<ndim; ++d)
+        {
+          velocity->SumIntoMyValue(localIndex,d,interpolVec(d*ele->NumNode()+i));
+          tracevelocity->SumIntoMyValue(localIndex,d,interpolVec((d+ndim)*ele->NumNode()+i));
+        }
+        for (int d=0; d<ndim*ndim; ++d)
+          velocitygradient->SumIntoMyValue(localIndex,d,interpolVec(ele->NumNode()*(2*ndim+2+d)+i+2));
+        (*pressure)[localIndex] += interpolVec(ele->NumNode()*(2*ndim)+i);
+      }
+      const int eleIndex = dis.ElementRowMap()->LID(ele->Id());
+      if (eleIndex >= 0)
+      {
+        (*cellPres)[eleIndex] += interpolVec(ele->NumNode()*(2*ndim+2));
+      }
+    } // for (int el=0; el<dis.NumMyColElements();++el)
+
+    for (int i=0; i<pressure->MyLength(); ++i)
+    {
+      (*pressure)[i] /= touchCount[i];
+      for (int d=0; d<ndim; ++d)
+      {
+        (*velocity)[d][i] /= touchCount[i];
+        (*tracevelocity)[d][i] /= touchCount[i];
+      }
+      for (int d=0; d<ndim*ndim; ++d)
+        (*velocitygradient)[d][i] /= touchCount[i];
+    }
+    dis.ClearState(true);
+
+    return;
+  } // getNodeVectorsHDGSolid
+
+} // namespace
+
+
+/*----------------------------------------------------------------------*
+ |  Output (public)                                      schoeder 01/14 |
+ *----------------------------------------------------------------------*/
+void ACOU::AcouTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("ACOU::AcouImplicitTimeInt::Output");
+
+  // output of solution
+  Teuchos::RCP<Epetra_Vector> interpolatedPressure, traceVel, cellPres;
+  Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity;
+  Teuchos::RCP<Epetra_MultiVector> traceVelocity;
+  Teuchos::RCP<Epetra_MultiVector> interpolatedVelocityGradient;
+  if(phys_ == INPAR::ACOU::acou_lossless)
+  {
+    getNodeVectorsHDG(*discret_, velnp_, numdim_,
+                      interpolatedVelocity, interpolatedPressure, traceVel, cellPres, phys_,padaptivity_);
+  }
+  else // if(phys_ == INPAR::ACOU::acou_solid)
+  {
+    getNodeVectorsHDGSolid(*discret_, velnp_, numdim_,
+        interpolatedVelocityGradient,interpolatedVelocity,interpolatedPressure,
+        traceVelocity,cellPres,phys_,writestress_);
+  }
+  // fill in pressure values into monitor file, if required
+  FillMonitorFile(interpolatedPressure);
+
+  if( history != Teuchos::null )
+  {
+    // monitor boundary condition
+    std::string condname = "PressureMonitor";
+    std::vector<DRT::Condition*> pressuremon;
+    discret_->GetCondition(condname,pressuremon);
+    const std::vector<int> pressuremonnodes = *(pressuremon[0]->Nodes());
+    for(unsigned int i=0; i<pressuremonnodes.size(); ++i)
+    {
+      if(discret_->NodeRowMap()->LID(pressuremonnodes[i])>=0)
+        history->ReplaceMyValue(history->Map().LID(pressuremonnodes[i]),step_,interpolatedPressure->operator [](discret_->NodeRowMap()->LID(pressuremonnodes[i])));
+    }
+  } // if( history != Teuchos::null )
+
+
+  if (step_%upres_ == 0)
+  {
+    Teuchos::RCP<Epetra_Vector> dmap;
+    if(padaptivity_)
+    {
+      dmap.reset(new Epetra_Vector(*discret_->ElementRowMap()));
+      for(int i=0; i<discret_->NumMyRowElements(); ++i)
+      {
+        dmap->operator [](i) = double(discret_->lRowElement(i)->Degree());
+      }
+    }
+
+    if (myrank_ == 0 && !invana_)
+      std::cout<<"======= Output written in step "<<step_<<std::endl;
+    // step number and time
+    output_->NewStep(step_,time_);
+    // write element data only once
+    if (step_==0)
+    {
+      output_->WriteElementData(true);
+      if(phys_!=INPAR::ACOU::acou_solid)
+        OutputDensityAndSpeedOfSound();
+    }
+
+    output_->WriteVector("velnp",interpolatedVelocity);
+    output_->WriteVector("pressure",interpolatedPressure);
+    output_->WriteVector("pressure_avg",cellPres);
+    if(phys_ == INPAR::ACOU::acou_lossless)
+    {
+      output_->WriteVector("par_vel",traceVel);
+    }
+    else // (phys_ == INPAR::ACOU::acou_solid)
+    {
+      output_->WriteVector("trace_velocity",traceVelocity);
+      //output_->WriteVector("stress",interpolatedVelocityGradient,output_->nodevector);
+      if(numdim_==2)
+      {
+        Teuchos::RCP<Epetra_Vector> stress = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap()));
+        stress->Update(1.0,*interpolatedVelocityGradient->operator ()(0),0.0);
+        output_->WriteVector("stress_xx",stress);
+        stress->Update(1.0,*interpolatedVelocityGradient->operator ()(1),0.0);
+        output_->WriteVector("stress_xy",stress);
+        stress->Update(1.0,*interpolatedVelocityGradient->operator ()(2),0.0);
+        output_->WriteVector("stress_yx",stress);
+        stress->Update(1.0,*interpolatedVelocityGradient->operator ()(3),0.0);
+        output_->WriteVector("stress_yy",stress);
+      }
+      if(numdim_==3)
+      {
+        output_->WriteVector("stress_xx",Teuchos::rcp(interpolatedVelocityGradient->operator ()(0)));
+        output_->WriteVector("stress_xy",Teuchos::rcp(interpolatedVelocityGradient->operator ()(1)));
+        output_->WriteVector("stress_xz",Teuchos::rcp(interpolatedVelocityGradient->operator ()(2)));
+        output_->WriteVector("stress_yx",Teuchos::rcp(interpolatedVelocityGradient->operator ()(3)));
+        output_->WriteVector("stress_yy",Teuchos::rcp(interpolatedVelocityGradient->operator ()(4)));
+        output_->WriteVector("stress_yz",Teuchos::rcp(interpolatedVelocityGradient->operator ()(5)));
+        output_->WriteVector("stress_zx",Teuchos::rcp(interpolatedVelocityGradient->operator ()(6)));
+        output_->WriteVector("stress_zy",Teuchos::rcp(interpolatedVelocityGradient->operator ()(7)));
+        output_->WriteVector("stress_zz",Teuchos::rcp(interpolatedVelocityGradient->operator ()(8)));
+      }
+
+    }
+
+    //if(errormaps_) output_->WriteVector("error",error_);
+    if(padaptivity_) output_->WriteVector("degree",dmap);
+
+    // add restart data
+    if (uprestart_ != 0 && step_%uprestart_ == 0)
+    {
+      WriteRestart();
+    }
+  }
+
+  return;
+} // Output
 
 /*----------------------------------------------------------------------*
  |  Calculate node based values (public)                 schoeder 01/14 |

@@ -2864,7 +2864,7 @@ void ACOU::PatImageReconstruction::SolveStandardAcou()
   acou_rhs_->Scale(0.0);
 
   // do the time integration
-  acoualgo_->Integrate(acou_rhs_,abcnodes_map_);
+  acoualgo_->Integrate(acou_rhs_);
 
   return;
 }
@@ -3063,7 +3063,7 @@ void ACOU::PatImageReconstruction::TimeReversalEstimate()
   acoualgo_->SetInitialZeroField();
 
   // do the time integration
-  acoualgo_->Integrate(acou_rhs_,abcnodes_map_);
+  acoualgo_->Integrate(acou_rhs_);
 
   // reset parameter
   acouparams_->set<bool>("timereversal",false);

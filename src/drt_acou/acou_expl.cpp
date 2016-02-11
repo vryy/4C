@@ -60,6 +60,7 @@ Maintainer: Svenja Schoeder
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/acoustic.H"
+#include "../drt_mat/acoustic_sol.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../linalg/linalg_mapextractor.H"
@@ -196,137 +197,13 @@ void ACOU::AcouExplicitTimeInt::SetInitialPhotoAcousticField(
 /*----------------------------------------------------------------------*
  |  Integrate                                            schoeder 03/15 |
  *----------------------------------------------------------------------*/
-void AcouExplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<Epetra_Map> splitter)
+void AcouExplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> history)
 {
   if(numdim_==2)
-      wave2d_->run(history,splitter);
+      wave2d_->run(history);
   else if(numdim_==3)
-      wave3d_->run(history,splitter);
+      wave3d_->run(history);
 
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Output                                               schoeder 03/15 |
- *----------------------------------------------------------------------*/
-void AcouExplicitTimeInt::Output(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<Epetra_Map> splitter)
-{
-  // first: get the deal values and put them in the baci elements (output is a bit more expensive than usually)
-
-  if (step_%upres_ == 0)
-  {
-    // second: do the baci output
-    output_->NewStep(step_,time_);
-
-    // write element data only once
-    if (step_==0)
-    {
-      output_->WriteElementData(true);
-      //if(invana_)
-        OutputDensityAndSpeedOfSound();
-    }
-  }
-
-  // output of solution
-  Teuchos::RCP<Epetra_Vector> pressure, cellPres;
-  Teuchos::RCP<Epetra_MultiVector> velocity;
-
-  // get the node vectors
-  {
-    {
-      const Epetra_Map* nodemap = discret_->NodeRowMap();
-      pressure.reset(new Epetra_Vector(*nodemap));
-      velocity.reset(new Epetra_MultiVector(*nodemap,3));
-      cellPres.reset(new Epetra_Vector(*(discret_->ElementRowMap())));
-    }
-
-    // call element routine for interpolate HDG to elements
-    Teuchos::ParameterList params;
-    params.set<int>("action",ACOU::interpolate_hdg_to_node);
-    params.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
-    params.set<bool>("padaptivity",false);
-    params.set<int>("useacouoptvecs",-1);
-
-    DRT::Element::LocationArray la(2);
-
-    Epetra_SerialDenseMatrix dummyMat;
-    Epetra_SerialDenseVector dummyVec;
-    Epetra_SerialDenseVector interpolVec;
-    std::vector<unsigned char> touchCount(pressure->MyLength());
-    velocity->PutScalar(0.);
-    pressure->PutScalar(0.);
-
-    for (int el=0; el<discret_->NumMyColElements();++el)
-    {
-      DRT::Element *ele = discret_->lColElement(el);
-      ele->LocationVector(*discret_,la,false);
-      if (interpolVec.M() == 0)
-        interpolVec.Resize(ele->NumNode()*(numdim_+2)+1);
-
-      ele->Evaluate(params,*discret_,la[0].lm_,dummyMat,dummyMat,interpolVec,dummyVec,dummyVec);
-
-      // sum values on nodes into vectors and record the touch count (build average of values)
-      for (int i=0; i<ele->NumNode(); ++i)
-      {
-        DRT::Node* node = ele->Nodes()[i];
-        const int localIndex = pressure->Map().LID(node->Id());
-
-        if (localIndex < 0)
-          continue;
-
-        touchCount[localIndex]++;
-        for (int d=0; d<numdim_; ++d)
-        {
-          velocity->SumIntoMyValue(localIndex,d,interpolVec(i+d*ele->NumNode()));
-        }
-        (*pressure)[localIndex] += interpolVec(i+numdim_*ele->NumNode());
-      }
-
-      const int eleIndex = discret_->ElementRowMap()->LID(ele->Id());
-      if (eleIndex >= 0)
-        (*cellPres)[eleIndex] += interpolVec((numdim_+2)*ele->NumNode());
-    }
-
-    for (int i=0; i<pressure->MyLength(); ++i)
-    {
-      (*pressure)[i] /= touchCount[i];
-      for (int d=0; d<numdim_; ++d)
-        (*velocity)[d][i] /= touchCount[i];
-    }
-  }
-
-  // fill in pressure values into monitor file, if required
-  FillMonitorFile(pressure);
-
-  if( history != Teuchos::null )
-  {
-    // monitor boundary condition
-    std::string condname = "PressureMonitor";
-    std::vector<DRT::Condition*> pressuremon;
-    discret_->GetCondition(condname,pressuremon);
-    const std::vector<int> pressuremonnodes = *(pressuremon[0]->Nodes());
-    for(unsigned int i=0; i<pressuremonnodes.size(); ++i)
-    {
-      if(discret_->NodeRowMap()->LID(pressuremonnodes[i])>=0)
-        history->ReplaceMyValue(history->Map().LID(pressuremonnodes[i]),step_,pressure->operator [](discret_->NodeRowMap()->LID(pressuremonnodes[i])));
-    }
-  } // if( history != Teuchos::null )
-
-  if (step_%upres_ == 0)
-  {
-    if (myrank_ == 0 && !invana_)
-      std::cout<<"======= Output written in step "<<step_<<std::endl;
-
-    output_->WriteVector("velnp",velocity);
-    output_->WriteVector("pressure",pressure);
-    output_->WriteVector("pressure_avg",cellPres);
-
-    // add restart data
-    if (uprestart_ != 0 && step_%uprestart_ == 0)
-    {
-      WriteRestart();
-    }
-  }
   return;
 }
 
@@ -356,6 +233,7 @@ void AcouExplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec)
   params.set<INPAR::ACOU::PhysicalType>("physical type",phys_);
   params.set<bool>("padaptivity",false);
   params.set<int>("useacouoptvecs",-1);
+  params.set<bool>("writestress",writestress_);
 
   DRT::Element::LocationArray la(2);
 
@@ -370,7 +248,12 @@ void AcouExplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec)
     DRT::Element *ele = discret_->lColElement(el);
     ele->LocationVector(*discret_,la,false);
     if (interpolVec.M() == 0)
-      interpolVec.Resize(ele->NumNode()*(numdim_+2)+1);
+    {
+      if(phys_==INPAR::ACOU::acou_solid)
+        interpolVec.Resize(ele->NumNode()*(2*numdim_+2+numdim_*numdim_)+2);
+      else
+        interpolVec.Resize(ele->NumNode()*(numdim_+2)+1);
+    }
 
     ele->Evaluate(params,*discret_,la[0].lm_,dummyMat,dummyMat,interpolVec,dummyVec,dummyVec);
 
@@ -540,7 +423,7 @@ public:
   }
 
   virtual double value (const Point<dim> &p,
-                        const unsigned int dbcindex=0) const;
+                        const unsigned int component=0) const;
 private:
 
   std::vector<DRT::Condition*> dirichletBC;
@@ -549,23 +432,26 @@ private:
 
 template <int dim>
 double DirichletBoundaryFunction<dim>::value (const Point<dim>   &p,
-                                              const unsigned int dbcindex) const
+                                              const unsigned int component) const
 {
   double xyz[dim];
   for(unsigned d=0; d<dim; ++d)
     xyz[d] = p(d);
   double t = this->get_time();
 
+  int dimcomp = component % dim;
+  int dbcindex = component / dim;
+
   // warning: only possibilities are "value" and "function" not "curve". if you want to use "curve" in your dbc, implement the evaluation here
   double return_value = 0.0;
   int funct_num = (*(dirichletBC[dbcindex]->template Get<std::vector<int> >("funct")))[0];
   if(funct_num>0) // return value specified by functione evaluation
   {
-    return_value = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(0,xyz,t,NULL);
+    return_value = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(dimcomp,xyz,t,NULL);
   }
   else // return value given by input value "VAL"
   {
-    return_value = (*(dirichletBC[dbcindex]->template Get<std::vector<double> >("val")))[0];
+    return_value = (*(dirichletBC[dbcindex]->template Get<std::vector<double> >("val")))[dimcomp];
   }
 
   return return_value;
@@ -591,34 +477,41 @@ WaveEquationProblem<dim>::WaveEquationProblem(Teuchos::RCP<DRT::DiscretizationHD
   invana(params->get<bool>("invana")),
   adjoint(params->get<bool>("adjoint")),
   acouopt(params->get<bool>("acouopt")),
-  timereversal(params->get<bool>("timereversal"))
+  timereversal(params->get<bool>("timereversal")),
+  solid((DRT::INPUT::IntegralValue<INPAR::ACOU::PhysicalType>(*params,"PHYSICAL_TYPE"))==INPAR::ACOU::acou_solid)
 {
   make_grid_and_dofs(discret,bacitimeint->AdjointSourceVec());
   const unsigned int fe_degree = discret->lRowElement(0)->Degree();
 
   // get function numbers for analytic solution and right hand side
+  int comps = 1;
+  if(solid) comps = dim;
   int sourcetermfuncno = (params->get<int>("SOURCETERMFUNCNO"))-1;
-  Teuchos::RCP<Function<dim> > diriboundary (new DirichletBoundaryFunction<dim>(1,0.0,discret));
-  Teuchos::RCP<Function<dim> > rhs (new RightHandSide<dim>(1,0.0,sourcetermfuncno));
+  Teuchos::RCP<Function<dim> > rhs (new RightHandSide<dim>(comps,0.0,sourcetermfuncno));
+  Teuchos::RCP<Function<dim> > diriboundary (new DirichletBoundaryFunction<dim>(comps,0.0,discret));
 
   if (fe_degree==1)
-    evaluator.reset(new WaveEquationOperation<dim,1>(dof_handler, discret, diriboundary, rhs, bacitimeint->AdjointSourceVec()));
+    evaluator.reset(new WaveEquationOperation<dim,1>(dof_handler, discret, diriboundary, rhs, solid, bacitimeint->AdjointSourceVec()));
   else if (fe_degree==2)
-    evaluator.reset(new WaveEquationOperation<dim,2>(dof_handler, discret, diriboundary, rhs, bacitimeint->AdjointSourceVec()));
+    evaluator.reset(new WaveEquationOperation<dim,2>(dof_handler, discret, diriboundary, rhs, solid, bacitimeint->AdjointSourceVec()));
   else if (fe_degree==3)
-    evaluator.reset(new WaveEquationOperation<dim,3>(dof_handler, discret, diriboundary, rhs, bacitimeint->AdjointSourceVec()));
+    evaluator.reset(new WaveEquationOperation<dim,3>(dof_handler, discret, diriboundary, rhs, solid, bacitimeint->AdjointSourceVec()));
   else if (fe_degree==4)
-    evaluator.reset(new WaveEquationOperation<dim,4>(dof_handler, discret, diriboundary, rhs, bacitimeint->AdjointSourceVec()));
+    evaluator.reset(new WaveEquationOperation<dim,4>(dof_handler, discret, diriboundary, rhs, solid, bacitimeint->AdjointSourceVec()));
   else if (fe_degree==5)
-    evaluator.reset(new WaveEquationOperation<dim,5>(dof_handler, discret, diriboundary, rhs, bacitimeint->AdjointSourceVec()));
+    evaluator.reset(new WaveEquationOperation<dim,5>(dof_handler, discret, diriboundary, rhs, solid, bacitimeint->AdjointSourceVec()));
   else if (fe_degree==6)
-    evaluator.reset(new WaveEquationOperation<dim,6>(dof_handler, discret, diriboundary, rhs, bacitimeint->AdjointSourceVec()));
+    evaluator.reset(new WaveEquationOperation<dim,6>(dof_handler, discret, diriboundary, rhs, solid, bacitimeint->AdjointSourceVec()));
   else
     dserror("Only degrees between 1 and 6 are implemented!");
 
-  solutions.resize(dim+1);
+  if(solid)
+    solutions.resize(dim*dim+dim+1);
+  else
+    solutions.resize(dim+1);
+
   evaluator->initialize_dof_vector(solutions[0]);
-  for (unsigned int d=1; d<dim+1; ++d)
+  for (unsigned int d=1; d<solutions.size(); ++d)
     solutions[d] = solutions[0];
 
   post_pressure.reinit(dof_handler_post_disp.locally_owned_dofs(),MPI_COMM_WORLD);
@@ -649,8 +542,17 @@ WaveEquationProblem<dim>::WaveEquationProblem(Teuchos::RCP<DRT::DiscretizationHD
 
     const int element_index = cell->index();
     Teuchos::RCP<MAT::Material> mat = discret->lColElement(element_index)->Material();
-    MAT::AcousticMat* actmat = static_cast<MAT::AcousticMat*>(mat.get());
-    double c = actmat->SpeedofSound(element_index);
+    double c = 0.0;
+    if(solid)
+    {
+      MAT::AcousticSolMat* actmat = static_cast<MAT::AcousticSolMat*>(mat.get());
+      c = actmat->SpeedofSound();
+    }
+    else
+    {
+      MAT::AcousticMat* actmat = static_cast<MAT::AcousticMat*>(mat.get());
+      c = actmat->SpeedofSound(element_index);
+    }
     diameter /= c;
 
     if (diameter < min_cell_diameter)
@@ -936,101 +838,214 @@ namespace
 
 template <int dim>
 void
-WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<Epetra_Map> splitter)
+WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Teuchos::RCP<Epetra_MultiVector> history)
 {
-  Vector<double> norm_per_cell_p (triangulation.n_active_cells());
 
-  IndexSet relevant_set;
-  get_relevant_set(dof_handler, relevant_set);
-  parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
-                                                    solutions[dim].get_mpi_communicator());
-  ghosted_sol = solutions[dim];
-  ghosted_sol.update_ghost_values();
-
-//  VectorTools::integrate_difference (dof_handler,
-//                                     ghosted_sol,
-//                                     ZeroFunction<dim>(1),
-//                                     norm_per_cell_p,
-//                                     QGauss<dim>(fe.degree+1),
-//                                     VectorTools::L2_norm);
-//  double solution_mag =
-//    std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
-//  double solution_norm_p = 0, solution_norm_p_post = 0;
-//  if (exactsolutionfuncno>=0)
-//  {
-//    norm_per_cell_p = 0;
-//    VectorTools::integrate_difference (dof_handler,
-//        ghosted_sol,
-//        ExactSolution<dim>(dim,time,exactsolutionfuncno),
-//        norm_per_cell_p,
-//        QGauss<dim>(fe.degree+2),
-//        VectorTools::L2_norm);
-//
-//    solution_norm_p =
-//        std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
-//
-//    norm_per_cell_p = 0;
-//    compute_post_pressure();
-//    IndexSet relevant_set;
-//    get_relevant_set(dof_handler_post_disp, relevant_set);
-//    parallel::distributed::Vector<double> ghosted_post(dof_handler_post_disp.locally_owned_dofs(),relevant_set,
-//                                                       solutions[dim].get_mpi_communicator());
-//    ghosted_post = post_pressure;
-//    ghosted_post.update_ghost_values();
-//    VectorTools::integrate_difference (dof_handler_post_disp,
-//        ghosted_post,
-//        ExactSolution<dim>(dim,time,exactsolutionfuncno),
-//        norm_per_cell_p,
-//        QGauss<dim>(fe.degree+3),
-//        VectorTools::L2_norm);
-//
-//    solution_norm_p_post =
-//        std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
-//
-//    ghosted_post = 0;
-//    VectorTools::integrate_difference (dof_handler_post_disp,
-//        ghosted_post,
-//        ExactSolution<dim>(dim,time,exactsolutionfuncno),
-//        norm_per_cell_p,
-//        QGauss<dim>(fe.degree+2),
-//        VectorTools::L2_norm);
-//    solution_mag =
-//        std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
-//
-//    pcout << "   Time:"
-//        << std::setw(8) << std::setprecision(3) << time
-//        << ", solution norm p: "
-//        << std::setprecision(5) << std::setw(10) << solution_norm_p/solution_mag
-//        << ", solution norm p post: "
-//        << std::setprecision(5) << std::setw(9) << solution_norm_p_post/solution_mag
-//        << std::endl;
-//  }
-//  else
-//    pcout << "   Time:" << std::setw(8) << std::setprecision(3) << time
-//          << ", solution norm p: "
-//          << std::setprecision(5) << std::setw(10) << solution_mag << std::endl;
-//
-  if(!invana && step%up_res == 0) // otherwise we  get way too much output files
+  if (exactsolutionfuncno>=0 && this->solid==false)
   {
-    DataOut<dim> data_out;
+    Vector<double> norm_per_cell_p (triangulation.n_active_cells());
 
-    data_out.attach_dof_handler (dof_handler);
-    data_out.add_data_vector (ghosted_sol, "solution_pressure");
-    data_out.build_patches (/*2*/);
+    IndexSet relevant_set;
+    get_relevant_set(dof_handler, relevant_set);
+    parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
+                                                      solutions[dim].get_mpi_communicator());
+    ghosted_sol = solutions[dim];
+    ghosted_sol.update_ghost_values();
 
-    const std::string filename_pressure = DRT::Problem::Instance()->OutputControlFile()->FileName() +
-        ".solution-pressure_" +
-        Utilities::int_to_string(Utilities::MPI::this_mpi_process(solutions[dim].get_mpi_communicator()))
-        + "-" + Utilities::int_to_string (timestep_number, 3);
+    // calculate norm of pressure
+    VectorTools::integrate_difference (dof_handler,
+                                       ghosted_sol,
+                                       ZeroFunction<dim>(1),
+                                       norm_per_cell_p,
+                                       QGauss<dim>(fe.degree+1),
+                                       VectorTools::L2_norm);
+    double solution_mag = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
 
-    std::ofstream output_pressure ((filename_pressure + ".vtu").c_str());
-    data_out.write_vtu (output_pressure);
+    double solution_norm_p = 0;//, solution_norm_p_post = 0;
+
+    // calculate norm of difference between pressure and analytic solution
+    norm_per_cell_p = 0;
+    VectorTools::integrate_difference (dof_handler,
+        ghosted_sol,
+        ExactSolution<dim>(dim,time,exactsolutionfuncno),
+        norm_per_cell_p,
+        QGauss<dim>(fe.degree+2),
+        VectorTools::L2_norm);
+    solution_norm_p = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+
+    // calculate norm of difference betwenn POSTPROCESSED pressure and analytic solution
+    /*
+    norm_per_cell_p = 0;
+    compute_post_pressure();
+    IndexSet relevant_set;
+    get_relevant_set(dof_handler_post_disp, relevant_set);
+    parallel::distributed::Vector<double> ghosted_post(dof_handler_post_disp.locally_owned_dofs(),relevant_set,
+                                                       solutions[dim].get_mpi_communicator());
+    ghosted_post = post_pressure;
+    ghosted_post.update_ghost_values();
+    VectorTools::integrate_difference (dof_handler_post_disp,
+        ghosted_post,
+        ExactSolution<dim>(dim,time,exactsolutionfuncno),
+        norm_per_cell_p,
+        QGauss<dim>(fe.degree+3),
+        VectorTools::L2_norm);
+    solution_norm_p_post = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+
+    ghosted_post = 0;
+    VectorTools::integrate_difference (dof_handler_post_disp,
+        ghosted_post,
+        ExactSolution<dim>(dim,time,exactsolutionfuncno),
+        norm_per_cell_p,
+        QGauss<dim>(fe.degree+2),
+        VectorTools::L2_norm);
+    solution_mag =
+        std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+    */
+    if(solution_mag!=0.0)
+      pcout << "   Time:"
+        << std::setw(8) << std::setprecision(3) << time
+        << ", solution norm p: "
+        << std::setprecision(5) << std::setw(10) << solution_norm_p/solution_mag
+        //<< ", solution norm p post: "
+        //<< std::setprecision(5) << std::setw(9) << solution_norm_p_post/solution_mag
+        << std::endl;
   }
+  else if (exactsolutionfuncno>=0 && this->solid==true)
+  {
+    double v_solution_mag = 0.0;
+    double v_error_mag = 0.0;
+
+    for(int d=0; d<dim+1+dim*dim; ++d)
+    {
+
+      Vector<double> norm_per_cell_v (triangulation.n_active_cells());
+
+      IndexSet relevant_set;
+      get_relevant_set(dof_handler, relevant_set);
+      parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
+                                                        solutions[d].get_mpi_communicator());
+      ghosted_sol = solutions[d];
+      ghosted_sol.update_ghost_values();
+
+      // calculate norm of pressure
+      VectorTools::integrate_difference (dof_handler,
+                                         ghosted_sol,
+                                         ZeroFunction<dim>(1),
+                                         norm_per_cell_v,
+                                         QGauss<dim>(fe.degree+1),
+                                         VectorTools::L2_norm);
+
+      v_solution_mag = Utilities::MPI::sum (norm_per_cell_v.norm_sqr(), MPI_COMM_WORLD);
+
+      // calculate norm of difference between velocity and analytic solution
+      norm_per_cell_v = 0;
+      VectorTools::integrate_difference (dof_handler,
+                                         ghosted_sol,
+                                         ExactSolution<dim>(dim,time,exactsolutionfuncno+d),
+                                         norm_per_cell_v,
+                                         QGauss<dim>(fe.degree+2),
+                                         VectorTools::L2_norm);
+      v_error_mag  = Utilities::MPI::sum (norm_per_cell_v.norm_sqr(), MPI_COMM_WORLD);
+
+      // calculate norm of difference between velocity and analytic solution
+      norm_per_cell_v = 0;
+      ghosted_sol*=0.0;
+      VectorTools::integrate_difference (dof_handler,
+                                         ghosted_sol,
+                                         ExactSolution<dim>(dim,time,exactsolutionfuncno+d),
+                                         norm_per_cell_v,
+                                         QGauss<dim>(fe.degree+2),
+                                         VectorTools::L2_norm);
+      double v_exactsol_mag  = Utilities::MPI::sum (norm_per_cell_v.norm_sqr(), MPI_COMM_WORLD);
+
+
+      if(d<dim)
+        std::cout<<"d "<<d<<" absolute error in dem v-teil "<<std::sqrt(v_error_mag)<<std::endl;
+      else if(d==dim)
+        std::cout<<"d "<<d<<" absolute error in dem p-teil "<<std::sqrt(v_error_mag)<<std::endl;
+      else
+        std::cout<<"d "<<d<<" absolute error in dem H-teil "<<std::sqrt(v_error_mag)<<" solution norm "<< std::sqrt(v_solution_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<std::endl;
+    }
+
+    // stress sigma_xy
+    {
+      Vector<double> norm_per_cell_v (triangulation.n_active_cells());
+
+      IndexSet relevant_set;
+      get_relevant_set(dof_handler, relevant_set);
+      parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
+                                                        solutions[dim+2].get_mpi_communicator());
+      ghosted_sol = solutions[dim+2];
+      ghosted_sol+=solutions[dim+3];
+      ghosted_sol.update_ghost_values();
+
+      // calculate norm of pressure
+      VectorTools::integrate_difference (dof_handler,
+                                         ghosted_sol,
+                                         ZeroFunction<dim>(1),
+                                         norm_per_cell_v,
+                                         QGauss<dim>(fe.degree+1),
+                                         VectorTools::L2_norm);
+
+      v_solution_mag = Utilities::MPI::sum (norm_per_cell_v.norm_sqr(), MPI_COMM_WORLD);
+
+      // calculate norm of difference between velocity and analytic solution
+      norm_per_cell_v = 0;
+      VectorTools::integrate_difference (dof_handler,
+                                         ghosted_sol,
+                                         ExactSolution<dim>(dim,time,exactsolutionfuncno+7),
+                                         norm_per_cell_v,
+                                         QGauss<dim>(fe.degree+2),
+                                         VectorTools::L2_norm);
+      v_error_mag  = Utilities::MPI::sum (norm_per_cell_v.norm_sqr(), MPI_COMM_WORLD);
+
+      // calculate norm of difference between velocity and analytic solution
+      norm_per_cell_v = 0;
+      ghosted_sol*=0.0;
+      VectorTools::integrate_difference (dof_handler,
+                                         ghosted_sol,
+                                         ExactSolution<dim>(dim,time,exactsolutionfuncno+7),
+                                         norm_per_cell_v,
+                                         QGauss<dim>(fe.degree+2),
+                                         VectorTools::L2_norm);
+      double v_exactsol_mag  = Utilities::MPI::sum (norm_per_cell_v.norm_sqr(), MPI_COMM_WORLD);
+
+
+      std::cout<<"stress! absolute error in stressxy "<<std::sqrt(v_error_mag)<<" solution norm "<< std::sqrt(v_solution_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<std::endl;
+
+    }
+
+
+    /*v_solution_mag = std::sqrt(v_solution_mag);
+    v_error_mag = std::sqrt(v_error_mag);
+    if(v_solution_mag!=0.0)
+    pcout<<"Time: "<< std::setw(8) << std::setprecision(3) << time
+        <<" solution norm v "<< std::setprecision(5) << std::setw(10) << v_solution_mag
+        <<" error norm v "<< std::setprecision(5) << std::setw(10) << v_error_mag/v_solution_mag<<std::endl;*/
+  }
+
+//  /* VTU output */
+//  if(!invana && step%up_res == 0) // otherwise we  get way too much output files
+//  {
+//    DataOut<dim> data_out;
+//
+//    data_out.attach_dof_handler (dof_handler);
+//    data_out.add_data_vector (ghosted_sol, "solution_pressure");
+//    data_out.build_patches (/*2*/);
+//
+//    const std::string filename_pressure = DRT::Problem::Instance()->OutputControlFile()->FileName() +
+//        ".solution-pressure_" +
+//        Utilities::int_to_string(Utilities::MPI::this_mpi_process(solutions[dim].get_mpi_communicator()))
+//        + "-" + Utilities::int_to_string (timestep_number, 3);
+//
+//    std::ofstream output_pressure ((filename_pressure + ".vtu").c_str());
+//    data_out.write_vtu (output_pressure);
+//  }
 
   // write baci output
   write_deal_cell_values();
   if(!adjoint)
-    bacitimeint->Output(history,splitter);
+    bacitimeint->Output(history);
 
   return;
 }
@@ -1038,14 +1053,14 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Te
 
 
 template<int dim>
-void WaveEquationProblem<dim>::run(Teuchos::RCP<Epetra_MultiVector> history, Teuchos::RCP<Epetra_Map> splitter)
+void WaveEquationProblem<dim>::run(Teuchos::RCP<Epetra_MultiVector> history)
 {
   previous_solutions = solutions;
 
   // if necessary, write a monitor file
   bacitimeint->InitMonitorFile();
 
-  output_results(0,history,splitter);
+  output_results(0,history);
 
   Teuchos::RCP<RungeKuttaIntegrator<WaveEquationOperationBase<dim> > > integrator;
   switch(dyna)
@@ -1132,7 +1147,7 @@ void WaveEquationProblem<dim>::run(Teuchos::RCP<Epetra_MultiVector> history, Teu
     timer.restart();
 
     // output results
-    output_results(step / up_res, history, splitter);
+    output_results(step / up_res, history);
 
     output_time += timer.wall_time();
 
