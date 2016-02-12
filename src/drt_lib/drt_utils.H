@@ -253,6 +253,7 @@ namespace UTILS
     \author Georg Hammerl
     \date 05/15
    */
+  template<int dim>
   Teuchos::RCP<Epetra_MultiVector> ComputeSuperconvergentPatchRecovery(
       Teuchos::RCP<DRT::Discretization> dis,   ///< underlying discretization
       Teuchos::RCP<const Epetra_Vector> state, ///< state vector needed on element level

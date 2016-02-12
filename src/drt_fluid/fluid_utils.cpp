@@ -1303,8 +1303,22 @@ void FLD::UTILS::ProjectGradientAndSetParam(
       dserror("ale fluid is currently not supported everywhere for superconvergent patch recovery, but it is easy to implement");
     params.set<int>("action",FLD::calc_velgrad_ele_center);
     // project velocity gradient of fluid to nodal level via superconvergent patch recovery and store it in a ParameterList
-    Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
-        DRT::UTILS::ComputeSuperconvergentPatchRecovery(discret, vel, "vel", numvec, params);
+    Teuchos::RCP<Epetra_MultiVector> projected_velgrad;
+    switch (dim)
+    {
+    case 3:
+      projected_velgrad = DRT::UTILS::ComputeSuperconvergentPatchRecovery<3>(discret, vel, "vel", numvec, params);
+      break;
+    case 2:
+      projected_velgrad = DRT::UTILS::ComputeSuperconvergentPatchRecovery<2>(discret, vel, "vel", numvec, params);
+      break;
+    case 1:
+      projected_velgrad = DRT::UTILS::ComputeSuperconvergentPatchRecovery<1>(discret, vel, "vel", numvec, params);
+      break;
+    default:
+      dserror("only 1/2/3D implementation available for superconvergent patch recovery");
+      break;
+    }
     discret->AddMultiVectorToParameterList(eleparams,paraname,projected_velgrad);
   }
   else if(recomethod == INPAR::FLUID::gradreco_l2)

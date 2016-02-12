@@ -483,6 +483,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
  | (identical order as shape functions)for a given vector (either       |
  | dof or element based)                                    ghamm 06/14 |
  *----------------------------------------------------------------------*/
+template<int dim>
 Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery(
   Teuchos::RCP<DRT::Discretization> dis,
   Teuchos::RCP<const Epetra_Vector> state,
@@ -491,15 +492,18 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   Teuchos::ParameterList& params
   )
 {
+  const int dimp = dim+1;
+  const int myrank = dis->Comm().MyPID();
+
   // check whether action type is set
   if(params.getEntryRCP("action") == Teuchos::null)
     dserror("action type for element is missing");
 
   // decide whether a dof or an element based map is given
   bool dofmaptoreconstruct = false;
-  if(state->Map().SameAs(*dis->DofRowMap()))
+  if(state->Map().PointSameAs(*dis->DofRowMap()))
     dofmaptoreconstruct = true;
-  else if(state->Map().SameAs(*dis->ElementRowMap()))
+  else if(state->Map().PointSameAs(*dis->ElementRowMap()))
   {
     dofmaptoreconstruct = false;
     if(numvec != state->NumVectors())
@@ -509,12 +513,6 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   {
     dserror("input map is neither a dof row map nor an element row map of the given discret");
   }
-
-  const int myrank = dis->Comm().MyPID();
-
-  const int dim = DRT::Problem::Instance()->NDim();
-  if(dim!=3)
-    dserror("2D implementation missing");
 
   // handle pbcs if existing
   // build inverse map from slave to master nodes
@@ -619,9 +617,9 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
     }
 
     // store corresponding element centroid
-    for (int j=0; j<dim; ++j)
+    for (int d=0; d<dim; ++d)
     {
-      int err = centercoords->ReplaceMyValue(i, j, elevector2(j));
+      int err = centercoords->ReplaceMyValue(i, d, elevector2(d));
       if(err < 0) dserror("multi vector insertion failed");
     }
   } //end element loop
@@ -629,7 +627,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered_col =
       Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementColMap()),numvec,true));
   LINALG::Export(*elevec_toberecovered,*elevec_toberecovered_col);
-  Teuchos::RCP<Epetra_MultiVector> centercoords_col = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementColMap()),3,true));
+  Teuchos::RCP<Epetra_MultiVector> centercoords_col = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementColMap()),dim,true));
   LINALG::Export(*centercoords,*centercoords_col);
 
   // step 2: use precalculated (velocity) gradient for patch-recovery of gradient
@@ -671,11 +669,11 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         // patch-recovery for each entry of the velocity gradient
         for(int j=0; j<numvec; ++j)
         {
-          static LINALG::Matrix<4,1> p;
+          static LINALG::Matrix<dimp,1> p;
           p(0) = 1.0;
-          static LINALG::Matrix<4,4> A;
-          static LINALG::Matrix<4,1> x;
-          static LINALG::Matrix<4,1> b;
+          static LINALG::Matrix<dimp,dimp> A;
+          static LINALG::Matrix<dimp,1> x;
+          static LINALG::Matrix<dimp,1> b;
 
           A.Clear();
           b.Clear();
@@ -684,9 +682,8 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           for (int k=0; k<numadjacent; ++k)
           {
             const int elelid = elevec_toberecovered_col->Map().LID(adjacentele[k]->Id());
-            p(1) = (*(*centercoords_col)(0))[elelid] - node->X()[0] /* + ALE_DISP*/;
-            p(2) = (*(*centercoords_col)(1))[elelid] - node->X()[1] /* + ALE_DISP*/;
-            p(3) = (*(*centercoords_col)(2))[elelid] - node->X()[2] /* + ALE_DISP*/;
+            for (int d=0; d<dim; ++d)
+              p(d+1) = (*(*centercoords_col)(d))[elelid] - node->X()[d] /* + ALE_DISP*/;
 
             // compute outer product of p x p and add to A
             A.MultiplyNT(1.0,p,p,1.0);
@@ -695,7 +692,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::gaussElimination<true, 4>( A, b, x );
+          const double det = LINALG::gaussElimination<true, dimp>( A, b, x );
           if(det < 1.0e-14)
             dserror("system singular");
 
@@ -719,7 +716,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         // containers for adjacent elements to slave+master nodes
         std::vector<const DRT::Element* const *> adjacenteles(numslavenodes+1);
         std::vector<int> numadjacenteles(numslavenodes+1);
-        std::vector<double> offset(3, 0.0);
+        std::vector<double> offset(dim, 0.0);
         std::vector<std::vector<double> > eleoffsets(numslavenodes+1, offset);
         for (int s=0; s<numslavenodes; ++s)
         {
@@ -739,11 +736,11 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         // patch-recovery for each entry of the velocity gradient
         for(int j=0; j<numvec; ++j)
         {
-          static LINALG::Matrix<4,1> p;
+          static LINALG::Matrix<dimp,1> p;
           p(0) = 1.0;
-          static LINALG::Matrix<4,4> A;
-          static LINALG::Matrix<4,1> x;
-          static LINALG::Matrix<4,1> b;
+          static LINALG::Matrix<dimp,dimp> A;
+          static LINALG::Matrix<dimp,1> x;
+          static LINALG::Matrix<dimp,1> b;
 
           A.Clear();
           b.Clear();
@@ -754,9 +751,8 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
             for (int k=0; k<numadjacenteles[s]; ++k)
             {
               const int elelid = elevec_toberecovered_col->Map().LID(adjacenteles[s][k]->Id());
-              p(1) = (*(*centercoords_col)(0))[elelid] + eleoffsets[s][0] - node->X()[0] /* + ALE_DISP*/;
-              p(2) = (*(*centercoords_col)(1))[elelid] + eleoffsets[s][1] - node->X()[1] /* + ALE_DISP*/;
-              p(3) = (*(*centercoords_col)(2))[elelid] + eleoffsets[s][2] - node->X()[2] /* + ALE_DISP*/;
+              for (int d=0; d<dim; ++d)
+                p(d+1) = (*(*centercoords_col)(d))[elelid] + eleoffsets[s][d] - node->X()[d] /* + ALE_DISP*/;
 
               // compute outer product of p x p and add to A
               A.MultiplyNT(1.0,p,p,1.0);
@@ -766,7 +762,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::gaussElimination<true, 4>( A, b, x );
+          const double det = LINALG::gaussElimination<true, dimp>( A, b, x );
           if(det < 1.0e-14)
             dserror("system singular");
 
@@ -805,7 +801,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
               continue;
 
             const double* pos = adjacentnodes[n]->X();  /* + ALE DISP */
-            static LINALG::Matrix<3,1> dist;
+            static LINALG::Matrix<dim,1> dist;
             for(int d=0; d<dim; ++d)
               dist(d) = pos[d] - node->X()[d];  /* + ALE DISP */
             const double tmp = dist.Norm2();
@@ -834,11 +830,11 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         // patch-recovery for each entry of the velocity gradient
         for(int j=0; j<numvec; ++j)
         {
-          static LINALG::Matrix<4,1> p;
+          static LINALG::Matrix<dimp,1> p;
           p(0) = 1.0;
-          static LINALG::Matrix<4,4> A;
-          static LINALG::Matrix<4,1> x;
-          static LINALG::Matrix<4,1> b;
+          static LINALG::Matrix<dimp,dimp> A;
+          static LINALG::Matrix<dimp,1> x;
+          static LINALG::Matrix<dimp,1> b;
 
           A.Clear();
           b.Clear();
@@ -847,9 +843,8 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           for (int k=0; k<numadjacent; ++k)
           {
             const int elelid = elevec_toberecovered_col->Map().LID(closestnodeadjacentele[k]->Id());
-            p(1) = (*(*centercoords_col)(0))[elelid] - closestnode->X()[0]; /* + ALE_DISP*/
-            p(2) = (*(*centercoords_col)(1))[elelid] - closestnode->X()[1]; /* + ALE_DISP*/
-            p(3) = (*(*centercoords_col)(2))[elelid] - closestnode->X()[2]; /* + ALE_DISP*/
+            for (int d=0; d<dim; ++d)
+              p(d+1) = (*(*centercoords_col)(d))[elelid] - closestnode->X()[d]; /* + ALE_DISP*/
 
             // compute outer product of p x p and add to A
             A.MultiplyNT(1.0,p,p,1.0);
@@ -858,15 +853,17 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::gaussElimination<true, 4>( A, b, x );
+          const double det = LINALG::gaussElimination<true, dimp>( A, b, x );
           if(det < 1.0e-14)
             dserror("system singular");
 
           // patch-recovery interpolation for boundary point
-          p(1) = node->X()[0] - closestnode->X()[0] /* + ALE_DISP*/;
-          p(2) = node->X()[1] - closestnode->X()[1] /* + ALE_DISP*/;
-          p(3) = node->X()[2] - closestnode->X()[2] /* + ALE_DISP*/;
-          const double recoveredgradient = p(0)*x(0) + p(1)*x(1) + p(2)*x(2) + p(3)*x(3);
+          double recoveredgradient = p(0)*x(0);
+          for (int d=0; d<dim; ++d)
+          {
+            p(d+1) = node->X()[d] - closestnode->X()[d] /* + ALE_DISP*/;
+            recoveredgradient += p(d+1)*x(d+1);
+          }
 
           // write solution vector
           nodevec->ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
@@ -900,7 +897,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
               continue;
 
             const double* pos = adjacentnodes[n]->X();  /* + ALE DISP */
-            static LINALG::Matrix<3,1> dist;
+            static LINALG::Matrix<dim,1> dist;
             for(int d=0; d<dim; ++d)
               dist(d) = pos[d] - node->X()[d];  /* + ALE DISP */
             const double tmp = dist.Norm2();
@@ -950,7 +947,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         // containers for adjacent elements to slave+master nodes
         std::vector<const DRT::Element* const *> closestnodeadjacenteles(numslavenodes+1);
         std::vector<int> numadjacenteles(numslavenodes+1);
-        std::vector<double> offset(3, 0.0);
+        std::vector<double> offset(dim, 0.0);
         std::vector<std::vector<double> > eleoffsets(numslavenodes+1, offset);
         for (int s=0; s<numslavenodes; ++s)
         {
@@ -970,11 +967,11 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         // patch-recovery for each entry of the velocity gradient
         for(int j=0; j<numvec; ++j)
         {
-          static LINALG::Matrix<4,1> p;
+          static LINALG::Matrix<dimp,1> p;
           p(0) = 1.0;
-          static LINALG::Matrix<4,4> A;
-          static LINALG::Matrix<4,1> x;
-          static LINALG::Matrix<4,1> b;
+          static LINALG::Matrix<dimp,dimp> A;
+          static LINALG::Matrix<dimp,1> x;
+          static LINALG::Matrix<dimp,1> b;
 
           A.Clear();
           b.Clear();
@@ -985,9 +982,8 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
             for (int k=0; k<numadjacenteles[s]; ++k)
             {
               const int elelid = elevec_toberecovered_col->Map().LID(closestnodeadjacenteles[s][k]->Id());
-              p(1) = (*(*centercoords_col)(0))[elelid] + eleoffsets[s][0] - closestnode->X()[0]; /* + ALE_DISP*/
-              p(2) = (*(*centercoords_col)(1))[elelid] + eleoffsets[s][1] - closestnode->X()[1]; /* + ALE_DISP*/
-              p(3) = (*(*centercoords_col)(2))[elelid] + eleoffsets[s][2] - closestnode->X()[2]; /* + ALE_DISP*/
+              for(int d=0; d<dim; ++d)
+                p(d+1) = (*(*centercoords_col)(d))[elelid] + eleoffsets[s][d] - closestnode->X()[d]; /* + ALE_DISP*/
 
               // compute outer product of p x p and add to A
               A.MultiplyNT(1.0,p,p,1.0);
@@ -997,15 +993,17 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::gaussElimination<true, 4>( A, b, x );
+          const double det = LINALG::gaussElimination<true, dimp>( A, b, x );
           if(det < 1.0e-14)
             dserror("system singular");
 
           // patch-recovery interpolation for boundary point
-          p(1) = node->X()[0] - closestnode->X()[0]; /* + ALE_DISP*/
-          p(2) = node->X()[1] - closestnode->X()[1]; /* + ALE_DISP*/
-          p(3) = node->X()[2] - closestnode->X()[2]; /* + ALE_DISP*/
-          const double recoveredgradient = p(0)*x(0) + p(1)*x(1) + p(2)*x(2) + p(3)*x(3);
+          double recoveredgradient = p(0)*x(0);
+          for (int d=0; d<dim; ++d)
+          {
+            p(d+1) = node->X()[d] - closestnode->X()[d] /* + ALE_DISP*/;
+            recoveredgradient += p(d+1)*x(d+1);
+          }
 
           // write solution vector
           nodevec->ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
@@ -1049,6 +1047,26 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
 
   return fullnodevec;
 }
+
+template Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery<1>(
+    Teuchos::RCP<DRT::Discretization>,
+    Teuchos::RCP<const Epetra_Vector>,
+    const std::string,
+    const int,
+    Teuchos::ParameterList&);
+template Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery<2>(
+    Teuchos::RCP<DRT::Discretization>,
+    Teuchos::RCP<const Epetra_Vector>,
+    const std::string,
+    const int,
+    Teuchos::ParameterList&);
+template Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery<3>(
+    Teuchos::RCP<DRT::Discretization>,
+    Teuchos::RCP<const Epetra_Vector>,
+    const std::string,
+    const int,
+    Teuchos::ParameterList&);
+
 
 
 DRT::UTILS::Random::Random():
