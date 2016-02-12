@@ -798,10 +798,6 @@ void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::EvaluateElements()
 {
-  // check dimension
-  if (dim_ == 2)
-    dserror("ERROR: Element-based integration only for 3D coupling!");
-
   // output
   if(myrank_== 0)
   {
@@ -1720,7 +1716,7 @@ void VOLMORTAR::VolMortarCoupl::PerformCut(
     wizard->SetOptions(
         INPAR::CUT::NDS_Strategy_full,
         INPAR::CUT::VCellGaussPts_DirectDivergence, // how to create volume cell Gauss points?
-        INPAR::CUT::BCellGaussPts_DirectDivergence, // how to create boundary cell Gauss points?
+        INPAR::CUT::BCellGaussPts_Tessellation    , // how to create boundary cell Gauss points?
         false,                                      // gmsh output for cut library
         true,                                       // find point positions
         false,                                      // generate only tet cells
@@ -2605,19 +2601,56 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
 {
   switch (Aele.Shape())
   {
-  // 2D surface elements
-  case DRT::Element::hex8:
+  // 2D "volume" elements
+  case DRT::Element::quad4:
   {
-    static VolMortarIntegratorEleBased<DRT::Element::hex8> integrator(
+    static VolMortarIntegratorEleBased<DRT::Element::quad4> integrator(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
         *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
     break;
   }
-  case DRT::Element::tet4:
+  case DRT::Element::quad8:
   {
-    static VolMortarIntegratorEleBased<DRT::Element::tet4> integrator(
+    static VolMortarIntegratorEleBased<DRT::Element::quad8> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+    break;
+  }
+  case DRT::Element::quad9:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::quad9> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+    break;
+  }
+  case DRT::Element::tri3:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::tri3> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+    break;
+  }
+  case DRT::Element::tri6:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::tri6> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+    break;
+  }
+  // 3D volume elements
+  case DRT::Element::hex8:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::hex8> integrator(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
@@ -2636,6 +2669,15 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
   case DRT::Element::hex20:
   {
     static VolMortarIntegratorEleBased<DRT::Element::hex20> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+    break;
+  }
+  case DRT::Element::tet4:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::tet4> integrator(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
@@ -2662,7 +2704,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate3D Cells                                        farah 04/14|
+ |  Integrate3D element based for projector P21              farah 04/14|
  *----------------------------------------------------------------------*/
 void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
     DRT::Element& Bele,
@@ -2670,7 +2712,53 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
 {
   switch (Bele.Shape())
   {
-  // 2D surface elements
+  // 2D "volume" elements
+  case DRT::Element::quad4:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::quad4> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+    break;
+  }
+  case DRT::Element::quad8:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::quad8> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+    break;
+  }
+  case DRT::Element::quad9:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::quad9> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+    break;
+  }
+  case DRT::Element::tri3:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::tri3> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+    break;
+  }
+  case DRT::Element::tri6:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::tri6> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+    break;
+  }
+  // 3D volume elements
   case DRT::Element::hex8:
   {
     static VolMortarIntegratorEleBased<DRT::Element::hex8> integrator(
@@ -2680,9 +2768,9 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
         *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
     break;
   }
-  case DRT::Element::tet4:
+  case DRT::Element::hex20:
   {
-    static VolMortarIntegratorEleBased<DRT::Element::tet4> integrator(
+    static VolMortarIntegratorEleBased<DRT::Element::hex20> integrator(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
@@ -2698,9 +2786,9 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
         *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
     break;
   }
-  case DRT::Element::hex20:
+  case DRT::Element::tet4:
   {
-    static VolMortarIntegratorEleBased<DRT::Element::hex20> integrator(
+    static VolMortarIntegratorEleBased<DRT::Element::tet4> integrator(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,

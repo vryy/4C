@@ -55,6 +55,9 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
   //*******************************
   switch(intshape)
   {
+  //*******************************
+  //               2D
+  //*******************************
   case DRT::Element::tri3:
   {
     DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_tri_7point;
@@ -71,6 +74,73 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     break;
   }
+  case DRT::Element::tri6:
+  {
+    DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_tri_12point;
+
+    const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,2);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  case DRT::Element::quad4:
+  {
+    DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_quad_64point;
+
+    const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,2);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  case DRT::Element::quad8:
+  {
+    DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_quad_64point;
+
+    const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,2);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  case DRT::Element::quad9:
+  {
+    DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_quad_64point;
+
+    const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,2);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  //*******************************
+  //               3D
+  //*******************************
   case DRT::Element::tet4:
   {
     DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_tet_45point;
@@ -156,6 +226,9 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
     }
     break;
   }
+  //*******************************
+  //            Default
+  //*******************************
   default:
   {
     dserror("ERROR: VolMortarIntegrator: This element type is not implemented!");
@@ -186,7 +259,11 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
   for (int gp=0;gp<ngp_;++gp)
   {
     // coordinates and weight
-    double eta[3]    = {coords_(gp,0), coords_(gp,1), coords_(gp,2)};
+    double eta[3]    = {coords_(gp,0), coords_(gp,1), 0.0};
+
+    if(ndim_==3)
+      eta[2] = coords_(gp,2);
+
     double wgt       = weights_[gp];
     double jac       = 0.0;
     double globgp[3] = {0.0, 0.0, 0.0};
@@ -217,6 +294,132 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
 
       switch (shape)
       {
+      //************************************************
+      //                    2D
+      //************************************************
+      case DRT::Element::tri3:
+      {
+        proj=VolMortarEleBasedGP<distypeS,DRT::Element::tri3>(
+            sele,
+            Bele,
+            foundeles,
+            found,
+            gpid,
+            jac,
+            wgt,
+            gpdist,
+            Axi,
+            AuxXi,
+            globgp,
+            dualquad_,
+            D,
+            M,
+            Adis,
+            Bdis,
+            dofseta,
+            dofsetb);
+
+        break;
+      }
+      case DRT::Element::tri6:
+      {
+        proj=VolMortarEleBasedGP<distypeS,DRT::Element::tri6>(
+            sele,
+            Bele,
+            foundeles,
+            found,
+            gpid,
+            jac,
+            wgt,
+            gpdist,
+            Axi,
+            AuxXi,
+            globgp,
+            dualquad_,
+            D,
+            M,
+            Adis,
+            Bdis,
+            dofseta,
+            dofsetb);
+
+        break;
+      }
+      case DRT::Element::quad4:
+      {
+        proj=VolMortarEleBasedGP<distypeS,DRT::Element::quad4>(
+            sele,
+            Bele,
+            foundeles,
+            found,
+            gpid,
+            jac,
+            wgt,
+            gpdist,
+            Axi,
+            AuxXi,
+            globgp,
+            dualquad_,
+            D,
+            M,
+            Adis,
+            Bdis,
+            dofseta,
+            dofsetb);
+
+        break;
+      }
+      case DRT::Element::quad8:
+      {
+        proj=VolMortarEleBasedGP<distypeS,DRT::Element::quad8>(
+            sele,
+            Bele,
+            foundeles,
+            found,
+            gpid,
+            jac,
+            wgt,
+            gpdist,
+            Axi,
+            AuxXi,
+            globgp,
+            dualquad_,
+            D,
+            M,
+            Adis,
+            Bdis,
+            dofseta,
+            dofsetb);
+
+        break;
+      }
+      case DRT::Element::quad9:
+      {
+        proj=VolMortarEleBasedGP<distypeS,DRT::Element::quad9>(
+            sele,
+            Bele,
+            foundeles,
+            found,
+            gpid,
+            jac,
+            wgt,
+            gpdist,
+            Axi,
+            AuxXi,
+            globgp,
+            dualquad_,
+            D,
+            M,
+            Adis,
+            Bdis,
+            dofseta,
+            dofsetb);
+
+        break;
+      }
+      //************************************************
+      //                    3D
+      //************************************************
       case DRT::Element::hex8:
       {
         proj=VolMortarEleBasedGP<distypeS,DRT::Element::hex8>(
@@ -382,8 +585,12 @@ bool VOLMORTAR::VolMortarEleBasedGP(
     DRT::Element* mele,
     std::vector<int>& foundeles,
     int& found, int& gpid,
-    double& jac, double& wgt, double& gpdist,
-    double* Axi, double* AuxXi, double* globgp,
+    double& jac,
+    double& wgt,
+    double& gpdist,
+    double* Axi,
+    double* AuxXi,
+    double* globgp,
     INPAR::VOLMORTAR::DualQuad& dq,
     LINALG::SparseMatrix& D,
     LINALG::SparseMatrix& M,

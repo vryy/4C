@@ -139,7 +139,7 @@ public:
    */
   virtual void AssignMaterials();
 
-protected:
+private:
   /*!
    \brief Assemble p matrix for cons. interpolation approach
 
