@@ -321,16 +321,17 @@ namespace OPTI
 
     //! @name convergence stuff
 
-    const double tol_sub_; /// tolerance for MMA subproblem
+    double tol_sub_; /// tolerance for MMA subproblem
+    const bool tol_sub_adaptiv_; /// flag for adaptiv tolerance for MMA subproblem
+    const double tol_sub_quot_fac_; /// quotient factor for adaption of MMA subproblem tolerance
+    const double tol_sub_min_; /// minimal tolerance for MMA subproblem
     const double tol_kkt_; /// tolerance for outer iterations (KKT-conditions are checked)
-    const double tol_sub_fac_; /// convergence check factor in subproblem
-    const double tol_reducefac_; /// reduction factor of tolerance in subproblem
-    const double resfac_sub_; /// residuum reduction factor in subproblem
     const double fac_stepsize_; /// factor for adjusting step size of optimization step
     const double asy_fac1_; /// factor for computation of moving asymptotes
     const double asy_fac2_; /// factor for computation of moving asymptotes
     const double fac_x_bd_; /// factor for computation of boundaries for objective variables
     const double fac_sub_reg_; /// regularisation factor in subproblem
+    const double inc2_tol_; /// factor for increasing u-x
     const double gamma_up_; /// factor for increasing u-x
     const double gamma_down_; /// factor for decreasing u-x
     //@}

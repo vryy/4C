@@ -55,9 +55,6 @@ X_DIFF_MIN  1e-06
 c_init    1000
 fac_sub_reg  0.001
 fac_x_boundaries  0.1
-resfac_sub  0.9
-tol_reducefac  0.1
-tol_sub_fac  1.001
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
 INITFUNCNO                      1
 INITIALFIELD                    zero_field//field_by_function

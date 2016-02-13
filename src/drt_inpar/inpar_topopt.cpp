@@ -171,7 +171,10 @@ void INPAR::TOPOPT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   IntParameter("INITFUNCNO",-1,"function number for initial density field in topology optimization",&topoptoptimizer);
   DoubleParameter("VOLUME_BOUNDARY",0.7,"maximal percentage of fluid volume in background domain",&topoptoptimizer);
   DoubleParameter("TOL_KKT",1.0e-5,"tolerance of optimization problem (for KKT-conditions)",&topoptoptimizer);
-  DoubleParameter("TOL_SUB",1.0e-9,"tolerance of subproblem",&topoptoptimizer);
+  DoubleParameter("TOL_SUB",1.0e-3,"tolerance of subproblem",&topoptoptimizer);
+  BoolParameter("TOL_SUB_ADAPTIV","yes","adaptive tolerance of subproblem",&topoptoptimizer);
+  DoubleParameter("TOL_SUB_QUOT_FAC",1.0e-03,"quotient factor for adaption of subproblem tolerance",&topoptoptimizer);
+  DoubleParameter("TOL_SUB_MIN",1.0e-10,"minimal tolerance of subproblem",&topoptoptimizer);
   BoolParameter("update_smooth","no","update smoothing parameter of impermeability function",&topoptoptimizer);
   IntParameter("update_smooth_every_iter",50,"update smoothing parameter every numiter",&topoptoptimizer);
   DoubleParameter("update_smooth_fac",10.0,"update smoothing parameter factor",&topoptoptimizer);
@@ -182,13 +185,10 @@ void INPAR::TOPOPT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // parameter of optimization algorithm GCMMA
   DoubleParameter("X_DIFF_MIN",1.0e-5,"minimal difference of upper and lower boundary of optimization variable",&topoptoptimizer);
-  DoubleParameter("RHO_INIT",1.0e-2,"initial rho value",&topoptoptimizer);
   DoubleParameter("RHOMIN",1.0e-6,"minimal parameter value",&topoptoptimizer);
   DoubleParameter("FACMIN",1.0e-10,"minimal parameter value",&topoptoptimizer);
+  DoubleParameter("a_init",0.0,"initial value for solver parameter",&topoptoptimizer);
   DoubleParameter("c_init",1000.0,"initial value for solver parameter",&topoptoptimizer);
-  DoubleParameter("tol_sub_fac",1.001,"convergence factor for subproblem",&topoptoptimizer);
-  DoubleParameter("tol_reducefac",0.1,"reduction factor for subproblem tolerance",&topoptoptimizer);
-  DoubleParameter("resfac_sub",0.9,"residuum reduction factor for subproblem",&topoptoptimizer);
   DoubleParameter("fac_stepsize",-1.01,"factor for adjusting step size in every optimization step",&topoptoptimizer);
   DoubleParameter("RHO_FAC1",1.1,"factor for updating rho",&topoptoptimizer);
   DoubleParameter("RHO_FAC2",10.0,"factor for updating rho",&topoptoptimizer);
@@ -196,6 +196,9 @@ void INPAR::TOPOPT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   DoubleParameter("asymptotes_fac2",0.01,"factor for updating asymptotes",&topoptoptimizer);
   DoubleParameter("fac_x_boundaries",0.1,"unsensible factor for computation of boundaries for optimization variable",&topoptoptimizer);
   DoubleParameter("fac_sub_reg",0.001,"regularisation factor in subproblem",&topoptoptimizer);
+  DoubleParameter("GAMMA_UP",2.3,"controls maximum stepsize increase",&topoptoptimizer);
+  DoubleParameter("GAMMA_DOWN",0.7,"controls maximum stepsize decrease",&topoptoptimizer);
+  DoubleParameter("inc2_tol",1.0e-10,"small tolerance for asymptotes update checked against delta x^2",&topoptoptimizer);
   DoubleParameter("GAMMA_UP",2.3,"controls maximum stepsize increase",&topoptoptimizer);
   DoubleParameter("GAMMA_DOWN",0.7,"controls maximum stepsize decrease",&topoptoptimizer);
 

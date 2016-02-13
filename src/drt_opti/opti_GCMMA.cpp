@@ -72,7 +72,7 @@ r0_(0.0),
 P_(Teuchos::rcp(new Epetra_MultiVector(x->Map(),m_))),
 Q_(Teuchos::rcp(new Epetra_MultiVector(x->Map(),m_))),
 b_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
-rho0_(params_.get<double>("RHO_INIT")),
+rho0_(0.01), // initial value never used
 rho_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 rho0min_(params_.get<double>("RHOMIN")),
 rhomin_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
@@ -90,15 +90,16 @@ a_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 c_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 d_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 tol_sub_(params_.get<double>("TOL_SUB")),
+tol_sub_adaptiv_(DRT::INPUT::IntegralValue<int>(params_,"TOL_SUB_ADAPTIV")),
+tol_sub_quot_fac_(params_.get<double>("TOL_SUB_QUOT_FAC")),
+tol_sub_min_(params_.get<double>("TOL_SUB_MIN")),
 tol_kkt_(params_.get<double>("TOL_KKT")),
-tol_sub_fac_(params_.get<double>("tol_sub_fac")),
-tol_reducefac_(params_.get<double>("tol_reducefac")),
-resfac_sub_(params_.get<double>("resfac_sub")),
 fac_stepsize_(params_.get<double>("fac_stepsize")),
 asy_fac1_(params_.get<double>("asymptotes_fac1")),
 asy_fac2_(params_.get<double>("asymptotes_fac2")),
 fac_x_bd_(params_.get<double>("fac_x_boundaries")),
 fac_sub_reg_(params_.get<double>("fac_sub_reg")),
+inc2_tol_(params_.get<double>("inc2_tol")),
 gamma_up_(params_.get<double>("GAMMA_UP")),
 gamma_down_(params_.get<double>("GAMMA_DOWN")),
 facmin_(params_.get<double>("FACMIN")),
@@ -110,12 +111,12 @@ output_(output)
   if (m_>100)
     dserror("current implementation inefficient for large number of constraints due to array structure and used solver");
 
-  if (resfac_sub_>0.95 || resfac_sub_<0.5)
-    dserror("factor for residuum check in subproblem shall be slightly smaller than one!");
-  if (tol_sub_fac_<1.0 || tol_sub_fac_>1.1)
-    dserror("factor for convergence check shall be slightly greater than one!");
-  if (tol_reducefac_>0.99 || tol_reducefac_<0.01)
-    dserror("factor for tolerance adaption shall be significant smaller than one!");
+  if ((tol_sub_quot_fac_<1e-6) || (tol_sub_quot_fac_>1e-1))
+    dserror("unsensible quotient between KKT and subproblem tolerances");
+  if ((tol_sub_min_<1e-12) || (tol_sub_min_>1e-3))
+    dserror("unsensible minimal tolerance for subproblem");
+  if ((inc2_tol_<1e-25) || (inc2_tol_>1e-5))
+    dserror("unsensible zero-off-boundary");
   if (fac_stepsize_>-1.0 || fac_stepsize_<-1.1)
     dserror("unsensible step size factor");
   if (asy_fac1_<2.0 || asy_fac1_>100000.0)
@@ -191,7 +192,7 @@ output_(output)
 
   for (int i=0;i<m_;i++)
   {
-    *p1 = 0.0;
+    *p1 = params_.get<double>("a_init");
     *p2 = params_.get<double>("c_init")*a0_;
     *p3 = a0_;
     *p4 = rho0_;
@@ -483,9 +484,9 @@ void OPTI::GCMMA::Asymptotes()
       double val = (*xval-*xold)*(*xold-*xold2);
 
       double fac = 1.0;
-      if (val<0)
+      if (val<-inc2_tol_)
         fac = gamma_down_;
-      else if (val>0)
+      else if (val>inc2_tol_)
         fac = gamma_up_;
 
       *asy_min = *xval - fac*(*xold-*asy_min);
@@ -1067,6 +1068,14 @@ bool OPTI::GCMMA::KKTCond(
   if (resnorm<tol_kkt_)
     return true;
 
+  // adopt tolerance of subproblem to improve convergence
+  // Comparison of tol_sub and kkt-residual:
+  // - if subproblem tolerance is too small, convergence is slow
+  // - if it is too large (= near kkt residuum), no more convergence
+  // Moreover, it must not become too small. Otherwise subproblem will not converge below tol
+  if ((tol_sub_adaptiv_==true) && (tol_sub_>resnorm*tol_sub_quot_fac_))
+    tol_sub_ = std::max(0.1*tol_sub_,tol_sub_min_);
+
   return false;
 }
 
@@ -1329,6 +1338,41 @@ void OPTI::GCMMA::InitSubSolve()
 //  std::cout << "p0 is " << *p0_ << "q0 is " << *q0_ << std::endl;
 //  std::cout << "p is " << *P_ << "q is " << *Q_ << std::endl;
 //  std::cout << "a0 is " << a0_ << ", a is " << *a_ << ", b is " << *b_ << ", c is " << *c_ << ", d is " << *d_ << std::endl;
+
+//  const std::string outname(DRT::Problem::Instance()->OutputControlFile()->FileName());
+//
+//  std::ostringstream filename1;
+//  std::ostringstream filename2;
+//  std::ostringstream filename3;
+//  std::ostringstream filename4;
+//  std::ostringstream filename5;
+//  std::ostringstream filename6;
+//  std::ostringstream filename7;
+//  std::ostringstream filename8;
+//  std::ostringstream filename9;
+//  std::ostringstream filename10;
+//
+//  filename1 << outname << "_" << total_iter_ << "_lower.mtl";
+//  filename2 << outname << "_" << total_iter_ << "_upper.mtl";
+//  filename3 << outname << "_" << total_iter_ << "_alpha.mtl";
+//  filename4 << outname << "_" << total_iter_ << "_beta.mtl";
+//  filename5 << outname << "_" << total_iter_ << "_P.mtl";
+//  filename6 << outname << "_" << total_iter_ << "_Q.mtl";
+//  filename7 << outname << "_" << total_iter_ << "_p0.mtl";
+//  filename8 << outname << "_" << total_iter_ << "_q0.mtl";
+//  filename9 << outname << "_" << total_iter_ << "_a.mtl";
+//  filename10 << outname << "_" << total_iter_ << "_d.mtl";
+//
+//  LINALG::PrintVectorInMatlabFormat(filename1.str(),*asymp_min_);
+//  LINALG::PrintVectorInMatlabFormat(filename2.str(),*asymp_max_);
+//  LINALG::PrintVectorInMatlabFormat(filename3.str(),*alpha_);
+//  LINALG::PrintVectorInMatlabFormat(filename4.str(),*beta_);
+//  LINALG::PrintVectorInMatlabFormat(filename5.str(),*(*P_)(0));
+//  LINALG::PrintVectorInMatlabFormat(filename6.str(),*(*Q_)(0));
+//  LINALG::PrintVectorInMatlabFormat(filename7.str(),*(*p0_)(0));
+//  LINALG::PrintVectorInMatlabFormat(filename8.str(),*(*q0_)(0));
+//  LINALG::PrintSerialDenseMatrixInMatlabFormat(filename9.str(),*a_);
+//  LINALG::PrintSerialDenseMatrixInMatlabFormat(filename10.str(),*d_);
 }
 
 
@@ -2008,15 +2052,15 @@ void OPTI::GCMMA::SubSolve()
 
         // it would be sufficient to compute resinf only once here and not in
         // every iteration as done above. but the effort is neglegible
-        if (resinf < resfac_sub_*tol_sub)
+        if (resinf < 0.9*tol_sub)
           break;
       }
 
       if ((inner_iter==max_sub_iter_) and (discret_->Comm().MyPID()==0))
         printf("Reached maximal number of iterations in inner loop of primal dual interior point optimization algorithm\n");
 
-      if (tol_sub > tol_sub_fac_*tol_sub_)
-        tol_sub *= tol_reducefac_;
+      if (tol_sub > 1.001*tol_sub_)
+        tol_sub *= 0.1;
       else
         tol_reached = true;
     }
@@ -4145,7 +4189,7 @@ void OPTI::GCMMA::SubSolve()
 
         // it would be sufficient to compute resinf only once here and not in
         // every iteration as done above. but the effort is neglegible
-        if (resinf < resfac_sub_*tol_sub)
+        if (resinf < 0.9*tol_sub)
           break;
 
       }
@@ -4153,8 +4197,8 @@ void OPTI::GCMMA::SubSolve()
       if ((inner_iter==max_sub_iter_) and (discret_->Comm().MyPID()==0))
         printf("Reached maximal number of iterations in inner loop of primal dual interior point optimization algorithm\n");
 
-      if (tol_sub > tol_sub_fac_*tol_sub_)
-        tol_sub *= tol_reducefac_;
+      if (tol_sub > 1.001*tol_sub_)
+        tol_sub *= 0.1;
       else
         tol_reached = true;
     }
@@ -4165,6 +4209,41 @@ void OPTI::GCMMA::SubSolve()
 //  std::cout << "xsi is " << *xsi_ << std::endl;
 //  std::cout << "eta is " << *eta_ << std::endl;
 //  std::cout << "mu is " << *mu_ << ", zet is " << zet_ << ", s is " << *s_ << std::endl;
+
+//  const std::string outname(DRT::Problem::Instance()->OutputControlFile()->FileName());
+//
+//  std::ostringstream filename1;
+//  std::ostringstream filename2;
+//  std::ostringstream filename3;
+//  std::ostringstream filename4;
+//  std::ostringstream filename5;
+//  std::ostringstream filename6;
+//  std::ostringstream filename7;
+//  std::ostringstream filename8;
+//  std::ostringstream filename9;
+//
+//  filename1 << outname << "_" << total_iter_ << "_x.mtl";
+//  filename2 << outname << "_" << total_iter_ << "_xi.mtl";
+//  filename3 << outname << "_" << total_iter_ << "_eta.mtl";
+//  filename4 << outname << "_" << total_iter_ << "_y.mtl";
+//  filename5 << outname << "_" << total_iter_ << "_lam.mtl";
+//  filename6 << outname << "_" << total_iter_ << "_mu.mtl";
+//  filename7 << outname << "_" << total_iter_ << "_z.mtl";
+//  filename8 << outname << "_" << total_iter_ << "_zeta.mtl";
+//  filename9 << outname << "_" << total_iter_ << "_s.mtl";
+//
+//  LINALG::PrintVectorInMatlabFormat(filename1.str(),*x_mma_);
+//  LINALG::PrintVectorInMatlabFormat(filename2.str(),*xsi_);
+//  LINALG::PrintVectorInMatlabFormat(filename3.str(),*eta_);
+//  LINALG::PrintSerialDenseMatrixInMatlabFormat(filename4.str(),*y_mma_);
+//  LINALG::PrintSerialDenseMatrixInMatlabFormat(filename5.str(),*lam_);
+//  LINALG::PrintSerialDenseMatrixInMatlabFormat(filename6.str(),*mu_);
+//  LINALG::PrintSerialDenseMatrixInMatlabFormat(filename7.str(),*s_);
+//
+//  Epetra_SerialDenseVector tmp_z(Copy, &z_mma_, 1);
+//  Epetra_SerialDenseVector tmp_zeta(Copy, &zet_, 1);
+//  LINALG::PrintSerialDenseMatrixInMatlabFormat(filename8.str(),tmp_z);
+//  LINALG::PrintSerialDenseMatrixInMatlabFormat(filename9.str(),tmp_zeta);
 }
 
 
