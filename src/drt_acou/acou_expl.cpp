@@ -514,7 +514,13 @@ WaveEquationProblem<dim>::WaveEquationProblem(Teuchos::RCP<DRT::DiscretizationHD
   for (unsigned int d=1; d<solutions.size(); ++d)
     solutions[d] = solutions[0];
 
-  post_pressure.reinit(dof_handler_post_disp.locally_owned_dofs(),MPI_COMM_WORLD);
+  if(solid)
+    post_quantity.resize(dim);
+  else
+    post_quantity.resize(1);
+
+  for (unsigned int d=0; d<post_quantity.size(); ++d)
+    post_quantity[d].reinit(dof_handler_post_disp.locally_owned_dofs(),MPI_COMM_WORLD);
 
   // get some parameters:
   final_time = params->get<double>("MAXTIME");
@@ -798,12 +804,107 @@ WaveEquationProblem<dim>::compute_post_pressure()
       cell_matrix.apply_lu_factorization(rhs_vector, false);
       for (unsigned int i=0; i<dofs_per_cell_post; ++i)
         {
-          post_pressure.local_element(local_dof_indices_post[i]) = rhs_vector(i);
+          post_quantity[0].local_element(local_dof_indices_post[i]) = rhs_vector(i);
         }
     }
-  post_pressure.compress(VectorOperation::insert);
+  post_quantity[0].compress(VectorOperation::insert);
 }
 
+template <int dim>
+void
+WaveEquationProblem<dim>::compute_post_velocity()
+{
+  evaluator->set_adjoint_eval(false);
+  for (unsigned int d=0; d<dim*dim+dim+1; ++d)
+    previous_solutions[d] = 0;
+  evaluator->apply(solutions,previous_solutions,time);
+
+  for(unsigned int vcomp = 0; vcomp<dim; ++vcomp)
+  {
+    QGauss<dim> quadrature_post(dof_handler_post_disp.get_fe().degree+1);
+    FEValues<dim> fe_values(dof_handler.get_fe(),quadrature_post,
+        update_values | update_gradients | update_quadrature_points |
+        update_JxW_values);
+
+    FEValues<dim> fe_values_post(dof_handler_post_disp.get_fe(),quadrature_post,
+        update_values | update_gradients | update_quadrature_points |
+        update_JxW_values);
+
+    const unsigned int dofs_per_cell_post = dof_handler_post_disp.get_fe().dofs_per_cell,
+                       dofs_per_cell      = dof_handler.get_fe().dofs_per_cell;
+
+    const unsigned int n_q_points = quadrature_post.size();
+
+    LAPACKFullMatrix<double> half_matrix(dofs_per_cell_post*dim,dofs_per_cell_post);
+    LAPACKFullMatrix<double> cell_matrix(dofs_per_cell_post,dofs_per_cell_post);
+    Vector<double> rhs_vector(dofs_per_cell_post),
+                   replace_vector(dofs_per_cell_post);
+    Table<2,double> solution_vector(dim+1, dofs_per_cell);
+    Tensor<1,dim> flux_values;
+
+    std::vector<types::global_dof_index> local_dof_indices_post(dofs_per_cell_post),
+        local_dof_indices(dofs_per_cell);
+    double replace_value;
+
+    typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active();
+    typename DoFHandler<dim>::active_cell_iterator cellpost = dof_handler_post_disp.begin_active(),
+        endcpost = dof_handler_post_disp.end();
+
+    for (; cellpost!=endcpost; ++cell, ++cellpost)
+    {
+      cell_matrix = 0;
+      rhs_vector = 0.;
+      replace_vector = 0.;
+      fe_values.reinit(cell);
+      fe_values_post.reinit(cellpost);
+      cellpost->get_dof_indices(local_dof_indices_post);
+      cell->get_dof_indices(local_dof_indices);
+      replace_value = 0.;
+      for (unsigned int i=0; i<dofs_per_cell; ++i)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+          solution_vector[d][i] = previous_solutions[dim+1+vcomp*dim+d](local_dof_indices[i]);
+        solution_vector[dim][i] = solutions[vcomp](local_dof_indices[i]);
+      }
+      for (unsigned int q_index=0; q_index<n_q_points; ++q_index)
+      {
+        flux_values = 0.;
+        for (unsigned int i=0; i<dofs_per_cell; ++i)
+        {
+          replace_value += fe_values.shape_value(i,q_index)*solution_vector[dim][i]*fe_values.JxW(q_index);
+          for (unsigned int d=0; d<dim; ++d)
+            flux_values[d] += fe_values.shape_value(i,q_index) * solution_vector[d][i];
+        }
+        const double weight = std::sqrt(fe_values_post.JxW(q_index));
+        for (unsigned int i=0; i<dofs_per_cell_post; ++i)
+        {
+          for (unsigned int d=0; d<dim; ++d)
+            half_matrix(q_index*dim+d,i) = fe_values_post.shape_grad(i,q_index)[d] * weight;
+
+          rhs_vector(i) -= flux_values * fe_values_post.shape_grad(i,q_index) * fe_values_post.JxW(q_index);
+          replace_vector(i) += fe_values_post.shape_value(i,q_index) * 1.0 * fe_values_post.JxW(q_index);
+        }
+      }
+      half_matrix.Tmmult(cell_matrix, half_matrix);
+      for (unsigned int i=0; i<dofs_per_cell_post; ++i)
+      {
+        cell_matrix(0,i) = replace_vector(i);
+        rhs_vector(i) *= -1.;
+      }
+
+      cell_matrix.compute_lu_factorization();
+
+      rhs_vector(0) = replace_value;
+      cell_matrix.apply_lu_factorization(rhs_vector, false);
+
+      for (unsigned int i=0; i<dofs_per_cell_post; ++i)
+      {
+        post_quantity[vcomp].local_element(local_dof_indices_post[i]) = rhs_vector(i);
+      }
+    }
+    post_quantity[vcomp].compress(VectorOperation::insert);
+  }
+}
 
 
 namespace
@@ -960,15 +1061,43 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Te
 
 
       if(d<dim)
-        std::cout<<"d "<<d<<" absolute error in dem v-teil "<<std::sqrt(v_error_mag)<<std::endl;
+        std::cout<<"d "<<d<<" absolute error in v "<<std::sqrt(v_error_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<std::endl;
       else if(d==dim)
-        std::cout<<"d "<<d<<" absolute error in dem p-teil "<<std::sqrt(v_error_mag)<<std::endl;
+        std::cout<<"d "<<d<<" absolute error in p "<<std::sqrt(v_error_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<std::endl;
       else
-        std::cout<<"d "<<d<<" absolute error in dem H-teil "<<std::sqrt(v_error_mag)<<" solution norm "<< std::sqrt(v_solution_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<std::endl;
+        std::cout<<"d "<<d<<" absolute error in H "<<std::sqrt(v_error_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<" solution norm "<< std::sqrt(v_solution_mag)<<std::endl;
     }
 
-    // stress sigma_xy
+    // postprocessed solution
     {
+      compute_post_velocity();
+
+      for(int d=0; d<dim; ++d)
+      {
+        Vector<double> norm_per_cell_v (triangulation.n_active_cells());
+
+        IndexSet relevant_set;
+        get_relevant_set(dof_handler_post_disp, relevant_set);
+        parallel::distributed::Vector<double> ghosted_sol(dof_handler_post_disp.locally_owned_dofs(),relevant_set,
+                                                          solutions[0].get_mpi_communicator());
+        ghosted_sol = post_quantity[d];
+        ghosted_sol.update_ghost_values();
+
+        // calculate norm of difference between velocity and analytic solution
+        norm_per_cell_v = 0;
+        VectorTools::integrate_difference (dof_handler_post_disp,
+                                           ghosted_sol,
+                                           ExactSolution<dim>(dim,time,exactsolutionfuncno+d),
+                                           norm_per_cell_v,
+                                           QGauss<dim>(fe.degree+3),
+                                           VectorTools::L2_norm);
+        v_error_mag  = Utilities::MPI::sum (norm_per_cell_v.norm_sqr(), MPI_COMM_WORLD);
+
+        std::cout<<"d "<<d<<" absolute error in v****** "<<std::sqrt(v_error_mag)<<std::endl;
+      }
+    }
+    // stress sigma_xy
+    /*{
       Vector<double> norm_per_cell_v (triangulation.n_active_cells());
 
       IndexSet relevant_set;
@@ -1013,34 +1142,28 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Te
 
       std::cout<<"stress! absolute error in stressxy "<<std::sqrt(v_error_mag)<<" solution norm "<< std::sqrt(v_solution_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<std::endl;
 
-    }
+    }*/
 
 
-    /*v_solution_mag = std::sqrt(v_solution_mag);
-    v_error_mag = std::sqrt(v_error_mag);
-    if(v_solution_mag!=0.0)
-    pcout<<"Time: "<< std::setw(8) << std::setprecision(3) << time
-        <<" solution norm v "<< std::setprecision(5) << std::setw(10) << v_solution_mag
-        <<" error norm v "<< std::setprecision(5) << std::setw(10) << v_error_mag/v_solution_mag<<std::endl;*/
   }
 
-//  /* VTU output */
-//  if(!invana && step%up_res == 0) // otherwise we  get way too much output files
-//  {
-//    DataOut<dim> data_out;
-//
-//    data_out.attach_dof_handler (dof_handler);
-//    data_out.add_data_vector (ghosted_sol, "solution_pressure");
-//    data_out.build_patches (/*2*/);
-//
-//    const std::string filename_pressure = DRT::Problem::Instance()->OutputControlFile()->FileName() +
-//        ".solution-pressure_" +
-//        Utilities::int_to_string(Utilities::MPI::this_mpi_process(solutions[dim].get_mpi_communicator()))
-//        + "-" + Utilities::int_to_string (timestep_number, 3);
-//
-//    std::ofstream output_pressure ((filename_pressure + ".vtu").c_str());
-//    data_out.write_vtu (output_pressure);
-//  }
+  /* VTU output */
+  // if(!invana && step%up_res == 0) // otherwise we  get way too much output files
+  // {
+  //   DataOut<dim> data_out;
+  //
+  //   data_out.attach_dof_handler (dof_handler);
+  //   data_out.add_data_vector (ghosted_sol, "solution_pressure");
+  //   data_out.build_patches (/*2*/);
+  //
+  //   const std::string filename_pressure = DRT::Problem::Instance()->OutputControlFile()->FileName() +
+  //       ".solution-pressure_" +
+  //       Utilities::int_to_string(Utilities::MPI::this_mpi_process(solutions[dim].get_mpi_communicator()))
+  //       + "-" + Utilities::int_to_string (timestep_number, 3);
+  //
+  //   std::ofstream output_pressure ((filename_pressure + ".vtu").c_str());
+  //   data_out.write_vtu (output_pressure);
+  // }
 
   // write baci output
   write_deal_cell_values();

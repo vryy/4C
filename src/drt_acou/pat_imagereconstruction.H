@@ -314,6 +314,10 @@ protected:
 
   //! calculation of error in parameter field for analytic examples
   virtual void ComputeParameterError() { std::cout<<"here could be a parameter error calculation"<<std::endl; return; }
+
+  //! convert gradient to different basis
+  void ConvertGradient(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> gradient);
+
 };
 
 class PatImageReconstructionOptiSplit : public PatImageReconstruction

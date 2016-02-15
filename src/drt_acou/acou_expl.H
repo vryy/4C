@@ -73,8 +73,9 @@ private:
   void make_grid_and_dofs (Teuchos::RCP<DRT::DiscretizationHDG> discret, Teuchos::RCP<Epetra_MultiVector> adjoint_source);
   void output_results (const unsigned int timestep_number, Teuchos::RCP<Epetra_MultiVector> history);
   void compute_post_pressure();
+  void compute_post_velocity();
 
-  parallel::distributed::Vector<value_type> post_pressure;
+  std::vector<parallel::distributed::Vector<value_type> > post_quantity; // pressure for fluid, velocity for solid
 
   ConditionalOStream             pcout;
 

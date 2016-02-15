@@ -508,6 +508,8 @@ void ACOU::PatImageReconstruction::EvaluateReacGrad()
     }
   }
 
+  //ConvertGradient(scatra_discret_,reac_objgrad_);
+
   return;
 }
 
@@ -642,6 +644,155 @@ void ACOU::PatImageReconstruction::CheckNeighborsReacGrad(DRT::Element* actele, 
     dserror("distype not yet implemented");
   */
 
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::PatImageReconstruction::ConvertGradient(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> gradient)
+{
+
+  // harmonic basis
+  if(0)
+  {
+    // this is an implementation for circular harmonics
+
+    // basis size
+    int basis_size = 2*(iter_+1);
+
+    // to calculate the gradient with respect to the values scaling the basis function, we need to scale each element gradient value with the value of the
+    // basis function at that point
+
+    // new gradient
+    std::vector<double> newgrad(3*basis_size*basis_size);
+
+    // loop basis functions to evaluate gradient contribution
+    for(int i=0; i<basis_size; ++i)
+    {
+      for(int j=0; j<basis_size; ++j)
+      {
+        double loc_grad_contrib[3] = {0.0};
+        for(int e=0; e<discret->NumMyRowElements(); ++e)
+        {
+          // get center coordinates
+          std::vector<double> xyz = DRT::UTILS::ElementCenterRefeCoords(discret->lRowElement(e));
+
+          // evaluate i-th shape function at these coordinates
+          double N_ij_at_xy_cc = std::cos(double(i)*PI*xyz[0]/10.0)*std::cos(double(j)*PI*xyz[1]/10.0);
+          double N_ij_at_xy_cs = std::cos(double(i)*PI*xyz[0]/10.0)*std::sin(double(j+1)*PI*xyz[1]/10.0);
+          double N_ij_at_xy_ss = std::sin(double(i+1)*PI*xyz[0]/10.0)*std::sin(double(j+1)*PI*xyz[1]/10.0);
+
+          // compute product of evaluated shape function and gradient value
+          loc_grad_contrib[0] += N_ij_at_xy_cc * gradient->operator [](e);
+          loc_grad_contrib[1] += N_ij_at_xy_cs * gradient->operator [](e);
+          loc_grad_contrib[2] += N_ij_at_xy_ss * gradient->operator [](e);
+        }
+        double glo_grad_contrib[3] = {0.0};
+        discret->Comm().SumAll(&loc_grad_contrib[0],&glo_grad_contrib[0],3);
+
+        newgrad[i*basis_size+j] = glo_grad_contrib[0];
+        newgrad[i*basis_size+j+1*basis_size*basis_size] = glo_grad_contrib[1];
+        newgrad[i*basis_size+j+2*basis_size*basis_size] = glo_grad_contrib[2];
+
+      }
+    }
+
+    // build new gradient
+    for(int e=0; e<discret->NumMyRowElements(); ++e)
+    {
+      // get center coordinates
+      std::vector<double> xyz = DRT::UTILS::ElementCenterRefeCoords(discret->lRowElement(e));
+
+      double new_grad_ele = 0.0;
+      for(int i=0; i<basis_size; ++i)
+      {
+        for(int j=0; j<basis_size; ++j)
+        {
+          // evaluate i-th shape function at these coordinates
+          double N_ij_at_xy_cc = std::cos(double(i)*PI*xyz[0]/10.0)*std::cos(double(j)*PI*xyz[1]/10.0);
+          double N_ij_at_xy_cs = std::cos(double(i)*PI*xyz[0]/10.0)*std::sin(double(j+1)*PI*xyz[1]/10.0);
+          double N_ij_at_xy_ss = std::sin(double(i+1)*PI*xyz[0]/10.0)*std::sin(double(j+1)*PI*xyz[1]/10.0);
+
+          new_grad_ele += N_ij_at_xy_cc * newgrad[i*basis_size+j]
+                        + N_ij_at_xy_cs * newgrad[i*basis_size+j+1*basis_size*basis_size]
+                        + N_ij_at_xy_ss * newgrad[i*basis_size+j+2*basis_size*basis_size];
+        }
+      }
+      gradient->ReplaceMyValue(e,0,new_grad_ele);
+    }
+  }
+
+  // lagrange basis
+  if(1)
+  {
+    // basis size
+    int basis_size = (iter_+3);
+
+    // new gradient
+    std::vector<double> newgrad(basis_size*basis_size);
+
+    // loop basis functions to evaluate gradient contribution
+    for(int i=0; i<basis_size; ++i)
+    {
+      for(int j=0; j<basis_size; ++j)
+      {
+        double loc_grad_contrib = 0.0;
+        for(int e=0; e<discret->NumMyRowElements(); ++e)
+        {
+          // get center coordinates
+          std::vector<double> xyz = DRT::UTILS::ElementCenterRefeCoords(discret->lRowElement(e));
+
+          // evaluate i-th shape function at these coordinates
+          double N_i_at_x = 1.0;
+          double N_j_at_y = 1.0;
+
+          for(int k=0; k<basis_size; ++k)
+          {
+            if(k!=i)
+              N_i_at_x *= (xyz[0]-(-5.0+k*10.0/(basis_size-1)))/(-5.0+i*10.0/(basis_size-1)-(-5.0+k*10.0/(basis_size-1)));
+            if(k!=j)
+              N_j_at_y *= (xyz[1]-(-5.0+k*10.0/(basis_size-1)))/(-5.0+j*10.0/(basis_size-1)-(-5.0+k*10.0/(basis_size-1)));
+          }
+
+          // compute product of evaluated shape function and gradient value
+          loc_grad_contrib += N_i_at_x * N_j_at_y * gradient->operator [](e);
+
+        }
+        double glo_grad_contrib = 0.0;
+        discret->Comm().SumAll(&loc_grad_contrib,&glo_grad_contrib,1);
+
+        newgrad[i*basis_size+j] = glo_grad_contrib;
+      }
+    }
+
+    // build new gradient
+    for(int e=0; e<discret->NumMyRowElements(); ++e)
+    {
+      // get center coordinates
+      std::vector<double> xyz = DRT::UTILS::ElementCenterRefeCoords(discret->lRowElement(e));
+
+      double new_grad_ele = 0.0;
+      for(int i=0; i<basis_size; ++i)
+      {
+        for(int j=0; j<basis_size; ++j)
+        {
+          // evaluate i-th shape function at these coordinates
+          double N_i_at_x = 1.0;
+          double N_j_at_y = 1.0;
+
+          for(int k=0; k<basis_size; ++k)
+          {
+            if(k!=i)
+              N_i_at_x *= (xyz[0]-(-5.0+k*10.0/(basis_size-1)))/(-5.0+i*10.0/(basis_size-1)-(-5.0+k*10.0/(basis_size-1)));
+            if(k!=j)
+              N_j_at_y *= (xyz[1]-(-5.0+k*10.0/(basis_size-1)))/(-5.0+j*10.0/(basis_size-1)-(-5.0+k*10.0/(basis_size-1)));
+          }
+
+          new_grad_ele += N_i_at_x * N_j_at_y * newgrad[i*basis_size+j];
+        }
+      }
+      gradient->ReplaceMyValue(e,0,new_grad_ele);
+    }
+  }
   return;
 }
 
@@ -924,6 +1075,8 @@ Teuchos::RCP<Epetra_Vector> ACOU::PatImageReconstructionOptiSplit::EvaluateDiffG
 
     return setids;
   }
+
+  //ConvertGradient(scatra_discret_,diff_objgrad_);
 
   return Teuchos::null;
 }
@@ -1602,6 +1755,8 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateGradient()
       scatra_discret_->Comm().Barrier();
     }
   }
+
+
 
   return;
 }
