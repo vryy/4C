@@ -629,7 +629,7 @@ bool VOLMORTAR::VolMortarEleBasedGP(
   }
 
   // Check parameter space mapping
-  bool proj = CheckMapping3D<distypeS,distypeM>(sele,*mele,Axi,Bxi);
+  bool proj = CheckMapping<distypeS,distypeM>(sele,*mele,Axi,Bxi);
 
   // if gp outside continue or eval nearest gp
   if(!proj and (found!=((int)foundeles.size()-1)))

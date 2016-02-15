@@ -240,9 +240,9 @@ protected:
  |  Check paraspace mapping                                  farah 02/15|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-bool CheckMapping3D(DRT::Element& sele,
-                               DRT::Element& mele,
-                               double* sxi, double* mxi)
+bool CheckMapping(DRT::Element& sele,
+                    DRT::Element& mele,
+                    double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
   double tol = 1e-5;
@@ -256,6 +256,20 @@ bool CheckMapping3D(DRT::Element& sele,
   else if(distypeS==DRT::Element::tet4 || distypeS==DRT::Element::tet10)
   {
     if(sxi[0]<0.0-tol || sxi[1]<0.0-tol || sxi[2]<0.0-tol || (sxi[0]+sxi[1]+sxi[2])>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else if (distypeS==DRT::Element::tri3 || distypeS==DRT::Element::tri6)
+  {
+    if(sxi[0]<0.0-tol || sxi[1]<0.0-tol || (sxi[0]+sxi[1])>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else if (distypeS==DRT::Element::quad4 || distypeS==DRT::Element::quad8 || distypeS==DRT::Element::quad9)
+  {
+    if(sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol  || sxi[1]>1.0+tol )
     {
       return false;
     }
@@ -274,6 +288,20 @@ bool CheckMapping3D(DRT::Element& sele,
   else if(distypeM==DRT::Element::tet4 || distypeM==DRT::Element::tet10)
   {
     if(mxi[0]<0.0-tol || mxi[1]<0.0-tol || mxi[2]<0.0-tol || (mxi[0]+mxi[1]+mxi[2])>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else if (distypeM==DRT::Element::tri3 || distypeM==DRT::Element::tri6)
+  {
+    if(mxi[0]<0.0-tol || mxi[1]<0.0-tol || (mxi[0]+mxi[1])>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else if (distypeM==DRT::Element::quad4 || distypeM==DRT::Element::quad8 || distypeM==DRT::Element::quad9)
+  {
+    if(mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol  || mxi[1]>1.0+tol )
     {
       return false;
     }
