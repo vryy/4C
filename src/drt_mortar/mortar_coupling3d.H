@@ -734,7 +734,7 @@ public:
    \brief Evaluate mortar-coupling pairs
 
    */
-  virtual void EvaluateMortar();
+  virtual void IntegrateCoupling();
 
   /*!
    \brief Evaluate nts-coupling pairs
@@ -882,7 +882,7 @@ public:
    \brief Evaluate mortar-coupling pairs
 
    */
-  virtual void EvaluateMortar();
+  virtual void IntegrateCoupling();
 
   /*!
    \brief Evaluate nts-coupling pairs

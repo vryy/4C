@@ -32,7 +32,8 @@ namespace INPAR
       shape_undefined,      ///< undefined
       shape_standard,       ///< standard shape functions
       shape_dual,           ///< dual shape functions
-      shape_petrovgalerkin  ///< Petrov-Galerkin approach
+      shape_petrovgalerkin, ///< Petrov-Galerkin approach
+      shape_none            ///< for all methods w/o Lagrange multiplier interpolation
     };
 
     /// Type of Lagrange multiplier interpolation for quadratic FE case

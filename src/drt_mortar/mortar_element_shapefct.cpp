@@ -2187,6 +2187,10 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(
     LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv,
     const int& valdim)
 {
+  // some methods don't need a Lagrange multiplier interpolation
+  if (lmtype == INPAR::MORTAR::shape_none)
+    return true;
+
   if (!xi)
     dserror("ERROR: EvaluateShapeLagMult called with xi=NULL");
 
@@ -2594,6 +2598,10 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(
     LINALG::SerialDenseVector& val, LINALG::SerialDenseMatrix& deriv,
     const int& valdim)
 {
+  // some methods don't need a Lagrange multiplier interpolation
+  if (lmtype == INPAR::MORTAR::shape_none)
+    return true;
+
   if (!xi)
     dserror("ERROR: EvaluateShapeLagMultLin called with xi=NULL");
   if (!IsSlave())

@@ -95,8 +95,7 @@ public:
    and assembled into the slave element nodes.
 
    */
-  virtual bool IntegrateCells(GEN::pairedvector<int,Epetra_SerialDenseMatrix>* dMatrixDeriv=NULL,
-      GEN::pairedvector<int,Epetra_SerialDenseMatrix>* mMatrixDeriv=NULL);
+  virtual bool IntegrateCells();
 
   //@}
 
@@ -380,7 +379,7 @@ public:
    \brief Evaluate mortar coupling pairs
 
    */
-  virtual void EvaluateMortar();
+  virtual void IntegrateCoupling();
 
   /*!
    \brief Evaluate NTS coupling pairs
@@ -478,7 +477,7 @@ public:
    \brief Evaluate mortar coupling pairs
 
    */
-  virtual void EvaluateMortar();
+  virtual void IntegrateCoupling();
 
   /*!
    \brief Evaluate NTS coupling pairs

@@ -352,7 +352,7 @@ public:
    \brief Evaluate mortar coupling pairs
 
    */
-  virtual void EvaluateMortar();
+  virtual void IntegrateCoupling();
 
   /*!
    \brief Evaluate mortar coupling pairs

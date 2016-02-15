@@ -606,19 +606,6 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   DRT::Node** mynodes = sele.Nodes();
   if(!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
-  // contact with wear
-  bool wear = false;
-  if(imortar_.get<double>("WEARCOEFF")!= 0.0)
-    wear = true;
-
-  // poro contact
-  bool poroprob = false;
-  if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
-  {
-    if (imortar_.get<bool>("CONTACTNOPEN")) //evaluate additional terms just in case of no penectration condition
-      poroprob=true;
-  }
-
   // decide whether boundary modification has to be considered or not
   // this is element-specific (is there a boundary node in this element?)
   bool bound = false;
@@ -638,18 +625,13 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
   }
 
   // prepare directional derivative of dual shape functions
-  // this is only necessary for quadratic dual shape functions in 2D
-  bool duallin = false;
   GEN::pairedvector<int,Epetra_SerialDenseMatrix> dualmap(2*nrow,0,Epetra_SerialDenseMatrix(nrow,nrow));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
       && (   sele.Shape()==MORTAR::MortarElement::line3
           || sele.Shape()==MORTAR::MortarElement::nurbs3
           || sele.MoData().DerivDualShape()!=Teuchos::null
           ))
-  {
-    duallin=true;
     sele.DerivShapeDual(dualmap);
-  }
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
@@ -666,27 +648,6 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseMatrix ssecderiv(nrow,1);
-
-  // get slave and master nodal coords for Jacobian / GP evaluation
-  LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
-  LINALG::SerialDenseMatrix mcoord(3,mele.NumNode());
-  sele.GetNodalCoords(scoord);
-  mele.GetNodalCoords(mcoord);
-
-  // nodal coords from previous time step and lagrange mulitplier
-  Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
-  Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
-  Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
-
-  if(wear or DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
-  {
-    scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-    mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,mele.NumNode()));
-    lagmult   = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-    sele.GetNodalCoordsOld(*scoordold);
-    mele.GetNodalCoordsOld(*mcoordold);
-    sele.GetNodalLagMult(*lagmult);
-  }
 
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
@@ -750,10 +711,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
     // coordinate transformation sxi->eta (slave MortarElement->Overlap)
     double sxi[2]  = {0.0, 0.0};
-    double mxi2[2] = {0.0, 0.0};
-
     sxi[0]  = 0.5*(1.0-eta[0])*sxia + 0.5*(1.0+eta[0])*sxib;
-    mxi2[0] = 0.5*(1.0-eta[0])*mxia + 0.5*(1.0+eta[0])*mxib;
 
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
@@ -772,33 +730,15 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     if (linlm)
       sele.EvaluateShapeLagMultLin(ShapeFcn(),sxi,lmval,lmderiv,nrow);
     else
-    {
       sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
-      if (WearSide() == INPAR::WEAR::wear_both and
-          WearType() == INPAR::WEAR::wear_intstate)
-        mele.EvaluateShapeLagMult(ShapeFcn(),mxi2,lm2val,lm2deriv,ncol);  // evaluate lm on master side for both-sided wear
-    }
 
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
     mele.EvaluateShape(mxi,mval,mderiv,ncol);
-    if (WearSide() == INPAR::WEAR::wear_both and
-        WearType() == INPAR::WEAR::wear_intstate)
-      mele.EvaluateShape(mxi2,m2val,m2deriv,ncol);
 
     // evaluate the two slave side Jacobians
     double dxdsxi = sele.Jacobian(sxi);
-    double dxdmxi = 0.0;
-    if (WearSide() == INPAR::WEAR::wear_both and
-        WearType() == INPAR::WEAR::wear_intstate)
-      dxdmxi = mele.Jacobian(mxi2);
-
     double dsxideta = -0.5*sxia + 0.5*sxib;
-
-    double dmxideta = 0.0;
-    if (WearSide() == INPAR::WEAR::wear_both and
-        WearType() == INPAR::WEAR::wear_intstate)
-      dmxideta = -0.5*mxia + 0.5*mxib;
 
     // evaluate linearizations *******************************************
     // evaluate 2nd deriv of trace space shape functions (on slave element)
@@ -810,148 +750,50 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
     double dxdsxidsxi=djacdxi[0]; // only 2D here
 
     // evalute the GP slave coordinate derivatives
-    GEN::pairedvector<int,double> dsxigp(linsize+ndof*ncol);
+    std::vector<GEN::pairedvector<int,double> > dsxigp(1,
+        GEN::pairedvector<int,double>(linsize+ndof*ncol));
     for (_CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-      dsxigp[p->first] += 0.5*(1.0-eta[0])*(p->second);
+      dsxigp[0][p->first] += 0.5*(1.0-eta[0])*(p->second);
     for (_CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-      dsxigp[p->first] += 0.5*(1.0+eta[0])*(p->second);
+      dsxigp[0][p->first] += 0.5*(1.0+eta[0])*(p->second);
 
     // evalute the GP master coordinate derivatives
-    GEN::pairedvector<int,double> dmxigp(linsize+ndof*ncol);
-    DerivXiGP2D(sele,mele,sxi[0],mxi[0],dsxigp,dmxigp,linsize);
+    std::vector<GEN::pairedvector<int,double> > dmxigp(1,
+        GEN::pairedvector<int,double>(linsize+ndof*ncol));
+    DerivXiGP2D(sele,mele,sxi[0],mxi[0],dsxigp[0],dmxigp[0],linsize);
 
     // evaluate the Jacobian derivative
-    GEN::pairedvector<int,double> derivjac(nrow*ndof);
-    sele.DerivJacobian(sxi,derivjac);
+    GEN::pairedvector<int,double> derivjacSele(nrow*ndof);
+    sele.DerivJacobian(sxi,derivjacSele);
+
+    double jac = dsxideta*dxdsxi;
+    GEN::pairedvector<int,double> derivjac(nrow*ndof+linsize);
+    for (GEN::pairedvector<int,double>::const_iterator p=derivjacSele.begin();p!=derivjacSele.end();++p)
+      derivjac[p->first]+=dsxideta*p->second;
+    for (_CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
+      derivjac[p->first]-=.5*dxdsxi*p->second;
+    for (_CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
+      derivjac[p->first]+=.5*dxdsxi*p->second;
+    for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
+      derivjac[p->first]+=dsxideta*dxdsxidsxi*p->second;
 
     //**********************************************************************
     // frequently reused quantities
     //**********************************************************************
-    double gpn[3]      = {0.0,0.0,0.0};  // normalized normal at gp
+    double gpn[2]      = {0.0,0.0};      // normalized normal at gp
     double gap[1]      = {0.0};          // gap
-    double jumpval[1]  = {0.0};          // jump for wear
-    double jumpvalv[1] = {0.0};          // jump for slipincr --> equal to jumpval
-    double wearval[1]  = {0.0};          // wear value
-    double lengthn[1]  = {0.0};          // length of gp normal gpn
-    GEN::pairedvector<int,double> dsliptmatrixgp(linsize+ndof*ncol); // deriv. of slip for wear
-    GEN::pairedvector<int,double> dslipgp(linsize+ndof*ncol);        // deriv. of slip for slipincr
     GEN::pairedvector<int,double> dgapgp(linsize+ndof*ncol);         // gap lin without weighting and jac
-    GEN::pairedvector<int,double> dweargp(linsize+ndof*ncol);        // wear lin without weighting and jac
     std::vector<GEN::pairedvector<int,double> > dnmap_unit(2,(linsize+ndof*ncol)); // deriv of x and y comp. of gpn (unit)
 
     //**********************************************************************
     // evaluate at GP and lin char. quantities
     //**********************************************************************
 
-    // integrate D and M matrix
-    double jac = dsxideta*dxdsxi;
-    GP_DM(sele,mele,lmval,sval,mval,jac,wgt,nrow,ncol,ndof,bound);
+    Gap_2D(sele,mele,sval,mval,sderiv,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
 
-    // integrate and lin gp gap
-    GP_2D_G(sele,mele,sval,mval,lmval,scoord,mcoord,sderiv,mderiv,gap,gpn,lengthn,dsxideta,
-        dxdsxi,wgt,dsxigp,dmxigp,dgapgp, dnmap_unit,linsize);
+    IntegrateGP_2D(sele,mele,sval,lmval,mval,sderiv,mderiv,lmderiv,dualmap,
+        wgt,jac,derivjac,gpn,dnmap_unit,*gap,dgapgp,sxi,mxi,dsxigp,dmxigp);
 
-    // compute segment scaling factor
-    if (nodalscale_)
-      GP_2D_Scaling(sele,sval,dsxideta,wgt);
-
-    // Creating the tangential relative slip increment (non-objective)
-    if (DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
-      GP_2D_SlipIncr(sele,mele,sval,mval,lmval,scoord,mcoord,scoordold,mcoordold,sderiv,
-          mderiv,dsxideta,dxdsxi,wgt,jumpvalv,dsxigp,dmxigp,dslipgp,linsize);
-
-    // both-sided map wear specific stuff
-    double jacm = dmxideta*dxdmxi;
-    if (WearSide() == INPAR::WEAR::wear_both and
-        WearType() == INPAR::WEAR::wear_intstate)
-      GP_D2(sele,mele,lm2val,m2val,jacm,wgt,comm);
-
-    // std. wear for all wear-algorithm types
-    if(wear)
-      GP_2D_Wear(sele,mele,sval,sderiv,mval,mderiv,lmval,lmderiv,scoord,scoordold,mcoord,mcoordold,
-             lagmult,gpn,dsxideta,dxdsxi,dxdsxidsxi,wgt,jumpval,wearval,dsxigp,dmxigp,dualmap,ximaps,
-             dnmap_unit, dsliptmatrixgp,dweargp,linsize);
-
-    // integrate T and E matrix for discr. wear
-    if (WearType() == INPAR::WEAR::wear_primvar)
-      GP_TE(sele,lmval,sval,jac,wgt,jumpval);
-
-    // both-sided discr wear specific stuff
-    if (WearSide() == INPAR::WEAR::wear_both and
-        WearType() == INPAR::WEAR::wear_primvar)
-      GP_TE_Master(sele,mele,lmval,lm2val,mval,jac,wgt,jumpval,comm);
-
-
-    std::vector<GEN::pairedvector<int,double> > auxdsxigp;
-    auxdsxigp.push_back(dsxigp);
-    std::vector<GEN::pairedvector<int,double> > auxdmxigp;
-    auxdmxigp.push_back(dmxigp);
-    double ncoup[1]      = {0.0};
-    std::map<int,double> dncoupgp;         // ncoup lin. without lm and jac.
-    std::map<int,double> dvelncoupgp;      // velocity ncoup lin. without lm and jac.
-    std::map<int,double> dpresncoupgp;     // pressure ncoup lin. without lm and jac.
-    if(poroprob) //access poro contact integration for 2D
-    {
-      GP_NCOUP_DERIV(sele, mele, sval, mval,lmval, sderiv,mderiv,ncoup, gpn, lengthn,jac, wgt, &eta[0],
-          auxdsxigp, auxdmxigp, dncoupgp, dvelncoupgp, dpresncoupgp, dnmap_unit, false);
-    }
-    //**********************************************************************
-    // compute segment LINEARIZATION
-    //**********************************************************************
-    for (int iter=0;iter<nrow;++iter)
-    {
-      // compute segment D/M linearization  -- bound
-      if (bound)
-        GP_DM_Lin_bound(iter,duallin,sele,sval,lmval,sderiv,lmderiv,dsxideta,dxdsxi,dxdsxidsxi,
-            wgt,*sxi,dsxigp,derivjac,ximaps,dualmap);
-
-      // compute segment D/M linearization
-      GP_2D_DM_Lin(iter,bound,linlm,sele,mele,sval,mval,lmval,sderiv,mderiv,lmderiv,dsxideta,dxdsxi,
-           dxdsxidsxi,wgt, dsxigp, dmxigp, derivjac, ximaps, dualmap);
-
-      // Lin gap
-      GP_2D_G_Lin(iter,sele,mele,sval,mval,lmval,sderiv,lmderiv,*gap,gpn,dsxideta,dxdsxi,dxdsxidsxi,wgt,
-          dgapgp,dsxigp,dmxigp,derivjac,ximaps,dualmap);
-
-      // Lin scaling
-      if (nodalscale_)
-        GP_2D_Scaling_Lin(iter,sele,sval,sderiv,dsxideta,wgt,dsxigp,ximaps);
-
-      // Lin tangential relative slip increment (non-objective)
-      if (DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
-        GP_2D_SlipIncr_Lin(iter,sele,sval,lmval,sderiv,lmderiv,dsxideta,dxdsxi,dxdsxidsxi,wgt,
-            jumpvalv,dsxigp,dslipgp,ximaps,derivjac,dualmap);
-
-      // Lin wear for impl. alg.
-      if(wearimpl_ == true and
-         WearType() == INPAR::WEAR::wear_intstate)
-        GP_2D_Wear_Lin(iter,sele,sval,lmval,sderiv,lmderiv,dsxideta,dxdsxi,dxdsxidsxi,gpn,
-             wgt, *wearval,jumpval,dsxigp,dweargp,ximaps,derivjac,dualmap);
-
-      // Lin wear T and E matrix
-      if(wearimpl_ == true and
-         WearType() == INPAR::WEAR::wear_primvar)
-        GP_2D_TE_Lin(iter,sele,sval,lmval,sderiv,lmderiv,dsxideta,dxdsxi,dxdsxidsxi,wgt,jumpval,
-             dsxigp,derivjac,dsliptmatrixgp,ximaps,dualmap);
-
-      if (poroprob)
-      {
-        // Lin ncoup condition
-        GP_NCOUP_LIN(iter,sele,mele,sval,mval,lmval,sderiv,lmderiv,*ncoup,gpn,jac,wgt,duallin,dncoupgp,
-            dvelncoupgp,dpresncoupgp,derivjac,auxdsxigp,auxdmxigp,dualmap);
-      }
-    }// nrow loop
-
-    // lin for master nodes
-    if (WearSide() == INPAR::WEAR::wear_both and
-        WearType() == INPAR::WEAR::wear_primvar)
-    {
-      for (int iter=0;iter<ncol;++iter)
-      {
-        GP_2D_TE_Master_Lin(iter,sele,mele,sval,mval,lmval,mderiv,lmderiv,dsxideta,dxdsxi,dxdsxidsxi,wgt,jumpval,
-             dsxigp,dmxigp,derivjac,dsliptmatrixgp,ximaps,dualmap,comm);
-      }
-    }
   }//gp-loop
 
   return;
@@ -1376,11 +1218,6 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
       dserror("ERROR: IntegrateDerivCell3D called on a wrong type of MortarElement pair!");
   }
 
-  // contact with wear
-  bool wear = false;
-  if(wearlaw_!= INPAR::WEAR::wear_none)
-    wear = true;
-
   int msize   = meles.size();
   int nrow    = sele.NumNode();
   int ndof    = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
@@ -1390,41 +1227,14 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
   LINALG::SerialDenseMatrix sderiv(nrow,2,true);
   LINALG::SerialDenseVector lmval(nrow);
   LINALG::SerialDenseMatrix lmderiv(nrow,2,true);
-  LINALG::SerialDenseVector svalmod(nrow);
-  LINALG::SerialDenseMatrix sderivmod(nrow,2,true);
-
-  // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseMatrix ssecderiv(nrow,3);
-
-  // get slave and master nodal coords for Jacobian / GP evaluation
-  LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
-  sele.GetNodalCoords(scoord);
-
-  // nodal coords from previous time step and lagrange mulitplier
-  Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
-  Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
-  Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
 
   // prepare directional derivative of dual shape functions
   // this is necessary for all slave element types except tri3
-  bool duallin = false;
   GEN::pairedvector<int,Epetra_SerialDenseMatrix> dualmap(nrow*ndof,0,Epetra_SerialDenseMatrix(nrow,nrow));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
       && (sele.Shape()!=MORTAR::MortarElement::tri3 || sele.MoData().DerivDualShape()!=Teuchos::null))
-  {
-    duallin = true;
     sele.DerivShapeDual(dualmap);
-  }
 
-  // decide whether displacement shape fct. modification has to be considered or not
-  // this is the case for dual quadratic Lagrange multipliers on quad8 and tri6 elements
-  bool dualquad3d = false;
-  if ( (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-       (LagMultQuad() == INPAR::MORTAR::lagmult_quad) &&
-       (sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
-  {
-    dualquad3d = true;
-  }
   //********************************************************************
   //  Boundary_segmentation test -- HasProj() check
   //  if a slave-node has no projection onto each master element
@@ -1477,7 +1287,6 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
 
       // evaluate trace space shape functions (on both elements)
       sele.EvaluateShape(sxi,sval,sderiv,nrow);
-      if (dualquad3d) sele.EvaluateShape(sxi,svalmod,sderivmod,nrow,true);
 
       // evaluate the two Jacobians (int. cell and slave element)
       double jacslave = sele.Jacobian(sxi);
@@ -1497,35 +1306,14 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
         int nmnode  = meles[nummaster]->NumNode();
         LINALG::SerialDenseVector mval(nmnode);
         LINALG::SerialDenseMatrix mderiv(nmnode,2,true);
-        LINALG::SerialDenseMatrix mcoord(3,meles[nummaster]->NumNode());
-        meles[nummaster]->GetNodalCoords(mcoord);
 
-        // get them in the case of wear
-        if (wear or gpslip_)
-        {
-          scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-          mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,meles[nummaster]->NumNode()));
-          lagmult   = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-          sele.GetNodalCoordsOld(*scoordold);
-          meles[nummaster]->GetNodalCoordsOld(*mcoordold);
-          sele.GetNodalLagMult(*lagmult);
-        }
-
-        // for both-sided wear
-        LINALG::SerialDenseVector lm2val(nmnode);
-        LINALG::SerialDenseMatrix lm2deriv(nmnode,2,true);
 
         // project Gauss point onto master element
         MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint3D(sele,sxi,*meles[nummaster],mxi,projalpha);
 
-        // evaluate Lagrange multiplier shape functions (on slave element)
-        if (WearSide() != INPAR::WEAR::wear_slave)
-          meles[nummaster]->EvaluateShapeLagMult(ShapeFcn(),mxi,lm2val,lm2deriv,nmnode);
-
-        is_on_mele=true;
-
         // check GP projection
         const double tol = 0.00;
+        is_on_mele=true;
         if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9 ||
             dt==DRT::Element::nurbs9)
         {
@@ -1557,89 +1345,29 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
           DerivXiGP3D(sele,*meles[nummaster],sxi,mxi,dsxigp,dmxigp,projalpha);
 
           //**********************************************************************
-          // frequently reused quantities
+          // geometric quantities
           //**********************************************************************
           double gpn[3]      = {0.0,0.0,0.0};
-          double gap[1]      = {0.0};
-          double lengthn[1]  = {0.0};      // length of gp normal gpn
-          GEN::pairedvector<int,double> dsliptmatrixgp((nmnode*ndof)+linsize);               // deriv. of slip for wear
           GEN::pairedvector<int,double> dgapgp((nmnode*ndof)+linsize);                       // gap lin. without lm and jac.
-          GEN::pairedvector<int,double> dweargp((nmnode*ndof)+linsize);                      // wear lin. without lm and jac.
-          std::vector<GEN::pairedvector<int,double> > dslipgp(2,((nmnode*ndof)+linsize));    // deriv. of slip for slipincr (xi, eta)
+          double gap[1]      = {0.0};
           std::vector<GEN::pairedvector<int,double> > dnmap_unit(3,((nmnode*ndof)+linsize)); // deriv of x,y and z comp. of gpn (unit)
 
-          double jumpval[2]  = {0.0,0.0};  // jump for wear
-          double wearval[1]  = {0.0};      // wear value
           //**********************************************************************
           // evaluate at GP and lin char. quantities
           //**********************************************************************
-          // integrate D and M matrix
-          bool bound =false;
-          GP_DM(sele,*meles[nummaster],lmval,sval,mval,jacslave,wgt,nrow,nmnode,ndof,bound);
 
-          // integrate and lin gp gap
-          GP_3D_G(sele,*meles[nummaster],sval,mval,lmval,scoord,mcoord,sderiv,mderiv,gap,gpn,lengthn,jacslave,
-               wgt,dsxigp, dmxigp,dgapgp,dnmap_unit,false);
+          Gap_3D(sele,*meles[nummaster],sval,mval,sderiv,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
 
-          //*******************************
-          // WEAR stuff
-          //*******************************
-          if (wear)
-          {
-            // std. wear for all wear-algorithm types --  mechdiss included
-            GP_3D_Wear(sele,*meles[nummaster],sval,sderiv,mval,mderiv,lmval,lmderiv,scoord,scoordold,mcoord,
-                 mcoordold,lagmult,gpn,jacslave,wgt,jumpval,wearval,dsliptmatrixgp,dweargp,dsxigp,
-                 dmxigp,dnmap_unit,dualmap);
+          if (algo_==INPAR::MORTAR::algorithm_mortar)
+            dynamic_cast<CONTACT::CoElement&>(sele).PrepareMderiv(meles,nummaster);
 
-            // integrate T and E matrix for discr. wear
-            if (WearType() == INPAR::WEAR::wear_primvar)
-              GP_TE(sele,lmval,sval,jacslave,wgt,jumpval);
+          IntegrateGP_3D(sele,*meles[nummaster],sval,lmval,mval,sderiv,mderiv,lmderiv,dualmap,
+              wgt,jacslave,jacslavemap,gpn,dnmap_unit,gap[0],dgapgp,sxi,mxi,dsxigp,dmxigp);
 
-            // both-sided discr wear specific stuff
-            if (WearType() == INPAR::WEAR::wear_primvar and
-                WearSide() == INPAR::WEAR::wear_both)
-              GP_TE_Master(sele,*meles[nummaster],lmval,lm2val,mval,jacslave,wgt,jumpval,comm);
-          }
+          // assemble m-matrix for this slave/master pair
+          if (algo_==INPAR::MORTAR::algorithm_mortar)
+            dynamic_cast<CONTACT::CoElement&> (sele).AssembleMderivToNodes(*meles[nummaster]);
 
-          //********************************************************************
-          // compute ele linearization
-          //********************************************************************
-          // loop over all slave nodes
-          for (int j=0; j<nrow; ++j)
-          {
-            // compute ele D/M linearization
-            GP_3D_DM_Ele_Lin(j, duallin, dualquad3d, sele,*meles[nummaster], sval, svalmod, mval,
-                lmval, mderiv, wgt, jacslave, dmxigp, jacslavemap, dualmap);
-
-            // compute ele gap linearization
-            GP_3D_G_Ele_Lin(j,sele,sval,svalmod,lmval,sderiv,lmderiv,*gap,jacslave,wgt,duallin,
-                dualquad3d,dgapgp,jacslavemap, dualmap);
-
-            // Lin wear for impl. alg.
-            if(WearType() == INPAR::WEAR::wear_intstate and
-               wearimpl_  == true)
-              GP_3D_Wear_Lin(j,sele,sval,lmval,sderiv,lmderiv,jacslave,gpn,wgt,*wearval,jumpval,dweargp,
-                  jacslavemap,dsxigp,dualmap);
-
-            // Lin wear matrices T and E for discr. wear
-            if(WearType() == INPAR::WEAR::wear_primvar and
-               wearimpl_  == true)
-              GP_3D_TE_Lin(j,duallin,sele,sval,lmval,sderiv,lmderiv,jacslave,wgt,jumpval,dsxigp,jacslavemap,
-                   dsliptmatrixgp,dualmap);
-
-          }
-
-          // lin for master nodes
-          if (WearType() == INPAR::WEAR::wear_primvar and
-              WearSide() == INPAR::WEAR::wear_both    and
-              wearimpl_  == true)
-          {
-            for (int iter=0;iter<nmnode;++iter)
-            {
-              GP_3D_TE_Master_Lin(iter,duallin,sele,*meles[nummaster],sval,mval,lmval,lm2val,sderiv,mderiv,lmderiv,lm2deriv,
-                  jacslave,wgt,jumpval,dsxigp,dmxigp,jacslavemap,dsliptmatrixgp,dualmap,dualmap,comm); // last dualmap == dualmap
-            }
-          }
         }//is_on_mele
         if (is_on_mele==true) break;
       }//mele loop
@@ -1670,8 +1398,6 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
 void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-     GEN::pairedvector<int,Epetra_SerialDenseMatrix>* dMatrixDeriv,
-     GEN::pairedvector<int,Epetra_SerialDenseMatrix>* mMatrixDeriv,
      const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
@@ -1691,19 +1417,6 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   if (cell==Teuchos::null)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
 
-  // poro contact
-  bool poroprob = false;
-  if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
-  {
-    if (imortar_.get<bool>("CONTACTNOPEN")) //evaluate additional terms just in case of no penectration condition
-      poroprob=true;
-  }
-
-  // contact with wear
-  bool wear = false;
-  if(wearlaw_!= INPAR::WEAR::wear_none)
-    wear = true;
-
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
@@ -1721,50 +1434,12 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   LINALG::SerialDenseVector lmval(nrow);
   LINALG::SerialDenseMatrix lmderiv(nrow,2,true);
 
-  // for both-sided wear
-  LINALG::SerialDenseVector lm2val(ncol);
-  LINALG::SerialDenseMatrix lm2deriv(ncol,2,true);
-
-  // create empty vectors for shape fct. evaluation
-  LINALG::SerialDenseMatrix ssecderiv(nrow,3);
-
-  // get slave and master nodal coords for Jacobian / GP evaluation
-  LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
-  LINALG::SerialDenseMatrix mcoord(3,mele.NumNode());
-  sele.GetNodalCoords(scoord);
-  mele.GetNodalCoords(mcoord);
-
-  // nodal coords from previous time step and lagrange mulitplier
-  Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
-  Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
-  Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
-
-  // get them in the case of wear
-  if (wear or gpslip_==true)
-  {
-    scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-    mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,mele.NumNode()));
-    lagmult   = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-    sele.GetNodalCoordsOld(*scoordold);
-    mele.GetNodalCoordsOld(*mcoordold);
-    sele.GetNodalLagMult(*lagmult);
-  }
-
   // prepare directional derivative of dual shape functions
   // this is necessary for all slave element types except tri3
-  bool duallin = false;
   GEN::pairedvector<int,Epetra_SerialDenseMatrix> dualmap((nrow+ncol)*ndof,0,Epetra_SerialDenseMatrix(nrow,nrow));
-  GEN::pairedvector<int,Epetra_SerialDenseMatrix>dual2map((nrow+ncol)*ndof,0,Epetra_SerialDenseMatrix(ncol,ncol));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
       (sele.Shape()!=MORTAR::MortarElement::tri3 || sele.MoData().DerivDualShape()!=Teuchos::null))
-  {
-    duallin = true;
     sele.DerivShapeDual(dualmap);
-
-    if(WearSide() == INPAR::WEAR::wear_both and
-       WearType() == INPAR::WEAR::wear_primvar)
-      mele.DerivShapeDual(dual2map);
-  }
 
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
@@ -1859,16 +1534,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     // evaluate Lagrange multiplier shape functions (on slave element)
     sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
 
-    // evaluate Lagrange multiplier shape functions (on slave element)
-    if (WearSide() != INPAR::WEAR::wear_slave)
-      mele.EvaluateShapeLagMult(ShapeFcn(),mxi,lm2val,lm2deriv,ncol);
-
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
     mele.EvaluateShape(mxi,mval,mderiv,ncol);
-
-    // evaluate 2nd deriv of trace space shape functions (on slave element)
-    sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
 
     // evaluate linearizations *******************************************
 
@@ -1892,168 +1560,21 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     std::vector<GEN::pairedvector<int,double> > dmxigp(2,(nrow+ncol)*ndof);
     DerivXiGP3DAuxPlane(mele,mxi,cell->Auxn(),dmxigp,mprojalpha,cell->GetDerivAuxn(),lingp);
 
-    // scaling specific
-    double jacsele = 1.0;
-    double derivjacselexi[2] = {0.0, 0.0};
-    GEN::pairedvector<int,double> derivjacsele(nrow*ndof);
-    if (nodalscale_)
-    {
-      jacsele = sele.Jacobian(sxi);
-      sele.DerivJacobian(sxi,derivjacsele);
-
-      LINALG::SerialDenseMatrix ssecderiv(sele.NumNode(),3);
-      sele.Evaluate2ndDerivShape(sxi,ssecderiv,sele.NumNode());
-      dynamic_cast<CoElement&> (sele).DJacDXi(derivjacselexi,sxi,ssecderiv);
-    }
-
     //**********************************************************************
-    // frequently reused quantities
+    // geometric quantities
     //**********************************************************************
     double gpn[3]      = {0.0,0.0,0.0};
-    double gap[1]      = {0.0};
-    double jumpval[2]  = {0.0,0.0};  // jump for wear
-    double jumpvalv[2] = {0.0,0.0};  // jump for slipincr --> equal to jumpval
-    double wearval[1]  = {0.0};      // wear value
-    double lengthn[1]  = {0.0};      // length of gp normal gpn
-    GEN::pairedvector<int,double> dsliptmatrixgp((ncol*ndof)+linsize);           // deriv. of slip for wear
     GEN::pairedvector<int,double> dgapgp((ncol*ndof)+linsize);                   // gap lin. without lm and jac.
-    GEN::pairedvector<int,double> dweargp((ncol*ndof)+linsize);                  // wear lin. without lm and jac.
-    std::vector<GEN::pairedvector<int,double> > dslipgp(2,((ncol*ndof)+linsize));// deriv. of slip for slipincr (xi, eta)
+    double gap[1]      = {0.0};
     std::vector<GEN::pairedvector<int,double> > dnmap_unit(3,linsize);           // deriv of x,y and z comp. of gpn (unit)
+    Gap_3D(sele,mele,sval,mval,sderiv,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
 
     //**********************************************************************
     // evaluate at GP and lin char. quantities
-    //**********************************************************************
+   //**********************************************************************
+    IntegrateGP_3D(sele,mele,sval,lmval,mval,sderiv,mderiv,lmderiv,dualmap,
+        wgt,jac,jacintcellmap,gpn,dnmap_unit,gap[0],dgapgp,sxi,mxi,dsxigp,dmxigp);
 
-    // integrate and lin gp gap
-    GP_3D_G(sele,mele,sval,mval,lmval,scoord,mcoord,sderiv,mderiv,gap,gpn,lengthn,jac,
-         wgt,dsxigp, dmxigp,dgapgp,dnmap_unit,false);
-
-    // if we use GPTS, all we need is the forces here
-    if (algo_==INPAR::MORTAR::algorithm_gpts)
-    {
-      GPTS_forces(sele,mele,
-          sval,sderiv,dsxigp,
-          mval,mderiv,dmxigp,
-          jac,jacintcellmap,wgt,
-          *gap,dgapgp,
-          gpn,dnmap_unit);
-      // and we're done for this gp
-      continue;
-    }
-
-    // integrate D and M matrix
-    bool bound =false;
-    GP_DM(sele,mele,lmval,sval,mval,jac,wgt,nrow,ncol,ndof,bound);
-
-    // compute segment scaling factor
-    if (nodalscale_)
-      GP_3D_Scaling(sele,sval,jac,wgt,jacsele);
-
-    // Creating the WEIGHTED tangential relative slip increment (non-objective)
-    if (gpslip_)
-      GP_3D_SlipIncr(sele,mele,sval,mval,lmval,scoord,mcoord,scoordold,mcoordold,sderiv,
-           mderiv,jac,wgt,jumpvalv,dsxigp,dmxigp,dslipgp);
-
-    //*******************************
-    // WEAR stuff
-    //*******************************
-    // std. wear for all wear-algorithm types --  mechdiss included
-    if (wear)
-      GP_3D_Wear(sele,mele,sval,sderiv,mval,mderiv,lmval,lmderiv,scoord,scoordold,mcoord,
-           mcoordold,lagmult,gpn,jac,wgt,jumpval,wearval,dsliptmatrixgp,dweargp,dsxigp,
-           dmxigp,dnmap_unit,dualmap);
-
-    if (wear)
-    {
-      // integrate T and E matrix for discr. wear
-      if (WearType() == INPAR::WEAR::wear_primvar)
-        GP_TE(sele,lmval,sval,jac,wgt,jumpval);
-
-      // both-sided discr wear specific stuff
-      if (WearSide() == INPAR::WEAR::wear_both and
-          WearType() == INPAR::WEAR::wear_primvar)
-        GP_TE_Master(sele,mele,lmval,lm2val,mval,jac,wgt,jumpval,comm);
-
-      // both-sided wear specific stuff
-      if (WearSide() == INPAR::WEAR::wear_both and
-          WearType() == INPAR::WEAR::wear_intstate)
-        GP_D2(sele,mele,lm2val,mval,jac,wgt,comm);
-    }
-
-    //*******************************
-    // PORO stuff
-    //*******************************
-    double ncoup[1]      = {0.0};
-    std::map<int,double> dncoupgp;         // ncoup lin. without lm and jac.
-    std::map<int,double> dvelncoupgp;      // velocity ncoup lin. without lm and jac.
-    std::map<int,double> dpresncoupgp;     // pressure ncoup lin. without lm and jac.
-    if (poroprob)
-    {
-      GP_NCOUP_DERIV(sele, mele, sval, mval,lmval, sderiv,mderiv,ncoup, gpn, lengthn,jac, wgt, &eta[0],
-          dsxigp, dmxigp, dncoupgp, dvelncoupgp, dpresncoupgp, dnmap_unit, false);
-    }
-
-    // compute segment D/M linearization
-    GP_3D_DM_Lin(duallin,sele,mele,sval,mval,lmval,sderiv,mderiv,lmderiv,wgt,
-        jac,dsxigp,dmxigp,jacintcellmap,dualmap,dMatrixDeriv,mMatrixDeriv);
-
-    //********************************************************************
-    // compute cell linearization
-    //********************************************************************
-    for (int iter=0;iter<nrow;++iter)
-    {
-      // Lin gap
-      GP_3D_G_Lin(iter,sele,mele,sval,mval,lmval,sderiv,lmderiv,*gap,gpn,jac,wgt,duallin,dgapgp,jacintcellmap,
-           dsxigp,dmxigp,dualmap);
-
-      // Lin scaling
-      if (nodalscale_)
-        GP_3D_Scaling_Lin(iter,sele,sval,sderiv,jac,wgt,jacsele,derivjacsele,jacintcellmap,
-            dsxigp,derivjacselexi);
-
-      // Lin weighted slip
-      if (gpslip_)
-        GP_3D_SlipIncr_Lin(iter,sele,sval,lmval,sderiv,lmderiv,jac,wgt,jumpvalv,jacintcellmap,
-             dslipgp,dsxigp,dualmap);
-
-      // wear stuff
-      if(wear)
-      {
-        // Lin wear for impl. alg.
-        if(wearimpl_ == true and
-           WearType() == INPAR::WEAR::wear_intstate)
-          GP_3D_Wear_Lin(iter,sele,sval,lmval,sderiv,lmderiv,jac,gpn,wgt,*wearval,jumpval,dweargp,
-               jacintcellmap,dsxigp,dualmap);
-
-        // Lin wear matrices T and E for discr. wear
-        if(wearimpl_ == true and
-           WearType() == INPAR::WEAR::wear_primvar)
-          GP_3D_TE_Lin(iter,duallin,sele,sval,lmval,sderiv,lmderiv,jac,wgt,jumpval,dsxigp,jacintcellmap,
-               dsliptmatrixgp,dualmap);
-      }
-
-      if (poroprob)
-      {
-        // Lin ncoup condition
-        GP_NCOUP_LIN(iter,sele,mele,sval,mval,lmval,sderiv,lmderiv,*ncoup,gpn,jac,wgt,duallin,dncoupgp,
-            dvelncoupgp,dpresncoupgp,jacintcellmap,dsxigp,dmxigp,dualmap);
-      }
-
-    }// end lin
-
-    // lin for master nodes
-    if (WearSide() == INPAR::WEAR::wear_both    and
-        WearType() == INPAR::WEAR::wear_primvar and
-        wearimpl_  == true and
-        wear == true)
-    {
-      for (int iter=0;iter<ncol;++iter)
-      {
-        GP_3D_TE_Master_Lin(iter,duallin,sele,mele,sval,mval,lmval,lm2val,sderiv,mderiv,lmderiv,lm2deriv,
-             jac,wgt,jumpval,dsxigp,dmxigp,jacintcellmap,dsliptmatrixgp,dualmap,dual2map,comm);
-      }
-    }
   }// end gp loop
   //**********************************************************************
 
@@ -2072,9 +1593,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-     GEN::pairedvector<int,Epetra_SerialDenseMatrix>* dMatrixDeriv,
-     GEN::pairedvector<int,Epetra_SerialDenseMatrix>* mMatrixDeriv)
+     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn)
 {
   // get LMtype
   INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
@@ -2345,26 +1864,28 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     //**********************************************************************
     // evaluate at GP and lin char. quantities
     //**********************************************************************
-    // compute cell D/M matrix *******************************************
-    GP_3D_DM_Quad(sele,mele,sintele,lmval,lmintval,sval,mval,jac,wgt,nrow,nintrow,ncol,
-         ndof,bound);
-
     // integrate and lin gp gap
     if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
             lmtype == INPAR::MORTAR::lagmult_pwlin)
       GP_3D_G_Quad_pwlin(sele,sintele,mele,sval,mval,lmintval,scoord,mcoord,sderiv,
            mderiv,gap,gpn,lengthn,jac,wgt,dsxigp,dmxigp,dgapgp,dnmap_unit);
     else
-      GP_3D_G(sele,mele,sval,mval,lmval,scoord,mcoord,sderiv,mderiv,gap,gpn,lengthn,jac,
-         wgt,dpsxigp, dpmxigp,dgapgp,dnmap_unit,true);
+    {
+      Gap_3D(sele,mele,sval,mval,sderiv,mderiv,gap,gpn,dpsxigp,dpmxigp,dgapgp,dnmap_unit);
+      GP_3D_wGap(sele,sval,lmval,gap,jac,wgt,true);
+    }
+
+    // compute cell D/M matrix *******************************************
+    GP_3D_DM_Quad(sele,mele,sintele,lmval,lmintval,sval,mval,jac,wgt,nrow,nintrow,ncol,
+         ndof,bound);
 
     //*******************************
     // WEAR stuff
     //*******************************
-    // std. wear for all wear-algorithm types --  mechdiss included
+    // std. wear for all wear-algorithm types
     if (wear)
-      GP_3D_Wear(sele,mele,sval,sderiv,mval,mderiv,lmval,lmderiv,scoord,scoordold,mcoord,
-           mcoordold,lagmult,gpn,jac,wgt,jumpval,wearval,dsliptmatrixgp,dweargp,dsxigp,
+      GP_3D_Wear(sele,mele,sval,sderiv,mval,mderiv,lmval,lmderiv,
+          lagmult,gpn,jac,wgt,jumpval,wearval,dsliptmatrixgp,dweargp,dsxigp,
            dmxigp,dnmap_unit,dualmap);
 
     // integrate T and E matrix for discr. wear
@@ -2392,7 +1913,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     {
       // Lin DM
       GP_3D_DM_Quad_Lin(duallin, sele,mele,sval,svalmod,mval,lmval,sderiv,mderiv,
-          lmderiv,wgt,jac,dpsxigp,dpmxigp,jacintcellmap,dualmap,dualquad3d,dMatrixDeriv,mMatrixDeriv);
+          lmderiv,wgt,jac,dpsxigp,dpmxigp,jacintcellmap,dualmap,dualquad3d);
 
       for (int iter=0;iter<nrow;++iter)
       {
@@ -2402,7 +1923,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 
         // Lin wear matrices T and E for discr. wear
         if(WearType() == INPAR::WEAR::wear_primvar)
-          GP_3D_TE_Lin(iter,duallin,sele,sval,lmval,sderiv,lmderiv,jac,wgt,jumpval,dsxigp,jacintcellmap,
+          GP_3D_TE_Lin(iter,sele,sval,lmval,sderiv,lmderiv,jac,wgt,jumpval,dsxigp,jacintcellmap,
                dsliptmatrixgp,dualmap);
       }
     }
@@ -2436,11 +1957,6 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
     if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
       dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
   }
-
-  // contact with wear
-  bool wear = false;
-  if(imortar_.get<double>("WEARCOEFF")!= 0.0)
-    wear = true;
 
   // *********************************************************************
   // Define slave quantities
@@ -2481,7 +1997,6 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   LINALG::SerialDenseMatrix sderiv(nrow,1);
   LINALG::SerialDenseVector lmval(nrow);
   LINALG::SerialDenseMatrix lmderiv(nrow,1);
-  LINALG::SerialDenseMatrix ssecderiv(nrow,1);
 
   // get slave nodal coords for Jacobian / GP evaluation
   LINALG::SerialDenseMatrix scoord(3,nrow);
@@ -2495,28 +2010,16 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
   Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
   Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
 
-  if(wear or DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
-  {
-    scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-    lagmult   = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-    sele.GetNodalCoordsOld(*scoordold);
-    sele.GetNodalLagMult(*lagmult);
-  }
-
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
   // prepare directional derivative of dual shape functions
   // this is only necessary for quadratic dual shape functions in 2D
-  //bool duallin = false; // --> coming soon
   GEN::pairedvector<int,Epetra_SerialDenseMatrix> dualmap(nrow*ndof,0,Epetra_SerialDenseMatrix(nrow,nrow));
   if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() ==INPAR::MORTAR::shape_petrovgalerkin)
       && (sele.Shape()==MORTAR::MortarElement::line3 || sele.MoData().DerivDualShape()!=Teuchos::null ||
           sele.Shape()==MORTAR::MortarElement::nurbs3 || sele.IsHermite()))
-  {
-    //duallin=true;
     sele.DerivShapeDual(dualmap);
-  }
 
   // decide whether boundary modification has to be considered or not
   // this is element-specific (is there a boundary node in this element?)
@@ -2564,7 +2067,6 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
 
       // evaluate the two slave side Jacobians
       double dxdsxi = sele.Jacobian(sxi);
-      double dsxideta = -0.5*sxia + 0.5*sxib; // dummy for gap
 
       // evaluate Lagrange multiplier shape functions (on slave element)
       sele.EvaluateShapeLagMult(ShapeFcn(),sxi,lmval,lmderiv,nrow);
@@ -2625,99 +2127,34 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
           DerivXiAB2D(sele,sxia,sxib,*meles[nummaster],mxia,mxib,ximaps,startslave,endslave,linsize);
 
           // evalute the GP slave coordinate derivatives --> no entries
-          GEN::pairedvector<int,double> dsxigp(linsize+ndof*ncol);
+          std::vector<GEN::pairedvector<int,double> > dsxigp(1,GEN::pairedvector<int,double>(linsize+ndof*ncol));
           for (_CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-            dsxigp[p->first] = 0.0;
+            dsxigp[0][p->first] = 0.0;
 
           // evalute the GP master coordinate derivatives
-          GEN::pairedvector<int,double> dmxigp(linsize+ndof*ncol);
-          DerivXiGP2D(sele,*meles[nummaster],sxi[0],mxi[0],dsxigp,dmxigp,linsize);
-
-          // evaluate linearizations *******************************************
-          // evaluate 2nd deriv of trace space shape functions (on slave element)
-          sele.Evaluate2ndDerivShape(sxi,ssecderiv,nrow);
-
-          // evaluate the derivative dxdsxidsxi = Jac,xi
-          double djacdxi[2] = {0.0, 0.0};
-          dynamic_cast<CONTACT::CoElement&>(sele).DJacDXi(djacdxi,sxi,ssecderiv);
-          double dxdsxidsxi=djacdxi[0]; // only 2D here
+          std::vector<GEN::pairedvector<int,double> > dmxigp(1,GEN::pairedvector<int,double>(linsize+ndof*ncol));
+          DerivXiGP2D(sele,*meles[nummaster],sxi[0],mxi[0],dsxigp[0],dmxigp[0],linsize);
 
           // evaluate the Jacobian derivative
           GEN::pairedvector<int,double> derivjac(nrow*ndof);
           sele.DerivJacobian(sxi,derivjac); //direct derivative if xi^1_g does not change
 
-          if(wear or DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
-          {
-            mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,meles[nummaster]->NumNode()));
-            meles[nummaster]->GetNodalCoordsOld(*mcoordold);
-          }
-
           //**********************************************************************
           // frequently reused quantities
           //**********************************************************************
-          double gpn[3]      = {0.0,0.0,0.0};  // normalized normal at gp
-          double gap[1]      = {0.0};          // gap
-          double lengthn[1]  = {0.0};          // length of gp normal gpn
-          double jumpval[1]  = {0.0};          // jump for wear
-          double jumpvalv[1] = {0.0};          // jump for slipincr --> equal to jumpval
-          double wearval[1]  = {0.0};          // wear value
-
-          GEN::pairedvector<int,double> dsliptmatrixgp(linsize+ndof*ncol); // deriv. of slip for wear
-          GEN::pairedvector<int,double> dgapgp(linsize+ndof*ncol);         // gap lin without weighting and jac
-          GEN::pairedvector<int,double> dslipgp(linsize+ndof*ncol);        // deriv. of slip for slipincr
-          GEN::pairedvector<int,double> dweargp(linsize+ndof*ncol);        // wear lin without weighting and jac
-
+          double gpn[2]      = {0.0,0.0};  // normalized normal at gp
           std::vector<GEN::pairedvector<int,double> > dnmap_unit(2,(linsize+ndof*ncol)); // deriv of x and y comp. of gpn (unit)
+          double gap[1]      = {0.0};          // gap
+          GEN::pairedvector<int,double> dgapgp(linsize+ndof*ncol);         // gap lin without weighting and jac
 
           //**********************************************************************
           // evaluate at GP and lin char. quantities
           //**********************************************************************
-          // integrate D and M
-          GP_DM(sele,*meles[nummaster],lmval,sval,mval,dxdsxi,wgt,nrow,ncol,ndof,bound);
+          Gap_2D(sele,*meles[nummaster],sval,mval,sderiv,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
 
           // integrate and lin gp gap
-          GP_2D_G(sele,*meles[nummaster],sval,mval,lmval,scoord,mcoord,sderiv,mderiv,gap,gpn,lengthn,dsxideta,
-              dxdsxi,wgt,dsxigp,dmxigp,dgapgp, dnmap_unit, linsize);
-
-          // Creating the tangential relative slip increment (non-objective)
-          if (DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
-            GP_2D_SlipIncr(sele,*meles[nummaster],sval,mval,lmval,scoord,mcoord,scoordold,mcoordold,sderiv,
-                mderiv,dsxideta,dxdsxi,wgt,jumpvalv,dsxigp,dmxigp,dslipgp,linsize);
-
-          // std. wear for all wear-algorithm types
-          if(wear)
-            GP_2D_Wear(sele,*meles[nummaster],sval,sderiv,mval,mderiv,lmval,lmderiv,scoord,scoordold,mcoord,mcoordold,
-                   lagmult,gpn,dsxideta,dxdsxi,dxdsxidsxi,wgt,jumpval,wearval,dsxigp,dmxigp,dualmap,ximaps,
-                   dnmap_unit, dsliptmatrixgp,dweargp,linsize);
-
-          // integrate T and E matrix for discr. wear
-          if (WearType() == INPAR::WEAR::wear_primvar)
-            GP_TE(sele,lmval,sval,dxdsxi,wgt,jumpval);
-
-          //**********************************************************************
-          // compute LINEARIZATION
-          //**********************************************************************
-          for (int iter=0;iter<nrow;++iter)
-          {
-            //lin DM
-            GP_2D_DM_Ele_Lin(iter,bound,sele,*meles[nummaster],sval,mval,lmval,mderiv,
-                 dxdsxi,wgt,dmxigp,derivjac,dualmap);
-
-            // lin gap
-            GP_2D_G_Ele_Lin(iter,sele,sval,mval,lmval,*gap,dxdsxi,wgt,dgapgp,
-                derivjac, dualmap);
-
-            // Lin tangential relative slip increment (non-objective)
-            if (DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
-              GP_2D_SlipIncr_Lin(iter,sele,sval,lmval,sderiv,lmderiv,dsxideta,dxdsxi,dxdsxidsxi,wgt,
-                  jumpvalv,dsxigp,dslipgp,ximaps,derivjac,dualmap);
-
-            // Lin wear T and E matrix
-            if(wearimpl_ == true and
-               WearType() == INPAR::WEAR::wear_primvar)
-              GP_2D_TE_Lin(iter,sele,sval,lmval,sderiv,lmderiv,dsxideta,dxdsxi,dxdsxidsxi,wgt,jumpval,
-                   dsxigp,derivjac,dsliptmatrixgp,ximaps,dualmap);
-          }
+          IntegrateGP_2D(sele,*meles[nummaster],sval,lmval,mval,sderiv,mderiv,lmderiv,dualmap,
+              wgt,dxdsxi,derivjac,gpn,dnmap_unit,gap[0],dgapgp,sxi,mxi,dsxigp,dmxigp);
         }
       }//End Loop over all Master Elements
     } // End Loop over all GP
@@ -4015,6 +3452,431 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele,
   return;
 }
 
+void CONTACT::CoIntegrator::IntegrateGP_3D(
+    MORTAR::MortarElement& sele,
+    MORTAR::MortarElement& mele,
+    LINALG::SerialDenseVector& sval,
+    LINALG::SerialDenseVector& lmval,
+    LINALG::SerialDenseVector& mval,
+    LINALG::SerialDenseMatrix& sderiv,
+    LINALG::SerialDenseMatrix& mderiv,
+    LINALG::SerialDenseMatrix& lmderiv,
+    GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
+    double& wgt,
+    double& jac,
+    GEN::pairedvector<int, double>& derivjac,
+    double* normal,
+    std::vector<GEN::pairedvector<int, double> >& dnmap_unit,
+    double& gap,
+    GEN::pairedvector<int, double>& deriv_gap,
+    double* sxi,
+    double* mxi,
+    std::vector<GEN::pairedvector<int,double> >& derivsxi,
+    std::vector<GEN::pairedvector<int,double> >& derivmxi
+    )
+{
+  // different algorithms integrate different sh*t
+  switch(algo_)
+  {
+  case INPAR::MORTAR::algorithm_mortar:
+  {
+    // is quadratic case?
+    bool quad = sele.IsQuad();
+
+    // weighted gap
+    GP_3D_wGap(sele,sval,lmval,&gap,jac,wgt,quad);
+    for (int j=0;j<sele.NumNode();++j)
+      GP_G_Lin(j,sele,mele,sval,mval,lmval,sderiv,lmderiv,gap,normal,
+          jac,wgt,deriv_gap,derivjac,derivsxi,dualmap);
+
+    // integrate D and M matrix
+    bool bound =false;
+    GP_DM(sele,mele,lmval,sval,mval,jac,wgt,bound);
+
+    // compute segment D/M linearization
+    GP_3D_DM_Lin(sele,mele,sval,mval,lmval,sderiv,mderiv,lmderiv,wgt,
+        jac,derivsxi,derivmxi,derivjac,dualmap);
+
+    // compute segment scaling factor
+    if (nodalscale_)
+    {
+      double jacsele=sele.Jacobian(sxi);
+      double derivjacselexi[2] = {0.0, 0.0};
+      GEN::pairedvector<int,double> derivjacsele(sele.NumNode()*Dim());
+
+      sele.DerivJacobian(sxi,derivjacsele);
+      LINALG::SerialDenseMatrix ssecderiv(sele.NumNode(),3);
+      sele.Evaluate2ndDerivShape(sxi,ssecderiv,sele.NumNode());
+      dynamic_cast<CoElement&> (sele).DJacDXi(derivjacselexi,sxi,ssecderiv);
+
+      GP_Scaling(sele,sval,jac,wgt,jacsele);
+      for (int iter=0;iter<sele.NumNode();++iter)
+        GP_Scaling_Lin(iter,sele,sval,sderiv,jac,wgt,jacsele,derivjacsele,derivjac,
+            derivsxi,derivjacselexi);
+    }
+
+    // Creating the WEIGHTED tangential relative slip increment (non-objective)
+    if (gpslip_)
+    {
+      int linsize = 0;
+      for (int i=0;i<sele.NumNode();++i)
+        linsize += dynamic_cast<CoNode*> (sele.Nodes()[i])->GetLinsize();
+
+      double jumpvalv[2] = {0.0,0.0};  // jump for slipincr --> equal to jumpval
+      std::vector<GEN::pairedvector<int,double> > dslipgp(2,((mele.NumNode()*Dim())+linsize));// deriv. of slip for slipincr (xi, eta)
+
+      // Creating the WEIGHTED tangential relative slip increment (non-objective)
+      GP_3D_SlipIncr(sele,mele,sval,mval,lmval,sderiv,
+          mderiv,jac,wgt,jumpvalv,derivsxi,derivmxi,dslipgp);
+      // Lin weighted slip
+      for (int iter=0;iter<sele.NumNode();++iter)
+        GP_3D_SlipIncr_Lin(iter,sele,sval,lmval,sderiv,lmderiv,jac,wgt,jumpvalv,derivjac,
+            dslipgp,derivsxi,dualmap);
+    }
+
+    //*******************************
+    // WEAR stuff
+    //*******************************
+    // std. wear for all wear-algorithm types
+    if (wearlaw_!= INPAR::WEAR::wear_none)
+    {
+      int linsize = 0;
+      for (int i=0;i<sele.NumNode();++i)
+        linsize += dynamic_cast<CoNode*> (sele.Nodes()[i])->GetLinsize();
+
+      double jumpval[2]  = {0.0,0.0};  // jump for wear
+      double wearval[1]  = {0.0};      // wear value
+      GEN::pairedvector<int,double> dsliptmatrixgp((mele.NumNode()*Dim())+linsize); // deriv. of slip for wear
+      GEN::pairedvector<int,double> dweargp((mele.NumNode()*Dim())+linsize);        // wear lin. without lm and jac.
+      Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult= Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
+      sele.GetNodalLagMult(*lagmult);
+
+      GP_3D_Wear(sele,mele,sval,sderiv,mval,mderiv,lmval,lmderiv,lagmult,normal,
+          jac,wgt,jumpval,wearval,dsliptmatrixgp,dweargp,derivsxi,
+          derivmxi,dnmap_unit,dualmap);
+
+      if (WearType() == INPAR::WEAR::wear_intstate and
+          wearimpl_  == true)
+        for (int j=0; j<sele.NumNode(); ++j)
+          GP_3D_Wear_Lin(j,sele,sval,lmval,sderiv,lmderiv,jac,normal,wgt,*wearval,jumpval,dweargp,derivjac,derivsxi,dualmap);
+
+      // integrate T and E matrix for discr. wear
+      if (WearType() == INPAR::WEAR::wear_primvar)
+        GP_TE(sele,lmval,sval,jac,wgt,jumpval);
+
+      // both-sided discr wear specific stuff
+      if (WearSide() == INPAR::WEAR::wear_both and
+          WearType() == INPAR::WEAR::wear_primvar)
+      {
+        LINALG::SerialDenseVector lm2val(mele.NumNode());
+        LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(),Dim()-1,true);
+        mele.EvaluateShapeLagMult(ShapeFcn(),mxi,lm2val,lm2deriv,mele.NumNode());
+
+        GP_TE_Master(sele,mele,lmval,lm2val,mval,jac,wgt,jumpval,Comm_);
+      }
+
+      // both-sided wear specific stuff
+      if (WearSide() == INPAR::WEAR::wear_both and
+          WearType() == INPAR::WEAR::wear_intstate)
+      {
+        LINALG::SerialDenseVector lm2val(mele.NumNode());
+        LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(),2,true);
+        mele.EvaluateShapeLagMult(ShapeFcn(),mxi,lm2val,lm2deriv,mele.NumNode());
+
+        GP_D2(sele,mele,lm2val,mval,jac,wgt,Comm_);
+      }
+
+      // Lin wear matrices T and E for discr. wear
+      if(wearimpl_  == true and
+          WearType() == INPAR::WEAR::wear_primvar)
+        for (int j=0; j<sele.NumNode(); ++j)
+          GP_3D_TE_Lin(j,sele,sval,lmval,sderiv,lmderiv,jac,wgt,jumpval,derivsxi,derivjac,
+              dsliptmatrixgp,dualmap);
+
+
+
+      if (WearSide() == INPAR::WEAR::wear_both    and
+          WearType() == INPAR::WEAR::wear_primvar and
+          wearimpl_  == true)
+      {
+        LINALG::SerialDenseVector lm2val(mele.NumNode());
+        LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(),Dim()-1,true);
+        GEN::pairedvector<int,Epetra_SerialDenseMatrix>dual2map(
+            (sele.NumNode()+mele.NumNode())*Dim(),0,
+            Epetra_SerialDenseMatrix(mele.NumNode(),mele.NumNode()));
+        mele.EvaluateShapeLagMult(ShapeFcn(),mxi,lm2val,lm2deriv,mele.NumNode());
+        mele.DerivShapeDual(dual2map);
+
+        for (int iter=0;iter<mele.NumNode();++iter)
+          GP_3D_TE_Master_Lin(iter,sele,mele,sval,mval,lmval,lm2val,sderiv,mderiv,lmderiv,lm2deriv,
+              jac,wgt,jumpval,derivsxi,derivmxi,derivjac,dsliptmatrixgp,dualmap,dual2map,Comm_);
+      }
+    }
+
+    //*******************************
+    // PORO stuff
+    //*******************************
+    bool poroprob = false;
+    if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
+      if (imortar_.get<bool>("CONTACTNOPEN")) //evaluate additional terms just in case of no penectration condition
+        poroprob=true;
+    if (poroprob)
+    {
+      double ncoup[1]      = {0.0};
+      std::map<int,double> dncoupgp;         // ncoup lin. without lm and jac.
+      std::map<int,double> dvelncoupgp;      // velocity ncoup lin. without lm and jac.
+      std::map<int,double> dpresncoupgp;     // pressure ncoup lin. without lm and jac.
+
+      GP_NCOUP_DERIV(sele, mele, sval, mval,lmval, sderiv,mderiv,ncoup, normal, jac, wgt, sxi,
+          derivsxi, derivmxi, dncoupgp, dvelncoupgp, dpresncoupgp, dnmap_unit, false);
+      // Lin ncoup condition
+      for (int j=0; j<sele.NumNode(); ++j)
+      GP_NCOUP_LIN(j,sele,mele,sval,mval,lmval,sderiv,lmderiv,*ncoup,normal,jac,wgt,dncoupgp,
+          dvelncoupgp,dpresncoupgp,derivjac,derivsxi,derivmxi,dualmap);
+    }
+    break;
+  }
+
+  case INPAR::MORTAR::algorithm_gpts:
+  {
+    GPTS_forces(sele,mele,sval,sderiv,derivsxi,mval,mderiv,derivmxi,
+        jac,derivjac,wgt,gap,deriv_gap,normal,dnmap_unit);
+    break;
+  }
+  default:
+    dserror("contact integrator doesn't know what to do with this algorithm");
+
+  };
+
+  return;
+}
+
+
+void CONTACT::CoIntegrator::IntegrateGP_2D(
+    MORTAR::MortarElement& sele,
+    MORTAR::MortarElement& mele,
+    LINALG::SerialDenseVector& sval,
+    LINALG::SerialDenseVector& lmval,
+    LINALG::SerialDenseVector& mval,
+    LINALG::SerialDenseMatrix& sderiv,
+    LINALG::SerialDenseMatrix& mderiv,
+    LINALG::SerialDenseMatrix& lmderiv,
+    GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
+    double& wgt,
+    double& jac,
+    GEN::pairedvector<int, double>& derivjac,
+    double* normal,
+    std::vector<GEN::pairedvector<int, double> >& dnmap_unit,
+    double& gap,
+    GEN::pairedvector<int, double>& deriv_gap,
+    double* sxi,
+    double* mxi,
+    std::vector<GEN::pairedvector<int,double> >& derivsxi,
+    std::vector<GEN::pairedvector<int,double> >& derivmxi
+    )
+{
+
+  // different algorithms integrate different sh*t
+  switch(algo_)
+  {
+  case INPAR::MORTAR::algorithm_mortar:
+  {
+    // decide whether boundary modification has to be considered or not
+    // this is element-specific (is there a boundary node in this element?)
+    bool bound = false;
+    for (int k=0;k<sele.NumNode();++k)
+    {
+      MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[k]);
+      if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+      bound += mymrtrnode->IsOnBound();
+    }
+
+    // decide whether linear LM are used for quadratic FE here
+    bool linlm = false;
+    if (LagMultQuad() == INPAR::MORTAR::lagmult_lin && sele.Shape() == DRT::Element::line3)
+    {
+      bound = false; // crosspoints and linear LM NOT at the same time!!!!
+      linlm = true;
+    }
+
+    // weighted gap
+    GP_2D_wGap(sele,sval,lmval,&gap,jac,wgt);
+    for (int j=0;j<sval.M();++j)
+      GP_2D_G_Lin(j,sele,mele,sval,mval,lmval,sderiv,lmderiv,gap,
+          normal,jac,wgt,deriv_gap,derivjac,derivsxi,dualmap);
+
+    // integrate D and M matrix
+    GP_DM(sele,mele,lmval,sval,mval,jac,wgt,bound);
+    // D/M linearization
+    for (int j=0;j<sval.M();++j)
+    {
+      // compute segment D/M linearization  -- bound
+      if (bound)
+        GP_DM_Lin_bound(j,sele,sval,lmval,sderiv,lmderiv,jac,
+            wgt,sxi[0],derivjac,derivsxi,derivmxi,dualmap);
+      // compute segment D/M linearization
+      GP_2D_DM_Lin(j,bound,linlm,sele,mele,sval,mval,lmval,sderiv,mderiv,lmderiv,jac,
+          wgt,derivsxi,derivmxi,derivjac,dualmap);
+    }
+
+    // compute segment scaling factor
+    if (nodalscale_)
+    {
+      double jacsele=sele.Jacobian(sxi);
+      double derivjacselexi[2] = {0.0, 0.0};
+      GEN::pairedvector<int,double> derivjacsele(sele.NumNode()*Dim());
+
+      sele.DerivJacobian(sxi,derivjacsele);
+      LINALG::SerialDenseMatrix ssecderiv(sele.NumNode(),3);
+      sele.Evaluate2ndDerivShape(sxi,ssecderiv,sele.NumNode());
+      dynamic_cast<CoElement&> (sele).DJacDXi(derivjacselexi,sxi,ssecderiv);
+
+      GP_Scaling(sele,sval,jac,wgt,jacsele);
+      for (int iter=0;iter<sele.NumNode();++iter)
+        GP_Scaling_Lin(iter,sele,sval,sderiv,jac,wgt,jacsele,derivjacsele,derivjac,
+            derivsxi,derivjacselexi);
+    }
+
+    // Creating the tangential relative slip increment (non-objective)
+    if (DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")==true)
+    {
+      int linsize = 0;
+      for (int i=0;i<sele.NumNode();++i)
+        linsize += dynamic_cast<CoNode*> (sele.Nodes()[i])->GetLinsize();
+      linsize = linsize * 2;
+
+      double jumpvalv[1] = {0.0};          // jump for slipincr --> equal to jumpval
+      GEN::pairedvector<int,double> dslipgp(linsize+Dim()*mele.NumNode());        // deriv. of slip for slipincr
+
+      GP_2D_SlipIncr(sele,mele,sval,mval,lmval,sderiv,
+          mderiv,jac,wgt,jumpvalv,derivsxi,derivmxi,dslipgp,linsize);
+
+      for (int iter=0;iter<sele.NumNode();++iter)
+        GP_2D_SlipIncr_Lin(iter,sele,sval,lmval,sderiv,lmderiv,jac,wgt,
+            jumpvalv,derivsxi,dslipgp,derivjac,dualmap);
+    }
+
+    // wear specific stuff
+    if (wearlaw_!= INPAR::WEAR::wear_none)
+    {
+      // nodal Lagrange mulitplier
+      Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult = Teuchos::rcp(
+            new LINALG::SerialDenseMatrix(3,sele.NumNode()));
+        sele.GetNodalLagMult(*lagmult);
+
+      int linsize = 0;
+      for (int i=0;i<sele.NumNode();++i)
+        linsize += dynamic_cast<CoNode*> (sele.Nodes()[i])->GetLinsize();
+      linsize = linsize * 2;
+
+      double jumpval[1]  = {0.0};          // jump for wear
+      double wearval[1]  = {0.0};          // wear value
+      GEN::pairedvector<int,double> dsliptmatrixgp(linsize+Dim()*mele.NumNode()); // deriv. of slip for wear
+      GEN::pairedvector<int,double> dweargp       (linsize+Dim()*mele.NumNode()); // wear lin without weighting and jac
+
+      // std. wear for all wear-algorithm types
+      GP_2D_Wear(sele,mele,sval,sderiv,mval,mderiv,lmval,lmderiv,lagmult,normal,
+          jac,wgt,jumpval,wearval,dsliptmatrixgp,dweargp,derivsxi,
+          derivmxi,dnmap_unit,dualmap);
+
+      // integrate T and E matrix for discr. wear
+      if (WearType() == INPAR::WEAR::wear_primvar)
+        GP_TE(sele,lmval,sval,jac,wgt,jumpval);
+
+      // both-sided discr wear specific stuff
+      if (WearSide() == INPAR::WEAR::wear_both and
+          WearType() == INPAR::WEAR::wear_primvar)
+      {
+        LINALG::SerialDenseVector lm2val(mele.NumNode());
+        LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(),Dim()-1,true);
+        mele.EvaluateShapeLagMult(ShapeFcn(),mxi,lm2val,lm2deriv,mele.NumNode());
+
+        GP_TE_Master(sele,mele,lmval,lm2val,mval,jac,wgt,jumpval,Comm_);
+      }
+
+      // both-sided map wear specific stuff
+      if (WearSide() == INPAR::WEAR::wear_both and
+          WearType() == INPAR::WEAR::wear_intstate)
+      {
+        LINALG::SerialDenseVector lm2val(mele.NumNode());
+        LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(),2,true);
+        mele.EvaluateShapeLagMult(ShapeFcn(),mxi,lm2val,lm2deriv,mele.NumNode());
+
+        GP_D2(sele,mele,lm2val,mval,jac,wgt,Comm_);
+      }
+
+      // Lin wear for impl. alg.
+      if(wearimpl_ == true and
+         WearType() == INPAR::WEAR::wear_intstate)
+        for (int j=0; j<sele.NumNode(); ++j)
+          GP_2D_Wear_Lin(j,sele,sval,lmval,sderiv,lmderiv,jac,normal,wgt,wearval[0],jumpval,dweargp,derivjac,derivsxi,dualmap);
+
+      // Lin wear T and E matrix
+      if(wearimpl_ == true and
+         WearType() == INPAR::WEAR::wear_primvar)
+        for (int j=0; j<sele.NumNode(); ++j)
+        GP_2D_TE_Lin(j,sele,sval,lmval,sderiv,lmderiv,jac,wgt,jumpval,
+             derivsxi,derivjac,dsliptmatrixgp,dualmap);
+
+      if (WearSide() == INPAR::WEAR::wear_both    and
+          WearType() == INPAR::WEAR::wear_primvar and
+          wearimpl_  == true)
+      {
+        LINALG::SerialDenseVector lm2val(mele.NumNode());
+        LINALG::SerialDenseMatrix lm2deriv(mele.NumNode(),Dim()-1,true);
+        GEN::pairedvector<int,Epetra_SerialDenseMatrix>dual2map(
+            (sele.NumNode()+mele.NumNode())*Dim(),0,
+            Epetra_SerialDenseMatrix(mele.NumNode(),mele.NumNode()));
+        mele.EvaluateShapeLagMult(ShapeFcn(),mxi,lm2val,lm2deriv,mele.NumNode());
+        mele.DerivShapeDual(dual2map);
+
+        for (int iter=0;iter<mele.NumNode();++iter)
+          GP_3D_TE_Master_Lin(iter,sele,mele,sval,mval,lmval,lm2val,sderiv,mderiv,lmderiv,lm2deriv,
+              jac,wgt,jumpval,derivsxi,derivmxi,derivjac,dsliptmatrixgp,dualmap,dual2map,Comm_);
+      }
+    } // if wear
+
+    //*******************************
+    // PORO stuff
+    //*******************************
+    bool poroprob = false;
+    if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
+      if (imortar_.get<bool>("CONTACTNOPEN")) //evaluate additional terms just in case of no penectration condition
+        poroprob=true;
+    if (poroprob)
+    {
+      double ncoup[1]      = {0.0};
+      std::map<int,double> dncoupgp;         // ncoup lin. without lm and jac.
+      std::map<int,double> dvelncoupgp;      // velocity ncoup lin. without lm and jac.
+      std::map<int,double> dpresncoupgp;     // pressure ncoup lin. without lm and jac.
+
+      GP_NCOUP_DERIV(sele, mele, sval, mval,lmval, sderiv,mderiv,ncoup, normal, jac, wgt, sxi,
+          derivsxi, derivmxi, dncoupgp, dvelncoupgp, dpresncoupgp, dnmap_unit, false);
+      // Lin ncoup condition
+      for (int j=0; j<sele.NumNode(); ++j)
+      GP_NCOUP_LIN(j,sele,mele,sval,mval,lmval,sderiv,lmderiv,*ncoup,normal,jac,wgt,dncoupgp,
+          dvelncoupgp,dpresncoupgp,derivjac,derivsxi,derivmxi,dualmap);
+    }
+
+    break;
+  }
+
+  case INPAR::MORTAR::algorithm_gpts:
+  {
+    GPTS_forces(sele,mele,sval,sderiv,derivsxi,mval,mderiv,derivmxi,
+        jac,derivjac,wgt,gap,deriv_gap,normal,dnmap_unit);
+    break;
+  }
+  default:
+    dserror("contact integrator doesn't know what to do with this algorithm");
+
+  };
+
+  return;
+
+}
+
+
 /*----------------------------------------------------------------------*
  |  Compute entries for D and M matrix at GP                 farah 09/13|
  *----------------------------------------------------------------------*/
@@ -4025,9 +3887,11 @@ void inline CONTACT::CoIntegrator::GP_DM(
      LINALG::SerialDenseVector& sval,
      LINALG::SerialDenseVector& mval,
      double& jac,
-     double& wgt, int& nrow, int& ncol,
-     int& ndof, bool& bound)
+     double& wgt,
+     bool& bound)
 {
+  int nrow;
+  int ncol;
   // get slave element nodes themselves
   DRT::Node** snodes = NULL;
   DRT::Node** mnodes = NULL;
@@ -4039,9 +3903,13 @@ void inline CONTACT::CoIntegrator::GP_DM(
     sele.AdjEleStatus(sfeatures);
     sele.HermitEleNodes(hsnodes, sfeatures[0]);
     snodes=hsnodes;
+    nrow =sfeatures[1];
   }
   else
+  {
+    nrow=sele.NumNode();
     snodes = sele.Nodes();
+  }
 
   if(mele.IsHermite())
   {
@@ -4049,9 +3917,13 @@ void inline CONTACT::CoIntegrator::GP_DM(
     mele.AdjEleStatus(mfeatures);
     mele.HermitEleNodes(hmnodes, mfeatures[0]);
     mnodes=hmnodes;
+    ncol=mfeatures[1];
   }
   else
+  {
+    ncol=mele.NumNode();
     mnodes=mele.Nodes();
+  }
 
   // BOUNDARY NODE MODIFICATION **********************************
   // We have modified their neighbors' dual shape functions, so we
@@ -4315,134 +4187,49 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_G(
+void inline CONTACT::CoIntegrator::GP_2D_wGap(
      MORTAR::MortarElement& sele,
-     MORTAR::MortarElement& mele,
      LINALG::SerialDenseVector& sval,
-     LINALG::SerialDenseVector& mval,
      LINALG::SerialDenseVector& lmval,
-     LINALG::SerialDenseMatrix& scoord,
-     LINALG::SerialDenseMatrix& mcoord,
-     LINALG::SerialDenseMatrix& sderiv,
-     LINALG::SerialDenseMatrix& mderiv,
-     double* gap, double* gpn, double* lengthn,
-     double& dsxideta, double& dxdsxi,
-     double& wgt,
-     const GEN::pairedvector<int,double>& dsxigp,
-     const GEN::pairedvector<int,double>& dmxigp,
-     GEN::pairedvector<int,double> & dgapgp,
-     std::vector<GEN::pairedvector<int,double> >& dnmap_unit,
-     int& linsize)
+     double* gap,
+     double& jac,
+     double& wgt)
 {
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator _CI;
-
-  // get slave element nodes themselves
-  DRT::Node** snodes = NULL;
-  DRT::Node** mnodes = NULL;
-  DRT::Node* hsnodes[4] = {0,0,0,0};
-  DRT::Node* hmnodes[4] = {0,0,0,0};
-  int nrow = sele.NumNode();
-  int ncol = mele.NumNode();
-
-  int ndof     = Dim();
-
-  if(sele.IsHermite())
+  DRT::Node** mynodes = NULL;
+  DRT::Node* hnodes[4] = {0,0,0,0};
+  int nrow = 0 ;
+  int sfeatures[2] = {0,0};
+  // for hermit smoothing
+  if (sele.IsHermite())
   {
-    int sfeatures[2] = {0,0};
     sele.AdjEleStatus(sfeatures);
-    nrow = sfeatures[1];
-    sele.HermitEleNodes(hsnodes, sfeatures[0]);
-    snodes=hsnodes;
+    nrow    = sfeatures[1];
+    sele.HermitEleNodes(hnodes, sfeatures[0]);
+    mynodes=hnodes;
   }
   else
-    snodes = sele.Nodes();
-
-  if(mele.IsHermite())
   {
-    int mfeatures[2] = {0,0};
-    mele.AdjEleStatus(mfeatures);
-    ncol = mfeatures[1];
-    mele.HermitEleNodes(hmnodes, mfeatures[0]);
-    mnodes=hmnodes;
+    nrow    = sele.NumNode();
+    mynodes = sele.Nodes();
   }
-  else
-    mnodes=mele.Nodes();
-
-  double sgpx[3] = {0.0, 0.0, 0.0};
-  double mgpx[3] = {0.0, 0.0, 0.0};
-
-  for (int i=0;i<nrow;++i)
-  {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*> (snodes[i]);
-    gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
-    gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
-    gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
-
-    if (WearType() == INPAR::WEAR::wear_primvar)
-    {
-      FriNode* myfricnode = dynamic_cast<FriNode*> (mymrtrnode);
-      double w = myfricnode->WearData().wcurr()[0] + myfricnode->WearData().waccu()[0];
-      sgpx[0]+=sval[i] * (scoord(0,i)-(myfricnode->MoData().n()[0]) * w);
-      sgpx[1]+=sval[i] * (scoord(1,i)-(myfricnode->MoData().n()[1]) * w);
-      sgpx[2]+=sval[i] * (scoord(2,i)-(myfricnode->MoData().n()[2]) * w);
-    }
-    else
-    {
-      sgpx[0]+=sval[i] * scoord(0,i);
-      sgpx[1]+=sval[i] * scoord(1,i);
-      sgpx[2]+=sval[i] * scoord(2,i);
-    }
-  }
-
-  // build interpolation of master GP coordinates
-  for (int i=0;i<ncol;++i)
-  {
-    if(WearSide() == INPAR::WEAR::wear_both and
-       WearType() == INPAR::WEAR::wear_primvar)
-    {
-      FriNode* mymrtrnodeM = dynamic_cast<FriNode*> (mnodes[i]);
-      double w = mymrtrnodeM->WearData().wcurr()[0] + mymrtrnodeM->WearData().waccu()[0];
-      mgpx[0]+=mval[i] * (mcoord(0,i) - (mymrtrnodeM->MoData().n()[0]) * w);
-      mgpx[1]+=mval[i] * (mcoord(1,i) - (mymrtrnodeM->MoData().n()[1]) * w);
-      mgpx[2]+=mval[i] * (mcoord(2,i) - (mymrtrnodeM->MoData().n()[2]) * w);
-    }
-    else
-    {
-      mgpx[0]+=mval[i]*mcoord(0,i);
-      mgpx[1]+=mval[i]*mcoord(1,i);
-      mgpx[2]+=mval[i]*mcoord(2,i);
-    }
-  }
-
-  // normalize interpolated GP normal back to length 1.0 !!!
-  lengthn[0] = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
-  if (lengthn[0]<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
-
-  for (int i=0;i<3;++i)
-    gpn[i]/=lengthn[0];
-
-  // build gap function at current GP
-  for (int i=0;i<Dim();++i)
-    gap[0]+=(mgpx[i]-sgpx[i])*gpn[i];
-
   // **************************
   // add to node
   // **************************
   for (int j=0;j<nrow;++j)
   {
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(snodes[j]);
+    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(mynodes[j]);
 
     double prod = 0.0;
     // Petrov-Galerkin approach (dual LM for D/M but standard LM for gap)
     if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-      prod = sval[j]*gap[0]*dxdsxi*dsxideta*wgt;
+      prod = sval[j]*gap[0]*jac*wgt;
     // usual standard or dual LM approach
     else
-      prod = lmval[j]*gap[0]*dxdsxi*dsxideta*wgt;
+      prod = lmval[j]*gap[0]*jac*wgt;
 
 
     // do not process slave side boundary nodes
@@ -4453,235 +4240,28 @@ void inline CONTACT::CoIntegrator::GP_2D_G(
     cnode->AddgValue(prod);
   }
 
-  // **************************
-  // Linearization
-  // **************************
-
-  // build directional derivative of slave GP normal (non-unit)
-  GEN::pairedvector<int,double> dmap_nxsl_gp(ncol*ndof + linsize);
-  GEN::pairedvector<int,double> dmap_nysl_gp(ncol*ndof + linsize);
-
-  for (int i=0;i<nrow;++i)
-  {
-    MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*> (snodes[i]);
-
-    GEN::pairedvector<int,double>& dmap_nxsl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivN()[0];
-    GEN::pairedvector<int,double>& dmap_nysl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivN()[1];
-
-    for (_CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
-      dmap_nxsl_gp[p->first] += sval[i]*(p->second);
-    for (_CI p=dmap_nysl_i.begin();p!=dmap_nysl_i.end();++p)
-      dmap_nysl_gp[p->first] += sval[i]*(p->second);
-
-    for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
-    {
-      double valx =  sderiv(i,0)*snode->MoData().n()[0];
-      dmap_nxsl_gp[p->first] += valx*(p->second);
-      double valy =  sderiv(i,0)*snode->MoData().n()[1];
-      dmap_nysl_gp[p->first] += valy*(p->second);
-    }
-  }
-
-  // build directional derivative of slave GP normal (unit)
-  const double ll     = lengthn[0]*lengthn[0];
-  const double linv   = 1.0/lengthn[0];
-  const double lllinv = 1.0/(lengthn[0]*lengthn[0]*lengthn[0]);
-  const double sxsx   = gpn[0]*gpn[0]*ll; // gpn is the unit normal --> multiplication with ll
-  const double sxsy   = gpn[0]*gpn[1]*ll; // to get the non-unit normal
-  const double sysy   = gpn[1]*gpn[1]*ll;
-
-  for (_CI p=dmap_nxsl_gp.begin();p!=dmap_nxsl_gp.end();++p)
-  {
-    dnmap_unit[0][p->first] += linv*(p->second);
-    dnmap_unit[0][p->first] -= lllinv*sxsx*(p->second);
-    dnmap_unit[1][p->first] -= lllinv*sxsy*(p->second);
-  }
-
-  for (_CI p=dmap_nysl_gp.begin();p!=dmap_nysl_gp.end();++p)
-  {
-    dnmap_unit[1][p->first] += linv*(p->second);
-    dnmap_unit[1][p->first] -= lllinv*sysy*(p->second);
-    dnmap_unit[0][p->first] -= lllinv*sxsy*(p->second);
-  }
-
-  // *****************************************************************************
-  // add everything to dgapgp                                                    *
-  // *****************************************************************************
-  for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
-    dgapgp[p->first] += (mgpx[0]-sgpx[0]) * (p->second);
-
-  for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
-    dgapgp[p->first] += (mgpx[1]-sgpx[1]) * (p->second);
-
-  // for wear as own discretization
-  // slave nodes
-  if (WearType() == INPAR::WEAR::wear_primvar)
-  {
-    for (int z=0;z<nrow;++z)
-    {
-      for (int k=0;k<2;++k)
-      {
-        FriNode* frinode = dynamic_cast<FriNode*> (snodes[z]);
-        double w = frinode->WearData().wcurr()[0] + frinode->WearData().waccu()[0];
-
-        dgapgp[frinode->Dofs()[k]] -= sval[z] * gpn[k];
-
-        for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
-          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * w)* (p->second);
-
-        for (_CI p=frinode->CoData().GetDerivN()[k].begin();p!=frinode->CoData().GetDerivN()[k].end();++p)
-          dgapgp[p->first] += gpn[k] * sval[z] * w * (p->second);
-      }
-    }
-  }
-  else
-  {
-    for (int z=0;z<nrow;++z)
-    {
-      MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*> (snodes[z]);
-
-      for (int k=0;k<Dim();++k)
-      {
-        dgapgp[snode->Dofs()[k]] -= sval[z] * (gpn[k]);
-
-        for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
-          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * snode->xspatial()[k] * (p->second);
-      }
-    }
-  }
-
-  // **************************************************
-  // master nodes
-  if(WearSide() == INPAR::WEAR::wear_both and
-     WearType() == INPAR::WEAR::wear_primvar)
-  {
-    for (int z=0;z<ncol;++z)
-    {
-      for (int k=0;k<2;++k)
-      {
-        FriNode* frinode = dynamic_cast<FriNode*> (mnodes[z]);
-        const double w = frinode->WearData().wcurr()[0] + frinode->WearData().waccu()[0];
-
-        dgapgp[frinode->Dofs()[k]] += mval[z] * gpn[k];
-
-        for (_CI p=dmxigp.begin();p!=dmxigp.end();++p)
-          dgapgp[p->first] += gpn[k] * mderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * w)* (p->second);
-
-        for (_CI p=frinode->CoData().GetDerivN()[k].begin();p!=frinode->CoData().GetDerivN()[k].end();++p)
-          dgapgp[p->first] -= gpn[k] * mval[z] * w * (p->second);
-      }
-    }
-  }
-  else
-  {
-    for (int z=0;z<ncol;++z)
-    {
-      MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*> (mnodes[z]);
-
-      for (int k=0;k<Dim();++k)
-      {
-        dgapgp[mnode->Dofs()[k]] += mval[z] * gpn[k];
-
-        for (_CI p=dmxigp.begin();p!=dmxigp.end();++p)
-          dgapgp[p->first] += gpn[k] * mderiv(z,0) * mnode->xspatial()[k] * (p->second);
-      }
-    }
-  }
-
-
   return;
 }
 
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_G(
+void inline CONTACT::CoIntegrator::GP_3D_wGap(
      MORTAR::MortarElement& sele,
-     MORTAR::MortarElement& mele,
      LINALG::SerialDenseVector& sval,
-     LINALG::SerialDenseVector& mval,
      LINALG::SerialDenseVector& lmval,
-     LINALG::SerialDenseMatrix& scoord,
-     LINALG::SerialDenseMatrix& mcoord,
-     LINALG::SerialDenseMatrix& sderiv,
-     LINALG::SerialDenseMatrix& mderiv,
-     double* gap, double* gpn, double* lengthn,
+     double* gap,
      double& jac,
      double& wgt,
-     std::vector<GEN::pairedvector<int,double> >& dsxigp,
-     std::vector<GEN::pairedvector<int,double> >& dmxigp,
-     GEN::pairedvector<int,double> & dgapgp,
-     std::vector<GEN::pairedvector<int,double> >& dnmap_unit, bool quadratic,
+     bool quadratic,
      int nintrow)
 {
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator _CI;
-
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
-  DRT::Node** mnodes = mele.Nodes();
   if(!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-  if(!mnodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
   // number of nodes (slave, master)
   const int nrow = sele.NumNode();
-  const int ncol = mele.NumNode();
-
-  double sgpx[3] = {0.0, 0.0, 0.0};
-  double mgpx[3] = {0.0, 0.0, 0.0};
-
-  for (int i=0;i<nrow;++i)
-  {
-    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
-    gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
-    gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
-    gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
-
-    if (WearType() == INPAR::WEAR::wear_primvar)
-    {
-      FriNode* myfricnode = dynamic_cast<FriNode*> (mymrtrnode);
-      sgpx[0]+=sval[i] * (scoord(0,i)-(myfricnode->MoData().n()[0]) * myfricnode->WearData().wcurr()[0]);
-      sgpx[1]+=sval[i] * (scoord(1,i)-(myfricnode->MoData().n()[1]) * myfricnode->WearData().wcurr()[0]);
-      sgpx[2]+=sval[i] * (scoord(2,i)-(myfricnode->MoData().n()[2]) * myfricnode->WearData().wcurr()[0]);
-    }
-    else
-    {
-      sgpx[0]+=sval[i] * scoord(0,i);
-      sgpx[1]+=sval[i] * scoord(1,i);
-      sgpx[2]+=sval[i] * scoord(2,i);
-    }
-  }
-
-  // build interpolation of master GP coordinates
-  for (int i=0;i<ncol;++i)
-  {
-    if (WearSide() == INPAR::WEAR::wear_both and
-        WearType() == INPAR::WEAR::wear_primvar)
-    {
-      FriNode* masternode = dynamic_cast<FriNode*> (mnodes[i]);
-
-      mgpx[0]+=mval[i] * (mcoord(0,i) - (masternode->MoData().n()[0] * masternode->WearData().wcurr()[0]) );
-      mgpx[1]+=mval[i] * (mcoord(1,i) - (masternode->MoData().n()[1] * masternode->WearData().wcurr()[0])  );
-      mgpx[2]+=mval[i] * (mcoord(2,i) - (masternode->MoData().n()[2] * masternode->WearData().wcurr()[0])  );
-    }
-    else
-    {
-      mgpx[0]+=mval[i]*mcoord(0,i);
-      mgpx[1]+=mval[i]*mcoord(1,i);
-      mgpx[2]+=mval[i]*mcoord(2,i);
-    }
-  }
-
-  // normalize interpolated GP normal back to length 1.0 !!!
-  lengthn[0] = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
-  if (lengthn[0]<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
-
-  for (int i=0;i<3;++i)
-    gpn[i]/=lengthn[0];
-
-  // build gap function at current GP
-  for (int i=0;i<Dim();++i)
-    gap[0]+=(mgpx[i]-sgpx[i])*gpn[i];
 
   // **************************
   // add to node
@@ -4780,6 +4360,91 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
     }
   }
 
+  return;
+}
+
+void CONTACT::CoIntegrator::Gap_3D(
+    MORTAR::MortarElement& sele,
+    MORTAR::MortarElement& mele,
+    LINALG::SerialDenseVector& sval,
+    LINALG::SerialDenseVector& mval,
+    LINALG::SerialDenseMatrix& sderiv,
+    LINALG::SerialDenseMatrix& mderiv,
+    double* gap, double* gpn,
+    std::vector<GEN::pairedvector<int,double> >& dsxigp,
+    std::vector<GEN::pairedvector<int,double> >& dmxigp,
+    GEN::pairedvector<int,double> & dgapgp,
+    std::vector<GEN::pairedvector<int,double> >& dnmap_unit)
+{
+  // map iterator
+  typedef GEN::pairedvector<int,double>::const_iterator _CI;
+
+  // get slave element nodes themselves
+  DRT::Node** snodes = sele.Nodes();
+  DRT::Node** mnodes = mele.Nodes();
+  if(!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if(!mnodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+
+  // number of nodes (slave, master)
+  const int nrow = sele.NumNode();
+  const int ncol = mele.NumNode();
+
+  double sgpx[3] = {0.0, 0.0, 0.0};
+  double mgpx[3] = {0.0, 0.0, 0.0};
+
+  for (int i=0;i<nrow;++i)
+  {
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
+    gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
+    gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
+    gpn[2]+=sval[i]*mymrtrnode->MoData().n()[2];
+
+    if (WearType() == INPAR::WEAR::wear_primvar)
+    {
+      FriNode* myfricnode = dynamic_cast<FriNode*> (mymrtrnode);
+      sgpx[0]+=sval[i] * (sele.GetNodalCoords(0,i)-(myfricnode->MoData().n()[0]) * myfricnode->WearData().wcurr()[0]);
+      sgpx[1]+=sval[i] * (sele.GetNodalCoords(1,i)-(myfricnode->MoData().n()[1]) * myfricnode->WearData().wcurr()[0]);
+      sgpx[2]+=sval[i] * (sele.GetNodalCoords(2,i)-(myfricnode->MoData().n()[2]) * myfricnode->WearData().wcurr()[0]);
+    }
+    else
+    {
+      sgpx[0]+=sval[i] * sele.GetNodalCoords(0,i);
+      sgpx[1]+=sval[i] * sele.GetNodalCoords(1,i);
+      sgpx[2]+=sval[i] * sele.GetNodalCoords(2,i);
+    }
+  }
+
+  // build interpolation of master GP coordinates
+  for (int i=0;i<ncol;++i)
+  {
+    if (WearSide() == INPAR::WEAR::wear_both and
+        WearType() == INPAR::WEAR::wear_primvar)
+    {
+      FriNode* masternode = dynamic_cast<FriNode*> (mnodes[i]);
+
+      mgpx[0]+=mval[i] * (mele.GetNodalCoords(0,i) - (masternode->MoData().n()[0] * masternode->WearData().wcurr()[0]) );
+      mgpx[1]+=mval[i] * (mele.GetNodalCoords(1,i) - (masternode->MoData().n()[1] * masternode->WearData().wcurr()[0])  );
+      mgpx[2]+=mval[i] * (mele.GetNodalCoords(2,i) - (masternode->MoData().n()[2] * masternode->WearData().wcurr()[0])  );
+    }
+    else
+    {
+      mgpx[0]+=mval[i]*mele.GetNodalCoords(0,i);
+      mgpx[1]+=mval[i]*mele.GetNodalCoords(1,i);
+      mgpx[2]+=mval[i]*mele.GetNodalCoords(2,i);
+    }
+  }
+
+  // normalize interpolated GP normal back to length 1.0 !!!
+    double lengthn = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
+  if (lengthn<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+
+  for (int i=0;i<3;++i)
+    gpn[i]/=lengthn;
+
+  // build gap function at current GP
+  for (int i=0;i<Dim();++i)
+    gap[0]+=(mgpx[i]-sgpx[i])*gpn[i];
+
   // **************************
   // Linearization
   // **************************
@@ -4831,9 +4496,9 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
     }
   }
 
-  const double ll     = lengthn[0]*lengthn[0];
-  const double linv   = 1.0/(lengthn[0]);
-  const double lllinv = 1.0/(lengthn[0]*lengthn[0]*lengthn[0]);
+  const double ll     = lengthn*lengthn;
+  const double linv   = 1.0/(lengthn);
+  const double lllinv = 1.0/(lengthn*lengthn*lengthn);
   const double sxsx   = gpn[0]*gpn[0]*ll;
   const double sxsy   = gpn[0]*gpn[1]*ll;
   const double sxsz   = gpn[0]*gpn[2]*ll;
@@ -4992,6 +4657,272 @@ void inline CONTACT::CoIntegrator::GP_3D_G(
 
   return;
 }
+
+void CONTACT::CoIntegrator::Gap_2D(
+    MORTAR::MortarElement& sele,
+    MORTAR::MortarElement& mele,
+    LINALG::SerialDenseVector& sval,
+    LINALG::SerialDenseVector& mval,
+    LINALG::SerialDenseMatrix& sderiv,
+    LINALG::SerialDenseMatrix& mderiv,
+    double* gap, double* gpn,
+    std::vector<GEN::pairedvector<int,double> >& dsxigp,
+    std::vector<GEN::pairedvector<int,double> >& dmxigp,
+    GEN::pairedvector<int,double> & dgapgp,
+    std::vector<GEN::pairedvector<int,double> >& dnmap_unit)
+{
+
+  // map iterator
+  typedef GEN::pairedvector<int,double>::const_iterator _CI;
+
+  // get slave element nodes themselves
+  DRT::Node** snodes = NULL;
+  DRT::Node** mnodes = NULL;
+  DRT::Node* hsnodes[4] = {0,0,0,0};
+  DRT::Node* hmnodes[4] = {0,0,0,0};
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+
+  int linsize = 0;
+  for (int i=0;i<nrow;++i)
+    linsize += dynamic_cast<CoNode*> (sele.Nodes()[i])->GetLinsize();
+  //safety
+  linsize = linsize * 2;
+
+  int ndof     = Dim();
+
+  int sstatus=-1;
+  if(sele.IsHermite())
+  {
+    int sfeatures[2] = {0,0};
+    sele.AdjEleStatus(sfeatures);
+    sstatus = sfeatures[0];
+    nrow = sfeatures[1];
+    sele.HermitEleNodes(hsnodes, sfeatures[0]);
+    snodes=hsnodes;
+  }
+  else
+    snodes = sele.Nodes();
+
+  int mstatus=-1;
+  if(mele.IsHermite())
+  {
+    int mfeatures[2] = {0,0};
+    mele.AdjEleStatus(mfeatures);
+    mstatus = mfeatures[0];
+    ncol = mfeatures[1];
+    mele.HermitEleNodes(hmnodes, mfeatures[0]);
+    mnodes=hmnodes;
+  }
+  else
+    mnodes=mele.Nodes();
+
+  // get slave nodal coords for GP evaluation
+  LINALG::SerialDenseMatrix scoord(3,nrow);
+  if(sele.IsHermite())
+    sele.AdjNodeCoords(scoord, sstatus);
+  else
+    sele.GetNodalCoords(scoord);
+
+  // get master nodal coords for GP evaluation
+  LINALG::SerialDenseMatrix mcoord(3,ncol);
+  if(mele.IsHermite())
+    mele.AdjNodeCoords(mcoord, mstatus);
+  else
+    mele.GetNodalCoords(mcoord);
+
+  double sgpx[2] = {0.0, 0.0};
+  double mgpx[2] = {0.0, 0.0};
+
+  for (int i=0;i<nrow;++i)
+  {
+    MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*> (snodes[i]);
+    gpn[0]+=sval[i]*mymrtrnode->MoData().n()[0];
+    gpn[1]+=sval[i]*mymrtrnode->MoData().n()[1];
+
+    if (WearType() == INPAR::WEAR::wear_primvar)
+    {
+      FriNode* myfricnode = dynamic_cast<FriNode*> (mymrtrnode);
+      double w = myfricnode->WearData().wcurr()[0] + myfricnode->WearData().waccu()[0];
+      sgpx[0]+=sval[i] * (scoord(0,i)-(myfricnode->MoData().n()[0]) * w);
+      sgpx[1]+=sval[i] * (scoord(1,i)-(myfricnode->MoData().n()[1]) * w);
+    }
+    else
+    {
+      sgpx[0]+=sval[i] * scoord(0,i);
+      sgpx[1]+=sval[i] * scoord(1,i);
+    }
+  }
+
+  // build interpolation of master GP coordinates
+  for (int i=0;i<ncol;++i)
+  {
+    if(WearSide() == INPAR::WEAR::wear_both and
+       WearType() == INPAR::WEAR::wear_primvar)
+    {
+      FriNode* mymrtrnodeM = dynamic_cast<FriNode*> (mnodes[i]);
+      double w = mymrtrnodeM->WearData().wcurr()[0] + mymrtrnodeM->WearData().waccu()[0];
+      mgpx[0]+=mval[i] * (mcoord(0,i) - (mymrtrnodeM->MoData().n()[0]) * w);
+      mgpx[1]+=mval[i] * (mcoord(1,i) - (mymrtrnodeM->MoData().n()[1]) * w);
+    }
+    else
+    {
+      mgpx[0]+=mval[i]*mcoord(0,i);
+      mgpx[1]+=mval[i]*mcoord(1,i);
+    }
+  }
+
+  // normalize interpolated GP normal back to length 1.0 !!!
+  double lengthn = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]);
+  if (lengthn<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+
+  for (int i=0;i<Dim();++i)
+    gpn[i]/=lengthn;
+
+  // build gap function at current GP
+  for (int i=0;i<Dim();++i)
+    gap[0]+=(mgpx[i]-sgpx[i])*gpn[i];
+
+  // **************************
+  // Linearization
+  // **************************
+
+  // build directional derivative of slave GP normal (non-unit)
+  GEN::pairedvector<int,double> dmap_nxsl_gp(ncol*ndof + linsize);
+  GEN::pairedvector<int,double> dmap_nysl_gp(ncol*ndof + linsize);
+
+  for (int i=0;i<nrow;++i)
+  {
+    MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*> (snodes[i]);
+
+    GEN::pairedvector<int,double>& dmap_nxsl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivN()[0];
+    GEN::pairedvector<int,double>& dmap_nysl_i = dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().GetDerivN()[1];
+
+    for (_CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
+      dmap_nxsl_gp[p->first] += sval[i]*(p->second);
+    for (_CI p=dmap_nysl_i.begin();p!=dmap_nysl_i.end();++p)
+      dmap_nysl_gp[p->first] += sval[i]*(p->second);
+
+    for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+    {
+      double valx =  sderiv(i,0)*snode->MoData().n()[0];
+      dmap_nxsl_gp[p->first] += valx*(p->second);
+      double valy =  sderiv(i,0)*snode->MoData().n()[1];
+      dmap_nysl_gp[p->first] += valy*(p->second);
+    }
+  }
+
+  // build directional derivative of slave GP normal (unit)
+  const double ll     = lengthn*lengthn;
+  const double linv   = 1.0/lengthn;
+  const double lllinv = 1.0/(lengthn*lengthn*lengthn);
+  const double sxsx   = gpn[0]*gpn[0]*ll; // gpn is the unit normal --> multiplication with ll
+  const double sxsy   = gpn[0]*gpn[1]*ll; // to get the non-unit normal
+  const double sysy   = gpn[1]*gpn[1]*ll;
+
+  for (_CI p=dmap_nxsl_gp.begin();p!=dmap_nxsl_gp.end();++p)
+  {
+    dnmap_unit[0][p->first] += linv*(p->second);
+    dnmap_unit[0][p->first] -= lllinv*sxsx*(p->second);
+    dnmap_unit[1][p->first] -= lllinv*sxsy*(p->second);
+  }
+
+  for (_CI p=dmap_nysl_gp.begin();p!=dmap_nysl_gp.end();++p)
+  {
+    dnmap_unit[1][p->first] += linv*(p->second);
+    dnmap_unit[1][p->first] -= lllinv*sysy*(p->second);
+    dnmap_unit[0][p->first] -= lllinv*sxsy*(p->second);
+  }
+
+  // *****************************************************************************
+  // add everything to dgapgp                                                    *
+  // *****************************************************************************
+  for (_CI p=dnmap_unit[0].begin();p!=dnmap_unit[0].end();++p)
+    dgapgp[p->first] += (mgpx[0]-sgpx[0]) * (p->second);
+
+  for (_CI p=dnmap_unit[1].begin();p!=dnmap_unit[1].end();++p)
+    dgapgp[p->first] += (mgpx[1]-sgpx[1]) * (p->second);
+
+  // for wear as own discretization
+  // slave nodes
+  if (WearType() == INPAR::WEAR::wear_primvar)
+  {
+    for (int z=0;z<nrow;++z)
+    {
+      for (int k=0;k<2;++k)
+      {
+        FriNode* frinode = dynamic_cast<FriNode*> (snodes[z]);
+        double w = frinode->WearData().wcurr()[0] + frinode->WearData().waccu()[0];
+
+        dgapgp[frinode->Dofs()[k]] -= sval[z] * gpn[k];
+
+        for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * w)* (p->second);
+
+        for (_CI p=frinode->CoData().GetDerivN()[k].begin();p!=frinode->CoData().GetDerivN()[k].end();++p)
+          dgapgp[p->first] += gpn[k] * sval[z] * w * (p->second);
+      }
+    }
+  }
+  else
+  {
+    for (int z=0;z<nrow;++z)
+    {
+      MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*> (snodes[z]);
+
+      for (int k=0;k<Dim();++k)
+      {
+        dgapgp[snode->Dofs()[k]] -= sval[z] * (gpn[k]);
+
+        for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+          dgapgp[p->first] -= gpn[k] * sderiv(z,0) * snode->xspatial()[k] * (p->second);
+      }
+    }
+  }
+
+  // **************************************************
+  // master nodes
+  if(WearSide() == INPAR::WEAR::wear_both and
+     WearType() == INPAR::WEAR::wear_primvar)
+  {
+    for (int z=0;z<ncol;++z)
+    {
+      for (int k=0;k<2;++k)
+      {
+        FriNode* frinode = dynamic_cast<FriNode*> (mnodes[z]);
+        const double w = frinode->WearData().wcurr()[0] + frinode->WearData().waccu()[0];
+
+        dgapgp[frinode->Dofs()[k]] += mval[z] * gpn[k];
+
+        for (_CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
+          dgapgp[p->first] += gpn[k] * mderiv(z,0) * (frinode->xspatial()[k] - frinode->MoData().n()[k] * w)* (p->second);
+
+        for (_CI p=frinode->CoData().GetDerivN()[k].begin();p!=frinode->CoData().GetDerivN()[k].end();++p)
+          dgapgp[p->first] -= gpn[k] * mval[z] * w * (p->second);
+      }
+    }
+  }
+  else
+  {
+    for (int z=0;z<ncol;++z)
+    {
+      MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*> (mnodes[z]);
+
+      for (int k=0;k<Dim();++k)
+      {
+        dgapgp[mnode->Dofs()[k]] += mval[z] * gpn[k];
+
+        for (_CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
+          dgapgp[p->first] += gpn[k] * mderiv(z,0) * mnode->xspatial()[k] * (p->second);
+      }
+    }
+  }
+
+
+  return;
+
+}
+
 
 /*----------------------------------------------------------------------*
  |  Compute entries for weighted Gap at GP                   farah 12/13|
@@ -5297,20 +5228,25 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Do lin. entries for weighted Gap at GP - ele based       farah 02/14|
+ |  Do lin. entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_G_Ele_Lin(
-     int& iter,
-     MORTAR::MortarElement& sele,
-     LINALG::SerialDenseVector& sval,
-     LINALG::SerialDenseVector& mval,
-     LINALG::SerialDenseVector& lmval,
-     double& gap,
-     double& dxdsxi, double& wgt,
-     const GEN::pairedvector<int,double>& dgapgp,
-     const GEN::pairedvector<int,double>& derivjac,
-     const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
+void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
+    int& iter,
+    MORTAR::MortarElement& sele,
+    MORTAR::MortarElement& mele,
+    LINALG::SerialDenseVector& sval,
+    LINALG::SerialDenseVector& mval,
+    LINALG::SerialDenseVector& lmval,
+    LINALG::SerialDenseMatrix& sderiv,
+    LINALG::SerialDenseMatrix& lmderiv,
+    double& gap, double *gpn,double& jac,
+    double& wgt,
+    GEN::pairedvector<int,double>& dgapgp,
+    GEN::pairedvector<int,double>& jacintcellmap,
+    std::vector<GEN::pairedvector<int,double> >& dsxigp,
+    const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
 {
   // get slave element nodes themselves
   DRT::Node** snodes = NULL;
@@ -5331,105 +5267,6 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Ele_Lin(
   MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
   if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
 
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator _CI;
-
-  double fac = 0.0;
-
-  // get the corresponding map as a reference
-  std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
-
-  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-  {
-    // (1) Lin(Phi) - dual shape functions
-    // -->0 PG
-
-    // (2) Lin(Phi) - slave GP coordinates --> 0
-
-    // (3) Lin(g) - gap function
-    fac = wgt*sval[iter]*dxdsxi;
-    for (_CI p=dgapgp.begin();p!=dgapgp.end();++p)
-      dgmap[p->first] += fac*(p->second);
-
-    // (4) Lin(dsxideta) - segment end coordinates --> 0
-
-    // (5) Lin(dxdsxi) - slave GP Jacobian
-    fac = wgt*sval[iter]*gap;
-    for (_CI p=derivjac.begin();p!=derivjac.end();++p)
-      dgmap[p->first] += fac*(p->second);
-
-    // (6) Lin(dxdsxi) - slave GP coordinates --> 0
-  }
-  else
-  {
-    // (1) Lin(Phi) - dual shape functions
-    if (ShapeFcn() == INPAR::MORTAR::shape_dual)
-    {
-      for (int m=0;m<nrow;++m)
-      {
-        fac = wgt*sval[m]*gap*dxdsxi;
-        for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator p=dualmap.begin();p!=dualmap.end();++p)
-        {
-          dgmap[p->first] += fac*(p->second)(iter,m);
-        }
-      }
-    }
-
-    // (2) Lin(Phi) - slave GP coordinates --> 0
-
-    // (3) Lin(g) - gap function
-    fac = wgt*lmval[iter]*dxdsxi;
-    for (_CI p=dgapgp.begin();p!=dgapgp.end();++p)
-      dgmap[p->first] += fac*(p->second);
-
-    // (4) Lin(dsxideta) - segment end coordinates --> 0
-
-    // (5) Lin(dxdsxi) - slave GP Jacobian
-    fac = wgt*lmval[iter]*gap;
-    for (_CI p=derivjac.begin();p!=derivjac.end();++p)
-      dgmap[p->first] += fac*(p->second);
-
-    // (6) Lin(dxdsxi) - slave GP coordinates --> 0
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Do lin. entries for weighted Gap at GP                   farah 09/13|
- *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
-     int& iter,
-     MORTAR::MortarElement& sele,
-     MORTAR::MortarElement& mele,
-     LINALG::SerialDenseVector& sval,
-     LINALG::SerialDenseVector& mval,
-     LINALG::SerialDenseVector& lmval,
-     LINALG::SerialDenseMatrix& sderiv,
-     LINALG::SerialDenseMatrix& lmderiv,
-     double& gap, double *gpn,
-     double& dsxideta, double& dxdsxi,
-     double& dxdsxidsxi,
-     double& wgt,
-     const GEN::pairedvector<int,double>& dgapgp,
-     const GEN::pairedvector<int,double>& dsxigp,
-     const GEN::pairedvector<int,double>& dmxigp,
-     const GEN::pairedvector<int,double>& derivjac,
-     const std::vector<GEN::pairedvector<int,double> >& ximaps,
-     const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
-{
-  const int nrow = sele.NumNode();
-  const int ncol = mele.NumNode();
-
-  // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
-
-  // get master element nodes themselves
-  DRT::Node** mnodes = mele.Nodes();
-
-  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-
   double fac = 0.0;
 
   // map iterator
@@ -5445,30 +5282,18 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
     // as std shape functions are used here
 
     // (2) Lin(Phi) - slave GP coordinates
-    fac = wgt*sderiv(iter,0)*gap*dsxideta*dxdsxi;
-    for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+    fac = wgt*sderiv(iter,0)*gap*jac;
+    for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
       dgmap[p->first] += fac*(p->second);
 
     // (3) Lin(g) - gap function
-    fac = wgt*sval[iter]*dsxideta*dxdsxi;
+    fac = wgt*sval[iter]*jac;
     for (_CI p=dgapgp.begin();p!=dgapgp.end();++p)
       dgmap[p->first] += fac*(p->second);
 
-    // (4) Lin(dsxideta) - segment end coordinates
-    fac = wgt*sval[iter]*gap*dxdsxi;
-    for (_CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-      dgmap[p->first] -= 0.5*fac*(p->second);
-    for (_CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-      dgmap[p->first] += 0.5*fac*(p->second);
-
-    // (5) Lin(dxdsxi) - slave GP Jacobian
-    fac = wgt*sval[iter]*gap*dsxideta;
-    for (_CI p=derivjac.begin();p!=derivjac.end();++p)
-      dgmap[p->first] += fac*(p->second);
-
-    // (6) Lin(dxdsxi) - slave GP coordinates
-    fac = wgt*sval[iter]*gap*dsxideta*dxdsxidsxi;
-    for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+    // (4) Lin(dxdsxi) - slave GP Jacobian
+    fac = wgt*sval[iter]*gap;
+    for (_CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
       dgmap[p->first] += fac*(p->second);
   }
 
@@ -5480,37 +5305,25 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
     {
       for (int m=0;m<nrow;++m)
       {
-        fac = wgt*sval[m]*gap*dsxideta*dxdsxi;
+        fac = wgt*sval[m]*gap*jac;
         for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();p!=dualmap.end();++p)
           dgmap[p->first] += fac*(p->second)(iter,m);
       }
     }
 
     // (2) Lin(Phi) - slave GP coordinates
-    fac = wgt*lmderiv(iter,0)*gap*dsxideta*dxdsxi;
-    for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+    fac = wgt*lmderiv(iter,0)*gap*jac;
+    for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
       dgmap[p->first] += fac*(p->second);
 
     // (3) Lin(g) - gap function
-    fac = wgt*lmval[iter]*dsxideta*dxdsxi;
+    fac = wgt*lmval[iter]*jac;
     for (_CI p=dgapgp.begin();p!=dgapgp.end();++p)
       dgmap[p->first] += fac*(p->second);
 
-    // (4) Lin(dsxideta) - segment end coordinates
-    fac = wgt*lmval[iter]*gap*dxdsxi;
-    for (_CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-      dgmap[p->first] -= 0.5*fac*(p->second);
-    for (_CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-      dgmap[p->first] += 0.5*fac*(p->second);
-
-    // (5) Lin(dxdsxi) - slave GP Jacobian
-    fac = wgt*lmval[iter]*gap*dsxideta;
-    for (_CI p=derivjac.begin();p!=derivjac.end();++p)
-      dgmap[p->first] += fac*(p->second);
-
-    // (6) Lin(dxdsxi) - slave GP coordinates
-    fac = wgt*lmval[iter]*gap*dsxideta*dxdsxidsxi;
-    for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+    // (4) Lin(dxdsxi) - slave GP Jacobian
+    fac = wgt*lmval[iter]*gap;
+    for (_CI p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
       dgmap[p->first] += fac*(p->second);
   }
 
@@ -5519,13 +5332,17 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
   //****************************************************************
   if(WearType() == INPAR::WEAR::wear_primvar)
   {
+    // get master element nodes themselves
+    const int ncol = mele.NumNode();
+    DRT::Node** mnodes = mele.Nodes();
+
     std::map<int,double>& dgwmmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivGW();
 
     for (int bl=0;bl<nrow;++bl)
     {
       MORTAR::MortarNode* wearnode = dynamic_cast<MORTAR::MortarNode*>(snodes[bl]);
       for (int z=0;z<Dim();++z)
-        dgwmmap[wearnode->Dofs()[0]] += dxdsxi*dsxideta*wgt*lmval[iter]*(gpn[z]*sval[bl]*wearnode->MoData().n()[z]);
+        dgwmmap[wearnode->Dofs()[0]] += jac*wgt*lmval[iter]*(gpn[z]*sval[bl]*wearnode->MoData().n()[z]);
     }
 
     if (WearSide() == INPAR::WEAR::wear_both)
@@ -5534,7 +5351,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(
       {
         MORTAR::MortarNode* wearnodeM = dynamic_cast<MORTAR::MortarNode*>(mnodes[bl]);
         for (int z=0;z<Dim();++z)
-          dgwmmap[wearnodeM->Dofs()[0]] -= dxdsxi*dsxideta*wgt*lmval[iter]*(gpn[z]*mval[bl]*wearnodeM->MoData().n()[z]);
+          dgwmmap[wearnodeM->Dofs()[0]] -= jac*wgt*lmval[iter]*(gpn[z]*mval[bl]*wearnodeM->MoData().n()[z]);
       }
     }
   }
@@ -5738,122 +5555,9 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(
 }
 
 /*----------------------------------------------------------------------*
- |  Do lin. entries for weighted Gap at GP                   farah 07/14|
- *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_G_Ele_Lin(
-     int& iter,
-     MORTAR::MortarElement& sele,
-     LINALG::SerialDenseVector& sval,
-     LINALG::SerialDenseVector& svalmod,
-     LINALG::SerialDenseVector& lmval,
-     LINALG::SerialDenseMatrix& sderiv,
-     LINALG::SerialDenseMatrix& lmderiv,
-     double& gap, double& jacslave,
-     double& wgt, bool& duallin, bool& dualquad3d,
-     GEN::pairedvector<int,double>& dgapgp,
-     GEN::pairedvector<int,double>& jacslavemap,
-     const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
-{
-  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3D: Null pointer!");
-
-  DRT::Element::DiscretizationType dt_s = sele.Shape();
-  const int nrow = sele.NumNode();
-
-  double fac = 0.0;
-
-  // get the corresponding map as a reference
-  std::map<int,double>& dgmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
-
-  typedef GEN::pairedvector<int,double>::const_iterator _CI;
-
-  if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-  {
-    // (1) Lin(Phi) - dual shape functions
-    // --> 0 PG!!!
-
-    // (2) Lin(Phi) - slave GP coordinates --> 0
-
-    // (3) Lin(g) - gap function
-    fac = wgt*sval[iter]*jacslave;
-    for (_CI p=dgapgp.begin(); p!=dgapgp.end(); ++p)
-      dgmap[p->first] += fac*(p->second);
-
-    // (4) Lin(dsxideta) - intcell GP Jacobian --> 0
-
-    // (5) Lin(dxdsxi) - slave GP Jacobian
-    fac = wgt*sval[iter]*gap;
-    for (_CI p=jacslavemap.begin(); p!=jacslavemap.end(); ++p)
-      dgmap[p->first] += fac*(p->second);
-
-    // (6) Lin(dxdsxi) - slave GP coordinates --> 0
-  }
-  // standard shape functions
-  else if( ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3 ||
-      (LagMultQuad() ==INPAR::MORTAR::lagmult_lin && dt_s==DRT::Element::quad9) ))
-  {
-    // (1) Lin(Phi) - dual shape functions --> 0
-    // this vanishes here since there are no deformation-dependent dual functions
-
-     // (2) Lin(NSlave) - slave GP coordinates --> 0
-
-     // (3) Lin(g) - gap function
-     fac = wgt*lmval[iter]*jacslave;
-     for (_CI p=dgapgp.begin(); p!=dgapgp.end(); ++p)
-       dgmap[p->first] += fac*(p->second);
-
-     // (4) Lin(dsxideta) - intcell GP Jacobian --> 0
-
-     // (5) Lin(dxdsxi) - slave GP Jacobian
-     fac = wgt*lmval[iter]*gap;
-     for (_CI p=jacslavemap.begin(); p!=jacslavemap.end(); ++p)
-       dgmap[p->first] += fac*(p->second);
-
-     // (6) Lin(dxdsxi) - slave GP coordinates --> 0
-  }
-
-  // dual shape functions
-  else if( ShapeFcn() == INPAR::MORTAR::shape_dual &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3) )
-  {
-    // (1) Lin(Phi) - dual shape functions
-    if (duallin)
-      for (int m=0; m<nrow; ++m)
-      {
-        if (dualquad3d) fac = wgt*svalmod[m]*gap*jacslave;
-        else fac = wgt*sval[m]*gap*jacslave;
-        for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
-            p!=dualmap.end(); ++p)
-          dgmap[p->first] += fac*(p->second)(iter,m);
-      }
-
-    // (2) Lin(Phi) - slave GP coordinates --> 0
-
-    // (3) Lin(g) - gap function
-    fac = wgt*lmval[iter]*jacslave;
-    for (_CI p=dgapgp.begin(); p!=dgapgp.end(); ++p)
-      dgmap[p->first] += fac*(p->second);
-
-    // (4) Lin(dsxideta) - intcell GP Jacobian --> 0
-
-    // (5) Lin(dxdsxi) - slave GP Jacobian
-    fac = wgt*lmval[iter]*gap;
-    for (_CI p=jacslavemap.begin(); p!=jacslavemap.end(); ++p)
-      dgmap[p->first] += fac*(p->second);
-
-    // (6) Lin(dxdsxi) - slave GP coordinates --> 0
-  }
-  else
-    dserror("ERROR: Invalid integration case for 3D contact!");
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Do lin. entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_G_Lin(
+void inline CONTACT::CoIntegrator::GP_G_Lin(
      int& iter,
      MORTAR::MortarElement& sele,
      MORTAR::MortarElement& mele,
@@ -5863,11 +5567,10 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Lin(
      LINALG::SerialDenseMatrix& sderiv,
      LINALG::SerialDenseMatrix& lmderiv,
      double& gap, double *gpn,double& jac,
-     double& wgt, bool& duallin,
+     double& wgt,
      GEN::pairedvector<int,double>& dgapgp,
      GEN::pairedvector<int,double>& jacintcellmap,
      std::vector<GEN::pairedvector<int,double> >& dsxigp,
-     std::vector<GEN::pairedvector<int,double> >& dmxigp,
      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
 {
   const int nrow = sele.NumNode();
@@ -5894,13 +5597,12 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Lin(
     // (1) Lin(Phi) - does not exist here for Petrov-Galerkin approach
 
     // (2) Lin(N) - slave GP coordinates
-    fac = wgt*sderiv(iter,0)*gap*jac;
-    for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-      dgmap[p->first] += fac*(p->second);
-
-    fac = wgt*sderiv(iter,1)*gap*jac;
-    for (_CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-      dgmap[p->first] += fac*(p->second);
+    for (int d=0;d<Dim()-1;++d)
+    {
+      fac = wgt*sderiv(iter,d)*gap*jac;
+      for (_CI p=dsxigp[d].begin();p!=dsxigp[d].end();++p)
+        dgmap[p->first] += fac*(p->second);
+    }
 
     // (3) Lin(g) - gap function
     fac = wgt*sval[iter]*jac;
@@ -5917,7 +5619,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Lin(
   else
   {
     // (1) Lin(Phi) - dual shape functions
-    if (duallin)
+    if (dualmap.size()>0)
       for (int m=0;m<nrow;++m)
       {
         fac = wgt*sval[m]*gap*jac;
@@ -5926,13 +5628,12 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Lin(
       }
 
     // (2) Lin(Phi) - slave GP coordinates
-    fac = wgt*lmderiv(iter,0)*gap*jac;
-    for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
-      dgmap[p->first] += fac*(p->second);
-
-    fac = wgt*lmderiv(iter,1)*gap*jac;
-    for (_CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
-      dgmap[p->first] += fac*(p->second);
+    for (int d=0;d<Dim()-1;++d)
+    {
+      fac = wgt*lmderiv(iter,d)*gap*jac;
+      for (_CI p=dsxigp[d].begin();p!=dsxigp[d].end();++p)
+        dgmap[p->first] += fac*(p->second);
+    }
 
     // (3) Lin(g) - gap function
     fac = wgt*lmval[iter]*jac;
@@ -5955,7 +5656,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Lin(
     for (int bl=0;bl<nrow;++bl)
     {
       MORTAR::MortarNode* wearnode = dynamic_cast<MORTAR::MortarNode*>(snodes[bl]);
-      for (int z=0;z<3;++z)
+      for (int z=0;z<Dim();++z)
         dgwmmap[wearnode->Dofs()[0]] += jac*wgt*lmval[iter]*(gpn[z]*sval[bl]*wearnode->MoData().n()[z]);
     }
 
@@ -5977,19 +5678,19 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Lin(
  |  Compute entries for weighted Gap at GP                   farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_DM_Lin_bound(
-     int& iter,bool& duallin,
-     MORTAR::MortarElement& sele,
-     LINALG::SerialDenseVector& sval,
-     LINALG::SerialDenseVector& lmval,
-     LINALG::SerialDenseMatrix& sderiv,
-     LINALG::SerialDenseMatrix& lmderiv,
-     double& dsxideta, double& dxdsxi,
-     double& dxdsxidsxi,
-     double& wgt, double& sxi,
-     const GEN::pairedvector<int,double>& dsxigp,
-     const GEN::pairedvector<int,double>& derivjac,
-     const std::vector<GEN::pairedvector<int,double> >& ximaps,
-     const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
+    int& iter,
+    MORTAR::MortarElement& sele,
+    LINALG::SerialDenseVector& sval,
+    LINALG::SerialDenseVector& lmval,
+    LINALG::SerialDenseMatrix& sderiv,
+    LINALG::SerialDenseMatrix& lmderiv,
+    double& jac,
+    double& wgt,
+    double& sxi,
+    const GEN::pairedvector<int, double>& derivjac,
+    std::vector<GEN::pairedvector<int,double> >& derivsxi,
+    std::vector<GEN::pairedvector<int,double> >& derivmxi,
+    const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
 {
   // check the shape function type (not really necessary because only dual shape functions arrive here)
   if (ShapeFcn() == INPAR::MORTAR::shape_standard)
@@ -6023,40 +5724,28 @@ void inline CONTACT::CoIntegrator::GP_DM_Lin_bound(
   if (!boundnode)
   {
     // (1) Lin(Phi) - dual shape functions
-    if (duallin)
+    if (dualmap.size()>0)
       for (int m=0;m<nrow;++m)
       {
-        fac = wgt*sval[iter]*sval[m]*dsxideta*dxdsxi;
+        fac = wgt*sval[iter]*sval[m]*jac;
         for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
             p!=dualmap.end();++p)
           nodemap[p->first] += fac*(p->second)(iter,m);
       }
 
     // (2) Lin(Phi) - slave GP coordinates
-    fac = wgt*lmderiv(iter,0)*sval[iter]*dsxideta*dxdsxi;
-    for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+    fac = wgt*lmderiv(iter,0)*sval[iter]*jac;
+    for (_CI p=derivsxi[0].begin();p!=derivsxi[0].end();++p)
       nodemap[p->first] += fac*(p->second);
 
     // (3) Lin(NSlave) - slave GP coordinates
-    fac = wgt*lmval[iter]*sderiv(iter,0)*dsxideta*dxdsxi;
-    for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+    fac = wgt*lmval[iter]*sderiv(iter,0)*jac;
+    for (_CI p=derivsxi[0].begin();p!=derivsxi[0].end();++p)
       nodemap[p->first] += fac*(p->second);
-
-    // (4) Lin(dsxideta) - segment end coordinates
-    fac = wgt*lmval[iter]*sval[iter]*dxdsxi;
-    for (_CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-      nodemap[p->first] -= 0.5*fac*(p->second);
-    for (_CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-      nodemap[p->first] += 0.5*fac*(p->second);
 
     // (5) Lin(dxdsxi) - slave GP Jacobian
-    fac = wgt*lmval[iter]*sval[iter]*dsxideta;
+    fac = wgt*lmval[iter]*sval[iter];
     for (_CI p=derivjac.begin();p!=derivjac.end();++p)
-      nodemap[p->first] += fac*(p->second);
-
-    // (6) Lin(dxdsxi) - slave GP coordinates
-    fac = wgt*lmval[iter]*sval[iter]*dsxideta*dxdsxidsxi;
-    for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
       nodemap[p->first] += fac*(p->second);
   }
 
@@ -6078,44 +5767,32 @@ void inline CONTACT::CoIntegrator::GP_DM_Lin_bound(
       std::map<int,double>& nodemmap = dynamic_cast<CONTACT::CoNode*>(mymrtrnode2)->CoData().GetDerivM()[bgid];
 
       // (1) Lin(Phi) - dual shape functions
-      if (duallin)
+      if (dualmap.size()>0)
         for (int m=0;m<nrow;++m)
         {
           LINALG::SerialDenseVector vallin(nrow-1);
           LINALG::SerialDenseMatrix derivlin(nrow-1,1);
           if (iter==0) sele.ShapeFunctions(MORTAR::MortarElement::dual1D_base_for_edge0,&sxi,vallin,derivlin);
           else if (iter==1) sele.ShapeFunctions(MORTAR::MortarElement::dual1D_base_for_edge1,&sxi,vallin,derivlin);
-          double fac = wgt*sval[iter]*vallin[m]*dsxideta*dxdsxi;
+          double fac = wgt*sval[iter]*vallin[m]*jac;
           for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
               p!=dualmap.end();++p)
             nodemmap[p->first] -= fac*(p->second)(k,m);
         }
 
       // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*lmderiv(k,0)*sval[iter]*dsxideta*dxdsxi;
-      for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+      fac = wgt*lmderiv(k,0)*sval[iter]*jac;
+      for (_CI p=derivsxi[0].begin();p!=derivsxi[0].end();++p)
         nodemmap[p->first] -= fac*(p->second);
 
       // (3) Lin(NSlave) - slave GP coordinates
-      fac = wgt*lmval[k]*sderiv(iter,0)*dsxideta*dxdsxi;
-      for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+      fac = wgt*lmval[k]*sderiv(iter,0)*jac;
+      for (_CI p=derivsxi[0].begin();p!=derivsxi[0].end();++p)
         nodemmap[p->first] -= fac*(p->second);
 
-      // (4) Lin(dsxideta) - segment end coordinates
-      fac = wgt*lmval[k]*sval[iter]*dxdsxi;
-      for (_CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-        nodemmap[p->first] += 0.5*fac*(p->second);
-      for (_CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-        nodemmap[p->first] -= 0.5*fac*(p->second);
-
-      // (5) Lin(dxdsxi) - slave GP Jacobian
-      fac = wgt*lmval[k]*sval[iter]*dsxideta;
+      // (4) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*lmval[k]*sval[iter];
       for (_CI p=derivjac.begin();p!=derivjac.end();++p)
-        nodemmap[p->first] -= fac*(p->second);
-
-      // (6) Lin(dxdsxi) - slave GP coordinates
-      fac = wgt*lmval[k]*sval[iter]*dsxideta*dxdsxidsxi;
-      for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
         nodemmap[p->first] -= fac*(p->second);
     }
   }
@@ -6296,171 +5973,6 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(
 }
 
 /*----------------------------------------------------------------------*
- |  Lin D and M matrix entries at GP for elebased integr.    farah 07/14|
- *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_DM_Ele_Lin(
-    int& iter,bool& duallin, bool& dualquad3d,
-    MORTAR::MortarElement& sele,
-    MORTAR::MortarElement& mele,
-    LINALG::SerialDenseVector& sval,
-    LINALG::SerialDenseVector& svalmod,
-    LINALG::SerialDenseVector& mval,
-    LINALG::SerialDenseVector& lmval,
-    LINALG::SerialDenseMatrix& mderiv,
-    double& wgt, double& jacslave,
-    std::vector<GEN::pairedvector<int,double> >& dmxigp,
-    GEN::pairedvector<int,double>& jacslavemap,
-    const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
-{
-  MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3D: Null pointer!");
-
-  const int sgid   = mymrtrnode->Id();
-  const int nmnode = mele.NumNode();
-  const int nrow   = sele.NumNode();
-
-  DRT::Element::DiscretizationType dt_s = sele.Shape();
-
-  typedef GEN::pairedvector<int,double>::const_iterator _CI;
-
-  // standard shape functions
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3 ||
-      (LagMultQuad() ==INPAR::MORTAR::lagmult_lin && dt_s==DRT::Element::quad9) ) )
-  {
-    // integrate LinM
-    for (int k=0; k<nmnode; ++k)
-    {
-      // global master node ID
-      int mgid = mele.Nodes()[k]->Id();
-      double fac = 0.0;
-
-      // get the correct map as a reference
-      std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
-
-      // (1) Lin(Phi) - dual shape functions --> 0
-      // this vanishes here since there are no deformation-dependent dual functions
-
-      // (2) Lin(NSlave) - slave GP coordinates --> 0
-
-      // (3) Lin(NMaster) - master GP coordinates
-      fac = wgt*lmval[iter]*mderiv(k, 0)*jacslave;
-      for (_CI p=dmxigp[0].begin(); p!=dmxigp[0].end(); ++p)
-        dmmap_jk[p->first] += fac*(p->second);
-
-      fac = wgt*lmval[iter]*mderiv(k, 1)*jacslave;
-      for (_CI p=dmxigp[1].begin(); p!=dmxigp[1].end(); ++p)
-        dmmap_jk[p->first] += fac*(p->second);
-
-      // (4) Lin(dsxideta) - intcell GP Jacobian --> 0
-
-      // (5) Lin(dxdsxi) - slave GP Jacobian
-      fac = wgt*lmval[iter]*mval[k];
-      for (_CI p=jacslavemap.begin(); p!=jacslavemap.end(); ++p)
-        dmmap_jk[p->first] += fac*(p->second);
-
-      // (6) Lin(dxdsxi) - slave GP coordinates --> 0
-    } // loop over master nodes
-
-    // integrate LinD
-    for (int k=0; k<nrow; ++k)
-    {
-      // global master node ID -- evtl anderes sgid!!!
-      int ssgid = sele.Nodes()[k]->Id();//int sgid = meles[nummaster]->Nodes()[k]->Id();
-      double fac = 0.0;
-
-      // get the correct map as a reference
-      std::map<int,double>& ddmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[ssgid];
-
-      // (1) Lin(Phi) - dual shape functions  --> 0
-      // this vanishes here since there are no deformation-dependent dual functions
-
-      // (2) Lin(NSlave) - slave GP coordinates --> 0
-
-      // (3) Lin(NSlave) - slave GP coordinates --> 0
-
-      // (4) Lin(dsxideta) - intcell GP Jacobian --> 0
-
-      // (5) Lin(dxdsxi) - slave GP Jacobian
-      fac = wgt*lmval[iter]*sval[k];
-      for (_CI p=jacslavemap.begin(); p!=jacslavemap.end(); ++p)
-        ddmap_jk[p->first] += fac*(p->second);
-
-      // (6) Lin(dxdsxi) - slave GP coordinates --> 0
-    } // loop over slave nodes
-  }
-
-  //************************************
-  // dual shape functions
-  //************************************
-  else if ((ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
-      (LagMultQuad() == INPAR::MORTAR::lagmult_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3))
-  {
-    // get the D-map as a reference
-    std::map<int,double>& ddmap_jj = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
-
-    // integrate LinM and LinD
-    for (int k=0; k<nmnode; ++k)
-    {
-      // global master node ID
-      int mgid = mele.Nodes()[k]->Id();
-      double fac = 0.0;
-
-      // get the correct map as a reference
-      std::map<int,double>& dmmap_jk = dynamic_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivM()[mgid];
-
-      // (1) Lin(Phi) - dual shape functions
-      if (duallin)
-        for (int m=0; m<nrow; ++m)
-        {
-          if (dualquad3d) fac = wgt*svalmod[m]*mval[k]*jacslave;
-          else            fac = wgt*sval[m]*mval[k]*jacslave;
-          for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
-              p!=dualmap.end(); ++p)
-          {
-            dmmap_jk[p->first] += fac*(p->second)(iter,m);
-            ddmap_jj[p->first] += fac*(p->second)(iter,m);
-          }
-        }
-
-      // (2) Lin(Phi) - slave GP coordinates --> 0
-
-      // (3) Lin(NMaster) - master GP coordinates
-      fac = wgt*lmval[iter]*mderiv(k, 0)*jacslave;
-      for (_CI p=dmxigp[0].begin(); p!=dmxigp[0].end(); ++p)
-      {
-        dmmap_jk[p->first] += fac*(p->second);
-        ddmap_jj[p->first] += fac*(p->second);
-      }
-      fac = wgt*lmval[iter]*mderiv(k, 1)*jacslave;
-      for (_CI p=dmxigp[1].begin(); p!=dmxigp[1].end(); ++p)
-      {
-        dmmap_jk[p->first] += fac*(p->second);
-        ddmap_jj[p->first] += fac*(p->second);
-      }
-
-      // (4) Lin(dsxideta) - intcell GP Jacobian --> 0
-
-      // (5) Lin(dxdsxi) - slave GP Jacobian
-      fac = wgt*lmval[iter]*mval[k];
-      for (_CI p=jacslavemap.begin(); p!=jacslavemap.end(); ++p)
-      {
-        dmmap_jk[p->first] += fac*(p->second);
-        ddmap_jj[p->first] += fac*(p->second);
-      }
-
-      // (6) Lin(dxdsxi) - slave GP coordinates --> 0
-    } // loop over master nodes
-  } // ShapeFcn() switch
-  else
-  {
-    dserror("ERROR: Invalid integration case for 3D contact!");
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
@@ -6474,20 +5986,43 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
      LINALG::SerialDenseMatrix& sderiv,
      LINALG::SerialDenseMatrix& mderiv,
      LINALG::SerialDenseMatrix& lmderiv,
-     double& dsxideta, double& dxdsxi,
-     double& dxdsxidsxi,
+     double& jac,
      double& wgt,
-     const GEN::pairedvector<int,double>& dsxigp,
-     const GEN::pairedvector<int,double>& dmxigp,
+     const std::vector<GEN::pairedvector<int,double> >& dsxigp,
+     const std::vector<GEN::pairedvector<int,double> >& dmxigp,
      const GEN::pairedvector<int,double>& derivjac,
-     const std::vector<GEN::pairedvector<int,double> >& ximaps,
      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
 {
-  const int nrow = sele.NumNode();
-  const int ncol = mele.NumNode();
+  DRT::Node** snodes = NULL;
+  DRT::Node** mnodes = NULL;
 
-  // get slave element nodes themselves
-  DRT::Node** snodes = sele.Nodes();
+  DRT::Node* hsnodes[4] = {0,0,0,0};
+  DRT::Node* hmnodes[4] = {0,0,0,0};
+
+  int nrow = sele.NumNode();
+  int ncol = mele.NumNode();
+
+  if(sele.IsHermite())
+  {
+    int sfeatures[2] = {0,0};
+    sele.AdjEleStatus(sfeatures);
+    nrow = sfeatures[1];
+    sele.HermitEleNodes(hsnodes, sfeatures[0]);
+    snodes=hsnodes;
+  }
+  else
+    snodes = sele.Nodes();
+
+  if(mele.IsHermite())
+  {
+    int mfeatures[2] = {0,0};
+    mele.AdjEleStatus(mfeatures);
+    ncol = mfeatures[1];
+    mele.HermitEleNodes(hmnodes, mfeatures[0]);
+    mnodes=hmnodes;
+  }
+  else
+    mnodes = mele.Nodes();
 
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
@@ -6521,7 +6056,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
       for (int k=0; k<ncol; ++k)
       {
         // global master node ID
-        int mgid = mele.Nodes()[k]->Id();
+        int mgid = mnodes[k]->Id();
         double fac = 0.0;
 
         // get the correct map as a reference
@@ -6531,30 +6066,18 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
         // this vanishes here since there are no deformation-dependent dual functions
 
         // (2) Lin(NSlave) - slave GP coordinates
-        fac = wgt*lmderiv(iter,0)*mval[k]*dsxideta*dxdsxi;
-        for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        fac = wgt*lmderiv(iter,0)*mval[k]*jac;
+        for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
           dmmap_jk[p->first] += fac*(p->second);
 
         // (3) Lin(NMaster) - master GP coordinates
-        fac = wgt*lmval[iter]*mderiv(k, 0)*dsxideta*dxdsxi;
-        for (_CI p=dmxigp.begin(); p!=dmxigp.end(); ++p)
+        fac = wgt*lmval[iter]*mderiv(k, 0)*jac;
+        for (_CI p=dmxigp[0].begin(); p!=dmxigp[0].end(); ++p)
           dmmap_jk[p->first] += fac*(p->second);
 
-        // (4) Lin(dsxideta) - segment end coordinates
-        fac = wgt*lmval[iter]*mval[k]*dxdsxi;
-        for (_CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
-          dmmap_jk[p->first] -= 0.5*fac*(p->second);
-        for (_CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
-          dmmap_jk[p->first] += 0.5*fac*(p->second);
-
-        // (5) Lin(dxdsxi) - slave GP Jacobian
-        fac = wgt*lmval[iter]*mval[k]*dsxideta;
+        // (4) Lin(dxdsxi) - slave GP Jacobian
+        fac = wgt*lmval[iter]*mval[k];
         for (_CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-          dmmap_jk[p->first] += fac*(p->second);
-
-        // (6) Lin(dxdsxi) - slave GP coordinates
-        fac = wgt*lmval[iter]*mval[k]*dsxideta*dxdsxidsxi;
-        for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
           dmmap_jk[p->first] += fac*(p->second);
       } // loop over master nodes
 
@@ -6580,30 +6103,18 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
           // this vanishes here since there are no deformation-dependent dual functions
 
           // (2) Lin(NSlave) - slave GP coordinates
-          fac = wgt*lmderiv(iter,0)*sval[k]*dsxideta*dxdsxi;
-          for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+          fac = wgt*lmderiv(iter,0)*sval[k]*jac;
+          for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
             dmmap_jk[p->first] -= fac*(p->second);
 
           // (3) Lin(NSlave) - slave GP coordinates
-          fac = wgt*lmval[iter]*sderiv(k, 0)*dsxideta*dxdsxi;
-          for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+          fac = wgt*lmval[iter]*sderiv(k, 0)*jac;
+          for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
             dmmap_jk[p->first] -= fac*(p->second);
 
-          // (4) Lin(dsxideta) - segment end coordinates
-          fac = wgt*lmval[iter]*sval[k]*dxdsxi;
-          for (_CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
-            dmmap_jk[p->first] += 0.5*fac*(p->second);
-          for (_CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
-            dmmap_jk[p->first] -= 0.5*fac*(p->second);
-
-          // (5) Lin(dxdsxi) - slave GP Jacobian
-          fac = wgt*lmval[iter]*sval[k]*dsxideta;
+          // (4) Lin(dxdsxi) - slave GP Jacobian
+          fac = wgt*lmval[iter]*sval[k];
           for (_CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-            dmmap_jk[p->first] -= fac*(p->second);
-
-          // (6) Lin(dxdsxi) - slave GP coordinates
-          fac = wgt*lmval[iter]*sval[k]*dsxideta*dxdsxidsxi;
-          for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
             dmmap_jk[p->first] -= fac*(p->second);
         }
 
@@ -6617,30 +6128,18 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
           // this vanishes here since there are no deformation-dependent dual functions
 
           // (2) Lin(NSlave) - slave GP coordinates
-          fac = wgt*lmderiv(iter,0)*sval[k]*dsxideta*dxdsxi;
-          for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+          fac = wgt*lmderiv(iter,0)*sval[k]*jac;
+          for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
             ddmap_jk[p->first] += fac*(p->second);
 
           // (3) Lin(NSlave) - slave GP coordinates
-          fac = wgt*lmval[iter]*sderiv(k, 0)*dsxideta*dxdsxi;
-          for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+          fac = wgt*lmval[iter]*sderiv(k, 0)*jac;
+          for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
             ddmap_jk[p->first] += fac*(p->second);
 
-          // (4) Lin(dsxideta) - segment end coordinates
-          fac = wgt*lmval[iter]*sval[k]*dxdsxi;
-          for (_CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
-            ddmap_jk[p->first] -= 0.5*fac*(p->second);
-          for (_CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
-            ddmap_jk[p->first] += 0.5*fac*(p->second);
-
-          // (5) Lin(dxdsxi) - slave GP Jacobian
-          fac = wgt*lmval[iter]*sval[k]*dsxideta;
+          // (4) Lin(dxdsxi) - slave GP Jacobian
+          fac = wgt*lmval[iter]*sval[k];
           for (_CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-            ddmap_jk[p->first] += fac*(p->second);
-
-          // (6) Lin(dxdsxi) - slave GP coordinates
-          fac = wgt*lmval[iter]*sval[k]*dsxideta*dxdsxidsxi;
-          for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
             ddmap_jk[p->first] += fac*(p->second);
         }
       } // loop over slave nodes
@@ -6662,7 +6161,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
       for (int k=0; k<ncol; ++k)
       {
         // global master node ID
-        int mgid = mele.Nodes()[k]->Id();
+        int mgid = mnodes[k]->Id();
         double fac = 0.0;
 
         // get the correct map as a reference
@@ -6672,30 +6171,18 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
         // this vanishes here since there are no deformation-dependent dual functions
 
         // (2) Lin(NSlave) - slave GP coordinates
-        fac = wgt*lmderiv(iter,0)*mval[k]*dsxideta*dxdsxi;
-        for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        fac = wgt*lmderiv(iter,0)*mval[k]*jac;
+        for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
           dmmap_jk[p->first] += fac*(p->second);
 
         // (3) Lin(NMaster) - master GP coordinates
-        fac = wgt*lmval[iter]*mderiv(k, 0)*dsxideta*dxdsxi;
-        for (_CI p=dmxigp.begin(); p!=dmxigp.end(); ++p)
+        fac = wgt*lmval[iter]*mderiv(k, 0)*jac;
+        for (_CI p=dmxigp[0].begin(); p!=dmxigp[0].end(); ++p)
           dmmap_jk[p->first] += fac*(p->second);
 
-        // (4) Lin(dsxideta) - segment end coordinates
-        fac = wgt*lmval[iter]*mval[k]*dxdsxi;
-        for (_CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
-          dmmap_jk[p->first] -= 0.5*fac*(p->second);
-        for (_CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
-          dmmap_jk[p->first] += 0.5*fac*(p->second);
-
-        // (5) Lin(dxdsxi) - slave GP Jacobian
-        fac = wgt*lmval[iter]*mval[k]*dsxideta;
+        // (4) Lin(dxdsxi) - slave GP Jacobian
+        fac = wgt*lmval[iter]*mval[k];
         for (_CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-          dmmap_jk[p->first] += fac*(p->second);
-
-        // (6) Lin(dxdsxi) - slave GP coordinates
-        fac = wgt*lmval[iter]*mval[k]*dsxideta*dxdsxidsxi;
-        for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
           dmmap_jk[p->first] += fac*(p->second);
       } // loop over master nodes
 
@@ -6703,7 +6190,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
       for (int k=0; k<nrow; ++k)
       {
         // global slave node ID
-        int sgid = sele.Nodes()[k]->Id();
+        int sgid = snodes[k]->Id();
         double fac = 0.0;
 
         // get the correct map as a reference
@@ -6713,30 +6200,18 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
         // this vanishes here since there are no deformation-dependent dual functions
 
         // (2) Lin(NSlave) - slave GP coordinates
-        fac = wgt*lmderiv(iter,0)*sval[k]*dsxideta*dxdsxi;
-        for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        fac = wgt*lmderiv(iter,0)*sval[k]*jac;
+        for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
           ddmap_jk[p->first] += fac*(p->second);
 
         // (3) Lin(NSlave) - slave GP coordinates
-        fac = wgt*lmval[iter]*sderiv(k, 0)*dsxideta*dxdsxi;
-        for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        fac = wgt*lmval[iter]*sderiv(k, 0)*jac;
+        for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
           ddmap_jk[p->first] += fac*(p->second);
 
-        // (4) Lin(dsxideta) - segment end coordinates
-        fac = wgt*lmval[iter]*sval[k]*dxdsxi;
-        for (_CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
-          ddmap_jk[p->first] -= 0.5*fac*(p->second);
-        for (_CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
-          ddmap_jk[p->first] += 0.5*fac*(p->second);
-
-        // (5) Lin(dxdsxi) - slave GP Jacobian
-        fac = wgt*lmval[iter]*sval[k]*dsxideta;
+        // (4) Lin(dxdsxi) - slave GP Jacobian
+        fac = wgt*lmval[iter]*sval[k];
         for (_CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-          ddmap_jk[p->first] += fac*(p->second);
-
-        // (6) Lin(dxdsxi) - slave GP coordinates
-        fac = wgt*lmval[iter]*sval[k]*dsxideta*dxdsxidsxi;
-        for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
           ddmap_jk[p->first] += fac*(p->second);
       } // loop over slave nodes
     }
@@ -6751,7 +6226,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
       for (int k=0; k<ncol; ++k)
       {
         // global master node ID
-        int mgid = mele.Nodes()[k]->Id();
+        int mgid = mnodes[k]->Id();
         double fac = 0.0;
 
         // get the correct map as a reference
@@ -6760,7 +6235,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
         // (1) Lin(Phi) - dual shape functions
         for (int m=0; m<nrow; ++m)
         {
-          fac = wgt*sval[m]*mval[k]*dsxideta*dxdsxi;
+          fac = wgt*sval[m]*mval[k]*jac;
           for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
               p!=dualmap.end(); ++p)
           {
@@ -6770,50 +6245,27 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(
         }
 
         // (2) Lin(Phi) - slave GP coordinates
-        fac = wgt*lmderiv(iter, 0)*mval[k]*dsxideta*dxdsxi;
+        fac = wgt*lmderiv(iter, 0)*mval[k]*jac;
 
-        for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+        for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
         {
           dmmap_jk[p->first] += fac*(p->second);
           if (!bound) ddmap_jk[p->first] += fac*(p->second);
         }
 
         // (3) Lin(NMaster) - master GP coordinates
-        fac = wgt*lmval(iter, 0)*mderiv(k, 0)*dsxideta*dxdsxi;
+        fac = wgt*lmval(iter, 0)*mderiv(k, 0)*jac;
 
-        for (_CI p=dmxigp.begin(); p!=dmxigp.end(); ++p)
+        for (_CI p=dmxigp[0].begin(); p!=dmxigp[0].end(); ++p)
         {
           dmmap_jk[p->first] += fac*(p->second);
           if (!bound) ddmap_jk[p->first] += fac*(p->second);
         }
 
-        // (4) Lin(dsxideta) - segment end coordinates
-        fac = wgt*lmval[iter]*mval[k]*dxdsxi;
-
-        for (_CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
-        {
-          dmmap_jk[p->first] -= 0.5*fac*(p->second);
-          if (!bound) ddmap_jk[p->first] -= 0.5*fac*(p->second);
-        }
-        for (_CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
-        {
-          dmmap_jk[p->first] += 0.5*fac*(p->second);
-          if (!bound) ddmap_jk[p->first] += 0.5*fac*(p->second);
-        }
-
-        // (5) Lin(dxdsxi) - slave GP Jacobian
-        fac = wgt*lmval[iter]*mval[k]*dsxideta;
+        // (4) Lin(dxdsxi) - slave GP Jacobian
+        fac = wgt*lmval[iter]*mval[k];
 
         for (_CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-        {
-          dmmap_jk[p->first] += fac*(p->second);
-          if (!bound) ddmap_jk[p->first] += fac*(p->second);
-        }
-
-        // (6) Lin(dxdsxi) - slave GP coordinates
-        fac = wgt*lmval[iter]*mval[k]*dsxideta*dxdsxidsxi;
-
-        for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
         {
           dmmap_jk[p->first] += fac*(p->second);
           if (!bound) ddmap_jk[p->first] += fac*(p->second);
@@ -6956,9 +6408,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
      const std::vector<GEN::pairedvector<int,double> >& dpmxigp,
      const GEN::pairedvector<int,double>& jacintcellmap,
      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
-     bool dualquad3d,
-     GEN::pairedvector<int,Epetra_SerialDenseMatrix>* dMatrixDeriv,
-     GEN::pairedvector<int,Epetra_SerialDenseMatrix>* mMatrixDeriv)
+     bool dualquad3d)
 {
   const int nrow = sele.NumNode();
   const int ncol = mele.NumNode();
@@ -6991,7 +6441,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
     for (int d=0; d<2; ++d)
       for (_CI p=dpsxigp[d].begin(); p!=dpsxigp[d].end(); ++p)
       {
-        Epetra_SerialDenseMatrix& dMderiv = (*dMatrixDeriv)[p->first];
+        Epetra_SerialDenseMatrix& dMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
         for (int j=0; j<nrow; ++j)
           for (int k=0; k<nrow; ++k)
           {
@@ -7003,7 +6453,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
     // (4) Lin(dsxideta) - intcell GP Jacobian
     for (_CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
     {
-      Epetra_SerialDenseMatrix& dMderiv = (*dMatrixDeriv)[p->first];
+      Epetra_SerialDenseMatrix& dMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
       for (int j=0; j<nrow; ++j)
         for (int k=0; k<nrow; ++k)
           dMderiv(j,k) += wgt*lmval[j]*sval[k]*(p->second);
@@ -7016,7 +6466,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
     for (int d=0; d<2; ++d)
       for (_CI p=dpsxigp[d].begin(); p!=dpsxigp[d].end(); ++p)
       {
-        Epetra_SerialDenseMatrix& mMderiv = (*mMatrixDeriv)[p->first];
+        Epetra_SerialDenseMatrix& mMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
         for (int j=0; j<nrow; ++j)
           for (int k=0; k<ncol; ++k)
             mMderiv(j,k) += wgt*lmderiv(j, d)*mval[k]*jac*(p->second);
@@ -7026,7 +6476,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
     for (int d=0; d<2; ++d)
       for (_CI p=dpmxigp[d].begin(); p!=dpmxigp[d].end(); ++p)
       {
-        Epetra_SerialDenseMatrix& mMderiv = (*mMatrixDeriv)[p->first];
+        Epetra_SerialDenseMatrix& mMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
         for (int j=0; j<nrow; ++j)
           for (int k=0; k<ncol; ++k)
             mMderiv(j,k) += wgt*lmval[j]*mderiv(k, d)*jac*(p->second);
@@ -7035,7 +6485,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
     // (4) Lin(dsxideta) - intcell GP Jacobian
     for (_CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
     {
-      Epetra_SerialDenseMatrix& mMderiv = (*mMatrixDeriv)[p->first];
+      Epetra_SerialDenseMatrix& mMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
       for (int j=0; j<nrow; ++j)
         for (int k=0; k<ncol; ++k)
           mMderiv(j,k) +=  wgt*lmval[j]*mval[k]*(p->second);
@@ -7189,8 +6639,8 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
       for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
           p!=dualmap.end(); ++p)
       {
-        Epetra_SerialDenseMatrix& dDderiv = (*dMatrixDeriv)[p->first];
-        Epetra_SerialDenseMatrix& dMderiv = (*mMatrixDeriv)[p->first];
+        Epetra_SerialDenseMatrix& dDderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+        Epetra_SerialDenseMatrix& dMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
         for (int m=0; m<nrow;++m)
           for (int k=0; k<ncol;++k)
           {
@@ -7209,8 +6659,8 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
     for (int d=0; d<2;++d)
       for (_CI p=dpsxigp[d].begin(); p!=dpsxigp[d].end(); ++p)
       {
-        Epetra_SerialDenseMatrix& dDderiv = (*dMatrixDeriv)[p->first];
-        Epetra_SerialDenseMatrix& dMderiv = (*mMatrixDeriv)[p->first];
+        Epetra_SerialDenseMatrix& dDderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+        Epetra_SerialDenseMatrix& dMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
         for (int j=0;j<nrow; ++j)
           for (int k=0; k<ncol;++k)
           {
@@ -7224,8 +6674,8 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
     for (int d=0; d<2;++d)
       for (_CI p=dpmxigp[d].begin(); p!=dpmxigp[d].end(); ++p)
       {
-        Epetra_SerialDenseMatrix& dDderiv = (*dMatrixDeriv)[p->first];
-        Epetra_SerialDenseMatrix& dMderiv = (*mMatrixDeriv)[p->first];
+        Epetra_SerialDenseMatrix& dDderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+        Epetra_SerialDenseMatrix& dMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
         for (int j=0;j<nrow; ++j)
           for (int k=0; k<ncol;++k)
           {
@@ -7238,8 +6688,8 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
     // (4) Lin(dsxideta) - intcell GP Jacobian
     for (_CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
     {
-      Epetra_SerialDenseMatrix& dDderiv = (*dMatrixDeriv)[p->first];
-      Epetra_SerialDenseMatrix& dMderiv = (*mMatrixDeriv)[p->first];
+      Epetra_SerialDenseMatrix& dDderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+      Epetra_SerialDenseMatrix& dMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
       for (int j=0;j<nrow; ++j)
         for (int k=0; k<ncol;++k)
         {
@@ -7257,7 +6707,6 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(
  |  Lin D and M matrix entries at GP                         farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
-     bool& duallin,
      MORTAR::MortarElement& sele,
      MORTAR::MortarElement& mele,
      LINALG::SerialDenseVector& sval,
@@ -7270,9 +6719,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
      std::vector<GEN::pairedvector<int,double> >& dsxigp,
      std::vector<GEN::pairedvector<int,double> >& dmxigp,
      GEN::pairedvector<int,double>& jacintcellmap,
-     const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
-     GEN::pairedvector<int,Epetra_SerialDenseMatrix>* dMatrixDeriv,
-     GEN::pairedvector<int,Epetra_SerialDenseMatrix>* mMatrixDeriv)
+     const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
 {
   const int nrow = sele.NumNode();
   const int ncol = mele.NumNode();
@@ -7291,7 +6738,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
     for (int d=0; d<2; ++d)
       for (_CI p=dsxigp[d].begin(); p!=dsxigp[d].end(); ++p)
       {
-        Epetra_SerialDenseMatrix& dMderiv = (*mMatrixDeriv)[p->first];
+        Epetra_SerialDenseMatrix& dMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
         for (int j=0;j<nrow;++j)
           for (int k=0;k<ncol;++k)
             dMderiv(j,k) +=  wgt*lmderiv(j, d)*mval[k]*jac*(p->second);
@@ -7301,7 +6748,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
     for (int d=0; d<2; ++d)
       for (_CI p=dmxigp[d].begin(); p!=dmxigp[d].end(); ++p)
       {
-        Epetra_SerialDenseMatrix& dMderiv = (*mMatrixDeriv)[p->first];
+        Epetra_SerialDenseMatrix& dMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
         for (int j=0;j<nrow;++j)
           for (int k=0;k<ncol;++k)
             dMderiv(j,k) +=  wgt*lmval[j]*mderiv(k, d)*jac*(p->second);
@@ -7310,7 +6757,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
     // (4) Lin(dsxideta) - intcell GP Jacobian
     for (_CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
     {
-      Epetra_SerialDenseMatrix& dMderiv = (*mMatrixDeriv)[p->first];
+      Epetra_SerialDenseMatrix& dMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
       for (int j=0;j<nrow;++j)
         for (int k=0;k<ncol;++k)
           dMderiv(j,k) += wgt*lmval[j]*mval[k] *(p->second);
@@ -7325,7 +6772,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
     for (int d=0;d<2;++d)
       for (_CI p=dsxigp[d].begin(); p!=dsxigp[d].end(); ++p)
       {
-        Epetra_SerialDenseMatrix& dDderiv = (*dMatrixDeriv)[p->first];
+        Epetra_SerialDenseMatrix& dDderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
         for (int j=0;j<nrow;++j)
           for (int k=0;k<nrow;++k)
             dDderiv(j,k) += ( wgt*lmderiv(j, d)*sval[k]*jac
@@ -7335,7 +6782,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
     // (4) Lin(dsxideta) - intcell GP Jacobian
     for (_CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
     {
-      Epetra_SerialDenseMatrix& dDderiv = (*dMatrixDeriv)[p->first];
+      Epetra_SerialDenseMatrix& dDderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
       for (int j=0;j<nrow;++j)
         for (int k=0;k<nrow;++k)
           dDderiv(j,k) += wgt*lmval[j]*sval[k]*(p->second);
@@ -7348,12 +6795,12 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
     double fac=0.;
 
     // (1) Lin(Phi) - dual shape functions
-    if (duallin)
+    if (dualmap.size()>0)
       for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
           p!=dualmap.end(); ++p)
       {
-        Epetra_SerialDenseMatrix& dDderiv = (*dMatrixDeriv)[p->first];
-        Epetra_SerialDenseMatrix& dMderiv = (*mMatrixDeriv)[p->first];
+        Epetra_SerialDenseMatrix& dDderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+        Epetra_SerialDenseMatrix& dMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
         for (int j=0;j<nrow;++j)
           for (int k=0;k<ncol;++k)
             for (int m=0; m<nrow; ++m)
@@ -7368,8 +6815,8 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
     for (int d=0;d<2;++d)
       for (_CI p=dsxigp[d].begin(); p!=dsxigp[d].end(); ++p)
       {
-        Epetra_SerialDenseMatrix& dDderiv = (*dMatrixDeriv)[p->first];
-        Epetra_SerialDenseMatrix& dMderiv = (*mMatrixDeriv)[p->first];
+        Epetra_SerialDenseMatrix& dDderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+        Epetra_SerialDenseMatrix& dMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
         for (int j=0;j<nrow;++j)
           for (int k=0;k<ncol;++k)
           {
@@ -7383,8 +6830,8 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
     for (int d=0;d<2;++d)
       for (_CI p=dmxigp[d].begin(); p!=dmxigp[d].end(); ++p)
       {
-        Epetra_SerialDenseMatrix& dDderiv = (*dMatrixDeriv)[p->first];
-        Epetra_SerialDenseMatrix& dMderiv = (*mMatrixDeriv)[p->first];
+        Epetra_SerialDenseMatrix& dDderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+        Epetra_SerialDenseMatrix& dMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
         for (int j=0;j<nrow;++j)
           for (int k=0;k<ncol;++k)
           {
@@ -7397,8 +6844,8 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Lin(
     // (4) Lin(dsxideta) - intcell GP Jacobian
     for (_CI p=jacintcellmap.begin(); p!=jacintcellmap.end(); ++p)
     {
-      Epetra_SerialDenseMatrix& dDderiv = (*dMatrixDeriv)[p->first];
-      Epetra_SerialDenseMatrix& dMderiv = (*mMatrixDeriv)[p->first];
+      Epetra_SerialDenseMatrix& dDderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetDderiv()[p->first];
+      Epetra_SerialDenseMatrix& dMderiv = dynamic_cast<CONTACT::CoElement&>(sele).GetMderiv()[p->first];
       for (int j=0;j<nrow;++j)
         for (int k=0;k<ncol;++k)
         {
@@ -7486,23 +6933,17 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
      LINALG::SerialDenseMatrix& mderiv,
      LINALG::SerialDenseVector& lmval,
      LINALG::SerialDenseMatrix& lmderiv,
-     LINALG::SerialDenseMatrix& scoord,
-     Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold,
-     LINALG::SerialDenseMatrix& mcoord,
-     Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold,
      Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult,
      double* gpn,
-     double& dsxideta, double& dxdsxi,
-     double& dxdsxidsxi,double& wgt,
+     double& jac,
+     double& wgt,
      double* jumpval, double* wearval,
-     const GEN::pairedvector<int,double>& dsxigp,
-     const GEN::pairedvector<int,double>& dmxigp,
-     const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap,
-     const std::vector<GEN::pairedvector<int,double> >& ximaps,
-     const std::vector<GEN::pairedvector<int,double> >& dnmap_unit,
      GEN::pairedvector<int,double> & dsliptmatrixgp,
      GEN::pairedvector<int,double> & dweargp,
-     int& linsize)
+     const std::vector<GEN::pairedvector<int,double> >& dsxigp,
+     const std::vector<GEN::pairedvector<int,double> >& dmxigp,
+     const std::vector<GEN::pairedvector<int,double> >& dnmap_unit,
+     const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
 {
   const int nrow = sele.NumNode();
   const int ncol = mele.NumNode();
@@ -7511,6 +6952,11 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
   DRT::Node** mnodes = mele.Nodes();
+
+  int linsize = 0;
+  for (int i=0;i<sele.NumNode();++i)
+    linsize += dynamic_cast<CoNode*> (sele.Nodes()[i])->GetLinsize();
+  linsize = linsize * 2;
 
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
@@ -7523,11 +6969,11 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
   // The wearcoefficient is not included in this calculation
   //***********************************************************************
   // for wearval
-  double gpt[3]     = {0.0, 0.0, 0.0};
-  double gplm[3]    = {0.0, 0.0, 0.0};
-  double sgpjump[3] = {0.0, 0.0, 0.0};
-  double mgpjump[3] = {0.0, 0.0, 0.0};
-  double jump[3]    = {0.0, 0.0, 0.0};
+  double gpt[2]     = {0.0, 0.0};
+  double gplm[2]    = {0.0, 0.0};
+  double sgpjump[2] = {0.0, 0.0};
+  double mgpjump[2] = {0.0, 0.0};
+  double jump[2]    = {0.0, 0.0};
 
   // for linearization
   double lm_lin  = 0.0;
@@ -7540,38 +6986,33 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
      //nodal tangent interpolation
      gpt[0]+=sval[i]*myconode->CoData().txi()[0];
      gpt[1]+=sval[i]*myconode->CoData().txi()[1];
-     gpt[2]+=sval[i]*myconode->CoData().txi()[2];
 
      // delta D
-     sgpjump[0]+=sval[i]*(scoord(0,i)-((*scoordold)(0,i)));
-     sgpjump[1]+=sval[i]*(scoord(1,i)-((*scoordold)(1,i)));
-     sgpjump[2]+=sval[i]*(scoord(2,i)-((*scoordold)(2,i)));
+     sgpjump[0]+=sval[i]*(sele.GetNodalCoords(0,i)-(sele.GetNodalCoordsOld(0,i)));
+     sgpjump[1]+=sval[i]*(sele.GetNodalCoords(1,i)-(sele.GetNodalCoordsOld(1,i)));
 
      // LM interpolation
      gplm[0]+=lmval[i]*((*lagmult)(0,i));
      gplm[1]+=lmval[i]*((*lagmult)(1,i));
-     gplm[2]+=lmval[i]*((*lagmult)(2,i));
   }
 
   // normalize interpolated GP tangent back to length 1.0 !!!
-  lengtht = sqrt(gpt[0]*gpt[0]+gpt[1]*gpt[1]+gpt[2]*gpt[2]);
+  lengtht = sqrt(gpt[0]*gpt[0]+gpt[1]*gpt[1]);
   if (abs(lengtht)<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
 
-  for (int i=0;i<3;i++)
+  for (int i=0;i<Dim();i++)
     gpt[i]/=lengtht;
 
   // interpolation of master GP jumps (relative displacement increment)
   for (int i=0;i<ncol;++i)
   {
-    mgpjump[0]+=mval[i]*(mcoord(0,i)-(*mcoordold)(0,i));
-    mgpjump[1]+=mval[i]*(mcoord(1,i)-(*mcoordold)(1,i));
-    mgpjump[2]+=mval[i]*(mcoord(2,i)-(*mcoordold)(2,i));
+    mgpjump[0]+=mval[i]*(mele.GetNodalCoords(0,i)-mele.GetNodalCoordsOld(0,i));
+    mgpjump[1]+=mval[i]*(mele.GetNodalCoords(1,i)-mele.GetNodalCoordsOld(1,i));
   }
 
   // jump
   jump[0] = sgpjump[0] - mgpjump[0];
   jump[1] = sgpjump[1] - mgpjump[1];
-  jump[2] = sgpjump[2] - mgpjump[2];
 
   // evaluate wear
   // normal contact stress -- normal LM value
@@ -7582,7 +7023,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
   }
 
   // value of relative tangential jump
-  for (int i=0;i<3;++i)
+  for (int i=0;i<Dim();++i)
     jumpval[0]+=gpt[i]*jump[i];
 
   // steady state slip
@@ -7609,9 +7050,9 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
 
     double prod = 0.0;
     if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-      prod = sval[j]*wearval[0]*dxdsxi*dsxideta*wgt;
+      prod = sval[j]*wearval[0]*jac*wgt;
     else
-      prod = lmval[j]*wearval[0]*dxdsxi*dsxideta*wgt;
+      prod = lmval[j]*wearval[0]*jac*wgt;
 
     // add current Gauss point's contribution to wseg
     cnode->AddDeltaWeightedWearValue(prod);
@@ -7660,11 +7101,10 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
     for (_CI p=ddualgp_y.begin();p!=ddualgp_y.end();++p)
       dweargp[p->first] += abs(jumpval[0])*gpn[1]*(p->second);
 
-
     // LM deriv
     for (int i=0;i<nrow;++i)
     {
-      for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+      for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
       {
         ddualgp_x_sxi[p->first] += ((*lagmult)(0,i)) *lmderiv(i,0)*(p->second);
         ddualgp_y_sxi[p->first] += ((*lagmult)(1,i)) *lmderiv(i,0)*(p->second);
@@ -7694,7 +7134,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
       for (_CI p=dmap_tysl_i.begin();p!=dmap_tysl_i.end();++p)
         dmap_tysl_gp[p->first] += sval[i]*(p->second);
 
-      for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+      for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
       {
         double valx =  sderiv(i,0) * dynamic_cast<CONTACT::CoNode*>(cnode)->CoData().txi()[0];
         dmap_txsl_gp[p->first] += valx*(p->second);
@@ -7756,11 +7196,11 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
     // lin slave part -- sxi
     for (int i=0;i<nrow;++i)
     {
-      for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+      for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
       {
-        double valx =  sderiv(i,0) * ( scoord(0,i) - ((*scoordold)(0,i)));
+        double valx =  sderiv(i,0) * ( sele.GetNodalCoords(0,i) - (sele.GetNodalCoordsOld(0,i)));
         dmap_slcoord_gp_x[p->first] += valx*(p->second);
-        double valy =  sderiv(i,0) * ( scoord(1,i) - ((*scoordold)(1,i)) );
+        double valy =  sderiv(i,0) * ( sele.GetNodalCoords(1,i) - (sele.GetNodalCoordsOld(1,i)) );
         dmap_slcoord_gp_y[p->first] += valy*(p->second);
       }
     }
@@ -7768,11 +7208,11 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(
     // lin master part -- mxi
     for (int i=0;i<ncol;++i)
     {
-      for (_CI p=dmxigp.begin();p!=dmxigp.end();++p)
+      for (_CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
       {
-        double valx =  mderiv(i,0) * ( mcoord(0,i)-((*mcoordold)(0,i)) );
+        double valx =  mderiv(i,0) * ( mele.GetNodalCoords(0,i)-(mele.GetNodalCoordsOld(0,i)) );
         dmap_mcoord_gp_x[p->first] += valx*(p->second);
-        double valy =  mderiv(i,0) * ( mcoord(1,i)-((*mcoordold)(1,i)) );
+        double valy =  mderiv(i,0) * ( mele.GetNodalCoords(1,i)-(mele.GetNodalCoordsOld(1,i)) );
         dmap_mcoord_gp_y[p->first] += valy*(p->second);
       }
     }
@@ -7836,10 +7276,6 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
      LINALG::SerialDenseMatrix& mderiv,
      LINALG::SerialDenseVector& lmval,
      LINALG::SerialDenseMatrix& lmderiv,
-     LINALG::SerialDenseMatrix& scoord,
-     Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold,
-     LINALG::SerialDenseMatrix& mcoord,
-     Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold,
      Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult,
      double* gpn,
      double& jac,double& wgt,
@@ -7895,18 +7331,18 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
   double sgpjump[3] = {0.0, 0.0, 0.0};
   for (int i=0;i<nrow;++i)
   {
-    sgpjump[0]+=sval[i]*(scoord(0,i)-(*scoordold)(0,i));
-    sgpjump[1]+=sval[i]*(scoord(1,i)-(*scoordold)(1,i));
-    sgpjump[2]+=sval[i]*(scoord(2,i)-(*scoordold)(2,i));
+    sgpjump[0]+=sval[i]*(sele.GetNodalCoords(0,i)-sele.GetNodalCoordsOld(0,i));
+    sgpjump[1]+=sval[i]*(sele.GetNodalCoords(1,i)-sele.GetNodalCoordsOld(1,i));
+    sgpjump[2]+=sval[i]*(sele.GetNodalCoords(2,i)-sele.GetNodalCoordsOld(2,i));
   }
 
   // interpolation of master GP jumps (relative displacement increment)
   double mgpjump[3] = {0.0, 0.0, 0.0};
   for (int i=0;i<ncol;++i)
   {
-    mgpjump[0]+=mval[i]*(mcoord(0,i)-(*mcoordold)(0,i));
-    mgpjump[1]+=mval[i]*(mcoord(1,i)-(*mcoordold)(1,i));
-    mgpjump[2]+=mval[i]*(mcoord(2,i)-(*mcoordold)(2,i));
+    mgpjump[0]+=mval[i]*(mele.GetNodalCoords(0,i)-mele.GetNodalCoordsOld(0,i));
+    mgpjump[1]+=mval[i]*(mele.GetNodalCoords(1,i)-mele.GetNodalCoordsOld(1,i));
+    mgpjump[2]+=mval[i]*(mele.GetNodalCoords(2,i)-mele.GetNodalCoordsOld(2,i));
   }
 
   // build jump (relative displacement increment) at current GP
@@ -8159,20 +7595,20 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
     {
       for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
       {
-        double valx =  sderiv(i,0) * ( scoord(0,i) - (*scoordold)(0,i) );
+        double valx =  sderiv(i,0) * ( sele.GetNodalCoords(0,i) - sele.GetNodalCoordsOld(0,i) );
         dmap_slcoord_gp_x[p->first] += valx*(p->second);
-        double valy =  sderiv(i,0) * ( scoord(1,i) - (*scoordold)(1,i) );
+        double valy =  sderiv(i,0) * ( sele.GetNodalCoords(1,i) - sele.GetNodalCoordsOld(1,i) );
         dmap_slcoord_gp_y[p->first] += valy*(p->second);
-        double valz =  sderiv(i,0) * ( scoord(2,i) - (*scoordold)(2,i) );
+        double valz =  sderiv(i,0) * ( sele.GetNodalCoords(2,i) - sele.GetNodalCoordsOld(2,i) );
         dmap_slcoord_gp_z[p->first] += valz*(p->second);
       }
       for (_CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
       {
-        double valx =  sderiv(i,1) * ( scoord(0,i) - (*scoordold)(0,i) );
+        double valx =  sderiv(i,1) * ( sele.GetNodalCoords(0,i) - sele.GetNodalCoordsOld(0,i) );
         dmap_slcoord_gp_x[p->first] += valx*(p->second);
-        double valy =  sderiv(i,1) * ( scoord(1,i) - (*scoordold)(1,i) );
+        double valy =  sderiv(i,1) * ( sele.GetNodalCoords(1,i) - sele.GetNodalCoordsOld(1,i) );
         dmap_slcoord_gp_y[p->first] += valy*(p->second);
-        double valz =  sderiv(i,1) * ( scoord(2,i) - (*scoordold)(2,i) );
+        double valz =  sderiv(i,1) * ( sele.GetNodalCoords(2,i) - sele.GetNodalCoordsOld(2,i) );
         dmap_slcoord_gp_z[p->first] += valz*(p->second);
       }
     }
@@ -8182,20 +7618,20 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
     {
       for (_CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
       {
-        double valx =  mderiv(i,0) * ( mcoord(0,i)-(*mcoordold)(0,i) );
+        double valx =  mderiv(i,0) * ( mele.GetNodalCoords(0,i)-mele.GetNodalCoordsOld(0,i) );
         dmap_mcoord_gp_x[p->first] += valx*(p->second);
-        double valy =  mderiv(i,0) * ( mcoord(1,i)-(*mcoordold)(1,i) );
+        double valy =  mderiv(i,0) * ( mele.GetNodalCoords(1,i)-mele.GetNodalCoordsOld(1,i) );
         dmap_mcoord_gp_y[p->first] += valy*(p->second);
-        double valz =  mderiv(i,0) * ( mcoord(2,i)-(*mcoordold)(2,i) );
+        double valz =  mderiv(i,0) * ( mele.GetNodalCoords(2,i)-mele.GetNodalCoordsOld(2,i) );
         dmap_mcoord_gp_z[p->first] += valz*(p->second);
       }
       for (_CI p=dmxigp[1].begin();p!=dmxigp[1].end();++p)
       {
-        double valx =  mderiv(i,1) * ( mcoord(0,i)-(*mcoordold)(0,i) );
+        double valx =  mderiv(i,1) * ( mele.GetNodalCoords(0,i)-mele.GetNodalCoordsOld(0,i) );
         dmap_mcoord_gp_x[p->first] += valx*(p->second);
-        double valy =  mderiv(i,1) * ( mcoord(1,i)-(*mcoordold)(1,i) );
+        double valy =  mderiv(i,1) * ( mele.GetNodalCoords(1,i)-mele.GetNodalCoordsOld(1,i) );
         dmap_mcoord_gp_y[p->first] += valy*(p->second);
-        double valz =  mderiv(i,1) * ( mcoord(2,i)-(*mcoordold)(2,i) );
+        double valz =  mderiv(i,1) * ( mele.GetNodalCoords(2,i)-mele.GetNodalCoordsOld(2,i) );
         dmap_mcoord_gp_z[p->first] += valz*(p->second);
       }
     }
@@ -8287,33 +7723,11 @@ void inline CONTACT::CoIntegrator::GP_3D_Wear(
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  Compute scaling entries at GP                            farah 09/13|
- *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_Scaling(
-     MORTAR::MortarElement& sele,
-     LINALG::SerialDenseVector& sval,
-     double& dsxideta, double& wgt)
-{
-  double nrow = sele.NumNode();
-  DRT::Node** snodes = sele.Nodes();
-
-  for (int j=0;j<nrow;++j)
-  {
-    MORTAR::MortarNode* snode = dynamic_cast<MORTAR::MortarNode*> (snodes[j]);
-
-    double prod = wgt*sval[j]*dsxideta/sele.Nodes()[j]->NumElement();
-    snode->AddScValue(prod);
-  }
-
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  |  Compute entries for scaling at GP                        farah 12/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_Scaling(
+void inline CONTACT::CoIntegrator::GP_Scaling(
      MORTAR::MortarElement& sele,
      LINALG::SerialDenseVector& sval,
      double& jac, double& wgt,
@@ -8337,46 +7751,11 @@ void inline CONTACT::CoIntegrator::GP_3D_Scaling(
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  Lin scaling entries at GP                                farah 09/13|
- *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_2D_Scaling_Lin(
-     int& iter,
-     MORTAR::MortarElement& sele,
-     LINALG::SerialDenseVector& sval,
-     LINALG::SerialDenseMatrix& sderiv,
-     double& dsxideta, double& wgt,
-     const GEN::pairedvector<int,double>& dsxigp,
-     const std::vector<GEN::pairedvector<int,double> >& ximaps)
-{
-  DRT::Node** snodes = sele.Nodes();
-
-  // map iterator
-  typedef GEN::pairedvector<int,double>::const_iterator CI;
-
-  CONTACT::CoNode* myconode = dynamic_cast<CONTACT::CoNode*>(snodes[iter]);
-  if (!myconode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
-
-  // get the corresponding map as a reference
-  std::map<int,double>& dscmap = myconode->CoData().GetDerivScale();
-
-  // (1) linearization of slave gp coordinates in ansatz function
-  for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
-    dscmap[p->first] += wgt * sderiv(iter,0) *dsxideta * (p->second)/sele.Nodes()[iter]->NumElement();
-
-  // (2) linearization of dsxideta - segment end coordinates
-  for (CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-    dscmap[p->first] -= 0.5*wgt * sval[iter]*(p->second)/sele.Nodes()[iter]->NumElement();
-  for (CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-    dscmap[p->first] += 0.5*wgt*sval[iter]*(p->second)/sele.Nodes()[iter]->NumElement();
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  Lin scaling entries at GP                                farah 09/13|
  *----------------------------------------------------------------------*/
-void inline CONTACT::CoIntegrator::GP_3D_Scaling_Lin(
+void inline CONTACT::CoIntegrator::GP_Scaling_Lin(
      int& iter,
      MORTAR::MortarElement& sele,
      LINALG::SerialDenseVector& sval,
@@ -8402,19 +7781,15 @@ void inline CONTACT::CoIntegrator::GP_3D_Scaling_Lin(
   double fac = 0.0;
 
   // (1) Lin slave GP coordiantes
-  fac = wgt * sderiv(iter,0) * jac / jacsele;
-  fac /= sele.Nodes()[iter]->NumElement();
-  if (sele.Shape() == DRT::Element::tri3 )
-    fac *= 6.0;
-  for (_CI p=dsxigp[0].begin() ; p!=dsxigp[0].end(); ++p)
-    dscmap[p->first] += fac * (p->second);
-
-  fac = wgt * sderiv(iter,1) * jac / jacsele;
-  fac /= sele.Nodes()[iter]->NumElement();
-  if (sele.Shape() == DRT::Element::tri3 )
-    fac *= 6.0;
-  for (_CI p=dsxigp[1].begin() ; p!=dsxigp[1].end(); ++p)
-    dscmap[p->first] += fac * (p->second);
+  for (int d=0;d<Dim()-1;++d)
+  {
+    fac = wgt * sderiv(iter,d) * jac / jacsele;
+    fac /= sele.Nodes()[iter]->NumElement();
+    if (sele.Shape() == DRT::Element::tri3 )
+      fac *= 6.0;
+    for (_CI p=dsxigp[d].begin() ; p!=dsxigp[d].end(); ++p)
+      dscmap[p->first] += fac * (p->second);
+  }
 
   // (2) Lin integration cell jacobian
   fac = wgt * sval[iter] / jacsele;
@@ -8432,19 +7807,15 @@ void inline CONTACT::CoIntegrator::GP_3D_Scaling_Lin(
   for (_CI p=derivjacsele.begin(); p!=derivjacsele.end(); ++p)
     dscmap[p->first] += fac * (-1.0)/(jacsele*jacsele)*(p->second);
 
-  fac = wgt * sval[iter] * jac;
-  fac /= sele.Nodes()[iter]->NumElement();
-  if (sele.Shape() == DRT::Element::tri3 )
-    fac *= 6.0;
-  for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-    dscmap[p->first] += fac * (-1.0)/(jacsele*jacsele) * (derivjacselexi[0] * (p->second)); //
-
-  fac = wgt * sval[iter] * jac;
-  fac /= sele.Nodes()[iter]->NumElement();
-  if (sele.Shape() == DRT::Element::tri3 )
-    fac *= 6.0;
-  for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-    dscmap[p->first] += fac * (-1.0)/(jacsele*jacsele) * (derivjacselexi[1] * (p->second));
+  for (int d=0;d<Dim()-1;++d)
+  {
+    fac = wgt * sval[iter] * jac;
+    fac /= sele.Nodes()[iter]->NumElement();
+    if (sele.Shape() == DRT::Element::tri3 )
+      fac *= 6.0;
+    for (_CI p=dsxigp[d].begin(); p!=dsxigp[d].end(); ++p)
+      dscmap[p->first] += fac * (-1.0)/(jacsele*jacsele) * (derivjacselexi[d] * (p->second)); //
+  }
 
   return;
 }
@@ -8765,20 +8136,18 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Master_Lin(
  |  Compute lin for T and E matrix -- discr. wear            farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
-     int& iter,                             //like k
-     MORTAR::MortarElement& sele,
-     LINALG::SerialDenseVector& sval,
-     LINALG::SerialDenseVector& lmval,
-     LINALG::SerialDenseMatrix& sderiv,
-     LINALG::SerialDenseMatrix& lmderiv,
-     double& dsxideta, double& dxdsxi,
-     double& dxdsxidsxi,
-     double& wgt, double* jumpval,
-     const GEN::pairedvector<int,double>& dsxigp,
-     const GEN::pairedvector<int,double>& derivjac,
-     const GEN::pairedvector<int,double>& dsliptmatrixgp,
-     const std::vector<GEN::pairedvector<int,double> >& ximaps,
-     const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
+    int& iter,
+    MORTAR::MortarElement& sele,
+    LINALG::SerialDenseVector& sval,
+    LINALG::SerialDenseVector& lmval,
+    LINALG::SerialDenseMatrix& sderiv,
+    LINALG::SerialDenseMatrix& lmderiv,
+    double& jac,
+    double& wgt, double* jumpval,
+    const std::vector<GEN::pairedvector<int,double> >& dsxigp,
+    const GEN::pairedvector<int,double>& derivjac,
+    const GEN::pairedvector<int,double>& dsliptmatrixgp,
+    const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
 {
   const int nrow=sele.NumNode();
 
@@ -8807,43 +8176,31 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
       // (1) Lin(Phi) - dual shape functions
       for (int m=0; m<nrow; ++m)
       {
-        fac = wgt*sval[m]*sval[j]*dsxideta*dxdsxi*abs(jumpval[0]);
+        fac = wgt*sval[m]*sval[j]*jac*abs(jumpval[0]);
         for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
             p!=dualmap.end(); ++p)
           tmmap_jk[p->first] += fac*(p->second)(iter,m);
       }
 
       // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*lmderiv(j, 0)*sval[iter]*dsxideta*dxdsxi*abs(jumpval[0]);
-      for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+      fac = wgt*lmderiv(j, 0)*sval[iter]*jac*abs(jumpval[0]);
+      for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
         tmmap_jk[p->first] += fac*(p->second);
 
       // (3) Lin(Phi) - slave GP coordinates
-      fac = wgt*lmval[j]*sderiv(iter,0)*dsxideta*dxdsxi*abs(jumpval[0]);
-      for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+      fac = wgt*lmval[j]*sderiv(iter,0)*jac*abs(jumpval[0]);
+      for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
         tmmap_jk[p->first] += fac*(p->second);
 
-      // (4) Lin(dsxideta) - segment end coordinates
-      fac = wgt*lmval[j]*sval[iter]*dxdsxi*abs(jumpval[0]);
-      for (_CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
-        tmmap_jk[p->first] -= 0.5*fac*(p->second);
-      for (_CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
-        tmmap_jk[p->first] += 0.5*fac*(p->second);
-
-      // (5) Lin(dxdsxi) - slave GP Jacobian
-      fac = wgt*lmval[j]*sval[iter]*dsxideta*abs(jumpval[0]);
+      // (4) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*lmval[j]*sval[iter]*abs(jumpval[0]);
       for (_CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-        tmmap_jk[p->first] += fac*(p->second);
-
-      // (6) Lin(dxdsxi) - slave GP coordinates
-      fac = wgt*lmval[j]*sval[iter]*dsxideta*dxdsxidsxi*abs(jumpval[0]);
-      for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
         tmmap_jk[p->first] += fac*(p->second);
 
       // (7) Lin(wear)
       if(!sswear_)
       {
-        fac = wgt*lmval[j]*sval[iter]*dsxideta*dxdsxi;
+        fac = wgt*lmval[j]*sval[iter]*jac;
         for (_CI p=dsliptmatrixgp.begin(); p!=dsliptmatrixgp.end(); ++p) //dsliptmatrixgp
         {
           tmmap_jk[p->first] += fac*(p->second);
@@ -8864,30 +8221,18 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
       std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivE()[mgid];
 
       // (1) Lin(Phi) - slave GP coordinates
-      fac = wgt*sderiv(iter, 0)*sval[j]*dsxideta*dxdsxi;
-      for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+      fac = wgt*sderiv(iter, 0)*sval[j]*jac;
+      for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
         emmap_jk[p->first] += fac*(p->second);
 
       // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*sval[iter]*sderiv(j,0)*dsxideta*dxdsxi;
-      for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+      fac = wgt*sval[iter]*sderiv(j,0)*jac;
+      for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
         emmap_jk[p->first] += fac*(p->second);
-
-      // (3) Lin(dsxideta) - segment end coordinates
-      fac = wgt*sval[iter]*sval[j]*dxdsxi;
-      for (_CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
-        emmap_jk[p->first] -= 0.5*fac*(p->second);
-      for (_CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
-        emmap_jk[p->first] += 0.5*fac*(p->second);
 
       // (4) Lin(dxdsxi) - slave GP Jacobian
-      fac = wgt*sval[iter]*sval[j]*dsxideta;
+      fac = wgt*sval[iter]*sval[j];
       for (_CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-        emmap_jk[p->first] += fac*(p->second);
-
-      // (5) Lin(dxdsxi) - slave GP coordinates
-      fac = wgt*sval[iter]*sval[j]*dsxideta*dxdsxidsxi;
-      for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
         emmap_jk[p->first] += fac*(p->second);
     } // end integrate linE
   }
@@ -8906,56 +8251,41 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
       // (1) Lin(Phi) - dual shape functions
       for (int m=0; m<nrow; ++m)
       {
-        fac = wgt*sval[m]*lmval[j]*dsxideta*dxdsxi*abs(jumpval[0]);
+        fac = wgt*sval[m]*lmval[j]*jac*abs(jumpval[0]);
         for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
             p!=dualmap.end(); ++p)
           tmmap_jk[p->first] += fac*(p->second)(iter,m);
       }
 
       // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*lmderiv(j, 0)*lmval[iter]*dsxideta*dxdsxi*abs(jumpval[0]);
-      for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+      fac = wgt*lmderiv(j, 0)*lmval[iter]*jac*abs(jumpval[0]);
+      for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
         tmmap_jk[p->first] += fac*(p->second);
 
 
       // (1) Lin(Phi) - dual shape functions
       for (int m=0; m<nrow; ++m)
       {
-        fac = wgt*sval[m]*sval[j]*dsxideta*dxdsxi*abs(jumpval[0]);
+        fac = wgt*sval[m]*sval[j]*jac*abs(jumpval[0]);
         for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
             p!=dualmap.end(); ++p)
           tmmap_jk[p->first] += fac*(p->second)(iter,m);
       }
 
       // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*lmderiv(iter, 0)*lmval[j]*dsxideta*dxdsxi*abs(jumpval[0]);
-      for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+      fac = wgt*lmderiv(iter, 0)*lmval[j]*jac*abs(jumpval[0]);
+      for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
         tmmap_jk[p->first] += fac*(p->second);
 
-
-      // (4) Lin(dsxideta) - segment end coordinates
-      fac = wgt*lmval[j]*lmval[iter]*dxdsxi*abs(jumpval[0]);
-      for (_CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
-        tmmap_jk[p->first] -= 0.5*fac*(p->second);
-      for (_CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
-        tmmap_jk[p->first] += 0.5*fac*(p->second);
-
-      // (5) Lin(dxdsxi) - slave GP Jacobian
-      fac = wgt*lmval[j]*lmval[iter]*dsxideta*abs(jumpval[0]);
+      // (3) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*lmval[j]*lmval[iter]*abs(jumpval[0]);
       for (_CI p=derivjac.begin(); p!=derivjac.end(); ++p)
         tmmap_jk[p->first] += fac*(p->second);
 
-      // (6) Lin(dxdsxi) - slave GP coordinates
-      fac = wgt*lmval[j]*lmval[iter]*dsxideta*dxdsxidsxi*abs(jumpval[0]);
-      for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
-        tmmap_jk[p->first] += fac*(p->second);
-
-      // (7) Lin(wear)
-      fac = wgt*lmval[j]*lmval[iter]*dsxideta*dxdsxi;
+      // (4) Lin(wear)
+      fac = wgt*lmval[j]*lmval[iter]*jac;
       for (_CI p=dsliptmatrixgp.begin(); p!=dsliptmatrixgp.end(); ++p) //dsliptmatrixgp
-      {
         tmmap_jk[p->first] += fac*(p->second);
-      }
     } // end integrate linT
 
     //********************************************************************************
@@ -8972,37 +8302,25 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
       // (1) Lin(Phi) - dual shape functions
       for (int m=0; m<nrow; ++m)
       {
-        fac = wgt*sval[m]*sval[j]*dsxideta*dxdsxi;
+        fac = wgt*sval[m]*sval[j]*jac;
         for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
             p!=dualmap.end(); ++p)
           emmap_jk[p->first] += fac*(p->second)(iter,m);
       }
 
       // (1) Lin(Phi) - slave GP coordinates
-      fac = wgt*lmderiv(iter, 0)*sval[j]*dsxideta*dxdsxi;
-      for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+      fac = wgt*lmderiv(iter, 0)*sval[j]*jac;
+      for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
         emmap_jk[p->first] += fac*(p->second);
 
       // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*lmval[iter]*sderiv(j,0)*dsxideta*dxdsxi;
-      for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
+      fac = wgt*lmval[iter]*sderiv(j,0)*jac;
+      for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
         emmap_jk[p->first] += fac*(p->second);
 
-      // (3) Lin(dsxideta) - segment end coordinates
-      fac = wgt*lmval[iter]*sval[j]*dxdsxi;
-      for (_CI p=ximaps[0].begin(); p!=ximaps[0].end(); ++p)
-        emmap_jk[p->first] -= 0.5*fac*(p->second);
-      for (_CI p=ximaps[1].begin(); p!=ximaps[1].end(); ++p)
-        emmap_jk[p->first] += 0.5*fac*(p->second);
-
-      // (4) Lin(dxdsxi) - slave GP Jacobian
-      fac = wgt*lmval[iter]*sval[j]*dsxideta;
+      // (3) Lin(dxdsxi) - slave GP Jacobian
+      fac = wgt*lmval[iter]*sval[j];
       for (_CI p=derivjac.begin(); p!=derivjac.end(); ++p)
-        emmap_jk[p->first] += fac*(p->second);
-
-      // (5) Lin(dxdsxi) - slave GP coordinates
-      fac = wgt*lmval[iter]*sval[j]*dsxideta*dxdsxidsxi;
-      for (_CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
         emmap_jk[p->first] += fac*(p->second);
     } // end integrate linE
   }
@@ -9016,7 +8334,7 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(
  |  Compute lin for T and E matrix -- discr. wear            farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
-     int& iter, bool& duallin,                //like k
+     int& iter,
      MORTAR::MortarElement& sele,
      LINALG::SerialDenseVector& sval,
      LINALG::SerialDenseVector& lmval,
@@ -9054,7 +8372,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
       std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
-      if (duallin)
+      if (dualmap.size()>0)
         for (int m=0; m<nrow; ++m)
         {
           fac = wgt*sval[m]*sval[iter]*jac*abs(jumpval[0]);
@@ -9148,7 +8466,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
       // LM-shape function lin...
       //**********************************************
       // (1) Lin(Phi) - dual shape functions
-      if (duallin)
+      if (dualmap.size()>0)
         for (int m=0; m<nrow; ++m)
         {
           fac = wgt*sval[m]*lmval[j]*jac*abs(jumpval[0]);
@@ -9170,7 +8488,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
       // wear weighting lin...
       //**********************************************
       // (1) Lin(Phi) - dual shape functions
-      if (duallin)
+      if (dualmap.size()>0)
         for (int m=0; m<nrow; ++m)
         {
           fac = wgt*lmval[iter]*sval[m]*jac*abs(jumpval[0]);
@@ -9216,7 +8534,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
       // wear weighting lin...
       //**********************************************
       // (1) Lin(Phi) - dual shape functions
-      if (duallin)
+      if (dualmap.size()>0)
         for (int m=0; m<nrow; ++m)
         {
           fac = wgt*sval[m]*sval[iter]*jac;
@@ -9260,7 +8578,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(
  |  Compute lin for T and E matrix -- discr. wear (master)   farah 11/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
-     int& iter, bool& duallin,                //like k
+     int& iter,
      MORTAR::MortarElement& sele,
      MORTAR::MortarElement& mele,
      LINALG::SerialDenseVector& sval,
@@ -9310,7 +8628,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
       std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
-      if (duallin)
+      if (dualmap.size()>0)
         for (int m=0; m<nrow; ++m)
         {
           fac = wgt*sval[m]*mval[iter]*jac*abs(jumpval[0]);
@@ -9320,24 +8638,20 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
         }
 
       // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*lmderiv(j, 0)*mval[iter]*jac*abs(jumpval[0]);
-      for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-        dtmap_jk[p->first] += fac*(p->second);
-
-      fac = wgt*lmderiv(j, 1)*mval[iter]*jac*abs(jumpval[0]);
-      for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-        dtmap_jk[p->first] += fac*(p->second);
-
+      for (int d=0;d<Dim()-1;++d)
+      {
+        fac = wgt*lmderiv(j, d)*mval[iter]*jac*abs(jumpval[0]);
+        for (_CI p=dsxigp[d].begin(); p!=dsxigp[d].end(); ++p)
+          dtmap_jk[p->first] += fac*(p->second);
+      }
 
       // (3) Lin(NMaster) - master GP coordinates
-      fac = wgt*lmval[j]*mderiv(iter, 0)*jac*abs(jumpval[0]);
-      for (_CI p=dmxigp[0].begin(); p!=dmxigp[0].end(); ++p)
-        dtmap_jk[p->first] += fac*(p->second);
-
-      fac = wgt*lmval[j]*mderiv(iter, 1)*jac*abs(jumpval[0]);
-      for (_CI p=dmxigp[1].begin(); p!=dmxigp[1].end(); ++p)
-        dtmap_jk[p->first] += fac*(p->second);
-
+      for (int d=0;d<Dim()-1;++d)
+      {
+        fac = wgt*lmval[j]*mderiv(iter, d)*jac*abs(jumpval[0]);
+        for (_CI p=dmxigp[d].begin(); p!=dmxigp[d].end(); ++p)
+          dtmap_jk[p->first] += fac*(p->second);
+      }
 
       // (4) Lin(dsxideta) - intcell GP Jacobian
       fac = wgt*lmval[j]*mval[iter]*abs(jumpval[0]);
@@ -9361,22 +8675,20 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
       std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivE()[mgid];
 
       // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*mderiv(j, 0)*mval[iter]*jac;
-      for (_CI p=dmxigp[0].begin(); p!=dmxigp[0].end(); ++p)
-        emmap_jk[p->first] += fac*(p->second);
-
-      fac = wgt*mderiv(j, 1)*mval[iter]*jac;
-      for (_CI p=dmxigp[1].begin(); p!=dmxigp[1].end(); ++p)
-        emmap_jk[p->first] += fac*(p->second);
+      for (int d=0;d<Dim()-1;++d)
+      {
+        fac = wgt*mderiv(j, d)*mval[iter]*jac;
+        for (_CI p=dmxigp[d].begin(); p!=dmxigp[d].end(); ++p)
+          emmap_jk[p->first] += fac*(p->second);
+      }
 
       // (3) Lin(NMaster) - master GP coordinates
-      fac = wgt*mval[j]*mderiv(iter, 0)*jac;
-      for (_CI p=dmxigp[0].begin(); p!=dmxigp[0].end(); ++p)
-        emmap_jk[p->first] += fac*(p->second);
-
-      fac = wgt*mval[j]*mderiv(iter, 1)*jac;
-      for (_CI p=dmxigp[1].begin(); p!=dmxigp[1].end(); ++p)
-        emmap_jk[p->first] += fac*(p->second);
+      for (int d=0;d<Dim()-1;++d)
+      {
+        fac = wgt*mval[j]*mderiv(iter, d)*jac;
+        for (_CI p=dmxigp[d].begin(); p!=dmxigp[d].end(); ++p)
+          emmap_jk[p->first] += fac*(p->second);
+      }
 
       // (4) Lin(dsxideta) - intcell GP Jacobian
       fac = wgt*mval[j]*mval[iter];
@@ -9401,7 +8713,7 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
       std::map<int,double>& dtmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivTw()[mgid];
 
       // (1) Lin(Phi) - dual shape functions
-      if (duallin)
+      if (dualmap.size()>0)
         for (int m=0; m<nrow; ++m)
         {
           fac = wgt*sval[m]*lm2val[iter]*jac*abs(jumpval[0]);
@@ -9411,18 +8723,17 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
         }
 
       // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*lmderiv(j, 0)*lm2val[iter]*jac*abs(jumpval[0]);
-      for (_CI p=dsxigp[0].begin(); p!=dsxigp[0].end(); ++p)
-        dtmap_jk[p->first] += fac*(p->second);
-
-      fac = wgt*lmderiv(j, 1)*lm2val[iter]*jac*abs(jumpval[0]);
-      for (_CI p=dsxigp[1].begin(); p!=dsxigp[1].end(); ++p)
-        dtmap_jk[p->first] += fac*(p->second);
+      for (int d=0;d<Dim()-1;++d)
+      {
+        fac = wgt*lmderiv(j, d)*lm2val[iter]*jac*abs(jumpval[0]);
+        for (_CI p=dsxigp[d].begin(); p!=dsxigp[d].end(); ++p)
+          dtmap_jk[p->first] += fac*(p->second);
+      }
 
       //----------------------
 
       // (1) Lin(Phi) - dual shape functions
-      if (duallin)
+      if (dual2map.size()>0)
         for (int m=0; m<ncol; ++m)
         {
           fac = wgt*lmval[m]*mval[iter]*jac*abs(jumpval[0]);
@@ -9432,13 +8743,12 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
         }
 
       // (3) Lin(NMaster) - master GP coordinates
-      fac = wgt*lmval[j]*lm2deriv(iter, 0)*jac*abs(jumpval[0]);
-      for (_CI p=dmxigp[0].begin(); p!=dmxigp[0].end(); ++p)
-        dtmap_jk[p->first] += fac*(p->second);
-
-      fac = wgt*lmval[j]*lm2deriv(iter, 1)*jac*abs(jumpval[0]);
-      for (_CI p=dmxigp[1].begin(); p!=dmxigp[1].end(); ++p)
-        dtmap_jk[p->first] += fac*(p->second);
+      for (int d=0;d<Dim()-1;++d)
+      {
+        fac = wgt*lmval[j]*lm2deriv(iter, d)*jac*abs(jumpval[0]);
+        for (_CI p=dmxigp[d].begin(); p!=dmxigp[d].end(); ++p)
+          dtmap_jk[p->first] += fac*(p->second);
+      }
 
       //----------------------
 
@@ -9464,18 +8774,17 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
       std::map<int,double>& emmap_jk = dynamic_cast<CONTACT::FriNode*>(mymrtrnode)->WearData().GetDerivE()[mgid];
 
       // (2) Lin(Phi) - slave GP coordinates
-      fac = wgt*mderiv(j, 0)*lm2val[iter]*jac;
-      for (_CI p=dmxigp[0].begin(); p!=dmxigp[0].end(); ++p)
-        emmap_jk[p->first] += fac*(p->second);
-
-      fac = wgt*mderiv(j, 1)*lm2val[iter]*jac;
-      for (_CI p=dmxigp[1].begin(); p!=dmxigp[1].end(); ++p)
-        emmap_jk[p->first] += fac*(p->second);
+      for(int d=0;d<Dim()-1;++d)
+      {
+        fac = wgt*mderiv(j, d)*lm2val[iter]*jac;
+        for (_CI p=dmxigp[d].begin(); p!=dmxigp[d].end(); ++p)
+          emmap_jk[p->first] += fac*(p->second);
+      }
 
       //----------------------
 
       // (1) Lin(Phi) - dual shape functions
-      if (duallin)
+      if (dual2map.size()>0)
         for (int m=0; m<ncol; ++m)
         {
           fac = wgt*mval[m]*mval[iter]*jac;
@@ -9485,13 +8794,12 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(
         }
 
       // (3) Lin(NMaster) - master GP coordinates
-      fac = wgt*mval[j]*lm2deriv(iter, 0)*jac;
-      for (_CI p=dmxigp[0].begin(); p!=dmxigp[0].end(); ++p)
-        emmap_jk[p->first] += fac*(p->second);
-
-      fac = wgt*mval[j]*lm2deriv(iter, 1)*jac;
-      for (_CI p=dmxigp[1].begin(); p!=dmxigp[1].end(); ++p)
-        emmap_jk[p->first] += fac*(p->second);
+      for (int d=0;d<Dim()-1;++d)
+      {
+        fac = wgt*mval[j]*lm2deriv(iter, d)*jac;
+        for (_CI p=dmxigp[d].begin(); p!=dmxigp[d].end(); ++p)
+          emmap_jk[p->first] += fac*(p->second);
+      }
 
       //----------------------
 
@@ -9517,16 +8825,12 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(
      LINALG::SerialDenseVector& sval,
      LINALG::SerialDenseVector& mval,
      LINALG::SerialDenseVector& lmval,
-     LINALG::SerialDenseMatrix& scoord,
-     LINALG::SerialDenseMatrix& mcoord,
-     Teuchos::RCP<LINALG::SerialDenseMatrix>  scoordold,
-     Teuchos::RCP<LINALG::SerialDenseMatrix>  mcoordold,
      LINALG::SerialDenseMatrix& sderiv,
      LINALG::SerialDenseMatrix& mderiv,
-     double& dsxideta, double& dxdsxi,
+     double& jac,
      double& wgt, double* jumpvalv,
-     const GEN::pairedvector<int,double>& dsxigp,
-     const GEN::pairedvector<int,double>& dmxigp,
+     const std::vector<GEN::pairedvector<int,double> >& dsxigp,
+     const std::vector<GEN::pairedvector<int,double> >& dmxigp,
      GEN::pairedvector<int,double>& dslipgp,
      int& linsize)
 {
@@ -9549,10 +8853,10 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(
   GEN::pairedvector<int,double> dmap_tysl_gp(ncol*ndof + linsize);
 
   // build interpolation of slave GP normal and coordinates
-  double sjumpv[3] = {0.0, 0.0, 0.0};
-  double mjumpv[3] = {0.0, 0.0, 0.0};
-  double jumpv[3]  = {0.0, 0.0, 0.0};
-  double tanv[3]   = {0.0, 0.0, 0.0};
+  double sjumpv[2] = {0.0, 0.0};
+  double mjumpv[2] = {0.0, 0.0};
+  double jumpv[2]  = {0.0, 0.0};
+  double tanv[2]   = {0.0, 0.0};
 
   double tanlength = 0.0;
   for (int i=0;i<nrow;++i)
@@ -9562,36 +8866,32 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(
      //nodal tangent interpolation
      tanv[0]+=sval[i]*myconode->CoData().txi()[0];
      tanv[1]+=sval[i]*myconode->CoData().txi()[1];
-     tanv[2]+=sval[i]*myconode->CoData().txi()[2];
 
      // delta D
-     sjumpv[0]+=sval[i]*(scoord(0,i)-(*scoordold)(0,i));
-     sjumpv[1]+=sval[i]*(scoord(1,i)-(*scoordold)(1,i));
-     sjumpv[2]+=sval[i]*(scoord(2,i)-(*scoordold)(2,i));
+     sjumpv[0]+=sval[i]*(sele.GetNodalCoords(0,i)-sele.GetNodalCoordsOld(0,i));
+     sjumpv[1]+=sval[i]*(sele.GetNodalCoords(1,i)-sele.GetNodalCoordsOld(1,i));
   }
 
   for (int i=0;i<ncol;++i)
   {
-    mjumpv[0]+=mval[i]*(mcoord(0,i)-(*mcoordold)(0,i));
-    mjumpv[1]+=mval[i]*(mcoord(1,i)-(*mcoordold)(1,i));
-    mjumpv[2]+=mval[i]*(mcoord(2,i)-(*mcoordold)(2,i));
+    mjumpv[0]+=mval[i]*(mele.GetNodalCoords(0,i)-mele.GetNodalCoordsOld(0,i));
+    mjumpv[1]+=mval[i]*(mele.GetNodalCoords(1,i)-mele.GetNodalCoordsOld(1,i));
   }
 
   // normalize interpolated GP tangent back to length 1.0 !!!
-  tanlength = sqrt(tanv[0]*tanv[0]+tanv[1]*tanv[1]+tanv[2]*tanv[2]);
+  tanlength = sqrt(tanv[0]*tanv[0]+tanv[1]*tanv[1]);
   if (tanlength<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
 
-  for (int i=0;i<3;i++)
+  for (int i=0;i<2;i++)
     tanv[i]/=tanlength;
 
   // jump
   jumpv[0] = sjumpv[0] - mjumpv[0];
   jumpv[1] = sjumpv[1] - mjumpv[1];
-  jumpv[2] = sjumpv[2] - mjumpv[2];
 
   //multiply with tangent
   // value of relative tangential jump
-  for (int i=0;i<3;++i)
+  for (int i=0;i<2;++i)
     jumpvalv[0] += tanv[i]*jumpv[i];
 
 
@@ -9608,7 +8908,7 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(
     for (_CI p=dmap_tysl_i.begin();p!=dmap_tysl_i.end();++p)
       dmap_tysl_gp[p->first] += sval[i]*(p->second);
 
-    for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+    for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
     {
       double valx =  sderiv(i,0) * dynamic_cast<CONTACT::CoNode*>(snodes[i])->CoData().txi()[0];
       dmap_txsl_gp[p->first] += valx*(p->second);
@@ -9656,8 +8956,8 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(
     {
       dslipgp[snode->Dofs()[k]] += sval[z] * tanv[k];
 
-      for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
-        dslipgp[p->first] += tanv[k] * sderiv(z,0) * (scoord(k,z)-(*scoordold)(k,z)) * (p->second);
+      for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
+        dslipgp[p->first] += tanv[k] * sderiv(z,0) * (sele.GetNodalCoords(k,z)-sele.GetNodalCoordsOld(k,z)) * (p->second);
     }
   }
 
@@ -9668,8 +8968,8 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(
     {
       dslipgp[mnode->Dofs()[k]] -= mval[z] * tanv[k];
 
-      for (_CI p=dmxigp.begin();p!=dmxigp.end();++p)
-        dslipgp[p->first] -= tanv[k] * mderiv(z,0) * (mcoord(k,z)-(*mcoordold)(k,z)) * (p->second);
+      for (_CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
+        dslipgp[p->first] -= tanv[k] * mderiv(z,0) * (mele.GetNodalCoords(k,z)-mele.GetNodalCoordsOld(k,z)) * (p->second);
     }
   }
 
@@ -9679,7 +8979,7 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(
   {
     FriNode* snode = dynamic_cast<FriNode*> (snodes[j]);
 
-    double prod = lmval[j]*jumpvalv[0]*dxdsxi*dsxideta*wgt;
+    double prod = lmval[j]*jumpvalv[0]*jac*wgt;
 
     // add current Gauss point's contribution to jump
     snode->AddJumpValue(prod,0);
@@ -9698,10 +8998,6 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
      LINALG::SerialDenseVector& sval,
      LINALG::SerialDenseVector& mval,
      LINALG::SerialDenseVector& lmval,
-     LINALG::SerialDenseMatrix& scoord,
-     LINALG::SerialDenseMatrix& mcoord,
-     Teuchos::RCP<LINALG::SerialDenseMatrix>  scoordold,
-     Teuchos::RCP<LINALG::SerialDenseMatrix>  mcoordold,
      LINALG::SerialDenseMatrix& sderiv,
      LINALG::SerialDenseMatrix& mderiv,
      double& jac,
@@ -9760,16 +9056,16 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
      tanv2[1]+=sval[i]*myconode->CoData().teta()[1];
      tanv2[2]+=sval[i]*myconode->CoData().teta()[2];
      // delta D
-     sjumpv[0]+=sval[i]*(scoord(0,i)-(*scoordold)(0,i));
-     sjumpv[1]+=sval[i]*(scoord(1,i)-(*scoordold)(1,i));
-     sjumpv[2]+=sval[i]*(scoord(2,i)-(*scoordold)(2,i));
+     sjumpv[0]+=sval[i]*(sele.GetNodalCoords(0,i)-sele.GetNodalCoordsOld(0,i));
+     sjumpv[1]+=sval[i]*(sele.GetNodalCoords(1,i)-sele.GetNodalCoordsOld(1,i));
+     sjumpv[2]+=sval[i]*(sele.GetNodalCoords(2,i)-sele.GetNodalCoordsOld(2,i));
   }
 
   for (int i=0;i<ncol;++i)
   {
-    mjumpv[0]+=mval[i]*(mcoord(0,i)-(*mcoordold)(0,i));
-    mjumpv[1]+=mval[i]*(mcoord(1,i)-(*mcoordold)(1,i));
-    mjumpv[2]+=mval[i]*(mcoord(2,i)-(*mcoordold)(2,i));
+    mjumpv[0]+=mval[i]*(mele.GetNodalCoords(0,i)-mele.GetNodalCoordsOld(0,i));
+    mjumpv[1]+=mval[i]*(mele.GetNodalCoords(1,i)-mele.GetNodalCoordsOld(1,i));
+    mjumpv[2]+=mval[i]*(mele.GetNodalCoords(2,i)-mele.GetNodalCoordsOld(2,i));
   }
 
   // normalize interpolated GP tangent back to length 1.0 !!!
@@ -10013,14 +9309,14 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
 
       for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
       {
-        dslipgp[0][p->first] += tanv1[k] * sderiv(z,0) * (scoord(k,z)-(*scoordold)(k,z)) * (p->second);
-        dslipgp[1][p->first] += tanv2[k] * sderiv(z,0) * (scoord(k,z)-(*scoordold)(k,z)) * (p->second);
+        dslipgp[0][p->first] += tanv1[k] * sderiv(z,0) * (sele.GetNodalCoords(k,z)-sele.GetNodalCoordsOld(k,z)) * (p->second);
+        dslipgp[1][p->first] += tanv2[k] * sderiv(z,0) * (sele.GetNodalCoords(k,z)-sele.GetNodalCoordsOld(k,z)) * (p->second);
       }
 
       for (_CI p=dsxigp[1].begin();p!=dsxigp[1].end();++p)
       {
-        dslipgp[0][p->first] += tanv1[k] * sderiv(z,1) * (scoord(k,z)-(*scoordold)(k,z)) * (p->second);
-        dslipgp[1][p->first] += tanv2[k] * sderiv(z,1) * (scoord(k,z)-(*scoordold)(k,z)) * (p->second);
+        dslipgp[0][p->first] += tanv1[k] * sderiv(z,1) * (sele.GetNodalCoords(k,z)-sele.GetNodalCoordsOld(k,z)) * (p->second);
+        dslipgp[1][p->first] += tanv2[k] * sderiv(z,1) * (sele.GetNodalCoords(k,z)-sele.GetNodalCoordsOld(k,z)) * (p->second);
       }
     }
   }
@@ -10036,14 +9332,14 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
 
       for (_CI p=dmxigp[0].begin();p!=dmxigp[0].end();++p)
       {
-        dslipgp[0][p->first] -= tanv1[k] * mderiv(z,0) * (mcoord(k,z)-(*mcoordold)(k,z)) * (p->second);
-        dslipgp[1][p->first] -= tanv2[k] * mderiv(z,0) * (mcoord(k,z)-(*mcoordold)(k,z)) * (p->second);
+        dslipgp[0][p->first] -= tanv1[k] * mderiv(z,0) * (mele.GetNodalCoords(k,z)-mele.GetNodalCoordsOld(k,z)) * (p->second);
+        dslipgp[1][p->first] -= tanv2[k] * mderiv(z,0) * (mele.GetNodalCoords(k,z)-mele.GetNodalCoordsOld(k,z)) * (p->second);
       }
 
       for (_CI p=dmxigp[1].begin();p!=dmxigp[1].end();++p)
       {
-        dslipgp[0][p->first] -= tanv1[k] * mderiv(z,1) * (mcoord(k,z)-(*mcoordold)(k,z)) * (p->second);
-        dslipgp[1][p->first] -= tanv2[k] * mderiv(z,1) * (mcoord(k,z)-(*mcoordold)(k,z)) * (p->second);
+        dslipgp[0][p->first] -= tanv1[k] * mderiv(z,1) * (mele.GetNodalCoords(k,z)-mele.GetNodalCoordsOld(k,z)) * (p->second);
+        dslipgp[1][p->first] -= tanv2[k] * mderiv(z,1) * (mele.GetNodalCoords(k,z)-mele.GetNodalCoordsOld(k,z)) * (p->second);
       }
     }
   }
@@ -10061,12 +9357,10 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr_Lin(
      LINALG::SerialDenseVector& lmval,
      LINALG::SerialDenseMatrix& sderiv,
      LINALG::SerialDenseMatrix& lmderiv,
-     double& dsxideta, double& dxdsxi,
-     double& dxdsxidsxi,
+     double& jac,
      double& wgt, double* jumpvalv,
-     const GEN::pairedvector<int,double>& dsxigp,
+     const std::vector<GEN::pairedvector<int,double> >& dsxigp,
      const GEN::pairedvector<int,double>& dslipgp,
-     const std::vector<GEN::pairedvector<int,double> >& ximaps,
      const GEN::pairedvector<int,double>& derivjac,
      const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
 {
@@ -10088,7 +9382,7 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr_Lin(
   {
     for (int m=0;m<nrow;++m)
     {
-      fac = wgt*sval[m]*jumpvalv[0]*dsxideta*dxdsxi;
+      fac = wgt*sval[m]*jumpvalv[0]*jac;
       for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
           p!=dualmap.end();++p)
         djumpmap[p->first] += fac*(p->second)(iter,m);
@@ -10096,30 +9390,18 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr_Lin(
   }
 
   // (2) Lin(Phi) - slave GP coordinates
-  fac = wgt*lmderiv(iter,0)*jumpvalv[0]*dsxideta*dxdsxi;
-  for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+  fac = wgt*lmderiv(iter,0)*jumpvalv[0]*jac;
+  for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
     djumpmap[p->first] += fac*(p->second);
 
   // (3) Lin(g) - gap function
-  fac = wgt*lmval[iter]*dsxideta*dxdsxi;
+  fac = wgt*lmval[iter]*jac;
   for (_CI p=dslipgp.begin();p!=dslipgp.end();++p)
     djumpmap[p->first] += fac*(p->second);
 
-  // (4) Lin(dsxideta) - segment end coordinates
-  fac = wgt*lmval[iter]*jumpvalv[0]*dxdsxi;
-  for (_CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-    djumpmap[p->first] -= 0.5*fac*(p->second);
-  for (_CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-    djumpmap[p->first] += 0.5*fac*(p->second);
-
-  // (5) Lin(dxdsxi) - slave GP Jacobian
-  fac = wgt*lmval[iter]*jumpvalv[0]*dsxideta;
+  // (4) Lin(dxdsxi) - slave GP Jacobian
+  fac = wgt*lmval[iter]*jumpvalv[0];
   for (_CI p=derivjac.begin();p!=derivjac.end();++p)
-    djumpmap[p->first] += fac*(p->second);
-
-  // (6) Lin(dxdsxi) - slave GP coordinates
-  fac = wgt*lmval[iter]*jumpvalv[0]*dsxideta*dxdsxidsxi;
-  for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
     djumpmap[p->first] += fac*(p->second);
 
   return;
@@ -10215,21 +9497,19 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr_Lin(
  |  Lin wear for impl. algor.                                farah 09/13|
  *----------------------------------------------------------------------*/
 void inline CONTACT::CoIntegrator::GP_2D_Wear_Lin(
-     int& iter,
-     MORTAR::MortarElement& sele,
-     LINALG::SerialDenseVector& sval,
-     LINALG::SerialDenseVector& lmval,
-     LINALG::SerialDenseMatrix& sderiv,
-     LINALG::SerialDenseMatrix& lmderiv,
-     double& dsxideta, double& dxdsxi,
-     double& dxdsxidsxi, double* gpn,
-     double& wgt, double& wearval,
-     double* jumpval,
-     const GEN::pairedvector<int,double>& dsxigp,
-     const GEN::pairedvector<int,double>& dweargp,
-     const std::vector<GEN::pairedvector<int,double> >& ximaps,
-     const GEN::pairedvector<int,double>& derivjac,
-     const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
+    int& iter,
+    MORTAR::MortarElement& sele,
+    LINALG::SerialDenseVector& sval,
+    LINALG::SerialDenseVector& lmval,
+    LINALG::SerialDenseMatrix& sderiv,
+    LINALG::SerialDenseMatrix& lmderiv,
+    double& jac, double* gpn,
+    double& wgt, double& wearval,
+    double* jumpval,
+    const GEN::pairedvector<int,double>& dweargp,
+    const GEN::pairedvector<int,double>& derivjac,
+    const std::vector<GEN::pairedvector<int,double> >& dsxigp,
+    const GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dualmap)
 {
   const double wcoeff=wearcoeff_+wearcoeffm_;
 
@@ -10252,30 +9532,18 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear_Lin(
     // we use std. shape functions for shape_petrovgalerkin
 
     // (2) Lin(Phi) - slave GP coordinates --> because of duality
-    facw = wcoeff*wgt*sderiv(iter,0)*wearval*dsxideta*dxdsxi;
-    for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+    facw = wcoeff*wgt*sderiv(iter,0)*wearval*jac;
+    for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
       dwmap[p->first] += facw*(p->second);
 
     // (3) Lin(w) - wear function
-    facw = wcoeff*wgt*sval[iter]*dsxideta*dxdsxi;
+    facw = wcoeff*wgt*sval[iter]*jac;
     for (_CI p=dweargp.begin();p!=dweargp.end();++p)
       dwmap[p->first] += facw*(p->second);
 
-    // (4) Lin(dsxideta) - segment end coordinates
-    facw = wcoeff*wgt*sval[iter]*wearval*dxdsxi;
-    for (_CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-      dwmap[p->first] -= 0.5*facw*(p->second);
-    for (_CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-      dwmap[p->first] += 0.5*facw*(p->second);
-
-    // (5) Lin(dxdsxi) - slave GP Jacobian
-    facw = wcoeff*wgt*sval[iter]*wearval*dsxideta;
+    // (4) Lin(dxdsxi) - slave GP Jacobian
+    facw = wcoeff*wgt*sval[iter]*wearval;
     for (_CI p=derivjac.begin();p!=derivjac.end();++p)
-      dwmap[p->first] += facw*(p->second);
-
-    // (6) Lin(dxdsxi) - slave GP coordinates
-    facw = wcoeff*wgt*sval[iter]*wearval*dsxideta*dxdsxidsxi;
-    for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
       dwmap[p->first] += facw*(p->second);
   }
   else // no petrov_galerkin
@@ -10285,7 +9553,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear_Lin(
     {
       for (int m=0;m<nrow;++m)
       {
-        facw = wcoeff*wgt*sval[m]*wearval*dsxideta*dxdsxi;
+        facw = wcoeff*wgt*sval[m]*wearval*jac;
         for (GEN::pairedvector<int,Epetra_SerialDenseMatrix>::const_iterator  p=dualmap.begin();
             p!=dualmap.end();++p)
           dwmap[p->first] += facw*(p->second)(iter,m);
@@ -10293,30 +9561,18 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear_Lin(
     }
 
     // (2) Lin(Phi) - slave GP coordinates --> because of duality
-    facw = wcoeff*wgt*lmderiv(iter,0)*wearval*dsxideta*dxdsxi;
-    for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
+    facw = wcoeff*wgt*lmderiv(iter,0)*wearval*jac;
+    for (_CI p=dsxigp[0].begin();p!=dsxigp[0].end();++p)
       dwmap[p->first] += facw*(p->second);
 
     // (3) Lin(w) - wear function
-    facw = wcoeff*wgt*lmval[iter]*dsxideta*dxdsxi;
+    facw = wcoeff*wgt*lmval[iter]*jac;
     for (_CI p=dweargp.begin();p!=dweargp.end();++p)
       dwmap[p->first] += facw*(p->second);
 
-    // (4) Lin(dsxideta) - segment end coordinates
-    facw = wcoeff*wgt*lmval[iter]*wearval*dxdsxi;
-    for (_CI p=ximaps[0].begin();p!=ximaps[0].end();++p)
-      dwmap[p->first] -= 0.5*facw*(p->second);
-    for (_CI p=ximaps[1].begin();p!=ximaps[1].end();++p)
-      dwmap[p->first] += 0.5*facw*(p->second);
-
-    // (5) Lin(dxdsxi) - slave GP Jacobian
-    facw = wcoeff*wgt*lmval[iter]*wearval*dsxideta;
+    // (4) Lin(dxdsxi) - slave GP Jacobian
+    facw = wcoeff*wgt*lmval[iter]*wearval;
     for (_CI p=derivjac.begin();p!=derivjac.end();++p)
-      dwmap[p->first] += facw*(p->second);
-
-    // (6) Lin(dxdsxi) - slave GP coordinates
-    facw = wcoeff*wgt*lmval[iter]*wearval*dsxideta*dxdsxidsxi;
-    for (_CI p=dsxigp.begin();p!=dsxigp.end();++p)
       dwmap[p->first] += facw*(p->second);
   }
 
@@ -10331,13 +9587,13 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear_Lin(
 
     if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     {
-      dwlmmap[wearnode->Dofs()[0]] += wcoeff*sval[iter]*dxdsxi*dsxideta*wgt*abs(jumpval[0])*gpn[0]*lmval[bl];
-      dwlmmap[wearnode->Dofs()[1]] += wcoeff*sval[iter]*dxdsxi*dsxideta*wgt*abs(jumpval[0])*gpn[1]*lmval[bl];
+      dwlmmap[wearnode->Dofs()[0]] += wcoeff*sval[iter]*jac*wgt*abs(jumpval[0])*gpn[0]*lmval[bl];
+      dwlmmap[wearnode->Dofs()[1]] += wcoeff*sval[iter]*jac*wgt*abs(jumpval[0])*gpn[1]*lmval[bl];
     }
     else
     {
-      dwlmmap[wearnode->Dofs()[0]] += wcoeff*lmval[iter]*dxdsxi*dsxideta*wgt*abs(jumpval[0])*gpn[0]*lmval[bl];
-      dwlmmap[wearnode->Dofs()[1]] += wcoeff*lmval[iter]*dxdsxi*dsxideta*wgt*abs(jumpval[0])*gpn[1]*lmval[bl];
+      dwlmmap[wearnode->Dofs()[0]] += wcoeff*lmval[iter]*jac*wgt*abs(jumpval[0])*gpn[0]*lmval[bl];
+      dwlmmap[wearnode->Dofs()[1]] += wcoeff*lmval[iter]*jac*wgt*abs(jumpval[0])*gpn[1]*lmval[bl];
     }
   }
 
@@ -10473,7 +9729,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(
      LINALG::SerialDenseVector& lmval,
      LINALG::SerialDenseMatrix& sderiv,
      LINALG::SerialDenseMatrix& mderiv,
-     double* ncoup, double* gpn, double* lengthn,
+     double* ncoup, double* gpn,
      double& jac,
      double& wgt,
      double* gpcoord,
@@ -10521,11 +9777,6 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(
   //fill local vectors for corresponding problem dimension
   for (int k=0;k<Dim();++k)
   {
-    for (int i=0;i<nrow;++i)
-    {
-      CoNode* mymrtrnode = dynamic_cast<CoNode*> (snodes[i]);
-      gpn[k]+=sval[i]*mymrtrnode->MoData().n()[k];
-    }
 
     if(slaveporo)
       for (int i=0;i<nrow;++i)
@@ -10545,12 +9796,6 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(
       }
     }
   }
-
-  // normalize interpolated GP normal back to length 1.0 !!!
-  lengthn[0] = sqrt(gpn[0]*gpn[0]+gpn[1]*gpn[1]+gpn[2]*gpn[2]);
-  if (lengthn[0]<1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
-  for (int i=0;i<3;++i)
-    gpn[i]/=lengthn[0];
 
   ////////////////////////////////!!!Calculate slave side Porosity!!!////////////////////////////
   // get J
@@ -10704,91 +9949,6 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(
   // Linearization w.r.t. displacements
   // **************************
 
-  int linsize = 0;
-  for (int i=0;i<nrow;++i)
-  {
-    CoNode* cnode = dynamic_cast<CoNode*> (snodes[i]);
-    linsize += cnode->GetLinsize();
-  }
-
-  // build directional derivative of slave GP normal (non-unit)
-  GEN::pairedvector<int,double> dmap_nxsl_gp(linsize);
-  GEN::pairedvector<int,double> dmap_nysl_gp(linsize);
-  GEN::pairedvector<int,double> dmap_nzsl_gp(linsize);
-
-  for (int i=0;i<nrow;++i)
-  {
-    CoNode* mrtrnode = dynamic_cast<CoNode*> (snodes[i]);
-
-
-    GEN::pairedvector<int, double>& dmap_nxsl_i = mrtrnode->CoData().GetDerivN()[0];
-    GEN::pairedvector<int, double>& dmap_nysl_i = mrtrnode->CoData().GetDerivN()[1];
-    GEN::pairedvector<int, double>& dmap_nzsl_i = mrtrnode->CoData().GetDerivN()[2];
-    for (_CI p=dmap_nxsl_i.begin();p!=dmap_nxsl_i.end();++p)
-      dmap_nxsl_gp[p->first] += sval[i]*(p->second);
-    for (_CI p=dmap_nysl_i.begin();p!=dmap_nysl_i.end();++p)
-      dmap_nysl_gp[p->first] += sval[i]*(p->second);
-    if (Dim()==3)
-    {
-    for (_CI p=dmap_nzsl_i.begin();p!=dmap_nzsl_i.end();++p)
-      dmap_nzsl_gp[p->first] += sval[i]*(p->second);
-    }
-
-    for (unsigned int d=0;d<dsxigp.size();++d)
-    {
-      for (_CI p=dsxigp[d].begin();p!=dsxigp[d].end();++p)
-      {
-        double valx =  sderiv(i,0)*mrtrnode->MoData().n()[0];
-        dmap_nxsl_gp[p->first] += valx*(p->second);
-        double valy =  sderiv(i,0)*mrtrnode->MoData().n()[1];
-        dmap_nysl_gp[p->first] += valy*(p->second);
-        if (Dim()==3)
-        {
-          double valz =  sderiv(i,0)*mrtrnode->MoData().n()[2];
-          dmap_nzsl_gp[p->first] += valz*(p->second);
-        }
-      }
-    }
-  }
-  // INFO: dnmap_unit(x,y,z)sl_gp ... delta (n/|n|)
-
-  double ll = lengthn[0]*lengthn[0];
-  double sxsx = gpn[0]*gpn[0]*ll;
-  double sxsy = gpn[0]*gpn[1]*ll;
-  double sxsz = gpn[0]*gpn[2]*ll;
-  double sysy = gpn[1]*gpn[1]*ll;
-  double sysz = gpn[1]*gpn[2]*ll;
-  double szsz = gpn[2]*gpn[2]*ll;
-  for (_CI p=dmap_nxsl_gp.begin();p!=dmap_nxsl_gp.end();++p)
-  {
-    dnmap_unit[0][p->first] += 1/lengthn[0]*(p->second);
-    dnmap_unit[0][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sxsx*(p->second);
-    dnmap_unit[1][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sxsy*(p->second);
-
-    if (Dim()==3)
-      dnmap_unit[2][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sxsz*(p->second);
-  }
-
-  for (_CI p=dmap_nysl_gp.begin();p!=dmap_nysl_gp.end();++p)
-  {
-    dnmap_unit[1][p->first] += 1/lengthn[0]*(p->second);
-    dnmap_unit[1][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sysy*(p->second);
-    dnmap_unit[0][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sxsy*(p->second);
-
-    if (Dim()==3)
-      dnmap_unit[2][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sysz*(p->second);
-  }
-
-  if (Dim()==3)
-  {
-    for (_CI p=dmap_nzsl_gp.begin();p!=dmap_nzsl_gp.end();++p)
-    {
-      dnmap_unit[2][p->first] += 1/lengthn[0]*(p->second);
-      dnmap_unit[2][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*szsz*(p->second);
-      dnmap_unit[0][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sxsz*(p->second);
-      dnmap_unit[1][p->first] -= 1/(lengthn[0]*lengthn[0]*lengthn[0])*sysz*(p->second);
-    }
-  }
   // add everything to dncoupgp
   // dncoupgp ... (v(struct)-v(fluid)) * delta n
   for (int k=0; k<Dim();++k)
@@ -10933,7 +10093,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_LIN(
      LINALG::SerialDenseMatrix& sderiv,
      LINALG::SerialDenseMatrix& lmderiv,
      double& ncoup, double *gpn,double& jac,
-     double& wgt, bool& duallin,
+     double& wgt,
      const std::map<int,double>& dncoupgp,
      const std::map<int,double>& dvelncoupgp,
      const std::map<int,double> & dpresncoupgp,
@@ -10992,7 +10152,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_LIN(
   else
   {
     // (1) Lin(Phi) - dual shape functions
-    if (duallin)
+    if (dualmap.size()>0)
       for (int m=0;m<nrow;++m)
       {
         fac = wgt*sval[m]*ncoup*jac;
@@ -11246,12 +10406,12 @@ void CONTACT::CoIntegrator::GPTS_forces(
         dynamic_cast<CONTACT::CoNode*>(mele.Nodes()[m])->CoGPTSData()->GetGPTSforceDeriv()[d][p->first]-=p->second*mval(m);
     }
 
-    for (int e=0;e<2;++e)
+    for (int e=0;e<Dim()-1;++e)
       for (GEN::pairedvector<int,double>::const_iterator p=dsxi[e].begin();p!=dsxi[e].end();++p)
         for (int s=0;s<sele.NumNode();++s)
           dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[s])->CoGPTSData()->GetGPTSforceDeriv()[d][p->first]+=gp_force*sderiv(s,e)*p->second;
 
-    for (int e=0;e<2;++e)
+    for (int e=0;e<Dim()-1;++e)
       for (GEN::pairedvector<int,double>::const_iterator p=dmxi[e].begin();p!=dmxi[e].end();++p)
         for (int m=0;m<mele.NumNode();++m)
           dynamic_cast<CONTACT::CoNode*>(mele.Nodes()[m])->CoGPTSData()->GetGPTSforceDeriv()[d][p->first]-=gp_force*mderiv(m,e)*p->second;
@@ -11259,3 +10419,4 @@ void CONTACT::CoIntegrator::GPTS_forces(
   }
   return;
 }
+

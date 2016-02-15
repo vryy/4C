@@ -18,6 +18,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../headers/pairedvector.H"
+#include "mortar_node.H"
 
 // forward declarations
 namespace LINALG
@@ -622,10 +623,20 @@ public:
   /*!
   \brief Get nodal reference / spatial coords of current element
 
-  \param isinit (in): true if called for reference coords
   */
-  virtual void GetNodalCoords(LINALG::SerialDenseMatrix& coord,
-                              bool isinit = false);
+  virtual void GetNodalCoords(LINALG::SerialDenseMatrix& coord);
+
+  double inline GetNodalCoords(const int direction, const int node)
+  {
+  #ifdef DEBUG
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (Points()[node]);
+    if (!mymrtrnode)
+      dserror("ERROR: GetNodalCoords: Null pointer!");
+    return mymrtrnode->xspatial()[direction];
+  #else
+    return static_cast<MortarNode*> (Points()[node])->xspatial()[direction];
+  #endif
+  }
 
   /*!
   \brief Get nodal spatial coords from previous time step of current element
@@ -634,6 +645,18 @@ public:
   */
   virtual void GetNodalCoordsOld(LINALG::SerialDenseMatrix& coord,
                                  bool isinit = false);
+
+  double inline GetNodalCoordsOld(const int direction, const int node)
+  {
+  #ifdef DEBUG
+    MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (Points()[node]);
+    if (!mymrtrnode)
+      dserror("ERROR: GetNodalCoords: Null pointer!");
+    return mymrtrnode->X()[direction]+mymrtrnode->uold()[direction];
+  #else
+    return (static_cast<MortarNode*> (Points()[node])->X()[direction]+static_cast<MortarNode*> (Points()[node])->uold()[direction]);
+  #endif
+  }
 
   /*!
   \brief Get nodal spatial coords from previous time step of current element

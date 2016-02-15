@@ -21,6 +21,9 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include <Epetra_FEVector.h>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Operator.h>
 
 
 /*----------------------------------------------------------------------*
@@ -665,16 +668,20 @@ void CONTACT::CoPenaltyStrategy::ApplyGPTSforces(
 {
   Teuchos::RCP<Epetra_FEVector> fc=Teuchos::rcp(new Epetra_FEVector(feff->Map()));
   Teuchos::RCP<LINALG::SparseMatrix> kc =
-      Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+      Teuchos::rcp(new LINALG::SparseMatrix(
+          (dynamic_cast<Epetra_CrsMatrix*>(&(*kteff->EpetraOperator())))->RowMap(),
+          100,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
   for (int i=0; i<(int)interface_.size(); ++i)
   {
     interface_[i]->AddGPTSforces(fc);
     interface_[i]->AddGPTSstiffness(kc);
   }
+  if(fc->GlobalAssemble(Add,false)!=0) dserror("GlobalAssemble failed");
   if (feff->Update(1.,*fc,1.)) dserror("update went wrong");
-  kc->Complete();
+  dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true,Add);
   kteff->UnComplete();
   kteff->Add(*kc,false,1.,1.);
   kteff->Complete();
-  return;}
+  return;
+}

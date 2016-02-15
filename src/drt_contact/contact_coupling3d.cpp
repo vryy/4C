@@ -89,8 +89,7 @@ bool CONTACT::CoCoupling3d::AuxiliaryPlane()
 /*----------------------------------------------------------------------*
  |  Integration of cells (3D)                                 popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling3d::IntegrateCells(GEN::pairedvector<int,Epetra_SerialDenseMatrix>* dMatrixDeriv,
-    GEN::pairedvector<int,Epetra_SerialDenseMatrix>* mMatrixDeriv)
+bool CONTACT::CoCoupling3d::IntegrateCells()
 {
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -154,7 +153,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells(GEN::pairedvector<int,Epetra_SerialDe
       if (stype_ == INPAR::CONTACT::solution_augmented)
         Teuchos::rcp_dynamic_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
       else
-        integrator->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),dMatrixDeriv,mMatrixDeriv,Comm());
+        integrator->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
     }
 
     // *******************************************************************
@@ -182,7 +181,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells(GEN::pairedvector<int,Epetra_SerialDe
           dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
       // call integrator
-      integrator->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn(),dMatrixDeriv,mMatrixDeriv);
+      integrator->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
     }
 
     // *******************************************************************
@@ -202,7 +201,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells(GEN::pairedvector<int,Epetra_SerialDe
           dynamic_cast<MORTAR::IntElement&>(MasterIntElement());
 
       // call integrator
-      integrator->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn(),dMatrixDeriv,mMatrixDeriv);
+      integrator->IntegrateDerivCell3DAuxPlaneQuad(SlaveElement(),MasterElement(),sintref,mintref,Cells()[i],Auxn());
     }
 
     // *******************************************************************
@@ -1201,8 +1200,15 @@ CONTACT::CoCoupling3dQuadManager::CoCoupling3dQuadManager(
 /*----------------------------------------------------------------------*
  |  Evaluate mortar coupling pairs                            popp 03/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoCoupling3dManager::EvaluateMortar()
+void CONTACT::CoCoupling3dManager::IntegrateCoupling()
 {
+  // get algorithm
+  INPAR::MORTAR::AlgorithmType algo = DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+
+  // prepare linearizations
+  if (algo==INPAR::MORTAR::algorithm_mortar)
+    dynamic_cast<CONTACT::CoElement&>(SlaveElement()).PrepareDderiv(MasterElements());
+
   // decide which type of numerical integration scheme
 
   //**********************************************************************
@@ -1230,34 +1236,19 @@ void CONTACT::CoCoupling3dManager::EvaluateMortar()
     ConsistDualShape();
 
     // integrate cells
-
-    // number of dofs that may appear in the linearization
-    int numderiv=0;
-    numderiv+=SlaveElement().NumNode()*3*12;
-    for (unsigned m=0;m<MasterElements().size(); ++m)
-      numderiv += (MasterElements()[m])->NumNode()*3;
-
-    // temporary d-matrix linearization of this slave element
-    GEN::pairedvector<int,Epetra_SerialDenseMatrix> dMatrixDeriv(numderiv,0,
-        Epetra_SerialDenseMatrix(SlaveElement().NumNode(),SlaveElement().NumNode()));
-
     for (int i=0; i<(int)Coupling().size(); ++i)
     {
       // temporary m-matrix linearization of this slave/master pair
-      GEN::pairedvector<int,Epetra_SerialDenseMatrix> mMatrixDeriv(
-          SlaveElement().NumNode()*3*12+Coupling()[i]->MasterElement().NumNode()*3,0,
-          Epetra_SerialDenseMatrix(SlaveElement().NumNode(),Coupling()[i]->MasterElement().NumNode()));
+      if (algo==INPAR::MORTAR::algorithm_mortar)
+        dynamic_cast<CONTACT::CoElement&> (SlaveElement()).PrepareMderiv(MasterElements(),i);
 
       // integrate cells
-      Coupling()[i]->IntegrateCells(&dMatrixDeriv,&mMatrixDeriv);
+      Coupling()[i]->IntegrateCells();
 
       // assemble m-matrix for this slave/master pair
-      dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(mMatrixDeriv,Coupling()[i]->MasterElement());
+      if (algo==INPAR::MORTAR::algorithm_mortar)
+        dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(Coupling()[i]->MasterElement());
     }
-
-    // assemble d-matrix linearization for this slave element
-    dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleDderivToNodes(dMatrixDeriv,
-        (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin));
   }
 
   //**********************************************************************
@@ -1315,34 +1306,19 @@ void CONTACT::CoCoupling3dManager::EvaluateMortar()
           ConsistDualShape();
 
           // integrate cells
-
-          // number of dofs that may appear in the linearization
-          int numderiv=0;
-          numderiv+=SlaveElement().NumNode()*3*12;
-          for (unsigned m=0;m<MasterElements().size(); ++m)
-            numderiv += (MasterElements()[m])->NumNode()*3;
-
-          // temporary d-matrix linearization of this slave element
-          GEN::pairedvector<int,Epetra_SerialDenseMatrix> dMatrixDeriv(numderiv,0,
-              Epetra_SerialDenseMatrix(SlaveElement().NumNode(),SlaveElement().NumNode()));
-
           for (int i=0; i<(int)Coupling().size(); ++i)
           {
             // temporary m-matrix linearization of this slave/master pair
-            GEN::pairedvector<int,Epetra_SerialDenseMatrix> mMatrixDeriv(
-                SlaveElement().NumNode()*3*12+Coupling()[i]->MasterElement().NumNode()*3,0,
-                Epetra_SerialDenseMatrix(SlaveElement().NumNode(),Coupling()[i]->MasterElement().NumNode()));
+            if (algo==INPAR::MORTAR::algorithm_mortar)
+              dynamic_cast<CONTACT::CoElement&> (SlaveElement()).PrepareMderiv(MasterElements(),i);
 
             // integrate cells
-            Coupling()[i]->IntegrateCells(&dMatrixDeriv,&mMatrixDeriv);
+            Coupling()[i]->IntegrateCells();
 
             // assemble m-matrix for this slave/master pair
-            dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(mMatrixDeriv,Coupling()[i]->MasterElement());
+            if (algo==INPAR::MORTAR::algorithm_mortar)
+              dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(Coupling()[i]->MasterElement());
           }
-
-          // assemble d-matrix linearization for this slave element
-          dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleDderivToNodes(dMatrixDeriv,
-              (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin));
         }
       }
     }
@@ -1363,6 +1339,13 @@ void CONTACT::CoCoupling3dManager::EvaluateMortar()
   SlaveElement().MoData().ResetDualShape();
   SlaveElement().MoData().ResetDerivDualShape();
 
+  // assemble element contribution to nodes
+  if (algo==INPAR::MORTAR::algorithm_mortar)
+  {
+    bool dual = (ShapeFcn()==INPAR::MORTAR::shape_dual)
+                 || (ShapeFcn()==INPAR::MORTAR::shape_petrovgalerkin);
+    dynamic_cast<CONTACT::CoElement&>(SlaveElement()).AssembleDderivToNodes(dual);
+  }
   return;
 }
 
@@ -1396,7 +1379,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
   // Mortar Contact
   //*********************************
   if(algo==INPAR::MORTAR::algorithm_mortar || algo==INPAR::MORTAR::algorithm_gpts)
-    EvaluateMortar();
+    IntegrateCoupling();
 
   //*********************************
   // Node-to-Segment Contact
@@ -1421,11 +1404,18 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
 /*----------------------------------------------------------------------*
  |  Evaluate mortar coupling pairs for Quad-coupling         farah 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoCoupling3dQuadManager::EvaluateMortar()
+void CONTACT::CoCoupling3dQuadManager::IntegrateCoupling()
 {
   // check
   if (DRT::INPUT::IntegralValue<int>(MORTAR::Coupling3dQuadManager::imortar_, "LM_NODAL_SCALE"))
     dserror("no nodal scaling for quad elements.");
+
+  // get algorithm type
+  INPAR::MORTAR::AlgorithmType algo = DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(MORTAR::Coupling3dQuadManager::imortar_, "ALGORITHM");
+
+  // prepare linearizations
+  if (algo==INPAR::MORTAR::algorithm_mortar)
+    dynamic_cast<CONTACT::CoElement&>(SlaveElement()).PrepareDderiv(MasterElements());
 
   // decide which type of numerical integration scheme
 
@@ -1468,27 +1458,18 @@ void CONTACT::CoCoupling3dQuadManager::EvaluateMortar()
 
     ConsistDualShape();
 
-
-    int numderiv=0;
-    numderiv+=SlaveElement().NumNode()*3*12;
-    for (unsigned m=0;m<MasterElements().size(); ++m)
-      numderiv += (MasterElements()[m])->NumNode()*3;
-
-    GEN::pairedvector<int,Epetra_SerialDenseMatrix> dMatrixDeriv(numderiv,0,
-        Epetra_SerialDenseMatrix(SlaveElement().NumNode(),SlaveElement().NumNode()));
-
+    // integrate cells
     for (int i=0; i<(int)Coupling().size(); ++i)
     {
-      GEN::pairedvector<int,Epetra_SerialDenseMatrix> mMatrixDeriv(
-          SlaveElement().NumNode()*3*12+Coupling()[i]->MasterElement().NumNode()*3,0,
-          Epetra_SerialDenseMatrix(SlaveElement().NumNode(),Coupling()[i]->MasterElement().NumNode()));
+      if (algo==INPAR::MORTAR::algorithm_mortar)
+        dynamic_cast<CONTACT::CoElement&> (SlaveElement()).PrepareMderiv(MasterElements(),i%mauxelements.size());
 
-      Coupling()[i]->IntegrateCells(&dMatrixDeriv,&mMatrixDeriv);
-      dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(mMatrixDeriv,Coupling()[i]->MasterElement());
+      Coupling()[i]->IntegrateCells();
+
+      if (algo==INPAR::MORTAR::algorithm_mortar)
+        dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(Coupling()[i]->MasterElement());
     }
 
-    dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleDderivToNodes(dMatrixDeriv,
-        (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin));
   }
 
   //**********************************************************************
@@ -1556,27 +1537,14 @@ void CONTACT::CoCoupling3dQuadManager::EvaluateMortar()
 
         ConsistDualShape();
 
-
-        int numderiv=0;
-        numderiv+=SlaveElement().NumNode()*3;
-        for (unsigned m=0;m<MasterElements().size(); ++m)
-          numderiv += (MasterElements()[m])->NumNode()*3;
-
-        GEN::pairedvector<int,Epetra_SerialDenseMatrix> dMatrixDeriv(numderiv,0,
-            Epetra_SerialDenseMatrix(SlaveElement().NumNode(),SlaveElement().NumNode()));
-
         for (int i=0; i<(int)Coupling().size(); ++i)
         {
-          GEN::pairedvector<int,Epetra_SerialDenseMatrix> mMatrixDeriv(
-              SlaveElement().NumNode()*3*4+Coupling()[i]->MasterElement().NumNode()*3,0,
-              Epetra_SerialDenseMatrix(SlaveElement().NumNode(),Coupling()[i]->MasterElement().NumNode()));
-
-          Coupling()[i]->IntegrateCells(&dMatrixDeriv,&mMatrixDeriv);
-          dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(mMatrixDeriv,Coupling()[i]->MasterElement());
+          if (algo==INPAR::MORTAR::algorithm_mortar)
+            dynamic_cast<CONTACT::CoElement&> (SlaveElement()).PrepareMderiv(MasterElements(),i%mauxelements.size());
+          Coupling()[i]->IntegrateCells();
+          if (algo==INPAR::MORTAR::algorithm_mortar)
+            dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(Coupling()[i]->MasterElement());
         }
-
-        dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleDderivToNodes(dMatrixDeriv,
-            (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin));
       }
     }
   }
@@ -1591,6 +1559,10 @@ void CONTACT::CoCoupling3dQuadManager::EvaluateMortar()
   // free memory of consistent dual shape function coefficient matrix
   SlaveElement().MoData().ResetDualShape();
   SlaveElement().MoData().ResetDerivDualShape();
+
+  if (algo==INPAR::MORTAR::algorithm_mortar)
+    dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleDderivToNodes(
+        (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin));
 
   return;
 }
@@ -1625,7 +1597,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
   // Mortar Contact
   //*********************************
   if(algo==INPAR::MORTAR::algorithm_mortar)
-    EvaluateMortar();
+    IntegrateCoupling();
 
   //*********************************
   // Node-to-Segment Contact
@@ -1649,7 +1621,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
 {
   // For standard shape functions no modification is necessary
   // A switch earlier in the process improves computational efficiency
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard)
+  if (ShapeFcn() != INPAR::MORTAR::shape_dual && ShapeFcn() != INPAR::MORTAR::shape_petrovgalerkin)
     return;
 
   bool consistent_bound = DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT");

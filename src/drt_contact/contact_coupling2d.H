@@ -200,7 +200,7 @@ public:
   \brief Evaluate mortar coupling
 
   */
-  virtual void EvaluateMortar();
+  virtual void IntegrateCoupling();
 
   /*!
   \brief Evaluate node-to-segment coupling

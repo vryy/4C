@@ -7705,7 +7705,6 @@ void CONTACT::CoInterface::AddGPTSforces(Teuchos::RCP<Epetra_FEVector> feff)
     if (err<0)
       dserror("stop");
   }
-  if(feff->GlobalAssemble(Add,false)!=0) dserror("GlobalAssemble failed");
   return;
 }
 

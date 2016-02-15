@@ -4246,7 +4246,7 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
   // Mortar Contact
   //*********************************
   if(algo==INPAR::MORTAR::algorithm_mortar)
-    EvaluateMortar();
+    IntegrateCoupling();
 
   //*********************************
   // Node-to-Segment Contact
@@ -4280,7 +4280,7 @@ void MORTAR::Coupling3dManager::EvaluateNTS()
 /*----------------------------------------------------------------------*
  |  Evaluate mortar-coupling pairs                            popp 03/09|
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling3dManager::EvaluateMortar()
+void MORTAR::Coupling3dManager::IntegrateCoupling()
 {
   // decide which type of numerical integration scheme
 
@@ -4419,7 +4419,7 @@ bool MORTAR::Coupling3dQuadManager::EvaluateCoupling()
   // Mortar Contact
   //*********************************
   if(algo==INPAR::MORTAR::algorithm_mortar)
-    EvaluateMortar();
+    IntegrateCoupling();
 
   //*********************************
   // Node-to-Segment Contact
@@ -4453,7 +4453,7 @@ void MORTAR::Coupling3dQuadManager::EvaluateNTS()
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs for Quad-coupling                farah 01/13|
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling3dQuadManager::EvaluateMortar()
+void MORTAR::Coupling3dQuadManager::IntegrateCoupling()
 {
   // decide which type of numerical integration scheme
 

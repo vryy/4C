@@ -193,8 +193,8 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
   //*********************************
   // Mortar Contact
   //*********************************
-  if(algo==INPAR::MORTAR::algorithm_mortar)
-    EvaluateMortar();
+  if(algo==INPAR::MORTAR::algorithm_mortar || algo==INPAR::MORTAR::algorithm_gpts)
+    IntegrateCoupling();
 
   //*********************************
   // Node-to-Segment Contact
@@ -231,7 +231,7 @@ void CONTACT::CoCoupling2dManager::EvaluateNTS()
 /*----------------------------------------------------------------------*
  |  Evaluate mortar coupling pairs                           Popp 03/09 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoCoupling2dManager::EvaluateMortar()
+void CONTACT::CoCoupling2dManager::IntegrateCoupling()
 {
   //**********************************************************************
   // STANDARD INTEGRATION (SEGMENTS)

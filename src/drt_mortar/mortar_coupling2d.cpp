@@ -980,7 +980,7 @@ MORTAR::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret,
 /*----------------------------------------------------------------------*
  |  Evaluate mortar-coupling pairs                           popp 03/09 |
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling2dManager::EvaluateMortar()
+void MORTAR::Coupling2dManager::IntegrateCoupling()
 {
   // decide which type of numerical integration scheme
 
@@ -1157,7 +1157,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
   // Mortar Contact
   //*********************************
   if(algo==INPAR::MORTAR::algorithm_mortar)
-    EvaluateMortar();
+    IntegrateCoupling();
 
   //*********************************
   // Node-to-Segment Contact

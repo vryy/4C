@@ -737,8 +737,7 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(double* xi,
 /*----------------------------------------------------------------------*
  |  Get nodal coordinates of the element                      popp 01/08|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord,
-                                           bool isinit)
+void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord)
 {
   const int nnodes = NumPoint();
   DRT::Node** mynodes = Points();
@@ -752,18 +751,9 @@ void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord,
     MortarNode* mymrtrnode = dynamic_cast<MortarNode*> (mynodes[i]);
     if (!mymrtrnode)
       dserror("ERROR: GetNodalCoords: Null pointer!");
-    if (isinit)
-    {
-      coord(0,i) = mymrtrnode->X()[0];
-      coord(1,i) = mymrtrnode->X()[1];
-      coord(2,i) = mymrtrnode->X()[2];
-    }
-    else
-    {
-      coord(0,i) = mymrtrnode->xspatial()[0];
-      coord(1,i) = mymrtrnode->xspatial()[1];
-      coord(2,i) = mymrtrnode->xspatial()[2];
-    }
+    coord(0,i) = mymrtrnode->xspatial()[0];
+    coord(1,i) = mymrtrnode->xspatial()[1];
+    coord(2,i) = mymrtrnode->xspatial()[2];
   }
 
   return;
@@ -1139,7 +1129,7 @@ bool MORTAR::MortarElement::LocalToGlobal(const double* xi, double* globcoord,
   if(IsHermite())
     AdjNodeCoords(coord, status);
   else
-    GetNodalCoords(coord,false);
+    GetNodalCoords(coord);
 
   // init globcoords
   for (int i=0;i<3;++i) globcoord[i]=0.0;

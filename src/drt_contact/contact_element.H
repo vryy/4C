@@ -237,20 +237,52 @@ public:
       const LINALG::SerialDenseMatrix& secderiv);
 
   /*!
+   \brief Prepare D-Matrix deriv integration of contribution of one slave element
+   */
+  virtual void PrepareDderiv(const std::vector<MORTAR::MortarElement*>& meles);
+
+  /*!
+   \brief Prepare D-Matrix deriv integration of contribution of one slave element
+   */
+  virtual void PrepareMderiv(const std::vector<MORTAR::MortarElement*>& meles, const int m);
+
+  /*!
+   \brief Access to D-Matrix deriv to add Gauss point contribution
+   */
+  GEN::pairedvector<int,Epetra_SerialDenseMatrix>& GetDderiv()
+  {
+    if(dMatrixDeriv_==Teuchos::null)
+      dserror("trying to get Dderiv, but not initialized");
+    return *dMatrixDeriv_;
+  }
+
+  /*!
+   \brief Access to M-Matrix deriv to add Gauss point contribution
+   */
+  GEN::pairedvector<int,Epetra_SerialDenseMatrix>& GetMderiv()
+  {
+    if(mMatrixDeriv_==Teuchos::null)
+      dserror("trying to get Mderiv, but not initialized");
+    return *mMatrixDeriv_;
+  }
+
+  /*!
    \brief Assemble D-Matrix deriv contribution of one slave element into the adjacent nodes
    */
-  virtual void AssembleDderivToNodes(GEN::pairedvector<int,Epetra_SerialDenseMatrix>& dderiv,bool dual);
+  virtual void AssembleDderivToNodes(bool dual);
 
   /*!
    \brief Assemble M-Matrix deriv contribution of one slave/master pair into the adjacent nodes
    */
-  virtual void AssembleMderivToNodes(GEN::pairedvector<int,Epetra_SerialDenseMatrix>& mderiv,MORTAR::MortarElement& mele);
+  virtual void AssembleMderivToNodes(MORTAR::MortarElement& mele);
 
   //@}
 
 private:
 
-  // no new variables as compared to base class
+
+  Teuchos::RCP<GEN::pairedvector<int,Epetra_SerialDenseMatrix> > dMatrixDeriv_; //< temporary matrix for D linearization during integration
+  Teuchos::RCP<GEN::pairedvector<int,Epetra_SerialDenseMatrix> > mMatrixDeriv_; //< temporary matrix for M linearization during integration
 
 };
 // class CoElement
