@@ -17,23 +17,23 @@ RANDSEED                        1
 NUMSTEP                         60
 MAXTIME                         40.0
 TIMESTEP                        0.2
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     10
 -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
 REINITIALIZATION                None
 -----------------------------------LEVEL-SET CONTROL/PARTICLE
-INCLUDE_PARTICLE            yes
-MIN_RADIUS                  0.1
-MAX_RADIUS                  0.5
-DIMENSION                   2Dz
-NUMPARTICLE                 2
-PARTICLEBANDWIDTH           1.0
-FAST_CHECK                  yes
+INCLUDE_PARTICLE                yes
+MIN_RADIUS                      0.1
+MAX_RADIUS                      0.5
+NUMPARTICLE                     2
+PARTICLEBANDWIDTH               1.0
+FAST_CHECK                      yes
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 //CUTOFF_RADIUS                   0.4
 BIN_PER_DIR                     20 5 1
 ------------------------------------------------------------PARTICLE DYNAMIC
+DIMENSION                       2Dz
 DYNAMICTYP                      RK2
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
@@ -47,7 +47,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.4
 VELFUNCNO                       1
 VELOCITYFIELD                   function
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 CONVFORM                        convective
 MATID                           1
 LINEAR_SOLVER                   1
@@ -64,7 +64,7 @@ EVALUATION_TAU                  element_center
 STABTYPE                        SUPG
 SUGRVEL                         no
 -------------------------------------------SOLVER 1
-SOLVER         UMFPACK
+SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra  DIFFUSIVITY 0.0
 ----------------------------------------------------------RESULT DESCRIPTION

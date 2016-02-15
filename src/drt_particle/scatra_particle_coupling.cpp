@@ -57,7 +57,6 @@ PARTICLE::ScatraParticleCoupling::ScatraParticleCoupling(
   scatra_(scatra),
   scatradis_(scatra->Discretization()),
   params_(params),
-  particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(params->sublist("PARTICLE"),"DIMENSION")),
   escaped_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::Escaped>(params->sublist("PARTICLE"),"ESCAPED")),
   reseeding_(params->sublist("PARTICLE").get<int>("RESEEDING")),
   fast_(DRT::INPUT::IntegralValue<bool>(params->sublist("PARTICLE"),"FAST_CHECK")),

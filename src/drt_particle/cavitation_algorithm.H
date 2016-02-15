@@ -317,6 +317,11 @@ namespace CAVITATION
       const bool approxelecoordsinit
       );
 
+    /// compute superconvergent patch recovery for fluid fraction
+    virtual void ComputePatchRecoveredFluidFraction(
+      Teuchos::RCP<const Epetra_MultiVector> fluidfraction
+      );
+
     /// L2 projection of a single value per element to nodal value distribution
     virtual void ComputeL2ProjectedFluidFraction(
       Teuchos::RCP<const Epetra_MultiVector>
@@ -339,6 +344,8 @@ namespace CAVITATION
     const INPAR::CAVITATION::CouplingStrategyOverFields coupalgo_;   ///< coupling strategy between fluid and particle
 
     const INPAR::CAVITATION::VoidFractionCalculation void_frac_strategy_;   ///< strategy for void fraction calculation
+
+    const INPAR::CAVITATION::FluidFracReconstructionMethod fluidfrac_reconstr_;   ///< type of fluid fraction reconstruction
 
     const int gauss_rule_per_dir_;   ///< number of gauss points in each direction for void fraction computation
 

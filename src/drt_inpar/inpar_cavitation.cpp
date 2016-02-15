@@ -77,7 +77,21 @@ void INPAR::CAVITATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
 
   BoolParameter("SIMPLIFIED_BUBBLE_FORCES","no","switch on/off simplified bubble force computation",&cavitationdyn);
 
-  IntParameter("VOIDFRAC_PROJ_SOLVER",-1,"Number of linear solver used for L2 projection",&cavitationdyn);
+  setStringToIntegralParameter<int>("FLUIDFRAC_PROJ_METHOD", "superconvergent_patch_recovery",
+                               "Flag to decide which reconstruction type for the fluid fraction is chosen.",
+                               tuple<std::string>(
+                                 "superconvergent_patch_recovery",
+                                 "L2_projection"),
+                               tuple<std::string>(
+                                 "fluid fraction reconstruction via superconvergent patch recovery",
+                                 "fluid fraction reconstruction via L2-projection"),
+                               tuple<int>(
+                                 fluidfracreco_spr,
+                                 fluidfracreco_l2
+                               ),
+                               &cavitationdyn);
+
+  IntParameter("FLUIDFRAC_PROJ_SOLVER",-1,"Number of linear solver used for L2 projection",&cavitationdyn);
 
   IntParameter("TIME_STEP_SIZE_RATIO",1,"Ration between fluid and particle time step size in cavitation problems",&cavitationdyn);
 
@@ -184,6 +198,20 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
    setNumericStringParameter("GRAVITY_ACCELERATION","0.0 0.0 0.0",
                              "Acceleration due to gravity in particle/cavitation simulations.",
                              &particledyn);
+
+   setStringToIntegralParameter<int>("DIMENSION","3D",
+                                "number of space dimensions for handling of quasi-2D problems with 3D particles",
+                                tuple<std::string>(
+                                  "3D",
+                                  "2Dx",
+                                  "2Dy",
+                                  "2Dz"),
+                                tuple<int>(
+                                  INPAR::PARTICLE::particle_3D,
+                                  INPAR::PARTICLE::particle_2Dx,
+                                  INPAR::PARTICLE::particle_2Dy,
+                                  INPAR::PARTICLE::particle_2Dz),
+                                &particledyn);
 }
 
 

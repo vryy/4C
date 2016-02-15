@@ -37,14 +37,14 @@ BOUNDINGBOX                     -1.000001 -1.000001 -1.100001 1.100001 1.100001 
 DYNAMICTYP                      CentrDiff
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
 ----------------------------------------------------------CAVITATION DYNAMIC
-COUPALGO                        cavitation_oneway //cavitation_twowaymomentum
+COUPALGO                        cavitation_oneway
 INFLOW_RADIUS_BLENDING          no
 MAXTIME                         0.5
 NUMSTEP                         5
 RESTARTEVRY                     3
 SIMPLIFIED_BUBBLE_FORCES        Yes
 TIMESTEP                        5.0e-3
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       yes
@@ -63,15 +63,13 @@ START_THETA                     0.66
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 MESHTYING                       no
 INITIALFIELD                    field_by_function
-VELGRAD_PROJ_SOLVER             9
-VELGRAD_PROJ_METHOD             L2_projection
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 PSPG                            yes
 STABTYPE                        residual_based
 SUPG                            yes

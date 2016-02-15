@@ -27,16 +27,17 @@ CUTOFF_RADIUS                   0.5
 DYNAMICTYP                      CentrDiff
 GRAVITY_ACCELERATION            -9.81 0.0 0.0
 ----------------------------------------------------------CAVITATION DYNAMIC
-COUPALGO                        cavitation_voidfrac_only //cavitation_twowayfull // cavitation_oneway
-RESULTSEVRY                           5
+COUPALGO                        cavitation_voidfrac_only
+RESULTSEVRY                     5
 RESTARTEVRY                     15
 TIMESTEP                        5.0e-3
 NUMSTEP                         20
 MAXTIME                         0.5
-VOID_FRACTION_CALC              analytical_quadraticpoly //analytical_constpoly,gaussian_integration
+VOID_FRACTION_CALC              analytical_quadraticpoly
 NUM_GP_VOID_FRACTION            5
 SIMPLIFIED_BUBBLE_FORCES        Yes
-VOIDFRAC_PROJ_SOLVER            1
+FLUIDFRAC_PROJ_METHOD           L2_projection
+FLUIDFRAC_PROJ_SOLVER           1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       yes
@@ -59,7 +60,7 @@ INITIALFIELD                    field_by_function
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 PSPG                            yes
 STABTYPE                        residual_based
 SUPG                            yes

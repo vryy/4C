@@ -24,6 +24,7 @@ Maintainer: Georg Hammerl
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "binning_strategy.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_inpar/inpar_cavitation.H"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
@@ -197,6 +198,8 @@ namespace PARTICLE
     bool havepbc_;   ///< flag whether periodic boundary conditions are specified for particles
 
     std::vector<std::vector<double> > pbcbounds_;   ///< bounds for pbcs in x, y, z direction
+
+    INPAR::PARTICLE::ParticleDim particle_dim_;   ///< dimension of problem
 
     //@}
 

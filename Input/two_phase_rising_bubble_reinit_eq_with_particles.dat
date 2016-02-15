@@ -22,7 +22,7 @@ MAXTIME                         2.0
 NUMSTEP                         5 //10 temporary
 RESTARTEVRY                     4
 TIMESTEP                        3.0e-3
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 WRITE_CENTER_OF_MASS            yes
 --------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow_Jumps
@@ -64,7 +64,7 @@ START_THETA                     1.0
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        3.0e-4
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 GMSH_OUTPUT                     no //yes
 NONLINEARBC                     yes
 ----------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
@@ -94,7 +94,7 @@ SOLVERTYPE                      nonlinear
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        3.0e-4
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 VELOCITYFIELD                   Navier_Stokes
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ADAPTCONV                       yes
@@ -129,18 +129,18 @@ CORRECTOR_STEP                  yes
 REINITVOLCORRECTION             no //yes
 -----------------------------------LEVEL-SET CONTROL/PARTICLE
 INCLUDE_PARTICLE                yes
-MIN_RADIUS                  0.1
-MAX_RADIUS                  0.5
-DIMENSION                   2Dz
-NUMPARTICLE                 16
-PARTICLEBANDWIDTH           3.0
-RESEEDING                   40
-FAST_CHECK                  yes
-RESTARTDATA                 yes
+MIN_RADIUS                      0.1
+MAX_RADIUS                      0.5
+NUMPARTICLE                     16
+PARTICLEBANDWIDTH               3.0
+RESEEDING                       40
+FAST_CHECK                      yes
+RESTARTDATA                     yes
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 BIN_PER_DIR                     45 80 1
 ------------------------------------------------------------PARTICLE DYNAMIC
+DIMENSION                       2Dz
 DYNAMICTYP                      RK2
 -------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  no

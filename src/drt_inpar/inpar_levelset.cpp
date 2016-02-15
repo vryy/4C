@@ -281,20 +281,6 @@ void INPAR::LEVELSET::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   BoolParameter("INCLUDE_PARTICLE","No","Activate a hybrid particle-level-set method",&ls_particle);
 
-  setStringToIntegralParameter<int>("DIMENSION","3D",
-                               "number of space dimensions for handling of quasi-2D problems with 3D particles",
-                               tuple<std::string>(
-                                 "3D",
-                                 "2Dx",
-                                 "2Dy",
-                                 "2Dz"),
-                               tuple<int>(
-                                 INPAR::PARTICLE::particle_3D,
-                                 INPAR::PARTICLE::particle_2Dx,
-                                 INPAR::PARTICLE::particle_2Dy,
-                                 INPAR::PARTICLE::particle_2Dz),
-                               &ls_particle);
-
   setStringToIntegralParameter<int>("ESCAPED","half",
                                "criterion for escaped particles",
                                tuple<std::string>(

@@ -173,8 +173,6 @@ namespace PARTICLE
 
     const Teuchos::RCP<Teuchos::ParameterList> params_;       ///< the parameter list
 
-    INPAR::PARTICLE::ParticleDim particle_dim_;         ///< dimension of problem
-
     INPAR::PARTICLE::Escaped escaped_;                  ///< escaped criterion
 
     int reseeding_;                                     ///< reseeding frequency

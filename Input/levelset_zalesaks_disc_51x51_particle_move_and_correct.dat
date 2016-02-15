@@ -20,23 +20,23 @@ RANDSEED                        1
 NUMSTEP                         10
 MAXTIME                         100.0
 TIMESTEP                        0.4
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     5
 -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
 REINITIALIZATION                None
 -----------------------------------LEVEL-SET CONTROL/PARTICLE
 INCLUDE_PARTICLE                yes
-MIN_RADIUS                  0.1
-MAX_RADIUS                  0.5
-DIMENSION                   2Dz
-NUMPARTICLE                 4
-PARTICLEBANDWIDTH           3.0
-FAST_CHECK                  yes
-RESTARTDATA                 yes
+MIN_RADIUS                      0.1
+MAX_RADIUS                      0.5
+NUMPARTICLE                     4
+PARTICLEBANDWIDTH               3.0
+FAST_CHECK                      yes
+RESTARTDATA                     yes
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 BIN_PER_DIR                     51 51 1
 ------------------------------------------------------------PARTICLE DYNAMIC
+DIMENSION                       2Dz
 DYNAMICTYP                      RK2
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
@@ -51,7 +51,7 @@ TIMESTEP                        0.4
 VELFUNCNO                       1
 VELCURVENO                      1
 VELOCITYFIELD                   function_and_curve
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 CONVFORM                        convective
 MATID                           1
 LINEAR_SOLVER                   1
@@ -68,7 +68,7 @@ EVALUATION_TAU                  element_center
 STABTYPE                        SUPG
 SUGRVEL                         no
 -------------------------------------------SOLVER 1
-SOLVER         UMFPACK
+SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra  DIFFUSIVITY 0.0
 MAT 2 MAT_Particle DENSITY 1.0 INITRADIUS 0.0

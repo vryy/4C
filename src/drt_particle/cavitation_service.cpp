@@ -292,7 +292,18 @@ void CAVITATION::Algorithm::CalculateFluidFraction()
 
   // transform fluid fraction from element level to node level
   // nodal values are stored in pressure dof of vector as expected in time integration
-  ComputeL2ProjectedFluidFraction(fluid_fraction);
+  switch (fluidfrac_reconstr_)
+  {
+  case INPAR::CAVITATION::fluidfracreco_spr:
+    ComputePatchRecoveredFluidFraction(fluid_fraction);
+    break;
+  case INPAR::CAVITATION::fluidfracreco_l2:
+    ComputeL2ProjectedFluidFraction(fluid_fraction);
+    break;
+  default:
+    dserror("desired fluid fraction projection method not available");
+    break;
+  }
 
   return;
 }
@@ -1302,6 +1313,39 @@ bool CAVITATION::Algorithm::ComputePressureAtBubblePosition(
 
 
 /*----------------------------------------------------------------------*
+ | compute superconvergent patch recovery for fluid frac    ghamm 02/16 |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::ComputePatchRecoveredFluidFraction(
+  Teuchos::RCP<const Epetra_MultiVector> fluidfraction
+  )
+{
+  Teuchos::ParameterList params;
+  // only element center is relevant in this action
+  params.set<int>("action",FLD::calc_velgrad_ele_center);
+
+  Teuchos::RCP<Epetra_MultiVector> nodevec;
+  if(particle_dim_ == INPAR::PARTICLE::particle_3D)
+    nodevec = DRT::UTILS::ComputeSuperconvergentPatchRecovery<3>(fluiddis_,Teuchos::rcp((*fluidfraction)(0),false), "dummy", 1, params);
+  else
+    nodevec = DRT::UTILS::ComputeSuperconvergentPatchRecovery<2>(fluiddis_,Teuchos::rcp((*fluidfraction)(0),false), "dummy", 1, params);
+
+  const int numnode = nodevec->MyLength();
+  for(int i=0; i<numnode; ++i)
+  {
+    const int nodeid = nodevec->Map().GID(i);
+
+    // fill fluid fraction into pressure dof of dof row map --> always 3D problem!
+    const int pressuredof = fluiddis_->Dof(fluiddis_->gNode(nodeid), 3);
+    const int lid = fluidfracnp_->Map().LID(pressuredof);
+
+    (*fluidfracnp_)[lid] = (*(*nodevec)(0))[i];
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | compute nodal fluid fraction based on L2 projection      ghamm 04/14 |
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::ComputeL2ProjectedFluidFraction(
@@ -1420,7 +1464,7 @@ void CAVITATION::Algorithm::ComputeL2ProjectedFluidFraction(
   matrix->Complete();
 
   // get solver parameter list of linear solver
-  const int solvernumber = DRT::Problem::Instance()->CavitationParams().get<int>("VOIDFRAC_PROJ_SOLVER");
+  const int solvernumber = DRT::Problem::Instance()->CavitationParams().get<int>("FLUIDFRAC_PROJ_SOLVER");
   // solve system
   Teuchos::RCP<Epetra_Vector> nodevec = SolveOnNodeBasedVector(solvernumber, noderowmap, matrix, rhs);
 

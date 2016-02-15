@@ -10,6 +10,7 @@ General Data File BACI
 -----------------------------------------------------------------------TITLE
 single air bubble rising due to buoyancy in water
 walls with slip condition and Krylov projection for pressure
+superconvergent patch recovery for fluid fraction applied
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      500
 //NODES                         756
@@ -42,8 +43,7 @@ TIMESTEP                        5.0e-3
 NUMSTEP                         20
 MAXTIME                         5.0
 SIMPLIFIED_BUBBLE_FORCES        Yes
-FLUIDFRAC_PROJ_METHOD           L2_projection
-FLUIDFRAC_PROJ_SOLVER           2
+FLUIDFRAC_PROJ_METHOD           superconvergent_patch_recovery
 VOID_FRACTION_CALC              analytical_quadraticpoly
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
@@ -69,7 +69,7 @@ INITIALFIELD                    field_by_function
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
-DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
 PSPG                            yes
 STABTYPE                        residual_based
 SUPG                            yes
@@ -127,27 +127,27 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 15209.6-950.6*z  // p_init = \rho_fl * 
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 2954 QUANTITY velx VALUE -1.46306849041322795e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 2954 QUANTITY vely VALUE -1.46306849041350412e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 2954 QUANTITY velz VALUE -1.11739774887106930e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 2954 QUANTITY pressure VALUE  3.80893260609727258e+03 TOLERANCE 1.000e-06
-FLUID DIS fluid NODE 2736 QUANTITY velx VALUE  1.20984738469329028e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 2736 QUANTITY vely VALUE  1.20984738469326045e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 2736 QUANTITY velz VALUE -1.83963891541306962e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid NODE 2736 QUANTITY pressure VALUE  4.76163134191361223e+03 TOLERANCE 1.000e-06
-FLUID DIS fluid ELEMENT 288 QUANTITY fluidfraction VALUE  9.44374302013311739e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid ELEMENT 313 QUANTITY fluidfraction VALUE  6.69720794570445421e-01 TOLERANCE 1.000e-12
-FLUID DIS fluid ELEMENT 338 QUANTITY fluidfraction VALUE  9.44118436505179126e-01 TOLERANCE 1.000e-12
+FLUID DIS fluid NODE 2954 QUANTITY velx VALUE -8.59345987656531668e-02 TOLERANCE 1.000e-12
+FLUID DIS fluid NODE 2954 QUANTITY vely VALUE -8.59345987656336546e-02 TOLERANCE 1.000e-12
+FLUID DIS fluid NODE 2954 QUANTITY velz VALUE -1.93319423699580689e-01 TOLERANCE 1.000e-12
+FLUID DIS fluid NODE 2954 QUANTITY pressure VALUE 3.80612067481245276e+03  TOLERANCE 1.000e-06
+FLUID DIS fluid NODE 2736 QUANTITY velx VALUE  9.89722843058335883e-02 TOLERANCE 1.000e-12
+FLUID DIS fluid NODE 2736 QUANTITY vely VALUE  9.89722843057919827e-02 TOLERANCE 1.000e-12
+FLUID DIS fluid NODE 2736 QUANTITY velz VALUE -1.49702252627141513e-01 TOLERANCE 1.000e-12
+FLUID DIS fluid NODE 2736 QUANTITY pressure VALUE  4.75965646609615760e+03 TOLERANCE 1.000e-06
+FLUID DIS fluid ELEMENT 288 QUANTITY fluidfraction VALUE  9.43151725726458112e-01 TOLERANCE 1.000e-12
+FLUID DIS fluid ELEMENT 313 QUANTITY fluidfraction VALUE  6.69729023503770171e-01 TOLERANCE 1.000e-12
+FLUID DIS fluid ELEMENT 338 QUANTITY fluidfraction VALUE  9.45332783858708114e-01 TOLERANCE 1.000e-12
 PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE 5.0 TOLERANCE 1.000e-12
 PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE 5.0 TOLERANCE 1.000e-12
-PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE 1.24809128554499029e+01  TOLERANCE 1.000e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE 1.24756982618703063e+01  TOLERANCE 1.000e-12
 PARTICLE DIS particle NODE 1 QUANTITY velx VALUE 0.0 TOLERANCE 1.000e-12
 PARTICLE DIS particle NODE 1 QUANTITY vely VALUE 0.0 TOLERANCE 1.000e-12
-PARTICLE DIS particle NODE 1 QUANTITY velz VALUE -3.94153189570029872e+00 TOLERANCE 1.000e-12
+PARTICLE DIS particle NODE 1 QUANTITY velz VALUE -4.02772937257346797e+00 TOLERANCE 1.000e-12
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
-NDSURF  6
+NDSURF  7
 NDVOL   1
 NDPARTICLE  0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
@@ -172,6 +172,10 @@ E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 // pos_z_surface
 E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+--------------------DESIGN PATCH RECOVERY BOUNDARY SURF CONDITIONS
+DSURF  1
+// spr_boundary
+E 7 -
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
@@ -182,6 +186,12 @@ SIDE fluid y- DSURFACE 3
 SIDE fluid y+ DSURFACE 4
 SIDE fluid z- DSURFACE 5
 SIDE fluid z+ DSURFACE 6
+SIDE fluid x- DSURFACE 7
+SIDE fluid x+ DSURFACE 7
+SIDE fluid y- DSURFACE 7
+SIDE fluid y+ DSURFACE 7
+SIDE fluid z- DSURFACE 7
+SIDE fluid z+ DSURFACE 7
 ------------------------------------------------DVOL-NODE TOPOLOGY
 VOLUME fluid DVOL 1
 -------------------------------------------------------NODE COORDS

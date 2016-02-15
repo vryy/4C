@@ -23,7 +23,7 @@ MAXTIME                         2.0
 NUMSTEP                         5
 RESTARTEVRY                     4
 TIMESTEP                        0.05
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 WRITE_CENTER_OF_MASS            yes
 --------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow_Jumps
@@ -63,7 +63,7 @@ RESTARTEVRY                     1
 START_THETA                     1.0
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 NONLINEARBC                     yes
 ----------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 GRAD_DIV                        yes
@@ -91,7 +91,7 @@ RESTARTEVRY                     1
 SOLVERTYPE                      nonlinear
 THETA                           0.5
 TIMEINTEGR                      One_Step_Theta
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 VELOCITYFIELD                   Navier_Stokes
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ADAPTCONV                       yes
@@ -108,17 +108,17 @@ STABTYPE                        SUPG
 REINITIALIZATION                None
 REINITINTERVAL                  2
 -----------------------------------LEVEL-SET CONTROL/PARTICLE
-INCLUDE_PARTICLE            yes
-MIN_RADIUS                  0.1
-MAX_RADIUS                  0.5
-DIMENSION                   3D
-NUMPARTICLE                 2
-PARTICLEBANDWIDTH           1.0
-FAST_CHECK                  yes
+INCLUDE_PARTICLE                yes
+MIN_RADIUS                      0.1
+MAX_RADIUS                      0.5
+NUMPARTICLE                     2
+PARTICLEBANDWIDTH               1.0
+FAST_CHECK                      yes
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 BIN_PER_DIR                     10 5 5
 ------------------------------------------------------------PARTICLE DYNAMIC
+DIMENSION                       3D
 DYNAMICTYP                      RK2
 -----------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver

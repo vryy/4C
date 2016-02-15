@@ -38,7 +38,7 @@ DYNAMICTYP                      CentrDiff
 GRAVITY_ACCELERATION            -9.81 0.0 0.0
 ----------------------------------------------------------CAVITATION DYNAMIC
 COUPALGO                        cavitation_twowaymomentum
-RESULTSEVRY                           10
+RESULTSEVRY                     10
 RESTARTEVRY                     80
 TIMESTEP                        1.0e-4
 NUMSTEP                         100
@@ -63,7 +63,7 @@ START_THETA                     0.66
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 MESHTYING                       no
 INITIALFIELD                    field_by_function
 VELGRAD_PROJ_SOLVER             9
@@ -71,7 +71,7 @@ VELGRAD_PROJ_METHOD             L2_projection
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 PSPG                            yes
 STABTYPE                        residual_based
 SUPG                            yes

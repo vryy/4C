@@ -109,15 +109,6 @@ namespace INPAR
 
   namespace PARTICLE
   {
-    /// problem dimension in case of quasi 2D
-    enum ParticleDim
-    {
-      particle_3D,
-      particle_2Dx,
-      particle_2Dy,
-      particle_2Dz
-    };
-
     /// escape criterion
     enum Escaped
     {

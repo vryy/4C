@@ -44,7 +44,7 @@ MAXTIME                         1000.0
 NUMSTEP                         4
 RESTARTEVRY                     1//20                     //CHANGED before 2!
 TIMESTEP                        0.02 //3.0e-03
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 -------------------------------------------TWO PHASE FLOW/SURFACE TENSION
 SURFTENSAPPROX                      surface_tension_approx_divgrad_normal  //surface_tension_approx_nodal_curvature, surface_tension_approx_divgrad_normal
 SMOOTHGRADPHI                       smooth_grad_phi_l2_projection
@@ -60,7 +60,7 @@ NONLINITER                      fixed_point_like
 ITEMAX                          15
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-RESULTSEVRY                           5
+RESULTSEVRY                     5
 RESTARTEVRY                     10
 NUMSTASTEPS                     0
 THETA                           1.0
@@ -139,7 +139,7 @@ TIMESTEP                        0.1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
-RESULTSEVRY                           5
+RESULTSEVRY                     5
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 CALCERROR                       No
@@ -158,7 +158,6 @@ REINITINTERVAL                  1                           //CHANGED!!! Before 
 REINIT_INITIAL                  no //yes
 -----------------------------------------LEVEL-SET CONTROL/PARTICLE
 INCLUDE_PARTICLE                Yes
-DIMENSION                       2Dz
 NUMPARTICLE                     16
 PARTICLEBANDWIDTH               3
 MIN_RADIUS                      0.1
@@ -170,6 +169,7 @@ TYPE                            Particle
 //CUTOFF_RADIUS                   0.05
 BIN_PER_DIR                     32 128 1
 ------------------------------------------------------------PARTICLE DYNAMIC
+DIMENSION                       2Dz
 DYNAMICTYP                      RK2
 -----------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver

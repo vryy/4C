@@ -57,7 +57,8 @@ PARTICLE::Algorithm::Algorithm(
   particlewalldis_(Teuchos::null),
   moving_walls_(false),
   havepbc_(false),
-  pbcbounds_(0)
+  pbcbounds_(0),
+  particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION"))
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
   // safety check

@@ -64,6 +64,15 @@ namespace INPAR
       undefined
     };
 
+    /// problem dimension in case of quasi 2D
+    enum ParticleDim
+    {
+      particle_3D,
+      particle_2Dx,
+      particle_2Dy,
+      particle_2Dz
+    };
+
     /// set the particle parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
@@ -91,6 +100,13 @@ namespace INPAR
       analytical_constpoly,
       analytical_quadraticpoly,
       gaussian_integration
+    };
+
+    //! reconstruction type of fluid fraction
+    enum FluidFracReconstructionMethod
+    {
+      fluidfracreco_spr,
+      fluidfracreco_l2
     };
 
     /// set the cavitation parameters

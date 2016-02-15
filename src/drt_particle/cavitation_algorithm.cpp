@@ -56,6 +56,7 @@ CAVITATION::Algorithm::Algorithm(
   dim_(3),
   coupalgo_(DRT::INPUT::IntegralValue<INPAR::CAVITATION::CouplingStrategyOverFields>(params,"COUPALGO")),
   void_frac_strategy_(DRT::INPUT::IntegralValue<INPAR::CAVITATION::VoidFractionCalculation>(params,"VOID_FRACTION_CALC")),
+  fluidfrac_reconstr_(DRT::INPUT::IntegralValue<INPAR::CAVITATION::FluidFracReconstructionMethod>(params,"FLUIDFRAC_PROJ_METHOD")),
   gauss_rule_per_dir_(params.get<int>("NUM_GP_VOID_FRACTION")),
   approxelecoordsinit_((bool)DRT::INPUT::IntegralValue<int>(params,"APPROX_ELECOORDS_INIT")),
   simplebubbleforce_((bool)DRT::INPUT::IntegralValue<int>(params,"SIMPLIFIED_BUBBLE_FORCES")),
@@ -82,6 +83,22 @@ CAVITATION::Algorithm::Algorithm(
   fluid_ = fluid->FluidField();
 
   // validate input file
+
+  switch (particle_dim_)
+  {
+  case INPAR::PARTICLE::particle_3D:
+    // standard case
+    break;
+  case INPAR::PARTICLE::particle_2Dz:
+    if(myrank_ == 0)
+      std::cout << "\nPseudo 2D cavitation problem chosen (z-direction ignored)" << std::endl << std::endl;
+    break;
+  case INPAR::PARTICLE::particle_2Dx:
+  case INPAR::PARTICLE::particle_2Dy:
+  default:
+    dserror("only 2D in x and y direction available");
+    break;
+  }
 
   // check whether gravity acceleration for fluid and particles match
   if(gravity_acc_.Norm2() > 0.0)
@@ -131,8 +148,11 @@ CAVITATION::Algorithm::Algorithm(
       dserror("no cavitation fluid material specified");
 
     // check for solver for L2 projection
-    if(DRT::Problem::Instance()->CavitationParams().get<int>("VOIDFRAC_PROJ_SOLVER") < 0)
-      dserror("no solver for L2 projection of fluid fraction specified: check VOIDFRAC_PROJ_SOLVER");
+    if(fluidfrac_reconstr_ == INPAR::CAVITATION::fluidfracreco_l2)
+    {
+      if(DRT::Problem::Instance()->CavitationParams().get<int>("FLUIDFRAC_PROJ_SOLVER") < 0)
+        dserror("no solver for L2 projection of fluid fraction specified: check FLUIDFRAC_PROJ_SOLVER");
+    }
   }
   else
   {
@@ -1395,7 +1415,7 @@ void CAVITATION::Algorithm::IntegrateRadius(
       // adapt time step size
       dtsub = std::min( std::max(scale*dtsub,dt_min), dt_max );
 
-      // step is repeated if
+      // step is finished if
       if (localtruncerr <= epsilon)
       {
         // leave while loop and update at the end

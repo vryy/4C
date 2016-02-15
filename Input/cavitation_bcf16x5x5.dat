@@ -35,7 +35,7 @@ DYNAMICTYP                      CentrDiff
 GRAVITY_ACCELERATION            -9.81 0.0 0.0
 ----------------------------------------------------------CAVITATION DYNAMIC
 COUPALGO                        cavitation_twowaymomentum
-RESULTSEVRY                           10
+RESULTSEVRY                     10
 RESTARTEVRY                     80
 TIMESTEP                        1.0e-4
 NUMSTEP                         100
@@ -60,8 +60,7 @@ START_THETA                     0.66
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
-RESULTSEVRY                           1
-MESHTYING                       no
+RESULTSEVRY                     1
 INITIALFIELD                    field_by_function
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
