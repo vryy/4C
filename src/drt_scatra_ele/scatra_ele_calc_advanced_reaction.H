@@ -64,6 +64,7 @@ protected:
     const int           iquad=-1    //!< id of current gauss point (default = -1)
   );
 
+
   //! evaluate material
   virtual void Materials(
     const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
@@ -77,7 +78,7 @@ protected:
 
 
   //! material BioFilm
-  virtual void MatBioFilm(
+  void MatBioFilm(
       const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       const int                               k,        //!< id of current scalar
       double&                                 densn,    //!< density at t_(n)
@@ -100,6 +101,7 @@ protected:
   );
 
 
+  //! Get right hand side including reaction bodyforce term
   virtual void GetRhsInt(
     double&      rhsint,  //!< rhs containing bodyforce at Gauss point
     const double densnp,  //!< density at t_(n+1)
@@ -108,104 +110,76 @@ protected:
 
 
   //!Calculate K(c)
-  virtual double CalcReaCoeff(
+  double CalcReaCoeff(
       const int                                 k         //!< id of current scalar
       );
 
 
+  //! helper for calculating K(c)
   virtual double CalcReaCoeffFac(
       const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
       const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
       const std::vector<double>                 couprole,                //!<type of coupling role
-      const int                                 k                        //!< id of current scalar
+      const double                              reacstart,               //!<reaction start coefficient
+      const int                                 k,                       //!< id of current scalar
+      const double                              scale = 1.0              //!< scale factor
   );
 
 
   //! calculate \frac{partial}{\partial c} K(c)
-  virtual double CalcReaCoeffDerivMatrix(
+  double CalcReaCoeffDerivMatrix(
       const int                 k,                  //!< id of current scalar
       const int                 j                   //!< concentration to be derived to
       );
 
 
+  //! helper for calculating \frac{partial}{\partial c} K(c)
   virtual double CalcReaCoeffDerivFac(
       const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
       const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichiometry coefficients
       const std::vector<double>               couprole,                //!<type of coupling role
+      const double                            reacstart,               //!<reaction start coefficient
       const int                               toderive,                //!<concentration to be derived to
-      const int                               k                        //!< id of current scalar
+      const int                               k,                       //!< id of current scalar
+      const double                            scale = 1.0              //!< scale factor
   );
 
 
   //! calculate f(c)
-  virtual double CalcReaBodyForceTerm(
+  double CalcReaBodyForceTerm(
       const int                                 k                       //!< id of current scalar
 );
 
 
+  //! helper for calculating f(c)
   virtual double CalcReaBodyForceTermFac(
       const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
       const MAT::PAR::reaction_coupling           couplingtype,           //!<type of coupling the stoichiometry coefficients
       const std::vector<double>                   couprole,               //!<type of coupling role
-      const int                                   k                       //!< id of current scalar
+      const double                                reacstart,              //!<reaction start coefficient
+      const int                                   k,                      //!< id of current scalar
+      const double                                scale = 1.0             //!< scale factor
   );
 
 
   //! calculate \frac{partial}{\partial c} f(c)
-  virtual double CalcReaBodyForceDerivMatrix(
+  double CalcReaBodyForceDerivMatrix(
       const int                 k,                  //!< id of current scalar
       const int                 j                   //!< concentration to be derived to
 );
 
 
+  //! helper for calculating calculate \frac{partial}{\partial c} f(c)
   virtual double CalcReaBodyForceDerivFac(
       const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
       const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
       const std::vector<double>                 couprole,                //!<type of coupling role
+      const double                              reacstart,              //!<reaction start coefficient
       const int                                 toderive,                //!<concentration to be derived to
-      const int                                 k                        //!< id of current scalar
+      const int                                 k,                       //!< id of current scalar
+      const double                              scale = 1.0              //!< scale factor
   );
 
-
-  //! Calculate (K(c)-reacstart(c)./c)_{+}
-  virtual void ReacStartForReaCoeff(
-  const int                               k,             //!< id of current scalar
-  const int                               condnum,       //!< id of current condition
-  const double                            reacstart,     //!< value for reaction starting
-  double&                                 value,         //!< current reaction value
-  const MAT::PAR::reaction_coupling       couplingtype   //!<type of coupling the stoichiometry coefficients
-  );
-
-  //! Calculate \frac{\partial}{\partial_c} (K(c)-reacstart(c)./c)_{+}
-  void ReacStartForReaCoeffDeriv(
-    const int                               k,              //!< id of current scalar
-    const int                               toderive,       //!<concentration to be derived to
-    const int                               condnum,        //!< id of current condition
-    const double                            reacstart,      //!< value for reaction starting
-    double&                                 value,          //!< current reaction value
-    const std::vector<int>                  stoich,         //!<stoichometrie of current condition
-    const MAT::PAR::reaction_coupling  couplingtype         //!<type of coupling the stoichiometry coefficients
-    );
-
-
-  //! Calculate (f(c)-reacstart(c))_{+}
-  virtual void ReacStartForReaBF(
-  const int                               k,             //!< id of current scalar
-  const int                               condnum,       //!< id of current condition
-  const double                            reacstart,     //!< value for reaction starting
-  double&                                 value          //!< current reaction value
-  );
-
-  //! Calculate \frac{\partial}{\partial_c} (f(c)-reacstart(c))_{+}
-  void ReacStartForReaBFDeriv(
-    const int                               k,              //!< id of current scalar
-    const int                               toderive,       //!< concentration to be derived to
-    const int                               condnum,        //!< id of current condition
-    const double                            reacstart,      //!< value for reaction starting
-    double&                                 value,          //!< current reaction value
-    const std::vector<int>                  stoich,         //!< stoichometrie of current condition
-    const MAT::PAR::reaction_coupling  couplingtype         //!<type of coupling the stoichiometry coefficients
-    );
 
   //! calculation of reactive element matrix
   virtual void CalcMatReact(
@@ -219,25 +193,29 @@ protected:
     const LINALG::Matrix<my::nen_,1>&      diff     //!< laplace term
   );
 
+
   //! Get numcond, stoich list, reaction coefficient, couplingtpye from material
   virtual void GetAdvancedReactionCoefficients(
       const Teuchos::RCP<const MAT::Material> material, //!< pointer to current material
       const int           iquad
   );
 
+
   //! Set reac. body force, reaction coefficient and derivatives
   void SetAdvancedReactionTerms(
-      const int                               k,            //!< index of current scalar
-      const double                            scale=1.0     //!< scale factor
+      const int                               k            //!< index of current scalar
   );
+
 
   //! Clear all reaction related class variable (i.e. set them to zero)
   void ClearAdvancedReactionTerms( );
 
+
   //! evaluate shape functions and their derivatives at element center
   virtual double EvalShapeFuncAndDerivsAtEleCenter();
 
-  int numcond_;                                               //!< number of homogenous scatra coupling conditions
+
+  int numcond_;                                               //!< number of scatra coupling conditions
   std::vector<std::vector<int> > stoich_;                     //!< vector containing the stoichometrie
   std::vector<double> reaccoeff_;                             //!< constant by which the reaction coefficient is multiplied
   std::vector<MAT::PAR::reaction_coupling> couplingtype_;     //!< how to calculate the different couplings

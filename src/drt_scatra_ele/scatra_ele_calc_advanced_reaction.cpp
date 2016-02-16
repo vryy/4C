@@ -243,7 +243,7 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetMaterialParams(
       //Note: order is important here!!
       Materials(singlemat,k,densn,densnp,densam,visc,iquad);
 
-      SetAdvancedReactionTerms(k,1.0); //every reaction calculation stuff happens in here!!
+      SetAdvancedReactionTerms(k); //every reaction calculation stuff happens in here!!
     }
   }
 
@@ -428,7 +428,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeff(
     const int                        k                       //!< id of current scalar
 )
 {
-  double reactermK=0;
+  double reactermK=0.0;
 
     for (int condnum = 0;condnum < numcond_;condnum++)
     {
@@ -437,14 +437,11 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeff(
       const double& reaccoeff = reaccoeff_[condnum]; //get reaction coefficient
       const MAT::PAR::reaction_coupling& couplingtype = couplingtype_[condnum]; //get coupling type
       const std::vector<double>& couprole = couprole_[condnum]; //get scalar treatment
-      const double& reacstart = reacstart_[condnum]; //get reactionstart coefficient
+      const double& reacstart = reacstart_[condnum]; //get reaction start coefficient
 
     if (stoich[k]<0 or couplingtype==MAT::PAR::reac_coup_michaelis_menten)
     {
-      double rcfac= CalcReaCoeffFac(stoich,couplingtype,couprole,k);
-
-      if (reacstart>0 and std::abs(rcfac)>1e-16)
-        ReacStartForReaCoeff(k,condnum,reacstart,rcfac,couplingtype);
+      double rcfac= CalcReaCoeffFac(stoich,couplingtype,couprole,reacstart,k);
 
       reactermK += -reaccoeff*stoich[k]*rcfac; // scalar at integration point np
     }
@@ -460,7 +457,9 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffFac(
           const std::vector<int>                    stoich,                 //!<stoichometrie of current condition
           const MAT::PAR::reaction_coupling         couplingtype,           //!<type of coupling the stoichiometry coefficients
           const std::vector<double>                 couprole,               //!<type of coupling role
-          const int                                 k                       //!< id of current scalar
+          const double                              reacstart,              //!<reaction start coefficient
+          const int                                 k,                      //!< id of current scalar
+          const double                              scale                   //!< scale factor
 )
 {
 double rcfac=1.0;
@@ -474,7 +473,7 @@ switch (couplingtype)
       if (stoich[ii]<0)
       {
         if (ii!=k)
-          rcfac *=my::scatravarmanager_->Phinp(ii);
+          rcfac *=my::scatravarmanager_->Phinp(ii)*scale;
       }
     }
     break;
@@ -487,17 +486,23 @@ switch (couplingtype)
       if (stoich[ii]<0)
       {
         if (ii!=k)
-          rcfac *= std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]);
+          rcfac *= std::pow(my::scatravarmanager_->Phinp(ii)*scale,couprole[ii]);
         else
-          rcfac *= std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]-1.0);
+          rcfac *= std::pow(my::scatravarmanager_->Phinp(ii)*scale,couprole[ii]-1.0);
       }
     }
+
+    if ( reacstart > 0 )
+      dserror("The reacstart feature is only tested for reactions of type simple_multiplicative. It should work, but be careful!");
     break;
   }
 
   case MAT::PAR::reac_coup_constant: //constant source term:
   {
     rcfac = 0.0;
+
+    if ( reacstart > 0 )
+      dserror("The reacstart feature is only tested for reactions of type simple_multiplicative. It should work, but be careful!");
     break;
   }
 
@@ -510,18 +515,18 @@ switch (couplingtype)
         if (couprole[k]<0)
         {
           if ((couprole[ii] < 0) and (ii != k))
-            rcfac *= my::funct_.Dot(my::ephinp_[ii]);
+            rcfac *= my::scatravarmanager_->Phinp(ii)*scale;
           else if ((couprole[ii] > 0) and (ii!=k))
-            rcfac *= (my::funct_.Dot(my::ephinp_[ii])/(my::funct_.Dot(my::ephinp_[ii]) + couprole[ii]));
+            rcfac *= (my::scatravarmanager_->Phinp(ii)*scale/(my::scatravarmanager_->Phinp(ii)*scale + couprole[ii]));
         }
         else if (couprole[k]>0)
         {
           if (ii == k)
-            rcfac *= (1/(my::funct_.Dot(my::ephinp_[ii])+couprole[ii]));
+            rcfac *= (1/(my::scatravarmanager_->Phinp(ii)*scale+couprole[ii]));
           else if (couprole[ii] < 0)
-            rcfac *= my::funct_.Dot(my::ephinp_[ii]);
+            rcfac *= my::scatravarmanager_->Phinp(ii)*scale;
           else if (couprole[ii] > 0)
-            rcfac *= (my::funct_.Dot(my::ephinp_[ii])/(my::funct_.Dot(my::ephinp_[ii]) + couprole[ii]));
+            rcfac *= (my::scatravarmanager_->Phinp(ii)*scale/(my::scatravarmanager_->Phinp(ii)*scale + couprole[ii]));
         }
         else //if (couprole[k] == 0)
           rcfac = 0;
@@ -529,6 +534,9 @@ switch (couplingtype)
     }
     else
       rcfac = 0;
+
+    if ( reacstart > 0 )
+      dserror("The reacstart feature is only tested for reactions of type simple_multiplicative. It should work, but be careful!");
     break;
   }
 
@@ -539,6 +547,18 @@ switch (couplingtype)
   default:
     dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
     break;
+}
+
+//reaction start feature
+if ( reacstart > 0 )
+{
+  //product of ALL educts (with according kinematics)
+  const double prod = CalcReaBodyForceTermFac(stoich,couplingtype,couprole,-1.0,k,scale);
+
+  if (prod > reacstart ) //! Calculate (K(c)-reacstart(c)./c)_{+}
+    rcfac -= reacstart/(my::scatravarmanager_->Phinp(k)*scale);
+  else
+    rcfac = 0;
 }
 
   return rcfac;
@@ -553,7 +573,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivMa
     const int                 j                   //!< concentration to be derived to
 )
 {
-  double reacoeffderivmatrixKJ=0;
+  double reacoeffderivmatrixKJ=0.0;
 
     for (int condnum = 0;condnum < numcond_;condnum++)
     {
@@ -565,10 +585,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivMa
 
     if (stoich[k]<0 or couplingtype==MAT::PAR::reac_coup_michaelis_menten)
     {
-      double rcdmfac = CalcReaCoeffDerivFac(stoich,couplingtype,couprole,j,k);
-
-      if (reacstart>0)
-        ReacStartForReaCoeffDeriv(k,j,condnum,reacstart,rcdmfac,stoich,couplingtype);
+      double rcdmfac = CalcReaCoeffDerivFac(stoich,couplingtype,couprole,reacstart,j,k);
 
       reacoeffderivmatrixKJ += -reaccoeff*stoich[k]*rcdmfac;
     }
@@ -584,11 +601,13 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFa
           const std::vector<int>                  stoich,                  //!<stoichometrie of current condition
           const MAT::PAR::reaction_coupling       couplingtype,            //!<type of coupling the stoichiometry coefficients
           const std::vector<double>               couprole,                //!<type of coupling role
+          const double                            reacstart,               //!<reaction start coefficient
           const int                               toderive,                //!<concentration to be derived to
-          const int                               k                        //!< id of current scalar
+          const int                               k,                       //!< id of current scalar
+          const double                            scale                    //!< scale factor
 )
 {
-  double rcdmfac=1;
+  double rcdmfac=1.0;
 
   switch (couplingtype)
   {
@@ -599,7 +618,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFa
         for (int ii=0; ii < my::numscal_; ii++)
         {
           if (stoich[ii]<0 and ii!=k and ii!= toderive)
-            rcdmfac *= my::scatravarmanager_->Phinp(ii);
+            rcdmfac *= my::scatravarmanager_->Phinp(ii)*scale;
         }
       }
       else
@@ -614,11 +633,11 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFa
         for (int ii=0; ii < my::numscal_; ii++)
         {
           if (stoich[ii]<0 and ii!=k and ii!= toderive)
-            rcdmfac *= std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]);
+            rcdmfac *= std::pow(my::scatravarmanager_->Phinp(ii)*scale,couprole[ii]);
           else if(stoich[ii]<0 and ii!=k and ii== toderive)
-            rcdmfac *= couprole[ii]*std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]-1.0);
+            rcdmfac *= couprole[ii]*std::pow(my::scatravarmanager_->Phinp(ii)*scale,couprole[ii]-1.0);
           else if(stoich[ii]<0 and ii==k and ii== toderive and couprole[ii]!=1.0)
-            rcdmfac *= (couprole[ii]-1.0)*std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]-2.0);
+            rcdmfac *= (couprole[ii]-1.0)*std::pow(my::scatravarmanager_->Phinp(ii)*scale,couprole[ii]-2.0);
         }
       }
       else
@@ -647,9 +666,9 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFa
               if (ii==k)
                 rcdmfac *= 1;
               else if (ii!=toderive and couprole[ii]<0)
-                rcdmfac *= my::scatravarmanager_->Phinp(ii);
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)*scale;
               else if (ii!=toderive and couprole[ii]>0)
-                rcdmfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii]+my::scatravarmanager_->Phinp(ii));
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)*scale/(couprole[ii]+my::scatravarmanager_->Phinp(ii)*scale);
               else if (ii!=toderive and couprole[ii] == 0)
                 rcdmfac *= 1;
               else if (ii == toderive)
@@ -660,13 +679,13 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFa
               if (ii==k)
                 rcdmfac *= 1;
               else if (ii!=toderive and couprole[ii]<0)
-                rcdmfac *= my::scatravarmanager_->Phinp(ii);
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)*scale;
               else if (ii!=toderive and couprole[ii]>0)
-                rcdmfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii]+my::scatravarmanager_->Phinp(ii));
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)*scale/(couprole[ii]+my::scatravarmanager_->Phinp(ii)*scale);
               else if (ii!=toderive and couprole[ii]==0)
                 rcdmfac *= 1;
               else if (ii == toderive)
-                rcdmfac *= couprole[ii]/std::pow((couprole[ii]+my::scatravarmanager_->Phinp(ii)),2);
+                rcdmfac *= couprole[ii]/std::pow((couprole[ii]+my::scatravarmanager_->Phinp(ii)*scale),2);
             }
           }
           else if (couprole[k] > 0 )
@@ -676,11 +695,11 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFa
             else if ( (k!=toderive) and couprole[toderive]<0)
             {
               if (ii==k)
-                rcdmfac *= 1/(couprole[ii]+my::scatravarmanager_->Phinp(ii));
+                rcdmfac *= 1/(couprole[ii]+my::scatravarmanager_->Phinp(ii)*scale);
               else if ((ii !=toderive) and (couprole[ii]<0))
-                rcdmfac *= my::scatravarmanager_->Phinp(ii);
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)*scale;
               else if ((ii!=toderive) and (couprole[ii]>0))
-                rcdmfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii]+my::scatravarmanager_->Phinp(ii));
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)*scale/(couprole[ii]+my::scatravarmanager_->Phinp(ii)*scale);
               else if ((ii!=toderive) and (couprole[ii]==0))
                 rcdmfac *= 1;
               else if (ii==toderive)
@@ -689,24 +708,24 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFa
             else if ( (k!=toderive) and couprole[toderive]>0)
             {
               if (ii==k)
-                rcdmfac *= 1/(couprole[ii]+my::scatravarmanager_->Phinp(ii));
+                rcdmfac *= 1/(couprole[ii]+my::scatravarmanager_->Phinp(ii)*scale);
               else if ((ii!=toderive) and couprole[ii]<0)
-                rcdmfac *= my::scatravarmanager_->Phinp(ii);
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)*scale;
               else if ((ii!=toderive) and couprole[ii]>0)
-                rcdmfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii] + my::scatravarmanager_->Phinp(ii));
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)*scale/(couprole[ii] + my::scatravarmanager_->Phinp(ii)*scale);
               else if ((ii!=toderive) and (couprole[ii]==0))
                 rcdmfac *= 1;
               else if (ii==toderive)
-                rcdmfac *= couprole[ii]/std::pow((couprole[ii]+my::scatravarmanager_->Phinp(ii)),2);
+                rcdmfac *= couprole[ii]/std::pow((couprole[ii]+my::scatravarmanager_->Phinp(ii)*scale),2);
             }
             else if (k==toderive)
             {
               if (ii==k)
-                rcdmfac *= -1/std::pow((couprole[ii]+my::scatravarmanager_->Phinp(ii)),2);
+                rcdmfac *= -1/std::pow((couprole[ii]+my::scatravarmanager_->Phinp(ii)*scale),2);
               else if ((ii!=toderive) and (couprole[ii]<0))
-                rcdmfac *= my::scatravarmanager_->Phinp(ii);
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)*scale;
               else if ((ii!=toderive) and (couprole[ii]>0))
-                rcdmfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii] + my::scatravarmanager_->Phinp(ii));
+                rcdmfac *= my::scatravarmanager_->Phinp(ii)*scale/(couprole[ii] + my::scatravarmanager_->Phinp(ii)*scale);
               else if ((ii!=toderive) and (couprole[ii]==0))
                 rcdmfac *= 1;
             }
@@ -729,6 +748,21 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaCoeffDerivFa
       break;
   }
 
+  //reaction start feature
+  if ( reacstart > 0 )
+  {
+    //product of ALL educts (with according kinematics)
+    const double prod = CalcReaBodyForceTermFac(stoich,couplingtype,couprole,-1.0,k,scale);
+
+    if ( prod > reacstart) //! Calculate \frac{\partial}{\partial_c} (K(c)-reacstart(c)./c)_{+}
+    {
+      if (k==toderive)
+        rcdmfac -= -reacstart / pow(my::scatravarmanager_->Phinp(k)*scale,2);
+    }
+    else
+      rcdmfac = 0;
+  }
+
   return rcdmfac;
 }
 
@@ -740,7 +774,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTer
     const int                                 k                       //!< id of current scalar
 )
 {
-  double bodyforcetermK=0;
+  double bodyforcetermK=0.0;
 
   for (int condnum = 0;condnum < numcond_;condnum++)
   {
@@ -753,10 +787,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTer
 
     if (stoich[k]>0 or couplingtype==MAT::PAR::reac_coup_michaelis_menten)
     {
-      double bftfac = CalcReaBodyForceTermFac(stoich,couplingtype,couprole,k);// scalar at integration point np
-
-      if (reacstart>0 and std::abs(bftfac)>1e-16)
-        ReacStartForReaBF(k,condnum,reacstart,bftfac);
+      double bftfac = CalcReaBodyForceTermFac(stoich,couplingtype,couprole,reacstart,k);// scalar at integration point np
 
       bodyforcetermK += reaccoeff*stoich[k]*bftfac;
     }
@@ -765,14 +796,16 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTer
 }
 
 /*----------------------------------------------------------------------*
- |  helper for calculating                                   thon 02/14 |
+ |  helper for calculating f(c)                              thon 02/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTermFac(
           const std::vector<int>                      stoich,                 //!<stoichometrie of current condition
           const MAT::PAR::reaction_coupling           couplingtype,           //!<type of coupling the stoichiometry coefficients
           const std::vector<double>                   couprole,               //!<type of coupling role
-          const int                                   k                       //!< id of current scalar
+          const double                                reacstart,              //!<reaction start coefficient
+          const int                                   k,                      //!< id of current scalar
+          const double                                scale                   //!< scale factor
 )
 {
   double bftfac=1.0;
@@ -785,7 +818,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTer
       {
         if (stoich[ii]<0)
         {
-          bftfac *=my::scatravarmanager_->Phinp(ii);
+          bftfac *=my::scatravarmanager_->Phinp(ii)*scale;
         }
       }
       break;
@@ -797,7 +830,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTer
       {
         if (stoich[ii]<0)
         {
-          bftfac *= std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]);
+          bftfac *= std::pow(my::scatravarmanager_->Phinp(ii)*scale,couprole[ii]);
         }
       }
       break;
@@ -820,9 +853,9 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTer
           for (int ii=0; ii < my::numscal_; ii++)
           {
             if (couprole[ii]>0) //and (ii!=k))
-              bftfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii]+my::scatravarmanager_->Phinp(ii));
+              bftfac *= my::scatravarmanager_->Phinp(ii)*scale/(couprole[ii]+my::scatravarmanager_->Phinp(ii)*scale);
             else if (couprole[ii]<0) //and (ii!=k))
-              bftfac *= my::scatravarmanager_->Phinp(ii);
+              bftfac *= my::scatravarmanager_->Phinp(ii)*scale;
           }
         }
       }
@@ -837,6 +870,18 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceTer
     default:
       dserror("The couplingtype %i is not a valid coupling type.", couplingtype);
       break;
+  }
+
+  //reaction start feature
+  if ( reacstart > 0 )
+  {
+    //product of ALL educts (with according kinematics)
+    const double prod = bftfac; //=CalcReaBodyForceTermFac(stoich,couplingtype,couprole,-1.0,k,scale);
+
+    if (prod > reacstart ) //! Calculate (f(c)-reacstart(c))_{+}
+      bftfac -= reacstart;
+    else
+      bftfac = 0;
   }
 
   return bftfac;
@@ -864,10 +909,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceDer
 
     if (stoich[k]>0 or couplingtype==MAT::PAR::reac_coup_michaelis_menten)
     {
-      double bfdmfac = CalcReaBodyForceDerivFac(stoich,couplingtype,couprole,j,k);
-
-      if (reacstart>0 and std::abs(bfdmfac)>1e-16)
-        ReacStartForReaBFDeriv(k,j,condnum,reacstart,bfdmfac,stoich,couplingtype);
+      double bfdmfac = CalcReaBodyForceDerivFac(stoich,couplingtype,couprole,reacstart,j,k);
 
       reabodyforcederivmatrixKJ += reaccoeff*stoich[k]*bfdmfac;
     }
@@ -883,8 +925,10 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceDer
         const std::vector<int>                    stoich,                  //!<stoichometrie of current condition
         const MAT::PAR::reaction_coupling         couplingtype,            //!<type of coupling the stoichiometry coefficients
         const std::vector<double>                 couprole,                //!<type of coupling role
+        const double                              reacstart,               //!<reaction start coefficient
         const int                                 toderive,                //!<concentration to be derived to
-        const int                                 k                        //!< id of current scalar
+        const int                                 k,                       //!< id of current scalar
+        const double                              scale                    //!< scale factor
 )
 {
   double bfdmfac=1.0;
@@ -898,7 +942,7 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceDer
           for (int ii=0; ii < my::numscal_; ii++)
           {
             if (stoich[ii]<0 and ii!=toderive)
-              bfdmfac *= my::scatravarmanager_->Phinp(ii);
+              bfdmfac *= my::scatravarmanager_->Phinp(ii)*scale;
           }
         }
       else
@@ -913,9 +957,9 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceDer
           for (int ii=0; ii < my::numscal_; ii++)
           {
             if (stoich[ii]<0 and ii!=toderive)
-              bfdmfac *= std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]);
+              bfdmfac *= std::pow(my::scatravarmanager_->Phinp(ii)*scale,couprole[ii]);
             else if(stoich[ii]<0 and ii==toderive)
-              bfdmfac *= std::pow(my::scatravarmanager_->Phinp(ii),couprole[ii]-1.0);
+              bfdmfac *= std::pow(my::scatravarmanager_->Phinp(ii)*scale,couprole[ii]-1.0);
           }
         }
       else
@@ -942,16 +986,16 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceDer
             if (ii != toderive)
             {
               if (couprole[ii] > 0)
-                bfdmfac *= my::scatravarmanager_->Phinp(ii)/(couprole[ii] + my::scatravarmanager_->Phinp(ii));
+                bfdmfac *= my::scatravarmanager_->Phinp(ii)*scale/(couprole[ii] + my::scatravarmanager_->Phinp(ii)*scale);
               else if (couprole[ii] < 0)
-                bfdmfac *= my::scatravarmanager_->Phinp(ii);
+                bfdmfac *= my::scatravarmanager_->Phinp(ii)*scale;
               else
                 bfdmfac *= 1;
             }
             else
             {
               if (couprole[ii] > 0)
-                bfdmfac *= couprole[ii]/(std::pow((my::scatravarmanager_->Phinp(ii)+couprole[ii]), 2));
+                bfdmfac *= couprole[ii]/(std::pow((my::scatravarmanager_->Phinp(ii)*scale+couprole[ii]), 2));
               else if (couprole[ii] < 0)
                 bfdmfac *= 1;
               else
@@ -974,114 +1018,20 @@ double DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::CalcReaBodyForceDer
       break;
   }
 
+  //reaction start feature
+  if ( reacstart > 0 )
+  {
+    //product of ALL educts (with according kinematics)
+    const double prod = CalcReaBodyForceTermFac(stoich,couplingtype,couprole,-1.0,k,scale);
+
+    if ( prod > reacstart) //! Calculate \frac{\partial}{\partial_c} (f(c)-reacstart(c))_{+}
+      { /*nothing to do here :-) */}
+    else
+      bfdmfac = 0;
+  }
+
   return bfdmfac;
 }
-
-/*-------------------------------------------------------------------------------*
- |  calculate reaction coefficient for "delayed" reactions            thon 03/14 |
- *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ReacStartForReaCoeff(
-  const int                               k,            //!< id of current scalar
-  const int                               condnum,      //!< id of current condition
-  const double                            reacstart,      //!< value for reaction starting
-  double&                                 value,         //!< current reaction value
-  const MAT::PAR::reaction_coupling       couplingtype            //!<type of coupling the stoichiometry coefficients
-  )
-{
-  switch (couplingtype)
-  {
-    case MAT::PAR::reac_coup_simple_multiplicative: //reaction of type A*B*C:
-    {
-      double prod = value * my::scatravarmanager_->Phinp(k); //for simple multiplikative only!
-
-      if (prod > reacstart )
-        value = value - reacstart/my::scatravarmanager_->Phinp(k);
-      else
-        value = 0;
-      break;
-    }
-
-    case MAT::PAR::reac_coup_none:
-      dserror("reac_coup_none is not a valid coupling");
-      break;
-
-    default:
-      dserror("The reacstart feature is only implemented for reactions of type simple_multiplicative!", couplingtype);
-      break;
-  }
-
-    return;
-}
-
-///*----------------------------------------------------------------------------------*
-// |  calculate reaction coefficient derivative for "delayed" reactions    thon 03/14 |
-// *----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ReacStartForReaCoeffDeriv(
-        const int                               k,              //!< id of current scalar
-        const int                               toderive,       //!<concentration to be derived to
-        const int                               condnum,        //!< id of current condition
-        const double                            reacstart,      //!< value for reaction starting
-        double&                                 value,          //!< current reaction value
-        const std::vector<int>                  stoich,         //!<stoichometrie of current condition
-        const MAT::PAR::reaction_coupling       couplingtype    //!<type of coupling the stoichiometry coefficients
-  )
-{
-  double prod = CalcReaBodyForceTermFac(stoich,couplingtype,std::vector<double>(),k);
-
-  if ( prod > reacstart)
-  {
-    if (k==toderive)
-      value= value - (-reacstart / pow(my::scatravarmanager_->Phinp(k),2) );
-  }
-  else
-    value = 0;
-  return;
-}
-
-/*-------------------------------------------------------------------------------*
- |  calculate reactions body force term for "delayed" reactions       thon 03/14 |
- *-------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ReacStartForReaBF(
-  const int                               k,            //!< id of current scalar
-  const int                               condnum,      //!< id of current condition
-  const double                            reacstart,      //!< value for reaction starting
-  double&                                 value         //!< current reaction value
-  )
-{
-  if (value > reacstart )
-    value = value - reacstart;
-  else
-    value = 0;
-
-  return;
-}
-
-/*-----------------------------------------------------------------------------------------*
- |  calculate reactions body force term derivative for "delayed" reactions      thon 03/14 |
- *-----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::ReacStartForReaBFDeriv(
-        const int                               k,              //!< id of current scalar
-        const int                               toderive,       //!<concentration to be derived to
-        const int                               condnum,        //!< id of current condition
-        const double                            reacstart,      //!< value for reaction starting
-        double&                                 value,          //!< current reaction value
-        const std::vector<int>                  stoich,         //!<stoichometrie of current condition
-        const MAT::PAR::reaction_coupling       couplingtype    //!<type of coupling the stoichiometry coefficients
-  )
-{
-  double prod = CalcReaBodyForceTermFac(stoich,couplingtype,std::vector<double>(),k);
-
-  if ( prod > reacstart) { }
-  else
-    value = 0;
-
-  return;
-}
-
 
 /*--------------------------------------------------------------------------- *
  |  calculation of reactive element matrix for coupled reactions  thon 02/14  |
@@ -1273,21 +1223,20 @@ void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::GetAdvancedReactionCo
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::SetAdvancedReactionTerms(
-    const int                               k,      //!< index of current scalar
-    const double                            scale   //!< scale factor
-                                    )
+    const int                               k      //!< index of current scalar
+    )
 {
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = ReaManager();
 
-  remanager->AddToReaBodyForce( CalcReaBodyForceTerm(k)*scale ,k);
+  remanager->AddToReaBodyForce( CalcReaBodyForceTerm(k) ,k);
 
-  remanager->SetReaCoeff( CalcReaCoeff(k)*scale ,k);
+  remanager->SetReaCoeff( CalcReaCoeff(k) ,k);
 
   for (int j=0; j<my::numscal_ ;j++)
   {
-    remanager->AddToReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j)*scale ,k,j );
+    remanager->AddToReaBodyForceDerivMatrix( CalcReaBodyForceDerivMatrix(k,j) ,k,j );
 
-    remanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j)*scale ,k,j );
+    remanager->SetReaCoeffDerivMatrix( CalcReaCoeffDerivMatrix(k,j) ,k,j );
   }
 
 }
