@@ -108,7 +108,8 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   //  dserror("At least two material lists required for partitioned FS3I!");
 
   // determine type of scalar transport
-  const INPAR::SCATRA::ImplType impltype(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->FS3IDynamicParams(),"SCATRATYPE"));
+  const INPAR::SCATRA::ImplType impltype_fluid =
+      DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->FS3IDynamicParams(),"FLUIDSCAL_SCATRATYPE");
 
   //---------------------------------------------------------------------
   // create discretization for fluid-based scalar transport from and
@@ -130,11 +131,16 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
       if(element == NULL)
         dserror("Invalid element type!");
       else
-        element->SetImplType(impltype);
+        element->SetImplType(impltype_fluid);
     }
   }
   else
     dserror("Fluid AND ScaTra discretization present. This is not supported.");
+
+
+  // determine type of scalar transport
+    const INPAR::SCATRA::ImplType impltype_struct =
+        DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->FS3IDynamicParams(),"STRUCTSCAL_SCATRATYPE");
 
   //---------------------------------------------------------------------
   // create discretization for structure-based scalar transport from and
@@ -156,7 +162,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
       if(element == NULL)
         dserror("Invalid element type!");
       else
-        element->SetImplType(impltype);
+        element->SetImplType(impltype_struct);
     }
   }
   else

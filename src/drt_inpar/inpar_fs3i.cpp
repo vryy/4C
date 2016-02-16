@@ -78,7 +78,28 @@ void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   IntParameter("STRUCTSCAL_INITFUNCNO",-1,"function number for structure scalar transport initial field",&fs3idyn);
 
   // type of scalar transport
-  setStringToIntegralParameter<int>("SCATRATYPE","Undefined",
+  setStringToIntegralParameter<int>("STRUCTSCAL_SCATRATYPE","Advanced_Reaction",
+                               "Type of scalar transport problem",
+                               tuple<std::string>(
+                                 "Undefined",
+                                 "ConvectionDiffusion",
+                                 "Advanced_Reaction",
+                                 "Chemotaxis",
+                                 "Chemo_Reac",
+                                 "Poro",
+                                 "Poro_Reac"),
+                               tuple<int>(
+                                 INPAR::SCATRA::impltype_undefined,
+                                 INPAR::SCATRA::impltype_std,
+                                 INPAR::SCATRA::impltype_advreac,
+                                 INPAR::SCATRA::impltype_chemo,
+                                 INPAR::SCATRA::impltype_chemoreac,
+                                 INPAR::SCATRA::impltype_poro,
+                                 INPAR::SCATRA::impltype_pororeac),
+                                 &fs3idyn);
+
+  // type of scalar transport
+  setStringToIntegralParameter<int>("FLUIDSCAL_SCATRATYPE","ConvectionDiffusion",
                                "Type of scalar transport problem",
                                tuple<std::string>(
                                  "Undefined",

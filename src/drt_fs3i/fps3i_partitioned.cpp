@@ -126,6 +126,10 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
   Teuchos::RCP<DRT::Discretization> fluidscatradis = problem->GetDis("scatra1");
   Teuchos::RCP<DRT::Discretization> structscatradis = problem->GetDis("scatra2");
 
+  // determine type of scalar transport
+  const INPAR::SCATRA::ImplType impltype_fluid =
+    DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->FS3IDynamicParams(),"FLUIDSCAL_SCATRATYPE");
+
   //---------------------------------------------------------------------
   // create discretization for fluid-based scalar transport from and
   // according to fluid discretization
@@ -151,17 +155,21 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
       if(element == NULL)
         dserror("Invalid element type!");
       else
-        element->SetImplType(INPAR::SCATRA::impltype_advreac);
+        element->SetImplType(impltype_fluid);
     }
   }
   else
     dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
+
+  //determine type of scalar transport
+  const INPAR::SCATRA::ImplType impltype_struct =
+    DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->FS3IDynamicParams(),"STRUCTSCAL_SCATRATYPE");
+
   //---------------------------------------------------------------------
   // create discretization for poro-based scalar transport from and
   // according to poro (structure) discretization
   //--------------------------------------------------------------------
-
   if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
 
   if(!structscatradis->Filled())
@@ -178,7 +186,7 @@ FS3I::PartFPS3I::PartFPS3I(const Epetra_Comm& comm)
       if(element == NULL)
         dserror("Invalid element type!");
       else
-        element->SetImplType(INPAR::SCATRA::impltype_pororeac);
+        element->SetImplType(impltype_struct);
     }
 
     // redistribute FPSI interface here, since if done before the PoroScatra cloning does not work

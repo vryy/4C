@@ -189,7 +189,7 @@ LINEAR_SOLVER1                  4
 LINEAR_SOLVER2                  3
 STRUCTSCAL_INITFUNCNO           1
 STRUCTSCAL_INITIALFIELD         field_by_function
-SCATRATYPE                      ConvectionDiffusion
+STRUCTSCAL_SCATRATYPE           ConvectionDiffusion
 ----------------------------------------------------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no

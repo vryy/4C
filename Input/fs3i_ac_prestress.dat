@@ -59,7 +59,7 @@ LINEAR_SOLVER1                  5                             // ScaTra FLUID so
 LINEAR_SOLVER2                  6                             // ScaTra STRUCT solver
 STRUCTSCAL_INITIALFIELD         field_by_function
 STRUCTSCAL_INITFUNCNO           3
-SCATRATYPE                      Advanced_Reaction //ConvectionDiffusion //
+STRUCTSCAL_SCATRATYPE           Advanced_Reaction //ConvectionDiffusion //
 ----------------------------------------------------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no

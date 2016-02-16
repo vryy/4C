@@ -129,9 +129,10 @@ MAXTIME                         100.0
 TIMESTEP                        0.1
 NUMSTEP                         3
 RESTARTEVRY                     1
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 INF_PERM                        No
 SCATRA_SOLVERTYPE               nonlinear
+STRUCTSCAL_SCATRATYPE           Poro_Reac
 COUPLED_LINEAR_SOLVER           6                             // FS3I problem
 LINEAR_SOLVER1                  4                             // ScaTra FLUID solver
 LINEAR_SOLVER2                  3                             // ScaTra STRUCT solver
