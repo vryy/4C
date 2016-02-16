@@ -641,10 +641,13 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   if(conds.size() != 1 && conds.size() != 0)
     dserror("exactly one boundary including all outer nodes expected");
 
+  if(allcoupledcolnodes->begin() == allcoupledcolnodes->end() && conds.size() == 0)
+    dserror("Neither periodic boundary conditions nor an SPRboundary is specified! Missing bc?");
+
   // loop all nodes
   for (int i=0;i<nodecolmap.NumMyElements();++i)
   {
-    int nodegid = nodecolmap.GID(i);
+    const int nodegid = nodecolmap.GID(i);
     const DRT::Node* node = dis->gNode(nodegid);
     if(!node)
       dserror("Cannot find with gid: %d", nodegid);
@@ -664,7 +667,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
         //---------------------------------------------
 
         const DRT::Element* const * adjacentele = node->Elements();
-        int numadjacent = node->NumElement();
+        const int numadjacent = node->NumElement();
 
         // patch-recovery for each entry of the velocity gradient
         for(int j=0; j<numvec; ++j)
@@ -692,7 +695,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::gaussElimination<true, dimp>( A, b, x );
+          const double det = LINALG::scaledGaussElemination<dimp>( A, b, x );
           if(det < 1.0e-14)
             dserror("system singular");
 
@@ -762,7 +765,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::gaussElimination<true, dimp>( A, b, x );
+          const double det = LINALG::scaledGaussElemination<dimp>( A, b, x );
           if(det < 1.0e-14)
             dserror("system singular");
 
@@ -787,7 +790,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
 
         // get all neighboring nodes of boundary node and find closest one
         const DRT::Element* const * adjacentele = node->Elements();
-        int numadjacentele = node->NumElement();
+        const int numadjacentele = node->NumElement();
         double distance = 1.0e12;
         int closestnodeid = -1;
         for (int k=0; k<numadjacentele; ++k)
@@ -853,7 +856,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::gaussElimination<true, dimp>( A, b, x );
+          const double det = LINALG::scaledGaussElemination<dimp>( A, b, x );
           if(det < 1.0e-14)
             dserror("system singular");
 
@@ -877,7 +880,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
 
         // often bounds are axis aligned -> another pbc (master) node is closest node
         const DRT::Element* const * adjacentele = node->Elements();
-        int numadjacentele = node->NumElement();
+        const int numadjacentele = node->NumElement();
 
         // leave here if the boundary node is a ghost node and has no adjacent elements on this proc
         // only boundary ghost nodes which have an inner node as a row node have all neighboring elements on this proc
@@ -993,7 +996,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::gaussElimination<true, dimp>( A, b, x );
+          const double det = LINALG::scaledGaussElemination<dimp>( A, b, x );
           if(det < 1.0e-14)
             dserror("system singular");
 
@@ -1014,7 +1017,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
   } // end loop over all nodes
 
   // call global assemble
-  int err = nodevec->GlobalAssemble(Insert, false);
+  const int err = nodevec->GlobalAssemble(Insert, false);
   if (err<0)
     dserror("global assemble into nodevec failed");
 

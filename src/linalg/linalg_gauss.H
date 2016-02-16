@@ -139,6 +139,42 @@ double gaussElimination(
   }
 }
 
+
+/*!
+  \brief computes a Gaussian elimination for a linear system of equations after row scaling (if necessary)
+
+  \tparam dim      (in)    : dimension of the matrix
+  \return determinant of system matrix
+*/
+template<unsigned dim>
+double scaledGaussElemination(
+  typename LINALG::Matrix<dim, dim> & A,  ///< (in)    : system matrix
+  typename LINALG::Matrix<dim, 1>   & b,  ///< (in)    : right-hand-side
+  typename LINALG::Matrix<dim, 1>   & x,  ///< (out)   : solution vector
+  const double tol = 1.0e-3               ///< (in)    : tolerance if row scaling is applied
+  )
+{
+  // scale rows of the system with inverse of the diagonal entry of A if entry is small
+  double min = A(0,0);
+  for(unsigned d=1; d<dim; ++d)
+    min = std::min(min, A(d,d));
+  if(min < tol)
+  {
+    for(unsigned j=0; j<dim; ++j)
+    {
+      const double scale = 1.0/A(j,j);
+      for(unsigned i=0; i<dim; ++i)
+      {
+        A(j,i) *= scale;
+      }
+      b(j) *= scale;
+    }
+  }
+
+  // no pivoting applied due to scaling
+  return LINALG::gaussElimination<false, dim>( A, b, x );
+}
+
 }
 
 #endif
