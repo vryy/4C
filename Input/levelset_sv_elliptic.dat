@@ -21,7 +21,7 @@ RANDSEED                        1
 NUMSTEP                         10
 MAXTIME                         700.0
 TIMESTEP                        0.005 // CFL=0.5
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     2
 CALCERROR                       InitialField
 -----------------------------------LEVEL-SET CONTROL/REINITIALIZATION
@@ -36,18 +36,18 @@ LUMPING                         yes
 DIFF_FUNC                       hyperbolic
 CONVTOL_REINIT                  -1.0 // unused
 -----------------------------------LEVEL-SET CONTROL/PARTICLE
-INCLUDE_PARTICLE            no //yes
-MIN_RADIUS                  0.1
-MAX_RADIUS                  0.5
-DIMENSION                   2Dz
-NUMPARTICLE                 32
-PARTICLEBANDWIDTH           3.0
-RESEEDING                   25
-FAST_CHECK                  yes
+INCLUDE_PARTICLE                no //yes
+MIN_RADIUS                      0.1
+MAX_RADIUS                      0.5
+NUMPARTICLE                     32
+PARTICLEBANDWIDTH               3.0
+RESEEDING                       25
+FAST_CHECK                      yes
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 BIN_PER_DIR                     100 100 1
 ------------------------------------------------------------PARTICLE DYNAMIC
+DIMENSION                       2Dz
 DYNAMICTYP                      RK2
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      linear_full //nonlinear
@@ -97,7 +97,7 @@ ML_PROLONG_THRES                0.0                             // threshold for
 ML_SMOOTHERFINE                 ILU                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  SGS                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu Umfpack
-ML_SMOTIMES 2 2 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES                     2 2 1                           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     0.67                            // damping fine grid
 ML_DAMPMED                      0.67                            // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
