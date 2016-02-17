@@ -271,6 +271,9 @@ namespace PARTICLE
     //! Return density
     virtual double ParticleDensity() { return density_; }
 
+    //! does collision handler exist?
+    virtual bool HaveCollHandler() {return (collhandler_!=Teuchos::null); }
+
     //@}
 
     //! @name Extract methods

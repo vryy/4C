@@ -617,6 +617,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   Teuchos::RCP<const Epetra_Vector> bubblevel = particles_->Velnp();
   Teuchos::RCP<const Epetra_Vector> bubbleacc = particles_->Accnp();
   Teuchos::RCP<const Epetra_Vector> bubbleradius = particles_->Radius();
+  Teuchos::RCP<const Epetra_Vector> bubblemass = particles_->Mass();
 
   // vectors to be filled with forces,
   // note: global assemble is needed for fluidforces due to the case with large bins and small fluid eles
@@ -648,9 +649,6 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     rho_l = actmat->density_;
     mu_l = actmat->viscosity_;
   }
-
-  // bubble density
-  double rho_b = particles_->ParticleDensity();
 
   // check whether dbc are specified for particles at all
   Teuchos::RCP<const Epetra_Map> dbcmap = particles_->GetDBCMapExtractor()->CondMap();
@@ -753,8 +751,10 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     static LINALG::Matrix<3,1> v_bub;
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*bubblevel,v_bub,lm_b);
 
-    // get bubble radius
-    const double r_bub = (*bubbleradius)[ particledis_->NodeRowMap()->LID(currparticle->Id()) ];
+    // get bubble radius and mass (assumption of constant mass (-> no mass transfer))
+    const int lid = particledis_->NodeRowMap()->LID(currparticle->Id());
+    const double r_bub = (*bubbleradius)[lid];
+    const double m_b = (*bubblemass)[lid];
 
     // bubble Reynolds number
     static LINALG::Matrix<3,1> v_rel;
@@ -805,7 +805,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     /*------------------------------------------------------------------*/
 
     /*------------------------------------------------------------------*/
-    //// 2.2) lift force = c_l * rho_l * volume_b * (u-v) x rot_u   with rot_u = nabla x u
+    //// 2.2) lift force = c_l * rho_l * vol_b * (u-v) x rot_u   with rot_u = nabla x u
     const double c_l = 0.5;
     const double vol_b = 4.0 / 3.0 * M_PI * r_bub * r_bub* r_bub;
     static LINALG::Matrix<3,1> rot_u(false);
@@ -832,12 +832,12 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     if(simplebubbleforce_)
     {
       /*------------------------------------------------------------------*/
-      //// 2.3) gravity and buoyancy forces = volume_b * rho_bub * g - volume_b * rho_l * ( g - Du/Dt )
+      //// 2.3) gravity and buoyancy forces = m_b * g - vol_b * rho_l * ( g - Du/Dt )
 
       static LINALG::Matrix<3,1> grav_buoy_force(false);
-      grav_buoy_force.Update(rho_b, gravity_acc_);
-      grav_buoy_force.Update(-rho_l, gravity_acc_, rho_l, Du_Dt, 1.0);
+      grav_buoy_force.Update(-rho_l, gravity_acc_, rho_l, Du_Dt);
       grav_buoy_force.Scale(vol_b);
+      grav_buoy_force.Update(m_b, gravity_acc_, 1.0);
       // assemble
       sumforces.Update(1.0, grav_buoy_force, 1.0);
       /*------------------------------------------------------------------*/
@@ -845,7 +845,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     else
     {
       /*------------------------------------------------------------------*/
-      //// 2.3) gravity, pressure gradient and viscous stress term = volume_b * rho_bub * g + volume_b * ( -grad_p + dTau/dx )
+      //// 2.3) gravity, pressure gradient and viscous stress term = m_b * g + vol_b * ( -grad_p + dTau/dx )
 
       static LINALG::Matrix<3,1> grad_p(false);
       static LINALG::Matrix<3,1> visc_stress(false);
@@ -856,18 +856,18 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       }
 
       static LINALG::Matrix<3,1> grav_surface_force(false);
-      grav_surface_force.Update(rho_b, gravity_acc_);
-      grav_surface_force.Update(-1.0, grad_p, 2.0*mu_l, visc_stress, 1.0);
+      grav_surface_force.Update(-1.0, grad_p, 2.0*mu_l, visc_stress);
       grav_surface_force.Scale(vol_b);
+      grav_surface_force.Update(m_b, gravity_acc_, 1.0);
       // assemble
       sumforces.Update(1.0, grav_surface_force, 1.0);
       /*------------------------------------------------------------------*/
     }
 
     /*------------------------------------------------------------------*/
-    //// 2.4) virtual/added mass = c_VM * rho_l * volume_b * ( Du/Dt - Dv/Dt )
+    //// 2.4) virtual/added mass = c_VM * rho_l * vol_b * ( Du/Dt - Dv/Dt )
     //// Note: implicit treatment of bubble acceleration in added mass, other forces explicit
-    //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) + c_VM * rho_l * volume_b * Du/Dt }{ 1 + c_VM * rho_l / rho_b }
+    //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) + c_VM * rho_l * vol_b * Du/Dt }{ 1 + c_VM * rho_l * vol_b / m_b }
     //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) +         coeff3          * Du/Dt }{          coeff4          }
     const double c_VM = 0.5;
     const double coeff3 = c_VM * rho_l * vol_b;
@@ -886,9 +886,9 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     {
       /*------------------------------------------------------------------*/
       //// Note: implicit treatment of bubble acceleration in added mass, other forces explicit
-      //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) + c_VM * rho_l * volume_b * Du/Dt }{ 1 + c_VM * rho_l / rho_b }
+      //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) + c_VM * rho_l * vol_b * Du/Dt }{ 1 + c_VM * rho_l * vol_b / m_b }
       //// final force = \frac{ sum all forces (2.1, 2.2, 2.3) +         coeff3          * Du/Dt }{          coeff4          }
-      const double coeff4 = 1.0 + c_VM * rho_l / rho_b;
+      const double coeff4 = 1.0 + c_VM * rho_l * vol_b / m_b;
       const double invcoeff4 = 1.0 / coeff4;
 
       bubbleforce.Update(invcoeff4, sumforces, coeff3*invcoeff4, Du_Dt);
@@ -901,15 +901,13 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       for (int d=0; d<dim_; ++d)
         Dv_Dt(d) = (*bubbleacc)[posx+d];
 
-      // compute bubble force
-      const double m_b = vol_b * rho_b;
       bubbleforce.Update(m_b, Dv_Dt);
     }
     /*------------------------------------------------------------------*/
 
     // rough safety check whether chosen time step is within stability criterion
     // of explicit time integration scheme: acc * \Delta t < v_rel (*safety factor 0.5)
-    const double invmass = 1.0 / (vol_b * rho_b);
+    const double invmass = 1.0 / m_b;
     for(int d=0; d<dim_; ++d)
     {
       // ignore case with v_rel close to zero
@@ -962,7 +960,6 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     {
       // calculate added mass force
       static LINALG::Matrix<3,1> addedmassforce(false);
-      const double m_b = vol_b * rho_b;
       addedmassforce.Update(coeff3, Du_Dt, -coeff3/m_b, bubbleforce);
 
       //// coupling force = -(dragforce + liftforce + addedmassforce); actio = reactio --> minus sign
@@ -1017,7 +1014,6 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     if(output)
     {
       // gravity
-      double m_b = vol_b * rho_b;
       static LINALG::Matrix<3,1> gravityforce(false);
       gravityforce.Update(m_b, gravity_acc_);
       std::cout << "t: " << particles_->Time() << " gravity force       : " << gravityforce << std::endl;
@@ -1281,6 +1277,20 @@ void CAVITATION::Algorithm::ComputeRadius()
     (*dtsub_)[lid] = dtsub/TIMESCALE;
   }
 
+  // update inertia in case of (tangential) contact
+  if(particles_->HaveCollHandler())
+  {
+    // assumption of constant mass (-> no mass transfer)
+    Teuchos::RCP<const Epetra_Vector> mass = particles_->Mass();
+    Teuchos::RCP<Epetra_Vector> inertia = particles_->WriteAccessInertia();
+    for(int lid=0; lid<particledis_->NumMyRowNodes(); ++lid)
+    {
+      const double rad = (*bubbleradiusn)[lid];
+      // inertia-vector: sphere: I = 2/5 * m * r^2
+      (*inertia)[lid] = 0.4 * (*mass)[lid] * rad * rad;
+    }
+  }
+
   return;
 }
 
@@ -1494,9 +1504,8 @@ void CAVITATION::Algorithm::ParticleInflow()
     // do blending of radius of inflow particles
     //----------------------------------------------
     Teuchos::RCP<Epetra_Vector> radiusn = particles_->WriteAccessRadius();
-    Teuchos::RCP<Epetra_Vector> massn = particles_->WriteAccessMass();
+    Teuchos::RCP<const Epetra_Vector> massn = particles_->Mass();
     Teuchos::RCP<Epetra_Vector> inertian = particles_->WriteAccessInertia();
-    const double density = particles_->ParticleDensity();
 
     for(std::set<int>::const_iterator i=latestinflowbubbles_.begin(); i!=latestinflowbubbles_.end(); ++i)
     {
@@ -1517,10 +1526,12 @@ void CAVITATION::Algorithm::ParticleInflow()
           (*radiusn)[bubblelid] *= blendingfac;
         }
         // adapt radius dependent quantities
-        const double mass = density * 4.0/3.0 * M_PI * pow((*particles_->WriteAccessRadius())[bubblelid], 3);
-        (*massn)[bubblelid] = mass;
+        const double rad = (*radiusn)[bubblelid];
+        // assumption of constant mass (-> no mass transfer)
+//        const double mass = density * 4.0/3.0 * M_PI * rad * rad * rad;
+//        (*massn)[bubblelid] = mass;
         if(inertian != Teuchos::null)
-          (*inertian)[bubblelid] = 0.4 * mass * (*particles_->WriteAccessRadius())[bubblelid] * (*particles_->WriteAccessRadius())[bubblelid];
+          (*inertian)[bubblelid] = 0.4 * (*massn)[bubblelid] * rad * rad;
       }
     }
   }
@@ -1540,7 +1551,7 @@ void CAVITATION::Algorithm::ParticleInflow()
     // assumption only valid in case of one condition or conditions with identical inflow frequency
     if(biniter->second.size() != 0)
     {
-      double inflowtime = 1.0 / biniter->second.front()->inflow_freq_;
+      const double inflowtime = 1.0 / biniter->second.front()->inflow_freq_;
       inflowsteps = (int)(inflowtime/Dt());
       if(Step() % inflowsteps == 0)
       {
@@ -1751,13 +1762,14 @@ void CAVITATION::Algorithm::ParticleInflow()
 
       // get node lid
       lid = noderowmap->LID(newbubbleid);
-
       double inflow_radius = (*particleiter)->inflow_radius_;
+      // assumption of constant mass (-> no mass transfer)
+      const double mass = density * 4.0/3.0 * M_PI * inflow_radius * inflow_radius * inflow_radius;
+      (*massn)[lid] = mass;
+
       // start with a small radius that is blended to the actual value
       inflow_radius *= invblendingsteps;
       (*radiusn)[lid] = inflow_radius;
-      const double mass = density * 4.0/3.0 * M_PI * pow(inflow_radius, 3);
-      (*massn)[lid] = mass;
       if(inertian != Teuchos::null)
         (*inertian)[lid] = 0.4 * mass * inflow_radius * inflow_radius;
 

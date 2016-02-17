@@ -162,6 +162,9 @@ namespace ADAPTER
     //! Return density
     virtual double ParticleDensity() = 0;
 
+    //! does collision handler exist?
+    virtual bool HaveCollHandler() = 0;
+
     //@}
 
     //! @name Extract methods

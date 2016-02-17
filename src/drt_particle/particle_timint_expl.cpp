@@ -78,7 +78,7 @@ void PARTICLE::TimIntExpl::Init()
       double r_p = (*radius_)[n];
 
       //inertia-vector: sphere: I = 2/5 * m * r^2
-      (*inertia_)[n] = 0.4 * (*mass_)[n] * pow(r_p, 2.0);
+      (*inertia_)[n] = 0.4 * (*mass_)[n] * r_p * r_p;
     }
   }
 

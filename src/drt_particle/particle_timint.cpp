@@ -210,7 +210,7 @@ void PARTICLE::TimInt::SetInitialFields()
     (*radius_)[n] = initial_radius;
 
     // mass-vector: m = rho * 4/3 * PI *r^3
-    (*mass_)[n] = density_ * 4.0/3.0 * M_PI * pow(initial_radius, 3.0);
+    (*mass_)[n] = density_ * 4.0/3.0 * M_PI * initial_radius * initial_radius * initial_radius;
   }
 
   // set initial radius condition if existing
@@ -239,7 +239,7 @@ void PARTICLE::TimInt::SetInitialFields()
           dserror("negative initial radius");
 
         // mass-vector: m = rho * 4/3 * PI * r^3
-        (*mass_)[lid] = density_ * 4.0/3.0 * M_PI * pow(r_p, 3.0);
+        (*mass_)[lid] = density_ * 4.0/3.0 * M_PI * r_p * r_p * r_p;
       }
     }
   }
@@ -558,24 +558,19 @@ void PARTICLE::TimInt::ReadRestartState()
   reader.ReadVector(accn_, "acceleration");
   acc_->UpdateSteps(*accn_);
   reader.ReadVector(radius_, "radius");
+  reader.ReadVector(mass_, "mass");
 
   if(radius_->GlobalLength() != 0)
   {
-    // initialize mass
-    for(int lid=0; lid<discret_->NumMyRowNodes(); ++lid)
-    {
-      // mass-vector: m = rho * 4/3 * PI *r^3
-      (*mass_)[lid] = density_ * 4.0/3.0 * M_PI * pow((*radius_)[lid], 3.0);
-    }
-
     // read in particle collision relevant data
     if(collhandler_ != Teuchos::null)
     {
       // initialize inertia
       for(int lid=0; lid<discret_->NumMyRowNodes(); ++lid)
       {
+        const double rad = (*radius_)[lid];
         // inertia-vector: sphere: I = 2/5 * m * r^2
-        (*inertia_)[lid] = 0.4 * (*mass_)[lid] * pow((*radius_)[lid], 2.0);
+        (*inertia_)[lid] = 0.4 * (*mass_)[lid] * rad * rad;
       }
 
       reader.ReadVector(ang_veln_, "ang_velocity");
@@ -655,6 +650,7 @@ void PARTICLE::TimInt::OutputRestart
   output_->WriteVector("velocity", (*vel_)(0));
   output_->WriteVector("acceleration", (*acc_)(0));
   output_->WriteVector("radius", radius_, output_->nodevector);
+  output_->WriteVector("mass", mass_, output_->nodevector);
   if(variableradius_)
   {
     output_->WriteVector("radius0", radius0_, output_->nodevector);
