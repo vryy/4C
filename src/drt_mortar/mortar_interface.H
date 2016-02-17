@@ -662,6 +662,10 @@ public:
   virtual void DetectTiedSlaveNodes(int& founduntied);
 
   /*!
+  \brief Ghost underlying volume elements
+  */
+  void CreateVolumeGhosting(DRT::Discretization& idiscret,bool onlyslave);
+  /*!
   \brief return integration time for current interface
   */
   virtual double Inttime(){return inttime_interface_;};

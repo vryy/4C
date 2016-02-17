@@ -668,6 +668,74 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
   return ;
 }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3,3>& b,
+                        LINALG::Matrix<3,3>& s,
+                        LINALG::Matrix<6,6>& dsdb,
+                        const int eleGID)
+{
+
+  LINALG::Matrix<3,1> prinv(true);
+
+  LINALG::Matrix<6,1> b_vec; // stress like
+  for (int i=0;i<3;++i) b_vec(i)=b(i,i);
+  b_vec(3)=b(0,1);b_vec(4)=b(2,1);b_vec(5)=b(0,2);
+  {
+    for (int i=3;i<6;++i) b_vec(i)*=2.;
+    InvariantsPrincipal(prinv,b_vec);
+    for (int i=3;i<6;++i) b_vec(i)*=.5;
+  }
+  LINALG::Matrix<3,1> dPI(true);
+  LINALG::Matrix<6,1> ddPII(true);
+  EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID);
+
+  LINALG::Matrix<3,3>ib(b);
+  ib.Invert();
+  LINALG::Matrix<6,1> ib_vec; // stress like
+  for (int i=0;i<3;++i) ib_vec(i)=ib(i,i);
+  ib_vec(3)=ib(0,1);ib_vec(4)=ib(2,1);ib_vec(5)=ib(0,2);
+
+  LINALG::Matrix<3,3> id2(true); for (int i=0;i<3;++i) id2(i,i)=1.;
+  LINALG::Matrix<6,1> id2_vec(true); for (int i=0;i<3;++i) id2_vec(i)=1.;
+
+  double j = sqrt(prinv(2));
+  s.Clear();
+  s.Update(prinv(1)*dPI(1)+prinv(2)*dPI(2),id2,1.);
+  s.Update(dPI(0),b,1.);
+  s.Update(-prinv(2)*dPI(1),ib,1.);
+  s.Scale(2./j);
+
+
+  LINALG::Matrix<6,1>d1db=id2_vec;
+  LINALG::Matrix<6,1>d2db;
+  d2db.Update(prinv(0),id2_vec,0.);
+  d2db.Update(-1.,b_vec,1.);
+  LINALG::Matrix<6,1> d3db;
+  d3db.Update(prinv(2),ib_vec,0.);
+
+  dsdb.Clear();
+  dsdb.MultiplyNT(-pow(prinv(2),-3./2.)*(prinv(1)*dPI(1)+prinv(2)*dPI(2)),id2_vec,d3db,1.);
+  dsdb.MultiplyNT(-pow(prinv(2),-3./2.)*dPI(0),b_vec,d3db,1.);
+  dsdb.MultiplyNT(+pow(prinv(2),-3./2.)*prinv(2)*dPI(1),ib_vec,d3db,1.);
+  dsdb.MultiplyNT(2./j*( prinv(1)*ddPII(5)+prinv(2)*ddPII(4) )       ,id2_vec,d1db,1.);
+  dsdb.MultiplyNT(2./j*( dPI(1)+prinv(1)*ddPII(1)+prinv(2)*ddPII(3) ),id2_vec,d2db,1.);
+  dsdb.MultiplyNT(2./j*( prinv(1)*ddPII(3)+dPI(2)+prinv(2)*ddPII(2) ),id2_vec,d3db,1.);
+
+  dsdb.MultiplyNT(2./j*ddPII(0),b_vec,d1db,1.);
+  dsdb.MultiplyNT(2./j*ddPII(5),b_vec,d2db,1.);
+  dsdb.MultiplyNT(2./j*ddPII(4),b_vec,d3db,1.);
+  AddtoCmatHolzapfelProduct(dsdb,id2_vec,2./j*dPI(0));
+
+  dsdb.MultiplyNT(-2./j*prinv(2)*ddPII(5),ib_vec,d1db,1.);
+  dsdb.MultiplyNT(-2./j*prinv(2)*ddPII(1),ib_vec,d2db,1.);
+  dsdb.MultiplyNT(-2./j*prinv(2)*ddPII(3),ib_vec,d3db,1.);
+  dsdb.MultiplyNT(-2./j         *dPI(1)  ,ib_vec,d3db,1.);
+  AddtoCmatHolzapfelProduct(dsdb,ib_vec,+2./j*prinv(2)*dPI(1));
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

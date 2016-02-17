@@ -7711,20 +7711,20 @@ void CONTACT::CoInterface::AddGPTSforces(Teuchos::RCP<Epetra_FEVector> feff)
 void CONTACT::CoInterface::AddGPTSstiffness(Teuchos::RCP<LINALG::SparseMatrix> kteff)
 {
   for (int i=0;i<mnodecolmap_->NumMyElements();++i)
-    {
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Discret().gNode(mnodecolmap_->GID(i)));
-      for (int d=0;d<cnode->NumDof();++d)
-        for (std::map<int,double>::const_iterator p=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].begin();
-            p!=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].end();++p)
-          kteff->FEAssemble(-p->second,cnode->Dofs()[d],p->first);
-    }
+  {
+    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Discret().gNode(mnodecolmap_->GID(i)));
+    for (int d=0;d<cnode->NumDof();++d)
+      for (std::map<int,double>::const_iterator p=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].begin();
+          p!=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].end();++p)
+        kteff->FEAssemble(-p->second,cnode->Dofs()[d],p->first);
+  }
   for (int i=0;i<snodecolmap_->NumMyElements();++i)
-    {
-      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Discret().gNode(snodecolmap_->GID(i)));
-      for (int d=0;d<cnode->NumDof();++d)
-        for (std::map<int,double>::const_iterator p=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].begin();
-            p!=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].end();++p)
-          kteff->FEAssemble(-p->second,cnode->Dofs()[d],p->first);
-    }
+  {
+    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(Discret().gNode(snodecolmap_->GID(i)));
+    for (int d=0;d<cnode->NumDof();++d)
+      for (std::map<int,double>::const_iterator p=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].begin();
+          p!=cnode->CoGPTSData()->GetGPTSforceDeriv()[d].end();++p)
+        kteff->FEAssemble(-p->second,cnode->Dofs()[d],p->first);
+  }
   return;
 }

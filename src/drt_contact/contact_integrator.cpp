@@ -33,6 +33,8 @@ Maintainer: Alexander Popp
 #include "../drt_mat/structporo.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 
+#include "../drt_so3/so_base.H"
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
@@ -47,6 +49,7 @@ nodalscale_(DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")),
 gpslip_(DRT::INPUT::IntegralValue<int>(imortar_,"GP_SLIP_INCR")),
 algo_(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_,"ALGORITHM")),
 ppn_(imortar_.get<double>("PENALTYPARAM")),
+stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(imortar_,"STRATEGY")),
 wearlaw_(DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(imortar_,"WEARLAW")),
 wearimpl_(false),
 wearside_(INPAR::WEAR::wear_slave),
@@ -3639,8 +3642,8 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(
 
   case INPAR::MORTAR::algorithm_gpts:
   {
-    GPTS_forces(sele,mele,sval,sderiv,derivsxi,mval,mderiv,derivmxi,
-        jac,derivjac,wgt,gap,deriv_gap,normal,dnmap_unit);
+    GPTS_forces<3>(sele,mele,sval,sderiv,derivsxi,mval,mderiv,derivmxi,
+        jac,derivjac,wgt,gap,deriv_gap,normal,dnmap_unit,sxi);
     break;
   }
   default:
@@ -3863,8 +3866,8 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(
 
   case INPAR::MORTAR::algorithm_gpts:
   {
-    GPTS_forces(sele,mele,sval,sderiv,derivsxi,mval,mderiv,derivmxi,
-        jac,derivjac,wgt,gap,deriv_gap,normal,dnmap_unit);
+    GPTS_forces<2>(sele,mele,sval,sderiv,derivsxi,mval,mderiv,derivmxi,
+        jac,derivjac,wgt,gap,deriv_gap,normal,dnmap_unit,sxi);
     break;
   }
   default:
@@ -10347,7 +10350,6 @@ double inline CONTACT::CoIntegrator::TDetDeformationGradient(
   //Linearisation of Jacobian (atm missing!)
   // D J[d] = J div(d) = J div(N_i d_i) = J dN_i/dx_j d_ij = J dN_i/dzeta_k dzeta_k/dx_j d_ij
 
-  // linearization of jacobian determinant //h.Willmann
 //  LINALG::Matrix<dim,numnodes>  auxJLin (true);   // matrix to be filled with linearization scalars
   xjm.Invert();
   {
@@ -10367,22 +10369,97 @@ double inline CONTACT::CoIntegrator::TDetDeformationGradient(
   return J;
 }
 
+template <int dim>
 void CONTACT::CoIntegrator::GPTS_forces(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
     const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,const std::vector<GEN::pairedvector<int,double> >& dsxi,
     const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,const std::vector<GEN::pairedvector<int,double> >& dmxi,
     const double jac,const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
     const double gap, const GEN::pairedvector<int,double>& dgapgp,
-    const double* gpn, const std::vector<GEN::pairedvector<int,double> >& dnmap_unit)
+    double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit,const double* sxi)
 {
-  if (gap>0.)
-    return;
+  if (dim!=Dim())
+    dserror("dimension inconsistency");
+
   if (sele.Owner()!=Comm_.MyPID())
     return;
 
+  double gap_plus_cauchy_nn=0.;
+  std::map<int,double> deriv_sigma_nn;
+
+  if (stype_==INPAR::CONTACT::solution_nitsche)
+  {
+    LINALG::Matrix<dim,1> pxsi(true);
+    DRT::Element::DiscretizationType distype = sele.ParentElement()->Shape();
+    switch (distype)
+    {
+    case DRT::Element::hex8:
+      SoEleGP<DRT::Element::hex8,dim>(sele,wgt,sxi,pxsi);
+      break;
+    case DRT::Element::quad4:
+      SoEleGP<DRT::Element::quad4,dim>(sele,wgt,sxi,pxsi);
+      break;
+    default:
+      dserror("Nitsche contact not implemented for used (bulk) elements");
+    }
+
+    LINALG::Matrix<dim,dim> cauchy;
+    Epetra_SerialDenseMatrix dsdd;
+    dynamic_cast<DRT::ELEMENTS::So_base*>(sele.ParentElement())->GetCauchyAtXi(pxsi,sele.MoData().ParentDisp(),cauchy,dsdd);
+
+    const LINALG::Matrix<dim,1> normal(gpn,true);
+    LINALG::Matrix<dim,1> trac;
+    trac.Multiply(cauchy,normal);
+    double cauchy_nn = trac.Dot(normal);
+    gap_plus_cauchy_nn =(gap + cauchy_nn/ppn_);
+
+    LINALG::Matrix<dim,dim> nn;
+    nn.MultiplyNT(normal,normal);
+    int numstr;
+    if      (dim==3) numstr=6;
+    else if (dim==2) numstr=3;
+    else dserror("unknown dimesion");
+
+    Epetra_SerialDenseVector nn_vec(numstr);
+    for (int i=0;i<dim;i++)nn_vec(i)=nn(i,i);
+    if (dim==3)
+    {
+      nn_vec(3)=nn(0,1)*2.;
+      nn_vec(4)=nn(2,1)*2.;
+      nn_vec(5)=nn(0,2)*2.;
+    }
+    else
+      nn_vec(2)=nn(0,1)*2.;
+
+    Epetra_SerialDenseVector dsndd(sele.ParentElement()->NumNode()*dim);
+    if(dsdd.Multiply(true,nn_vec,dsndd)!=0) dserror("multiply failed");
+    if (sele.ParentElement()->NumNode()*dim!=(int)sele.MoData().ParentDof().size())
+      std::cout << "skipping..." << std::endl;
+
+    else
+    {
+      for (int i=0;i<sele.ParentElement()->NumNode()*dim;++i)
+        deriv_sigma_nn[sele.MoData().ParentDof().at(i)] += dsndd(i);
+
+      for (int d=0;d<Dim();++d)
+        for (GEN::pairedvector<int,double>::const_iterator p=dnmap_unit[d].begin();p!=dnmap_unit[d].end();++p)
+          deriv_sigma_nn[p->first]+=2.*trac(d)*p->second;
+    }
+  }
+  else if (stype_==INPAR::CONTACT::solution_penalty)
+    gap_plus_cauchy_nn = gap;
+  else
+    dserror("unknown algorithm");
+
+  if (gap_plus_cauchy_nn>=0.)
+  {
+//    std::cout << "yes we return :-) " << std::endl;
+    return;
+  }
+
   for (int d=0;d<Dim();++d)
   {
-    double gp_force = ppn_ * jac*wgt*gap*gpn[d];
+    double gp_force = ppn_ * jac*wgt*gap_plus_cauchy_nn*gpn[d];
 
     for (int s=0;s<sele.NumNode();++s)
       dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[s])->CoGPTSData()->GetGPTSforce()[d]+=gp_force*sval(s);
@@ -10392,11 +10469,13 @@ void CONTACT::CoIntegrator::GPTS_forces(
     std::map<int,double> deriv_gp_force;
 
     for (GEN::pairedvector<int,double>::const_iterator p=jacintcellmap.begin();p!=jacintcellmap.end();++p)
-      deriv_gp_force[p->first]+=ppn_ * p->second * wgt*gap*gpn[d];
+      deriv_gp_force[p->first]+=ppn_ * p->second * wgt*gap_plus_cauchy_nn*gpn[d];
     for (GEN::pairedvector<int,double>::const_iterator p=dgapgp.begin();p!=dgapgp.end();++p)
       deriv_gp_force[p->first]+=ppn_ * jac*wgt*p->second*gpn[d];
-    for (GEN::pairedvector<int,double>::const_iterator p=dnmap_unit[d].begin();p!=dnmap_unit[d].end();++p)
-      deriv_gp_force[p->first]+=ppn_ * jac*wgt*gap*p->second;
+    for (std::map<int,double>::const_iterator p=deriv_sigma_nn.begin();p!=deriv_sigma_nn.end();++p)
+      deriv_gp_force[p->first]+=jac*wgt*gpn[d]*p->second;
+      for (GEN::pairedvector<int,double>::const_iterator p=dnmap_unit[d].begin();p!=dnmap_unit[d].end();++p)
+        deriv_gp_force[p->first]+=ppn_ * jac*wgt*gap_plus_cauchy_nn*p->second;
 
     for (std::map<int,double>::const_iterator p=deriv_gp_force.begin();p!=deriv_gp_force.end();++p)
     {
@@ -10417,6 +10496,35 @@ void CONTACT::CoIntegrator::GPTS_forces(
           dynamic_cast<CONTACT::CoNode*>(mele.Nodes()[m])->CoGPTSData()->GetGPTSforceDeriv()[d][p->first]-=gp_force*mderiv(m,e)*p->second;
 
   }
+
   return;
 }
 
+template <DRT::Element::DiscretizationType parentdistype, int dim>
+void inline CONTACT::CoIntegrator::SoEleGP(
+    MORTAR::MortarElement& sele,
+    const double wgt,
+    const double* gpcoord,
+    LINALG::Matrix<dim,1>& pxsi
+)
+{
+  DRT::UTILS::CollectedGaussPoints intpoints = DRT::UTILS::CollectedGaussPoints(1); //reserve just for 1 entry ...
+  intpoints.Append(gpcoord[0], gpcoord[1],0.0, wgt);
+
+  // get coordinates of gauss point w.r.t. local parent coordinate system
+  LINALG::SerialDenseMatrix pqxg(1,dim);
+  LINALG::Matrix<dim,dim>  derivtrafo(true);
+
+  DRT::UTILS::BoundaryGPToParentGP<dim>( pqxg,
+      derivtrafo,
+      intpoints ,
+      sele.ParentElement()->Shape(),
+      sele.Shape(),
+      sele.FaceParentNumber());
+
+  // coordinates of the current integration point in parent coordinate system
+    for (int idim=0;idim<dim ;idim++)
+  {
+    pxsi(idim) = pqxg(0,idim);
+  }
+}

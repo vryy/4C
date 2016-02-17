@@ -1285,7 +1285,10 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
     if(cmtbridge_->HaveMeshtying())
       cmtbridge_->MtManager()->GetStrategy().ApplyForceStiffCmt(dis,stiff,fresm,stepn_,iter_,predict);
     if(cmtbridge_->HaveContact())
+    {
+      dynamic_cast<CONTACT::CoAbstractStrategy&>(cmtbridge_->ContactManager()->GetStrategy()).SetParentState("displacement",dis,discret_);
       cmtbridge_->ContactManager()->GetStrategy().ApplyForceStiffCmt(dis,stiff,fresm,stepn_,iter_,predict);
+    }
 
 
     // scaling back
@@ -3283,6 +3286,15 @@ int STR::TimIntImpl::CmtNonlinearSolve()
 
     // update constraint norm
     cmtbridge_->GetStrategy().UpdateConstraintNorm();
+  }
+
+  //********************************************************************
+  // Solving Strategy using Nitsche's method
+  //********************************************************************
+  else if (soltype == INPAR::CONTACT::solution_nitsche)
+  {
+    // nonlinear iteration
+    return NewtonFull();
   }
 
   //********************************************************************

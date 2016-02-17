@@ -24,6 +24,7 @@ Maintainer: Alexander Popp
 #include <Epetra_FEVector.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Operator.h>
+#include "../drt_lib/drt_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -683,5 +684,77 @@ void CONTACT::CoPenaltyStrategy::ApplyGPTSforces(
   kteff->UnComplete();
   kteff->Add(*kc,false,1.,1.);
   kteff->Complete();
+  return;
+}
+
+
+//this should add the displacement of the parent element to the contact element into the datacontainer...
+//...and it should additionally add the dof IDs to its Data container
+/*------------------------------------------------------------------------*
+ | Assign generell poro contact state!                          ager 10/14|
+ *------------------------------------------------------------------------*/
+void CONTACT::CoPenaltyStrategy::SetParentState(const std::string& statename,
+    const Teuchos::RCP<Epetra_Vector> vec,
+    const Teuchos::RCP<DRT::Discretization> dis)
+{
+  if (stype_!=INPAR::CONTACT::solution_nitsche)
+    return;
+
+  if (statename == "displacement")
+  {
+    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(),true));
+    LINALG::Export(*vec,*global);
+
+    //set state on interfaces
+    for (int i=0; i<(int)interface_.size(); ++i)
+    {
+      DRT::Discretization& idiscret_ = interface_[i]->Discret();
+
+      if(1) //do for the slave elements  ....
+      {
+        for (int j=0; j < interface_[i]->SlaveColElements()->NumMyElements(); ++j) //will just work for onesided poro contact as the porosity is just on slave side!!!
+        {
+          int gid = interface_[i]->SlaveColElements()->GID(j);
+
+          MORTAR::MortarElement* ele = dynamic_cast<MORTAR::MortarElement*>(idiscret_.gElement(gid));
+
+          std::vector<int> lm;
+          std::vector<int> lmowner;
+          std::vector<int> lmstride;
+
+          //this gets values in local order
+          ele->ParentElement()->LocationVector(*dis,lm,lmowner,lmstride);
+
+          std::vector<double> myval;
+          DRT::UTILS::ExtractMyValues(*global,myval,lm);
+
+          ele->MoData().ParentDisp() = myval;
+          ele->MoData().ParentDof() = lm;
+        }
+      }
+//      if(poromaster_)//add master parent element displacements
+//      {
+//        for (int j=0; j < interface_[i]->MasterColElements()->NumMyElements(); ++j)
+//        {
+//          int gid = interface_[i]->MasterColElements()->GID(j);
+//
+//          MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(idiscret_.gElement(gid));
+//
+//          std::vector<int> lm;
+//          std::vector<int> lmowner;
+//          std::vector<int> lmstride;
+//
+//          //this gets values in local order
+//          mele->ParentElement()->LocationVector(*dis,lm,lmowner,lmstride);
+//
+//          std::vector<double> myval;
+//          DRT::UTILS::ExtractMyValues(*global,myval,lm);
+//
+//          mele->MoData().ParentDisp() = myval;
+//          mele->MoData().ParentDof() = lm;
+//        }
+//      }
+    }
+  }
   return;
 }

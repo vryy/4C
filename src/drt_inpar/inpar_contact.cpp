@@ -73,12 +73,12 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
         tuple<std::string>("LagrangianMultipliers","lagrange", "Lagrange",
                            "PenaltyMethod","penalty", "Penalty",
                            "UzawaAugementedLagrange","uzawa","Uzawa",
-                           "AugmentedLagrange","augmented", "Augmented"),
+                           "AugmentedLagrange","augmented", "Augmented","Nitsche"),
         tuple<int>(
                 solution_lagmult, solution_lagmult, solution_lagmult,
                 solution_penalty, solution_penalty, solution_penalty,
                 solution_uzawa, solution_uzawa, solution_uzawa,
-                solution_augmented, solution_augmented, solution_augmented),
+                solution_augmented, solution_augmented, solution_augmented,solution_nitsche),
         &scontact);
 
   setStringToIntegralParameter<int>("SYSTEM","Condensed","Type of linear system setup / solution",

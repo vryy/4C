@@ -108,6 +108,20 @@ public:
   */
   virtual Teuchos::RCP<MAT::So3Material> SolidMaterial(int nummat=0) const;
 
+  /// evaluate Cauchy stress for any given point in parametric domain (3D version)
+  virtual void GetCauchyAtXi(const LINALG::Matrix<3,1>& xi,
+      const std::vector<double>& disp,
+      LINALG::Matrix<3,3>& cauchy,
+      Epetra_SerialDenseMatrix& dsdd)
+  { dserror("not implemented for chosen solid element"); }
+
+  /// evaluate Cauchy stress for any given point in parametric domain (2D version)
+  virtual void GetCauchyAtXi(const LINALG::Matrix<2,1>& xi,
+      const std::vector<double>& disp,
+      LINALG::Matrix<2,2>& cauchy,
+      Epetra_SerialDenseMatrix& dsdd)
+  { dserror("not implemented for chosen solid element"); }
+
 protected:
   //! kinematic type
   INPAR::STR::KinemType kintype_;

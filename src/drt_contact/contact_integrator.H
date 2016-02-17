@@ -527,13 +527,14 @@ protected:
 /*!
 \brief evaluate GPTS forces and linearization at this gp
 */
+  template <int dim>
   void GPTS_forces(
       MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
       const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,const std::vector<GEN::pairedvector<int,double> >& dsxi,
       const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,const std::vector<GEN::pairedvector<int,double> >& dmxi,
       const double jac,const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
       const double gap, const GEN::pairedvector<int,double>& dgapgp,
-      const double* gpn, const std::vector<GEN::pairedvector<int,double> >& dnmap_unit);
+      double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit,const double* sxi);
 
   /*!
    \brief evaluate weighted Gap entries at GP (quad-pwlin)
@@ -991,6 +992,14 @@ protected:
   }
   ;
 
+  template <DRT::Element::DiscretizationType parentdistype, int dim>
+  void inline SoEleGP(
+      MORTAR::MortarElement& sele,
+      const double wgt,
+      const double* gpcoord,
+      LINALG::Matrix<dim,1>& pxsi
+);
+
     // don't want = operator and cctor
     CoIntegrator operator = (const CoIntegrator& old);
     CoIntegrator(const CoIntegrator& old);
@@ -1010,6 +1019,7 @@ protected:
     bool                                             gpslip_;      // gp-wise evaluated slip increment
     INPAR::MORTAR::AlgorithmType                     algo_;        // contact algorithm
     double                                           ppn_;         // penalty param in normal direction (needed for gpts)
+    INPAR::CONTACT::SolvingStrategy                  stype_;       // solution stratety
 
     // wear inputs from parameter list
     INPAR::WEAR::WearLaw                             wearlaw_;     // type of wear law

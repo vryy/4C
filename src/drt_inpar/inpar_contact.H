@@ -46,7 +46,8 @@ namespace INPAR
       solution_lagmult,  ///< method of Lagrange multipliers
       solution_penalty,  ///< penalty approach
       solution_uzawa,    ///< Uzawa augmented Lagrange approach
-      solution_augmented ///< augmented Lagrange approach
+      solution_augmented,///< augmented Lagrange approach
+      solution_nitsche   ///< Nitsche contact solution method
     };
 
     /// Type of linear system setup and solution

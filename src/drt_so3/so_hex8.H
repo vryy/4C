@@ -371,6 +371,13 @@ public:
       return 10.0;
   }
 
+  /// evaluate Cauchy stress at given point in parameter space
+  virtual void GetCauchyAtXi(
+      const LINALG::Matrix<NUMDIM_SOH8,1>& xi,
+      const std::vector<double>& disp,
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& cauchy,
+      Epetra_SerialDenseMatrix& dsdd);
+
   //! struct_ale
   bool structale_;
   //@}

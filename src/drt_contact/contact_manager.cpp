@@ -558,6 +558,14 @@ CONTACT::CoManager::CoManager(
         if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
           SetPoroParentElement(slavetype, mastertype, cele, ele);
 
+        if (stype==INPAR::CONTACT::solution_nitsche)
+          if (isslave[j])
+          {
+            Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
+            if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
+            cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
+          }
+
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
@@ -653,7 +661,7 @@ CONTACT::CoManager::CoManager(
           maxdof));
     }
   }
-  else if (stype == INPAR::CONTACT::solution_penalty)
+  else if (stype == INPAR::CONTACT::solution_penalty || stype == INPAR::CONTACT::solution_nitsche)
   {
     strategy_ = Teuchos::rcp(new CoPenaltyStrategy(
         Discret().DofRowMap(),
@@ -1129,9 +1137,11 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   //                       GPTS-SPECIFIC CHECKS
   // *********************************************************************
-  else if(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar,"ALGORITHM") == INPAR::MORTAR::algorithm_nts)
+  else if(DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(mortar,"ALGORITHM") == INPAR::MORTAR::algorithm_gpts)
   {
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_penalty)
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_nitsche)
+      dserror("Nitsche contact under construction ... If you want to use it, you're on your own.");
+    else if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_penalty)
       dserror("ERROR: GPTS-Algorithm only with penalty strategy");
 
     if (contact.get<double>("PENALTYPARAM") <= 0.0)
@@ -1143,17 +1153,15 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") != INPAR::WEAR::wear_none)
       dserror("GPTS algorithm not implemented for wear");
 
-    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") != INPAR::MORTAR::inttype_segments)
-      dserror("GPTS algorithm only for segment-based integration");
-
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(cparams, "FRICTION")!=INPAR::CONTACT::friction_none)
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none)
       dserror("GPTS algorithm only for frictionless contact");
 
-    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") != INPAR::MORTAR::lagmult_undefined)
-          dserror("GPTS algorithm only implemented for first order interpolation");
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_nitsche
+        &&
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "") != INPAR::MORTAR::inttype_elements
+        )
+      dserror("Nitsche only with Element-based integration yet");
 
-    if (dim!=3)
-      dserror("GPTS algorithm only implemented for 3D contact");
   }// END GPTS CHECKS
 
   // *********************************************************************

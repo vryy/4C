@@ -720,6 +720,9 @@ public:
   virtual void UpdateWearDiscretIterate(bool store) = 0;
   virtual void UpdateWearDiscretAccumulation(bool wearaccumulation) = 0;
 
+  virtual void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<DRT::Discretization> dis)
+  {/* standard contact methods don't need the corresponding bulk element */};
+
 protected:
 
     // don't want cctor (= operator impossible anyway for abstract class)

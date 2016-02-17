@@ -99,6 +99,14 @@ namespace MAT
 
     /// Set elementwise material parameters
     virtual void Init(double val, std::string name){dserror("not implemented in this material");};
+
+    /// evaluate Cauchy stress with given left Cauchy--Green tensor
+    virtual void EvaluateCauchy(const LINALG::Matrix<3,3>& b,
+                                LINALG::Matrix<3,3>& s,
+                                LINALG::Matrix<6,6>& dsdb,
+                                const int eleGID)
+    {dserror("EvaluateCauchy not implementend for this material");return;}
+
   };
 
 }

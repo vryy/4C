@@ -3557,3 +3557,69 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate cauchy stress tensor                           seitz 02/16|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(const LINALG::Matrix<NUMDIM_SOH8,1>& xi,
+        const std::vector<double>& disp,
+        LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& cauchy,
+        Epetra_SerialDenseMatrix& dsdd)
+{
+
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // reference coord. of element
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
+  DRT::Node** nodes = Nodes();
+
+  dsdd.Reshape(MAT::NUM_STRESS_3D,NUMDOF_SOH8);
+  LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> dsdd_linalg(dsdd.A(),true);
+  dsdd_linalg.Clear();
+
+  for (int i=0; i<NUMNOD_SOH8; ++i)
+  {
+    const double* x = nodes[i]->X();
+    for (int d =0; d<NUMDIM_SOH8; ++d)
+    {
+      xrefe(i,d) = x[d];
+      xcurr(i,d) = xrefe(i,d) + disp[i*NODDOF_SOH8+d];
+    }
+  }
+  LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> bop; // here: linearization of b=FF^T !!!
+
+  LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> deriv;
+  DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xi,deriv);
+
+  LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ;
+
+  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invJ;
+  invJ.Multiply(deriv,xrefe);
+  invJ.Invert();
+  N_XYZ.Multiply(invJ,deriv);
+  LINALG::Matrix<3,3> defgrd;
+  defgrd.MultiplyTT(xcurr,N_XYZ);
+
+  LINALG::Matrix<3,3> b;
+  b.MultiplyNT(defgrd,defgrd);
+  LINALG::Matrix<6,6> dsdb;
+  SolidMaterial()->EvaluateCauchy(b,cauchy,dsdb,Id());
+
+  for (int i=0; i<NUMNOD_SOH8; ++i)
+  {
+    for (int x=0;x<3;++x)
+      for (int g=0;g<3;++g)
+        bop(x,NODDOF_SOH8*i+x) += defgrd(x,g)*N_XYZ(g,i);
+    for (int g=0;g<3;++g)
+    {
+      bop(3,NODDOF_SOH8*i+0) += defgrd(1,g)*N_XYZ(g,i);
+      bop(3,NODDOF_SOH8*i+1) += defgrd(0,g)*N_XYZ(g,i);
+      bop(4,NODDOF_SOH8*i+2) += defgrd(1,g)*N_XYZ(g,i);
+      bop(4,NODDOF_SOH8*i+1) += defgrd(2,g)*N_XYZ(g,i);
+      bop(5,NODDOF_SOH8*i+0) += defgrd(2,g)*N_XYZ(g,i);
+      bop(5,NODDOF_SOH8*i+2) += defgrd(0,g)*N_XYZ(g,i);
+    }
+  }
+  bop.Scale(2.);
+  dsdd_linalg.Multiply(dsdb,bop);
+
+}

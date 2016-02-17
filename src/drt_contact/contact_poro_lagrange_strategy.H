@@ -163,7 +163,7 @@ namespace CONTACT
     */
     void SetState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec);
 
-    void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<DRT::Discretization> dis);
+    virtual void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<DRT::Discretization> dis);
 
     //Flag for Poro No Penetration Condition
     bool HasPoroNoPenetration(){return no_penetration_;}
