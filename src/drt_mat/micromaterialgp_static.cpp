@@ -178,7 +178,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
 
   }
 
-	// restart file name and new output file name are sent to supporting procs
+  // restart file name and new output file name are sent to supporting procs
   if (microdis->Comm().NumProc()>1)
   {
     {
@@ -221,7 +221,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
 
     Teuchos::RCP<IO::OutputControl> microcontrol =
       Teuchos::rcp(new IO::OutputControl(microdis->Comm(),
-                            "structure",
+                            "Structure",
                             microproblem->SpatialApproximation(),
                             "micro-input-file-not-known",
                             restartname_,
@@ -375,5 +375,3 @@ void MAT::MicroMaterialGP::Output()
   strain_ = Teuchos::null;
   plstrain_ = Teuchos::null;
 }
-
-

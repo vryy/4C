@@ -15,7 +15,7 @@ macro (baci_test arg nproc restart)
   endif ()
 endmacro (baci_test)
 
-# Restart test case from test case priviously run
+# Restart test case from test case previously run
 macro (baci_test_restartonly arg nproc restart)
   if (${restart})
     add_test(NAME ${arg}-p${nproc}-restart
@@ -83,17 +83,23 @@ endmacro (cut_test)
 
 # POSTPROCESSING TEST
 macro(post_processing arg nproc stresstype straintype startstep)
+  # set default output prefix to "xxx"
+  set(OUTPUTPREFIX xxx)
 
-  set (RUNPOSTFILTER_PAR ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx\ --output=xxx_PAR_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
-  set (RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx\ --output=xxx_SER_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep} )
+  # concatenate default output prefix with additional identifier if specified as optional input argument
+  if(${ARGN})
+    set(OUTPUTPREFIX ${OUTPUTPREFIX}${ARGN})
+  endif(${ARGN})
 
-#  set (CLEANUPPOSTFILTER /bin/rm\ -vf\ xxx_PAR_${arg}*\ xxx_SER_${arg}* )
+  # define macros for serial and parallel runs
+  set(RUNPOSTFILTER_SER ./post_drt_ensight\ --file=${OUTPUTPREFIX}\ --output=${OUTPUTPREFIX}_SER_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
+  set(RUNPOSTFILTER_PAR ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=${OUTPUTPREFIX}\ --output=${OUTPUTPREFIX}_PAR_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
 
-  add_test(NAME ${arg}-p${nproc}-pp
-  COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && pvpython\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py xxx_PAR_${arg}*.case xxx_SER_${arg}*.case ${PROJECT_SOURCE_DIR}/Input/${arg}.csv")# && ${CLEANUPPOSTFILTER}")
-
-  set_tests_properties ( ${arg}-p${nproc}-pp PROPERTIES TIMEOUT 1000 )
-  set_tests_properties ( ${arg}-p${nproc}-pp PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}" )
+  # specify test case
+  add_test(NAME ${arg}${ARGN}-p${nproc}-pp
+    COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && pvpython\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py ${OUTPUTPREFIX}_PAR_${arg}*.case ${OUTPUTPREFIX}_SER_${arg}*.case ${PROJECT_SOURCE_DIR}/Input/${arg}${ARGN}.csv")
+  set_tests_properties(${arg}${ARGN}-p${nproc}-pp PROPERTIES TIMEOUT 1000)
+  set_tests_properties(${arg}${ARGN}-p${nproc}-pp PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}")
 endmacro(post_processing)
 
 # CODE TESTING
@@ -1333,6 +1339,7 @@ baci_test(sohex8_incompr_block_nln 1 "")
 baci_test(sohex8_incompr_block_nln 2 "")
 baci_test(sohex8_multiscale_macro 1 1)
 baci_test(sohex8_multiscale_macro 2 1)
+post_processing(sohex8_multiscale_macro 2 "" "" 3 "_el7_gp7")
 baci_test(sohex8_multiscale_macro_2micro 1 1)
 baci_test(sohex8_multiscale_macro_2micro 2 1)
 baci_test(sohex8_remodel 1 " ")
