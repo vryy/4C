@@ -230,6 +230,110 @@ namespace PAR
 
   };  // class PoroLawConstant
 
+  /*----------------------------------------------------------------------*/
+  //! incompressible skeleton porosity law
+  class PoroLawIncompSkeleton : public PoroLaw
+  {
+  public:
+
+    /// standard constructor
+    explicit PoroLawIncompSkeleton(
+      Teuchos::RCP<MAT::PAR::Material> matdata
+      );
+
+    /// destructor
+    virtual ~PoroLawIncompSkeleton() { ; }
+
+    /// create material instance of matching type with my parameters
+    virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+    //! evaluate constitutive relation for porosity and compute derivatives
+   virtual void ConstitutiveDerivatives(
+       Teuchos::ParameterList& params,       ///< (i) parameter list
+       double                  press,        ///< (i) fluid pressure at gauss point
+       double                  J,            ///< (i) Jacobian determinant at gauss point
+       double                  porosity,     ///< (i) porosity at gauss point
+       double                  refporosity,  ///< (i) porosity at gauss point
+       double*                 dW_dp,        ///< (o) derivative of potential w.r.t. pressure
+       double*                 dW_dphi,      ///< (o) derivative of potential w.r.t. porosity
+       double*                 dW_dJ,        ///< (o) derivative of potential w.r.t. jacobian
+       double*                 dW_dphiref,   ///< (o) derivative of potential w.r.t. reference porosity
+       double*                 W             ///< (o) inner potential
+         );
+
+   /// compute current porosity and save it
+   virtual void ComputePorosity(
+       const double& refporosity,     ///< (i) initial/reference porosity at gauss point
+       const double& press,           ///< (i) pressure at gauss point
+       const double& J,               ///< (i) determinant of jacobian at gauss point
+       const int&    gp,              ///< (i) number of current gauss point
+       double&       porosity,        ///< (o) porosity at gauss point
+       double*       dphi_dp,         ///< (o) first derivative of porosity w.r.t. pressure at gauss point
+       double*       dphi_dJ,         ///< (o) first derivative of porosity w.r.t. jacobian at gauss point
+       double*       dphi_dJdp,       ///< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
+       double*       dphi_dJJ,        ///< (o) second derivative of porosity w.r.t. jacobian at gauss point
+       double*       dphi_dpp,        ///< (o) second derivative of porosity w.r.t. pressure at gauss point
+       double*       dphi_dphiref     ///< (o) derivative of porosity w.r.t. reference porosity (only nonzero with reaction)
+       );
+
+  };  // class PoroLawConstant
+
+  /*----------------------------------------------------------------------*/
+  //! linear Biot model for porosity law
+  class PoroLawLinBiot : public PoroLaw
+  {
+  public:
+
+    /// standard constructor
+    explicit PoroLawLinBiot(
+      Teuchos::RCP<MAT::PAR::Material> matdata
+      );
+
+    /// destructor
+    virtual ~PoroLawLinBiot() { ; }
+
+    /// @name material parameters
+    //@{
+    /// inverse biot modulus
+    double invBiotModulus_;
+    /// Biot coefficient
+    double biotCoeff_;
+    //@}
+
+    /// create material instance of matching type with my parameters
+    virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+    //! evaluate constitutive relation for porosity and compute derivatives
+   virtual void ConstitutiveDerivatives(
+       Teuchos::ParameterList& params,       ///< (i) parameter list
+       double                  press,        ///< (i) fluid pressure at gauss point
+       double                  J,            ///< (i) Jacobian determinant at gauss point
+       double                  porosity,     ///< (i) porosity at gauss point
+       double                  refporosity,  ///< (i) porosity at gauss point
+       double*                 dW_dp,        ///< (o) derivative of potential w.r.t. pressure
+       double*                 dW_dphi,      ///< (o) derivative of potential w.r.t. porosity
+       double*                 dW_dJ,        ///< (o) derivative of potential w.r.t. jacobian
+       double*                 dW_dphiref,   ///< (o) derivative of potential w.r.t. reference porosity
+       double*                 W             ///< (o) inner potential
+         );
+
+   /// compute current porosity and save it
+   virtual void ComputePorosity(
+       const double& refporosity,     ///< (i) initial/reference porosity at gauss point
+       const double& press,           ///< (i) pressure at gauss point
+       const double& J,               ///< (i) determinant of jacobian at gauss point
+       const int&    gp,              ///< (i) number of current gauss point
+       double&       porosity,        ///< (o) porosity at gauss point
+       double*       dphi_dp,         ///< (o) first derivative of porosity w.r.t. pressure at gauss point
+       double*       dphi_dJ,         ///< (o) first derivative of porosity w.r.t. jacobian at gauss point
+       double*       dphi_dJdp,       ///< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
+       double*       dphi_dJJ,        ///< (o) second derivative of porosity w.r.t. jacobian at gauss point
+       double*       dphi_dpp,        ///< (o) second derivative of porosity w.r.t. pressure at gauss point
+       double*       dphi_dphiref     ///< (o) derivative of porosity w.r.t. reference porosity (only nonzero with reaction)
+       );
+
+  };  // class PoroLawConstant
+
 }//namespace PAR
 }//namespace MAT
 

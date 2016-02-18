@@ -1,3 +1,13 @@
+//
+// Maintainer: Anh-Tu Vuong
+// vuong@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+//
+//
+//
+==================================================================
+General Data File BACI
+==================================================================
 -----------------------------------------------------------------------TITLE
 testing framework for 2D porus medium with quad4 elements
 ----------------------------------------------------------------PROBLEM SIZE
@@ -68,7 +78,7 @@ TOLRES_PORO                     1e-08
 VECTORNORM_RESF                 Inf
 VECTORNORM_INC                  L1_Scaled
 TIMESTEP                        0.01
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 LINEAR_SOLVER                   1
 SECONDORDER                     no
 CONTIPARTINT                    yes

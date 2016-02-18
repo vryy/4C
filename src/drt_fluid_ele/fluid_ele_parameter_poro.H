@@ -53,6 +53,20 @@ public:
   //! type of time discretization for continuity equation
   INPAR::POROELAST::TimeDisTypeConti TimeDisTypeConti() const {return time_distype_conti_;};
 
+  //! flag for inclusion of transient terms in continuity equation
+  bool IsStationaryConti() const
+  {
+    return (not( transient_terms_==INPAR::POROELAST::transient_all or
+                 transient_terms_==INPAR::POROELAST::transient_continuity_only));
+  };
+
+  //! flag for inclusion of transient terms in momentum equation
+  bool IsStationaryMomentum() const
+  {
+    return (not( transient_terms_==INPAR::POROELAST::transient_all or
+                 transient_terms_==INPAR::POROELAST::transient_momentum_only));
+  };
+
 
 private:
 
@@ -70,6 +84,9 @@ private:
 
   //! type of time discretization for continuity equation
   INPAR::POROELAST::TimeDisTypeConti time_distype_conti_;
+
+  //! type of time discretization for continuity equation
+  INPAR::POROELAST::TransientEquationsOfPoroFluid transient_terms_;
 
   /// private Constructor since we are a Singleton.
   FluidEleParameterPoro();

@@ -1,3 +1,9 @@
+//
+// Maintainer: Christoph Ager
+// ager@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289 -15249
+//
 ==================================================================
                   General Data File BACI
 ==================================================================
@@ -37,13 +43,14 @@ MAXTIME                         2.5
 TIMESTEP                        0.5
 ITEMAX                          50
 ITEMIN                          1
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 SECONDORDER                     Yes
 CONTIPARTINT                    yes
 LINEAR_SOLVER                   1
 PHYSICAL_TYPE                   Poro
 MATCHINGGRID                    yes
 CONTACTNOPEN                    yes
+TRANSIENT_TERMS                 none
 ------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      Stationary //One_Step_Theta //One_Step_Theta

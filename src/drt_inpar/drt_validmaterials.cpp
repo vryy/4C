@@ -1963,7 +1963,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_StructPoro",
-                                            "wrapper for structure porelastic material",
+                                            "wrapper for structure poroelastic material",
                                             INPAR::MAT::m_structporo));
 
     AddNamedInt(m,"MATID","ID of structure material");
@@ -1973,11 +1973,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
   /*----------------------------------------------------------------------*/
-  // hyperelastic material for poroelasticity
+  // linear law for porosity in porous media problems
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawLinear",
-                                            "linear consitutive law for porosity",
+                                            "linear constitutive law for porosity",
                                             INPAR::MAT::m_poro_law_linear));
 
     AddNamedReal(m,"BULKMODULUS","bulk modulus of porous medium");
@@ -1985,25 +1985,48 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
   /*----------------------------------------------------------------------*/
-  // hyperelastic material for poroelasticity
+  // constant law for porosity in porous media problems
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawConstant",
-                                            "constant consitutive law for porosity",
+                                            "constant constitutive law for porosity",
                                             INPAR::MAT::m_poro_law_constant));
 
     AppendMaterialDefinition(matlist,m);
   }
   /*----------------------------------------------------------------------*/
-  // hyperelastic material for poroelasticity
+  // neo-hookean law for porosity in porous media problems
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawNeoHooke",
-                                            "NeoHookean-like consitutive law for porosity",
+                                            "NeoHookean-like constitutive law for porosity",
                                             INPAR::MAT::m_poro_law_logNeoHooke_Penalty));
 
     AddNamedReal(m,"BULKMODULUS","bulk modulus of porous medium");
     AddNamedReal(m,"PENALTYPARAMETER","penalty paramter of porous medium");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
+  // incompressible skeleton law for porosity in porous media problems
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawIncompSkel",
+                                            "porosity law for incompressible skeleton phase",
+                                            INPAR::MAT::m_poro_law_incompr_skeleton));
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  /*----------------------------------------------------------------------*/
+  // incompressible skeleton law for porosity in porous media problems
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PoroLawLinBiot",
+                                            "linear biot model for porosity law",
+                                            INPAR::MAT::m_poro_law_linear_biot));
+
+    AddNamedReal(m,"INVBIOTMODULUS","inverse Biot modulus of porous medium");
+    AddNamedReal(m,"BIOTCEOFF","Biot coefficient of porous medium");
 
     AppendMaterialDefinition(matlist,m);
   }

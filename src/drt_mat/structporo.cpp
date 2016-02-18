@@ -68,6 +68,20 @@ MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
       porolaw_ = static_cast<MAT::PAR::PoroLaw*>(curmat->Parameter());
       break;
     }
+  case INPAR::MAT::m_poro_law_incompr_skeleton:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PoroLawIncompSkeleton(curmat));
+    porolaw_ = static_cast<MAT::PAR::PoroLawIncompSkeleton*>(curmat->Parameter());
+    break;
+  }
+  case INPAR::MAT::m_poro_law_linear_biot:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::PoroLawLinBiot(curmat));
+      porolaw_ = static_cast<MAT::PAR::PoroLawLinBiot*>(curmat->Parameter());
+      break;
+    }
   default:
     dserror("invalid material for porosity law %d", curmat->Type());
     break;

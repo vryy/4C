@@ -290,3 +290,139 @@ void MAT::PAR::PoroLawConstant::ConstitutiveDerivatives(
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+MAT::PAR::PoroLawIncompSkeleton::PoroLawIncompSkeleton(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: PoroLaw(matdata)
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<MAT::Material> MAT::PAR::PoroLawIncompSkeleton::CreateMaterial()
+{
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*/
+void MAT::PAR::PoroLawIncompSkeleton::ComputePorosity(
+                                       const double& refporosity,
+                                       const double& press,
+                                       const double& J,
+                                       const int& gp,
+                                       double& porosity,
+                                       double* dphi_dp,
+                                       double* dphi_dJ,
+                                       double* dphi_dJdp,
+                                       double* dphi_dJJ,
+                                       double* dphi_dpp,
+                                       double* dphi_dphiref)
+{
+  porosity = 1.0 - (1.0-refporosity)/J;
+
+  if(dphi_dp)      *dphi_dp      = 0.0;
+  if(dphi_dJ)      *dphi_dJ      = 1.0-(1.0-refporosity)/(J*J);
+  if(dphi_dJdp)    *dphi_dJdp    = 0.0;
+  if(dphi_dJJ)     *dphi_dJJ     = 1.0-2.0*(1.0-refporosity)/(J*J*J);
+  if(dphi_dpp)     *dphi_dpp     = 0.0;
+  if(dphi_dphiref) *dphi_dphiref = 1.0/J;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*/
+void MAT::PAR::PoroLawIncompSkeleton::ConstitutiveDerivatives(
+    Teuchos::ParameterList& params,
+    double     press,
+    double     J,
+    double     porosity,
+    double     refporosity,
+    double*    dW_dp,
+    double*    dW_dphi,
+    double*    dW_dJ,
+    double*    dW_dphiref,
+    double*    W)
+{
+  if(W)           *W            = J*(1.0-porosity)-(1.0-refporosity);
+  if(dW_dp)       *dW_dp        = 0.0;
+  if(dW_dphi)     *dW_dphi      = -1.0*J;
+  if(dW_dJ)       *dW_dJ        = 1.0-porosity;
+  if(dW_dphiref)  *dW_dphiref   = 1.0;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+MAT::PAR::PoroLawLinBiot::PoroLawLinBiot(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+: PoroLaw(matdata),
+  invBiotModulus_(matdata->GetDouble("INVBIOTMODULUS")),
+  biotCoeff_(matdata->GetDouble("BIOTCEOFF"))
+{
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<MAT::Material> MAT::PAR::PoroLawLinBiot::CreateMaterial()
+{
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*/
+void MAT::PAR::PoroLawLinBiot::ComputePorosity(
+                                       const double& refporosity,
+                                       const double& press,
+                                       const double& J,
+                                       const int& gp,
+                                       double& porosity,
+                                       double* dphi_dp,
+                                       double* dphi_dJ,
+                                       double* dphi_dJdp,
+                                       double* dphi_dJJ,
+                                       double* dphi_dpp,
+                                       double* dphi_dphiref)
+{
+  porosity = refporosity + invBiotModulus_*press + biotCoeff_*(J-1);
+
+  if(dphi_dp)      *dphi_dp      = invBiotModulus_;
+  if(dphi_dJ)      *dphi_dJ      = biotCoeff_;
+  if(dphi_dJdp)    *dphi_dJdp    = 0.0;
+  if(dphi_dJJ)     *dphi_dJJ     = 0.0;
+  if(dphi_dpp)     *dphi_dpp     = 0.0;
+  if(dphi_dphiref) *dphi_dphiref = 1.0;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+*----------------------------------------------------------------------*/
+void MAT::PAR::PoroLawLinBiot::ConstitutiveDerivatives(
+    Teuchos::ParameterList& params,
+    double     press,
+    double     J,
+    double     porosity,
+    double     refporosity,
+    double*    dW_dp,
+    double*    dW_dphi,
+    double*    dW_dJ,
+    double*    dW_dphiref,
+    double*    W)
+{
+  if(W)           *W            = porosity - refporosity - invBiotModulus_*press - biotCoeff_*(J-1);
+  if(dW_dp)       *dW_dp        = -1.0*invBiotModulus_;
+  if(dW_dphi)     *dW_dphi      = 1.0;
+  if(dW_dJ)       *dW_dJ        = -1.0*biotCoeff_;
+  if(dW_dphiref)  *dW_dphiref   = -1.0;
+
+  return;
+}

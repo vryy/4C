@@ -413,6 +413,27 @@ namespace ELEMENTS
                                                  double &                         porosity,
                                                  double &                         dphi_dp);
 
+    //! Compute Jacobian Determinant
+    void ComputeJacobianDeterminantVolumeChangeAndLinearizations(
+       double & J,
+       double & volchange,
+       LINALG::Matrix<1,numdof_>& dJ_dus,
+       LINALG::Matrix<1,numdof_>& dvolchange_dus,
+       const LINALG::Matrix<numdim_,numdim_>& defgrd,
+       const LINALG::Matrix<numdim_,numdim_>& defgrd_inv,
+       const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
+       const LINALG::Matrix<numdim_,numnod_>& nodaldisp
+       );
+
+    //! Compute Jacobian Determinant
+    void ComputeJacobianDeterminantVolumeChange(
+       double & J,
+       double & volchange,
+       const LINALG::Matrix<numdim_,numdim_>& defgrd,
+       const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
+       const LINALG::Matrix<numdim_,numnod_>& nodaldisp
+       );
+
     //! fill stiffness matrix and rhs vector for darcy flow
     void FillMatrixAndVectors(
         const int &                                     gp,

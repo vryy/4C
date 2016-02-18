@@ -357,7 +357,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::EvaluatePressureEquation(
                                     preforce);
 
   // now the porosity time derivative (different for standard poro and poro_p1 elements)
-  if (my::fldparatimint_->IsStationary() == false)
+  if (my::porofldpara_->IsStationaryConti() == false)
   {
     // inertia terms on the right hand side for instationary fluids
 
@@ -1010,7 +1010,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
 
     // compute strong residual of mixture (structural) equation
     if (  my::porofldpara_->StabBiot() and
-          (not my::fldparatimint_->IsStationary()) and
+          (not my::porofldpara_->IsStationaryConti()) and
           my::structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
        )
       my::ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X,true);
@@ -1080,7 +1080,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     }
 
 
-    if (not my::fldparatimint_->IsStationary())
+    if (not my::porofldpara_->IsStationaryMomentum())
     //transient terms
     /*  reaction  */
     /*
@@ -1171,7 +1171,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
       for (int j =0; j< my::nsd_; j++)
         derxy_convel(i) += my::derxy_(j,i) * my::velint_(j);
 
-    if (not my::fldparatimint_->IsStationary())
+    if (not my::porofldpara_->IsStationaryConti())
     {
       for (int i =0; i< my::nen_; i++)
         for (int j =0; j< my::nsd_; j++)
@@ -1222,7 +1222,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
           |                              |
           \                             /
        */
-      if (not my::fldparatimint_->IsStationary())
+      if (not my::porofldpara_->IsStationaryConti())
       {
         for (int ui=0; ui<my::nen_; ++ui)
         {

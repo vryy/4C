@@ -59,7 +59,8 @@ DRT::ELEMENTS::FluidEleParameterPoro::FluidEleParameterPoro()
     poro_conti_partint_(false),
     stab_biot_(false),
     stab_biot_scaling_(0.0),
-    time_distype_conti_(INPAR::POROELAST::pressure)
+    time_distype_conti_(INPAR::POROELAST::pressure),
+    transient_terms_(INPAR::POROELAST::transient_all)
 {
 }
 
@@ -74,6 +75,7 @@ void DRT::ELEMENTS::FluidEleParameterPoro::SetElementPoroParameter( Teuchos::Par
   poro_conti_partint_ = params.get<bool>("conti partial integration",false);
   reaction_= true;
   time_distype_conti_ = DRT::INPUT::get<INPAR::POROELAST::TimeDisTypeConti>(params, "Time DisType Conti");
+  transient_terms_    = DRT::INPUT::get<INPAR::POROELAST::TransientEquationsOfPoroFluid>(params, "Transient Terms Poro Fluid");
 
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements

@@ -583,10 +583,33 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
     //evaluate shape functions and derivatives at integration point
     my::ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
 
-    //jacobian determinant of transformation between spatial and material space "|dx/dX|"
-    const double J = my::ComputeJacobianDeterminant(gp,xcurr,deriv);
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
+    my::ComputeDefGradient(defgrd,N_XYZ,xcurr);
 
-    //----------------------------------------------------
+    // inverse deformation gradient F^-1
+    static LINALG::Matrix<my::numdim_,my::numdim_> defgrd_inv(false);
+    defgrd_inv.Invert(defgrd);
+
+    // jacobian determinant of transformation between spatial and material space "|dx/dX|"
+    double J = 0.0;
+    //------linearization of jacobi determinant detF=J w.r.t. structure displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
+    static LINALG::Matrix<1,my::numdof_> dJ_dus;
+    // volume change (used for porosity law). Same as J in nonlinear theory.
+    double volchange = 0.0;
+    //------linearization of volume change w.r.t. structure displacement
+    static LINALG::Matrix<1,my::numdof_> dvolchange_dus;
+
+    // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
+    my::ComputeJacobianDeterminantVolumeChangeAndLinearizations(
+        J,
+        volchange,
+        dJ_dus,
+        dvolchange_dus,
+        defgrd,
+        defgrd_inv,
+        N_XYZ,
+        nodaldisp);
+
     // pressure at integration point
     double press = shapefct.Dot(epreaf);
 
@@ -602,15 +625,12 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
     fvelint.Multiply(evelnp,shapefct);
 
     // material fluid velocity gradient at integration point
-    LINALG::Matrix<my::numdim_,my::numdim_>              fvelder;
+    LINALG::Matrix<my::numdim_,my::numdim_> fvelder;
     fvelder.MultiplyNT(evelnp,N_XYZ);
 
     // pressure gradient at integration point
     LINALG::Matrix<my::numdim_,1> Gradp;
     Gradp.Multiply(N_XYZ,epreaf);
-
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
 
     // non-linear B-operator
     LINALG::Matrix<my::numstr_,my::numdof_> bop;
@@ -623,14 +643,6 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
     // inverse Right Cauchy-Green tensor
     LINALG::Matrix<my::numdim_,my::numdim_> C_inv(false);
     C_inv.Invert(cauchygreen);
-
-    // inverse deformation gradient F^-1
-    LINALG::Matrix<my::numdim_,my::numdim_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
-
-    //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
-    LINALG::Matrix<1,my::numdof_> dJ_dus;
-    my::ComputeLinearizationOfJacobian(dJ_dus,J,N_XYZ,defgrd_inv);
 
     //------linearization of material gradient of jacobi determinant GradJ  w.r.t. strucuture displacement d(GradJ)/d(us)
     //---------------------d(GradJ)/dus =  dJ/dus * F^-T . : dF/dX + J * dF^-T/dus : dF/dX + J * F^-T : N_X_X
@@ -653,7 +665,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
     LINALG::Matrix<1,my::numdof_> dphi_dus;
     double porosity=0.0;
 
-    ComputePorosityAndLinearization(params,press,J,gp,shapefct,porosity_dof,dJ_dus,porosity,dphi_dus);
+    ComputePorosityAndLinearization(params,press,volchange,gp,shapefct,porosity_dof,dvolchange_dus,porosity,dphi_dus);
 
     double    dW_dphi = 0.0;
     double    dW_dJ   = 0.0;
@@ -665,7 +677,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1(
     double init_porosity = shapefct.Dot(*init_porosity_);
     my::structmat_->ConstitutiveDerivatives(params,
                                       press,
-                                      J,
+                                      volchange,
                                       porosity,
                                       init_porosity,
                                       &dW_dp, //dW_dp not needed
@@ -891,10 +903,29 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1OD(
     //evaluate second derivatives of shape functions at integration point
     //ComputeSecondDerivativesOfShapeFunctions(gp,xrefe,deriv,deriv2,N_XYZ,N_XYZ2);
 
-    const double J = my::ComputeJacobianDeterminant(gp,xcurr,deriv);
-
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     defgrd.MultiplyNT(xcurr,N_XYZ); //  (6.17)
+
+    // inverse deformation gradient F^-1
+    static LINALG::Matrix<my::numdim_,my::numdim_> defgrd_inv(false);
+    defgrd_inv.Invert(defgrd);
+
+    // jacobian determinant of transformation between spatial and material space "|dx/dX|"
+    double J = 0.0;
+    //------linearization of jacobi determinant detF=J w.r.t. structure displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
+    static LINALG::Matrix<1,numdof_> dJ_dus;
+    // volume change (used for porosity law). Same as J in nonlinear theory.
+    double volchange = 0.0;
+    //------linearization of volume change w.r.t. structure displacement
+    static LINALG::Matrix<1,numdof_> dvolchange_dus;
+
+    // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
+    my::ComputeJacobianDeterminantVolumeChange(
+        J,
+        volchange,
+        defgrd,
+        N_XYZ,
+        nodaldisp);
 
     // non-linear B-operator
     LINALG::Matrix<my::numstr_,my::numdof_> bop;
@@ -920,18 +951,12 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1OD(
     fvelint.Multiply(evelnp,shapefct);
 
     // material fluid velocity gradient at integration point
-    LINALG::Matrix<my::numdim_,my::numdim_>              fvelder;
+    LINALG::Matrix<my::numdim_,my::numdim_> fvelder;
     fvelder.MultiplyNT(evelnp,N_XYZ);
 
     //! ----------------structure velocity at integration point
-    LINALG::Matrix<my::numdim_,1> velint(true);
-    for(int i=0; i<my::numnod_; i++)
-      for(int j=0; j<my::numdim_; j++)
-        velint(j) += nodalvel(j,i) * shapefct(i);
-
-    // inverse deformation gradient F^-1
-    LINALG::Matrix<my::numdim_,my::numdim_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
+    LINALG::Matrix<my::numdim_,1> velint;
+    velint.Multiply(nodalvel,shapefct);
 
     //**************************************************+auxilary variables for computing the porosity and linearization
     double dphi_dp=0.0;
@@ -939,7 +964,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele,distype>::GaussPointLoopP1OD(
 
     ComputePorosityAndLinearizationOD(params,
                                       press,
-                                      J,
+                                      volchange,
                                       gp,
                                       shapefct,
                                       porosity_dof,

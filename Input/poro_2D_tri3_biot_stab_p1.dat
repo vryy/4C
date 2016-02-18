@@ -29,7 +29,7 @@ INITIALFIELD                    zero_field
 PREDICTOR                       steady_state
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta //One_Step_Theta Stationary
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
@@ -46,7 +46,7 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 STAB_BIOT                       yes
-STAB_BIOT_SCALING               3.0
+STAB_BIOT_SCALING               5.0
 ------------------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit
 PHYSICAL_TYPE                   Poro_P1
@@ -66,10 +66,11 @@ TOLRES_PORO                     1e-08
 VECTORNORM_RESF                 Inf
 VECTORNORM_INC                  L1_Scaled
 TIMESTEP                        0.001
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 LINEAR_SOLVER                   1
 SECONDORDER                     no
 CONTIPARTINT                    yes
+TRANSIENT_TERMS                 continuity
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Poroelasticity
 RESTART                         0
@@ -92,7 +93,7 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 THETA                           1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 5 INITPOROSITY 0.8
-MAT 5 MAT_PoroLawLinear BULKMODULUS 1.0e8
+MAT 5 MAT_PoroLawLinBiot INVBIOTMODULUS 0.0 BIOTCEOFF 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0e6 NUE 0.0 DENS 1.0 THEXPANS 0.0
 MAT 3 MAT_FluidPoro DYNVISCOSITY 1.0 DENSITY 1.0 PERMEABILITY 1.0e-7 TYPE Darcy
 ----------------------------------------------------------------------FUNCT1
@@ -102,10 +103,10 @@ FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0
 ----------------------------------------------------------------------FUNCT2
 FUNCT2 EXPR 0 0.0 0 FUNCTION 0.8
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS porofluid NODE 27 QUANTITY pressure VALUE 5.60147783230205643e-01 TOLERANCE 1e-8
-FLUID DIS porofluid NODE 8 QUANTITY pressure VALUE 9.36116893435018138e-01 TOLERANCE 1e-8
-FLUID DIS porofluid NODE 45 QUANTITY pressure VALUE 8.99073866935803268e-01 TOLERANCE 1e-8
-FLUID DIS porofluid NODE 147 QUANTITY pressure VALUE 8.63207108322177286e-01 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 27 QUANTITY pressure VALUE 6.58797243046471914e-01 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 8 QUANTITY pressure VALUE 9.85999942200215695e-01 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 45 QUANTITY pressure VALUE 9.81425317696636768e-01 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 147 QUANTITY pressure VALUE 9.75696514455729247e-01 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  12

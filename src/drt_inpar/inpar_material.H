@@ -92,6 +92,8 @@ namespace INPAR
       m_poro_law_constant,                     ///< constant porosity
       m_poro_law_linear,                       ///< linear law for porosity
       m_poro_law_logNeoHooke_Penalty,          ///< neo hookeian like law for porosity + penalty term
+      m_poro_law_incompr_skeleton,             ///< porosity law for incompressible skeleton phase
+      m_poro_law_linear_biot,                  ///< porosity law for incompressible skeleton phase
       m_scatra,                                ///< scalar transport material
       m_scatra_aniso,                          ///< anisotropic scalar transport material
       m_scatra_growth_scd,                     ///< scalar transport material for coupling with growth model

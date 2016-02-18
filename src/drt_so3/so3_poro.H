@@ -539,11 +539,25 @@ protected:
       LINALG::Matrix<numdim_,numnod_>&  N_XYZ
       );
 
-  //! Compute Jacobian Determinant
-  double ComputeJacobianDeterminant(
-     const int & gp,
-     const LINALG::Matrix<numdim_,numnod_>&   xcurr,
-     const   LINALG::Matrix<numdim_,numnod_>& deriv
+  //! Compute Jacobian Determinant and the volume change
+  void ComputeJacobianDeterminantVolumeChange(
+     double & J,
+     double & volchange,
+     const LINALG::Matrix<numdim_,numdim_>& defgrd,
+     const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
+     const LINALG::Matrix<numdim_,numnod_>& nodaldisp
+     );
+
+  //! Compute Jacobian Determinant and the volume change and its linearizations
+  virtual void ComputeJacobianDeterminantVolumeChangeAndLinearizations(
+     double & J, ///< (o) Jacobian Determinant
+     double & volchange, ///< (o) Change of Volume
+     LINALG::Matrix<1,numdof_>& dJ_dus, ///< (o) Linearization of Jacobian Determinant  w.r.t displacements
+     LINALG::Matrix<1,numdof_>& dvolchange_dus, ///<  (o) Linearization of Change of Volume  w.r.t displacements
+     const LINALG::Matrix<numdim_,numdim_>& defgrd, ///< (i) deformation gradient
+     const LINALG::Matrix<numdim_,numdim_>& defgrd_inv, ///< (i) inverse of deformation gradient
+     const LINALG::Matrix<numdim_,numnod_>& N_XYZ, ///< (i) spatial gradient of material shape functions
+     const LINALG::Matrix<numdim_,numnod_>& nodaldisp ///<  (i) nodal displacements
      );
 
   //! Compute Linearization Of Jacobian

@@ -111,17 +111,10 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(Teuchos::ParameterLis
   else
   {
     /*
-    Teuchos::RCP<std::vector<double> >xrefe = Teuchos::rcp(new std::vector<double>(3));
-    DRT::Node** nodes = Nodes();
-    for (int i=0; i<numnod_; ++i){
-        const double* x = nodes[i]->X();
-        (*xrefe)[0] +=  x[0]/numnod_;
-        (*xrefe)[1] +=  x[1]/numnod_;
-        (*xrefe)[2] +=  x[2]/numnod_;
-
-     }
-     params.set<Teuchos::RCP<std::vector<double> > >("position",xrefe);
-     */
+    std::vector<double> center = DRT::UTILS::ElementCenterRefeCoords(this);
+    Teuchos::RCP<std::vector<double> >xrefe = Teuchos::rcp(new std::vector<double>(center));
+    params.set<Teuchos::RCP<std::vector<double> > >("position",xrefe);
+    */
     //do nothing
   }//if(scatracoupling_)
   return;
@@ -608,35 +601,51 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
     //evaluate shape functions and derivatives at integration point
     ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
 
-    //jacobian determinant of transformation between spatial and material space "|dx/dX|"
-    const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
+    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
+    ComputeDefGradient(defgrd,N_XYZ,xcurr);
 
-    //----------------------------------------------------
+    // inverse deformation gradient F^-1
+    static LINALG::Matrix<numdim_,numdim_> defgrd_inv(false);
+    defgrd_inv.Invert(defgrd);
+
+    // jacobian determinant of transformation between spatial and material space "|dx/dX|"
+    double J = 0.0;
+    //------linearization of jacobi determinant detF=J w.r.t. structure displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
+    static LINALG::Matrix<1,numdof_> dJ_dus;
+    // volume change (used for porosity law). Same as J in nonlinear theory.
+    double volchange = 0.0;
+    //------linearization of volume change w.r.t. structure displacement
+    static LINALG::Matrix<1,numdof_> dvolchange_dus;
+
+    // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
+    ComputeJacobianDeterminantVolumeChangeAndLinearizations(
+        J,
+        volchange,
+        dJ_dus,
+        dvolchange_dus,
+        defgrd,
+        defgrd_inv,
+        N_XYZ,
+        nodaldisp);
+
     // pressure at integration point
     double press = shapefct.Dot(epreaf);
 
     // structure displacement and velocity at integration point
     static LINALG::Matrix<numdim_,1> velint;
-    velint.Clear();
-
-    for(int i=0; i<numnod_; i++)
-      for(int j=0; j<numdim_; j++)
-        velint(j) += nodalvel(j,i) * shapefct(i);
+    velint.Multiply(nodalvel,shapefct);
 
     // fluid velocity at integration point
     static LINALG::Matrix<numdim_,1> fvelint;
     fvelint.Multiply(evelnp,shapefct);
 
     // material fluid velocity gradient at integration point
-    static LINALG::Matrix<numdim_,numdim_>              fvelder;
+    static LINALG::Matrix<numdim_,numdim_> fvelder;
     fvelder.MultiplyNT(evelnp,N_XYZ);
 
     // pressure gradient at integration point
     static LINALG::Matrix<numdim_,1> Gradp;
     Gradp.Multiply(N_XYZ,epreaf);
-
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    ComputeDefGradient(defgrd,N_XYZ,xcurr);
 
     // non-linear B-operator
     static LINALG::Matrix<numstr_,numdof_> bop;
@@ -650,14 +659,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
     // inverse Right Cauchy-Green tensor
     static LINALG::Matrix<numdim_,numdim_> C_inv(false);
     C_inv.Invert(cauchygreen);
-
-    // inverse deformation gradient F^-1
-    static LINALG::Matrix<numdim_,numdim_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
-
-    //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
-    static LINALG::Matrix<1,numdof_> dJ_dus ;
-    ComputeLinearizationOfJacobian(dJ_dus,J,N_XYZ,defgrd_inv);
 
     // compute some auxiliary matrixes for computation of linearization
     //dF^-T/dus
@@ -675,7 +676,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoop(
     static LINALG::Matrix<1,numdof_> dphi_dus;
     double porosity=0.0;
 
-    ComputePorosityAndLinearization(params,press,J,gp,shapefct,porosity_dof,dJ_dus,porosity,dphi_dus);
+    ComputePorosityAndLinearization(params,press,volchange,gp,shapefct,porosity_dof,dvolchange_dus,porosity,dphi_dus);
 
     // **********************fill stiffness matrix and force vector+++++++++++++++++++++++++
     if(fluidmat_->Type() == MAT::PAR::darcy_brinkman)
@@ -809,10 +810,25 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
     //evaluate second derivatives of shape functions at integration point
     //ComputeSecondDerivativesOfShapeFunctions(gp,xrefe,deriv,deriv2,N_XYZ,N_XYZ2);
 
-    const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
-
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     ComputeDefGradient(defgrd,N_XYZ,xcurr);
+
+    // inverse deformation gradient F^-1
+    static LINALG::Matrix<numdim_,numdim_> defgrd_inv(false);
+    defgrd_inv.Invert(defgrd);
+
+    // jacobian determinant of transformation between spatial and material space "|dx/dX|"
+    double J = 0.0;
+    // volume change (used for porosity law). Same as J in nonlinear theory.
+    double volchange = 0.0;
+
+    // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
+    ComputeJacobianDeterminantVolumeChange(
+        J,
+        volchange,
+        defgrd,
+        N_XYZ,
+        nodaldisp);
 
     // non-linear B-operator
     static LINALG::Matrix<numstr_,numdof_> bop;
@@ -838,19 +854,12 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
     fvelint.Multiply(evelnp,shapefct);
 
     // material fluid velocity gradient at integration point
-    static LINALG::Matrix<numdim_,numdim_>              fvelder;
+    static LINALG::Matrix<numdim_,numdim_> fvelder;
     fvelder.MultiplyNT(evelnp,N_XYZ);
 
     //! ----------------structure velocity at integration point
-    static LINALG::Matrix<numdim_,1> velint(true);
-    velint.Clear();
-    for(int i=0; i<numnod_; i++)
-      for(int j=0; j<numdim_; j++)
-        velint(j) += nodalvel(j,i) * shapefct(i);
-
-    // inverse deformation gradient F^-1
-    static LINALG::Matrix<numdim_,numdim_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
+    static LINALG::Matrix<numdim_,1> velint;
+    velint.Multiply(nodalvel,shapefct);
 
     //**************************************************+auxilary variables for computing the porosity and linearization
     double dphi_dp=0.0;
@@ -858,7 +867,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
 
     ComputePorosityAndLinearizationOD(params,
                                       press,
-                                      J,
+                                      volchange,
                                       gp,
                                       shapefct,
                                       NULL,
@@ -1474,21 +1483,90 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeShapeFunctionsAndDerivativ
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeJacobianDeterminant(
-                                         const int & gp,
-                                         const LINALG::Matrix<numdim_,numnod_>& xcurr,
-                                         const   LINALG::Matrix<numdim_,numnod_>& deriv )
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeJacobianDeterminantVolumeChange(
+    double & J,
+    double & volchange,
+    const LINALG::Matrix<numdim_,numdim_>& defgrd,
+    const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
+    const LINALG::Matrix<numdim_,numnod_>& nodaldisp
+    )
 {
-  // get Jacobian matrix and determinant w.r.t. spatial configuration
-  //! transposed jacobian "dx/ds"
-  LINALG::Matrix<numdim_,numdim_> xjm;
-  //! inverse of transposed jacobian "ds/dx"
-  LINALG::Matrix<numdim_,numdim_> xji;
-  xjm.MultiplyNT(deriv,xcurr);
-  const double det = xji.Invert(xjm);
+  //compute J
+  J=defgrd.Determinant();
 
-  // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
-  return det/detJ_[gp];
+  if(so3_ele::kintype_==INPAR::STR::kinem_nonlinearTotLag) //total lagrange (nonlinear)
+  {
+    //for nonlinear kinematics the Jacobian of the deformation gradient is the volume change
+    volchange=J;
+  }
+  else if(so3_ele::kintype_==INPAR::STR::kinem_linear) //linear kinematics
+  {
+    //for linear kinematics the volume change is the trace of the linearized strains
+
+    //gradient of displacements
+    static LINALG::Matrix<numdim_,numdim_> dispgrad;
+    dispgrad.Clear();
+    //gradient of displacements
+    dispgrad.MultiplyNT(nodaldisp,N_XYZ);
+
+    volchange=1.0;
+    //volchange = 1 + trace of the linearized strains (= trace of displacement gradient)
+    for(int i=0; i<numdim_;++i)
+      volchange += dispgrad(i,i);
+  }
+  else
+    dserror("invalid kinematic type!");
+}
+
+/*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeJacobianDeterminantVolumeChangeAndLinearizations(
+    double & J,
+    double & volchange,
+    LINALG::Matrix<1,numdof_>& dJ_dus,
+    LINALG::Matrix<1,numdof_>& dvolchange_dus,
+    const LINALG::Matrix<numdim_,numdim_>& defgrd,
+    const LINALG::Matrix<numdim_,numdim_>& defgrd_inv,
+    const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
+    const LINALG::Matrix<numdim_,numnod_>& nodaldisp
+    )
+{
+  //compute J
+  J=defgrd.Determinant();
+  //compute linearization of J
+  ComputeLinearizationOfJacobian(dJ_dus,J,N_XYZ,defgrd_inv);
+
+  if(so3_ele::kintype_==INPAR::STR::kinem_nonlinearTotLag) //total lagrange (nonlinear)
+  {
+    //for nonlinear kinematics the Jacobian of the deformation gradient is the volume change
+    volchange=J;
+    dvolchange_dus=dJ_dus;
+  }
+  else if(so3_ele::kintype_==INPAR::STR::kinem_linear) //linear kinematics
+  {
+    //for linear kinematics the volume change is the trace of the linearized strains
+
+    //gradient of displacements
+    static LINALG::Matrix<numdim_,numdim_> dispgrad;
+    dispgrad.Clear();
+    //gradient of displacements
+    dispgrad.MultiplyNT(nodaldisp,N_XYZ);
+
+    volchange=1.0;
+    //volchange = 1 + trace of the linearized strains (= trace of displacement gradient)
+    for(int i=0; i<numdim_;++i)
+      volchange += dispgrad(i,i);
+
+    for(int i=0; i<numdim_;++i)
+      for(int j=0; j<numnod_;++j)
+        dvolchange_dus(numdim_*j+i)=N_XYZ(i,j);
+  }
+  else
+    dserror("invalid kinematic type!");
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1612,43 +1690,53 @@ DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeBOperator(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 inline void
-DRT::ELEMENTS::So3_Poro<so3_ele,distype>::  ComputeLinearizationOfJacobian(
+DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeLinearizationOfJacobian(
     LINALG::Matrix<1,numdof_>& dJ_dus,
     const double& J,
     const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
     const LINALG::Matrix<numdim_,numdim_>& defgrd_inv)
 {
-  //------------------------------------ build F^-1 as vector 9x1
-  LINALG::Matrix<numdim_*numdim_,1> defgrd_inv_vec;
-  defgrd_inv_vec(0)=defgrd_inv(0,0);
-  defgrd_inv_vec(1)=defgrd_inv(0,1);
-  defgrd_inv_vec(2)=defgrd_inv(0,2);
-  defgrd_inv_vec(3)=defgrd_inv(1,0);
-  defgrd_inv_vec(4)=defgrd_inv(1,1);
-  defgrd_inv_vec(5)=defgrd_inv(1,2);
-  defgrd_inv_vec(6)=defgrd_inv(2,0);
-  defgrd_inv_vec(7)=defgrd_inv(2,1);
-  defgrd_inv_vec(8)=defgrd_inv(2,2);
-
-  //--------------------------- build N_X operator (wrt material config)
-  LINALG::Matrix<9,numdof_> N_X(true); // set to zero
-  for (int i=0; i<numnod_; ++i)
+  if(so3_ele::kintype_==INPAR::STR::kinem_nonlinearTotLag) //total lagrange (nonlinear)
   {
-    N_X(0,3*i+0) = N_XYZ(0,i);
-    N_X(1,3*i+1) = N_XYZ(0,i);
-    N_X(2,3*i+2) = N_XYZ(0,i);
+    //------------------------------------ build F^-1 as vector 9x1
+    LINALG::Matrix<numdim_*numdim_,1> defgrd_inv_vec;
+    defgrd_inv_vec(0)=defgrd_inv(0,0);
+    defgrd_inv_vec(1)=defgrd_inv(0,1);
+    defgrd_inv_vec(2)=defgrd_inv(0,2);
+    defgrd_inv_vec(3)=defgrd_inv(1,0);
+    defgrd_inv_vec(4)=defgrd_inv(1,1);
+    defgrd_inv_vec(5)=defgrd_inv(1,2);
+    defgrd_inv_vec(6)=defgrd_inv(2,0);
+    defgrd_inv_vec(7)=defgrd_inv(2,1);
+    defgrd_inv_vec(8)=defgrd_inv(2,2);
 
-    N_X(3,3*i+0) = N_XYZ(1,i);
-    N_X(4,3*i+1) = N_XYZ(1,i);
-    N_X(5,3*i+2) = N_XYZ(1,i);
+    //--------------------------- build N_X operator (wrt material config)
+    LINALG::Matrix<9,numdof_> N_X(true); // set to zero
+    for (int i=0; i<numnod_; ++i)
+    {
+      N_X(0,3*i+0) = N_XYZ(0,i);
+      N_X(1,3*i+1) = N_XYZ(0,i);
+      N_X(2,3*i+2) = N_XYZ(0,i);
 
-    N_X(6,3*i+0) = N_XYZ(2,i);
-    N_X(7,3*i+1) = N_XYZ(2,i);
-    N_X(8,3*i+2) = N_XYZ(2,i);
+      N_X(3,3*i+0) = N_XYZ(1,i);
+      N_X(4,3*i+1) = N_XYZ(1,i);
+      N_X(5,3*i+2) = N_XYZ(1,i);
+
+      N_X(6,3*i+0) = N_XYZ(2,i);
+      N_X(7,3*i+1) = N_XYZ(2,i);
+      N_X(8,3*i+2) = N_XYZ(2,i);
+    }
+
+    //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
+    dJ_dus.MultiplyTN(J,defgrd_inv_vec,N_X);
   }
-
-  //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
-  dJ_dus.MultiplyTN(J,defgrd_inv_vec,N_X);
+  else if(so3_ele::kintype_==INPAR::STR::kinem_linear) //linear kinematics
+  {
+    //J=1 -> no linearization
+    dJ_dus.Clear();
+  }
+  else
+    dserror("invalid kinematic type!");
 
 }
 

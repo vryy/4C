@@ -85,6 +85,22 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
                                       porosity),
                                     &poroelastdyn);
 
+  // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq approximation)
+  setStringToIntegralParameter<int>("TRANSIENT_TERMS","all",
+                                    "which equation includes transient terms",
+                                    tuple<std::string>(
+                                      "none",
+                                      "momentum",
+                                      "continuity",
+                                      "all"
+                                      ),
+                                    tuple<int>(
+                                        transient_none,
+                                        transient_momentum_only,
+                                        transient_continuity_only,
+                                        transient_all),
+                                    &poroelastdyn);
+
   // Output type
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&poroelastdyn);
   // Time loop control

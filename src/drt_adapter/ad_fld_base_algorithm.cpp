@@ -380,7 +380,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
             fluidtimeparams->get<int>("Physical Type")!= INPAR::FLUID::poro_p2 )
             dserror("Input parameter PHYSICAL_TYPE in section POROELASTICITY DYNAMIC needs to be 'Poro' or 'Poro_P1' for poro-elasticity!");
 
-    fluidtimeparams->set<int>("Time DisType Conti",DRT::INPUT::IntegralValue<INPAR::POROELAST::TimeDisTypeConti>(pedyn,"TIME_DISTYPE_CONTI"));
+        fluidtimeparams->set<int>("Time DisType Conti",DRT::INPUT::IntegralValue<INPAR::POROELAST::TimeDisTypeConti>(pedyn,"TIME_DISTYPE_CONTI"));
+        fluidtimeparams->set<int>("Transient Terms Poro Fluid",DRT::INPUT::IntegralValue<INPAR::POROELAST::TransientEquationsOfPoroFluid>(pedyn,"TRANSIENT_TERMS"));
       }
 
   // now, set general parameters required for all problems

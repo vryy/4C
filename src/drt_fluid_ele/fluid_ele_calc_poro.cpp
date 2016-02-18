@@ -1143,7 +1143,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluatePressureEquation(
                                     preforce);
 
   // now the porosity time derivative (different for standard poro and other poro elements)
-  if (my::fldparatimint_->IsStationary() == false)
+  if (porofldpara_->IsStationaryConti() == false)
   {
     // inertia terms on the right hand side for instationary fluids
     if(porofldpara_->TimeDisTypeConti() == INPAR::POROELAST::pressure)
@@ -1653,6 +1653,14 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
                          false);
      }
 
+     // -------------------------(material) deformation gradient F = d xyze_ / d XYZE = xyze_ * N_XYZ_^T
+     static LINALG::Matrix<my::nsd_,my::nsd_>          defgrd(false);
+     ComputeDefGradient(defgrd,N_XYZ_,my::xyze_);
+
+     // inverse deformation gradient F^-1
+     static LINALG::Matrix<my::nsd_,my::nsd_>          defgrd_inv(false);
+     defgrd_inv.Invert(defgrd);
+
      //--linearization of porosity gradient w.r.t. pressure at gausspoint
      //d(grad(phi))/dp = dphi/(dJdp)* dJ/dx + d^2phi/(dp)^2 * dp/dx + dphi/dp* N,x
      static LINALG::Matrix<my::nsd_,my::nen_>             dgradphi_dp(false);
@@ -1661,14 +1669,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
      //LINALG::Matrix<my::nsd_,1>             grad_porosity(true);
      //--------------------------- dJ/dx
      static LINALG::Matrix<my::nsd_,1> gradJ(false);
-
-     // -------------------------(material) deformation gradient F = d xyze_ / d XYZE = xyze_ * N_XYZ_^T
-     static LINALG::Matrix<my::nsd_,my::nsd_>          defgrd(false);
-     ComputeDefGradient(defgrd,N_XYZ_,my::xyze_);
-
-     // inverse deformation gradient F^-1
-     static LINALG::Matrix<my::nsd_,my::nsd_>          defgrd_inv(false);
-     defgrd_inv.Invert(defgrd);
 
      // dF/dX
      static LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_> F_X(false);
@@ -1794,7 +1794,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
 
      // compute strong residual of mixture (structural) equation
      if (  porofldpara_->StabBiot() and
-           (not my::fldparatimint_->IsStationary()) and
+           (not porofldpara_->IsStationaryConti()) and
            structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
         )
        ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X,false);
@@ -1862,14 +1862,17 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
      } // ui
 
      // inertia terms on the right hand side for instationary fluids
-     if (not my::fldparatimint_->IsStationary())
+     if (not porofldpara_->IsStationaryMomentum())
      {
        for (int idim = 0; idim <my::nsd_; ++idim)
        {
          if (my::fldparatimint_->IsGenalpha()) resM_Du(idim)+=rhsfac*my::densam_*my::accint_(idim);
          else                            resM_Du(idim)+=my::fac_*my::densaf_*my::velint_(idim);
        }
+     }
 
+     if (not my::fldparatimint_->IsStationary())
+     {
        //coupling part RHS
        // reacoeff * phi * v_s
        for (int vi=0; vi<my::nen_; ++vi)
@@ -2112,7 +2115,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(
 
      // 8) Biot stabilization term
      if (  porofldpara_->StabBiot() and
-           (not my::fldparatimint_->IsStationary()) and
+           (not porofldpara_->IsStationaryConti()) and
            structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
         )
      {
@@ -2254,6 +2257,14 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
     // evaluate shape function derivatives w.r.t. to material coordinates at integration point
     const double det0 = SetupMaterialDerivatives();
 
+    // -------------------------(material) deformation gradient F = d my::xyze_ / d XYZE = my::xyze_ * N_XYZ_^T
+    static LINALG::Matrix<my::nsd_,my::nsd_> defgrd(false);
+    ComputeDefGradient(defgrd,N_XYZ_,my::xyze_);
+
+    // inverse deformation gradient F^-1
+    static LINALG::Matrix<my::nsd_,my::nsd_> defgrd_inv(false);
+    defgrd_inv.Invert(defgrd);
+
     // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
     J_ = my::det_/det0;
 
@@ -2360,14 +2371,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
     //------------------ d( grad(\phi) ) / du_s = d\phi/(dJ du_s) * dJ/dx+ d\phi/dJ * dJ/(dx*du_s) + d\phi/(dp*du_s) * dp/dx
     static LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradphi_dus(false);
 
-    // -------------------------(material) deformation gradient F = d my::xyze_ / d XYZE = my::xyze_ * N_XYZ_^T
-    static LINALG::Matrix<my::nsd_,my::nsd_> defgrd(false);
-    ComputeDefGradient(defgrd,N_XYZ_,my::xyze_);
-
-    // inverse deformation gradient F^-1
-    static LINALG::Matrix<my::nsd_,my::nsd_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
-
     //------------------------------------ build F^-T as vector 9x1
     static LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec;
     for(int i=0; i<my::nsd_; i++)
@@ -2411,7 +2414,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
                             dphi_dus,
                             dgradphi_dus);
 
-    if (my::fldparatimint_->IsStationary() == false)
+    if (porofldpara_->IsStationaryConti() == false)
     {
       if(porofldpara_->TimeDisTypeConti() == INPAR::POROELAST::porosity)
       {
@@ -2495,7 +2498,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoopOD(
 
     // compute strong residual of mixture (structural) equation
     if (  porofldpara_->StabBiot() and
-          (not my::fldparatimint_->IsStationary()) and
+          (not porofldpara_->IsStationaryConti()) and
           structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
        )
       ComputeMixtureStrongResidual(params,defgrd,edispnp,edispn,F_X,true);
@@ -2781,7 +2784,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
     )
 {
 
-  if (my::fldparatimint_->IsStationary() == false)
+  if (porofldpara_->IsStationaryConti() == false)
     if(porofldpara_->TimeDisTypeConti() == INPAR::POROELAST::pressure)
     {
       for (int vi=0; vi<my::nen_; ++vi)
@@ -2884,7 +2887,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
               ;
             }
           }
-        } // end for(idim)
+        } // end for(nen_)
       else if(porofldpara_->TimeDisTypeConti() == INPAR::POROELAST::porosity)
         for (int vi=0; vi<my::nen_; ++vi)
         {
@@ -2905,7 +2908,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
               ;
             }
           }
-        } // end for(idim)
+        } // end for(nen_)
 
     } // end if (not stationary)
   }
@@ -3071,19 +3074,17 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::FillMatrixContiOD(
   //*************************************************************************************************************
   // biot stabilization
   if (  porofldpara_->StabBiot() and
-        (not my::fldparatimint_->IsStationary()) and
+        (not porofldpara_->IsStationaryConti()) and
         structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
      )
   {
     const double val = taustruct_*porosity_;
     double fac_dens = 0.0;
     double fac_dens2 = 0.0;
-    if (not my::fldparatimint_->IsStationary())
-    {
-      const double timefactor = my::fldparatimint_->Dt()*my::fldparatimint_->Theta();
-      fac_dens = taustruct_*my::fac_/J_*structmat_->Density()/timefactor;
-      fac_dens2 = -taustruct_*my::fac_/(J_*J_)*structmat_->Density()/my::fldparatimint_->Dt();
-    }
+
+    const double timefactor = my::fldparatimint_->Dt()*my::fldparatimint_->Theta();
+    fac_dens = taustruct_*my::fac_/J_*structmat_->Density()/timefactor;
+    fac_dens2 = -taustruct_*my::fac_/(J_*J_)*structmat_->Density()/my::fldparatimint_->Dt();
 
     for (int ui=0; ui<my::nen_; ++ui)
     {
@@ -3179,8 +3180,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_OD(
   }
   //*************************** linearisation of mesh motion in momentum balance**********************************
   // mass
-
-  if (my::fldparatimint_->IsStationary() == false)
+  if (porofldpara_->IsStationaryMomentum() == false)
   {
     const double fac0 = my::fac_ * my::densam_ * (1.0 + addstab ) * my::velint_(0);
     const double fac1 = my::fac_ * my::densam_ * (1.0 + addstab ) * my::velint_(1);
@@ -4080,7 +4080,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
       }
     }
 
-    if (my::fldparatimint_->IsStationary() == false)
+    if (porofldpara_->IsStationaryConti() == false)
       if(timedistype == INPAR::POROELAST::pressure)
       {
         // (dphi_dJ*J)*div vs
@@ -4159,7 +4159,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
   }
   else
   {
-    if (my::fldparatimint_->IsStationary() == false)
+    if (porofldpara_->IsStationaryConti() == false)
     {
       // (dphi_dJ*J+phi)*div vs
       for (int ui = 0; ui < my::nen_; ++ui)
@@ -4248,7 +4248,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
 
   }//partial integration
 
-  if (my::fldparatimint_->IsStationary() == false)
+  if (porofldpara_->IsStationaryConti() == false)
   {
     // dphi_dp*dp/dt + rhs
     if(timedistype == INPAR::POROELAST::pressure)
@@ -4526,7 +4526,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_3D_Pres_OD(
   }
 
   if (  porofldpara_->StabBiot() and
-        (not my::fldparatimint_->IsStationary()) and
+        (not porofldpara_->IsStationaryConti()) and
         structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
      )
   {
@@ -4732,7 +4732,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
 
   //*************************** linearisation of mesh motion in momentum balance**********************************
   // mass
-  if (my::fldparatimint_->IsStationary() == false)
+  if (porofldpara_->IsStationaryMomentum() == false)
   {
     const double fac0 = my::fac_ * my::densam_ * (1.0 + addstab ) * my::velint_(0);
     const double fac1 = my::fac_ * my::densam_ * (1.0 + addstab ) * my::velint_(1);
@@ -5033,7 +5033,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
   const double convvelint_0   = my::convvelint_(0);
   const double convvelint_1   = my::convvelint_(1);
 
-  if (my::fldparatimint_->IsStationary() == false)
+  if (porofldpara_->IsStationaryConti() == false)
   {
     if(timedistype == INPAR::POROELAST::pressure)
     {
@@ -5104,7 +5104,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
     }
 
 
-    if (my::fldparatimint_->IsStationary() == false)
+    if (porofldpara_->IsStationaryConti() == false)
     {
       if(timedistype == INPAR::POROELAST::pressure)
         // (dphi_dJ*J_)*div vs
@@ -5143,7 +5143,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
   }
   else
   {
-    if (my::fldparatimint_->IsStationary() == false)
+    if (porofldpara_->IsStationaryConti() == false)
     {
       if(timedistype == INPAR::POROELAST::pressure)
         // (dphi_dJ*J+phi)*div vs
@@ -5313,7 +5313,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_Pres_OD(
   }
 
   if (  porofldpara_->StabBiot() and
-        (not my::fldparatimint_->IsStationary()) and
+        (not porofldpara_->IsStationaryConti()) and
         structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
      )
   {
@@ -6344,7 +6344,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSAndSubgridScaleVeloc
   // computation of various residuals and residual-based values such as
   // the subgrid-scale velocity
   //----------------------------------------------------------------------
-  if (my::fldparatimint_->IsGenalpha())
+  if (my::fldparatimint_->IsGenalpha() and (not porofldpara_->IsStationaryMomentum()))
   {
     // rhs of momentum equation: density*bodyforce at n+alpha_F
     my::rhsmom_.Update(my::densaf_,my::bodyforce_,0.0);
@@ -6358,7 +6358,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSAndSubgridScaleVeloc
   }
   else
   {
-    if (not my::fldparatimint_->IsStationary())
+    if (not porofldpara_->IsStationaryMomentum())
     {
       // rhs of instationary momentum equation:
       // density*theta*bodyforce at n+1 + density*(histmom/dt)
@@ -6442,7 +6442,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
     // due to time factor and reaction coefficient
     double sigma_tot = my::reacoeff_;
 
-    if (not my::fldparatimint_->IsStationary())
+    if (not porofldpara_->IsStationaryMomentum())
     {
       sigma_tot += 1.0/my::fldparatimint_->TimeFac();
     }
@@ -6476,7 +6476,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
     dtaudphi_(2)= 0.0;
 
     if (  porofldpara_->StabBiot() and
-          (not my::fldparatimint_->IsStationary()) and
+          (not porofldpara_->IsStationaryConti()) and
           structmat_->PoroLawType() != INPAR::MAT::m_poro_law_constant
        )
     {
@@ -6515,71 +6515,74 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeOldRHSConti(double dphi_dp
   for (int j =0; j< my::nsd_; j++)
     grad_porosity_gridvelint += grad_porosity_(j) * gridvelint_(j);
 
-  if (my::fldparatimint_->IsGenalpha())
+  if (not porofldpara_->IsStationaryConti())
   {
-    if(porofldpara_->TimeDisTypeConti() == INPAR::POROELAST::pressure)
+    if (my::fldparatimint_->IsGenalpha())
     {
-      //In this case the continuity equation is formulated, as such that the time derivative
-      //of the porosity is replaced by the time derivative of the pressure and the Jacobian
-      //before discretizing, i.e.
-      // $\frac{d\phi}{dt}=\frac{d\phi}{d p}\frac{d p}{d t}+\frac{d\phi}{dJ}\frac{d J}{d t}$
+      if(porofldpara_->TimeDisTypeConti() == INPAR::POROELAST::pressure)
+      {
+        //In this case the continuity equation is formulated, as such that the time derivative
+        //of the porosity is replaced by the time derivative of the pressure and the Jacobian
+        //before discretizing, i.e.
+        // $\frac{d\phi}{dt}=\frac{d\phi}{d p}\frac{d p}{d t}+\frac{d\phi}{dJ}\frac{d J}{d t}$
 
-      my::rhscon_ = 0.0;
+        my::rhscon_ = 0.0;
+      }
+      else if(porofldpara_->TimeDisTypeConti() == INPAR::POROELAST::porosity)
+      {
+        dserror("time discretization of continuity equation w.r.t. porosity not implemented for genalpha!");
+        my::rhscon_ = 0.0;
+        //porositydot_ = my::fldparatimint_->AlphaM()*porositydotnp_+(1.0-my::fldparatimint_->AlphaM())*porositydotn_;
+        //porositydot_ = dphi_dp*pressdot_+J_*my::vdiv_;
+      }
     }
-    else if(porofldpara_->TimeDisTypeConti() == INPAR::POROELAST::porosity)
+    else if (my::fldparatimint_->IsOneStepTheta())
     {
-      dserror("time discretization of continuity equation w.r.t. porosity not implemented for genalpha!");
-      my::rhscon_ = 0.0;
-      //porositydot_ = my::fldparatimint_->AlphaM()*porositydotnp_+(1.0-my::fldparatimint_->AlphaM())*porositydotn_;
-      //porositydot_ = dphi_dp*pressdot_+J_*my::vdiv_;
+      if(porofldpara_->TimeDisTypeConti() == INPAR::POROELAST::pressure)
+      {
+        //In this case the continuity equation is formulated, as such that the time derivative
+        //of the porosity is replaced by the time derivative of the pressure and the Jacobian
+        //before discretizing, i.e.
+        // $\frac{d\phi}{dt}=\frac{d\phi}{d p}\frac{d p}{d t}+\frac{d\phi}{dJ}\frac{d J}{d t}$
+
+        // rhs of continuity equation
+        my::rhscon_ = 1.0/my::fldparatimint_->Dt()/my::fldparatimint_->Theta() * histcon_;
+
+        //this is only needed for conti_stab (deactivated for now). If used, it needs to be checked again!!!
+        my::conres_old_ = my::fldparatimint_->Theta()*(my::vdiv_* porosity_ + vel_grad_porosity-grad_porosity_gridvelint)
+                          + dphi_dp * press_/my::fldparatimint_->Dt()/my::fldparatimint_->Theta() - my::rhscon_;
+      }
+      else if(porofldpara_->TimeDisTypeConti() ==  INPAR::POROELAST::porosity)
+      {
+        //In case of discretizing the porosity, we can not use the history vector, as the porosity is
+        //not a primary variable. Therefore, we have to recalculate the residual from the last time step.
+        //Note, that the domain and the spatial derivatives of the shape functions are still calculated
+        //based on the current solution
+
+        double vel_grad_porosity_old = 0.0;
+        for (int idim = 0; idim <my::nsd_; ++idim)
+          vel_grad_porosity_old += grad_porosityold_(idim)*velnint_(idim);
+
+        double    grad_porosity_gridvelint_old=0.0;
+        for (int j =0; j< my::nsd_; j++)
+          grad_porosity_gridvelint_old += grad_porosityold_(j) * gridvelnint_(j);
+
+        // rhs of continuity equation (note the scaling with -1)
+        // (prepared for later multiplication by theta*dt in
+        //  evaluation of element matrix and vector contributions)
+        my::rhscon_ = (-1.0)* (-porosityn_/my::fldparatimint_->Dt()
+                      + my::fldparatimint_->OmTheta()*(my::vdivn_* porosityn_
+                          + vel_grad_porosity_old-grad_porosity_gridvelint_old)
+                      )
+                      /my::fldparatimint_->Theta();
+
+        //this is only needed for conti_stab (deactivated for now). If used, it needs to be checked again!!!
+        my::conres_old_ = my::fldparatimint_->Theta()*(my::vdiv_* porosity_ + vel_grad_porosity-grad_porosity_gridvelint)
+                          + porosity_/my::fldparatimint_->Dt()/my::fldparatimint_->Theta() - my::rhscon_;
+      }
+      else
+        dserror("unknown type of time discretization for continuity equation");
     }
-  }
-  else if (my::fldparatimint_->IsOneStepTheta())
-  {
-    if(porofldpara_->TimeDisTypeConti() == INPAR::POROELAST::pressure)
-    {
-      //In this case the continuity equation is formulated, as such that the time derivative
-      //of the porosity is replaced by the time derivative of the pressure and the Jacobian
-      //before discretizing, i.e.
-      // $\frac{d\phi}{dt}=\frac{d\phi}{d p}\frac{d p}{d t}+\frac{d\phi}{dJ}\frac{d J}{d t}$
-
-      // rhs of continuity equation
-      my::rhscon_ = 1.0/my::fldparatimint_->Dt()/my::fldparatimint_->Theta() * histcon_;
-
-      //this is only needed for conti_stab (deactivated for now). If used, it needs to be checked again!!!
-      my::conres_old_ = my::fldparatimint_->Theta()*(my::vdiv_* porosity_ + vel_grad_porosity-grad_porosity_gridvelint)
-                        + dphi_dp * press_/my::fldparatimint_->Dt()/my::fldparatimint_->Theta() - my::rhscon_;
-    }
-    else if(porofldpara_->TimeDisTypeConti() ==  INPAR::POROELAST::porosity)
-    {
-      //In case of discretizing the porosity, we can not use the history vector, as the porosity is
-      //not a primary variable. Therefore, we have to recalculate the residual from the last time step.
-      //Note, that the domain and the spatial derivatives of the shape functions are still calculated
-      //based on the current solution
-
-      double vel_grad_porosity_old = 0.0;
-      for (int idim = 0; idim <my::nsd_; ++idim)
-        vel_grad_porosity_old += grad_porosityold_(idim)*velnint_(idim);
-
-      double    grad_porosity_gridvelint_old=0.0;
-      for (int j =0; j< my::nsd_; j++)
-        grad_porosity_gridvelint_old += grad_porosityold_(j) * gridvelnint_(j);
-
-      // rhs of continuity equation (note the scaling with -1)
-      // (prepared for later multiplication by theta*dt in
-      //  evaluation of element matrix and vector contributions)
-      my::rhscon_ = (-1.0)* (-porosityn_/my::fldparatimint_->Dt()
-                    + my::fldparatimint_->OmTheta()*(my::vdivn_* porosityn_
-                        + vel_grad_porosity_old-grad_porosity_gridvelint_old)
-                    )
-                    /my::fldparatimint_->Theta();
-
-      //this is only needed for conti_stab (deactivated for now). If used, it needs to be checked again!!!
-      my::conres_old_ = my::fldparatimint_->Theta()*(my::vdiv_* porosity_ + vel_grad_porosity-grad_porosity_gridvelint)
-                        + porosity_/my::fldparatimint_->Dt()/my::fldparatimint_->Theta() - my::rhscon_;
-    }
-    else
-      dserror("unknown type of time discretization for continuity equation");
   }
   else
   {
@@ -6606,7 +6609,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDu(
     idim_nsd_p_idim[idim]=idim*my::nsd_+idim;
   }
 
-  if (my::fldparatimint_->IsStationary() == false)
+  //mass
+  if (porofldpara_->IsStationaryMomentum() == false)
   {
     const double fac_densam=my::fac_*my::densam_;
 
@@ -7212,7 +7216,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPointOD(
     }
   }
 
-  if (my::fldparatimint_->IsStationary() == false)
+  if (porofldpara_->IsStationaryConti() == false)
   {
     if(porofldpara_->TimeDisTypeConti() == INPAR::POROELAST::porosity)
     {

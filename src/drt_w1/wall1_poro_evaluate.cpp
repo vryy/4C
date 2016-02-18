@@ -638,9 +638,32 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoop(
     //evaluate shape functions and derivatives at integration point
     ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
 
-    const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
-
+    //compute deformation gradient
     ComputeDefGradient(defgrd,N_XYZ,xcurr);
+
+    // inverse deformation gradient F^-1
+    LINALG::Matrix<numdim_,numdim_> defgrd_inv(false);
+    defgrd_inv.Invert(defgrd);
+
+    // jacobian determinant of transformation between spatial and material space "|dx/dX|"
+    double J = 0.0;
+    //------linearization of jacobi determinant detF=J w.r.t. structure displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
+    static LINALG::Matrix<1,numdof_> dJ_dus;
+    // volume change (used for porosity law). Same as J in nonlinear theory.
+    double volchange = 0.0;
+    //------linearization of volume change w.r.t. structure displacement
+    static LINALG::Matrix<1,numdof_> dvolchange_dus;
+
+    // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
+    ComputeJacobianDeterminantVolumeChangeAndLinearizations(
+        J,
+        volchange,
+        dJ_dus,
+        dvolchange_dus,
+        defgrd,
+        defgrd_inv,
+        N_XYZ,
+        nodaldisp);
 
     // non-linear B-operator
     LINALG::Matrix<numstr_,numdof_> bop;
@@ -677,14 +700,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoop(
     LINALG::Matrix<numdim_,numdim_> C_inv(false);
     C_inv.Invert(cauchygreen);
 
-    // inverse deformation gradient F^-1
-    LINALG::Matrix<numdim_,numdim_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
-
-    //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) = dJ/dF : dF/dus = J * F^-T * N,X
-    LINALG::Matrix<1,numdof_> dJ_dus;
-    ComputeLinearizationOfJacobian(dJ_dus,J,N_XYZ,defgrd_inv);
-
     // compute some auxiliary matrixes for computation of linearization
     //dF^-T/dus
     LINALG::Matrix<numdim_*numdim_,numdof_> dFinvTdus(true);
@@ -703,7 +718,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoop(
     LINALG::Matrix<1,numdof_> dphi_dus;
     double porosity=0.0;
 
-    ComputePorosityAndLinearization(params,press,J,gp,shapefct,porosity_dof,dJ_dus,porosity,dphi_dus);
+    ComputePorosityAndLinearization(params,press,volchange,gp,shapefct,porosity_dof,dvolchange_dus,porosity,dphi_dus);
 
     // **********************evaluate stiffness matrix and force vector+++++++++++++++++++++++++
     if(fluidmat_->Type() == MAT::PAR::darcy_brinkman )
@@ -1124,10 +1139,21 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopOD(
     //evaluate shape functions and derivatives at integration point
     ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
 
-    const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
-
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     ComputeDefGradient(defgrd,N_XYZ,xcurr);
+
+    // jacobian determinant of transformation between spatial and material space "|dx/dX|"
+    double J = 0.0;
+    // volume change (used for porosity law). Same as J in nonlinear theory.
+    double volchange = 0.0;
+
+    // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
+    ComputeJacobianDeterminantVolumeChange(
+        J,
+        volchange,
+        defgrd,
+        N_XYZ,
+        nodaldisp);
 
     // non-linear B-operator (may so be called, meaning
     LINALG::Matrix<numstr_,numdof_> bop;
@@ -1172,7 +1198,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopOD(
 
     ComputePorosityAndLinearizationOD(params,
                                       press,
-                                      J,
+                                      volchange,
                                       gp,
                                       shapefct,
                                       porosity_dof,
@@ -1458,7 +1484,18 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::couplstress_poroelast(
     //evaluate shape functions and derivatives at integration point
     ComputeShapeFunctionsAndDerivatives(gp,shapefct,deriv,N_XYZ);
 
-    const double J = ComputeJacobianDeterminant(gp,xcurr,deriv);
+    // jacobian determinant of transformation between spatial and material space "|dx/dX|"
+    double J = 0.0;
+    // volume change (used for porosity law). Same as J in nonlinear theory.
+    double volchange = 0.0;
+
+    // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
+    ComputeJacobianDeterminantVolumeChange(
+        J,
+        volchange,
+        defgrd,
+        N_XYZ,
+        disp);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     ComputeDefGradient(defgrd,N_XYZ,xcurr);
@@ -1570,6 +1607,96 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::InitElement()
   init_=true;
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeJacobianDeterminantVolumeChangeAndLinearizations(
+    double & J,
+    double & volchange,
+    LINALG::Matrix<1,numdof_>& dJ_dus,
+    LINALG::Matrix<1,numdof_>& dvolchange_dus,
+    const LINALG::Matrix<numdim_,numdim_>& defgrd,
+    const LINALG::Matrix<numdim_,numdim_>& defgrd_inv,
+    const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
+    const LINALG::Matrix<numdim_,numnod_>& nodaldisp
+    )
+{
+  //compute J
+  J=defgrd.Determinant();
+  //compute linearization of J
+  ComputeLinearizationOfJacobian(dJ_dus,J,N_XYZ,defgrd_inv);
+
+  if(kintype_==INPAR::STR::kinem_nonlinearTotLag) //total lagrange (nonlinear)
+  {
+    //for nonlinear kinematics the Jacobian of the deformation gradient is the volume change
+    volchange=J;
+    dvolchange_dus=dJ_dus;
+  }
+  else if(kintype_==INPAR::STR::kinem_linear) //linear kinematics
+  {
+    //for linear kinematics the volume change is the trace of the linearized strains
+
+    //gradient of displacements
+    static LINALG::Matrix<numdim_,numdim_> dispgrad;
+    dispgrad.Clear();
+    //gradient of displacements
+    dispgrad.MultiplyNT(nodaldisp,N_XYZ);
+
+    volchange=1.0;
+    //volchange = 1 + trace of the linearized strains (= trace of displacement gradient)
+    for(int i=0; i<numdim_;++i)
+      volchange += dispgrad(i,i);
+
+    for(int i=0; i<numdim_;++i)
+      for(int j=0; j<numnod_;++j)
+        dvolchange_dus(numdim_*j+i)=N_XYZ(i,j);
+  }
+  else
+    dserror("invalid kinematic type!");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |                                                           vuong 03/12|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeJacobianDeterminantVolumeChange(
+    double & J,
+    double & volchange,
+    const LINALG::Matrix<numdim_,numdim_>& defgrd,
+    const LINALG::Matrix<numdim_,numnod_>& N_XYZ,
+    const LINALG::Matrix<numdim_,numnod_>& nodaldisp
+    )
+{
+  //compute J
+  J=defgrd.Determinant();
+
+  if(kintype_==INPAR::STR::kinem_nonlinearTotLag) //total lagrange (nonlinear)
+  {
+    //for nonlinear kinematics the Jacobian of the deformation gradient is the volume change
+    volchange=J;
+  }
+  else if(kintype_==INPAR::STR::kinem_linear) //linear kinematics
+  {
+    //for linear kinematics the volume change is the trace of the linearized strains
+
+    //gradient of displacements
+    static LINALG::Matrix<numdim_,numdim_> dispgrad;
+    dispgrad.Clear();
+    //gradient of displacements
+    dispgrad.MultiplyNT(nodaldisp,N_XYZ);
+
+    volchange=1.0;
+    //volchange = 1 + trace of the linearized strains (= trace of displacement gradient)
+    for(int i=0; i<numdim_;++i)
+      volchange += dispgrad(i,i);
+  }
+  else
+    dserror("invalid kinematic type!");
 }
 
 /*-----------------------------------------------------------------------------*

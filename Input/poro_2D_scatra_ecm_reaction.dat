@@ -51,7 +51,7 @@ STEADYSTEP                      -1
 THETA                           0.66
 TIMEINTEGR                      Stationary
 TIMESTEP                        0.01
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 LINEAR_SOLVER                   3
 ----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
@@ -88,6 +88,7 @@ VECTORNORM_RESF                 Inf
 VECTORNORM_INC                  L1_Scaled
 SECONDORDER                     no
 CONTIPARTINT                    no
+TRANSIENT_TERMS                 none
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No

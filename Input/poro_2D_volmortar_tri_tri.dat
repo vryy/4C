@@ -69,6 +69,7 @@ SECONDORDER                     Yes
 CONTIPARTINT                    yes
 LINEAR_SOLVER                   1
 PHYSICAL_TYPE                   Poro
+TRANSIENT_TERMS                 none
 MATCHINGGRID                    no
 ----------------------------------------------------------VOLMORTAR COUPLING
 COUPLINGTYPE                    volmortar

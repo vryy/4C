@@ -119,6 +119,7 @@ void FLD::TimIntPoro::SetElementCustomParameter()
   // set poro specific element parameters
   eleparams.set<bool>("conti partial integration",params_->get<bool>("conti partial integration"));
   eleparams.set<int>("Time DisType Conti",params_->get<int>("Time DisType Conti"));
+  eleparams.set<int>("Transient Terms Poro Fluid",params_->get<int>("Transient Terms Poro Fluid"));
 
   // parameter for stabilization
   eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");

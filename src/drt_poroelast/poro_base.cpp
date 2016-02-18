@@ -179,6 +179,23 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
     = DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(pedyn,"PHYSICAL_TYPE");
     if(porositydof_ and physicaltype != INPAR::FLUID::poro_p1)
       dserror("Poro P1 elements need a special fluid. Set 'PHYSICAL_TYPE' to 'Poro_P1' in the FLUID DYNAMIC section!");
+
+    INPAR::POROELAST::TransientEquationsOfPoroFluid transientfluid
+    = DRT::INPUT::IntegralValue<INPAR::POROELAST::TransientEquationsOfPoroFluid>(pedyn,"TRANSIENT_TERMS");
+
+    if(fluidtimealgo == INPAR::FLUID::timeint_stationary)
+    {
+      if(transientfluid != INPAR::POROELAST::transient_none)
+        dserror("Invalid option for stationary fluid! Set 'TRANSIENT_TERMS' in section POROELASTICITY DYNAMIC to 'none'!");
+    }
+    else
+    {
+      if(transientfluid == INPAR::POROELAST::transient_none)
+        dserror("Invalid option for stationary fluid! Set 'TRANSIENT_TERMS' in section POROELASTICITY DYNAMIC to valid parameter!");
+    }
+
+    if(transientfluid == INPAR::POROELAST::transient_momentum_only)
+      dserror("Option 'momentum' for parameter 'TRANSIENT_TERMS' in section POROELASTICITY DYNAMIC is not working properly! There is probably a bug in the linearization ....");
   }
 }
 

@@ -48,6 +48,15 @@ namespace POROELAST
     pressure
   };
 
+  /// flag for control, in which equation the transient terms are included
+  enum TransientEquationsOfPoroFluid
+  {
+    transient_none,
+    transient_momentum_only,
+    transient_continuity_only,
+    transient_all
+  };
+
   /// @name Solution technique and related
 
   /// type of norm to check for convergence

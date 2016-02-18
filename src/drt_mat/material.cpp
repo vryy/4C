@@ -556,6 +556,8 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::m_poro_law_linear:
   case INPAR::MAT::m_poro_law_constant:
   case INPAR::MAT::m_poro_law_logNeoHooke_Penalty:
+  case INPAR::MAT::m_poro_law_incompr_skeleton:
+  case INPAR::MAT::m_poro_law_linear_biot:
   {
     return Teuchos::null;
   }
