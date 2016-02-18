@@ -78,7 +78,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Done()
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::ScaTraEleBoundaryCalcPoro(const int numdofpernode, const int numscal,const std::string& disname)
   : DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(numdofpernode,numscal,disname),
-    xyze0_(true),
     eporosity_(true),
     eprenp_(true),
     isnodalporosity_(false)

@@ -120,6 +120,11 @@ const std::string ImplTypeToString(const INPAR::SCATRA::ImplType impltype)
     impltypestring = "Advanced reactions";
     break;
   }
+  case INPAR::SCATRA::impltype_refconcreac:
+  {
+    impltypestring = "Reference concentrations AND reactions";
+    break;
+  }
   case INPAR::SCATRA::impltype_chemo:
   {
      impltypestring = "Chemotaxis";

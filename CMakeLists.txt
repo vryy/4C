@@ -1229,12 +1229,14 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_boundary_calc_elch_NP.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_loma.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_poro.cpp
+  src/drt_scatra_ele/scatra_ele_boundary_calc_refconc_reac.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_std.cpp
   src/drt_scatra_ele/scatra_ele_boundary_calc_sti_electrode.cpp
   src/drt_scatra_ele/scatra_ele_boundary_evaluate.cpp
   src/drt_scatra_ele/scatra_ele_boundary_factory.cpp
   src/drt_scatra_ele/scatra_ele_calc.cpp
   src/drt_scatra_ele/scatra_ele_calc_advanced_reaction.cpp
+  src/drt_scatra_ele/scatra_ele_calc_refconc_reac.cpp
   src/drt_scatra_ele/scatra_ele_calc_aniso.cpp
   src/drt_scatra_ele/scatra_ele_calc_cardiac_monodomain.cpp
   src/drt_scatra_ele/scatra_ele_calc_chemo.cpp

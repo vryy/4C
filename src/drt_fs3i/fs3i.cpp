@@ -143,7 +143,7 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
   //Check FS3I dynamic parameters
   DRT::Problem* problem = DRT::Problem::Instance();
   //const Teuchos::ParameterList& ioparams = problem->IOParams();
-  //const Teuchos::ParameterList& fs3idyn = problem->FS3IDynamicParams();
+  const Teuchos::ParameterList& fs3idyn = problem->FS3IDynamicParams();
   const Teuchos::ParameterList& structdynparams = problem->StructuralDynamicParams();
   const Teuchos::ParameterList& scatradynparams = problem->ScalarTransportDynamicParams();
   //const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
@@ -190,7 +190,8 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
 
 
   //is scatra calculated conservative?
-  if ( DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatradynparams,"CONVFORM") != INPAR::SCATRA::convform_conservative )
+  if ( DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(fs3idyn,"STRUCTSCAL_CONVFORM") == INPAR::SCATRA::convform_convective
+      and not ( DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(fs3idyn,"STRUCTSCAL_SCATRATYPE") == INPAR::SCATRA::impltype_refconcreac) )
       dserror("Your scalar fields have to be calculated in conservative form, since the velocity field in the structure is NOT divergence free!");
 
   //is structure calculated dynamic when not prestressing?

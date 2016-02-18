@@ -56,9 +56,11 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
 
     INPAR::SCATRA::ConvForm convform
     = DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams,"CONVFORM");
-    if ( not (convform == INPAR::SCATRA::convform_conservative) )
+    INPAR::SCATRA::ImplType impltype
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(ssicontrol,"SCATRATYPE");
+    if ( (convform == INPAR::SCATRA::convform_convective) and (not (impltype == INPAR::SCATRA::impltype_refconcreac)) )
       dserror("If the scalar transport problem is solved on the deforming domain, the conservative form must be"
-          "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR TRANSPORT DYNAMIC section!");
+          "used to include volume changes! Set 'CONVFORM' to 'conservative' in the SCALAR TRANSPORT DYNAMIC section or use RefConc_Reac as impltype!");
   }
 }
 

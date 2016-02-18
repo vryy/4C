@@ -63,6 +63,15 @@ void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   IntParameter("LINEAR_SOLVER1",-1,"number of linear solver used for fluid problem",&fs3idyn);
   IntParameter("LINEAR_SOLVER2",-1,"number of linear solver used for structural problem",&fs3idyn);
 
+  setStringToIntegralParameter<int>("STRUCTSCAL_CONVFORM","conservative","form of convective term of structure scalar",
+                               tuple<std::string>(
+                                 "convective",
+                                 "conservative"
+                                 ),
+                               tuple<int>(
+                                 INPAR::SCATRA::convform_convective,
+                                 INPAR::SCATRA::convform_conservative),
+                               &fs3idyn);
 
   setStringToIntegralParameter<int>("STRUCTSCAL_INITIALFIELD",
                                   "zero_field",
@@ -86,6 +95,7 @@ void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  "Advanced_Reaction",
                                  "Chemotaxis",
                                  "Chemo_Reac",
+                                 "RefConc_Reac",
                                  "Poro",
                                  "Poro_Reac"),
                                tuple<int>(
@@ -94,6 +104,7 @@ void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  INPAR::SCATRA::impltype_advreac,
                                  INPAR::SCATRA::impltype_chemo,
                                  INPAR::SCATRA::impltype_chemoreac,
+                                 INPAR::SCATRA::impltype_refconcreac,
                                  INPAR::SCATRA::impltype_poro,
                                  INPAR::SCATRA::impltype_pororeac),
                                  &fs3idyn);

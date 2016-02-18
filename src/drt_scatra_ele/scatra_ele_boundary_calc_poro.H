@@ -76,9 +76,6 @@ private:
   /// private constructor since we are singleton
   ScaTraEleBoundaryCalcPoro(const int numdofpernode, const int numscal,const std::string& disname);
 
-  //! initial node coordinates
-  LINALG::Matrix<my::nsd_,my::nen_> xyze0_;
-
   //! nodal porosity values at t_(n+1)
   LINALG::Matrix<my::nen_,1> eporosity_;
 

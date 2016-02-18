@@ -257,7 +257,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::ExtractElementAndNodeValues(
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*dispnp,edispnp_,lmdisp);
 
     // add nodal displacements to point coordinates
-    xyze_ += edispnp_;
+    UpdateNodeCoordinates();
   }
   else
   {

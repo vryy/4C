@@ -751,7 +751,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateService(
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_,nen_> >(*dispnp,edispnp_,lmdisp);
 
     // add nodal displacements to point coordinates
-    xyze_ += edispnp_;
+    UpdateNodeCoordinates();
   }
   else edispnp_.Clear();
 

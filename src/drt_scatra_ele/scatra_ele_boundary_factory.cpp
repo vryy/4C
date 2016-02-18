@@ -22,6 +22,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_boundary_calc_elch_NP.H"
 #include "scatra_ele_boundary_calc_loma.H"
 #include "scatra_ele_boundary_calc_poro.H"
+#include "scatra_ele_boundary_calc_refconc_reac.H"
 #include "scatra_ele_boundary_calc_std.H"
 #include "scatra_ele_boundary_calc_sti_electrode.H"
 #include "scatra_ele_boundary_interface.H"
@@ -142,6 +143,11 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
   case INPAR::SCATRA::impltype_pororeac:
   {
     return DRT::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype>::Instance(numdofpernode,numscal,disname);
+    break;
+  }
+  case INPAR::SCATRA::impltype_refconcreac:
+  {
+    return DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::Instance(numdofpernode,numscal,disname);
     break;
   }
   case INPAR::SCATRA::impltype_thermo_elch_electrode:

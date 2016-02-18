@@ -268,6 +268,13 @@ namespace ELEMENTS
     //! set internal variables
     virtual void SetInternalVariablesForMatAndRHS();
 
+    // add nodal displacements to point coordinates
+    virtual void UpdateNodeCoordinates()
+    {
+      xyze_ += edispnp_;
+      return;
+    };
+
     //! finite difference check for debugging purposes
     virtual void FDCheck(
       DRT::Element*                              ele,          //!< the element we are dealing with

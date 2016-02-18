@@ -22,6 +22,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_calc_loma.H"
 #include "scatra_ele_calc_poro.H"
 #include "scatra_ele_calc_advanced_reaction.H"
+#include "scatra_ele_calc_refconc_reac.H"
 #include "scatra_ele_calc_chemo.H"
 #include "scatra_ele_calc_chemo_reac.H"
 #include "scatra_ele_calc_poro_reac_ECM.H"
@@ -324,11 +325,16 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     return DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim>::Instance(numdofpernode,numscal,disname);
     break;
   }
+  case INPAR::SCATRA::impltype_refconcreac:
+  {
+    return DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(numdofpernode,numscal,disname);
+    break;
+  }
   case INPAR::SCATRA::impltype_chemo:
-    {
-      return DRT::ELEMENTS::ScaTraEleCalcChemo<distype>::Instance(numdofpernode,numscal,disname);
-      break;
-    }
+  {
+    return DRT::ELEMENTS::ScaTraEleCalcChemo<distype>::Instance(numdofpernode,numscal,disname);
+    break;
+  }
   case INPAR::SCATRA::impltype_chemoreac:
   {
     return DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype>::Instance(numdofpernode,numscal,disname);

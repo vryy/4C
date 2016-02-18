@@ -182,13 +182,6 @@ public:
       const double                        scalar
       );
 
-  //!computes the factor for the wall shear stress dependent interface flux
-  void WSSinfluence(
-      LINALG::Matrix<nen_,1>&            f_ewss,
-      const LINALG::Matrix<nsd_+1,nen_>& ewss,          ///<vector of euclidean norm of shear stress tensor of each node of the element
-      const bool                         wssonoff,      ///<flag if WSS has influence on interface permeability
-      const std::vector<double>*         coeffs);       ///<coefficients of the log law to determine the influence of WSS on concentration flux
-
   //! computes mechanoresponsive scalar transport
   void CalcMechanotransduction(
       DRT::FaceElement*                 ele,
@@ -197,6 +190,15 @@ public:
       std::vector<int>&                 lm,
       Epetra_SerialDenseVector&         elevec1_epetra
       );
+
+  private:
+
+  // add nodal displacements to point coordinates
+  void UpdateNodeCoordinates()
+  {
+    xyze_ += edispnp_;
+    return;
+  };
 
   protected:
 
@@ -254,16 +256,33 @@ public:
       const bool                addarea ///< flag for area calculation
   );
 
-  //! evaluate surface/interface permeability
+  //! evaluate scatra-scatra interface coupling condition
   void EvaluateSurfacePermeability(
-      const DRT::FaceElement*                       ele,      ///< current boundary element
-      const std::vector<LINALG::Matrix<nen_,1> >&   ephinp,   ///< scalar values at element nodes
-      const LINALG::Matrix<nen_,1>&                 f_ewss,   ///< factor for WSS at element nodes
-      Epetra_SerialDenseMatrix&                     emat,     ///< element-matrix
-      Epetra_SerialDenseVector&                     erhs,     ///< element-rhs
-      const std::vector<int>*                       onoff,    ///<flag for dofs to be considered by membrane equations of Kedem and Katchalsky
-      const double                                  perm      ///< surface/interface permeability coefficient
-      );
+      const DRT::FaceElement*        ele,              ///< current boundary element
+      Teuchos::ParameterList&        params,           ///< parameter list
+      DRT::Discretization&           discretization,   ///< discretization
+      DRT::Element::LocationArray&   la,               ///< location array
+      Epetra_SerialDenseMatrix&      elemat1,     ///< element matrix for slave side
+      Epetra_SerialDenseVector&      elevec1    ///< element residual for slave side
+  );
+
+  //!computes the factor for the wall shear stress dependent interface flux
+  void WSSinfluence(
+      LINALG::Matrix<nen_,1>&            f_ewss,
+      const LINALG::Matrix<nsd_+1,nen_>& ewss,          ///<vector of euclidean norm of shear stress tensor of each node of the element
+      const bool                         wssonoff,      ///<flag if WSS has influence on interface permeability
+      const std::vector<double>*         coeffs);       ///<coefficients of the log law to determine the influence of WSS on concentration flux
+
+  //! Factor needed for the calculation of reference concentrations
+  virtual double FacForRefConc(
+      const int                      iquad,             ///< current boundary integration point
+      const DRT::FaceElement*        bele,              ///< current boundary element
+      Teuchos::ParameterList&        params,            ///< parameter list
+      DRT::Discretization&           discretization,    ///< discretization
+      DRT::Element::LocationArray&   la,                ///< location array
+      Epetra_SerialDenseMatrix&      elemat1,           ///< element matrix for slave side
+      Epetra_SerialDenseVector&      elevec1            ///< element residual for slave side
+  ){return 1.0;};
 
   //! compute integral of convective mass/heat flux over boundary surface
   virtual std::vector<double> CalcConvectiveFlux(

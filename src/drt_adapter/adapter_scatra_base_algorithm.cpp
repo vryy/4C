@@ -127,6 +127,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     {
       //scatra2 (=structure scalar) get's inputs from FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION, hence we have to replace it
       scatratimeparams->sublist("STABILIZATION")=prbdyn.sublist("STRUCTURE SCALAR STABILIZATION");
+      scatratimeparams->set<std::string>("CONVFORM",prbdyn.get<std::string>("STRUCTSCAL_CONVFORM"));
 
       //scatra2 get's in initial functions from FS3I DYNAMICS
       switch ( DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(prbdyn,"STRUCTSCAL_INITIALFIELD") )
