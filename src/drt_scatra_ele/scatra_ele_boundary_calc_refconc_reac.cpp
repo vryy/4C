@@ -208,12 +208,12 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype>::CalcJatIntPoint
       bintpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
 
   Epetra_SerialDenseMatrix gps(bintpoints.IP().nquad,bnsd);
-  for (int iquad=0; iquad<bintpoints.IP().nquad; ++iquad)
+  for (int biquad=0; biquad<bintpoints.IP().nquad; ++biquad)
   {
-    const double* gpcoord = (bintpoints.IP().qxg)[iquad];
+    const double* gpcoord = (bintpoints.IP().qxg)[biquad];
     for (int idim=0;idim<bnsd ;idim++)
     {
-      gps(iquad,idim) = gpcoord[idim];
+      gps(biquad,idim) = gpcoord[idim];
     }
   }
 
