@@ -59,7 +59,6 @@ DRT::ELEMENTS::FluidEleParameterPoro::FluidEleParameterPoro()
     poro_conti_partint_(false),
     stab_biot_(false),
     stab_biot_scaling_(0.0),
-    time_distype_conti_(INPAR::POROELAST::pressure),
     transient_terms_(INPAR::POROELAST::transient_all)
 {
 }
@@ -74,7 +73,6 @@ void DRT::ELEMENTS::FluidEleParameterPoro::SetElementPoroParameter( Teuchos::Par
   set_fluid_parameter_poro_ = true;
   poro_conti_partint_ = params.get<bool>("conti partial integration",false);
   reaction_= true;
-  time_distype_conti_ = DRT::INPUT::get<INPAR::POROELAST::TimeDisTypeConti>(params, "Time DisType Conti");
   transient_terms_    = DRT::INPUT::get<INPAR::POROELAST::TransientEquationsOfPoroFluid>(params, "Transient Terms Poro Fluid");
 
   // ---------------------------------------------------------------------
@@ -105,8 +103,8 @@ void DRT::ELEMENTS::FluidEleParameterPoro::PrintFluidParameterPoro() const
   std::cout << "|    method SetElementParameterPoro was called:    " << set_fluid_parameter_poro_ << std::endl;
   // flag to (de)activate stationary formulation
   std::cout << "|    Partial integration of conti equation:    " << poro_conti_partint_ << std::endl;
-  // type of time discretization for continuity equation
-  std::cout << "|   type of time discretization for continuity equation:  " << time_distype_conti_ << std::endl;
+  // type of handling transient terms
+  std::cout << "|   type of handling transient terms:  " << transient_terms_ << std::endl;
   // flag to (de)activate Newton linearization
   std::cout << "|    Type of stabilization:    " << stabtype_ << std::endl;
 

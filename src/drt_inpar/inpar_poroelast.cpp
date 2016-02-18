@@ -72,20 +72,6 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
                                     &poroelastdyn);
 
   // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq approximation)
-  setStringToIntegralParameter<int>("TIME_DISTYPE_CONTI","pressure",
-                                    "type of time discretization for continuity equation",
-                                    tuple<std::string>(
-                                      "pressure",
-                                      "pres",
-                                      "porosity"
-                                      ),
-                                    tuple<int>(
-                                      pressure,
-                                      pressure,
-                                      porosity),
-                                    &poroelastdyn);
-
-  // physical type of poro fluid flow (incompressible, varying density, loma, Boussinesq approximation)
   setStringToIntegralParameter<int>("TRANSIENT_TERMS","all",
                                     "which equation includes transient terms",
                                     tuple<std::string>(

@@ -50,9 +50,6 @@ public:
   //! scaling factor for biot stabilization
   double StabBiotScaling() const {return stab_biot_scaling_;};
 
-  //! type of time discretization for continuity equation
-  INPAR::POROELAST::TimeDisTypeConti TimeDisTypeConti() const {return time_distype_conti_;};
-
   //! flag for inclusion of transient terms in continuity equation
   bool IsStationaryConti() const
   {
@@ -82,10 +79,7 @@ private:
   //! scaling factor for biot stabilization
   double stab_biot_scaling_;
 
-  //! type of time discretization for continuity equation
-  INPAR::POROELAST::TimeDisTypeConti time_distype_conti_;
-
-  //! type of time discretization for continuity equation
+  //! type of handling transient terms
   INPAR::POROELAST::TransientEquationsOfPoroFluid transient_terms_;
 
   /// private Constructor since we are a Singleton.

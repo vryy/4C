@@ -1050,6 +1050,15 @@ protected:
       const LINALG::Matrix<my::nsd_,my::nen_>& xcurr     ///<<    (i) current position of gausspoint
     );
 
+  //! Compute Jacobian Determinant and the volume change
+  void ComputeJacobianDeterminantVolumeChange(
+     double & J,
+     double & volchange,
+     const LINALG::Matrix<my::nsd_,my::nsd_>& defgrd,
+     const LINALG::Matrix<my::nsd_,my::nen_>& N_XYZ,
+     const LINALG::Matrix<my::nsd_,my::nen_>& nodaldisp
+     );
+
   //! Compute deformation gradient
   double ComputeEffectiveStiffness(
     );
@@ -1097,8 +1106,6 @@ protected:
 
   //! porosity at gauss point (time step n+1)
   double             porosity_;
-  //! porosity at gauss point (time step n)
-  double             porosityn_;
   //! time derivative of porosity at gauss point (time step n+1 or n+\alpha_M)
   double             porositydot_;
   //! porosity gradient w.r.t. spatial coordinates at gauss point
@@ -1109,10 +1116,6 @@ protected:
   LINALG::Matrix<my::nsd_,1>             grad_porosityold_;
   //! porosity gradient w.r.t. reference coordinates at gauss point
   LINALG::Matrix<my::nsd_,1>             refgrad_porosityold_;
-  //! velocity vector in gausspoint at time step n
-  LINALG::Matrix<my::nsd_,1> velnint_;
-  //! global velocity derivatives in gausspoint w.r.t x,y,z at time step n
-  LINALG::Matrix<my::nsd_,my::nsd_> vnderxy_;
   //! grid (=structure) velocity at gauss point (time step n+1)
   LINALG::Matrix<my::nsd_,1>             gridvelint_;
   //! grid (=structure) velocity at gauss point (time step n)
@@ -1125,12 +1128,8 @@ protected:
   double gridvdiv_;
   //! determinant of deformation gradient (time step n+1)
   double J_;
-  //! determinant of deformation gradient (time step n)
-  double Jn_;
   //! fluid pressure at gauss point (time step n+1)
   double press_;
-  //! fluid pressure at gauss point (time step n)
-  double pressn_;
   //! fluid pressure time derivative at gauss point (time step n+1 or n+\alpha_M)
   double pressdot_;
 //  //! fluid pressure time derivative at gauss point (time step n)
@@ -1139,8 +1138,6 @@ protected:
   //double pressdotnp_;
   //! fluid pressure gradient w.r.t to paramter space coordinates at gauss point
   LINALG::Matrix<my::nsd_,1> refgradp_;
-  //! spatial gradient of fluid pressure gauss point at time step n
-  LINALG::Matrix<my::nsd_,1> gradpn_;
 
   //! material reactive tensor
   LINALG::Matrix<my::nsd_,my::nsd_>             matreatensor_;

@@ -822,7 +822,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::GaussPointLoopOD(
     // volume change (used for porosity law). Same as J in nonlinear theory.
     double volchange = 0.0;
 
-    // compute J, the volume change and the respctive linearizations w.r.t. structure displacement
+    // compute J and the volume change
     ComputeJacobianDeterminantVolumeChange(
         J,
         volchange,
@@ -1480,7 +1480,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeShapeFunctionsAndDerivativ
 //}
 
 /*----------------------------------------------------------------------*
- |                                                           vuong 03/12|
+ |                                                           vuong 02/16|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeJacobianDeterminantVolumeChange(
@@ -1519,7 +1519,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeJacobianDeterminantVolumeC
 }
 
 /*----------------------------------------------------------------------*
- |                                                           vuong 03/12|
+ |                                                           vuong 02/16|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputeJacobianDeterminantVolumeChangeAndLinearizations(

@@ -864,9 +864,26 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     my::EvalShapeFuncAndDerivsAtIntPoint(iquad.Point(),iquad.Weight());
 
     // evaluate shape function derivatives w.r.t. to material coordinates at integration point
-    const double det0 = my::SetupMaterialDerivatives();
-    // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
-    my::J_ = my::det_/det0;
+    my::SetupMaterialDerivatives();
+
+    // -------------------------(material) deformation gradient F = d xyze_ / d XYZE = xyze_ * N_XYZ_^T
+    static LINALG::Matrix<my::nsd_,my::nsd_>          defgrd(false);
+    my::ComputeDefGradient(defgrd,my::N_XYZ_,my::xyze_);
+
+    // inverse deformation gradient F^-1
+    static LINALG::Matrix<my::nsd_,my::nsd_>          defgrd_inv(false);
+    defgrd_inv.Invert(defgrd);
+
+    // volume change (used for porosity law). Same as J in nonlinear theory.
+    double volchange = 0.0;
+
+    // compute J and the volume change
+    my::ComputeJacobianDeterminantVolumeChange(
+        my::J_,
+        volchange,
+        defgrd,
+        my::N_XYZ_,
+        edispnp);
 
     my::EvaluateVariablesAtGaussPointOD(
           params,
@@ -903,7 +920,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     params.set<double>("scalar",scalaraf);
     ComputePorosity(  params,
                       my::press_,
-                      my::J_,
+                      volchange,
                       *(iquad),
                       my::funct_,
                       eporositynp,
@@ -928,14 +945,6 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::GaussPointLoopP1OD(
     static LINALG::Matrix<1,my::nsd_*my::nen_> dJ_dus(false);
     //------------------ d( grad(\phi) ) / du_s = d\phi/(dJ du_s) * dJ/dx+ d\phi/dJ * dJ/(dx*du_s) + d\phi/(dp*du_s) * dp/dx
     static LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradphi_dus(false);
-
-    // -------------------------(material) deformation gradient F = d my::xyze_ / d XYZE = my::xyze_ * N_XYZ_^T
-    static LINALG::Matrix<my::nsd_,my::nsd_> defgrd(false);
-    my::ComputeDefGradient(defgrd,my::N_XYZ_,my::xyze_);
-
-    // inverse deformation gradient F^-1
-    static LINALG::Matrix<my::nsd_,my::nsd_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
 
     //------------------------------------ build F^-T as vector 9x1
     static LINALG::Matrix<my::nsd_*my::nsd_,1> defgrd_IT_vec(false);

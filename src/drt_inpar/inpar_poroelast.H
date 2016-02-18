@@ -41,13 +41,6 @@ namespace POROELAST
     Monolithic_meshtying
   };
 
-  /// type of time discretization for continuity equation
-  enum TimeDisTypeConti
-  {
-    porosity,
-    pressure
-  };
-
   /// flag for control, in which equation the transient terms are included
   enum TransientEquationsOfPoroFluid
   {

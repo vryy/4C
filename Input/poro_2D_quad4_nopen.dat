@@ -82,7 +82,6 @@ TOLRES_PRES                     1e-10
 TOLRES_PORO                     1e-10
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
-TIME_DISTYPE_CONTI              porosity //pressure porosity
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      One_Step_Theta //One_Step_Theta Stationary
