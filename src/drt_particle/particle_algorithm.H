@@ -104,7 +104,7 @@ namespace PARTICLE
 
     /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary
-    virtual void TransferParticles(bool ghosting = true);
+    virtual void TransferParticles(const bool updatestates, const bool ghosting = true);
 
   protected:
 
@@ -125,6 +125,9 @@ namespace PARTICLE
 
     /// output particle time step
     virtual void Output(bool forced_writerestart = false);
+
+    /// update state vectors which do not live in the time integrator to new layout
+    virtual void UpdateStates(){};
 
     /// bins are distributed to the processors
     virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs();

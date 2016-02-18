@@ -180,6 +180,9 @@ namespace CAVITATION
     /// output particle time step
     virtual void Output(bool forced_writerestart = false);
 
+    /// update state vectors which do not live in the time integrator to new layout
+    virtual void UpdateStates();
+
     /// setup of bubble sources in each bin
     virtual void BuildBubbleInflowCondition();
 

@@ -217,6 +217,12 @@ namespace PARTICLE
     //! dof map of vector of unknowns
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap();
 
+    //! Access to rcp pointer to noderowmap of discretization
+    virtual const Epetra_Map* NodeRowMapView();
+
+    //! node map of particles
+    virtual Teuchos::RCP<const Epetra_Map> NodeRowMap();
+
     //! Access output object
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
     {

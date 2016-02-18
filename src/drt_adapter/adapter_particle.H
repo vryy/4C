@@ -117,6 +117,12 @@ namespace ADAPTER
     //! dof map of vector of unknowns
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
 
+    //! Access to rcp pointer to noderowmap of discretization
+    virtual const Epetra_Map* NodeRowMapView() = 0;
+
+    //! node map of particles
+    virtual Teuchos::RCP<const Epetra_Map> NodeRowMap() = 0;
+
     //! Access output object
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
 

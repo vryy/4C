@@ -212,7 +212,7 @@ void CAVITATION::Algorithm::Timeloop()
     if(particles_->Time() > Time()-Dt()+0.1*count_*Dt())
     {
       ++count_;
-      TransferParticles();
+      TransferParticles(true);
     }
 
     // update displacements, velocities, accelerations
@@ -582,20 +582,14 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   fluiddis_->ClearState();
   particledis_->ClearState();
 
-  Teuchos::RCP<Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(*fluid_->Velnp()));
-  Teuchos::RCP<Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(*fluid_->Veln()));
-  // compute acceleration
-  Teuchos::RCP<Epetra_Vector> acc = Teuchos::rcp(new Epetra_Vector(*velnp));
-  acc->Update(-1.0/Dt(), *veln, 1.0/Dt());
-
   double theta = 1.0;
   if((particles_->Step()-restartparticles_) % timestepsizeratio_ != 0)
     theta = (double)((particles_->Step()-restartparticles_) % timestepsizeratio_) / (double)timestepsizeratio_;
 
   // fluid velocity linearly interpolated between n and n+1 in case of subcycling
-  Teuchos::RCP<Epetra_Vector> vel = Teuchos::rcp(new Epetra_Vector(*velnp));
+  Teuchos::RCP<Epetra_Vector> vel = Teuchos::rcp(new Epetra_Vector(*fluid_->Velnp()));
   if(theta != 1.0)
-    vel->Update(1.0-theta, *veln, theta);
+    vel->Update(1.0-theta, *fluid_->Veln(), theta);
 
   Teuchos::ParameterList p;
   if(!simplebubbleforce_)
@@ -608,9 +602,9 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     FLD::UTILS::ProjectGradientAndSetParam(fluiddis_,p,vel,"velgradient",false);
   }
 
-  // at the beginning of the coupling step: veln = velnp(previous step) and current velnp contains fluid predictor
+  // set fluid states
   fluiddis_->SetState("vel",vel);
-  fluiddis_->SetState("acc",acc);
+  fluiddis_->SetState("acc",fluid_->Accnp());
 
   // state at n+1 contains already dbc values due to PrepareTimeStep(), otherwise n = n+1
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispnp();
@@ -1652,18 +1646,7 @@ void CAVITATION::Algorithm::ParticleInflow()
 
   // update of state vectors to the new maps
   particles_->UpdateStatesAfterParticleTransfer();
-
-  if(computeradiusRPbased_)
-  {
-    Teuchos::RCP<Epetra_Vector> old;
-    old = dtsub_;
-    dtsub_ = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
-    LINALG::Export(*old, *dtsub_);
-
-    old = pg0_;
-    pg0_ = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
-    LINALG::Export(*old, *pg0_);
-  }
+  UpdateStates();
 
   // insert data for new bubbles into state vectors
   const Epetra_Map* dofrowmap = particledis_->DofRowMap();
@@ -2094,6 +2077,34 @@ void CAVITATION::Algorithm::Output(bool forced_writerestart)
       particles_->DiscWriter()->WriteVector("pg0", pg0_, IO::DiscretizationWriter::nodevector);
       particles_->DiscWriter()->WriteVector("dtsub", dtsub_, IO::DiscretizationWriter::nodevector);
     }
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update state vectors to new layout                      ghamm 02/16  |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::UpdateStates()
+{
+  // call base class
+  PARTICLE::Algorithm::UpdateStates();
+
+  Teuchos::RCP<Epetra_Vector> old;
+
+  if (dtsub_ != Teuchos::null)
+  {
+    old = dtsub_;
+    dtsub_ = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *dtsub_);
+  }
+
+  if (pg0_ != Teuchos::null)
+  {
+    old = pg0_;
+    pg0_ = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *pg0_);
   }
 
   return;

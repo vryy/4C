@@ -114,7 +114,7 @@ void PARTICLE::Algorithm::Timeloop()
     PrepareOutput();
 
     // transfer particles into their correct bins
-    TransferParticles();
+    TransferParticles(true);
 
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
@@ -337,8 +337,6 @@ void PARTICLE::Algorithm::Update()
   if(structure_ != Teuchos::null)
     structure_->Update();
 
-  // update of state vectors to the new maps
-  particles_->UpdateStatesAfterParticleTransfer();
   // write state vectors from n+1 to n
   particles_->Update();
 
@@ -844,7 +842,7 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
 /*----------------------------------------------------------------------*
  | particles are checked and transferred if necessary       ghamm 10/12 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::TransferParticles(bool ghosting)
+void PARTICLE::Algorithm::TransferParticles(const bool updatestates, const bool ghosting)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles");
 
@@ -982,6 +980,13 @@ void PARTICLE::Algorithm::TransferParticles(bool ghosting)
   if(moving_walls_)
     rebuildwallpointer = false;
   BuildElementToBinPointers(rebuildwallpointer);
+
+  // update state vectors in time integrator to the new layout
+  if(updatestates)
+  {
+    particles_->UpdateStatesAfterParticleTransfer();
+    UpdateStates();
+  }
 
   return;
 }

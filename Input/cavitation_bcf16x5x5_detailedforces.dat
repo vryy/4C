@@ -33,7 +33,7 @@ LIMIT_OUTP_TO_PROC              -1
 --------------------------------------------------------------------MESHFREE
 TYPE                            Particle
 CUTOFF_RADIUS                   0.02
-----------------------------------------------------------PARTICLE DYNAMIC
+------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      CentrDiff
 GRAVITY_ACCELERATION            -9.81 0.0 0.0
 ----------------------------------------------------------CAVITATION DYNAMIC
@@ -115,7 +115,7 @@ NAME                            L2-projection solver for velocity gradient
 SOLVER                          Belos                         // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        5                             // output every so often, 0 no output
 AZSOLVE                         CG                            // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU //ML                            // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
+AZPREC                          ILU                           //ML // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         8                             // how often to recompute some preconditioners
 AZDROP                          0.0                           // drop tolerance for ILUT
 IFPACKFILL                      1.0                           // fill-in for ILUT
@@ -160,20 +160,20 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0-9810.0*x  // p_init = \rho_fl * g *
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 147 QUANTITY velx VALUE  5.69159058070781883e-05 TOLERANCE 1.0e-12
-FLUID DIS fluid NODE 147 QUANTITY vely VALUE -1.23052684785034738e-05 TOLERANCE 1.0e-12
-FLUID DIS fluid NODE 147 QUANTITY velz VALUE  1.23052681307744041e-05 TOLERANCE 1.0e-12
-FLUID DIS fluid NODE 147 QUANTITY pressure VALUE  5.85136049880648329e+02 TOLERANCE 1.0e-7
-FLUID DIS fluid NODE 202 QUANTITY velx VALUE  3.65947159602595501e-04 TOLERANCE 1.0e-12
-FLUID DIS fluid NODE 202 QUANTITY vely VALUE -3.18697047714194834e-05 TOLERANCE 1.0e-12
-FLUID DIS fluid NODE 202 QUANTITY velz VALUE  3.18697079596509479e-05 TOLERANCE 1.0e-12
-FLUID DIS fluid NODE 202 QUANTITY pressure VALUE  4.87171077746493438e+02 TOLERANCE 1.0e-7
-PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -4.90849773275128728e-02 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 147 QUANTITY velx VALUE  5.69154979224621995e-05 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 147 QUANTITY vely VALUE -1.23058025064494852e-05 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 147 QUANTITY velz VALUE  1.23058021587558164e-05 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 147 QUANTITY pressure VALUE  5.85136108800638908e+02 TOLERANCE 1.0e-7
+FLUID DIS fluid NODE 202 QUANTITY velx VALUE  3.65951888443994148e-04 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 202 QUANTITY vely VALUE -3.18707273899056169e-05 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 202 QUANTITY velz VALUE  3.18707305797900087e-05 TOLERANCE 1.0e-12
+FLUID DIS fluid NODE 202 QUANTITY pressure VALUE  4.87171100272985996e+02 TOLERANCE 1.0e-7
+PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE -4.90849984188096097e-02 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13
 PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE 2.12189943290975190e-11 TOLERANCE 1.0e-12
-PARTICLE DIS particle NODE 1 QUANTITY velx VALUE  1.73131428669067444e-01 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY velx VALUE  1.73129257487828703e-01 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 1 QUANTITY vely VALUE 0.0 TOLERANCE 1.0e-13
-PARTICLE DIS particle NODE 1 QUANTITY velz VALUE  -1.91657584719115017e-09 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 1 QUANTITY velz VALUE -1.91657584719115017e-09 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 2 QUANTITY dispx VALUE 2.5e-03 TOLERANCE 1.0e-12
 PARTICLE DIS particle NODE 2 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-13
 PARTICLE DIS particle NODE 2 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-13
@@ -187,7 +187,7 @@ NDLINE                          12
 NDSURF                          6
 NDVOL                           1
 -------------------------------------------DESIGN PARTICLE DIRICH CONDITIONS
-DPARTICLE  1
+DPARTICLE                       1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 5.0e-2 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
@@ -247,7 +247,7 @@ E 4 - NUMDOF 4 ONOFF 1 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 E 5 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 //                              surface_back
 E 6 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
--------------------------------------DESIGN VOL NEUMANN CONDITIONS
+-----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 //                              fluid_volume
 E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -9.81 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Dead

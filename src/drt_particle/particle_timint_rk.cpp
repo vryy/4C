@@ -53,7 +53,7 @@ void PARTICLE::TimIntRK::Init()
   radius_  = Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(),true));
   // signs
   sign_  =  Teuchos::rcp(new Epetra_Vector(*discret_->NodeRowMap(),true));
-  
+
   return;
 }
 
@@ -97,7 +97,7 @@ void PARTICLE::TimIntRK::Integrate_RK_Second()
   disn_->Update(dthalf, *vel, 1.0);
 
   // transfer particles to their correct bin, if required
-  particle_algorithm_->TransferParticles(false);
+  particle_algorithm_->TransferParticles(false, false);
 
   // transfer state vectors to potentially new maps
   Teuchos::RCP<Epetra_Vector> old;
@@ -120,9 +120,7 @@ void PARTICLE::TimIntRK::Integrate_RK_Second()
   disn_->Update(1.0, *dis, dt, *vel, 0.0);
 
   // transfer particles to their correct bin, if required
-  particle_algorithm_->TransferParticles(false);
-  // transfer state vectors to potentially new maps
-  UpdateStatesAfterParticleTransfer();
+  particle_algorithm_->TransferParticles(true, false);
 
   // testing output for convergence study (one particle assumed)
   //std::cout << "position " << std::setprecision(12) << (*disn_)[0] << std::endl;

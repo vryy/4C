@@ -2672,10 +2672,8 @@ void PARTICLE::ScatraParticleCoupling::Attraction(
     disnp->Update(1.0,*inc_dis,1.0);
 
     // transfer particles to bins
-    TransferParticles(false);
-    // update of state vectors to the new maps
-    particles_->UpdateStatesAfterParticleTransfer();
-    // likewise update present vectors according to the new distribution of particles
+    TransferParticles(true, false);
+    // update present vectors according to the new distribution of particles
     old = lambda;
     lambda = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
     LINALG::Export(*old, *lambda);

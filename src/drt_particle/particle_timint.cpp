@@ -299,8 +299,7 @@ void PARTICLE::TimInt::PrepareTimeStep()
     ApplyDirichletBC(timen_, disn_, veln_, accn_, true);
 
     // do particle business
-    particle_algorithm_->TransferParticles();
-    UpdateStatesAfterParticleTransfer();
+    particle_algorithm_->TransferParticles(true);
   }
 
   return;
@@ -550,18 +549,20 @@ void PARTICLE::TimInt::ReadRestartState()
   // maps need to be adapted to restarted discretization
   UpdateStatesAfterParticleTransfer();
 
-  // now, state vectors an be read in
-  reader.ReadVector(disn_, "displacement");
-  dis_->UpdateSteps(*disn_);
-  reader.ReadVector(veln_, "velocity");
-  vel_->UpdateSteps(*veln_);
-  reader.ReadVector(accn_, "acceleration");
-  acc_->UpdateSteps(*accn_);
+  // start with reading radius in order to find out whether particles exist
   reader.ReadVector(radius_, "radius");
-  reader.ReadVector(mass_, "mass");
 
   if(radius_->GlobalLength() != 0)
   {
+    // now, remaining state vectors an be read in
+    reader.ReadVector(disn_, "displacement");
+    dis_->UpdateSteps(*disn_);
+    reader.ReadVector(veln_, "velocity");
+    vel_->UpdateSteps(*veln_);
+    reader.ReadVector(accn_, "acceleration");
+    acc_->UpdateSteps(*accn_);
+    reader.ReadVector(mass_, "mass");
+
     // read in particle collision relevant data
     if(collhandler_ != Teuchos::null)
     {
@@ -842,4 +843,19 @@ Teuchos::RCP<const Epetra_Map> PARTICLE::TimInt::DofRowMap()
 const Epetra_Map* PARTICLE::TimInt::DofRowMapView()
 {
   return discret_->DofRowMap();
+}
+
+/*----------------------------------------------------------------------*/
+/* node map of particles                                                */
+Teuchos::RCP<const Epetra_Map> PARTICLE::TimInt::NodeRowMap()
+{
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+  return Teuchos::rcp(new Epetra_Map(*noderowmap));
+}
+
+/*----------------------------------------------------------------------*/
+/* view of node map of particles                                        */
+const Epetra_Map* PARTICLE::TimInt::NodeRowMapView()
+{
+  return discret_->NodeRowMap();
 }
