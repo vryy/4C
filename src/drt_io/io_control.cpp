@@ -59,7 +59,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     if (comm.MyPID()==0)
     {
       int number = 0;
-      size_t pos = filename_.rfind('-');
+      size_t pos = RestartFinder(filename_);
       if (pos!=std::string::npos)
       {
         number = atoi(filename_.substr(pos+1).c_str());
@@ -167,7 +167,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     {
       // check whether filename_ includes a dash and in case separate the number at the end
       int number = 0;
-      size_t pos = filename_.rfind('-');
+      size_t pos = RestartFinder(filename_);
       if (pos!=std::string::npos)
       {
         number = atoi(filename_.substr(pos+1).c_str());
@@ -459,7 +459,7 @@ IO::ErrorFileControl::ErrorFileControl(const Epetra_Comm& comm,
     {
       // check whether filename_ includes a dash and in case separate the number at the end
       int number = 0;
-      size_t pos = filename_.rfind('-');
+      size_t pos = RestartFinder(filename_);
       if (pos!=std::string::npos)
       {
         number = atoi(filename_.substr(pos+1).c_str());
@@ -512,5 +512,21 @@ IO::ErrorFileControl::ErrorFileControl(const Epetra_Comm& comm,
 IO::ErrorFileControl::~ErrorFileControl()
 {
   if (errfile_ != NULL) fclose(errfile_);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+size_t IO::RestartFinder(const std::string& filename)
+{
+  size_t pos;
+  for(pos = filename.size(); pos > 0; --pos)
+  {
+    if (filename[pos-1] == '-')
+      return pos-1;
+
+    if(not std::isdigit(filename[pos-1]) or filename[pos-1] == '/')
+      return std::string::npos;
+  }
+  return std::string::npos;
 }
 

@@ -171,6 +171,11 @@ namespace IO
     FILE* errfile_;
   };
 
+  /// find position of restart number in filename (if existing):
+  /// for "outname-5" will return position of the "-"
+  /// returns std::string::npos if not found
+  size_t RestartFinder(const std::string& filename);
+
 }
 
 #endif
