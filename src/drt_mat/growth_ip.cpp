@@ -75,6 +75,14 @@ MAT::PAR::Growth::Growth(
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
+  case INPAR::MAT::m_growth_ac_radial_refconc:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::PAR::GrowthLawACRadialRefConc(curmat));
+      MAT::PAR::GrowthLawACRadialRefConc* params = static_cast<MAT::PAR::GrowthLawACRadialRefConc*>(curmat->Parameter());
+      growthlaw_ = params->CreateGrowthLaw();
+      break;
+    }
   case INPAR::MAT::m_growth_biofilm:
     {
       if (curmat->Parameter() == NULL)

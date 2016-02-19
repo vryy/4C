@@ -1212,6 +1212,83 @@ class GrowthLawAC: public GrowthLawStatic
     MAT::PAR::GrowthLawACRadial* Parameter() {return dynamic_cast<MAT::PAR::GrowthLawACRadial*>(MAT::GrowthLawStatic::Parameter()); };
 
   };
+
+
+  namespace PAR
+    {
+      /*----------------------------------------------------------------------*/
+      /// material parameters
+      class GrowthLawACRadialRefConc : public GrowthLawAC
+      {
+      public:
+
+        /// standard constructor
+        GrowthLawACRadialRefConc(
+          Teuchos::RCP<MAT::PAR::Material> matdata
+          );
+
+        /// destructor
+        virtual ~GrowthLawACRadialRefConc() { ; }
+
+        /// create growth law instance of matching type with my parameters
+        virtual Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
+
+      };  // class Growth
+
+    }  // namespace PAR
+
+    class GrowthLawACRadialRefConc: public GrowthLawStatic
+    {
+
+    public:
+
+      /// construct empty material object
+      GrowthLawACRadialRefConc();
+      explicit GrowthLawACRadialRefConc(MAT::PAR::GrowthLawAC* params);
+
+      /// destructor
+      virtual ~GrowthLawACRadialRefConc() { ; }
+
+      //! @name Evaluation methods
+      //@{
+
+      /*! \brief evaluate the volumetric growth factor
+       *
+       * \param Out
+       * theta - the volumetric growth factor
+       * \param Out
+       * dthetadC - derivative of theta wrt the chauchy green tensor
+       * \param In
+       * matgrowth - a reference to a growth material
+       * \param In
+       * defgrad - the deformation gradient
+       * \param In
+       * glstrain - the green lagrange strains
+       * \param In
+       * params - a parameter list as handed in from the element
+       * \param In
+       * eleGID - the calling element's GID
+       *
+       *  \author kehl
+       * \date 06/2015
+       */
+      virtual void Evaluate(double* theta,
+          const double& thetaold,
+          LINALG::Matrix<6,1>* dthetadC,
+          MAT::Growth& matgrowth,
+          const LINALG::Matrix<3,3>* defgrd,
+          const LINALG::Matrix<6,1>* glstrain,
+          Teuchos::ParameterList& params,
+          const int eleGID );
+
+      //@}
+
+      /// material type
+      virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growth_ac_radial_refconc; };
+
+      MAT::PAR::GrowthLawACRadialRefConc* Parameter() {return dynamic_cast<MAT::PAR::GrowthLawACRadialRefConc*>(MAT::GrowthLawStatic::Parameter()); };
+
+    };
 } // namespace MAT
 
 

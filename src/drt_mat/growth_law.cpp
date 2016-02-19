@@ -933,7 +933,7 @@ void MAT::GrowthLawACRadial::Evaluate(double* theta,
   (*dthetadC)(5)=2*dThetadC(0,2);
 
   // set ratio for potential linear interpolation between two elastic materials
-  double conc_zero_ratio = 1.0/(1.0+deltagrowth);
+  const double conc_zero_ratio = 1.0/ *theta;
   // linearization of ratio for potential linear interpolation of between two elastic materials
   Cinv.Scale(-0.5*deltagrowth*pow(1.0+deltagrowth,-2.0));
 
@@ -949,4 +949,64 @@ void MAT::GrowthLawACRadial::Evaluate(double* theta,
   // save values in parameter list
   params.set< double >("conc_zero_ratio",conc_zero_ratio);
   params.set< Teuchos::RCP<LINALG::Matrix<6,1> > >("dconc_zero_ratio_dC",dconc_zero_ratio_dC);
+}
+
+
+/*----------------------------------------------------------------------------*/
+MAT::PAR::GrowthLawACRadialRefConc::GrowthLawACRadialRefConc(
+  Teuchos::RCP<MAT::PAR::Material> matdata
+  )
+  : GrowthLawAC(matdata)
+{
+}
+
+Teuchos::RCP<MAT::GrowthLaw> MAT::PAR::GrowthLawACRadialRefConc::CreateGrowthLaw()
+{
+  return Teuchos::rcp(new MAT::GrowthLawACRadialRefConc(this));
+}
+
+/*----------------------------------------------------------------------------*/
+MAT::GrowthLawACRadialRefConc::GrowthLawACRadialRefConc()
+  : GrowthLawStatic(NULL)
+{
+}
+
+/*----------------------------------------------------------------------------*/
+MAT::GrowthLawACRadialRefConc::GrowthLawACRadialRefConc(MAT::PAR::GrowthLawAC* params)
+  : GrowthLawStatic(params)
+{
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthLawACRadialRefConc::Evaluate(double* theta,
+                                      const double& thetaold,
+                                      LINALG::Matrix<6,1>* dthetadC,
+                                      MAT::Growth& matgrowth,
+                                      const LINALG::Matrix<3,3>* defgrd,
+                                      const LINALG::Matrix<6,1>* glstrain,
+                                      Teuchos::ParameterList& params,
+                                      const int eleGID)
+{
+  const int Sc1 = Parameter()->Sc1_;
+  const double alpha= Parameter()->alpha_;
+  // NOTE: if no second scalar is chosen to induce growth, this points out the first scalar field
+  const int Sc2 = Parameter()->Sc2_;
+  // NOTE: if no second scalar is chosen to induce growth, beta is zero and hence has no influence on growth
+  const double beta= Parameter()->beta_;
+
+  //const double deltagrowth = (alpha*GetCfac().at(Sc1-1) + beta * GetCfac().at(Sc2-1))*defgrd->Determinant();
+  const double deltagrowth = (alpha*GetCfac().at(Sc1-1) + beta * GetCfac().at(Sc2-1))*1.0;
+
+  *theta = 1.0 + deltagrowth;
+
+  dthetadC->PutScalar(0.0);
+
+  // set ratio for potential linear interpolation between two elastic materials
+  const double conc_zero_ratio = 1.0/ *theta;
+
+  // save values in parameter list
+  params.set< double >("conc_zero_ratio",conc_zero_ratio);
+
+  //here we don't need this:
+  //  params.set< Teuchos::RCP<LINALG::Matrix<6,1> > >("dconc_zero_ratio_dC",dconc_zero_ratio_dC);
 }

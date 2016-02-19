@@ -58,6 +58,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::GrowthScd::CreateMaterial()
     mat = Teuchos::rcp(new MAT::GrowthScdAC(this));
     break;
   case INPAR::MAT::m_growth_ac_radial:
+  case INPAR::MAT::m_growth_ac_radial_refconc:
     mat = Teuchos::rcp(new MAT::GrowthScdACRadial(this));
     break;
   default:
@@ -730,6 +731,8 @@ void MAT::GrowthScdACRadial::Evaluate
     //save for time update
     n_for_update_.at(gp)=n_for_update;
 
+//    n_.at(gp)=n_for_update;
+
     //--------------------------------------------------------------------------------------
     // calculate \theta and  \frac{\partial \theta}{\partial C}
     //--------------------------------------------------------------------------------------
@@ -759,37 +762,57 @@ void MAT::GrowthScdACRadial::Evaluate
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
 
-//    *cmat = PullBack4Tensor(F_ginv,cmatdach);
     cmatelast = PullBack4Tensor(F_ginv,cmatdach);
 
-    //if the growth law shall be proportional to the scalar in the
-    //spatial configuration on has to a lot more :-(
-
-    //--------------------------------------------------------------------------------------
-    // calculate \frac{\partial S}{\partial \theta}
-    //--------------------------------------------------------------------------------------
-    // NOTE: we do this by a FD approximation, which is really cheap here due to the fact
-    // that theta is a scalar value (hence only one more material evaluation is needed!)
-
-    const double espilon = 1.0e-8;
-
-    LINALG::Matrix<6,1> SEps(true);
-    LINALG::Matrix<6,6> cmatdachEps(true);
-
-    GetSAndCmatdach(theta+espilon,defgrd,&SEps,&cmatdachEps,params,eleGID);
-
-    //--------------------------------------------------------------------------------------
-    // calculate \frac{d S}{d E} = \frac{\partial S}{\partial E} +
-    //    + 2* \left( \frac{\partial S}{\partial \theta} \times \frac{\partial \theta}{\partial C} \right)
-    //--------------------------------------------------------------------------------------
-    for (int i = 0; i < 6; i++)
+    if (params.isParameter("dconc_zero_ratio_dC"))
     {
-      for (int j = 0; j < 6; j++)
-      {
+      //if the growth law shall be proportional to the scalar in the
+      //spatial configuration on has to a lot more :-(
 
-        (*cmat)(i, j) =  cmatelast(i, j) + 2.0 *(SEps(i) - S(i))/espilon * dthetadCvec(j);
+      //--------------------------------------------------------------------------------------
+      // calculate \frac{\partial S}{\partial \theta}
+      //--------------------------------------------------------------------------------------
+      // NOTE: we do this by a FD approximation, which is really cheap here due to the fact
+      // that theta is a scalar value (hence only one more material evaluation is needed!)
+
+      const double espilon = 1.0e-8;
+
+      LINALG::Matrix<6,1> SEps(true);
+      LINALG::Matrix<6,6> cmatdachEps(true);
+
+      GetSAndCmatdach(theta+espilon,defgrd,&SEps,&cmatdachEps,params,eleGID);
+
+      //--------------------------------------------------------------------------------------
+      // calculate \frac{d S}{d E} = \frac{\partial S}{\partial E} +
+      //    + 2* \left( \frac{\partial S}{\partial \theta} \times \frac{\partial \theta}{\partial C} \right)
+      //--------------------------------------------------------------------------------------
+      for (int i = 0; i < 6; i++)
+      {
+        for (int j = 0; j < 6; j++)
+        {
+
+          (*cmat)(i, j) =  cmatelast(i, j) + 2.0 *(SEps(i) - S(i))/espilon * dthetadCvec(j);
+        }
       }
+
+      //clean up for safety reasons
+      params.remove("dconc_zero_ratio_dC");
+      params.remove("conc_zero_ratio");
     }
+    else //dthetadCvec is zero
+    {
+      //Note: we want to end up here only if our theta does not depend on structural variables, hence
+      // iff dthetadCvec is zero. We better check:
+      if (dthetadCvec.NormInf() > 1e-14)
+        dserror("dthetadCvec should be zero in this case!");
+
+      //we are done!
+      *cmat=cmatelast;
+
+      //clean up for safety reasons
+      params.remove("conc_zero_ratio");
+    }
+
     // store theta
     theta_->at(gp) = theta;
   }

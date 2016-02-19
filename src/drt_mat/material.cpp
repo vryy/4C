@@ -550,6 +550,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::m_growth_exponential:
   case INPAR::MAT::m_growth_ac:
   case INPAR::MAT::m_growth_ac_radial:
+  case INPAR::MAT::m_growth_ac_radial_refconc:
   case INPAR::MAT::m_growth_biofilm:
   case INPAR::MAT::m_growth_const:
   case INPAR::MAT::mes_coupSVK:

@@ -124,18 +124,14 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   //evaluate elastic material corresponding to zero concentration
   LINALG::Matrix<6,1> stress_zero_conc = *stress;
   LINALG::Matrix<6,6> cmat_zero_conc = *cmat;
-  double psi_zero_conc = 0.0;
 
   zero_conc_mat_->Evaluate(defgrd, glstrain, params, &stress_zero_conc, &cmat_zero_conc,eleGID);
-  zero_conc_mat_->StrainEnergy(*glstrain,psi_zero_conc,eleGID);
 
   //evaluate elastic material corresponding to infinite concentration
   LINALG::Matrix<6,1> stress_infty_conc = *stress;
   LINALG::Matrix<6,6> cmat_infty_conc = *cmat;
-  double psi_infty_conc = 0.0;
 
   infty_conc_mat_->Evaluate(defgrd, glstrain, params, &stress_infty_conc, &cmat_infty_conc,eleGID);
-  infty_conc_mat_->StrainEnergy(*glstrain,psi_infty_conc,eleGID);
 
   double conc_zero_ratio;
   //get the ratio of interpolation
@@ -162,11 +158,6 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     conc_zero_ratio=zero_conc_ratio_.at(gp);
   }
 
-  //get derivative of interpolation ratio w.r.t. glstrain
-  Teuchos::RCP<LINALG::Matrix<6,1> > dconc_zero_ratio_dC =
-      params.get< Teuchos::RCP<LINALG::Matrix<6,1> > >( "dconc_zero_ratio_dC",Teuchos::rcp(new LINALG::Matrix<6,1>(true)) );
-
-
   ///////////////////////////////////////////////////////////////////////////////////////////////
   // \mym S = 2 \frac{\partial}{\partial \mym C} \left( \Psi(\mym C) \right) = ...
   // \mym S = 2 \frac{\partial}{\partial \mym C} \left( \gamma(J) * \Psi_1(\mym C) + (1-\gamma(J)) * \Psi_2(\mym C) \right) = ...
@@ -175,12 +166,28 @@ void MAT::ScalarDepInterp::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   //do the linear interpolation between stresses:
   // ... = \gamma * 2 * \frac{\partial}{\partial \mym C} \Psi_1 + (1-\gamma) * 2* \frac{\partial}{\partial \mym C} \Psi_2)
   stress->Update(conc_zero_ratio,stress_zero_conc,1-conc_zero_ratio,stress_infty_conc,0.0);
-  //...and add the stresses due to possible dependency of the ratio w.r.t. to C
-  // ... + * 2 * \Psi_1 * \frac{\partial}{\partial \mym C} \gamma - 2 * \Psi_2 * \frac{\partial}{\partial \mym C} \gamma )
-  stress->Update(2.0*psi_zero_conc,*dconc_zero_ratio_dC,-2.0*psi_infty_conc,*dconc_zero_ratio_dC,1.0);
 
-  //Note: for the linearization we do neglect the derivatives of the ratio w.r.t. glstrain
   cmat->Update(conc_zero_ratio,cmat_zero_conc,1-conc_zero_ratio,cmat_infty_conc,0.0);
+
+  if (params.isParameter("dconc_zero_ratio_dC"))
+  {
+    //get derivative of interpolation ratio w.r.t. glstrain
+    Teuchos::RCP<LINALG::Matrix<6,1> > dconc_zero_ratio_dC =
+        params.get< Teuchos::RCP<LINALG::Matrix<6,1> > >( "dconc_zero_ratio_dC");
+
+    //evaluate strain energy functions
+    double psi_zero_conc = 0.0;
+    zero_conc_mat_->StrainEnergy(*glstrain,psi_zero_conc,eleGID);
+
+    double psi_infty_conc = 0.0;
+    infty_conc_mat_->StrainEnergy(*glstrain,psi_infty_conc,eleGID);
+
+    //...and add the stresses due to possible dependency of the ratio w.r.t. to C
+    // ... + * 2 * \Psi_1 * \frac{\partial}{\partial \mym C} \gamma - 2 * \Psi_2 * \frac{\partial}{\partial \mym C} \gamma )
+    stress->Update(2.0*psi_zero_conc,*dconc_zero_ratio_dC,-2.0*psi_infty_conc,*dconc_zero_ratio_dC,1.0);
+
+    //Note: for the linearization we do neglect the derivatives of the ratio w.r.t. glstrain
+  }
 }
 
 /*----------------------------------------------------------------------*/

@@ -468,6 +468,15 @@ bool FS3I::ACFSI::DoesGrowthNeedsUpdate()
         sc1 = growthlawacradial->Parameter()->Sc1_;
         break;
       }
+      case INPAR::MAT::m_growth_ac_radial_refconc:
+      {
+        Teuchos::RCP<MAT::GrowthLawACRadialRefConc> growthlawacradialrefconc = Teuchos::rcp_dynamic_cast<MAT::GrowthLawACRadialRefConc>(growthlaw);
+        if (growthlawacradialrefconc==Teuchos::null)
+          dserror("Dynamic cast to MAT::GrowthLawACRadialRefConc failed!");
+        alpha = growthlawacradialrefconc->Parameter()->alpha_;
+        sc1 = growthlawacradialrefconc->Parameter()->Sc1_;
+        break;
+      }
       default:
       {
         dserror("Growth law not supported in AC-FS3I!");
