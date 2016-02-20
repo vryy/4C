@@ -184,8 +184,8 @@ int XFEM::TIMEINT::interfaceSide(
 
     if (pointInCell)
     {
-      if (cell->getDomainPlus()==true) 	return 1;
-      else 								return -1;
+      if (cell->getDomainPlus()==true)        return 1;
+      else                                                         return -1;
     }
   }
 
@@ -201,8 +201,8 @@ int XFEM::TIMEINT::interfaceSide(
       if (side !=cell->getDomainPlus())
         break; // special case of more than once cut element with deleted cell
 
-    if (side==true)		return 1;
-    else				return -1;
+    if (side==true)              return 1;
+    else                            return -1;
   }
 
   dserror("point in an element should be in one of the elements domain integration cells");
@@ -597,7 +597,11 @@ void XFEM::STD::importNewFGIData(
   flamefront_ = flamefront;
   newinterfacehandle_ = flamefront->InterfaceHandle();
   newdofrowmap_ = newdofrowmap;
-  newNodalDofRowDistrib_ = newNodalDofRowDistrib;
+  // must loop because XFEM::DofKey does not implement a copy assignment operator
+  newNodalDofRowDistrib_.clear();
+  for (std::map<XFEM::DofKey, XFEM::DofGID>::const_iterator i=newNodalDofRowDistrib.begin();
+       i != newNodalDofRowDistrib.end(); ++i)
+    newNodalDofRowDistrib_[i->first] = i->second;
   return;
 }
 
@@ -998,8 +1002,8 @@ void XFEM::STD::exportFinalData()
   {
     // Initialization
     int source = myrank_-(dest-myrank_); // source proc (sends (dest-myrank_) far and gets from (dest-myrank_) earlier)
-    if (source<0)				source+=numproc_;
-    else if (source>=numproc_)	source-=numproc_;
+    if (source<0)                            source+=numproc_;
+    else if (source>=numproc_)       source-=numproc_;
 
     DRT::PackBuffer dataSend;
 
@@ -1136,8 +1140,11 @@ void XFEM::ENR::importNewFGIData(
   phinp_=flamefront->Phinp();
   newinterfacehandle_=flamefront->InterfaceHandle();
   newdofrowmap_=newdofrowmap;
-  newNodalDofRowDistrib_=newNodalDofRowDistrib;
-  nodalDofColDistrib_npi_=oldNodalDofColDistrib;
+  // must loop because XFEM::DofKey does not implement a copy assignment operator
+  newNodalDofRowDistrib_.clear();
+  for (std::map<XFEM::DofKey, XFEM::DofGID>::const_iterator i=newNodalDofRowDistrib.begin();
+       i != newNodalDofRowDistrib.end(); ++i)
+    newNodalDofRowDistrib_[i->first] = i->second;
   return;
 }
 
@@ -1157,7 +1164,7 @@ bool XFEM::ENR::newEnrValueNeeded(
   {
     // case 1: the node was not enriched in old timestep and therefore needs a new enrichment
     const int gid = node->Id();
-    //  	std::cout << "here with node " << *node << std::endl;
+    //         std::cout << "here with node " << *node << std::endl;
 
     const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid)); // field set of node
     for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
@@ -1188,7 +1195,7 @@ bool XFEM::ENR::newEnrValueNeeded(
   {
     // case 1: the node was not enriched in old timestep and therefore needs a new enrichment
     const int gid = node->Id();
-    //  	std::cout << "here with node " << *node << std::endl;
+    //         std::cout << "here with node " << *node << std::endl;
 
     const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid)); // field set of node
     for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
@@ -1320,8 +1327,8 @@ void XFEM::ENR::getCritCutElements(
           currVol = -currVol;
         }
 
-        if (cell->getDomainPlus())	plusVol += currVol;
-        else 						minusVol += currVol;
+        if (cell->getDomainPlus())       plusVol += currVol;
+        else                                           minusVol += currVol;
       } // end loop over domain integration cells
 
       if (plusVol == 0.0 || minusVol == 0.0) // no domain integration cell in one subdomain

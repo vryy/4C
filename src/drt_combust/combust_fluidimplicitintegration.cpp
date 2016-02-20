@@ -373,7 +373,10 @@ void FLD::CombustFluidImplicitTimeInt::Init()
     fsvelafStd_  = LINALG::CreateVector(*dofrowmap,true);
     fsvelafXfem_  = LINALG::CreateVector(*dofrowmap,true);
     // store dof distribution map of inital unenriched fluid field
-    plainnodalDofDistributionMap_ = state_.nodalDofDistributionMap_;
+    plainnodalDofDistributionMap_.clear();
+    for (std::map<XFEM::DofKey, XFEM::DofGID>::const_iterator i=state_.nodalDofDistributionMap_.begin();
+         i != state_.nodalDofDistributionMap_.end(); ++i)
+      plainnodalDofDistributionMap_[i->first] = i->second;
 
     if (myrank_ == 0)
     {
@@ -399,7 +402,10 @@ void FLD::CombustFluidImplicitTimeInt::Init()
     fsvelafStd_  = LINALG::CreateVector(*dofrowmap,true);
     fsvelafXfem_  = LINALG::CreateVector(*dofrowmap,true);
     // store dof distribution map of inital unenriched fluid field
-    plainnodalDofDistributionMap_ = state_.nodalDofDistributionMap_;
+    plainnodalDofDistributionMap_.clear();
+    for (std::map<XFEM::DofKey, XFEM::DofGID>::const_iterator i=state_.nodalDofDistributionMap_.begin();
+         i != state_.nodalDofDistributionMap_.end(); ++i)
+      plainnodalDofDistributionMap_[i->first] = i->second;
 
     if (myrank_ == 0)
     {

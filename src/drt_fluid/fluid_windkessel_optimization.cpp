@@ -261,7 +261,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
   // -------------------------------------------------------------------
   // Read in all of the pressures and evaluate the objective function
   // -------------------------------------------------------------------
-  std::map<int, Teuchos::RCP<DRT::Condition> >::iterator itr;
+  std::map<const int, Teuchos::RCP<DRT::Condition> >::iterator itr;
 
   int index = 0;
   int constrain_num = 0;
