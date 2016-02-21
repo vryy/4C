@@ -18,7 +18,7 @@ Maintainer: Alexander Popp
 #include "mortar_defines.H"
 #include "mortar_utils.H"
 #include "mortar_calc_utils.H"
-#include "../drt_contact/contact_interpolator.H"
+#include "../drt_contact/contact_interpolator.H" // MT interpolator is located in here
 
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -37,7 +37,8 @@ MORTAR::Coupling3d::Coupling3d(DRT::Discretization& idiscret, int dim,
     lmquadtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(params,"LM_QUAD")),
     sele_(sele),
     mele_(mele),
-    imortar_(params)
+    imortar_(params),
+    lauxn_(-1.0)
 {
   // empty constructor body
   return;
@@ -89,8 +90,8 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
   ProjectMaster();
 
   // tolerance for polygon clipping
-  double sminedge = SlaveIntElement().MinEdgeSize();
-  double mminedge = MasterIntElement().MinEdgeSize();
+  const double sminedge = SlaveIntElement().MinEdgeSize();
+  const double mminedge = MasterIntElement().MinEdgeSize();
   tol = MORTARCLIPTOL * std::min(sminedge, mminedge);
 
   // do polygon clipping
@@ -129,9 +130,9 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling3d::RoughCheckCenters()
 {
-  double sme = SlaveIntElement().MaxEdgeSize();
-  double mme = MasterIntElement().MaxEdgeSize();
-  double near = 2.0 * std::max(sme, mme);
+  const double sme = SlaveIntElement().MaxEdgeSize();
+  const double mme = MasterIntElement().MaxEdgeSize();
+  const double near = 2.0 * std::max(sme, mme);
 
   double loccs[2] =
   { 0.0, 0.0 };
@@ -157,7 +158,7 @@ bool MORTAR::Coupling3d::RoughCheckCenters()
   SlaveIntElement().LocalToGlobal(loccs, sc, 0);
   MasterIntElement().LocalToGlobal(loccm, mc, 0);
 
-  double cdist = sqrt(
+  const double cdist = sqrt(
       (mc[0] - sc[0]) * (mc[0] - sc[0]) + (mc[1] - sc[1]) * (mc[1] - sc[1])
           + (mc[2] - sc[2]) * (mc[2] - sc[2]));
   if (cdist >= near)
@@ -180,9 +181,9 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
 
   // prepare check
   bool near = false;
-  double sme = SlaveIntElement().MaxEdgeSize();
-  double mme = MasterIntElement().MaxEdgeSize();
-  double limit = 0.3 * std::max(sme, mme);
+  const double sme = SlaveIntElement().MaxEdgeSize();
+  const double mme = MasterIntElement().MaxEdgeSize();
+  const double limit = 0.3 * std::max(sme, mme);
 
   for (int i = 0; i < nnodes; ++i)
   {
@@ -278,9 +279,35 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
   // we then compute the unit normal vector at the element center
   Lauxn() = SlaveIntElement().ComputeUnitNormalAtXi(loccenter, Auxn());
 
+
+  // calculate auxplane with cpp normal!
+//  LINALG::SerialDenseVector val(SlaveIntElement().NumNode());
+//  LINALG::SerialDenseMatrix deriv(SlaveIntElement().NumNode(),2,true);
+//  SlaveIntElement().EvaluateShape(loccenter, val, deriv, SlaveIntElement().NumNode(),false);
+//  Auxn()[0] = 0.0;
+//  Auxn()[1] = 0.0;
+//  Auxn()[2] = 0.0;
+//
+//  // interpolate between nodal normals
+//  for(int i=0;i<SlaveIntElement().NumNode();++i)
+//  {
+//    MortarNode* snode = dynamic_cast<MortarNode*>(SlaveIntElement().Nodes()[i]);
+//    Auxn()[0] += val[i]*snode->MoData().n()[0];
+//    Auxn()[1] += val[i]*snode->MoData().n()[1];
+//    Auxn()[2] += val[i]*snode->MoData().n()[2];
+//  }
+//
+//  // get length (not used in the following)
+//  Lauxn() = sqrt(Auxn()[0]*Auxn()[0] + Auxn()[1]*Auxn()[1] + Auxn()[2]*Auxn()[2]);
+//
+//  // create unit normal
+//  Auxn()[0] /= Lauxn();
+//  Auxn()[1] /= Lauxn();
+//  Auxn()[2] /= Lauxn();
+
   //std::cout << "Slave Element: " << SlaveIntElement().Id() << std::endl;
   //std::cout << "->Center: " << Auxc()[0] << " " << Auxc()[1] << " " << Auxc()[2] << std::endl;
-  //std::cout << "->Normal: " << Auxn()[0] << " " << Auxn()[1] << " " << Auxn()[2] << std::endl;
+//  std::cout << "->Normal cpp: " << Auxn()[0] << " " << Auxn()[1] << " " << Auxn()[2] << std::endl;
 
   return true;
 }
@@ -4188,15 +4215,6 @@ const Epetra_Comm& MORTAR::Coupling3dManager::Comm() const
 
 
 /*----------------------------------------------------------------------*
- |  get communicator  (public)                               farah 01/13|
- *----------------------------------------------------------------------*/
-const Epetra_Comm& MORTAR::Coupling3dQuadManager::Comm() const
-{
-  return idiscret_.Comm();
-}
-
-
-/*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret,
@@ -4235,6 +4253,7 @@ MORTAR::Coupling3dQuadManager::Coupling3dQuadManager(
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling3dManager::EvaluateCoupling()
 {
+  // check of we need to start the real coupling
   if(MasterElements().size() == 0)
     return false;
 
@@ -4245,14 +4264,9 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
   //*********************************
   // Mortar Contact
   //*********************************
-  if(algo==INPAR::MORTAR::algorithm_mortar)
+  if(algo == INPAR::MORTAR::algorithm_mortar or
+     algo == INPAR::MORTAR::algorithm_gpts)
     IntegrateCoupling();
-
-  //*********************************
-  // Node-to-Segment Contact
-  //*********************************
-  else if(algo == INPAR::MORTAR::algorithm_nts)
-    EvaluateNTS();
 
   //*********************************
   // Error
@@ -4261,19 +4275,6 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
     dserror("ERROR: chosen contact algorithm not supported!");
 
   return true;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Evaluate nts-coupling pairs                              farah 10/14|
- *----------------------------------------------------------------------*/
-void MORTAR::Coupling3dManager::EvaluateNTS()
-{
-  CONTACT::MTInterpolator::Impl(SlaveElement(), MasterElements())->Interpolate3D(
-      SlaveElement(),
-      MasterElements());
-
-  return;
 }
 
 
@@ -4398,53 +4399,6 @@ void MORTAR::Coupling3dManager::IntegrateCoupling()
   // free memory of consistent dual shape function coefficient matrix
   SlaveElement().MoData().ResetDualShape();
   SlaveElement().MoData().ResetDerivDualShape();
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Evaluate coupling pairs for Quad-coupling                farah 10/14|
- *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3dQuadManager::EvaluateCoupling()
-{
-  if(MasterElements().size() == 0)
-    return false;
-
-  // decide which type of coupling should be evaluated
-  INPAR::MORTAR::AlgorithmType algo =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
-
-  //*********************************
-  // Mortar Contact
-  //*********************************
-  if(algo==INPAR::MORTAR::algorithm_mortar)
-    IntegrateCoupling();
-
-  //*********************************
-  // Node-to-Segment Contact
-  //*********************************
-  else if(algo == INPAR::MORTAR::algorithm_nts)
-    EvaluateNTS();
-
-  //*********************************
-  // Error
-  //*********************************
-  else
-    dserror("ERROR: chosen contact algorithm not supported!");
-
-  return true;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Evaluate nts-coupling pairs for Quad-coupling            farah 10/14|
- *----------------------------------------------------------------------*/
-void MORTAR::Coupling3dQuadManager::EvaluateNTS()
-{
-  CONTACT::MTInterpolator::Impl(SlaveElement(), MasterElements())->Interpolate3D(
-      SlaveElement(),
-      MasterElements());
 
   return;
 }

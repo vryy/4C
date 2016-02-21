@@ -140,18 +140,6 @@ public:
       Teuchos::RCP<Epetra_Map>& ActiveDofMap);
 
   /*!
-   \brief Return discrete wear vector (t_n+1)
-
-   */
-  Teuchos::RCP<Epetra_Vector> WearVar() { return w_; }
-
-  /*!
-   \brief Return discrete wear vector (t_n+1) Master
-
-   */
-  Teuchos::RCP<Epetra_Vector> WearVarM() { return wm_; }
-
-  /*!
    \brief Return Lagrange multiplier vector (t_n+1)
 
    */
@@ -176,34 +164,10 @@ public:
   Teuchos::RCP<Epetra_Vector> ConstrRhs() { return constrrhs_; }
 
   /*!
-   \brief Return wear rhs vector (only in saddle-point formulation
-
-   */
-  Teuchos::RCP<Epetra_Vector> WearRhs() { return wearrhs_; }
-
-  /*!
-   \brief Return wear-master rhs vector (only in saddle-point formulation
-
-   */
-  Teuchos::RCP<Epetra_Vector> WearMRhs() { return wearmrhs_; }
-
-  /*!
    \brief Returns increment of LagrangeMultiplier solution vector in SaddlePointSolve routine
 
    */
   Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() { return zincr_; }
-
-  /*!
-   \brief Returns increment of W solution vector in SaddlePointSolve routine
-
-   */
-  Teuchos::RCP<Epetra_Vector> WSolveIncr() { return wincr_; }
-
-  /*!
-   \brief Returns increment of W-master solution vector in SaddlePointSolve routine
-
-   */
-  Teuchos::RCP<Epetra_Vector> WMSolveIncr() { return wmincr_; }
 
   /*!
    \brief Return mortar matrix D
@@ -282,18 +246,6 @@ public:
 
    */
   bool Friction() { return friction_; }
-
-  /*!
-   \brief Return global both sided wear status
-
-   */
-  bool WearBothDiscrete() { return wbothpv_; }
-
-  /*!
-   \brief Return global wear status
-
-   */
-  bool WeightedWear() { return weightedwear_; }
 
   /*!
    \brief Return contact interfaces
@@ -378,21 +330,6 @@ public:
   void RedistributeContact(Teuchos::RCP<Epetra_Vector> dis);
 
   /*!
-   \brief Setup this strategy object (maps, vectors, etc.)
-
-   All global maps and vectors are initialized by collecting
-   the necessary information from all interfaces. In the case
-   of a parallel redistribution, this method is called again
-   to re-setup the above mentioned quantities. In this case
-   we set the input parameter redistributed=TRUE. Moreover,
-   when called for the first time (in the constructor) this
-   method is given the input parameter init=TRUE to account
-   for initialization of the active set.
-
-   */
-  void Setup(bool redistributed, bool init);
-
-  /*!
    \brief Global evaluation method called from time integrator
 
    */
@@ -415,33 +352,6 @@ public:
       const Teuchos::RCP<Epetra_Vector> vec);
 
   /*!
-   \brief Update global master and slave sets
-
-   This becomes necessary for self contact simulations, because in a
-   self contact interface master and slave status are assigned dynamically
-   and thus the global maps change constantly.
-
-   */
-  void UpdateMasterSlaveSetsGlobal();
-
-  /*!
-   \brief Initialize and evaluate interface for the next Newton step
-
-   This method calls Initialize() on all contact interfaces, which
-   resets all kind of nodal quantities like normal vector, weighted
-   gap or Mortar and linearization maps. It then calls Evaluate() on
-   all contact interfaces, which does all the geometric contact stuff.
-   Concretely, this is an evaluation of all involved quantites at nodal
-   level plus the setup of all corresponding linearizations.
-   It includes the nodal normal calculations, contact search, projection
-   and overlap detection, integration of the  Mortar terms D, M and of the
-   weighted gap. Additionally, the linearizations of geometrical quantities
-   (delta_n, delta_t, delta_D, delta_M) are calculated.
-
-   */
-  void InitEvalInterface();
-
-  /*!
    \brief Evaluate reference state
 
    for frictional contact we need history values (relative velocity) and
@@ -452,54 +362,6 @@ public:
   void EvaluateReferenceState(const Teuchos::RCP<Epetra_Vector> vec);
 
   void InitBinStrategyforTimestep(Teuchos::RCP<Epetra_Vector> vel);
-
-  void CalcMeanVelforBinning(Teuchos::RCP<Epetra_Vector> vel);
-
-  /*!
-   \brief Initialize and evaluate Mortar stuff for the next Newton step
-
-   This method first checks if we are dealing with self contact and updates
-   the interface slave and master sets if so. Then it resets the global
-   Mortar matrices D and M and the global gap vector g accordingly.
-
-   The nodal quantites computed in InitEvalInterface() are then assembled
-   to global matrices and vectors respectively. No setup of the global system
-   is to be done here yet, so there is no need to pass in the effective
-   stiffness K or the effective load vector f.
-
-   */
-  void InitMortar();
-  void AssembleMortar();
-  /*!
-   \brief Evaluate relative movement of contact bodies
-
-   This is for evaluating the relative movement of contact bodies. This
-   can either be done with regarding the different movement of material points
-   or regarding the change of mortar projection. The second possibility
-   is definitely objective wheras the first possibility is objective
-   only when the gap is zero.
-
-   */
-
-  void EvaluateRelMov();
-
-  /*!
-   \brief Evaluate contact
-
-   This is just a tiny control routine, deciding which Evaluate-routine
-   of those listed below is to be called (based on input-file information).
-   Note that into ALL derived Evaluate() routines, a REFERENCE to the pointer
-   on the effective stiffness matrix is handed in. This way, after building the
-   new effective stiffness matrix with contact, we can simply let the pointer
-   kteff point onto the new object. The same is true for the effective force
-   vector feff. Be careful: kteff is of type Teuchos::RCP<LINALG::SparseOperator>&.
-
-   \param kteff (in/out): effective stiffness matrix (without -> with contact)
-   \param feff (in/out): effective residual / force vector (without -> with contact)
-
-   */
-  void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff,
-      Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
 
   /*!
    \brief Evaluate matrix of nodal normals
@@ -553,32 +415,11 @@ public:
    */
   void StoreDirichletStatus(Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
 
-  /*!
-   \brief Update Mortar matrices D and M
-
-   The std::string input parameter defines in which direction the conversion
-   is to be performed. Currently only the possibilities "old" and "current"
-   exist, with "old" meaning the Mortar matrices of the last time / load step
-   will be set to the current values D_n+1 and M_n+1 (this happens after
-   completion of a time / load step!). The std::string "current" adresses the
-   current Mortar matrices, which when called will be reset to the last
-   converged values D_n and M_n (this happens in the predictor step when
-   the active set has not yet converged!).
-
-   \param state (in): std::string defining in which direction to convert D and M
-
-   */
-  void StoreDM(const std::string& state);
-
-  /*!
-   \brief Store current (contact) nodal entries to old ones
-
-   Contact nodes own their current entries and old ones (last converged
-   state) from. p.e. the mortar matrices D and M. This function writes the
-   current ones to the old ones.
-
-   */
-  void StoreToOld(MORTAR::StrategyBase::QuantityType type);
+  virtual void SetParentState(
+      const std::string& statename,
+      const Teuchos::RCP<Epetra_Vector> vec,
+      const Teuchos::RCP<DRT::Discretization> dis)
+  {/* standard contact methods don't need the corresponding bulk element */};
 
   /*!
    \brief Update contact at end of time step
@@ -705,23 +546,130 @@ public:
   void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) {}
   Teuchos::RCP<Epetra_Vector> LagrMultOldRescaled() {return Teuchos::null; }
 
-  // wear stuff:
-  virtual void OutputWear() = 0;
-  virtual Teuchos::RCP<Epetra_Vector> ContactWear() = 0;
-  virtual Teuchos::RCP<Epetra_Vector> ContactWear2() = 0;
-  //virtual std::vector<Teuchos::RCP<CONTACT::WearInterface> > WearInterfaces() = 0;
+protected:
 
-  virtual const Teuchos::RCP<Epetra_Map> MasterSlipNodes() = 0;
-  virtual const Teuchos::RCP<Epetra_Map> MasterActiveNodes() = 0;
+  /*!
+   \brief Evaluate contact
 
-  //@}
+   This is just a tiny control routine, deciding which Evaluate-routine
+   of those listed below is to be called (based on input-file information).
+   Note that into ALL derived Evaluate() routines, a REFERENCE to the pointer
+   on the effective stiffness matrix is handed in. This way, after building the
+   new effective stiffness matrix with contact, we can simply let the pointer
+   kteff point onto the new object. The same is true for the effective force
+   vector feff. Be careful: kteff is of type Teuchos::RCP<LINALG::SparseOperator>&.
 
-  //empty functions wear
-  virtual void UpdateWearDiscretIterate(bool store) = 0;
-  virtual void UpdateWearDiscretAccumulation(bool wearaccumulation) = 0;
+   \param kteff (in/out): effective stiffness matrix (without -> with contact)
+   \param feff (in/out): effective residual / force vector (without -> with contact)
 
-  virtual void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<DRT::Discretization> dis)
-  {/* standard contact methods don't need the corresponding bulk element */};
+   */
+  void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+      Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
+
+  /*!
+   \brief Evaluate relative movement of contact bodies
+
+   This is for evaluating the relative movement of contact bodies. This
+   can either be done with regarding the different movement of material points
+   or regarding the change of mortar projection. The second possibility
+   is definitely objective wheras the first possibility is objective
+   only when the gap is zero.
+
+   */
+
+  void EvaluateRelMov();
+
+  /*!
+   \brief Initialize and evaluate Mortar stuff for the next Newton step
+
+   This method first checks if we are dealing with self contact and updates
+   the interface slave and master sets if so. Then it resets the global
+   Mortar matrices D and M and the global gap vector g accordingly.
+
+   The nodal quantites computed in InitEvalInterface() are then assembled
+   to global matrices and vectors respectively. No setup of the global system
+   is to be done here yet, so there is no need to pass in the effective
+   stiffness K or the effective load vector f.
+
+   */
+  void InitMortar();
+  void AssembleMortar();
+
+  /*!
+   \brief Initialize and evaluate interface for the next Newton step
+
+   This method calls Initialize() on all contact interfaces, which
+   resets all kind of nodal quantities like normal vector, weighted
+   gap or Mortar and linearization maps. It then calls Evaluate() on
+   all contact interfaces, which does all the geometric contact stuff.
+   Concretely, this is an evaluation of all involved quantites at nodal
+   level plus the setup of all corresponding linearizations.
+   It includes the nodal normal calculations, contact search, projection
+   and overlap detection, integration of the  Mortar terms D, M and of the
+   weighted gap. Additionally, the linearizations of geometrical quantities
+   (delta_n, delta_t, delta_D, delta_M) are calculated.
+
+   */
+  void InitEvalInterface();
+
+  /*!
+   \brief Setup this strategy object (maps, vectors, etc.)
+
+   All global maps and vectors are initialized by collecting
+   the necessary information from all interfaces. In the case
+   of a parallel redistribution, this method is called again
+   to re-setup the above mentioned quantities. In this case
+   we set the input parameter redistributed=TRUE. Moreover,
+   when called for the first time (in the constructor) this
+   method is given the input parameter init=TRUE to account
+   for initialization of the active set.
+
+   */
+  void Setup(bool redistributed, bool init);
+
+  /*!
+   \brief Update Mortar matrices D and M
+
+   The std::string input parameter defines in which direction the conversion
+   is to be performed. Currently only the possibilities "old" and "current"
+   exist, with "old" meaning the Mortar matrices of the last time / load step
+   will be set to the current values D_n+1 and M_n+1 (this happens after
+   completion of a time / load step!). The std::string "current" adresses the
+   current Mortar matrices, which when called will be reset to the last
+   converged values D_n and M_n (this happens in the predictor step when
+   the active set has not yet converged!).
+
+   \param state (in): std::string defining in which direction to convert D and M
+
+   */
+  void StoreDM(const std::string& state);
+
+  /*!
+   \brief Store current (contact) nodal entries to old ones
+
+   Contact nodes own their current entries and old ones (last converged
+   state) from. p.e. the mortar matrices D and M. This function writes the
+   current ones to the old ones.
+
+   */
+  void StoreToOld(MORTAR::StrategyBase::QuantityType type);
+
+  /*!
+   \brief Update global master and slave sets
+
+   This becomes necessary for self contact simulations, because in a
+   self contact interface master and slave status are assigned dynamically
+   and thus the global maps change constantly.
+
+   */
+  void UpdateMasterSlaveSetsGlobal();
+
+private:
+  /*!
+   \brief Calculate mean velocity of interface for binning range
+
+   */
+  void CalcMeanVelforBinning(Teuchos::RCP<Epetra_Vector> vel);
 
 protected:
 
@@ -796,17 +744,6 @@ protected:
     Teuchos::RCP<LINALG::SparseMatrix>  invtrafo_;        // inverse trafo matrix T^(-1) for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix>  dmatrixmod_;      // modified global Mortar matrix D
     Teuchos::RCP<LINALG::SparseMatrix>  doldmod_;         // modified global Mortar matrix Dold
-
-    // contact with wear
-    bool weightedwear_;                                   // flag for contact with wear (is) --> weighted wear
-    bool wbothpv_;                                        // flag for both sided wear disrete
-    Teuchos::RCP<Epetra_Vector> w_;                       // current vector of pv wear at t_n+1 (slave)
-    Teuchos::RCP<Epetra_Vector> wincr_;                   // Wear variables vector increment within SaddlePointSolve (this is NOT the increment of w_ between t_{n+1} and t_{n}!)
-    Teuchos::RCP<Epetra_Vector> wearrhs_;
-
-    Teuchos::RCP<Epetra_Vector> wm_;                       // current vector of pv wear at t_n+1 (master)
-    Teuchos::RCP<Epetra_Vector> wmincr_;                   // Wear variables vector increment within SaddlePointSolve (this is NOT the increment of w_ between t_{n+1} and t_{n}!)
-    Teuchos::RCP<Epetra_Vector> wearmrhs_;
 
     double inttime_;                                      // integration time
     std::vector<double > ivel_;                           // mean interface velocity

@@ -279,8 +279,8 @@ void FSI::SlidingMonolithicStructureSplit::SetupSystem()
                                                     false,
                                                     aleproj_));
 
-      iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->MasterDofRowMap(), true));
-      iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->MasterDofRowMap(), true));
+      iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->MasterDofMap(), true));
+      iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->MasterDofMap(), true));
     }
     notsetup_=false;
   }
@@ -864,7 +864,7 @@ void FSI::SlidingMonolithicStructureSplit::Update()
   // update history variables for sliding ale
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
   {
-    iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->MasterDofRowMap(),true));
+    iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->MasterDofMap(),true));
     Teuchos::RCP<Epetra_Vector> idispale =
         AleToFluidInterface(AleField()->Interface()->ExtractFSICondVector(AleField()->Dispnp()));
 

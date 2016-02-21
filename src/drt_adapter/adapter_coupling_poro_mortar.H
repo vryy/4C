@@ -117,6 +117,25 @@ namespace ADAPTER
         Teuchos::RCP<CONTACT::CoInterface>& interface,
         int numcoupleddof);
 
+    /*!
+    \brief complete interface, store as internal variable
+           store maps as internal variable and do parallel redist.
+
+    */
+    virtual void CompleteInterface(
+        Teuchos::RCP<DRT::Discretization>   masterdis,
+        Teuchos::RCP<CONTACT::CoInterface>& interface);
+
+    /*!
+    \brief create strategy object if required
+
+    */
+    virtual void CreateStrategy(
+        Teuchos::RCP<DRT::Discretization>   masterdis,
+        Teuchos::RCP<DRT::Discretization>   slavedis,
+        Teuchos::ParameterList&             input,
+        int numcoupleddof);
+
   private:
 
     //poro lagrange strategy
@@ -124,6 +143,9 @@ namespace ADAPTER
 
     //firstinit
     bool firstinit_;
+
+    int slavetype_;  // 1 poro, 0 struct, -1 default
+    int mastertype_; // 1 poro, 0 struct, -1 default
   };
 }
 

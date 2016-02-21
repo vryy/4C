@@ -287,8 +287,7 @@ void CONTACT::CoElement::DJacDXi(double* djacdxi, double* xi,
     std::vector<double> geta(3);
     Metrics(xi, gxi, geta);
 
-    double gsec[3] =
-    { 0.0, 0.0, 0.0 };
+    double gsec[3] = { 0.0, 0.0, 0.0 };
     for (int i = 0; i < NumNode(); ++i)
       for (int k = 0; k < 3; ++k)
         gsec[k] += secderiv(i, 0) * coord(k, i);
@@ -306,8 +305,8 @@ void CONTACT::CoElement::DJacDXi(double* djacdxi, double* xi,
   // 3D quadratic case   (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt == quad4 || dt == tri6 || dt == quad8 || dt == quad9
-      || dt == nurbs4 || dt == nurbs8 || dt == nurbs9)
+  else if (dt == quad4  || dt == tri6   || dt == quad8 || dt == quad9 ||
+           dt == nurbs4 || dt == nurbs8 || dt == nurbs9)
   {
     // get nodal coords for 2nd deriv. evaluation
     LINALG::SerialDenseMatrix coord(3, NumNode());
@@ -319,15 +318,13 @@ void CONTACT::CoElement::DJacDXi(double* djacdxi, double* xi,
     Metrics(xi, gxi, geta);
 
     // cross product of gxi and geta
-    double cross[3] =
-    { 0.0, 0.0, 0.0 };
+    double cross[3] = { 0.0, 0.0, 0.0 };
     cross[0] = gxi[1] * geta[2] - gxi[2] * geta[1];
     cross[1] = gxi[2] * geta[0] - gxi[0] * geta[2];
     cross[2] = gxi[0] * geta[1] - gxi[1] * geta[0];
 
     // the Jacobian itself
-    const double jacinv = 1.0
-        / sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
+    const double jacinv = 1.0 / sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
 
     // 2nd deriv. evaluation
     LINALG::Matrix<3, 3> gsec(true);
@@ -337,24 +334,18 @@ void CONTACT::CoElement::DJacDXi(double* djacdxi, double* xi,
           gsec(k, d) += secderiv(i, d) * coord(k, i);
 
     // compute dJacdXi (2 components in 3D)
-    djacdxi[0] += jacinv * (cross[2] * geta[1] - cross[1] * geta[2])
-        * gsec(0, 0);
-    djacdxi[0] += jacinv * (cross[0] * geta[2] - cross[2] * geta[0])
-        * gsec(1, 0);
-    djacdxi[0] += jacinv * (cross[1] * geta[0] - cross[0] * geta[1])
-        * gsec(2, 0);
-    djacdxi[0] += jacinv * (cross[1] * gxi[2] - cross[2] * gxi[1]) * gsec(0, 2);
-    djacdxi[0] += jacinv * (cross[2] * gxi[0] - cross[0] * gxi[2]) * gsec(1, 2);
-    djacdxi[0] += jacinv * (cross[0] * gxi[1] - cross[1] * gxi[0]) * gsec(2, 2);
-    djacdxi[1] += jacinv * (cross[2] * geta[1] - cross[1] * geta[2])
-        * gsec(0, 2);
-    djacdxi[1] += jacinv * (cross[0] * geta[2] - cross[2] * geta[0])
-        * gsec(1, 2);
-    djacdxi[1] += jacinv * (cross[1] * geta[0] - cross[0] * geta[1])
-        * gsec(2, 2);
-    djacdxi[1] += jacinv * (cross[1] * gxi[2] - cross[2] * gxi[1]) * gsec(0, 1);
-    djacdxi[1] += jacinv * (cross[2] * gxi[0] - cross[0] * gxi[2]) * gsec(1, 1);
-    djacdxi[1] += jacinv * (cross[0] * gxi[1] - cross[1] * gxi[0]) * gsec(2, 1);
+    djacdxi[0] += jacinv * (cross[2] * geta[1] - cross[1] * geta[2]) * gsec(0, 0);
+    djacdxi[0] += jacinv * (cross[0] * geta[2] - cross[2] * geta[0]) * gsec(1, 0);
+    djacdxi[0] += jacinv * (cross[1] * geta[0] - cross[0] * geta[1]) * gsec(2, 0);
+    djacdxi[0] += jacinv * (cross[1] * gxi[2]  - cross[2] * gxi[1])  * gsec(0, 2);
+    djacdxi[0] += jacinv * (cross[2] * gxi[0]  - cross[0] * gxi[2])  * gsec(1, 2);
+    djacdxi[0] += jacinv * (cross[0] * gxi[1]  - cross[1] * gxi[0])  * gsec(2, 2);
+    djacdxi[1] += jacinv * (cross[2] * geta[1] - cross[1] * geta[2]) * gsec(0, 2);
+    djacdxi[1] += jacinv * (cross[0] * geta[2] - cross[2] * geta[0]) * gsec(1, 2);
+    djacdxi[1] += jacinv * (cross[1] * geta[0] - cross[0] * geta[1]) * gsec(2, 2);
+    djacdxi[1] += jacinv * (cross[1] * gxi[2]  - cross[2] * gxi[1])  * gsec(0, 1);
+    djacdxi[1] += jacinv * (cross[2] * gxi[0]  - cross[0] * gxi[2])  * gsec(1, 1);
+    djacdxi[1] += jacinv * (cross[0] * gxi[1]  - cross[1] * gxi[0])  * gsec(2, 1);
   }
 
   // unknown case
@@ -363,6 +354,7 @@ void CONTACT::CoElement::DJacDXi(double* djacdxi, double* xi,
 
   return;
 }
+
 
 void CONTACT::CoElement::PrepareDderiv(const std::vector<MORTAR::MortarElement*>& meles)
 {

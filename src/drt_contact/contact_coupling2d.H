@@ -12,10 +12,9 @@ Maintainer: Alexander Popp
 #ifndef CONTACT_COUPLING2D_H
 #define CONTACT_COUPLING2D_H
 
-#include "../drt_mortar/mortar_coupling2d.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_wear.H"
-
+#include "../drt_mortar/mortar_coupling2d.H"
 
 /*!
 \brief CONTACT: namespace of the BACI contact and meshtying algorithms
@@ -107,7 +106,7 @@ protected:
 \author popp (popp@lnm.mw.tum.de)
 */
 
-class CoCoupling2dManager
+class CoCoupling2dManager  : public MORTAR::Coupling2dManager
 {
 public:
 
@@ -130,48 +129,6 @@ public:
   virtual ~CoCoupling2dManager() {}
 
   /*!
-  \brief Get coupling slave element
-
-  */
-  virtual MORTAR::MortarElement& SlaveElement() const { return *sele_; }
-
-  /*!
-  \brief Get one specific coupling master element
-
-  */
-  virtual MORTAR::MortarElement& MasterElement(int k) const { return *(mele_[k]); }
-
-  /*!
-  \brief Get all coupling master elements
-
-  */
-  virtual std::vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
-
-  /*!
-  \brief Get coupling pairs
-
-  */
-  virtual std::vector<Teuchos::RCP<CONTACT::CoCoupling2d> >& Coupling() { return coup_; }
-
-  /*!
-  \brief Get type of quadratic LM interpolation
-
-  */
-  virtual INPAR::MORTAR::LagMultQuad LagMultQuad() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_,"LM_QUAD"); };
-
-  /*!
-  \brief Get type of integration scheme
-
-  */
-  virtual INPAR::MORTAR::IntType IntType() { return DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(imortar_,"INTTYPE"); };
-
-  /*!
-  \brief Get coupling type
-
-  */
-  virtual const bool& Quad() {return quad_;}
-
-  /*!
   \brief Get communicator
 
   */
@@ -181,7 +138,7 @@ public:
   \brief Get problem dimension
 
   */
-  virtual const int& Dim() {return dim_;}
+  virtual const int& Dim() const {return dim_;}
 
   /*!
   \brief Return the LM shape fcn type
@@ -191,31 +148,19 @@ public:
       { return DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(imortar_,"LM_SHAPEFCN"); }
 
   /*!
-  \brief Evaluate coupling pairs
-
-  */
-  virtual bool EvaluateCoupling();
-
-  /*!
   \brief Evaluate mortar coupling
 
   */
   virtual void IntegrateCoupling();
 
-  /*!
-  \brief Evaluate node-to-segment coupling
-
-  */
-  virtual void EvaluateNTS();
-
+  virtual bool EvaluateCoupling();
+  //@}
+private:
   /*!
   \brief Calculate consistent dual shape functions in boundary elements
 
   */
   virtual void ConsistDualShape();
-
-  //@}
-
 
 protected:
 
@@ -223,13 +168,6 @@ protected:
     CoCoupling2dManager operator = (const CoCoupling2dManager& old);
     CoCoupling2dManager(const CoCoupling2dManager& old);
 
-    DRT::Discretization&                      idiscret_;  // discretization of the contact interface
-    int                                       dim_;       // problem dimension (here: 2D)
-    bool                                      quad_;      // flag indicating coupling type (true = quadratic)
-    Teuchos::ParameterList&                   imortar_;   // containing contact input parameters
-    MORTAR::MortarElement*                    sele_;      // slave element
-    std::vector<MORTAR::MortarElement*>       mele_;      // master elements
-    std::vector<Teuchos::RCP<CoCoupling2d> >  coup_;      // coupling pairs
     INPAR::CONTACT::SolvingStrategy           stype_;     // solving strategy
 
 }; // class CoCoupling2dManager

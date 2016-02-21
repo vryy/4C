@@ -365,7 +365,7 @@ CONTACT::SmoothingManager::SmoothingManager(
     if (stype==INPAR::CONTACT::solution_augmented)
       newinterface=Teuchos::rcp(new CONTACT::AugmentedInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else if(wlaw!=INPAR::WEAR::wear_none)
-      newinterface=Teuchos::rcp(new CONTACT::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
+      newinterface=Teuchos::rcp(new WEAR::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else
       newinterface = Teuchos::rcp(new CONTACT::CoInterface(groupid1, Comm(), dim, icparams, isself[0],redundant));
     cinterfaces.push_back(newinterface);
@@ -1350,7 +1350,7 @@ bool CONTACT::SmoothingManager::ReadAndCheckInput(Teuchos::ParameterList& cparam
 /*----------------------------------------------------------------------*
  |  write interface tractions for postprocessing (public)     popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::SmoothingManager::PostprocessTractions(IO::DiscretizationWriter& output)
+void CONTACT::SmoothingManager::PostprocessQuantities(IO::DiscretizationWriter& output)
 {
   // *********************************************************************
   // active contact set and slip set

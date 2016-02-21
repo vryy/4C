@@ -25,7 +25,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_serialdensevector.H"
 
 // for nts-meshtying
-#include "../drt_contact/contact_interpolator.H"
+#include "../drt_contact/contact_interpolator.H" // MT interpolator is located in here
 
 
 /*----------------------------------------------------------------------*
@@ -34,9 +34,13 @@ Maintainer: Alexander Popp
 MORTAR::Coupling2d::Coupling2d(DRT::Discretization& idiscret, int dim,
     bool quad, Teuchos::ParameterList& params, MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele) :
-
-    idiscret_(idiscret), dim_(dim), quad_(quad), imortar_(params), sele_(sele), mele_(
-        mele), overlap_(false)
+    idiscret_(idiscret),
+    dim_(dim),
+    quad_(quad),
+    imortar_(params),
+    sele_(sele),
+    mele_(mele),
+    overlap_(false)
 {
   // initialize variables
   hasproj_.resize(4);
@@ -121,7 +125,7 @@ bool MORTAR::Coupling2d::Project()
 
       // for nurbs we need to use the Gauss point projector, since the actual spatial coords
       // of the point to be projected is calculated by N*X using shape functions N and CP coords X
-      MORTAR::MortarProjector::Impl(SlaveElement(),mele_)->ProjectGaussPoint(SlaveElement(),xinode,mele_,xi);
+      MORTAR::MortarProjector::Impl(SlaveElement(),mele_)->ProjectGaussPoint2D(SlaveElement(),xinode,mele_,xi);
     }
     else
     {
@@ -967,11 +971,19 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
-MORTAR::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret,
-    int dim, bool quad, Teuchos::ParameterList& params,
-    MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele) :
-    idiscret_(idiscret), dim_(dim), quad_(quad), imortar_(params), sele_(sele), mele_(
-        mele)
+MORTAR::Coupling2dManager::Coupling2dManager(
+    DRT::Discretization& idiscret,
+    int dim,
+    bool quad,
+    Teuchos::ParameterList& params,
+    MORTAR::MortarElement* sele,
+    std::vector<MORTAR::MortarElement*> mele) :
+  idiscret_(idiscret),
+  dim_(dim),
+  quad_(quad),
+  imortar_(params),
+  sele_(sele),
+  mele_(mele)
 {
   return;
 }
@@ -1131,19 +1143,6 @@ void MORTAR::Coupling2dManager::IntegrateCoupling()
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                  farah 10/14|
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling2dManager::EvaluateNTS()
-{
-  CONTACT::MTInterpolator::Impl(SlaveElement(), MasterElements())->Interpolate2D(
-      SlaveElement(),
-      MasterElements());
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Evaluate coupling pairs                                  farah 10/14|
- *----------------------------------------------------------------------*/
 bool MORTAR::Coupling2dManager::EvaluateCoupling()
 {
   if(MasterElements().size() == 0)
@@ -1156,14 +1155,9 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
   //*********************************
   // Mortar Contact
   //*********************************
-  if(algo==INPAR::MORTAR::algorithm_mortar)
+  if(algo == INPAR::MORTAR::algorithm_mortar or
+     algo == INPAR::MORTAR::algorithm_gpts)
     IntegrateCoupling();
-
-  //*********************************
-  // Node-to-Segment Contact
-  //*********************************
-  else if(algo == INPAR::MORTAR::algorithm_nts)
-    EvaluateNTS();
 
   //*********************************
   // Error

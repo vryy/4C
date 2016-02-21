@@ -286,9 +286,9 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
               FluidField()->Discretization(), *coupsfm_, true, aleproj_));
 
       iprojdispinc_ = Teuchos::rcp(
-          new Epetra_Vector(*coupsfm_->SlaveDofRowMap(), true));
+          new Epetra_Vector(*coupsfm_->SlaveDofMap(), true));
       iprojdisp_ = Teuchos::rcp(
-          new Epetra_Vector(*coupsfm_->SlaveDofRowMap(), true));
+          new Epetra_Vector(*coupsfm_->SlaveDofMap(), true));
     }
     notsetup_ = false;
   }
@@ -1508,7 +1508,7 @@ void FSI::MortarMonolithicFluidSplit::Update()
   if (aleproj_ != INPAR::FSI::ALEprojection_none)
   {
     iprojdisp_ = Teuchos::rcp(
-        new Epetra_Vector(*coupsfm_->SlaveDofRowMap(), true));
+        new Epetra_Vector(*coupsfm_->SlaveDofMap(), true));
     Teuchos::RCP<Epetra_Vector> idispale = AleToFluidInterface(
         AleField()->Interface()->ExtractFSICondVector(AleField()->Dispnp()));
 

@@ -166,7 +166,7 @@ void CONTACT::PoroLagrangeStrategy::PoroInitialize(ADAPTER::Coupling& coupfs,
      interface_[i]->AssembleTN(Tangential_,Teuchos::null);
      interface_[i]->AssembleTNderiv(linTangentiallambda_,Teuchos::null,true); //use lambda(n +1) for tangential condition!!!
 
-     interface_[i]->AssembleLinDM(*porolindmatrix_,*porolinmmatrix_,true,false);
+     interface_[i]->AssembleLinDM(*porolindmatrix_,*porolinmmatrix_,true);
     }
   }
 
@@ -1526,7 +1526,7 @@ void CONTACT::PoroLagrangeStrategy::PoroMtPrepareFluidCoupling()
   //Assemble D and M matrices
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-   interface_[i]->AssembleDM(*dmatrix_,*mmatrix_,false);
+   interface_[i]->AssembleDM(*dmatrix_,*mmatrix_);
   }
 
   // complete D and M matrices

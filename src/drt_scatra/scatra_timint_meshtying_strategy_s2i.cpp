@@ -1104,7 +1104,6 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
       icoupmortar_[islavecondition->first]->SetupInterface(
           scatratimint_->Discretization(),
           scatratimint_->Discretization(),
-          Teuchos::null,
           coupleddof,
           mastergnodes,
           slavegnodes,
@@ -1117,9 +1116,9 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
       imortarcells_[islavecondition->first] = icoupmortar_[islavecondition->first]->EvaluateGeometry();
 
       // build interface maps
-      imastermap = LINALG::MergeMap(imastermap,icoupmortar_[islavecondition->first]->MasterDofRowMap(),false);
-      islavemap = LINALG::MergeMap(islavemap,icoupmortar_[islavecondition->first]->SlaveDofRowMap(),false);
-      ifullmap = LINALG::MergeMap(ifullmap,LINALG::MergeMap(icoupmortar_[islavecondition->first]->MasterDofRowMap(),icoupmortar_[islavecondition->first]->SlaveDofRowMap(),false),false);
+      imastermap = LINALG::MergeMap(imastermap,icoupmortar_[islavecondition->first]->MasterDofMap(),false);
+      islavemap = LINALG::MergeMap(islavemap,icoupmortar_[islavecondition->first]->SlaveDofMap(),false);
+      ifullmap = LINALG::MergeMap(ifullmap,LINALG::MergeMap(icoupmortar_[islavecondition->first]->MasterDofMap(),icoupmortar_[islavecondition->first]->SlaveDofMap(),false),false);
     }
 
     // generate interior and interface maps

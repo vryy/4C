@@ -669,7 +669,7 @@ void CONTACT::MtManager::ReadRestart(IO::DiscretizationReader& reader,
 /*----------------------------------------------------------------------*
  |  write interface tractions for postprocessing (public)     popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtManager::PostprocessTractions(IO::DiscretizationWriter& output)
+void CONTACT::MtManager::PostprocessQuantities(IO::DiscretizationWriter& output)
 {
   // evaluate interface tractions
   Teuchos::RCP<Epetra_Map> problem = GetStrategy().ProblemDofs();

@@ -86,9 +86,12 @@ namespace INPAR
     /// (this enum represents the input file parameter ALGORITHM)
     enum AlgorithmType
     {
-      algorithm_mortar,    ///< mortar algorithm
+      algorithm_mortar,    ///< mortar algorithm (segment-to-segment)
       algorithm_nts,       ///< node-to-segment algorithm
-      algorithm_gpts       ///< gp-to-segment algorithm
+      algorithm_gpts,      ///< gp-to-segment algorithm
+      algorithm_lts,       ///< line-to-segment algorithm (coming soon...)
+      algorithm_ltl,       ///< line-to-segment algorithm (coming soon...)
+      algorithm_ntl        ///< node-to-line algorithm (coming soon...)
     };
 
     /// Type of parallel redistribution algorithm

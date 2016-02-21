@@ -129,7 +129,7 @@ public:
   \brief postprocess tractions for mesht/contact
 
   */
-  void PostprocessTractions(Teuchos::RCP<IO::DiscretizationWriter>& output);
+  void PostprocessQuantities(Teuchos::RCP<IO::DiscretizationWriter>& output);
 
   /*!
   \brief read restart

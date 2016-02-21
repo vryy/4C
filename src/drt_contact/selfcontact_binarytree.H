@@ -482,12 +482,6 @@ public:
   virtual ~SelfDualEdge() {};
 
   /*!
-  \brief Calculate the cost function of a dual edge
-
-  */
-  void CalculateCosts();
-
-  /*!
   \brief Return costs
 
   */
@@ -504,25 +498,6 @@ public:
 
   */
   virtual Teuchos::RCP<SelfBinaryTreeNode> GetNode2() const { return node2_; }
-
-
-  /*!
-  \brief return greater node of dual edge
-
-  */
-  virtual Teuchos::RCP<SelfBinaryTreeNode> GreaterNode()
-  {
-    if (node1_ > node2_)       return node1_;
-    else if (node2_ > node1_)  return node2_;
-    else                       return node1_;
-  }
-
-  virtual Teuchos::RCP<SelfBinaryTreeNode> LesserNode()
-  {
-    if (node1_ > node2_)       return node2_;
-    else if (node2_ > node1_)  return node1_;
-    else                       return node1_;
-  }
 
   /*!
   \brief Return common tree node of two dual edges
@@ -542,6 +517,29 @@ public:
   }
 
 private:
+  /*!
+  \brief Calculate the cost function of a dual edge
+
+  */
+  void CalculateCosts();
+
+  /*!
+  \brief return greater node of dual edge
+
+  */
+  virtual Teuchos::RCP<SelfBinaryTreeNode> GreaterNode()
+  {
+    if (node1_ > node2_)       return node1_;
+    else if (node2_ > node1_)  return node2_;
+    else                       return node1_;
+  }
+
+  virtual Teuchos::RCP<SelfBinaryTreeNode> LesserNode()
+  {
+    if (node1_ > node2_)       return node2_;
+    else if (node2_ > node1_)  return node1_;
+    else                       return node1_;
+  }
 
   // don't want = operator and cctor
   SelfDualEdge operator = (const SelfDualEdge& old);
@@ -598,6 +596,18 @@ public:
   */
   virtual ~SelfBinaryTree() {};
 
+  //! @name Evaluation methods
+
+  /*!
+  \brief Evaluate search self binarytree:
+         call SetEnlarge() and SearchContactSeparate()
+
+  */
+  void EvaluateSearch();
+
+  //@}
+
+private:
   //! @name Access methods
 
   /*!
@@ -683,17 +693,17 @@ public:
   //! @name Evaluation methods
 
   /*!
-  \brief Calculate minimal element length / inflation factor "enlarge"
-
-  */
-  void SetEnlarge();
-
-  /*!
   \brief Initialize Tree in a bottom up way based on dual graph
 
   */
   void InitializeTreeBottomUp(std::map<Teuchos::RCP<SelfDualEdge>,
                               std::vector<Teuchos::RCP<SelfDualEdge> > > *dualGraph);
+
+  /*!
+  \brief Calculate minimal element length / inflation factor "enlarge"
+
+  */
+  void SetEnlarge();
 
   /*!
   \brief Evaluate Binary search tree for separate update (bottom-up,
@@ -763,9 +773,6 @@ public:
   */
   void UpdateNormals();
 
-  //@}
-
-protected:
 
   // don't want = operator and cctor
   SelfBinaryTree operator = (const SelfBinaryTree& old);

@@ -17,10 +17,10 @@ Maintainer: Philipp Farah
 #include "contact_interface.H"
 #include <Epetra_FEVector.h>
 
-namespace CONTACT
+namespace WEAR
 {
 
-class WearInterface : public CoInterface
+class WearInterface : public CONTACT::CoInterface
 {
 
 public:
@@ -263,24 +263,6 @@ public:
                                  LINALG::SparseMatrix& linslipWglobal);
 
    /*!
-   \brief Finalize construction of Wear interface
-
-   The methods completes construction phase of a mortar interface.
-   It creates complete overlap ghosting of all elements and nodes
-   on all processors that own at least one node or element on the interface.
-   On return, row maps of nodes and elements are the same as on input but column maps
-   are redundant on all participating processors. Also creates row and column maps
-   of slave and master nodes separately such that these can be easily accessed.
-
-   \param maxdof (in): maximum dof ID in global discretization
-                       (if default=0, then no lmdofrowmap is created)
-
-   \return Filled()==true
-
-   */
-   virtual void FillComplete(int maxdof = 0, bool newghosting = true);
-
-   /*!
    \brief Assemble inactive rhs (incremental delta_w_)
    */
    virtual void AssembleInactiveWearRhs(Epetra_Vector& inactiverhs);
@@ -447,7 +429,15 @@ public:
    INPAR::WEAR::WearShape WearShapeFcn()
        { return DRT::INPUT::IntegralValue<INPAR::WEAR::WearShape>(imortar_,"WEAR_SHAPEFCN"); }
 
-protected:
+private:
+   /*!
+   \brief initialize node and element data container
+
+   Derived verision!
+
+   */
+   virtual void InitializeDataContainer();
+
 
    // both-sided wear specific stuff
    Teuchos::RCP<Epetra_Map>      involvednodes_;  // row map of all involved master nodes
@@ -463,11 +453,11 @@ protected:
    Teuchos::RCP<Epetra_Map>      slipmasternodes_;      // row map of all active master nodes (first entries)
    Teuchos::RCP<Epetra_Map>      slipmn_;      // row map of all active master nodes (first entries)
 
-
-   bool wearimpl_;        //bool for implicit wear
-   bool wearpv_;          //bool for wear with own discretization
-   bool wearboth_;        //bool for wear on both sides
-   bool sswear_;          //bool steady state wear
+   bool wear_;            // bool for wear
+   bool wearimpl_;        // bool for implicit wear
+   bool wearpv_;          // bool for wear with own discretization
+   bool wearboth_;        // bool for wear on both sides
+   bool sswear_;          // bool steady state wear
 
 }; //class
 

@@ -680,7 +680,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivSegment2D(
 
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
-    MORTAR::MortarProjector::Impl(sele,mele)->ProjectGaussPoint(sele,sxi,mele,mxi);
+    MORTAR::MortarProjector::Impl(sele,mele)->ProjectGaussPoint2D(sele,sxi,mele,mxi);
 
     // check GP projection
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
@@ -900,7 +900,7 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle2D(
       {
         // project Gauss point onto master element
         double mxi[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint(sele,sxi,*meles[nummaster],mxi);
+        MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint2D(sele,sxi,*meles[nummaster],mxi);
 
         // gp on mele?
         if ((mxi[0]>=-1.0) && (mxi[0]<=1.0) && (kink_projection==false))

@@ -154,7 +154,6 @@ namespace ADAPTER
     //@}
 
   private:
-
     /*!
     \brief Create auxiliary dofsets for multiphysics if necessary
 
@@ -164,11 +163,24 @@ namespace ADAPTER
                           std::vector<int>* coupleddof12,
                           std::vector<int>* coupleddof21);
 
+    /// check setup call
+    const bool& IsSetup() const { return issetup_; };
+
+    /// check init and setup call
+    void CheckSetup() const
+    {
+      if ( !IsSetup())
+        dserror("ERROR: Call Setup() first!");
+    }
+
+  private:
+    bool                               issetup_;  ///< check for setup
+
     // mortar matrices and projector
     // s1 = P12 * s2
     // s2 = P21 * s1
-    Teuchos::RCP<LINALG::SparseMatrix> P12_;     // global Mortar projection matrix P Omega_2 -> Omega_1
-    Teuchos::RCP<LINALG::SparseMatrix> P21_;     // global Mortar projection matrix P Omega_1 -> Omega_2
+    Teuchos::RCP<LINALG::SparseMatrix> P12_;     ///< global Mortar projection matrix P Omega_2 -> Omega_1
+    Teuchos::RCP<LINALG::SparseMatrix> P21_;     ///< global Mortar projection matrix P Omega_1 -> Omega_2
 
   };
 }

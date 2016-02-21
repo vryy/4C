@@ -731,10 +731,11 @@ void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
  |  Solve soe with me*ae^T = de^T and return me^-1           farah 07/14|
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix LINALG::InvertAndMultiplyByCholesky(
-    LINALG::SerialDenseMatrix& me, LINALG::SerialDenseMatrix& de,
+    LINALG::SerialDenseMatrix& me,
+    LINALG::SerialDenseMatrix& de,
     LINALG::SerialDenseMatrix& ae)
 {
-  int n = me.N();
+  const int n = me.N();
 
   LINALG::SerialDenseMatrix y(n, n);
   LINALG::SerialDenseMatrix y_identity(n, n, true);
@@ -1683,6 +1684,23 @@ Teuchos::RCP<Epetra_Map> LINALG::CreateMap(const std::vector<int> & gids,
 bool LINALG::SplitVector(const Epetra_Map& xmap, const Epetra_Vector& x,
     Teuchos::RCP<Epetra_Map>& x1map, Teuchos::RCP<Epetra_Vector>& x1,
     Teuchos::RCP<Epetra_Map>& x2map, Teuchos::RCP<Epetra_Vector>& x2)
+{
+  // map extractor with fullmap(xmap) and two other maps (x1map and x2map)
+  LINALG::MapExtractor extractor(xmap, x1map, x2map);
+
+  // extract subvectors from fullvector
+  x1 = extractor.ExtractVector(x, 1);
+  x2 = extractor.ExtractVector(x, 0);
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ | split a vector into 2 pieces with given submaps           farah 02/16|
+ *----------------------------------------------------------------------*/
+bool LINALG::SplitVector(const Epetra_Map& xmap, const Epetra_Vector& x,
+    Teuchos::RCP<const Epetra_Map>& x1map, Teuchos::RCP<Epetra_Vector>& x1,
+    Teuchos::RCP<const Epetra_Map>& x2map, Teuchos::RCP<Epetra_Vector>& x2)
 {
   // map extractor with fullmap(xmap) and two other maps (x1map and x2map)
   LINALG::MapExtractor extractor(xmap, x1map, x2map);

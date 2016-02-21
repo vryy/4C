@@ -84,9 +84,9 @@ Teuchos::RCP<LINALG::SparseOperator> ALE::Meshtying::Setup(std::vector<int> coup
   if (myrank_ == 0)
   {
     int numdofmaster =
-        (adaptermeshtying_->MasterDofRowMap())->NumGlobalElements();
+        (adaptermeshtying_->MasterDofMap())->NumGlobalElements();
     int numdofslave =
-        (adaptermeshtying_->SlaveDofRowMap())->NumGlobalElements();
+        (adaptermeshtying_->SlaveDofMap())->NumGlobalElements();
 
     std::cout << std::endl << "number of master dof's:   " << numdofmaster
         << std::endl;
@@ -109,10 +109,10 @@ Teuchos::RCP<LINALG::SparseOperator> ALE::Meshtying::Setup(std::vector<int> coup
             "The null space does not have the right length. Fix it or use option Smat");
 
   // slave dof rowmap
-  gsdofrowmap_ = adaptermeshtying_->SlaveDofRowMap();
+  gsdofrowmap_ = adaptermeshtying_->SlaveDofMap();
 
   // master dof rowmap
-  gmdofrowmap_ = adaptermeshtying_->MasterDofRowMap();
+  gmdofrowmap_ = adaptermeshtying_->MasterDofMap();
 
   // merge dofrowmap for slave and master discretization
   gsmdofrowmap_ = LINALG::MergeMap(*gmdofrowmap_, *gsdofrowmap_, false);

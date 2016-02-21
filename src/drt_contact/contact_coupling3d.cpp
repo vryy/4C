@@ -1351,22 +1351,6 @@ void CONTACT::CoCoupling3dManager::IntegrateCoupling()
 
 
 /*----------------------------------------------------------------------*
- |  Evaluate node-to-segment coupling pairs                  farah 10/14|
- *----------------------------------------------------------------------*/
-void CONTACT::CoCoupling3dManager::EvaluateNTS()
-{
-  // create an interpolator instance
-  Teuchos::RCP<CONTACT::CoInterpolator> interpolator =
-      Teuchos::rcp(new CoInterpolator(imortar_));
-
-  // create contact terms + linearization
-  interpolator->Interpolate3D(SlaveElement(),MasterElements());
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                 farah 09/14 |
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
@@ -1382,12 +1366,6 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
     IntegrateCoupling();
 
   //*********************************
-  // Node-to-Segment Contact
-  //*********************************
-  else if(algo == INPAR::MORTAR::algorithm_nts)
-    EvaluateNTS();
-
-  //*********************************
   // Error
   //*********************************
   else
@@ -1395,7 +1373,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
 
   // interpolate temperatures in TSI case
   if (imortar_.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
-    CoInterpolator(imortar_).InterpolateMasterTemp3D(SlaveElement(),MasterElements());
+    NTS::CoInterpolator(imortar_,dim_).InterpolateMasterTemp3D(SlaveElement(),MasterElements());
 
   return true;
 }
@@ -1569,22 +1547,6 @@ void CONTACT::CoCoupling3dQuadManager::IntegrateCoupling()
 
 
 /*----------------------------------------------------------------------*
- |  Evaluate NTS coupling pairs for Quad-coupling            farah 09/14|
- *----------------------------------------------------------------------*/
-void CONTACT::CoCoupling3dQuadManager::EvaluateNTS()
-{
-  // create an interpolator instance
-  Teuchos::RCP<CONTACT::CoInterpolator> interpolator =
-      Teuchos::rcp(new CoInterpolator(Params()));
-
-  // create contact terms + linearization
-  interpolator->Interpolate3D(SlaveElement(),MasterElements());
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  |  Evaluate coupling pairs for Quad-coupling                farah 01/13|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
@@ -1598,12 +1560,6 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
   //*********************************
   if(algo==INPAR::MORTAR::algorithm_mortar)
     IntegrateCoupling();
-
-  //*********************************
-  // Node-to-Segment Contact
-  //*********************************
-  else if(algo == INPAR::MORTAR::algorithm_nts)
-    EvaluateNTS();
 
   //*********************************
   // Error

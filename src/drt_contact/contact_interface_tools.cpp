@@ -1165,6 +1165,475 @@ void CONTACT::CoInterface::FDCheckNormalDeriv()
 
 
 /*----------------------------------------------------------------------*
+ | Finite difference check for normal/tangent deriv.         farah 01/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoInterface::FDCheckNormalCPPDeriv()
+{
+  // FD checks only for serial case
+  Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
+  Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
+  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+
+  // get out of here if not participating in interface
+  if (!lComm()) return;
+
+  // create storage for normals / tangents
+  std::vector<double> refnx(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> refny(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> refnz(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newnx(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newny(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newnz(int(snodecolmapbound_->NumMyElements()));
+
+  std::vector<double> reftxix(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> reftxiy(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> reftxiz(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newtxix(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newtxiy(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newtxiz(int(snodecolmapbound_->NumMyElements()));
+
+  std::vector<double> reftetax(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> reftetay(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> reftetaz(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newtetax(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newtetay(int(snodecolmapbound_->NumMyElements()));
+  std::vector<double> newtetaz(int(snodecolmapbound_->NumMyElements()));
+
+  // problem dimension (2D or 3D)
+  int dim = Dim();
+
+  // store all nodal normals / derivatives (reference)
+  for(int j=0; j<snodecolmapbound_->NumMyElements();++j)
+  {
+    int jgid = snodecolmapbound_->GID(j);
+    DRT::Node* jnode = idiscret_->gNode(jgid);
+    if (!jnode) dserror("ERROR: Cannot find node with gid %",jgid);
+    CoNode* jcnode = dynamic_cast<CoNode*>(jnode);
+
+    // store reference normals / tangents
+    refnx[j] = jcnode->MoData().n()[0];
+    refny[j] = jcnode->MoData().n()[1];
+    refnz[j] = jcnode->MoData().n()[2];
+    reftxix[j] = jcnode->CoData().txi()[0];
+    reftxiy[j] = jcnode->CoData().txi()[1];
+    reftxiz[j] = jcnode->CoData().txi()[2];
+    reftetax[j] = jcnode->CoData().teta()[0];
+    reftetay[j] = jcnode->CoData().teta()[1];
+    reftetaz[j] = jcnode->CoData().teta()[2];
+  }
+
+  // global loop to apply FD scheme to all slave dofs (=dim*nodes)
+  for (int i=0; i<dim*snodefullmap->NumMyElements();++i)
+  {
+    // store warnings for this finite difference
+    int w=0;
+
+    // reset normal etc.
+    Initialize();
+
+    // compute element areas
+    SetElementAreas();
+
+    EvaluateSearchBinarytree();
+
+    // now finally get the node we want to apply the FD scheme to
+    int gid = snodefullmap->GID(i/dim);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    CoNode* snode = dynamic_cast<CoNode*>(node);
+
+    int sdof = snode->Dofs()[i%dim];
+    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << sdof << std::endl;
+
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (i%dim==0)
+    {
+      snode->xspatial()[0] += delta;
+    }
+    else if (i%dim==1)
+    {
+      snode->xspatial()[1] += delta;
+    }
+    else
+    {
+      snode->xspatial()[2] += delta;
+    }
+
+    // compute element areas
+    SetElementAreas();
+
+    EvaluateCPPNormals();
+
+    // compute finite difference derivative
+    for(int k=0; k<snodecolmapbound_->NumMyElements();++k)
+    {
+      int kgid = snodecolmapbound_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
+
+      // build NEW averaged normal at each slave node
+//      kcnode->BuildAveragedNormal();
+
+      newnx[k] = kcnode->MoData().n()[0];
+      newny[k] = kcnode->MoData().n()[1];
+      newnz[k] = kcnode->MoData().n()[2];
+      newtxix[k] = kcnode->CoData().txi()[0];
+      newtxiy[k] = kcnode->CoData().txi()[1];
+      newtxiz[k] = kcnode->CoData().txi()[2];
+      newtetax[k] = kcnode->CoData().teta()[0];
+      newtetay[k] = kcnode->CoData().teta()[1];
+      newtetaz[k] = kcnode->CoData().teta()[2];
+
+      // get reference normal / tangent
+      double refn[3] = {0.0, 0.0, 0.0};
+      double reftxi[3] = {0.0, 0.0, 0.0};
+      double refteta[3] = {0.0, 0.0, 0.0};
+      refn[0] = refnx[k];
+      refn[1] = refny[k];
+      refn[2] = refnz[k];
+      reftxi[0] = reftxix[k];
+      reftxi[1] = reftxiy[k];
+      reftxi[2] = reftxiz[k];
+      refteta[0] = reftetax[k];
+      refteta[1] = reftetay[k];
+      refteta[2] = reftetaz[k];
+
+      // get modified normal / tangent
+      double newn[3] = {0.0, 0.0, 0.0};
+      double newtxi[3] = {0.0, 0.0, 0.0};
+      double newteta[3] = {0.0, 0.0, 0.0};
+      newn[0] = newnx[k];
+      newn[1] = newny[k];
+      newn[2] = newnz[k];
+      newtxi[0] = newtxix[k];
+      newtxi[1] = newtxiy[k];
+      newtxi[2] = newtxiz[k];
+      newteta[0] = newtetax[k];
+      newteta[1] = newtetay[k];
+      newteta[2] = newtetaz[k];
+
+      // print results (derivatives) to screen
+      if (abs(newn[0]-refn[0])>1e-12 || abs(newn[1]-refn[1])>1e-12 || abs(newn[2]-refn[2]) > 1e-12)
+      {
+        for (int d=0;d<dim;++d)
+        {
+         double finit = (newn[d]-refn[d])/delta;
+         double analy = (kcnode->CoData().GetDerivN()[d])[snode->Dofs()[i%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+
+         if(abs(analy)>1e-12)
+           std::cout << "NORMAL(" << kgid << "," << d << "," << snode->Dofs()[i%dim] << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+        }
+      }
+
+      if (abs(newtxi[0]-reftxi[0])>1e-12 || abs(newtxi[1]-reftxi[1])>1e-12 || abs(newtxi[2]-reftxi[2]) > 1e-12)
+      {
+        for (int d=0;d<dim;++d)
+        {
+         double finit = (newtxi[d]-reftxi[d])/delta;
+         double analy = (kcnode->CoData().GetDerivTxi()[d])[snode->Dofs()[i%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "TANGENT_XI(" << kgid << "," << d << "," << snode->Dofs()[i%dim] << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+        }
+      }
+
+      //if (abs(newteta[0]-refteta[0])>1e-12 || abs(newteta[1]-refteta[1])>1e-12 || abs(newteta[2]-refteta[2]) > 1e-12)
+      {
+        for (int d=0;d<dim;++d)
+        {
+         double finit = (newteta[d]-refteta[d])/delta;
+         double analy = (kcnode->CoData().GetDerivTeta()[d])[snode->Dofs()[i%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "TANGENT_ETA(" << kgid << "," << d << "," << snode->Dofs()[i%dim] << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+        }
+      }
+    }
+
+    // undo finite difference modification
+    if (i%dim==0)
+    {
+      snode->xspatial()[0] -= delta;
+    }
+    else if (i%dim==1)
+    {
+      snode->xspatial()[1] -= delta;
+    }
+    else
+    {
+      snode->xspatial()[2] -= delta;
+    }
+
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+  }
+
+
+
+
+
+
+
+
+  // global loop to apply FD scheme to all slave dofs (=dim*nodes)
+  for (int i=0; i<dim*mnodefullmap->NumMyElements();++i)
+  {
+    // store warnings for this finite difference
+    int w=0;
+
+    // reset normal etc.
+    Initialize();
+
+    // compute element areas
+    SetElementAreas();
+
+    EvaluateSearchBinarytree();
+
+    // now finally get the node we want to apply the FD scheme to
+    int gid = mnodefullmap->GID(i/dim);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find slave node with gid %",gid);
+    CoNode* mnode = dynamic_cast<CoNode*>(node);
+
+    int mdof = mnode->Dofs()[i%dim];
+    std::cout << "\nDERIVATIVE FOR S-NODE # " << gid << " DOF: " << mdof << std::endl;
+
+
+    // do step forward (modify nodal displacement)
+    double delta = 1e-8;
+    if (i%dim==0)
+    {
+      mnode->xspatial()[0] += delta;
+    }
+    else if (i%dim==1)
+    {
+      mnode->xspatial()[1] += delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] += delta;
+    }
+
+    // compute element areas
+    SetElementAreas();
+
+    EvaluateCPPNormals();
+
+    // compute finite difference derivative
+    for(int k=0; k<snodecolmapbound_->NumMyElements();++k)
+    {
+      int kgid = snodecolmapbound_->GID(k);
+      DRT::Node* knode = idiscret_->gNode(kgid);
+      if (!knode) dserror("ERROR: Cannot find node with gid %",kgid);
+      CoNode* kcnode = dynamic_cast<CoNode*>(knode);
+
+      // build NEW averaged normal at each slave node
+//      kcnode->BuildAveragedNormal();
+
+      newnx[k] = kcnode->MoData().n()[0];
+      newny[k] = kcnode->MoData().n()[1];
+      newnz[k] = kcnode->MoData().n()[2];
+      newtxix[k] = kcnode->CoData().txi()[0];
+      newtxiy[k] = kcnode->CoData().txi()[1];
+      newtxiz[k] = kcnode->CoData().txi()[2];
+      newtetax[k] = kcnode->CoData().teta()[0];
+      newtetay[k] = kcnode->CoData().teta()[1];
+      newtetaz[k] = kcnode->CoData().teta()[2];
+
+      // get reference normal / tangent
+      double refn[3] = {0.0, 0.0, 0.0};
+      double reftxi[3] = {0.0, 0.0, 0.0};
+      double refteta[3] = {0.0, 0.0, 0.0};
+      refn[0] = refnx[k];
+      refn[1] = refny[k];
+      refn[2] = refnz[k];
+      reftxi[0] = reftxix[k];
+      reftxi[1] = reftxiy[k];
+      reftxi[2] = reftxiz[k];
+      refteta[0] = reftetax[k];
+      refteta[1] = reftetay[k];
+      refteta[2] = reftetaz[k];
+
+      // get modified normal / tangent
+      double newn[3] = {0.0, 0.0, 0.0};
+      double newtxi[3] = {0.0, 0.0, 0.0};
+      double newteta[3] = {0.0, 0.0, 0.0};
+      newn[0] = newnx[k];
+      newn[1] = newny[k];
+      newn[2] = newnz[k];
+      newtxi[0] = newtxix[k];
+      newtxi[1] = newtxiy[k];
+      newtxi[2] = newtxiz[k];
+      newteta[0] = newtetax[k];
+      newteta[1] = newtetay[k];
+      newteta[2] = newtetaz[k];
+
+      // print results (derivatives) to screen
+      if (abs(newn[0]-refn[0])>1e-12 || abs(newn[1]-refn[1])>1e-12 || abs(newn[2]-refn[2]) > 1e-12)
+      {
+        for (int d=0;d<dim;++d)
+        {
+         double finit = (newn[d]-refn[d])/delta;
+         double analy = (kcnode->CoData().GetDerivN()[d])[mnode->Dofs()[i%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+
+         if(abs(analy)>1e-12)
+           std::cout << "NORMAL(" << kgid << "," << d << "," << mnode->Dofs()[i%dim] << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+        }
+      }
+
+      if (abs(newtxi[0]-reftxi[0])>1e-12 || abs(newtxi[1]-reftxi[1])>1e-12 || abs(newtxi[2]-reftxi[2]) > 1e-12)
+      {
+        for (int d=0;d<dim;++d)
+        {
+         double finit = (newtxi[d]-reftxi[d])/delta;
+         double analy = (kcnode->CoData().GetDerivTxi()[d])[mnode->Dofs()[i%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "TANGENT_XI(" << kgid << "," << d << "," << mnode->Dofs()[i%dim] << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+        }
+      }
+
+      //if (abs(newteta[0]-refteta[0])>1e-12 || abs(newteta[1]-refteta[1])>1e-12 || abs(newteta[2]-refteta[2]) > 1e-12)
+      {
+        for (int d=0;d<dim;++d)
+        {
+         double finit = (newteta[d]-refteta[d])/delta;
+         double analy = (kcnode->CoData().GetDerivTeta()[d])[mnode->Dofs()[i%dim]];
+         double dev = finit - analy;
+
+         // kgid: id of currently tested slave node
+         // snode->Dofs()[fd%dim]: currently modified slave dof
+         std::cout << "TANGENT_ETA(" << kgid << "," << d << "," << mnode->Dofs()[i%dim] << ") : fd=" << finit << " derivn=" << analy << " DEVIATION " << dev;
+
+         if( abs(dev) > 1e-4 )
+         {
+           std::cout << " ***** WARNING ***** ";
+           w++;
+         }
+         else if( abs(dev) > 1e-5 )
+         {
+           std::cout << " ***** warning ***** ";
+           w++;
+         }
+
+         std::cout << std::endl;
+        }
+      }
+    }
+
+    // undo finite difference modification
+    if (i%dim==0)
+    {
+      mnode->xspatial()[0] -= delta;
+    }
+    else if (i%dim==1)
+    {
+      mnode->xspatial()[1] -= delta;
+    }
+    else
+    {
+      mnode->xspatial()[2] -= delta;
+    }
+
+    std::cout << " ******************** GENERATED " << w << " WARNINGS ***************** " << std::endl;
+  }
+
+  // back to normal...
+  // reset normal etc.
+  Initialize();
+
+  // compute element areas
+  SetElementAreas();
+
+  // contents of Evaluate()
+  Evaluate();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | Finite difference check for D-Mortar derivatives           popp 05/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::FDCheckMortarDDeriv()
@@ -2733,7 +3202,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       // 2) integrate Mortar matrix M and weighted gap g
       // 3) compute directional derivative of M and g and store into nodes
       //********************************************************************
-      IntegrateCoupling(selement,melements);
+      MortarCoupling(selement,melements);
     }
     // *******************************************************************
 
@@ -2933,7 +3402,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       // 2) integrate Mortar matrix M and weighted gap g
       // 3) compute directional derivative of M and g and store into nodes
       //********************************************************************
-      IntegrateCoupling(selement,melements);
+      MortarCoupling(selement,melements);
     }
     // *******************************************************************
 
@@ -3104,7 +3573,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     // 2) integrate Mortar matrix M and weighted gap g
     // 3) compute directional derivative of M and g and store into nodes
     //********************************************************************
-    IntegrateCoupling(selement,melements);
+    MortarCoupling(selement,melements);
   }
   // *******************************************************************
 

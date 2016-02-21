@@ -145,6 +145,22 @@ public:
   }
 
   /*!
+   \brief Return the 'D' map (vector) of this node
+   */
+  GEN::pairedvector<int, double>& GetDnts()
+  {
+    return drows_nts_;
+  }
+
+  /*!
+   \brief Return the 'M' map of this node
+   */
+  std::map<int, double>& GetMnts()
+  {
+    return mrows_nts_;
+  }
+
+  /*!
    \brief Return the 'Mmod' map of this node
    */
   std::map<int, double>& GetMmod()
@@ -176,6 +192,9 @@ protected:
   GEN::pairedvector<int, double> drows_; // nodal rows of D matrix
   std::map<int, double> mrows_; // nodal rows of M matrix
   std::map<int, double> mmodrows_; // nodal rows of Mmod matrix
+
+  GEN::pairedvector<int, double> drows_nts_; // nodal rows of D matrix
+  std::map<int, double> mrows_nts_; // nodal rows of M matrix
 
   double scalefac_; // nodal scaling factor for better conditioning
 
@@ -462,6 +481,7 @@ public:
 
    */
   void AddDValue(const int& colnode, const double& val);
+  void AddDntsValue(const int& colnode, const double& val);
 
   /*!
    \brief Add a value to the 'M' map of this node
@@ -475,6 +495,7 @@ public:
 
    */
   void AddMValue(const int& colnode,const double& val);
+  void AddMntsValue(const int& colnode,const double& val);
 
   /*!
    \brief Add a value to the 'Mmod' map of this node
@@ -531,7 +552,7 @@ public:
    \param limit      (in):    limit in percent of edge length
 
    */
-  virtual bool CheckMeshDistortion(double& relocation, double& limit);
+  virtual bool CheckMeshDistortion(double& relocation, const double& limit);
 
   /*!
    \brief Initializes the data container of the node

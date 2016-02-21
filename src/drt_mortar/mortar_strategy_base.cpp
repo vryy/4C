@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file mortar_abstract_strategy.cpp
+\file mortar_strategy_base.cpp
 
 <pre>
 Maintainer: Alexander Popp
@@ -38,6 +38,7 @@ comm_(comm),
 scontact_(params),
 dim_(dim),
 alphaf_(alphaf),
+parredist_(false),
 maxdof_(maxdof)
 
 {

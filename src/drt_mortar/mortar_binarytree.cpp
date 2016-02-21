@@ -58,6 +58,7 @@ mleafsmap_(mleafsmap)
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  | get communicator (public)                                  popp 10/08|
  *----------------------------------------------------------------------*/
@@ -1056,6 +1057,74 @@ useauxpos_(useauxpos)
   }
   */
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | clear found search elements from last eval.               farah 01/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::BinaryTree::InitSearchElements()
+{
+  // loop over all elements to reset candidates / search lists
+  // (use standard slave column map)
+  for (int i = 0; i < selements_->NumMyElements(); ++i)
+  {
+    int gid = selements_->GID(i);
+    DRT::Element* ele = Discret().gElement(gid);
+    if (!ele)
+      dserror("ERROR: Cannot find ele with gid %i", gid);
+    MortarElement* sele = dynamic_cast<MortarElement*>(ele);
+
+    sele->MoData().SearchElements().resize(0);
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ | evaluate search to get sele to mele info (public)         farah 01/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::BinaryTree::EvaluateSearch()
+{
+  // *********************************************************************
+  // Possible versions for general mortar setting:
+  // *********************************************************************
+  //
+  // 1) Combined Update and Search
+  // -> In this case we only have to call SearchCombined(), which
+  //    does buth top-down update (where necessary) and search.
+  //
+  // 2) Separate Update and Search
+  // -> In this case we have to explicitly call and updating routine, i.e.
+  //    UpdateTreeTopDown() or UpdateTreeBottomUp() before calling the
+  //    search routine SearchSeparate(). Of course, the bottom-up
+  //    update makes more sense here. For very large meshtying problems,
+  //    this version is preferable and thus chosen as default.
+  //
+  // *********************************************************************
+
+  // init search elements
+  InitSearchElements();
+
+  // calculate minimal element length
+  SetEnlarge();
+
+  // update tree in a top down way
+  //binarytree_->UpdateTreeTopDown();
+
+  // update tree in a bottom up way
+  UpdateTreeBottomUp();
+
+#ifdef MORTARGMSHCTN
+  for (int i=0;i<(int)(binarytree_->CouplingMap().size());i++)
+  binarytree_->CouplingMap()[i].clear();
+  binarytree_->CouplingMap().clear();
+  binarytree_->CouplingMap().resize(2);
+#endif //MORTARGMSHCTN
+  // search with a separate algorithm
+  SearchSeparate();
+
+  // search with an combined algorithm
+  //binarytree_->SearchCombined();
   return;
 }
 

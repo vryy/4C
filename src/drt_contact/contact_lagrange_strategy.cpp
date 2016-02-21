@@ -3031,6 +3031,31 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
           } // if (ftype == INPAR::CONTACT::friction_coulomb)
         } // if (nz - cn*wgap <= 0)
       } // if (cnode->Active()==false)
+
+      if(cnode->Active())
+      {
+//        std::cout << "active node= " << cnode->Id() << std::endl;
+//        for(int alph = 0; alph< cnode->NumElement();++alph)
+//        {
+////          std::cout << "alpha= " << (cnode->CoData().GetAlpha()[0])[cnode->Elements()[alph]->Id()] << std::endl;
+//          if((cnode->CoData().GetAlpha()[0])[cnode->Elements()[alph]->Id()]>1-1e-8)
+//            std::cout << "MORTAR" << std::endl;
+//          else if((cnode->CoData().GetAlpha()[0])[cnode->Elements()[alph]->Id()]<0+1e-8)
+//            std::cout << "NTS" << std::endl;
+//          else
+//            std::cout << "MIXED" << std::endl;
+//        }
+
+//          std::cout << "alpha= " << (cnode->CoData().GetAlpha()[0])[cnode->Elements()[alph]->Id()] << std::endl;
+//          if((cnode->CoData().GetAlphaN())>1-1e-8)
+//            std::cout << "MORTAR" << std::endl;
+//          else if((cnode->CoData().GetAlphaN())<0+1e-8)
+//            std::cout << "NTS" << std::endl;
+//          else
+//            std::cout << "MIXED" << std::endl;
+
+      }
+
     } // loop over all slave nodes
   } // loop over all interfaces
 

@@ -77,14 +77,8 @@ namespace WEAR
     //! virtual destructor to support polymorph destruction
     virtual ~Algorithm();
 
-    //! create mortar interfaces for material conf.
-    void CreateMaterialInterface();
-
     //! outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;
-
-    //! check compatibility if input parameters
-    void CheckInput();
 
     //! read restart data
     virtual void ReadRestart(
@@ -97,13 +91,20 @@ namespace WEAR
     //! access to ALE field
     ADAPTER::AleWearWrapper& AleField() { return *ale_; }
 
-  protected:
+  private:
 
-    int                                                dim_;        //! problem dimension
+    //! check compatibility if input parameters
+    void CheckInput();
+
+    //! create mortar interfaces for material conf.
+    void CreateMaterialInterface();
 
     //! @name Underlying fields
     Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>      structure_;  //! underlying structure
     Teuchos::RCP<ADAPTER::AleWearWrapper>              ale_;        //! underlying ALE
+
+  protected:
+    int                                                dim_;        //! problem dimension
     //@}
 
     Teuchos::RCP<MORTAR::ManagerBase>                  cmtman_;        // contact manager

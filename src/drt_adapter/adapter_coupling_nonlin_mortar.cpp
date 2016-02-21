@@ -40,23 +40,19 @@ Maintainer: Philipp Farah
  |  ctor                                                     farah 10/14|
  *----------------------------------------------------------------------*/
 ADAPTER::CouplingNonLinMortar::CouplingNonLinMortar() :
+  CouplingMortar(),
   issetup_(false),
   comm_(Teuchos::null),
   myrank_(-1),
-  masterdofrowmap_(Teuchos::null),
-  slavedofrowmap_(Teuchos::null),
   slavenoderowmap_(Teuchos::null),
-  D_(Teuchos::null),
-  DInv_(Teuchos::null),
   DLin_(Teuchos::null),
-  M_(Teuchos::null),
   MLin_(Teuchos::null),
-  P_(Teuchos::null),
   gap_(Teuchos::null),
   interface_(Teuchos::null)
 {
   //empty...
 }
+
 
 /*----------------------------------------------------------------------*
  |  initialize nonlinear mortar framework                    farah 10/14|
@@ -84,24 +80,84 @@ void ADAPTER::CouplingNonLinMortar::Setup(
   Teuchos::RCP<CONTACT::CoInterface> interface;
 
   // number of dofs per node based on the coupling vector coupleddof
-  int dof = coupleddof.size();
+  const int dof = coupleddof.size();
 
   // number of coupled dofs (defined in coupleddof by a 1)
   int numcoupleddof = 0;
   for(int ii=0; ii<dof; ++ii)
     if(coupleddof[ii]==1) numcoupleddof+=1;
 
-  ReadMortarCondition(masterdis, slavedis, coupleddof, couplingcond, input, mastergnodes, slavegnodes, masterelements, slaveelements);
+  // read the mortar conditions and set probtype
+  ReadMortarCondition(
+      masterdis,
+      slavedis,
+      coupleddof,
+      couplingcond,
+      input,
+      mastergnodes,
+      slavegnodes,
+      masterelements,
+      slaveelements);
 
-  AddMortarNodes(masterdis,slavedis,coupleddof,input,mastergnodes,slavegnodes,masterelements,slaveelements,interface,numcoupleddof);
+  // add contact nodes to interface discr.
+  AddMortarNodes(
+      masterdis,
+      slavedis,
+      coupleddof,
+      input,
+      mastergnodes,
+      slavegnodes,
+      masterelements,
+      slaveelements,
+      interface,
+      numcoupleddof);
 
-  AddMortarElements(masterdis,slavedis,input,masterelements,slaveelements,interface,numcoupleddof);
+  // add contact eles to interface discr.
+  AddMortarElements(
+      masterdis,
+      slavedis,
+      input,
+      masterelements,
+      slaveelements,
+      interface,
+      numcoupleddof);
+
+  // complete interface, store as int. var. and do
+  // parallel red.
+  CompleteInterface(
+      masterdis,
+      interface);
+
+  // Initialize matrices
+  InitMatrices();
+
+  // create stratgy object if required
+  CreateStrategy(
+      masterdis,
+      slavedis,
+      input,
+      numcoupleddof);
 
   // set setup flag
   issetup_ = true;
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  read mortar condition                                    farah 10/14|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::CreateStrategy(
+    Teuchos::RCP<DRT::Discretization>   masterdis,
+    Teuchos::RCP<DRT::Discretization>   slavedis,
+    Teuchos::ParameterList&             input,
+    int numcoupleddof)
+{
+  // nothing to do for pure adapter
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  read mortar condition                                    farah 10/14|
@@ -181,13 +237,11 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(
 
   input.set<int>("PROBTYPE", INPAR::CONTACT::other); //if other probtypes, this will be overwritten in overloaded function
 
-  bool isnurbs=false;
   // is this a nurbs problem?
+  bool isnurbs=false;
   std::string distype = DRT::Problem::Instance()->SpatialApproximation();
   if(distype=="Nurbs")
-  {
     isnurbs=true;
-  }
   input.set<bool>("NURBS",isnurbs);
 
   // check for invalid parameter values
@@ -196,12 +250,9 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(
   if (DRT::INPUT::IntegralValue<int>(input,"LM_NODAL_SCALE")==true)
     if(myrank_== 0) dserror("Mortar coupling adapter does not work with LM_NODAL_SCALE");
 
-  // check for parallel redistribution (only if more than 1 proc)
-//  bool parredist = false;
-//  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST")
-//      != INPAR::MORTAR::parredist_none)
-//    if (comm_->NumProc()>1) parredist = true;
+  return;
 }
+
 
 /*----------------------------------------------------------------------*
  |  add mortar nodes                                         farah 10/14|
@@ -219,7 +270,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarNodes(
     int numcoupleddof
     )
 {
-  bool isnurbs = input.get<bool>("NURBS");
+  const bool isnurbs = input.get<bool>("NURBS");
 
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   const int dim = DRT::Problem::Instance()->NDim();
@@ -340,7 +391,7 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(
     int numcoupleddof
     )
 {
-  bool isnurbs = input.get<bool>("NURBS");
+  const bool isnurbs = input.get<bool>("NURBS");
 
   // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
   const int dim = DRT::Problem::Instance()->NDim();
@@ -472,40 +523,83 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(
     }
   }
 
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Initialize matrices                                      farah 02/16|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::InitMatrices()
+{
+  // safety check
+  if(slavedofrowmap_  == Teuchos::null or
+     slavenoderowmap_ == Teuchos::null)
+    dserror("ERROR: Maps not initialized!");
+
+  // init as standard sparse matrix --> local assembly
+  D_   = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
+  M_   = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
+  gap_ = Teuchos::rcp(new Epetra_Vector(*slavenoderowmap_,true));
+
+  // init as fe matrix --> nonlocal assembly
+  DLin_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  MLin_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,true,false,LINALG::SparseMatrix::FE_MATRIX));
+
+  // bye
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  complete interface (also print and parallel redist.)     farah 02/16|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::CompleteInterface(
+    Teuchos::RCP<DRT::Discretization>   masterdis,
+    Teuchos::RCP<CONTACT::CoInterface>& interface)
+{
   // finalize the contact interface construction
   interface->FillComplete();
 
   // store old row maps (before parallel redistribution)
-  slavedofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
-  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
-  slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
+  pslavedofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
+  pmasterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
+  pslavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
 
   // print parallel distribution
   interface->PrintParallelDistribution(1);
 
+  // check for parallel redistribution
+  bool parredist = false;
+  const Teuchos::ParameterList& input =
+      DRT::Problem::Instance()->MortarCouplingParams();
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") !=
+      INPAR::MORTAR::parredist_none)
+    parredist = true;
+
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
   //**********************************************************************
-//  if (parredist && comm_->NumProc()>1)
-//  {
-//    // redistribute optimally among all procs
-//    interface->Redistribute(1);
-//
-//    // call fill complete again
-//    interface->FillComplete();
-//
-//    // print parallel distribution again
-//    interface->PrintParallelDistribution(1);
-//  }
+  if (parredist && comm_->NumProc()>1)
+  {
+    // redistribute optimally among all procs
+    interface->Redistribute(1);
+
+    // call fill complete again
+    interface->FillComplete();
+
+    // print parallel distribution again
+    interface->PrintParallelDistribution(1);
+  }
+
+  // store row maps (after parallel redistribution)
+  slavedofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
+  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
+  slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
 
   // store interface
   interface_ = interface;
 
-  D_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
-  DLin_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,true,false,LINALG::SparseMatrix::FE_MATRIX));
-  M_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
-  MLin_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,true,false,LINALG::SparseMatrix::FE_MATRIX));
-  gap_ = Teuchos::rcp(new Epetra_Vector(*slavenoderowmap_,true));
   return;
 }
 
@@ -709,15 +803,19 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   // safety check
   CheckSetup();
 
+  // init matrices
   D_->Zero();
   DLin_->Zero();
 
+  // set lagrange multiplier and displacement state
   interface_->SetState(statename,vec);
   interface_->SetState("lm",veclm);
 
+  // general interface init: data container etc...
   interface_->Initialize();
   interface_->SetElementAreas();
 
+  // loop over all slave col elements and direct integration
   for (int j=0; j<interface_->SlaveColElements()->NumMyElements(); ++j)
   {
     int gid = interface_->SlaveColElements()->GID(j);
@@ -731,8 +829,9 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
     integrator->IntegrateD(*cele,*comm_,true);
   }
 
-  interface_->AssembleDM(*D_,*M_,true);
-  interface_->AssembleLinDM(*DLin_,*MLin_,false,true);
+  // assemble routine
+  interface_->AssembleD(*D_);
+  interface_->AssembleLinD(*DLin_,false);
 
   return;
 }
@@ -775,56 +874,6 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
 
 
 /*----------------------------------------------------------------------*
- |  compute projection operator P                            farah 01/16|
- *----------------------------------------------------------------------*/
-void ADAPTER::CouplingNonLinMortar::CreateP()
-{
-  // safety check
-  CheckSetup();
-
-  // check
-  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(interface_->IParams(),"LM_SHAPEFCN") !=
-      INPAR::MORTAR::shape_dual)
-    dserror("ERROR: Creation of P operator only for dual shape functions!");
-
-  /********************************************************************/
-  /* Multiply Mortar matrices: P = inv(D) * M         A               */
-  /********************************************************************/
-  DInv_ = Teuchos::rcp(new LINALG::SparseMatrix(*D_));
-  Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(
-      *slavedofrowmap_, true);
-  int err = 0;
-
-  // extract diagonal of invd into diag
-  DInv_->ExtractDiagonalCopy(*diag);
-
-  // set zero diagonal values to dummy 1.0
-  for (int i = 0; i < diag->MyLength(); ++i)
-    if (abs((*diag)[i]) < 1e-12)
-    {
-      std::cout << "WARNING: Diagonal entry of D matrix is skipped because it is less than 1e-12!!!" << std::endl;
-      (*diag)[i] = 1.0;
-    }
-
-  // scalar inversion of diagonal values
-  err = diag->Reciprocal(*diag);
-  if (err > 0)
-    dserror("ERROR: Reciprocal: Zero diagonal entry!");
-
-  // re-insert inverted diagonal into invd
-  err = DInv_->ReplaceDiagonalValues(*diag);
-  DInv_->Complete();
-
-  // do the multiplication P = inv(D) * M
-  P_ = LINALG::MLMultiply(*DInv_, false,*M_, false, false, false, true);
-
-  P_->Complete(*masterdofrowmap_,*slavedofrowmap_);
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  |  Integrate mortar matrices + linearization (D/M matrix) + gap vector |
  |  + compute projection operator P                         wirtz 01/16 |
  *----------------------------------------------------------------------*/
@@ -841,6 +890,8 @@ void ADAPTER::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
 
   gap_->PutScalar(0.0);
   interface_->AssembleG(*gap_);
+
+  MatrixRowColTransform();
 
   return;
 }

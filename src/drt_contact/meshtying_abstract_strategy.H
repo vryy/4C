@@ -152,16 +152,6 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
       else return false;
     }
 
-    /*!
-    \brief Assemble global coordinate vector
-
-    \param sidename (in): std::string indicating slave or master side
-    \param ref (in): boolean indicating evaluation in reference configuration
-    \param vec (in/out)):  empty global vetcor to be assembled to
-
-    */
-    void AssembleCoords(const std::string& sidename, bool ref, Teuchos::RCP<Epetra_Vector> vec);
-
     //@}
 
     //! @name Evaluation methods
@@ -171,18 +161,6 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     */
     void RedistributeMeshtying();
-
-    /*!
-    \brief Setup this strategy object (maps, vectors, etc.)
-
-    All global maps and vectors are initialized by collecting
-    the necessary information from all interfaces. In the case
-    of a parallel redistribution, this method is called again
-    to re-setup the above mentioned quantities. In this case
-    the input parameter is set to TRUE.
-
-    */
-    void Setup(bool redistributed);
 
     /*!
     \brief Global evaluation method called from time integrator
@@ -226,61 +204,6 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     */
     virtual void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis);
-
-    /*!
-    \brief Restrict slave boundary to actual meshtying zone
-
-    Only do this ONCE for meshtying upon initialization!
-    This method first detects for each interface the actually tied part
-    of the slave surface (i.e. the nodes that carry a D/M contribution).
-    Then all slave maps on interface level and on global level are
-    re-initialized and re-setup according to the the above defined
-    actual slave meshtying zone. This is necessary for problems in which
-    the slave surface does not fully project onto the master surface
-    and thus the actual meshtying zone cannot be defined within the
-    input file. Thus, it is computed here.
-
-    */
-    virtual void RestrictMeshtyingZone();
-
-    /*!
-    \brief Do mesh intialization for rotational invariance
-
-    Only do this ONCE for meshtying upon initialization!
-    This method relocates the slave nodes such that the meshtying constraint
-    is satisifed in the reference condiguration, which is a prerequisite for
-    ensuring both rotational invariance and absence of initial stresses at the
-    same time. Basically the constraint equation needs to be solved for this,
-    which is specific to the applied solving strategy (dual Lagrange or Penalty).
-    In the dual LM, matrix D is diagonal, thus its inversion is trivial and no
-    linear system needs to be solved. In the penalty case, matrix D is not diagonal
-    and we apply a default LINALG::Solver to solve for the modified slave poitions.
-    Thus, this linear system solve is done in the derived method FIRST and then
-    we refer back to this base class function.
-
-    \param Xslavemod (in): modified slave reference configuration
-
-    */
-    virtual void MeshInitialization(
-        Teuchos::RCP<Epetra_Vector> Xslavemod);
-
-    /*!
-    \brief Evaluate contact
-
-    This is just a tiny control routine, deciding which Evaluate-routine
-    of those listed below is to be called (based on input-file information)
-    Note that into ALL derived Evaluate() routines, a REFERENCE to the pointer
-    on the effective stiffness matrix is handed in. This way, after building the
-    new effective stiffness matrix with contact, we can simply let the pointer
-    kteff point onto the new object. The same is true for the effective force
-    vector feff. Be careful: kteff is of type Teuchos::RCP<LINALG::SparseOperator>&.
-
-    \param kteff (in/out): effective stiffness matrix (without -> with contact)
-    \param feff (in/out): effective residual / force vector (without -> with contact)
-
-    */
-    void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff,
-                  Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
 
     //@}
 
@@ -408,10 +331,8 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     bool IsInContact() { return true; }
     bool WasInContact() { return true; }
     bool WasInContactLastTimeStep() { return true; }
-    bool WeightedWear() {return false;}
     Teuchos::RCP<Epetra_Vector> ContactNorStress() {return Teuchos::null;}
     Teuchos::RCP<Epetra_Vector> ContactTanStress() {return Teuchos::null;}
-    Teuchos::RCP<Epetra_Vector> ContactWear() {return Teuchos::null;}
     void AssembleMortar() {}
     void InitBinStrategyforTimestep(Teuchos::RCP<Epetra_Vector> vel) {}
     void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle, Teuchos::RCP<Epetra_Vector>& sliptoggle, Teuchos::RCP<Epetra_Vector>& weightedwear,Teuchos::RCP<Epetra_Vector>& realwear, bool forcedrestart = false) {}
@@ -424,7 +345,6 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     int NumberOfSlipNodes() {return 0;}
     void OutputStresses() {}
     void AugForces(Epetra_Vector& augfs_lm,Epetra_Vector& augfs_g,Epetra_Vector& augfm_lm,Epetra_Vector& augfm_g){};
-    void OutputWear() {}
     void RedistributeContact(Teuchos::RCP<Epetra_Vector> dis) {}
     void ResetActiveSet() {}
     void SaveReferenceState(Teuchos::RCP<Epetra_Vector> dis) {}
@@ -440,14 +360,90 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     const Teuchos::RCP<Epetra_Map> NotReDistSlaveRowDofs() { return pgsdofrowmap_; }
     const Teuchos::RCP<Epetra_Map> NotReDistMasterRowDofs() { return pgmdofrowmap_; }
     const Teuchos::RCP<Epetra_Map> SlipRowNodes() {return Teuchos::null;}
-    Teuchos::RCP<Epetra_Vector> WSolveIncr() { return Teuchos::null; }
-    Teuchos::RCP<Epetra_Vector> WearRhs() {return Teuchos::null;}
-    Teuchos::RCP<Epetra_Vector> WMSolveIncr() { return Teuchos::null; }
-    Teuchos::RCP<Epetra_Vector> WearMRhs() {return Teuchos::null;}
-
-    virtual const Teuchos::RCP<Epetra_Map> MasterSlipNodes() {return Teuchos::null;};
-    virtual const Teuchos::RCP<Epetra_Map> MasterActiveNodes() {return Teuchos::null;};
     //@}
+
+  protected:
+    /*!
+    \brief Assemble global coordinate vector
+
+    \param sidename (in): std::string indicating slave or master side
+    \param ref (in): boolean indicating evaluation in reference configuration
+    \param vec (in/out)):  empty global vetcor to be assembled to
+
+    */
+    void AssembleCoords(
+        const std::string& sidename,
+        bool ref,
+        Teuchos::RCP<Epetra_Vector> vec);
+
+    /*!
+    \brief Do mesh intialization for rotational invariance
+
+    Only do this ONCE for meshtying upon initialization!
+    This method relocates the slave nodes such that the meshtying constraint
+    is satisifed in the reference condiguration, which is a prerequisite for
+    ensuring both rotational invariance and absence of initial stresses at the
+    same time. Basically the constraint equation needs to be solved for this,
+    which is specific to the applied solving strategy (dual Lagrange or Penalty).
+    In the dual LM, matrix D is diagonal, thus its inversion is trivial and no
+    linear system needs to be solved. In the penalty case, matrix D is not diagonal
+    and we apply a default LINALG::Solver to solve for the modified slave poitions.
+    Thus, this linear system solve is done in the derived method FIRST and then
+    we refer back to this base class function.
+
+    \param Xslavemod (in): modified slave reference configuration
+
+    */
+    virtual void MeshInitialization(
+        Teuchos::RCP<Epetra_Vector> Xslavemod);
+
+  private:
+    /*!
+    \brief Evaluate contact
+
+    This is just a tiny control routine, deciding which Evaluate-routine
+    of those listed below is to be called (based on input-file information)
+    Note that into ALL derived Evaluate() routines, a REFERENCE to the pointer
+    on the effective stiffness matrix is handed in. This way, after building the
+    new effective stiffness matrix with contact, we can simply let the pointer
+    kteff point onto the new object. The same is true for the effective force
+    vector feff. Be careful: kteff is of type Teuchos::RCP<LINALG::SparseOperator>&.
+
+    \param kteff (in/out): effective stiffness matrix (without -> with contact)
+    \param feff (in/out): effective residual / force vector (without -> with contact)
+
+    */
+    void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+                  Teuchos::RCP<Epetra_Vector>& feff,
+                  Teuchos::RCP<Epetra_Vector> dis);
+
+    /*!
+    \brief Restrict slave boundary to actual meshtying zone
+
+    Only do this ONCE for meshtying upon initialization!
+    This method first detects for each interface the actually tied part
+    of the slave surface (i.e. the nodes that carry a D/M contribution).
+    Then all slave maps on interface level and on global level are
+    re-initialized and re-setup according to the the above defined
+    actual slave meshtying zone. This is necessary for problems in which
+    the slave surface does not fully project onto the master surface
+    and thus the actual meshtying zone cannot be defined within the
+    input file. Thus, it is computed here.
+
+    */
+    virtual void RestrictMeshtyingZone();
+
+    /*!
+    \brief Setup this strategy object (maps, vectors, etc.)
+
+    All global maps and vectors are initialized by collecting
+    the necessary information from all interfaces. In the case
+    of a parallel redistribution, this method is called again
+    to re-setup the above mentioned quantities. In this case
+    the input parameter is set to TRUE.
+
+    */
+    void Setup(bool redistributed);
 
   protected:
 

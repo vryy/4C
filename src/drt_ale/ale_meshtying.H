@@ -183,10 +183,10 @@ class Meshtying
     Teuchos::RCP<Epetra_Map> gsmdofrowmap_;
 
     //! slave dof rowmap
-    Teuchos::RCP<Epetra_Map> gsdofrowmap_;
+    Teuchos::RCP<const Epetra_Map> gsdofrowmap_;
 
     //! master dof rowmap
-    Teuchos::RCP<Epetra_Map> gmdofrowmap_;
+    Teuchos::RCP<const Epetra_Map> gmdofrowmap_;
 
     //! merged map for saddle point system and 2x2 block matrix
     Teuchos::RCP<Epetra_Map> mergedmap_;

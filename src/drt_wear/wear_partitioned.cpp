@@ -169,8 +169,8 @@ void WEAR::Partitioned::TimeLoopIterStagg()
 
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  CONTACT::WearLagrangeStrategy& cstrategy =
-      static_cast<CONTACT::WearLagrangeStrategy&>(strategy);
+  WEAR::WearLagrangeStrategy& cstrategy =
+      static_cast<WEAR::WearLagrangeStrategy&>(strategy);
 
   // reset waccu, wold and wcurr...
   cstrategy.UpdateWearDiscretIterate(false);
@@ -239,8 +239,8 @@ void WEAR::Partitioned::TimeLoopStagg(bool alestep)
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  CONTACT::WearLagrangeStrategy& cstrategy =
-      static_cast<CONTACT::WearLagrangeStrategy&>(strategy);
+  WEAR::WearLagrangeStrategy& cstrategy =
+      static_cast<WEAR::WearLagrangeStrategy&>(strategy);
 
   // counter and print header
   IncrementTimeAndStep();
@@ -510,8 +510,8 @@ void WEAR::Partitioned::MergeWear(Teuchos::RCP<Epetra_Vector>& disinterface_s,
       static_cast<CONTACT::CoAbstractStrategy&>(strategy);
   std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface =
       cstrategy.ContactInterfaces();
-  Teuchos::RCP<CONTACT::WearInterface> winterface = Teuchos::rcp_dynamic_cast<
-      CONTACT::WearInterface>(interface[0]);
+  Teuchos::RCP<WEAR::WearInterface> winterface = Teuchos::rcp_dynamic_cast<
+      WEAR::WearInterface>(interface[0]);
   if (winterface == Teuchos::null)
     dserror("ERROR: Casting to WearInterface returned null!");
 
@@ -628,13 +628,13 @@ void WEAR::Partitioned::WearSpatialMasterMap(Teuchos::RCP<Epetra_Vector>& disint
 
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  CONTACT::WearLagrangeStrategy& cstrategy =
-      static_cast<CONTACT::WearLagrangeStrategy&>(strategy);
+  WEAR::WearLagrangeStrategy& cstrategy =
+      static_cast<WEAR::WearLagrangeStrategy&>(strategy);
 
   for (int i=0; i<(int)interfaces_.size(); ++i)
   {
-    Teuchos::RCP<CONTACT::WearInterface> winterface = Teuchos::rcp_dynamic_cast<
-        CONTACT::WearInterface>(interfacesMat_[i]);
+    Teuchos::RCP<WEAR::WearInterface> winterface = Teuchos::rcp_dynamic_cast<
+        WEAR::WearInterface>(interfacesMat_[i]);
     if (winterface == Teuchos::null)
       dserror("ERROR: Casting to WearInterface returned null!");
 
@@ -796,8 +796,8 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  CONTACT::WearLagrangeStrategy& cstrategy =
-      static_cast<CONTACT::WearLagrangeStrategy&>(strategy);
+  WEAR::WearLagrangeStrategy& cstrategy =
+      static_cast<WEAR::WearLagrangeStrategy&>(strategy);
 
   INPAR::WEAR::WearType wtype = DRT::INPUT::IntegralValue<
       INPAR::WEAR::WearType>(DRT::Problem::Instance()->WearParams(),
@@ -929,8 +929,8 @@ void WEAR::Partitioned::RedistributeMatInterfaces()
         std::cout << "=======    Redistribute Mat. Int.   =======" << std::endl;
         std::cout << "===========================================" << std::endl;
       }
-      Teuchos::RCP<CONTACT::WearInterface> winterface = Teuchos::rcp_dynamic_cast<
-          CONTACT::WearInterface>(interfacesMat_[m]);
+      Teuchos::RCP<WEAR::WearInterface> winterface = Teuchos::rcp_dynamic_cast<
+          WEAR::WearInterface>(interfacesMat_[m]);
 
       // export nodes and elements to the row map
       winterface->Discret().ExportRowNodes(*interfaces_[m]->Discret().NodeRowMap());
@@ -962,8 +962,8 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  CONTACT::WearLagrangeStrategy& cstrategy =
-      dynamic_cast<CONTACT::WearLagrangeStrategy&>(strategy);
+  WEAR::WearLagrangeStrategy& cstrategy =
+      dynamic_cast<WEAR::WearLagrangeStrategy&>(strategy);
 
   INPAR::WEAR::WearType wtype = DRT::INPUT::IntegralValue<
       INPAR::WEAR::WearType>(DRT::Problem::Instance()->WearParams(),
@@ -984,8 +984,8 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
   // loop over all interfaces
   for (int m = 0; m < (int) interfaces_.size(); ++m)
   {
-    Teuchos::RCP<CONTACT::WearInterface> winterface = Teuchos::rcp_dynamic_cast<
-        CONTACT::WearInterface>(interfaces_[m]);
+    Teuchos::RCP<WEAR::WearInterface> winterface = Teuchos::rcp_dynamic_cast<
+        WEAR::WearInterface>(interfaces_[m]);
     if (winterface == Teuchos::null)
       dserror("ERROR: Casting to WearInterface returned null!");
 
@@ -1068,7 +1068,6 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
 
     // 5. evaluate dmat
     Teuchos::RCP<LINALG::SparseMatrix> dmat  = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofs, 10));
-    Teuchos::RCP<LINALG::SparseMatrix> dummy = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofs, 10));
 
     for (int j=0; j<interfacesMat_[m]->SlaveColElements()->NumMyElements(); ++j)
     {
@@ -1084,7 +1083,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
     }
 
     // 6. assemble dmat
-    interfacesMat_[m]->AssembleDM(*dmat,*dummy,true);
+    interfacesMat_[m]->AssembleD(*dmat);
 
     // 7. complete dmat
     dmat->Complete();
@@ -1153,13 +1152,13 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
   // loop over all interfaces
   for (int m = 0; m < (int) interfaces_.size(); ++m)
   {
-    Teuchos::RCP<CONTACT::WearInterface> winterface = Teuchos::rcp_dynamic_cast<
-        CONTACT::WearInterface>(interfaces_[m]);
+    Teuchos::RCP<WEAR::WearInterface> winterface = Teuchos::rcp_dynamic_cast<
+        WEAR::WearInterface>(interfaces_[m]);
     if (winterface == Teuchos::null)
       dserror("ERROR: Casting to WearInterface returned null!");
 
-    Teuchos::RCP<CONTACT::WearInterface> winterfaceMat = Teuchos::rcp_dynamic_cast<
-        CONTACT::WearInterface>(interfacesMat_[m]);
+    Teuchos::RCP<WEAR::WearInterface> winterfaceMat = Teuchos::rcp_dynamic_cast<
+        WEAR::WearInterface>(interfacesMat_[m]);
     if (winterfaceMat == Teuchos::null)
       dserror("ERROR: Casting to WearInterface returned null!");
 

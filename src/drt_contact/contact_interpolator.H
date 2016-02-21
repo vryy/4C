@@ -30,6 +30,7 @@ Maintainer: Philipp Farah
 namespace MORTAR
 {
 class MortarElement;
+class MortarNode;
 }
 
 namespace LINALG
@@ -45,7 +46,10 @@ class SerialDenseMatrix;
 namespace CONTACT
 {
 class CoNode;
+}
 
+namespace NTS
+{
 class CoInterpolator
 {
 public:
@@ -54,7 +58,7 @@ public:
    \brief Constructor
 
    */
-  CoInterpolator(Teuchos::ParameterList& params);
+  CoInterpolator(Teuchos::ParameterList& params, const int& dim);
 
   /*!
    \brief Destructor
@@ -65,17 +69,10 @@ public:
   };
 
   /*!
-   \brief Interpolate for 2D problems
+   \brief Interpolate for nts algorithm
 
    */
-  void Interpolate2D(MORTAR::MortarElement& sele,
-                     std::vector<MORTAR::MortarElement*> meles);
-
-  /*!
-   \brief Interpolate for 3D problems
-
-   */
-  void Interpolate3D(MORTAR::MortarElement& sele,
+  void Interpolate(MORTAR::MortarNode& snode,
                      std::vector<MORTAR::MortarElement*> meles);
 
   /*!
@@ -85,17 +82,6 @@ public:
    */
   void InterpolateMasterTemp3D(MORTAR::MortarElement& sele,
                                std::vector<MORTAR::MortarElement*> meles);
-
-  /*!
-   \brief lin 2D projection
-
-   */
-  void DerivXiGP2D(MORTAR::MortarElement& sele,
-                   MORTAR::MortarElement& mele,
-                   double& sxigp, double& mxigp,
-                   const GEN::pairedvector<int,double>& derivsxi,
-                   GEN::pairedvector<int,double>& derivmxi,
-                   int& linsize);
 
   /*!
    \brief lin 3D projection
@@ -109,10 +95,49 @@ public:
                    double& alpha);
 
   /*!
+   \brief node-wise gap calculation for 3D problems
+
+   */
+  void nwGap3D(CONTACT::CoNode& mynode,
+               MORTAR::MortarElement& mele,
+               LINALG::SerialDenseVector& mval,
+               LINALG::SerialDenseMatrix& mderiv,
+               std::vector<GEN::pairedvector<int,double> >& dmxi,
+               double* gpn);
+
+private:
+
+  /*!
+   \brief Interpolate for 2D problems
+
+   */
+  void Interpolate2D(MORTAR::MortarNode& snode,
+                     std::vector<MORTAR::MortarElement*> meles);
+
+  /*!
+   \brief Interpolate for 3D problems
+
+   */
+  void Interpolate3D(MORTAR::MortarNode& snode,
+                     std::vector<MORTAR::MortarElement*> meles);
+
+  /*!
+   \brief lin 2D projection
+
+   */
+  void DerivXiGP2D(MORTAR::MortarElement& sele,
+                   MORTAR::MortarElement& mele,
+                   double& sxigp, double& mxigp,
+                   const GEN::pairedvector<int,double>& derivsxi,
+                   GEN::pairedvector<int,double>& derivmxi,
+                   int& linsize);
+
+  /*!
    \brief node-wise D/M calculation
 
    */
-  void nwDM2D(CoNode& mynode,
+  void nwDM2D(CONTACT::CoNode& mynode,
+            MORTAR::MortarElement& sele,
             MORTAR::MortarElement& mele,
             LINALG::SerialDenseVector& mval,
             LINALG::SerialDenseMatrix& mderiv,
@@ -122,7 +147,7 @@ public:
    \brief node-wise D/M calculation for 3D problems
 
    */
-  void nwDM3D(CoNode& mynode,
+  void nwDM3D(CONTACT::CoNode& mynode,
              MORTAR::MortarElement& mele,
              LINALG::SerialDenseVector& mval,
              LINALG::SerialDenseMatrix& mderiv,
@@ -132,7 +157,8 @@ public:
    \brief node-wise gap calculation
 
    */
-  void nwGap2D(CoNode& mynode,
+  void nwGap2D(CONTACT::CoNode& mynode,
+               MORTAR::MortarElement& sele,
                MORTAR::MortarElement& mele,
                LINALG::SerialDenseVector& mval,
                LINALG::SerialDenseMatrix& mderiv,
@@ -140,22 +166,10 @@ public:
                double* gpn);
 
   /*!
-   \brief node-wise gap calculation for 3D problems
-
-   */
-  void nwGap3D(CoNode& mynode,
-               MORTAR::MortarElement& mele,
-               LINALG::SerialDenseVector& mval,
-               LINALG::SerialDenseMatrix& mderiv,
-               std::vector<GEN::pairedvector<int,double> >& dmxi,
-               double* gpn);
-
-
-  /*!
    \brief node-wise master temperature calculation for 3D problems
 
    */
-  void nwMasterTemp(CoNode& mynode,
+  void nwMasterTemp(CONTACT::CoNode& mynode,
                     MORTAR::MortarElement& mele,
                     const LINALG::SerialDenseVector& mval,
                     const LINALG::SerialDenseMatrix& mderiv,
@@ -165,7 +179,7 @@ public:
    \brief node-wise slip calculation
 
    */
-  void nwSlip2D(CoNode& mynode,
+  void nwSlip2D(CONTACT::CoNode& mynode,
                 MORTAR::MortarElement& mele,
                 LINALG::SerialDenseVector& mval,
                 LINALG::SerialDenseMatrix& mderiv,
@@ -181,7 +195,7 @@ public:
    \brief node-wise wear calculation (internal state var.)
 
    */
-  void nwWear2D(CoNode& mynode,
+  void nwWear2D(CONTACT::CoNode& mynode,
                 MORTAR::MortarElement& mele,
                 LINALG::SerialDenseVector& mval,
                 LINALG::SerialDenseMatrix& mderiv,
@@ -203,22 +217,21 @@ public:
    \brief node-wise wear calculation (primary variable)
 
    */
-  void nwTE2D(CoNode& mynode,
+  void nwTE2D(CONTACT::CoNode& mynode,
               double& area,
               double& jumpval,
               GEN::pairedvector<int,double>& dslipmatrix);
 
-protected:
-
   Teuchos::ParameterList&                          iparams_;     // containing contact input parameters
+  int                                              dim_;         // problem dimension
   bool                                             pwslip_;      // point-wise evaluated slip increment
 
   // wear inputs from parameter list
-  INPAR::WEAR::WearLaw                          wearlaw_;     // type of wear law
+  INPAR::WEAR::WearLaw                             wearlaw_;     // type of wear law
   bool                                             wearimpl_;    // flag for implicit wear algorithm
-  INPAR::WEAR::WearSide                         wearside_;    // definition of wear surface
-  INPAR::WEAR::WearType                         weartype_;    // definition of contact wear algorithm
-  INPAR::WEAR::WearShape                        wearshapefcn_;// type of wear shape function
+  INPAR::WEAR::WearSide                            wearside_;    // definition of wear surface
+  INPAR::WEAR::WearType                            weartype_;    // definition of contact wear algorithm
+  INPAR::WEAR::WearShape                           wearshapefcn_;// type of wear shape function
   double                                           wearcoeff_;   // wear coefficient
   double                                           wearcoeffm_;  // wear coefficient master
   bool                                             sswear_;      // flag for steady state wear
@@ -243,21 +256,13 @@ public:
 
   //! @name Access methods
   /// Internal implementation class
-  static MTInterpolator* Impl(MORTAR::MortarElement& sele,
-                              std::vector<MORTAR::MortarElement*> meles);
+  static MTInterpolator* Impl(std::vector<MORTAR::MortarElement*> meles);
 
   /*!
-   \brief Interpolate for 2D problems
+   \brief Interpolate for nts algorithm
 
    */
-  virtual void Interpolate2D(MORTAR::MortarElement& sele,
-                     std::vector<MORTAR::MortarElement*> meles) = 0;
-
-  /*!
-   \brief Interpolate for 3D problems
-
-   */
-  virtual void Interpolate3D(MORTAR::MortarElement& sele,
+  virtual void Interpolate(MORTAR::MortarNode& snode,
                      std::vector<MORTAR::MortarElement*> meles) = 0;
 };
 
@@ -284,18 +289,29 @@ public:
   //! nm_: number of master element nodes
   static const int nm_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;
 
+  //! number of space dimensions ("+1" due to considering only interface elements)
+  static const int ndim_ = DRT::UTILS::DisTypeToDim<distypeM>::dim + 1;
+
+  /*!
+   \brief Interpolate for nts problems
+
+   */
+  virtual void Interpolate(MORTAR::MortarNode& snode,
+                     std::vector<MORTAR::MortarElement*> meles);
+
+private:
   /*!
    \brief Interpolate for 2D problems
 
    */
-  virtual void Interpolate2D(MORTAR::MortarElement& sele,
+  virtual void Interpolate2D(MORTAR::MortarNode& snode,
                      std::vector<MORTAR::MortarElement*> meles);
 
   /*!
    \brief Interpolate for 3D problems
 
    */
-  virtual void Interpolate3D(MORTAR::MortarElement& sele,
+  virtual void Interpolate3D(MORTAR::MortarNode& snode,
                      std::vector<MORTAR::MortarElement*> meles);
 };
 

@@ -80,12 +80,6 @@ public:
   }
 
   /*!
-   \brief Get communicator
-
-   */
-  virtual const Epetra_Comm& Comm() const;
-
-  /*!
    \brief Get coupling slave element
 
    */
@@ -186,17 +180,6 @@ public:
   //! @name Evaluation methods
 
   /*!
-   \brief Checks roughly whether the two elements are near
-
-   This methods checks the orientation of slave and master element.
-   Projection and overlap detection only make sense if the scalar
-   product of the two center normals is negative (i.e. if the two
-   elements form an angle smaller than 90°).
-
-   */
-  virtual bool RoughCheckOrient();
-
-  /*!
    \brief Projection of slave / master pair
 
    This method projects the nodes of the slave MortarElement sele_ onto
@@ -232,8 +215,24 @@ public:
   virtual bool IntegrateOverlap();
 
   //@}
+private:
+  /*!
+   \brief Checks roughly whether the two elements are near
+
+   This methods checks the orientation of slave and master element.
+   Projection and overlap detection only make sense if the scalar
+   product of the two center normals is negative (i.e. if the two
+   elements form an angle smaller than 90°).
+
+   */
+  virtual bool RoughCheckOrient();
 
 protected:
+  /*!
+   \brief Get communicator
+
+   */
+  virtual const Epetra_Comm& Comm() const;
 
   // don't want = operator and cctor
   Coupling2d operator =(const Coupling2d& old);
@@ -349,18 +348,6 @@ public:
   virtual bool EvaluateCoupling();
 
   /*!
-   \brief Evaluate mortar coupling pairs
-
-   */
-  virtual void IntegrateCoupling();
-
-  /*!
-   \brief Evaluate mortar coupling pairs
-
-   */
-  virtual void EvaluateNTS();
-
-  /*!
    \brief Get coupling type
 
    */
@@ -380,13 +367,19 @@ public:
         "LM_SHAPEFCN");
   }
 
+  //@}
+protected:
+  /*!
+   \brief Evaluate mortar coupling pairs
+
+   */
+  virtual void IntegrateCoupling();
+
   /*!
    \brief Calculate consistent dual shape functions in boundary elements
 
    */
   virtual void ConsistDualShape();
-
-  //@}
 
 protected:
 

@@ -464,7 +464,7 @@ void SSI::SSI_Base::SetupFieldCoupling(const std::string struct_disname, const s
                             1
                             );
 
-    extractor_= Teuchos::rcp(new LINALG::MapExtractor(*structdis->DofRowMap(0),adaptermeshtying_->MasterDofRowMap(),true));
+    extractor_= Teuchos::rcp(new LINALG::MapExtractor(*structdis->DofRowMap(0),adaptermeshtying_->MasterDofMap(),true));
   }
   else if(fieldcoupling_==INPAR::SSI::coupling_volmortar)
   {

@@ -13,10 +13,10 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 
 #include "contact_node.H"
-#include "../drt_lib/drt_dserror.H"
 #include "contact_element.H"
 #include "contact_defines.H"
 #include "../linalg/linalg_serialdensevector.H"
+#include "../drt_lib/drt_dserror.H"
 
 CONTACT::CoNodeType CONTACT::CoNodeType::instance_;
 
@@ -36,6 +36,7 @@ DRT::ParObject* CONTACT::CoNodeType::Create( const std::vector<char> & data )
  *----------------------------------------------------------------------*/
 CONTACT::CoNodeDataContainer::CoNodeDataContainer():
 grow_(1.0e12),
+gnts_(1.0e12),
 activeold_(false),
 derivn_(0,0),    //init deriv normal to length 0 with 0 entries per direction
 derivtxi_(0,0),  //init deriv txi    to length 0 with 0 entries per direction
@@ -424,6 +425,26 @@ void CONTACT::CoNode::AddWGapValue(double& val)
 
   // add given value to wGap_
   CoData().GetWGap()+=val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the nts gap                               farah 01/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoNode::AddntsGapValue(double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddWGapValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddWGapValue: function called for boundary node %i", Id());
+
+  // initialize if called for the first time
+  if (CoData().Getgnts()==1.0e12) CoData().Getgnts()=0;
+
+  // add given value to wGap_
+  CoData().Getgnts()+=val;
 
   return;
 }

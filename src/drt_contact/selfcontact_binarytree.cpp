@@ -1044,6 +1044,27 @@ eps_(eps)
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Evaluate search selfbinarytree (public)                  farah 02/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::SelfBinaryTree::EvaluateSearch()
+{
+  // calculate minimal element length
+  SetEnlarge();
+
+  // TODO: is this outdated?
+  // update and search for contact with a combined algorithm
+  //binarytreeself_->SearchContactCombined();
+
+  // update and search for contact with separate algorithms
+  SearchContactSeparate();
+
+  // bye bye
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  |  get communicator (public)                                 popp 11/09|
  *----------------------------------------------------------------------*/

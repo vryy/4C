@@ -79,8 +79,8 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
   // copy interfaces for material configuration
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  CONTACT::WearLagrangeStrategy& cstrategy =
-      static_cast<CONTACT::WearLagrangeStrategy&>(strategy);
+  WEAR::WearLagrangeStrategy& cstrategy =
+      static_cast<WEAR::WearLagrangeStrategy&>(strategy);
 
   // get dimension
   dim_ = strategy.Dim();
@@ -125,8 +125,8 @@ void WEAR::Algorithm::CheckInput()
 void WEAR::Algorithm::CreateMaterialInterface()
 {
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  CONTACT::WearLagrangeStrategy& cstrategy =
-      static_cast<CONTACT::WearLagrangeStrategy&>(strategy);
+  WEAR::WearLagrangeStrategy& cstrategy =
+      static_cast<WEAR::WearLagrangeStrategy&>(strategy);
 
   // create some local variables (later to be stored in strategy)
   int dim = DRT::Problem::Instance()->NDim();
@@ -411,7 +411,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
     if (stype==INPAR::CONTACT::solution_augmented)
       newinterface=Teuchos::rcp(new CONTACT::AugmentedInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else if(wlaw!=INPAR::WEAR::wear_none)
-      newinterface=Teuchos::rcp(new CONTACT::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
+      newinterface=Teuchos::rcp(new WEAR::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else
       newinterface = Teuchos::rcp(new CONTACT::CoInterface(groupid1, Comm(), dim, icparams, isself[0],redundant));
     interfacesMat_.push_back(newinterface);

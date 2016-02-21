@@ -21,6 +21,7 @@ Maintainer: Philipp Farah
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 #include "../drt_lib/drt_dserror.H"
+#include "adapter_coupling_mortar.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/14 |
@@ -45,7 +46,7 @@ namespace LINALG
 
 namespace ADAPTER
 {
-  class CouplingNonLinMortar
+  class CouplingNonLinMortar : public CouplingMortar
   {
   public:
 
@@ -91,36 +92,6 @@ namespace ADAPTER
                             const Teuchos::RCP<Epetra_Vector> veclm);
 
     virtual void PrintInterface(std::ostream& os);
-
-    virtual void CreateP();
-
-    virtual Teuchos::RCP<LINALG::SparseMatrix> DMatrix()
-    {
-      if(D_==Teuchos::null)
-        dserror("ERROR: D Matrix is null pointer!");
-      return D_;
-    };
-
-    virtual Teuchos::RCP<LINALG::SparseMatrix> DInvMatrix()
-    {
-      if(DInv_==Teuchos::null)
-        dserror("ERROR: DInv Matrix is null pointer!");
-      return DInv_;
-    };
-
-    virtual Teuchos::RCP<LINALG::SparseMatrix> MMatrix()
-    {
-      if(M_==Teuchos::null)
-        dserror("ERROR: M Matrix is null pointer!");
-      return M_;
-    };
-
-    virtual Teuchos::RCP<LINALG::SparseMatrix> PMatrix()
-    {
-      if(P_==Teuchos::null)
-        dserror("ERROR: P Matrix is null pointer!");
-      return P_;
-    };
 
     virtual Teuchos::RCP<LINALG::SparseMatrix> DLinMatrix()
     {
@@ -191,6 +162,31 @@ namespace ADAPTER
               Teuchos::RCP<CONTACT::CoInterface>& interface,
               int numcoupleddof);
 
+    /*!
+    \brief complete interface, store as internal variable
+           store maps as internal variable and do parallel redist.
+
+    */
+    virtual void CompleteInterface(
+        Teuchos::RCP<DRT::Discretization>   masterdis,
+        Teuchos::RCP<CONTACT::CoInterface>& interface);
+
+    /*!
+    \brief initialize matrices (interla variables)
+
+    */
+    virtual void InitMatrices();
+
+    /*!
+    \brief create strategy object if required
+
+    */
+    virtual void CreateStrategy(
+        Teuchos::RCP<DRT::Discretization>   masterdis,
+        Teuchos::RCP<DRT::Discretization>   slavedis,
+        Teuchos::ParameterList&             input,
+        int numcoupleddof);
+
     /// check setup call
     const bool& IsSetup() const { return issetup_; };
 
@@ -201,20 +197,17 @@ namespace ADAPTER
         dserror("ERROR: Call Setup() first!");
     }
 
+  protected:
+
     bool                               issetup_;         ///< check for setup
     Teuchos::RCP<Epetra_Comm>          comm_;            ///< communicator
     int                                myrank_;          ///< my proc id
 
-    Teuchos::RCP<Epetra_Map>           masterdofrowmap_; ///< map of master row dofs
-    Teuchos::RCP<Epetra_Map>           slavedofrowmap_;  ///< map of slave row dofs
-    Teuchos::RCP<Epetra_Map>           slavenoderowmap_; ///< map of slave row nodes
+    Teuchos::RCP<Epetra_Map>           slavenoderowmap_; ///< map of slave row nodes (after parallel redist.)
+    Teuchos::RCP<Epetra_Map>           pslavenoderowmap_;///< map of slave row nodes (before parallel redist.)
 
-    Teuchos::RCP<LINALG::SparseMatrix> D_;               ///< D matrix
-    Teuchos::RCP<LINALG::SparseMatrix> DInv_;            ///< inverted D matrix
     Teuchos::RCP<LINALG::SparseMatrix> DLin_;            ///< linearization of D matrix
-    Teuchos::RCP<LINALG::SparseMatrix> M_;               ///< M matrix (master side)
     Teuchos::RCP<LINALG::SparseMatrix> MLin_;            ///< linearization of M matrix
-    Teuchos::RCP<LINALG::SparseMatrix> P_;               ///< projection operator P = DInv * M
 
     Teuchos::RCP<Epetra_Vector>        gap_;             ///< gap vector
 

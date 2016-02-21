@@ -244,6 +244,7 @@ public:
   */
   double Weight(int& gp) {return weights_[gp];}
 
+private:
   //----------------- GP EVALUATIONS ---------------
   /*!
   \brief evaluate D/M-matrix entries at GP
@@ -296,7 +297,6 @@ public:
        double* sxi);
   //@}
 
-private:
   Teuchos::ParameterList&       imortar_;     // merged parameter list
   INPAR::MORTAR::ShapeFcn       shapefcn_;    // lm shape function type
   INPAR::MORTAR::LagMultQuad    lmquadtype_;  // type of quadratic lm interpolation

@@ -215,18 +215,6 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   void UpdateActiveSet() {}
   void UpdateActiveSetSemiSmooth() {}
 
-  //same procedure for wear functions:
-  void OutputWear() {};
-  Teuchos::RCP<Epetra_Vector> ContactWear() {return Teuchos::null;};
-  Teuchos::RCP<Epetra_Vector> ContactWear2() {return Teuchos::null;};
-  const Teuchos::RCP<Epetra_Map> MasterSlipNodes() {return Teuchos::null;};
-  const Teuchos::RCP<Epetra_Map> MasterActiveNodes() {return Teuchos::null;};
-  //@}
-
-  //wear
-  void UpdateWearDiscretIterate(bool store){};
-  void UpdateWearDiscretAccumulation(bool wearaccumulation){};
-
 protected:
 
   // don't want = operator and cctor

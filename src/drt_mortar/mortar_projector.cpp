@@ -17,13 +17,14 @@ Maintainer: Alexander Popp
 #include "mortar_element.H"
 #include "mortar_node.H"
 #include "mortar_defines.H"
+#include "mortar_calc_utils.H"
+
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
-#include "mortar_calc_utils.H"
 /*----------------------------------------------------------------------*
  |  impl. for aux.-plane based projection                    farah 01/14|
  *----------------------------------------------------------------------*/
@@ -526,6 +527,8 @@ void MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::Done()
   // cleanup call, we can do it this way.
   Instance(false);
 }
+
+
 /*----------------------------------------------------------------------*
  |  Project a node along its nodal normal (public)            popp 01/08|
  *----------------------------------------------------------------------*/
@@ -595,7 +598,9 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectNodalNormal(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectElementNormal(
-    MORTAR::MortarNode& node, MORTAR::MortarElement& ele, double* xi)
+    MORTAR::MortarNode& node,
+    MORTAR::MortarElement& ele,
+    double* xi)
 {
   bool ok = true;
   if (ndim_ == 2)
@@ -660,7 +665,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectElementNormal(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS,
     DRT::Element::DiscretizationType distypeM>
-bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint(
+bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint2D(
     MORTAR::MortarElement& gpele, const double* gpeta,
     MORTAR::MortarElement& ele, double* xi)
 {
@@ -719,10 +724,10 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
 
     for (k = 0; k < MORTARMAXITER; ++k)
     {
-      f = EvaluateFGaussPoint(gpx, gpn, ele, eta);
+      f = EvaluateFGaussPoint2D(gpx, gpn, ele, eta);
       if (abs(f) < MORTARCONVTOL)
         break;
-      df = EvaluateGradFGaussPoint(gpn, ele, eta);
+      df = EvaluateGradFGaussPoint2D(gpn, ele, eta);
       if (abs(df) < 1.0e-12)
         dserror("ERROR: Singular Jacobian for projection");
       eta[0] += (-f) / df;
@@ -1268,6 +1273,952 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPointAuxn3D(
   return true;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  Project snode onto melement with master normal           farah 01/16|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(
+    MORTAR::MortarNode&    snode,
+    MORTAR::MortarElement& mele,
+    double* xi,
+    double* normal,
+    double& dist)
+{
+  if(ndim_!=3)
+    dserror("ERROR: ProjectSNodeByMNormal3D is only for 3D problems!");
+
+  // start in the element center
+  double eta[2] =  { 0.0, 0.0 };
+  if (distype == DRT::Element::tri3 || distype == DRT::Element::tri6)
+  {
+    eta[0] = 1.0 / 3.0;
+    eta[1] = 1.0 / 3.0;
+  }
+
+  // auxiliary variable for distance
+  double alpha = 0.0;
+
+  // function f (vector-valued)
+  double f[3] =  { 0.0, 0.0, 0.0 };
+
+  // gradient of f (df/deta[0], df/deta[1], df/dalpha)
+  LINALG::Matrix<3, 3> df;
+
+  // start iteration
+  int k = 0;
+  double conv = 0.0;
+
+  for (k = 0; k < MORTARMAXITER; ++k)
+  {
+    //**********************************************
+    //  F CALCULATION                             //
+    //**********************************************
+
+    // build interpolation of master node coordinates for current eta
+    double xm[3]         = { 0.0, 0.0, 0.0 };
+    double xs[3]         = { 0.0, 0.0, 0.0 };
+    double unormal[3]    = { 0.0, 0.0, 0.0 };
+    double normal[3]     = { 0.0, 0.0, 0.0 };
+    double normalpart[3] = { 0.0, 0.0, 0.0 };
+
+    // calc xmaster
+    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
+
+    // calc normal part
+    double length = mele.ComputeUnitNormalAtXi(eta,unormal);
+    for (int i = 0; i < 3; ++i)
+      normalpart[i] = unormal[i]*alpha;
+
+    for (int i = 0; i < 3; ++i)
+      normal[i] = unormal[i]*length;
+
+    // calc xslave
+    for (int i = 0; i < 3; ++i)
+      xs[i] = snode.xspatial()[i];
+
+    //calculate F
+    for (int i = 0; i < 3; ++i)
+      f[i] = xm[i] + normalpart[i] - xs[i];
+
+    // check for convergence
+    conv = sqrt(f[0] * f[0] + f[1] * f[1] + f[2] * f[2]);
+    if (conv <= MORTARCONVTOL)
+      break;
+
+    //**********************************************
+    //   F GRADIENT CALCULATION                   //
+    //**********************************************
+    // master coordinate grad
+    double meta0[3] = { 0.0, 0.0, 0.0 }; // x,xi_0
+    double meta1[3] = { 0.0, 0.0, 0.0 }; // x,xi_1
+    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
+    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta1, 2);
+
+    // normal grad
+    LINALG::Matrix<3,n_> secderiv;
+    double meta00[3]=  { 0.0, 0.0, 0.0 }; // x,xi_0 xi_0
+    double meta11[3]=  { 0.0, 0.0, 0.0 }; // x,xi_1 xi_1
+    double meta01[3]=  { 0.0, 0.0, 0.0 }; // x,xi_0 xi_1
+
+    DRT::UTILS::shape_function_2D_deriv2(secderiv,eta[0],eta[1],distype);
+
+    for (int i = 0;i<n_;++i)
+    {
+      MortarNode* mymnode = dynamic_cast<MortarNode*> (mele.Nodes()[i]);
+      if (!mymnode)
+        dserror("ERROR: Null pointer!");
+      for (int d = 0;d<3;++d)
+      {
+        meta00[d] += secderiv(0,i) * mymnode->xspatial()[d];
+        meta11[d] += secderiv(1,i) * mymnode->xspatial()[d];
+        meta01[d] += secderiv(2,i) * mymnode->xspatial()[d];
+      }
+    }
+
+    double naux_0[3] = { 0.0, 0.0, 0.0 };
+    double naux_1[3] = { 0.0, 0.0, 0.0 };
+
+    // normal grad xi_0
+    naux_0[0] = (meta00[1]*meta1[2]-meta00[2]*meta1[1]);
+    naux_0[1] = (meta00[2]*meta1[0]-meta00[0]*meta1[2]);
+    naux_0[2] = (meta00[0]*meta1[1]-meta00[1]*meta1[0]);
+
+    naux_0[0] += (meta0[1]*meta01[2]-meta0[2]*meta01[1]);
+    naux_0[1] += (meta0[2]*meta01[0]-meta0[0]*meta01[2]);
+    naux_0[2] += (meta0[0]*meta01[1]-meta0[1]*meta01[0]);
+
+    // normal grad xi_1
+    naux_1[0] = (meta01[1]*meta1[2]-meta01[2]*meta1[1]);
+    naux_1[1] = (meta01[2]*meta1[0]-meta01[0]*meta1[2]);
+    naux_1[2] = (meta01[0]*meta1[1]-meta01[1]*meta1[0]);
+
+    naux_1[0] += (meta0[1]*meta11[2]-meta0[2]*meta11[1]);
+    naux_1[1] += (meta0[2]*meta11[0]-meta0[0]*meta11[2]);
+    naux_1[2] += (meta0[0]*meta11[1]-meta0[1]*meta11[0]);
+
+    double n_0[3] = { 0.0, 0.0, 0.0 };
+    double n_1[3] = { 0.0, 0.0, 0.0 };
+
+    double fac0 = 0.0;
+    double fac1 = 0.0;
+
+    for (int i=0;i<3; ++i)
+      fac0 += naux_0[i]* normal[i];
+
+    for (int i = 0;i<3;++i)
+      n_0[i] = naux_0[i]/length - fac0*normal[i]/(length*length*length);
+
+    for (int i=0;i<3; ++i)
+      fac1 += naux_1[i]* normal[i];
+
+    for (int i = 0;i<3;++i)
+      n_1[i] = naux_1[i]/length - fac1*normal[i]/(length*length*length);
+
+    // evaluate function f gradient
+    for (int i = 0; i < 3; ++i)
+    {
+      df(i, 0) = meta0[i] + n_0[i];
+      df(i, 1) = meta1[i] + n_1[i];
+      df(i, 2) = unormal[i];
+    }
+
+    //**********************************************
+    //   solve deta = - inv(dF) * F               //
+    //**********************************************
+    double jacdet = df.Invert();
+    if (abs(jacdet) < 1.0e-12)
+      dserror("ERROR: Singular Jacobian for projection");
+
+    // update eta and alpha
+    eta[0] += -df(0, 0) * f[0] - df(0, 1) * f[1] - df(0, 2) * f[2];
+    eta[1] += -df(1, 0) * f[0] - df(1, 1) * f[1] - df(1, 2) * f[2];
+    alpha  += -df(2, 0) * f[0] - df(2, 1) * f[1] - df(2, 2) * f[2];
+  } // end newton loop
+
+  // Newton iteration unconverged
+  if (conv > MORTARCONVTOL)
+    dserror("ERROR: Projector not converged!");
+
+  // Newton iteration converged
+  xi[0] = eta[0];
+  xi[1] = eta[1];
+  mele.ComputeUnitNormalAtXi(eta,normal);
+  dist  = alpha;
+
+  // bye bye
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Project snode onto melement with master normal           farah 01/16|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(
+    MORTAR::MortarNode&    snode,
+    MORTAR::MortarElement& mele,
+    double* xi,
+    double* normal,
+    double& dist,
+    std::vector<GEN::pairedvector<int,double> >& normaltolineLin)
+{
+  if(ndim_!=3)
+    dserror("ERROR: ProjectSNodeByMNormal3D is only for 3D problems!");
+
+  // start in the element center
+  double eta[2] =  { 0.0, 0.0 };
+  if (distype == DRT::Element::tri3 || distype == DRT::Element::tri6)
+  {
+    eta[0] = 1.0 / 3.0;
+    eta[1] = 1.0 / 3.0;
+  }
+
+  // auxiliary variable for distance
+  double alpha = 0.0;
+
+  // function f (vector-valued)
+  double f[3] =  { 0.0, 0.0, 0.0 };
+
+  // gradient of f (df/deta[0], df/deta[1], df/dalpha)
+  LINALG::Matrix<3, 3> df;
+
+  // start iteration
+  int k = 0;
+  double conv = 0.0;
+
+  for (k = 0; k < MORTARMAXITER; ++k)
+  {
+    //**********************************************
+    //  F CALCULATION                             //
+    //**********************************************
+
+    // build interpolation of master node coordinates for current eta
+    double xm[3]         = { 0.0, 0.0, 0.0 };
+    double xs[3]         = { 0.0, 0.0, 0.0 };
+    double unormal[3]    = { 0.0, 0.0, 0.0 };
+    double normal[3]     = { 0.0, 0.0, 0.0 };
+    double normalpart[3] = { 0.0, 0.0, 0.0 };
+
+    // calc xmaster
+    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
+
+    // calc normal part
+    double length = mele.ComputeUnitNormalAtXi(eta,unormal);
+    for (int i = 0; i < 3; ++i)
+      normalpart[i] = unormal[i]*alpha;
+
+    for (int i = 0; i < 3; ++i)
+      normal[i] = unormal[i]*length;
+
+    // calc xslave
+    for (int i = 0; i < 3; ++i)
+      xs[i] = snode.xspatial()[i];
+
+    //calculate F
+    for (int i = 0; i < 3; ++i)
+      f[i] = xm[i] + normalpart[i] - xs[i];
+
+    // check for convergence
+    conv = sqrt(f[0] * f[0] + f[1] * f[1] + f[2] * f[2]);
+    if (conv <= MORTARCONVTOL)
+      break;
+
+    //**********************************************
+    //   F GRADIENT CALCULATION                   //
+    //**********************************************
+    // master coordinate grad
+    double meta0[3] = { 0.0, 0.0, 0.0 }; // x,xi_0
+    double meta1[3] = { 0.0, 0.0, 0.0 }; // x,xi_1
+    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
+    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta1, 2);
+
+    // normal grad
+    LINALG::Matrix<3,n_> secderiv;
+    double meta00[3]=  { 0.0, 0.0, 0.0 }; // x,xi_0 xi_0
+    double meta11[3]=  { 0.0, 0.0, 0.0 }; // x,xi_1 xi_1
+    double meta01[3]=  { 0.0, 0.0, 0.0 }; // x,xi_0 xi_1
+
+    DRT::UTILS::shape_function_2D_deriv2(secderiv,eta[0],eta[1],distype);
+
+    for (int i = 0;i<n_;++i)
+    {
+      MortarNode* mymnode = dynamic_cast<MortarNode*> (mele.Nodes()[i]);
+      if (!mymnode)
+        dserror("ERROR: Null pointer!");
+      for (int d = 0;d<3;++d)
+      {
+        meta00[d] += secderiv(0,i) * mymnode->xspatial()[d];
+        meta11[d] += secderiv(1,i) * mymnode->xspatial()[d];
+        meta01[d] += secderiv(2,i) * mymnode->xspatial()[d];
+      }
+    }
+
+    double naux_0[3] = { 0.0, 0.0, 0.0 };
+    double naux_1[3] = { 0.0, 0.0, 0.0 };
+
+    // normal grad xi_0
+    naux_0[0] = (meta00[1]*meta1[2]-meta00[2]*meta1[1]);
+    naux_0[1] = (meta00[2]*meta1[0]-meta00[0]*meta1[2]);
+    naux_0[2] = (meta00[0]*meta1[1]-meta00[1]*meta1[0]);
+
+    naux_0[0] += (meta0[1]*meta01[2]-meta0[2]*meta01[1]);
+    naux_0[1] += (meta0[2]*meta01[0]-meta0[0]*meta01[2]);
+    naux_0[2] += (meta0[0]*meta01[1]-meta0[1]*meta01[0]);
+
+    // normal grad xi_1
+    naux_1[0] = (meta01[1]*meta1[2]-meta01[2]*meta1[1]);
+    naux_1[1] = (meta01[2]*meta1[0]-meta01[0]*meta1[2]);
+    naux_1[2] = (meta01[0]*meta1[1]-meta01[1]*meta1[0]);
+
+    naux_1[0] += (meta0[1]*meta11[2]-meta0[2]*meta11[1]);
+    naux_1[1] += (meta0[2]*meta11[0]-meta0[0]*meta11[2]);
+    naux_1[2] += (meta0[0]*meta11[1]-meta0[1]*meta11[0]);
+
+    double n_0[3] = { 0.0, 0.0, 0.0 };
+    double n_1[3] = { 0.0, 0.0, 0.0 };
+
+    double fac0 = 0.0;
+    double fac1 = 0.0;
+
+    for (int i=0;i<3; ++i)
+      fac0 += naux_0[i]* normal[i];
+
+    for (int i = 0;i<3;++i)
+      n_0[i] = naux_0[i]/length - fac0*normal[i]/(length*length*length);
+
+    for (int i=0;i<3; ++i)
+      fac1 += naux_1[i]* normal[i];
+
+    for (int i = 0;i<3;++i)
+      n_1[i] = naux_1[i]/length - fac1*normal[i]/(length*length*length);
+
+    // evaluate function f gradient
+    for (int i = 0; i < 3; ++i)
+    {
+      df(i, 0) = meta0[i] + n_0[i];
+      df(i, 1) = meta1[i] + n_1[i];
+      df(i, 2) = unormal[i];
+    }
+
+    //**********************************************
+    //   solve deta = - inv(dF) * F               //
+    //**********************************************
+    double jacdet = df.Invert();
+    if (abs(jacdet) < 1.0e-12)
+      dserror("ERROR: Singular Jacobian for projection");
+
+    // update eta and alpha
+    eta[0] += -df(0, 0) * f[0] - df(0, 1) * f[1] - df(0, 2) * f[2];
+    eta[1] += -df(1, 0) * f[0] - df(1, 1) * f[1] - df(1, 2) * f[2];
+    alpha  += -df(2, 0) * f[0] - df(2, 1) * f[1] - df(2, 2) * f[2];
+  } // end newton loop
+
+  // Newton iteration unconverged
+  if (conv > MORTARCONVTOL)
+    dserror("ERROR: Projector not converged!");
+
+  // Newton iteration converged
+  xi[0] = eta[0];
+  xi[1] = eta[1];
+  mele.ComputeUnitNormalAtXi(eta,normal);
+  dist  = alpha;
+
+  // bye bye
+  return true;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Project snode onto melement with master normal           farah 01/16|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(
+    MORTAR::MortarNode&    snode,
+    MORTAR::MortarElement& mele,
+    double* xi,
+    double* normal,
+    double& dist)
+{
+  if(ndim_!=2)
+    dserror("ERROR: ProjectSNodeByMNormal2D is only for 2D problems!");
+
+  // start in the element center
+  double eta[2] =  { 0.0, 0.0 };
+
+  // auxiliary variable for distance
+  double alpha = 0.0;
+
+  // function f (vector-valued)
+  double f[3] =  { 0.0, 0.0, 0.0 };
+
+  // gradient of f (df/deta[0], df/deta[1], df/dalpha)
+  LINALG::Matrix<3, 3> df;
+
+  // start iteration
+  int k = 0;
+  double conv = 0.0;
+
+  for (k = 0; k < MORTARMAXITER; ++k)
+  {
+    //**********************************************
+    //  F CALCULATION                             //
+    //**********************************************
+
+    // build interpolation of master node coordinates for current eta
+    double xm[3]         = { 0.0, 0.0, 0.0 };
+    double xs[3]         = { 0.0, 0.0, 0.0 };
+    double unormal[3]    = { 0.0, 0.0, 0.0 };
+    double normal[3]     = { 0.0, 0.0, 0.0 };
+    double normalpart[3] = { 0.0, 0.0, 0.0 };
+
+    // calc xmaster
+    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
+
+    // calc normal part
+    double length = mele.ComputeUnitNormalAtXi(eta,unormal);
+    for (int i = 0; i < 3; ++i)
+      normalpart[i] = unormal[i]*alpha;
+
+    for (int i = 0; i < 3; ++i)
+      normal[i] = unormal[i]*length;
+
+    // calc xslave
+    for (int i = 0; i < 3; ++i)
+      xs[i] = snode.xspatial()[i];
+
+    //calculate F
+    for (int i = 0; i < 3; ++i)
+      f[i] = xm[i] + normalpart[i] - xs[i];
+
+    // check for convergence
+    conv = sqrt(f[0] * f[0] + f[1] * f[1] + f[2] * f[2]);
+    if (conv <= MORTARCONVTOL)
+      break;
+
+    //**********************************************
+    //   F GRADIENT CALCULATION                   //
+    //**********************************************
+
+    // master coordinate grad
+    double meta0[3] = { 0.0, 0.0, 0.0 }; // x,xi_0
+    double meta1[3] = { 0.0, 0.0, 1.0 }; // x,xi_1
+    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
+
+    // normal grad
+    LINALG::Matrix<1,n_> secderiv;
+    double meta00[3]=  { 0.0, 0.0, 0.0 }; // x,xi_0 xi_0
+    double meta11[3]=  { 0.0, 0.0, 0.0 }; // x,xi_1 xi_1
+    double meta01[3]=  { 0.0, 0.0, 0.0 }; // x,xi_0 xi_1
+
+    DRT::UTILS::shape_function_1D_deriv2(secderiv,eta[0],distype);
+
+    for (int i = 0;i<n_;++i)
+    {
+      MortarNode* mymnode = dynamic_cast<MortarNode*> (mele.Nodes()[i]);
+      if (!mymnode)
+        dserror("ERROR: Null pointer!");
+      for (int d = 0;d<3;++d)
+        meta00[d] += secderiv(0,i) * mymnode->xspatial()[d];
+    }
+
+    double naux_0[3] = { 0.0, 0.0, 0.0 };
+    double naux_1[3] = { 0.0, 0.0, 0.0 };
+
+    // normal grad xi_0
+    naux_0[0] = (meta00[1]*meta1[2]-meta00[2]*meta1[1]);
+    naux_0[1] = (meta00[2]*meta1[0]-meta00[0]*meta1[2]);
+    naux_0[2] = (meta00[0]*meta1[1]-meta00[1]*meta1[0]);
+
+    naux_0[0] += (meta0[1]*meta01[2]-meta0[2]*meta01[1]);
+    naux_0[1] += (meta0[2]*meta01[0]-meta0[0]*meta01[2]);
+    naux_0[2] += (meta0[0]*meta01[1]-meta0[1]*meta01[0]);
+
+    // normal grad xi_1
+    naux_1[0] = (meta01[1]*meta1[2]-meta01[2]*meta1[1]);
+    naux_1[1] = (meta01[2]*meta1[0]-meta01[0]*meta1[2]);
+    naux_1[2] = (meta01[0]*meta1[1]-meta01[1]*meta1[0]);
+
+    naux_1[0] += (meta0[1]*meta11[2]-meta0[2]*meta11[1]);
+    naux_1[1] += (meta0[2]*meta11[0]-meta0[0]*meta11[2]);
+    naux_1[2] += (meta0[0]*meta11[1]-meta0[1]*meta11[0]);
+
+    double n_0[3] = { 0.0, 0.0, 0.0 };
+    double n_1[3] = { 0.0, 0.0, 0.0 };
+
+    double fac0 = 0.0;
+    double fac1 = 0.0;
+
+    for (int i=0;i<3; ++i)
+      fac0 += naux_0[i]* normal[i];
+
+    for (int i = 0;i<3;++i)
+      n_0[i] = naux_0[i]/length - fac0*normal[i]/(length*length*length);
+
+    for (int i=0;i<3; ++i)
+      fac1 += naux_1[i]* normal[i];
+
+    for (int i = 0;i<3;++i)
+      n_1[i] = naux_1[i]/length - fac1*normal[i]/(length*length*length);
+
+    // evaluate function f gradient
+    for (int i = 0; i < 3; ++i)
+    {
+      df(i, 0) = meta0[i] + n_0[i];
+      df(i, 1) = meta1[i] + n_1[i];
+      df(i, 2) = unormal[i];
+    }
+
+    //**********************************************
+    //   solve deta = - inv(dF) * F               //
+    //**********************************************
+    double jacdet = df.Invert();
+    if (abs(jacdet) < 1.0e-12)
+      dserror("ERROR: Singular Jacobian for projection");
+
+    // update eta and alpha
+    eta[0] += -df(0, 0) * f[0] - df(0, 1) * f[1] - df(0, 2) * f[2];
+    eta[1] += -df(1, 0) * f[0] - df(1, 1) * f[1] - df(1, 2) * f[2];
+    alpha  += -df(2, 0) * f[0] - df(2, 1) * f[1] - df(2, 2) * f[2];
+  } // end newton loop
+
+  // Newton iteration unconverged
+  if (conv > MORTARCONVTOL)
+    dserror("ERROR: Projector not converged!");
+
+  // Newton iteration converged
+  xi[0] = eta[0];
+  mele.ComputeUnitNormalAtXi(eta,normal);
+  dist  = alpha;
+
+  // bye bye
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Project snode onto melement with master normal + Lin     farah 01/16|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(
+    MORTAR::MortarNode&    snode,
+    MORTAR::MortarElement& mele,
+    double* xi,
+    double* normal,
+    double& dist,
+    std::vector<GEN::pairedvector<int,double> >& normaltolineLin)
+{
+  if(ndim_!=2)
+    dserror("ERROR: ProjectSNodeByMNormal2D is only for 2D problems!");
+
+  // start in the element center
+  double eta[2] =  { 0.0, 0.0 };
+
+  // auxiliary variable for distance
+  double alpha = 0.0;
+
+  // function f (vector-valued)
+  double f[3] =  { 0.0, 0.0, 0.0 };
+
+  // gradient of f (df/deta[0], df/deta[1], df/dalpha)
+  LINALG::Matrix<3, 3> df;
+
+  // start iteration
+  int k = 0;
+  double conv = 0.0;
+
+  for (k = 0; k < MORTARMAXITER; ++k)
+  {
+    //**********************************************
+    //  F CALCULATION                             //
+    //**********************************************
+
+    // build interpolation of master node coordinates for current eta
+    double xm[3]         = { 0.0, 0.0, 0.0 };
+    double xs[3]         = { 0.0, 0.0, 0.0 };
+    double unormal[3]    = { 0.0, 0.0, 0.0 };
+    double normal_k[3]   = { 0.0, 0.0, 0.0 };
+    double normalpart[3] = { 0.0, 0.0, 0.0 };
+
+    // calc xmaster
+    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, xm, 0);
+
+    // calc normal part
+    double length = mele.ComputeUnitNormalAtXi(eta,unormal);
+    for (int i = 0; i < 3; ++i)
+      normalpart[i] = unormal[i]*alpha;
+
+    for (int i = 0; i < 3; ++i)
+      normal_k[i] = unormal[i]*length;
+
+    // calc xslave
+    for (int i = 0; i < 3; ++i)
+      xs[i] = snode.xspatial()[i];
+
+    //calculate F
+    for (int i = 0; i < 3; ++i)
+      f[i] = xm[i] + normalpart[i] - xs[i];
+
+    // check for convergence
+    conv = sqrt(f[0] * f[0] + f[1] * f[1] + f[2] * f[2]);
+    if (conv <= MORTARCONVTOL)
+      break;
+
+    //**********************************************
+    //   F GRADIENT CALCULATION                   //
+    //**********************************************
+
+    // master coordinate grad
+    double meta0[3] = { 0.0, 0.0, 0.0 }; // x,xi_0
+    double meta1[3] = { 0.0, 0.0, 1.0 }; // x,xi_1
+    MORTAR::UTILS::LocalToGlobal<distype>(mele, eta, meta0, 1);
+
+    // normal grad
+    LINALG::Matrix<1,n_> secderiv;
+    double meta00[3]=  { 0.0, 0.0, 0.0 }; // x,xi_0 xi_0
+    double meta11[3]=  { 0.0, 0.0, 0.0 }; // x,xi_1 xi_1
+    double meta01[3]=  { 0.0, 0.0, 0.0 }; // x,xi_0 xi_1
+
+    DRT::UTILS::shape_function_1D_deriv2(secderiv,eta[0],distype);
+
+    for (int i = 0;i<n_;++i)
+    {
+      MortarNode* mymnode = dynamic_cast<MortarNode*> (mele.Nodes()[i]);
+      if (!mymnode)
+        dserror("ERROR: Null pointer!");
+      for (int d = 0;d<3;++d)
+        meta00[d] += secderiv(0,i) * mymnode->xspatial()[d];
+    }
+
+    double naux_0[3] = { 0.0, 0.0, 0.0 };
+    double naux_1[3] = { 0.0, 0.0, 0.0 };
+
+    // normal grad xi_0
+    naux_0[0] = (meta00[1]*meta1[2]-meta00[2]*meta1[1]);
+    naux_0[1] = (meta00[2]*meta1[0]-meta00[0]*meta1[2]);
+    naux_0[2] = (meta00[0]*meta1[1]-meta00[1]*meta1[0]);
+
+    naux_0[0] += (meta0[1]*meta01[2]-meta0[2]*meta01[1]);
+    naux_0[1] += (meta0[2]*meta01[0]-meta0[0]*meta01[2]);
+    naux_0[2] += (meta0[0]*meta01[1]-meta0[1]*meta01[0]);
+
+    // normal grad xi_1
+    naux_1[0] = (meta01[1]*meta1[2]-meta01[2]*meta1[1]);
+    naux_1[1] = (meta01[2]*meta1[0]-meta01[0]*meta1[2]);
+    naux_1[2] = (meta01[0]*meta1[1]-meta01[1]*meta1[0]);
+
+    naux_1[0] += (meta0[1]*meta11[2]-meta0[2]*meta11[1]);
+    naux_1[1] += (meta0[2]*meta11[0]-meta0[0]*meta11[2]);
+    naux_1[2] += (meta0[0]*meta11[1]-meta0[1]*meta11[0]);
+
+    double n_0[3] = { 0.0, 0.0, 0.0 };
+    double n_1[3] = { 0.0, 0.0, 0.0 };
+
+    double fac0 = 0.0;
+    double fac1 = 0.0;
+
+    for (int i=0;i<3; ++i)
+      fac0 += naux_0[i]* normal_k[i];
+
+    for (int i = 0;i<3;++i)
+      n_0[i] = naux_0[i]/length - fac0*normal_k[i]/(length*length*length);
+
+    for (int i=0;i<3; ++i)
+      fac1 += naux_1[i]* normal_k[i];
+
+    for (int i = 0;i<3;++i)
+      n_1[i] = naux_1[i]/length - fac1*normal_k[i]/(length*length*length);
+
+    // evaluate function f gradient
+    for (int i = 0; i < 3; ++i)
+    {
+      df(i, 0) = meta0[i] + n_0[i];
+      df(i, 1) = meta1[i] + n_1[i];
+      df(i, 2) = unormal[i];
+    }
+
+    //**********************************************
+    //   solve deta = - inv(dF) * F               //
+    //**********************************************
+    double jacdet = df.Invert();
+    if (abs(jacdet) < 1.0e-12)
+      dserror("ERROR: Singular Jacobian for projection");
+
+    // update eta and alpha
+    eta[0] += -df(0, 0) * f[0] - df(0, 1) * f[1] - df(0, 2) * f[2];
+    eta[1] += -df(1, 0) * f[0] - df(1, 1) * f[1] - df(1, 2) * f[2];
+    alpha  += -df(2, 0) * f[0] - df(2, 1) * f[1] - df(2, 2) * f[2];
+  } // end newton loop
+
+  // Newton iteration unconverged
+  if (conv > MORTARCONVTOL)
+    dserror("ERROR: Projector not converged!");
+
+  //**********************************************
+  //   Get stuff                                //
+  //**********************************************
+  // Newton iteration converged
+  xi[0] = eta[0];
+  double normallength = mele.ComputeUnitNormalAtXi(eta,normal);
+  dist  = alpha;
+
+
+  //**********************************************
+  //   Lin deta = - inv(dF) * Lin F             //
+  //**********************************************
+  // prepare linearizations
+  typedef GEN::pairedvector<int,double>::const_iterator _CI;
+
+  std::vector<GEN::pairedvector<int,double> > etaLin(3,1000);
+  std::vector<GEN::pairedvector<int,double> > fLin(3,1000);
+  std::vector<GEN::pairedvector<int,double> > xmLin(3,1000);
+  std::vector<GEN::pairedvector<int,double> > normalpartLin(3,1000);
+  std::vector<GEN::pairedvector<int,double> > xsLin(3,1000);
+
+  //--------------------------
+  // master part:
+  LINALG::Matrix<n_,1> val;
+  DRT::UTILS::shape_function_1D(val,eta[0],distype);
+
+  for (int i = 0;i<n_;++i)
+  {
+    // get master node
+    DRT::Node* node = mele.Nodes()[i];
+    if (!node) dserror("ERROR: Cannot find master node");
+    MortarNode* mnode = dynamic_cast<MortarNode*>(node);
+
+    for(int k = 0; k<2; ++k)
+      (xmLin[k])[mnode->Dofs()[k]] += val(i) ;
+  }
+
+  //--------------------------
+  // normal part:
+  std::vector<GEN::pairedvector<int,double> > x_0Lin(3,1000);
+  std::vector<GEN::pairedvector<int,double> > auxnormalLin(3,1000);
+  std::vector<GEN::pairedvector<int,double> > auxnormalunitLin(3,1000);
+
+  LINALG::Matrix<1,n_>   deriv1;
+  DRT::UTILS::shape_function_1D_deriv1(deriv1,eta[0],distype);
+  for (int i = 0;i<n_;++i)
+  {
+    // get master node
+    DRT::Node* node = mele.Nodes()[i];
+    if (!node) dserror("ERROR: Cannot find master node");
+    MortarNode* mnode = dynamic_cast<MortarNode*>(node);
+
+    for(int k = 0; k<2; ++k)
+      (x_0Lin[k])[mnode->Dofs()[k]] += deriv1(i) ;
+  }
+
+  // cross product linearization
+  for (_CI p=x_0Lin[1].begin();p!=x_0Lin[1].end();++p)
+    (auxnormalLin[0])[p->first] += (p->second);
+  for (_CI p=x_0Lin[0].begin();p!=x_0Lin[0].end();++p)
+    (auxnormalLin[1])[p->first] -= (p->second);
+
+  // calc normalpart without alpha
+  double linnormalaux[3] = {0.0, 0.0, 0.0};
+  linnormalaux[0] = normal[0]*normallength;
+  linnormalaux[1] = normal[1]*normallength;
+  linnormalaux[2] = normal[2]*normallength;
+
+  // derivative weighting matrix for current element
+  LINALG::Matrix<3, 3>W;
+  const double lcubeinv = 1.0 / (normallength * normallength * normallength);
+
+  for (int j = 0; j < 3; ++j)
+  {
+    for (int k = 0; k < 3; ++k)
+    {
+      W(j, k) = -lcubeinv * linnormalaux[j] * linnormalaux[k];
+      if (j == k)
+        W(j, k) += 1 / normallength;
+    }
+  }
+
+  // row loop
+  for (int j = 0; j < 3; ++j)
+  {
+    for (_CI p=auxnormalLin[0].begin();p!=auxnormalLin[0].end();++p)
+      (auxnormalunitLin[j])[p->first] += (p->second) * W(j,0);
+
+    for (_CI p=auxnormalLin[1].begin();p!=auxnormalLin[1].end();++p)
+      (auxnormalunitLin[j])[p->first] += (p->second) * W(j,1);
+
+    for (_CI p=auxnormalLin[2].begin();p!=auxnormalLin[2].end();++p)
+      (auxnormalunitLin[j])[p->first] += (p->second) * W(j,2);
+  }
+
+  for (int j = 0; j < 3; ++j)
+  {
+    for (_CI p=auxnormalunitLin[j].begin();p!=auxnormalunitLin[j].end();++p)
+      (normalpartLin[j])[p->first] += (p->second) * alpha;
+  }
+
+
+  //--------------------------
+  // slave part:
+  for(int k = 0; k<2; ++k)
+    (xsLin[k])[snode.Dofs()[k]] += 1.0;
+
+  // All terms:
+  for (int j = 0; j < 3; ++j)
+  {
+    for (_CI p=xmLin[j].begin();p!=xmLin[j].end();++p)
+      (fLin[j])[p->first] += (p->second);
+
+    for (_CI p=normalpartLin[j].begin();p!=normalpartLin[j].end();++p)
+      (fLin[j])[p->first] += (p->second);
+
+    for (_CI p=xsLin[j].begin();p!=xsLin[j].end();++p)
+      (fLin[j])[p->first] -= (p->second);
+  }
+
+
+  for(int i = 0; i<3 ; ++i)
+  {
+    for(int k = 0; k<3 ; ++k)
+    {
+      for (_CI p=fLin[i].begin();p!=fLin[i].end();++p)
+        (etaLin[k])[p->first] -= (p->second) * df(k,i);
+    }
+  }
+
+  //**********************************************
+  //   Lin N                                    //
+  //**********************************************
+  std::vector<GEN::pairedvector<int,double> > x_0Linnew(3,1000);
+  std::vector<GEN::pairedvector<int,double> > normaltolineLinaux(3,1000);
+
+  LINALG::Matrix<1,n_>   deriv;
+  DRT::UTILS::shape_function_1D_deriv1(deriv,eta[0],distype);
+
+  LINALG::Matrix<1,n_>   deriv2;
+  DRT::UTILS::shape_function_1D_deriv2(deriv2,eta[0],distype);
+  for (int i = 0;i<n_;++i)
+  {
+    // get master node
+    DRT::Node* node = mele.Nodes()[i];
+    if (!node) dserror("ERROR: Cannot find master node");
+    MortarNode* mnode = dynamic_cast<MortarNode*>(node);
+
+    for(int k = 0; k<2; ++k)
+      (x_0Linnew[k])[mnode->Dofs()[k]] += deriv(i);
+
+    for(int k = 0; k<2; ++k)
+    {
+      for (_CI p=etaLin[0].begin();p!=etaLin[0].end();++p)
+        (x_0Linnew[k])[p->first] += (p->second) * deriv2(i) * mnode->xspatial()[k];
+    }
+  }
+
+  // cross product linearization
+  for (_CI p=x_0Linnew[1].begin();p!=x_0Linnew[1].end();++p)
+    (normaltolineLinaux[0])[p->first] += (p->second);
+  for (_CI p=x_0Linnew[0].begin();p!=x_0Linnew[0].end();++p)
+    (normaltolineLinaux[1])[p->first] -= (p->second);
+
+  //normalize lin
+  LINALG::Matrix<3, 3>Wfinal;
+//  const double lcubeinv = 1.0 / (normallength * normallength * normallength);
+
+  for (int j = 0; j < 3; ++j)
+  {
+    for (int k = 0; k < 3; ++k)
+    {
+      Wfinal(j, k) = -lcubeinv * linnormalaux[j] * linnormalaux[k];
+      if (j == k)
+        Wfinal(j, k) += 1 / normallength;
+    }
+  }
+
+  // row loop
+  for (int j = 0; j < 3; ++j)
+  {
+    for (_CI p=normaltolineLinaux[0].begin();p!=normaltolineLinaux[0].end();++p)
+      (normaltolineLin[j])[p->first] += (p->second) * Wfinal(j,0);
+
+    for (_CI p=normaltolineLinaux[1].begin();p!=normaltolineLinaux[1].end();++p)
+      (normaltolineLin[j])[p->first] += (p->second) * Wfinal(j,1);
+
+    for (_CI p=normaltolineLinaux[2].begin();p!=normaltolineLinaux[2].end();++p)
+      (normaltolineLin[j])[p->first] += (p->second) * Wfinal(j,2);
+  }
+
+  // bye bye
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Project snode onto melement with master normal           farah 01/16|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal(
+    MORTAR::MortarNode&    snode,
+    MORTAR::MortarElement& mele,
+    double* xi,
+    double* normal,
+    double& dist)
+{
+  if(ndim_==2)
+  {
+    ProjectSNodeByMNormal2D(
+        snode,
+        mele,
+        xi,
+        normal,
+        dist);
+  }
+  else if(ndim_==3)
+  {
+    ProjectSNodeByMNormal3D(
+        snode,
+        mele,
+        xi,
+        normal,
+        dist);
+  }
+  else
+  {
+    dserror("ERROR: wrong dimension!");
+  }
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Project snode onto melement with master normal           farah 01/16|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormalLin(
+    MORTAR::MortarNode&    snode,
+    MORTAR::MortarElement& mele,
+    double* xi,
+    double* normal,
+    double& dist,
+    std::vector<GEN::pairedvector<int,double> >& normaltolineLin)
+{
+  if(ndim_==2)
+  {
+    ProjectSNodeByMNormal2DLin(
+        snode,
+        mele,
+        xi,
+        normal,
+        dist,
+        normaltolineLin);
+  }
+  else if(ndim_==3)
+  {
+    dserror("ERROR: Not yet implemented!");
+  }
+  else
+  {
+    dserror("ERROR: wrong dimension!");
+  }
+
+  return true;
+}
+
 /*----------------------------------------------------------------------*
  |  Evaluate F for nodal normal case (public)                 popp 01/08|
  *----------------------------------------------------------------------*/
@@ -1348,9 +2299,8 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateFElementNormal(
   if (!mynodes)
     dserror("ERROR: EvaluateFElementNormal: Null pointer!");
 
-    LINALG::Matrix<n_, 1
->  val;
-  LINALG::Matrix<ndim_, n_> coord;
+  LINALG::Matrix<n_, 1>      val;
+  LINALG::Matrix<ndim_, n_>  coord;
 
   // get shape function values and derivatives at gpeta
   if (distype == DRT::Element::nurbs2 || distype == DRT::Element::nurbs3)
@@ -1491,7 +2441,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(
      *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS,
     DRT::Element::DiscretizationType distypeM>
-double MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::EvaluateFGaussPoint(
+double MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::EvaluateFGaussPoint2D(
     const double* gpx, const double* gpn, MORTAR::MortarElement& ele,
     const double* eta)
 {
@@ -1525,7 +2475,7 @@ double MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::EvaluateFGaussP
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS,
     DRT::Element::DiscretizationType distypeM>
-double MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::EvaluateGradFGaussPoint(
+double MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::EvaluateGradFGaussPoint2D(
     const double* gpn, MORTAR::MortarElement& ele, const double* eta)
 {
   /* Evaluate the function GradF(eta)

@@ -828,7 +828,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(
       double mxi[2] = { 0.0, 0.0};
       sxi[0]=eta[0];
 
-      MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint(sele,eta,*meles[nummaster],mxi);
+      MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint2D(sele,eta,*meles[nummaster],mxi);
 
       // evaluate trace space shape functions (on both elements)
       UTILS::EvaluateShape_Displ(mxi, mval,*meles[nummaster], false);
@@ -944,7 +944,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(
 
     // project Gauss point onto master element
     double mxi[2] = { 0.0, 0.0 };
-    MORTAR::MortarProjector::Impl(sele, mele)->ProjectGaussPoint(sele, sxi, mele, mxi);
+    MORTAR::MortarProjector::Impl(sele, mele)->ProjectGaussPoint2D(sele, sxi, mele, mxi);
 
     // check GP projection
     if ((mxi[0] < mxia) || (mxi[0] > mxib))
@@ -1442,7 +1442,7 @@ Teuchos::RCP<Epetra_SerialDenseMatrix> MORTAR::MortarIntegratorCalc<distypeS,dis
     sxi[0] = 0.5 * (1 - eta[0]) * sxia + 0.5 * (1 + eta[0]) * sxib;
 
     // project Gauss point onto master element
-    MORTAR::MortarProjector::Impl(sele, mele)->ProjectGaussPoint(sele, sxi,
+    MORTAR::MortarProjector::Impl(sele, mele)->ProjectGaussPoint2D(sele, sxi,
         mele, mxi);
 
     // check GP projection

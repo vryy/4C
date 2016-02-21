@@ -29,10 +29,14 @@ Maintainer: Philipp Farah
 /*----------------------------------------------------------------------*
  |  ctor                                                     farah 10/13|
  *----------------------------------------------------------------------*/
-ADAPTER::MortarVolCoupl::MortarVolCoupl()
+ADAPTER::MortarVolCoupl::MortarVolCoupl() :
+  issetup_(false),
+  P12_(Teuchos::null),
+  P21_(Teuchos::null)
 {
   //empty...
 }
+
 
 /*----------------------------------------------------------------------*
  |  setup                                                    farah 10/13|
@@ -46,10 +50,11 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> dis1, // o
                                     Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy,
                                     bool redistribute)
 {
-  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  // get problem dimension (2D or 3D)
   const int dim = DRT::Problem::Instance()->NDim();
 
-  const Teuchos::ParameterList& params = DRT::Problem::Instance()->VolmortarParams();
+  const Teuchos::ParameterList& params =
+      DRT::Problem::Instance()->VolmortarParams();
 
   if ((dis1->NumDofSets() == 1) and (dis2->NumDofSets() == 1))
   {
@@ -77,11 +82,21 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> dis1, // o
     binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
   }
 
+  // create material strategy
   if(materialstrategy==Teuchos::null)
     materialstrategy= Teuchos::rcp(new VOLMORTAR::UTILS::DefaultMaterialStrategy() );
+
   // create coupling instance
   Teuchos::RCP<VOLMORTAR::VolMortarCoupl> coupdis =
-      Teuchos::rcp(new VOLMORTAR::VolMortarCoupl(dim,dis1,dis2,coupleddof12,coupleddof21,dofsets12,dofsets21,materialstrategy));
+      Teuchos::rcp(new VOLMORTAR::VolMortarCoupl(
+          dim,
+          dis1,
+          dis2,
+          coupleddof12,
+          coupleddof21,
+          dofsets12,
+          dofsets21,
+          materialstrategy));
 
   //-----------------------
   // Evaluate volmortar coupling:
@@ -114,8 +129,13 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> dis1, // o
   //assign materials from one discretization to the other
   coupdis->AssignMaterials();
 
+  // set flag
+  issetup_=true;
+
+  // bye
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Create Auxiliary dofsets for multiphysics                farah 06/15|
@@ -178,6 +198,9 @@ void ADAPTER::MortarVolCoupl::AssignMaterials(
 Teuchos::RCP<const Epetra_Vector> ADAPTER::MortarVolCoupl::ApplyVectorMapping12(
     Teuchos::RCP<const Epetra_Vector> vec) const
 {
+  // safety check
+  CheckSetup();
+
   Teuchos::RCP<Epetra_Vector> mapvec = LINALG::CreateVector(P12_->RowMap(),true);
   P12_->Multiply(false,*vec,*mapvec);
 
@@ -190,6 +213,9 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::MortarVolCoupl::ApplyVectorMapping12(
 Teuchos::RCP<const Epetra_Vector> ADAPTER::MortarVolCoupl::ApplyVectorMapping21(
     Teuchos::RCP<const Epetra_Vector> vec) const
 {
+  // safety check
+  CheckSetup();
+
   Teuchos::RCP<Epetra_Vector> mapvec = LINALG::CreateVector(P21_->RowMap(),true);
   P21_->Multiply(false,*vec,*mapvec);
 
@@ -202,6 +228,9 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::MortarVolCoupl::ApplyVectorMapping21(
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::MortarVolCoupl::ApplyMatrixMapping12(
     Teuchos::RCP<const LINALG::SparseMatrix> mat) const
 {
+  // safety check
+  CheckSetup();
+
   return LINALG::MLMultiply(*mat,false,*P12_,false,false,false,true);
 }
 
@@ -211,6 +240,9 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::MortarVolCoupl::ApplyMatrixMapping12
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::MortarVolCoupl::ApplyMatrixMapping21(
     Teuchos::RCP<const LINALG::SparseMatrix> mat) const
 {
+  // safety check
+  CheckSetup();
+
   return LINALG::MLMultiply(*mat,false,*P21_,false,false,false,true);
 }
 
@@ -218,6 +250,9 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::MortarVolCoupl::ApplyMatrixMapping21
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::MortarVolCoupl::MasterToSlave(Teuchos::RCP<const Epetra_Vector> mv) const
 {
+  // safety check
+  CheckSetup();
+
   //create vector
   Teuchos::RCP<Epetra_Vector> sv = LINALG::CreateVector(P12_->ColMap(),true);
   //project
@@ -231,6 +266,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::MortarVolCoupl::MasterToSlave(Teuchos::RCP<
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::MortarVolCoupl::SlaveToMaster(Teuchos::RCP<const Epetra_Vector> sv) const
 {
+  // safety check
+  CheckSetup();
+
   //create vector
   Teuchos::RCP<Epetra_Vector> mv = LINALG::CreateVector(P21_->ColMap(),true);
   //project
@@ -244,6 +282,9 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::MortarVolCoupl::SlaveToMaster(Teuchos::RCP<
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> ADAPTER::MortarVolCoupl::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv) const
 {
+  // safety check
+  CheckSetup();
+
   //create vector
   Teuchos::RCP<Epetra_MultiVector> sv =
     Teuchos::rcp(new Epetra_MultiVector(P12_->ColMap(),mv->NumVectors()));
@@ -258,6 +299,9 @@ Teuchos::RCP<Epetra_MultiVector> ADAPTER::MortarVolCoupl::MasterToSlave(Teuchos:
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> ADAPTER::MortarVolCoupl::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv) const
 {
+  // safety check
+  CheckSetup();
+
   //create vector
   Teuchos::RCP<Epetra_MultiVector> mv =
     Teuchos::rcp(new Epetra_MultiVector(P21_->ColMap(),sv->NumVectors()));
@@ -280,6 +324,9 @@ void ADAPTER::MortarVolCoupl::MasterToSlave(Teuchos::RCP<const Epetra_MultiVecto
   if (sv->NumVectors()!=mv->NumVectors())
     dserror("column number mismatch %d!=%d",sv->NumVectors(),mv->NumVectors());
 #endif
+
+  // safety check
+  CheckSetup();
 
   //slave vector with auxiliary dofmap
   Epetra_MultiVector sv_aux(P21_->RowMap(),sv->NumVectors());
@@ -309,6 +356,9 @@ void ADAPTER::MortarVolCoupl::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVecto
     dserror("column number mismatch %d!=%d",sv->NumVectors(),mv->NumVectors());
 #endif
 
+  // safety check
+  CheckSetup();
+
   //master vector with auxiliary dofmap
   Epetra_MultiVector mv_aux(P12_->RowMap(),mv->NumVectors());
 
@@ -327,6 +377,9 @@ void ADAPTER::MortarVolCoupl::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVecto
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map>  ADAPTER::MortarVolCoupl::MasterDofMap() const
 {
+  // safety check
+  CheckSetup();
+
   return Teuchos::rcpFromRef(P21_->ColMap());
 }
 
@@ -335,5 +388,8 @@ Teuchos::RCP<const Epetra_Map>  ADAPTER::MortarVolCoupl::MasterDofMap() const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> ADAPTER::MortarVolCoupl::SlaveDofMap() const
 {
+  // safety check
+  CheckSetup();
+
   return Teuchos::rcpFromRef(P12_->ColMap());
 }

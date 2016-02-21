@@ -382,12 +382,6 @@ public:
   virtual void IntegrateCoupling();
 
   /*!
-   \brief Evaluate NTS coupling pairs
-
-   */
-  virtual void EvaluateNTS();
-
-  /*!
    \brief Return the LM shape fcn type
 
    */
@@ -478,12 +472,6 @@ public:
 
    */
   virtual void IntegrateCoupling();
-
-  /*!
-   \brief Evaluate NTS coupling pairs
-
-   */
-  virtual void EvaluateNTS();
 
   /*!
    \brief spatial dimension

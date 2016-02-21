@@ -69,6 +69,24 @@ namespace WEAR
     /// virtual destructor to support polymorph destruction
     virtual ~Partitioned();
 
+    // write output for ale and structure
+    void Output();
+
+    /// read restart data
+    virtual void ReadRestart(
+      int step  ///< step number where the calculation is continued
+      );
+
+    /// general time loop
+    virtual void TimeLoop();
+
+    // update ale and structure
+    void Update();
+
+  protected:
+    //nothing
+
+  private:
     // do ale step
     void AleStep(Teuchos::RCP<Epetra_Vector> idisale_global);
 
@@ -114,19 +132,11 @@ namespace WEAR
                     Teuchos::RCP<Epetra_Vector>& disinterface_m,
                     Teuchos::RCP<Epetra_Vector>& disinterface_g);
 
-    // write output for ale and structure
-    void Output();
-
     // ale parameter list
     virtual Teuchos::ParameterList& ParamsAle() {return alepara_;};
 
     // prepare time step for ale and structure
     void PrepareTimeStep();
-
-    /// read restart data
-    virtual void ReadRestart(
-      int step  ///< step number where the calculation is continued
-      );
 
     // redistribute material interfaces according to current interfaces
     void RedistributeMatInterfaces();
@@ -137,17 +147,11 @@ namespace WEAR
     // transform from ale to structure dofs
     virtual Teuchos::RCP<Epetra_Vector> StructureToAle(Teuchos::RCP<const Epetra_Vector> vec) const;
 
-    /// general time loop
-    virtual void TimeLoop();
-
     // time loop for staggered coupling
     void TimeLoopStagg(bool alestep);
 
     //time loop for iterative stagered coupling
     void TimeLoopIterStagg();
-
-    // update ale and structure
-    void Update();
 
     // update spatial displacements due to mat. displ
     void UpdateSpatConf();
@@ -168,11 +172,6 @@ namespace WEAR
     /// wear in sp conf.
     void WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterface_s);
 
-  protected:
-    //nothing
-
-  private:
-
     Teuchos::RCP<Epetra_Vector>                      wearnp_i_;     // wear in timestep n+1 and nonlin iter i
     Teuchos::RCP<Epetra_Vector>                      wearnp_ip_;    // wear in timestep n+1 and nonlin iter i+1
     Teuchos::RCP<Epetra_Vector>                      wearincr_;     // wear incr between wearnp_i_ and wearnp_ip_
@@ -184,7 +183,6 @@ namespace WEAR
     Teuchos::RCP< ::ADAPTER::Coupling>               coupstrualei_;  // ale struct coupling on ale interface
 
     Teuchos::ParameterList                           alepara_;       // ale parameter list
-
 
  };  // Algorithm
 

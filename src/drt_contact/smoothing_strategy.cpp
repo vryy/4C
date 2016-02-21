@@ -26,14 +26,30 @@
 /*----------------------------------------------------------------------*
  | ctor (public)                                             farah 01/15|
  *----------------------------------------------------------------------*/
-CONTACT::SmoothingStrategy::SmoothingStrategy(const Epetra_Map* DofRowMap,
-    const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
+CONTACT::SmoothingStrategy::SmoothingStrategy(
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<CONTACT::CoInterface> > cinterface,
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > mtinterface, int dim,
-    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
-    CoAbstractStrategy(DofRowMap, NodeRowMap, params, cinterface, dim, comm,
-        alphaf, maxdof), activesetssconv_(false), activesetconv_(false), activesetsteps_(
-            1), minterface_(mtinterface) {
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > mtinterface,
+    int dim,
+    Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf,
+    int maxdof) :
+    CoAbstractStrategy(
+        DofRowMap,
+        NodeRowMap,
+        params,
+        cinterface,
+        dim,
+        comm,
+        alphaf,
+        maxdof),
+    activesetssconv_(false),
+    activesetconv_(false),
+    activesetsteps_(1),
+    minterface_(mtinterface)
+{
   // get number of contact lm dofs as offset
   globaloffset_ = glmdofrowmap_->NumGlobalElements();
 
@@ -45,6 +61,7 @@ CONTACT::SmoothingStrategy::SmoothingStrategy(const Epetra_Map* DofRowMap,
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  | setup this strategy object                               farah 01/15 |
@@ -121,6 +138,7 @@ void CONTACT::SmoothingStrategy::SetupMT(bool redistributed)
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  | initialize global contact variables for next Newton step  farah 01/15|

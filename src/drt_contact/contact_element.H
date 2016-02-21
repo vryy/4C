@@ -222,15 +222,6 @@ public:
       std::vector<GEN::pairedvector<int, double> >& derivn);
 
   /*!
-   \brief Compute element normal derivative at local coordinate xi
-   Caution: This function cannot be called stand-alone! It is
-   integrated into the whole nodal normal calculation process.
-   */
-  virtual void DerivNormalAtXi(double* xi, int& i,
-      Epetra_SerialDenseMatrix& elens,
-      std::vector<GEN::pairedvector<int, double> >& derivn);
-
-  /*!
    \brief Evaluate derivative J,xi of Jacobian determinant
    */
   virtual void DJacDXi(double* djacdxi, double* xi,
@@ -277,6 +268,16 @@ public:
   virtual void AssembleMderivToNodes(MORTAR::MortarElement& mele);
 
   //@}
+private:
+
+  /*!
+   \brief Compute element normal derivative at local coordinate xi
+   Caution: This function cannot be called stand-alone! It is
+   integrated into the whole nodal normal calculation process.
+   */
+  virtual void DerivNormalAtXi(double* xi, int& i,
+      Epetra_SerialDenseMatrix& elens,
+      std::vector<GEN::pairedvector<int, double> >& derivn);
 
 private:
 

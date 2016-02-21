@@ -106,6 +106,11 @@ public:
   virtual double& Getg() { return grow_; }
 
   /*!
+   \brief Return the weighted gap (scalar) of this node
+   */
+  virtual double& Getgnts() { return gnts_; }
+
+  /*!
   \brief Return the weighted gap (scalar) of this node
 
   */
@@ -331,6 +336,9 @@ public:
    */
   virtual std::map<int, double>& GetDerivScale() { return derivscalefac_; }
 
+  virtual std::vector<GEN::pairedvector<int, double> >& GetAlpha() {return alpha_;};
+  virtual double& GetAlphaN() {return nalpha_;};
+
   //@}
 
 protected:
@@ -342,7 +350,9 @@ protected:
   double txi_[3];  // nodal tangent t_xi for contact methods at newton step n
   double teta_[3]; // nodal tangent t_eta for contact methods at newton step n
   double grow_;    // nodal entry of g vector
+  double gnts_;    // nodal entry of g vector
 
+  double nalpha_;
   bool activeold_; // true if cnode was in contact (last converged state n)
 
   std::vector<GEN::pairedvector<int, double> > derivn_;    // directional derivative of nodal normal
@@ -372,6 +382,9 @@ protected:
   std::map<int,double> augALin_;      // linearization of the scaling factor (element based integration)
   std::map<int,double> aWGapLin_;     // linearization of the averaged weighted gap
   std::map<int,double> wGapLin_;      // linearization of the weighted gap
+
+  std::vector<GEN::pairedvector<int, double> >  alpha_;    // scaling factor for hybrid formulation
+
 
   // *** Penalty-related quantities **************************
   double kappa_;                               // gap-scaling factor kappa
@@ -805,7 +818,7 @@ public:
 
    */
   void AddgValue(double& val);
-
+  void AddntsGapValue(double& val);
   /*!
   \brief Add a value to the weighted gap of this node (augmented Lagrange)
 
@@ -874,26 +887,6 @@ public:
   void BuildAveragedNormal();
 
   /*!
-   \brief Build directional derivative of nodal normal + tangents
-
-   This method will be called after having finished the method
-   BuildAveragedNormal() for the computation of nodal normals. The result
-   (directional derivatives) will be stored in the nodal maps derivn_ and
-   will later be assembled to the global system of equations.
-   Please note that we also compute the directional derivative of the
-   nodal tangent here,and the results will be stored analogously in
-   the nodal maps derivtxi_ (2D and 3D) and derivteta_ (only 3D).
-
-   \param elens (in):  Matrix containing normals of adjacent elements
-   \param length (in): Length of the nodal averaged normal
-   \param ltxi (in):   Length of the nodal tangent txi
-
-   */
-  void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens, double length,
-      double ltxi);
-
-  void DerivAveragedNormalHermit(double length, double ltxi);
-  /*!
    \brief Initializes the data container of the node
 
    With this function, the container with contact specific quantities/information
@@ -953,6 +946,28 @@ public:
 
   virtual bool HasCoTSIData(){return (cTSIdata_!=Teuchos::null);}
   //@}
+
+private:
+  /*!
+   \brief Build directional derivative of nodal normal + tangents
+
+   This method will be called after having finished the method
+   BuildAveragedNormal() for the computation of nodal normals. The result
+   (directional derivatives) will be stored in the nodal maps derivn_ and
+   will later be assembled to the global system of equations.
+   Please note that we also compute the directional derivative of the
+   nodal tangent here,and the results will be stored analogously in
+   the nodal maps derivtxi_ (2D and 3D) and derivteta_ (only 3D).
+
+   \param elens (in):  Matrix containing normals of adjacent elements
+   \param length (in): Length of the nodal averaged normal
+   \param ltxi (in):   Length of the nodal tangent txi
+
+   */
+  void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens, double length,
+      double ltxi);
+
+  void DerivAveragedNormalHermit(double length, double ltxi);
 
 protected:
 

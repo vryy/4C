@@ -99,32 +99,6 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     //! @name Evaluation methods
 
     /*!
-    \brief Initialize general contact variables for next Newton step
-
-    For a lagrangian strategy this includes the global normal / tangent matrices N and T,
-    the global derivative matrices S and P and Tresca friction matrix L + vector r.
-
-    */
-    void Initialize();
-
-    /*!
-    \brief Evaluate contact
-
-    For a lagrangian strategy this involves heavy modification to the initial kteff and feff.
-    Hence, they are infact build from scratch here.
-    The application of modifications to groups of dofs (slave, master, active etc.)
-    results in some matrix and vector splitting and a lot of matrix-vector calculation in here!
-
-    */
-    void EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
-
-    /*!
-    \brief Evaluate frictional contact
-
-    */
-    void EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
-
-    /*!
     \brief Build 2x2 saddle point system
 
     \param kdd (in): the displacement dof stiffness (upper left block)
@@ -274,18 +248,33 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
 
-    // same procedure for wear stuff:
-    void OutputWear() {};
-    Teuchos::RCP<Epetra_Vector> ContactWear() {return Teuchos::null;};
-    Teuchos::RCP<Epetra_Vector> ContactWear2() {return Teuchos::null;};
-    //std::vector<Teuchos::RCP<CONTACT::WearInterface> > WearInterfaces() {return std::vector<Teuchos::RCP<CONTACT::WearInterface> >(NULL);};
-    //@}
-    const Teuchos::RCP<Epetra_Map> MasterSlipNodes() {return Teuchos::null;};
-    const Teuchos::RCP<Epetra_Map> MasterActiveNodes() {return Teuchos::null;};
+  protected:
+    /*!
+    \brief Initialize general contact variables for next Newton step
 
-    //wear
-    void UpdateWearDiscretIterate(bool store) {};
-    void UpdateWearDiscretAccumulation(bool wearaccumulation) {};
+    For a lagrangian strategy this includes the global normal / tangent matrices N and T,
+    the global derivative matrices S and P and Tresca friction matrix L + vector r.
+
+    */
+    void Initialize();
+
+    /*!
+    \brief Evaluate contact
+
+    For a lagrangian strategy this involves heavy modification to the initial kteff and feff.
+    Hence, they are infact build from scratch here.
+    The application of modifications to groups of dofs (slave, master, active etc.)
+    results in some matrix and vector splitting and a lot of matrix-vector calculation in here!
+
+    */
+    void EvaluateContact(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+
+    /*!
+    \brief Evaluate frictional contact
+
+    */
+    void EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+
 
   protected:
 

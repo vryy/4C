@@ -39,9 +39,16 @@ CONTACT::MtAbstractStrategy::MtAbstractStrategy(
     Teuchos::RCP<Epetra_Comm> comm,
     double alphaf,
     int maxdof) :
-MORTAR::StrategyBase(DofRowMap,NodeRowMap,params,dim,comm,alphaf,maxdof),
-interface_(interface),
-dualquadslave3d_(false)
+  MORTAR::StrategyBase(
+    DofRowMap,
+    NodeRowMap,
+    params,
+    dim,
+    comm,
+    alphaf,
+    maxdof),
+  interface_(interface),
+  dualquadslave3d_(false)
 {
   // call setup method with flag redistributed=FALSE
   Setup(false);
@@ -540,7 +547,7 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
       // check is mesh distortion is still OK
       // (throw a dserror if length of relocation is larger than 80%
       // of an adjacent element edge -> see Puso, IJNME, 2004)
-      double limit = 0.8;
+      const double limit = 0.8;
       double relocation = 0.0;
       if (dim==2)
       {

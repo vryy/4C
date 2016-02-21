@@ -128,7 +128,7 @@ public:
   // MORTAR::ManagerBase is always called from the control routine (time
   // integrator), these functions need to be defined purely virtual here.
 
-  virtual void PostprocessTractions(IO::DiscretizationWriter& output) = 0;
+  virtual void PostprocessQuantities(IO::DiscretizationWriter& output) = 0;
   virtual void ReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero) = 0;
   virtual void WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart=false) = 0;
 

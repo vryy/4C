@@ -119,7 +119,7 @@ public:
   \param output (in): IO::Discretization writer for restart
 
   */
-  void PostprocessTractions(IO::DiscretizationWriter& output);
+  void PostprocessQuantities(IO::DiscretizationWriter& output);
 
   //@}
 

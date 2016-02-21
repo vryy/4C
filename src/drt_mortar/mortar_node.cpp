@@ -36,7 +36,8 @@ DRT::ParObject* MORTAR::MortarNodeType::Create( const std::vector<char> & data )
  |  ctor (public)                                            mgit 02/10|
  *----------------------------------------------------------------------*/
 MORTAR::MortarNodeDataContainer::MortarNodeDataContainer():
-drows_(0)
+drows_(0),
+drows_nts_(0)
 {
   for (int i=0;i<3;++i)
   {
@@ -313,6 +314,27 @@ void MORTAR::MortarNode::AddDValue(const int& colnode,const double& val)
 }
 
 /*----------------------------------------------------------------------*
+ |  Add a value to the 'D' map                               farah 01/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarNode::AddDntsValue(const int& colnode,const double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddDValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddDValue: function called for boundary node %i", Id());
+
+  // check if this has been called before
+  if ((int)MoData().GetDnts().size()==0)
+    MoData().GetDnts().resize(dentries_);
+
+  // add the pair (col,val) to the given row
+  MoData().GetDnts()[colnode] += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Add a value to the 'M' map                                popp 01/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarNode::AddMValue(const int& colnode,const double& val)
@@ -325,6 +347,23 @@ void MORTAR::MortarNode::AddMValue(const int& colnode,const double& val)
 
   // add the pair (col,val) to the given row
   MoData().GetM()[colnode] += val;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Add a value to the 'M' map                               farah 01/16|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarNode::AddMntsValue(const int& colnode,const double& val)
+{
+  // check if this is a master node or slave boundary node
+  if (IsSlave()==false)
+    dserror("ERROR: AddMValue: function called for master node %i", Id());
+  if (IsOnBound()==true)
+    dserror("ERROR: AddMValue: function called for boundary node %i", Id());
+
+  // add the pair (col,val) to the given row
+  MoData().GetMnts()[colnode] += val;
 
   return;
 }
@@ -487,7 +526,7 @@ MORTAR::MortarNode* MORTAR::MortarNode::FindClosestNode(const Teuchos::RCP<DRT::
 /*----------------------------------------------------------------------*
  | Check mesh re-initialization for this node                 popp 12/09|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, double& limit)
+bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, const double& limit)
 {
   // initialize return parameter
   bool ok = true;
@@ -501,7 +540,7 @@ bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, double& limit)
     MortarElement* mrtrele = dynamic_cast<MortarElement*>(ele);
 
     // minimal edge size of the current element
-    double minedgesize = mrtrele->MinEdgeSize();
+    const double minedgesize = mrtrele->MinEdgeSize();
 
     // check whether relocation is not too large
     if (relocation > limit * minedgesize)

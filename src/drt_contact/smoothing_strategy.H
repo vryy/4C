@@ -167,12 +167,6 @@ class SmoothingStrategy : public CoAbstractStrategy
     void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis);
 
     /*!
-    \brief create vector with node positions
-
-    */
-    void AssembleCoords(const std::string& sidename, bool ref,
-                                                     Teuchos::RCP<Epetra_Vector> vec);
-    /*!
     \brief Recovery method
 
     We only recover the Lagrange multipliers here, which had been
@@ -229,12 +223,6 @@ class SmoothingStrategy : public CoAbstractStrategy
     }
 
     /*!
-    \brief Setup mortar maps for strategy
-
-    */
-    void SetupMT(bool redistributed);
-
-    /*!
     \brief Set current displ state
 
     */
@@ -278,21 +266,22 @@ class SmoothingStrategy : public CoAbstractStrategy
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
 
-    // same procedure for wear stuff:
-    void OutputWear() {};
-    Teuchos::RCP<Epetra_Vector> ContactWear() {return Teuchos::null;};
-    Teuchos::RCP<Epetra_Vector> ContactWear2() {return Teuchos::null;};
-    //std::vector<Teuchos::RCP<CONTACT::WearInterface> > WearInterfaces() {return std::vector<Teuchos::RCP<CONTACT::WearInterface> >(NULL);};
-    //@}
-    const Teuchos::RCP<Epetra_Map> MasterSlipNodes() {return Teuchos::null;};
-    const Teuchos::RCP<Epetra_Map> MasterActiveNodes() {return Teuchos::null;};
+  private:
+    /*!
+    \brief create vector with node positions
 
-    //wear
-    void UpdateWearDiscretIterate(bool store) {};
-    void UpdateWearDiscretAccumulation(bool wearaccumulation) {};
+    */
+    void AssembleCoords(const std::string& sidename,
+                        bool ref,
+                        Teuchos::RCP<Epetra_Vector> vec);
 
-  protected:
+    /*!
+    \brief Setup mortar maps for strategy
 
+    */
+    void SetupMT(bool redistributed);
+
+  private:
     // don't want = operator and cctor
     SmoothingStrategy operator = (const SmoothingStrategy& old);
     SmoothingStrategy(const SmoothingStrategy& old);

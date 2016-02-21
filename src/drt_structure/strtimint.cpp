@@ -2467,7 +2467,7 @@ void STR::TimInt::OutputRestart
   if(HaveContactMeshtying())
   {
     cmtbridge_->WriteRestart(output_);
-    cmtbridge_->PostprocessTractions(output_);
+    cmtbridge_->PostprocessQuantities(output_);
   }
 
   // beam contact
@@ -2564,7 +2564,7 @@ void STR::TimInt::OutputState
 
   // meshtying and contact output
   if (HaveContactMeshtying())
-    cmtbridge_->PostprocessTractions(output_);
+    cmtbridge_->PostprocessQuantities(output_);
 
   if(porositysplitter_!=Teuchos::null)
   {

@@ -15,14 +15,18 @@ Maintainer: Alexander Popp
 #include "contact_interface.H"
 #include "../drt_contact_aug/contact_augmented_interface.H"
 #include "friction_node.H"
+
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_utils.H"
+
 #include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_wear.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_colors.H"
+
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
+
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_sparsematrix.H"
@@ -51,8 +55,6 @@ isselfcontact_(false),
 friction_(false),
 regularized_(false),
 dualquadslave3d_(false),
-weightedwear_(false),
-wbothpv_(false),
 stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY")),
 constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(params,"CONSTRAINT_DIRECTIONS"))
 {
@@ -68,28 +70,13 @@ constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>
 
   INPAR::CONTACT::FrictionType ftype = DRT::INPUT::IntegralValue<
       INPAR::CONTACT::FrictionType>(Params(), "FRICTION");
-  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<
-      INPAR::WEAR::WearLaw>(Params(), "WEARLAW");
-  INPAR::WEAR::WearSide wside = DRT::INPUT::IntegralValue<
-      INPAR::WEAR::WearSide>(Params(), "WEAR_SIDE");
-  INPAR::WEAR::WearType wtype = DRT::INPUT::IntegralValue<
-      INPAR::WEAR::WearType>(Params(), "WEARTYPE");
 
   // set frictional contact status
   if (ftype != INPAR::CONTACT::friction_none)
     friction_ = true;
 
-  // set wear contact status
-  if (wlaw != INPAR::WEAR::wear_none and
-      wtype == INPAR::WEAR::wear_intstate)
-    weightedwear_ = true;
-
-  // discrete both-sided wear for active set output
-  if (wside == INPAR::WEAR::wear_both and
-      wtype == INPAR::WEAR::wear_primvar)
-    wbothpv_ = true;
-
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(Params(), "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none)
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(Params(), "CONTACT_REGULARIZATION")
+      != INPAR::CONTACT::reg_none)
     regularized_ = true;
 
   // call setup method with flag redistributed=FALSE, init=TRUE
@@ -684,7 +671,7 @@ void CONTACT::CoAbstractStrategy::ApplyForceStiffCmt(
     UpdateActiveSetSemiSmooth();
 
   // apply contact forces and stiffness
-  Initialize(); // init lin-matrices
+  Initialize();         // init lin-matrices
   Evaluate(kt, f, dis); // assemble lin. matrices, condensation ...
 
   // Evaluate structural and constraint rhs. This is also necessary, if the rhs did not
@@ -1100,7 +1087,7 @@ void CONTACT::CoAbstractStrategy::InitMortar()
   mmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100));
 
   if (constr_direction_==INPAR::CONTACT::constr_xyz)
-  g_ = LINALG::CreateVector(*gsdofrowmap_, true);
+    g_ = LINALG::CreateVector(*gsdofrowmap_, true);
   else if (constr_direction_==INPAR::CONTACT::constr_ntt)
     g_ = LINALG::CreateVector(*gsnoderowmap_, true);
   else
@@ -1141,7 +1128,8 @@ void CONTACT::CoAbstractStrategy::AssembleMortar()
 #ifdef CONTACTFDNORMAL
     // FD check of normal derivatives
     std::cout << " -- CONTACTFDNORMAL- -----------------------------------" << std::endl;
-    interface_[i]->FDCheckNormalDeriv();
+//    interface_[i]->FDCheckNormalDeriv();
+    interface_[i]->FDCheckNormalCPPDeriv();
     std::cout << " -- CONTACTFDNORMAL- -----------------------------------" << std::endl;
 #endif // #ifdef CONTACTFDNORMAL
 #ifdef CONTACTFDMORTARD
@@ -1379,19 +1367,6 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
       vectorglobal = LagrMult();
       break;
     }
-    case MORTAR::StrategyBase::wmupdate:
-    case MORTAR::StrategyBase::wmold:
-    {
-      vectorglobal = WearVarM();
-      break;
-    }
-    case MORTAR::StrategyBase::wupdate:
-    case MORTAR::StrategyBase::wold:
-    case MORTAR::StrategyBase::wupdateT:
-    {
-      vectorglobal = WearVar();
-      break;
-    }
     case MORTAR::StrategyBase::lmuzawa:
     {
       vectorglobal = LagrMultUzawa();
@@ -1399,7 +1374,6 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
     }
     case MORTAR::StrategyBase::activeold:
     case MORTAR::StrategyBase::slipold:
-    case MORTAR::StrategyBase::weightedwear:
     {
       break;
     }
@@ -1413,10 +1387,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
     // rowmap for remaining cases
     Teuchos::RCP<Epetra_Map> sdofmap, snodemap;
     if (type == MORTAR::StrategyBase::lmupdate  or
-        type == MORTAR::StrategyBase::lmcurrent or
-        type == MORTAR::StrategyBase::wupdate   or
-        type == MORTAR::StrategyBase::wold      or
-        type == MORTAR::StrategyBase::wupdateT)
+        type == MORTAR::StrategyBase::lmcurrent)
     {
       sdofmap  = interface_[i]->SlaveColDofs();
       snodemap = interface_[i]->SlaveColNodes();
@@ -1427,213 +1398,86 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(
       snodemap = interface_[i]->SlaveRowNodes();
     }
 
+    // export global quantity to current interface slave dof map (column or row)
     Teuchos::RCP<Epetra_Vector> vectorinterface = Teuchos::null;
-    if (type == MORTAR::StrategyBase::wmupdate or
-        type == MORTAR::StrategyBase::wmold)
-    {
-      // export global quantity to current interface slave dof map (column or row)
-      const Teuchos::RCP<Epetra_Map> masterdofs =
-          LINALG::AllreduceEMap(*(interface_[i]->MasterRowDofs()));
-      vectorinterface = Teuchos::rcp(new Epetra_Vector(*masterdofs));
+    vectorinterface = Teuchos::rcp(new Epetra_Vector(*sdofmap));
+    if (vectorglobal != Teuchos::null) // necessary for case "activeold" and wear
+      LINALG::Export(*vectorglobal, *vectorinterface);
 
-      if (vectorglobal != Teuchos::null) // necessary for case "activeold" and wear
-        LINALG::Export(*vectorglobal, *vectorinterface);
-    }
-    else
+    // loop over all slave nodes (column or row) on the current interface
+    for (int j = 0; j < snodemap->NumMyElements(); ++j)
     {
-      // export global quantity to current interface slave dof map (column or row)
-      vectorinterface = Teuchos::rcp(new Epetra_Vector(*sdofmap));
+      int gid = snodemap->GID(j);
+      DRT::Node* node = interface_[i]->Discret().gNode(gid);
+      if (!node)
+        dserror("ERROR: Cannot find node with gid %", gid);
+      CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-      if (vectorglobal != Teuchos::null) // necessary for case "activeold" and wear
-        LINALG::Export(*vectorglobal, *vectorinterface);
-    }
+      // be aware of problem dimension
+      const int dim = Dim();
+      const int numdof = cnode->NumDof();
+      if (dim != numdof)
+        dserror("ERROR: Inconsisteny Dim <-> NumDof");
 
-    // master specific
-    const Teuchos::RCP<Epetra_Map> masternodes =
-        LINALG::AllreduceEMap(*(interface_[i]->MasterRowNodes()));
-    if (type == MORTAR::StrategyBase::wmupdate)
-    {
-      for (int j = 0; j < masternodes->NumMyElements(); ++j)
+      // find indices for DOFs of current node in Epetra_Vector
+      // and extract this node's quantity from vectorinterface
+      std::vector<int> locindex(dim);
+
+      for (int dof = 0; dof < dim; ++dof)
       {
-        int gid = masternodes->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node)
-          dserror("ERROR: Cannot find node with gid %", gid);
-        FriNode* fnode = dynamic_cast<FriNode*>(node);
+        locindex[dof] = (vectorinterface->Map()).LID(cnode->Dofs()[dof]);
+        if (locindex[dof] < 0)
+          dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
 
-        // store updated wcurr into node
-        fnode->WearData().wcurr()[0] =
-            (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
-      }
-    }
-    else if (type == MORTAR::StrategyBase::wmold)
-    {
-      for (int j = 0; j < masternodes->NumMyElements(); ++j)
-      {
-        int gid = masternodes->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node)
-          dserror("ERROR: Cannot find node with gid %", gid);
-        FriNode* fnode = dynamic_cast<FriNode*>(node);
-
-        // store updated wcurr into node
-        fnode->WearData().wold()[0] +=
-            (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
-      }
-    }
-    else
-    {
-      // loop over all slave nodes (column or row) on the current interface
-      for (int j = 0; j < snodemap->NumMyElements(); ++j)
-      {
-        int gid = snodemap->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node)
-          dserror("ERROR: Cannot find node with gid %", gid);
-        CoNode* cnode = dynamic_cast<CoNode*>(node);
-
-        // be aware of problem dimension
-        const int dim = Dim();
-        const int numdof = cnode->NumDof();
-        if (dim != numdof)
-          dserror("ERROR: Inconsisteny Dim <-> NumDof");
-
-        // find indices for DOFs of current node in Epetra_Vector
-        // and extract this node's quantity from vectorinterface
-        std::vector<int> locindex(dim);
-
-        for (int dof = 0; dof < dim; ++dof)
+        switch (type)
         {
-          locindex[dof] = (vectorinterface->Map()).LID(cnode->Dofs()[dof]);
-          if (locindex[dof] < 0)
-            dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
-
-          switch (type)
-          {
-          case MORTAR::StrategyBase::lmcurrent:
-          {
-            cnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
-            break;
-          }
-          case MORTAR::StrategyBase::lmold:
-          {
-            cnode->MoData().lmold()[dof] = (*vectorinterface)[locindex[dof]];
-            break;
-          }
-          case MORTAR::StrategyBase::lmuzawa:
-          {
-            cnode->MoData().lmuzawa()[dof] = (*vectorinterface)[locindex[dof]];
-            break;
-          }
-          case MORTAR::StrategyBase::lmupdate:
-          {
+        case MORTAR::StrategyBase::lmcurrent:
+        {
+          cnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
+          break;
+        }
+        case MORTAR::StrategyBase::lmold:
+        {
+          cnode->MoData().lmold()[dof] = (*vectorinterface)[locindex[dof]];
+          break;
+        }
+        case MORTAR::StrategyBase::lmuzawa:
+        {
+          cnode->MoData().lmuzawa()[dof] = (*vectorinterface)[locindex[dof]];
+          break;
+        }
+        case MORTAR::StrategyBase::lmupdate:
+        {
 #ifndef CONTACTPSEUDO2D
-            // throw a dserror if node is Active and DBC
-            if (cnode->IsDbc() && cnode->Active())
-              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",cnode->Id());
+          // throw a dserror if node is Active and DBC
+          if (cnode->IsDbc() && cnode->Active())
+            dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",cnode->Id());
 #endif // #ifndef CONTACTPSEUDO2D
 
-            // store updated LM into node
-            cnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
-            break;
-          }
-          case MORTAR::StrategyBase::wupdate:
-          {
-            // throw a dserror if node is Active and DBC
-            if (cnode->IsDbc() && cnode->Active())
-              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",cnode->Id());
-
-            // explicity set global Lag. Mult. to zero for D.B.C nodes
-            if (cnode->IsDbc())
-              (*vectorinterface)[locindex[dof]] = 0.0;
-
-            // store updated wcurr into node
-            FriNode* fnode = dynamic_cast<FriNode*>(cnode);
-            fnode->WearData().wcurr()[0] =
-                (*vectorinterface)[locindex[(int) (dof / Dim())]];
-            dof = dof + Dim() - 1;
-            break;
-          }
-          case MORTAR::StrategyBase::wupdateT:
-          {
-            // throw a dserror if node is Active and DBC
-            if (cnode->IsDbc() && cnode->Active())
-              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",cnode->Id());
-
-            // explicity set global Lag. Mult. to zero for D.B.C nodes
-            if (cnode->IsDbc())
-              (*vectorinterface)[locindex[dof]] = 0.0;
-
-            // store updated wcurr into node
-            FriNode* fnode = dynamic_cast<FriNode*>(cnode);
-            fnode->WearData().waccu()[0] +=
-                (*vectorinterface)[locindex[(int) (dof / Dim())]];
-            dof = dof + Dim() - 1;
-            break;
-          }
-          case MORTAR::StrategyBase::wold:
-          {
-            // throw a dserror if node is Active and DBC
-            if (cnode->IsDbc() && cnode->Active())
-              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",cnode->Id());
-
-            // explicity set global Lag. Mult. to zero for D.B.C nodes
-            if (cnode->IsDbc())
-              (*vectorinterface)[locindex[dof]] = 0.0;
-
-            // store updated wcurr into node
-            FriNode* fnode = dynamic_cast<FriNode*>(cnode);
-            fnode->WearData().wold()[0] +=
-                (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
-            dof = dof + Dim() - 1;
-
-            break;
-          }
-          case MORTAR::StrategyBase::activeold:
-          {
-            cnode->CoData().ActiveOld() = cnode->Active();
-            break;
-          }
-          case MORTAR::StrategyBase::slipold:
-          {
-            if (!friction_)
-              dserror("ERROR: Slip just for friction problems!");
-
-            FriNode* fnode = dynamic_cast<FriNode*>(cnode);
-            fnode->FriData().SlipOld() = fnode->FriData().Slip();
-            break;
-          }
-          // weighted wear
-          case MORTAR::StrategyBase::weightedwear:
-          {
-            if (!friction_)
-              dserror("ERROR: This should not be called for contact without friction");
-
-            // update wear only once per node
-            if (dof == 0)
-            {
-              FriNode* frinode = dynamic_cast<FriNode*>(cnode);
-              const double wearcoeffs = Params().get<double>("WEARCOEFF", 0.0);
-              const double wearcoeffm = Params().get<double>("WEARCOEFF_MASTER", 0.0);
-              const double wearcoeff  = wearcoeffs + wearcoeffm;
-
-              // amount of wear
-              if (Params().get<int>("PROBTYPE") != INPAR::CONTACT::structalewear)
-                frinode->WearData().WeightedWear() += wearcoeff * frinode->WearData().DeltaWeightedWear();
-
-              // wear for each ale step
-              else
-                frinode->WearData().WeightedWear()  = wearcoeff * frinode->WearData().DeltaWeightedWear();
-            }
-            break;
-          }
-          default:
-            dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
-            break;
-          } // switch
+          // store updated LM into node
+          cnode->MoData().lm()[dof] = (*vectorinterface)[locindex[dof]];
+          break;
         }
-      } // end slave loop
-    }
+        case MORTAR::StrategyBase::activeold:
+        {
+          cnode->CoData().ActiveOld() = cnode->Active();
+          break;
+        }
+        case MORTAR::StrategyBase::slipold:
+        {
+          if (!friction_)
+            dserror("ERROR: Slip just for friction problems!");
+
+          FriNode* fnode = dynamic_cast<FriNode*>(cnode);
+          fnode->FriData().SlipOld() = fnode->FriData().Slip();
+          break;
+        }
+        default:
+          dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
+          break;
+        } // switch
+      }
+    } // end slave loop
   }
 
   return;
@@ -1902,12 +1746,6 @@ void CONTACT::CoAbstractStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
 
     // store nodal entries form penalty contact tractions to old ones
     StoreToOld(MORTAR::StrategyBase::pentrac);
-  }
-
-  //----------------------------------------wear: store history values
-  if (weightedwear_)
-  {
-    StoreNodalQuantities(MORTAR::StrategyBase::weightedwear);
   }
 
   return;

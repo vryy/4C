@@ -116,7 +116,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck2D(MORTAR::MortarElement& sele,
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele,*meles[bs_test])->ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
+        MORTAR::MortarProjector::Impl(sele,*meles[bs_test])->ProjectGaussPoint2D(sele,sxi_test,*meles[bs_test],mxi_test);
 
         if ((mxi_test[0]>=-1.0) && (mxi_test[0]<=1.0))
         {
@@ -153,7 +153,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck2D(MORTAR::MortarElement& sele,
       for (int bs_test=0;bs_test<(int)meles.size();++bs_test)
       {
         double mxi_test[2] = {0.0, 0.0};
-        MORTAR::MortarProjector::Impl(sele,*meles[bs_test])->ProjectGaussPoint(sele,sxi_test,*meles[bs_test],mxi_test);
+        MORTAR::MortarProjector::Impl(sele,*meles[bs_test])->ProjectGaussPoint2D(sele,sxi_test,*meles[bs_test],mxi_test);
 
         if ((mxi_test[0]>=-1.0) && (mxi_test[0]<=1.0))
         {
@@ -718,7 +718,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
     // project Gauss point onto master element
     double mxi[2] = {0.0, 0.0};
-    MORTAR::MortarProjector::Impl(sele,mele)->ProjectGaussPoint(sele,sxi,mele,mxi);
+    MORTAR::MortarProjector::Impl(sele,mele)->ProjectGaussPoint2D(sele,sxi,mele,mxi);
 
     // check GP projection
     if ((mxi[0]<mxia) || (mxi[0]>mxib))
@@ -2087,7 +2087,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
         if(sele.IsHermite())
           MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPointHermit(sele,sxi,*meles[nummaster],mxi);
         else
-          MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint(sele,sxi,*meles[nummaster],mxi);
+          MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint2D(sele,sxi,*meles[nummaster],mxi);
 
         // gp on mele?
         if ((mxi[0]>=-1.0) && (mxi[0]<=1.0) && (kink_projection==false))
@@ -2156,8 +2156,27 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
           Gap_2D(sele,*meles[nummaster],sval,mval,sderiv,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
 
           // integrate and lin gp gap
-          IntegrateGP_2D(sele,*meles[nummaster],sval,lmval,mval,sderiv,mderiv,lmderiv,dualmap,
-              wgt,dxdsxi,derivjac,gpn,dnmap_unit,gap[0],dgapgp,sxi,mxi,dsxigp,dmxigp);
+          IntegrateGP_2D(
+              sele,
+              *meles[nummaster],
+              sval,
+              lmval,
+              mval,
+              sderiv,
+              mderiv,
+              lmderiv,
+              dualmap,
+              wgt,
+              dxdsxi,
+              derivjac,
+              gpn,
+              dnmap_unit,
+              gap[0],
+              dgapgp,
+              sxi,
+              mxi,
+              dsxigp,
+              dmxigp);
         }
       }//End Loop over all Master Elements
     } // End Loop over all GP
@@ -3455,6 +3474,9 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele,
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::IntegrateGP_3D(
     MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele,
@@ -3655,6 +3677,8 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::IntegrateGP_2D(
     MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele,
@@ -10369,6 +10393,8 @@ double inline CONTACT::CoIntegrator::TDetDeformationGradient(
   return J;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <int dim>
 void CONTACT::CoIntegrator::GPTS_forces(
     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,

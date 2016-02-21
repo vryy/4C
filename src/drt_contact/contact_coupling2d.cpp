@@ -14,19 +14,21 @@ Maintainer: Alexander Popp
 
 #include "contact_coupling2d.H"
 #include "contact_integrator.H"
-#include "../drt_contact_aug/contact_augmented_integrator.H"
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_mortar/mortar_node.H"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
-#include "../linalg/linalg_serialdensevector.H"
-#include "../drt_mortar/mortar_projector.H"
 #include "contact_element.H"
 #include "contact_defines.H"
 #include "contact_node.H"
 #include "contact_interpolator.H"
 
+#include "../drt_contact_aug/contact_augmented_integrator.H"
+
+#include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensevector.H"
+
+#include "../drt_mortar/mortar_defines.H"
+#include "../drt_mortar/mortar_element.H"
+#include "../drt_mortar/mortar_node.H"
+#include "../drt_mortar/mortar_projector.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 06/09|
@@ -157,12 +159,13 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
 CONTACT::CoCoupling2dManager::CoCoupling2dManager(DRT::Discretization& idiscret,
     int dim, bool quad, Teuchos::ParameterList& params,
     MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele) :
-    idiscret_(idiscret),
-    dim_(dim),
-    quad_(quad),
-    imortar_(params),
-    sele_(sele),
-    mele_(mele),
+    MORTAR::Coupling2dManager(
+        idiscret,
+        dim,
+        quad,
+        params,
+        sele,
+        mele),
     stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY"))
 {
   // evaluate coupling
@@ -180,12 +183,14 @@ const Epetra_Comm& CONTACT::CoCoupling2dManager::Comm() const
   return idiscret_.Comm();
 }
 
-
 /*----------------------------------------------------------------------*
- |  Evaluate coupling pairs                                 farah 09/14 |
+ |  Evaluate coupling pairs                                  farah 10/14|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
 {
+  if(MasterElements().size() == 0)
+    return false;
+
   // decide which type of coupling should be evaluated
   INPAR::MORTAR::AlgorithmType algo =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
@@ -197,34 +202,12 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
     IntegrateCoupling();
 
   //*********************************
-  // Node-to-Segment Contact
-  //*********************************
-  else if(algo == INPAR::MORTAR::algorithm_nts)
-    EvaluateNTS();
-
-  //*********************************
   // Error
   //*********************************
   else
     dserror("ERROR: chose contact algorithm not supported!");
 
   return true;
-}
-
-
-/*----------------------------------------------------------------------*
- |  Evaluate node-to-segment coupling pairs                 farah 09/14 |
- *----------------------------------------------------------------------*/
-void CONTACT::CoCoupling2dManager::EvaluateNTS()
-{
-  // create an interpolator instance
-  Teuchos::RCP<CONTACT::CoInterpolator> interpolator =
-      Teuchos::rcp(new CoInterpolator(imortar_));
-
-  // create contact terms + linearization
-  interpolator->Interpolate2D(SlaveElement(),MasterElements());
-
-  return;
 }
 
 

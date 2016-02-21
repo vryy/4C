@@ -22,13 +22,13 @@ Maintainer: Philipp Farah
 #include "contact_lagrange_strategy.H"
 #include <Epetra_FEVector.h>
 
-namespace CONTACT
+namespace WEAR
 {
 // forward declarations
 class WearInterface;
 
 
-class WearLagrangeStrategy : public CoLagrangeStrategy
+class WearLagrangeStrategy : public CONTACT::CoLagrangeStrategy
 {
 
 public:
@@ -53,14 +53,6 @@ public:
   */
   virtual ~WearLagrangeStrategy() {};
 
-
-  /*!
-  \brief Evaluate frictional contact
-
-  */
-  void EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
-
-
   /*!
   \brief Condense discr. wear and lm. for frictional contact
 
@@ -80,30 +72,6 @@ public:
 
   */
   void PrepareSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
-  /*!
-  \brief Initialize and evaluate Mortar stuff for the next Newton step
-
-  This method first checks if we are dealing with self contact and updates
-  the interface slave and master sets if so. Then it resets the global
-  Mortar matrices D and M and the global gap vector g accordingly.
-
-  The nodal quantites computed in InitEvalInterface() are then assembled
-  to global matrices and vectors respectively. No setup of the global system
-  is to be done here yet, so there is no need to pass in the effective
-  stiffness K or the effective load vector f.
-
-  */
-  void InitMortar();
-  void AssembleMortar();
-
-  /*!
-  \brief Initialize general contact variables for next Newton step
-
-  For a lagrangian strategy this includes the global normal / tangent matrices N and T,
-  the global derivative matrices S and P and Tresca friction matrix L + vector r.
-
-  */
-  void Initialize();
 
   /*!
   \brief Recovery method
@@ -124,21 +92,6 @@ public:
 
   */
   void RedistributeContact(Teuchos::RCP<Epetra_Vector> dis);
-
-  /*!
-  \brief Setup this strategy object (maps, vectors, etc.)
-
-  All global maps and vectors are initialized by collecting
-  the necessary information from all interfaces. In the case
-  of a parallel redistribution, this method is called again
-  to re-setup the above mentioned quantities. In this case
-  we set the input parameter redistributed=TRUE. Moreover,
-  when called for the first time (in the constructor) this
-  method is given the input parameter init=TRUE to account
-  for initialization of the active set.
-
-  */
-  void SetupWear(bool redistributed, bool init);
 
   /*!
   \brief Build 2x2 saddle point system
@@ -234,6 +187,18 @@ public:
   void UpdateWearDiscretAccumulation();
 
   /*!
+  \brief Update wear contact at end of time step
+
+  */
+  void Update(Teuchos::RCP<Epetra_Vector> dis);
+
+  /*!
+  \brief Store wear data into wear data container
+
+  */
+  void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type);
+
+  /*!
   \brief Return vector of wear (t_n+1) - D^-1 \times weighted wear!
 
   */
@@ -244,7 +209,7 @@ public:
   \brief Return wear interfaces
 
   */
-  std::vector<Teuchos::RCP<CONTACT::WearInterface> > WearInterfaces() { return interface_; }
+  std::vector<Teuchos::RCP<WEAR::WearInterface> > WearInterfaces() { return interface_; }
 
   /*!
   \brief Return master map for both sided wear (slip), mapped from slave side
@@ -258,12 +223,118 @@ public:
   */
   const Teuchos::RCP<Epetra_Map> MasterActiveNodes() {return gmactivenodes_;};
 
-protected:
+  /*!
+   \brief Return discrete wear vector (t_n+1)
+
+   */
+  Teuchos::RCP<Epetra_Vector> WearVar() { return w_; }
+
+  /*!
+   \brief Return discrete wear vector (t_n+1) Master
+
+   */
+  Teuchos::RCP<Epetra_Vector> WearVarM() { return wm_; }
+
+  /*!
+   \brief Return wear rhs vector (only in saddle-point formulation
+
+   */
+  Teuchos::RCP<Epetra_Vector> WearRhs() { return wearrhs_; }
+
+  /*!
+   \brief Return wear-master rhs vector (only in saddle-point formulation
+
+   */
+  Teuchos::RCP<Epetra_Vector> WearMRhs() { return wearmrhs_; }
+
+  /*!
+   \brief Returns increment of W solution vector in SaddlePointSolve routine
+
+   */
+  Teuchos::RCP<Epetra_Vector> WSolveIncr() { return wincr_; }
+
+  /*!
+   \brief Returns increment of W-master solution vector in SaddlePointSolve routine
+
+   */
+  Teuchos::RCP<Epetra_Vector> WMSolveIncr() { return wmincr_; }
+
+  /*!
+   \brief Return global both sided wear status
+
+   */
+  bool WearBothDiscrete() { return wbothpv_; }
+
+  /*!
+   \brief Return global wear status
+
+   */
+  bool WeightedWear() { return weightedwear_; }
+
+private:
+  /*!
+  \brief Evaluate frictional contact
+
+  */
+  void EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+
+  /*!
+  \brief Initialize and evaluate Mortar stuff for the next Newton step
+
+  This method first checks if we are dealing with self contact and updates
+  the interface slave and master sets if so. Then it resets the global
+  Mortar matrices D and M and the global gap vector g accordingly.
+
+  The nodal quantites computed in InitEvalInterface() are then assembled
+  to global matrices and vectors respectively. No setup of the global system
+  is to be done here yet, so there is no need to pass in the effective
+  stiffness K or the effective load vector f.
+
+  */
+  void InitMortar();
+  void AssembleMortar();
+
+  /*!
+  \brief Initialize general contact variables for next Newton step
+
+  For a lagrangian strategy this includes the global normal / tangent matrices N and T,
+  the global derivative matrices S and P and Tresca friction matrix L + vector r.
+
+  */
+  void Initialize();
+
+  /*!
+  \brief Setup this strategy object (maps, vectors, etc.)
+
+  All global maps and vectors are initialized by collecting
+  the necessary information from all interfaces. In the case
+  of a parallel redistribution, this method is called again
+  to re-setup the above mentioned quantities. In this case
+  we set the input parameter redistributed=TRUE. Moreover,
+  when called for the first time (in the constructor) this
+  method is given the input parameter init=TRUE to account
+  for initialization of the active set.
+
+  */
+  void SetupWear(bool redistributed, bool init);
+
+private:
   // don't want = operator and cctor
   WearLagrangeStrategy operator = (const WearLagrangeStrategy& old);
   WearLagrangeStrategy(const WearLagrangeStrategy& old);
 
-  std::vector<Teuchos::RCP<CONTACT::WearInterface> > interface_;
+  std::vector<Teuchos::RCP<WEAR::WearInterface> > interface_;
+
+  // basic data
+  bool weightedwear_;                                   // flag for contact with wear (is) --> weighted wear
+  bool wbothpv_;                                        // flag for both sided wear disrete
+  Teuchos::RCP<Epetra_Vector> w_;                       // current vector of pv wear at t_n+1 (slave)
+  Teuchos::RCP<Epetra_Vector> wincr_;                   // Wear variables vector increment within SaddlePointSolve (this is NOT the increment of w_ between t_{n+1} and t_{n}!)
+  Teuchos::RCP<Epetra_Vector> wearrhs_;
+
+  Teuchos::RCP<Epetra_Vector> wm_;                      // current vector of pv wear at t_n+1 (master)
+  Teuchos::RCP<Epetra_Vector> wmincr_;                  // Wear variables vector increment within SaddlePointSolve (this is NOT the increment of w_ between t_{n+1} and t_{n}!)
+  Teuchos::RCP<Epetra_Vector> wearmrhs_;
 
   // implicit wear algorithm
   Teuchos::RCP<LINALG::SparseMatrix> wlinmatrix_;   // global Matrix Wg containing wear-lm derivatives

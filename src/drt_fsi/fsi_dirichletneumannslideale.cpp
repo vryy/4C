@@ -35,7 +35,7 @@ FSI::DirichletNeumannSlideale::DirichletNeumannSlideale(const Epetra_Comm& comm)
                                                          true,
                                                          aletype));
 
-  islave_ = Teuchos::rcp(new Epetra_Vector(*StructureFluidCouplingMortar().SlaveDofRowMap(),true));
+  islave_ = Teuchos::rcp(new Epetra_Vector(*StructureFluidCouplingMortar().SlaveDofMap(),true));
 
 }
 
@@ -95,7 +95,7 @@ FSI::DirichletNeumannSlideale::FluidOp(Teuchos::RCP<Epetra_Vector> idispcurr,
       MBFluidField()->SetItemax(mfresitemax_ + 1);
 
     //new Epetra_Vector for aledisp in interface
-    Teuchos::RCP<Epetra_Vector> iale = Teuchos::rcp(new Epetra_Vector(*(StructureFluidCouplingMortar().MasterDofRowMap()),true));
+    Teuchos::RCP<Epetra_Vector> iale = Teuchos::rcp(new Epetra_Vector(*(StructureFluidCouplingMortar().MasterDofMap()),true));
 
     Teuchos::RCP<Epetra_Vector> idispn = StructureField()->ExtractInterfaceDispn();
 

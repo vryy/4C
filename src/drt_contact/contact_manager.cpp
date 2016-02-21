@@ -57,7 +57,7 @@ CONTACT::CoManager::CoManager(
   // welcome message
 
   // create some local variables (later to be stored in strategy)
-  int dim = DRT::Problem::Instance()->NDim();
+  const int dim = DRT::Problem::Instance()->NDim();
   if (dim != 2 && dim != 3)
     dserror("ERROR: Contact problem must be 2D or 3D");
   std::vector<Teuchos::RCP<CONTACT::CoInterface> > interfaces;
@@ -368,7 +368,7 @@ CONTACT::CoManager::CoManager(
     if (stype==INPAR::CONTACT::solution_augmented)
       newinterface=Teuchos::rcp(new CONTACT::AugmentedInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else if(wlaw!=INPAR::WEAR::wear_none)
-      newinterface=Teuchos::rcp(new CONTACT::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
+      newinterface=Teuchos::rcp(new WEAR::WearInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else if (cparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi)
       newinterface=Teuchos::rcp(new CONTACT::CoTSIInterface(groupid1,Comm(),dim,icparams,isself[0],redundant));
     else
@@ -610,7 +610,7 @@ CONTACT::CoManager::CoManager(
       (wtype == INPAR::WEAR::wear_intstate ||
        wtype == INPAR::WEAR::wear_primvar))
   {
-    strategy_ = Teuchos::rcp(new WearLagrangeStrategy(
+    strategy_ = Teuchos::rcp(new WEAR::WearLagrangeStrategy(
         Discret().DofRowMap(),
         Discret().NodeRowMap(),
         cparams,
@@ -1156,11 +1156,11 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none)
       dserror("GPTS algorithm only for frictionless contact");
 
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_nitsche
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_nitsche
         &&
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "") != INPAR::MORTAR::inttype_elements
+        DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") != INPAR::MORTAR::inttype_elements
         )
-      dserror("Nitsche only with Element-based integration yet");
+      dserror("Nitsche only with Element-based integration");
 
   }// END GPTS CHECKS
 
@@ -1298,7 +1298,7 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
 /*----------------------------------------------------------------------*
  |  write interface tractions for postprocessing (public)     popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
+void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
 {
   // *********************************************************************
   // active contact set and slip set

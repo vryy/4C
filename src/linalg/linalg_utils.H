@@ -1287,6 +1287,21 @@ bool SplitVector(const Epetra_Map& xmap, const Epetra_Vector& x,
     Teuchos::RCP<Epetra_Map>& x2map, Teuchos::RCP<Epetra_Vector>& x2);
 
 /*!
+ \brief split a vector into 2 non-overlapping pieces (Teuchos::RCP version)
+
+ \param xmap    : map of vector to be split
+ \param x       : vector to be split
+ \param x1map   : map of first vector to be extracted
+ \param x1      : first vector to be extracted
+ \param x2map   : map of second vector to be extracted
+ \param x2      : second vector to be extracted
+
+ */
+bool SplitVector(const Epetra_Map& xmap, const Epetra_Vector& x,
+    Teuchos::RCP<const Epetra_Map>& x1map, Teuchos::RCP<Epetra_Vector>& x1,
+    Teuchos::RCP<const Epetra_Map>& x2map, Teuchos::RCP<Epetra_Vector>& x2);
+
+/*!
  \brief Print sparsity pattern of a matrix to postscript file
 
  creates a file Epetra::Matrix.ps in current directory where the exact

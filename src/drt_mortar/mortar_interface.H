@@ -465,16 +465,6 @@ public:
   virtual void Redistribute();
 
   /*!
-  \brief Create interface ghosting
-
-  To ease our search algorithms we'll afford the luxury to ghost all nodes
-  on all processors in the general mortar coupling framework. Currently, this
-  still holds for both slave and master side of the interface.
-
-  */
-  virtual void CreateInterfaceGhosting();
-
-  /*!
   \brief Create binary search tree
 
   The methods creates a binary tree object for efficient search.
@@ -482,17 +472,6 @@ public:
   */
   virtual void CreateSearchTree();
 
-  /*!
-  \brief Update interface master and slave sets
-
-  This update is usually only done ONCE in the initialization phase
-  and sets up the slave and master sets (elements, nodes, dofs) for
-  the whole simulation. Yet, in the case of self contact the sets
-  need to be updated again and again during simulation time, as the
-  slave/master status is assigned dynamically.
-
-  */
-  virtual void UpdateMasterSlaveSets();
 /*!
   \brief Restrict slave sets to actual meshtying zone
 
@@ -529,12 +508,6 @@ public:
   virtual void SetState(const std::string& statename,
                         const Teuchos::RCP<Epetra_Vector> vec);
 
-  /*!
-  \brief Set element areas
-
-  */
-  virtual void SetElementAreas();
-
 
   /*!
   \brief Create integration cells for interface
@@ -555,16 +528,6 @@ public:
   virtual void Evaluate(int rriter=0, const int step=0, const int iter=0);
 
   /*!
-    \brief Evaluate nodal distances
-
-  */
-  virtual void EvaluateDistances(const Teuchos::RCP<Epetra_Vector> vec,
-      std::map<int, std::vector<double> >& mynormals,
-      std::map<int,std::vector<GEN::pairedvector<int,double> > >& dmynormals,
-      std::map<int,double>& mygap,
-      std::map<int,std::map<int,double> >& dmygap);
-
-  /*!
   \brief Evaluate nodal normals
 
   */
@@ -581,44 +544,11 @@ public:
   virtual void EvaluateNodalNormals(std::map<int,std::vector<double> >& mynormals);
 
   /*!
-  \brief Export nodal normals
-
-  This method exports / communicates the nodal normal vector from row to
-  column map layout (needed for coupling evaluation). The reason behind this
-  is that only the row nodes can correctly evaluate the nodal normal based on
-  averaging of the adjacent element normals. A column node might not know of
-  all adjacent elements and thus would compute wrong nodal normals by itself.
-
-  */
-  virtual void ExportNodalNormals();
-
-  /*!
-  \brief Brute force search algorithm for potentially coupling
-         slave / master pairs (element-based algorithm)
-
-  */
-  virtual void EvaluateSearchBruteForce(const double& eps);
-
-  /*!
-  \brief Binary tree search algorithm for potentially coupling
-         slave / master pairs (element-based algorithm)
-
-  */
-  virtual bool EvaluateSearchBinarytree();
-
-  /*!
   \brief Integrate Mortar matrices D and M and gap g on slave/master overlaps
 
   */
-  virtual bool IntegrateCoupling(MORTAR::MortarElement* sele,
+  virtual bool MortarCoupling(MORTAR::MortarElement* sele,
                                  std::vector<MORTAR::MortarElement*> mele);
-
-  /*!
-  \brief Split MortarElements into IntElements for 3D quadratic coupling
-
-  */
-  virtual bool SplitIntElements(MORTAR::MortarElement& ele,
-                                std::vector<Teuchos::RCP<MORTAR::IntElement> >& auxele);
 
   /*!
   \brief Assemble lagrange multipliers into global z vector (penalty strategy)
@@ -631,6 +561,21 @@ public:
 
   */
   virtual void AssembleDM(LINALG::SparseMatrix& dglobal,
+                          LINALG::SparseMatrix& mglobal);
+
+  /*!
+  \brief Assemble Mortar matrix D
+
+  */
+  virtual void AssembleD(LINALG::SparseMatrix& dglobal);
+
+  /*!
+  \brief Assemble Mortar matrix M
+
+  */
+  virtual void AssembleM(LINALG::SparseMatrix& mglobal);
+
+  virtual void AssembleDMnts(LINALG::SparseMatrix& dglobal,
                           LINALG::SparseMatrix& mglobal,
                           bool onlyD=false);
 
@@ -691,6 +636,138 @@ public:
   void SetPoroFlag(bool poro){poro_ = poro;}
 
   //@}
+
+protected:
+  /*!
+  \brief Evaluate segment-to-segment coupling (mortar...)
+
+  */
+  virtual void EvaluateSTS();
+
+  /*!
+  \brief Evaluate node-to-segment coupling
+
+  */
+  virtual void EvaluateNTS();
+
+  /*!
+  \brief Binary tree search algorithm for potentially coupling
+         slave / master pairs (element-based algorithm)
+
+  */
+  virtual bool EvaluateSearchBinarytree();
+
+  /*!
+  \brief Brute force search algorithm for potentially coupling
+         slave / master pairs (element-based algorithm)
+
+  */
+  virtual void EvaluateSearchBruteForce(const double& eps);
+
+  /*!
+  \brief Export nodal normals
+
+  This method exports / communicates the nodal normal vector from row to
+  column map layout (needed for coupling evaluation). The reason behind this
+  is that only the row nodes can correctly evaluate the nodal normal based on
+  averaging of the adjacent element normals. A column node might not know of
+  all adjacent elements and thus would compute wrong nodal normals by itself.
+
+  */
+  virtual void ExportNodalNormals();
+
+  /*!
+  \brief build nodal normals and other stuff before real coupling
+         starts
+
+  */
+  virtual void PreEvaluate();
+
+  /*!
+  \brief Evaluate mortar interface
+
+  Here, we decide if we evaluate STS (mortar), NTS, GPTS... contact.
+  Thus, it can be interpreted as switch between constraints discretizations
+
+  */
+  virtual void EvaluateCoupling();
+
+  /*!
+  \brief do scaling and other operations after real coupling
+
+  */
+  virtual void PostEvaluate();
+
+  /*!
+  \brief find meles for one snode
+
+  */
+  virtual void FindMEles(
+      MortarNode& mrtrnode,
+      std::vector<MortarElement*>& meles);
+
+  /*!
+  \brief find master nodes for one snode
+
+  */
+  virtual void FindMNodes(
+      MortarNode& mrtrnode,
+      std::vector<MortarElement*>& meles,
+      std::vector<MortarNode*>& mnodes);
+
+  /*!
+  \brief Initialize data container for nodes and elements
+
+  */
+  virtual void InitializeDataContainer();
+
+  /*!
+  \brief Set element areas
+
+  */
+  virtual void SetElementAreas();
+
+  /*!
+  \brief Split MortarElements into IntElements for 3D quadratic coupling
+
+  */
+  virtual bool SplitIntElements(MORTAR::MortarElement& ele,
+                                std::vector<Teuchos::RCP<MORTAR::IntElement> >& auxele);
+
+  /*!
+  \brief Update interface master and slave sets
+
+  This update is usually only done ONCE in the initialization phase
+  and sets up the slave and master sets (elements, nodes, dofs) for
+  the whole simulation. Yet, in the case of self contact the sets
+  need to be updated again and again during simulation time, as the
+  slave/master status is assigned dynamically.
+
+  */
+  virtual void UpdateMasterSlaveSets();
+
+  /*!
+  \brief Create interface ghosting
+
+  To ease our search algorithms we'll afford the luxury to ghost all nodes
+  on all processors in the general mortar coupling framework. Currently, this
+  still holds for both slave and master side of the interface.
+
+  */
+  virtual void CreateInterfaceGhosting();
+
+private:
+  /*!
+  \brief check and init possible cross point modification
+
+  */
+  void InitializeCrossPoints();
+
+  /*!
+  \brief check and init for lin lm interpolation for 2nd order FE
+
+  */
+  void InitializeLagMultLin();
 
 protected:
 

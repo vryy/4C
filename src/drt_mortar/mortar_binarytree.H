@@ -371,6 +371,20 @@ public:
   //! @name Query methods
 
   /*!
+  \brief Evaluate search tree to get corresponding master elements for the slave elements
+
+  */
+  void EvaluateSearch();
+
+private:
+
+  /*!
+  \brief clear found search elements
+
+  */
+  void InitSearchElements();
+
+  /*!
   \brief Print full tree
 
   */
@@ -536,10 +550,6 @@ public:
   void EvaluateSearchCombined(Teuchos::RCP<BinaryTreeNode> streenode,
                               Teuchos::RCP<BinaryTreeNode> mtreenode);
 
-  //@}
-
-
-protected:
 
   // don't want = operator and cctor
   BinaryTree operator = (const BinaryTree& old);

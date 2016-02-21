@@ -316,8 +316,14 @@ public:
   Derived verision!
 
   */
-  bool IntegrateCoupling(MORTAR::MortarElement* sele,
+  bool MortarCoupling(MORTAR::MortarElement* sele,
                          std::vector<MORTAR::MortarElement*> mele);
+
+  /*!
+  \brief evaluate coupling terms for nts coupling + lin
+
+  */
+  void EvaluateNTS();
 
   /*!
   \brief Integrate penalty sclaing factor kappa on slave element
@@ -345,6 +351,16 @@ public:
   virtual void EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
                               const Teuchos::RCP<LINALG::SparseMatrix> dmatrixmod,
                               const Teuchos::RCP<LINALG::SparseMatrix> doldmod);
+
+  /*!
+    \brief Evaluate nodal distances and linearization
+
+  */
+  virtual void EvaluateDistances(const Teuchos::RCP<Epetra_Vector> vec,
+      std::map<int, std::vector<double> >& mynormals,
+      std::map<int,std::vector<GEN::pairedvector<int,double> > >& dmynormals,
+      std::map<int,double>& mygap,
+      std::map<int,std::map<int,double> >& dmygap);
 
   /*!
   \brief Assemble slave coordinates (xs)
@@ -447,8 +463,19 @@ public:
   */
   virtual void AssembleLinDM(LINALG::SparseMatrix& lindglobal,
                              LINALG::SparseMatrix& linmglobal,
-                             bool usePoroLM = false,
-                             bool onlyD     = false);
+                             bool usePoroLM = false);
+
+  /*!
+  \brief subroutine assemble lin d
+  */
+  virtual void AssembleLinD(LINALG::SparseMatrix& lindglobal,
+                             bool usePoroLM = false);
+
+  /*!
+  \brief subroutine assemble lin m
+  */
+  virtual void AssembleLinM(LINALG::SparseMatrix& linmglobal,
+                             bool usePoroLM = false);
 
 
   /*!
@@ -556,6 +583,12 @@ public:
   void FDCheckNormalDeriv();
 
   /*!
+  \brief Check normal/tangent derivatives with finite differences
+
+  */
+  void FDCheckNormalCPPDeriv();
+
+  /*!
   \brief Check Mortar matrix D derivatives with finite differences
 
   */
@@ -619,13 +652,56 @@ public:
 
 protected:
 
+  /*!
+  \brief initialize node and element data container
+
+  Derived verision!
+
+  */
+  virtual void InitializeDataContainer();
+
+  /*!
+  \brief set cpp normal and tangent to data container
+
+  Derived verision!
+
+  */
+  virtual void SetCPPNormal(
+      MORTAR::MortarNode& snode,
+      double* normal,
+      std::vector<GEN::pairedvector<int,double> >& normallin);
+
+  virtual void PreEvaluate();
+  virtual void PostEvaluate();
+
+  virtual void EvaluateCPPNormals();
+  virtual void PrepareNonSmoothContact();
+  virtual void DetectNonSmoothGeometries();
+  virtual void EvaluateAveragedNodalNormals();
+  virtual void SpecialContactScenarios();
+  virtual void ScaleTerms();
+
+
+  virtual double ComputeNormalToLine(
+      MORTAR::MortarNode& mrtrnode,
+      std::vector<MORTAR::MortarElement*> meles,
+      double* normal,
+      std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
+
+  virtual double ComputeNormalToNode(
+      MORTAR::MortarNode& mrtrnode,
+      std::vector<MORTAR::MortarNode*> mnodes,
+      double* normal,
+      std::vector<GEN::pairedvector<int,double> >& normaltonodeLin);
+
+  virtual void ComputeScaling();
+
   // don't want = operator and cctor
   CoInterface operator = (const CoInterface& old);
   CoInterface(const CoInterface& old);
 
   bool                          selfcontact_;           // flag indicating if this is a self contact interface
   bool                          friction_;              // flag for frictional contact
-  bool                          wear_;                  // flag for wear
   INPAR::CONTACT::ConstraintDirection constr_direction_;// direction in which the contact constraints are formulated
 
   Teuchos::RCP<Epetra_Map>      activenodes_;    // row map of all active slave nodes
@@ -635,6 +711,9 @@ protected:
   Teuchos::RCP<Epetra_Map>      slipnodes_;      // row map of all slip slave nodes
   Teuchos::RCP<Epetra_Map>      slipdofs_;       // row map of all slip slave dofs
   Teuchos::RCP<Epetra_Map>      slipt_;          // row map of part of T-matrix (slip nodes)
+
+  Teuchos::RCP<Epetra_Map>      nonsmoothnodes_; // row map of all nonsmooth slave nodes
+  Teuchos::RCP<Epetra_Map>      smoothnodes_;    // row map of all smooth slave nodes
 
   Teuchos::RCP<Epetra_Map>      nextendedghosting_;
   Teuchos::RCP<Epetra_Map>      eextendedghosting_;

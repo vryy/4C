@@ -52,17 +52,6 @@ public:
   //! @name Evaluation methods
 
   /*!
-  \brief Read and check contact input parameters
-
-  All specified contact-related input parameters are read from the
-  DRT::Problem::Instance() and stored into a local variable of
-  type Teuchos::ParameterList. Invalid parameter combinations are
-  sorted out and throw a dserror.
-
-  */
-  bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
-
-  /*!
   \brief Write restart information for contact
 
   The additionally necessary restart information in the contact
@@ -98,11 +87,22 @@ public:
   \param output (in): IO::Discretization writer for restart
 
   */
-  void PostprocessTractions(IO::DiscretizationWriter& output);
+  void PostprocessQuantities(IO::DiscretizationWriter& output);
   //@}
 
 
-protected:
+private:
+
+  /*!
+  \brief Read and check contact input parameters
+
+  All specified contact-related input parameters are read from the
+  DRT::Problem::Instance() and stored into a local variable of
+  type Teuchos::ParameterList. Invalid parameter combinations are
+  sorted out and throw a dserror.
+
+  */
+  bool ReadAndCheckInput(Teuchos::ParameterList& cparams);
 
   // don't want = operator and cctor
   SmoothingManager operator = (const SmoothingManager& old);

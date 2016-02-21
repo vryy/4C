@@ -161,7 +161,6 @@ class StrategyBase
     virtual double ConstraintNorm() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactNorStress() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactTanStress() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> ContactWear() = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> DMatrix() = 0;
     virtual void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,Teuchos::RCP<Epetra_Vector>& sliptoggle,Teuchos::RCP<Epetra_Vector>& weightedwear,Teuchos::RCP<Epetra_Vector>& realwear, bool forcedrestart = false) = 0;
@@ -185,11 +184,7 @@ class StrategyBase
     virtual Teuchos::RCP<Epetra_Vector> LagrMultOld() = 0;
     virtual Teuchos::RCP<Epetra_Vector> LagrMultOldRescaled() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ConstrRhs() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> WearRhs() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> WearMRhs() = 0;
     virtual Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> WSolveIncr() = 0;
-    virtual Teuchos::RCP<Epetra_Vector> WMSolveIncr() = 0;
     virtual Teuchos::RCP<Epetra_Vector> MeshInitialization() = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> MMatrix() = 0;
     virtual void MortarCoupling(const Teuchos::RCP<Epetra_Vector> dis) = 0;
@@ -197,7 +192,6 @@ class StrategyBase
     virtual int NumberOfSlipNodes() = 0;
     virtual void OutputStresses() = 0;
     virtual void AugForces(Epetra_Vector& augfs_lm,Epetra_Vector& augfs_g,Epetra_Vector& augfm_lm,Epetra_Vector& augfm_g) = 0;
-    virtual void OutputWear() = 0;
     virtual void Print(std::ostream& os) const = 0;
     virtual void PrintActiveSet() = 0;
     virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
@@ -221,12 +215,21 @@ class StrategyBase
     virtual void VisualizeGmsh(const int step, const int iter) = 0;
     virtual bool WasInContact() = 0;
     virtual bool WasInContactLastTimeStep() = 0;
-    virtual bool WeightedWear() = 0;
-    virtual bool WearBothDiscrete() = 0;
-    virtual const Teuchos::RCP<Epetra_Map> MasterSlipNodes() = 0;
-    virtual const Teuchos::RCP<Epetra_Map> MasterActiveNodes() = 0;
+
     //Flag for Poro No Penetration Condition (overloaded by PoroLagrangeStrategy)
     virtual bool HasPoroNoPenetration(){return false;}
+
+    // wear stuff
+    virtual bool WeightedWear(){return false;};
+    virtual bool WearBothDiscrete(){return false;};
+    virtual Teuchos::RCP<Epetra_Vector> WearRhs(){return Teuchos::null;};
+    virtual Teuchos::RCP<Epetra_Vector> WearMRhs(){return Teuchos::null;};
+    virtual Teuchos::RCP<Epetra_Vector> WSolveIncr(){return Teuchos::null;};
+    virtual Teuchos::RCP<Epetra_Vector> WMSolveIncr(){return Teuchos::null;};
+    virtual Teuchos::RCP<Epetra_Vector> ContactWear(){return Teuchos::null;};
+    virtual void OutputWear(){;};
+    virtual const Teuchos::RCP<Epetra_Map> MasterSlipNodes(){return Teuchos::null;};
+    virtual const Teuchos::RCP<Epetra_Map> MasterActiveNodes(){return Teuchos::null;};
     //@}
 
   protected:

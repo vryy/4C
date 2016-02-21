@@ -58,7 +58,7 @@ public:
                             MORTAR::MortarElement& ele,
                             double* xi) = 0;
 
-  virtual bool ProjectGaussPoint(MORTAR::MortarElement& gpele,
+  virtual bool ProjectGaussPoint2D(MORTAR::MortarElement& gpele,
                          const double* gpeta,
                          MORTAR::MortarElement& ele,
                          double* xi) = 0;
@@ -76,6 +76,19 @@ public:
   virtual bool ProjectGaussPointHermit(MORTAR::MortarElement& gpele,
                                        const double* gpeta, MORTAR::MortarElement& ele,
                                        double* xi) = 0;
+
+  virtual bool ProjectSNodeByMNormal(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist) = 0;
+
+  virtual bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist,
+                         std::vector<GEN::pairedvector<int,double> >& normaltolineLin) = 0;
 }; // class MortarProjector
 
 /*!
@@ -163,7 +176,7 @@ public:
   \param xi (out)  : Local coordinates of projection on master element
 
   */
-  bool ProjectGaussPoint(MORTAR::MortarElement& gpele,
+  bool ProjectGaussPoint2D(MORTAR::MortarElement& gpele,
                          const double* gpeta,
                          MORTAR::MortarElement& ele,
                          double* xi)
@@ -238,7 +251,49 @@ public:
                                MORTAR::MortarElement& ele,
                                double* xi, double& par);
 
+  //TODO explanation
+  bool ProjectSNodeByMNormal(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist);
+
+  //TODO explanation
+  bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist,
+                         std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
+
 protected:
+
+  bool ProjectSNodeByMNormal3D(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist);
+
+  bool ProjectSNodeByMNormal3DLin(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist,
+                         std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
+
+  bool ProjectSNodeByMNormal2D(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist);
+
+  bool ProjectSNodeByMNormal2DLin(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist,
+                         std::vector<GEN::pairedvector<int,double> >& normaltolineLin);
+
   /*!
   \brief Evaluate F for nodal normal projection
 
@@ -390,7 +445,7 @@ public:
   \param xi (out)  : Local coordinates of projection on master element
 
   */
-  bool ProjectGaussPoint(MORTAR::MortarElement& gpele,
+  bool ProjectGaussPoint2D(MORTAR::MortarElement& gpele,
                          const double* gpeta,
                          MORTAR::MortarElement& ele,
                          double* xi);
@@ -457,6 +512,19 @@ public:
                                const double* gpeta, MORTAR::MortarElement& ele,
                                double* xi);
 
+  bool ProjectSNodeByMNormal(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist){dserror("ERROR");return false;};
+
+  bool ProjectSNodeByMNormalLin(MORTAR::MortarNode& snode,
+                         MORTAR::MortarElement& mele,
+                         double* xi,
+                         double* normal,
+                         double& dist,
+                         std::vector<GEN::pairedvector<int,double> >& normaltolineLin){dserror("ERROR");return false;};
+
 protected:
 
   /*!
@@ -479,7 +547,7 @@ protected:
   \brief Evaluate F for Gauss point projection
 
   */
-  double EvaluateFGaussPoint(const double* gpx,
+  double EvaluateFGaussPoint2D(const double* gpx,
                              const double* gpn,
                              MORTAR::MortarElement& ele,
                              const double* eta);
@@ -488,7 +556,7 @@ protected:
   \brief Evaluate GradF for Gauss point projection
 
   */
-  double EvaluateGradFGaussPoint(const double* gpn,
+  double EvaluateGradFGaussPoint2D(const double* gpn,
                                  MORTAR::MortarElement& ele,
                                  const double* eta);
 

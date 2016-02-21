@@ -45,7 +45,9 @@ Maintainer: Anh-Tu Vuong & Christoph Ager
  *----------------------------------------------------------------------*/
 ADAPTER::CouplingPoroMortar::CouplingPoroMortar():
   CouplingNonLinMortar(),
-  firstinit_(false)
+  firstinit_(false),
+  slavetype_(-1),
+  mastertype_(-1)
 {
   //empty...
 }
@@ -113,10 +115,6 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(
     comm_->SumAll(&nummastermtreles,&eleoffset,1);
   }
 
-  // ints to communicate decision over previous bools between processors
-  int slavetype = -1; //1 poro, 0 struct, -1 default
-  int mastertype = -1; //1 poro, 0 struct, -1 default
-
   // feeding master elements to the interface
   std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
@@ -140,20 +138,20 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(
       {
         if(faceele->ParentElement()->Id() == eleitergeometry->second->Id())
         {
-          if (mastertype==0)
+          if (mastertype_==0)
             dserror("struct and poro master elements on the same processor - no mixed interface supported");
           cele->PhysType() = MORTAR::MortarElement::poro;
-          mastertype=1;
+          mastertype_=1;
           break;
         }
       }
     }
     if(cele->PhysType()==MORTAR::MortarElement::other)
     {
-      if (mastertype==1)
+      if (mastertype_==1)
         dserror("struct and poro master elements on the same processor - no mixed interface supported");
       cele->PhysType() = MORTAR::MortarElement::structure;
-      mastertype=0;
+      mastertype_=0;
     }
 
     cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
@@ -210,20 +208,20 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(
           {
             if(faceele->ParentElement()->Id() == eleitergeometry->second->Id())
             {
-              if (slavetype==0)
+              if (slavetype_==0)
                 dserror("struct and poro slave elements on the same processor - no mixed interface supported");
               cele->PhysType() = MORTAR::MortarElement::poro;
-              slavetype=1;
+              slavetype_=1;
               break;
             }
           }
         }
         if(cele->PhysType()==MORTAR::MortarElement::other)
         {
-          if (slavetype==1)
+          if (slavetype_==1)
             dserror("struct and poro slave elements on the same processor - no mixed interface supported");
           cele->PhysType() = MORTAR::MortarElement::structure;
-          slavetype=0;
+          slavetype_=0;
         }
         cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
 
@@ -255,43 +253,23 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(
       interface->AddCoElement(cele);
   }
 
-  // finalize the contact interface construction
-  int maxdof = masterdis->DofRowMap()->MaxAllGID();
-  interface->FillComplete(maxdof);
+  return;
+}
 
-  //interface->CreateVolumeGhosting(*masterdis);
 
-  // store old row maps (before parallel redistribution)
-  slavedofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
-  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
+/*----------------------------------------------------------------------*
+ |  read mortar condition                                    Ager 02/16 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingPoroMortar::CreateStrategy(
+    Teuchos::RCP<DRT::Discretization>   masterdis,
+    Teuchos::RCP<DRT::Discretization>   slavedis,
+    Teuchos::ParameterList&             input,
+    int numcoupleddof)
+{
+  // poro lagrange strategy:
 
-  // print parallel distribution
-  interface->PrintParallelDistribution(1);
-
-  //**********************************************************************
-  // PARALLEL REDISTRIBUTION OF INTERFACE
-  //**********************************************************************
-//  if (parredist && comm_->NumProc()>1)
-//  {
-//    // redistribute optimally among all procs
-//    interface->Redistribute(1);
-//
-//    // call fill complete again
-//    interface->FillComplete();
-//
-//    // print parallel distribution again
-//    interface->PrintParallelDistribution(1);
-//  }
-
-  // store interface
-  interface_ = interface;
-
-  D_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
-  DLin_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,true,false,LINALG::SparseMatrix::FE_MATRIX));
-  M_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
-  MLin_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,true,false,LINALG::SparseMatrix::FE_MATRIX));
-
-  //poro lagrange strategy
+  // get problem dimension (2D or 3D) and create (MORTAR::MortarInterface)
+  const int dim = DRT::Problem::Instance()->NDim();
 
   //bools to decide which side is structural and which side is poroelastic to manage all 4 constellations
   // s-s, p-s, s-p, p-p
@@ -304,8 +282,8 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(
   comm_->Barrier();
   int slaveTypeList[comm_->NumProc()];
   int masterTypeList[comm_->NumProc()];
-  comm_->GatherAll(&slavetype,&slaveTypeList[0],1);
-  comm_->GatherAll(&mastertype,&masterTypeList[0],1);
+  comm_->GatherAll(&slavetype_,&slaveTypeList[0],1);
+  comm_->GatherAll(&mastertype_,&masterTypeList[0],1);
   comm_->Barrier();
 
   for(int i=0; i<comm_->NumProc();++i)
@@ -350,33 +328,91 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(
     }
   }
 
-  const Teuchos::ParameterList& stru     = DRT::Problem::Instance()->StructuralDynamicParams();
-  double theta;
-  theta = stru.sublist("ONESTEPTHETA").get<double>("THETA");
+  const Teuchos::ParameterList& stru = DRT::Problem::Instance()->StructuralDynamicParams();
+  double theta = stru.sublist("ONESTEPTHETA").get<double>("THETA");
   //what if problem is static ? there should be an error for previous line called in a dyna_statics problem
   //and not a value of 0.5
   //a proper disctinction is necessary if poro meshtying is expanded to other time integration strategies
 
-  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(stru,"DYNAMICTYP") == INPAR::STR::dyna_statics)
+  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(stru,"DYNAMICTYP")
+      == INPAR::STR::dyna_statics)
   {
     theta = 1.0;
   }
   std::vector<Teuchos::RCP<CONTACT::CoInterface> > interfaces;
   interfaces.push_back(interface_);
   double alphaf = 1.0 - theta;
+
   //create contact poro lagrange strategy for mesh tying
   porolagstrategy_ = Teuchos::rcp(new CONTACT::PoroLagrangeStrategy(
-      masterdis->DofRowMap(),masterdis->NodeRowMap(),input,interfaces,dim,comm_,alphaf,numcoupleddof,poroslave,poromaster));
+      masterdis->DofRowMap(),
+      masterdis->NodeRowMap(),
+      input,
+      interfaces,
+      dim,
+      comm_,
+      alphaf,
+      numcoupleddof,
+      poroslave,
+      poromaster));
+
   porolagstrategy_->PoroMtInitialize();
 
   firstinit_ = true;
-  // create binary search tree
-  interface_->CreateSearchTree();
+
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  evaluate blockmatrices for poro meshtying        h.Willmann 2015    |
+ |  complete interface (also print and parallel redist.)      Ager 02/16|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingPoroMortar::CompleteInterface(
+    Teuchos::RCP<DRT::Discretization>   masterdis,
+    Teuchos::RCP<CONTACT::CoInterface>& interface)
+{
+  // finalize the contact interface construction
+  int maxdof = masterdis->DofRowMap()->MaxAllGID();
+  interface->FillComplete(maxdof);
+
+  //interface->CreateVolumeGhosting(*masterdis);
+
+  // store old row maps (before parallel redistribution)
+  slavedofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
+  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
+  slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
+
+  // print parallel distribution
+  interface->PrintParallelDistribution(1);
+
+  // TODO: is this possible?
+  //**********************************************************************
+  // PARALLEL REDISTRIBUTION OF INTERFACE
+  //**********************************************************************
+//  if (parredist && comm_->NumProc()>1)
+//  {
+//    // redistribute optimally among all procs
+//    interface->Redistribute(1);
+//
+//    // call fill complete again
+//    interface->FillComplete();
+//
+//    // print parallel distribution again
+//    interface->PrintParallelDistribution(1);
+//  }
+
+  // store interface
+  interface_ = interface;
+
+  // create binary search tree
+  interface_->CreateSearchTree();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate blockmatrices for poro meshtying             ager 10/15    |
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingPoroMortar::EvaluatePoroMt(
     Teuchos::RCP<Epetra_Vector> fvel,
@@ -415,8 +451,9 @@ void ADAPTER::CouplingPoroMortar::EvaluatePoroMt(
   return;
 }// ADAPTER::CouplingNonLinMortar::EvaluatePoroMt()
 
+
 /*----------------------------------------------------------------------*
- |  update poro meshtying quantities                 h.Willmann 2015    |
+ |  update poro meshtying quantities                      ager 10/15    |
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingPoroMortar::UpdatePoroMt()
 {
@@ -428,7 +465,7 @@ void ADAPTER::CouplingPoroMortar::UpdatePoroMt()
 }//ADAPTER::CouplingNonLinMortar::UpdatePoroMt()
 
 /*----------------------------------------------------------------------*
- |  recover fluid coupling lagrange multiplier       h.Willmann 2015    |
+ |  recover fluid coupling lagrange multiplier            ager 10/15    |
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingPoroMortar::RecoverFluidLMPoroMt(Teuchos::RCP<Epetra_Vector> disi,Teuchos::RCP<Epetra_Vector> veli)
 {

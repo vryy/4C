@@ -29,8 +29,9 @@ Maintainer: Philipp Farah
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 09/14|
  *----------------------------------------------------------------------*/
-CONTACT::CoInterpolator::CoInterpolator(Teuchos::ParameterList& params) :
+NTS::CoInterpolator::CoInterpolator(Teuchos::ParameterList& params, const int& dim) :
 iparams_(params),
+dim_(dim),
 pwslip_(DRT::INPUT::IntegralValue<int>(iparams_,"GP_SLIP_INCR")),
 wearlaw_(DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(iparams_,"WEARLAW")),
 wearimpl_(false),
@@ -71,10 +72,28 @@ ssslip_(iparams_.get<double>("SSSLIP"))
 
 
 /*----------------------------------------------------------------------*
+ |  interpolate (public)                                     farah 02/16|
+ *----------------------------------------------------------------------*/
+void NTS::CoInterpolator::Interpolate(MORTAR::MortarNode& snode,
+                                      std::vector<MORTAR::MortarElement*> meles)
+{
+  // call sub functions for 2 and 3 dimensions
+  if(dim_==2)
+    Interpolate2D(snode,meles);
+  else if(dim_==3)
+    Interpolate3D(snode,meles);
+  else
+    dserror("ERROR: wrong dimension");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterpolator::Interpolate2D(MORTAR::MortarElement& sele,
-                                            std::vector<MORTAR::MortarElement*> meles)
+void NTS::CoInterpolator::Interpolate2D(MORTAR::MortarNode& snode,
+                                        std::vector<MORTAR::MortarElement*> meles)
 {
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -82,134 +101,142 @@ void CONTACT::CoInterpolator::Interpolate2D(MORTAR::MortarElement& sele,
   // check input data
   for (int i=0;i<(int)meles.size();++i)
   {
-    if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
+    if ((!snode.IsSlave()) || (meles[i]->IsSlave()))
       dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
   }
 
   // contact with wear
   bool wear = false;
-  if(iparams_.get<double>("WEARCOEFF")!= 0.0)
+  if(iparams_.get<double>("WEARCOEFF")> 1e-12)
     wear = true;
 
-  //**************************************************************
-  //                loop over all Slave nodes
-  //**************************************************************
-  for(int snodes = 0; snodes<sele.NumNode() ;++snodes)
+  // bool for node to node projection
+  bool kink_projection=false;
+
+  // calculate area -- simplified version
+  double area = 0.0;
+  for (int ele=0;ele<snode.NumElement();++ele)
+    area+=dynamic_cast<CONTACT::CoElement*>(snode.Elements()[ele])->MoData().Area();
+
+  area=area/snode.NumElement();
+
+  // get first element (this is a dummy to use established algorithms)
+  MORTAR::MortarElement* sele =
+      dynamic_cast<MORTAR::MortarElement*>(snode.Elements()[0]);
+
+  CONTACT::CoNode& mynode = dynamic_cast<CONTACT::CoNode&>(snode);
+
+  int lid = -1;
+  for (int i=0;i<sele->NumNode();++i)
   {
-    CoNode* mynode = dynamic_cast<CoNode*>(sele.Nodes()[snodes]);
-    bool kink_projection=false;
-
-    // skip this node if already considered
-    if (mynode->MoData().GetD().size()!=0)
-      continue;
-
-    double area = 0.0;
-    for (int ele=0;ele<mynode->NumElement();++ele)
-      area+=dynamic_cast<CONTACT::CoElement*>(mynode->Elements()[ele])->MoData().Area();
-
-    area=area/mynode->NumElement();
-
-    //**************************************************************
-    //                loop over all Master Elements
-    //**************************************************************
-    for (int nummaster=0;nummaster<(int)meles.size();++nummaster)
+    if((sele->Nodes()[i])->Id() == snode.Id())
     {
-      // project Gauss point onto master element
-      double mxi[2] = {0.0, 0.0};
-      MORTAR::MortarProjector::Impl(*meles[nummaster])->ProjectNodalNormal(
-          *mynode, *meles[nummaster], mxi);
-
-      // node on mele?
-      if ((mxi[0]>=-1.0) && (mxi[0]<=1.0) && (kink_projection==false))
-      {
-        kink_projection   = true;
-        mynode->HasProj() = true;
-
-        int ndof = 2;
-        int ncol = meles[nummaster]->NumNode();
-        LINALG::SerialDenseVector mval(ncol);
-        LINALG::SerialDenseMatrix mderiv(ncol,1);
-        meles[nummaster]->EvaluateShape(mxi,mval,mderiv,ncol,false);
-
-        // get slave and master nodal coords for Jacobian / GP evaluation
-        LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
-        LINALG::SerialDenseMatrix mcoord(3,ncol);
-        sele.GetNodalCoords(scoord);
-        meles[nummaster]->GetNodalCoords(mcoord);
-
-        // nodal coords from previous time step and lagrange mulitplier
-        Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
-        Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
-        Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
-
-        scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-        mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,ncol));
-        lagmult   = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-        sele.GetNodalCoordsOld(*scoordold);
-        meles[nummaster]->GetNodalCoordsOld(*mcoordold);
-        sele.GetNodalLagMult(*lagmult);
-
-        // TODO: calculate reasonable linsize
-        int linsize    = 100;
-        double gpn[3]  = {0.0, 0.0, 0.0};
-        double jumpval = 0.0;
-        GEN::pairedvector<int,double> dgap(linsize+ndof*ncol);
-        GEN::pairedvector<int,double> dslipmatrix(linsize+ndof*ncol);
-        GEN::pairedvector<int,double> dwear(linsize+ndof*ncol);
-        //**************************************************************
-        double sxi[2] = {0.0, 0.0};
-
-        if(sele.Shape() == DRT::Element::line2)
-        {
-          if(snodes == 0)
-            sxi[0] = -1;
-          if(snodes == 1)
-            sxi[0] = 1;
-        }
-        else if (sele.Shape() == DRT::Element::line3)
-        {
-          if(snodes == 0)
-            sxi[0] = -1;
-          if(snodes == 1)
-            sxi[0] = 1;
-          if(snodes == 2)
-            sxi[0] = 0;
-        }
-        else
-        {
-          dserror("ERROR: Chosen element type not supported for NTS!");
-        }
-        //**************************************************************
-
-        // evalute the GP slave coordinate derivatives --> no entries
-        GEN::pairedvector<int,double> dsxi(linsize+ndof*ncol);
-
-        // evalute the GP master coordinate derivatives
-        GEN::pairedvector<int,double> dmxi(linsize+ndof*ncol);
-        DerivXiGP2D(sele,*meles[nummaster],sxi[0],mxi[0],dsxi,dmxi,linsize);
-
-        // calculate node-wise DM
-        nwDM2D(*mynode,*meles[nummaster],mval,mderiv,dmxi);
-
-        // calculate node-wise un-weighted gap
-        nwGap2D(*mynode, *meles[nummaster], mval, mderiv, dmxi, gpn);
-
-        // calculate node-wise wear
-        if(wear)
-          nwWear2D(*mynode, *meles[nummaster], mval, mderiv, scoord, mcoord, scoordold, mcoordold,
-                   lagmult,snodes,linsize, jumpval, area, gpn, dmxi, dslipmatrix, dwear);
-
-        // calculate node-wise slip
-        if(pwslip_)
-          nwSlip2D(*mynode, *meles[nummaster], mval, mderiv, scoord, mcoord, scoordold, mcoordold,
-                   snodes, linsize, dmxi);
-
-        // calculate node-wise wear (prim. var.)
-        if(weartype_ == INPAR::WEAR::wear_primvar)
-          nwTE2D(*mynode, area, jumpval, dslipmatrix);
-      }//End hit ele
-    }//End Loop over all Master Elements
+      lid = i;
+      break;
+    }
   }
+
+  //**************************************************************
+  //                loop over all Master Elements
+  //**************************************************************
+  for (int nummaster=0;nummaster<(int)meles.size();++nummaster)
+  {
+    // project Gauss point onto master element
+    double mxi[2] = {0.0, 0.0};
+    MORTAR::MortarProjector::Impl(*meles[nummaster])->ProjectNodalNormal(
+        snode, *meles[nummaster], mxi);
+
+    // node on mele?
+    if ((mxi[0]>=-1.0) && (mxi[0]<=1.0) && (kink_projection==false))
+    {
+      kink_projection = true;
+      snode.HasProj() = true;
+
+      int ndof = 2;
+      int ncol = meles[nummaster]->NumNode();
+      LINALG::SerialDenseVector mval(ncol);
+      LINALG::SerialDenseMatrix mderiv(ncol,1);
+      meles[nummaster]->EvaluateShape(mxi,mval,mderiv,ncol,false);
+
+      // get slave and master nodal coords for Jacobian / GP evaluation
+      LINALG::SerialDenseMatrix scoord(3,sele->NumNode());
+      LINALG::SerialDenseMatrix mcoord(3,ncol);
+      sele->GetNodalCoords(scoord);
+      meles[nummaster]->GetNodalCoords(mcoord);
+
+      // nodal coords from previous time step and lagrange mulitplier
+      Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
+      Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
+      Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
+
+      scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele->NumNode()));
+      mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,ncol));
+      lagmult   = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele->NumNode()));
+      sele->GetNodalCoordsOld(*scoordold);
+      meles[nummaster]->GetNodalCoordsOld(*mcoordold);
+      sele->GetNodalLagMult(*lagmult);
+
+      // TODO: calculate reasonable linsize
+      int linsize    = 100;
+      double gpn[3]  = {0.0, 0.0, 0.0};
+      double jumpval = 0.0;
+      GEN::pairedvector<int,double> dgap(linsize+ndof*ncol);
+      GEN::pairedvector<int,double> dslipmatrix(linsize+ndof*ncol);
+      GEN::pairedvector<int,double> dwear(linsize+ndof*ncol);
+      //**************************************************************
+      double sxi[2] = {0.0, 0.0};
+
+      if(sele->Shape() == DRT::Element::line2)
+      {
+        if(lid == 0)
+          sxi[0] = -1;
+        if(lid == 1)
+          sxi[0] = 1;
+      }
+      else if (sele->Shape() == DRT::Element::line3)
+      {
+        if(lid == 0)
+          sxi[0] = -1;
+        if(lid == 1)
+          sxi[0] = 1;
+        if(lid == 2)
+          sxi[0] = 0;
+      }
+      else
+      {
+        dserror("ERROR: Chosen element type not supported for NTS!");
+      }
+      //**************************************************************
+
+      // evalute the GP slave coordinate derivatives --> no entries
+      GEN::pairedvector<int,double> dsxi(linsize+ndof*ncol);
+
+      // evalute the GP master coordinate derivatives
+      GEN::pairedvector<int,double> dmxi(linsize+ndof*ncol);
+      DerivXiGP2D(*sele,*meles[nummaster],sxi[0],mxi[0],dsxi,dmxi,linsize);
+
+      // calculate node-wise DM
+      nwDM2D(mynode,*sele,*meles[nummaster],mval,mderiv,dmxi);
+
+      // calculate node-wise un-weighted gap
+      nwGap2D(mynode, *sele,*meles[nummaster], mval, mderiv, dmxi, gpn);
+
+      // calculate node-wise wear
+      if(wear)
+        nwWear2D(mynode, *meles[nummaster], mval, mderiv, scoord, mcoord, scoordold, mcoordold,
+                 lagmult,lid,linsize, jumpval, area, gpn, dmxi, dslipmatrix, dwear);
+
+      // calculate node-wise slip
+      if(pwslip_)
+        nwSlip2D(mynode, *meles[nummaster], mval, mderiv, scoord, mcoord, scoordold, mcoordold,
+                 lid, linsize, dmxi);
+
+      // calculate node-wise wear (prim. var.)
+      if(weartype_ == INPAR::WEAR::wear_primvar)
+        nwTE2D(mynode, area, jumpval, dslipmatrix);
+    }//End hit ele
+  }//End Loop over all Master Elements
+
   //**************************************************************
 
   return;
@@ -219,8 +246,8 @@ void CONTACT::CoInterpolator::Interpolate2D(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterpolator::Interpolate3D(MORTAR::MortarElement& sele,
-                                            std::vector<MORTAR::MortarElement*> meles)
+void NTS::CoInterpolator::Interpolate3D(MORTAR::MortarNode& snode,
+                                        std::vector<MORTAR::MortarElement*> meles)
 {
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -228,140 +255,147 @@ void CONTACT::CoInterpolator::Interpolate3D(MORTAR::MortarElement& sele,
   // check input data
   for (int i=0;i<(int)meles.size();++i)
   {
-    if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
+    if ((!snode.IsSlave()) || (meles[i]->IsSlave()))
       dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
   }
 
-  //**************************************************************
-  //                loop over all Slave nodes
-  //**************************************************************
-  for(int snodes = 0; snodes<sele.NumNode() ;++snodes)
+  bool kink_projection=false;
+
+  // calculate area -- simplified version
+  double area = 0.0;
+  for (int ele=0;ele<snode.NumElement();++ele)
+    area+=dynamic_cast<CONTACT::CoElement*>(snode.Elements()[ele])->MoData().Area();
+
+  area=area/snode.NumElement();
+
+  // get first element (this is a dummy to use established algorithms)
+  MORTAR::MortarElement* sele =
+      dynamic_cast<MORTAR::MortarElement*>(snode.Elements()[0]);
+
+  CONTACT::CoNode& mynode = dynamic_cast<CONTACT::CoNode&>(snode);
+
+  int lid = -1;
+  for (int i=0;i<sele->NumNode();++i)
   {
-    CoNode* mynode = dynamic_cast<CoNode*>(sele.Nodes()[snodes]);
-    bool kink_projection=false;
-
-    // skip this node if already considered
-    if (mynode->MoData().GetD().size()!=0)
-      continue;
-
-    double area = 0.0;
-    for (int ele=0;ele<mynode->NumElement();++ele)
-      area+=dynamic_cast<CONTACT::CoElement*>(mynode->Elements()[ele])->MoData().Area();
-
-    area=area/mynode->NumElement();
-
-    double sxi[2] = {0.0, 0.0};
-
-    if(sele.Shape() == DRT::Element::quad4 or
-       sele.Shape() == DRT::Element::quad8 or
-       sele.Shape() == DRT::Element::quad9)
+    if((sele->Nodes()[i])->Id() == snode.Id())
     {
-      if(snodes==0)       {sxi[0] = -1; sxi[1] = -1;}
-      else if(snodes==1)  {sxi[0] =  1; sxi[1] = -1;}
-      else if(snodes==2)  {sxi[0] =  1; sxi[1] =  1;}
-      else if(snodes==3)  {sxi[0] = -1; sxi[1] =  1;}
-      else if(snodes==4)  {sxi[0] =  0; sxi[1] = -1;}
-      else if(snodes==5)  {sxi[0] =  1; sxi[1] =  0;}
-      else if(snodes==6)  {sxi[0] =  0; sxi[1] =  1;}
-      else if(snodes==7)  {sxi[0] = -1; sxi[1] =  0;}
-      else if(snodes==8)  {sxi[0] =  0; sxi[1] =  0;}
-      else dserror("ERORR: wrong node LID");
+      lid = i;
+      break;
     }
-    else if (sele.Shape() == DRT::Element::tri3 or
-             sele.Shape() == DRT::Element::tri6)
+  }
+
+  double sxi[2] = {0.0, 0.0};
+
+  if(sele->Shape() == DRT::Element::quad4 or
+     sele->Shape() == DRT::Element::quad8 or
+     sele->Shape() == DRT::Element::quad9)
+  {
+    if(lid==0)       {sxi[0] = -1; sxi[1] = -1;}
+    else if(lid==1)  {sxi[0] =  1; sxi[1] = -1;}
+    else if(lid==2)  {sxi[0] =  1; sxi[1] =  1;}
+    else if(lid==3)  {sxi[0] = -1; sxi[1] =  1;}
+    else if(lid==4)  {sxi[0] =  0; sxi[1] = -1;}
+    else if(lid==5)  {sxi[0] =  1; sxi[1] =  0;}
+    else if(lid==6)  {sxi[0] =  0; sxi[1] =  1;}
+    else if(lid==7)  {sxi[0] = -1; sxi[1] =  0;}
+    else if(lid==8)  {sxi[0] =  0; sxi[1] =  0;}
+    else dserror("ERORR: wrong node LID");
+  }
+  else if (sele->Shape() == DRT::Element::tri3 or
+           sele->Shape() == DRT::Element::tri6)
+  {
+    if(lid==0)       {sxi[0] = 0;    sxi[1] = 0;}
+    else if(lid==1)  {sxi[0] = 1;    sxi[1] = 0;}
+    else if(lid==2)  {sxi[0] = 0;    sxi[1] = 1;}
+    else if(lid==3)  {sxi[0] = 0.5;  sxi[1] = 0;}
+    else if(lid==4)  {sxi[0] = 0.5;  sxi[1] = 0.5;}
+    else if(lid==5)  {sxi[0] = 0;    sxi[1] = 0.5;}
+    else dserror("ERORR: wrong node LID");
+  }
+  else
+  {
+    dserror("ERROR: Chosen element type not supported for NTS!");
+  }
+
+  //**************************************************************
+  //                loop over all Master Elements
+  //**************************************************************
+  for (int nummaster=0;nummaster<(int)meles.size();++nummaster)
+  {
+    // project Gauss point onto master element
+    double mxi[2]    = {0.0, 0.0};
+    double projalpha =  0.0;
+    MORTAR::MortarProjector::Impl(*sele,*meles[nummaster])->ProjectGaussPoint3D(
+        *sele,sxi,*meles[nummaster],mxi,projalpha);
+
+    bool is_on_mele = true;
+
+    // check GP projection
+    DRT::Element::DiscretizationType dt = meles[nummaster]->Shape();
+    const double tol = 0.00;
+    if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
     {
-      if(snodes==0)       {sxi[0] = 0;    sxi[1] = 0;}
-      else if(snodes==1)  {sxi[0] = 1;    sxi[1] = 0;}
-      else if(snodes==2)  {sxi[0] = 0;    sxi[1] = 1;}
-      else if(snodes==3)  {sxi[0] = 0.5;  sxi[1] = 0;}
-      else if(snodes==4)  {sxi[0] = 0.5;  sxi[1] = 0.5;}
-      else if(snodes==5)  {sxi[0] = 0;    sxi[1] = 0.5;}
-      else dserror("ERORR: wrong node LID");
+      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+      {
+        is_on_mele=false;
+      }
     }
     else
     {
-      dserror("ERROR: Chosen element type not supported for NTS!");
+      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+      {
+        is_on_mele=false;
+      }
     }
 
-    //**************************************************************
-    //                loop over all Master Elements
-    //**************************************************************
-    for (int nummaster=0;nummaster<(int)meles.size();++nummaster)
+    // node on mele?
+    if ((kink_projection==false) && (is_on_mele))
     {
-      // project Gauss point onto master element
-      double mxi[2]    = {0.0, 0.0};
-      double projalpha =  0.0;
-      MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint3D(
-          sele,sxi,*meles[nummaster],mxi,projalpha);
+      kink_projection   = true;
+      mynode.HasProj()  = true;
 
-      bool is_on_mele = true;
+      int ndof = 3;
+      int ncol = meles[nummaster]->NumNode();
+      LINALG::SerialDenseVector mval(ncol);
+      LINALG::SerialDenseMatrix mderiv(ncol,2);
+      meles[nummaster]->EvaluateShape(mxi,mval,mderiv,ncol,false);
 
-      // check GP projection
-      DRT::Element::DiscretizationType dt = meles[nummaster]->Shape();
-      const double tol = 0.00;
-      if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
-      {
-        if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
-        {
-          is_on_mele=false;
-        }
-      }
-      else
-      {
-        if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
-        {
-          is_on_mele=false;
-        }
-      }
+      // get slave and master nodal coords for Jacobian / GP evaluation
+      LINALG::SerialDenseMatrix scoord(3,sele->NumNode());
+      LINALG::SerialDenseMatrix mcoord(3,ncol);
+      sele->GetNodalCoords(scoord);
+      meles[nummaster]->GetNodalCoords(mcoord);
 
-      // node on mele?
-      if ((kink_projection==false) && (is_on_mele))
-      {
-        kink_projection   = true;
-        mynode->HasProj() = true;
+      // nodal coords from previous time step and lagrange mulitplier
+      Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
+      Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
+      Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
 
-        int ndof = 3;
-        int ncol = meles[nummaster]->NumNode();
-        LINALG::SerialDenseVector mval(ncol);
-        LINALG::SerialDenseMatrix mderiv(ncol,2);
-        meles[nummaster]->EvaluateShape(mxi,mval,mderiv,ncol,false);
+      scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele->NumNode()));
+      mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,ncol));
+      lagmult   = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele->NumNode()));
+      sele->GetNodalCoordsOld(*scoordold);
+      meles[nummaster]->GetNodalCoordsOld(*mcoordold);
+      sele->GetNodalLagMult(*lagmult);
 
-        // get slave and master nodal coords for Jacobian / GP evaluation
-        LINALG::SerialDenseMatrix scoord(3,sele.NumNode());
-        LINALG::SerialDenseMatrix mcoord(3,ncol);
-        sele.GetNodalCoords(scoord);
-        meles[nummaster]->GetNodalCoords(mcoord);
+      int linsize    = mynode.GetLinsize();
+      double gpn[3]  = {0.0, 0.0, 0.0};
+      //**************************************************************
 
-        // nodal coords from previous time step and lagrange mulitplier
-        Teuchos::RCP<LINALG::SerialDenseMatrix> scoordold;
-        Teuchos::RCP<LINALG::SerialDenseMatrix> mcoordold;
-        Teuchos::RCP<LINALG::SerialDenseMatrix> lagmult;
+      // evalute the GP slave coordinate derivatives --> no entries
+      std::vector<GEN::pairedvector<int,double> > dsxi(2,0);
+      std::vector<GEN::pairedvector<int,double> > dmxi(2,4*linsize+ncol*ndof);
+      DerivXiGP3D(*sele,*meles[nummaster],sxi,mxi, dsxi, dmxi, projalpha);
 
-        scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-        mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,ncol));
-        lagmult   = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-        sele.GetNodalCoordsOld(*scoordold);
-        meles[nummaster]->GetNodalCoordsOld(*mcoordold);
-        sele.GetNodalLagMult(*lagmult);
+      // calculate node-wise DM
+      nwDM3D(mynode,*meles[nummaster],mval,mderiv,dmxi);
 
-        int linsize    = mynode->GetLinsize();
-        double gpn[3]  = {0.0, 0.0, 0.0};
-        //**************************************************************
+      // calculate node-wise un-weighted gap
+      nwGap3D(mynode, *meles[nummaster], mval, mderiv, dmxi, gpn);
 
-        // evalute the GP slave coordinate derivatives --> no entries
-        std::vector<GEN::pairedvector<int,double> > dsxi(2,0);
-        std::vector<GEN::pairedvector<int,double> > dmxi(2,4*linsize+ncol*ndof);
-        DerivXiGP3D(sele,*meles[nummaster],sxi,mxi, dsxi, dmxi, projalpha);
+    }//End hit ele
+  }//End Loop over all Master Elements
 
-        // calculate node-wise DM
-        nwDM3D(*mynode,*meles[nummaster],mval,mderiv,dmxi);
-
-        // calculate node-wise un-weighted gap
-        nwGap3D(*mynode, *meles[nummaster], mval, mderiv, dmxi, gpn);
-
-      }//End hit ele
-    }//End Loop over all Master Elements
-  }
   //**************************************************************
 
   return;
@@ -371,7 +405,7 @@ void CONTACT::CoInterpolator::Interpolate3D(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     seitz 08/15|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterpolator::InterpolateMasterTemp3D(MORTAR::MortarElement& sele,
+void NTS::CoInterpolator::InterpolateMasterTemp3D(MORTAR::MortarElement& sele,
                                             std::vector<MORTAR::MortarElement*> meles)
 {
   // if it's not a TSI problem, there's nothing to do here
@@ -385,7 +419,7 @@ void CONTACT::CoInterpolator::InterpolateMasterTemp3D(MORTAR::MortarElement& sel
   for (int i=0;i<(int)meles.size();++i)
   {
     if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
+      dserror("ERROR: InterpolateMasterTemp3D called on a wrong type of MortarElement pair!");
   }
 
   //**************************************************************
@@ -393,7 +427,7 @@ void CONTACT::CoInterpolator::InterpolateMasterTemp3D(MORTAR::MortarElement& sel
   //**************************************************************
   for(int snodes = 0; snodes<sele.NumNode() ;++snodes)
   {
-    CoNode* mynode = dynamic_cast<CoNode*>(sele.Nodes()[snodes]);
+    CONTACT::CoNode* mynode = dynamic_cast<CONTACT::CoNode*>(sele.Nodes()[snodes]);
 
     double sxi[2] = {0.0, 0.0};
 
@@ -498,7 +532,7 @@ void CONTACT::CoInterpolator::InterpolateMasterTemp3D(MORTAR::MortarElement& sel
 /*----------------------------------------------------------------------*
  |  node-wise TE for primary variable wear                  farah 09/14 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterpolator::nwTE2D(CoNode& mynode,
+void NTS::CoInterpolator::nwTE2D(CONTACT::CoNode& mynode,
                                    double& area,
                                    double& jumpval,
                                    GEN::pairedvector<int,double>& dslipmatrix)
@@ -531,7 +565,7 @@ void CONTACT::CoInterpolator::nwTE2D(CoNode& mynode,
 /*----------------------------------------------------------------------*
  |  node-wise slip                                          farah 09/14 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterpolator::nwSlip2D(CoNode& mynode,
+void NTS::CoInterpolator::nwSlip2D(CONTACT::CoNode& mynode,
                                    MORTAR::MortarElement& mele,
                                    LINALG::SerialDenseVector& mval,
                                    LINALG::SerialDenseMatrix& mderiv,
@@ -680,7 +714,7 @@ void CONTACT::CoInterpolator::nwSlip2D(CoNode& mynode,
 /*----------------------------------------------------------------------*
  |  node-wise un-weighted gap                               farah 09/14 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterpolator::nwWear2D(CoNode& mynode,
+void NTS::CoInterpolator::nwWear2D(CONTACT::CoNode& mynode,
                                    MORTAR::MortarElement& mele,
                                    LINALG::SerialDenseVector& mval,
                                    LINALG::SerialDenseMatrix& mderiv,
@@ -918,7 +952,8 @@ void CONTACT::CoInterpolator::nwWear2D(CoNode& mynode,
 /*----------------------------------------------------------------------*
  |  node-wise un-weighted gap                               farah 09/14 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterpolator::nwGap2D(CoNode& mynode,
+void NTS::CoInterpolator::nwGap2D(CONTACT::CoNode& mynode,
+                                   MORTAR::MortarElement& sele,
                                    MORTAR::MortarElement& mele,
                                    LINALG::SerialDenseVector& mval,
                                    LINALG::SerialDenseMatrix& mderiv,
@@ -926,6 +961,14 @@ void CONTACT::CoInterpolator::nwGap2D(CoNode& mynode,
                                    double* gpn)
 {
   const int ncol = mele.NumNode();
+  double alpha = 1.0 - mynode.CoData().GetAlphaN();//(mynode.CoData().GetAlpha()[0])[sele.Id()];
+
+  double area = 0.0;
+  for (int ele=0;ele<mynode.NumElement();++ele)
+    area+=dynamic_cast<CONTACT::CoElement*>(mynode.Elements()[ele])->MoData().Area();
+
+  area=area/mynode.NumElement();
+  alpha*=area;
 
   double sgpx[3] = {0.0, 0.0, 0.0};
   double mgpx[3] = {0.0, 0.0, 0.0};
@@ -963,7 +1006,10 @@ void CONTACT::CoInterpolator::nwGap2D(CoNode& mynode,
   // **************************
   // add to node
   // **************************
+  gap *= alpha;
   mynode.AddgValue(gap);
+
+//  mynode.AddntsGapValue(gap);
 
   // **************************
   // linearization
@@ -1000,7 +1046,7 @@ void CONTACT::CoInterpolator::nwGap2D(CoNode& mynode,
   std::map<int,double>& dgmap = mynode.CoData().GetDerivG();
 
   // (1) Lin(g) - gap function
-  double fac = 1.0;
+  double fac = alpha;
   for (_CI p=dgapgp.begin();p!=dgapgp.end();++p)
     dgmap[p->first] += fac*(p->second);
 
@@ -1011,7 +1057,7 @@ void CONTACT::CoInterpolator::nwGap2D(CoNode& mynode,
 /*----------------------------------------------------------------------*
  |  node-wise un-weighted gap                               farah 09/14 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterpolator::nwGap3D(CoNode& mynode,
+void NTS::CoInterpolator::nwGap3D(CONTACT::CoNode& mynode,
                                    MORTAR::MortarElement& mele,
                                    LINALG::SerialDenseVector& mval,
                                    LINALG::SerialDenseMatrix& mderiv,
@@ -1109,12 +1155,11 @@ void CONTACT::CoInterpolator::nwGap3D(CoNode& mynode,
 }
 
 
-
 /*----------------------------------------------------------------------*
  |  projected master temperature at the slave node          seitz 08/15 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterpolator::nwMasterTemp(
-    CoNode& mynode,
+void NTS::CoInterpolator::nwMasterTemp(
+    CONTACT::CoNode& mynode,
     MORTAR::MortarElement& mele,
     const LINALG::SerialDenseVector& mval,
     const LINALG::SerialDenseMatrix& mderiv,
@@ -1160,13 +1205,21 @@ void CONTACT::CoInterpolator::nwMasterTemp(
 /*----------------------------------------------------------------------*
  |  node-wise D/M calculation                               farah 09/14 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterpolator::nwDM2D(CoNode& mynode,
+void NTS::CoInterpolator::nwDM2D(CONTACT::CoNode& mynode,
+                                   MORTAR::MortarElement& sele,
                                    MORTAR::MortarElement& mele,
                                    LINALG::SerialDenseVector& mval,
                                    LINALG::SerialDenseMatrix& mderiv,
                                    GEN::pairedvector<int,double>& dmxi)
 {
   const int ncol = mele.NumNode();
+  double alpha = 1.0 - mynode.CoData().GetAlphaN();//(mynode.CoData().GetAlpha()[0])[sele.Id()];
+  double area = 0.0;
+  for (int ele=0;ele<mynode.NumElement();++ele)
+    area+=dynamic_cast<CONTACT::CoElement*>(mynode.Elements()[ele])->MoData().Area();
+
+  area=area/mynode.NumElement();
+  alpha*=area;
 
   typedef GEN::pairedvector<int,double>::const_iterator _CI;
 
@@ -1176,17 +1229,17 @@ void CONTACT::CoInterpolator::nwDM2D(CoNode& mynode,
     CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(mele.Nodes()[k]);
 
     // multiply the two shape functions
-    double prod = mval[k];
+    double prod = mval[k]*alpha;
 
-    if(abs(prod)>MORTARINTTOL) mynode.AddMValue(mnode->Id(),prod);
+    if(abs(prod)>MORTARINTTOL) mynode.AddMntsValue(mnode->Id(),prod);
     if(abs(prod)>MORTARINTTOL) mynode.AddMNode(mnode->Id());  // only for friction!
   }
 
   // integrate dseg
   // multiply the two shape functions
-  double prod = 1.0;
+  double prod = 1.0*alpha;
 
-    if(abs(prod)>MORTARINTTOL) mynode.AddDValue(mynode.Id(),prod);
+    if(abs(prod)>MORTARINTTOL) mynode.AddDntsValue(mynode.Id(),prod);
     if(abs(prod)>MORTARINTTOL) mynode.AddSNode(mynode.Id()); // only for friction!
 
   // integrate LinM
@@ -1200,7 +1253,7 @@ void CONTACT::CoInterpolator::nwDM2D(CoNode& mynode,
     std::map<int,double>& dmmap_jk = mynode.CoData().GetDerivM()[mgid];
 
     // (3) Lin(NMaster) - master GP coordinates
-    fac = mderiv(k, 0);
+    fac = mderiv(k, 0) * alpha;
     for (_CI p=dmxi.begin(); p!=dmxi.end(); ++p)
       dmmap_jk[p->first] += fac*(p->second);
   } // loop over master nodes
@@ -1212,7 +1265,7 @@ void CONTACT::CoInterpolator::nwDM2D(CoNode& mynode,
 /*----------------------------------------------------------------------*
  |  node-wise D/M calculation                               farah 09/14 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterpolator::nwDM3D(CoNode& mynode,
+void NTS::CoInterpolator::nwDM3D(CONTACT::CoNode& mynode,
                                    MORTAR::MortarElement& mele,
                                    LINALG::SerialDenseVector& mval,
                                    LINALG::SerialDenseMatrix& mderiv,
@@ -1267,7 +1320,7 @@ void CONTACT::CoInterpolator::nwDM3D(CoNode& mynode,
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of XiGP master (2D)       popp 05/08 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterpolator::DerivXiGP2D(MORTAR::MortarElement& sele,
+void NTS::CoInterpolator::DerivXiGP2D(MORTAR::MortarElement& sele,
                                     MORTAR::MortarElement& mele,
                                     double& sxigp, double& mxigp,
                                     const GEN::pairedvector<int,double>& derivsxi,
@@ -1479,7 +1532,7 @@ void CONTACT::CoInterpolator::DerivXiGP2D(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Compute directional derivative of XiGP master (3D)        popp 02/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterpolator::DerivXiGP3D(MORTAR::MortarElement& sele,
+void NTS::CoInterpolator::DerivXiGP3D(MORTAR::MortarElement& sele,
                                       MORTAR::MortarElement& mele,
                                       double* sxigp, double* mxigp,
                                       const std::vector<GEN::pairedvector<int,double> >& derivsxi,
@@ -1549,7 +1602,7 @@ void CONTACT::CoInterpolator::DerivXiGP3D(MORTAR::MortarElement& sele,
   int linsize = 0;
   for (int i=0;i<numsnode;++i)
   {
-    CoNode* cnode = dynamic_cast<CoNode*> (snodes[i]);
+    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*> (snodes[i]);
     linsize += cnode->GetLinsize();
   }
 
@@ -1648,9 +1701,11 @@ void CONTACT::CoInterpolator::DerivXiGP3D(MORTAR::MortarElement& sele,
 /*----------------------------------------------------------------------*
  |  Implementation for meshtying interpolator                farah 10/14|
  *----------------------------------------------------------------------*/
-CONTACT::MTInterpolator* CONTACT::MTInterpolator::Impl(MORTAR::MortarElement& sele,
+NTS::MTInterpolator* NTS::MTInterpolator::Impl(
     std::vector<MORTAR::MortarElement*> meles)
 {
+  // TODO: maybe this object should be crearted for one mele
+  // and note for a vector of meles...
   switch (meles[0]->Shape())
   {
   // 2D surface elements
@@ -1695,7 +1750,7 @@ CONTACT::MTInterpolator* CONTACT::MTInterpolator::Impl(MORTAR::MortarElement& se
  |  ctor (public)                                            farah 10/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeM>
-CONTACT::MTInterpolatorCalc<distypeM>::MTInterpolatorCalc()
+NTS::MTInterpolatorCalc<distypeM>::MTInterpolatorCalc()
 {
   //...
 }
@@ -1705,7 +1760,7 @@ CONTACT::MTInterpolatorCalc<distypeM>::MTInterpolatorCalc()
  |  Instance (public)                                        farah 10/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeM>
-CONTACT::MTInterpolatorCalc<distypeM> * CONTACT::MTInterpolatorCalc<distypeM>::Instance(bool create)
+NTS::MTInterpolatorCalc<distypeM> * NTS::MTInterpolatorCalc<distypeM>::Instance(bool create)
 {
   static MTInterpolatorCalc<distypeM> * instance;
   if (create)
@@ -1727,19 +1782,36 @@ CONTACT::MTInterpolatorCalc<distypeM> * CONTACT::MTInterpolatorCalc<distypeM>::I
  |  Done (public)                                             farah 10/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeM>
-void CONTACT::MTInterpolatorCalc<distypeM> ::Done()
+void NTS::MTInterpolatorCalc<distypeM> ::Done()
 {
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
   Instance(false);
 }
 
+/*----------------------------------------------------------------------*
+ |  interpolate (public)                                     farah 10/14|
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distypeM>
+void NTS::MTInterpolatorCalc<distypeM>::Interpolate(MORTAR::MortarNode& snode,
+                                            std::vector<MORTAR::MortarElement*> meles)
+{
+  if(ndim_ == 2)
+    Interpolate2D(snode,meles);
+  else if(ndim_ == 3)
+    Interpolate3D(snode,meles);
+  else
+    dserror("ERROR: wrong dimension!");
+
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 10/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeM>
-void CONTACT::MTInterpolatorCalc<distypeM>::Interpolate2D(MORTAR::MortarElement& sele,
+void NTS::MTInterpolatorCalc<distypeM>::Interpolate2D(MORTAR::MortarNode& snode,
                                             std::vector<MORTAR::MortarElement*> meles)
 {
   // ********************************************************************
@@ -1748,60 +1820,52 @@ void CONTACT::MTInterpolatorCalc<distypeM>::Interpolate2D(MORTAR::MortarElement&
   // check input data
   for (int i=0;i<(int)meles.size();++i)
   {
-    if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
+    if ((!snode.IsSlave()) || (meles[i]->IsSlave()))
       dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
   }
 
+  // bool for projection onto a master node
+  bool kink_projection=false;
+
   //**************************************************************
-  //                loop over all Slave nodes
+  //                loop over all Master Elements
   //**************************************************************
-  for(int snodes = 0; snodes<sele.NumNode() ;++snodes)
+  for (int nummaster=0;nummaster<(int)meles.size();++nummaster)
   {
-    MORTAR::MortarNode* mynode = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[snodes]);
-    bool kink_projection=false;
+    // project Gauss point onto master element
+    double mxi[2] = {0.0, 0.0};
+    MORTAR::MortarProjector::Impl(*meles[nummaster])->ProjectNodalNormal(
+        snode, *meles[nummaster], mxi);
 
-    // skip this node if already considered
-    if (mynode->MoData().GetD().size()!=0)
-      continue;
-
-    //**************************************************************
-    //                loop over all Master Elements
-    //**************************************************************
-    for (int nummaster=0;nummaster<(int)meles.size();++nummaster)
+    // node on mele?
+    if ((mxi[0]>=-1.0) && (mxi[0]<=1.0) && (kink_projection==false))
     {
-      // project Gauss point onto master element
-      double mxi[2] = {0.0, 0.0};
-      MORTAR::MortarProjector::Impl(*meles[nummaster])->ProjectNodalNormal(
-          *mynode, *meles[nummaster], mxi);
+      kink_projection   = true;
+      snode.HasProj()   = true;
 
-      // node on mele?
-      if ((mxi[0]>=-1.0) && (mxi[0]<=1.0) && (kink_projection==false))
+      static LINALG::Matrix<nm_,1> mval;
+      MORTAR::UTILS::EvaluateShape_Displ(mxi, mval,*meles[nummaster], false);
+
+      // node-wise M value
+      for (int k=0; k<nm_; ++k)
       {
-        kink_projection   = true;
-        mynode->HasProj() = true;
+        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(meles[nummaster]->Nodes()[k]);
 
-        static LINALG::Matrix<nm_,1> mval;
-        MORTAR::UTILS::EvaluateShape_Displ(mxi, mval,*meles[nummaster], false);
-
-        // node-wise M value
-        for (int k=0; k<nm_; ++k)
-        {
-          MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(meles[nummaster]->Nodes()[k]);
-
-          // multiply the two shape functions
-          double prod = mval(k);
-
-          if(abs(prod)>MORTARINTTOL) mynode->AddMValue(mnode->Id(),prod);
-        }
-
-        // integrate dseg
         // multiply the two shape functions
-        double prod = 1.0;
+        double prod = mval(k);
 
-        if(abs(prod)>MORTARINTTOL) mynode->AddDValue(mynode->Id(),prod);
-      }//End hit ele
-    }//End Loop over all Master Elements
-  }
+        if(abs(prod)>MORTARINTTOL)
+          snode.AddMValue(mnode->Id(),prod);
+      }
+
+      // dseg reduces to 1.0 for nts
+      double prod = 1.0;
+
+      if(abs(prod)>MORTARINTTOL)
+        snode.AddDValue(snode.Id(),prod);
+    }//End hit ele
+  }//End Loop over all Master Elements
+
   //**************************************************************
 
   return;
@@ -1812,7 +1876,7 @@ void CONTACT::MTInterpolatorCalc<distypeM>::Interpolate2D(MORTAR::MortarElement&
  |  interpolate (public)                                     farah 10/14|
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeM>
-void CONTACT::MTInterpolatorCalc<distypeM>::Interpolate3D(MORTAR::MortarElement& sele,
+void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(MORTAR::MortarNode& snode,
                                             std::vector<MORTAR::MortarElement*> meles)
 {
   // ********************************************************************
@@ -1821,123 +1885,127 @@ void CONTACT::MTInterpolatorCalc<distypeM>::Interpolate3D(MORTAR::MortarElement&
   // check input data
   for (int i=0;i<(int)meles.size();++i)
   {
-    if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
+    if ((!snode.IsSlave()) || (meles[i]->IsSlave()))
       dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
   }
 
-  //**************************************************************
-  //                loop over all Slave nodes
-  //**************************************************************
-  for(int snodes = 0; snodes<sele.NumNode() ;++snodes)
+  bool kink_projection=false;
+  double sxi[2] = {0.0, 0.0};
+
+  // get local id
+  MORTAR::MortarElement* sele =
+      dynamic_cast<MORTAR::MortarElement*> (snode.Elements()[0]);
+
+  int lid = -1;
+  for (int i=0;i<sele->NumNode();++i)
   {
-    MORTAR::MortarNode* mynode = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[snodes]);
-    bool kink_projection=false;
-
-    // skip this node if already considered
-    if (mynode->MoData().GetD().size()!=0)
-      continue;
-
-    double sxi[2] = {0.0, 0.0};
-
-    if(sele.Shape() == DRT::Element::quad4 or
-       sele.Shape() == DRT::Element::quad8 or
-       sele.Shape() == DRT::Element::quad9)
+    if((sele->Nodes()[i])->Id() == snode.Id())
     {
-      if(snodes==0)       {sxi[0] = -1; sxi[1] = -1;}
-      else if(snodes==1)  {sxi[0] =  1; sxi[1] = -1;}
-      else if(snodes==2)  {sxi[0] =  1; sxi[1] =  1;}
-      else if(snodes==3)  {sxi[0] = -1; sxi[1] =  1;}
-      else if(snodes==4)  {sxi[0] =  0; sxi[1] = -1;}
-      else if(snodes==5)  {sxi[0] =  1; sxi[1] =  0;}
-      else if(snodes==6)  {sxi[0] =  0; sxi[1] =  1;}
-      else if(snodes==7)  {sxi[0] = -1; sxi[1] =  0;}
-      else if(snodes==8)  {sxi[0] =  0; sxi[1] =  0;}
-      else dserror("ERORR: wrong node LID");
+      lid = i;
+      break;
     }
-    else if (sele.Shape() == DRT::Element::tri3 or
-             sele.Shape() == DRT::Element::tri6)
+  }
+
+  if(sele->Shape() == DRT::Element::quad4 or
+     sele->Shape() == DRT::Element::quad8 or
+     sele->Shape() == DRT::Element::quad9)
+  {
+    if(lid==0)       {sxi[0] = -1; sxi[1] = -1;}
+    else if(lid==1)  {sxi[0] =  1; sxi[1] = -1;}
+    else if(lid==2)  {sxi[0] =  1; sxi[1] =  1;}
+    else if(lid==3)  {sxi[0] = -1; sxi[1] =  1;}
+    else if(lid==4)  {sxi[0] =  0; sxi[1] = -1;}
+    else if(lid==5)  {sxi[0] =  1; sxi[1] =  0;}
+    else if(lid==6)  {sxi[0] =  0; sxi[1] =  1;}
+    else if(lid==7)  {sxi[0] = -1; sxi[1] =  0;}
+    else if(lid==8)  {sxi[0] =  0; sxi[1] =  0;}
+    else dserror("ERORR: wrong node LID");
+  }
+  else if (sele->Shape() == DRT::Element::tri3 or
+           sele->Shape() == DRT::Element::tri6)
+  {
+    if(lid==0)       {sxi[0] = 0;    sxi[1] = 0;}
+    else if(lid==1)  {sxi[0] = 1;    sxi[1] = 0;}
+    else if(lid==2)  {sxi[0] = 0;    sxi[1] = 1;}
+    else if(lid==3)  {sxi[0] = 0.5;  sxi[1] = 0;}
+    else if(lid==4)  {sxi[0] = 0.5;  sxi[1] = 0.5;}
+    else if(lid==5)  {sxi[0] = 0;    sxi[1] = 0.5;}
+    else dserror("ERORR: wrong node LID");
+  }
+  else
+  {
+    dserror("ERROR: Chosen element type not supported for NTS!");
+  }
+
+  //**************************************************************
+  //                loop over all Master Elements
+  //**************************************************************
+  for (int nummaster=0;nummaster<(int)meles.size();++nummaster)
+  {
+    // project Gauss point onto master element
+    double mxi[2]    = {0.0, 0.0};
+    double projalpha =  0.0;
+    MORTAR::MortarProjector::Impl(*sele,*meles[nummaster])->ProjectGaussPoint3D(
+        *sele,sxi,*meles[nummaster],mxi,projalpha);
+
+    bool is_on_mele = true;
+
+    // check GP projection
+    const double tol = 0.00;
+    if (distypeM==DRT::Element::quad4 || distypeM==DRT::Element::quad8 || distypeM==DRT::Element::quad9)
     {
-      if(snodes==0)       {sxi[0] = 0;    sxi[1] = 0;}
-      else if(snodes==1)  {sxi[0] = 1;    sxi[1] = 0;}
-      else if(snodes==2)  {sxi[0] = 0;    sxi[1] = 1;}
-      else if(snodes==3)  {sxi[0] = 0.5;  sxi[1] = 0;}
-      else if(snodes==4)  {sxi[0] = 0.5;  sxi[1] = 0.5;}
-      else if(snodes==5)  {sxi[0] = 0;    sxi[1] = 0.5;}
-      else dserror("ERORR: wrong node LID");
+      if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+      {
+        is_on_mele=false;
+      }
     }
     else
     {
-      dserror("ERROR: Chosen element type not supported for NTS!");
+      if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+      {
+        is_on_mele=false;
+      }
     }
 
-    //**************************************************************
-    //                loop over all Master Elements
-    //**************************************************************
-    for (int nummaster=0;nummaster<(int)meles.size();++nummaster)
+    // node on mele?
+    if ((kink_projection==false) && (is_on_mele))
     {
-      // project Gauss point onto master element
-      double mxi[2]    = {0.0, 0.0};
-      double projalpha =  0.0;
-      MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint3D(
-          sele,sxi,*meles[nummaster],mxi,projalpha);
+      kink_projection   = true;
+      snode.HasProj()   = true;
 
-      bool is_on_mele = true;
+      static LINALG::Matrix<nm_,1> mval;
+      MORTAR::UTILS::EvaluateShape_Displ(mxi, mval,*meles[nummaster], false);
 
-      // check GP projection
-      const double tol = 0.00;
-      if (distypeM==DRT::Element::quad4 || distypeM==DRT::Element::quad8 || distypeM==DRT::Element::quad9)
+      // node-wise M value
+      for (int k=0; k<nm_; ++k)
       {
-        if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
-        {
-          is_on_mele=false;
-        }
-      }
-      else
-      {
-        if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
-        {
-          is_on_mele=false;
-        }
-      }
+        MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(meles[nummaster]->Nodes()[k]);
 
-      // node on mele?
-      if ((kink_projection==false) && (is_on_mele))
-      {
-        kink_projection   = true;
-        mynode->HasProj() = true;
-
-        static LINALG::Matrix<nm_,1> mval;
-        MORTAR::UTILS::EvaluateShape_Displ(mxi, mval,*meles[nummaster], false);
-
-        // node-wise M value
-        for (int k=0; k<nm_; ++k)
-        {
-          MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(meles[nummaster]->Nodes()[k]);
-
-          // multiply the two shape functions
-          double prod = mval(k);
-
-          if(abs(prod)>MORTARINTTOL) mynode->AddMValue(mnode->Id(),prod);
-        }
-
-        // integrate dseg
         // multiply the two shape functions
-        double prod = 1.0;
+        double prod = mval(k);
 
-        if(abs(prod)>MORTARINTTOL) mynode->AddDValue(mynode->Id(),prod);
-      }//End hit ele
-    }//End Loop over all Master Elements
-  }
+        if(abs(prod)>MORTARINTTOL)
+          snode.AddMValue(mnode->Id(),prod);
+      }
+
+      // integrate dseg
+      // multiply the two shape functions
+      double prod = 1.0;
+
+      if(abs(prod)>MORTARINTTOL)
+        snode.AddDValue(snode.Id(),prod);
+    }//End hit ele
+  }//End Loop over all Master Elements
   //**************************************************************
 
   return;
 }
 
 
-template class CONTACT::MTInterpolatorCalc<DRT::Element::line2>;
-template class CONTACT::MTInterpolatorCalc<DRT::Element::line3>;
-template class CONTACT::MTInterpolatorCalc<DRT::Element::quad4>;
-template class CONTACT::MTInterpolatorCalc<DRT::Element::quad8>;
-template class CONTACT::MTInterpolatorCalc<DRT::Element::quad9>;
-template class CONTACT::MTInterpolatorCalc<DRT::Element::tri3>;
-template class CONTACT::MTInterpolatorCalc<DRT::Element::tri6>;
+template class NTS::MTInterpolatorCalc<DRT::Element::line2>;
+template class NTS::MTInterpolatorCalc<DRT::Element::line3>;
+template class NTS::MTInterpolatorCalc<DRT::Element::quad4>;
+template class NTS::MTInterpolatorCalc<DRT::Element::quad8>;
+template class NTS::MTInterpolatorCalc<DRT::Element::quad9>;
+template class NTS::MTInterpolatorCalc<DRT::Element::tri3>;
+template class NTS::MTInterpolatorCalc<DRT::Element::tri6>;

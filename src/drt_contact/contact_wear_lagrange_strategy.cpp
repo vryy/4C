@@ -39,7 +39,7 @@ Maintainer: Philipp Farah
 /*----------------------------------------------------------------------*
  | ctor (public)                                             farah 09/13|
  *----------------------------------------------------------------------*/
-CONTACT::WearLagrangeStrategy::WearLagrangeStrategy(
+WEAR::WearLagrangeStrategy::WearLagrangeStrategy(
     const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap,
     Teuchos::ParameterList params,
@@ -48,7 +48,17 @@ CONTACT::WearLagrangeStrategy::WearLagrangeStrategy(
     Teuchos::RCP<Epetra_Comm> comm,
     double alphaf,
     int maxdof) :
-CoLagrangeStrategy(DofRowMap,NodeRowMap,params,interfaces,dim,comm,alphaf,maxdof),
+CoLagrangeStrategy(
+    DofRowMap,
+    NodeRowMap,
+    params,
+    interfaces,
+    dim,
+    comm,
+    alphaf,
+    maxdof),
+weightedwear_(false),
+wbothpv_(false),
 wearimpl_(false),
 wearprimvar_(false),
 wearbothpv_(false),
@@ -58,7 +68,7 @@ sswear_(DRT::INPUT::IntegralValue<int>(Params(),"SSWEAR"))
   // cast to  wearinterfaces
   for (int z=0; z<(int)interfaces.size();++z)
   {
-    interface_.push_back(Teuchos::rcp_dynamic_cast<CONTACT::WearInterface>(interfaces[z]));
+    interface_.push_back(Teuchos::rcp_dynamic_cast<WEAR::WearInterface>(interfaces[z]));
     if (interface_[z]==Teuchos::null)
       dserror("WearLagrangeStrategy: Interface-cast failed!");
   }
@@ -72,7 +82,18 @@ sswear_(DRT::INPUT::IntegralValue<int>(Params(),"SSWEAR"))
       DRT::INPUT::IntegralValue<INPAR::WEAR::WearTimeScale>(Params(),"WEAR_TIMESCALE");
   INPAR::WEAR::WearTimInt wtimint =
       DRT::INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(Params(),"WEARTIMINT");
+  INPAR::WEAR::WearLaw wlaw =
+      DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(Params(), "WEARLAW");
 
+  // set wear contact status
+  if (wlaw != INPAR::WEAR::wear_none and
+      wtype == INPAR::WEAR::wear_intstate)
+    weightedwear_ = true;
+
+  // discrete both-sided wear for active set output
+  if (wside == INPAR::WEAR::wear_both and
+      wtype == INPAR::WEAR::wear_primvar)
+    wbothpv_ = true;
   if (wtimint == INPAR::WEAR::wear_impl)
     wearimpl_ = true;
 
@@ -98,10 +119,11 @@ sswear_(DRT::INPUT::IntegralValue<int>(Params(),"SSWEAR"))
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  | setup this strategy object                               farah 09/13 |
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
+void WEAR::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
 {
   // ------------------------------------------------------------------------
   // setup global accessible Epetra_Maps
@@ -171,7 +193,7 @@ void CONTACT::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        FriNode* cnode = dynamic_cast<FriNode*>(node);
+        CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
         cnode->WearData().wcurr()[0]=0.0;
       }
@@ -183,7 +205,7 @@ void CONTACT::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
           int gid = interface_[i]->MasterColNodes()->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-          FriNode* cnode = dynamic_cast<FriNode*>(node);
+          CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
           cnode->WearData().wcurr()[0]=0.0;
         }
@@ -304,9 +326,8 @@ void CONTACT::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
   }
 
   // output wear ... this is for the unweighted wear*n vector
-  wearoutput_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  wearoutput_  = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   wearoutput2_ = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
-
 
   return;
 }
@@ -314,7 +335,7 @@ void CONTACT::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
 /*----------------------------------------------------------------------*
  | initialize wear stuff for next Newton step                farah 11/13|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::InitMortar()
+void WEAR::WearLagrangeStrategy::InitMortar()
 {
   // for self contact, slave and master sets may have changed,
   // thus we have to update them before initializing D,M etc.
@@ -373,16 +394,14 @@ void CONTACT::WearLagrangeStrategy::InitMortar()
 /*----------------------------------------------------------------------*
  | Assemble wear stuff for next Newton step                  farah 11/13|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::AssembleMortar()
+void WEAR::WearLagrangeStrategy::AssembleMortar()
 {
+  // call base routine
+  CONTACT::CoAbstractStrategy::AssembleMortar();
+
   // for all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
-    //************************************************************
-    // assemble D-, M-matrix and g-vector, store them globally
-    interface_[i]->AssembleDM(*dmatrix_,*mmatrix_);
-    interface_[i]->AssembleG(*g_);
-
     //************************************************************
     // only assemble D2 for both-sided wear --> unweights the
     // weighted wear increment in master side
@@ -393,34 +412,8 @@ void CONTACT::WearLagrangeStrategy::AssembleMortar()
 
     //************************************************************
     // assemble wear vector
-    if (!wearprimvar_) interface_[i]->AssembleWear(*wearvector_);
-
-#ifdef CONTACTFDNORMAL
-    // FD check of normal derivatives
-    std::cout << " -- CONTACTFDNORMAL- -----------------------------------" << std::endl;
-    interface_[i]->FDCheckNormalDeriv();
-    std::cout << " -- CONTACTFDNORMAL- -----------------------------------" << std::endl;
-#endif // #ifdef CONTACTFDNORMAL
-
-#ifdef CONTACTFDMORTARD
-    // FD check of Mortar matrix D derivatives
-    std::cout << " -- CONTACTFDMORTARD -----------------------------------" << std::endl;
-    dmatrix_->Complete();
-    if( dmatrix_->NormOne() )
-      interface_[i]->FDCheckMortarDDeriv();
-    dmatrix_->UnComplete();
-    std::cout << " -- CONTACTFDMORTARD -----------------------------------" << std::endl;
-#endif // #ifdef CONTACTFDMORTARD
-
-#ifdef CONTACTFDMORTARM
-    // FD check of Mortar matrix M derivatives
-    std::cout << " -- CONTACTFDMORTARM -----------------------------------" << std::endl;
-    mmatrix_->Complete(*gmdofrowmap_, *gsdofrowmap_);
-    if( mmatrix_->NormOne() )
-        interface_[i]->FDCheckMortarMDeriv();
-    mmatrix_->UnComplete();
-    std::cout << " -- CONTACTFDMORTARM -----------------------------------" << std::endl;
-#endif // #ifdef CONTACTFDMORTARM
+    if (!wearprimvar_)
+      interface_[i]->AssembleWear(*wearvector_);
   } // end interface loop
 
   // *********************************************************************************
@@ -456,7 +449,7 @@ void CONTACT::WearLagrangeStrategy::AssembleMortar()
           int gid = interface_[i]->SlaveRowNodes()->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-          FriNode* cnode = dynamic_cast<FriNode*>(node);
+          CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
           if(cnode->FriData().Slip()==true)
             cnode->CoData().Getg()+=cnode->WearData().WeightedWear();
@@ -464,12 +457,6 @@ void CONTACT::WearLagrangeStrategy::AssembleMortar()
       }
     }
   }
-
-  //********************************************
-  // FillComplete() global Mortar matrices     *
-  //********************************************
-  dmatrix_->Complete();
-  mmatrix_->Complete(*gmdofrowmap_,*gsdofrowmap_);
 
   //********************************************
   // FillComplete() matrix for both-sided wear *
@@ -482,33 +469,12 @@ void CONTACT::WearLagrangeStrategy::AssembleMortar()
 /*----------------------------------------------------------------------*
  | initialize global contact variables for next Newton step  farah 09/13|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::Initialize()
+void WEAR::WearLagrangeStrategy::Initialize()
 {
-  // (re)setup global matrices containing fc derivatives
-  // must use FE_MATRIX type here, as we will do non-local assembly!
-  lindmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
-  linmmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  CONTACT::CoLagrangeStrategy::Initialize();
 
   // (re)setup global tangent matrix
   tmatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactivet_,3));
-
-  // (re)setup global matrix containing gap derivatives
-  smatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*gactiven_,3));
-
-  // inactive rhs for the saddle point problem
-  Teuchos::RCP<Epetra_Map> gidofs = LINALG::SplitMap(*gsdofrowmap_, *gactivedofs_);
-  inactiverhs_ = LINALG::CreateVector(*gidofs, true);
-
-  // (re)setup of global friction
-  // here the calculation of gstickt is necessary
-  Teuchos::RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_,*gslipt_);
-  linstickLM_  = Teuchos::rcp(new LINALG::SparseMatrix(*gstickt,3));
-  linstickDIS_ = Teuchos::rcp(new LINALG::SparseMatrix(*gstickt,3));
-  linstickRHS_ = LINALG::CreateVector(*gstickt,true);
-
-  linslipLM_   = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
-  linslipDIS_  = Teuchos::rcp(new LINALG::SparseMatrix(*gslipt_,3));
-  linslipRHS_  = LINALG::CreateVector(*gslipt_,true);
 
   if (wearimpl_ and !wearprimvar_)
   {
@@ -588,7 +554,7 @@ void CONTACT::WearLagrangeStrategy::Initialize()
  | condense wear and lm. for impl/expl wear algorithm        farah 10/13|
  | Internal state variable approach!                                    |
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::CondenseWearImplExpl(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+void WEAR::WearLagrangeStrategy::CondenseWearImplExpl(Teuchos::RCP<LINALG::SparseOperator>& kteff,
                                                    Teuchos::RCP<Epetra_Vector>& feff,
                                                    Teuchos::RCP<Epetra_Vector>& gact)
 {
@@ -1524,7 +1490,7 @@ void CONTACT::WearLagrangeStrategy::CondenseWearImplExpl(Teuchos::RCP<LINALG::Sp
 /*----------------------------------------------------------------------*
  | condense wear and lm. for discr. wear algorithm           farah 10/13|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::CondenseWearDiscr(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+void WEAR::WearLagrangeStrategy::CondenseWearDiscr(Teuchos::RCP<LINALG::SparseOperator>& kteff,
                                                    Teuchos::RCP<Epetra_Vector>& feff,
                                                    Teuchos::RCP<Epetra_Vector>& gact)
 {
@@ -2534,7 +2500,7 @@ void CONTACT::WearLagrangeStrategy::CondenseWearDiscr(Teuchos::RCP<LINALG::Spars
 /*----------------------------------------------------------------------*
  | evaluate frictional wear contact (public)                 farah 10/13|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+void WEAR::WearLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOperator>& kteff,
                                                      Teuchos::RCP<Epetra_Vector>& feff)
 {
   // check if contact contributions are present,
@@ -2956,7 +2922,7 @@ void CONTACT::WearLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::Sparse
 /*----------------------------------------------------------------------*
  | preparation for self-contact and assemble lind/m          farah 10/13|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::PrepareSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator>& kteff,
+void WEAR::WearLagrangeStrategy::PrepareSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator>& kteff,
                                                    Teuchos::RCP<Epetra_Vector>& feff)
 {
   //----------------------------------------------------------------------
@@ -3058,7 +3024,7 @@ void CONTACT::WearLagrangeStrategy::PrepareSaddlePointSystem(Teuchos::RCP<LINALG
 /*----------------------------------------------------------------------*
  | Setup 2x2 saddle point system for contact problems      wiesner 11/14|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
+void WEAR::WearLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd,
                                         Teuchos::RCP<Epetra_Vector> fd,
                                         Teuchos::RCP<Epetra_Vector> sold,
                                         Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
@@ -3831,7 +3797,7 @@ void CONTACT::WearLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::
 /*------------------------------------------------------------------------*
  | Update internal member variables after saddle point solve wiesner 11/14|
  *------------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::UpdateDisplacementsAndLMincrements(Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol)
+void WEAR::WearLagrangeStrategy::UpdateDisplacementsAndLMincrements(Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol)
 {
   //**********************************************************************
   // extract results for displacement and LM increments
@@ -3913,7 +3879,7 @@ void CONTACT::WearLagrangeStrategy::UpdateDisplacementsAndLMincrements(Teuchos::
 /*-----------------------------------------------------------------------*
 |  Output de-weighted wear vector                             farah 09/14|
 *-----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::OutputWear()
+void WEAR::WearLagrangeStrategy::OutputWear()
 {
   //***********************************************
   //                 primvar wear
@@ -3956,7 +3922,7 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        FriNode* frinode = dynamic_cast<FriNode*>(node);
+        CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // be aware of problem dimension
         int dim = Dim();
@@ -4091,7 +4057,7 @@ void CONTACT::WearLagrangeStrategy::OutputWear()
 /*----------------------------------------------------------------------*
  |  write restart information for contact                     popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,
+void WEAR::WearLagrangeStrategy::DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,
                                                  Teuchos::RCP<Epetra_Vector>& sliptoggle,
                                                  Teuchos::RCP<Epetra_Vector>& weightedwear,
                                                  Teuchos::RCP<Epetra_Vector>& realwear,
@@ -4122,7 +4088,7 @@ void CONTACT::WearLagrangeStrategy::DoWriteRestart(Teuchos::RCP<Epetra_Vector>& 
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
       if (!node) dserror("ERROR: Cannot find node with gid %", gid);
-      CoNode* cnode = dynamic_cast<CoNode*>(node);
+      CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
       int dof = (activetoggle->Map()).LID(gid);
 
       // set value active / inactive in toggle vector
@@ -4150,7 +4116,7 @@ void CONTACT::WearLagrangeStrategy::DoWriteRestart(Teuchos::RCP<Epetra_Vector>& 
 /*----------------------------------------------------------------------*
  | Recovery method                                           farah 10/13|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
+void WEAR::WearLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
@@ -4391,7 +4357,7 @@ void CONTACT::WearLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 /*----------------------------------------------------------------------*
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<Epetra_Vector> dis)
+void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<Epetra_Vector> dis)
 {
   // get out of here if parallel redistribution is switched off
   // or if this is a single processor (serial) job
@@ -4555,7 +4521,7 @@ void CONTACT::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<Epetra_Vect
 /*----------------------------------------------------------------------*
  |  read restart information for contact                      popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& reader,
+void WEAR::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& reader,
                                                 Teuchos::RCP<Epetra_Vector> dis)
 {
   // check whether this is a restart with contact of a previously
@@ -4631,7 +4597,7 @@ void CONTACT::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& read
       {
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %", gid);
-        CoNode* cnode = dynamic_cast<CoNode*>(node);
+        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
 
         // set value active / inactive in cnode
         cnode->Active()=true;
@@ -4734,272 +4700,12 @@ void CONTACT::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& read
 }
 
 /*----------------------------------------------------------------------*
- |  Update active set and check for convergence (public)      popp 06/08|
+ |  Update active set and check for convergence (public)     farah 02/16|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
+void WEAR::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
 {
-  // FIXME: Here we do not consider zig-zagging yet!
-
-  // get out gof here if not in the semi-smooth Newton case
-  // (but before doing this, check if there are invalid active nodes)
-  bool semismooth = DRT::INPUT::IntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
-  if (!semismooth)
-  {
-    // loop over all interfaces
-    for (int i=0; i<(int)interface_.size(); ++i)
-    {
-      // loop over all slave nodes on the current interface
-      for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
-      {
-        int gid = interface_[i]->SlaveRowNodes()->GID(j);
-        DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        CoNode* cnode = dynamic_cast<CoNode*>(node);
-
-        // The nested active set strategy cannot deal with the case of
-        // active nodes that have no integration segments/cells attached,
-        // as this leads to zero rows in D and M and thus to singular systems.
-        // However, this case might possibly happen when slave nodes slide
-        // over the edge of a master body within one fixed active set step.
-        // (Remark: Semi-smooth Newton has no problems in this case, as it
-        // updates the active set after EACH Newton step, see below, and thus
-        // would always set the corresponding nodes to INACTIVE.)
-        if (cnode->Active() && !cnode->HasSegment())
-          dserror("ERROR: Active node %i without any segment/cell attached",cnode->Id());
-      }
-    }
-    return;
-  }
-
-  // get input parameter ftype
-  INPAR::CONTACT::FrictionType ftype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(Params(),"FRICTION");
-
-  // read weighting factor cn
-  // (this is necessary in semi-smooth Newton case, as the search for the
-  // active set is now part of the Newton iteration. Thus, we do not know
-  // the active / inactive status in advance and we can have a state in
-  // which both the condition znormal = 0 and wgap = 0 are violated. Here
-  // we have to weigh the two violations via cn!
-  double cn = Params().get<double>("SEMI_SMOOTH_CN");
-
-  // assume that active set has converged and check for opposite
-  activesetconv_=true;
-
-  // loop over all interfaces
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    //if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n interfaces!");
-
-    // loop over all slave nodes on the current interface
-    for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
-    {
-      int gid = interface_[i]->SlaveRowNodes()->GID(j);
-      DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-
-      CoNode* cnode = dynamic_cast<CoNode*>(node);
-
-      // get scaling factor
-      double scalefac=1.;
-      if (DRT::INPUT::IntegralValue<int>(scontact_,"LM_NODAL_SCALE")==true &&
-                cnode->MoData().GetScale() != 0.)
-        scalefac = cnode->MoData().GetScale();
-
-      // compute weighted gap
-      double wgap = (*g_)[g_->Map().LID(gid)]/scalefac;
-
-      // compute normal part of Lagrange multiplier
-      double nz = 0.0;
-      double nzold = 0.0;
-      for (int k=0;k<3;++k)
-      {
-        nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
-        nzold += cnode->MoData().n()[k] * cnode->MoData().lmold()[k];
-      }
-
-      // friction
-      double ct = Params().get<double>("SEMI_SMOOTH_CT");
-      std::vector<double> tz (Dim()-1,0);
-      std::vector<double> tjump (Dim()-1,0);
-      double euclidean = 0.0;
-
-      if (friction_)
-      {
-        // static cast
-        FriNode* frinode = dynamic_cast<FriNode*>(cnode);
-
-        // compute tangential parts and of Lagrange multiplier and incremental jumps
-        for (int i=0;i<Dim();++i)
-        {
-          tz[0] += frinode->CoData().txi()[i]*frinode->MoData().lm()[i];
-          if(Dim()==3) tz[1] += frinode->CoData().teta()[i]*frinode->MoData().lm()[i];
-
-          if (DRT::INPUT::IntegralValue<int>(Params(),"GP_SLIP_INCR")==false)
-          {
-            tjump[0] += frinode->CoData().txi()[i]*frinode->FriData().jump()[i];
-            if(Dim()==3) tjump[1] += frinode->CoData().teta()[i]*frinode->FriData().jump()[i];
-          }
-        }
-
-        if (DRT::INPUT::IntegralValue<int>(Params(),"GP_SLIP_INCR")==true)
-        {
-          tjump[0] = frinode->FriData().jump_var()[0];
-          if(Dim()==3) tjump[1] = frinode->FriData().jump_var()[1];
-        }
-
-        // evaluate euclidean norm |tz+ct.tjump|
-        std::vector<double> sum (Dim()-1,0);
-        sum[0] = tz[0]+ct*tjump[0];
-        if (Dim()==3) sum[1] = tz[1]+ct*tjump[1];
-        if (Dim()==2) euclidean = abs(sum[0]);
-        if (Dim()==3) euclidean = sqrt(sum[0]*sum[0]+sum[1]*sum[1]);
-       }
-
-
-      // check nodes of inactive set *************************************
-      if (cnode->Active()==false)
-      {
-        // check for fulfilment of contact condition
-        //if (abs(nz) > 1e-8)
-        //  std::cout << "ERROR: UpdateActiveSet: Exact inactive node condition violated "
-        //       <<  "for node ID: " << cnode->Id() << std::endl;
-
-        // check for penetration and/or tensile contact forces
-        if (nz - cn*wgap > 0) // no averaging of Lagrange multipliers
-        //if ((0.5*nz+0.5*nzold) - cn*wgap > 0) // averaging of Lagrange multipliers
-        {
-          cnode->Active() = true;
-          activesetconv_ = false;
-
-          // friction
-          if (friction_)
-          {
-            // nodes coming into contact
-            dynamic_cast<FriNode*>(cnode)->FriData().Slip() = true;
-          }
-        }
-      }
-
-      // check nodes of active set ***************************************
-      else
-      {
-        // check for fulfilment of contact condition
-        //if (abs(wgap) > 1e-8)
-        //  std::cout << "ERROR: UpdateActiveSet: Exact active node condition violated "
-        //       << "for node ID: " << cnode->Id() << std::endl;
-
-        // check for tensile contact forces and/or penetration
-        if (nz - cn*wgap <= 0) // no averaging of Lagrange multipliers
-        //if ((0.5*nz+0.5*nzold) - cn*wgap <= 0) // averaging of Lagrange multipliers
-        {
-          cnode->Active() = false;
-          activesetconv_ = false;
-
-          // friction
-          if (friction_) dynamic_cast<FriNode*>(cnode)->FriData().Slip() = false;
-        }
-
-        // only do something for friction
-        else
-        {
-          // friction tresca
-          if (ftype == INPAR::CONTACT::friction_tresca)
-          {
-            FriNode* frinode = dynamic_cast<FriNode*>(cnode);
-
-            // CAREFUL: friction bound is now interface-local (popp 08/2012)
-            double frbound = interface_[i]->IParams().get<double>("FRBOUND");
-
-            if(frinode->FriData().Slip() == false)
-            {
-              // check (euclidean)-frbound <= 0
-              if(euclidean-frbound <= 0) {}
-                // do nothing (stick was correct)
-              else
-              {
-                 frinode->FriData().Slip() = true;
-                 activesetconv_ = false;
-              }
-            }
-            else
-            {
-              // check (euclidean)-frbound > 0
-              if(euclidean-frbound > 0) {}
-               // do nothing (slip was correct)
-              else
-              {
-                frinode->FriData().Slip() = false;
-                activesetconv_ = false;
-              }
-            }
-          } // if (fytpe=="tresca")
-
-          // friction coulomb
-          if (ftype == INPAR::CONTACT::friction_coulomb)
-          {
-            FriNode* frinode = dynamic_cast<FriNode*>(cnode);
-
-            // CAREFUL: friction coefficient is now interface-local (popp 08/2012)
-            double frcoeff = interface_[i]->IParams().get<double>("FRCOEFF");
-
-            if(frinode->FriData().Slip() == false)
-            {
-              // check (euclidean)-frbound <= 0
-              if(euclidean-frcoeff*(nz-cn*wgap) <= 1e-10) {}
-              // do nothing (stick was correct)
-              else
-              {
-                 frinode->FriData().Slip() = true;
-                 activesetconv_ = false;
-              }
-            }
-            else
-            {
-              // check (euclidean)-frbound > 0
-              if(euclidean-frcoeff*(nz-cn*wgap) > -1e-10) {}
-              // do nothing (slip was correct)
-              else
-              {
-                frinode->FriData().Slip() = false;
-                activesetconv_ = false;
-              }
-            }
-          } // if (ftype == INPAR::CONTACT::friction_coulomb)
-        } // if (nz - cn*wgap <= 0)
-      } // if (cnode->Active()==false)
-    } // loop over all slave nodes
-  } // loop over all interfaces
-
-  // broadcast convergence status among processors
-  int convcheck = 0;
-  int localcheck = activesetconv_;
-  Comm().SumAll(&localcheck,&convcheck,1);
-
-  // active set is only converged, if converged on all procs
-  // if not, increase no. of active set steps too
-  if (convcheck!=Comm().NumProc())
-  {
-    activesetconv_ = false;
-    activesetsteps_ += 1;
-  }
-
-  // also update special flag for semi-smooth Newton convergence
-  activesetssconv_ = activesetconv_;
-
-  // update zig-zagging history (shift by one)
-  if (zigzagtwo_!=Teuchos::null) zigzagthree_  = Teuchos::rcp(new Epetra_Map(*zigzagtwo_));
-  if (zigzagone_!=Teuchos::null) zigzagtwo_    = Teuchos::rcp(new Epetra_Map(*zigzagone_));
-  if (gactivenodes_!=Teuchos::null) zigzagone_ = Teuchos::rcp(new Epetra_Map(*gactivenodes_));
-
-  // (re)setup active global Epetra_Maps
-  gactivenodes_ = Teuchos::null;
-  gactivedofs_  = Teuchos::null;
-  gactiven_     = Teuchos::null;
-  gactivet_     = Teuchos::null;
-  gslipnodes_   = Teuchos::null;
-  gslipdofs_    = Teuchos::null;
-  gslipt_       = Teuchos::null;
+  // call base routine
+  CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth();
 
   // for both-sided wear
   gminvolvednodes_  = Teuchos::null;
@@ -5017,12 +4723,6 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
   // (these maps are NOT allowed to be overlapping !!!)
   for (int i=0;i<(int)interface_.size();++i)
   {
-    interface_[i]->BuildActiveSet();
-    gactivenodes_ = LINALG::MergeMap(gactivenodes_,interface_[i]->ActiveNodes(),false);
-    gactivedofs_ = LINALG::MergeMap(gactivedofs_,interface_[i]->ActiveDofs(),false);
-    gactiven_ = LINALG::MergeMap(gactiven_,interface_[i]->ActiveNDofs(),false);
-    gactivet_ = LINALG::MergeMap(gactivet_,interface_[i]->ActiveTDofs(),false);
-
     // for both-sided wear
     if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearSide>(scontact_,"WEAR_SIDE")
         == INPAR::WEAR::wear_both and
@@ -5030,13 +4730,6 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
     {
       gminvolvednodes_ = LINALG::MergeMap(gminvolvednodes_, interface_[i]->InvolvedNodes(), false);
       gminvolveddofs_  = LINALG::MergeMap(gminvolveddofs_, interface_[i]->InvolvedDofs(), false);
-    }
-
-    if(friction_)
-    {
-      gslipnodes_ = LINALG::MergeMap(gslipnodes_,interface_[i]->SlipNodes(),false);
-      gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
-      gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
     }
 
     if(wearprimvar_ and wearbothpv_)
@@ -5058,94 +4751,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
 
     if(wearbothpv_)
       gwminact_ = LINALG::SplitMap(*gmdofnrowmap_,*gmslipn_);
-
   }
-
-  //****************************************
-
-  // CHECK FOR ZIG-ZAGGING / JAMMING OF THE ACTIVE SET
-  // *********************************************************************
-  // A problem of the active set strategy which sometimes arises is known
-  // from optimization literature as jamming or zig-zagging. This means
-  // that within a load/time-step the semi-smooth Newton algorithm can get
-  // stuck between more than one intermediate solution due to the fact that
-  // the active set decision is a discrete decision. Hence the semi-smooth
-  // Newton algorithm fails to converge. The non-uniquenesss results either
-  // from highly curved contact surfaces or from the FE discretization.
-  // *********************************************************************
-  // To overcome this problem we monitor the development of the active
-  // set scheme in our contact algorithms. We can identify zig-zagging by
-  // comparing the current active set with the active set of the second-
-  // and third-last iteration. If an identity occurs, we interfere and
-  // let the semi-smooth Newton algorithm restart from another active set
-  // (e.g. intermediate set between the two problematic candidates), thus
-  // leading to some kind of damped / modified semi-smooth Newton method.
-  // This very simple approach helps stabilizing the contact algorithm!
-  // *********************************************************************
-  int zigzagging = 0;
-  // FIXGIT: For friction zig-zagging is not eliminated
-  if (ftype != INPAR::CONTACT::friction_tresca && ftype != INPAR::CONTACT::friction_coulomb)
-  {
-    // frictionless contact
-    if (ActiveSetSteps()>2)
-    {
-      if (zigzagtwo_!=Teuchos::null)
-      {
-        if (zigzagtwo_->SameAs(*gactivenodes_))
-        {
-          // detect zig-zagging
-          zigzagging = 1;
-        }
-      }
-
-      if (zigzagthree_!=Teuchos::null)
-      {
-        if (zigzagthree_->SameAs(*gactivenodes_))
-        {
-          // detect zig-zagging
-          zigzagging = 2;
-        }
-      }
-    }
-  } // if (ftype != INPAR::CONTACT::friction_tresca && ftype != INPAR::CONTACT::friction_coulomb)
-
-  // output to screen
-  if (Comm().MyPID()==0)
-  {
-    if (zigzagging==1)
-    {
-      std::cout << "DETECTED 1-2 ZIG-ZAGGING OF ACTIVE SET................." << std::endl;
-    }
-    else if (zigzagging==2)
-    {
-      std::cout << "DETECTED 1-2-3 ZIG-ZAGGING OF ACTIVE SET................" << std::endl;
-    }
-    else
-    {
-      // do nothing, no zig-zagging
-    }
-  }
-
-  // reset zig-zagging history
-  if (activesetconv_==true)
-  {
-    zigzagone_  = Teuchos::null;
-    zigzagtwo_  = Teuchos::null;
-    zigzagthree_= Teuchos::null;
-  }
-
-  // output of active set status to screen
-  if (Comm().MyPID()==0 && activesetconv_==false)
-    std::cout << "ACTIVE CONTACT SET HAS CHANGED... CHANGE No. " << ActiveSetSteps()-1 << std::endl;
-
-  // update flag for global contact status
-  if (gactivenodes_->NumGlobalElements())
-  {
-    isincontact_=true;
-    wasincontact_=true;
-  }
-  else
-    isincontact_=false;
 
   return;
 }
@@ -5153,7 +4759,7 @@ void CONTACT::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
 /*----------------------------------------------------------------------*
  |  Update Wear rhs for seq. staggered partitioned sol.      farah 11/13|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::UpdateWearDiscretIterate(bool store)
+void WEAR::WearLagrangeStrategy::UpdateWearDiscretIterate(bool store)
 {
   if (store)
   {
@@ -5171,7 +4777,7 @@ void CONTACT::WearLagrangeStrategy::UpdateWearDiscretIterate(bool store)
         int gid = interface_[i]->SlaveColNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
         if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-        FriNode* cnode = dynamic_cast<FriNode*>(node);
+        CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // reset
         cnode->WearData().wcurr()[0] = 0.0;
@@ -5188,7 +4794,7 @@ void CONTACT::WearLagrangeStrategy::UpdateWearDiscretIterate(bool store)
           int gid = masternodes->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
           if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-          FriNode* cnode = dynamic_cast<FriNode*>(node);
+          CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
           // reset
           cnode->WearData().wcurr()[0] = 0.0;
@@ -5205,10 +4811,251 @@ void CONTACT::WearLagrangeStrategy::UpdateWearDiscretIterate(bool store)
 /*----------------------------------------------------------------------*
  |  Update Wear for different time scales                    farah 12/13|
  *----------------------------------------------------------------------*/
-void CONTACT::WearLagrangeStrategy::UpdateWearDiscretAccumulation()
+void WEAR::WearLagrangeStrategy::UpdateWearDiscretAccumulation()
 {
   if(weartimescales_)
     StoreNodalQuantities(MORTAR::StrategyBase::wupdateT);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Update and output contact at end of time step            farah 02/16|
+ *----------------------------------------------------------------------*/
+void WEAR::WearLagrangeStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
+{
+  // call base routine
+  CONTACT::CoAbstractStrategy::Update(dis);
+
+  // wear: store history values
+  if (weightedwear_)
+    StoreNodalQuantities(MORTAR::StrategyBase::weightedwear);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Store wear data                                          farah 02/16|
+ *----------------------------------------------------------------------*/
+void WEAR::WearLagrangeStrategy::StoreNodalQuantities(
+    MORTAR::StrategyBase::QuantityType type)
+{
+  // loop over all interfaces
+  for (int i = 0; i < (int) interface_.size(); ++i)
+  {
+    // get global quantity to be stored in nodes
+    Teuchos::RCP<Epetra_Vector> vectorglobal = Teuchos::null;
+
+    // start type switch
+    switch (type)
+    {
+    case MORTAR::StrategyBase::wmupdate:
+    case MORTAR::StrategyBase::wmold:
+    {
+      vectorglobal = WearVarM();
+      break;
+    }
+    case MORTAR::StrategyBase::wupdate:
+    case MORTAR::StrategyBase::wold:
+    case MORTAR::StrategyBase::wupdateT:
+    {
+      vectorglobal = WearVar();
+      break;
+    }
+    case MORTAR::StrategyBase::weightedwear:
+    {
+      break;
+    }
+    default:
+      CONTACT::CoAbstractStrategy::StoreNodalQuantities(type);
+      break;
+    } // switch
+
+    // slave dof and node map of the interface
+    // columnmap for current or updated LM
+    // rowmap for remaining cases
+    Teuchos::RCP<Epetra_Map> sdofmap, snodemap;
+    if (type == MORTAR::StrategyBase::wupdate   or
+        type == MORTAR::StrategyBase::wold      or
+        type == MORTAR::StrategyBase::wupdateT)
+    {
+      sdofmap  = interface_[i]->SlaveColDofs();
+      snodemap = interface_[i]->SlaveColNodes();
+    }
+    else
+    {
+      sdofmap  = interface_[i]->SlaveRowDofs();
+      snodemap = interface_[i]->SlaveRowNodes();
+    }
+
+    // master side wear
+    Teuchos::RCP<Epetra_Vector> vectorinterface = Teuchos::null;
+    if (type == MORTAR::StrategyBase::wmupdate or
+        type == MORTAR::StrategyBase::wmold)
+    {
+      // export global quantity to current interface slave dof map (column or row)
+      const Teuchos::RCP<Epetra_Map> masterdofs =
+          LINALG::AllreduceEMap(*(interface_[i]->MasterRowDofs()));
+      vectorinterface = Teuchos::rcp(new Epetra_Vector(*masterdofs));
+
+      if (vectorglobal != Teuchos::null) // necessary for case "activeold" and wear
+        LINALG::Export(*vectorglobal, *vectorinterface);
+    }
+    else
+    {
+      // export global quantity to current interface slave dof map (column or row)
+      vectorinterface = Teuchos::rcp(new Epetra_Vector(*sdofmap));
+
+      if (vectorglobal != Teuchos::null) // necessary for case "activeold" and wear
+        LINALG::Export(*vectorglobal, *vectorinterface);
+    }
+
+    // master specific
+    const Teuchos::RCP<Epetra_Map> masternodes =
+        LINALG::AllreduceEMap(*(interface_[i]->MasterRowNodes()));
+    if (type == MORTAR::StrategyBase::wmupdate)
+    {
+      for (int j = 0; j < masternodes->NumMyElements(); ++j)
+      {
+        int gid = masternodes->GID(j);
+        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        if (!node)
+          dserror("ERROR: Cannot find node with gid %", gid);
+        CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
+
+        // store updated wcurr into node
+        fnode->WearData().wcurr()[0] =
+            (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
+      }
+    }
+    else if (type == MORTAR::StrategyBase::wmold)
+    {
+      for (int j = 0; j < masternodes->NumMyElements(); ++j)
+      {
+        int gid = masternodes->GID(j);
+        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        if (!node)
+          dserror("ERROR: Cannot find node with gid %", gid);
+        CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
+
+        // store updated wcurr into node
+        fnode->WearData().wold()[0] +=
+            (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
+      }
+    }
+    else
+    {
+      // loop over all slave nodes (column or row) on the current interface
+      for (int j = 0; j < snodemap->NumMyElements(); ++j)
+      {
+        int gid = snodemap->GID(j);
+        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        if (!node)
+          dserror("ERROR: Cannot find node with gid %", gid);
+        CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
+
+        // be aware of problem dimension
+        const int dim = Dim();
+        const int numdof = cnode->NumDof();
+        if (dim != numdof)
+          dserror("ERROR: Inconsisteny Dim <-> NumDof");
+
+        // find indices for DOFs of current node in Epetra_Vector
+        // and extract this node's quantity from vectorinterface
+        std::vector<int> locindex(dim);
+
+        for (int dof = 0; dof < dim; ++dof)
+        {
+          locindex[dof] = (vectorinterface->Map()).LID(cnode->Dofs()[dof]);
+          if (locindex[dof] < 0)
+            dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
+
+          switch (type)
+          {
+          case MORTAR::StrategyBase::wupdate:
+          {
+            // throw a dserror if node is Active and DBC
+            if (cnode->IsDbc() && cnode->Active())
+              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",cnode->Id());
+
+            // explicity set global Lag. Mult. to zero for D.B.C nodes
+            if (cnode->IsDbc())
+              (*vectorinterface)[locindex[dof]] = 0.0;
+
+            // store updated wcurr into node
+            CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(cnode);
+            fnode->WearData().wcurr()[0] =
+                (*vectorinterface)[locindex[(int) (dof / Dim())]];
+            dof = dof + Dim() - 1;
+            break;
+          }
+          case MORTAR::StrategyBase::wupdateT:
+          {
+            // throw a dserror if node is Active and DBC
+            if (cnode->IsDbc() && cnode->Active())
+              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",cnode->Id());
+
+            // explicity set global Lag. Mult. to zero for D.B.C nodes
+            if (cnode->IsDbc())
+              (*vectorinterface)[locindex[dof]] = 0.0;
+
+            // store updated wcurr into node
+            CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(cnode);
+            fnode->WearData().waccu()[0] +=
+                (*vectorinterface)[locindex[(int) (dof / Dim())]];
+            dof = dof + Dim() - 1;
+            break;
+          }
+          case MORTAR::StrategyBase::wold:
+          {
+            // throw a dserror if node is Active and DBC
+            if (cnode->IsDbc() && cnode->Active())
+              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!",cnode->Id());
+
+            // explicity set global Lag. Mult. to zero for D.B.C nodes
+            if (cnode->IsDbc())
+              (*vectorinterface)[locindex[dof]] = 0.0;
+
+            // store updated wcurr into node
+            CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(cnode);
+            fnode->WearData().wold()[0] +=
+                (*vectorinterface)[vectorinterface->Map().LID(fnode->Dofs()[0])];
+            dof = dof + Dim() - 1;
+
+            break;
+          }
+          // weighted wear
+          case MORTAR::StrategyBase::weightedwear:
+          {
+            if (!friction_)
+              dserror("ERROR: This should not be called for contact without friction");
+
+            // update wear only once per node
+            if (dof == 0)
+            {
+              CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(cnode);
+              const double wearcoeffs = Params().get<double>("WEARCOEFF", 0.0);
+              const double wearcoeffm = Params().get<double>("WEARCOEFF_MASTER", 0.0);
+              const double wearcoeff  = wearcoeffs + wearcoeffm;
+
+              // amount of wear
+              if (Params().get<int>("PROBTYPE") != INPAR::CONTACT::structalewear)
+                frinode->WearData().WeightedWear() += wearcoeff * frinode->WearData().DeltaWeightedWear();
+
+              // wear for each ale step
+              else
+                frinode->WearData().WeightedWear()  = wearcoeff * frinode->WearData().DeltaWeightedWear();
+            }
+            break;
+          }
+          default:
+            break;
+          } // switch
+        }
+      } // end slave loop
+    }
+  }
 
   return;
 }

@@ -305,13 +305,13 @@ aletype_(aleproj)
   // useful displacement vectors
   if (structcoupmaster_)
   {
-    structdofrowmap_ = coupsf.MasterDofRowMap();
-    fluiddofrowmap_ = coupsf.SlaveDofRowMap();
+    structdofrowmap_ = coupsf.MasterDofMap();
+    fluiddofrowmap_ = coupsf.SlaveDofMap();
   }
   else
   {
-    structdofrowmap_ = coupsf.SlaveDofRowMap();
-    fluiddofrowmap_ = coupsf.MasterDofRowMap();
+    structdofrowmap_ = coupsf.SlaveDofMap();
+    fluiddofrowmap_ = coupsf.MasterDofMap();
   }
 
   Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(*structdofrowmap_,*fluiddofrowmap_, true);
@@ -460,16 +460,18 @@ std::vector<double> FSI::UTILS::SlideAleUtils::Centerdisp
   Teuchos::RCP<Epetra_Vector> idisptotal = structure.ExtractInterfaceDispnp();
   Teuchos::RCP<Epetra_Vector> idispstep = structure.ExtractInterfaceDispnp();
 
-  idispstep->Update(-1.0, *idispn, 1.0);
+  int err = idispstep->Update(-1.0, *idispn, 1.0);
+  if(err!=0)
+    dserror("ERROR");
 
   const int dim = DRT::Problem::Instance()->NDim();
   // get structure and fluid discretizations  and set stated for element evaluation
-
-  const Teuchos::RCP<Epetra_Vector> idisptotalcol = LINALG::CreateVector(*structdis->DofColMap(),false);
+  const Teuchos::RCP<Epetra_Vector> idisptotalcol = LINALG::CreateVector(*structdis->DofColMap(),true);
   LINALG::Export(*idisptotal,*idisptotalcol);
-  structdis->SetState("displacementtotal",idisptotalcol);
-  const Teuchos::RCP<Epetra_Vector> idispstepcol = LINALG::CreateVector(*structdis->DofColMap(),false);
+  const Teuchos::RCP<Epetra_Vector> idispstepcol = LINALG::CreateVector(*structdis->DofColMap(),true);
   LINALG::Export(*idispstep,*idispstepcol);
+
+  structdis->SetState("displacementtotal",idisptotalcol);
   structdis->SetState("displacementincr",idispstepcol);
 
   //define stuff needed by the elements
@@ -490,7 +492,6 @@ std::vector<double> FSI::UTILS::SlideAleUtils::Centerdisp
   std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = istructdispeles_.begin(); elemiter != istructdispeles_.end(); ++elemiter)
   {
-
     Teuchos::RCP<DRT::Element> iele = elemiter->second;
     std::vector<int> lm;
     std::vector<int> lmowner;

@@ -205,8 +205,8 @@ namespace FSI
 
       std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > > structreduelements_;
 
-      Teuchos::RCP<Epetra_Map> structdofrowmap_;
-      Teuchos::RCP<Epetra_Map> fluiddofrowmap_;
+      Teuchos::RCP<const Epetra_Map> structdofrowmap_;
+      Teuchos::RCP<const Epetra_Map> fluiddofrowmap_;
       Teuchos::RCP<Epetra_Map> structfullnodemap_;
       Teuchos::RCP<Epetra_Map> structfullelemap_;
       Teuchos::RCP<Epetra_Map> fluidfullnodemap_;

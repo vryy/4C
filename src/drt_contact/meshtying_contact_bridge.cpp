@@ -141,15 +141,15 @@ MORTAR::StrategyBase& CONTACT::MeshtyingContactBridge::GetStrategy()
 /*----------------------------------------------------------------------*
  |  PostprocessTractions                                     farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::PostprocessTractions(Teuchos::RCP<IO::DiscretizationWriter>& output)
+void CONTACT::MeshtyingContactBridge::PostprocessQuantities(Teuchos::RCP<IO::DiscretizationWriter>& output)
 {
   // contact
   if (HaveContact())
-    ContactManager()->PostprocessTractions(*output);
+    ContactManager()->PostprocessQuantities(*output);
 
   // meshtying
   if (HaveMeshtying())
-    MtManager()->PostprocessTractions(*output);
+    MtManager()->PostprocessQuantities(*output);
 
   return;
 }

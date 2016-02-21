@@ -283,16 +283,6 @@ public:
   /*!
    \brief Checks roughly whether the two elements are near (3D)
 
-   This methods computes the distance of all master nodes to the
-   slave element (auxiliary plane). If they are not close, then
-   coupling is stopped for the pair.
-
-   */
-  virtual bool RoughCheckNodes();
-
-  /*!
-   \brief Checks roughly whether the two elements are near (3D)
-
    This methods checks the orientation of slave and master element.
    Projection and overlap detection only make sense if the scalar
    product of the two center normals is negative (i.e. if the two
@@ -300,6 +290,59 @@ public:
 
    */
   virtual bool RoughCheckOrient();
+
+  /*!
+   \brief Integrate the integration cells (3D)
+
+   This method creates an integrator object for the cell triangles,
+   then projects the Gauss points back onto slave and master elements
+   (1st case, aux. plane) or only back onto the master element (2nd case)
+   in order to evaluate the respective shape function there. Then
+   entries of the mortar matrix M and the weighted gap g are integrated
+   and assembled into the slave element nodes.
+
+   */
+  virtual bool IntegrateCells();
+
+  //@}
+
+  //! @name Visualization and Debugging methods
+
+  /*!
+   \brief Visualize integration cells with gmsh
+
+   */
+  virtual void GmshOutputCells(int lid);
+
+  //@}
+
+  //! @name Linearization methods (for mortar contact only!)
+
+  /*!
+   \brief Linearization of clip vertex coordinates (3D)
+
+   */
+  virtual bool VertexLinearization(
+      std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex,
+      std::map<int, double>& projpar, bool printderiv = false)
+  {
+    return true;
+  }
+
+  /*!
+   \brief Linearization of clip vertex coordinates (3D)
+
+   */
+  virtual bool CenterLinearization(
+      const std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex
+      ,
+      std::vector<GEN::pairedvector<int, double> >& lincenter)
+  {
+    return true;
+  }
+
+  //@}
+private:
 
   /*!
    \brief Build auxiliary plane from slave element (3D)
@@ -312,22 +355,53 @@ public:
   virtual bool AuxiliaryPlane();
 
   /*!
-   \brief Projection of slave element onto aux. plane (3D)
+   \brief Triangulation of clip polygon (3D)
 
-   This method projects the nodes of the given slave CElement
-   onto the auxiliary plane derived before.
+   In a first step, this method computes linearizations of all clip
+   polygon vertices and stores them into local maps. Then, one of the
+   two available triangulation algorithms (Delaunay, Center) is called
+   to do the actual triangulation of the convex clip polygon.
+
+   DelaunayTriangulation() is more efficient, as it always generates N-2 triangles
+   for a clip polygon with N vertices. Moreover, the triangle shape is optimized
+   according to the Delaunay criterion, which maximizes the smallest internal
+   angle. Thus, DelaunayTriangulation() is used BY DEFAULT here.
+
+   CenterTriangulation() is an old version that was based on first finding the
+   center of the clip polygon by computing the centroid / geometric center
+   (see M. Puso, A 3D mortar method for solid mechanics, IJNME, 2004).
+   The clip polygon is triangulated into integration cells all containing two
+   vertices and the center point. Thus, we always generate N triangles here
+   for a clip polygon with N vertices (except for the special case N=3).
+   Thus, CenterTriangulation() is NOT used anymore.
 
    */
-  virtual bool ProjectSlave();
+  virtual bool Triangulation(std::map<int, double>& projpar, double tol);
+  virtual bool DelaunayTriangulation(
+      std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex
+      , double tol);
+  virtual bool CenterTriangulation(
+      std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex
+      , double tol);
 
   /*!
-   \brief Projection of master element onto aux. plane (3D)
+   \brief Check / set projection status of slave nodes (3D)
 
-   This method projects the nodes of the current master CElement
-   onto the auxiliary plane derived from the slave CElement before.
+   This method checks for all slave nodes if they are part of the clip
+   polygon (equal to any vertex). If so the HasProj status is set true!
 
    */
-  virtual bool ProjectMaster();
+  virtual bool HasProjStatus();
+
+  /*!
+   \brief Compute and return area of clipping polygon (3D)
+
+   This method automatically returns the relevant(!) area of the
+   current clip polygon, depending on whether coupling is performed
+   in the auxiliary plane or in the slave parameter space.
+
+   */
+  virtual double PolygonArea();
 
   /*!
    \brief Clipping of slave and master element (3D)
@@ -397,14 +471,34 @@ public:
       double& tol);
 
   /*!
-   \brief Compute and return area of clipping polygon (3D)
+   \brief Projection of slave element onto aux. plane (3D)
 
-   This method automatically returns the relevant(!) area of the
-   current clip polygon, depending on whether coupling is performed
-   in the auxiliary plane or in the slave parameter space.
+   This method projects the nodes of the given slave CElement
+   onto the auxiliary plane derived before.
 
    */
-  virtual double PolygonArea();
+  virtual bool ProjectSlave();
+
+  /*!
+   \brief Projection of master element onto aux. plane (3D)
+
+   This method projects the nodes of the current master CElement
+   onto the auxiliary plane derived from the slave CElement before.
+
+   */
+  virtual bool ProjectMaster();
+
+  /*!
+   \brief Checks roughly whether the two elements are near (3D)
+
+   This methods computes the distance of all master nodes to the
+   slave element (auxiliary plane). If they are not close, then
+   coupling is stopped for the pair.
+
+   */
+  virtual bool RoughCheckNodes();
+
+protected:
 
   /*!
    \brief Compute and return area of slave element (3D)
@@ -415,99 +509,6 @@ public:
 
    */
   virtual double SlaveElementArea();
-
-  /*!
-   \brief Check / set projection status of slave nodes (3D)
-
-   This method checks for all slave nodes if they are part of the clip
-   polygon (equal to any vertex). If so the HasProj status is set true!
-
-   */
-  virtual bool HasProjStatus();
-
-  /*!
-   \brief Triangulation of clip polygon (3D)
-
-   In a first step, this method computes linearizations of all clip
-   polygon vertices and stores them into local maps. Then, one of the
-   two available triangulation algorithms (Delaunay, Center) is called
-   to do the actual triangulation of the convex clip polygon.
-
-   DelaunayTriangulation() is more efficient, as it always generates N-2 triangles
-   for a clip polygon with N vertices. Moreover, the triangle shape is optimized
-   according to the Delaunay criterion, which maximizes the smallest internal
-   angle. Thus, DelaunayTriangulation() is used BY DEFAULT here.
-
-   CenterTriangulation() is an old version that was based on first finding the
-   center of the clip polygon by computing the centroid / geometric center
-   (see M. Puso, A 3D mortar method for solid mechanics, IJNME, 2004).
-   The clip polygon is triangulated into integration cells all containing two
-   vertices and the center point. Thus, we always generate N triangles here
-   for a clip polygon with N vertices (except for the special case N=3).
-   Thus, CenterTriangulation() is NOT used anymore.
-
-   */
-  virtual bool Triangulation(std::map<int, double>& projpar, double tol);
-  virtual bool DelaunayTriangulation(
-      std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex
-      , double tol);
-  virtual bool CenterTriangulation(
-      std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex
-      , double tol);
-
-  /*!
-   \brief Integrate the integration cells (3D)
-
-   This method creates an integrator object for the cell triangles,
-   then projects the Gauss points back onto slave and master elements
-   (1st case, aux. plane) or only back onto the master element (2nd case)
-   in order to evaluate the respective shape function there. Then
-   entries of the mortar matrix M and the weighted gap g are integrated
-   and assembled into the slave element nodes.
-
-   */
-  virtual bool IntegrateCells();
-
-  //@}
-
-  //! @name Visualization and Debugging methods
-
-  /*!
-   \brief Visualize integration cells with gmsh
-
-   */
-  virtual void GmshOutputCells(int lid);
-
-  //@}
-
-  //! @name Linearization methods (for mortar contact only!)
-
-  /*!
-   \brief Linearization of clip vertex coordinates (3D)
-
-   */
-  virtual bool VertexLinearization(
-      std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex,
-      std::map<int, double>& projpar, bool printderiv = false)
-  {
-    return true;
-  }
-
-  /*!
-   \brief Linearization of clip vertex coordinates (3D)
-
-   */
-  virtual bool CenterLinearization(
-      const std::vector<std::vector<GEN::pairedvector<int, double> > >& linvertex
-      ,
-      std::vector<GEN::pairedvector<int, double> >& lincenter)
-  {
-    return true;
-  }
-
-  //@}
-
-protected:
 
   // don't want = operator and cctor
   Coupling3d operator =(const Coupling3d& old);
@@ -731,18 +732,6 @@ public:
   virtual bool EvaluateCoupling();
 
   /*!
-   \brief Evaluate mortar-coupling pairs
-
-   */
-  virtual void IntegrateCoupling();
-
-  /*!
-   \brief Evaluate nts-coupling pairs
-
-   */
-  virtual void EvaluateNTS();
-
-  /*!
    \brief Return the LM shape fcn type
 
    */
@@ -750,16 +739,20 @@ public:
   {
     return shapefcn_;
   }
+  //@}
+
+protected:
+  /*!
+   \brief Evaluate mortar-coupling pairs
+
+   */
+  virtual void IntegrateCoupling();
 
   /*!
    \brief Calculate consistent dual shape functions in boundary elements
 
    */
   virtual void ConsistDualShape();
-
-  //@}
-
-protected:
 
   // don't want = operator and cctor
   Coupling3dManager operator =(const Coupling3dManager& old);
@@ -815,13 +808,6 @@ public:
   }
 
   /*!
-   \brief Split MortarElements into IntElements for 3D quadratic coupling
-
-   */
-  virtual bool SplitIntElements(MORTAR::MortarElement& ele,
-      std::vector<Teuchos::RCP<MORTAR::IntElement> >& auxele);
-
-  /*!
    \brief Get coupling slave element
 
    */
@@ -866,18 +852,9 @@ public:
     return quad_;
   }
 
-  /*!
-   \brief Get communicator
+  // @
 
-   */
-  virtual const Epetra_Comm& Comm() const;
-
-  /*!
-   \brief Evaluate coupling pairs
-
-   */
-  virtual bool EvaluateCoupling();
-
+protected:
   /*!
    \brief Evaluate mortar-coupling pairs
 
@@ -885,13 +862,12 @@ public:
   virtual void IntegrateCoupling();
 
   /*!
-   \brief Evaluate nts-coupling pairs
+   \brief Split MortarElements into IntElements for 3D quadratic coupling
 
    */
-  virtual void EvaluateNTS();
-  // @
+  virtual bool SplitIntElements(MORTAR::MortarElement& ele,
+      std::vector<Teuchos::RCP<MORTAR::IntElement> >& auxele);
 
-protected:
   // don't want = operator and cctor
   Coupling3dQuadManager operator =(const Coupling3dQuadManager& old);
   Coupling3dQuadManager(const Coupling3dQuadManager& old);
