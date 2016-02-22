@@ -451,7 +451,7 @@ class MortarCellCalc : public MortarCellInterface
         ) const;
 
     //! evaluate shape functions and domain integration factor at integration point
-    const double EvalShapeFuncAndDomIntFacAtIntPoint(
+    double EvalShapeFuncAndDomIntFacAtIntPoint(
         MORTAR::MortarElement&                               slaveelement,    //!< slave-side mortar element
         MORTAR::MortarElement&                               masterelement,   //!< master-side mortar element
         MORTAR::IntCell&                                     cell,            //!< mortar integration cell

@@ -2006,7 +2006,7 @@ void SCATRA::MortarCellCalc<distypeS,distypeM>::ExtractNodeValues(
  | evaluate shape functions and domain integration factor at integration point   fang 01/16 |
  *------------------------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
-const double SCATRA::MortarCellCalc<distypeS,distypeM>::EvalShapeFuncAndDomIntFacAtIntPoint(
+double SCATRA::MortarCellCalc<distypeS,distypeM>::EvalShapeFuncAndDomIntFacAtIntPoint(
     MORTAR::MortarElement&                               slaveelement,    //!< slave-side mortar element
     MORTAR::MortarElement&                               masterelement,   //!< master-side mortar element
     MORTAR::IntCell&                                     cell,            //!< mortar integration cell
