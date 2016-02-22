@@ -369,8 +369,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     }
 
     // abbreviations for slave and master set
-    int sset = gsdofrowmap_->NumGlobalElements();
-    int mset = gmdofrowmap_->NumGlobalElements();
+    const int sset = gsdofrowmap_->NumGlobalElements();
+    const int mset = gmdofrowmap_->NumGlobalElements();
 
     // we want to split fsm into 2 groups s,m
     fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -439,10 +439,10 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     LINALG::SplitMatrix2x2(kaa,gactivedofs_,gidofs,gstdofs,gslipdofs_,kast,kasl,temp1mtx4,temp1mtx5);
 
     // abbreviations for active and inactive set, stick and slip set
-    int aset = gactivedofs_->NumGlobalElements();
-    int iset = gidofs->NumGlobalElements();
-    int stickset = gstdofs->NumGlobalElements();
-    int slipset = gslipdofs_->NumGlobalElements();
+    const int aset = gactivedofs_->NumGlobalElements();
+    const int iset = gidofs->NumGlobalElements();
+    const int stickset = gstdofs->NumGlobalElements();
+    const int slipset = gslipdofs_->NumGlobalElements();
 
     // we want to split fs into 2 groups a,i
     Teuchos::RCP<Epetra_Vector> fa = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
@@ -551,15 +551,21 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     // kin: subtract T(dhat)*kan
     Teuchos::RCP<LINALG::SparseMatrix> kinmod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs,100));
     kinmod->Add(*kin,false,1.0,1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> kinadd = LINALG::MLMultiply(*dhat,true,*kan,false,false,false,true);
-    kinmod->Add(*kinadd,false,-1.0,1.0);
+    if (aset && iset)
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> kinadd = LINALG::MLMultiply(*dhat,true,*kan,false,false,false,true);
+      kinmod->Add(*kinadd,false,-1.0,1.0);
+    }
     kinmod->Complete(kin->DomainMap(),kin->RowMap());
 
     // kim: subtract T(dhat)*kam
     Teuchos::RCP<LINALG::SparseMatrix> kimmod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs,100));
     kimmod->Add(*kim,false,1.0,1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> kimadd = LINALG::MLMultiply(*dhat,true,*kam,false,false,false,true);
-    kimmod->Add(*kimadd,false,-1.0,1.0);
+    if (aset && iset)
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> kimadd = LINALG::MLMultiply(*dhat,true,*kam,false,false,false,true);
+      kimmod->Add(*kimadd,false,-1.0,1.0);
+    }
     kimmod->Complete(kim->DomainMap(),kim->RowMap());
 
     // kii: subtract T(dhat)*kai
@@ -568,8 +574,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     {
       kiimod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs,100));
       kiimod->Add(*kii,false,1.0,1.0);
-      Teuchos::RCP<LINALG::SparseMatrix> kiiadd = LINALG::MLMultiply(*dhat,true,*kai,false,false,false,true);
-      kiimod->Add(*kiiadd,false,-1.0,1.0);
+      if (aset)
+      {
+        Teuchos::RCP<LINALG::SparseMatrix> kiiadd = LINALG::MLMultiply(*dhat,true,*kai,false,false,false,true);
+        kiimod->Add(*kiiadd,false,-1.0,1.0);
+      }
       kiimod->Complete(kii->DomainMap(),kii->RowMap());
     }
 
@@ -744,7 +753,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
 
     // fi: add T(dhat)*fa
     Teuchos::RCP<Epetra_Vector> fimod = Teuchos::rcp(new Epetra_Vector(*gidofs));
-    if (aset) dhat->Multiply(true,*fa,*fimod);
+    if (aset && iset) dhat->Multiply(true,*fa,*fimod);
     fimod->Update(1.0,*fi,-1.0);
 
     //-------------------------------------------------------- FOURTH LINE
@@ -1423,8 +1432,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     }
 
     // abbreviations for slave  and master set
-    int sset = gsdofrowmap_->NumGlobalElements();
-    int mset = gmdofrowmap_->NumGlobalElements();
+    const int sset = gsdofrowmap_->NumGlobalElements();
+    const int mset = gmdofrowmap_->NumGlobalElements();
 
     // we want to split fsm into 2 groups s,m
     fs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -1479,8 +1488,8 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     LINALG::SplitMatrix2x2(kms,gmdofrowmap_,tempmap,gactivedofs_,gidofs,kma,kmi,tempmtx1,tempmtx2);
 
     // abbreviations for active and inactive set
-    int aset = gactivedofs_->NumGlobalElements();
-    int iset = gidofs->NumGlobalElements();
+    const int aset = gactivedofs_->NumGlobalElements();
+    const int iset = gidofs->NumGlobalElements();
 
     // we want to split fsmod into 2 groups a,i
     Teuchos::RCP<Epetra_Vector> fa = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
@@ -1579,15 +1588,21 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     // kin: subtract T(dhat)*kan --
     Teuchos::RCP<LINALG::SparseMatrix> kinmod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs,100));
     kinmod->Add(*kin,false,1.0,1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> kinadd = LINALG::MLMultiply(*dhat,true,*kan,false,false,false,true);
-    kinmod->Add(*kinadd,false,-1.0,1.0);
+    if (aset && iset)
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> kinadd = LINALG::MLMultiply(*dhat,true,*kan,false,false,false,true);
+      kinmod->Add(*kinadd,false,-1.0,1.0);
+    }
     kinmod->Complete(kin->DomainMap(),kin->RowMap());
 
     // kim: subtract T(dhat)*kam
     Teuchos::RCP<LINALG::SparseMatrix> kimmod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs,100));
     kimmod->Add(*kim,false,1.0,1.0);
-    Teuchos::RCP<LINALG::SparseMatrix> kimadd = LINALG::MLMultiply(*dhat,true,*kam,false,false,false,true);
-    kimmod->Add(*kimadd,false,-1.0,1.0);
+    if (aset && iset)
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> kimadd = LINALG::MLMultiply(*dhat,true,*kam,false,false,false,true);
+      kimmod->Add(*kimadd,false,-1.0,1.0);
+    }
     kimmod->Complete(kim->DomainMap(),kim->RowMap());
 
     // kii: subtract T(dhat)*kai
@@ -1596,8 +1611,11 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     {
       kiimod = Teuchos::rcp(new LINALG::SparseMatrix(*gidofs,100));
       kiimod->Add(*kii,false,1.0,1.0);
-      Teuchos::RCP<LINALG::SparseMatrix> kiiadd = LINALG::MLMultiply(*dhat,true,*kai,false,false,false,true);
-      kiimod->Add(*kiiadd,false,-1.0,1.0);
+      if(aset)
+      {
+        Teuchos::RCP<LINALG::SparseMatrix> kiiadd = LINALG::MLMultiply(*dhat,true,*kai,false,false,false,true);
+        kiimod->Add(*kiiadd,false,-1.0,1.0);
+      }
       kiimod->Complete(kii->DomainMap(),kii->RowMap());
     }
 
@@ -1720,7 +1738,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
 
     // fi: add T(dhat)*fa
     Teuchos::RCP<Epetra_Vector> fimod = Teuchos::rcp(new Epetra_Vector(*gidofs));
-    if (aset) dhat->Multiply(true,*fa,*fimod);
+    if (iset && aset) dhat->Multiply(true,*fa,*fimod);
     fimod->Update(1.0,*fi,-1.0);
 
     //---------------------------------------------------------- FOURTH LINE
