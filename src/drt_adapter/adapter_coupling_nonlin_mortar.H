@@ -187,6 +187,12 @@ namespace ADAPTER
         Teuchos::ParameterList&             input,
         int numcoupleddof);
 
+    /*!
+    \brief transform back to initial parallel distribution
+
+    */
+    virtual void MatrixRowColTransform();
+
     /// check setup call
     const bool& IsSetup() const { return issetup_; };
 
@@ -205,6 +211,8 @@ namespace ADAPTER
 
     Teuchos::RCP<Epetra_Map>           slavenoderowmap_; ///< map of slave row nodes (after parallel redist.)
     Teuchos::RCP<Epetra_Map>           pslavenoderowmap_;///< map of slave row nodes (before parallel redist.)
+    Teuchos::RCP<Epetra_Map>           smdofrowmap_;     ///< map of sm merged row dofs (after parallel redist.)
+    Teuchos::RCP<Epetra_Map>           psmdofrowmap_;    ///< map of sm merged row dofs (before parallel redist.)
 
     Teuchos::RCP<LINALG::SparseMatrix> DLin_;            ///< linearization of D matrix
     Teuchos::RCP<LINALG::SparseMatrix> MLin_;            ///< linearization of M matrix

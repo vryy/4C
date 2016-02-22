@@ -19,6 +19,8 @@ Maintainer: Philipp Farah
 #include "../drt_contact/contact_element.H"
 #include "../drt_contact/contact_integrator.H"
 
+#include "../drt_mortar/mortar_utils.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -561,10 +563,14 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
   // finalize the contact interface construction
   interface->FillComplete();
 
+  // create binary search tree
+  interface->CreateSearchTree();
+
   // store old row maps (before parallel redistribution)
   pslavedofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
   pmasterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
   pslavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
+  psmdofrowmap_     = LINALG::MergeMap(pslavedofrowmap_,pmasterdofrowmap_,false);
 
   // print parallel distribution
   interface->PrintParallelDistribution(1);
@@ -596,6 +602,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
   slavedofrowmap_  = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowDofs()));
   masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->MasterRowDofs()));
   slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->SlaveRowNodes()));
+  smdofrowmap_     = LINALG::MergeMap(slavedofrowmap_,masterdofrowmap_,false);
 
   // store interface
   interface_ = interface;
@@ -804,8 +811,7 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   CheckSetup();
 
   // init matrices
-  D_->Zero();
-  DLin_->Zero();
+  InitMatrices();
 
   // set lagrange multiplier and displacement state
   interface_->SetState(statename,vec);
@@ -833,6 +839,28 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   interface_->AssembleD(*D_);
   interface_->AssembleLinD(*DLin_,false);
 
+  // complete matrices
+  D_->Complete();
+  DLin_->Complete();
+
+  // check for parallel redistribution
+  bool parredist = false;
+  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST")
+      != INPAR::MORTAR::parredist_none)
+    parredist = true;
+
+  // only for parallel redistribution case
+  if (parredist)
+  {
+    if(pslavedofrowmap_  == Teuchos::null)
+      dserror("ERROR: Dof maps based on initial parallel distribution are wrong!");
+
+    // transform everything back to old distribution
+    D_     = MORTAR::MatrixRowColTransform(D_,    pslavedofrowmap_, pslavedofrowmap_);
+    DLin_  = MORTAR::MatrixRowColTransform(DLin_, pslavedofrowmap_, pslavedofrowmap_);
+  }
+
   return;
 }
 
@@ -847,11 +875,8 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
   // safety check
   CheckSetup();
 
-  // clear matrices
-  D_->Zero();
-  DLin_->Zero();
-  M_->Zero();
-  MLin_->Zero();
+  // init matrices with redistributed maps
+  InitMatrices();
 
   // set current lm and displ state
   interface_->SetState(statename,vec);
@@ -868,7 +893,65 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
   interface_->AssembleDM(*D_,*M_);
   interface_->AssembleLinDM(*DLin_,*MLin_);
 
+  // complete
+  D_->Complete();
+  M_->Complete(*masterdofrowmap_,*slavedofrowmap_);
+  DLin_->Complete(*smdofrowmap_,*slavedofrowmap_);
+  MLin_->Complete(*smdofrowmap_,*masterdofrowmap_);
+
+  // Dinv * M
+  CreateP();
+
+  // transform to initial parallel distrib.
+  MatrixRowColTransform();
+
   // bye bye
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  transform all matrices and vectors                       farah 02/16|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::MatrixRowColTransform()
+{
+  // call base function
+  CouplingMortar::MatrixRowColTransform();
+
+  // safety check
+  CheckSetup();
+
+  // check for parallel redistribution
+  bool parredist = false;
+  const Teuchos::ParameterList& input = DRT::Problem::Instance()->MortarCouplingParams();
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST")
+      != INPAR::MORTAR::parredist_none)
+    parredist = true;
+
+  // transform everything back to old distribution
+  if (parredist)
+  {
+    if(pslavedofrowmap_  == Teuchos::null or
+       pmasterdofrowmap_ == Teuchos::null or
+       pslavenoderowmap_ == Teuchos::null or
+       psmdofrowmap_     == Teuchos::null)
+      dserror("ERROR: Dof maps based on initial parallel distribution are wrong!");
+
+    if (DLin_ != Teuchos::null)
+      DLin_  = MORTAR::MatrixRowColTransform(D_,pslavedofrowmap_,psmdofrowmap_);
+
+    if (MLin_ != Teuchos::null)
+      MLin_  = MORTAR::MatrixRowColTransform(M_,pmasterdofrowmap_,psmdofrowmap_);
+
+    // transform gap vector
+    if(gap_ != Teuchos::null)
+    {
+      Teuchos::RCP<Epetra_Vector> pgap = LINALG::CreateVector(*pslavenoderowmap_,true);
+      LINALG::Export(*gap_,*pgap);
+      gap_ = pgap;
+    }
+  } // end parredist
+
   return;
 }
 
@@ -884,13 +967,35 @@ void ADAPTER::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
   // safety check
   CheckSetup();
 
-  IntegrateLinDM(statename, vec, veclm);
+  // init matrices with redistributed maps
+  InitMatrices();
 
-  CreateP();
+  // set current lm and displ state
+  interface_->SetState(statename,vec);
+  interface_->SetState("lm",veclm);
 
-  gap_->PutScalar(0.0);
+  // init internal data
+  interface_->Initialize();
+  interface_->SetElementAreas();
+
+  // call interface evaluate (d,m,gap...)
+  interface_->Evaluate();
+
+  // assemble mortar matrices and lin.
+  interface_->AssembleDM(*D_,*M_);
+  interface_->AssembleLinDM(*DLin_,*MLin_);
   interface_->AssembleG(*gap_);
 
+  // complete
+  D_->Complete();
+  M_->Complete(*masterdofrowmap_,*slavedofrowmap_);
+  DLin_->Complete(*smdofrowmap_,*slavedofrowmap_);
+  MLin_->Complete(*smdofrowmap_,*masterdofrowmap_);
+
+  // Dinv * M
+  CreateP();
+
+  // transform to initial parallel distrib.
   MatrixRowColTransform();
 
   return;

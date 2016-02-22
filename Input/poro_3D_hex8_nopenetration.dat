@@ -65,7 +65,7 @@ RESULTSEVRY                     1
 LINEAR_SOLVER                   1
 CONTIPARTINT                    yes
 -------------------------------------------------------------MORTAR COUPLING
-PARALLEL_REDIST                 no
+PARALLEL_REDIST                 static
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
