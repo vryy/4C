@@ -100,7 +100,7 @@ namespace ELASTIC
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_couplogneohooke; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_couplogmixneohooke; }
 
     /// add shear modulus equivalent
     virtual void AddShearMod(
