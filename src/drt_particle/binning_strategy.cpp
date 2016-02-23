@@ -50,6 +50,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   particledis_(Teuchos::null),
   cutoff_radius_(cutoff_radius),
   XAABB_(XAABB),
+  particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
   myrank_(comm.MyPID())
 {
   if( XAABB_(0,0) >= XAABB_(0,1) or XAABB_(1,0) >= XAABB_(1,1) or XAABB_(2,0) >= XAABB_(2,1))
@@ -72,6 +73,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   const Epetra_Comm& comm
   ) :
   particledis_(Teuchos::null),
+  particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
   myrank_(comm.MyPID())
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
@@ -125,6 +127,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   ) :
   particledis_(Teuchos::null),
   cutoff_radius_(0.0),
+  particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
   myrank_(dis[0]->Comm().MyPID())
 {
   WeightedRepartitioning(dis,stdelecolmap,stdnodecolmap);
@@ -868,6 +871,30 @@ void BINSTRATEGY::BinningStrategy::CreateBins(Teuchos::RCP<DRT::Discretization> 
       bin_per_dir_[dim] = std::max(1, (int)((XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_));
 
     bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0))/bin_per_dir_[dim];
+  }
+
+  if(particle_dim_ != INPAR::PARTICLE::particle_3D)
+  {
+    int entry = -1;
+    switch (particle_dim_)
+    {
+    case INPAR::PARTICLE::particle_2Dx:
+      entry = 0;
+      break;
+    case INPAR::PARTICLE::particle_2Dy:
+      entry = 1;
+      break;
+    case INPAR::PARTICLE::particle_2Dz:
+      entry = 2;
+      break;
+    default:
+      dserror("number of particle dimensions not yet implemented");
+      break;
+    }
+
+    // one bin in pseudo direction is enough
+    bin_per_dir_[entry] = 1;
+    bin_size_[entry] = (XAABB_(entry,1)-XAABB_(entry,0))/bin_per_dir_[entry];
   }
 
 //  if(myrank_ == 0)

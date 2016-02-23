@@ -22,6 +22,7 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 09/12 |
  *----------------------------------------------------------------------*/
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_inpar/inpar_cavitation.H"
 
 #include "Epetra_MpiComm.h"
 #include <Teuchos_RCP.hpp>
@@ -219,6 +220,8 @@ namespace BINSTRATEGY
     double bin_size_[3];    ///< size of each bin in Cartesian coordinates
 
     int bin_per_dir_[3];    ///< number of bins per direction
+
+    INPAR::PARTICLE::ParticleDim particle_dim_;   ///< dimension of problem
 
     //! @name miscellaneous stuff
     //@{

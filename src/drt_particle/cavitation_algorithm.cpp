@@ -75,11 +75,12 @@ CAVITATION::Algorithm::Algorithm(
   pg0_(Teuchos::null),
   count_(0)
 {
+  const Teuchos::ParameterList& fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
   // setup fluid time integrator
   fluiddis_ = DRT::Problem::Instance()->GetDis("fluid");
   // ask base algorithm for the fluid time integrator
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
-      Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(),DRT::Problem::Instance()->FluidDynamicParams(),"fluid",false));
+      Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(),fluidparams,"fluid",false));
   fluid_ = fluid->FluidField();
 
   // validate input file
@@ -91,12 +92,12 @@ CAVITATION::Algorithm::Algorithm(
     break;
   case INPAR::PARTICLE::particle_2Dz:
     if(myrank_ == 0)
-      std::cout << "\nPseudo 2D cavitation problem chosen (z-direction ignored)" << std::endl << std::endl;
+      IO::cout << "\nPseudo 2D cavitation problem chosen (z-direction ignored)" << IO::endl << IO::endl;
     break;
   case INPAR::PARTICLE::particle_2Dx:
   case INPAR::PARTICLE::particle_2Dy:
   default:
-    dserror("only 2D in x and y direction available");
+    dserror("only 2D in x-y direction available");
     break;
   }
 
@@ -120,16 +121,24 @@ CAVITATION::Algorithm::Algorithm(
     }
 
     // check whether an initial pressure field is set due to the gravity load
-    const int startfuncno = DRT::Problem::Instance()->FluidDynamicParams().get<int>("STARTFUNCNO");
+    const int startfuncno = fluidparams.get<int>("STARTFUNCNO");
     if(startfuncno < 0)
       dserror("pressure field needs to be initialized due to gravity load");
   }
 
   if(!simplebubbleforce_)
   {
-    // check for solver for L2 projection of velocity gradient
-    if(DRT::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER") < 0)
-      dserror("no solver for L2 projection of velocity gradient specified: check VELGRAD_PROJ_SOLVER");
+    INPAR::FLUID::GradientReconstructionMethod recomethod =
+        DRT::INPUT::IntegralValue<INPAR::FLUID::GradientReconstructionMethod>(fluidparams,"VELGRAD_PROJ_METHOD");
+    if(recomethod == INPAR::FLUID::gradreco_none)
+      dserror("Please specify which gradient-reconstruction method you want to use: check VELGRAD_PROJ_METHOD");
+
+    if(recomethod == INPAR::FLUID::gradreco_l2)
+    {
+      // check for solver for L2 projection of velocity gradient
+      if(fluidparams.get<int>("VELGRAD_PROJ_SOLVER") < 0)
+        dserror("no solver for L2 projection of velocity gradient specified: check VELGRAD_PROJ_SOLVER");
+    }
   }
 
   if(coupalgo_ == INPAR::CAVITATION::TwoWayFull)
@@ -535,6 +544,15 @@ void CAVITATION::Algorithm::Integrate()
     ComputeRadius();
   }
 
+  // enforce 2D bubble movement for pseudo-2D problem
+  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
+  {
+    Teuchos::RCP<Epetra_Vector> vel = particles_->WriteAccessVelnp();
+    const int numnodes = vel->MyLength()/dim_;
+    for(int i=0; i<numnodes; ++i)
+      (*vel)[i*dim_+2] = 0.0;
+  }
+
   // apply forces and solve particle time step
   PARTICLE::Algorithm::Integrate();
 
@@ -594,11 +612,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   Teuchos::ParameterList p;
   if(!simplebubbleforce_)
   {
-    INPAR::FLUID::GradientReconstructionMethod recomethod =
-        DRT::INPUT::IntegralValue<INPAR::FLUID::GradientReconstructionMethod>(DRT::Problem::Instance()->FluidDynamicParams(),"VELGRAD_PROJ_METHOD");
-    if(recomethod == INPAR::FLUID::gradreco_none)
-      dserror("Please specify which gradient-reconstruction method you want to use");
-    // project velocity gradient of fluid to nodal level via L2 projection and store it in a ParameterList
+    // project velocity gradient of fluid to nodal level and store it in a ParameterList
     FLD::UTILS::ProjectGradientAndSetParam(fluiddis_,p,vel,"velgradient",false);
   }
 
@@ -1064,6 +1078,15 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   //--------------------------------------------------------------------
   // 5th step: apply forces to bubbles and fluid field
   //--------------------------------------------------------------------
+
+  // enforce 2D bubble forces for pseudo-2D problem
+  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
+  {
+    const int numnodes = bubbleforces->MyLength()/dim_;
+    for(int i=0; i<numnodes; ++i)
+      (*bubbleforces)[i*dim_+2] = 0.0;
+  }
+
   particles_->SetForceInterface(bubbleforces);
 
   if(coupalgo_ == INPAR::CAVITATION::OneWay || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
@@ -1073,6 +1096,14 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   int err = fluidforces->GlobalAssemble(Add, false);
   if (err<0)
     dserror("global assemble into fluidforces failed");
+
+  // enforce 2D fluid forces for pseudo-2D problem
+  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
+  {
+    const int numnodes = fluidforces->MyLength()/4;
+    for(int i=0; i<numnodes; ++i)
+      (*(*fluidforces)(0))[i*(dim_+1)+2] = 0.0;
+  }
 
   switch(coupalgo_)
   {
@@ -1573,6 +1604,10 @@ void CAVITATION::Algorithm::ParticleInflow()
   // initialize bubble id with largest bubble id in use + 1 (on each proc)
   int maxbubbleid = particledis_->NodeRowMap()->MaxAllGID()+1;
 
+  int numrelevantdim = dim_;
+  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
+    numrelevantdim = 2;
+
   // start filling particles
   int inflowcounter = 0;
   for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
@@ -1590,7 +1625,7 @@ void CAVITATION::Algorithm::ParticleInflow()
       // add a random offset to initial inflow position
       if(amplitude)
       {
-        for(int d=0; d<dim_; ++d)
+        for(int d=0; d<numrelevantdim; ++d)
         {
           const double randomwert = DRT::Problem::Instance()->Random()->Uni();
           inflow_position[d] += randomwert * amplitude * (*particleiter)->inflow_radius_;

@@ -57,8 +57,7 @@ PARTICLE::Algorithm::Algorithm(
   particlewalldis_(Teuchos::null),
   moving_walls_(false),
   havepbc_(false),
-  pbcbounds_(0),
-  particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION"))
+  pbcbounds_(0)
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
   // safety check
@@ -75,6 +74,13 @@ PARTICLE::Algorithm::Algorithm(
     double value = 0.0;
     if(accstream >> value)
       gravity_acc_(dim) = value;
+  }
+
+  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
+  {
+    gravity_acc_(2) = 0.0;
+    if(myrank_ == 0)
+      IO::cout << "gravity in z-direction ignored as this is a pseudo-2D problem" << IO::endl;
   }
 
   // initial setup of particle discretization
