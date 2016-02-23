@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-  \file post_drt_ensight_thermo_heatflux.cpp
+  \file post_thermo_heatflux.cpp
 
   \brief postprocessing of thermal heatfluxes
 
@@ -89,7 +89,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     filter_(filter)
   {}
 
-  const int Numdf()
+  int Numdf()
   {
     int numdf = -1;
     if (filter_.GetWriter().GetField()->problem()->num_dim() == 3) numdf = 3;
@@ -212,7 +212,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     filter_(filter)
   {}
 
-  const int Numdf()
+  int Numdf()
   {
     int numdf = -1;
     if (filter_.GetWriter().GetField()->problem()->num_dim() == 3) numdf = 3;
