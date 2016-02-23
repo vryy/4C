@@ -259,6 +259,9 @@ void PARTICLE::TimInt::SetInitialFields()
 
       if(lid != -1)
       {
+        // provide random number generator with local ID of current particle as deterministic seed to ensure reproducibility of simulation
+        DRT::Problem::Instance()->Random()->SetRandSeed(lid);
+
         // initialize random number generator with current particle radius as mean and input parameter value as standard deviation
         DRT::Problem::Instance()->Random()->SetMeanVariance((*radius_)[lid],DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
 
@@ -273,6 +276,9 @@ void PARTICLE::TimInt::SetInitialFields()
 
         // set particle radius to random value
         (*radius_)[lid] = random_radius;
+
+        // recompute particle mass
+        (*mass_)[lid] = density_*4./3.*M_PI*random_radius*random_radius*random_radius;
       }
     }
   }
