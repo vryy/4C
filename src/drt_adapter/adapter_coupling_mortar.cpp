@@ -1217,7 +1217,7 @@ void ADAPTER::CouplingMortar::Evaluate(
   const Epetra_BlockMap stdmap = idispsl->Map();
   idispsl->ReplaceMap(*slavedofrowmap_);
 
-  Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(*pmasterdofrowmap_,*pslavedofrowmap_, true);
+  Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(*pmasterdofrowmap_,*pslavedofrowmap_, false);
   Teuchos::RCP<Epetra_Import> msimpo = Teuchos::rcp(new Epetra_Import(*dofrowmap,*pmasterdofrowmap_));
   Teuchos::RCP<Epetra_Import> slimpo = Teuchos::rcp(new Epetra_Import(*dofrowmap,*pslavedofrowmap_));
 
@@ -1502,7 +1502,7 @@ void ADAPTER::CouplingMortar::MasterToSlave(
     Teuchos::RCP<Epetra_MultiVector> sv) const
 {
 #ifdef DEBUG
-  if (not mv->Map().PointSameAs(DinvM_->ColMap()))
+  if (not mv->Map().PointSameAs(P_->ColMap()))
     dserror("master dof map vector expected");
   if (not sv->Map().PointSameAs(D_->ColMap()))
     dserror("slave dof map vector expected");
@@ -1533,7 +1533,7 @@ void ADAPTER::CouplingMortar::SlaveToMaster(
     Teuchos::RCP<Epetra_MultiVector> mv) const
 {
 #ifdef DEBUG
-  if (not mv->Map().PointSameAs(DinvM_->ColMap()))
+  if (not mv->Map().PointSameAs(P_->ColMap()))
     dserror("master dof map vector expected");
   if (not sv->Map().PointSameAs(D_->ColMap()))
     dserror("slave dof map vector expected");
