@@ -735,6 +735,44 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(volnurbslsdirichlet);
 
   /*--------------------------------------------------------------------*/
+  // Point coupling (e.g. joints - couple X out of Y nodal DoFs)
+
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > couplingintsepveccomponents;
+  std::vector<Teuchos::RCP<IntVectorConditionComponent> > couplingintveccomponents;
+  std::vector<Teuchos::RCP<ConditionComponent> > couplingcomponents;
+  std::vector<Teuchos::RCP<SeparatorConditionComponent> > couplingrealsepveccomponents;
+  std::vector<Teuchos::RCP<RealVectorConditionComponent> > couplingrealveccomponents;
+
+  couplingintsepveccomponents.push_back(
+      Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  couplingintveccomponents.push_back(
+      Teuchos::rcp(new IntVectorConditionComponent("onoff", 1)));
+
+  couplingcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
+  couplingcomponents.push_back(
+      Teuchos::rcp(
+        new IntRealBundle(
+            "couplingbund",
+            Teuchos::rcp(new IntConditionComponent("numdof")),
+            couplingintsepveccomponents,
+            couplingintveccomponents,
+            couplingrealsepveccomponents,
+            couplingrealveccomponents)));
+
+  Teuchos::RCP<ConditionDefinition> pointcoupling =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT COUPLING CONDITIONS",
+                                         "PointCoupling",
+                                         "Point Coupling",
+                                         DRT::Condition::PointCoupling,
+                                          false,
+                                         DRT::Condition::Point));
+
+  for (unsigned i=0; i<couplingcomponents.size(); ++i)
+    pointcoupling->AddComponent(couplingcomponents[i]);
+
+  condlist.push_back(pointcoupling);
+
+  /*--------------------------------------------------------------------*/
   // Initial fields
 
   std::vector<Teuchos::RCP<ConditionComponent> > initfieldscomponents;

@@ -31,6 +31,7 @@ int POTENTIAL::PotentialDofSet::AssignDegreesOfFreedom(const DRT::Discretization
 
   // first, we call the standard AssignDegreesOfFreedom from the base class
   int count = DRT::DofSet::AssignDegreesOfFreedom(dis,dspos,start);
+  if (pccdofhandling_) dserror("ERROR: Point coupling cinditions not yet implemented for PotentialDofSet");
 
   TransferDegreesOfFreedom(*sourcedis_, dis, start);
 

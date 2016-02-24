@@ -39,7 +39,7 @@ Maintainer: Martin Kronbichler
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
 DRT::DofSet::DofSet()
-  : DRT::DofSetBase(), filled_(false), dspos_( 0 )
+  : DRT::DofSetBase(), filled_(false), dspos_( 0 ), pccdofhandling_ (false)
 {
   return;
 }
@@ -207,6 +207,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   int maxnodenumdf = 0;
   int maxelementnumdf = 0;
   std::map<int,std::vector<int> > nodedofset;
+  std::map<int,std::vector<int> > nodeduplicatedofset;
   std::map<int,std::vector<int> > elementdofset;
   std::map<int,std::vector<int> > facedofset;
 
@@ -443,6 +444,12 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 #endif /* BW_OPT */
   {
 
+    // get DoF coupling conditions
+    std::vector<DRT::Condition*> couplingconditions(0);
+    dis.GetCondition("PointCoupling", couplingconditions);
+    if ((int)couplingconditions.size()>0)
+      pccdofhandling_=true;
+
     // do the nodes first
     Epetra_IntVector numdfrownodes(*dis.NodeRowMap());
     Epetra_IntVector idxrownodes(*dis.NodeRowMap());
@@ -451,7 +458,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     for (int i=0; i<numrownodes; ++i)
     {
       DRT::Node* actnode = dis.lRowNode(i);
-     numdfrownodes[i] = NumDofPerNode(*actnode);
+      numdfrownodes[i] = NumDofPerNode(*actnode);
     }
 
     int minnodegid = dis.NodeRowMap()->MinAllGID();
@@ -462,15 +469,104 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     {
       DRT::Node* actnode = dis.lRowNode(i);
       const int gid = actnode->Id();
-      int numdf = numdfrownodes[i];
-      int dof = count + ( gid-minnodegid )*maxnodenumdf;
-      idxrownodes[i] = dof;
-      std::vector<int> & dofs = nodedofset[gid];
-      dofs.reserve( numdf );
-      for ( int j=0; j<numdf; ++j )
+
+      // **********************************************************************
+      // **********************************************************************
+      // check for DoF coupling conditions                         popp 02/2016
+      // **********************************************************************
+      // **********************************************************************
+      int relevantcondid = -1;
+      for (int k=0; k<(int)couplingconditions.size();++k)
       {
-        dofs.push_back( dof+j );
+        if (couplingconditions[k]->ContainsNode(gid))
+        {
+          if (relevantcondid != -1)
+            dserror("ERROR: Two coupling conditions on one node");
+          relevantcondid = k;
+        }
       }
+
+      // check for node coupling condition and slave/master status
+      bool specialtreatment = false;
+      if (relevantcondid>=0)
+      {
+        const std::vector<int>* nodeids = couplingconditions[relevantcondid]->Nodes();
+        if (!nodeids) dserror("ERROR: Condition does not have Node Ids");
+
+        // do nothing for first (master) node in coupling condition
+        // do something for second, third, ... (slave) node
+        if ((*nodeids)[0]!=gid)
+        {
+          // critical case
+          specialtreatment = true;
+
+          // check which dofs are to be coupled
+          int numdofcond = couplingconditions[relevantcondid]->GetInt("numdof");
+          if (numdofcond != numdfrownodes[i])
+            dserror("ERROR: Number of DoFs in coupling condition does not match node");
+
+          // check number of coupled DoFs
+          int numdepdof = 0;
+          const std::vector<int>* onoffcond = couplingconditions[relevantcondid]->Get<std::vector<int>>("onoff");
+          for (int n=0;n<(int)(onoffcond->size());++n)
+          {
+            if ((*onoffcond)[n]==1)
+              numdepdof++;
+          }
+          if (numdepdof==numdfrownodes[i])
+            dserror("ERROR: All DoFs coupled at junction --> no junction needeed, just merge nodes!");
+
+          // get master node of this condition
+          int mgid = (*nodeids)[0];
+          std::vector<int> & mdofs = nodedofset[mgid];
+          if ((int)(mdofs.size())==0) dserror ("ERROR: Master node has not yet been initialized with DoFs");
+
+          // special treatment
+          int numdf = numdfrownodes[i];
+          int dof = count + ( gid-minnodegid )*maxnodenumdf;
+          idxrownodes[i] = dof;
+          std::vector<int> & dofs = nodedofset[gid];
+          std::vector<int> & duplicatedofs = nodeduplicatedofset[gid];
+          dofs.reserve( numdf );
+          duplicatedofs.reserve( numdf );
+          for ( int j=0; j<numdf; ++j )
+          {
+            // push back master node DoF ID if coupled
+            if ((*onoffcond)[j]==1)
+            {
+              dofs.push_back( mdofs[j] );
+              duplicatedofs.push_back( 1 );
+            }
+            // push back new DoF ID if not coupled
+            else
+            {
+              dofs.push_back( dof+j );
+              duplicatedofs.push_back( 0 );
+            }
+          }
+        }
+      }
+
+      // standard treatment for non-coupling nodes and master coupling nodes
+      if (!specialtreatment)
+      {
+        int numdf = numdfrownodes[i];
+        int dof = count + ( gid-minnodegid )*maxnodenumdf;
+        idxrownodes[i] = dof;
+        std::vector<int> & dofs = nodedofset[gid];
+        std::vector<int> & duplicatedofs = nodeduplicatedofset[gid];
+        dofs.reserve( numdf );
+        duplicatedofs.reserve( numdf );
+        for ( int j=0; j<numdf; ++j )
+        {
+          dofs.push_back( dof+j );
+          duplicatedofs.push_back( 0 );
+        }
+      }
+      // **********************************************************************
+      // **********************************************************************
+      // **********************************************************************
+      // **********************************************************************
     }
 
     Epetra_Import nodeimporter( numdfcolnodes_->Map(), numdfrownodes.Map() );
@@ -542,7 +638,6 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       count = idxrowfaces.MaxValue() + maxfacenumdf;
     }
 
-
     //////////////////////////////////////////////////////////////////
 
     // Now do it again for the elements
@@ -594,12 +689,21 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   localrowdofs.reserve( numrownodes*maxnodenumdf + numrowelements*maxelementnumdf );
   localcoldofs.reserve( numrownodes*maxnodenumdf + numrowelements*maxelementnumdf );
 
+  std::vector<int> allnodelocalcoldofs;
+  allnodelocalcoldofs.reserve( numrownodes*maxnodenumdf );
+
   for ( std::map<int,std::vector<int> >::iterator i=nodedofset.begin();
         i!=nodedofset.end();
         ++i )
   {
     std::vector<int> & dofs = i->second;
-    std::copy( dofs.begin(), dofs.end(), std::back_inserter( localrowdofs ) );
+    std::vector<int> & duplicatedofs = nodeduplicatedofset[i->first];
+    std::vector<int> cleandofs;
+    for (unsigned j=0; j<dofs.size(); ++j)
+    {
+      if (duplicatedofs[j]==0) cleandofs.push_back(dofs[j]);
+    }
+    std::copy( cleandofs.begin(), cleandofs.end(), std::back_inserter( localrowdofs ) );
     //printf("Proc %d nodal gid %d ndofs %d\n",proc,i->first,(int)dofs.size());
     //for (unsigned j=0; j<dofs.size(); ++j) printf(" %d ",dofs[j]);
     //printf("\n");
@@ -627,6 +731,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
   Exporter nodeexporter( *dis.NodeRowMap(), *dis.NodeColMap(), dis.Comm() );
   nodeexporter.Export( nodedofset );
+  nodeexporter.Export( nodeduplicatedofset );
 
   Exporter elementexporter( *dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm() );
   elementexporter.Export( elementdofset );
@@ -642,7 +747,14 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
         ++i )
   {
     std::vector<int> & dofs = i->second;
-    std::copy( dofs.begin(), dofs.end(), std::back_inserter( localcoldofs ) );
+    std::vector<int> & duplicatedofs = nodeduplicatedofset[i->first];
+    std::vector<int> cleandofs;
+    for (unsigned j=0; j<dofs.size(); ++j)
+    {
+      if (duplicatedofs[j]==0) cleandofs.push_back(dofs[j]);
+    }
+    std::copy( cleandofs.begin(), cleandofs.end(), std::back_inserter( localcoldofs ) );
+    std::copy( dofs.begin(), dofs.end(), std::back_inserter( allnodelocalcoldofs ) );
   }
   for ( std::map<int,std::vector<int> >::iterator i=facedofset.begin();
         i!=facedofset.end();
@@ -675,11 +787,36 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   if (!dofrowmap_->UniqueGIDs()) dserror("Dof row map is not unique");
   dofcolmap_ = Teuchos::rcp(new Epetra_Map(-1,localcoldofs.size(),&localcoldofs[0],0,dis.Comm()));
 
+  // **********************************************************************
+  // **********************************************************************
+  // build map of all (non-unique) column DoFs
+  dofscolnodes_ = Teuchos::rcp(new Epetra_Map(-1,allnodelocalcoldofs.size(),&allnodelocalcoldofs[0],0,dis.Comm()));
+
+  // build shift vector
+  shiftcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
+  int numcolnodes = dis.NumMyColNodes();
+  for (int i=0; i<numcolnodes; ++i)
+  {
+    if (i==0)
+    {
+      (*shiftcolnodes_)[i] = 0;
+    }
+    else
+    {
+      DRT::Node* lastnode = dis.lColNode(i-1);
+      (*shiftcolnodes_)[i] = (*shiftcolnodes_)[i-1] + NumDofPerNode(*lastnode);
+    }
+  }
+  // **********************************************************************
+  // **********************************************************************
+
+  // degrees of freedom have now been assigned
   filled_ = true;
 
   // tell all proxies
   NotifyAssigned();
 
+  // return maximum dof number of this dofset (+1)
   count = dofrowmap_->MaxAllGID() + 1;
   return count;
 }

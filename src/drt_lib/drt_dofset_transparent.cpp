@@ -28,6 +28,7 @@ int DRT::TransparentDofSet::AssignDegreesOfFreedom(const DRT::Discretization& di
 
   // first, we call the standard AssignDegreesOfFreedom from the base class
   int count = DRT::DofSet::AssignDegreesOfFreedom(dis,dspos,start);
+  if (pccdofhandling_) dserror("ERROR: Point coupling cinditions not yet implemented for TransparentDofSet");
 
   if(!parallel_)
   {
@@ -452,12 +453,12 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
   for(int rr=0;rr<size;++rr)
   {
     int         gid    = -1;
-    std::vector<int> mydofs ;
+    std::vector<int> mydofs;
     int numdofs = 0;
 
     DRT::ParObject::ExtractfromPack(position,rblock,gid);
     DRT::ParObject::ExtractfromPack(position,rblock,numdofs);
-    
+
     for(int ll=0;ll<numdofs;++ll)
     {
       int thisdof=0;
@@ -536,7 +537,7 @@ void DRT::TransparentDofSet::ReceiveBlock(
 void DRT::TransparentDofSet::SendBlock(
   int             numproc ,
   int             myrank  ,
-  std::vector<char>  & sblock  ,
+  std::vector<char>  & sblock,
   DRT::Exporter & exporter,
   MPI_Request   & request )
 {

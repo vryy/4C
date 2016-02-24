@@ -99,6 +99,7 @@ public:
     LineInitfield,
     SurfaceInitfield,
     VolumeInitfield,
+    PointCoupling,
     Mortar,
     Contact,
     AleWear,

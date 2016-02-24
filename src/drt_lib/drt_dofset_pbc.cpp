@@ -67,6 +67,7 @@ int DRT::PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const
   // assign dofs using the empty slave node set. This way the dofrowmap_
   // contains exactly the entries as in a regular dofset
   DRT::DofSet::AssignDegreesOfFreedom(dis,dspos,start);
+  if (pccdofhandling_) dserror("ERROR: Point coupling cinditions not yet implemented for PBCDofSet");
 
   myMaxGID_ = DRT::DofSetBase::MaxAllGID();
   myMinGID_ = DRT::DofSetBase::MinAllGID();

@@ -149,7 +149,10 @@ public:
       int lid = node->LID();
       if (lid==-1)
         return -1;
-      return (*idxcolnodes_)[lid]+dof;
+      if (pccdofhandling_)
+        return dofscolnodes_->GID((*shiftcolnodes_)[lid]+dof);
+      else
+        return (*idxcolnodes_)[lid]+dof;
     }
 
   /// Get the gid of a dof for given element
@@ -173,7 +176,12 @@ public:
       const int idx = (*idxcolnodes_)[lid];
       std::vector<int> dof((*numdfcolnodes_)[lid]);
       for (unsigned i=0; i<dof.size(); ++i)
-        dof[i] = idx+i;
+      {
+        if(pccdofhandling_)
+          dof[i] = dofscolnodes_->GID((*shiftcolnodes_)[lid]+i);
+        else
+          dof[i] = idx+i;
+      }
       return dof;
     }
 
@@ -210,7 +218,12 @@ public:
       int idx = (*idxcolnodes_)[lid];
       int size = (*numdfcolnodes_)[lid];
       for (int i=0; i<size; ++i)
-        lm.push_back(idx+i);
+      {
+        if (pccdofhandling_)
+          lm.push_back(dofscolnodes_->GID((*shiftcolnodes_)[lid]+i));
+        else
+          lm.push_back(idx+i);
+      }
     }
 
   /// Get the gid of all dofs of a node
@@ -227,7 +240,12 @@ public:
     const int size = (*numdfcolnodes_)[lid];
     dsassert(lm.size() >= (startindex+size), "vector<int> lm too small");
     for (int i=0; i<size; ++i)
-      lm[startindex+i] = idx+i;
+    {
+      if (pccdofhandling_)
+        lm[startindex+i] = dofscolnodes_->GID((*shiftcolnodes_)[lid]+i);
+      else
+        lm[startindex+i] = idx+i;
+    }
   }
 
   /// Get the gid of all dofs of a element
@@ -257,7 +275,12 @@ public:
     // Instead we have to ask the node itself
     const int size = NumDofPerNode(*element,*node);
     for (int i=0; i<size; ++i)
-      lm.push_back(idx+i);
+    {
+      if (pccdofhandling_)
+        lm.push_back(dofscolnodes_->GID((*shiftcolnodes_)[lid]+i));
+      else
+        lm.push_back(idx+i);
+    }
   }
 
   /*!
@@ -358,6 +381,39 @@ protected:
 
   /// column map gid of first dof for each element
   Teuchos::RCP<Epetra_IntVector>                 idxcolelements_;
+
+  //***************************************************************************
+  // Remark:                                                       popp 02/2016
+  // --------------------------------------------------------------------------
+  // In the logic outlined above and implemented in AssignDegreesOfFreedom() we
+  // assume that each nodal dof only appears once and therefore that we can
+  // define a unique access to all dofs of one node by knowing (1) its number of
+  // nodal dofs and (2) its first dof gid. The second, third,... dof gid are
+  // then simply defined by incrementation +1 starting from the first dof gid.
+  // However, in the case where we have point coupling conditions, e.g. due to
+  // joints in structural mechanics (where certain dofs of two nodes at the same
+  // geometrical position are to be coupled and certain others not), this basic
+  // assumption does not hold anymore. Instead, we want to assign the same(!)
+  // dof to both nodes in his case, i.e. the same dof is then shared by more
+  // than one node and the numbering logic mentioned above is not sufficient
+  // anymmore. For such cases in particular (but maybe also in general?), we
+  // should store not only the first dof for each node, but all(!) dofs for
+  // each node. The idxcolnodes_ vector defined above is then replaced by the
+  // two following data containters:
+  //    dofscolnodes_ (Epetra_Map) and shiftcolnodes_ (Epetra_IntVector)
+  // Nevertheless, for the time being, the old version with idxcolnodes_ stays
+  // around, since the new version is only implemented for the standard DofSet
+  // class declared here (but not for special TransparentDofSets, Proxy, etc.).
+  //***************************************************************************
+  /// special dof handling due to point coupling conditions
+  bool pccdofhandling_;
+
+  /// column map of all dofs for each node (possibly non-unique)
+  Teuchos::RCP<Epetra_Map>                       dofscolnodes_;
+
+  /// shift value for access to column map of all dofs for each node
+  Teuchos::RCP<Epetra_IntVector>                 shiftcolnodes_;
+  //***************************************************************************
 
 private:
 
