@@ -507,7 +507,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
 
           // check number of coupled DoFs
           int numdepdof = 0;
-          const std::vector<int>* onoffcond = couplingconditions[relevantcondid]->Get<std::vector<int>>("onoff");
+          const std::vector<int>* onoffcond = couplingconditions[relevantcondid]->Get<std::vector<int> >("onoff");
           for (int n=0;n<(int)(onoffcond->size());++n)
           {
             if ((*onoffcond)[n]==1)
