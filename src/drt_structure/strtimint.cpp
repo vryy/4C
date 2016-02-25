@@ -3477,20 +3477,29 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::Conver
     {
       IO::cout << "Nonlinear solver failed to converge repeat time step"
                << IO::endl;
-      // do nothing since we didn't update yet
+
+      // reset step (e.g. quantities on element level)
+      ResetStep();
+
       return INPAR::STR::conv_success;
     }
     break;
     case INPAR::STR::divcont_halve_step:
     {
-      IO::cout << "Nonlinear solver failed to converge at time t= "<< timen_ << ". Divide timestep in half"
+      IO::cout << "Nonlinear solver failed to converge at time t= "<< timen_ << ". Divide timestep in half. "
+               << "Old time step: " << (*dt_)[0] << IO::endl
+               << "New time step: " << 0.5*(*dt_)[0] << IO::endl
                << IO::endl;
+
       // halve the time step size
       (*dt_)[0]=(*dt_)[0]*0.5;
       // update the number of max time steps
       stepmax_= stepmax_ + (stepmax_-stepn_)+1;
       // reset timen_ because it is set in the constructor
-      timen_ = (*time_)[0] + (*dt_)[0];;
+      timen_ = (*time_)[0] + (*dt_)[0];
+      // reset step (e.g. quantities on element level)
+      ResetStep();
+
       return INPAR::STR::conv_success;
     }
     break;
@@ -3498,11 +3507,15 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::Conver
     {
       // maximal possible refinementlevel
       const int maxdivconrefinementlevel = 10;
-      IO::cout << "Nonlinear solver failed to converge divide timestep in half"
+      const int maxstepmax = 1000000;
+      IO::cout << "Nonlinear solver failed to converge at time t= "<< timen_ << ". Divide timestep in half. "
+               << "Old time step: " << (*dt_)[0] << IO::endl
+               << "New time step: " << 0.5*(*dt_)[0] << IO::endl
                << IO::endl;
 
       // halve the time step size
       (*dt_)[0]=(*dt_)[0]*0.5;
+
       // update the number of max time steps
       stepmax_= stepmax_ + (stepmax_-stepn_)+1;
       // reset timen_ because it is set in the constructor
@@ -3513,6 +3526,12 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::Conver
 
       if(divconrefinementlevel_==maxdivconrefinementlevel)
         dserror("Maximal divercont refinement level reached. Adapt your time basic time step size!");
+
+      if(stepmax_>maxstepmax)
+        dserror("Upper level for stepmax_ reached!");
+
+      // reset step (e.g. quantities on element level)
+      ResetStep();
 
       return INPAR::STR::conv_success;
     }
@@ -3538,7 +3557,10 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::Conver
       // update maximum number of time steps
       stepmax_= (1.0/rand_tsfac_)*stepmax_ + (1.0-(1.0/rand_tsfac_))*stepn_ + 1;
       // reset timen_ because it is set in the constructor
-      timen_ = (*time_)[0] + (*dt_)[0];;
+      timen_ = (*time_)[0] + (*dt_)[0];
+      // reset step (e.g. quantities on element level)
+      ResetStep();
+
       return INPAR::STR::conv_success;
     }
     break;

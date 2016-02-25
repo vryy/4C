@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam3ebtor.H
+\file beam3ebtor.cpp
 
 \brief three dimensional nonlinear rod based on a C1 curve
 
@@ -179,7 +179,7 @@ void DRT::ELEMENTS::Beam3ebtor::Pack(DRT::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
 
-  //add all class variables of beam2r element
+  //add all class variables
   AddtoPack(data,jacobi_);
   AddtoPack(data,Tref_);
   AddtoPack(data,crosssec_);

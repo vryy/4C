@@ -37,8 +37,6 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintSectionHeader(stream,"STRUCTURE ELEMENTS");
 
   //  PrintElementLines(stream,"ART");
-  PrintElementLines(stream,"BEAM2");
-  PrintElementLines(stream,"BEAM2R");
   PrintElementLines(stream,"BEAM3");
   PrintElementLines(stream,"BEAM3II");
   PrintElementLines(stream,"BEAM3CL");

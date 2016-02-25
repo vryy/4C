@@ -287,7 +287,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::Pack(DRT::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
 
-  //add all class variables of beam2r element
+  //add all class variables
   AddtoPack(data,jacobi_);
   AddtoPack<3,1>(data,Tref_);
   AddtoPack<3,1>(data,G2ref_);
@@ -444,8 +444,6 @@ void DRT::ELEMENTS::Beam3ebanisotrop::SetUpReferenceGeometry(const std::vector<L
   {
 
     std::cout << "SetUpReferenceGeometry!!!" << std::endl;
-
-
 
     //Get integration points for exact integration
     DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussruleebanisotrop);
@@ -731,6 +729,125 @@ void DRT::ELEMENTS::Beam3ebanisotrop::calculate_length(const std::vector<LINALG:
     //Update
     length_=length_-res/(1-deriv_length); //the derivative of f(l)=l-int(|N'd|)dxi=0 is f'(l)=1-int(d/dl(|N'd|))dxi
   }
+
+//  //*************************************begin: Determine optimal Hermite constant for circle segment**********************************************************
+//
+//  if(fabs(Tref_[0].Norm2()-1.0)>1.0e-12 or fabs(Tref_[1].Norm2()-1.0)>1.0e-12)
+//    dserror("Tangents have to be unit vectors!");
+//
+//  double copt=0.0;
+//  double int1=0.0;
+//  double int2=0.0;
+//
+//  LINALG::Matrix<3,1> v0(true);
+//  LINALG::Matrix<3,1> n0(true);
+//  LINALG::Matrix<3,3> Sv0(true);
+//  LINALG::Matrix<3,3> Sn0(true);
+//  LINALG::Matrix<3,1> r0(true);
+//  LINALG::Matrix<3,1> R0vec(true);
+//  LINALG::Matrix<3,3> triad0(true);
+//  double R0 = 0.0;
+//  double alpha0 = 0.0;
+//  double d0 = 0.0;
+//  LINALG::Matrix<1,1> scalarproduct10(true);
+//  LINALG::Matrix<1,1> scalarproduct20(true);
+//
+//  v0.Update(1.0,xrefe[1],1.0);
+//  v0.Update(-1.0,xrefe[0],1.0);
+//  d0 = v0.Norm2();
+//  v0.Scale(1.0/d0);
+//
+//  LARGEROTATIONS::computespin(Sv0,v0);
+//  n0.Multiply(Sv0,Tref_[0]);
+//  n0.Scale(1.0/n0.Norm2());
+//  LARGEROTATIONS::computespin(Sn0,n0);
+//  scalarproduct10.MultiplyTN(n0,Tref_[1]);
+//  if(scalarproduct10.Norm2()>1.0e-12)
+//    dserror("Only plane geometries possible at this point!");
+//
+//  scalarproduct20.MultiplyTN(v0,Tref_[0]);
+//  alpha0 = acos(scalarproduct20(0,0));
+//  R0=d0/(2*sin(alpha0));
+//  R0vec.Multiply(Sn0,Tref_[0]);
+//  R0vec.Scale(1/R0vec.Norm2());
+//  R0vec.Scale(R0);
+//  r0.Update(1.0,xrefe[0],0.0);
+//  r0.Update(-1.0,R0vec,1.0);
+//
+//  for(int i=0;i<3;i++)
+//  {
+//    triad0(i,0)=R0vec(i);
+//    triad0(i,1)=n0(i);
+//    triad0(i,2)=Tref_[0](i);
+//  }
+//
+//  for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+//  {
+//    //Get position xi of GP
+//    const double xi = gausspoints.qxg[numgp][0];
+//    const double wgt = gausspoints.qwgt[numgp];
+//    LINALG::Matrix<3,1> a(true);
+//    LINALG::Matrix<3,1> b(true);
+//    LINALG::Matrix<3,1> r(true);
+//    LINALG::Matrix<3,1> r_hermite(true);
+//    LINALG::Matrix<3,1> auxvec(true);
+//    LINALG::Matrix<1,1> auxscal(true);
+//
+//    //Get derivatives of the shape functions
+//    LINALG::Matrix<1,nnode*vnode> shapefunc(true);
+//    DRT::UTILS::shape_function_hermite_1D(shapefunc,xi,1.0,line2);
+//
+//    for (int i=0; i<3; i++)
+//    {
+//      b(i)+=Tref_[0](i)*shapefunc(1)+Tref_[1](i)*shapefunc(3);
+//      a(i)+=xrefe[0](i)*shapefunc(0)+xrefe[1](i)*shapefunc(2);
+//      r_hermite(i)+=xrefe[0](i)*shapefunc(0)+xrefe[1](i)*shapefunc(2)+Tref_[0](i)*length_*shapefunc(1)+Tref_[1](i)*length_*shapefunc(3);
+//    }
+//
+//    LINALG::Matrix<3,3> triad(true);
+//    LINALG::Matrix<3,3> triadalpha(true);
+//    LINALG::Matrix<3,1> Rvec(true);
+//    LINALG::Matrix<3,1> alphavec(true);
+//
+//    alphavec.Update(-(1.0+xi)*alpha0,n0,0.0);
+//    LARGEROTATIONS::angletotriad(alphavec,triadalpha);
+//    triad.Multiply(triadalpha,triad0);
+//    for(int i=0;i<3;i++)
+//    {
+//      Rvec(i)=triad(i,0);
+//    }
+//    r.Update(1.0,r0,0.0);
+//    r.Update(1.0,Rvec,1.0);
+//
+////    std::cout << "r: " << r << std::endl;
+////    std::cout << "r_hermite: " << r_hermite << std::endl;
+////
+////    std::cout << "alphavec: " << alphavec << std::endl;
+////    std::cout << "Rvec: " << Rvec << std::endl;
+//
+//
+//    auxvec.Update(1.0,r,0.0);
+//    auxvec.Update(-1.0,a,1.0);
+//    auxscal.MultiplyTN(b,auxvec);
+//
+//    int1+= auxscal(0,0)*wgt;
+//
+//    auxscal=0.0;
+//    auxscal.MultiplyTN(b,b);
+//    int2+= auxscal(0,0)*wgt;
+//  }
+//
+//  copt=int1/int2;
+//  double length_approx=d0;
+//  double length_analyt=2*alpha0*R0;
+//  std::cout << "copt length_ length_approx length_analyt" << std::endl;
+//
+//  std::cout << std::setprecision(16) << copt << " " << length_ << " " << length_approx << " " << length_analyt << std::endl;
+//  //length_=100*3.14159265358979323846/(4.0*NUMELE);
+//  //std::cout << "length_: " << length_ << std::endl;
+//
+//  //*************************************end: Determine optimal Hermite constant for circle segment*********************************************************
+
   return;
 }
 

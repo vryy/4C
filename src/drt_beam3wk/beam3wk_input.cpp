@@ -32,13 +32,29 @@ bool DRT::ELEMENTS::Beam3wk::ReadElement(const std::string& eletype,
   int rotvec = 0;
   linedef->ExtractInt("ROTVEC",rotvec);
 
+  int wk = 0;
+  linedef->ExtractInt("WK",wk);
+
   if (rotvec==0)
     rotvec_=false;
   else if (rotvec==1)
     rotvec_=true;
   else
-    dserror("The variable ROTVEC can only take on the values 0 (=tangent vectors as nodal DoFs) and "
-            "1 (=rotation vectors as nodal DoFs)!");
+    dserror("The variable ROTVEC can only take on the values 0 (tangent vectors as nodal DoFs) and "
+            "1 (rotation vectors as nodal DoFs)!");
+
+  if (wk==0)
+    weakkirchhoff_=false;
+  else if (wk==1)
+  {
+    weakkirchhoff_=true;
+    #ifdef CONSISTENTSPINSK
+      dserror("The flag CONSISTENTSPINSK is only possible for strong Kirchhoff constraint enforcement (weakkirchhoff_=false)");
+    #endif
+  }
+  else
+    dserror("The variable WK can only take on the values 0 (Kirchhoff constraint enforced in a strong manner) and "
+            "1 (Kirchhoff constraint enforced in a weak manner)!");
 
   linedef->ExtractDouble("CROSS",crosssec_);
 

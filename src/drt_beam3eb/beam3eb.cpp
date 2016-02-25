@@ -218,7 +218,7 @@ void DRT::ELEMENTS::Beam3eb::Pack(DRT::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
 
-  //add all class variables of beam2r element
+  //add all class variables
   AddtoPack(data,jacobi_);
   AddtoPack(data,crosssec_);
   AddtoPack(data,isinit_);

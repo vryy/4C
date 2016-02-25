@@ -26,6 +26,7 @@ Maintainer: Christoph Meier
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_beamcontact/beam3contact_utils.H"
+#include "../drt_lib/standardtypes_cpp.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 meier 10/12|
@@ -417,10 +418,10 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
       //Calculate first epsilon in the element midpoint (2nd CP)
       LINALG::TMatrix<FAD,3,1> r_s_CP(true);
       LINALG::TMatrix<FAD,3,1> r_ss_CP(true);
-      std::cout << "xi: " << xi << std::endl;
+      //std::cout << "xi: " << xi << std::endl;
       Calculate_r_s_and_r_ss(disp_totlag, xi, r_s_CP, r_ss_CP);
       kappaCP[i]=calculate_curvature(r_s_CP, r_ss_CP);
-      std::cout << "kappaCP[i](2): " << kappaCP[i](2) << std::endl;
+      //std::cout << "kappaCP[i](2): " << kappaCP[i](2) << std::endl;
     }
   #endif
 
@@ -767,7 +768,6 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     }
 #endif
 
-
     //Calculate internal energy
     temp_energy=0.0;
     temp_energy=ym*crosssec_*pow(epsilon,2.0);
@@ -806,40 +806,12 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
       rx_analyt.Clear();
 
       FAD phi = 0.0;
-      FAD M = 10.0;
-      FAD R0= ym*Izz_ / (2.0 *M);
-      FAD ele_length=1000.0/NUMELE;
+      FAD R0= 100;
+      double maxangle = PI/4;
+      FAD ele_length=R0*maxangle/(NUMELE);
       int ele=this->Id()+1;
-      FAD phi1=(ele-1)*ele_length/(sqrt(2.0)*R0);
-      FAD phi2=(ele)*ele_length/(sqrt(2.0)*R0);
-
-      if (firstcall_)
-      {
-        firstcall_=false;
-        //cout << "firstcall_" << endl;
-
-        disp_totlag[0]=R0/sqrt(2.0)*(sin(phi1) + phi1);
-        disp_totlag[1]=R0*(1-cos(phi1));
-        disp_totlag[2]=R0/sqrt(2.0)*(-sin(phi1) + phi1);
-        disp_totlag[7]=R0/sqrt(2.0)*(sin(phi2) + phi2);
-        disp_totlag[8]=R0*(1-cos(phi2));
-        disp_totlag[9]=R0/sqrt(2.0)*(-sin(phi2) + phi2);
-
-        disp_totlag[3]=0.5*(cos(phi1) + 1);
-        disp_totlag[4]=1.0/sqrt(2.0)*(sin(phi1));
-        disp_totlag[5]=0.5*(-cos(phi1) + 1);
-        disp_totlag[10]=0.5*(cos(phi2) + 1);
-        disp_totlag[11]=1.0/sqrt(2.0)*(sin(phi2));;
-        disp_totlag[12]=0.5*(-cos(phi2) + 1);
-
-        for (int dof=0; dof<14; dof++)
-        {
-          disp_totlag[dof].diff(dof,14);
-          //cout << "disp_totlag: " << disp_totlag[dof] << endl;
-        }
-
-
-      }
+      FAD phi1=(ele-1)*ele_length/(R0);
+      FAD phi2=(ele)*ele_length/(R0);
 
       for(int numgp=0; numgp < gausspoints.nquad; numgp++)
       {
@@ -861,9 +833,9 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
         }
 
         phi=(1-xi)/2*phi1 + (1+xi)/2*phi2;
-        r_analyt(0)=R0/sqrt(2.0)*(sin(phi) + phi);
+        r_analyt(0)=R0*sin(phi);
         r_analyt(1)=R0*(1-cos(phi));
-        r_analyt(2)=R0/sqrt(2.0)*(-sin(phi) + phi);
+        r_analyt(2)=0.0;
 
         for (int i=0;i<3;i++)
         {
@@ -890,6 +862,37 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
           f_int(10+i)+= wgt*jacobi_[numgp]*N_i(3)*n(i);
         }
       }//end of gauss integration
+
+      #ifdef OPTCURVEAX
+      LINALG::TMatrix<FAD,3,1> fax1(true);
+      FAD norm1=0.0;
+      LINALG::TMatrix<FAD,3,1> fax2(true);
+      FAD norm2=0.0;
+
+      for (int i=0; i<3; i++)
+      {
+        fax1(i)=disp_totlag[3 + i];
+        fax2(i)=disp_totlag[10 + i];
+      }
+
+      for (int i=0; i<3; i++)
+      {
+        fax1(i)=disp_totlag[3 + i];
+        fax2(i)=disp_totlag[10 + i];
+      }
+      norm1=Norm(fax1);
+      norm2=Norm(fax2);
+      fax1.Scale((norm1-1)/norm1);
+      fax2.Scale((norm2-1)/norm2);
+      double axfac=1.0e12;
+
+      for (int i=0; i<3; i++)
+      {
+        f_int(3 + i)+=axfac*fax1(i);
+        f_int(10 + i)+=axfac*fax2(i);
+      }
+      #endif
+
   //**********************end: optimal curve integration******************************************************************
 #endif
 
@@ -916,6 +919,7 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     #ifdef OPTCURVE
           (*stiffmatrix)(6,6)=1.0;
           (*stiffmatrix)(13,13)=1.0;
+          (*stiffmatrix)(14,14)=1.0;
     #endif
   }
 
@@ -1523,8 +1527,8 @@ int DRT::ELEMENTS::Beam3ebanisotrop::EvaluateNeumann(Teuchos::ParameterList& par
     }
 
     //calculate |t|=|r'| at the boundary
-    //abs_tangent=tangent.Norm2();
-    abs_tangent=1.0;
+    abs_tangent=tangent.Norm2();
+    //abs_tangent=1.0;
 
 
     //computespin = S ( tangent ) using the spinmatrix in namespace largerotations

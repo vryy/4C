@@ -107,8 +107,23 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
           b3_energy<2>(params,mydisp,&elevec1);
           break;
         }
+        case 3:
+        {
+          b3_energy<3>(params,mydisp,&elevec1);
+          break;
+        }
+        case 4:
+        {
+          b3_energy<4>(params,mydisp,&elevec1);
+          break;
+        }
+        case 5:
+        {
+          b3_energy<5>(params,mydisp,&elevec1);
+          break;
+        }
         default:
-          dserror("Only Line2 Elements implemented.");
+          dserror("Only Line2, Line3, Line4 and Line5 Elements implemented.");
       }
     }
     break;
@@ -414,6 +429,15 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
       dispthetaold_ = dispthetaconv_;
       Qnew_ = Qconv_;
       dispthetanew_ = dispthetaconv_;
+      Qnewmass_=Qconvmass_;
+      wnewmass_=wconvmass_;
+      anewmass_=aconvmass_;
+      amodnewmass_=amodconvmass_;
+      rttnewmass_=rttconvmass_;
+      rttmodnewmass_=rttmodconvmass_;
+      rtnewmass_=rtconvmass_;
+      dispnewmass_=dispconvmass_;
+      dispthetanew_=dispthetaconv_;
     }
     break;
     case calc_struct_stress:
@@ -1286,7 +1310,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   }
 
   /*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
-  * it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a
+  * it is dedicated to the application of beam3 elements in the frame of statistical mechanics problems; for these problems a
   * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
   * the element does not attach this special vector to params the following method is just doing nothing, which means that for
   * any ordinary problem of structural mechanics it may be ignored*/

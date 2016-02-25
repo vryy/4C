@@ -71,7 +71,9 @@ typedef Sacado::Fad::DFad<double> FAD;
 //#define BEAM3EBANISOTROPORTHOPRESSURE 3.1415926535897938   //Apply orthopressure load. DEFAULT: off
 
 //#define OPTCURVE
-#define NUMELE 16
+//#define OPTCURVEAX
+//#define NUMELE 2
+
 
 #define ROTATIONTOL 1.0e-12 //Tolerance that ensures a rotation per load/time step, that is smaller than 180°: 1+t*t_old !< ROTATIONTOL. DEFAULT: 1.0e-12
 

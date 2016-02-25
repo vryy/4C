@@ -225,7 +225,7 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  DRT::Element(old),
  isinit_(old.isinit_),
  eps_(old.eps_),
- f_(old.f_),                                                //1)
+ f_(old.f_),
  Ngp_(old.Ngp_),
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
@@ -252,7 +252,7 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  Tcurr_(old.Tcurr_),
  Tref_(old.Tref_),
  kapparef_(old.kapparef_),
- gammaref_(old.gammaref_),                                  //2)
+ gammaref_(old.gammaref_),
  nodeI_(old.nodeI_),
  nodeJ_(old.nodeJ_),
  crosssec_(old.crosssec_),
@@ -273,6 +273,7 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  inertscaletrans_(old.inertscaletrans_),
  inertscalerot1_(old.inertscalerot1_),
  inertscalerot2_(old.inertscalerot2_)
+
 {
   return;
 }
@@ -351,7 +352,7 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
 
-  //add all class variables of beam2r element
+  //add all class variables
   AddtoPack(data,jacobi_);
   AddtoPack(data,jacobimass_);
   AddtoPack(data,jacobinode_);
@@ -379,9 +380,13 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,dispthetaconv_);
   AddtoPack<3,1>(data,dispthetaold_);
   AddtoPack<3,1>(data,dispthetanew_);
+  AddtoPack<3,1>(data,dispconvmass_);
+  AddtoPack<3,1>(data,dispnewmass_);
   AddtoPack<3,1>(data,Tcurr_);
   AddtoPack<3,1>(data,Tref_);
   AddtoPack<3,1>(data,kapparef_);
+  AddtoPack<3,1>(data,gammaref_);
+  AddtoPack<3,1>(data,Ngp_);
   AddtoPack(data,eps_);
   AddtoPack(data,f_);
   AddtoPack(data,Ekin_);
@@ -418,7 +423,6 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
-
   //extract all class variables of beam3ii element
   ExtractfromPack(position,data,jacobi_);
   ExtractfromPack(position,data,jacobimass_);
@@ -447,9 +451,13 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,dispthetaconv_);
   ExtractfromPack<3,1>(position,data,dispthetaold_);
   ExtractfromPack<3,1>(position,data,dispthetanew_);
+  ExtractfromPack<3,1>(position,data,dispconvmass_);
+  ExtractfromPack<3,1>(position,data,dispnewmass_);
   ExtractfromPack<3,1>(position,data,Tcurr_);
   ExtractfromPack<3,1>(position,data,Tref_);
   ExtractfromPack<3,1>(position,data,kapparef_);
+  ExtractfromPack<3,1>(position,data,gammaref_);
+  ExtractfromPack<3,1>(position,data,Ngp_);
   ExtractfromPack(position,data,eps_);
   ExtractfromPack(position,data,f_);
   ExtractfromPack(position,data,Ekin_);

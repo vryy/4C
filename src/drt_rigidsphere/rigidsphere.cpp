@@ -159,7 +159,7 @@ void DRT::ELEMENTS::Rigidsphere::Pack(DRT::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
 
-  //add all class variables of beam2r element
+  //add all class variables
   AddtoPack(data,radius_);
   AddtoPack(data,rho_);
 

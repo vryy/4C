@@ -451,11 +451,6 @@ set(OBJS_DRT_ALE_LIB
   src/drt_ale3/ale3_surface.cpp
   src/drt_ale3/ale3_surface_evaluate.cpp
 )
-set(OBJS_DRT_B2_LIB
-  src/drt_beam2/beam2.cpp
-  src/drt_beam2/beam2_evaluate.cpp
-  src/drt_beam2/beam2_input.cpp
-)
 set(OBJS_DRT_LIB
   src/drt_fluid/drt_periodicbc.cpp
   src/drt_lib/drt_assemblestrategy.cpp
@@ -1577,7 +1572,6 @@ set(OBJS_DRT_B3II_LIB
   src/drt_beam3ii/beam3ii_evaluate.cpp
   src/drt_beam3ii/beam3ii_input.cpp
 )
-
 set(OBJS_DRT_B3CL_LIB
   src/drt_beam3cl/beam3cl.cpp
   src/drt_beam3cl/beam3cl_evaluate.cpp
@@ -1909,11 +1903,6 @@ set(OBJS_DRT_IO_LIB
 )
 set(OBJS_FORTRAN
   src/fortran/hex_fserv.f
-)
-set(OBJS_DRT_B2R_LIB
-  src/drt_beam2r/beam2r.cpp
-  src/drt_beam2r/beam2r_evaluate.cpp
-  src/drt_beam2r/beam2r_input.cpp
 )
 set(OBJS_DRT_POTENTIAL
   src/drt_potential/drt_potential.cpp
@@ -2345,8 +2334,6 @@ endif (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 add_library(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
 add_library(ele_meshfree_fluid ${OBJS_DRT_MESHFREE_FLUID_CELL_LIB})
 add_library(ele_ale ${OBJS_DRT_ALE_LIB})
-add_library(ele_b2 ${OBJS_DRT_B2_LIB})
-add_library(ele_b2r ${OBJS_DRT_B2R_LIB})
 add_library(ele_b3 ${OBJS_DRT_B3_LIB})
 add_library(ele_b3ii ${OBJS_DRT_B3II_LIB})
 add_library(ele_b3eb ${OBJS_DRT_B3EB_LIB})
@@ -2376,8 +2363,6 @@ add_library(ele_acou ${OBJS_DRT_ACOU_LIB})
 
 set(ELEMENT_LIBRARIES
   ele_ale
-  ele_b2
-  ele_b2r
   ele_b3
   ele_b3ii
   ele_b3eb

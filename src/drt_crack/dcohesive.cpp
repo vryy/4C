@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file Dcohesive.cpp
+\file dcohesive.cpp
 \brief one dimensional discrete cohesive (spring) element used to model
 crack propagation
 
@@ -65,7 +65,7 @@ void DRT::ELEMENTS::DcohesiveType::NodalBlockInformation( DRT::Element * dwele, 
 void DRT::ELEMENTS::DcohesiveType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0,
                                                             int numdf, int dimns )
 {
-  DRT::UTILS::ComputeBeam2DNullSpace( dis, ns, x0, numdf, dimns );
+  dserror("Function not implemented yet.");
 }
 
 void DRT::ELEMENTS::DcohesiveType::SetupElementDefinition( std::map<std::string,
@@ -157,7 +157,7 @@ gaussrule_(old.gaussrule_)
   return;
 }
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of Beam2 and return pointer to it (public) |
+ |  Deep copy this instance and return pointer to it (public) |
  |                                                            cyron 01/08 |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Dcohesive::Clone() const
@@ -400,11 +400,11 @@ int DRT::ELEMENTS::DcohesiveType::Initialize(DRT::Discretization& dis)
   //setting up geometric variables for beam3 elements
   for (int num=0; num<  dis.NumMyColElements(); ++num)
   {
-    //in case that current element is not a beam2 element there is nothing to do and we go back
+    //in case that current element is not a element there is nothing to do and we go back
     //to the head of the loop
     if (dis.lColElement(num)->ElementType() != *this) continue;
 
-    //if we get so far current element is a beam2 element and  we get a pointer at it
+    //if we get so far current element is a element and  we get a pointer at it
     DRT::ELEMENTS::Dcohesive* currele = dynamic_cast<DRT::ELEMENTS::Dcohesive*>(dis.lColElement(num));
     if (!currele) dserror("cast to Dcohesive* failed");
 

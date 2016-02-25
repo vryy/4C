@@ -31,7 +31,7 @@ Maintainer: Christoph Meier
 
 
 /*-----------------------------------------------------------------------------------------------------------*
- |  evaluate the element (public)                                                                 meier 10/12|
+ |  evaluate the element (public)                                                                 meier 01/16|
  *----------------------------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3wk::Evaluate(Teuchos::ParameterList& params,
                                         DRT::Discretization& discretization,
@@ -102,7 +102,10 @@ int DRT::ELEMENTS::Beam3wk::Evaluate(Teuchos::ParameterList& params,
 
       if (act == Beam3wk::calc_struct_nlnstiffmass)
       {
-        CalculateInternalForces(params,mydisp,&elemat1,&elemat2,&elevec1,&elevec2,false);
+        if(weakkirchhoff_)
+          CalculateInternalForcesWK(params,mydisp,&elemat1,&elemat2,&elevec1,&elevec2,false);
+        else
+          CalculateInternalForcesSK(params,mydisp,&elemat1,&elemat2,&elevec1,&elevec2,false);
       }
       else if (act == Beam3wk::calc_struct_nlnstifflmass)
       {
@@ -110,11 +113,17 @@ int DRT::ELEMENTS::Beam3wk::Evaluate(Teuchos::ParameterList& params,
       }
       else if (act == Beam3wk::calc_struct_nlnstiff)
       {
-        CalculateInternalForces(params,mydisp,&elemat1,NULL,&elevec1,NULL,false);
+        if(weakkirchhoff_)
+          CalculateInternalForcesWK(params,mydisp,&elemat1,NULL,&elevec1,NULL,false);
+        else
+          CalculateInternalForcesSK(params,mydisp,&elemat1,NULL,&elevec1,NULL,false);
       }
       else if (act == Beam3wk::calc_struct_internalforce)
       {
-        CalculateInternalForces(params,mydisp,NULL,NULL,&elevec1,NULL,false);
+        if(weakkirchhoff_)
+          CalculateInternalForcesWK(params,mydisp,NULL,NULL,&elevec1,NULL,false);
+        else
+          CalculateInternalForcesSK(params,mydisp,NULL,NULL,&elevec1,NULL,false);
       }
 
 //      //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
@@ -152,7 +161,10 @@ int DRT::ELEMENTS::Beam3wk::Evaluate(Teuchos::ParameterList& params,
 //          disp_aux[i] += h_rel;
 //          vel_aux[i] += h_rel / params.get<double>("delta time",0.01);
 //
-//          CalculateInternalForces(params,disp_aux,NULL,NULL,&force_aux,NULL,false);
+//          if(weakkirchhoff_)
+//            CalculateInternalForcesWK(params,disp_aux,NULL,NULL,&force_aux,NULL,false);
+//          else
+//            CalculateInternalForcesSK(params,disp_aux,NULL,NULL,&force_aux,NULL,false);
 //
 //          //computing derivative d(fint)/du numerically by finite difference
 //          for(int u = 0 ; u < 6*2+COLLOCATION_POINTS ; u++ )
@@ -244,7 +256,7 @@ int DRT::ELEMENTS::Beam3wk::Evaluate(Teuchos::ParameterList& params,
 
     case calc_struct_energy:
     {
-      dserror("No energy output implemented for beam3wk elements");
+      elevec1(0)=Eint_;
     }
     break;
 
@@ -306,7 +318,15 @@ int DRT::ELEMENTS::Beam3wk::Evaluate(Teuchos::ParameterList& params,
        * not be applied as starting point for any further iteration step; as a consequence the thereby generated change
        * of the geometric configuration should be canceled and the configuration should be reset to the value at the
        * beginning of the time step*/
-       dserror("The action calc_struct_reset_istep is not implemented yet!");
+
+      Qnewmass_=Qconvmass_;
+      wnewmass_=wconvmass_;
+      anewmass_=aconvmass_;
+      amodnewmass_=amodconvmass_;
+      rttnewmass_=rttconvmass_;
+      rttmodnewmass_=rttmodconvmass_;
+      rtnewmass_=rtconvmass_;
+      rnewmass_=rconvmass_;
     }
     break;
 
@@ -321,32 +341,33 @@ int DRT::ELEMENTS::Beam3wk::Evaluate(Teuchos::ParameterList& params,
 }  //DRT::ELEMENTS::Beam3wk::Evaluate
 
 /*------------------------------------------------------------------------------------------------------------*
- | lump mass matrix             (private)                                                           meier 05/12|
+ | lump mass matrix             (private)                                                          meier 01/16|
  *------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::lumpmass(Epetra_SerialDenseMatrix* emass)
+void DRT::ELEMENTS::Beam3wk::Lumpmass(Epetra_SerialDenseMatrix* emass)
 {
   dserror("Lumped mass matrix not implemented yet!!!");
 }
 
 /*------------------------------------------------------------------------------------------------------------*
- | stiffness matrix            (private)                                                           meier 09/12|
+ | internal forces: weak Kirchhoff constraint (private)                                            meier 01/16|
  *------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::CalculateInternalForces( Teuchos::ParameterList& params,
-                                                      std::vector<double>&      disp,
-                                                      Epetra_SerialDenseMatrix* stiffmatrix,
-                                                      Epetra_SerialDenseMatrix* massmatrix,
-                                                      Epetra_SerialDenseVector* force,
-                                                      Epetra_SerialDenseVector* inertia_force,
-                                                      bool update)
+void DRT::ELEMENTS::Beam3wk::CalculateInternalForcesWK( Teuchos::ParameterList& params,
+                                                        std::vector<double>&      disp,
+                                                        Epetra_SerialDenseMatrix* stiffmatrix,
+                                                        Epetra_SerialDenseMatrix* massmatrix,
+                                                        Epetra_SerialDenseVector* force,
+                                                        Epetra_SerialDenseVector* inertia_force,
+                                                        bool update)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Beam3wk::CalculateInternalForces");
+  TEUCHOS_FUNC_TIME_MONITOR("Beam3wk::CalculateInternalForcesWK");
   if(COLLOCATION_POINTS!=2 and COLLOCATION_POINTS!=3 and COLLOCATION_POINTS!=4)
-  {
     dserror("Only the values 2,3 and 4 are valid for COLLOCATION_POINTS!!!");
-  }
 
   //number of nodes fixed for these element
   const int nnode = 2;
+
+  if(disp.size()!=(6*nnode+COLLOCATION_POINTS))
+    dserror("Number of COLLOCATION_POINTS does not match number of nodes defined in the input file!!!");
 
   //internal force vector
   LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_int(true);
@@ -372,14 +393,22 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForces( Teuchos::ParameterList& pa
   std::vector<LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> > v_thetaperp_cp(COLLOCATION_POINTS);
   std::vector<LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> > v_thetapar_cp(COLLOCATION_POINTS);
 
+  //Get integration points for exact integration
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3wk);
+
   //interpolated values of strains and their variations evaluated at Gauss points
   FAD epsilon;
   LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> v_epsilon(true);
   LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetaperp_s(true);
   LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetapar_s(true);
+  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_theta_s(true); //=v_thetaperp_s+v_thetapar_s
+
+  //interpolated spin vector variation required for inertia forces: v_theta=v_thetaperp+v_thetapar
+  std::vector<LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,3> > v_theta(gausspoints.nquad,LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,3>(true));
 
   //Further material and spatial strains and forces to be evaluated at the Gauss points
-  LINALG::TMatrix<FAD,3,1> kappa; //material curvature
+  LINALG::TMatrix<FAD,3,1> K; //material curvature
+  LINALG::TMatrix<FAD,3,1> Omega; //material deformation measure Omega:=K-K0
   LINALG::TMatrix<FAD,3,1> m; //spatial moment stress resultant
   LINALG::TMatrix<FAD,3,1> M; //material moment stress resultant
   FAD f_par; //material=spatial axial force component
@@ -390,7 +419,7 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForces( Teuchos::ParameterList& pa
   std::vector<LINALG::TMatrix<FAD,3,1> > theta_cp(COLLOCATION_POINTS);  //angle at collocation points
 
   //Interpolated material triad and angles evaluated at Gauss point
-  LINALG::TMatrix<FAD,3,3> triad_mat; //material triad at gp
+  std::vector<LINALG::TMatrix<FAD,3,3> > triad_mat(gausspoints.nquad,LINALG::TMatrix<FAD,3,3>(true)); //vector of material triads at gps
   LINALG::TMatrix<FAD,3,1> theta;    //interpolated angle theta
   LINALG::TMatrix<FAD,3,1> theta_s;  //derivative of theta with respect to arc-length s
 
@@ -416,9 +445,6 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForces( Teuchos::ParameterList& pa
   double xi=0.0;  //parameter coordinated
   int ind=0; //position index where CP quantities have to be stored
 
-  //Get integration points for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3wk);
-
   //Set current positions and orientations at all nodes:
   UpdateDispTotlag(disp, disp_totlag);
   SetNodalVariables(disp_totlag,disp_totlag_centerline,triad_mat_cp);
@@ -440,7 +466,7 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForces( Teuchos::ParameterList& pa
     ind=LARGEROTATIONS::NumberingTrafo(node+1, COLLOCATION_POINTS);
 
     N_s.Clear();
-    AssembleShapefunctions(N_i_xi,jacobi_cp_[ind],N_s);
+    AssembleShapefunctionsNs(N_i_xi,jacobi_cp_[ind],N_s);
     r_s.Clear();
     //Calculation of r' at xi
     for (int i=0; i<3; i++)
@@ -454,7 +480,7 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForces( Teuchos::ParameterList& pa
     abs_r_s=Norm<FAD>(r_s);
     epsilon_cp[ind]=abs_r_s-1.0;
 
-    AssembleShapefunctions(L_i,L);
+    AssembleShapefunctionsL(L_i,L);
 
     v_epsilon_cp[ind].Clear();
     v_epsilon_cp[ind].MultiplyTN(N_s,r_s);
@@ -476,9 +502,12 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForces( Teuchos::ParameterList& pa
   for(int node=0; node<COLLOCATION_POINTS; node++)
   {
     theta_cp[node].Clear();
-    triadtoangle(theta_cp[node],triad_mat_cp[REFERENCE_NODE],triad_mat_cp[node]);
+    triadtoangleright(theta_cp[node],triad_mat_cp[REFERENCE_NODE],triad_mat_cp[node]);
   }
   //********end: evaluate quantities at collocation points********************************
+
+  //Clear energy in the beginning
+  Eint_=0.0;
 
   //******begin: gauss integration for internal force vector and stiffness matrix*********
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -487,22 +516,23 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForces( Teuchos::ParameterList& pa
     const double xi = gausspoints.qxg[numgp][0];
     const double wgt = gausspoints.qwgt[numgp];
 
+    //Evaluate shape functions
     L_i.Clear();
     L_i_xi.Clear();
     L_i_s.Clear();
-
     DRT::UTILS::shape_function_1D(L_i,xi,Shape());
     DRT::UTILS::shape_function_1D_deriv1(L_i_xi,xi,Shape());
     L_i_s.Update(1.0/jacobi_[numgp],L_i_xi,0.0);
 
-    //Calculate collocation piont interpolations
+
+    //Calculate collocation point interpolations ("v"-vectors and epsilon)
     v_epsilon.Clear();
     v_thetaperp_s.Clear();
     v_thetapar_s.Clear();
+    v_theta_s.Clear();
     epsilon=0.0;
     theta.Clear();
     theta_s.Clear();
-
     for(int node=0; node<COLLOCATION_POINTS; node++)
     {
       v_epsilon.Update(L_i(node),v_epsilon_cp[node],1.0);
@@ -512,39 +542,56 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForces( Teuchos::ParameterList& pa
       theta.Update(L_i(node),theta_cp[node],1.0);
       theta_s.Update(L_i_s(node),theta_cp[node],1.0);
     }
+    v_theta_s.Update(1.0,v_thetaperp_s,1.0);
+    v_theta_s.Update(1.0,v_thetapar_s,1.0);
+    //"v"-vector which is required for inertia forces is already calculated here
+    if (massmatrix != NULL and inertia_force != NULL)
+    {
+      v_theta[numgp].Clear();
+      for(int node=0; node<COLLOCATION_POINTS; node++)
+      {
+        v_theta[numgp].Update(L_i(node),v_thetaperp_cp[node],1.0);
+        v_theta[numgp].Update(L_i(node),v_thetapar_cp[node],1.0);
+      }
+    }
 
-    //compute material strain resultant kappa
-    kappa.Clear();
-    computestrain(theta,theta_s,kappa);
+    //compute material strain K
+    K.Clear();
+    Omega.Clear();
+    computestrain(theta,theta_s,K);
 
     for(int i=0; i<3; i++)
     {
-      kappa(i)-=kappa0_[numgp](i);
+      Omega(i)=K(i)-K0_[numgp](i);
     }
 
     //compute material stress resultants
     M.Clear();
     f_par=0.0;
-    straintostress(kappa,epsilon,M,f_par);
+    straintostress(Omega,epsilon,M,f_par);
+
+    //Calculate internal energy and store it in class variable
+    Eint_ += 0.5*epsilon.val()*f_par.val()*wgt*jacobi_[numgp];
+    for(int i=0; i<3; i++)
+    {
+      Eint_ += 0.5*Omega(i).val()*M(i).val()*wgt*jacobi_[numgp];
+    }
 
     //compute material triad at gp
-    triad_mat.Clear();
-    angletotriad(theta,triad_mat_cp[REFERENCE_NODE],triad_mat);
+    triad_mat[numgp].Clear();
+    angletotriad(theta,triad_mat_cp[REFERENCE_NODE],triad_mat[numgp]);
 
     //pushforward of stress resultants
     m.Clear();
-    m.Multiply(triad_mat,M);
+    m.Multiply(triad_mat[numgp],M);
 
+    //residual contribution from moments
     f_int_aux.Clear();
-    f_int_aux.Multiply(v_thetaperp_s,m);
+    f_int_aux.Multiply(v_theta_s,m);
     f_int_aux.Scale(wgt*jacobi_[numgp]);
     f_int.Update(1.0,f_int_aux,1.0);
 
-    f_int_aux.Clear();
-    f_int_aux.Multiply(v_thetapar_s,m);
-    f_int_aux.Scale(wgt*jacobi_[numgp]);
-    f_int.Update(1.0,f_int_aux,1.0);
-
+    //residual contribution from axial force
     f_int_aux.Clear();
     f_int_aux.Update(1.0,v_epsilon,0.0);
     f_int_aux.Scale(wgt*jacobi_[numgp]*f_par);
@@ -599,221 +646,10 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForces( Teuchos::ParameterList& pa
   {
     if(beta < 999)
     {
-      double gamma = params.get<double>("rot_gamma",1000);
-      double alpha_f = params.get<double>("rot_alphaf",1000);
-      double alpha_m = params.get<double>("rot_alpham",1000);
-      double dt = params.get<double>("delta time",1000);
 
-      //first of all we get the material law
-      Teuchos::RCP<const MAT::Material> currmat = Material();
-      double rho = 0;
-
-      //assignment of material parameters; only St.Venant material is accepted for this beam
-      switch(currmat->MaterialType())
-      {
-        case INPAR::MAT::m_stvenant:// only linear elastic material supported
-        {
-          const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-          rho = actmat->Density();
-        }
-        break;
-        default:
-          dserror("unknown or improper type of material law");
-        break;
-      }
-
-      //tensor of mass moments of inertia and cross-section value. These values are used in order to artificially scale
-      //the the translational and rotational inertia terms with given input parameters if necessary:
-      LINALG::TMatrix<FAD,3,3> Jp(true);
-      Jp(0,0)=inertscalerot1_*(Iyy_+Izz_);
-      Jp(1,1)=inertscalerot2_*Iyy_;
-      Jp(2,2)=inertscalerot2_*Izz_;
-      Jp.Scale(rho);
-
-      double scaledcrosssec=inertscaletrans_*crosssec_;
-
-      LINALG::TMatrix<FAD,3,6*nnode+COLLOCATION_POINTS> N(true);
-      LINALG::TMatrix<FAD,1,2*nnode> N_i(true);
-      LINALG::TMatrix<FAD,3,1> rnewmass(true); //Matrix to store r
-      LINALG::TMatrix<FAD,3,3> triad_mat_old(true);
-
-      //internal force vector
       LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_inert(true);
-      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_inert_aux(true);
-      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetaperp(true);
-      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetapar(true);
+      CalculateInteriaForces(params,triad_mat,disp_totlag_centerline,v_theta,f_inert);
 
-      for (int numgp=0; numgp<gausspoints.nquad; numgp++)//loop through Gauss points
-      {
-        //Get location and weight of GP in parameter space
-        const double xi = gausspoints.qxg[numgp][0];
-        const double wgt = gausspoints.qwgt[numgp];
-
-        L_i.Clear();
-        DRT::UTILS::shape_function_1D(L_i,xi,Shape());
-        v_thetaperp.Clear();
-        v_thetapar.Clear();
-        theta.Clear();
-
-        for(int node=0; node<COLLOCATION_POINTS; node++)
-        {
-          v_thetaperp.Update(L_i(node),v_thetaperp_cp[node],1.0);
-          v_thetapar.Update(L_i(node),v_thetapar_cp[node],1.0);
-          theta.Update(L_i(node),theta_cp[node],1.0);
-        }
-
-        //compute material triad at gp
-        triad_mat.Clear();
-        angletotriad(theta,triad_mat_cp[REFERENCE_NODE],triad_mat);
-        LINALG::TMatrix<FAD,4,1> Qnewmass(true);
-        triadtoquaternion(triad_mat,Qnewmass);
-
-        N_i.Clear();
-        N.Clear();
-        DRT::UTILS::shape_function_hermite_1D(N_i,xi,length_,line2);
-        AssembleShapefunctionsN(N_i,N);
-        rnewmass.Clear();
-        //Calculation of r at xi
-        for (int i=0; i<3; i++)
-        {
-          for (int j=0; j<6*nnode+COLLOCATION_POINTS; j++)
-          {
-            rnewmass(i)+=N(i,j)*disp_totlag_centerline[j];
-          }
-        }
-
-        triad_mat_old.Clear();
-        LINALG::TMatrix<FAD,4,1>  Qconv(true);
-        for(int i=0;i<4;i++)
-          Qconv(i)=(Qconvmass_[numgp])(i);
-
-        quaterniontotriad(Qconv,triad_mat_old);
-
-        LINALG::TMatrix<FAD,3,3>  deltatriad(true);
-        deltatriad.MultiplyNT(triad_mat,triad_mat_old);
-        LINALG::TMatrix<FAD,4,1>  deltaQ(true);
-        triadtoquaternion(deltatriad,deltaQ);
-        LINALG::TMatrix<FAD,3,1> deltatheta(true);
-        quaterniontoangle(deltaQ,deltatheta);
-
-        //compute material counterparts of spatial vectors
-        LINALG::TMatrix<FAD,3,1> deltaTHETA(true);
-        LINALG::TMatrix<FAD,3,1> Wconvmass(true);
-        LINALG::TMatrix<FAD,3,1> Aconvmass(true);
-        LINALG::TMatrix<FAD,3,1> Amodconvmass(true);
-
-        deltaTHETA.MultiplyTN(triad_mat,deltatheta);
-
-        LINALG::TMatrix<FAD,3,1> auxvector(true);
-        for(int i=0;i<3;i++)
-          auxvector(i)=(wconvmass_[numgp])(i);
-        Wconvmass.MultiplyTN(triad_mat_old,auxvector);
-
-        for(int i=0;i<3;i++)
-          auxvector(i)=(aconvmass_[numgp])(i);
-        Aconvmass.MultiplyTN(triad_mat_old,auxvector);
-
-        for(int i=0;i<3;i++)
-          auxvector(i)=(amodconvmass_[numgp])(i);
-        Amodconvmass.MultiplyTN(triad_mat_old,auxvector);
-
-        LINALG::TMatrix<FAD,3,1> deltar(true);
-        for (int i=0;i<3;i++)
-        {
-          deltar(i)=rnewmass(i)-rconvmass_[numgp](i);
-        }
-
-        LINALG::TMatrix<FAD,3,1> Anewmass(true);
-        LINALG::TMatrix<FAD,3,1> Wnewmass(true);
-        LINALG::TMatrix<FAD,3,1> Amodnewmass(true);
-        LINALG::TMatrix<FAD,3,1> rttnewmass(true);
-        LINALG::TMatrix<FAD,3,1> rtnewmass(true);
-        LINALG::TMatrix<FAD,3,1> rttmodnewmass(true);
-
-        //update angular velocities and accelerations according to Newmark time integration scheme in
-        //material description (see Jelenic, 1999, p. 146, equations (2.8) and (2.9)).
-        //The corresponding equations are adapted according to
-        //the gen-alpha Lie group time integration scheme proposed in [Arnold, Brüls (2007)], [Brüls, Cardona, 2010]
-        //and [Brüls, Cardona, Arnold (2012)]. In the predictor step of the time integration the following
-        //formulas automatically deliver a constant displacement (deltatheta=0), consistent velocity and consistent acceleration
-        //predictor. This fact has to be reflected in a consistent manner by the choice of the predictor in the input file:
-        for (int i=0;i<3;i++)
-        {
-          Anewmass(i)=   (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f))*deltaTHETA(i)-(1.0-alpha_m)/(beta*dt*(1.0-alpha_f))*Wconvmass(i)      \
-                        -alpha_f/(1.0-alpha_f)*Aconvmass(i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*Amodconvmass(i);
-
-          Wnewmass(i)=gamma/(beta*dt)*deltaTHETA(i)+(1-gamma/beta)*Wconvmass(i)+dt*(1-gamma/(2*beta))*Amodconvmass(i);
-
-
-          Amodnewmass(i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*Anewmass(i) + alpha_f*Aconvmass(i) - alpha_m*Amodconvmass(i));
-        }
-
-        for (int i=0;i<3;i++)
-        {
-          rttnewmass(i)=   (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f))*deltar(i)-(1.0-alpha_m)/(beta*dt*(1.0-alpha_f))*rtconvmass_[numgp](i)      \
-                        -alpha_f/(1.0-alpha_f)*rttconvmass_[numgp](i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*rttmodconvmass_[numgp](i);
-
-          rtnewmass(i)=gamma/(beta*dt)*deltar(i)+(1-gamma/beta)*rtconvmass_[numgp](i)+dt*(1-gamma/(2*beta))*rttmodconvmass_[numgp](i);
-
-          rttmodnewmass(i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*rttnewmass(i) + alpha_f*rttconvmass_[numgp](i) - alpha_m*rttmodconvmass_[numgp](i) );
-        }
-
-        //spin matrix of the material angular velocity, i.e. S(W)
-        LINALG::TMatrix<FAD,3,3> SWnewmass(true);
-        LARGEROTATIONS::computespin(SWnewmass,Wnewmass);
-        LINALG::TMatrix<FAD,3,1> Jp_Wnewmass(true);
-        LINALG::TMatrix<FAD,3,1> auxvector1(true);
-        LINALG::TMatrix<FAD,3,1> Pi_t(true);
-        Jp_Wnewmass.Multiply(Jp,Wnewmass);
-        for (int i=0;i<3;i++)
-          for (int j=0;j<3;j++)
-            auxvector1(i)+=SWnewmass(i,j)*Jp_Wnewmass(j)+Jp(i,j)*Anewmass(j);
-
-        Pi_t.Multiply(triad_mat,auxvector1);
-        LINALG::TMatrix<FAD,3,1> L_t(true);
-        L_t.Update(rho*scaledcrosssec,rttnewmass,1.0);
-
-        f_inert_aux.Clear();
-        f_inert_aux.Multiply(v_thetaperp,Pi_t);
-        f_inert_aux.Scale(wgt*jacobi_[numgp]);
-        f_inert.Update(1.0,f_inert_aux,1.0);
-
-        f_inert_aux.Clear();
-        f_inert_aux.Multiply(v_thetapar,Pi_t);
-        f_inert_aux.Scale(wgt*jacobi_[numgp]);
-        f_inert.Update(1.0,f_inert_aux,1.0);
-
-        f_inert_aux.Clear();
-        f_inert_aux.MultiplyTN(N,L_t);
-        f_inert_aux.Scale(wgt*jacobi_[numgp]);
-        f_inert.Update(1.0,f_inert_aux,1.0);
-
-        //**********begin: update class variables needed for storage**************
-        LINALG::TMatrix<FAD,3,1> wnewmass(true);
-        LINALG::TMatrix<FAD,3,1> anewmass(true);
-        LINALG::TMatrix<FAD,3,1> amodnewmass(true);
-        wnewmass.Multiply(triad_mat,Wnewmass);
-        anewmass.Multiply(triad_mat,Anewmass);
-        amodnewmass.Multiply(triad_mat,Amodnewmass);
-
-        for(int i=0;i<4;i++)
-        {
-          (Qnewmass_[numgp])(i)=(Qnewmass(i)).val();
-        }
-
-        for(int i=0;i<3;i++)
-        {
-          (wnewmass_[numgp])(i)=(wnewmass(i)).val();
-          (anewmass_[numgp])(i)=(anewmass(i)).val();
-          (amodnewmass_[numgp])(i)=(amodnewmass(i)).val();
-
-          (rnewmass_[numgp])(i)=(rnewmass(i)).val();
-          (rtnewmass_[numgp])(i)=(rtnewmass(i)).val();
-          (rttnewmass_[numgp])(i)=(rttnewmass(i)).val();
-          (rttmodnewmass_[numgp])(i)=(rttmodnewmass(i)).val();
-        }
-        //**********end: update class variables needed for storage**************
-      }//for (int gp=0; gp<gausspoints.nquad; gp++)
 
       if(rotvec_==true)
       {
@@ -848,8 +684,800 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForces( Teuchos::ParameterList& pa
   return;
 }
 
+/*------------------------------------------------------------------------------------------------------------*
+ | internal forces: strong Kirchhoff constraint (private)                                          meier 02/16|
+ *------------------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3wk::CalculateInternalForcesSK( Teuchos::ParameterList& params,
+                                                      std::vector<double>&      disp,
+                                                      Epetra_SerialDenseMatrix* stiffmatrix,
+                                                      Epetra_SerialDenseMatrix* massmatrix,
+                                                      Epetra_SerialDenseVector* force,
+                                                      Epetra_SerialDenseVector* inertia_force,
+                                                      bool update)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("Beam3wk::CalculateInternalForcesSK");
+  if(COLLOCATION_POINTS!=2 and COLLOCATION_POINTS!=3 and COLLOCATION_POINTS!=4)
+  {
+    dserror("Only the values 2,3 and 4 are valid for COLLOCATION_POINTS!!!");
+  }
+
+  //number of nodes fixed for these element
+  const int nnode = 2;
+
+  //internal force vector
+  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_int(true);
+  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_int_aux(true);
+
+  //vector for current nodal DoFs in total Lagrangian style, i.e. displacement + initial values:
+  //rotvec_==true:  disp_totlag=[\v{d}_1, \v{theta}_1, t_1, \v{d}_2, \v{theta}_2, t_2, \alpha_3]
+  //rotvec_==false: disp_totlag=[\v{d}_1, \v{t}_1, \alpha_1, \v{d}_2, \v{t}_2, \alpha_2, \alpha_3]
+  //! The Number of collocation points can take on the values 2, 3 and 4. 3 and 4 are interior nodes.
+  //This leads e.g. in the case rotvec_==true to the following ordering:
+  //if COLLOCATION_POINTS = 2: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2]
+  //if COLLOCATION_POINTS = 3: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2 \alpha_3]
+  //if COLLOCATION_POINTS = 4: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2 \alpha_3 \alpha_4]
+  std::vector<FAD> disp_totlag(6*nnode+COLLOCATION_POINTS, 0.0);
+
+  //vector containing locally assembled nodal positions and tangents required for centerline:
+  //r(s)=N(s)*disp_totlag_centerline, with disp_totlag_centerline=[\v{d}_1, \v{t}_1, 0, \v{d}_2, \v{t}_2, 0, 0]
+  std::vector<FAD> disp_totlag_centerline(6*nnode+COLLOCATION_POINTS, 0.0);
+
+  //CP values of strains and their variations needed for interpolation
+  std::vector<FAD> epsilon_cp(COLLOCATION_POINTS); // axial tension epsilon=|r_s|-1 at collocation points
+  std::vector<LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> > v_epsilon_cp(COLLOCATION_POINTS);
+
+  //Get integration points for exact integration
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3wk);
+
+  //interpolated values of strains and their variations evaluated at Gauss points
+  FAD epsilon;
+  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> v_epsilon(true);
+  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetaperp_s(true);
+  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetapartheta_s(true);
+  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_theta_s(true); //=v_thetaperp_s+v_thetapartheta_s(+v_thetapard_s)
+
+  //interpolated spin vector variation required for inertia forces: v_theta=v_thetaperp+v_thetapartheta(+v_thetapard)
+  std::vector<LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,3> > v_theta(gausspoints.nquad,LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,3>(true));
+
+  //Further material and spatial strains and forces to be evaluated at the Gauss points
+  LINALG::TMatrix<FAD,3,1> K(true); //material curvature
+  LINALG::TMatrix<FAD,3,1> Omega(true); //material deformation measure Omega:=K-K0
+  LINALG::TMatrix<FAD,3,1> m(true); //spatial moment stress resultant
+  LINALG::TMatrix<FAD,3,1> M(true); //material moment stress resultant
+  FAD f_par=0.0; //material=spatial axial force component
+
+  //Triads at collocation points
+  std::vector<LINALG::TMatrix<FAD,3,3> > triad_ref_cp(COLLOCATION_POINTS,LINALG::TMatrix<FAD,3,3>(true));  //reference triads (SR-system) at collocation points
+  std::vector<LINALG::TMatrix<FAD,3,3> > triad_mat_cp(COLLOCATION_POINTS,LINALG::TMatrix<FAD,3,3>(true));  //material triads at collocation points
+  std::vector<FAD > phi_cp(COLLOCATION_POINTS,0.0);  //relative angle at collocation points
+
+  //Interpolated material triad and angles evaluated at Gauss point
+  std::vector<LINALG::TMatrix<FAD,3,3> > triad_mat(gausspoints.nquad,LINALG::TMatrix<FAD,3,3>(true)); //vector of material triads at gps
+  FAD phi=0.0;    //interpolated relative angle phi
+  FAD phi_s=0.0;  //derivative of interpolated relative angle phi with respect to arc-length s
+
+  //matrices holding the assembled shape functions and s-derivatives
+  LINALG::TMatrix<FAD,3,6*nnode+COLLOCATION_POINTS> N_s(true);
+  LINALG::TMatrix<FAD,3,6*nnode+COLLOCATION_POINTS> N_ss(true);
+  LINALG::TMatrix<FAD,1,6*nnode+COLLOCATION_POINTS> L(true);
+  LINALG::TMatrix<FAD,1,6*nnode+COLLOCATION_POINTS> L_s(true);
+
+  //Matrices for individual shape functions and xi-derivatives
+  LINALG::TMatrix<FAD,1,2*nnode> N_i_xi(true);
+  LINALG::TMatrix<FAD,1,2*nnode> N_i_xixi(true);
+  LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> L_i(true);
+  LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> L_i_xi(true);
+
+  //Matrices for individual s-derivatives
+  LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> L_i_s(true);
+
+  //Additional kinematic quantities
+  LINALG::TMatrix<FAD,3,1> r_s(true); //Matrix to store r'
+  LINALG::TMatrix<FAD,3,1> r_ss(true); //Matrix to store r''
+  LINALG::TMatrix<FAD,3,1> g1(true); //g1:=r'/||r'||
+  LINALG::TMatrix<FAD,3,1> g1_s(true); //g1'
+  LINALG::TMatrix<FAD,3,1> ttilde(true); //\tilde{t}:=g1/||r'||=r'/||r'||^2
+  LINALG::TMatrix<FAD,3,1> ttilde_s(true);//\tilde{t}'
+  LINALG::TMatrix<FAD,3,1> kappacl(true); //centerline (cl) curvature vector
+  FAD abs_r_s=0.0; // ||r'||
+  FAD rsTrss=0.0; // r'^Tr''
+  LINALG::TMatrix<FAD,3,3> auxmatrix1(true); //auxilliary matrix
+  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> auxmatrix2(true); //auxilliary matrix
+
+  #ifdef CONSISTENTSPINSK
+    LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetapard_s(true);
+    std::vector<LINALG::TMatrix<FAD,3,1> > g1_cp(COLLOCATION_POINTS, LINALG::TMatrix<FAD,3,1>(true));
+    std::vector<LINALG::TMatrix<FAD,3,1> > ttilde_cp(COLLOCATION_POINTS, LINALG::TMatrix<FAD,3,1>(true));
+    std::vector<LINALG::TMatrix<FAD,3,6*nnode+COLLOCATION_POINTS> > N_s_cp(COLLOCATION_POINTS, LINALG::TMatrix<FAD,3,6*nnode+COLLOCATION_POINTS>(true));
+    std::vector<LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> > v1_cp(COLLOCATION_POINTS, LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1>(true));
+    LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> v1(true);
+    LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> v1_s(true);
+  #endif
+
+  //MISC
+  double xi=0.0;  //parameter coordinated
+  int ind=0; //position index where CP quantities have to be stored
+
+  //Set current positions and orientations at all nodes:
+  UpdateDispTotlag(disp, disp_totlag);
+
+  SetNodalVariables(disp_totlag,disp_totlag_centerline,triad_mat_cp);
+
+  #ifdef CONSISTENTSPINSK
+    //*******************************test CONSISTENTSPINSK********************************************
+    LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1>disp_totlag_rigidrotation(true);
+    LINALG::TMatrix<FAD,3,1> w0(true);
+    LINALG::TMatrix<FAD,3,3> Sw0(true);
+
+    w0(0)=1.0;
+    w0(1)=2.0;
+    w0(2)=3.0;
+
+    LARGEROTATIONS::computespin(Sw0,w0);
+    for(int i=0;i<3;i++)
+    {
+      for(int j=0;j<3;j++)
+      {
+        disp_totlag_rigidrotation(i)+=Sw0(i,j)*disp_totlag[j];
+        disp_totlag_rigidrotation(3+i)+=Sw0(i,j)*disp_totlag[3+j];
+        disp_totlag_rigidrotation(7+i)+=Sw0(i,j)*disp_totlag[7+j];
+        disp_totlag_rigidrotation(10+i)+=Sw0(i,j)*disp_totlag[10+j];
+      }
+    }
+
+    LINALG::TMatrix<FAD,1,1> auxscalar(true);
+    LINALG::TMatrix<FAD,3,1> delta_theta_s(true);
+    //***********************************test CONSISTENTSPINSK****************************************
+  #endif
+
+  //********begin: evaluate quantities at collocation points********************************
+  for(int node=0; node<COLLOCATION_POINTS; node++)
+  {
+    //calculate xi of cp
+    //node=0->xi=-1  node=1->xi=0  node=2->xi=1
+    xi=(double)node/(COLLOCATION_POINTS-1)*2-1.0;
+
+    //get value of interpolating function of theta (lagrange polynomials) at xi
+    N_i_xi.Clear();
+    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
+
+    //Determine storage position for the node node
+    ind=LARGEROTATIONS::NumberingTrafo(node+1, COLLOCATION_POINTS);
+
+    N_s.Clear();
+    AssembleShapefunctionsNs(N_i_xi,jacobi_cp_[ind],N_s);
+    r_s.Clear();
+    //Calculation of r' at xi
+    for (int i=0; i<3; i++)
+    {
+      for (int j=0; j<6*nnode+COLLOCATION_POINTS; j++)
+      {
+        r_s(i)+=N_s(i,j)*disp_totlag_centerline[j];
+      }
+    }
+    //calculate epsilon at collocation point
+    abs_r_s=Norm<FAD>(r_s);
+    epsilon_cp[ind]=abs_r_s-1.0;
+
+    v_epsilon_cp[ind].Clear();
+    v_epsilon_cp[ind].MultiplyTN(N_s,r_s);
+    v_epsilon_cp[ind].Scale(1.0/abs_r_s);
+
+    #ifdef CONSISTENTSPINSK
+      N_s_cp[ind].Update(1.0,N_s,0.0);
+      g1_cp[ind].Update(1.0/abs_r_s,r_s,0.0);
+      ttilde_cp[ind].Update(1.0/(abs_r_s*abs_r_s),r_s,0.0);
+      //*******************************test CONSISTENTSPINSK********************************************
+      auxscalar.MultiplyTN(w0,g1_cp[ind]);
+      if(node==0)
+        disp_totlag_rigidrotation(6)=auxscalar(0,0);
+      else if (node==1)
+        disp_totlag_rigidrotation(14)=auxscalar(0,0);
+      else
+        disp_totlag_rigidrotation(13)=auxscalar(0,0);
+      //*******************************test CONSISTENTSPINSK********************************************
+    #endif
+
+  } //for (int node=0; node<COLLOCATION_POINTS; node++)
+
+  //calculate angle at cp (this has to be done in a SEPARATE loop as follows)
+  for(int node=0; node<COLLOCATION_POINTS; node++)
+  {
+    LINALG::TMatrix<FAD,3,3> Lambdabarref(true);
+    LINALG::TMatrix<FAD,3,1> tangentref(true);
+    LINALG::TMatrix<FAD,3,1> phivec(true);
+    for(int i=0;i<3;i++)
+    {
+      tangentref(i)=triad_mat_cp[node](i,0);
+    }
+    CalculateSRTriads<FAD>(tangentref,triad_mat_cp[REFERENCE_NODE],Lambdabarref);
+    triadtoangleleft(phivec,Lambdabarref,triad_mat_cp[node]);
+    phi_cp[node]=0.0;
+    for(int i=0;i<3;i++)
+    {
+      phi_cp[node]+=tangentref(i)*phivec(i);
+    }
+
+    #ifdef CONSISTENTSPINSK
+      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> auxmatrix3(true);
+      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_s_cp[node], g1_cp[REFERENCE_NODE], ttilde_cp[node], auxmatrix3);
+      v1_cp[node].Update(1.0,auxmatrix3,0.0);
+      auxmatrix3.Clear();
+      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_s_cp[REFERENCE_NODE], g1_cp[node], ttilde_cp[REFERENCE_NODE], auxmatrix3);
+      v1_cp[node].Update(-1.0,auxmatrix3,1.0);
+      LINALG::TMatrix<FAD,1,1> auxscalar(true);
+      auxscalar.MultiplyTN(g1_cp[node],g1_cp[REFERENCE_NODE]);
+      v1_cp[node].Scale(1.0/(1.0+auxscalar(0,0)));
+    #endif
+  }
+  //********end: evaluate quantities at collocation points********************************
+
+  //Clear energy in the beginning
+  Eint_=0.0;
+
+  //******begin: gauss integration for internal force vector and stiffness matrix*********
+  for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+  {
+    //Get location and weight of GP in parameter space
+    const double xi = gausspoints.qxg[numgp][0];
+    const double wgt = gausspoints.qwgt[numgp];
+
+    //Evaluate and assemble shape functions
+    L_i.Clear();
+    L_i_xi.Clear();
+    L_i_s.Clear();
+    L.Clear();
+    L_s.Clear();
+    N_i_xi.Clear();
+    N_i_xixi.Clear();
+    N_s.Clear();
+    N_ss.Clear();
+    DRT::UTILS::shape_function_1D(L_i,xi,Shape());
+    DRT::UTILS::shape_function_1D_deriv1(L_i_xi,xi,Shape());
+    L_i_s.Update(1.0/jacobi_[numgp],L_i_xi,0.0);
+    AssembleShapefunctionsL(L_i,L);
+    //The assemble routine is identical for L and L_s
+    AssembleShapefunctionsL(L_i_s,L_s);
+    DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
+    AssembleShapefunctionsNs(N_i_xi,jacobi_[numgp],N_s);
+    DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi,xi,length_,line2);
+    AssembleShapefunctionsNss(N_i_xi,N_i_xixi,jacobi_[numgp],jacobi2_[numgp],N_ss);
+
+    //Calculate collocation piont interpolations
+    v_epsilon.Clear();
+    epsilon=0.0;
+    phi=0.0;
+    phi_s=0.0;
+    for(int node=0; node<COLLOCATION_POINTS; node++)
+    {
+      //calculate interpolated axial tension and variation
+      v_epsilon.Update(L_i(node),v_epsilon_cp[node],1.0);
+      epsilon+=L_i(node)*epsilon_cp[node];
+      //calculate interpolated relative angle
+      phi+=L_i(node)*phi_cp[node];
+      phi_s+=L_i_s(node)*phi_cp[node];
+    }
+
+    //Calculation of r' and r'' at xi
+    r_s.Clear();
+    r_ss.Clear();
+    for (int i=0; i<3; i++)
+    {
+      for (int j=0; j<6*nnode+COLLOCATION_POINTS; j++)
+      {
+        r_s(i)+=N_s(i,j)*disp_totlag_centerline[j];
+        r_ss(i)+=N_ss(i,j)*disp_totlag_centerline[j];
+      }
+    }
+
+    //*****************************************************************************************************************************
+    //************************Begin: Determine "v"-vectors representing the discrete strain variations*****************************
+    //*****************************************************************************************************************************
+    //Auxilliary quantities
+    abs_r_s=0.0;
+    rsTrss=0.0;
+    abs_r_s=Norm<FAD>(r_s);
+    for (int i=0;i<3;i++)
+    {
+      rsTrss+=r_s(i)*r_ss(i);
+    }
+    g1.Clear();
+    g1_s.Clear();
+    g1.Update(1.0/abs_r_s,r_s,0.0);
+    g1_s.Update(1.0/abs_r_s,r_ss,0.0);
+    g1_s.Update(-rsTrss/(abs_r_s*abs_r_s*abs_r_s),r_s,1.0);
+    ttilde.Clear();
+    ttilde_s.Clear();
+    ttilde.Update(1.0/(abs_r_s*abs_r_s),r_s,0.0);
+    ttilde_s.Update(1.0/(abs_r_s*abs_r_s),r_ss,0.0);
+    ttilde_s.Update(-2*rsTrss/(abs_r_s*abs_r_s*abs_r_s*abs_r_s),r_s,1.0);
+
+    //************** I) Compute v_theta_s=v_thetaperp_s+v_thetapartheta_s(+v_thetapard_s) *****************************************
+    // I a) Compute v_thetapartheta_s
+    v_thetapartheta_s.Clear();
+    for (int row=0;row<6*nnode+COLLOCATION_POINTS;row++)
+    {
+      for (int column=0;column<3;column++)
+      {
+        v_thetapartheta_s(row,column)+=L_s(0,row)*g1(column, 0) + L(0,row)*g1_s(column, 0);
+      }
+    }
+
+    // I b) Compute v_thetaperp_s
+    v_thetaperp_s.Clear();
+    auxmatrix1.Clear();
+    auxmatrix2.Clear();
+    LARGEROTATIONS::computespin(auxmatrix1,ttilde);
+    auxmatrix2.MultiplyTN(N_ss,auxmatrix1);
+    v_thetaperp_s.Update(-1.0,auxmatrix2,0.0);
+    auxmatrix1.Clear();
+    auxmatrix2.Clear();
+    LARGEROTATIONS::computespin(auxmatrix1,ttilde_s);
+    auxmatrix2.MultiplyTN(N_s,auxmatrix1);
+    v_thetaperp_s.Update(-1.0,auxmatrix2,1.0);
+
+    // I c) Calculate sum v_theta_s=v_thetaperp_s+v_thetapartheta_s
+    v_theta_s.Clear();
+    v_theta_s.Update(1.0,v_thetaperp_s,1.0);
+    v_theta_s.Update(1.0,v_thetapartheta_s,1.0);
+
+    //************** II) Compute v_theta=v_thetaperp_+v_thetapartheta_(+v_thetapard_)  which is required for inertia forces ********
+    if (massmatrix != NULL and inertia_force != NULL)
+    {
+      // II a) v_thetapartheta contribution
+      v_theta[numgp].Clear();
+      for (int row=0;row<6*nnode+COLLOCATION_POINTS;row++)
+      {
+        for (int column=0;column<3;column++)
+        {
+          v_theta[numgp](row,column)+=L(0,row)*g1(column, 0);
+        }
+      }
+
+      // II b) Compute v_thetaperp contribution
+      auxmatrix1.Clear();
+      auxmatrix2.Clear();
+      LARGEROTATIONS::computespin(auxmatrix1,ttilde);
+      auxmatrix2.MultiplyTN(N_s,auxmatrix1);
+      v_theta[numgp].Update(-1.0,auxmatrix2,1.0);
+    }
+
+    // Compute contributions stemming from CONSISTENTSPINSK
+    #ifdef CONSISTENTSPINSK
+      //************** to I) Compute v_thetapard_s of v_theta_s=v_thetaperp_s+v_thetapartheta_s(+v_thetapard_s) *******************
+      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> auxmatrix3(true);
+      LINALG::TMatrix<FAD,1,1> auxscalar1(true);
+
+      //Calculate v1:
+      v1.Clear();
+      auxmatrix3.Clear();
+      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_s, g1_cp[REFERENCE_NODE], ttilde, auxmatrix3);
+      v1.Update(1.0,auxmatrix3,0.0);
+      auxmatrix3.Clear();
+      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_s_cp[REFERENCE_NODE], g1, ttilde_cp[REFERENCE_NODE], auxmatrix3);
+      v1.Update(-1.0,auxmatrix3,1.0);
+      auxscalar1.Clear();
+      auxscalar1.MultiplyTN(g1,g1_cp[REFERENCE_NODE]);
+      v1.Scale(1.0/(1.0+auxscalar1(0,0)));
+
+      //Calculate v1_s:
+      v1_s.Clear();
+      auxmatrix3.Clear();
+      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_s, g1_cp[REFERENCE_NODE], ttilde_s, auxmatrix3);
+      v1_s.Update(1.0,auxmatrix3,0.0);
+      auxmatrix3.Clear();
+      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_ss, g1_cp[REFERENCE_NODE], ttilde, auxmatrix3);
+      v1_s.Update(1.0,auxmatrix3,1.0);
+      auxmatrix3.Clear();
+      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_s_cp[REFERENCE_NODE], g1_s, ttilde_cp[REFERENCE_NODE], auxmatrix3);
+      v1_s.Update(-1.0,auxmatrix3,1.0);
+      auxscalar1.Clear();
+      auxscalar1.MultiplyTN(g1_s,g1_cp[REFERENCE_NODE]);
+      v1_s.Update(-auxscalar1(0,0),v1,1.0);
+      auxscalar1.Clear();
+      auxscalar1.MultiplyTN(g1,g1_cp[REFERENCE_NODE]);
+      v1_s.Scale(1.0/(1.0+auxscalar1(0,0)));
+
+      //Calculate vec1 and vec2
+      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> vec1(true);
+      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> vec2(true);
+      for(int node=0; node<COLLOCATION_POINTS; node++)
+      {
+        vec1.Update(L_i_s(node),v1_cp[node],1.0);
+        vec2.Update(L_i(node),v1_cp[node],1.0);
+      }
+      vec1.Update(-1.0,v1_s,1.0);
+      vec2.Update(-1.0,v1,1.0);
+
+      //Compute v_thetapard_s
+      v_thetapard_s.Clear();
+      for (int i=0; i<6*nnode+COLLOCATION_POINTS; i++)
+      {
+        for (int j=0; j<3; j++)
+        {
+          v_thetapard_s(i,j)+=vec1(i)*g1(j)+vec2(i)*g1_s(j);
+        }
+      }
+      // I d) Add v_thetapard_s contribution according to v_theta_s+=v_thetapard_s
+      v_theta_s.Update(1.0,v_thetapard_s,1.0);
+
+      // to II)  Compute v_thetapard_ of v_theta=v_thetaperp_+v_thetapartheta_(+v_thetapard_)  which is required for inertia forces*******
+      // II c) v_thetapard_ contribution
+      if (massmatrix != NULL and inertia_force != NULL)
+      {
+
+        LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> vec3(true);
+        for(int node=0; node<COLLOCATION_POINTS; node++)
+        {
+          vec3.Update(L_i(node),v1_cp[node],1.0);
+        }
+        vec3.Update(-1.0,v1,1.0);
+        for (int i=0; i<6*nnode+COLLOCATION_POINTS; i++)
+        {
+          for (int j=0; j<3; j++)
+          {
+            v_theta[numgp](i,j)+=vec3(i)*g1(j);
+          }
+        }
+      }
+
+      //*******************************test CONSISTENTSPINSK********************************************
+      delta_theta_s.Clear();
+
+      delta_theta_s.MultiplyTN(v_theta_s,disp_totlag_rigidrotation);
+
+      std::cout << "delta_theta_s: " << std::endl;
+      for(int i=0;i<3;i++)
+        std::cout << delta_theta_s(i).val() << std::endl;
+
+      //*******************************test CONSISTENTSPINSK********************************************
+    #endif
+    //***************************************************************************************************************************
+    //************************End: Determine "v"-vectors representing the discrete strain variations*****************************
+    //***************************************************************************************************************************
+
+    //Compute material triad and centerline curvature at Gauss point
+    triad_mat[numgp].Clear();
+    ComputeTriadSK(phi,r_s,triad_mat_cp[REFERENCE_NODE],triad_mat[numgp]);
+    kappacl.Clear();
+    Calculate_clcurvature(r_s, r_ss, kappacl);
+
+    //compute material strain K at Gauss point
+    K.Clear();
+    Omega.Clear();
+    computestrainSK(phi_s,kappacl,triad_mat_cp[REFERENCE_NODE],triad_mat[numgp],K);
+    for(int i=0; i<3; i++)
+    {
+      Omega(i)=K(i)-K0_[numgp](i);
+    }
+
+    //compute material stress resultants at Gauss point
+    M.Clear();
+    f_par=0.0;
+    straintostress(Omega,epsilon,M,f_par);
+
+    //Calculate internal energy and store it in class variable
+    Eint_ += 0.5*epsilon.val()*f_par.val()*wgt*jacobi_[numgp];
+    for(int i=0; i<3; i++)
+    {
+      Eint_ += 0.5*Omega(i).val()*M(i).val()*wgt*jacobi_[numgp];
+    }
+
+    //pushforward of stress resultants
+    m.Clear();
+    m.Multiply(triad_mat[numgp],M);
+
+    //residual contribution from moments
+    f_int_aux.Clear();
+    f_int_aux.Multiply(v_theta_s,m);
+    f_int_aux.Scale(wgt*jacobi_[numgp]);
+    f_int.Update(1.0,f_int_aux,1.0);
+
+    //residual contribution from axial forces
+    f_int_aux.Clear();
+    f_int_aux.Update(1.0,v_epsilon,0.0);
+    f_int_aux.Scale(wgt*jacobi_[numgp]*f_par);
+    f_int.Update(1.0,f_int_aux,1.0);
+  }//for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+  //******end: gauss integration for internal force vector and stiffness matrix*********
+
+  if(rotvec_==true)
+  {
+    ApplyRotVecTrafo(disp_totlag_centerline,f_int);
+  }
+
+  //Update stiffness matrix and force vector
+  if(stiffmatrix!=NULL)
+  {
+    //Calculating stiffness matrix with FAD
+    for(int i = 0; i < 6*nnode+COLLOCATION_POINTS; i++)
+    {
+      for(int j = 0; j < 6*nnode+COLLOCATION_POINTS; j++)
+      {
+        (*stiffmatrix)(i,j)=f_int(i).dx(j);
+      }
+    }
+  }
+  if(force!=NULL)
+  {
+    for (int i=0; i< 6*nnode+COLLOCATION_POINTS; i++)
+    {
+      (*force)(i)=f_int(i).val();
+    }
+  }
+
+  //****************Update of the old reference triads at the nodes***********************************************
+  if (update and rotvec_==false)
+  {
+      UpdateRefTriads(disp_totlag_centerline);
+  }
+  //****************end: Update of the old reference triads at the nodes********************************************
+
+  //calculation of mass matrix: According to the paper of Jelenic and Crisfield "Geometrically exact 3D beam theory: implementation of a strain-invariant
+  //finite element for statics and dynamics", 1999, page 146, a time integration scheme that delivers angular velocities and angular accelerations as
+  //needed for the inertia terms of geometrically exact beams has to be based on multiplicative rotation angle increments between two successive time
+  //steps. Since BACI does all displacement updates in an additive manner, the global vector of rotational displacements has no physical meaning and,
+  //consequently the global velocity and acceleration vectors resulting from the BACI time integration schemes have no physical meaning, too. Therefore,
+  //a mass matrix in combination with this global acceleration vector is meaningless from a physical point of view. For these reasons, we have to apply
+  //our own time integration scheme at element level. Up to now, the only implemented integration scheme is the gen-alpha Lie group time integration
+  //according to [Arnold, Brüls (2007)], [Brüls, Cardona, 2010] and [Brüls, Cardona, Arnold (2012)] in combination with a constdisvelacc predictor. (Christoph Meier, 04.14)
+
+  double beta = params.get<double>("rot_beta",1000);
+
+  if (massmatrix != NULL and inertia_force != NULL)
+  {
+    if(beta < 999)
+    {
+
+      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_inert(true);
+      CalculateInteriaForces(params,triad_mat,disp_totlag_centerline,v_theta,f_inert);
+
+      if(rotvec_==true)
+      {
+        ApplyRotVecTrafo(disp_totlag_centerline,f_inert);
+      }
+
+      //Update mass matrix and inertia force vector
+      if(massmatrix!=NULL)
+      {
+        //Calculating stiffness matrix with FAD
+        for(int i = 0; i < 6*nnode+COLLOCATION_POINTS; i++)
+        {
+          for(int j = 0; j < 6*nnode+COLLOCATION_POINTS; j++)
+          {
+            (*massmatrix)(i,j)=f_inert(i).dx(j);
+          }
+        }
+      }
+      for (int i=0; i< 6*nnode+COLLOCATION_POINTS; i++)
+      {
+        (*inertia_force)(i)=f_inert(i).val();
+      }
+    }
+    else
+    {
+      //This is a dummy mass matrix which is necessary for statmech simulations
+      for (int i=0; i<6*nnode; i++)
+        (*massmatrix)(i,i) = 1;
+    }//if(beta < 999)
+  }//if (massmatrix != NULL)
+
+  return;
+}
+
+/*------------------------------------------------------------------------------------------------------------*
+ | Calculate intertia forces and moments                                                           meier 02/16|
+ *------------------------------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3wk::CalculateInteriaForces(Teuchos::ParameterList& params,
+                                                    std::vector<LINALG::TMatrix<FAD,3,3> >& triad_mat,
+                                                    std::vector<FAD>& disp_totlag_centerline,
+                                                    std::vector<LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,3> >& v_theta,
+                                                    LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,1>& f_inert)
+{
+  double gamma = params.get<double>("rot_gamma",1000);
+  double alpha_f = params.get<double>("rot_alphaf",1000);
+  double alpha_m = params.get<double>("rot_alpham",1000);
+  double dt = params.get<double>("delta time",1000);
+  double beta = params.get<double>("rot_beta",1000);
+
+  //first of all we get the material law
+  Teuchos::RCP<const MAT::Material> currmat = Material();
+  double rho = 0;
+
+  //assignment of material parameters; only St.Venant material is accepted for this beam
+  switch(currmat->MaterialType())
+  {
+    case INPAR::MAT::m_stvenant:// only linear elastic material supported
+    {
+      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+      rho = actmat->Density();
+    }
+    break;
+    default:
+      dserror("unknown or improper type of material law");
+    break;
+  }
+
+  //tensor of mass moments of inertia and cross-section value. These values are used in order to artificially scale
+  //the the translational and rotational inertia terms with given input parameters if necessary:
+  LINALG::TMatrix<FAD,3,3> Jp(true);
+  Jp(0,0)=inertscalerot1_*(Iyy_+Izz_);
+  Jp(1,1)=inertscalerot2_*Iyy_;
+  Jp(2,2)=inertscalerot2_*Izz_;
+  Jp.Scale(rho);
+
+  const int nnode=2;
+
+  double scaledcrosssec=inertscaletrans_*crosssec_;
+
+  LINALG::TMatrix<FAD,3,6*nnode+COLLOCATION_POINTS> N(true);
+  LINALG::TMatrix<FAD,1,2*nnode> N_i(true);
+  LINALG::TMatrix<FAD,3,1> rnewmass(true); //Matrix to store r
+  LINALG::TMatrix<FAD,3,3> triad_mat_old(true);
+
+  //internal force vector
+  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_inert_aux(true);
+  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetaperp(true);
+  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetapar(true);
+
+  //Get integration points for exact integration
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3wk);
+
+  for (int numgp=0; numgp<gausspoints.nquad; numgp++)//loop through Gauss points
+  {
+    //Get location and weight of GP in parameter space
+    const double xi = gausspoints.qxg[numgp][0];
+    const double wgt = gausspoints.qwgt[numgp];
+
+    //compute quaterion of material triad at gp
+    LINALG::TMatrix<FAD,4,1> Qnewmass(true);
+    triadtoquaternion(triad_mat[numgp],Qnewmass);
+
+    N_i.Clear();
+    N.Clear();
+    DRT::UTILS::shape_function_hermite_1D(N_i,xi,length_,line2);
+    AssembleShapefunctionsN(N_i,N);
+    rnewmass.Clear();
+    //Calculation of r at xi
+    for (int i=0; i<3; i++)
+    {
+      for (int j=0; j<6*nnode+COLLOCATION_POINTS; j++)
+      {
+        rnewmass(i)+=N(i,j)*disp_totlag_centerline[j];
+      }
+    }
+
+    triad_mat_old.Clear();
+    LINALG::TMatrix<FAD,4,1>  Qconv(true);
+    for(int i=0;i<4;i++)
+      Qconv(i)=(Qconvmass_[numgp])(i);
+
+    quaterniontotriad(Qconv,triad_mat_old);
+
+    LINALG::TMatrix<FAD,3,3>  deltatriad(true);
+    deltatriad.MultiplyNT(triad_mat[numgp],triad_mat_old);
+    LINALG::TMatrix<FAD,4,1>  deltaQ(true);
+    triadtoquaternion(deltatriad,deltaQ);
+    LINALG::TMatrix<FAD,3,1> deltatheta(true);
+    quaterniontoangle(deltaQ,deltatheta);
+
+    //compute material counterparts of spatial vectors
+    LINALG::TMatrix<FAD,3,1> deltaTHETA(true);
+    LINALG::TMatrix<FAD,3,1> Wconvmass(true);
+    LINALG::TMatrix<FAD,3,1> Aconvmass(true);
+    LINALG::TMatrix<FAD,3,1> Amodconvmass(true);
+
+    deltaTHETA.MultiplyTN(triad_mat[numgp],deltatheta);
+
+    LINALG::TMatrix<FAD,3,1> auxvector(true);
+    for(int i=0;i<3;i++)
+      auxvector(i)=(wconvmass_[numgp])(i);
+    Wconvmass.MultiplyTN(triad_mat_old,auxvector);
+
+    for(int i=0;i<3;i++)
+      auxvector(i)=(aconvmass_[numgp])(i);
+    Aconvmass.MultiplyTN(triad_mat_old,auxvector);
+
+    for(int i=0;i<3;i++)
+      auxvector(i)=(amodconvmass_[numgp])(i);
+    Amodconvmass.MultiplyTN(triad_mat_old,auxvector);
+
+    LINALG::TMatrix<FAD,3,1> deltar(true);
+    for (int i=0;i<3;i++)
+    {
+      deltar(i)=rnewmass(i)-rconvmass_[numgp](i);
+    }
+
+    LINALG::TMatrix<FAD,3,1> Anewmass(true);
+    LINALG::TMatrix<FAD,3,1> Wnewmass(true);
+    LINALG::TMatrix<FAD,3,1> Amodnewmass(true);
+    LINALG::TMatrix<FAD,3,1> rttnewmass(true);
+    LINALG::TMatrix<FAD,3,1> rtnewmass(true);
+    LINALG::TMatrix<FAD,3,1> rttmodnewmass(true);
+
+    //update angular velocities and accelerations according to Newmark time integration scheme in
+    //material description (see Jelenic, 1999, p. 146, equations (2.8) and (2.9)).
+    //The corresponding equations are adapted according to
+    //the gen-alpha Lie group time integration scheme proposed in [Arnold, Brüls (2007)], [Brüls, Cardona, 2010]
+    //and [Brüls, Cardona, Arnold (2012)]. In the predictor step of the time integration the following
+    //formulas automatically deliver a constant displacement (deltatheta=0), consistent velocity and consistent acceleration
+    //predictor. This fact has to be reflected in a consistent manner by the choice of the predictor in the input file:
+    for (int i=0;i<3;i++)
+    {
+      Anewmass(i)=   (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f))*deltaTHETA(i)-(1.0-alpha_m)/(beta*dt*(1.0-alpha_f))*Wconvmass(i)      \
+                    -alpha_f/(1.0-alpha_f)*Aconvmass(i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*Amodconvmass(i);
+
+      Wnewmass(i)=gamma/(beta*dt)*deltaTHETA(i)+(1-gamma/beta)*Wconvmass(i)+dt*(1-gamma/(2*beta))*Amodconvmass(i);
+
+
+      Amodnewmass(i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*Anewmass(i) + alpha_f*Aconvmass(i) - alpha_m*Amodconvmass(i));
+    }
+
+    for (int i=0;i<3;i++)
+    {
+      rttnewmass(i)=   (1.0-alpha_m)/(beta*dt*dt*(1.0-alpha_f))*deltar(i)-(1.0-alpha_m)/(beta*dt*(1.0-alpha_f))*rtconvmass_[numgp](i)      \
+                    -alpha_f/(1.0-alpha_f)*rttconvmass_[numgp](i)+(alpha_m/(1.0-alpha_f)-(0.5-beta)*(1.0-alpha_m)/(beta*(1.0-alpha_f)))*rttmodconvmass_[numgp](i);
+
+      rtnewmass(i)=gamma/(beta*dt)*deltar(i)+(1-gamma/beta)*rtconvmass_[numgp](i)+dt*(1-gamma/(2*beta))*rttmodconvmass_[numgp](i);
+
+      rttmodnewmass(i)=1.0/(1.0-alpha_m)*((1.0-alpha_f)*rttnewmass(i) + alpha_f*rttconvmass_[numgp](i) - alpha_m*rttmodconvmass_[numgp](i) );
+    }
+
+    //spin matrix of the material angular velocity, i.e. S(W)
+    LINALG::TMatrix<FAD,3,3> SWnewmass(true);
+    LARGEROTATIONS::computespin(SWnewmass,Wnewmass);
+    LINALG::TMatrix<FAD,3,1> Jp_Wnewmass(true);
+    LINALG::TMatrix<FAD,3,1> auxvector1(true);
+    LINALG::TMatrix<FAD,3,1> Pi_t(true);
+    Jp_Wnewmass.Multiply(Jp,Wnewmass);
+    for (int i=0;i<3;i++)
+      for (int j=0;j<3;j++)
+        auxvector1(i)+=SWnewmass(i,j)*Jp_Wnewmass(j)+Jp(i,j)*Anewmass(j);
+
+    Pi_t.Multiply(triad_mat[numgp],auxvector1);
+    LINALG::TMatrix<FAD,3,1> L_t(true);
+    L_t.Update(rho*scaledcrosssec,rttnewmass,1.0);
+
+    f_inert_aux.Clear();
+    f_inert_aux.Multiply(v_theta[numgp],Pi_t);
+    f_inert_aux.Scale(wgt*jacobi_[numgp]);
+    f_inert.Update(1.0,f_inert_aux,1.0);
+
+    f_inert_aux.Clear();
+    f_inert_aux.MultiplyTN(N,L_t);
+    f_inert_aux.Scale(wgt*jacobi_[numgp]);
+    f_inert.Update(1.0,f_inert_aux,1.0);
+
+    //**********begin: update class variables needed for storage**************
+    LINALG::TMatrix<FAD,3,1> wnewmass(true);
+    LINALG::TMatrix<FAD,3,1> anewmass(true);
+    LINALG::TMatrix<FAD,3,1> amodnewmass(true);
+    wnewmass.Multiply(triad_mat[numgp],Wnewmass);
+    anewmass.Multiply(triad_mat[numgp],Anewmass);
+    amodnewmass.Multiply(triad_mat[numgp],Amodnewmass);
+
+    for(int i=0;i<4;i++)
+    {
+      (Qnewmass_[numgp])(i)=(Qnewmass(i)).val();
+    }
+
+    for(int i=0;i<3;i++)
+    {
+      (wnewmass_[numgp])(i)=(wnewmass(i)).val();
+      (anewmass_[numgp])(i)=(anewmass(i)).val();
+      (amodnewmass_[numgp])(i)=(amodnewmass(i)).val();
+
+      (rnewmass_[numgp])(i)=(rnewmass(i)).val();
+      (rtnewmass_[numgp])(i)=(rtnewmass(i)).val();
+      (rttnewmass_[numgp])(i)=(rttnewmass(i)).val();
+      (rttmodnewmass_[numgp])(i)=(rttmodnewmass(i)).val();
+    }
+    //**********end: update class variables needed for storage**************
+  }//for (int gp=0; gp<gausspoints.nquad; gp++)
+}
+
 /*-----------------------------------------------------------------------------------------------------------*
- |  Integrate a Surface/Line Neumann boundary condition (public)                                  meier 09/12|
+ |  Integrate a Surface/Line Neumann boundary condition (public)                                  meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3wk::EvaluateNeumann(Teuchos::ParameterList& params,
                                                DRT::Discretization& discretization,
@@ -1102,107 +1730,33 @@ int DRT::ELEMENTS::Beam3wk::EvaluateNeumann(Teuchos::ParameterList& params,
         }
       }
     }
-    if(elevec1!=NULL)
+    for (int i=0; i< 6*nnode+COLLOCATION_POINTS; i++)
     {
-      for (int i=0; i< 6*nnode+COLLOCATION_POINTS; i++)
-      {
-        elevec1(i)=f_ext(i).val();
-      }
+      elevec1(i)=f_ext(i).val();
     }
   }//if a line neumann condition needs to be linearized
-
-//  std::cout << "elemat1: " << std::endl;
-//  if(elemat1!=NULL)
-//  {
-//    //Calculating stiffness matrix with FAD
-//    for(int i = 0; i < 6*nnode+COLLOCATION_POINTS; i++)
-//    {
-//      for(int j = 0; j < 6*nnode+COLLOCATION_POINTS; j++)
-//      {
-//        std::cout << (*elemat1)(i,j) << "  ";
-//      }
-//      std::cout << std::endl;
-//    }
-//  }
-//  std::cout << "fext: " << std::endl;
-//  {
-//    for (int i=0; i< 6*nnode+COLLOCATION_POINTS; i++)
-//    {
-//      std::cout << elevec1(i) << std::endl;
-//    }
-//  }
 
   return 0;
 }  //DRT::ELEMENTS::Beam3wk::EvaluateNeumann
 
 /*-----------------------------------------------------------------------------------------------------------*
- |  Rotate a triad around the first base vector (tangent)                                         meier 05/13|
+ |  Assemble C shape function                                                                     meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::RotateTriad(LINALG::TMatrix<FAD,3,3> triad, FAD alpha, LINALG::TMatrix<FAD,3,3>& triad_rot)
+void DRT::ELEMENTS::Beam3wk::AssembleShapefunctionsL(LINALG::TMatrix<FAD,1,COLLOCATION_POINTS>& L_i,
+                                                    LINALG::TMatrix<FAD,1,2*6+COLLOCATION_POINTS>& L)
 {
-
-  for (int i=0; i<3; i++)
-  {
-  triad_rot(i,0)=triad(i,0);
-  triad_rot(i,1)=triad(i,1)*cos(alpha)+triad(i,2)*sin(alpha);
-  triad_rot(i,2)=triad(i,2)*cos(alpha)-triad(i,1)*sin(alpha);
-  }
-
-  return;
-}
-
-/*-----------------------------------------------------------------------------------------------------------*
- |  Assemble all shape functions                                                                   meier 05/13|
- *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::AssembleShapefunctions( LINALG::TMatrix<FAD,1,4> N_i_xi,
-                                                     LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> C_i,
-                                                     LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> C_i_xi,
-                                                     FAD jacobi_local,
-                                                     LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N_s,
-                                                     LINALG::TMatrix<FAD,1,2*6+COLLOCATION_POINTS>& C,
-                                                     LINALG::TMatrix<FAD,1,2*6+COLLOCATION_POINTS>& C_s)
-{
-
-  //Matrices for N_i,s and N_i,ss
-  LINALG::TMatrix<FAD,1,4> N_i_s;
-  LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> C_i_s;
-
-  N_i_s.Clear();
-  C_i_s.Clear();
-
-  //Calculate the derivatives in s
-  N_i_s=N_i_xi;
-  N_i_s.Scale(1/jacobi_local);
-  C_i_s=C_i_xi;
-  C_i_s.Scale(1/jacobi_local);
-
-  //assembly_N respectively assembly_C is just an array to help assemble the matrices of the shape functions
-  //it determines, which shape function is used in which column of N respectively C
-
 
   #if defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==2)
 
-  int assembly_N[3][2*6+COLLOCATION_POINTS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
-                                      {0,1,0,0,2,0,0,0,3,0,0,4,0,0},
-                                      {0,0,1,0,0,2,0,0,0,3,0,0,4,0}};
-
-  int assembly_C[2*6+COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2};
+  int assembly_L[2*6+COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2};
 
   #elif defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==3)
 
-  int assembly_N[3][2*6+COLLOCATION_POINTS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
-                                      {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0},
-                                      {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0}};
-
-  int assembly_C[2*6+COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3};
+  int assembly_L[2*6+COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3};
 
   #elif defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==4)
 
-  int assembly_N[3][2*6+COLLOCATION_POINTS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
-                                         {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
-                                         {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0,0}};
-
-  int assembly_C[2*6+COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3,4};
+  int assembly_L[2*6+COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3,4};
 
   #else
   dserror("COLLOCATION_POINTS has to be defined. Only the values 2,3 and 4 are valid for COLLOCATION_POINTS!!!");
@@ -1211,26 +1765,13 @@ void DRT::ELEMENTS::Beam3wk::AssembleShapefunctions( LINALG::TMatrix<FAD,1,4> N_
   //Assemble the matrices of the shape functions
   for (int i=0; i<2*6+COLLOCATION_POINTS; i++)
   {
-    for (int j=0; j<3; j++)
+    if(assembly_L[i]==0)
     {
-      if(assembly_N[j][i]==0)
-      {
-        N_s(j,i)=0;
-      }
-      else
-      {
-        N_s(j,i)=N_i_s(assembly_N[j][i]-1);
-      }
-    }
-    if(assembly_C[i]==0)
-    {
-      C(i)=0.0;
-      C_s(i)=0.0;
+      L(i)=0.0;
     }
     else
     {
-        C(i)=C_i(assembly_C[i]-1);
-        C_s(i)=C_i_s(assembly_C[i]-1);
+        L(i)=L_i(assembly_L[i]-1);
     }
   }
 
@@ -1238,114 +1779,46 @@ void DRT::ELEMENTS::Beam3wk::AssembleShapefunctions( LINALG::TMatrix<FAD,1,4> N_
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
- |  Assemble C shape function                                                                meier 05/13|
+ |  Assemble the N_s shape functions                                                              meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::AssembleShapefunctions(LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> C_i,
-                                                    LINALG::TMatrix<FAD,1,2*6+COLLOCATION_POINTS>& C)
+void DRT::ELEMENTS::Beam3wk::AssembleShapefunctionsNss( LINALG::TMatrix<FAD,1,4>& N_i_xi,
+                                                        LINALG::TMatrix<FAD,1,4>& N_i_xixi,
+                                                        FAD jacobi,
+                                                        FAD jacobi2,
+                                                        LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N_ss)
 {
+  LINALG::TMatrix<FAD,1,4> N_i_ss(true);
+  N_i_ss.Update(1.0/(jacobi*jacobi),N_i_xixi,1.0);
+  N_i_ss.Update(-jacobi2/(jacobi*jacobi*jacobi*jacobi),N_i_xi,1.0);
 
-
-
-  //assembly_N respectively assembly_C is just an array to help assemble the matrices of the shape functions
-  //it determines, which shape function is used in which column of N respectively C
-
-  #if defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==2)
-
-  int assembly_C[2*6+COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2};
-
-  #elif defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==3)
-
-  int assembly_C[2*6+COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3};
-
-  #elif defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==4)
-
-  int assembly_C[2*6+COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3,4};
-
-  #else
-  dserror("COLLOCATION_POINTS has to be defined. Only the values 2,3 and 4 are valid for COLLOCATION_POINTS!!!");
-  #endif
-
-  //Assemble the matrices of the shape functions
-  for (int i=0; i<2*6+COLLOCATION_POINTS; i++)
-  {
-    if(assembly_C[i]==0)
-    {
-      C(i)=0.0;
-    }
-    else
-    {
-        C(i)=C_i(assembly_C[i]-1);
-    }
-  }
+  AssembleShapefunctionsN(N_i_ss,N_ss);
 
   return;
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
- |  Assemble the N_s shape functions                                                              meier 05/13|
+ |  Assemble the N_s shape functions                                                              meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::AssembleShapefunctions( LINALG::TMatrix<FAD,1,4> N_i_xi,
-                                                     FAD jacobi_local,
-                                                     LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N_s)
+void DRT::ELEMENTS::Beam3wk::AssembleShapefunctionsNs( LINALG::TMatrix<FAD,1,4>& N_i_xi,
+                                                       FAD jacobi,
+                                                       LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N_s)
 {
 
-  LINALG::TMatrix<FAD,1,4> N_i_s;
-
-  N_i_s.Clear();
+  LINALG::TMatrix<FAD,1,4> N_i_s(true);
 
   //Calculate the derivatives in s
   N_i_s=N_i_xi;
+  N_i_s.Scale(1.0/jacobi);
 
-  N_i_s.Scale(1/jacobi_local);
-
-  //assembly_N respectively assembly_C is just an array to help assemble the matrices of the shape functions
-  //it determines, which shape function is used in which column of N respectively C
-
-#if defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==2)
-
-int assembly_N[3][2*6+COLLOCATION_POINTS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
-                                    {0,1,0,0,2,0,0,0,3,0,0,4,0,0},
-                                    {0,0,1,0,0,2,0,0,0,3,0,0,4,0}};
-
-#elif defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==3)
-
-int assembly_N[3][2*6+COLLOCATION_POINTS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
-                                    {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0},
-                                    {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0}};
-
-#elif defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==4)
-
-int assembly_N[3][2*6+COLLOCATION_POINTS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
-                                       {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
-                                       {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0,0}};
-
-#else
-dserror("COLLOCATION_POINTS has to be defined. Only the values 2,3 and 4 are valid for COLLOCATION_POINTS!!!");
-#endif
-
-  //Assemble the matrices of the shape functions
-  for (int i=0; i<2*6+COLLOCATION_POINTS; i++)
-  {
-    for (int j=0; j<3; j++)
-    {
-      if(assembly_N[j][i]==0)
-      {
-        N_s(j,i)=0;
-      }
-      else
-      {
-        N_s(j,i)=N_i_s(assembly_N[j][i]-1);
-      }
-    }
-  }
+  AssembleShapefunctionsN(N_i_s,N_s);
 
   return;
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
- |  Assemble the N shape functions                                                              meier 05/13|
+ |  Assemble the N shape functions                                                                meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::AssembleShapefunctionsN( LINALG::TMatrix<FAD,1,4> N_i,
+void DRT::ELEMENTS::Beam3wk::AssembleShapefunctionsN( LINALG::TMatrix<FAD,1,4>& N_i,
                                                      LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N)
 {
 
@@ -1391,9 +1864,9 @@ dserror("COLLOCATION_POINTS has to be defined. Only the values 2,3 and 4 are val
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
- |  Calculate position vectors from displacement +  initial position                               meier 05/13|
+ |  Calculate position vectors from displacement +  initial position                              meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::UpdateDispTotlag(std::vector<double> disp, std::vector<FAD>& disp_totlag)
+void DRT::ELEMENTS::Beam3wk::UpdateDispTotlag(std::vector<double>& disp, std::vector<FAD>& disp_totlag)
 {
   for (int dof=0;dof<2*6+COLLOCATION_POINTS;dof++)
     disp_totlag[dof]=disp[dof];
@@ -1470,6 +1943,7 @@ void DRT::ELEMENTS::Beam3wk::SetNodalVariables( std::vector<FAD>& disp_totlag,
   LINALG::TMatrix<FAD,3,1> tangent(true);
   LINALG::TMatrix<FAD,3,3> triad_ref(true);
   LINALG::Matrix<3,3> triad_aux(true);
+  LINALG::TMatrix<FAD,3,3> triad_aux2(true);
   FAD alpha = 0.0;
   //next, set triads and tangents at boundary nodes
   if(rotvec_==false)
@@ -1490,8 +1964,13 @@ void DRT::ELEMENTS::Beam3wk::SetNodalVariables( std::vector<FAD>& disp_totlag,
       //calculate new sr triads
       triad_ref.Clear();
       triad_aux.Clear();
+      triad_aux2.Clear();
       LARGEROTATIONS::quaterniontotriad(qrefconv_[node],triad_aux);
-      CalculateSRTriads<FAD>(tangent,triad_aux,triad_ref);
+      for(int i=0;i<3;i++)
+        for(int j=0;j<3;j++)
+          triad_aux2(i,j)=triad_aux(i,j);
+
+      CalculateSRTriads<FAD>(tangent,triad_aux2,triad_ref);
 
       //calculate material triad
       triad_mat_cp[node].Clear();
@@ -1537,7 +2016,7 @@ void DRT::ELEMENTS::Beam3wk::SetNodalVariables( std::vector<FAD>& disp_totlag,
     ind=LARGEROTATIONS::NumberingTrafo(node+1, COLLOCATION_POINTS);
 
     N_s.Clear();
-    AssembleShapefunctions(N_i_xi,jacobi_cp_[ind],N_s);
+    AssembleShapefunctionsNs(N_i_xi,jacobi_cp_[ind],N_s);
     tangent.Clear();
     //Calculation of r' at xi
     for (int i=0; i<3; i++)
@@ -1553,8 +2032,13 @@ void DRT::ELEMENTS::Beam3wk::SetNodalVariables( std::vector<FAD>& disp_totlag,
     //calculate new sr triads
     triad_ref.Clear();
     triad_aux.Clear();
+    triad_aux2.Clear();
     LARGEROTATIONS::quaterniontotriad(qrefconv_[ind],triad_aux);
-    CalculateSRTriads<FAD>(tangent,triad_aux,triad_ref);
+    for(int i=0;i<3;i++)
+      for(int j=0;j<3;j++)
+        triad_aux2(i,j)=triad_aux(i,j);
+
+    CalculateSRTriads<FAD>(tangent,triad_aux2,triad_ref);
 
     //calculate material triad
     triad_mat_cp[ind].Clear();
@@ -1624,38 +2108,9 @@ void DRT::ELEMENTS::Beam3wk::ApplyRotVecTrafo( std::vector<FAD>& disp_totlag_cen
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
- |  Calculate tangent at an arbitrary point                                                       meier 05/13|
+ |  Update the reference triad at the element nodes at the end of time step                       meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::Calculate_r_s(std::vector<FAD> disp_totlag_centerline, double xi, double jacobi_local, LINALG::TMatrix<FAD,3,1>& r_s)
-{
-
-  FAD abs_r_s=0.0;
-  LINALG::TMatrix<FAD,1,4> N_i_xi;
-  LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS> N_s;
-  N_i_xi.Clear();
-  N_s.Clear();
-
-  //Get hermite derivatives N'xi and N''xi
-  DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
-
-  AssembleShapefunctions(N_i_xi, jacobi_local, N_s);
-
-  //Calculation of r' at xi
-  for (int i=0; i<3; i++)
-  {
-    for (int j=0; j<2*6+COLLOCATION_POINTS; j++)
-    {
-      r_s(i)+=N_s(i,j)*disp_totlag_centerline[j];
-    }
-  }
-
-  return;
-}
-
-/*-----------------------------------------------------------------------------------------------------------*
- |  Update the reference triad at the element nodes at the end of time step                       meier 05/13|
- *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::UpdateRefTriads(std::vector<FAD> disp_totlag_centerline)
+void DRT::ELEMENTS::Beam3wk::UpdateRefTriads(std::vector<FAD>& disp_totlag_centerline)
 {
   double xi=0.0;
   int ind=0;
@@ -1705,27 +2160,7 @@ void DRT::ELEMENTS::Beam3wk::UpdateRefTriads(std::vector<FAD> disp_totlag_center
   return;
 }
 
-void DRT::ELEMENTS::Beam3wk::computestrain(LINALG::Matrix<3,1>& theta, LINALG::Matrix<3,1>& theta_deriv, LINALG::Matrix<3,1>& kappa)
-{
-  LINALG::Matrix<3,3> Tinv;
-  kappa.Clear();
-  Tinv.Clear();
-
-  Tinv=LARGEROTATIONS::Tinvmatrix(theta);
-  kappa.MultiplyTN(Tinv,theta_deriv);
-}
-
-void DRT::ELEMENTS::Beam3wk::computestrain(LINALG::TMatrix<FAD,3,1>& theta, LINALG::TMatrix<FAD,3,1>& theta_deriv, LINALG::TMatrix<FAD,3,1>& kappa)
-{
-  LINALG::TMatrix<FAD,3,3> Tinv;
-  kappa.Clear();
-  Tinv.Clear();
-
-  Tinv=Tinvmatrix(theta);
-  kappa.MultiplyTN(Tinv,theta_deriv);
-}
-
-void DRT::ELEMENTS::Beam3wk::straintostress(LINALG::TMatrix<FAD,3,1>& kappa, FAD epsilon, LINALG::TMatrix<FAD,3,1>& M, FAD& f_par)
+void DRT::ELEMENTS::Beam3wk::straintostress(LINALG::TMatrix<FAD,3,1>& Omega, FAD epsilon, LINALG::TMatrix<FAD,3,1>& M, FAD& f_par)
 {
   //first of all we get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
@@ -1751,30 +2186,24 @@ void DRT::ELEMENTS::Beam3wk::straintostress(LINALG::TMatrix<FAD,3,1>& kappa, FAD
   f_par=0.0;
 
   f_par=ym*crosssec_*epsilon;
-  M(0)=sm*Irr_*kappa(0);
-  M(1)=ym*Iyy_*kappa(1);
-  M(2)=ym*Izz_*kappa(2);
+  M(0)=sm*Irr_*Omega(0);
+  M(1)=ym*Iyy_*Omega(1);
+  M(2)=ym*Izz_*Omega(2);
 
 }
-/*----------------------------------------------------------------------------------------------------------*
- |  Update of the nodal triads at the end of time step (public)                                  meier 05/13|
- *----------------------------------------------------------------------------------------------------------*/
+/*-----------------------------------------------------------------------------------------------------------*
+ |  Update of the nodal triads at the end of time step (public)                                   meier 01/16|
+ *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3wk::UpdateTriads( Teuchos::ParameterList& params,
                                               std::vector<double>& vel,
                                               std::vector<double>& disp)
 {
-  CalculateInternalForces(params,disp,NULL,NULL,NULL,NULL,true);
+  if(weakkirchhoff_)
+    CalculateInternalForcesWK(params,disp,NULL,NULL,NULL,NULL,true);
+  else
+    CalculateInternalForcesSK(params,disp,NULL,NULL,NULL,NULL,true);
 
   return;
-}
-///*--------------------------------------------------------------------------------------------------------*
-// |  Cross product of two Tmatrices (public)                                                    meier 05/13|
-// *--------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::CrossProduct(LINALG::TMatrix<FAD,3,1> T1,LINALG::TMatrix<FAD,3,1> T2,LINALG::TMatrix<FAD,3,1>& T3)
-{
-  T3(0,0) = (T1(1,0)*T2(2,0)) - (T1(2,0)*T2(1,0));
-  T3(1,0) = (T1(2,0)*T2(0,0)) - (T1(0,0)*T2(2,0));
-  T3(2,0) = (T1(0,0)*T2(1,0)) - (T1(1,0)*T2(0,0));
 }
 
 /*----------------------------------------------------------------------------------------------------------*

@@ -1938,7 +1938,7 @@ void DRT::ELEMENTS::Beam3eb::eb_nlnstiffmass(Teuchos::ParameterList& params,
 if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
 internalforces_ = *force;
 /*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
-* it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a
+* it is dedicated to the application of beam3 elements in the frame of statistical mechanics problems; for these problems a
 * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
 * the element does not attach this special vector to params the following method is just doing nothing, which means that for
 * any ordinary problem of structural mechanics it may be ignored*/

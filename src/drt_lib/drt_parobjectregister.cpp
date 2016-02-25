@@ -7,8 +7,6 @@
 
 #include "../drt_nurbs_discret/drt_control_point.H"
 #include "../drt_meshfree_discret/drt_meshfree_node.H"
-#include "../drt_beam2/beam2.H"
-#include "../drt_beam2r/beam2r.H"
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
@@ -169,8 +167,6 @@ std::string DRT::ParObjectList()
     << IMMERSED::ImmersedNodeType::Instance().Name() << " "
     << DRT::MESHFREE::MeshfreeNodeType::Instance().Name() << " "
     << DRT::MESHFREE::MeshfreeMultiBinType::Instance().Name() << " "
-    << DRT::ELEMENTS::Beam2Type::Instance().Name() << " "
-    << DRT::ELEMENTS::Beam2rType::Instance().Name() << " "
     << DRT::ELEMENTS::Beam3Type::Instance().Name() << " "
     << DRT::ELEMENTS::Beam3iiType::Instance().Name() << " "
     << DRT::ELEMENTS::Beam3ebType::Instance().Name() << " "
