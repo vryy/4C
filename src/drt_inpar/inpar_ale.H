@@ -44,11 +44,12 @@ namespace INPAR
     divcont_continue ///< continue nevertheless
   };
 
-  /// meshtying algorithm
+  /// mesh tying and mesh sliding algorithm
   enum MeshTying
   {
     no_meshtying,
-    yes_meshtying
+    meshtying,
+    meshsliding
   };
 
   /// Defines all valid parameters for acou problem

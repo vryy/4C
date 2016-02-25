@@ -91,6 +91,10 @@ namespace ADAPTER
                             const Teuchos::RCP<Epetra_Vector> vec,
                             const Teuchos::RCP<Epetra_Vector> veclm);
 
+    virtual void EvaluateSliding(const std::string& statename,
+                            const Teuchos::RCP<Epetra_Vector> vec,
+                            const Teuchos::RCP<Epetra_Vector> veclm);
+
     virtual void PrintInterface(std::ostream& os);
 
     virtual Teuchos::RCP<LINALG::SparseMatrix> DLinMatrix()
@@ -106,6 +110,30 @@ namespace ADAPTER
         dserror("ERROR: MLin Matrix is null pointer!");
       return MLin_;
     };
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> HMatrix()
+    {
+      if(H_==Teuchos::null)
+        dserror("ERROR: H Matrix is null pointer!");
+      return H_;
+    };
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> TMatrix()
+    {
+      if(T_==Teuchos::null)
+        dserror("ERROR: T Matrix is null pointer!");
+      return T_;
+    };
+
+    virtual Teuchos::RCP<LINALG::SparseMatrix> NMatrix()
+    {
+      if(N_==Teuchos::null)
+        dserror("ERROR: N Matrix is null pointer!");
+      return N_;
+    };
+
+    // create projection operator Dinv*M
+    void CreateP();
 
     virtual Teuchos::RCP<Epetra_Vector> Gap()
     {
@@ -217,6 +245,9 @@ namespace ADAPTER
     Teuchos::RCP<LINALG::SparseMatrix> DLin_;            ///< linearization of D matrix
     Teuchos::RCP<LINALG::SparseMatrix> MLin_;            ///< linearization of M matrix
 
+    Teuchos::RCP<LINALG::SparseMatrix> H_;               ///< Matrix containing the tangent derivatives with respect to slave dofs
+    Teuchos::RCP<LINALG::SparseMatrix> T_;               ///< Matrix containing the tangent vectors of the slave nodes
+    Teuchos::RCP<LINALG::SparseMatrix> N_;               ///< Matrix containing the (weighted) gap derivatives with respect to master and slave dofs
     Teuchos::RCP<Epetra_Vector>        gap_;             ///< gap vector
 
     Teuchos::RCP<CONTACT::CoInterface> interface_;       ///< interface

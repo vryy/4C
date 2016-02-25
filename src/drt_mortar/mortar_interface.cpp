@@ -1813,10 +1813,10 @@ void MORTAR::MortarInterface::SetState(const std::string& statename,
 
     // loop over all nodes to set current displacement
     // (use fully overlapping column map)
-    for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
+    for (int i = 0; i < SlaveColNodes()->NumMyElements(); ++i)
     {
       MORTAR::MortarNode* node =
-          dynamic_cast<MORTAR::MortarNode*>(idiscret_->lColNode(i));
+          dynamic_cast<MORTAR::MortarNode*>(idiscret_->gNode(SlaveColNodes()->GID(i)));
       const int numdof = node->NumDof();
       std::vector<double> mydisp(numdof);
       std::vector<int> lm(numdof);

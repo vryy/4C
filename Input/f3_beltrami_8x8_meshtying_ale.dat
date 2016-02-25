@@ -68,7 +68,7 @@ TIMESTEP                        0.01
 RESTARTEVRY                     1
 RESULTSEVRY                     1
 MAXITER                         3
-MESHTYING                       yes // no
+MESHTYING                       meshtying // no
 ------------------------------------------------------FSI DYNAMIC
 NUMSTEP                         5
 MAXTIME                         0.05

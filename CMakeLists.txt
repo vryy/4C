@@ -2012,6 +2012,7 @@ set(OBJS_DRT_T3CL_LIB
 set(OBJS_DRT_ALEALG
   src/drt_ale/ale.cpp
   src/drt_ale/ale_dyn.cpp
+  src/drt_ale/ale_meshsliding.cpp
   src/drt_ale/ale_meshtying.cpp
   src/drt_ale/ale_resulttest.cpp
   src/drt_ale/ale_utils_mapextractor.cpp

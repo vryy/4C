@@ -49,6 +49,9 @@ ADAPTER::CouplingNonLinMortar::CouplingNonLinMortar() :
   slavenoderowmap_(Teuchos::null),
   DLin_(Teuchos::null),
   MLin_(Teuchos::null),
+  H_(Teuchos::null),
+  T_(Teuchos::null),
+  N_(Teuchos::null),
   gap_(Teuchos::null),
   interface_(Teuchos::null)
 {
@@ -542,11 +545,15 @@ void ADAPTER::CouplingNonLinMortar::InitMatrices()
   // init as standard sparse matrix --> local assembly
   D_   = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
   M_   = Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
+  H_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
+  T_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
+  N_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,false,false));
+
   gap_ = Teuchos::rcp(new Epetra_Vector(*slavenoderowmap_,true));
 
   // init as fe matrix --> nonlocal assembly
   DLin_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,true,false,LINALG::SparseMatrix::FE_MATRIX));
-  MLin_= Teuchos::rcp(new LINALG::SparseMatrix(*slavedofrowmap_,81,true,false,LINALG::SparseMatrix::FE_MATRIX));
+  MLin_= Teuchos::rcp(new LINALG::SparseMatrix(*masterdofrowmap_,81,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
   // bye
   return;
@@ -593,6 +600,9 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
 
     // call fill complete again
     interface->FillComplete();
+
+    // re create binary search tree
+    interface->CreateSearchTree();
 
     // print parallel distribution again
     interface->PrintParallelDistribution(1);
@@ -938,10 +948,19 @@ void ADAPTER::CouplingNonLinMortar::MatrixRowColTransform()
       dserror("ERROR: Dof maps based on initial parallel distribution are wrong!");
 
     if (DLin_ != Teuchos::null)
-      DLin_  = MORTAR::MatrixRowColTransform(D_,pslavedofrowmap_,psmdofrowmap_);
+      DLin_  = MORTAR::MatrixRowColTransform(DLin_,pslavedofrowmap_,psmdofrowmap_);
 
     if (MLin_ != Teuchos::null)
-      MLin_  = MORTAR::MatrixRowColTransform(M_,pmasterdofrowmap_,psmdofrowmap_);
+      MLin_  = MORTAR::MatrixRowColTransform(MLin_,pmasterdofrowmap_,psmdofrowmap_);
+
+    if (H_ != Teuchos::null)
+      H_ = MORTAR::MatrixRowColTransform(H_,pslavedofrowmap_,pslavedofrowmap_);
+
+    if (T_ != Teuchos::null)
+      T_  = MORTAR::MatrixRowColTransform(T_,pslavedofrowmap_,pslavedofrowmap_);
+
+    if (N_ != Teuchos::null)
+      N_ = MORTAR::MatrixRowColTransform(N_,pslavedofrowmap_,psmdofrowmap_);
 
     // transform gap vector
     if(gap_ != Teuchos::null)
@@ -998,5 +1017,116 @@ void ADAPTER::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
   // transform to initial parallel distrib.
   MatrixRowColTransform();
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate all mortar matrices and vectors necessary for mesh sliding |
+ |                                                          wirtz 02/16 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::EvaluateSliding(const std::string& statename,
+    const Teuchos::RCP<Epetra_Vector> vec,
+    const Teuchos::RCP<Epetra_Vector> veclm)
+{
+  // safety check
+  CheckSetup();
+
+  // init matrices with redistributed maps
+  InitMatrices();
+
+  // set current lm and displ state
+  interface_->SetState(statename,vec);
+  interface_->SetState("lm",veclm);
+
+  // init internal data
+  interface_->Initialize();
+  interface_->SetElementAreas();
+
+  interface_->BuildActiveSet(true);
+
+  // call interface evaluate (d,m,gap...)
+  interface_->Evaluate();
+
+  // assemble mortar matrices and lin.
+  interface_->AssembleDM(*D_,*M_);
+  interface_->AssembleLinDM(*DLin_,*MLin_);
+  interface_->AssembleTNderiv(H_, Teuchos::null);
+  interface_->AssembleTN(T_, Teuchos::null);
+  interface_->AssembleS(*N_);
+  interface_->AssembleG(*gap_);
+
+  // complete
+  D_->Complete();
+  M_->Complete(*masterdofrowmap_,*slavedofrowmap_);
+  DLin_->Complete(*smdofrowmap_,*slavedofrowmap_);
+  MLin_->Complete(*smdofrowmap_,*masterdofrowmap_);
+  H_->Complete();
+  T_->Complete();
+  N_->Complete(*smdofrowmap_,*slavedofrowmap_);
+
+  // Dinv * M
+  CreateP();
+
+  // transform to initial parallel distrib.
+  MatrixRowColTransform();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  compute projection operator P                            wirtz 02/16|
+ *----------------------------------------------------------------------*/
+void ADAPTER::CouplingNonLinMortar::CreateP()
+{
+  // safety check
+  CheckSetup();
+
+  // check
+  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Interface()->IParams(),"LM_SHAPEFCN") !=
+      INPAR::MORTAR::shape_dual)
+    dserror("ERROR: Creation of P operator only for dual shape functions!");
+
+  /********************************************************************/
+  /* Multiply Mortar matrices: P = inv(D) * M         A               */
+  /********************************************************************/
+  D_->Complete();
+  Dinv_ = Teuchos::rcp(new LINALG::SparseMatrix(*D_));
+  Teuchos::RCP<Epetra_Vector> diag =
+      LINALG::CreateVector(*slavedofrowmap_, true);
+  int err = 0;
+
+  // extract diagonal of invd into diag
+  Dinv_->ExtractDiagonalCopy(*diag);
+
+  // set zero diagonal values to dummy 1.0
+  for (int i = 0; i < diag->MyLength(); ++i)
+  {
+    if (abs((*diag)[i]) < 1e-12)
+    {
+      std::cout << "WARNING: Diagonal entry of D matrix is skipped because it is less than 1e-12!!!" << std::endl;
+      (*diag)[i] = 1.0;
+    }
+  }
+
+  // scalar inversion of diagonal values
+  err = diag->Reciprocal(*diag);
+  if (err > 0)
+    dserror("ERROR: Reciprocal: Zero diagonal entry!");
+
+  // re-insert inverted diagonal into invd
+  err = Dinv_->ReplaceDiagonalValues(*diag);
+  if (err > 0)
+    dserror("ERROR: ReplaceDiagonalValues failed!");
+
+  // complete inverse D matrix
+  Dinv_->Complete();
+
+  // do the multiplication P = inv(D) * M
+  P_ = LINALG::MLMultiply(*Dinv_, false,*M_, false, false, false, true);
+
+  // complete the matrix
+  P_->Complete(*masterdofrowmap_,*slavedofrowmap_);
+
+  // bye
   return;
 }

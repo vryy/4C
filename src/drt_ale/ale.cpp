@@ -12,6 +12,7 @@ Maintainer: Matthias Mayr
 
 /*----------------------------------------------------------------------------*/
 #include "ale.H"
+#include "ale_meshsliding.H"
 #include "ale_resulttest.H"
 #include "ale_utils_mapextractor.H"
 
@@ -88,7 +89,11 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
     if (cond) dserror("Found a ALE Dirichlet condition. Remove ALE string!");
   }
 
-  if (msht_ != INPAR::ALE::no_meshtying )
+  if (msht_ == INPAR::ALE::meshsliding)
+  {
+    meshtying_ = Teuchos::rcp(new Meshsliding(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim(), NULL));
+  }
+  else if (msht_ == INPAR::ALE::meshtying)
   {
     meshtying_ = Teuchos::rcp(new Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim(), NULL));
   }
@@ -117,7 +122,7 @@ void ALE::Ale::CreateSystemMatrix(
   if (msht_ != INPAR::ALE::no_meshtying )
   {
     std::vector<int> coupleddof(DRT::Problem::Instance()->NDim(),1);
-    sysmat_ = meshtying_->Setup(coupleddof);
+    sysmat_ = meshtying_->Setup(coupleddof, dispnp_);
     meshtying_->DirichletOnMaster(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
 
     if (interface != Teuchos::null)
@@ -746,6 +751,7 @@ void ALE::Ale::UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a)
   if (msht_ != INPAR::ALE::no_meshtying)
   {
     meshtying_->UpdateSlaveDOF(a, dispnp_);
+    meshtying_->Recover(a);
   }
 
 }

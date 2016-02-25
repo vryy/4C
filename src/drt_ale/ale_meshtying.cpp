@@ -40,17 +40,16 @@ ALE::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization>      dis,
                           ):
   discret_(dis),
   solver_(solver),
-  msht_(msht),
-  surfacesplitter_(surfacesplitter),
   dofrowmap_(discret_->DofRowMap()),
-  problemrowmap_(Teuchos::null),
-  gndofrowmap_(Teuchos::null),
-  gsmdofrowmap_(Teuchos::null),
   gsdofrowmap_(Teuchos::null),
   gmdofrowmap_(Teuchos::null),
   mergedmap_(Teuchos::null),
+  msht_(msht),
+  surfacesplitter_(surfacesplitter),
+  problemrowmap_(Teuchos::null),
+  gndofrowmap_(Teuchos::null),
+  gsmdofrowmap_(Teuchos::null),
   valuesdc_(Teuchos::null),
-  pcoupled_ (true),
   dconmaster_(false),
   firstnonliniter_(false),
   nsd_(nsd),
@@ -58,61 +57,24 @@ ALE::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization>      dis,
 {
   // get the processor ID from the communicator
   myrank_  = discret_->Comm().MyPID();
-
-  adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 }
 
 /*-------------------------------------------------------*/
 /*  Setup mesh-tying problem                 wirtz 01/16 */
 /*-------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseOperator> ALE::Meshtying::Setup(std::vector<int> coupleddof)
+Teuchos::RCP<LINALG::SparseOperator> ALE::Meshtying::Setup(std::vector<int> coupleddof, Teuchos::RCP<Epetra_Vector>& dispnp)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  1)   Setup Meshtying");
 //  if(coupleddof[nsd_]==0)
 //    pcoupled_=false;
 
-  // Setup of meshtying adapter
- adaptermeshtying_->Setup(discret_,
-                          discret_,
-                          Teuchos::null,
-                          coupleddof,
-                          "Mortar",
-                          discret_->Comm(),
-                          true);
+  AdapterMortar(coupleddof);
 
   if (myrank_ == 0)
-  {
-    int numdofmaster =
-        (adaptermeshtying_->MasterDofMap())->NumGlobalElements();
-    int numdofslave =
-        (adaptermeshtying_->SlaveDofMap())->NumGlobalElements();
+    CompareNumDof();
 
-    std::cout << std::endl << "number of master dof's:   " << numdofmaster
-        << std::endl;
-    std::cout << "number of slave dof's:   " << numdofslave << std::endl
-        << std::endl;
-
-    if (numdofmaster > numdofslave)
-      std::cout
-          << "The master side is discretized by more elements than the slave side"
-          << std::endl;
-    else
-      std::cout
-          << "The slave side is discretized by more elements than the master side"
-          << std::endl;
-  }
-
-  if (pcoupled_ == false)
-    dserror(
-        "The system cannot be solved in a block matrix!! \n"
-            "The null space does not have the right length. Fix it or use option Smat");
-
-  // slave dof rowmap
-  gsdofrowmap_ = adaptermeshtying_->SlaveDofMap();
-
-  // master dof rowmap
-  gmdofrowmap_ = adaptermeshtying_->MasterDofMap();
+  DofRowMaps();
 
   // merge dofrowmap for slave and master discretization
   gsmdofrowmap_ = LINALG::MergeMap(*gmdofrowmap_, *gsdofrowmap_, false);
@@ -175,13 +137,6 @@ Teuchos::RCP<LINALG::SparseOperator> ALE::Meshtying::Setup(std::vector<int> coup
           new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
               dommapext, rowmapext, 1, false, true));
   sysmatsolve_ = matsolve;
-
-  // fixing length of nullspace for block matrix (solver/preconditioner ML)
-  std::string inv = "BMatMerged";
-  const Epetra_Map& oldmap = *(dofrowmap_);
-  const Epetra_Map& newmap = *(mergedmap_);
-  solver_.FixMLNullspace(&inv[0], oldmap, newmap, solver_.Params());
-  std::cout << std::endl;
 
   return mat;
 
@@ -278,99 +233,9 @@ void ALE::Meshtying::PrepareMeshtyingSystem(
     Teuchos::RCP<Epetra_Vector>&           residual,
     Teuchos::RCP<Epetra_Vector>&           dispnp)
 {
-
-  CondensationBlockMatrix(sysmat,residual,dispnp);
-  return;
-
-}
-
-/*-------------------------------------------------------*/
-/*  solve mesh-tying system                  wirtz 01/16 */
-/*                                                       */
-/*-------------------------------------------------------*/
-int ALE::Meshtying::SolveMeshtying(
-    LINALG::Solver&                        solver,
-    Teuchos::RCP<LINALG::SparseOperator>   sysmat,
-    Teuchos::RCP<Epetra_Vector>&           disi,
-    Teuchos::RCP<Epetra_Vector>            residual,
-    Teuchos::RCP<Epetra_Vector>&           dispnp)
-{
-  // time measurement
-  TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3)   Solve meshtying system");
-
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmatnew =
-      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat);
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmatsolve =
-      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmatsolve_);
-
-  Teuchos::RCP<Epetra_Vector> res = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> dis = Teuchos::null;
-
-  Teuchos::RCP<LINALG::SparseMatrix> mergedmatrix = Teuchos::null;
-
-  res = LINALG::CreateVector(*mergedmap_, true);
-  dis = LINALG::CreateVector(*mergedmap_, true);
-
-  mergedmatrix = Teuchos::rcp(
-      new LINALG::SparseMatrix(*mergedmap_, 108, false, true));
-
-  int errorcode = 0;
-
-  {
-    TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.1)   - Preparation");
-    SplitVectorBasedOn3x3(residual, res);
-
-    // assign blocks to the solution matrix
-    sysmatsolve->Assign(0, 0, LINALG::View, sysmatnew->Matrix(0, 0));
-    sysmatsolve->Assign(0, 1, LINALG::View, sysmatnew->Matrix(0, 1));
-    sysmatsolve->Assign(1, 0, LINALG::View, sysmatnew->Matrix(1, 0));
-    sysmatsolve->Assign(1, 1, LINALG::View, sysmatnew->Matrix(1, 1));
-    sysmatsolve->Complete();
-
-    mergedmatrix = sysmatsolve->Merge();
-
-  }
-
-  {
-    TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
-
-    errorcode = solver_.Solve(mergedmatrix->EpetraOperator(), dis, res, true);
-
-    LINALG::Export(*dis, *disi);
-    LINALG::Export(*res, *residual);
-    // compute and update slave dof's
-    UpdateSlaveDOF(disi, dispnp);
-  }
-  return errorcode;
-}
-
-/*-------------------------------------------------------*/
-/*  Condensation Block Matrix                wirtz 01/16 */
-/*                                                       */
-/*-------------------------------------------------------*/
-void ALE::Meshtying::CondensationBlockMatrix(
-  Teuchos::RCP<LINALG::SparseOperator>&  sysmat,
-  Teuchos::RCP<Epetra_Vector>&           residual,
-  Teuchos::RCP<Epetra_Vector>&           dispnp)
-{
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2)   Condensation block matrix");
 
-  /**********************************************************************/
-  /* Split residual into 3 subvectors                                   */
-  /**********************************************************************/
-
-  // container for split residual vector
-  std::vector<Teuchos::RCP<Epetra_Vector> > splitres(3);
-  std::vector<Teuchos::RCP<Epetra_Vector> > splitdisp(3);
-  SplitVector(residual,splitres);
-  SplitVector(dispnp,splitdisp);
-
-  /**********************************************************************/
-  /* Condensate blockmatrix                                             */
-  /**********************************************************************/
-
-  CondensationOperationBlockMatrix(sysmat,residual,splitres,splitdisp);
-
+  CondensationOperationBlockMatrix(sysmat,residual,dispnp);
   return;
 }
 
@@ -431,239 +296,7 @@ void ALE::Meshtying::SplitVectorBasedOn3x3(Teuchos::RCP<Epetra_Vector>   orgvect
   return;
 }
 
-/*-------------------------------------------------------*/
-/*  Condensation operation block matrix      wirtz 01/16 */
-/*                                                       */
-/*-------------------------------------------------------*/
-void ALE::Meshtying::CondensationOperationBlockMatrix(
-    Teuchos::RCP<LINALG::SparseOperator>&             sysmat,
-    Teuchos::RCP<Epetra_Vector>&                      residual,
-    std::vector<Teuchos::RCP<Epetra_Vector> >&        splitres,
-    std::vector<Teuchos::RCP<Epetra_Vector> >&        splitdisp)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2.1)   - Condensation Operation");
 
-  // cast Teuchos::RCP<LINALG::SparseOperator> to a Teuchos::RCP<LINALG::BlockSparseMatrixBase>
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmatnew = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat);
-
-  /**********************************************************************/
-  /* Build the final sysmat and residual                                */
-  /**********************************************************************/
-
-  // only the blocks nm, mn and mm are modified
-  // the other blocks remain unchanged, since only the 2x2 block matrix system is solved
-  // ---------------------        ------------------
-  // | nn | nm | ns | 0  |        | nn  | nm' | ns  |
-  // | mn | mm | ms | D  |   ->   | mn' | mm' | ms  |
-  // | sn | sm | ss | -M |        | sn  | sm  | ss  |
-  // |  0 | DT |-MT | 0  |        ------------------
-  // ---------------------
-  // solved system (2x2 matrix)
-  // -------------
-  // | nn  | nm' |
-  // | mn' | mm' |
-  // -------------
-
-  // Dirichlet or Dirichlet-like condition on the master side of the internal interface:
-  // First time step:
-  // coupling condition: u_s - u_m = delta u_m^D
-  // instead of          u_s - u_m = 0
-  //
-  // this has to be considered in the condensation and in update process
-
-  Teuchos::RCP<Epetra_Vector> dcnm = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> dcmm = Teuchos::null;
-  std::vector<Teuchos::RCP<Epetra_Vector> > splitdcmaster(3);
-
-  if (dconmaster_==true and firstnonliniter_==true)
-  {
-    dcnm = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_,true));
-    dcmm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_,true));
-
-    SplitVector(valuesdc_, splitdcmaster);
-  }
-
-  // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
-
-  /*--------------------------------------------------------------------*/
-  // block nm
-  /*--------------------------------------------------------------------*/
-  // compute modification for block nm
-  Teuchos::RCP<LINALG::SparseMatrix> knm_mod = MLMultiply(sysmatnew->Matrix(0,2),false,*P,false,false,false,true);
-
-  // Add transformation matrix to nm
-  sysmatnew->Matrix(0,1).UnComplete();
-  sysmatnew->Matrix(0,1).Add(*knm_mod,false,1.0,1.0);
-
-  if (dconmaster_==true and firstnonliniter_==true)
-    knm_mod->Multiply(false,*(splitdcmaster[1]),*dcnm);
-
-  /*--------------------------------------------------------------------*/
-  // block mn
-  /*--------------------------------------------------------------------*/
-  // compute modification for block kmn
-  Teuchos::RCP<LINALG::SparseMatrix> kmn_mod = MLMultiply(*P,true,sysmatnew->Matrix(2,0),false,false,false,true);
-
-  // Add transformation matrix to mn
-  sysmatnew->Matrix(1,0).UnComplete();
-  sysmatnew->Matrix(1,0).Add(*kmn_mod,false,1.0,1.0);
-
-  /*--------------------------------------------------------------------*/
-  // block mm
-  /*--------------------------------------------------------------------*/
-  // compute modification for block kmm
-  Teuchos::RCP<LINALG::SparseMatrix> kss_mod = MLMultiply(*P,true,sysmatnew->Matrix(2,2),false,false,false,true);
-  Teuchos::RCP<LINALG::SparseMatrix> kmm_mod = MLMultiply(*kss_mod,false,*P,false,false,false,true);
-
-  // Add transformation matrix to mm
-  sysmatnew->Matrix(1,1).UnComplete();
-  sysmatnew->Matrix(1,1).Add(*kmm_mod,false,1.0,1.0);
-
-  if (dconmaster_==true and firstnonliniter_==true)
-    kmm_mod->Multiply(false,*(splitdcmaster[1]),*dcmm);
-
-  // complete matrix
-  sysmatnew->Complete();
-
-  //*************************************************
-  //  condensation operation for the residual
-  //*************************************************
-  // r_m: add P^T*r_s
-  Teuchos::RCP<Epetra_Vector> fm_mod = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_,true));
-  P->Multiply(true,*(splitres[2]),*fm_mod);
-
-  // r_m: add P^T*K_ss*vp_i^s
-  Teuchos::RCP<Epetra_Vector> fm_mod_ss = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_,true));
-  kss_mod->Multiply(false,*(splitdisp[2]),*fm_mod_ss);
-  fm_mod->Update(1.0, *fm_mod_ss, 1.0);
-
-  // r_m: subtract P^T*K_ss*P*vp_i^m
-  Teuchos::RCP<Epetra_Vector> fm_mod_mm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_,true));
-  kmm_mod->Multiply(false,*(splitdisp[1]),*fm_mod_mm);
-  fm_mod->Update(-1.0, *fm_mod_mm, 1.0);
-
-  // r_m: insert Dirichlet boundary conditions
-  if (dconmaster_==true and firstnonliniter_==true)
-    fm_mod->Update(-1.0, *dcmm, 1.0);
-
-  // export and add r_m subvector to residual
-  Teuchos::RCP<Epetra_Vector> fm_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_));
-  LINALG::Export(*fm_mod,*fm_modexp);
-  residual->Update(1.0,*fm_modexp,1.0);
-
-
-  // r_n: add K_ns*vp_i^s
-  Teuchos::RCP<LINALG::SparseMatrix> knm = Teuchos::rcp(new LINALG::SparseMatrix(sysmatnew->Matrix(0,2)));
-  //LINALG::SparseMatrix& knm = sysmatnew->Matrix(0,2);
-  Teuchos::RCP<Epetra_Vector> fn_mod = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_,true));
-  knm->Multiply(false,*(splitdisp[2]),*fn_mod);
-
-  // r_n: subtract K_ns*P*vp_i^m
-  Teuchos::RCP<Epetra_Vector> fn_mod_nm = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_,true));
-  knm_mod->Multiply(false,*(splitdisp[1]),*fn_mod_nm);
-  fn_mod->Update(-1.0, *fn_mod_nm, 1.0);
-
-  // export and add r_n subvector to residual
-  Teuchos::RCP<Epetra_Vector> fn_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_));
-  LINALG::Export(*fn_mod,*fn_modexp);
-  residual->Update(1.0,*fn_modexp,1.0);
-
-  if (dconmaster_==true and firstnonliniter_==true)
-  {
-    Teuchos::RCP<Epetra_Vector> fn_exp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
-    LINALG::Export(*dcnm,*fn_exp);
-    residual->Update(-1.0,*fn_exp,1.0);
-  }
-
-  // export r_s = zero to residual
-  Teuchos::RCP<Epetra_Vector> fs_mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
-  LINALG::Export(*fs_mod,*residual);
-
-  return;
-}
-
-/*-------------------------------------------------------*/
-/*  Compute and update Slave DOF's           wirtz 01/16 */
-/*                                                       */
-/*-------------------------------------------------------*/
-void ALE::Meshtying::UpdateSlaveDOF(
-  Teuchos::RCP<Epetra_Vector>&   inc,
-  Teuchos::RCP<Epetra_Vector>&   dispnp)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.4)   - Update slave DOF");
-
-  // get dof row map
-  const Epetra_Map*  dofrowmap = discret_->DofRowMap();
-
-  // split incremental and displacement vector
-  std::vector<Teuchos::RCP<Epetra_Vector> > splitinc(3);
-  std::vector<Teuchos::RCP<Epetra_Vector> > splitdisp(3);
-  SplitVector(inc,splitinc);
-  SplitVector(dispnp,splitdisp);
-
-  // Dirichlet or Dirichlet-like condition on the master side of the internal interface:
-  // First time step:
-  // coupling condition: u_s - u_m = delta u_m^D
-  // instead of          u_s - u_m = 0
-  //
-  // this has to be considered in the condensation and in update process
-
-  // split vector containing Dirichlet boundary conditions, if any
-  std::vector<Teuchos::RCP<Epetra_Vector> > splitdcmaster(3);
-  if (dconmaster_==true and firstnonliniter_==true)
-    SplitVector(valuesdc_,splitdcmaster);
-
-  // get transformation matrix
-  Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
-
-  // define new incremental vector
-  Teuchos::RCP<Epetra_Vector> incnew = LINALG::CreateVector(*dofrowmap,true);
-
-  // delta_vp^s: add P*delta_vp^m
-  Teuchos::RCP<Epetra_Vector> fs_mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
-  P->Multiply(false,*(splitinc[1]),*fs_mod);
-
-  // delta_vp^s: subtract vp_i^s
-  fs_mod->Update(-1.0,*(splitdisp[2]),1.0);
-
-  // delta_vp^s: add P*vp_i^m
-  Teuchos::RCP<Epetra_Vector> fs_mod_m = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
-  P->Multiply(false,*(splitdisp[1]),*fs_mod_m);
-  fs_mod->Update(1.0,*fs_mod_m,1.0);
-
-  // set Dirichlet boundary conditions, if any
-  if (dconmaster_==true and firstnonliniter_==true)
-  {
-    Teuchos::RCP<Epetra_Vector> fsdc_mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
-    P->Multiply(false,*(splitdcmaster[1]),*fsdc_mod);
-    fs_mod->Update(1.0, *fsdc_mod, 1.0);
-  }
-
-  // export interior degrees of freedom
-  Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
-  LINALG::Export(*(splitinc[0]),*fnexp);
-  incnew->Update(1.0,*fnexp,1.0);
-
-  // export master degrees of freedom
-  Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
-  LINALG::Export(*(splitinc[1]),*fmexp);
-  incnew->Update(1.0,*fmexp,1.0);
-
-  // export slave degrees of freedom
-  Teuchos::RCP<Epetra_Vector> fs_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
-  LINALG::Export(*fs_mod,*fs_modexp);
-  incnew->Update(1.0,*fs_modexp,1.0);
-
-  // set iteration counter for Dirichlet boundary conditions, if any
-  if (dconmaster_==true and firstnonliniter_==true)
-    firstnonliniter_ = false;
-
-  // define incremental vector to new incremental vector
-  inc = incnew;
-
-  return;
-}
 
 /*-------------------------------------------------------*/
 /*  Set the flag for multifield problems     wirtz 01/16 */
@@ -776,4 +409,341 @@ void ALE::Meshtying::MultifieldSplit(Teuchos::RCP<LINALG::SparseOperator>& sysma
     sysmat = mat;
   }
 
+}
+
+/*-------------------------------------------------------*/
+/*  Call the constructor and the setup of the mortar     */
+/*  coupling adapter                         wirtz 02/16 */
+/*-------------------------------------------------------*/
+void ALE::Meshtying::AdapterMortar(std::vector<int> coupleddof)
+{
+  adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
+
+  // Setup of meshtying adapter
+ adaptermeshtying_->Setup(discret_,
+                          discret_,
+                          Teuchos::null,
+                          coupleddof,
+                          "Mortar",
+                          discret_->Comm(),
+                          true);
+}
+
+/*-------------------------------------------------------*/
+/*  Compare the size of the slave and master dof row map */
+/*                                           wirtz 02/16 */
+/*-------------------------------------------------------*/
+void ALE::Meshtying::CompareNumDof()
+{
+  int numdofmaster = (adaptermeshtying_->MasterDofMap())->NumGlobalElements();
+  int numdofslave = (adaptermeshtying_->SlaveDofMap())->NumGlobalElements();
+
+  std::cout << std::endl << "number of master dof's:   " << numdofmaster << std::endl;
+  std::cout << "number of slave dof's:   " << numdofslave << std::endl << std::endl;
+
+  if(numdofmaster > numdofslave)
+    std::cout << "The master side is discretized by more elements than the slave side" << std::endl;
+  else
+    std::cout << "The slave side is discretized by more elements than the master side" << std::endl;
+}
+
+/*-------------------------------------------------------*/
+/*  Get function for the slave and master dof row map    */
+/*                                           wirtz 02/16 */
+/*-------------------------------------------------------*/
+void ALE::Meshtying::DofRowMaps()
+{
+  // slave dof rowmap
+  gsdofrowmap_ = adaptermeshtying_->SlaveDofMap();
+
+  // master dof rowmap
+  gmdofrowmap_ = adaptermeshtying_->MasterDofMap();
+}
+
+/*-------------------------------------------------------*/
+/*  Get function for the P matrix            wirtz 02/16 */
+/*                                                       */
+/*-------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> ALE::Meshtying::GetMortarTrafo()
+{
+  return adaptermeshtying_->GetMortarTrafo();
+}
+
+/*-------------------------------------------------------*/
+/*  Condensation operation block matrix      wirtz 01/16 */
+/*                                                       */
+/*-------------------------------------------------------*/
+void ALE::Meshtying::CondensationOperationBlockMatrix(
+    Teuchos::RCP<LINALG::SparseOperator>&  sysmat,
+    Teuchos::RCP<Epetra_Vector>&           residual,
+    Teuchos::RCP<Epetra_Vector>&           dispnp)
+{
+  /**********************************************************************/
+  /* Split residual into 3 subvectors                                   */
+  /**********************************************************************/
+
+  // container for split residual vector
+  std::vector<Teuchos::RCP<Epetra_Vector> > splitres(3);
+  SplitVector(residual, splitres);
+
+  /**********************************************************************/
+  /* Condensate blockmatrix                                             */
+  /**********************************************************************/
+
+  TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2.1)   - Condensation Operation");
+
+  // cast Teuchos::RCP<LINALG::SparseOperator> to a Teuchos::RCP<LINALG::BlockSparseMatrixBase>
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmatnew = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat);
+
+  /**********************************************************************/
+  /* Build the final sysmat and residual                                */
+  /**********************************************************************/
+
+  // only the blocks nm, mn and mm are modified
+  // the other blocks remain unchanged, since only the 2x2 block matrix system is solved
+  // ---------------------        ------------------
+  // | nn | nm | ns | 0  |        | nn  | nm' | ns  |
+  // | mn | mm | ms | D  |   ->   | mn' | mm' | ms  |
+  // | sn | sm | ss | -M |        | sn  | sm  | ss  |
+  // |  0 | DT |-MT | 0  |        ------------------
+  // ---------------------
+  // solved system (2x2 matrix)
+  // -------------
+  // | nn  | nm' |
+  // | mn' | mm' |
+  // -------------
+
+  // Dirichlet or Dirichlet-like condition on the master side of the internal interface:
+  // First time step:
+  // coupling condition: u_s - u_m = delta u_m^D
+  // instead of          u_s - u_m = 0
+  //
+  // this has to be considered in the condensation and in update process
+
+  Teuchos::RCP<Epetra_Vector> dcnm = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> dcmm = Teuchos::null;
+  std::vector<Teuchos::RCP<Epetra_Vector> > splitdcmaster(3);
+
+  if (dconmaster_==true and firstnonliniter_==true)
+  {
+    dcnm = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_,true));
+    dcmm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_,true));
+
+    SplitVector(valuesdc_, splitdcmaster);
+  }
+
+  // get transformation matrix
+  Teuchos::RCP<LINALG::SparseMatrix> P = GetMortarTrafo();
+
+  /*--------------------------------------------------------------------*/
+  // block nm
+  /*--------------------------------------------------------------------*/
+  // compute modification for block nm
+  Teuchos::RCP<LINALG::SparseMatrix> knm_mod = MLMultiply(sysmatnew->Matrix(0,2),false,*P,false,false,false,true);
+
+  // Add transformation matrix to nm
+  sysmatnew->Matrix(0,1).UnComplete();
+  sysmatnew->Matrix(0,1).Add(*knm_mod,false,1.0,1.0);
+
+  if (dconmaster_==true and firstnonliniter_==true)
+    knm_mod->Multiply(false,*(splitdcmaster[1]),*dcnm);
+
+  /*--------------------------------------------------------------------*/
+  // block mn
+  /*--------------------------------------------------------------------*/
+  // compute modification for block kmn
+  Teuchos::RCP<LINALG::SparseMatrix> kmn_mod = MLMultiply(*P,true,sysmatnew->Matrix(2,0),false,false,false,true);
+
+  // Add transformation matrix to mn
+  sysmatnew->Matrix(1,0).UnComplete();
+  sysmatnew->Matrix(1,0).Add(*kmn_mod,false,1.0,1.0);
+
+  /*--------------------------------------------------------------------*/
+  // block mm
+  /*--------------------------------------------------------------------*/
+  // compute modification for block kmm
+  Teuchos::RCP<LINALG::SparseMatrix> kss_mod = MLMultiply(*P,true,sysmatnew->Matrix(2,2),false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> kmm_mod = MLMultiply(*kss_mod,false,*P,false,false,false,true);
+
+  // Add transformation matrix to mm
+  sysmatnew->Matrix(1,1).UnComplete();
+  sysmatnew->Matrix(1,1).Add(*kmm_mod,false,1.0,1.0);
+
+  if (dconmaster_==true and firstnonliniter_==true)
+    kmm_mod->Multiply(false,*(splitdcmaster[1]),*dcmm);
+
+  // complete matrix
+  sysmatnew->Complete();
+
+  //*************************************************
+  //  condensation operation for the residual
+  //*************************************************
+
+  // r_m: add P^T*r_s
+  Teuchos::RCP<Epetra_Vector> fm_mod = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_,true));
+  P->Multiply(true,*(splitres[2]),*fm_mod);
+
+  // r_m: insert Dirichlet boundary conditions
+  if (dconmaster_==true and firstnonliniter_==true)
+    fm_mod->Update(-1.0, *dcmm, 1.0);
+
+  // export and add r_m subvector to residual
+  Teuchos::RCP<Epetra_Vector> fm_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_));
+  LINALG::Export(*fm_mod,*fm_modexp);
+  residual->Update(1.0,*fm_modexp,1.0);
+
+  if (dconmaster_==true and firstnonliniter_==true)
+  {
+    Teuchos::RCP<Epetra_Vector> fn_exp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
+    LINALG::Export(*dcnm,*fn_exp);
+    residual->Update(-1.0,*fn_exp,1.0);
+  }
+
+  // export r_s = zero to residual
+  Teuchos::RCP<Epetra_Vector> fs_mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
+  LINALG::Export(*fs_mod,*residual);
+
+  return;
+}
+
+/*-------------------------------------------------------*/
+/*  Compute and update Slave DOF's           wirtz 01/16 */
+/*                                                       */
+/*-------------------------------------------------------*/
+void ALE::Meshtying::UpdateSlaveDOF(
+  Teuchos::RCP<Epetra_Vector>&   inc,
+  Teuchos::RCP<Epetra_Vector>&   dispnp)
+{
+  TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.4)   - Update slave DOF");
+
+  // get dof row map
+  const Epetra_Map*  dofrowmap = discret_->DofRowMap();
+
+  // split incremental and displacement vector
+  std::vector<Teuchos::RCP<Epetra_Vector> > splitinc(3);
+  std::vector<Teuchos::RCP<Epetra_Vector> > splitdisp(3);
+  SplitVector(inc,splitinc);
+  SplitVector(dispnp,splitdisp);
+
+  // Dirichlet or Dirichlet-like condition on the master side of the internal interface:
+  // First time step:
+  // coupling condition: u_s - u_m = delta u_m^D
+  // instead of          u_s - u_m = 0
+  //
+  // this has to be considered in the condensation and in update process
+
+  // split vector containing Dirichlet boundary conditions, if any
+  std::vector<Teuchos::RCP<Epetra_Vector> > splitdcmaster(3);
+  if (dconmaster_==true and firstnonliniter_==true)
+    SplitVector(valuesdc_,splitdcmaster);
+
+  // get transformation matrix
+  Teuchos::RCP<LINALG::SparseMatrix> P = GetMortarTrafo();
+
+  // define new incremental vector
+  Teuchos::RCP<Epetra_Vector> incnew = LINALG::CreateVector(*dofrowmap,true);
+
+  // delta_vp^s: add P*delta_vp^m
+  Teuchos::RCP<Epetra_Vector> fs_mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
+  P->Multiply(false,*(splitinc[1]),*fs_mod);
+
+  // delta_vp^s: subtract vp_i^s
+  fs_mod->Update(-1.0,*(splitdisp[2]),1.0);
+
+  // delta_vp^s: add P*vp_i^m
+  Teuchos::RCP<Epetra_Vector> fs_mod_m = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
+  P->Multiply(false,*(splitdisp[1]),*fs_mod_m);
+  fs_mod->Update(1.0,*fs_mod_m,1.0);
+
+  // set Dirichlet boundary conditions, if any
+  if (dconmaster_==true and firstnonliniter_==true)
+  {
+    Teuchos::RCP<Epetra_Vector> fsdc_mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_,true));
+    P->Multiply(false,*(splitdcmaster[1]),*fsdc_mod);
+    fs_mod->Update(1.0, *fsdc_mod, 1.0);
+  }
+
+  // export interior degrees of freedom
+  Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
+  LINALG::Export(*(splitinc[0]),*fnexp);
+  incnew->Update(1.0,*fnexp,1.0);
+
+  // export master degrees of freedom
+  Teuchos::RCP<Epetra_Vector> fmexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
+  LINALG::Export(*(splitinc[1]),*fmexp);
+  incnew->Update(1.0,*fmexp,1.0);
+
+  // export slave degrees of freedom
+  Teuchos::RCP<Epetra_Vector> fs_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap));
+  LINALG::Export(*fs_mod,*fs_modexp);
+  incnew->Update(1.0,*fs_modexp,1.0);
+
+  // set iteration counter for Dirichlet boundary conditions, if any
+  if (dconmaster_==true and firstnonliniter_==true)
+    firstnonliniter_ = false;
+
+  // define incremental vector to new incremental vector
+  inc = incnew;
+
+  return;
+}
+
+/*-------------------------------------------------------*/
+/*  solve mesh-tying system                  wirtz 01/16 */
+/*                                                       */
+/*-------------------------------------------------------*/
+int ALE::Meshtying::SolveMeshtying(
+    LINALG::Solver&                        solver,
+    Teuchos::RCP<LINALG::SparseOperator>   sysmat,
+    Teuchos::RCP<Epetra_Vector>&           disi,
+    Teuchos::RCP<Epetra_Vector>            residual,
+    Teuchos::RCP<Epetra_Vector>&           dispnp)
+{
+  // time measurement
+  TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3)   Solve meshtying system");
+
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmatnew =
+      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat);
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmatsolve =
+      Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmatsolve_);
+
+  Teuchos::RCP<Epetra_Vector> res = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> dis = Teuchos::null;
+
+  Teuchos::RCP<LINALG::SparseMatrix> mergedmatrix = Teuchos::null;
+
+  res = LINALG::CreateVector(*mergedmap_, true);
+  dis = LINALG::CreateVector(*mergedmap_, true);
+
+  mergedmatrix = Teuchos::rcp(
+      new LINALG::SparseMatrix(*mergedmap_, 108, false, true));
+
+  int errorcode = 0;
+
+  {
+    TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.1)   - Preparation");
+    SplitVectorBasedOn3x3(residual, res);
+
+    // assign blocks to the solution matrix
+    sysmatsolve->Assign(0, 0, LINALG::View, sysmatnew->Matrix(0, 0));
+    sysmatsolve->Assign(0, 1, LINALG::View, sysmatnew->Matrix(0, 1));
+    sysmatsolve->Assign(1, 0, LINALG::View, sysmatnew->Matrix(1, 0));
+    sysmatsolve->Assign(1, 1, LINALG::View, sysmatnew->Matrix(1, 1));
+    sysmatsolve->Complete();
+
+    mergedmatrix = sysmatsolve->Merge();
+
+  }
+
+  {
+    TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
+
+    errorcode = solver_.Solve(mergedmatrix->EpetraOperator(), dis, res, true);
+
+    LINALG::Export(*dis, *disi);
+    LINALG::Export(*res, *residual);
+    // compute and update slave dof's
+    UpdateSlaveDOF(disi, dispnp);
+  }
+  return errorcode;
 }

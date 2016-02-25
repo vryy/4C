@@ -70,13 +70,15 @@ void INPAR::ALE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                         divcont_continue),
                                     &adyn);
 
-  setStringToIntegralParameter<int>("MESHTYING", "no", "Flag to (de)activate mesh tying algorithm",
+  setStringToIntegralParameter<int>("MESHTYING", "no", "Flag to (de)activate mesh tying and mesh sliding algorithm",
                                   tuple<std::string>(
                                     "no",
-                                    "yes"),
+                                    "meshtying",
+                                    "meshsliding"),
                                   tuple<int>(
                                       no_meshtying,
-                                      yes_meshtying),
+                                      meshtying,
+                                      meshsliding),
                                   &adyn);
 
   // linear solver id used for scalar ale problems

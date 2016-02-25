@@ -1139,7 +1139,7 @@ void ADAPTER::CouplingMortar::CreateP()
   CheckSetup();
 
   // check
-  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(interface_->IParams(),"LM_SHAPEFCN") !=
+  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Interface()->IParams(),"LM_SHAPEFCN") !=
       INPAR::MORTAR::shape_dual)
     dserror("ERROR: Creation of P operator only for dual shape functions!");
 

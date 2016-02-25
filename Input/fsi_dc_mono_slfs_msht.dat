@@ -51,7 +51,7 @@ REYNOLDS-STRESS                 no_reynolds
 LINEAR_SOLVER                   1
 ALE_TYPE                        solid
 UPDATEMATRIX                    no
-MESHTYING                       yes
+MESHTYING                       meshtying
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1.0
 TIMESTEP                        0.1

@@ -263,7 +263,7 @@ namespace ADAPTER
     const bool& IsSetup() const { return issetup_; };
 
     /// check init and setup call
-    void CheckSetup() const
+    virtual void CheckSetup() const
     {
       if ( !IsSetup())
         dserror("ERROR: Call Setup() first!");
