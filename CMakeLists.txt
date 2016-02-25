@@ -1593,9 +1593,9 @@ set(OBJS_DRT_B3EBANISOTROP_LIB
   src/drt_beam3eb_anisotrop/beam3eb_anisotrop_input.cpp
 )
 set(OBJS_DRT_B3WK_LIB
-  src/drt_beam3wk/beam3wk.cpp
-  src/drt_beam3wk/beam3wk_evaluate.cpp
-  src/drt_beam3wk/beam3wk_input.cpp
+  src/drt_beam3k/beam3k.cpp
+  src/drt_beam3k/beam3k_evaluate.cpp
+  src/drt_beam3k/beam3k_input.cpp
 )
 set(OBJS_DRT_RIGIDSPHERE_LIB
   src/drt_rigidsphere/rigidsphere.cpp

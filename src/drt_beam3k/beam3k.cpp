@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam3wk.cpp
+\file beam3k.cpp
 
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
 
@@ -12,7 +12,7 @@ Maintainer: Christoph Meier
 
 *-----------------------------------------------------------------------------------------------------------*/
 
-#include "../drt_beam3wk/beam3wk.H"
+#include "../drt_beam3k/beam3k.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -27,52 +27,52 @@ Maintainer: Christoph Meier
 
 #include <Teuchos_TimeMonitor.hpp>
 
-DRT::ELEMENTS::Beam3wkType DRT::ELEMENTS::Beam3wkType::instance_;
+DRT::ELEMENTS::Beam3kType DRT::ELEMENTS::Beam3kType::instance_;
 
-DRT::ELEMENTS::Beam3wkType& DRT::ELEMENTS::Beam3wkType::Instance()
+DRT::ELEMENTS::Beam3kType& DRT::ELEMENTS::Beam3kType::Instance()
 {
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::Beam3wkType::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::Beam3kType::Create( const std::vector<char> & data )
 {
-  DRT::ELEMENTS::Beam3wk* object = new DRT::ELEMENTS::Beam3wk(-1,-1);
+  DRT::ELEMENTS::Beam3k* object = new DRT::ELEMENTS::Beam3k(-1,-1);
   object->Unpack(data);
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3wkType::Create(const std::string eletype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3kType::Create(const std::string eletype,
                                    const std::string eledistype,
                                  const int id,
                                  const int owner )
 {
-  if ( eletype=="BEAM3WK" )
+  if ( eletype=="BEAM3K" )
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3wk(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3k(id,owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3wkType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3kType::Create( const int id, const int owner )
 
 {
-  return Teuchos::rcp( new Beam3wk( id, owner ) );
+  return Teuchos::rcp( new Beam3k( id, owner ) );
 }
 
-void DRT::ELEMENTS::Beam3wkType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+void DRT::ELEMENTS::Beam3kType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
-      dserror("method 'NodalBlockInformation' not implemented for element type beam3wk!");
+      dserror("method 'NodalBlockInformation' not implemented for element type beam3k!");
 }
 
-void DRT::ELEMENTS::Beam3wkType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+void DRT::ELEMENTS::Beam3kType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   dserror("Function not implemented yet.");
 }
 
-void DRT::ELEMENTS::Beam3wkType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+void DRT::ELEMENTS::Beam3kType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BEAM3WK"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BEAM3K"];
   defs["LINE2"]
     .AddIntVector("LINE2",2)
     .AddNamedInt("WK")
@@ -168,7 +168,7 @@ void DRT::ELEMENTS::Beam3wkType::SetupElementDefinition( std::map<std::string,st
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            meier 05/12|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3wk::Beam3wk(int id, int owner) :
+DRT::ELEMENTS::Beam3k::Beam3k(int id, int owner) :
 DRT::Element(id,owner),
 isinit_(false),
 crosssec_(0),
@@ -212,7 +212,7 @@ inertscalerot2_(0)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       meier 05/12|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3wk::Beam3wk(const DRT::ELEMENTS::Beam3wk& old) :
+DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old) :
  DRT::Element(old),
  isinit_(old.isinit_),
  crosssec_(old.crosssec_),
@@ -254,19 +254,19 @@ DRT::ELEMENTS::Beam3wk::Beam3wk(const DRT::ELEMENTS::Beam3wk& old) :
   return;
 }
 /*--------------------------------------------------------------------------------*
- |  Deep copy this instance of Beam3wk and return pointer to it (public) |
+ |  Deep copy this instance of Beam3k and return pointer to it (public) |
  |                                                                    meier 05/12 |
  *--------------------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Beam3wk::Clone() const
+DRT::Element* DRT::ELEMENTS::Beam3k::Clone() const
 {
-  DRT::ELEMENTS::Beam3wk* newelement = new DRT::ELEMENTS::Beam3wk(*this);
+  DRT::ELEMENTS::Beam3k* newelement = new DRT::ELEMENTS::Beam3k(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            meier 05/12 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3wk::~Beam3wk()
+DRT::ELEMENTS::Beam3k::~Beam3k()
 {
   return;
 }
@@ -274,7 +274,7 @@ DRT::ELEMENTS::Beam3wk::~Beam3wk()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              meier 05/12
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::Print(std::ostream& os) const
+void DRT::ELEMENTS::Beam3k::Print(std::ostream& os) const
 {
   return;
 }
@@ -283,7 +283,7 @@ void DRT::ELEMENTS::Beam3wk::Print(std::ostream& os) const
  |                                                             (public) |
  |                                                          meier 05/12 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3wk::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3k::Shape() const
 {
   int numnodes = NumNode();
   switch(numnodes)
@@ -310,7 +310,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3wk::Shape() const
  |  Pack data                                                  (public) |
  |                                                           meier 05/12/
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Beam3k::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
@@ -365,7 +365,7 @@ void DRT::ELEMENTS::Beam3wk::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           meier 05/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type
@@ -424,7 +424,7 @@ void DRT::ELEMENTS::Beam3wk::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          meier 05/12|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3wk::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3k::Lines()
 {
   std::vector<Teuchos::RCP<Element> > lines(1);
   lines[0]= Teuchos::rcp(this, false);
@@ -438,7 +438,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3wk::Lines()
  | has to be stored; prerequesite for applying this method is that the
  | element nodes are already known (public)                   meier 01/16|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::SetUpReferenceGeometry(const std::vector<LINALG::Matrix<3,1> >& xrefe, const bool secondinit)
+void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometry(const std::vector<LINALG::Matrix<3,1> >& xrefe, const bool secondinit)
 {
   if(weakkirchhoff_)
     SetUpReferenceGeometryWK(xrefe,secondinit);
@@ -450,7 +450,7 @@ void DRT::ELEMENTS::Beam3wk::SetUpReferenceGeometry(const std::vector<LINALG::Ma
 /*--------------------------------------------------------------------------------------------*
  |  Set up the reference geometry of the case of a weak Kirchhoff constraint     meier 01/16|
  *--------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::SetUpReferenceGeometryWK(const std::vector<LINALG::Matrix<3,1> >& xrefe, const bool secondinit)
+void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::Matrix<3,1> >& xrefe, const bool secondinit)
 {
   /*this method initializes geometric variables of the element; the initilization can usually be applied to elements only once;
    *therefore after the first initilization the flag isinit is set to true and from then on this method does not take any action
@@ -491,7 +491,7 @@ void DRT::ELEMENTS::Beam3wk::SetUpReferenceGeometryWK(const std::vector<LINALG::
     }
 
     //Get integration points for exact integration
-    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3wk);
+    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
 
     //Vector holding angle theta of triads
     std::vector<LINALG::Matrix<3,1> > theta_cp;
@@ -623,12 +623,12 @@ void DRT::ELEMENTS::Beam3wk::SetUpReferenceGeometryWK(const std::vector<LINALG::
     isinit_ = true;
   }//if(!isinit_)
 
-}//DRT::ELEMENTS::Beam3wk::SetUpReferenceGeometry()
+}//DRT::ELEMENTS::Beam3k::SetUpReferenceGeometry()
 
 /*--------------------------------------------------------------------------------------------*
  |  Set up the reference geometry of the case of a strong Kirchhoff constraint     meier 01/16|
  *--------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::SetUpReferenceGeometrySK(const std::vector<LINALG::Matrix<3,1> >& xrefe, const bool secondinit)
+void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::Matrix<3,1> >& xrefe, const bool secondinit)
 {
   /*this method initializes geometric variables of the element; the initilization can usually be applied to elements only once;
    *therefore after the first initilization the flag isinit is set to true and from then on this method does not take any action
@@ -669,7 +669,7 @@ void DRT::ELEMENTS::Beam3wk::SetUpReferenceGeometrySK(const std::vector<LINALG::
     }
 
     //Get integration points for exact integration
-    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3wk);
+    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
 
     //Vector holding angle theta of triads
     std::vector<double > phi_cp;
@@ -836,12 +836,12 @@ void DRT::ELEMENTS::Beam3wk::SetUpReferenceGeometrySK(const std::vector<LINALG::
     isinit_ = true;
   }//if(!isinit_)
 
-}//DRT::ELEMENTS::Beam3wk::SetUpReferenceGeometrySK()
+}//DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK()
 
 /*--------------------------------------------------------------------------------------------*
  |  Calculates the element length via a Newton Iteration: f(l)=l-int(|N'd|)dxi=0   meier 01/16|
  *--------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::Calculate_length(const std::vector<LINALG::Matrix<3,1> >& xrefe,
+void DRT::ELEMENTS::Beam3k::Calculate_length(const std::vector<LINALG::Matrix<3,1> >& xrefe,
                                               const std::vector<LINALG::Matrix<3,1> >& trefe,
                                               double tolerance)
 {
@@ -849,7 +849,7 @@ void DRT::ELEMENTS::Beam3wk::Calculate_length(const std::vector<LINALG::Matrix<3
   const int vnode = 2; //interpolated values per node (2: value + derivative of value)
 
   //Get integration points for exact integration
-  //DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3wk);
+  //DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
   DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_10point);
 
   //Newton Iteration - Tolerance and residual
@@ -1047,18 +1047,18 @@ void DRT::ELEMENTS::Beam3wk::Calculate_length(const std::vector<LINALG::Matrix<3
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      meier 01/16|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3wkType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Beam3kType::Initialize(DRT::Discretization& dis)
 {
-  //setting up geometric variables for Beam3wk elements
+  //setting up geometric variables for Beam3k elements
   for (int num=0; num<  dis.NumMyColElements(); ++num)
   {
-    //in case that current element is not a Beam3wk element there is nothing to do and we go back
+    //in case that current element is not a Beam3k element there is nothing to do and we go back
     //to the head of the loop
     if (dis.lColElement(num)->ElementType() != *this) continue;
 
-    //if we get so far current element is a Beam3wk element and  we get a pointer at it
-    DRT::ELEMENTS::Beam3wk* currele = dynamic_cast<DRT::ELEMENTS::Beam3wk*>(dis.lColElement(num));
-    if (!currele) dserror("cast to Beam3wk* failed");
+    //if we get so far current element is a Beam3k element and  we get a pointer at it
+    DRT::ELEMENTS::Beam3k* currele = dynamic_cast<DRT::ELEMENTS::Beam3k*>(dis.lColElement(num));
+    if (!currele) dserror("cast to Beam3k* failed");
 
     //reference node position
     std::vector<LINALG::Matrix<3,1> > xrefe;

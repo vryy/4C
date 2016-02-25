@@ -28,8 +28,8 @@ Maintainer: Christoph Meier
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_beam3eb/beam3eb.H"
-#include "../drt_beam3wk/beam3wk.H"
 #include "../drt_beam3ebtor/beam3ebtor.H"
+#include "../drt_beam3k/beam3k.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_contact/contact_element.H"
@@ -2338,7 +2338,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
             eot != DRT::ELEMENTS::Beam3ebtorType::Instance() and
             eot != DRT::ELEMENTS::Beam3Type::Instance() and
             eot != DRT::ELEMENTS::Beam3iiType::Instance() and
-            eot != DRT::ELEMENTS::Beam3wkType::Instance()and
+            eot != DRT::ELEMENTS::Beam3kType::Instance()and
             eot != DRT::ELEMENTS::RigidsphereType::Instance())
           continue;
 
@@ -2451,10 +2451,10 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
             GMSH_N_nodedLine(n,n_axial,coord,element,gmshfilecontent);
         }
         // weak Kirchhoff beams need a special treatment
-        else if (eot == DRT::ELEMENTS::Beam3wkType::Instance())
+        else if (eot == DRT::ELEMENTS::Beam3kType::Instance())
         {
           // this cast is necessary in order to use the method ->Tref()
-          const DRT::ELEMENTS::Beam3wk* ele = dynamic_cast<const DRT::ELEMENTS::Beam3wk*>(element);
+          const DRT::ELEMENTS::Beam3k* ele = dynamic_cast<const DRT::ELEMENTS::Beam3k*>(element);
           // prepare storage for nodal coordinates
           int nnodes = element->NumNode();
           LINALG::SerialDenseMatrix nodalcoords(3,nnodes);
@@ -2473,7 +2473,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
               if (ele->RotVec())
                 nodaltangents(i,j) = ((ele->Theta0())[j])(i) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3+i])];
               else
-                dserror("ERROR: Gmsh output not yet implemented for beam3wk with tangent vector DoFs");
+                dserror("ERROR: Gmsh output not yet implemented for beam3k with tangent vector DoFs");
             }
           }
 
@@ -2494,9 +2494,9 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
             nodaltangents(2,j) = (1.0+lt) * R(2,0);
           }
 
-          // remember that the beam3wk is a 3-noded element only(!) due to the fact the
+          // remember that the beam3k is a 3-noded element only(!) due to the fact the
           // rotation interpolation needs a third node. With regard to the centerline that is
-          // of interest here, the beam3wk element is a 2-noded element with Hermite interpolation
+          // of interest here, the beam3k element is a 2-noded element with Hermite interpolation
           if (nnodes ==3)
           {
             LINALG::Matrix<12,1> disp_totlag(true);
@@ -4343,9 +4343,9 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
     const DRT::ELEMENTS::Beam3ebtor* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ebtor*>(thisele);
     eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
   }
-  else if ( eot == DRT::ELEMENTS::Beam3wkType::Instance() )
+  else if ( eot == DRT::ELEMENTS::Beam3kType::Instance() )
   {
-    const DRT::ELEMENTS::Beam3wk* thisbeam = static_cast<const DRT::ELEMENTS::Beam3wk*>(thisele);
+    const DRT::ELEMENTS::Beam3k* thisbeam = static_cast<const DRT::ELEMENTS::Beam3k*>(thisele);
     eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
   }
 

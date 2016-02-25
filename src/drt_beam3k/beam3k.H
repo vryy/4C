@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam3wk.H
+\file beam3k.H
 
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
 
@@ -28,7 +28,7 @@ the element has COLLOCATION_POINTS-2 interior nodes which one scalar DoF alpha_i
 
 Attention: Since so far linearizations are calculated with FAD, the rotation increments in the case (rotvec_==true)
 are of an additive nature, which is in strong contrast to the beam3ii implementation, where the iterative
-rotation increments are multiplicative. Consequently, the inhomogeneous rotational Dirichlet conditions of beam3wk
+rotation increments are multiplicative. Consequently, the inhomogeneous rotational Dirichlet conditions of beam3k
 can be interpreted as additive increments added to the initial values (i.e. if the initial value is zero, the
 Dirichlet values in the input file are the total nodal rotation angles). This is not true for beam3ii,
 where prescribed 3D rotation values have no direct physical interpretation. For 2D rotations both variants are identical.
@@ -36,8 +36,8 @@ where prescribed 3D rotation values have no direct physical interpretation. For 
 
 
 //header file only included if not yet included!
-#ifndef BEAM3WK_H
-#define BEAM3WK_H
+#ifndef BEAM3K_H
+#define BEAM3K_H
 
 #include "Teuchos_RCP.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -57,7 +57,7 @@ typedef Sacado::Fad::DFad<double> FAD;
 #define REFERENCE_NODE 2      //number of reference-node for the calculation of the rotation of the other triads (local numbering: 0 2 3 4 1)
 //DEFAULT: REFERENCE_NODE 2   //REFERENCE_NODE=2 represents the midpoint node in the case of 3 COLLOCATION_POINTS -> standard choice!
 
-#define mygaussrulebeam3wk intrule_line_4point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented.
+#define mygaussrulebeam3k intrule_line_4point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented.
 //DEFAULT: intrule_line_4point
 
 #define LENGTHCALCNEWTONTOL 10e-12 //Tolerance for iterative determination of element length.
@@ -76,13 +76,13 @@ namespace DRT
 namespace ELEMENTS
 {
 
-class Beam3wkType : public DRT::ElementType
+class Beam3kType : public DRT::ElementType
 {
 public:
 
-  std::string Name() const { return "Beam3wkType"; }
+  std::string Name() const { return "Beam3kType"; }
 
-  static Beam3wkType & Instance();
+  static Beam3kType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -103,7 +103,7 @@ public:
 
 private:
 
-  static Beam3wkType instance_;
+  static Beam3kType instance_;
 };
 
 /*!
@@ -111,12 +111,12 @@ private:
 
 author meier (meier@lnm.mw.tum.de)
 */
-class Beam3wk : public DRT::Element
+class Beam3k : public DRT::Element
 {
 public:
 
   //! @name Friends
-  friend class Beam3wkType;
+  friend class Beam3kType;
 
   //! @name Constructors and destructors and related methods
 
@@ -127,22 +127,22 @@ public:
   \param etype (in): Type of element
   \param owner (in): owner processor of the element
   */
-  Beam3wk(int id, int owner);
+  Beam3k(int id, int owner);
 
   /*!
   \brief Copy Constructor
 
   Makes a deep copy of a Element
   */
-  Beam3wk(const Beam3wk& old);
+  Beam3k(const Beam3k& old);
 
   /*!
   \brief Destructor
   */
-  virtual ~Beam3wk();
+  virtual ~Beam3k();
 
   /*!
-  \brief Deep copy this instance of Beam3wk and return pointer to the copy
+  \brief Deep copy this instance of Beam3k and return pointer to the copy
 
   The Clone() method is used by the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
@@ -162,7 +162,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return Beam3wkType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return Beam3kType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -181,7 +181,7 @@ public:
   virtual void Unpack(const std::vector<char>& data);
 
   virtual DRT::ElementType & ElementType() const
-  { return Beam3wkType::Instance(); }
+  { return Beam3kType::Instance(); }
 
   //@}
 
@@ -363,7 +363,7 @@ public:
 
 private:
 
-  //! action parameters recognized by Beam3wk
+  //! action parameters recognized by Beam3k
   enum ActionType
   {
     calc_none,
@@ -1010,7 +1010,7 @@ private:
   }
 
   // don't want = operator
-  Beam3wk& operator = (const Beam3wk& old);
+  Beam3k& operator = (const Beam3k& old);
 
   template<int dim>
   void ComputeTripleProduct(LINALG::TMatrix<FAD,3,dim>& mat1, LINALG::TMatrix<FAD,3,1>& vec1, LINALG::TMatrix<FAD,3,1>& vec2, LINALG::TMatrix<FAD,dim,1>& vec_out)
@@ -1024,7 +1024,7 @@ private:
     return;
   }
 
-}; // class Beam3wk
+}; // class Beam3k
 
 // << operator
 std::ostream& operator << (std::ostream& os, const DRT::Element& ele);
@@ -1032,4 +1032,4 @@ std::ostream& operator << (std::ostream& os, const DRT::Element& ele);
 } // namespace Elements
 } // namespace DRT
 
-#endif  // #ifndef BEAM3WK_H
+#endif  // #ifndef BEAM3K_H

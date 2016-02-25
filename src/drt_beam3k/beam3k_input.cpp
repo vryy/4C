@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam3wk_input.cpp
+\file beam3k_input.cpp
 
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
 
@@ -12,14 +12,14 @@ Maintainer: Christoph Meier
 
 *-----------------------------------------------------------------------------------------------------------*/
 
-#include "../drt_beam3wk/beam3wk.H"
+#include "../drt_beam3k/beam3k.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/largerotations.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Beam3wk::ReadElement(const std::string& eletype,
+bool DRT::ELEMENTS::Beam3k::ReadElement(const std::string& eletype,
                                        const std::string& distype,
                                        DRT::INPUT::LineDefinition* linedef)
 {
@@ -58,7 +58,7 @@ bool DRT::ELEMENTS::Beam3wk::ReadElement(const std::string& eletype,
 
   linedef->ExtractDouble("CROSS",crosssec_);
 
-  /*read beam moments of inertia of area; currently the Beam3wk element works only with rotationally symmetric
+  /*read beam moments of inertia of area; currently the Beam3k element works only with rotationally symmetric
    * crosssection so that the moment of inertia of area around both principal axes can be expressed by one input
    * number I_; however, the implementation itself is a general one and works also for other cases;*/
 

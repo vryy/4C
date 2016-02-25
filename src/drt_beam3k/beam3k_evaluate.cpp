@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam3wk_evaluate.cpp
+\file beam3k_evaluate.cpp
 
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
 
@@ -13,7 +13,6 @@ Maintainer: Christoph Meier
 *-----------------------------------------------------------------------------------------------------------*/
 
 
-#include "beam3wk.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
@@ -28,12 +27,13 @@ Maintainer: Christoph Meier
 #include "../drt_inpar/inpar_structure.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+#include "beam3k.H"
 
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 meier 01/16|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3wk::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
                                         DRT::Discretization& discretization,
                                         std::vector<int>& lm,
                                         Epetra_SerialDenseMatrix& elemat1, //stiffness matrix
@@ -42,37 +42,37 @@ int DRT::ELEMENTS::Beam3wk::Evaluate(Teuchos::ParameterList& params,
                                         Epetra_SerialDenseVector& elevec2, //inertia forces
                                         Epetra_SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::Beam3wk::ActionType act = Beam3wk::calc_none;
+  DRT::ELEMENTS::Beam3k::ActionType act = Beam3k::calc_none;
   // get the action required
   std::string action = params.get<std::string>("action","calc_none");
 
   if     (action == "calc_none")         dserror("No action supplied");
-  else if (action=="calc_struct_linstiff")     act = Beam3wk::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff")     act = Beam3wk::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce") act = Beam3wk::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass")   act = Beam3wk::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass")   act = Beam3wk::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass") act = Beam3wk::calc_struct_nlnstifflmass; //with lumped mass matrix
-  else if (action=="calc_struct_stress")     act = Beam3wk::calc_struct_stress;
-  else if (action=="calc_struct_eleload")     act = Beam3wk::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload")     act = Beam3wk::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep")  act = Beam3wk::calc_struct_update_istep;
-  else if (action=="calc_struct_reset_istep")   act = Beam3wk::calc_struct_reset_istep;
-  else if (action=="calc_struct_ptcstiff")    act = Beam3wk::calc_struct_ptcstiff;
-  else if (action=="calc_struct_energy")     act = Beam3wk::calc_struct_energy;
-  else     dserror("Unknown type of action for Beam3wk");
+  else if (action=="calc_struct_linstiff")     act = Beam3k::calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff")     act = Beam3k::calc_struct_nlnstiff;
+  else if (action=="calc_struct_internalforce") act = Beam3k::calc_struct_internalforce;
+  else if (action=="calc_struct_linstiffmass")   act = Beam3k::calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass")   act = Beam3k::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_nlnstifflmass") act = Beam3k::calc_struct_nlnstifflmass; //with lumped mass matrix
+  else if (action=="calc_struct_stress")     act = Beam3k::calc_struct_stress;
+  else if (action=="calc_struct_eleload")     act = Beam3k::calc_struct_eleload;
+  else if (action=="calc_struct_fsiload")     act = Beam3k::calc_struct_fsiload;
+  else if (action=="calc_struct_update_istep")  act = Beam3k::calc_struct_update_istep;
+  else if (action=="calc_struct_reset_istep")   act = Beam3k::calc_struct_reset_istep;
+  else if (action=="calc_struct_ptcstiff")    act = Beam3k::calc_struct_ptcstiff;
+  else if (action=="calc_struct_energy")     act = Beam3k::calc_struct_energy;
+  else     dserror("Unknown type of action for Beam3k");
 
   std::string test = params.get<std::string>("action","calc_none");
 
   switch(act)
   {
-    case Beam3wk::calc_struct_ptcstiff:
+    case Beam3k::calc_struct_ptcstiff:
     {
-      dserror("no ptc implemented for Beam3wk element");
+      dserror("no ptc implemented for Beam3k element");
     }
     break;
 
-    case Beam3wk::calc_struct_linstiff:
+    case Beam3k::calc_struct_linstiff:
     {
       //only nonlinear case implemented!
       dserror("linear stiffness matrix called, but not implemented");
@@ -80,10 +80,10 @@ int DRT::ELEMENTS::Beam3wk::Evaluate(Teuchos::ParameterList& params,
     break;
 
     //nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is required
-    case Beam3wk::calc_struct_nlnstiffmass:
-    case Beam3wk::calc_struct_nlnstifflmass:
-    case Beam3wk::calc_struct_nlnstiff:
-    case Beam3wk::calc_struct_internalforce:
+    case Beam3k::calc_struct_nlnstiffmass:
+    case Beam3k::calc_struct_nlnstifflmass:
+    case Beam3k::calc_struct_nlnstiff:
+    case Beam3k::calc_struct_internalforce:
     {
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacement and residual values for each degree of freedom
@@ -100,25 +100,25 @@ int DRT::ELEMENTS::Beam3wk::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
-      if (act == Beam3wk::calc_struct_nlnstiffmass)
+      if (act == Beam3k::calc_struct_nlnstiffmass)
       {
         if(weakkirchhoff_)
           CalculateInternalForcesWK(params,mydisp,&elemat1,&elemat2,&elevec1,&elevec2,false);
         else
           CalculateInternalForcesSK(params,mydisp,&elemat1,&elemat2,&elevec1,&elevec2,false);
       }
-      else if (act == Beam3wk::calc_struct_nlnstifflmass)
+      else if (act == Beam3k::calc_struct_nlnstifflmass)
       {
         dserror("The action calc_struct_nlnstifflmass is not implemented yet!");
       }
-      else if (act == Beam3wk::calc_struct_nlnstiff)
+      else if (act == Beam3k::calc_struct_nlnstiff)
       {
         if(weakkirchhoff_)
           CalculateInternalForcesWK(params,mydisp,&elemat1,NULL,&elevec1,NULL,false);
         else
           CalculateInternalForcesSK(params,mydisp,&elemat1,NULL,&elevec1,NULL,false);
       }
-      else if (act == Beam3wk::calc_struct_internalforce)
+      else if (act == Beam3k::calc_struct_internalforce)
       {
         if(weakkirchhoff_)
           CalculateInternalForcesWK(params,mydisp,NULL,NULL,&elevec1,NULL,false);
@@ -262,7 +262,7 @@ int DRT::ELEMENTS::Beam3wk::Evaluate(Teuchos::ParameterList& params,
 
     case calc_struct_stress:
     {
-      dserror("No stress output implemented for beam3wk elements");
+      dserror("No stress output implemented for beam3k elements");
     }
     break;
 
@@ -331,19 +331,19 @@ int DRT::ELEMENTS::Beam3wk::Evaluate(Teuchos::ParameterList& params,
     break;
 
     default:
-      dserror("Unknown type of action for Beam3wk %d", act);
+      dserror("Unknown type of action for Beam3k %d", act);
      break;
 
   }//switch(act)
 
   return 0;
 
-}  //DRT::ELEMENTS::Beam3wk::Evaluate
+}  //DRT::ELEMENTS::Beam3k::Evaluate
 
 /*------------------------------------------------------------------------------------------------------------*
  | lump mass matrix             (private)                                                          meier 01/16|
  *------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::Lumpmass(Epetra_SerialDenseMatrix* emass)
+void DRT::ELEMENTS::Beam3k::Lumpmass(Epetra_SerialDenseMatrix* emass)
 {
   dserror("Lumped mass matrix not implemented yet!!!");
 }
@@ -351,7 +351,7 @@ void DRT::ELEMENTS::Beam3wk::Lumpmass(Epetra_SerialDenseMatrix* emass)
 /*------------------------------------------------------------------------------------------------------------*
  | internal forces: weak Kirchhoff constraint (private)                                            meier 01/16|
  *------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::CalculateInternalForcesWK( Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& params,
                                                         std::vector<double>&      disp,
                                                         Epetra_SerialDenseMatrix* stiffmatrix,
                                                         Epetra_SerialDenseMatrix* massmatrix,
@@ -359,7 +359,7 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForcesWK( Teuchos::ParameterList& 
                                                         Epetra_SerialDenseVector* inertia_force,
                                                         bool update)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Beam3wk::CalculateInternalForcesWK");
+  TEUCHOS_FUNC_TIME_MONITOR("Beam3k::CalculateInternalForcesWK");
   if(COLLOCATION_POINTS!=2 and COLLOCATION_POINTS!=3 and COLLOCATION_POINTS!=4)
     dserror("Only the values 2,3 and 4 are valid for COLLOCATION_POINTS!!!");
 
@@ -394,7 +394,7 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForcesWK( Teuchos::ParameterList& 
   std::vector<LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> > v_thetapar_cp(COLLOCATION_POINTS);
 
   //Get integration points for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3wk);
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
 
   //interpolated values of strains and their variations evaluated at Gauss points
   FAD epsilon;
@@ -687,7 +687,7 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForcesWK( Teuchos::ParameterList& 
 /*------------------------------------------------------------------------------------------------------------*
  | internal forces: strong Kirchhoff constraint (private)                                          meier 02/16|
  *------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::CalculateInternalForcesSK( Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& params,
                                                       std::vector<double>&      disp,
                                                       Epetra_SerialDenseMatrix* stiffmatrix,
                                                       Epetra_SerialDenseMatrix* massmatrix,
@@ -695,7 +695,7 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForcesSK( Teuchos::ParameterList& 
                                                       Epetra_SerialDenseVector* inertia_force,
                                                       bool update)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Beam3wk::CalculateInternalForcesSK");
+  TEUCHOS_FUNC_TIME_MONITOR("Beam3k::CalculateInternalForcesSK");
   if(COLLOCATION_POINTS!=2 and COLLOCATION_POINTS!=3 and COLLOCATION_POINTS!=4)
   {
     dserror("Only the values 2,3 and 4 are valid for COLLOCATION_POINTS!!!");
@@ -727,7 +727,7 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForcesSK( Teuchos::ParameterList& 
   std::vector<LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> > v_epsilon_cp(COLLOCATION_POINTS);
 
   //Get integration points for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3wk);
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
 
   //interpolated values of strains and their variations evaluated at Gauss points
   FAD epsilon;
@@ -1268,7 +1268,7 @@ void DRT::ELEMENTS::Beam3wk::CalculateInternalForcesSK( Teuchos::ParameterList& 
 /*------------------------------------------------------------------------------------------------------------*
  | Calculate intertia forces and moments                                                           meier 02/16|
  *------------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::CalculateInteriaForces(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Beam3k::CalculateInteriaForces(Teuchos::ParameterList& params,
                                                     std::vector<LINALG::TMatrix<FAD,3,3> >& triad_mat,
                                                     std::vector<FAD>& disp_totlag_centerline,
                                                     std::vector<LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,3> >& v_theta,
@@ -1321,7 +1321,7 @@ void DRT::ELEMENTS::Beam3wk::CalculateInteriaForces(Teuchos::ParameterList& para
   LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetapar(true);
 
   //Get integration points for exact integration
-  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3wk);
+  DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
 
   for (int numgp=0; numgp<gausspoints.nquad; numgp++)//loop through Gauss points
   {
@@ -1479,7 +1479,7 @@ void DRT::ELEMENTS::Beam3wk::CalculateInteriaForces(Teuchos::ParameterList& para
 /*-----------------------------------------------------------------------------------------------------------*
  |  Integrate a Surface/Line Neumann boundary condition (public)                                  meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3wk::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
                                                DRT::Discretization& discretization,
                                                DRT::Condition& condition,
                                                std::vector<int>& lm,
@@ -1641,7 +1641,7 @@ int DRT::ELEMENTS::Beam3wk::EvaluateNeumann(Teuchos::ParameterList& params,
     }
 
     // gaussian points
-    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3wk);
+    DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
     LINALG::TMatrix<FAD,1,4> N_i;
     LINALG::TMatrix<FAD,3,6*nnode + COLLOCATION_POINTS> N;
 
@@ -1683,7 +1683,7 @@ int DRT::ELEMENTS::Beam3wk::EvaluateNeumann(Teuchos::ParameterList& params,
 
         if (functnum>0)
         {
-          dserror("Line Neumann conditions for distributed moments are not implemented for beam3wk so far! Only the function flag 1, 2 and 3 can be set!");
+          dserror("Line Neumann conditions for distributed moments are not implemented for beam3k so far! Only the function flag 1, 2 and 3 can be set!");
         }
       }
 
@@ -1737,12 +1737,12 @@ int DRT::ELEMENTS::Beam3wk::EvaluateNeumann(Teuchos::ParameterList& params,
   }//if a line neumann condition needs to be linearized
 
   return 0;
-}  //DRT::ELEMENTS::Beam3wk::EvaluateNeumann
+}  //DRT::ELEMENTS::Beam3k::EvaluateNeumann
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  Assemble C shape function                                                                     meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::AssembleShapefunctionsL(LINALG::TMatrix<FAD,1,COLLOCATION_POINTS>& L_i,
+void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsL(LINALG::TMatrix<FAD,1,COLLOCATION_POINTS>& L_i,
                                                     LINALG::TMatrix<FAD,1,2*6+COLLOCATION_POINTS>& L)
 {
 
@@ -1781,7 +1781,7 @@ void DRT::ELEMENTS::Beam3wk::AssembleShapefunctionsL(LINALG::TMatrix<FAD,1,COLLO
 /*-----------------------------------------------------------------------------------------------------------*
  |  Assemble the N_s shape functions                                                              meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::AssembleShapefunctionsNss( LINALG::TMatrix<FAD,1,4>& N_i_xi,
+void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsNss( LINALG::TMatrix<FAD,1,4>& N_i_xi,
                                                         LINALG::TMatrix<FAD,1,4>& N_i_xixi,
                                                         FAD jacobi,
                                                         FAD jacobi2,
@@ -1799,7 +1799,7 @@ void DRT::ELEMENTS::Beam3wk::AssembleShapefunctionsNss( LINALG::TMatrix<FAD,1,4>
 /*-----------------------------------------------------------------------------------------------------------*
  |  Assemble the N_s shape functions                                                              meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::AssembleShapefunctionsNs( LINALG::TMatrix<FAD,1,4>& N_i_xi,
+void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsNs( LINALG::TMatrix<FAD,1,4>& N_i_xi,
                                                        FAD jacobi,
                                                        LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N_s)
 {
@@ -1818,7 +1818,7 @@ void DRT::ELEMENTS::Beam3wk::AssembleShapefunctionsNs( LINALG::TMatrix<FAD,1,4>&
 /*-----------------------------------------------------------------------------------------------------------*
  |  Assemble the N shape functions                                                                meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::AssembleShapefunctionsN( LINALG::TMatrix<FAD,1,4>& N_i,
+void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsN( LINALG::TMatrix<FAD,1,4>& N_i,
                                                      LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N)
 {
 
@@ -1866,7 +1866,7 @@ dserror("COLLOCATION_POINTS has to be defined. Only the values 2,3 and 4 are val
 /*-----------------------------------------------------------------------------------------------------------*
  |  Calculate position vectors from displacement +  initial position                              meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::UpdateDispTotlag(std::vector<double>& disp, std::vector<FAD>& disp_totlag)
+void DRT::ELEMENTS::Beam3k::UpdateDispTotlag(std::vector<double>& disp, std::vector<FAD>& disp_totlag)
 {
   for (int dof=0;dof<2*6+COLLOCATION_POINTS;dof++)
     disp_totlag[dof]=disp[dof];
@@ -1929,7 +1929,7 @@ void DRT::ELEMENTS::Beam3wk::UpdateDispTotlag(std::vector<double>& disp, std::ve
 /*-----------------------------------------------------------------------------------------------------------*
  |  Set positions vectors and tangents at boundary nodes and triads at all CPs                    meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::SetNodalVariables( std::vector<FAD>& disp_totlag,
+void DRT::ELEMENTS::Beam3k::SetNodalVariables( std::vector<FAD>& disp_totlag,
                                                 std::vector<FAD>& disp_totlag_centerline,
                                                 std::vector<LINALG::TMatrix<FAD,3,3> >& triad_mat_cp)
 {
@@ -2052,7 +2052,7 @@ void DRT::ELEMENTS::Beam3wk::SetNodalVariables( std::vector<FAD>& disp_totlag,
 /*-----------------------------------------------------------------------------------------------------------*
  |  Pre-multiply trafo matrix if rotvec_==true: \tilde{\vec{f}_int}=\mat{T}^T*\vec{f}_int         meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::ApplyRotVecTrafo( std::vector<FAD>& disp_totlag_centerline,
+void DRT::ELEMENTS::Beam3k::ApplyRotVecTrafo( std::vector<FAD>& disp_totlag_centerline,
                                                LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,1>& f_int)
 {
   //Trafo matrices:
@@ -2110,7 +2110,7 @@ void DRT::ELEMENTS::Beam3wk::ApplyRotVecTrafo( std::vector<FAD>& disp_totlag_cen
 /*-----------------------------------------------------------------------------------------------------------*
  |  Update the reference triad at the element nodes at the end of time step                       meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::UpdateRefTriads(std::vector<FAD>& disp_totlag_centerline)
+void DRT::ELEMENTS::Beam3k::UpdateRefTriads(std::vector<FAD>& disp_totlag_centerline)
 {
   double xi=0.0;
   int ind=0;
@@ -2160,7 +2160,7 @@ void DRT::ELEMENTS::Beam3wk::UpdateRefTriads(std::vector<FAD>& disp_totlag_cente
   return;
 }
 
-void DRT::ELEMENTS::Beam3wk::straintostress(LINALG::TMatrix<FAD,3,1>& Omega, FAD epsilon, LINALG::TMatrix<FAD,3,1>& M, FAD& f_par)
+void DRT::ELEMENTS::Beam3k::straintostress(LINALG::TMatrix<FAD,3,1>& Omega, FAD epsilon, LINALG::TMatrix<FAD,3,1>& M, FAD& f_par)
 {
   //first of all we get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
@@ -2194,7 +2194,7 @@ void DRT::ELEMENTS::Beam3wk::straintostress(LINALG::TMatrix<FAD,3,1>& Omega, FAD
 /*-----------------------------------------------------------------------------------------------------------*
  |  Update of the nodal triads at the end of time step (public)                                   meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3wk::UpdateTriads( Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Beam3k::UpdateTriads( Teuchos::ParameterList& params,
                                               std::vector<double>& vel,
                                               std::vector<double>& disp)
 {
@@ -2209,7 +2209,7 @@ void DRT::ELEMENTS::Beam3wk::UpdateTriads( Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------------------------------------------*
  | Get position vector at xi for given nodal displacements                                        popp 02/16|
  *----------------------------------------------------------------------------------------------------------*/
-LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3wk::GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const
+LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3k::GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const
 {
   LINALG::Matrix<3,1> r(true);
   LINALG::Matrix<4,1> N_i(true);
