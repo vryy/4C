@@ -47,7 +47,8 @@ where prescribed 3D rotation values have no direct physical interpretation. For 
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/largerotations.H"
-#include "Sacado.hpp"
+#include <Sacado.hpp>
+#include "../headers/FAD_utils.H"
 
 #include <unistd.h>
 #include <sys/times.h>
@@ -528,8 +529,8 @@ private:
      quaternion.Clear();
 
      rotation_matrix.MultiplyTN(triad_ref,triad);
-     triadtoquaternion(rotation_matrix,quaternion);
-     quaterniontoangle(quaternion,theta);
+     LARGEROTATIONS::triadtoquaternion(rotation_matrix,quaternion);
+     LARGEROTATIONS::quaterniontoangle(quaternion,theta);
    }
 
   //!compute the relative angle theta between triad_ref and triad so that exp(theta) = triad*triad_ref^T -> inversion of the right translation triad=exp(theta)*triad_ref
@@ -543,8 +544,8 @@ private:
     quaternion.Clear();
 
     rotation_matrix.MultiplyNT(triad,triad_ref);
-    triadtoquaternion(rotation_matrix,quaternion);
-    quaterniontoangle(quaternion,theta);
+    LARGEROTATIONS::triadtoquaternion(rotation_matrix,quaternion);
+    LARGEROTATIONS::quaterniontoangle(quaternion,theta);
   }
 
    //!compute a triad with an (interpolated) relative angle between triad_ref and triad
@@ -558,195 +559,9 @@ private:
      quaternion.Clear();
      triad.Clear();
 
-     angletoquaternion(theta,quaternion);
-     quaterniontotriad(quaternion,rotation_matrix);
+     LARGEROTATIONS::angletoquaternion(theta,quaternion);
+     LARGEROTATIONS::quaterniontotriad(quaternion,rotation_matrix);
      triad.Multiply(triad_ref,rotation_matrix);// ???
-   }
-
-   //!this is a templated version of the method Tinvmatrix as declared in LARGEROTATIONS in order to also handle
-   //!the datatype FAD which is needed for automatic differentiation
-   template<typename T>
-   LINALG::TMatrix<T,3,3> Tinvmatrix(LINALG::TMatrix<T,3,1>& theta)
-   {
-
-     LINALG::TMatrix<T,3,3> result;
-     T theta_abs = pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
-
-     //in case of theta_abs == 0 the following computation has problems with ill-conditioning / singularities
-     if(theta_abs > 1e-8)
-     {
-       //ultimate term in eq. (2.5)
-       LARGEROTATIONS::computespin(result, theta);
-       result.Scale((1-cos(theta_abs)) / pow(theta_abs,2));
-
-       //penultimate term in eq. (2.5)
-       for(int i = 0; i<3; i++)
-         result(i,i) += sin(theta_abs)/(theta_abs);
-
-       //first term on the right side in eq. (2.5)
-       for(int i = 0; i<3; i++)
-         for(int j=0; j<3; j++)
-           result(i,j) += theta(i) * theta(j) * (1 - sin(theta_abs)/(theta_abs) )/pow(theta_abs,2);
-     }
-     //in case of theta_abs == 0 H(theta) is the identity matrix and hence also Hinv
-     else
-     {
-       //based on the small angle approximation sin(x)=x and 1-cos(x)=x^2/2 we get: Tinv = I + 0.5*S(theta) -> Tinv'=0.5*S(theta')
-       result.PutScalar(0.0);
-       LARGEROTATIONS::computespin(result, theta);
-       result.Scale(0.5);
-       for(int j=0; j<3; j++)
-         result(j,j) += 1;
-     }
-
-     return result;
-   }//Tinvmatrix
-
-   //!this is a templated version of the method quaterniontotriad as in LARGEROTATIONS in order to also handle
-   //!the datatype FAD which is needed for automatic differentiation
-   template<typename T>
-   void quaterniontotriad(const LINALG::TMatrix<T,4,1>& q, LINALG::TMatrix<T,3,3>& R)
-   {
-     //separate storage of vector part of q
-     LINALG::TMatrix<T,3,1> qvec;
-     for(int i = 0; i<3; i++)
-       qvec(i) = q(i);
-
-     //setting R to third summand of equation (16.70)
-     LARGEROTATIONS::computespin(R, qvec);
-     R.Scale(2*q(3));
-
-     //adding second summand of equation (16.70)
-     for(int i = 0; i<3; i++)
-       for(int j = 0; j<3; j++)
-         R(i,j) += 2*q(i)*q(j);
-
-     //adding diagonal entries according to first summand of equation (16.70)
-     R(0,0) = 1 - 2*(q(1)*q(1) + q(2)*q(2));
-     R(1,1) = 1 - 2*(q(0)*q(0) + q(2)*q(2));
-     R(2,2) = 1 - 2*(q(0)*q(0) + q(1)*q(1));
-
-     return;
-   } //quaterniontotriad
-
-   //!this is a templated version of the method angletoquaternion as declared in LARGEROTATIONS in order to also handle
-   //!the datatype FAD which is needed for automatic differentiation
-   template<typename T>
-   void angletoquaternion(const LINALG::TMatrix<T,3,1>& theta, LINALG::TMatrix<T,4,1>& q)
-   {
-     //absolute value of rotation angle theta
-     T abs_theta = 0.0;
-     for(int i=0; i<3; i++)
-       abs_theta+=theta(i)*theta(i);
-
-     abs_theta=pow(abs_theta,0.5);
-
-     //computing quaterion for rotation by angle theta, Crisfield, Vol. 2, equation (16.67)
-     if (abs_theta > 1e-12)
-     {
-       q(0) = theta(0) * sin(abs_theta / 2) / abs_theta;
-       q(1) = theta(1) * sin(abs_theta / 2) / abs_theta;
-       q(2) = theta(2) * sin(abs_theta / 2) / abs_theta;
-       q(3) = cos(abs_theta / 2);
-     }
-     else //altered due to FAD - with theta->0 the equations above simplify in the manner below
-       //NOTE: the equations below are chosen in a way that the linearisation (with FAD) is the same
-       //of the equations above for the case theta->0
-     {
-         q(0) = 0.5*theta(0);
-         q(1) = 0.5*theta(1);
-         q(2) = 0.5*theta(2);
-         q(3) = cos(abs_theta / 2);
-     }
-
-     return;
-   }//angletoquaternion
-
-   //!this is a templated version of the method quaterniontoangle as declared above in LARGEROTATIONS to also handle
-   //!the datatype FAD which is needed for automatic differentiation
-   template<typename T>
-   void quaterniontoangle(const LINALG::TMatrix<T,4,1>& q, LINALG::TMatrix<T,3,1>& theta)
-   {
-     /*the following function computes from a quaternion q an angle theta within [-PI; PI]; such an interval is
-        * imperative for the use of the resulting angle together with formulae like Crisfield, Vol. 2, equation (16.90);
-        * note that these formulae comprise not only trigonometric functions, but rather the angle theta directly. Hence
-        * they are not 2*PI-invariant !!! */
-
-       //if the rotation angle is pi we have q(3) == 0 and the rotation angle vector can be computed by
-       if(q(3) == 0)
-       {
-         //note that with q(3) == 0 the first three elements of q represent the unit direction vector of the angle
-         //according to Crisfield, Vol. 2, equation (16.67)
-         for(int i = 0; i<3; i++)
-           theta(i) = q(i) * M_PI;
-       }
-       else
-       {
-         //otherwise the angle can be computed from a quaternion via Crisfield, Vol. 2, eq. (16.79)
-         LINALG::TMatrix<T,3,1> omega;
-         T abs_omega=0.0;
-         for(int i = 0; i<3; i++)
-         {
-           omega(i) = q(i)*2/q(3);
-           abs_omega+=omega(i)*omega(i);
-         }
-
-         abs_omega=pow(abs_omega,0.5);
-         T tanhalf = abs_omega / 2;
-         T thetaabs = atan(tanhalf)*2;
-
-         //if the rotation angle is zero we return a zero rotation angle vector at once
-         if(abs_omega < 1e-12)
-         {
-           for(int i = 0; i<3; i++)
-             theta(i) = 2*q(i);  //altered due to FAD, the equations simplify in that way for theta->0
-         }
-         else
-           for(int i = 0; i<3; i++)
-             theta(i) = thetaabs* omega(i) / abs_omega;
-       }
-
-       return;
-   }
-
-   //!this is a templated version of the method triadtoquaternion as declared in LARGEROTATIONS in order to also handle
-   //!the datatype FAD which is needed for automatic differentiation
-   template<typename T>
-   void triadtoquaternion(const LINALG::TMatrix<T,3,3>& R, LINALG::TMatrix<T,4,1>& q)
-   {
-     T trace = R(0,0) + R(1,1) + R(2,2);
-
-     if(trace>R(0,0)  && trace>R(1,1) && trace>R(2,2))
-     {
-       q(3) = 0.5 * pow(1 + trace, 0.5);
-       /*note: if trace is greater than each element on diagonal, all diagonal elements are positive
-        *and hence also the trace is positive and thus q(3) > 0 so that division by q(3) is allowed*/
-       q(0) = (R(2,1) - R(1,2)) / (4*q(3));
-       q(1) = (R(0,2) - R(2,0)) / (4*q(3));
-       q(2) = (R(1,0) - R(0,1)) / (4*q(3));
-     }
-     else
-     {
-       for(int i = 0 ; i<3 ; i++)
-       {
-         int j = (i+1)% 3;
-         int k = (i+2)% 3;
-
-         if(R(i,i) >= R(j,j) && R(i,i) >= R(k,k))
-         {
-           //equation (16.78a)
-           q(i) = pow(0.5*R(i,i) + 0.25*(1 - trace) , 0.5);
-
-           //equation (16.78b)
-           q(3) = 0.25*(R(k,j) - R(j,k)) / q(i);
-
-           //equation (16.78c)
-           q(j) = 0.25*(R(j,i) + R(i,j)) / q(i);
-           q(k) = 0.25*(R(k,i) + R(i,k)) / q(i);
-          }
-        }
-      }
-     return;
    }
 
    //!compute (material) strain K
@@ -757,7 +572,7 @@ private:
      K.Clear();
      Tinv.Clear();
 
-     Tinv=Tinvmatrix(theta);
+     Tinv=LARGEROTATIONS::Tinvmatrix(theta);
      K.MultiplyTN(Tinv,theta_deriv);
 
      return;
@@ -791,7 +606,7 @@ private:
     T temp_scalar3=0.0;
     T fac_n0=0.0;
     T fac_b0=0.0;
-    T abs_r_s = Norm<T>(r_s);
+    T abs_r_s = FADUTILS::Norm<T>(r_s);
 
     for (int i=0; i<3; i++)
     {
@@ -839,20 +654,6 @@ private:
 
   void AssembleShapefunctionsN( LINALG::TMatrix<FAD,1,4>& N_i,
                                 LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N);
-
-  //! Calculates the Norm of a FAD vector, since .Norm2() is not available for FAD vectors
-  template<typename T>
-  T Norm(LINALG::TMatrix<T,3,1>& v)
-  {
-    T norm = 0.0;
-    for (int i=0;i<3;i++)
-    {
-      norm+=v(i)*v(i);
-    }
-    norm = sqrt(norm);
-
-    return norm;
-  }
 
   //! Delivers the tangent vector of the reference configuration at the boundary node "node=1,2" (necessary to calculate the centerline of the reference geometry)
   LINALG::Matrix<3,1> GetNodalRefTangent(const int& node)

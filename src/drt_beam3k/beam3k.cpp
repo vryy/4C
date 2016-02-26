@@ -377,7 +377,6 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
-  std::cout<<"We are in Unpack method"<<std::endl;
   //extract all class variables of beam3 element
   isinit_ = ExtractInt(position,data);
   ExtractfromPack(position,data,crosssec_);

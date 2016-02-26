@@ -44,17 +44,21 @@ bool DRT::ELEMENTS::Beam3ii::ReadElement(const std::string&          eletype,
   Qnew_.resize(NumNode());
   Qold_.resize(NumNode());
   Qconv_.resize(NumNode());
+  theta0_.resize(NumNode());
 
-  //extract triads at element nodes in reference configuration as rotation vectors and save them as quaternions at each node, respectively
+  // Attention! expression "TRIADS" in input file is misleading.
+  // The 3 specified values per node define a rotational pseudovector, which
+  // parameterizes the orientation of the triad at this node
+  // (relative to the global reference coordinate system)
+  // extract rotational pseudovectors at element nodes in reference configuration and save them as quaternions at each node, respectively
   std::vector<double> triads;
   linedef->ExtractDoubleVector("TRIADS",triads);
-  LINALG::Matrix<3,1> nodeangle;
     for(int i=0; i<NumNode(); i++)
     {
       for(int j=0; j<3; j++)
-        nodeangle(j) = triads[3*i+j];
+        theta0_[i](j) = triads[3*i+j];
 
-      LARGEROTATIONS::angletoquaternion(nodeangle,Qnew_[i]);
+      LARGEROTATIONS::angletoquaternion(theta0_[i],Qnew_[i]);
     }
 
   Qold_  = Qnew_;
@@ -107,4 +111,3 @@ void DRT::ELEMENTS::Beam3ii::SetCrossSecShear(const double& crosssecshear)
   crosssecshear_ = crosssecshear;
   return;
 }
-

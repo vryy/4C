@@ -11,7 +11,6 @@ Maintainer: Christoph Meier
 #ifndef BEAMTOSPHEREC_H
 #define BEAMTOSPHEREC_H
 
-#include "beam3contact_utils.H"
 #include "beam3contact_defines.H"
 #include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
@@ -25,6 +24,7 @@ Maintainer: Christoph Meier
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../headers/FAD_utils.H"
 
 namespace CONTACT
 {
@@ -227,7 +227,7 @@ public:
   /*!
   \brief Get gap of this contact pair
   */
-  double GetGap() { return BEAMCONTACT::CastToDouble(gap_);};
+  double GetGap() { return FADUTILS::CastToDouble(gap_);};
 
   /*!
   \brief Get current augmented lagrange multiplier 'lmuzawa_'
@@ -247,7 +247,7 @@ public:
     Epetra_SerialDenseVector r1;
     r1.Resize(3);
     for (int i=0;i<3;i++)
-      r1(i)= BEAMCONTACT::CastToDouble(x1_(i));
+      r1(i)= FADUTILS::CastToDouble(x1_(i));
 
     return r1;
   };
@@ -257,7 +257,7 @@ public:
     Epetra_SerialDenseVector r2;
     r2.Resize(3);
     for (int i=0;i<3;i++)
-      r2(i)= BEAMCONTACT::CastToDouble(x2_(i));
+      r2(i)= FADUTILS::CastToDouble(x2_(i));
 
     return r2;
   };

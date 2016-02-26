@@ -42,8 +42,8 @@ DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                    // fullnewton modnewton nlncg ptc
-TIMESTEP                        0.166666666
-NUMSTEP                         6
+TIMESTEP                        0.125
+NUMSTEP                         8
 MAXTIME                         1
 DAMPING                         No
 M_DAMP                          0
@@ -108,9 +108,14 @@ NODE            16    COORD 70.71067811865474 29.28932188134524 0.0
 // MAT_Struct_StVenantKirchhoff
 MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 1e+07 NUE 0.0 DENS 1.3e9 THEXPANS 0.0
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 16 QUANTITY dispx VALUE -2.38184927479864967e+01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 16 QUANTITY dispy VALUE -1.37314075378095151e+01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 16 QUANTITY dispz VALUE  5.36072332525939146e+01 TOLERANCE 1e-8
+// new results: changed test case to 8 load steps, in order to avoid 'ugly' timestep size
+STRUCTURE DIS structure NODE 16 QUANTITY dispx VALUE -2.38184928191927341e+01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 16 QUANTITY dispy VALUE -1.37314075766297883e+01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 16 QUANTITY dispz VALUE  5.36072333147111522e+01 TOLERANCE 1e-8
+// (old) results, for 6 load steps and insufficient precision of given timestep size
+//STRUCTURE DIS structure NODE 16 QUANTITY dispx VALUE -2.38184927479864967e+01 TOLERANCE 1e-8
+//STRUCTURE DIS structure NODE 16 QUANTITY dispy VALUE -1.37314075378095151e+01 TOLERANCE 1e-8
+//STRUCTURE DIS structure NODE 16 QUANTITY dispz VALUE  5.36072332525939146e+01 TOLERANCE 1e-8
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ---------------------------------------------------------------END

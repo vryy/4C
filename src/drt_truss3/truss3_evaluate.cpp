@@ -26,6 +26,7 @@ Maintainer: Dhrubajyoti Mukherjee
 #include "../drt_lib/standardtypes_cpp.H"
 
 #include "Sacado.hpp"
+#include "../headers/FAD_utils.H"
 typedef Sacado::Fad::DFad<double> FAD;
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -1044,10 +1045,10 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList&   params,
 //    // Compute terms at reference config.
 //    t10(0)=1.0;
 //    t20(1)=1.0;
-//    FAD norm_t20 = pow(BEAMCONTACT::ScalarProduct(t20,t20),0.5);
+//    FAD norm_t20 = pow(FADUTILS::ScalarProduct(t20,t20),0.5);
 //    t20_unit.Update(1.0/norm_t20,t20,0.0);
 //
-//    FAD norm_t10 = pow(BEAMCONTACT::ScalarProduct(t10,t10),0.5);
+//    FAD norm_t10 = pow(FADUTILS::ScalarProduct(t10,t10),0.5);
 //    t10_unit.Update(1.0/norm_t10,t10,0.0);
 //    double delta=1.0e-6;
 //
@@ -1064,13 +1065,13 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList&   params,
 //        t2(j).diff(j+3,6);
 //      }
 //
-//      FAD norm_t2 = pow(BEAMCONTACT::ScalarProduct(t2,t2),0.5);
+//      FAD norm_t2 = pow(FADUTILS::ScalarProduct(t2,t2),0.5);
 //      t2_unit.Update(1.0/norm_t2,t2,0.0);
 //
-//      FAD norm_t1 = pow(BEAMCONTACT::ScalarProduct(t1,t1),0.5);
+//      FAD norm_t1 = pow(FADUTILS::ScalarProduct(t1,t1),0.5);
 //      t1_unit.Update(1.0/norm_t1,t1,0.0);
 //
-//      W=pow((BEAMCONTACT::ScalarProduct(t1_unit,t2_unit)-BEAMCONTACT::ScalarProduct(t10_unit,t20_unit)),2);
+//      W=pow((FADUTILS::ScalarProduct(t1_unit,t2_unit)-FADUTILS::ScalarProduct(t10_unit,t20_unit)),2);
 //
 //      std::cout<<"Energy Potential FAD="<<W<<std::endl;
 //
@@ -1117,9 +1118,9 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList&   params,
 //        t1_l.Scale(1.0/t1_l.Norm2());
 //        t1_r.Scale(1.0/t1_r.Norm2());
 //
-//        double W_m = pow((BEAMCONTACT::ScalarProduct(t1_m,t2_m)-BEAMCONTACT::ScalarProduct(tangent20_unit,tangent10_unit)),2);
-//        double W_l = pow((BEAMCONTACT::ScalarProduct(t1_l,t2_m)-BEAMCONTACT::ScalarProduct(tangent20_unit,tangent10_unit)),2);
-//        double W_r = pow((BEAMCONTACT::ScalarProduct(t1_r,t2_m)-BEAMCONTACT::ScalarProduct(tangent20_unit,tangent10_unit)),2);
+//        double W_m = pow((FADUTILS::ScalarProduct(t1_m,t2_m)-FADUTILS::ScalarProduct(tangent20_unit,tangent10_unit)),2);
+//        double W_l = pow((FADUTILS::ScalarProduct(t1_l,t2_m)-FADUTILS::ScalarProduct(tangent20_unit,tangent10_unit)),2);
+//        double W_r = pow((FADUTILS::ScalarProduct(t1_r,t2_m)-FADUTILS::ScalarProduct(tangent20_unit,tangent10_unit)),2);
 //
 //        std::cout << "W_m: " << W_m << std::endl;
 //        std::cout << "W_l: " << W_l << std::endl;
@@ -1460,10 +1461,10 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNodeDot(Teuchos::ParameterList&   
   }
 
   // Norms of the tangential vectors and directional displacement vector
-  FAD norm_tref=pow(BEAMCONTACT::ScalarProduct(tref,tref),0.5);
-  FAD norm_vref=pow(BEAMCONTACT::ScalarProduct(vref,vref),0.5);
-  FAD norm_tcurr=pow(BEAMCONTACT::ScalarProduct(tcurr,tcurr),0.5);
-  FAD norm_vcurr=pow(BEAMCONTACT::ScalarProduct(vcurr,vcurr),0.5);
+  FAD norm_tref=pow(FADUTILS::ScalarProduct(tref,tref),0.5);
+  FAD norm_vref=pow(FADUTILS::ScalarProduct(vref,vref),0.5);
+  FAD norm_tcurr=pow(FADUTILS::ScalarProduct(tcurr,tcurr),0.5);
+  FAD norm_vcurr=pow(FADUTILS::ScalarProduct(vcurr,vcurr),0.5);
 
   // Recalculate unit vectors
   tref_unit.Update(1.0/norm_tref,tref,0.0);
@@ -1476,7 +1477,7 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNodeDot(Teuchos::ParameterList&   
   FAD spring =statmechparams.get<double> ("KTOR1_LINK", 0.0);
 
   //computing energy potential (equation 3.3)
-  FAD W=0.5*spring*pow((BEAMCONTACT::ScalarProduct(tcurr_unit,vcurr_unit)-BEAMCONTACT::ScalarProduct(tref_unit,vref_unit)),2);
+  FAD W=0.5*spring*pow((FADUTILS::ScalarProduct(tcurr_unit,vcurr_unit)-FADUTILS::ScalarProduct(tref_unit,vref_unit)),2);
 
   //Compute linerisation with FAD for checking
   for (int i=0; i<totdof; i++)
@@ -1490,8 +1491,8 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNodeDot(Teuchos::ParameterList&   
   LINALG::TMatrix<FAD,3,3> v_aux(true);
 
   // Calculate dot product
-  FAD tvcurr_unit=BEAMCONTACT::ScalarProduct(tcurr_unit,vcurr_unit);
-  FAD tvref_unit=BEAMCONTACT::ScalarProduct(tref_unit,vref_unit);
+  FAD tvcurr_unit=FADUTILS::ScalarProduct(tcurr_unit,vcurr_unit);
+  FAD tvref_unit=FADUTILS::ScalarProduct(tref_unit,vref_unit);
   for (int i=0; i<3; i++)
     for (int j=0; j<3; j++)
     {
@@ -1787,10 +1788,10 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffTangentDot(Teuchos::ParameterList&  
   }
 
   // Norms of the tangential vectors and directional displacement vector
-  FAD norm_tref1=pow(BEAMCONTACT::ScalarProduct(tref1,tref1),0.5);
-  FAD norm_tref2=pow(BEAMCONTACT::ScalarProduct(tref2,tref2),0.5);
-  FAD norm_tcurr1=pow(BEAMCONTACT::ScalarProduct(tcurr1,tcurr1),0.5);
-  FAD norm_tcurr2=pow(BEAMCONTACT::ScalarProduct(tcurr2,tcurr2),0.5);
+  FAD norm_tref1=pow(FADUTILS::ScalarProduct(tref1,tref1),0.5);
+  FAD norm_tref2=pow(FADUTILS::ScalarProduct(tref2,tref2),0.5);
+  FAD norm_tcurr1=pow(FADUTILS::ScalarProduct(tcurr1,tcurr1),0.5);
+  FAD norm_tcurr2=pow(FADUTILS::ScalarProduct(tcurr2,tcurr2),0.5);
 
   // Recalculate unit vectors
   tref1_unit.Update(1.0/norm_tref1,tref1,0.0);
@@ -1803,7 +1804,7 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffTangentDot(Teuchos::ParameterList&  
   FAD spring =statmechparams.get<double> ("KTOR2_LINK", 0.0);
 
   //computing energy potential (equation 3.3)
-  FAD W=0.5*spring*pow((BEAMCONTACT::ScalarProduct(tcurr1_unit,tcurr2_unit)-BEAMCONTACT::ScalarProduct(tref1_unit,tref2_unit)),2);
+  FAD W=0.5*spring*pow((FADUTILS::ScalarProduct(tcurr1_unit,tcurr2_unit)-FADUTILS::ScalarProduct(tref1_unit,tref2_unit)),2);
 
   //Compute linearization with FAD for checking
   for (int i=0; i<totdof; i++)
@@ -1817,8 +1818,8 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffTangentDot(Teuchos::ParameterList&  
   LINALG::TMatrix<FAD,3,3> t2_aux(true);
 
   // Calculate dot product
-  FAD t1t2curr_unit=BEAMCONTACT::ScalarProduct(tcurr1_unit,tcurr2_unit);
-  FAD t1t2ref_unit=BEAMCONTACT::ScalarProduct(tref1_unit,tref2_unit);
+  FAD t1t2curr_unit=FADUTILS::ScalarProduct(tcurr1_unit,tcurr2_unit);
+  FAD t1t2ref_unit=FADUTILS::ScalarProduct(tref1_unit,tref2_unit);
   for (int i=0; i<3; i++)
     for (int j=0; j<3; j++)
     {

@@ -1185,6 +1185,13 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
       if(fabs(beam3ebelement->GetKappaMax())>kappa_max)
         kappa_max=fabs(beam3ebelement->GetKappaMax());
     }
+    else if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
+    {
+      const DRT::ELEMENTS::Beam3ii* beam3iielement = dynamic_cast<const DRT::ELEMENTS::Beam3ii*>(element);
+
+      if(fabs(beam3iielement->GetKappaMax())>kappa_max)
+        kappa_max=fabs(beam3iielement->GetKappaMax());
+    }
     else
     {
       //std::cout << "Warning: Calculation of kappa_max only implemented for beam3eb elements so far!" << std::endl;
@@ -1193,7 +1200,7 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
   }
 
   Comm().MaxAll(&kappa_max,&global_kappa_max_,1);
-  std::cout << "global_kappa_max_: " << global_kappa_max_ << std::endl;
+//  std::cout << "global_kappa_max_: " << global_kappa_max_ << std::endl;
   timeintparams.set("kappa_max", global_kappa_max_);
   //End: Determine maximal curvature occuring in complete beam discretization
 

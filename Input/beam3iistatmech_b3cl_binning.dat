@@ -42,7 +42,7 @@ RESULTSEVRY            0    // write results every n-th step (Attention: problem
 RESTARTEVRY            1000 // set restart points every n-th step
 RESEVRYERGY            0    // output energy evry n-th step
 NLNSOL                 ptc     // fullnewton modnewton nlncg ptc
-DIVERCONT              repeat_step     // Continue even if results are divergent
+DIVERCONT              stop    //repeat_step     // Continue even if results are divergent
 TIMESTEP               0.01    // step size
 NUMSTEP                2 // total number of steps  //rumpf2.txt end
 MAXTIME                10000

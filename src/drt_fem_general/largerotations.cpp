@@ -1,7 +1,6 @@
 /*!----------------------------------------------------------------------
 \file largerotations.cpp
 
-\brief A set of preprocessor defines and utility functions for mortar methods.cpp
 \brief A set of utility functions for large rotations
 
 
@@ -35,7 +34,6 @@ void LARGEROTATIONS::quaterniontorodrigues(const LINALG::Matrix<4,1>& q, LINALG:
   //in any case except for the one dealt with above the angle can be computed from a quaternion via Crisfield, Vol. 2, eq. (16.79)
   for(int i = 0; i<3; i++)
     omega(i) = q(i)*2/q(3);
-
 
   return;
 } //LARGEROTATIONS::quaterniontorodrigues
@@ -74,7 +72,6 @@ void LARGEROTATIONS::quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Mat
       for(int i = 0; i<3; i++)
         theta(i) = 0;
 
-
     }
     else
       for(int i = 0; i<3; i++)
@@ -83,7 +80,6 @@ void LARGEROTATIONS::quaterniontoangle(const LINALG::Matrix<4,1>& q, LINALG::Mat
 
   return;
 } //LARGEROTATIONS::quaterniontoangle()
-
 
 /*---------------------------------------------------------------------------*
  |computes a spin matrix out of a rotation vector        (public)cyron02/09|
@@ -131,9 +127,6 @@ void LARGEROTATIONS::quaterniontotriad(const LINALG::Matrix<4,1>& q, LINALG::Mat
 
   return;
 } //LARGEROTATIONS::quaterniontotriad
-
-
-
 
 /*---------------------------------------------------------------------------*
  |computes a quaternion from an angle vector           (public)cyron02/09|
@@ -194,7 +187,7 @@ void LARGEROTATIONS::angletotriad(const LINALG::Matrix<3,1>& theta, LINALG::Matr
     {
       for(int j=0;j<3;j++)
       {
-        R(i,j) = identity(i,j) + spin(i,j)*(sin(theta_abs))/theta_abs + (1-(cos(theta_abs)))/(pow(theta_abs,2)) * spin2(i,j);
+        R(i,j) = identity(i,j) + spin(i,j)*(sin(theta_abs))/theta_abs + (1-(cos(theta_abs)))/(theta_abs*theta_abs) * spin2(i,j);
       }
     }
   }
@@ -211,7 +204,6 @@ void LARGEROTATIONS::angletotriad(const LINALG::Matrix<3,1>& theta, LINALG::Matr
 
   return;
 }
-
 
 /*---------------------------------------------------------------------------*
  |computes a quaternion q from a rotation matrix R; all operations are      |
@@ -255,7 +247,6 @@ void LARGEROTATIONS::triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Mat
   return;
 }//LARGEROTATIONS::TriadToQuaternion
 
-
 /*---------------------------------------------------------------------------*
  |matrix T(\theta) from Jelenic 1999, eq. (2.5), equivalent to matrix H^(-1) |
  |in Crisfield, Vol. 2, equation (16.93)                 (public) cyron 04/10|
@@ -291,9 +282,6 @@ LINALG::Matrix<3,3> LARGEROTATIONS::Tmatrix(LINALG::Matrix<3,1> theta)
   return result;
 }//LARGEROTATIONS::Tmatrix
 
-
-
-
 /*---------------------------------------------------------------------------*
  |matrix T(\theta)^{-1} from Jelenic 1999, eq. (2.5)     (public) cyron 04/10|
  *---------------------------------------------------------------------------*/
@@ -309,7 +297,7 @@ LINALG::Matrix<3,3> LARGEROTATIONS::Tinvmatrix(LINALG::Matrix<3,1> theta)
   {
     //ultimate term in eq. (2.5)
     computespin(result, theta);
-    result.Scale((1-cos(theta_abs)) / pow(theta_abs,2));
+    result.Scale((1-cos(theta_abs)) / (theta_abs*theta_abs));
 
       //penultimate term in eq. (2.5)
       for(int i = 0; i<3; i++)
@@ -371,24 +359,24 @@ void LARGEROTATIONS::computedTinvdx(const LINALG::Matrix<3,1>& Psil, const LINAL
     auxmatrix.Multiply(spinPsil,spinPsilprime);
     dTinvdx += auxmatrix;
     //TODO: Check this term also in beam3cl
-    dTinvdx.Scale((1-sin(normPsil)/normPsil)/pow(normPsil,2));
+    dTinvdx.Scale((1-sin(normPsil)/normPsil)/(normPsil*normPsil));
 
     //first summand
     auxmatrix.PutScalar(0);
     auxmatrix += spinPsil;
-    auxmatrix.Scale( scalarproductPsilPsilprime*(normPsil*sin(normPsil) - 2*(1-cos(normPsil)))/pow(normPsil,4) );
+    auxmatrix.Scale( scalarproductPsilPsilprime*(normPsil*sin(normPsil) - 2*(1-cos(normPsil)))/(normPsil*normPsil*normPsil*normPsil) );
     dTinvdx += auxmatrix;
 
     //second summand
     auxmatrix.PutScalar(0);
     auxmatrix += spinPsilprime;
     //TODO: Check this term also in beam3cl
-    auxmatrix.Scale((1-cos(normPsil))/pow(normPsil,2));
+    auxmatrix.Scale((1-cos(normPsil))/(normPsil*normPsil));
     dTinvdx += auxmatrix;
 
     //fourth summand
     auxmatrix.Multiply(spinPsil,spinPsil);
-    auxmatrix.Scale( scalarproductPsilPsilprime*(3*sin(normPsil) - normPsil*(2+cos(normPsil)))/pow(normPsil,5) );
+    auxmatrix.Scale( scalarproductPsilPsilprime*(3*sin(normPsil) - normPsil*(2+cos(normPsil)))/(normPsil*normPsil*normPsil*normPsil*normPsil) );
     dTinvdx += auxmatrix;
   }
 

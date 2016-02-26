@@ -17,7 +17,8 @@ Maintainer: Christoph Meier
 #include "../linalg/linalg_sparsematrix.H"
 #include "beam3contact_defines.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "Sacado.hpp"
+#include <Sacado.hpp>
+#include "../headers/FAD_utils.H"
 
 namespace CONTACT
 {
@@ -268,12 +269,12 @@ public:
   /*!
   \brief Get gap of this contact pair
   */
-  double GetGap() { return BEAMCONTACT::CastToDouble(gap_); };
+  double GetGap() { return FADUTILS::CastToDouble(gap_); };
 
   /*!
   \brief Get current augmented lagrange multiplier 'lmuzawa_'
   */
-  double Getlmuzawa() { return BEAMCONTACT::CastToDouble(lmuzawa_); };
+  double Getlmuzawa() { return FADUTILS::CastToDouble(lmuzawa_); };
 
   /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)
@@ -288,7 +289,7 @@ public:
     Epetra_SerialDenseVector r1;
     r1.Resize(3);
     for (int i=0;i<3;i++)
-      r1(i)=BEAMCONTACT::CastToDouble(r1_(i));
+      r1(i)=FADUTILS::CastToDouble(r1_(i));
 
     return r1;
   };
@@ -298,7 +299,7 @@ public:
     Epetra_SerialDenseVector r2;
     r2.Resize(3);
     for (int i=0;i<3;i++)
-      r2(i)=BEAMCONTACT::CastToDouble(r2_(i));
+      r2(i)=FADUTILS::CastToDouble(r2_(i));
 
     return r2;
   };

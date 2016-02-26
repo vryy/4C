@@ -1756,8 +1756,8 @@ bool Beam3ContactOctTree::IntersectionCOBB(const std::vector<int>& bboxIDs, Teuc
       }
 
 //      double t_02 = Teuchos::Time::wallTime();
-      t1 = BEAMCONTACT::DiffVector(r1_b,r1_a);
-      t2 = BEAMCONTACT::DiffVector(r2_b,r2_a);
+      t1 = FADUTILS::DiffVector(r1_b,r1_a);
+      t2 = FADUTILS::DiffVector(r2_b,r2_a);
       double angle = BEAMCONTACT::CalcAngle(t1,t2);
 //      std::cout<<"(i,j) = "<<i<<", "<<j<<",  Angle Calc : "<< Teuchos::Time::wallTime()-t_02<<std::endl;
 

@@ -28,108 +28,6 @@ typedef Sacado::Fad::DFad<double> FAD;
 
 namespace BEAMCONTACT
 {
-
-  /*!
-  \brief Cast of FAD to double
-  */
-  double CastToDouble(FAD a);
-
-  /*!
-  \brief Cast of double to double
-  */
-  double CastToDouble(double a);
-
-  /*!
-  \brief Cast of a FAD matrix to a double matrix
-  */
-  template<typename type,int dim1, int dim2>
-  LINALG::TMatrix<double,dim1,dim2> CastToDouble(LINALG::TMatrix<type,dim1,dim2> a)
-  {
-    LINALG::TMatrix<double,dim1,dim2> b(true);
-
-    for (int i=0;i<dim1;i++)
-    {
-      for (int j=0;j<dim2;j++)
-      {
-        b(i,j)=CastToDouble(a(i,j));
-      }
-    }
-    return b;
-  }
-
-  /*!
-  \brief Calculate Norm of a scalar FAD quantity
-  */
-  double Norm(double a);
-
-  /*!
-  \brief Calculate Norm of a scalar double quantity
-  */
-  FAD Norm(FAD a);
-
-  /*!
-  \brief Calculate Norm of a double vector
-  */
-  template<int length>
-  double VectorNorm(LINALG::TMatrix<double,length,1> v)
-  {
-    return v.Norm2();
-  }
-
-  /*!
-  \brief Calculate Norm of a FAD vector
-  */
-  template<int length>
-  FAD VectorNorm(LINALG::TMatrix<FAD,length,1> v)
-  {
-    FAD norm = 0.0;
-    for (int i=0;i<length;i++)
-    {
-      norm+=v(i)*v(i);
-    }
-    norm = pow(norm,0.5);
-    return norm;
-  }
-
-  /*!
-  \brief Calculate inner product of two FAD or double vectors
-  */
-  template<typename type>
-  type ScalarProduct(LINALG::TMatrix<type,3,1> a, LINALG::TMatrix<type,3,1> b)
-  {
-    return a(0)*b(0)+a(1)*b(1)+a(2)*b(2);
-  }
-
-  /*!
-  \brief Calculate difference of two FAD or double vectors
-  */
-  template<typename type>
-  LINALG::TMatrix<type,3,1> DiffVector(LINALG::TMatrix<type,3,1> a, LINALG::TMatrix<type,3,1> b)
-  {
-    LINALG::TMatrix<type,3,1> c(true);
-    for (int i=0;i<3;i++)
-      c(i)=a(i)-b(i);
-
-    return c;
-  }
-
-  /*!
-  \brief Calculate vector product of two FAD or double vectors
-  */
-  template<typename type>
-  LINALG::TMatrix<type,3,1> VectorProduct(LINALG::TMatrix<type,3,1> first_vector, LINALG::TMatrix<type,3,1> second_vector)
-  {
-    LINALG::TMatrix<type,3,1> result_vector;
-    result_vector.Clear();
-    LINALG::TMatrix<type,3,3> S_first_vector;
-    S_first_vector.Clear();
-    LARGEROTATIONS::computespin(S_first_vector,first_vector);
-
-    result_vector.Multiply(S_first_vector, second_vector);
-
-    return result_vector;
-  }
-
   /*!
   \brief Calculate angle encompassed by two lines: returns an angle \in [0;pi/2]
   */
@@ -139,39 +37,7 @@ namespace BEAMCONTACT
   \brief Get closest distance between the endpoints of two lines
   */
   template<typename type>
-  type GetClosestEndpointDist(LINALG::TMatrix<type,3,1> r1_a, LINALG::TMatrix<type,3,1> r1_b, LINALG::TMatrix<type,3,1> r2_a, LINALG::TMatrix<type,3,1> r2_b)
-  {
-    type minnodaldist=0.0;
-    type nodaldist=0.0;
-
-    minnodaldist=BEAMCONTACT::VectorNorm<3>(BEAMCONTACT::DiffVector(r1_a,r2_a));
-
-    nodaldist=BEAMCONTACT::VectorNorm<3>(BEAMCONTACT::DiffVector(r1_a,r2_b));
-    if(nodaldist<minnodaldist)
-      minnodaldist=nodaldist;
-
-    nodaldist=BEAMCONTACT::VectorNorm<3>(BEAMCONTACT::DiffVector(r1_b,r2_a));
-    if(nodaldist<minnodaldist)
-      minnodaldist=nodaldist;
-
-    nodaldist=BEAMCONTACT::VectorNorm<3>(BEAMCONTACT::DiffVector(r1_b,r2_b));
-    if(nodaldist<minnodaldist)
-      minnodaldist=nodaldist;
-
-    return minnodaldist;
-  }
-
-  /*!
-  \brief Calculate signum function of FAD or double quantity
-  */
-  template<typename type>
-  type Signum(type a)
-  {
-    if (CastToDouble(a) >= 0.0)
-      return 1.0;
-    else
-      return -1.0;
-  }
+  type GetClosestEndpointDist(LINALG::TMatrix<type,3,1> r1_a, LINALG::TMatrix<type,3,1> r1_b, LINALG::TMatrix<type,3,1> r2_a, LINALG::TMatrix<type,3,1> r2_b);
 
   /*!
   \brief Set primary displacement DoFs for automatic differentiation with Sacado

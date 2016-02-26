@@ -19,6 +19,7 @@ Maintainer: Christoph Meier
 #include "beam3contact_defines.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "Sacado.hpp"
+#include "../headers/FAD_utils.H"
 
 #include "../drt_lib/standardtypes_cpp.H"
 
@@ -113,7 +114,7 @@ public:
   */
   std::vector<double> GetGap()
   {
-    std::vector<double> gaps(1,BEAMCONTACT::CastToDouble(gap_));
+    std::vector<double> gaps(1,FADUTILS::CastToDouble(gap_));
 
     return gaps;
   };
@@ -123,7 +124,7 @@ public:
   */
   std::vector<double> GetContactForce()
   {
-    std::vector<double> forces(1,BEAMCONTACT::CastToDouble(fp_));
+    std::vector<double> forces(1,FADUTILS::CastToDouble(fp_));
 
     return forces;
   };
@@ -134,7 +135,7 @@ public:
   std::vector<double> GetContactAngle()
   {
     double angle = 0.0;
-    double cosangle = BEAMCONTACT::CastToDouble(tangentproduct_);
+    double cosangle = FADUTILS::CastToDouble(tangentproduct_);
     if(cosangle<1.0)
       angle=acos(cosangle); //returns an angle \in [0;pi/2] since scalarproduct \in [0;1.0]
     else
@@ -150,8 +151,8 @@ public:
   std::vector<std::pair<double,double> > GetClosestPoint()
   {
     std::pair<double,double> cp(0.0,0.0);
-    cp.first=BEAMCONTACT::CastToDouble(xi1_);
-    cp.second=BEAMCONTACT::CastToDouble(xi2_);
+    cp.first=FADUTILS::CastToDouble(xi1_);
+    cp.second=FADUTILS::CastToDouble(xi2_);
     std::vector<std::pair<double,double> > cps(1,cp);
 
     return cps;
@@ -178,7 +179,7 @@ public:
   /*!
   \brief Get current augmented lagrange multiplier 'lmuzawa_'
   */
-  double Getlmuzawa() { return BEAMCONTACT::CastToDouble(lmuzawa_); };
+  double Getlmuzawa() { return FADUTILS::CastToDouble(lmuzawa_); };
 
   /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)
@@ -193,7 +194,7 @@ public:
     std::vector<LINALG::Matrix<3,1> > r1(1,LINALG::Matrix<3,1>(true));
 
     for(int j=0;j<3;j++)
-      r1[0](j)=BEAMCONTACT::CastToDouble(r1_(j));
+      r1[0](j)=FADUTILS::CastToDouble(r1_(j));
 
     return r1;
   };
@@ -206,7 +207,7 @@ public:
     std::vector<LINALG::Matrix<3,1> > r2(1,LINALG::Matrix<3,1>(true));
 
     for(int j=0;j<3;j++)
-      r2[0](j)=BEAMCONTACT::CastToDouble(r2_(j));
+      r2[0](j)=FADUTILS::CastToDouble(r2_(j));
 
     return r2;
   };
@@ -221,12 +222,12 @@ public:
     if(GetNewGapStatus()==true)
     {
       for(int i=0;i<3;i++)
-        normal(i)=-BEAMCONTACT::CastToDouble(normal_(i));
+        normal(i)=-FADUTILS::CastToDouble(normal_(i));
     }
     else
     {
       for(int i=0;i<3;i++)
-        normal(i)=BEAMCONTACT::CastToDouble(normal_(i));
+        normal(i)=FADUTILS::CastToDouble(normal_(i));
     }
 
     return normal;
@@ -249,7 +250,7 @@ public:
   double GetEnergy()
   {
     TYPE energy=0.5*pp_*gap_*gap_;
-    return BEAMCONTACT::CastToDouble(energy);
+    return FADUTILS::CastToDouble(energy);
   };
 
   /*!
@@ -279,7 +280,7 @@ public:
     }
 
     //Only deliver normal_old_ when a valid closest point projection for last time step existed!
-    if (BEAMCONTACT::Norm(xi1_old_) < 1.0+XIETATOL and BEAMCONTACT::Norm(xi2_old_) < 1.0+XIETATOL and !oldcppunconverged_)
+    if (FADUTILS::Norm(xi1_old_) < 1.0+XIETATOL and FADUTILS::Norm(xi2_old_) < 1.0+XIETATOL and !oldcppunconverged_)
     {
       return &normal_old_;
     }

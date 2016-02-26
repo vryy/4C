@@ -11,7 +11,6 @@ Maintainer: Christoph Meier
 #ifndef BEAM3TOSPHEREPOT_H
 #define BEAM3TOSPHEREPOT_H
 
-#include "beam3contact_utils.H"
 #include "beam3contact_tangentsmoothing.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_sparsematrix.H"

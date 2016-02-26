@@ -19,6 +19,7 @@ Maintainer: Christoph Meier
 #include "beam3contact_defines.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "Sacado.hpp"
+#include "../headers/FAD_utils.H"
 #include "beam3contactinterface.H"
 #include "../drt_inpar/inpar_beamcontact.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -144,17 +145,17 @@ public:
 
     for (int i=0;i<size1;i++)
     {
-      gaps[i] = BEAMCONTACT::CastToDouble(cpvariables_[i]->GetGap());
+      gaps[i] = FADUTILS::CastToDouble(cpvariables_[i]->GetGap());
     }
 
     for (int i=size1;i<size2+size1;i++)
     {
-      gaps[i] = BEAMCONTACT::CastToDouble(gpvariables_[i-size1]->GetGap());
+      gaps[i] = FADUTILS::CastToDouble(gpvariables_[i-size1]->GetGap());
     }
 
     for (int i=size1+size2;i<size1+size2+size3;i++)
     {
-      gaps[i] = BEAMCONTACT::CastToDouble(epvariables_[i-size1-size2]->GetGap());
+      gaps[i] = FADUTILS::CastToDouble(epvariables_[i-size1-size2]->GetGap());
     }
 
     return gaps;
@@ -172,17 +173,17 @@ public:
 
     for (int i=0;i<size1;i++)
     {
-      f[i] = BEAMCONTACT::CastToDouble(cpvariables_[i]->Getfp()*cpvariables_[i]->GetPPfac());
+      f[i] = FADUTILS::CastToDouble(cpvariables_[i]->Getfp()*cpvariables_[i]->GetPPfac());
     }
 
     for (int i=size1;i<size2+size1;i++)
     {
-      f[i] = BEAMCONTACT::CastToDouble(gpvariables_[i-size1]->Getfp()*gpvariables_[i-size1]->GetPPfac());
+      f[i] = FADUTILS::CastToDouble(gpvariables_[i-size1]->Getfp()*gpvariables_[i-size1]->GetPPfac());
     }
 
     for (int i=size1+size2;i<size1+size2+size3;i++)
     {
-      f[i] = BEAMCONTACT::CastToDouble(epvariables_[i-size1-size2]->Getfp()*epvariables_[i-size1-size2]->GetPPfac());
+      f[i] = FADUTILS::CastToDouble(epvariables_[i-size1-size2]->Getfp()*epvariables_[i-size1-size2]->GetPPfac());
     }
 
     return f;
@@ -200,17 +201,17 @@ public:
 
     for (int i=0;i<size1;i++)
     {
-      angles[i] = BEAMCONTACT::CastToDouble(cpvariables_[i]->GetAngle());
+      angles[i] = FADUTILS::CastToDouble(cpvariables_[i]->GetAngle());
     }
 
     for (int i=size1;i<size2+size1;i++)
     {
-      angles[i] = BEAMCONTACT::CastToDouble(gpvariables_[i-size1]->GetAngle());
+      angles[i] = FADUTILS::CastToDouble(gpvariables_[i-size1]->GetAngle());
     }
 
     for (int i=size1+size2;i<size1+size2+size3;i++)
     {
-      angles[i] = BEAMCONTACT::CastToDouble(epvariables_[i-size1-size2]->GetAngle());
+      angles[i] = FADUTILS::CastToDouble(epvariables_[i-size1-size2]->GetAngle());
     }
 
     return angles;
@@ -228,22 +229,22 @@ public:
 
     for (int i=0;i<size1;i++)
     {
-      double xi=BEAMCONTACT::CastToDouble(cpvariables_[i]->GetCP().first);
-      double eta=BEAMCONTACT::CastToDouble(cpvariables_[i]->GetCP().second);
+      double xi=FADUTILS::CastToDouble(cpvariables_[i]->GetCP().first);
+      double eta=FADUTILS::CastToDouble(cpvariables_[i]->GetCP().second);
       cps[i]=std::make_pair(xi,eta);
     }
 
     for (int i=size1;i<size2+size1;i++)
     {
-      double xi=BEAMCONTACT::CastToDouble(gpvariables_[i-size1]->GetCP().first);
-      double eta=BEAMCONTACT::CastToDouble(gpvariables_[i-size1]->GetCP().second);
+      double xi=FADUTILS::CastToDouble(gpvariables_[i-size1]->GetCP().first);
+      double eta=FADUTILS::CastToDouble(gpvariables_[i-size1]->GetCP().second);
       cps[i]=std::make_pair(xi,eta);
     }
 
     for (int i=size1+size2;i<size1+size2+size3;i++)
     {
-      double xi=BEAMCONTACT::CastToDouble(epvariables_[i-size1-size2]->GetCP().first);
-      double eta=BEAMCONTACT::CastToDouble(epvariables_[i-size1-size2]->GetCP().second);
+      double xi=FADUTILS::CastToDouble(epvariables_[i-size1-size2]->GetCP().first);
+      double eta=FADUTILS::CastToDouble(epvariables_[i-size1-size2]->GetCP().second);
       cps[i]=std::make_pair(xi,eta);
     }
 
@@ -317,21 +318,21 @@ public:
     {
       TYPE eta1 = cpvariables_[i]->GetCP().first;
       for(int j=0;j<3;j++)
-        r1[i](j) = BEAMCONTACT::CastToDouble(r(eta1,element1_)(j));
+        r1[i](j) = FADUTILS::CastToDouble(r(eta1,element1_)(j));
     }
 
     for (int i=size1;i<size2+size1;i++)
     {
       TYPE eta1 = gpvariables_[i-size1]->GetCP().first;
       for(int j=0;j<3;j++)
-        r1[i](j) = BEAMCONTACT::CastToDouble(r(eta1,element1_)(j));
+        r1[i](j) = FADUTILS::CastToDouble(r(eta1,element1_)(j));
     }
 
     for (int i=size1+size2;i<size1+size2+size3;i++)
     {
       TYPE eta1 = epvariables_[i-size1-size2]->GetCP().first;
       for(int j=0;j<3;j++)
-        r1[i](j) = BEAMCONTACT::CastToDouble(r(eta1,element1_)(j));
+        r1[i](j) = FADUTILS::CastToDouble(r(eta1,element1_)(j));
     }
 
     return r1;
@@ -351,21 +352,21 @@ public:
     {
       TYPE eta2 = cpvariables_[i]->GetCP().second;
       for(int j=0;j<3;j++)
-        r2[i](j) = BEAMCONTACT::CastToDouble(r(eta2,element2_)(j));
+        r2[i](j) = FADUTILS::CastToDouble(r(eta2,element2_)(j));
     }
 
     for (int i=size1;i<size2+size1;i++)
     {
       TYPE eta2 = gpvariables_[i-size1]->GetCP().second;
       for(int j=0;j<3;j++)
-        r2[i](j) = BEAMCONTACT::CastToDouble(r(eta2,element2_)(j));
+        r2[i](j) = FADUTILS::CastToDouble(r(eta2,element2_)(j));
     }
 
     for (int i=size1+size2;i<size1+size2+size3;i++)
     {
       TYPE eta2 = epvariables_[i-size1-size2]->GetCP().second;
       for(int j=0;j<3;j++)
-        r2[i](j) = BEAMCONTACT::CastToDouble(r(eta2,element2_)(j));
+        r2[i](j) = FADUTILS::CastToDouble(r(eta2,element2_)(j));
     }
 
     return r2;
@@ -419,14 +420,14 @@ public:
 
     for (int i=0;i<(int)cpvariables_.size();i++)
     {
-      double ppfac = BEAMCONTACT::CastToDouble(cpvariables_[i]->GetPPfac());
+      double ppfac = FADUTILS::CastToDouble(cpvariables_[i]->GetPPfac());
       double e = -cpvariables_[i]->GetIntegratedEnergy();
       energy += ppfac*e;
     }
 
     for (int i=0;i<(int)gpvariables_.size();i++)
     {
-      double ppfac = BEAMCONTACT::CastToDouble(gpvariables_[i]->GetPPfac());
+      double ppfac = FADUTILS::CastToDouble(gpvariables_[i]->GetPPfac());
       double e = -gpvariables_[i]->GetIntegratedEnergy();
       energy += ppfac*e;
     }

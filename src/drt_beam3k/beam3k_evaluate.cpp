@@ -477,7 +477,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
       }
     }
     //calculate epsilon at collocation point
-    abs_r_s=Norm<FAD>(r_s);
+    abs_r_s=FADUTILS::Norm<FAD>(r_s);
     epsilon_cp[ind]=abs_r_s-1.0;
 
     AssembleShapefunctionsL(L_i,L);
@@ -856,7 +856,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
       }
     }
     //calculate epsilon at collocation point
-    abs_r_s=Norm<FAD>(r_s);
+    abs_r_s=FADUTILS::Norm<FAD>(r_s);
     epsilon_cp[ind]=abs_r_s-1.0;
 
     v_epsilon_cp[ind].Clear();
@@ -976,7 +976,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
     //Auxilliary quantities
     abs_r_s=0.0;
     rsTrss=0.0;
-    abs_r_s=Norm<FAD>(r_s);
+    abs_r_s=FADUTILS::Norm<FAD>(r_s);
     for (int i=0;i<3;i++)
     {
       rsTrss+=r_s(i)*r_ss(i);
@@ -1331,7 +1331,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInteriaForces(Teuchos::ParameterList& param
 
     //compute quaterion of material triad at gp
     LINALG::TMatrix<FAD,4,1> Qnewmass(true);
-    triadtoquaternion(triad_mat[numgp],Qnewmass);
+    LARGEROTATIONS::triadtoquaternion(triad_mat[numgp],Qnewmass);
 
     N_i.Clear();
     N.Clear();
@@ -1352,14 +1352,14 @@ void DRT::ELEMENTS::Beam3k::CalculateInteriaForces(Teuchos::ParameterList& param
     for(int i=0;i<4;i++)
       Qconv(i)=(Qconvmass_[numgp])(i);
 
-    quaterniontotriad(Qconv,triad_mat_old);
+    LARGEROTATIONS::quaterniontotriad(Qconv,triad_mat_old);
 
     LINALG::TMatrix<FAD,3,3>  deltatriad(true);
     deltatriad.MultiplyNT(triad_mat[numgp],triad_mat_old);
     LINALG::TMatrix<FAD,4,1>  deltaQ(true);
-    triadtoquaternion(deltatriad,deltaQ);
+    LARGEROTATIONS::triadtoquaternion(deltatriad,deltaQ);
     LINALG::TMatrix<FAD,3,1> deltatheta(true);
-    quaterniontoangle(deltaQ,deltatheta);
+    LARGEROTATIONS::quaterniontoangle(deltaQ,deltatheta);
 
     //compute material counterparts of spatial vectors
     LINALG::TMatrix<FAD,3,1> deltaTHETA(true);
@@ -2073,7 +2073,7 @@ void DRT::ELEMENTS::Beam3k::ApplyRotVecTrafo( std::vector<FAD>& disp_totlag_cent
       g_1(i)=disp_totlag_centerline[7*node+3+i];
     }
 
-    t=Norm<FAD>(g_1);;
+    t=FADUTILS::Norm<FAD>(g_1);
     g_1.Scale(1.0/t);
     LARGEROTATIONS::computespin(auxmatrix,g_1);
     auxmatrix.Scale(-1.0*t);

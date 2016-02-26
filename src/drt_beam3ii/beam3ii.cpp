@@ -36,7 +36,6 @@ DRT::ParObject* DRT::ELEMENTS::Beam3iiType::Create( const std::vector<char> & da
   return object;
 }
 
-
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3iiType::Create(const std::string eletype,
                                                               const std::string eledistype,
                                                               const int         id,
@@ -50,13 +49,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3iiType::Create(const std::string 
   return Teuchos::null;
 }
 
-
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3iiType::Create( const int id, const int owner )
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3ii(id,owner));
   return ele;
 }
-
 
 void DRT::ELEMENTS::Beam3iiType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
@@ -193,7 +190,8 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
 DRT::ELEMENTS::Beam3ii::Beam3ii(int id, int owner) :
 DRT::Element(id,owner),
 isinit_(false),
-eps_(0.0),                                //The class variables 1) - 2) are resized in the methods SetUpReferenceGeometry() and ReadElement()
+needstatmech_(false),
+eps_(0.0),
 Ngp_(LINALG::Matrix<3,1>(true)),
 nodeI_(0),
 nodeJ_(0),
@@ -224,9 +222,11 @@ inertscalerot2_(0.0)
 DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  DRT::Element(old),
  isinit_(old.isinit_),
+ needstatmech_(old.needstatmech_),
  eps_(old.eps_),
  f_(old.f_),
  Ngp_(old.Ngp_),
+ kappa_max_(old.kappa_max_),
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
  Qnew_(old.Qnew_),
@@ -249,6 +249,7 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  dispthetaconv_(old.dispthetaconv_),
  dispthetaold_(old.dispthetaold_),
  dispthetanew_(old.dispthetanew_),
+ theta0_(old.theta0_),
  Tcurr_(old.Tcurr_),
  Tref_(old.Tref_),
  kapparef_(old.kapparef_),
@@ -295,7 +296,6 @@ DRT::ELEMENTS::Beam3ii::~Beam3ii()
   return;
 }
 
-
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 01/08
  *----------------------------------------------------------------------*/
@@ -305,7 +305,6 @@ void DRT::ELEMENTS::Beam3ii::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
@@ -336,7 +335,6 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3ii::Shape() const
   return dis_none;
 }
 
-
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                           cyron 01/08/
@@ -352,7 +350,7 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
 
-  //add all class variables
+  //add all class variables of beam3ii element
   AddtoPack(data,jacobi_);
   AddtoPack(data,jacobimass_);
   AddtoPack(data,jacobinode_);
@@ -361,6 +359,7 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,crosssec_);
   AddtoPack(data,crosssecshear_);
   AddtoPack(data,isinit_);
+  AddtoPack(data,needstatmech_);
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
@@ -382,6 +381,7 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,dispthetanew_);
   AddtoPack<3,1>(data,dispconvmass_);
   AddtoPack<3,1>(data,dispnewmass_);
+  AddtoPack<3,1>(data,theta0_);
   AddtoPack<3,1>(data,Tcurr_);
   AddtoPack<3,1>(data,Tref_);
   AddtoPack<3,1>(data,kapparef_);
@@ -432,6 +432,7 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,crosssec_);
   ExtractfromPack(position,data,crosssecshear_);
   isinit_ = ExtractInt(position,data);
+  needstatmech_ = ExtractInt(position,data);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
@@ -453,6 +454,7 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,dispthetanew_);
   ExtractfromPack<3,1>(position,data,dispconvmass_);
   ExtractfromPack<3,1>(position,data,dispnewmass_);
+  ExtractfromPack<3,1>(position,data,theta0_);
   ExtractfromPack<3,1>(position,data,Tcurr_);
   ExtractfromPack<3,1>(position,data,Tref_);
   ExtractfromPack<3,1>(position,data,kapparef_);
@@ -494,7 +496,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3ii::Lines()
  |determine Gauss rule from required type of integration                |
  |                                                   (public)cyron 09/09|
  *----------------------------------------------------------------------*/
-DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3ii::MyGaussRule(int nnode, IntegrationType integrationtype)
+DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3ii::MyGaussRule(unsigned int nnode, IntegrationType integrationtype)
 {
   DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule1D_undefined;
 
@@ -594,15 +596,13 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3ii::MyGaussRule(int nnode, Integrati
   return gaussrule;
 }
 
-
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      cyron 01/08|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3iiType::Initialize(DRT::Discretization& dis)
 {
     //setting up geometric variables for beam3ii elements
-
-    for (int num=0; num<  dis.NumMyColElements(); ++num)
+    for (int num=0; num< dis.NumMyColElements(); ++num)
     {
       //in case that current element is not a beam3ii element there is nothing to do and we go back
       //to the head of the loop
@@ -672,6 +672,8 @@ int DRT::ELEMENTS::Beam3iiType::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------------------*/
 LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3ii::Tcurr(const int NodeID)
 {
+  if (NumNode()>2) dserror("Beam3ii::Tcurr() not yet implemented for nnode>2");
+
   for(int node=0; node< 2; node++)
   {
     const int* nodeids=this->NodeIds();
@@ -698,12 +700,13 @@ LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3ii::Tcurr(const int NodeID)
   }
   return Tcurr_;
 }
+
 /*----------------------------------------------------------------------------------*
  |  return reference tangent at node                                 mukherjee 04/15|
  *----------------------------------------------------------------------------------*/
 LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3ii::Tref()
 {
+  if (NumNode()>2) dserror("Beam3ii::Tref() not yet implemented for nnode>2");
+
   return Tref_;
 }
-
-

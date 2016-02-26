@@ -545,8 +545,8 @@ void DRT::ELEMENTS::Beam3ebanisotrop::CalculateInternalForces(Teuchos::Parameter
     ortho_normal(0)=r_s(1,0);
     ortho_normal(1)=-r_s(0,0);
     ortho_normal(2)=0.0;
-    if (BEAMCONTACT::CastToDouble(BEAMCONTACT::VectorNorm<3>(ortho_normal))>1.0e-12)
-      ortho_normal.Scale(1.0/(BEAMCONTACT::VectorNorm<3>(ortho_normal)));
+    if (FADUTILS::CastToDouble(FADUTILS::VectorNorm<3>(ortho_normal))>1.0e-12)
+      ortho_normal.Scale(1.0/(FADUTILS::VectorNorm<3>(ortho_normal)));
 
     Res_orthopressure.Clear();
     R_orthopressure.Clear();
