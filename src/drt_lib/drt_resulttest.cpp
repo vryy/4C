@@ -128,7 +128,11 @@ int DRT::ResultTest::CompareValues(double actresult, std::string type, DRT::INPU
               << "\t is WRONG --> actresult="
               << std::setw(24) << std::setprecision(17) << std::scientific << actresult
               << ", givenresult="
-              << std::setw(24) << std::setprecision(17) << std::scientific << givenresult
+              << std::setw(24) << givenresult
+              << ", abs(diff)="
+              << std::setw(24) << std::abs(actresult-givenresult)
+              << " >"
+              << std::setw(24) << tolerance
               << "\n";
 
     ret = 1;
@@ -137,7 +141,12 @@ int DRT::ResultTest::CompareValues(double actresult, std::string type, DRT::INPU
   {
     // Result is correct
     IO::cout  << msghead.str()
-              << "\t is CORRECT\n";
+              << "\t is CORRECT"
+              << ", abs(diff)="
+              << std::setw(24) << std::setprecision(17) << std::scientific << std::abs(actresult-givenresult)
+              << " <"
+              << std::setw(24) << tolerance
+              << "\n";
   }
 
   return ret;
