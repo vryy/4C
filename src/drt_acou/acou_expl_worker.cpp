@@ -1198,7 +1198,6 @@ WaveEquationOperation<dim,fe_degree>::write_deal_cell_values(Teuchos::RCP<DRT::D
       dserror("other distypes not yet implemented!");
       break;
     }
-
   }
 
   return;
@@ -1256,7 +1255,9 @@ compute_gradient_contributions(std::vector<parallel::distributed::Vector<value_t
 
     // do integration of adjoint solution
     adjoint_velocity.integrate (true, false);
+    adjoint_velocity.distribute_local_to_global (ad, 0);
     adjoint_pressure.integrate(true, false);
+    adjoint_pressure.distribute_local_to_global (ad, dim);
 
     // get the dof values of the forward solutions
     forward_velocity.reinit(cell);
@@ -1518,7 +1519,7 @@ local_apply_boundary_face (const MatrixFree<dim,value_type> &,
           lambda = 1./(tau+1./c/rho)*rho_inv*normal_v_plus - tau*rho*c_sq/(tau+1./c/rho)*p_plus;
       else if(int_boundary_id==1) // monitored
       {
-        lambda = VectorizedArray<value_type>();
+        lambda = 1./tau*normal_v_plus+p_plus;//VectorizedArray<value_type>();
 
         if(source_adjoint_meas!=Teuchos::null && this->adjoint_eval == true) // second query required for intermediate integration
         {

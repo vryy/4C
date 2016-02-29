@@ -1167,9 +1167,44 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Te
 
   // write baci output
   write_deal_cell_values();
-  if(!adjoint)
-    bacitimeint->Output(history);
+  //if(!adjoint)
+  {
+    if(bacitimeint->Step()%bacitimeint->UpRes()==0)
+      bacitimeint->Output(history);
+    else
+    {
+      // deal write node output to history please!
+      if( history != Teuchos::null )
+      {
+        IndexSet relevant_set;
+        get_relevant_set(dof_handler, relevant_set);
+        parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
+                                                          solutions[dim].get_mpi_communicator());
+        ghosted_sol = solutions[dim];
+        ghosted_sol.update_ghost_values();
 
+        Point<dim> eval_point;
+
+        // monitor boundary condition
+        std::string condname = "PressureMonitor";
+        std::vector<DRT::Condition*> pressuremon;
+        discret->GetCondition(condname,pressuremon);
+        const std::vector<int> pressuremonnodes = *(pressuremon[0]->Nodes());
+        for(unsigned int i=0; i<pressuremonnodes.size(); ++i)
+        {
+          if(discret->NodeRowMap()->LID(pressuremonnodes[i])>=0)
+          {
+            for(unsigned int d=0; d<dim; ++d)
+              eval_point[d] = discret->lRowNode(discret->NodeRowMap()->LID(pressuremonnodes[i]))->X()[d];
+
+            double press = VectorTools::point_value(dof_handler,ghosted_sol,eval_point);
+
+            history->ReplaceMyValue(history->Map().LID(pressuremonnodes[i]),bacitimeint->Step(),press);
+          }
+        }
+      }
+    }
+  }
   return;
 }
 
@@ -1338,7 +1373,7 @@ void WaveEquationProblem<dim>::intermediate_integrate(Teuchos::RCP<RungeKuttaInt
     eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna);
     eleparams.set<bool>("padaptivity",false);
     discret->SetState(1,"intvelnp",intvelnp);
-    discret->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+    discret->Evaluate(eleparams);
     discret->ClearState(true);
 
     // bring the internal field from baci to deal values
@@ -1375,6 +1410,7 @@ void WaveEquationProblem<dim>::intermediate_integrate(Teuchos::RCP<RungeKuttaInt
       count--;
       for(unsigned i=0; i<solutions.size(); ++i)
         stored_forward_solutions[count][i] = solutions[i];
+
     }
   }
 

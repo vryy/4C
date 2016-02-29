@@ -142,6 +142,8 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("TIKHWEIGHT",1.0,"tikhonow weight",&acou_inv);
   DoubleParameter("TVDWEIGHT",1.0,"tvd weight",&acou_inv);
   DoubleParameter("TVDEPS",0.01,"tvd eps",&acou_inv);
+  DoubleParameter("IMPULSERESPONSE_DT",0.0,"time step with which impulse response is recorded",&acou_inv);
+  StringParameter("IMPULSERESPONSE","none.impresp","Filename of file containing the impulse response",&acou_inv);
 
 }
 

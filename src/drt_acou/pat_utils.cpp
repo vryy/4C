@@ -253,7 +253,7 @@ bool ACOU::PATLineSearch::Run()
 
     // update alphas
     alpha_im1_ = alpha_i_;
-    alpha_i_ = PredictStepLength();
+    alpha_i_ *= 2.0; // = PredictStepLength();
   }
 
   if(alpha_x_ != 0.0)
@@ -266,6 +266,10 @@ bool ACOU::PATLineSearch::Run()
   {
     if(!myrank_)
       std::cout<<"*************** line search failed"<<std::endl;
+
+    // replace params by original params
+    imagereconstruction_->ReplaceParams(state_);
+
     return false;
   }
 }

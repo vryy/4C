@@ -136,7 +136,7 @@ namespace ELEMENTS
                                     bool completepoly);
 
       /// compute the residual
-      void ComputeResidual(Teuchos::ParameterList&       params,
+      void ComputeResidual(Teuchos::ParameterList&             params,
                            Epetra_SerialDenseVector          & eleVec,
                            Epetra_SerialDenseVector          & interiorVeln,
                            Epetra_SerialDenseVector          & interiorPressn);
@@ -233,6 +233,14 @@ namespace ELEMENTS
                          const double (&xyz)[nsd_],
                          double  &p,
                          double absorptioncoeff) const;
+
+      void EvaluateElementADER(DRT::Discretization &         discretization,
+                           const Teuchos::RCP<MAT::Material> &mat,
+                           DRT::ELEMENTS::Acou &             ele,
+                           double                            dt,
+                           Epetra_SerialDenseVector          &elevec,
+                           Epetra_SerialDenseVector          & interiorVeln,
+                           Epetra_SerialDenseVector          & interiorPressn);
 
       // convention: we sort the entries in the matrices the following way:
       // first come the velocity gradients, then the velocities, and finally the pressure

@@ -294,6 +294,17 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     ComputePressureAverage(elevec1);
     break;
   }
+  case ACOU::eval_ele_ader:
+  {
+    double dt = params.get<double>("dt");
+    bool adjoint = params.get<bool>("adjoint");
+    bool padapty = params.get<bool>("padaptivity");
+    const int useacouoptvecs = params.get<int>("useacouoptvecs");
+    ReadGlobalVectors(ele, discretization, lm, padapty, useacouoptvecs);
+    localSolver_->ComputeMatrices(discretization, mat, *ele, dt, dyna_, adjoint);
+    localSolver_->EvaluateElementADER(discretization, mat, *ele, dt, elevec1, interiorVelnp_, interiorPressnp_);
+    break;
+  }
   default:
     dserror("unknown action supplied");
     break;
@@ -845,8 +856,11 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateLight(
       + ( coeff_N(0,1) + coeff_N(1,1) * xyz[0] + coeff_N(2,1) * xyz[1] + coeff_N(3,1) * xyz[0] * xyz[1] ) * values[1]
       + ( coeff_N(0,2) + coeff_N(1,2) * xyz[0] + coeff_N(2,2) * xyz[1] + coeff_N(3,2) * xyz[0] * xyz[1] ) * values[2]
       + ( coeff_N(0,3) + coeff_N(1,3) * xyz[0] + coeff_N(2,3) * xyz[1] + coeff_N(3,3) * xyz[0] * xyz[1] ) * values[3];
-    p *= -absorptioncoeff;
 
+    double average = (values[0]+values[1]+values[2]+values[3])/4.0;
+    if(p>10.0*average|| p<average/10.0)
+      p = average;
+    p *= -absorptioncoeff;
   }
   else if (distype == DRT::Element::hex8)
   {
@@ -2382,6 +2396,44 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeMatrices(
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ * EvaluateElementADER
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateElementADER(
+    DRT::Discretization &         discretization,
+    const Teuchos::RCP<MAT::Material> &mat,
+    DRT::ELEMENTS::Acou &             ele,
+    double                            dt,
+    Epetra_SerialDenseVector          &elevec,
+    Epetra_SerialDenseVector          & interiorVeln,
+    Epetra_SerialDenseVector          & interiorPressn)
+{
+/*  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
+  double rho = actmat->Density(discretization.ElementColMap()->LID(ele.Id()));
+  double c = actmat->SpeedofSound(discretization.ElementColMap()->LID(ele.Id()));
+
+  // to be read from input file
+  int ORDER = 1; // the capital N in the papers
+
+  // input is the pressure and velocity from the last time level
+  // output is the element contributions to the equation (a vector of size tracedofs!!)
+  if(elevec.Length()!=Gmat.N())
+    dserror("at this point, the element vector has to be of size face*nfdofs");
+
+  // first contribution is from ********** k=0 ********** (this is easy since S is the unit matrix
+  elevec.Multiply('N','N',dt,Imat,interiorVeln,0.0);
+  elevec.Multiply('N','N',dt,Jmat,interiorPressn,1.0);
+  // that's it
+
+  // now the next higher contribution ********** k=1 **********
+*/
+
+
+  return;
+}
+
 
 // template classes
 template class DRT::ELEMENTS::AcouEleCalc<DRT::Element::hex8>;

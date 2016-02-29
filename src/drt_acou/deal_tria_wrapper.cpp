@@ -65,8 +65,8 @@ namespace dealii
       {
         for(unsigned int i=0; i<GeometryInfo<dim>::vertices_per_cell; ++i)
         {
-    cells[proc0elemap->GID(cell)-minallelegid].vertices[i] = proc0elenodeids->operator ()(i)->operator [](cell);
-  }
+          cells[proc0elemap->GID(cell)-minallelegid].vertices[i] = proc0elenodeids->operator ()(i)->operator [](cell);
+        }
       }
       // create the vertices
       int minallnodegid = discret->NodeRowMap()->MinAllGID();
@@ -74,8 +74,8 @@ namespace dealii
       {
         for (unsigned int d=0; d<dim; ++d)
         {
-    vertices[proc0nodemap->GID(node)-minallnodegid][d] = proc0nodecoords->operator ()(d)->operator [](node);
-  }
+          vertices[proc0nodemap->GID(node)-minallnodegid][d] = proc0nodecoords->operator ()(d)->operator [](node);
+        }
       }
       Assert (subcelldata.check_consistency(dim), ExcInternalError());
     }
@@ -87,15 +87,15 @@ namespace dealii
     GridReordering<dim>::invert_all_cells_of_negative_grid (vertices, cells);
 
     // 3. reorder_cells
-    GridReordering<dim>::reorder_cells (cells);
+    if(discret->Comm().MyPID()==0) // need to enter this with only one processor, otherwise debug mode throws error
+      GridReordering<dim>::reorder_cells (cells);
 
     // 4. send the col elements to the owner
-    //schicke die col-Elemente zum jeweiligen Besitzer -> col_cells.
-    // the cells write back into the baci vector which is then exported and then each processor can fill its list of col elements
+    // the cells write back into the baci vector which is exported and then each processor can fill its list of col elements
     if(discret->Comm().MyPID()==0)
       for(int cell=0; cell<discret->NumGlobalElements(); ++cell)
         for(unsigned int i=0; i<GeometryInfo<dim>::vertices_per_cell; ++i)
-    proc0elenodeids->operator ()(i)->operator [](cell) = cells[proc0elemap->GID(cell)-minallelegid].vertices[i];
+          proc0elenodeids->operator ()(i)->operator [](cell) = cells[proc0elemap->GID(cell)-minallelegid].vertices[i];
 
     Teuchos::RCP<Epetra_MultiVector> elecolnodeids = Teuchos::rcp(new Epetra_MultiVector(*discret->ElementColMap(),GeometryInfo<dim>::vertices_per_cell));
     LINALG::Export(*proc0elenodeids,*elecolnodeids);

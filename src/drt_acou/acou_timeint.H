@@ -117,8 +117,9 @@ public:
     time_ += dtp_;
   }
 
-  double Time() { return time_; }
-  int    Step() { return step_; }
+  double Time()  { return time_; }
+  int    Step()  { return step_; }
+  int    UpRes() { return upres_; }
 
   /// create result test for encapsulated structure algorithm
   virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();

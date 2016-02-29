@@ -151,6 +151,9 @@ protected:
   //! vector holding the mat ids
   std::vector<int> opti_matids_;
 
+  //! vector indicating if element is optimized or not
+  Teuchos::RCP<Epetra_Vector> opti_opt_ind_;
+
   //! output name given in command line
   std::string name_;
 
@@ -198,6 +201,12 @@ protected:
 
   //! the initial error value
   double error_start_;
+
+  //! consider impulse response or not
+  bool conv_imp_resp_;
+
+  //! the impulse respone already calculated for dtacou_
+  Epetra_SerialDenseVector imp_resp_;
 
   //! list of observed node gids
   std::vector<int> nodes_;
@@ -425,7 +434,7 @@ public:
 protected:
 
   //! vector indicating if element is optimized or not
-  Teuchos::RCP<Epetra_Vector> opt_ind_;
+  Teuchos::RCP<Epetra_Vector> acou_opt_ind_;
 
   //! material handling for acoustic parameters
   Teuchos::RCP<Epetra_Vector> c_vals_;
@@ -464,7 +473,10 @@ protected:
   virtual void CalculateGradDirNorm(const Epetra_Vector& bvector, const Epetra_Map& uniquemap, double* result);
 
   //! build basis patches
-  void CheckNeighborsAcouGrads(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
+  //void CheckNeighborsAcouGrads(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
+  void CheckNeighborsSoSGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
+  void CheckNeighborsRhoGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
+
 
   //! calculation of error in parameter field for analytic examples
   virtual void ComputeParameterError();

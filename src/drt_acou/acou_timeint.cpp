@@ -620,7 +620,7 @@ void ACOU::AcouTimeInt::WriteRestart()
 
   // write internal field for which we need to create and fill the corresponding vectors
   // since this requires some effort, the WriteRestart method should not be used excessively!
-  Teuchos::RCP<Epetra_Vector> intvelnp = Teuchos::rcp(new Epetra_Vector(*(discret_->DofColMap(1))));
+  Teuchos::RCP<Epetra_Vector> intvelnp = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap(1))));
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",ACOU::fill_restart_vecs);
   eleparams.set<INPAR::ACOU::DynamicType>("dynamic type",dyna_);
@@ -628,7 +628,7 @@ void ACOU::AcouTimeInt::WriteRestart()
   eleparams.set<int>("useacouoptvecs",-6);
 
   discret_->SetState(1,"intvelnp",intvelnp);
-  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  discret_->Evaluate(eleparams);
 
   Teuchos::RCP<const Epetra_Vector> matrix_state = discret_->GetState(1,"intvelnp");
   output_->WriteVector("intvelnp",matrix_state);
