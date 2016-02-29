@@ -299,7 +299,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     }
 
   // Checks in case of multi-scale simulations
-
   {
     // make sure we IMR-like generalised-alpha requested for multi-scale
     // simulations
@@ -319,6 +318,24 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       }
     }
   }
+
+  // Check if visco-elastic material is called within quasi-statics simulations
+  {
+    Teuchos::RCP<MAT::PAR::Bundle> materials = problem->Materials();
+    for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator  i=materials->Map()->begin();
+        i!=materials->Map()->end();
+        ++i)
+    {
+      Teuchos::RCP<MAT::PAR::Material> mat = i->second;
+      if (mat->Type() == INPAR::MAT::m_viscoelasthyper)
+      {
+        if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") == INPAR::STR::dyna_statics)
+          dserror("Usage of viscoelastic materials within quasi-static problem is not meaningful.");
+        break;
+      }
+    }
+  }
+
 
   // Add cohesive elements in case of crack propagation simulations
   {
