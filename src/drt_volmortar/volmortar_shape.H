@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file mortar_shape_utils.H
+\file volmortar_shape.H
 
 </pre>
 
@@ -939,18 +939,18 @@ void volmortar_shape_function_3D_modified(
     funct(7) = valtmp(7) + alpha * (valtmp(15) + valtmp(18) + valtmp(19));
 
     //edge nodes
-    funct(8)  = valtmp(8)  * (1.0-3.0*alpha);
-    funct(9)  = valtmp(9)  * (1.0-3.0*alpha);
-    funct(10) = valtmp(10) * (1.0-3.0*alpha);
-    funct(11) = valtmp(11) * (1.0-3.0*alpha);
-    funct(12) = valtmp(12) * (1.0-3.0*alpha);
-    funct(13) = valtmp(13) * (1.0-3.0*alpha);
-    funct(14) = valtmp(14) * (1.0-3.0*alpha);
-    funct(15) = valtmp(15) * (1.0-3.0*alpha);
-    funct(16) = valtmp(16) * (1.0-3.0*alpha);
-    funct(17) = valtmp(17) * (1.0-3.0*alpha);
-    funct(18) = valtmp(18) * (1.0-3.0*alpha);
-    funct(19) = valtmp(19) * (1.0-3.0*alpha);
+    funct(8)  = valtmp(8)  * (1.0-2.0*alpha);
+    funct(9)  = valtmp(9)  * (1.0-2.0*alpha);
+    funct(10) = valtmp(10) * (1.0-2.0*alpha);
+    funct(11) = valtmp(11) * (1.0-2.0*alpha);
+    funct(12) = valtmp(12) * (1.0-2.0*alpha);
+    funct(13) = valtmp(13) * (1.0-2.0*alpha);
+    funct(14) = valtmp(14) * (1.0-2.0*alpha);
+    funct(15) = valtmp(15) * (1.0-2.0*alpha);
+    funct(16) = valtmp(16) * (1.0-2.0*alpha);
+    funct(17) = valtmp(17) * (1.0-2.0*alpha);
+    funct(18) = valtmp(18) * (1.0-2.0*alpha);
+    funct(19) = valtmp(19) * (1.0-2.0*alpha);
 
     break;
   }
@@ -982,12 +982,12 @@ void volmortar_shape_function_3D_modified(
     funct(3) = valtmp(3) + alpha * (valtmp(7)  + valtmp(8) + valtmp(9));
 
     // edge nodes
-    funct(4)  = valtmp(4)  * (1.0-3.0*alpha);
-    funct(5)  = valtmp(5)  * (1.0-3.0*alpha);
-    funct(6)  = valtmp(6)  * (1.0-3.0*alpha);
-    funct(7)  = valtmp(7)  * (1.0-3.0*alpha);
-    funct(8)  = valtmp(8)  * (1.0-3.0*alpha);
-    funct(9)  = valtmp(9)  * (1.0-3.0*alpha);
+    funct(4)  = valtmp(4)  * (1.0-2.0*alpha);
+    funct(5)  = valtmp(5)  * (1.0-2.0*alpha);
+    funct(6)  = valtmp(6)  * (1.0-2.0*alpha);
+    funct(7)  = valtmp(7)  * (1.0-2.0*alpha);
+    funct(8)  = valtmp(8)  * (1.0-2.0*alpha);
+    funct(9)  = valtmp(9)  * (1.0-2.0*alpha);
 
     break;
   }

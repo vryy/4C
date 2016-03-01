@@ -616,7 +616,7 @@ void VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(
     std::set<int>& donebefore)
 {
   // trafo parameter
-  double alpha = 0.3;
+  const double alpha = 0.3;
 
   // ids for corner and edge nodes
   int corner_min = 0;
@@ -687,9 +687,9 @@ void VOLMORTAR::VolMortarCoupl::CreateTrafoOperator(
 
         // assemble diagonal entries
         if (dis)
-          T1_->Assemble(1.0 - 3.0 * alpha, row, row);
+          T1_->Assemble(1.0 - 2.0 * alpha, row, row);
         else
-          T2_->Assemble(1.0 - 3.0 * alpha, row, row);
+          T2_->Assemble(1.0 - 2.0 * alpha, row, row);
 
         // found ids
         for (int id = 0; id < (int) ids.size(); ++id)
