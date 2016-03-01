@@ -34,7 +34,6 @@ TIMESTEP                        5.0e-3
 NUMSTEP                         20
 MAXTIME                         0.5
 VOID_FRACTION_CALC              analytical_quadraticpoly
-NUM_GP_VOID_FRACTION            5
 SIMPLIFIED_BUBBLE_FORCES        Yes
 FLUIDFRAC_PROJ_METHOD           L2_projection
 FLUIDFRAC_PROJ_SOLVER           1

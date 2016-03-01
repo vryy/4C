@@ -386,6 +386,7 @@ namespace PARTICLE
     int stepmax_;  //!< final step \f$N\f$
     int step_;  //!< time step index \f$n\f$
     int stepn_;  //!< time step index \f$n+1\f$
+    int restart_;  //!< restart step
     //@}
 
     //! @name Global state vectors

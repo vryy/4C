@@ -74,6 +74,7 @@ PARTICLE::TimInt::TimInt
   stepmax_(particledynparams.get<int>("NUMSTEP")),
   step_(0),
   stepn_(0),
+  restart_(0),
   dis_(Teuchos::null),
   vel_(Teuchos::null),
   acc_(Teuchos::null),
@@ -537,6 +538,7 @@ void PARTICLE::TimInt::ReadRestart
   if (step != reader.ReadInt("step"))
     dserror("Time step on file not equal to given step");
 
+  restart_ = step;
   step_ = step;
   stepn_ = step_ + 1;
   time_ = Teuchos::rcp(new TIMINT::TimIntMStep<double>(0, 0, reader.ReadDouble("time")));
@@ -618,21 +620,21 @@ void PARTICLE::TimInt::OutputStep(bool forced_writerestart)
 
   // output restart (try this first)
   // write restart step
-  if ( (writerestartevery_ and (step_%writerestartevery_ == 0)) or forced_writerestart )
+  if ( (writerestartevery_ and ((step_-restart_)%writerestartevery_ == 0)) or forced_writerestart )
   {
     OutputRestart(datawritten);
   }
 
   // output results (not necessary if restart in same step)
   if ( writestate_
-       and writeresultsevery_ and (step_%writeresultsevery_ == 0)
+       and writeresultsevery_ and ((step_-restart_)%writeresultsevery_ == 0)
        and (not datawritten) )
   {
     OutputState(datawritten);
   }
 
   // output energy
-  if ( writeenergyevery_ and (step_%writeenergyevery_ == 0) )
+  if ( writeenergyevery_ and ((step_-restart_)%writeenergyevery_ == 0) )
   {
     OutputEnergy();
   }
@@ -681,7 +683,7 @@ void PARTICLE::TimInt::OutputRestart
   output_->ClearMapCache();
 
   // info dedicated to user's eyes staring at standard out
-  if ( (myrank_ == 0) and printscreen_ and (step_%printscreen_==0))
+  if ( (myrank_ == 0) and printscreen_ and ((step_-restart_)%printscreen_==0))
   {
     printf("====== Restart written in step %d\n", step_);
     fflush(stdout);
