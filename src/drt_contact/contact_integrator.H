@@ -534,7 +534,7 @@ protected:
       const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,const std::vector<GEN::pairedvector<int,double> >& dmxi,
       const double jac,const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
       const double gap, const GEN::pairedvector<int,double>& dgapgp,
-      double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit,const double* sxi);
+      double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit,double* sxi);
 
   /*!
    \brief evaluate weighted Gap entries at GP (quad-pwlin)

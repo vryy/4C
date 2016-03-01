@@ -10402,7 +10402,7 @@ void CONTACT::CoIntegrator::GPTS_forces(
     const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,const std::vector<GEN::pairedvector<int,double> >& dmxi,
     const double jac,const GEN::pairedvector<int,double>& jacintcellmap, const double wgt,
     const double gap, const GEN::pairedvector<int,double>& dgapgp,
-    double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit,const double* sxi)
+    double* gpn, std::vector<GEN::pairedvector<int,double> >& dnmap_unit,double* sxi)
 {
   if (dim!=Dim())
     dserror("dimension inconsistency");
@@ -10425,6 +10425,12 @@ void CONTACT::CoIntegrator::GPTS_forces(
     case DRT::Element::quad4:
       SoEleGP<DRT::Element::quad4,dim>(sele,wgt,sxi,pxsi);
       break;
+    case DRT::Element::quad9:
+      SoEleGP<DRT::Element::quad9,dim>(sele,wgt,sxi,pxsi);
+      break;
+    case DRT::Element::tri3:
+      SoEleGP<DRT::Element::tri3,dim>(sele,wgt,sxi,pxsi);
+      break;
     default:
       dserror("Nitsche contact not implemented for used (bulk) elements");
     }
@@ -10433,29 +10439,35 @@ void CONTACT::CoIntegrator::GPTS_forces(
     Epetra_SerialDenseMatrix dsdd;
     dynamic_cast<DRT::ELEMENTS::So_base*>(sele.ParentElement())->GetCauchyAtXi(pxsi,sele.MoData().ParentDisp(),cauchy,dsdd);
 
+    LINALG::Matrix<dim,1> eleN;
+    dynamic_cast<CoElement&>(sele).ComputeUnitNormalAtXi(sxi,eleN.A());
+    std::vector<GEN::pairedvector<int,double> > deriv_eleN(dim,sele.NumNode()*dim);
+    dynamic_cast<CoElement&>(sele).DerivUnitNormalAtXi(sxi,deriv_eleN);
+
     const LINALG::Matrix<dim,1> normal(gpn,true);
-    LINALG::Matrix<dim,1> trac;
-    trac.Multiply(cauchy,normal);
-    double cauchy_nn = trac.Dot(normal);
+    LINALG::Matrix<dim,1> trac_eleN;
+    trac_eleN.Multiply(cauchy,eleN);
+    LINALG::Matrix<dim,1> trac_n;
+    trac_n.Multiply(cauchy,normal);
+    double cauchy_nn = trac_eleN.Dot(normal);
     gap_plus_cauchy_nn =(gap + cauchy_nn/ppn_);
 
     LINALG::Matrix<dim,dim> nn;
-    nn.MultiplyNT(normal,normal);
+    nn.MultiplyNT(eleN,normal);
     int numstr;
     if      (dim==3) numstr=6;
     else if (dim==2) numstr=3;
     else dserror("unknown dimesion");
-
     Epetra_SerialDenseVector nn_vec(numstr);
     for (int i=0;i<dim;i++)nn_vec(i)=nn(i,i);
     if (dim==3)
     {
-      nn_vec(3)=nn(0,1)*2.;
-      nn_vec(4)=nn(2,1)*2.;
-      nn_vec(5)=nn(0,2)*2.;
+      nn_vec(3)=nn(0,1)+nn(1,0);
+      nn_vec(4)=nn(2,1)+nn(1,2);
+      nn_vec(5)=nn(0,2)+nn(2,0);
     }
     else
-      nn_vec(2)=nn(0,1)*2.;
+      nn_vec(2)=nn(0,1)+nn(1,0);
 
     Epetra_SerialDenseVector dsndd(sele.ParentElement()->NumNode()*dim);
     if(dsdd.Multiply(true,nn_vec,dsndd)!=0) dserror("multiply failed");
@@ -10468,8 +10480,12 @@ void CONTACT::CoIntegrator::GPTS_forces(
         deriv_sigma_nn[sele.MoData().ParentDof().at(i)] += dsndd(i);
 
       for (int d=0;d<Dim();++d)
+      {
         for (GEN::pairedvector<int,double>::const_iterator p=dnmap_unit[d].begin();p!=dnmap_unit[d].end();++p)
-          deriv_sigma_nn[p->first]+=2.*trac(d)*p->second;
+          deriv_sigma_nn[p->first]+=trac_eleN(d)*p->second;
+        for (GEN::pairedvector<int,double>::const_iterator p=deriv_eleN[d].begin();p!=deriv_eleN[d].end();++p)
+          deriv_sigma_nn[p->first]+=trac_n(d)*p->second;
+      }
     }
   }
   else if (stype_==INPAR::CONTACT::solution_penalty)
