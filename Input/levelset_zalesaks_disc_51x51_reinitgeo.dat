@@ -12,6 +12,7 @@
 ==================================================================
 -------------------------------------------------------------TITLE
 testing reinitialization by distance to interface
+Runs fine with serial revision 21886 (02.03.2016) //Magnus
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS 2601
 //NODES    5408

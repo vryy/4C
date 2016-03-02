@@ -17,6 +17,7 @@ Convection-Diffusion of a Gaussian Hill shifted by +1.0 not to run into cut trou
 // Finite Element Methods for Flow Problems
 // Wiley, 2003
 // Chapter 5.6.1, pp. 243
+Runs fine with serial revision 21886 (02.03.2016) //Magnus
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        750
 NODES                           1812
