@@ -112,6 +112,10 @@ int STR::TimIntExplEuler::IntegrateStep()
   else
     disn_->Update(dt, *(*vel_)(0), 1.0);
 
+  // *********** time measurement ***********
+  double dtcpu = timer_->WallTime();
+  // *********** time measurement ***********
+
   // apply Dirichlet BCs
   ApplyDirichletBC(timen_, disn_, veln_, Teuchos::null, false);
 
@@ -142,8 +146,9 @@ int STR::TimIntExplEuler::IntegrateStep()
                        fintn_);
   }
 
-  // TIMING
-  //if (!myrank_) std::cout << "\nT_internal: " << timer_->WallTime() -dtcpu << std::endl;
+  // *********** time measurement ***********
+  dtele_ = timer_->WallTime() - dtcpu;
+  // *********** time measurement ***********
 
   // viscous forces due Rayleigh damping
   if (damping_ == INPAR::STR::damp_rayleigh)
@@ -151,8 +156,9 @@ int STR::TimIntExplEuler::IntegrateStep()
     damp_->Multiply(false, *veln_, *fviscn_);
   }
 
-  // TIMING
-  //dtcpu = timer_->WallTime();
+  // *********** time measurement ***********
+  dtcpu = timer_->WallTime();
+  // *********** time measurement ***********
 
   // contact or meshtying forces
   if (HaveContactMeshtying())
@@ -165,8 +171,9 @@ int STR::TimIntExplEuler::IntegrateStep()
       cmtbridge_->ContactManager()->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fcmtn_,stepn_,0,false);
   }
 
-  // TIMING
-  //if (!myrank_) std::cout << "T_contact:  " << timer_->WallTime() - dtcpu  << std::endl;
+  // *********** time measurement ***********
+  dtcmt_ = timer_->WallTime() - dtcpu;
+  // *********** time measurement ***********
 
   // determine time derivative of linear momentum vector,
   // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
@@ -182,8 +189,9 @@ int STR::TimIntExplEuler::IntegrateStep()
     frimpn_->Update(1.0, *fcmtn_, 1.0);
   }
 
-  // TIMING
-  //dtcpu = timer_->WallTime();
+  // *********** time measurement ***********
+  dtcpu = timer_->WallTime();
+  // *********** time measurement ***********
 
   // obtain new accelerations \f$A_{n+1}\f$
   {
@@ -212,11 +220,12 @@ int STR::TimIntExplEuler::IntegrateStep()
     }
   }
 
-  // TIMING
-  //if (!myrank_) std::cout << "T_linsolve: " << timer_->WallTime() - dtcpu << std::endl;
-
   // apply Dirichlet BCs on accelerations
   ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_, false);
+
+  // *********** time measurement ***********
+  dtsolve_ = timer_->WallTime() - dtcpu;
+  // *********** time measurement ***********
 
   // things to be done after integrating
   PostSolve();

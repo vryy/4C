@@ -141,6 +141,12 @@ void STR::TimIntExpl::PrintStepText
           " | numiter %3d"
           " | wct %-14.8E\n",
           step_, stepmax_, (*time_)[0], (*dt_)[0], 0, timer_->ElapsedTime());
+  fprintf(ofile,
+          "                      "
+          " ( ts %-14.8E"
+          " | te %-14.8E"
+          " | tc %-14.8E)\n",
+          dtsolve_,dtele_,dtcmt_);
   // print a beautiful line made exactly of 80 dashes
   fprintf(ofile,
           "--------------------------------------------------------------"
