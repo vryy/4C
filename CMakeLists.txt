@@ -1678,6 +1678,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_factory.cpp
   src/drt_structure_new/str_model_evaluator_generic.cpp
   src/drt_structure_new/str_model_evaluator_structure.cpp
+  src/drt_structure_new/str_model_evaluator_springdashpot.cpp
   src/drt_structure_new/str_nln_solver_factory.cpp
   src/drt_structure_new/str_nln_solver_utils.cpp
   src/drt_structure_new/str_nln_solver_generic.cpp
@@ -1887,6 +1888,7 @@ set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/windkesseldofset.cpp
   src/drt_constraint/springdashpot.cpp
   src/drt_constraint/springdashpot_manager.cpp
+  src/drt_constraint/springdashpot_new.cpp
 )
 set(OBJS_DRT_IO_LIB
   src/drt_io/io.cpp

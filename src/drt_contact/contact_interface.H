@@ -356,7 +356,7 @@ public:
     \brief Evaluate nodal distances and linearization
 
   */
-  virtual void EvaluateDistances(const Teuchos::RCP<Epetra_Vector> vec,
+  virtual void EvaluateDistances(const Teuchos::RCP<const Epetra_Vector>& vec,
       std::map<int, std::vector<double> >& mynormals,
       std::map<int,std::vector<GEN::pairedvector<int,double> > >& dmynormals,
       std::map<int,double>& mygap,

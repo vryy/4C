@@ -38,16 +38,14 @@ STR::SOLVER::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > >
-    STR::SOLVER::Factory::BuildLinSolvers(
+Teuchos::RCP<STR::SOLVER::Factory::LinSolMap>
+STR::SOLVER::Factory::BuildLinSolvers(
     const std::set<enum INPAR::STR::ModelType>& modeltypes,
     const Teuchos::ParameterList& sdyn,
-    DRT::Discretization& actdis)
-    const
+    DRT::Discretization& actdis) const
 {
   // create a new standard map
-  Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > > linsolvers =
-      Teuchos::rcp(new std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> >());
+  Teuchos::RCP<LinSolMap> linsolvers = Teuchos::rcp(new LinSolMap());
 
   std::set<enum INPAR::STR::ModelType>::const_iterator mt_iter;
   // loop over all model types
@@ -55,29 +53,37 @@ Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> >
   {
     switch(*mt_iter)
     {
-      case INPAR::STR::model_structure:
-        (*linsolvers)[*mt_iter] = BuildStructureLinSolver(sdyn,actdis);
-        break;
-      // ToDo Check if this makes sense for simulations where both, meshtying and
-      //      contact, are present. If we need two linsolvers, please adjust the
-      //      implementation (maps for pre-conditioning, etc.).
-      case INPAR::STR::model_contact:
-      case INPAR::STR::model_meshtying:
-        (*linsolvers)[*mt_iter] = BuildMeshtyingContactLinSolver(sdyn,actdis);
-        break;
-      case INPAR::STR::model_lag_pen_constraint:
-        (*linsolvers)[*mt_iter] = BuildLagPenConstraintLinSolver(sdyn,actdis);
-        break;
-      case INPAR::STR::model_windkessel:
-        (*linsolvers)[*mt_iter] = BuildWindkesselLinSolver(sdyn,actdis);
-        break;
-      case INPAR::STR::model_springdashpot:
-        (*linsolvers)[*mt_iter] = BuildSpringDashpotLinSolver(sdyn,actdis);
-        break;
-      default:
-        dserror("No idea which solver to use for the given model type %s",
-            ModelTypeString(*mt_iter).c_str());
-        break;
+    case INPAR::STR::model_structure:
+    case INPAR::STR::model_springdashpot:
+    {
+      /* Check if the structural linear solver was already added and skip
+       * if true. */
+      LinSolMap::iterator iter =
+          linsolvers->find(INPAR::STR::model_structure);
+      if (iter==linsolvers->end())
+        (*linsolvers)[INPAR::STR::model_structure] =
+            BuildStructureLinSolver(sdyn,actdis);
+      break;
+    }
+    /* ToDo Check if this makes sense for simulations where both, meshtying and
+     *      contact, are present. If we need two linsolvers, please adjust the
+     *      implementation (maps for pre-conditioning, etc.). */
+    case INPAR::STR::model_contact:
+    case INPAR::STR::model_meshtying:
+      (*linsolvers)[*mt_iter] =
+          BuildMeshtyingContactLinSolver(sdyn,actdis);
+      break;
+    case INPAR::STR::model_lag_pen_constraint:
+      (*linsolvers)[*mt_iter] =
+          BuildLagPenConstraintLinSolver(sdyn,actdis);
+      break;
+    case INPAR::STR::model_windkessel:
+      (*linsolvers)[*mt_iter] = BuildWindkesselLinSolver(sdyn,actdis);
+      break;
+    default:
+      dserror("No idea which solver to use for the given model type %s",
+          ModelTypeString(*mt_iter).c_str());
+      break;
     }
   }
 
@@ -306,20 +312,6 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolve
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildWindkesselLinSolver(
-        const Teuchos::ParameterList& sdyn,
-        DRT::Discretization& actdis) const
-{
-  Teuchos::RCP<LINALG::Solver> linsolver = Teuchos::null;
-
-  dserror("Not yet implemented!");
-
-  return linsolver;
-}
-
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildSpringDashpotLinSolver(
         const Teuchos::ParameterList& sdyn,
         DRT::Discretization& actdis) const
 {

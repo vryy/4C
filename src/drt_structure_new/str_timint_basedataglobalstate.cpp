@@ -191,75 +191,79 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
   std::size_t nummodels = modeltypes.size();
   int numblocks = 0;
   // ---------------------------------------------------------------------------
-  // pure structural case
-  // ---------------------------------------------------------------------------
-  if(nummodels==1)
-  {
-    // switch between the different vector initialization options
-    switch (vecinittype)
-    {
-      /* use the last converged state to construct a new solution vector */
-      case vec_init_last_time_step:
-      {
-        xvec = Teuchos::rcp(new Epetra_Vector(*DofRowMapView(),false));
-        if (xvec->Scale(1.0,*GetDisN()))
-          dserror("Scale operation failed!");
-        break;
-      }
-      /* use the current global state to construct a new solution vector */
-      case vec_init_current_state:
-      {
-        xvec = Teuchos::rcp(new Epetra_Vector(*DofRowMapView(),false));
-        if (xvec->Scale(1.0,*GetDisNp()))
-          dserror("Scale operation failed!");
-        break;
-      }
-      /* construct a new solution vector filled with zeros */
-      case vec_init_zero:
-      default:
-      {
-        xvec = Teuchos::rcp(new Epetra_Vector(*DofRowMapView(),true));
-        break;
-      }
-    } // end of the switch-case statement
-  } // end of the pure structural problem case
-  // ---------------------------------------------------------------------------
   // if there are more than one active model type
   // ---------------------------------------------------------------------------
-  else
+  if(nummodels>1)
   {
+    // count blocks
     std::set<enum INPAR::STR::ModelType>::const_iterator miter;
     for (miter=modeltypes.begin();miter!=modeltypes.end();++miter)
     {
       switch (*miter)
       {
-        case INPAR::STR::model_structure:
-        {
-          ++numblocks;
-          break;
-        }
-        case INPAR::STR::model_contact:
-        {
-          enum INPAR::CONTACT::SystemType systype =
-              DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
-              problem->ContactDynamicParams(),"SYSTEM");
+      case INPAR::STR::model_structure:
+      {
+        ++numblocks;
+        break;
+      }
+      case INPAR::STR::model_contact:
+      {
+        enum INPAR::CONTACT::SystemType systype =
+            DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+                problem->ContactDynamicParams(),"SYSTEM");
 
-          if (systype == INPAR::CONTACT::system_saddlepoint)
-            ++numblocks;
-          break;
-        }
-        default:
-        {
-          // ToDo
-          dserror("Augment this function for your model type!");
-          break;
-        }
+        if (systype == INPAR::CONTACT::system_saddlepoint)
+          ++numblocks;
+        break;
+      }
+      case INPAR::STR::model_springdashpot:
+        break;
+      default:
+      {
+        // ToDo
+        dserror("Augment this function for your model type!");
+        break;
+      }
       }
     }
     // ToDo
-    dserror("The corresponding mnodel evaluators are necessary to create "
-        "the global vector.");
+    if(numblocks>1)
+      dserror("The corresponding mnodel evaluators are necessary to create "
+          "the global vector.");
   } // end of the case of more than one model type
+
+  // ---------------------------------------------------------------------------
+  // pure structural case
+  // ---------------------------------------------------------------------------
+  {
+    // switch between the different vector initialization options
+    switch (vecinittype)
+    {
+    /* use the last converged state to construct a new solution vector */
+    case vec_init_last_time_step:
+    {
+      xvec = Teuchos::rcp(new Epetra_Vector(*DofRowMapView(),false));
+      if (xvec->Scale(1.0,*GetDisN()))
+        dserror("Scale operation failed!");
+      break;
+    }
+    /* use the current global state to construct a new solution vector */
+    case vec_init_current_state:
+    {
+      xvec = Teuchos::rcp(new Epetra_Vector(*DofRowMapView(),false));
+      if (xvec->Scale(1.0,*GetDisNp()))
+        dserror("Scale operation failed!");
+      break;
+    }
+    /* construct a new solution vector filled with zeros */
+    case vec_init_zero:
+    default:
+    {
+      xvec = Teuchos::rcp(new Epetra_Vector(*DofRowMapView(),true));
+      break;
+    }
+    } // end of the switch-case statement
+  } // end of the pure structural problem case
 
   //wrap and return
   return Teuchos::rcp(new NOX::Epetra::Vector(xvec));
@@ -281,11 +285,7 @@ Teuchos::RCP<LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::
   // number of models
   std::size_t nummodels = modeltypes.size();
   int numblocks = 0;
-  // pure structural case
-  if(nummodels==1)
-    jac =
-        Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
-  else
+  if(nummodels>1)
   {
     std::set<enum INPAR::STR::ModelType>::const_iterator miter;
     for (miter=modeltypes.begin();miter!=modeltypes.end();++miter)
@@ -307,6 +307,8 @@ Teuchos::RCP<LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::
             ++numblocks;
           break;
         }
+        case INPAR::STR::model_springdashpot:
+          break;
         default:
         {
           // FixMe please.
@@ -316,9 +318,13 @@ Teuchos::RCP<LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::
       }
     }
     // FixMe please.
-    dserror("The corresponding managers/model-evaluators are necessary to create "
-        "the BlockMatrix.");
+    if(numblocks>1)
+      dserror("The corresponding managers/model-evaluators are necessary to create "
+          "the BlockMatrix.");
   }
+  // pure structural case
+  jac =
+      Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
   return jac;
 }
 

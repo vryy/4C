@@ -35,6 +35,9 @@ namespace SOLVER {
    *  \author Michael Hiermeier */
   class Factory
   {
+  private:
+    typedef std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > LinSolMap;
+
   public:
     //! constructor
     Factory();
@@ -43,10 +46,10 @@ namespace SOLVER {
     virtual ~Factory(){};
 
     //! build the desired linear solvers
-    Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<LINALG::Solver> > >
-        BuildLinSolvers(const std::set<enum INPAR::STR::ModelType>& modeltypes,
-                        const Teuchos::ParameterList& sdyn,
-                        DRT::Discretization& actdis) const;
+    Teuchos::RCP<LinSolMap> BuildLinSolvers(
+        const std::set<enum INPAR::STR::ModelType>& modeltypes,
+        const Teuchos::ParameterList& sdyn,
+        DRT::Discretization& actdis) const;
 
   private:
     //! create the structural linear solver (should be called by default)
@@ -69,10 +72,6 @@ namespace SOLVER {
         const Teuchos::ParameterList& sdyn,
         DRT::Discretization& actdis) const;
 
-    //! create the spring dashpot linear solver
-    Teuchos::RCP<LINALG::Solver> BuildSpringDashpotLinSolver(
-        const Teuchos::ParameterList& sdyn,
-        DRT::Discretization& actdis) const;
   }; // class Factory
 
   /*! Non-member function, which relates to the STR::SOLVER::Factory class

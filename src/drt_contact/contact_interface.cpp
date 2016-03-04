@@ -3110,13 +3110,17 @@ void CONTACT::CoInterface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod
 /*----------------------------------------------------------------------*
  |  calculate nodal distances (public)                     pfaller Jan15|
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<Epetra_Vector> vec,
-                                                std::map<int, std::vector<double> >& mynormals,
-                                                std::map<int,std::vector<GEN::pairedvector<int,double> > >& dmynormals,
-                                                std::map<int,double>& mygap,
-                                                std::map<int,std::map<int,double> >& dmygap)
+void CONTACT::CoInterface::EvaluateDistances(
+    const Teuchos::RCP<const Epetra_Vector>& vec,
+    std::map<int, std::vector<double> >& mynormals,
+    std::map<int,std::vector<GEN::pairedvector<int,double> > >& dmynormals,
+    std::map<int,double>& mygap,
+    std::map<int,std::map<int,double> >& dmygap)
 {
-  SetState("displacement",vec);
+  // ToDo Get rid of the const cast
+  Teuchos::RCP<Epetra_Vector> mutable_vec =
+      Teuchos::rcp_const_cast<Epetra_Vector>(vec);
+  SetState("displacement",mutable_vec);
   Initialize();
 
   // interface needs to be complete

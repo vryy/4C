@@ -17,6 +17,7 @@
 
 // supported model evaluators
 #include "str_model_evaluator_structure.H"
+#include "str_model_evaluator_springdashpot.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -45,11 +46,13 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
       case INPAR::STR::model_structure:
         (*models)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Structure());
         break;
+      case INPAR::STR::model_springdashpot:
+        (*models)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::SpringDashpot());
+        break;
       case INPAR::STR::model_contact:
       case INPAR::STR::model_meshtying:
       case INPAR::STR::model_lag_pen_constraint:
       case INPAR::STR::model_windkessel:
-      case INPAR::STR::model_springdashpot:
       default:
         dserror("Not yet implemented!");
         break;

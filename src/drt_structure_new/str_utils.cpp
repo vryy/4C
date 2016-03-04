@@ -83,7 +83,8 @@ void STR::NLN::ConvertModelType2SolType(
 
     soltypes.push_back(soltype);
     // copy the linsolver pointers into the new map
-    slinsolvers[soltype] = mlinsolvers.at(*mt_iter);
+    if (mlinsolvers.find(*mt_iter) != mlinsolvers.end())
+      slinsolvers[soltype] = mlinsolvers.at(*mt_iter);
   }
 
   return;
@@ -159,10 +160,6 @@ void STR::NLN::CreateConstraintInterfaces(
       case NOX::NLN::sol_lag_pen_constraint:
 //        iconstr_[NOX::NLN::sol_windkessel] = itimint.GetLagPenConstrManager();
 //        break;
-      case NOX::NLN::sol_springdashpot:
-//        iconstr_[NOX::NLN::sol_windkessel] = itimint.GetWindkesselManager();
-        dserror("Constraint interfaces are not yet considered!");
-        break;
       default:
         break;
     }
