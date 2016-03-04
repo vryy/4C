@@ -2080,9 +2080,9 @@ baci_test(meshtying3D_duallagr_muelu_contact2 1 "")
 baci_test(meshtying3D_duallagr_muelu_contact2 2 "")
 
 # meshtying saddlepoint formulation
-baci_test(meshtying3D_contactsp_duallagr_simple 2 "")
-baci_test(meshtying3D_contactsp_stdlagr_braesssarazin 2 "")
-baci_test(meshtying3D_contactsp_duallagr_braesssarazin 2 "")
+#baci_test(meshtying3D_contactsp_duallagr_simple 2 "") #currently broken (03/2016) due to structural changes in MueLu - must be fixed cooperation with TW.
+#baci_test(meshtying3D_contactsp_stdlagr_braesssarazin 2 "") #currently broken (03/2016) due to structural changes in MueLu - must be fixed cooperation with TW.
+#baci_test(meshtying3D_contactsp_duallagr_braesssarazin 2 "") #currently broken (03/2016) due to structural changes in MueLu - must be fixed cooperation with TW.
 
 # 2 block contact (saddlepoint formulation)
 baci_test(contact3D_lin_duallagr_SP 2 "")
