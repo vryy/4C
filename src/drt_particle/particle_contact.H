@@ -225,6 +225,7 @@ namespace PARTICLE
 
     /// struct to store wall contact point and additional information about corresponding wall ele
     struct WallContactPoint {
+      int eleid;
       LINALG::Matrix<3,1> point;
       double penetration;
       std::map<int,LINALG::Matrix<3,1> > nodalCoordinates;
@@ -269,32 +270,32 @@ namespace PARTICLE
 
   /// compute collisions (inter-particle and particle-wall), returns contact energy
   virtual double EvaluateParticleContact(
-    double dt,
+    const double dt,
     Teuchos::RCP<Epetra_Vector> f_contact,
     Teuchos::RCP<Epetra_Vector> m_contact
     );
 
   /// calculate normal contact force for single contact pair
   virtual void CalculateNormalContactForce(
-    double g,
-    double v_rel_normal,
-    double m_eff,
-    double& ContactForce,
-    int owner_i,
-    int owner_j
+    const double g,
+    const double v_rel_normal,
+    const double m_eff,
+    double& normalcontactforce,
+    const int owner_i,
+    const int owner_j
     );
 
   /// calculate tangential contact force
   virtual void CalculateTangentialContactForce(
-    double ContactForce,
+    const double normalcontactforce,
     const LINALG::Matrix<3,1>& normal,
-    LINALG::Matrix<3,1>& TangentialContactForce,
+    LINALG::Matrix<3,1>& tangentcontactforce,
     PARTICLE::Collision &currentColl,
     const LINALG::Matrix<3,1>& v_rel_tangential,
-    double m_eff,
+    const double m_eff,
     const double dt,
-    int owner_i,
-    int owner_j
+    const int owner_i,
+    const int owner_j
     );
 
   //@}
