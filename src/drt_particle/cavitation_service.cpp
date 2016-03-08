@@ -91,26 +91,32 @@ void CAVITATION::Algorithm::CalculateFluidFraction()
 
     // scaling factor in order to account for influence of bubble
     double scale = 1.2;
-    int ibinrange = (int)((maxradius*scale)/minbin) + 1;
+    const int ibinrange = (int)((maxradius*scale)/minbin) + 1;
     int ijk_range[] = {ijk[0]-ibinrange, ijk[0]+ibinrange, ijk[1]-ibinrange, ijk[1]+ibinrange, ijk[2]-ibinrange, ijk[2]+ibinrange};
 
     if(ibinrange > 3)
       dserror("not yet tested for such large bubbles");
 
     // variable to store bin ids of surrounding bins
-    std::set<int> binIds;
+    std::vector<int> binIds;
+    binIds.reserve((2*ibinrange+1) * (2*ibinrange+1) * (2*ibinrange+1));
 
     // get corresponding bin ids in ijk range and fill them into binIds (in gid)
-    GidsInijkRange(&ijk_range[0], binIds, true);
+    GidsInijkRange(&ijk_range[0], binIds, false);
 
     // variable to store all fluid elements in neighborhood
     std::set<DRT::Element*> neighboringfluideles;
-    for(std::set<int>::const_iterator i=binIds.begin(); i!=binIds.end(); ++i)
+    for(std::vector<int>::const_iterator i=binIds.begin(); i!=binIds.end(); ++i)
     {
+      // extract bins from discretization after checking on existence
+      const int lid = particledis_->ElementColMap()->LID(*i);
+      if(lid<0)
+        continue;
       // extract bins from discretization
-      DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>( particledis_->gElement(*i) );
-      DRT::Element** currfluideles = currbin->AssociatedFluidEles();
+      DRT::MESHFREE::MeshfreeMultiBin* currbin =
+          dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>( particledis_->lColElement(lid) );
 
+      DRT::Element** currfluideles = currbin->AssociatedFluidEles();
       for(int ifluidele=0; ifluidele<currbin->NumAssociatedFluidEle(); ++ifluidele)
       {
         neighboringfluideles.insert(currfluideles[ifluidele]);

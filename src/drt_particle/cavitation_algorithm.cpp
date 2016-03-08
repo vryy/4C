@@ -194,6 +194,9 @@ CAVITATION::Algorithm::Algorithm(
   if(computeradiusRPbased_ && myrank_ == 0)
     IO::cout << "Radius is adapted based on Rayleigh-Plesset equation" << IO::endl;
 
+  if(moving_walls_ && sparse_binning_)
+    dserror("moving walls and sparse bin scheme cannot be combined (yet)");
+
   return;
 }
 
@@ -260,8 +263,7 @@ void CAVITATION::Algorithm::InitCavitation()
 
   // gather all fluid coleles in each bin for proper extended ghosting
   std::map<int, std::set<int> > rowfluideles;
-  std::map<int, std::set<int> > ghostfluideles;
-  Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcsBasedOnUnderlyingDiscret(fluiddis_, rowfluideles, ghostfluideles);
+  Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcsBasedOnUnderlyingDiscret(fluiddis_, rowfluideles);
 
   //--------------------------------------------------------------------
   // -> 1) create a set of homeless particles that are not in a bin on this proc
@@ -278,7 +280,7 @@ void CAVITATION::Algorithm::InitCavitation()
   FillParticlesIntoBins(homelessparticles);
 
   // ghost bins, particles and fluid elements according to the bins
-  SetupGhosting(binrowmap, rowfluideles, ghostfluideles);
+  SetupGhosting(binrowmap, rowfluideles, fluidelecolmapold);
 
   // check whether extended ghosting includes standard ghosting
   for(int i=0; i<fluidelecolmapold->NumMyElements(); ++i)
@@ -1890,7 +1892,7 @@ void CAVITATION::Algorithm::ReadRestart(int restart)
 void CAVITATION::Algorithm::SetupGhosting(
   Teuchos::RCP<Epetra_Map> binrowmap,
   std::map<int, std::set<int> >& rowfluideles,
-  std::map<int, std::set<int> >& ghostfluideles
+  Teuchos::RCP<Epetra_Map> fluidelecolmapold
   )
 {
   //--------------------------------------------------------------------
@@ -1904,71 +1906,10 @@ void CAVITATION::Algorithm::SetupGhosting(
   // 3st step: extend ghosting of underlying fluid discretization according to bin distribution
   //--------------------------------------------------------------------
   std::map<int, std::set<int> > extendedfluidghosting;
-  {
-    // do communication to gather all elements for extended ghosting
-    const int numproc = fluiddis_->Comm().NumProc();
+  Teuchos::RCP<Epetra_Map> fluidelecolmap =
+      ExtendGhosting(&(*fluidelecolmapold), rowfluideles, extendedfluidghosting, bincolmap_);
 
-    for (int iproc = 0; iproc < numproc; ++iproc)
-    {
-      // first: proc i tells all procs how many col bins it has
-      int numbin = bincolmap_->NumMyElements();
-      fluiddis_->Comm().Broadcast(&numbin, 1, iproc);
-      // second: proc i tells all procs which col bins it has
-      std::vector<int> binid(numbin,0);
-      if(iproc == myrank_)
-      {
-        int* bincolmap = bincolmap_->MyGlobalElements();
-        for (int i=0; i<numbin; ++i)
-          binid[i] = bincolmap[i];
-      }
-      fluiddis_->Comm().Broadcast(&binid[0], numbin, iproc);
-
-      // loop over all own bins and find requested ones
-      std::map<int, std::set<int> > sdata;
-      std::map<int, std::set<int> > rdata;
-
-      for(int i=0; i<numbin; ++i)
-      {
-        if(rowfluideles[binid[i]].size() != 0)
-          sdata[binid[i]].insert(rowfluideles[binid[i]].begin(),rowfluideles[binid[i]].end());
-      }
-
-      LINALG::Gather<int>(sdata, rdata, 1, &iproc, fluiddis_->Comm());
-
-      // proc i has to store the received data
-      if(iproc == myrank_)
-      {
-        extendedfluidghosting = rdata;
-      }
-    }
-
-    // reduce map of sets to one set and copy to a vector to create extended fluid ele colmap
-    std::set<int> redufluideleset;
-    std::map<int, std::set<int> >::iterator iter;
-    for(iter=extendedfluidghosting.begin(); iter!= extendedfluidghosting.end(); ++iter)
-    {
-      redufluideleset.insert(iter->second.begin(),iter->second.end());
-    }
-
-    // add all standard fluid elements (row + ghost)
-    // -> this is necessary to recover at least standard ghosting
-    // this leads to fluid elements which are essential for evaluating the fluid and not for coupling with particles
-    for(iter=ghostfluideles.begin(); iter!= ghostfluideles.end(); ++iter)
-    {
-      redufluideleset.insert(iter->second.begin(), iter->second.end());
-    }
-    // ownership must not be changed during setup of extended ghosting
-    for(iter=rowfluideles.begin(); iter!= rowfluideles.end(); ++iter)
-    {
-      redufluideleset.insert(iter->second.begin(),iter->second.end());
-    }
-
-    std::vector<int> fluidcolgids(redufluideleset.begin(),redufluideleset.end());
-    Teuchos::RCP<Epetra_Map> fluidelecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)fluidcolgids.size(),&fluidcolgids[0],0,Comm()));
-
-    fluiddis_->ExtendedGhosting(*fluidelecolmap,true,true,true,false);
-
-  }
+  fluiddis_->ExtendedGhosting(*fluidelecolmap,true,true,true,false);
 
   //--------------------------------------------------------------------
   // 4th step: assign fluid elements to bins which are necessary for the coupling to particles
@@ -2346,15 +2287,20 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
       int ijk_range[] = {ijk[0]-ibinrange, ijk[0]+ibinrange, ijk[1]-ibinrange, ijk[1]+ibinrange, ijk[2]-ibinrange, ijk[2]+ibinrange};
 
       // variable to store bin ids of surrounding bins
-      std::set<int> binIds;
+      std::vector<int> binIds;
+      binIds.reserve((2*ibinrange+1) * (2*ibinrange+1) * (2*ibinrange+1));
 
       // get corresponding bin ids in ijk range and fill them into binIds
-      GidsInijkRange(&ijk_range[0], binIds, true);
+      GidsInijkRange(&ijk_range[0], binIds, false);
 
-      for(std::set<int>::const_iterator i=binIds.begin(); i!=binIds.end(); ++i)
+      for(std::vector<int>::const_iterator i=binIds.begin(); i!=binIds.end(); ++i)
       {
-        // extract bins from discretization
-        DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>( particledis_->gElement(*i) );
+        // extract bins from discretization after checking on existence
+        const int lid = particledis_->ElementColMap()->LID(*i);
+        if(lid<0)
+          continue;
+        DRT::MESHFREE::MeshfreeMultiBin *currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(particledis_->lColElement(lid));
+
         DRT::Element** currfluideles = currbin->AssociatedFluidEles();
 
         for(int ifluidele=0; ifluidele<currbin->NumAssociatedFluidEle(); ++ifluidele)

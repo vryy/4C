@@ -87,7 +87,7 @@ namespace PARTICLE
     virtual void GetBinContent(
       std::set<DRT::Node*>& NeighboringParticles,
       std::set<DRT::Element*>& NeighboringWallEles,
-      std::set<int>& binIds
+      std::vector<int>& binIds
       );
 
     /// read initial contact parameters and validate them

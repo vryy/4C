@@ -51,6 +51,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   cutoff_radius_(cutoff_radius),
   XAABB_(XAABB),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
+  sparse_binning_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"SPARSE_BIN_DISTRIBUTION")),
   myrank_(comm.MyPID())
 {
   if( XAABB_(0,0) >= XAABB_(0,1) or XAABB_(1,0) >= XAABB_(1,1) or XAABB_(2,0) >= XAABB_(2,1))
@@ -74,6 +75,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   ) :
   particledis_(Teuchos::null),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
+  sparse_binning_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"SPARSE_BIN_DISTRIBUTION")),
   myrank_(comm.MyPID())
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
@@ -128,6 +130,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   particledis_(Teuchos::null),
   cutoff_radius_(0.0),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
+  sparse_binning_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"SPARSE_BIN_DISTRIBUTION")),
   myrank_(dis[0]->Comm().MyPID())
 {
   WeightedRepartitioning(dis,stdelecolmap,stdnodecolmap);
@@ -182,11 +185,12 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
       }
 
       // get corresponding bin ids in ijk range
-      std::set<int> binIds;
+      std::vector<int> binIds;
+      binIds.reserve((ijk_range[1]-ijk_range[0]+1) * (ijk_range[3]-ijk_range[2]+1) * (ijk_range[5]-ijk_range[4]+1));
       GidsInijkRange(&ijk_range[0], binIds, false);
 
       // assign element to bins
-      for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
+      for(std::vector<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
         binelemap[*biniter].insert(ele->Id());
     }
   }
@@ -200,66 +204,53 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
  *----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::DistributeElesToBins(
   Teuchos::RCP<DRT::Discretization> underlyingdis,
-  std::map<int, std::set<int> >& rowelesinbin,
-  std::map<int, std::set<int> >& ghostelesinbin
+  std::map<int, std::set<int> >& rowelesinbin
   )
 {
   // exploit bounding box idea for elements in underlying discretization and bins
+  // loop over all row elements
+  for (int lid = 0; lid < underlyingdis->NumMyRowElements(); ++lid)
   {
-    // loop over all elements and separate into row and ghost elements
-    // will be needed later on for setup of proper extended ghosting
-    for (int lid = 0; lid < underlyingdis->NumMyColElements(); ++lid)
+    DRT::Element* ele = underlyingdis->lRowElement(lid);
+    DRT::Node** nodes = ele->Nodes();
+    const int numnode = ele->NumNode();
+
+    // initialize ijk_range with ijk of first node of fluid element
+    int ijk[3];
     {
-      DRT::Element* fluidele = underlyingdis->lColElement(lid);
-      DRT::Node** fluidnodes = fluidele->Nodes();
-      const int numnode = fluidele->NumNode();
+      const DRT::Node* node = nodes[0];
+      const double* coords = node->X();
+      ConvertPosToijk(coords, ijk);
+    }
 
-      // initialize ijk_range with ijk of first node of fluid element
+    // ijk_range contains: i_min i_max j_min j_max k_min k_max
+    int ijk_range[] = {ijk[0], ijk[0], ijk[1], ijk[1], ijk[2], ijk[2]};
+
+    // fill in remaining nodes
+    for (int j=1; j<numnode; ++j)
+    {
+      const DRT::Node* node = nodes[j];
+      const double* coords = node->X();
       int ijk[3];
+      ConvertPosToijk(coords, ijk);
+
+      for(int dim=0; dim<3; ++dim)
       {
-        const DRT::Node* node = fluidnodes[0];
-        const double* coords = node->X();
-        ConvertPosToijk(coords, ijk);
-      }
-
-      // ijk_range contains: i_min i_max j_min j_max k_min k_max
-      int ijk_range[] = {ijk[0], ijk[0], ijk[1], ijk[1], ijk[2], ijk[2]};
-
-      // fill in remaining nodes
-      for (int j=1; j<numnode; ++j)
-      {
-        const DRT::Node* node = fluidnodes[j];
-        const double* coords = node->X();
-        int ijk[3];
-        ConvertPosToijk(coords, ijk);
-
-        for(int dim=0; dim<3; ++dim)
-        {
-          if(ijk[dim]<ijk_range[dim*2])
-            ijk_range[dim*2]=ijk[dim];
-          if(ijk[dim]>ijk_range[dim*2+1])
-            ijk_range[dim*2+1]=ijk[dim];
-        }
-      }
-
-      // get corresponding bin ids in ijk range
-      std::set<int> binIds;
-      GidsInijkRange(&ijk_range[0], binIds, false);
-
-      // assign fluid element to bins
-      if(fluidele->Owner() == myrank_)
-      {
-        // only row elements go in here
-        for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
-          rowelesinbin[*biniter].insert(fluidele->Id());
-      }
-      else
-      {
-        // only ghost elements go in here
-        for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
-          ghostelesinbin[*biniter].insert(fluidele->Id());
+        if(ijk[dim]<ijk_range[dim*2])
+          ijk_range[dim*2]=ijk[dim];
+        if(ijk[dim]>ijk_range[dim*2+1])
+          ijk_range[dim*2+1]=ijk[dim];
       }
     }
+
+    // get corresponding bin ids in ijk range
+    std::vector<int> binIds;
+    binIds.reserve((ijk_range[1]-ijk_range[0]+1) * (ijk_range[3]-ijk_range[2]+1) * (ijk_range[5]-ijk_range[4]+1));
+    GidsInijkRange(&ijk_range[0], binIds, false);
+
+    // assign element to bins
+    for(std::vector<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
+      rowelesinbin[*biniter].insert(ele->Id());
   }
 
   return;
@@ -475,11 +466,11 @@ void BINSTRATEGY::BinningStrategy::WeightedRepartitioning(
     //----------------------------
     // fill elements into bins
     std::map<int, std::set<int> > binelemap;
-    std::map<int, std::set<int> > dummy;
-    DistributeElesToBins(dis[i], binelemap, dummy);
+    DistributeElesToBins(dis[i], binelemap);
 
     // ghosting is extended
-    Teuchos::RCP<Epetra_Map> extendedelecolmap = ExtendGhosting(dis[i]->ElementColMap(), binelemap);
+    std::map<int, std::set<int> > dummy;
+    Teuchos::RCP<Epetra_Map> extendedelecolmap = ExtendGhosting(dis[i]->ElementColMap(), binelemap, dummy);
 
     // adapt layout to extended ghosting in discret
     // first export the elements according to the processor local element column maps
@@ -645,27 +636,37 @@ void BINSTRATEGY::BinningStrategy::ExtendGhosting(
  *-------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
   const Epetra_Map* initial_elecolmap,
-  std::map<int, std::set<int> >& binelemap)
+  std::map<int, std::set<int> >& binelemap,
+  std::map<int, std::set<int> >& extendedghosting,
+  Teuchos::RCP<Epetra_Map> bincolmap)
 {
-  std::map<int, std::set<int> > extendedghosting;
-
   // do communication to gather all elements for extended ghosting
   const int numproc = initial_elecolmap->Comm().NumProc();
   for (int iproc = 0; iproc < numproc; ++iproc)
   {
-    // get all neighboring bins around bins that contain slave elements
+    // gather set of column bins for each proc
     std::set<int> binset;
     if(iproc == myrank_)
     {
-      for(std::map<int, std::set<int> >::const_iterator iter=binelemap.begin(); iter!=binelemap.end(); ++iter)
+      // either use given column layout of bins ...
+      if(bincolmap != Teuchos::null)
       {
-        int binId = iter->first;
-        std::vector<int> bins;
-        // get neighboring bins
-        GetBinConnectivity(binId, bins);
-        binset.insert(bins.begin(), bins.end());
-        // insert bin itself
-        binset.insert(binId);
+        int nummyeles = bincolmap->NumMyElements();
+        int* entries = bincolmap->MyGlobalElements();
+        binset.insert(entries, entries+nummyeles);
+      }
+      else // ... or add an extra layer to the given bin distribution
+      {
+        for(std::map<int, std::set<int> >::const_iterator iter=binelemap.begin(); iter!=binelemap.end(); ++iter)
+        {
+          int binId = iter->first;
+          std::vector<int> bins;
+          // get neighboring bins
+          GetBinConnectivity(binId, bins);
+          binset.insert(bins.begin(), bins.end());
+          // insert bin itself
+          binset.insert(binId);
+        }
       }
     }
     // copy set to vector in order to broadcast data
@@ -706,7 +707,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::ExtendGhosting(
     coleleset.insert(iter->second.begin(),iter->second.end());
   }
 
-  // insert standard ghosting for master and slave side
+  // insert standard ghosting
   for(int lid=0; lid<initial_elecolmap->NumMyElements(); ++lid)
   {
     coleleset.insert(initial_elecolmap->GID(lid));
@@ -732,11 +733,11 @@ void BINSTRATEGY::BinningStrategy::ExtendGhosting(
     //----------------------------
     // fill elements into bins
     std::map<int, std::set<int> > binelemap;
-    std::map<int, std::set<int> > dummy;
-    DistributeElesToBins(dis[i], binelemap, dummy);
+    DistributeElesToBins(dis[i], binelemap);
 
     // ghosting is extended
-    Teuchos::RCP<Epetra_Map> extendedelecolmap = ExtendGhosting(dis[i]->ElementColMap(), binelemap);
+    std::map<int, std::set<int> > dummy;
+    Teuchos::RCP<Epetra_Map> extendedelecolmap = ExtendGhosting(dis[i]->ElementColMap(), binelemap, dummy);
 
     // adapt layout to extended ghosting in discret
     // first export the elements according to the processor local element column maps
@@ -757,12 +758,6 @@ void BINSTRATEGY::BinningStrategy::ExtendGhosting(
 
     // now ghost the nodes
     dis[i]->ExportColumnNodes(*nodecolmap);
-
-    // fillcomplete discret with extended ghosting
-    dis[i]->FillComplete();
-    if(myrank_ == 0)
-      std::cout << "parallel distribution with extended ghosting" << std::endl;
-    DRT::UTILS::PrintParallelDistribution(*dis[i]);
   }
 
   return;
@@ -1154,7 +1149,46 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(int* ijk_range, std::set<int>&
               binIds.insert(gid);
           }
           else
+          {
             binIds.insert(gid);
+          }
+        }
+      } // end for int k
+    } // end for int j
+  } // end for int i
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | get all bins in ijk range                               ghamm 03/16  |
+ *----------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::GidsInijkRange(int* ijk_range, std::vector<int>& binIds, bool checkexistence)
+{
+  if(checkexistence == true and particledis_ == Teuchos::null)
+    dserror("particle discretization is not set up correctly");
+
+  for(int i=ijk_range[0]; i<=ijk_range[1]; ++i)
+  {
+    for(int j=ijk_range[2]; j<=ijk_range[3]; ++j)
+    {
+      for(int k=ijk_range[4]; k<=ijk_range[5]; ++k)
+      {
+        int ijk[3] = {i,j,k};
+
+        int gid = ConvertijkToGid(&ijk[0]);
+        if(gid != -1)
+        {
+          if(checkexistence)
+          {
+            if(particledis_->HaveGlobalElement(gid))
+              binIds.push_back(gid);
+          }
+          else
+          {
+            binIds.push_back(gid);
+          }
         }
       } // end for int k
     } // end for int j

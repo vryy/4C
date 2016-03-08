@@ -100,6 +100,8 @@ void INPAR::CAVITATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
   BoolParameter("COMPUTE_RADIUS_RP_BASED","no","switch on/off radius calculation based on Ralyeigh-Plesset equation",&cavitationdyn);
 
   BoolParameter("INIT_BUBBLEVEL_FROM_FLUID","no","interpolate initial velocity for particles from fluid field",&cavitationdyn);
+
+  BoolParameter("SPARSE_BIN_DISTRIBUTION","no","decide whether empty bins are removed",&cavitationdyn);
 }
 
 

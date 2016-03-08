@@ -108,8 +108,7 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
 
   // gather all scatra col eles in each bin for proper extended ghosting
   std::map<int, std::set<int> > scatraelesinbins;
-  std::map<int, std::set<int> > dummy;
-  Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcsBasedOnUnderlyingDiscret(scatradis_, scatraelesinbins, dummy);
+  Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcsBasedOnUnderlyingDiscret(scatradis_, scatraelesinbins);
 
   //--------------------------------------------------------------------
   // -> 1) create a set of homeless particles that are not in a bin on this proc

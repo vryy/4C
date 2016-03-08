@@ -115,9 +115,11 @@ void PARTICLE::ParticleCollisionHandlerBase::GetNeighbouringParticlesAndWalls(
 
   // ijk_range contains: i_min   i_max     j_min     j_max    k_min     k_max
   int ijk_range[] = {ijk[0]-1, ijk[0]+1, ijk[1]-1, ijk[1]+1, ijk[2]-1, ijk[2]+1};
-  std::set<int> binIds;
+  std::vector<int> binIds;
+  binIds.reserve(27);
 
-  particle_algorithm_->GidsInijkRange(ijk_range,binIds,true);
+  // do not check on existence here -> shifted to GetBinContent
+  particle_algorithm_->GidsInijkRange(ijk_range,binIds,false);
 
   GetBinContent(neighboringparticles, neighboringwalls, binIds);
 
@@ -134,18 +136,22 @@ void PARTICLE::ParticleCollisionHandlerBase::GetNeighbouringParticlesAndWalls(
 void PARTICLE::ParticleCollisionHandlerBase::GetBinContent(
   std::set<DRT::Node*> &particles,
   std::set<DRT::Element*> &walls,
-  std::set<int> &binIds
+  std::vector<int> &binIds
   )
 {
   // loop over all bins
-  for(std::set<int>::const_iterator bin=binIds.begin(); bin!=binIds.end(); ++bin)
+  for(std::vector<int>::const_iterator bin=binIds.begin(); bin!=binIds.end(); ++bin)
   {
-    DRT::Element *neighboringbin = discret_->gElement(*bin);
+    // extract bins from discretization after checking on existence
+    const int lid = discret_->ElementColMap()->LID(*bin);
+    if(lid<0)
+      continue;
+    DRT::MESHFREE::MeshfreeMultiBin* neighboringbin =
+        dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(discret_->lColElement(lid));
 
     // gather wall elements
-    DRT::MESHFREE::MeshfreeMultiBin* nbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(neighboringbin);
-    DRT::Element** walleles = nbin->AssociatedWallEles();
-    int numwalls = nbin->NumAssociatedWallEle();
+    DRT::Element** walleles = neighboringbin->AssociatedWallEles();
+    int numwalls = neighboringbin->NumAssociatedWallEle();
     for(int iwall=0;iwall<numwalls; ++iwall)
       walls.insert(walleles[iwall]);
 
@@ -606,10 +612,10 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
 
           // check, whether point has already been detected (e.g. one line element between two surfaces)
           bool insert = true;
-          for(std::vector<WallContactPoint>::const_iterator iter = (*pointer).begin(); iter != (*pointer).end(); ++iter)
+          for(size_t i=0; i<(*pointer).size(); ++i)
           {
             static LINALG::Matrix<3,1> distance_vector;
-            distance_vector.Update(1.0, nearestPoint, -1.0, (*iter).point);
+            distance_vector.Update(1.0, nearestPoint, -1.0, (*pointer)[i].point);
             const double distance = distance_vector.Norm2();
             const double adaptedtol = GEO::TOL7 * radius_i;
 
@@ -638,57 +644,57 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
 
       // find entries of lines and nodes which are within the penetration volume of the current particle
       // hierarchical: surfaces first
-      for(std::vector<WallContactPoint>::const_iterator surfiter = surfaces.begin(); surfiter != surfaces.end(); ++surfiter)
+      for(size_t s=0; s<surfaces.size(); ++s)
       {
         // within this radius no other contact point can lie: radius = sqrt(r_i^2 - (r_i-|g|)^2)
-        const double rminusg = radius_i-std::fabs((*surfiter).penetration);
+        const double rminusg = radius_i-std::fabs(surfaces[s].penetration);
         const double radius_surface = sqrt(radius_i*radius_i - rminusg*rminusg);
 
-        for(std::vector<WallContactPoint>::const_iterator lineiter = lines.begin(); lineiter != lines.end(); ++lineiter)
+        for(size_t l=0; l<lines.size(); ++l)
         {
           static LINALG::Matrix<3,1> distance_vector;
-          distance_vector.Update(1.0, (*surfiter).point, -1.0, (*lineiter).point);
+          distance_vector.Update(1.0, surfaces[s].point, -1.0, lines[l].point);
           const double distance = distance_vector.Norm2();
           if(distance <= radius_surface)
-            unusedIds.insert((*lineiter).eleid);
+            unusedIds.insert(lines[l].eleid);
         }
-        for(std::vector<WallContactPoint>::const_iterator nodeiter=nodes.begin(); nodeiter!= nodes.end(); ++nodeiter)
+        for(size_t p=0; p<nodes.size(); ++p)
         {
           static LINALG::Matrix<3,1> distance_vector;
-          distance_vector.Update(1.0, (*surfiter).point, -1.0, (*nodeiter).point);
+          distance_vector.Update(1.0, surfaces[s].point, -1.0, nodes[p].point);
           const double distance = distance_vector.Norm2();
           if(distance <= radius_surface)
-            unusedIds.insert((*nodeiter).eleid);
+            unusedIds.insert(nodes[p].eleid);
         }
       }
       // find entries of nodes which are within the penetration volume of the current particle
       // hierarchical: lines next
-      for(std::vector<WallContactPoint>::const_iterator lineiter=lines.begin(); lineiter != lines.end(); ++lineiter)
+      for(size_t l=0; l<lines.size(); ++l)
       {
         // radius = sqrt(r_i^2 - (r_i-|g|)^2)
-        const double rminusg = radius_i-std::fabs((*lineiter).penetration);
+        const double rminusg = radius_i-std::fabs(lines[l].penetration);
         const double radius_line = sqrt(radius_i*radius_i - rminusg*rminusg);
 
-        for(std::vector<WallContactPoint>::const_iterator nodeiter=nodes.begin(); nodeiter!=nodes.end(); ++nodeiter)
+        for(size_t p=0; p<nodes.size(); ++p)
         {
           static LINALG::Matrix<3,1> distance_vector;
-          distance_vector.Update(1.0, (*lineiter).point, -1.0, (*nodeiter).point);
+          distance_vector.Update(1.0, lines[l].point, -1.0, nodes[p].point);
           const double distance = distance_vector.Norm2();
           if(distance <= radius_line)
-            unusedIds.insert((*nodeiter).eleid);
+            unusedIds.insert(nodes[p].eleid);
         }
       }
 
       // write entries of lines and nodes to surfaces if contact has to be evaluated
-      for(std::vector<WallContactPoint>::const_iterator iter = lines.begin(); iter != lines.end() ;++iter)
+      for(size_t l=0; l<lines.size(); ++l)
       {
-        if( !unusedIds.count((*iter).eleid) )
-          surfaces.push_back(*iter);
+        if( !unusedIds.count(lines[l].eleid) )
+          surfaces.push_back(lines[l]);
       }
-      for(std::vector<WallContactPoint>::const_iterator iter=nodes.begin(); iter!=nodes.end(); ++iter)
+      for(size_t p=0; p<nodes.size(); ++p)
       {
-        if( !unusedIds.count((*iter).eleid) )
-          surfaces.push_back(*iter);
+        if( !unusedIds.count(nodes[p].eleid) )
+          surfaces.push_back(nodes[p]);
       }
 
       // evaluate contact between particle_i and entries of surfaces
@@ -696,10 +702,10 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
       if(history_wall.size() > 3)
         dserror("Contact with more than 3 wall elements. Check whether history is deleted correctly.");
 
-      for(std::vector<WallContactPoint>::const_iterator iter = surfaces.begin(); iter != surfaces.end(); ++iter)
+      for(size_t s=0; s<surfaces.size(); ++s)
       {
         // gid of wall element
-        WallContactPoint wallcontact = *iter;
+        WallContactPoint wallcontact = surfaces[s];
         const int gid_wall = wallcontact.eleid;
 
         // distance-vector

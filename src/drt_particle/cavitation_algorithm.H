@@ -190,7 +190,7 @@ namespace CAVITATION
     virtual void SetupGhosting(
       Teuchos::RCP<Epetra_Map> binrowmap,  ///< rowmap of bins
       std::map<int, std::set<int> >& rowfluideles,   ///< map from bin id to row fluid elements in this bin
-      std::map<int, std::set<int> >& ghostfluideles   ///< map from bin id to ghost fluid elements in this bin
+      Teuchos::RCP<Epetra_Map> fluidelecolmapold   ///< element column map before extended ghosting
       );
 
     /// some output to screen about subcycling

@@ -84,8 +84,7 @@ namespace BINSTRATEGY
     /// elements from the underlying discretization are assigned to bins
     virtual void DistributeElesToBins(
       Teuchos::RCP<DRT::Discretization> underlyingdis,   ///< discret of which the elements are distributed to bins
-      std::map<int, std::set<int> >& rowelesinbin,   ///< map of bins and assigned row elements
-      std::map<int, std::set<int> >& ghostelesinbin   ///< map of bins and assigned ghost elements
+      std::map<int, std::set<int> >& rowelesinbin   ///< map of bins and assigned row elements
       );
 
     /// nodes are assigned to bins
@@ -119,7 +118,9 @@ namespace BINSTRATEGY
     /// extend ghosting according to bin distribution
     Teuchos::RCP<Epetra_Map> ExtendGhosting(
       const Epetra_Map* initial_elecolmap,
-      std::map<int, std::set<int> >& binelemap
+      std::map<int, std::set<int> >& binelemap,
+      std::map<int, std::set<int> >& extendedghosting,
+      Teuchos::RCP<Epetra_Map> bincolmap = Teuchos::null
       );
 
     virtual void ExtendGhosting(
@@ -142,6 +143,13 @@ namespace BINSTRATEGY
     virtual void GidsInijkRange(
       int* ijk_bound,   ///< given range of ijk
       std::set<int>& binIds,   ///< all bin ids in the specified range
+      bool checkexistence   ///< check can be added whether the gids are on this proc
+      );
+
+    /// get all bin ids for given range of ijk
+    virtual void GidsInijkRange(
+      int* ijk_bound,   ///< given range of ijk
+      std::vector<int>& binIds,   ///< all bin ids in the specified range
       bool checkexistence   ///< check can be added whether the gids are on this proc
       );
 
@@ -221,12 +229,14 @@ namespace BINSTRATEGY
 
     int bin_per_dir_[3];    ///< number of bins per direction
 
-    INPAR::PARTICLE::ParticleDim particle_dim_;   ///< dimension of problem
+    const INPAR::PARTICLE::ParticleDim particle_dim_;   ///< dimension of problem
+
+    const bool sparse_binning_;   ///< flag whether bin scheme is sparse
 
     //! @name miscellaneous stuff
     //@{
 
-    int myrank_;    ///< myrank
+    const int myrank_;    ///< myrank
 
     //@}
 

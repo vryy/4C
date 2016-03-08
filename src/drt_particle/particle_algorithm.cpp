@@ -55,7 +55,7 @@ PARTICLE::Algorithm::Algorithm(
   bincolmap_(Teuchos::null),
   structure_(Teuchos::null),
   particlewalldis_(Teuchos::null),
-  moving_walls_(false),
+  moving_walls_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS")),
   havepbc_(false),
   pbcbounds_(0)
 {
@@ -89,7 +89,8 @@ PARTICLE::Algorithm::Algorithm(
   Teuchos::RCP<DRT::IndependentDofSet> independentdofset = Teuchos::rcp(new DRT::IndependentDofSet(true));
   particledis_->ReplaceDofSet(independentdofset);
 
-  moving_walls_ = (DRT::INPUT::IntegralValue<int>(particleparams,"MOVING_WALLS") == 1);
+  if(sparse_binning_ && DRT::Problem::Instance()->ProblemType() == prb_particle)
+    dserror("sparse bin scheme cannot be used for pure particle problems");
 
   // setup pbcs
   BuildParticlePeriodicBC();
@@ -806,6 +807,39 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
       } // end for int i
     } // end for lid
 
+    // remove non-existing ghost bins from original bin set
+    if(sparse_binning_)
+    {
+      // create copy of column bins
+      std::set<int> ghostbins(bins);
+      // find ghost bins and check for existence
+      for (int lid=0;lid<binrowmap->NumMyElements();++lid)
+      {
+        const int gid = binrowmap->GID(lid);
+        std::set<int>::iterator iter = ghostbins.find(gid);
+        if(iter != ghostbins.end())
+          ghostbins.erase(iter);
+      }
+      // only ghost bins remain
+      std::vector<int> ghostbins_vec(ghostbins.begin(),ghostbins.end());
+      int size = (int)ghostbins.size();
+      std::vector<int> pidlist(size);
+      int err = binrowmap->RemoteIDList(size,ghostbins_vec.data(),pidlist.data(),NULL);
+      if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d",err);
+
+      for(int i=0; i<size; ++i)
+      {
+        if(pidlist[i] == -1)
+        {
+          std::set<int>::iterator iter = bins.find(ghostbins_vec[i]);
+          if(iter == bins.end())
+            dserror("bin id is missing in bin set");
+          // erase non-existing id
+          bins.erase(iter);
+        }
+      }
+    }
+
     // copy bingids to a vector and create bincolmap
     std::vector<int> bincolmap(bins.begin(),bins.end());
     bincolmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)bincolmap.size(),&bincolmap[0],0,Comm()));
@@ -1037,24 +1071,24 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
   // loop over all particle wall nodes and elements and fill new discretization
   for(std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > >::iterator meit=structgelements.begin(); meit!=structgelements.end(); ++meit)
   {
-    // care about particle wall nodes
+    // care about particle wall nodes (only row nodes in case of moving walls, otherwise everything)
     std::map<int, DRT::Node*> wallgnodes = structgnodes[meit->first];
     for (std::map<int, DRT::Node* >::iterator nit=wallgnodes.begin(); nit != wallgnodes.end(); ++nit)
     {
       DRT::Node* currnode = (*nit).second;
-      if (currnode->Owner() == myrank_)
+      if ( currnode->Owner() == myrank_ || sparse_binning_ )
       {
         nodeids.push_back(currnode->Id());
         particlewalldis->AddNode(Teuchos::rcp(new DRT::Node(currnode->Id(), currnode->X(), currnode->Owner())));
       }
     }
 
-    // care about particle wall eles
+    // care about particle wall eles (only row elements in case of moving walls, otherwise everything)
     std::map<int, Teuchos::RCP<DRT::Element> > structelementsinterf = structgelements[meit->first];
     for (std::map<int, Teuchos::RCP<DRT::Element> >::iterator eit=structelementsinterf.begin(); eit != structelementsinterf.end(); ++eit)
     {
       Teuchos::RCP<DRT::Element> currele = eit->second;
-      if (currele->Owner() == myrank_)
+      if ( currele->Owner() == myrank_ || sparse_binning_ )
       {
         eleids.push_back(currele->Id() );
         // structural surface elements cannot be distributed --> Bele3 element is used
@@ -1065,19 +1099,40 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
     }
   }
 
-  // row node map of walls
-  Teuchos::RCP<Epetra_Map> wallnoderowmap = Teuchos::rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,particlewalldis->Comm()));
-  // fully overlapping node map
-  Teuchos::RCP<Epetra_Map> wallrednodecolmap = LINALG::AllreduceEMap(*wallnoderowmap);
+  // extended ghosting of wall elements for sparse bin scheme
+  if(sparse_binning_)
+  {
+    // fill complete in order to obtain element col map
+    particlewalldis->FillComplete(false, false, false);
 
-  // row ele map of walls
-  Teuchos::RCP<Epetra_Map> wallelerowmap = Teuchos::rcp(new Epetra_Map(-1,eleids.size(),&eleids[0],0,particlewalldis->Comm()));
-  // fully overlapping ele map
-  Teuchos::RCP<Epetra_Map> wallredelecolmap = LINALG::AllreduceEMap(*wallelerowmap);
+    std::map<int, std::set<int> > rowelesinbin;
+    DistributeElesToBins(particlewalldis, rowelesinbin);
 
-  // do the fully overlapping ghosting of the wall elements to have everything redundant
-  particlewalldis->ExportColumnNodes(*wallrednodecolmap);
-  particlewalldis->ExportColumnElements(*wallredelecolmap);
+    // get extended column map for wall elements
+    std::map<int, std::set<int> > dummy;
+     Teuchos::RCP<Epetra_Map> wallelecolmap =
+         ExtendGhosting(particlewalldis->ElementColMap(), rowelesinbin, dummy, bincolmap_);
+
+     // extend ghosting (add nodes/elements) according to the new column layout
+     particlewalldis->ExtendedGhosting(*wallelecolmap,false, false, false, true);
+  }
+  else  // ... or otherwise do fully redundant storage of wall elements in case of moving boundaries
+  {
+    // row node map of walls
+    Teuchos::RCP<Epetra_Map> wallnoderowmap = Teuchos::rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,particlewalldis->Comm()));
+
+    // fully overlapping node map
+    Teuchos::RCP<Epetra_Map> wallrednodecolmap = LINALG::AllreduceEMap(*wallnoderowmap);
+
+    // row ele map of walls
+    Teuchos::RCP<Epetra_Map> wallelerowmap = Teuchos::rcp(new Epetra_Map(-1,eleids.size(),&eleids[0],0,particlewalldis->Comm()));
+    // fully overlapping ele map
+    Teuchos::RCP<Epetra_Map> wallredelecolmap = LINALG::AllreduceEMap(*wallelerowmap);
+
+    // do the fully overlapping ghosting of the wall elements to have everything redundant
+    particlewalldis->ExportColumnNodes(*wallrednodecolmap);
+    particlewalldis->ExportColumnElements(*wallredelecolmap);
+  }
 
   // find out if we are in parallel; needed for TransparentDofSet
   bool parallel = (particlewalldis->Comm().NumProc() == 1) ? false : true;
@@ -1150,7 +1205,7 @@ void PARTICLE::Algorithm::BuildParticlePeriodicBC()
 void PARTICLE::Algorithm::AssignWallElesToBins()
 {
   // loop over all bins and remove assigned wall elements
-  int numcolbins = particledis_->ElementColMap()->NumMyElements();
+  const int numcolbins = particledis_->ElementColMap()->NumMyElements();
   for(int binlid=0; binlid<numcolbins; ++binlid)
   {
     DRT::Element *currentbin = particledis_->lColElement(binlid);
@@ -1334,7 +1389,7 @@ void PARTICLE::Algorithm::BuildElementToBinPointers(bool wallpointer)
       const int numwallele = actbin->NumAssociatedWallEle();
       const int* walleleids = actbin->AssociatedWallEleIds();
       std::vector<DRT::Element*> wallelements(numwallele);
-      for(int iwall=0; iwall<numwallele; iwall++)
+      for(int iwall=0; iwall<numwallele; ++iwall)
       {
         const int wallid = walleleids[iwall];
         wallelements[iwall] = particlewalldis_->gElement(wallid);
@@ -1352,15 +1407,14 @@ void PARTICLE::Algorithm::BuildElementToBinPointers(bool wallpointer)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcsBasedOnUnderlyingDiscret(
   Teuchos::RCP<DRT::Discretization> underlyingdis,
-  std::map<int, std::set<int> >& rowelesinbin,
-  std::map<int, std::set<int> >& ghostelesinbin)
+  std::map<int, std::set<int> >& rowelesinbin)
 {
 
   //--------------------------------------------------------------------
   // 1st step: exploiting bounding box idea for scatra elements and bins
   //--------------------------------------------------------------------
 
-  DistributeElesToBins(underlyingdis, rowelesinbin, ghostelesinbin);
+  DistributeElesToBins(underlyingdis, rowelesinbin);
 
   //--------------------------------------------------------------------
   // 2nd step: decide which proc will be owner of each bin
@@ -1395,7 +1449,8 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcsBasedOnUnderl
     }
 
     mynumeles_per_bin.clear();
-    maxnumeles_per_bin.clear();
+    if(sparse_binning_ == false)
+      maxnumeles_per_bin.clear();
 
     // find maximum myrank for each bin over all procs (init with -1)
     std::vector<int> maxmyrank_per_bin(numbins,-1);
@@ -1406,12 +1461,17 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcsBasedOnUnderl
     {
       if(myrank_ == maxmyrank_per_bin[gid])
       {
+        // do not add empty bins in case of sparse bin distribution
+        if(sparse_binning_ && maxnumeles_per_bin[gid] == 0)
+          continue;
+
         Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEMULTIBIN","dummy", gid, myrank_);
         particledis_->AddElement(bin);
         rowbins.push_back(gid);
       }
     }
 
+    maxnumeles_per_bin.clear();
     myrank_per_bin.clear();
     maxmyrank_per_bin.clear();
   }
