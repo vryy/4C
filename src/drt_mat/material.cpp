@@ -64,6 +64,7 @@ Maintainer: Lena Wiechert
 #include "elasthyper.H"
 #include "viscoelasthyper.H"
 #include "plasticelasthyper.H"
+#include "plastic_VarConstUpdate.H"
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
 #include "soret.H"
@@ -478,6 +479,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::PlasticElastHyper(curmat));
     MAT::PAR::PlasticElastHyper* params = static_cast<MAT::PAR::PlasticElastHyper*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_plelasthyperVCU:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PlasticElastHyperVCU(curmat));
+    MAT::PAR::PlasticElastHyperVCU* params = static_cast<MAT::PAR::PlasticElastHyperVCU*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_sc_dep_interp:

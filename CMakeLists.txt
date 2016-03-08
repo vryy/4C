@@ -547,6 +547,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/optimization_density.cpp
   src/drt_mat/permeablefluid.cpp
   src/drt_mat/plasticelasthyper.cpp
+  src/drt_mat/plastic_VarConstUpdate.cpp
   src/drt_mat/plasticlinelast.cpp
   src/drt_mat/plasticnlnlogneohooke.cpp
   src/drt_mat/poro_law.cpp

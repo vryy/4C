@@ -1043,6 +1043,49 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*----------------------------------------------------------------------*/
+  // collection of hyperelastic materials for finite strain plasticity
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_PlasticElastHyperVCU",
+                                            "list/collection of hyperelastic materials, i.e. material IDs",
+                                            INPAR::MAT::m_plelasthyperVCU));
+
+    AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
+    AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
+    AddNamedReal(m,"DENS","material mass density");
+    AddNamedReal(m,"INITYIELD","initial yield stress");
+    AddNamedReal(m,"ISOHARD","linear isotropic hardening modulus",0.,true);
+    AddNamedReal(m,"EXPISOHARD","nonlinear isotropic hardening exponent",0.,true);
+    AddNamedReal(m,"INFYIELD","saturation yield stress for nonlinear isotropic hardening",0.,true);
+    AddNamedReal(m,"KINHARD","linear kinematic hardening modulus",0.,true);
+
+    // visco-plasticity
+    AddNamedReal(m,"VISC", "Visco-Plasticity parameter 'eta' in Perzyna model",0.,true);
+    AddNamedReal(m,"RATE_DEPENDENCY", "Visco-Plasticity parameter 'eta' in Perzyna model",1.,true);
+    AddNamedReal(m,"VISC_SOFT", "Visco-Plasticity temperature dependency (eta = eta_0 * (1-(T-T_0)*x)",0.,true);
+
+    // optional pastic spin parameter
+    AddNamedReal(m,"PL_SPIN_CHI","Plastic spin coupling parameter chi (often called eta)",0.0,true);
+
+    // optional Hill yield parameters
+    AddNamedReal(m,"rY_11","relative yield stress in fiber1-direction (Y_11/Y_0)",0.0,true);
+    AddNamedReal(m,"rY_22","relative yield stress in fiber2-direction (Y_22/Y_0)",0.0,true);
+    AddNamedReal(m,"rY_33","relative yield stress in fiber3-direction (Y_33/Y_0)",0.0,true);
+    AddNamedReal(m,"rY_12","relative shear yield stress in 12-direction (Y_12/Y_0)",0.0,true);
+    AddNamedReal(m,"rY_23","relative shear yield stress in 23-direction (Y_23/Y_0)",0.0,true);
+    AddNamedReal(m,"rY_13","relative shear yield stress in 13-direction (Y_13/Y_0)",0.0,true);
+
+    // optional TSI parameters
+    AddNamedReal(m,"CTE","coefficient of thermal expansion",0.,true);
+    AddNamedReal(m,"INITTEMP","initial, reference temperature",0.,true);
+    AddNamedReal(m,"YIELDSOFT","yield stress softening",0.,true);
+    AddNamedReal(m,"HARDSOFT","hardening softening",0.,true);
+
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
   /*--------------------------------------------------------------------*/
   // logarithmic neo-Hooke material acc. to Bonet and Wood
   {

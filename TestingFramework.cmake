@@ -1083,6 +1083,7 @@ baci_test(plastic_damage_doublenotched_HEX27 2 "")
 baci_test(plastic_pressurisedcylinder_thrplastic 1 "")
 baci_test(plastic_pressurisedcylinder_thrplastic 2 80)
 baci_test(plastic_so3plast_rm 2 "")
+baci_test(plastic_necking_fbar_vcu 2 "")
 baci_test(potential_surf_pointapprox_VDW_3D 1 "")
 baci_test(potential_surf_pointapprox_VDW_3D 2 "")
 #baci_test(potential_vol_LJ_2D 1 "") # broken since dimension of condition now must not be greater than problem dimension

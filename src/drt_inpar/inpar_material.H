@@ -86,6 +86,7 @@ namespace INPAR
       m_particlemat,                           ///< particle material
       m_permeable_fluid,                       ///< permeable fluid
       m_plelasthyper,                          ///< general hyperelastic material for finite strain von-Mises plasticity using a semi-smooth Newton strategy (only in combination with such elements!)
+      m_plelasthyperVCU,                       ///< general hyperelastic material for finite strain von-Mises plasticity using a variational constitutive update
       m_pllinelast,                            ///< linear elasticity (St. Venant Kirchhoff) and von Mises plasticity
       m_plneohooke,                            ///< Neo-Hooke elasticity and von Mises plasticity
       m_plnlnlogneohooke,                      ///< Neo-Hooke elasticity with logarithmic finite strain von Mises plasticity

@@ -127,7 +127,7 @@ MAT::PlasticElastHyper::PlasticElastHyper(MAT::PAR::PlasticElastHyper* params)
 {
   // make sure the referenced materials in material list have quick access parameters
   std::vector<int>::const_iterator m;
-  for (m=params_->matids_->begin(); m!=params_->matids_->end(); ++m)
+  for (m=MatParams()->matids_->begin(); m!=MatParams()->matids_->end(); ++m)
   {
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
@@ -149,7 +149,7 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,type);
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (MatParams() != NULL) matid = MatParams()->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
   AddtoPack(data,(int)isoprinc_);
   AddtoPack(data,(int)isomod_);
@@ -160,7 +160,7 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,PlAniso_full_);
   AddtoPack(data,InvPlAniso_full_);
 
-  if (params_ != NULL) // summands are not accessible in postprocessing mode
+  if (MatParams() != NULL) // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
     for (unsigned int p=0; p<potsum_.size(); ++p)
@@ -203,7 +203,7 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
-  // matid and recover params_
+  // matid and recover MatParams()
   int matid;
   ExtractfromPack(position,data,matid);
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
@@ -228,11 +228,11 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,PlAniso_full_);
   ExtractfromPack(position,data,InvPlAniso_full_);
 
-  if (params_ != NULL) // summands are not accessible in postprocessing mode
+  if (MatParams() != NULL) // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
-    for (m=params_->matids_->begin(); m!=params_->matids_->end(); ++m)
+    for (m=MatParams()->matids_->begin(); m!=MatParams()->matids_->end(); ++m)
     {
       const int matid = *m;
       Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
@@ -349,8 +349,8 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp,
 {
   // dissipation mode
   if (mode!=INPAR::TSI::pl_flow)
-    if (params_->rY_11_!=0. || params_->rY_22_!=0. || params_->rY_33_!=0. ||
-        params_->rY_12_!=0. || params_->rY_23_!=0. || params_->rY_13_!=0.)
+    if (MatParams()->rY_11_!=0. || MatParams()->rY_22_!=0. || MatParams()->rY_33_!=0. ||
+        MatParams()->rY_12_!=0. || MatParams()->rY_23_!=0. || MatParams()->rY_13_!=0.)
       dserror("TSI with Hill plasticity only with DISSIPATION_MODE pl_flow");
   SetDissipationMode(mode);
 
@@ -377,7 +377,7 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp,
     dserror("no thermo-plasticitiy with plastic spin");
 
   /// Hill TSI only with pl_flow dissipation
-  if (params_->rY_11_!=0. && DisMode()!=INPAR::TSI::pl_flow)
+  if (MatParams()->rY_11_!=0. && DisMode()!=INPAR::TSI::pl_flow)
     dserror("hill thermo plasticity only with dissipation mode pl_flow");
 
   /// viscoplastic TSI only with  pl_flow dissipation
@@ -392,16 +392,16 @@ void MAT::PlasticElastHyper::SetupTSI(const int numgp,
 void MAT::PlasticElastHyper::SetupHillPlasticity(DRT::INPUT::LineDefinition* linedef)
 {
   // check if parameters are valid
-  if (params_->rY_11_!=0. || params_->rY_22_!=0. || params_->rY_33_!=0. ||
-      params_->rY_12_!=0. || params_->rY_23_!=0. || params_->rY_13_!=0.)
-    if (params_->rY_11_<=0. || params_->rY_22_<=0. || params_->rY_33_<=0. ||
-        params_->rY_12_<=0. || params_->rY_23_<=0. || params_->rY_13_<=0.)
+  if (MatParams()->rY_11_!=0. || MatParams()->rY_22_!=0. || MatParams()->rY_33_!=0. ||
+      MatParams()->rY_12_!=0. || MatParams()->rY_23_!=0. || MatParams()->rY_13_!=0.)
+    if (MatParams()->rY_11_<=0. || MatParams()->rY_22_<=0. || MatParams()->rY_33_<=0. ||
+        MatParams()->rY_12_<=0. || MatParams()->rY_23_<=0. || MatParams()->rY_13_<=0.)
       dserror("Hill parameters all must be positive (incomplete set?)");
 
   // all (optional) Hill parameters are zero (default value)
   // --> we want to do von Mises plasticity
-  if (params_->rY_11_==0. && params_->rY_22_==0. && params_->rY_33_==0. &&
-      params_->rY_12_==0. && params_->rY_23_==0. && params_->rY_13_==0.)
+  if (MatParams()->rY_11_==0. && MatParams()->rY_22_==0. && MatParams()->rY_33_==0. &&
+      MatParams()->rY_12_==0. && MatParams()->rY_23_==0. && MatParams()->rY_13_==0.)
   {
     PlAniso_full_.Clear();
     for (int i=0; i<3; i++)
@@ -501,12 +501,12 @@ void MAT::PlasticElastHyper::SetupHillPlasticity(DRT::INPUT::LineDefinition* lin
     LINALG::Matrix<3,3> M2;
     M2.MultiplyNT(directions.at(2),directions.at(2));
 
-    double alpha1 = 2./3./params_->rY_11_/params_->rY_11_;
-    double alpha2 = 2./3./params_->rY_22_/params_->rY_22_;
-    double alpha3 = 2./3./params_->rY_33_/params_->rY_33_;
-    double alpha4 = 1./3./params_->rY_12_/params_->rY_12_;
-    double alpha5 = 1./3./params_->rY_23_/params_->rY_23_;
-    double alpha6 = 1./3./params_->rY_13_/params_->rY_13_;
+    double alpha1 = 2./3./MatParams()->rY_11_/MatParams()->rY_11_;
+    double alpha2 = 2./3./MatParams()->rY_22_/MatParams()->rY_22_;
+    double alpha3 = 2./3./MatParams()->rY_33_/MatParams()->rY_33_;
+    double alpha4 = 1./3./MatParams()->rY_12_/MatParams()->rY_12_;
+    double alpha5 = 1./3./MatParams()->rY_23_/MatParams()->rY_23_;
+    double alpha6 = 1./3./MatParams()->rY_13_/MatParams()->rY_13_;
 
     // calculate plastic anisotropy tensor
     PlAniso_full_.Clear();

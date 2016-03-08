@@ -191,63 +191,63 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new PlasticElastHyper( *this ) ); }
 
     /// material mass density
-    virtual double Density() const { return params_->density_; }
+    virtual double Density() const { return MatParams()->density_; }
 
     /// initial yield stress
-    virtual double Inityield() const { return params_->inityield_;}
+    virtual double Inityield() const { return MatParams()->inityield_;}
 
     /// linear isotropic hardening modulus
-    virtual double Isohard() const { return params_->isohard_;}
+    virtual double Isohard() const { return MatParams()->isohard_;}
 
     /// exponent for nonlinear isotropic hardening
-    virtual double Expisohard() const {return params_->expisohard_;}
+    virtual double Expisohard() const {return MatParams()->expisohard_;}
 
     /// saturation yield stress for nonlinear isotropic hardening
-    virtual double Infyield() const { return params_->infyield_;}
+    virtual double Infyield() const { return MatParams()->infyield_;}
 
     /// linear kinematic hardening modulus
-    virtual double Kinhard() const { return params_->kinhard_;}
+    virtual double Kinhard() const { return MatParams()->kinhard_;}
 
     /// complementarity parameter
-    virtual double cpl() const { return params_->cpl_;}
+    virtual double cpl() const { return MatParams()->cpl_;}
 
     /// stabilization parameter
-    virtual double s() const { return params_->stab_s_;}
+    virtual double s() const { return MatParams()->stab_s_;}
 
     /// plastic spin unequal zero
     virtual bool HavePlasticSpin() const
-    {return (params_->plspin_chi_!=0. && (params_->kinhard_!=0 || params_->rY_11_!=0.));}
+    {return (MatParams()->plspin_chi_!=0. && (MatParams()->kinhard_!=0 || MatParams()->rY_11_!=0.));}
 
     /// plastic spin parameter chi
-    virtual double PlSpinChi() const {return params_->plspin_chi_; }
+    virtual double PlSpinChi() const {return MatParams()->plspin_chi_; }
 
     /// viscosity (of the plastic flow, no visco-elasticity)
-    virtual double Visc() const {return params_->visc_;}
+    virtual double Visc() const {return MatParams()->visc_;}
 
     /// rate dependency of visco-plasticity
-    virtual double ViscRate() const {return params_->rate_dependency_;}
+    virtual double ViscRate() const {return MatParams()->rate_dependency_;}
 
     /// viscosity (of the plastic flow, no visco-elasticity)
-    virtual double ViscSoft() const {return params_->visc_soft_;}
+    virtual double ViscSoft() const {return MatParams()->visc_soft_;}
 
     /// thermal expansion coefficient
-    virtual double Cte() const {return params_->cte_; }
+    virtual double Cte() const {return MatParams()->cte_; }
 
     /// initial temperature
-    virtual double InitTemp() const {return params_->inittemp_; }
+    virtual double InitTemp() const {return MatParams()->inittemp_; }
 
     /// initial yield stress softening with temperature
-    virtual double YieldSoft() const {return params_->yieldsoft_;}
+    virtual double YieldSoft() const {return MatParams()->yieldsoft_;}
 
     /// isotropic Hardening softening with temperature
-    virtual double HardSoft() const {return params_->hardsoft_;}
+    virtual double HardSoft() const {return MatParams()->hardsoft_;}
 
     /// set dissipation mode
     virtual void SetDissipationMode(INPAR::TSI::DissipationMode mode)
-    {if (params_!=NULL) params_->dis_mode_=mode;}
+    {if (MatParams()!=NULL) MatParams()->dis_mode_=mode;}
 
     /// get dissipation mode
-    virtual INPAR::TSI::DissipationMode DisMode() const {return params_->dis_mode_; }
+    virtual INPAR::TSI::DissipationMode DisMode() const {return MatParams()->dis_mode_; }
 
     /// evaluate quantities for elastic stiffness matrix
     /// in consideration of plastic history/deformation
@@ -355,13 +355,16 @@ private:
     virtual void UpdateGP(const int gp, const LINALG::Matrix<3,3>* deltaDp);
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    virtual MAT::PAR::Parameter* Parameter() const { return MatParams(); }
+
+    /// Access to material params
+    virtual MAT::PAR::PlasticElastHyper* MatParams() const {return params_;}
 
     /// Return whether the material requires the deformation gradient for its evaluation
     virtual bool NeedsDefgrd() { return true; };
 
     /// get plastic algorithm parameters
-    virtual void GetParams(double s, double cpl){params_->stab_s_=s;params_->cpl_=cpl;};
+    virtual void GetParams(double s, double cpl){MatParams()->stab_s_=s;MatParams()->cpl_=cpl;};
 
     /// return accumulated plastic strain at GP
     virtual double AccumulatedStrain(int gp) {return last_alpha_isotropic_[gp];}
