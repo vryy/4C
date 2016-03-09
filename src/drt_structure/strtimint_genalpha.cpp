@@ -26,7 +26,7 @@ Maintainer: Alexander Popp
 #include "../drt_plastic_ssn/plastic_ssn_manager.H"
 
 /*----------------------------------------------------------------------*/
-void STR::TimIntGenAlpha::VerifyCoeff()
+void STR::TimIntGenAlpha::CalcCoeff()
 {
   // rho_inf specified --> calculate optimal parameters
   if (rho_inf_!=-1.)
@@ -39,9 +39,12 @@ void STR::TimIntGenAlpha::VerifyCoeff()
     alphaf_ = rho_inf_/(rho_inf_+1.0);
     beta_   = 0.25*(1.0-alpham_+alphaf_)*(1.0-alpham_+alphaf_);
     gamma_  = 0.5-alpham_+alphaf_;
-    std::cout << "   rho = " << rho_inf_ << std::endl;
   }
+}
 
+/*----------------------------------------------------------------------*/
+void STR::TimIntGenAlpha::VerifyCoeff()
+{
   // beta
   if ( (beta_ <= 0.0) or (beta_ > 0.5) )
     dserror("beta out of range (0.0,0.5]");
@@ -126,6 +129,9 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   fviscm_(Teuchos::null),
   fint_str_(Teuchos::null)
 {
+  // calculate time integration parameters
+  CalcCoeff();
+
   // info to user about current time integration scheme and its parametrization
   if (myrank_ == 0)
   {

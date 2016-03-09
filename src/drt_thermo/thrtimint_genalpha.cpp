@@ -18,9 +18,9 @@ Maintainer: Caroline Danowski
 #include "thermo_ele_action.H"
 
 /*----------------------------------------------------------------------*
- | check if coefficients are in correct regime               dano 10/09 |
+ | calc coefficients for given rho_inf                      seitz 03/16 |
  *----------------------------------------------------------------------*/
-void THR::TimIntGenAlpha::VerifyCoeff()
+void THR::TimIntGenAlpha::CalcCoeff()
 {
   // rho_inf specified --> calculate optimal parameters
   if (rho_inf_!=-1.)
@@ -33,7 +33,13 @@ void THR::TimIntGenAlpha::VerifyCoeff()
     alphaf_ = 1.0/(rho_inf_+1.0);
     gamma_ = 0.5+alpham_-alphaf_;
   }
+}
 
+/*----------------------------------------------------------------------*
+ | check if coefficients are in correct regime               dano 10/09 |
+ *----------------------------------------------------------------------*/
+void THR::TimIntGenAlpha::VerifyCoeff()
+{
   // alpha_f
   if ( (alphaf_ < 0.0) or (alphaf_ > 1.0) )
     dserror("alpha_f out of range [0.0,1.0]");
@@ -99,6 +105,9 @@ THR::TimIntGenAlpha::TimIntGenAlpha(
   fcapm_(Teuchos::null),
   fcapn_(Teuchos::null)
 {
+  // calculate coefficients from given spectral radius
+  CalcCoeff();
+
   // info to user
   if (myrank_ == 0)
   {

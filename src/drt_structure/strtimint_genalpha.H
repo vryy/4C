@@ -52,6 +52,9 @@ namespace STR
     //! prints also info to STDOUT
     void VerifyCoeff();
 
+    //! calculate coefficients from given spectral radius
+    void CalcCoeff();
+
     //! @name Construction
     //@{
 
