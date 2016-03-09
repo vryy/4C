@@ -618,7 +618,7 @@ void MAT::GrowthScdACRadial::Unpack(const std::vector<char>& data)
 
   int numgp;
   ExtractfromPack(position,data,numgp);
-  if (not numgp == 0)
+  if (not (numgp == 0))
   {
     F_g_hist_ = std::vector<LINALG::Matrix<3,3> >(numgp,LINALG::Matrix<3,3>(true));
     n_ = std::vector<LINALG::Matrix<3,1> >(numgp,LINALG::Matrix<3,1>(true));

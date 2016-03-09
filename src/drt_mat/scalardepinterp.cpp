@@ -256,7 +256,7 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
 
   int numgp;
   ExtractfromPack(position,data,numgp);
-  if (not numgp == 0)
+  if (not (numgp == 0))
   {
     zero_conc_ratio_ = std::vector<double>(numgp,1.0);
 
