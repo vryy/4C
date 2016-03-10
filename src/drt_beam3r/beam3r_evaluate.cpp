@@ -1,5 +1,5 @@
 /*!-----------------------------------------------------------------------------------------------------------
- \file beam3ii_evaluate.cpp
+ \file beam3r_evaluate.cpp
  \brief
 
 <pre>
@@ -11,7 +11,7 @@ Maintainer: Christoph Meier
 
  *-----------------------------------------------------------------------------------------------------------*/
 
-#include "beam3ii.H"
+#include "beam3r.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
@@ -35,7 +35,7 @@ Maintainer: Christoph Meier
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 01/08|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization,
     std::vector<int>& lm,
     Epetra_SerialDenseMatrix& elemat1, //nonlinear stiffness matrix
@@ -49,28 +49,28 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
   // so far, no chance to figure out whether Statmech is needed because no parameter list is available upon initialization
   needstatmech_ = (params.get<Teuchos::RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null);
 
-  DRT::ELEMENTS::Beam3ii::ActionType act = Beam3ii::calc_none;
+  DRT::ELEMENTS::Beam3r::ActionType act = Beam3r::calc_none;
   // get the action required
   std::string action = params.get<std::string>("action","calc_none");
   if (action == "calc_none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff") act = Beam3ii::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff") act = Beam3ii::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce") act = Beam3ii::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass") act = Beam3ii::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass") act = Beam3ii::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass") act = Beam3ii::calc_struct_nlnstifflmass; //with lumped mass matrix
-  else if (action=="calc_struct_stress") act = Beam3ii::calc_struct_stress;
-  else if (action=="calc_struct_eleload") act = Beam3ii::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload") act = Beam3ii::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep") act = Beam3ii::calc_struct_update_istep;
-  else if (action=="calc_struct_reset_istep") act = Beam3ii::calc_struct_reset_istep;
-  else if (action=="calc_struct_ptcstiff")        act = Beam3ii::calc_struct_ptcstiff;
-  else if (action=="calc_struct_energy")        act = Beam3ii::calc_struct_energy;
-  else dserror("Unknown type of action for Beam3ii");
+  else if (action=="calc_struct_linstiff") act = Beam3r::calc_struct_linstiff;
+  else if (action=="calc_struct_nlnstiff") act = Beam3r::calc_struct_nlnstiff;
+  else if (action=="calc_struct_internalforce") act = Beam3r::calc_struct_internalforce;
+  else if (action=="calc_struct_linstiffmass") act = Beam3r::calc_struct_linstiffmass;
+  else if (action=="calc_struct_nlnstiffmass") act = Beam3r::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_nlnstifflmass") act = Beam3r::calc_struct_nlnstifflmass; //with lumped mass matrix
+  else if (action=="calc_struct_stress") act = Beam3r::calc_struct_stress;
+  else if (action=="calc_struct_eleload") act = Beam3r::calc_struct_eleload;
+  else if (action=="calc_struct_fsiload") act = Beam3r::calc_struct_fsiload;
+  else if (action=="calc_struct_update_istep") act = Beam3r::calc_struct_update_istep;
+  else if (action=="calc_struct_reset_istep") act = Beam3r::calc_struct_reset_istep;
+  else if (action=="calc_struct_ptcstiff")        act = Beam3r::calc_struct_ptcstiff;
+  else if (action=="calc_struct_energy")        act = Beam3r::calc_struct_energy;
+  else dserror("Unknown type of action for Beam3r");
 
   switch(act)
   {
-    case Beam3ii::calc_struct_ptcstiff:
+    case Beam3r::calc_struct_ptcstiff:
     {
       const int nnode = NumNode();
 
@@ -86,7 +86,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and
      residual values*/
-    case Beam3ii::calc_struct_linstiff:
+    case Beam3r::calc_struct_linstiff:
     {
       //only nonlinear case implemented!
       dserror("linear stiffness matrix called, but not implemented");
@@ -94,7 +94,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     //calculate internal energy
-    case Beam3ii::calc_struct_energy:
+    case Beam3r::calc_struct_energy:
     {
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
@@ -134,10 +134,10 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     break;
 
     //nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is required
-    case Beam3ii::calc_struct_nlnstiffmass:
-    case Beam3ii::calc_struct_nlnstifflmass:
-    case Beam3ii::calc_struct_nlnstiff:
-    case Beam3ii::calc_struct_internalforce:
+    case Beam3r::calc_struct_nlnstiffmass:
+    case Beam3r::calc_struct_nlnstifflmass:
+    case Beam3r::calc_struct_nlnstiff:
+    case Beam3r::calc_struct_internalforce:
     {
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
@@ -163,7 +163,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       }
 
-      if(act == Beam3ii::calc_struct_nlnstiffmass or act == Beam3ii::calc_struct_nlnstifflmass)
+      if(act == Beam3r::calc_struct_nlnstiffmass or act == Beam3r::calc_struct_nlnstifflmass)
       {
         Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
         if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
@@ -176,7 +176,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
 
       const int nnode = NumNode();
 
-      if (act == Beam3ii::calc_struct_nlnstiffmass)
+      if (act == Beam3r::calc_struct_nlnstiffmass)
       {
         switch(nnode)
         {
@@ -202,11 +202,11 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
           }
         }
       }
-      else if (act == Beam3ii::calc_struct_nlnstifflmass)
+      else if (act == Beam3r::calc_struct_nlnstifflmass)
       {
-        dserror("Lumped masss matrix not implemented for beam3ii elements so far!");
+        dserror("Lumped masss matrix not implemented for beam3r elements so far!");
       }
-      else if (act == Beam3ii::calc_struct_nlnstiff)
+      else if (act == Beam3r::calc_struct_nlnstiff)
       {
         switch(nnode)
         {
@@ -234,7 +234,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
             dserror("Only Line2, Line3, Line4, and Line5 Elements implemented.");
         }
       }
-      else if (act == Beam3ii::calc_struct_internalforce)
+      else if (act == Beam3r::calc_struct_internalforce)
       {
         switch(nnode)
         {
@@ -460,10 +460,10 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     case calc_struct_stress:
-      dserror("No stress output implemented for beam3ii elements");
+      dserror("No stress output implemented for beam3r elements");
     break;
     default:
-      dserror("Unknown type of action for Beam3ii %d", act);
+      dserror("Unknown type of action for Beam3r %d", act);
     break;
   }
   return 0;
@@ -473,7 +473,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
 /*-----------------------------------------------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)                                       cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3ii::EvaluateNeumann(Teuchos::ParameterList& params,
+int DRT::ELEMENTS::Beam3r::EvaluateNeumann(Teuchos::ParameterList& params,
                                         DRT::Discretization& discretization,
                                         DRT::Condition& condition,
                                         std::vector<int>& lm,
@@ -590,8 +590,8 @@ int DRT::ELEMENTS::Beam3ii::EvaluateNeumann(Teuchos::ParameterList& params,
  |Jelenic 1999, section 2.4)                                                                                 cyron 04/10|
  *----------------------------------------------------------------------------------------------------------------------*/
 template <typename T>
-inline void DRT::ELEMENTS::Beam3ii::strainstress(const LINALG::TMatrix<T,3,1>& gamma,
-                                                 const LINALG::TMatrix<T,3,1>& kappa,
+inline void DRT::ELEMENTS::Beam3r::strainstress(const LINALG::TMatrix<T,3,1>& Gamma,
+                                                 const LINALG::TMatrix<T,3,1>& K,
                                                  LINALG::TMatrix<T,3,1>& stressN,
                                                  LINALG::TMatrix<T,3,3>& CN,
                                                  LINALG::TMatrix<T,3,1>& stressM,
@@ -617,31 +617,31 @@ inline void DRT::ELEMENTS::Beam3ii::strainstress(const LINALG::TMatrix<T,3,1>& g
     break;
   }
 
-  //defining convected constitutive matrix CN between gamma and N according to Jelenic 1999, section 2.4
+  //defining material constitutive matrix CN between Gamma and N according to Jelenic 1999, section 2.4
   CN.PutScalar(0);
   CN(0,0) = ym*crosssec_;
   CN(1,1) = sm*crosssecshear_;
   CN(2,2) = sm*crosssecshear_;
 
-  //defining convected constitutive matrix CM between kappa and M according to Jelenic 1999, section 2.4
+  //defining material constitutive matrix CM between curvature and moment according to Jelenic 1999, section 2.4
   CM.PutScalar(0);
   CM(0,0) = sm*Irr_;
   CM(1,1) = ym*Iyy_;
   CM(2,2) = ym*Izz_;
 
   //computing stresses by multiplying strains with respective constitutive matrix
-  stressN.Multiply(CN,gamma);
-  stressM.Multiply(CM,kappa);
+  stressN.Multiply(CN,Gamma);
+  stressM.Multiply(CM,K);
 
   return;
-} // DRT::ELEMENTS::Beam3ii::straintostress
+} // DRT::ELEMENTS::Beam3r::straintostress
 
 /*----------------------------------------------------------------------------------------------------------------------*
  |push forward stresses and constitutive matrix to their spatial counterparts by rotation matrix Lambda according to    |
  |Romero 2004, eq. (3.10)                                                                                    cyron 04/10|
  *----------------------------------------------------------------------------------------------------------------------*/
 template <typename T>
-inline void DRT::ELEMENTS::Beam3ii::pushforward(const LINALG::TMatrix<T,3,3>& Lambda,
+inline void DRT::ELEMENTS::Beam3r::pushforward(const LINALG::TMatrix<T,3,3>& Lambda,
                                                 const LINALG::TMatrix<T,3,1>& stressN,
                                                 const LINALG::TMatrix<T,3,3>& CN,
                                                 const LINALG::TMatrix<T,3,1>& stressM ,
@@ -669,13 +669,13 @@ inline void DRT::ELEMENTS::Beam3ii::pushforward(const LINALG::TMatrix<T,3,3>& La
   cm.MultiplyNT(temp,Lambda);
 
    return;
-} // DRT::ELEMENTS::Beam3ii::pushforward
+} // DRT::ELEMENTS::Beam3r::pushforward
 
 /*------------------------------------------------------------------------------------------------------------*
  | calculation of elastic energy (private)                                                        cyron 12/10|
  *-----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnode>
-void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Beam3r::b3_energy( Teuchos::ParameterList& params,
                                         std::vector<double>& disp,
                                         Epetra_SerialDenseVector* intenergy)
 {
@@ -685,7 +685,7 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
 
   bool calcenergy = false;
   if(params.isParameter("energyoftype")==false) calcenergy = true;
-  else if(params.get<std::string>("energyoftype")=="beam3ii") calcenergy =true;
+  else if(params.get<std::string>("energyoftype")=="beam3r") calcenergy =true;
 
   if(calcenergy)
   {
@@ -723,11 +723,11 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
     LINALG::Matrix<3,3> Lambda;
 
     //3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
-    LINALG::Matrix<3,1> kappa;
-    //3D vector of convected axial and shear strains from (2.1), Jelenic 1999
-    LINALG::Matrix<3,1> gamma;
+    LINALG::Matrix<3,1> K;
+    //3D vector of material axial and shear strains from (2.1), Jelenic 1999
+    LINALG::Matrix<3,1> Gamma;
 
-    //convected stresses N and M and constitutive matrices C_N and C_M according to section 2.4, Jelenic 1999
+    //material stresses N and M and constitutive matrices C_N and C_M according to section 2.4, Jelenic 1999
     LINALG::Matrix<3,1> stressN;
     LINALG::Matrix<3,1> stressM;
     LINALG::Matrix<3,3> CN;
@@ -775,19 +775,19 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
       Calc_Psi_l_s<nnode,double>(Psi_li, I_i_xi[numgp], jacobi_[numgp], Psi_l_s);
       Calc_Lambda<double>(Psi_l,Q_r,Lambda);
 
-      //compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12)
-      computestrain<double>(Psi_l,Psi_l_s,r_s,Lambda,gammaref_[numgp],kapparef_[numgp],gamma,kappa);
+      //compute material strains gamma and kappa according to Jelenic 1999, eq. (2.12)
+      computestrain<double>(Psi_l,Psi_l_s,r_s,Lambda,Gammaref_[numgp],Kref_[numgp],Gamma,K);
 
-      //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
-      strainstress<double>(gamma,kappa,stressN,CN,stressM,CM);
+      //compute material stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
+      strainstress<double>(Gamma,K,stressN,CN,stressM,CM);
 
       //adding elastic energy at this Gauss point
       if(intenergy->M()==1)
       {
         for(int i=0; i<3; i++)
         {
-          (*intenergy)(0) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
-          (*intenergy)(0) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
+          (*intenergy)(0) += 0.5*Gamma(i)*stressN(i)*wgt*jacobi_[numgp];
+          (*intenergy)(0) += 0.5*K(i)*stressM(i)*wgt*jacobi_[numgp];
         }
         Eint_=(*intenergy)(0);
       }
@@ -795,8 +795,8 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
       {
         for(int i=0; i<3; i++)
         {
-          (*intenergy)(i) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
-          (*intenergy)(i+3) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
+          (*intenergy)(i) += 0.5*Gamma(i)*stressN(i)*wgt*jacobi_[numgp];
+          (*intenergy)(i+3) += 0.5*K(i)*stressM(i)*wgt*jacobi_[numgp];
         }
       }
       else
@@ -806,14 +806,14 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
   }
   return;
 
-} // DRT::ELEMENTS::Beam3ii::b3_energy
+} // DRT::ELEMENTS::Beam3r::b3_energy
 
 
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                   cyron 01/08|
  *-----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnode>
-void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Beam3r::b3_nlnstiffmass( Teuchos::ParameterList& params,
                                             std::vector<double>&      acc,
                                             std::vector<double>&      vel,
                                             std::vector<double>&      disp,
@@ -875,9 +875,9 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   LINALG::TMatrix<FADordouble,3,3> Lambda;
 
   //3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
-  LINALG::TMatrix<FADordouble,3,1> kappa;
-  //3D vector of convected axial and shear strains from (2.1), Jelenic 1999
-  LINALG::TMatrix<FADordouble,3,1> gamma;
+  LINALG::TMatrix<FADordouble,3,1> K;
+  //3D vector of material axial and shear strains from (2.1), Jelenic 1999
+  LINALG::TMatrix<FADordouble,3,1> Gamma;
 
   //convected stresses N and M and constitutive matrices C_N and C_M according to section 2.4, Jelenic 1999
   LINALG::TMatrix<FADordouble,3,1> stressN;
@@ -907,7 +907,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
       disp_totlag(6*node+dof) = Nodes()[node]->X()[dof] + disp[6*node+dof];
 
 
-  #ifndef BEAM3IIAUTOMATICDIFF
+  #ifndef BEAM3RAUTOMATICDIFF
   //Compute current nodal triads
   for (unsigned int node=0; node<nnode; ++node)
   {
@@ -947,7 +947,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   // set differentiation variables for FAD: translational DOFs
   for (unsigned int node=0; node< nnode; ++node)
     for (int i=0; i<3; ++i)
-      disp_totlag(6*node+i).diff(6*node+i,6*nnode);
+      disp_totlag(6*node+i).diff(6*node+i,6*nnode);     // TODO remove redundancy !
 
   #ifndef MULTIPLICATIVEUPDATES
   // note: when using FAD, we do not need to worry about multiplicative rotational increments for rotational DOFs
@@ -1022,7 +1022,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
     for (int i=0; i<4; ++i)
       Qnew_[node](i)= FADUTILS::CastToDouble(Q_i[node](i));
 
-  #endif //#ifndef BEAM3IIAUTOMATICDIFF
+  #endif //#ifndef BEAM3RAUTOMATICDIFF
 
   // compute reference triad Lambda_r according to (3.9), Jelenic 1999
   CalcRefQuaternion<FADordouble>(Q_i[nodeI_],Q_i[nodeJ_],Q_r,Phi_IJ);
@@ -1041,7 +1041,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
     CalcPsi_li<FADordouble>(Q_i[node],Q_r,Psi_li[node]);
 
   // reset norm of maximal bending curvature
-  kappa_max_=0.0;
+  K_max_=0.0;
 
   //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
   for(int numgp=0; numgp < gausspoints.nquad; numgp++)
@@ -1057,16 +1057,16 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
     //compute spin matrix related to vector rprime for later use
     LARGEROTATIONS::computespin<FADordouble>(r_s_hat,r_s);
 
-    //compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12)
-    computestrain<FADordouble>(Psi_l,Psi_l_s,r_s,Lambda,gammaref_[numgp],kapparef_[numgp],gamma,kappa);
+    //compute material strains gamma and kappa according to Jelenic 1999, eq. (2.12)
+    computestrain<FADordouble>(Psi_l,Psi_l_s,r_s,Lambda,Gammaref_[numgp],Kref_[numgp],Gamma,K);
 
     //determine norm of maximal bending curvature at this GP and store in class variable if needed
-    double kappamax = std::sqrt(FADUTILS::CastToDouble(kappa(1))*FADUTILS::CastToDouble(kappa(1)) + FADUTILS::CastToDouble(kappa(2))*FADUTILS::CastToDouble(kappa(2)) );
-    if(kappamax > kappa_max_)
-      kappa_max_=kappamax;
+    double Kmax = std::sqrt(FADUTILS::CastToDouble(K(1))*FADUTILS::CastToDouble(K(1)) + FADUTILS::CastToDouble(K(2))*FADUTILS::CastToDouble(K(2)) );
+    if(Kmax > K_max_)
+      K_max_=Kmax;
 
-    //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
-    strainstress<FADordouble>(gamma,kappa,stressN,CN,stressM,CM);
+    //compute material stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
+    strainstress<FADordouble>(Gamma,K,stressN,CN,stressM,CM);
 
     /*compute spatial stresses and constitutive matrices from convected ones according to Jelenic 1999, page 148, paragraph
      *between (2.22) and (2.23) and Romero 2004, (3.10)*/
@@ -1106,7 +1106,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
 
     if (stiffmatrix != NULL)
     {
-      #ifdef BEAM3IIAUTOMATICDIFF
+      #ifdef BEAM3RAUTOMATICDIFF
       //Calculating stiffness matrix with FAD
       for (unsigned int i = 0; i < 6*nnode; i++)
       {
@@ -1160,7 +1160,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
       }
       #endif
 
-      #else //#ifdef BEAM3IIAUTOMATICDIFF
+      #else //#ifdef BEAM3RAUTOMATICDIFF
 
       computeItilde<nnode>(Psi_l,Itilde,Phi_IJ,Lambda_r,Psi_li,I_i[numgp]);
       computeItildeprime<nnode,double>(Psi_l,Psi_l_s,Itildeprime,Phi_IJ,Lambda_r,Psi_li,I_i[numgp],I_i_xi[numgp],jacobi_[numgp]);
@@ -1252,9 +1252,9 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
 
     if(beta < 999)
     {
-      #ifdef BEAM3IIAUTOMATICDIFF
+      #ifdef BEAM3RAUTOMATICDIFF
       #ifndef MULTIPLICATIVEUPDATES
-        dserror("beam3ii: for dynamic simulations in combination with a FAD stiffness matrix, please define flag MULTIPLICATIVEUPDATES because the implemented GenAlpha Lie group time integration is based on multiplicative updates!");
+        dserror("beam3r: for dynamic simulations in combination with a FAD stiffness matrix, please define flag MULTIPLICATIVEUPDATES because the implemented GenAlpha Lie group time integration is based on multiplicative updates!");
       #endif
       #endif
 
@@ -1539,7 +1539,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur   // TODO what's this ???
   if(gausspoints.nquad==1 && params.get<std::string>("internalforces","no")=="yes" && force != NULL)
   {
-    eps_ = FADUTILS::CastToDouble(gamma(0));
+    eps_ = FADUTILS::CastToDouble(Gamma(0));
     f_ = *force;
     for (int i=0; i<3; ++i)
       Ngp_(i) = FADUTILS::CastToDouble(stressN(i));
@@ -1593,7 +1593,7 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
             Itildemass_allGP[gp][inode](i,j) = Itildemass[inode](i,j);
     }
 
-  #ifndef BEAM3IICONSTSTOCHFORCE
+  #ifndef BEAM3RCONSTSTOCHFORCE
     CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force,Imass_i,Itildemass_allGP);
   #else
     CalcBrownian<nnode,3,6,3>(params,vel,disp,stiffmatrix,force,Imass_i,Itildemass_allGP);
@@ -1601,13 +1601,13 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   }
 
   return;
-} // DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass
+} // DRT::ELEMENTS::Beam3r::b3_nlnstiffmass
 
 /*------------------------------------------------------------------------------------------------------------*
  | lump mass matrix             (private)                                                   cyron 01/08|
  *------------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnode>
-void DRT::ELEMENTS::Beam3ii::lumpmass(Epetra_SerialDenseMatrix* emass)
+void DRT::ELEMENTS::Beam3r::lumpmass(Epetra_SerialDenseMatrix* emass)
 {
   // lump mass matrix
   if (emass != NULL)
@@ -1631,7 +1631,7 @@ void DRT::ELEMENTS::Beam3ii::lumpmass(Epetra_SerialDenseMatrix* emass)
  | Evaluate PTC damping (public)                                                                  cyron 10/08|
  *----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnode>
-void DRT::ELEMENTS::Beam3ii::EvaluatePTC(Teuchos::ParameterList& params,
+void DRT::ELEMENTS::Beam3r::EvaluatePTC(Teuchos::ParameterList& params,
                                       Epetra_SerialDenseMatrix& elemat1)
 {
   //apply PTC rotation damping term using a Lobatto integration rule; implemented for 2 nodes only
@@ -1664,14 +1664,14 @@ void DRT::ELEMENTS::Beam3ii::EvaluatePTC(Teuchos::ParameterList& params,
   }
 
   return;
-} //DRT::ELEMENTS::Beam3ii::EvaluatePTC
+} //DRT::ELEMENTS::Beam3r::EvaluatePTC
 
 /*-----------------------------------------------------------------------------------------------------------*
  | computes damping coefficients per length and stores them in a matrix in the following order: damping of    |
  | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
  | rotation around filament axis                                             (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam3ii::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma)
+inline void DRT::ELEMENTS::Beam3r::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma)
 {
   //translational damping coefficients according to Howard, p. 107, table 6.2;
   gamma(0) = 2*PI*params.get<double>("ETA",0.0);
@@ -1709,11 +1709,11 @@ inline void DRT::ELEMENTS::Beam3ii::MyDampingConstants(Teuchos::ParameterList& p
  |computes the number of different random numbers required in each time step for generation of stochastic    |
  |forces;                                                                    (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3ii::HowManyRandomNumbersINeed()
+int DRT::ELEMENTS::Beam3r::HowManyRandomNumbersINeed()
 {
   /*at each Gauss point one needs as many random numbers as randomly excited degrees of freedom, i.e. three
    *random numbers for the translational degrees of freedom and one random number for the rotation around the element axis*/
-  #ifndef BEAM3IICONSTSTOCHFORCE
+  #ifndef BEAM3RCONSTSTOCHFORCE
     return (4*NumNode());
   #else
     return (3);
@@ -1725,7 +1725,7 @@ int DRT::ELEMENTS::Beam3ii::HowManyRandomNumbersINeed()
  |the physical space                                                         (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<int ndim> //number of dimensions of embedding space
-void DRT::ELEMENTS::Beam3ii::MyBackgroundVelocity(Teuchos::ParameterList&      params,  //!<parameter list
+void DRT::ELEMENTS::Beam3r::MyBackgroundVelocity(Teuchos::ParameterList&      params,  //!<parameter list
                                                 const LINALG::Matrix<ndim,1>&  evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
                                                 LINALG::Matrix<ndim,1>&        velbackground,  //!< velocity of background fluid
                                                 LINALG::Matrix<ndim,ndim>&     velbackgroundgrad) //!<gradient of velocity of background fluid
@@ -1778,7 +1778,7 @@ void DRT::ELEMENTS::Beam3ii::MyBackgroundVelocity(Teuchos::ParameterList&      p
  | computes rotational damping forces and stiffness (public)                                    cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnode> //number of nodes
-inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(Teuchos::ParameterList&                       params,  //!<parameter list
+inline void DRT::ELEMENTS::Beam3r::MyRotationalDamping(Teuchos::ParameterList&                       params,  //!<parameter list
                                               const std::vector<double>&                              vel,  //!< element velocity vector
                                               const std::vector<double>&                              disp, //!<element disp vector
                                               Epetra_SerialDenseMatrix*                               stiffmatrix,  //!< element stiffness matrix
@@ -1878,13 +1878,13 @@ inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(Teuchos::ParameterList& 
   }
 
   return;
-}//DRT::ELEMENTS::Beam3ii::MyRotationalDamping(.)
+}//DRT::ELEMENTS::Beam3r::MyRotationalDamping(.)
 
 /*-----------------------------------------------------------------------------------------------------------*
  | computes translational damping forces and stiffness (public)                                 cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
-inline void DRT::ELEMENTS::Beam3ii::MyTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
+inline void DRT::ELEMENTS::Beam3r::MyTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
                                                   const std::vector<double>&       vel,  //!< element velocity vector
                                                   const std::vector<double>&       disp, //!<element disp vector
                                                   Epetra_SerialDenseMatrix*        stiffmatrix,  //!< element stiffness matrix
@@ -1982,19 +1982,19 @@ inline void DRT::ELEMENTS::Beam3ii::MyTranslationalDamping(Teuchos::ParameterLis
   }
 
   return;
-}//DRT::ELEMENTS::Beam3ii::MyTranslationalDamping(.)
+}//DRT::ELEMENTS::Beam3r::MyTranslationalDamping(.)
 
 /*-----------------------------------------------------------------------------------------------------------*
  | computes stochastic forces and resulting stiffness (public)                                  cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
+inline void DRT::ELEMENTS::Beam3r::MyStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
                                               const std::vector<double>&       vel,  //!< element velocity vector
                                               const std::vector<double>&       disp, //!<element disp vector
                                               Epetra_SerialDenseMatrix*        stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector*        force)//!< element internal force vector
 {
-  //damping coefficients for three translational and one rotatinal degree of freedom
+  //damping coefficients for three translational and one rotational degree of freedom
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma);
 
@@ -2044,7 +2044,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(Teuchos::ParameterList& p
         {
           if(force != NULL)
           {
-            #ifndef BEAM3IICONSTSTOCHFORCE
+            #ifndef BEAM3RCONSTSTOCHFORCE
               (*force)(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
             #else
               (*force)(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
@@ -2055,7 +2055,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(Teuchos::ParameterList& p
             //loop over all column nodes
             for (unsigned int j=0; j<nnode; j++)
             {
-              #ifndef BEAM3IICONSTSTOCHFORCE
+              #ifndef BEAM3RCONSTSTOCHFORCE
                 (*stiffmatrix)(i*dof+k,j*dof+k) -= funct(i)*deriv(j)*tpar(l)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
                 (*stiffmatrix)(i*dof+k,j*dof+l) -= funct(i)*deriv(j)*tpar(k)*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(gausspoints.qwgt[gp]/ jacobi[gp])*(sqrt(gamma(0)) - sqrt(gamma(1)));
               #else
@@ -2067,13 +2067,13 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(Teuchos::ParameterList& p
   }
 
   return;
-}//DRT::ELEMENTS::Beam3ii::MyStochasticForces(.)
+}//DRT::ELEMENTS::Beam3r::MyStochasticForces(.)
 
 /*-----------------------------------------------------------------------------------------------------------*
  | computes stochastic moments and (if required) resulting stiffness (public)                   cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnode, int randompergauss> //number of nodes, number of random numbers required per Gauss point, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(Teuchos::ParameterList&                       params,  //!<parameter list
+inline void DRT::ELEMENTS::Beam3r::MyStochasticMoments(Teuchos::ParameterList&                       params,  //!<parameter list
                                               const std::vector<double>&                              vel,  //!< element velocity vector
                                               const std::vector<double>&                              disp, //!<element disp vector
                                               Epetra_SerialDenseMatrix*                               stiffmatrix,  //!< element stiffness matrix
@@ -2135,14 +2135,14 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(Teuchos::ParameterList& 
     }
   }
   return;
-}//DRT::ELEMENTS::Beam3ii::MyStochasticMoments(.)
+}//DRT::ELEMENTS::Beam3r::MyStochasticMoments(.)
 
 /*-----------------------------------------------------------------------------------------------------------*
  | Assemble stochastic and viscous forces and respective stiffness according to fluctuation dissipation      |
  | theorem                                                                               (public) cyron 10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
-inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(Teuchos::ParameterList&                       params,
+inline void DRT::ELEMENTS::Beam3r::CalcBrownian(Teuchos::ParameterList&                       params,
                                               const std::vector<double>&                       vel,  //!< element velocity vector
                                               const std::vector<double>&                       disp, //!< element displacement vector
                                               Epetra_SerialDenseMatrix*                        stiffmatrix,  //!< element stiffness matrix
@@ -2209,7 +2209,7 @@ inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(Teuchos::ParameterList&        
   //MyStochasticMoments<nnode,randompergauss>(params,vel,disp,stiffmatrix,force,gausspointsdamping,Idamping,Itildedamping,Qconvdamping,Qnewdamping);
 
 return;
-}//DRT::ELEMENTS::Beam3ii::CalcBrownian(.)
+}//DRT::ELEMENTS::Beam3r::CalcBrownian(.)
 
 /*-----------------------------------------------------------------------------------------------------------*
  | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions; if two   |
@@ -2219,7 +2219,7 @@ return;
  |                                                                                       (public) cyron 10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnode, int ndim> //number of nodes, number of dimensions
-inline void DRT::ELEMENTS::Beam3ii::NodeShift(Teuchos::ParameterList& params,  //!<parameter list
+inline void DRT::ELEMENTS::Beam3r::NodeShift(Teuchos::ParameterList& params,  //!<parameter list
                                               std::vector<double>&    disp) //!<element disp vector
 {
   /*get number of degrees of freedom per node; note: the following function assumes the same number of degrees
@@ -2277,4 +2277,4 @@ inline void DRT::ELEMENTS::Beam3ii::NodeShift(Teuchos::ParameterList& params,  /
     }
 
 return;
-}//DRT::ELEMENTS::Beam3ii::NodeShift
+}//DRT::ELEMENTS::Beam3r::NodeShift

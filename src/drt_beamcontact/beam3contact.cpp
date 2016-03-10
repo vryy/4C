@@ -26,7 +26,7 @@ Maintainer: Christoph Meier
 
 #include "../drt_structure/strtimint_impl.H"
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_inpar/inpar_statmech.H"
 
@@ -76,8 +76,8 @@ boundarynode2_(std::make_pair(0,0))
   if (smoothing == INPAR::BEAMCONTACT::bsm_cpp)
   {
     const DRT::ElementType & eot1 = element1_->ElementType();
-    if(eot1 != DRT::ELEMENTS::Beam3Type::Instance() and eot1 != DRT::ELEMENTS::Beam3iiType::Instance())
-      dserror("Tangent smoothing only implemented for beams of type beam3 and beam3ii!");
+    if(eot1 != DRT::ELEMENTS::Beam3Type::Instance() and eot1 != DRT::ELEMENTS::Beam3rType::Instance())
+      dserror("Tangent smoothing only implemented for beams of type beam3 and beam3r!");
 
     //For both elements the 2 direct neighbor elements are determined and saved in the B3CNeighbor-Class
     //variables neighbors1_ and neighbors2_.
@@ -5082,9 +5082,9 @@ double CONTACT::Beam3contact<numnodes, numnodalvalues>::GetJacobi(DRT::Element* 
   {
     jacobi = (static_cast<DRT::ELEMENTS::Beam3*>(element1))->GetJacobi();
   }
-  else if (eot1 == DRT::ELEMENTS::Beam3iiType::Instance())
+  else if (eot1 == DRT::ELEMENTS::Beam3rType::Instance())
   {
-    jacobi = (static_cast<DRT::ELEMENTS::Beam3ii*>(element1))->GetJacobi();
+    jacobi = (static_cast<DRT::ELEMENTS::Beam3r*>(element1))->GetJacobi();
   }
   else
   {

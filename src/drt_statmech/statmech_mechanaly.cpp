@@ -19,7 +19,7 @@ Maintainer: Kei Müller
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_truss3/truss3.H"
 #include "../drt_truss3cl/truss3cl.H"
@@ -113,10 +113,10 @@ void STATMECH::StatMechManager::OutputElementSpatialInternalForces(const std::os
           force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->InternalForceVector();
           eps = (dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->EpsilonSgn();
         }
-        else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
+        else if(eot == DRT::ELEMENTS::Beam3rType::Instance())
         {
-          force = (dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element))->InternalForceVector();
-          eps = (dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element))->EpsilonSgn();
+          force = (dynamic_cast<DRT::ELEMENTS::Beam3r*>(element))->InternalForceVector();
+          eps = (dynamic_cast<DRT::ELEMENTS::Beam3r*>(element))->EpsilonSgn();
         }
         else if(eot == DRT::ELEMENTS::BeamCLType::Instance())
         {
@@ -188,8 +188,8 @@ void STATMECH::StatMechManager::OutputElementMaterialInternalForces(const Epetra
         const DRT::ElementType &eot = rowele->ElementType();
         if(eot == DRT::ELEMENTS::Beam3Type::Instance())
           force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(rowele))->MatForceGp();
-        else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
-          force = (dynamic_cast<DRT::ELEMENTS::Beam3ii*>(rowele))->MatForceGp();
+        else if(eot == DRT::ELEMENTS::Beam3rType::Instance())
+          force = (dynamic_cast<DRT::ELEMENTS::Beam3r*>(rowele))->MatForceGp();
         else if(eot == DRT::ELEMENTS::BeamCLType::Instance())
           force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(rowele))->MatForceGp();
         else

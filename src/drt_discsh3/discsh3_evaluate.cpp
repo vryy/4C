@@ -366,7 +366,7 @@ void DRT::ELEMENTS::DiscSh3::EvaluatePTC(Teuchos::ParameterList& params,
     }
 
   return;
-} //DRT::ELEMENTS::Beam3ii::EvaluatePTC
+} //DRT::ELEMENTS::Beam3r::EvaluatePTC
 
 
 /*----------------------------------------------------------------------------*

@@ -21,7 +21,7 @@ Maintainer: Kei Müller
 #include "../drt_lib/drt_element.H"
 #include "../drt_truss3/truss3.H"
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 
 
 //MEASURETIME activates measurement of computation time for certain parts of the code
@@ -2056,8 +2056,8 @@ void STATMECH::StatMechManager::OutputDeltaTheta(std::ostringstream& filename)
           LINALG::Matrix<3,1> Tcurr2_alt(true);
           LINALG::Matrix<3,1> Tref1_alt(true);
           LINALG::Matrix<3,1> Tref2_alt(true);
-          crossele->TcurrBeam3ii(Tcurr1_alt,Tcurr2_alt);
-          crossele->TrefBeam3ii(Tref1_alt,Tref2_alt);
+          crossele->TcurrBeam3r(Tcurr1_alt,Tcurr2_alt);
+          crossele->TrefBeam3r(Tref1_alt,Tref2_alt);
           double Phi_ref_alt= GetTheta(Tref1_alt,Tref2_alt);
           double Phi_curr_alt= GetTheta(Tcurr1_alt,Tcurr2_alt);
           double DeltaTheta= abs(Phi_ref_alt-Phi_curr_alt);

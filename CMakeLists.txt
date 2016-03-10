@@ -1568,10 +1568,10 @@ set(OBJS_BACI_MAIN
   src/global_full/global_control.cpp
   src/global_full/baci.cpp
 )
-set(OBJS_DRT_B3II_LIB
-  src/drt_beam3ii/beam3ii.cpp
-  src/drt_beam3ii/beam3ii_evaluate.cpp
-  src/drt_beam3ii/beam3ii_input.cpp
+set(OBJS_DRT_B3R_LIB
+  src/drt_beam3r/beam3r.cpp
+  src/drt_beam3r/beam3r_evaluate.cpp
+  src/drt_beam3r/beam3r_input.cpp
 )
 set(OBJS_DRT_B3CL_LIB
   src/drt_beam3cl/beam3cl.cpp
@@ -2339,7 +2339,7 @@ add_library(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
 add_library(ele_meshfree_fluid ${OBJS_DRT_MESHFREE_FLUID_CELL_LIB})
 add_library(ele_ale ${OBJS_DRT_ALE_LIB})
 add_library(ele_b3 ${OBJS_DRT_B3_LIB})
-add_library(ele_b3ii ${OBJS_DRT_B3II_LIB})
+add_library(ele_b3r ${OBJS_DRT_B3R_LIB})
 add_library(ele_b3eb ${OBJS_DRT_B3EB_LIB})
 add_library(ele_b3ebtor ${OBJS_DRT_B3EBTOR_LIB})
 add_library(ele_b3ebanisotrop ${OBJS_DRT_B3EBANISOTROP_LIB})
@@ -2368,7 +2368,7 @@ add_library(ele_acou ${OBJS_DRT_ACOU_LIB})
 set(ELEMENT_LIBRARIES
   ele_ale
   ele_b3
-  ele_b3ii
+  ele_b3r
   ele_b3eb
   ele_b3ebtor
   ele_b3ebanisotrop

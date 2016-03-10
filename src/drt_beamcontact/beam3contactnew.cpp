@@ -26,7 +26,7 @@ Maintainer: Christoph Meier
 
 #include "../drt_structure/strtimint_impl.H"
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_inpar/inpar_statmech.H"
 
@@ -119,8 +119,8 @@ radius2_(0.0)
 
   const DRT::ElementType & eot1 = element1_->ElementType();
 
-  if (smoothing_ == INPAR::BEAMCONTACT::bsm_cpp and eot1 != DRT::ELEMENTS::Beam3Type::Instance() and eot1 != DRT::ELEMENTS::Beam3iiType::Instance() )
-    dserror("Tangent smoothing only implemented for beams of type beam3 and beam3ii!");
+  if (smoothing_ == INPAR::BEAMCONTACT::bsm_cpp and eot1 != DRT::ELEMENTS::Beam3Type::Instance() and eot1 != DRT::ELEMENTS::Beam3rType::Instance() )
+    dserror("Tangent smoothing only implemented for beams of type beam3 and beam3r!");
 
   //For both elements the 2 direct neighbor elements are determined and saved in the B3CNeighbor-Class
   //variables neighbors1_ and neighbors2_. The neighbors are not only necessary for tangent smoothing
@@ -155,10 +155,10 @@ radius2_(0.0)
     Iyy1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->Iyy();
     Iyy2 = (static_cast<DRT::ELEMENTS::Beam3*>(element2_))->Iyy();
   }
-  else if (eot1 == DRT::ELEMENTS::Beam3iiType::Instance())
+  else if (eot1 == DRT::ELEMENTS::Beam3rType::Instance())
   {
-    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3ii*>(element1_))->Iyy();
-    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3ii*>(element2_))->Iyy();
+    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3r*>(element1_))->Iyy();
+    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3r*>(element2_))->Iyy();
   }
   else if (eot1 == DRT::ELEMENTS::Beam3ebType::Instance())
   {
@@ -3777,9 +3777,9 @@ double CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetJacobi(DRT::Elemen
   {
     jacobi = (static_cast<DRT::ELEMENTS::Beam3*>(element1))->GetJacobi();
   }
-  else if (eot1 == DRT::ELEMENTS::Beam3iiType::Instance())
+  else if (eot1 == DRT::ELEMENTS::Beam3rType::Instance())
   {
-    jacobi = (static_cast<DRT::ELEMENTS::Beam3ii*>(element1))->GetJacobi();
+    jacobi = (static_cast<DRT::ELEMENTS::Beam3r*>(element1))->GetJacobi();
   }
   else
   {

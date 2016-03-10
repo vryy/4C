@@ -14,7 +14,7 @@ Maintainer: Christoh Meier
 
 #include "beam3contact_utils.H"
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_beam3ebtor/beam3ebtor.H"
 #include "../drt_beam3k/beam3k.H"
@@ -77,7 +77,7 @@ bool BEAMCONTACT::BeamElement(DRT::Element& element)
 
   if (ele_type == DRT::ELEMENTS::Beam3ebType::Instance() or
       ele_type == DRT::ELEMENTS::Beam3Type::Instance() or
-      ele_type == DRT::ELEMENTS::Beam3iiType::Instance() or
+      ele_type == DRT::ELEMENTS::Beam3rType::Instance() or
       ele_type == DRT::ELEMENTS::Beam3kType::Instance())
     return true; //TODO: Print Warning, that only these three types of beam elements are supported!!!
   else
@@ -132,9 +132,9 @@ double BEAMCONTACT::CalcEleRadius(const DRT::Element* ele)
     const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(ele);
     eleradius =MANIPULATERADIUS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
   }
-  if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
+  if ( eot == DRT::ELEMENTS::Beam3rType::Instance() )
   {
-    const DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ii*>(ele);
+    const DRT::ELEMENTS::Beam3r* thisbeam = static_cast<const DRT::ELEMENTS::Beam3r*>(ele);
     eleradius = MANIPULATERADIUS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
   }
   if ( eot == DRT::ELEMENTS::Beam3ebType::Instance() )

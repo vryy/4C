@@ -25,7 +25,7 @@ Maintainer: Christoph Meier
 
 #include "../drt_structure/strtimint_impl.H"
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../headers/FAD_utils.H"
@@ -94,10 +94,10 @@ radius2_(0.0)
     Iyy1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->Iyy();
     Iyy2 = (static_cast<DRT::ELEMENTS::Beam3*>(element2_))->Iyy();
   }
-  else if (eot1 == DRT::ELEMENTS::Beam3iiType::Instance())
+  else if (eot1 == DRT::ELEMENTS::Beam3rType::Instance())
   {
-    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3ii*>(element1_))->Iyy();
-    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3ii*>(element2_))->Iyy();
+    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3r*>(element1_))->Iyy();
+    Iyy2 = (static_cast<DRT::ELEMENTS::Beam3r*>(element2_))->Iyy();
   }
   else if (eot1 == DRT::ELEMENTS::Beam3ebType::Instance())
   {
@@ -105,7 +105,7 @@ radius2_(0.0)
     Iyy2 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element2_))->Iyy();
   }
   else
-    dserror("Only Beam3, Beam3ii and Beam3eb elements allowed in Beam3tobeampotential!");
+    dserror("Only Beam3, Beam3r and Beam3eb elements allowed in Beam3tobeampotential!");
 
   radius1_ = MANIPULATERADIUS * sqrt(sqrt(4 * Iyy1 / M_PI));
   radius2_ = MANIPULATERADIUS * sqrt(sqrt(4 * Iyy2 / M_PI));

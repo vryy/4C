@@ -80,7 +80,7 @@ BEAMS_PARSHIFTANGLE1            10 //Lower shift angle (in degrees) for penalty 
 BEAMS_PARSHIFTANGLE2            30 //Upper shift angle (in degrees) for penalty scaling of small-angle-contact
 BEAMS_SEGANGLE                  1.0 //Maximal angle deviation needed for contact search segmentation
 BEAMS_NUMINTEGRATIONINTERVAL    20 //Number of integration intervals per element
-BEAMS_SMOOTHING                 None //Apply tangent smoothing or not (possible for non-smooth beam3 and beam3ii elements)
+BEAMS_SMOOTHING                 None //Apply tangent smoothing or not (possible for non-smooth beam3 and beam3r elements)
 BEAMS_PENALTYLAW                LinPosQuadPen //Penalty Law: LinPen(default), QuadPen, LinNegQuadPen, LinPosQuadPen, LinPosCubPen, LinPosDoubleQuadPen, LinPosExpPen"
 BEAMS_PENREGPARAM_G0            0.005
 BEAMS_PENREGPARAM_F0            0.0

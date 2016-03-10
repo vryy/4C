@@ -12,7 +12,7 @@ Maintainer: Christoph Meier
 *----------------------------------------------------------------------*/
 
 #include "beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
@@ -288,15 +288,15 @@ double DRT::ELEMENTS::Beam3::Lcurr() const
  return lcurr_;
 }
 
-//brief! Return current tangent of beam3ii elements connected to beam3 element
-void DRT::ELEMENTS::Beam3::TcurrBeam3ii(LINALG::Matrix<3,1>& Tcurr1, LINALG::Matrix<3,1>& Tcurr2)
+//brief! Return current tangent of beam3r elements connected to beam3 element
+void DRT::ELEMENTS::Beam3::TcurrBeam3r(LINALG::Matrix<3,1>& Tcurr1, LINALG::Matrix<3,1>& Tcurr2)
 {
   DRT::Node* node1 = this->Nodes()[0];
   DRT::Element* Element1=node1->Elements()[0];
   const DRT::ElementType &eot_el1 = Element1->ElementType();
-  if(eot_el1==DRT::ELEMENTS::Beam3iiType::Instance())
+  if(eot_el1==DRT::ELEMENTS::Beam3rType::Instance())
   {
-    DRT::ELEMENTS::Beam3ii* fil1 = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (Element1);
+    DRT::ELEMENTS::Beam3r* fil1 = dynamic_cast<DRT::ELEMENTS::Beam3r*> (Element1);
     if(fil1==NULL)
       return;
     int nodenumber=0;
@@ -306,9 +306,9 @@ void DRT::ELEMENTS::Beam3::TcurrBeam3ii(LINALG::Matrix<3,1>& Tcurr1, LINALG::Mat
   }
   DRT::Node* node2 = this->Nodes()[1];
   DRT::Element* Element2=node2->Elements()[0];
-  if(Element2->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance())
+  if(Element2->ElementType()==DRT::ELEMENTS::Beam3rType::Instance())
   {
-    DRT::ELEMENTS::Beam3ii* fil2 = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (Element2);
+    DRT::ELEMENTS::Beam3r* fil2 = dynamic_cast<DRT::ELEMENTS::Beam3r*> (Element2);
     if (fil2==NULL)
       return;
     int nodenumber=0;
@@ -319,24 +319,24 @@ void DRT::ELEMENTS::Beam3::TcurrBeam3ii(LINALG::Matrix<3,1>& Tcurr1, LINALG::Mat
  return;
 }
 
-//brief! Return current tangent of beam3ii elements connected to beam3 element
-void DRT::ELEMENTS::Beam3::TrefBeam3ii(LINALG::Matrix<3,1>& Tref1, LINALG::Matrix<3,1>& Tref2)
+//brief! Return current tangent of beam3r elements connected to beam3 element
+void DRT::ELEMENTS::Beam3::TrefBeam3r(LINALG::Matrix<3,1>& Tref1, LINALG::Matrix<3,1>& Tref2)
 {
   DRT::Node* node1 = this->Nodes()[0];
   DRT::Element* Element1=node1->Elements()[0];
   const DRT::ElementType &eot_el1 = Element1->ElementType();
-  if(eot_el1==DRT::ELEMENTS::Beam3iiType::Instance())
+  if(eot_el1==DRT::ELEMENTS::Beam3rType::Instance())
   {
-    DRT::ELEMENTS::Beam3ii* fil1 = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (Element1);
+    DRT::ELEMENTS::Beam3r* fil1 = dynamic_cast<DRT::ELEMENTS::Beam3r*> (Element1);
     if(fil1==NULL)
       return;
     Tref1=fil1->Tref();
   }
   DRT::Node* node2 = this->Nodes()[1];
   DRT::Element* Element2=node2->Elements()[0];
-  if(Element2->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance())
+  if(Element2->ElementType()==DRT::ELEMENTS::Beam3rType::Instance())
   {
-    DRT::ELEMENTS::Beam3ii* fil2 = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (Element2);
+    DRT::ELEMENTS::Beam3r* fil2 = dynamic_cast<DRT::ELEMENTS::Beam3r*> (Element2);
     if (fil2==NULL)
       return;
     Tref2=fil2->Tref();

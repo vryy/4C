@@ -31,7 +31,7 @@ Maintainer: Kei Müller
 #include "../drt_io/io_control.H"
 #include "../drt_beam3/beam3.H"
 #include "../drt_spring3/spring3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_beam3cl/beam3cl.H"
 #include "../drt_truss3/truss3.H"
@@ -366,7 +366,7 @@ void STATMECH::StatMechManager::GetBindingSpotPositions(Epetra_Vector& discol,
      linkermodel_ == statmech_linker_bellseqintpol ||
      linkermodel_ == statmech_linker_myosinthick)
     GetInterpolatedBindingSpotPositions(discol, bspotpositions, bspotrotations);
-  else  // conventional crosslinker beam3ii, Truss 3 element, i.e. binding spots coincide with nodes
+  else  // conventional crosslinker beam3r, Truss 3 element, i.e. binding spots coincide with nodes
     GetNodalBindingSpotPositionsFromDisVec(discol, bspotpositions, bspotrotations);
   return;
 }
@@ -537,7 +537,7 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
     //Quaternions at relevant filament nodes
     LINALG::Matrix<4,1>  bQ;
     std::vector<LINALG::Matrix<4,1> >  nQ(2);
-    DRT::ELEMENTS::Beam3ii* filele = NULL;
+    DRT::ELEMENTS::Beam3r* filele = NULL;
 
     // loop over row binding spots CHANGED
     int prevelegid = -1;
@@ -549,8 +549,8 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
       if(elegid!=prevelegid)
       {
         filelement = discret_->gElement(elegid);
-        if (filelement->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance())
-          filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_->gElement(elegid));
+        if (filelement->ElementType()==DRT::ELEMENTS::Beam3rType::Instance())
+          filele = dynamic_cast<DRT::ELEMENTS::Beam3r*> (discret_->gElement(elegid));
 
         node0 = discret_->gNode(filelement->NodeIds()[0]);
         node1 = discret_->gNode(filelement->NodeIds()[1]);
@@ -765,11 +765,11 @@ void STATMECH::StatMechManager::GetElementBindingSpotTriads(Teuchos::RCP<Epetra_
 
     //check type of element (orientation triads are not for all elements available in the same way
     DRT::ElementType & eot = ((discret_->lRowNode(i)->Elements())[lowestidele])->ElementType();
-    //if element is of type beam3ii get nodal triad
-    if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
+    //if element is of type beam3r get nodal triad
+    if (eot == DRT::ELEMENTS::Beam3rType::Instance())
     {
-      DRT::ELEMENTS::Beam3ii* filele = NULL;
-      filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_->lRowNode(i)->Elements()[lowestidele]);
+      DRT::ELEMENTS::Beam3r* filele = NULL;
+      filele = dynamic_cast<DRT::ELEMENTS::Beam3r*> (discret_->lRowNode(i)->Elements()[lowestidele]);
 
       //check whether crosslinker is connected to first or second node of that element
       int nodenumber = 0;
@@ -806,7 +806,7 @@ void STATMECH::StatMechManager::GetElementBindingSpotTriads(Teuchos::RCP<Epetra_
       (*nodetriadsrow)[3][i]=0.0;
     }
     else
-      dserror("Filaments have to be discretized with beam3ii or Beam3eb elements for orientation check!!!");
+      dserror("Filaments have to be discretized with beam3r or Beam3eb elements for orientation check!!!");
   }
   // communicate the appropriate vector
   if(nodetriads->MyLength()==discret_->NodeColMap()->NumMyElements())
@@ -2367,7 +2367,7 @@ void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&             
        //correct reference configuration data is computed for the new crosslinker element;
 
        DRT::Element * element = discret_->gElement(discret_->lRowElement(0)->Id());
-       if (element->ElementType().Name()=="Beam3iiType")
+       if (element->ElementType().Name()=="Beam3rType")
        {
          // set initial triads/quaternions
          if(nodalquaternions==Teuchos::null)

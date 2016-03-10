@@ -39,7 +39,7 @@ Maintainer: Kei Müller
 #include "stru_aux.H"
 
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_beam3cl/beam3cl.H"
 #include "../drt_truss3/truss3.H"
@@ -199,14 +199,14 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
       if((statmechman_->GetPeriodLength())->at(0) > 0.0)
         statmechman_->PeriodicBoundaryBeam3Init(discret_->lColElement(i));
     }
-    else if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
+    else if ( eot == DRT::ELEMENTS::Beam3rType::Instance() )
     {
       //see whether current element needs more random numbers per time step than any other before
-      randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3ii*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+      randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::Beam3r*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
 
       //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
       if((statmechman_->GetPeriodLength())->at(0) > 0.0)
-        statmechman_->PeriodicBoundaryBeam3iiInit(discret_->lColElement(i));
+        statmechman_->PeriodicBoundaryBeam3rInit(discret_->lColElement(i));
     }
     else if ( eot == DRT::ELEMENTS::BeamCLType::Instance() )
     {

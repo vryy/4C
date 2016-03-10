@@ -406,7 +406,7 @@ int DRT::ELEMENTS::BeamCL::EvaluateNeumann(Teuchos::ParameterList&   params,
 
   dserror("Integration of Surface Neumann Boundary Condition for 4-noded Beam Element not yet implemented");
   //
-  // So far the folowing code is juft a copy of beam3ii´ s code !
+  // So far the folowing code is juft a copy of beam3r´ s code !
   //
   // get element displacements
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");

@@ -252,7 +252,7 @@ void DRT::ELEMENTS::Rigidsphere::MyBackgroundVelocity(Teuchos::ParameterList& pa
                                                 LINALG::Matrix<3,1>& velbackground,  //!< velocity of background fluid
                                                 LINALG::Matrix<3,3>& velbackgroundgrad) //!<gradient of velocity of background fluid
 {
-  // only constant background velocity implemented yet. for case of shear flow, see beam3ii
+  // only constant background velocity implemented yet. for case of shear flow, see beam3r
 
   // default values for background velocity and its gradient
   velbackground.PutScalar(0);

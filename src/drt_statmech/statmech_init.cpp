@@ -324,8 +324,8 @@ void STATMECH::StatMechManager::ElementSanityCheck()
   // An element used to browse through local Row Elements
 
   DRT::Element * element = discret_->gElement(discret_->lRowElement(0)->Id());
-//  if (element->ElementType().Name()=="Beam3iiType" && linkermodel_ != statmech_linker_none && statmechparams_.get<double>("ILINK",0.0) != 0.0)
-//    dserror("Truss linkers are not currently configured to bind with filaments discretized with Beam3ii elements.\nPlease choose Beam3Type element for linkers.");
+//  if (element->ElementType().Name()=="Beam3rType" && linkermodel_ != statmech_linker_none && statmechparams_.get<double>("ILINK",0.0) != 0.0)
+//    dserror("Truss linkers are not currently configured to bind with filaments discretized with Beam3r elements.\nPlease choose Beam3Type element for linkers.");
   if (element->ElementType().Name()=="Beam3ebType" && linkermodel_ != statmech_linker_none && statmechparams_.get<double>("ILINK",0.0) != 0.0)
     dserror("Currently only Truss and spring linkers are configured to bind with filaments discretized with Beam3eb elements.\nPlease set ILINK=0 to activate truss linkers, ILINK=ALINK=0 activate spring linkers.");
   return;
@@ -647,7 +647,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       bspotxi_->Import(bspotxirow,bspotimporter,Insert);
       bspot2nodes_->Import(bspot2nodesrow,bspotimporter,Insert);
     }
-    else // beam3/beam3ii element: new binding spot maps are equivalent to node maps
+    else // beam3/beam3r element: new binding spot maps are equivalent to node maps
     {
       // maps
       bspotcolmap_ = Teuchos::rcp(new Epetra_Map(*(discret_->NodeColMap())));

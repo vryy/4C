@@ -33,7 +33,7 @@ Maintainer: Kei Müller
 #include <math.h>
 
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "beam3contact_manager.H"
@@ -515,8 +515,8 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
 
         if (eot == DRT::ELEMENTS::Beam3Type::Instance())
           (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->Izz()) / M_PI));
-        else if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
-          (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element))->Izz()) / M_PI));
+        else if (eot == DRT::ELEMENTS::Beam3rType::Instance())
+          (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3r*>(element))->Izz()) / M_PI));
         else if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
           (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3eb*>(element))->Izz()) / M_PI));
         else if (eot == DRT::ELEMENTS::RigidsphereType::Instance())

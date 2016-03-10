@@ -25,7 +25,7 @@ Maintainer: Christoph Meier
 
 #include "../drt_structure/strtimint_impl.H"
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "../drt_inpar/inpar_statmech.H"
@@ -77,16 +77,16 @@ radius2_(0.0)
   {
     Iyy1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->Iyy();
   }
-  else if (eot1 == DRT::ELEMENTS::Beam3iiType::Instance())
+  else if (eot1 == DRT::ELEMENTS::Beam3rType::Instance())
   {
-    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3ii*>(element1_))->Iyy();
+    Iyy1 = (static_cast<DRT::ELEMENTS::Beam3r*>(element1_))->Iyy();
   }
   else if (eot1 == DRT::ELEMENTS::Beam3ebType::Instance())
   {
     Iyy1 = (static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->Iyy();
   }
   else
-    dserror("Only Beam3, Beam3ii and Beam3eb elements allowed as first element in Beam3tospherepotential!");
+    dserror("Only Beam3, Beam3r and Beam3eb elements allowed as first element in Beam3tospherepotential!");
 
   radius1_ = MANIPULATERADIUS * sqrt(sqrt(4 * Iyy1 / M_PI));
 

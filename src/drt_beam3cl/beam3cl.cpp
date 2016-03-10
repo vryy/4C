@@ -228,7 +228,7 @@ DRT::ELEMENTS::BeamCL::BeamCL(const DRT::ELEMENTS::BeamCL& old) :
   return;
 }
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of Beam3ii and return pointer to it (public) |
+ |  Deep copy this instance of Beam3r and return pointer to it (public) |
  |                                                            cyron 01/08 |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::BeamCL::Clone() const

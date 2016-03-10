@@ -1,6 +1,6 @@
 /*!----------------------------------------------------------------------
-\file beam3ii.cpp
-\brief 3D nonlinear Reissner beam element oy type II
+\file beam3r.cpp
+\brief 3D nonlinear Reissner beam element of type II
 
 <pre>
 Maintainer: Christoph Meier
@@ -11,7 +11,7 @@ Maintainer: Christoph Meier
 
 *----------------------------------------------------------------------*/
 
-#include "beam3ii.H"
+#include "beam3r.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
@@ -22,54 +22,54 @@ Maintainer: Christoph Meier
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_inpar/inpar_statmech.H"
 
-DRT::ELEMENTS::Beam3iiType DRT::ELEMENTS::Beam3iiType::instance_;
+DRT::ELEMENTS::Beam3rType DRT::ELEMENTS::Beam3rType::instance_;
 
-DRT::ELEMENTS::Beam3iiType& DRT::ELEMENTS::Beam3iiType::Instance()
+DRT::ELEMENTS::Beam3rType& DRT::ELEMENTS::Beam3rType::Instance()
 {
   return instance_;
 }
 
-DRT::ParObject* DRT::ELEMENTS::Beam3iiType::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::Beam3rType::Create( const std::vector<char> & data )
 {
-  DRT::ELEMENTS::Beam3ii* object = new DRT::ELEMENTS::Beam3ii(-1,-1);
+  DRT::ELEMENTS::Beam3r* object = new DRT::ELEMENTS::Beam3r(-1,-1);
   object->Unpack(data);
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3iiType::Create(const std::string eletype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3rType::Create(const std::string eletype,
                                                               const std::string eledistype,
                                                               const int         id,
                                                               const int         owner )
 {
-  if ( eletype=="BEAM3II" )
+  if ( eletype=="BEAM3R" )
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3ii(id,owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(id,owner));
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3iiType::Create( const int id, const int owner )
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3rType::Create( const int id, const int owner )
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3ii(id,owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(id,owner));
   return ele;
 }
 
-void DRT::ELEMENTS::Beam3iiType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+void DRT::ELEMENTS::Beam3rType::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 6;
   dimns = 6;
   nv = 6;
 }
 
-void DRT::ELEMENTS::Beam3iiType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+void DRT::ELEMENTS::Beam3rType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeBeam3DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
-void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+void DRT::ELEMENTS::Beam3rType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BEAM3II"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BEAM3R"];
 
   defs["LINE2"]
     .AddIntVector("LINE2",2)
@@ -187,7 +187,7 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3ii::Beam3ii(int id, int owner) :
+DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner) :
 DRT::Element(id,owner),
 isinit_(false),
 needstatmech_(false),
@@ -219,14 +219,14 @@ inertscalerot2_(0.0)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       cyron 01/08|
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
+DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old) :
  DRT::Element(old),
  isinit_(old.isinit_),
  needstatmech_(old.needstatmech_),
  eps_(old.eps_),
  f_(old.f_),
  Ngp_(old.Ngp_),
- kappa_max_(old.kappa_max_),
+ K_max_(old.K_max_),
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
  Qnew_(old.Qnew_),
@@ -252,8 +252,8 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
  theta0_(old.theta0_),
  Tcurr_(old.Tcurr_),
  Tref_(old.Tref_),
- kapparef_(old.kapparef_),
- gammaref_(old.gammaref_),
+ Kref_(old.Kref_),
+ Gammaref_(old.Gammaref_),
  nodeI_(old.nodeI_),
  nodeJ_(old.nodeJ_),
  crosssec_(old.crosssec_),
@@ -279,19 +279,19 @@ DRT::ELEMENTS::Beam3ii::Beam3ii(const DRT::ELEMENTS::Beam3ii& old) :
   return;
 }
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of Beam3ii and return pointer to it (public) |
+ |  Deep copy this instance of Beam3r and return pointer to it (public) |
  |                                                            cyron 01/08 |
  *----------------------------------------------------------------------*/
-DRT::Element* DRT::ELEMENTS::Beam3ii::Clone() const
+DRT::Element* DRT::ELEMENTS::Beam3r::Clone() const
 {
-  DRT::ELEMENTS::Beam3ii* newelement = new DRT::ELEMENTS::Beam3ii(*this);
+  DRT::ELEMENTS::Beam3r* newelement = new DRT::ELEMENTS::Beam3r(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            cyron 01/08 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3ii::~Beam3ii()
+DRT::ELEMENTS::Beam3r::~Beam3r()
 {
   return;
 }
@@ -299,9 +299,9 @@ DRT::ELEMENTS::Beam3ii::~Beam3ii()
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 01/08
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ii::Print(std::ostream& os) const
+void DRT::ELEMENTS::Beam3r::Print(std::ostream& os) const
 {
-  os << "beam3ii ";
+  os << "beam3r ";
   Element::Print(os);
   return;
 }
@@ -310,7 +310,7 @@ void DRT::ELEMENTS::Beam3ii::Print(std::ostream& os) const
  |                                                             (public) |
  |                                                          cyron 01/08 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3ii::Shape() const
+DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3r::Shape() const
 {
   int numnodes = NumNode();
   switch(numnodes)
@@ -339,7 +339,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3ii::Shape() const
  |  Pack data                                                  (public) |
  |                                                           cyron 01/08/
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
+void DRT::ELEMENTS::Beam3r::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm( data );
   sm.Insert();
@@ -350,7 +350,7 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
 
-  //add all class variables of beam3ii element
+  //add all class variables of beam3r element
   AddtoPack(data,jacobi_);
   AddtoPack(data,jacobimass_);
   AddtoPack(data,jacobinode_);
@@ -384,8 +384,8 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,theta0_);
   AddtoPack<3,1>(data,Tcurr_);
   AddtoPack<3,1>(data,Tref_);
-  AddtoPack<3,1>(data,kapparef_);
-  AddtoPack<3,1>(data,gammaref_);
+  AddtoPack<3,1>(data,Kref_);
+  AddtoPack<3,1>(data,Gammaref_);
   AddtoPack<3,1>(data,Ngp_);
   AddtoPack(data,eps_);
   AddtoPack(data,f_);
@@ -411,7 +411,7 @@ void DRT::ELEMENTS::Beam3ii::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           cyron 01/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
+void DRT::ELEMENTS::Beam3r::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type
@@ -423,7 +423,7 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
-  //extract all class variables of beam3ii element
+  //extract all class variables of beam3r element
   ExtractfromPack(position,data,jacobi_);
   ExtractfromPack(position,data,jacobimass_);
   ExtractfromPack(position,data,jacobinode_);
@@ -457,8 +457,8 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
   ExtractfromPack<3,1>(position,data,theta0_);
   ExtractfromPack<3,1>(position,data,Tcurr_);
   ExtractfromPack<3,1>(position,data,Tref_);
-  ExtractfromPack<3,1>(position,data,kapparef_);
-  ExtractfromPack<3,1>(position,data,gammaref_);
+  ExtractfromPack<3,1>(position,data,Kref_);
+  ExtractfromPack<3,1>(position,data,Gammaref_);
   ExtractfromPack<3,1>(position,data,Ngp_);
   ExtractfromPack(position,data,eps_);
   ExtractfromPack(position,data,f_);
@@ -485,7 +485,7 @@ void DRT::ELEMENTS::Beam3ii::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          cyron 01/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3ii::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3r::Lines()
 {
   std::vector<Teuchos::RCP<Element> > lines(1);
   lines[0]= Teuchos::rcp(this, false);
@@ -496,7 +496,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3ii::Lines()
  |determine Gauss rule from required type of integration                |
  |                                                   (public)cyron 09/09|
  *----------------------------------------------------------------------*/
-DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3ii::MyGaussRule(unsigned int nnode, IntegrationType integrationtype)
+DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(unsigned int nnode, IntegrationType integrationtype)
 {
   DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule1D_undefined;
 
@@ -599,18 +599,18 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3ii::MyGaussRule(unsigned int nnode, 
 /*----------------------------------------------------------------------*
  |  Initialize (public)                                      cyron 01/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3iiType::Initialize(DRT::Discretization& dis)
+int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
 {
-    //setting up geometric variables for beam3ii elements
+    //setting up geometric variables for beam3r elements
     for (int num=0; num< dis.NumMyColElements(); ++num)
     {
-      //in case that current element is not a beam3ii element there is nothing to do and we go back
+      //in case that current element is not a beam3r element there is nothing to do and we go back
       //to the head of the loop
       if (dis.lColElement(num)->ElementType() != *this) continue;
 
-      //if we get so far current element is a beam3ii element and  we get a pointer at it
-      DRT::ELEMENTS::Beam3ii* currele = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(dis.lColElement(num));
-      if (!currele) dserror("cast to Beam3ii* failed");
+      //if we get so far current element is a beam3r element and  we get a pointer at it
+      DRT::ELEMENTS::Beam3r* currele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(dis.lColElement(num));
+      if (!currele) dserror("cast to Beam3r* failed");
 
       //reference node position
       std::vector<double> xrefe;
@@ -670,9 +670,9 @@ int DRT::ELEMENTS::Beam3iiType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------------------*
  |  return current tangent at node                                   mukherjee 10/14|
  *----------------------------------------------------------------------------------*/
-LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3ii::Tcurr(const int NodeID)
+LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3r::Tcurr(const int NodeID)
 {
-  if (NumNode()>2) dserror("Beam3ii::Tcurr() not yet implemented for nnode>2");
+  if (NumNode()>2) dserror("Beam3r::Tcurr() not yet implemented for nnode>2");
 
   for(int node=0; node< 2; node++)
   {
@@ -704,9 +704,9 @@ LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3ii::Tcurr(const int NodeID)
 /*----------------------------------------------------------------------------------*
  |  return reference tangent at node                                 mukherjee 04/15|
  *----------------------------------------------------------------------------------*/
-LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3ii::Tref()
+LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3r::Tref()
 {
-  if (NumNode()>2) dserror("Beam3ii::Tref() not yet implemented for nnode>2");
+  if (NumNode()>2) dserror("Beam3r::Tref() not yet implemented for nnode>2");
 
   return Tref_;
 }

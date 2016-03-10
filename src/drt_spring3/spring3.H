@@ -132,9 +132,9 @@ public:
 
   virtual void SetInitialTangents(std::vector<LINALG::Matrix<4,1> >& initquaternions);
 
-  virtual void TcurrBeam3ii(LINALG::Matrix<3,1>& Tcurr1, LINALG::Matrix<3,1>& Tcurr2);
+  virtual void TcurrBeam3r(LINALG::Matrix<3,1>& Tcurr1, LINALG::Matrix<3,1>& Tcurr2);
 
-  virtual void TrefBeam3ii(LINALG::Matrix<3,1>& Tref1, LINALG::Matrix<3,1>& Tref2);
+  virtual void TrefBeam3r(LINALG::Matrix<3,1>& Tref1, LINALG::Matrix<3,1>& Tref2);
 
   /*Print the change in angle of this element*/
 

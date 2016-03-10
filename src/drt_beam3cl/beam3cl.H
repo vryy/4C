@@ -120,7 +120,7 @@ namespace DRT
         virtual ~BeamCL();
 
         /*!
-         \brief Deep copy this instance of Beam3ii and return pointer to the copy
+         \brief Deep copy this instance of Beam3r and return pointer to the copy
 
          The Clone() method is used by the virtual base class Element in cases
          where the type of the derived class is unknown and a copy-ctor is needed
@@ -683,7 +683,7 @@ namespace DRT
           } //if(!isinit_)
           return;
 
-        } //DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry()
+        } //DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry()
 
         //!\brief Set initial quaternions rQconv_ depending on nodal quaternions from already existing beam elements
         void SetInitialQuaternions(std::vector<LINALG::Matrix<4, 1> >& initquaternions);
@@ -696,7 +696,7 @@ namespace DRT
 
       private:
 
-        //! action parameters recognized by Beam3ii
+        //! action parameters recognized by Beam3r
         enum ActionType
         {
           calc_none,
@@ -939,7 +939,7 @@ namespace DRT
           }
 
           return;
-        } // DRT::ELEMENTS::Beam3ii::evaluatebasisfunctionsandtriads
+        } // DRT::ELEMENTS::Beam3r::evaluatebasisfunctionsandtriads
 
         //Update of the nodal triads of the four real nodes
         template<int nnode>
@@ -1215,7 +1215,7 @@ namespace DRT
           }
 
           return;
-        } // DRT::ELEMENTS::Beam3ii::computeItildeprime
+        } // DRT::ELEMENTS::Beam3r::computeItildeprime
 
         //!compute matrix v_I as outlined in the equations above (3.15) on page 152 of Jelenic 1999
         /*----------------------------------------------------------------------------------------------------------------------*
@@ -1238,7 +1238,7 @@ namespace DRT
           result.Scale(0.5);
 
           return result;
-        } // DRT::ELEMENTS::Beam3ii::vI
+        } // DRT::ELEMENTS::Beam3r::vI
 
         //!compute matrix v_J as outlined in the equations above (3.15) on page 152 of Jelenic 1999
         /*----------------------------------------------------------------------------------------------------------------------*
@@ -1261,7 +1261,7 @@ namespace DRT
           result.Scale(0.5);
 
           return result;
-        } // DRT::ELEMENTS::Beam3ii::vJ
+        } // DRT::ELEMENTS::Beam3r::vJ
 
         //!compute derivative r' (rprime) of line of centroids at Gauss point x with respect to Jelenic 1999 , eq. (2.12)
         /*----------------------------------------------------------------------------------------------------------------------*
@@ -1311,7 +1311,7 @@ namespace DRT
           rprime.Scale(1.0 / jacobi);
 
           return;
-        } // DRT::ELEMENTS::Beam3ii::curvederivative
+        } // DRT::ELEMENTS::Beam3r::curvederivative
 
         //!calculation of nonlinear stiffness and mass matrix
         template<int nnode>
@@ -1414,7 +1414,7 @@ namespace DRT
         BeamCL& operator =(const BeamCL& old);
 
     };
-    // class Beam3ii
+    // class Beam3r
 
 // << operator
     std::ostream& operator <<(std::ostream& os, const DRT::Element& ele);

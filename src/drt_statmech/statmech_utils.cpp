@@ -20,7 +20,7 @@ Maintainer: Kei Müller
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_io/io.H"
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_beam3cl/beam3cl.H"
 #include "../drt_truss3/truss3.H"
@@ -260,13 +260,13 @@ void STATMECH::StatMechManager::PeriodicBoundaryBeam3Init(DRT::Element* element)
 }
 
 /*------------------------------------------------------------------------*
- | Beam3ii initialization when periodic BCs are applied        cyron 02/10|
+ | Beam3r initialization when periodic BCs are applied        cyron 02/10|
  *-----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::PeriodicBoundaryBeam3iiInit(DRT::Element* element)
+void STATMECH::StatMechManager::PeriodicBoundaryBeam3rInit(DRT::Element* element)
 {
   // note: in analogy to PeriodicBoundaryBeam3Init()
 
-  DRT::ELEMENTS::Beam3ii* beam = dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element);
+  DRT::ELEMENTS::Beam3r* beam = dynamic_cast<DRT::ELEMENTS::Beam3r*>(element);
 
   const int ndim = 3;
 
@@ -1137,7 +1137,7 @@ void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_
   Teuchos::RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(6));
   energies->Scale(0.0);
   //filaments
-  p.set("energyoftype", "beam3ii");
+  p.set("energyoftype", "beam3r");
   discret_->EvaluateScalars(p, energies);
   for(int i=0; i<energies->M(); i++)
     energy.push_back((*energies)(i));

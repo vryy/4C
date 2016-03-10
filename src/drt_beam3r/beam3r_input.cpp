@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file beam3ii_input.cpp
+\file beam3r_input.cpp
 \brief
 
 <pre>
@@ -11,13 +11,13 @@ Maintainer: Christoph Meier
 
 *----------------------------------------------------------------------*/
 
-#include "beam3ii.H"
+#include "beam3r.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/largerotations.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Beam3ii::ReadElement(const std::string&          eletype,
+bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
                                          const std::string&          distype,
                                          DRT::INPUT::LineDefinition* linedef)
 {
@@ -70,7 +70,7 @@ bool DRT::ELEMENTS::Beam3ii::ReadElement(const std::string&          eletype,
 /*------------------------------------------------------------------------*
  | Set moment of inertia                            (public) mueller 03/12|
  *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ii::SetIyy(const double& Iyy)
+void DRT::ELEMENTS::Beam3r::SetIyy(const double& Iyy)
 {
   Iyy_ = Iyy;
   return;
@@ -79,7 +79,7 @@ void DRT::ELEMENTS::Beam3ii::SetIyy(const double& Iyy)
 /*------------------------------------------------------------------------*
  | Set moment of inertia                            (public) mueller 03/12|
  *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ii::SetIzz(const double& Izz)
+void DRT::ELEMENTS::Beam3r::SetIzz(const double& Izz)
 {
   Izz_ = Izz;
   return;
@@ -88,7 +88,7 @@ void DRT::ELEMENTS::Beam3ii::SetIzz(const double& Izz)
 /*------------------------------------------------------------------------*
  | Set moment of inertia                            (public) mueller 03/12|
  *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ii::SetIrr(const double& Irr)
+void DRT::ELEMENTS::Beam3r::SetIrr(const double& Irr)
 {
   Irr_ = Irr;
   return;
@@ -97,7 +97,7 @@ void DRT::ELEMENTS::Beam3ii::SetIrr(const double& Irr)
 /*------------------------------------------------------------------------*
  | Set cross section area                           (public) mueller 03/12|
  *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ii::SetCrossSec(const double& crosssec)
+void DRT::ELEMENTS::Beam3r::SetCrossSec(const double& crosssec)
 {
   crosssec_ = crosssec;
   return;
@@ -106,7 +106,7 @@ void DRT::ELEMENTS::Beam3ii::SetCrossSec(const double& crosssec)
 /*------------------------------------------------------------------------*
  | Set cross section area with shear correction     (public) mueller 03/12|
  *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ii::SetCrossSecShear(const double& crosssecshear)
+void DRT::ELEMENTS::Beam3r::SetCrossSecShear(const double& crosssecshear)
 {
   crosssecshear_ = crosssecshear;
   return;

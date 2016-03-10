@@ -23,7 +23,7 @@ Maintainer: Christoph Meier
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "../drt_inpar/inpar_statmech.H"
@@ -64,10 +64,10 @@ contactflag_(false)
   const DRT::ElementType & eot1 = element1_->ElementType();
   const DRT::ElementType & eot2 = element2_->ElementType();
 
-  if(eot1 != DRT::ELEMENTS::Beam3Type::Instance() and eot1 != DRT::ELEMENTS::Beam3iiType::Instance()
+  if(eot1 != DRT::ELEMENTS::Beam3Type::Instance() and eot1 != DRT::ELEMENTS::Beam3rType::Instance()
      and eot1 != DRT::ELEMENTS::Beam3ebType::Instance())
   {
-    dserror("How did you get here? element1_ has to be of type beam3, beam3ii or beam3eb!!!");
+    dserror("How did you get here? element1_ has to be of type beam3, beam3r or beam3eb!!!");
   }
 
   if(eot2 != DRT::ELEMENTS::RigidsphereType::Instance())
@@ -916,8 +916,8 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeGap(TYPE& g
   if ( eot1 == DRT::ELEMENTS::Beam3Type::Instance() )
     MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3*>(element1_))->Iyy();
 
-  if ( eot1 == DRT::ELEMENTS::Beam3iiType::Instance() )
-    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3ii*>(element1_))->Iyy();
+  if ( eot1 == DRT::ELEMENTS::Beam3rType::Instance() )
+    MomentOfInertia_ele1 = (static_cast<DRT::ELEMENTS::Beam3r*>(element1_))->Iyy();
 
   radius_ele2 = (static_cast<DRT::ELEMENTS::Rigidsphere*>(element2_))->Radius();
 

@@ -186,7 +186,7 @@ public:
                                               Teuchos::RCP<Epetra_MultiVector>  bspotpositions,
                                               Teuchos::RCP<Epetra_MultiVector>  bspotrotations);
 
-  //! \brief Retrieve interpolated binding spot positions for beam3ii elements
+  //! \brief Retrieve interpolated binding spot positions for beam3r elements
   void GetInterpolatedBindingSpotPositions(const Epetra_Vector&              dis,
                                            Teuchos::RCP<Epetra_MultiVector>  bspotpositions,
                                            Teuchos::RCP<Epetra_MultiVector>  bspotrotations);
@@ -253,8 +253,8 @@ public:
   //! \brief Initializes beam3 elements in case of periodic boundary conditions
   void PeriodicBoundaryBeam3Init(DRT::Element* element);
 
-  //! \brief Initializes beam3ii elements in case of periodic boundary conditions
-  void PeriodicBoundaryBeam3iiInit(DRT::Element* element);
+  //! \brief Initializes beam3r elements in case of periodic boundary conditions
+  void PeriodicBoundaryBeam3rInit(DRT::Element* element);
 
   //! \brief Initializes beam3eb elements in case of periodic boundary conditions
   void PeriodicBoundaryBeam3ebInit(DRT::Element* element);

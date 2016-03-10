@@ -18,7 +18,7 @@ Maintainer: Kei Müller
 #include "../linalg/linalg_utils.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_truss3/truss3.H"
 #include "../drt_spring3/spring3.H"
@@ -402,7 +402,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector&                 
             // check whether the kinked visualization is to be applied
             bool kinked = CheckForKinkedVisual(element->Id());
             if (eot == DRT::ELEMENTS::Beam3Type::Instance() ||
-                eot==DRT::ELEMENTS::Beam3iiType::Instance() ||
+                eot==DRT::ELEMENTS::Beam3rType::Instance() ||
                 eot==DRT::ELEMENTS::BeamCLType::Instance() ||
                 eot==DRT::ELEMENTS::Beam3ebType::Instance()||
                 eot == DRT::ELEMENTS::Truss3Type::Instance() ||
@@ -691,8 +691,8 @@ void STATMECH::StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialD
   {
     // draw colored lines between two nodes of a beam or a truss element (meant for filaments/crosslinks/springs)
     const DRT::ElementType & eot = element->ElementType();
-    if(element->ElementType().Name()=="Beam3iiType")
-      dotline = eot==DRT::ELEMENTS::Beam3iiType::Instance();
+    if(element->ElementType().Name()=="Beam3rType")
+      dotline = eot==DRT::ELEMENTS::Beam3rType::Instance();
     if (element->ElementType().Name() == "Beam3Type")
       dotline = eot == DRT::ELEMENTS::Beam3Type::Instance();
     else if(element->ElementType().Name()=="BeamCLType")
@@ -1463,8 +1463,8 @@ void STATMECH::StatMechManager::GmshWedge(const int& n,
     const DRT::ElementType & eot = thisele->ElementType();
     if(eot == DRT::ELEMENTS::Beam3Type::Instance())
       radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(thisele))->Izz()) / M_PI));
-    else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
-      radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
+    else if(eot == DRT::ELEMENTS::Beam3rType::Instance())
+      radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3r*>(thisele))->Izz()) / M_PI));
     else if(eot == DRT::ELEMENTS::BeamCLType::Instance())
       radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::BeamCL*>(thisele))->Izz()) / M_PI));
     else if(eot == DRT::ELEMENTS::Beam3ebType::Instance())

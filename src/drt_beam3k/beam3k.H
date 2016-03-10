@@ -12,7 +12,7 @@ Maintainer: Christoph Meier
 
 3D nonlinear Kirchhoff-like beam element. It can be switched between a variant with weak enforcement of the Kirchhoff
 constraint and variant with strong enforcement of the Kirchhoff constraint. This variant with weak constraint enforcement is based
-on a rotation interpolation that is similar to beam3ii. As the beam curve has to be C^1-continous, it is interpolated
+on a rotation interpolation that is similar to beam3r. As the beam curve has to be C^1-continous, it is interpolated
 with Hermite polynomials of order 3. Therefore each of the two boundary nodes has 7 dofs. With the flag rotvec_ is can be
 switched between to sets of degrees of freedom on the boundary node. The first set (rotvec_==true) is
 [\v{d}_1, \v{theta}_1, t_1, \v{d}_2, \v{theta}_2, t_2, \alpha_3], where \v{d}_i is the vector of nodal positions
@@ -27,10 +27,10 @@ the element has COLLOCATION_POINTS-2 interior nodes which one scalar DoF alpha_i
 
 
 Attention: Since so far linearizations are calculated with FAD, the rotation increments in the case (rotvec_==true)
-are of an additive nature, which is in strong contrast to the beam3ii implementation, where the iterative
+are of an additive nature, which is in strong contrast to the beam3r implementation, where the iterative
 rotation increments are multiplicative. Consequently, the inhomogeneous rotational Dirichlet conditions of beam3k
 can be interpreted as additive increments added to the initial values (i.e. if the initial value is zero, the
-Dirichlet values in the input file are the total nodal rotation angles). This is not true for beam3ii,
+Dirichlet values in the input file are the total nodal rotation angles). This is not true for beam3r,
 where prescribed 3D rotation values have no direct physical interpretation. For 2D rotations both variants are identical.
 *----------------------------------------------------------------------*/
 

@@ -2013,7 +2013,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluatePTC(Teuchos::ParameterList& params,
   }
 
   return;
-} //DRT::ELEMENTS::Beam3ii::EvaluatePTC
+} //DRT::ELEMENTS::Beam3r::EvaluatePTC
 
 /*------------------------------------------------------------------------------------------------------------*
  | lump mass matrix            (private)                                                   meier 05/12|
@@ -2240,7 +2240,7 @@ inline void DRT::ELEMENTS::Beam3eb::MyTranslationalDamping(Teuchos::ParameterLis
           tpartparvelbackgroundgrad(i,j) += r_x(i)*r_x(k)*velbackgroundgrad(k,j);
 
 
-    //loop over all line nodes. Number shape functions for beam3eb is 4 in contrast to 2, in case of beam3ii elements.
+    //loop over all line nodes. Number shape functions for beam3eb is 4 in contrast to 2, in case of beam3r elements.
     // Therefore max(i && j)= 4 i.e. 2*nnode
     for(int i=0; i<2*nnode; i++)
     {
@@ -2345,7 +2345,7 @@ inline void DRT::ELEMENTS::Beam3eb::MyStochasticForces(Teuchos::ParameterList& p
       }
     }
 
-    //loop over all line nodes. Number shape functions for beam3eb is 4 in contrast to 2, in case of beam3ii elements.
+    //loop over all line nodes. Number shape functions for beam3eb is 4 in contrast to 2, in case of beam3r elements.
     // Therefore max(i && j)= 4 i.e. 2*nnode
     for(int i=0; i<2*nnode; i++)
     {

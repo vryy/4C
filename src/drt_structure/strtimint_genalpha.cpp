@@ -364,7 +364,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   {
 
     if (pred_ != INPAR::STR::pred_constdis)
-      dserror("Only the predictor PredictConstDisConsistVelAcc() allowed for dynamic beam3ii simulations!!!");
+      dserror("Only the predictor PredictConstDisConsistVelAcc() allowed for dynamic beam3r simulations!!!");
 
     //If we have nonlinear inertia forces, the corresponding contributions are computed together with the internal forces
     finertn_->PutScalar(0.0);
@@ -972,7 +972,7 @@ void STR::TimIntGenAlpha::BuildResStiffNLMassRot(
    *                + K_{T}
    * Remark: So far, all time integration pre-factors (only necessary for the
    * mass matrix since internal forces are evaluated at n+1) are already
-   * considered at element level (see, e.g., beam3ii_evaluate.cpp). Therefore,
+   * considered at element level (see, e.g., beam3r_evaluate.cpp). Therefore,
    * we don't have to apply them here.
    */
   stiff_->Add(*mass_, false, 1.0 , 1.0);

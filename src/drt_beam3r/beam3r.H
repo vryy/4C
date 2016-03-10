@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
-\file beam3ii.H
+\file beam3r.H
 
-\brief 3D nonlinear Reissner beam element oy type II
+\brief 3D nonlinear Reissner beam element
 
-3D nonlinear Reissner beam element oy type II (according to "The
+3D nonlinear Reissner beam element of type II (according to "The
 interpolation of rotations and its application to finite element models
 of geometrically exact rods", Romero 2004)
 
@@ -20,8 +20,8 @@ Maintainer: Christoph Meier
 *----------------------------------------------------------------------*/
 
 //header file only included if not yet included!
-#ifndef BEAM3II_H
-#define BEAM3II_H
+#ifndef BEAM3R_H
+#define BEAM3R_H
 
 #include "Teuchos_RCP.hpp"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -37,9 +37,9 @@ Maintainer: Christoph Meier
 #include "Sacado.hpp"
 #include "../headers/FAD_utils.H"
 
-//#define BEAM3IIAUTOMATICDIFF  //default: off  //Decide whether automatic differentiation via Sacado is used or not for linearization of f_int
+//#define BEAM3RAUTOMATICDIFF  //default: off  //Decide whether automatic differentiation via Sacado is used or not for linearization of f_int
 
-#ifdef BEAM3IIAUTOMATICDIFF
+#ifdef BEAM3RAUTOMATICDIFF
   typedef Sacado::Fad::DFad<double> FADordouble;
 
   #define MULTIPLICATIVEUPDATES  //default: on  // decide whether multiplicative updates of rotational DOFs are used (in this case, FAD-computed stiffmatrix needs to be transformed)
@@ -47,7 +47,7 @@ Maintainer: Christoph Meier
   typedef double FADordouble;
 #endif
 
-//#define BEAM3IICONSTSTOCHFORCE  //Flag in order to hold stochastic forces constant over the element length
+//#define BEAM3RCONSTSTOCHFORCE  //Flag in order to hold stochastic forces constant over the element length
                                 //and to only provide random numbers for the 3 translational DoFs
                                 //(needed in order to compare with beam3eb)
 
@@ -57,13 +57,13 @@ namespace DRT
 namespace ELEMENTS
 {
 
-class Beam3iiType : public DRT::ElementType
+class Beam3rType : public DRT::ElementType
 {
 public:
 
-  std::string Name() const { return "Beam3iiType"; }
+  std::string Name() const { return "Beam3rType"; }
 
-  static Beam3iiType & Instance();
+  static Beam3rType & Instance();
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
@@ -84,7 +84,7 @@ public:
 
 private:
 
-  static Beam3iiType instance_;
+  static Beam3rType instance_;
 };
 
 /*!
@@ -96,12 +96,12 @@ Crisfield, 2003, "Non-linear Finite Element Analysis of Solids and Structures", 
 
 author cyron (cyron @lnm.mw.tum.de)
 */
-class Beam3ii : public DRT::Element
+class Beam3r : public DRT::Element
 {
 public:
 
   //! @name Friends
-  friend class Beam3iiType;
+  friend class Beam3rType;
 
   //! @name Constructors and destructors and related methods
 
@@ -112,22 +112,22 @@ public:
   \param etype (in): Type of element
   \param owner (in): owner processor of the element
   */
-  Beam3ii(int id, int owner);
+  Beam3r(int id, int owner);
 
   /*!
   \brief Copy Constructor
 
   Makes a deep copy of a Element
   */
-  Beam3ii(const Beam3ii& old);
+  Beam3r(const Beam3r& old);
 
   /*!
   \brief Destructor
   */
-  virtual ~Beam3ii();
+  virtual ~Beam3r();
 
   /*!
-  \brief Deep copy this instance of Beam3ii and return pointer to the copy
+  \brief Deep copy this instance of Beam3r and return pointer to the copy
 
   The Clone() method is used by the virtual base class Element in cases
   where the type of the derived class is unknown and a copy-ctor is needed
@@ -146,7 +146,7 @@ public:
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
   */
-  virtual int UniqueParObjectId() const { return Beam3iiType::Instance().UniqueParObjectId(); }
+  virtual int UniqueParObjectId() const { return Beam3rType::Instance().UniqueParObjectId(); }
 
   /*!
   \brief Pack this class so it can be communicated
@@ -164,7 +164,7 @@ public:
   */
   virtual void Unpack(const std::vector<char>& data);
 
-  virtual DRT::ElementType & ElementType() const { return Beam3iiType::Instance(); }
+  virtual DRT::ElementType & ElementType() const { return Beam3rType::Instance(); }
 
   //@}
 
@@ -234,7 +234,7 @@ public:
    */
   const double& GetKappaMax() const
   {
-    return kappa_max_;
+    return K_max_;
   }
 
   /*!
@@ -296,7 +296,7 @@ public:
       for(int dof=0; dof<3 ; dof++)
       {
         if(fabs(rotrefe[3*node+dof])>1.0e-10)
-          dserror("So far, rotrefe is only a dummy and cannot be used in Beam3ii::SetUpReferenceGeometry!");
+          dserror("So far, rotrefe is only a dummy and cannot be used in Beam3r::SetUpReferenceGeometry!");
       }
 
     if(!isinit_ || secondinit)
@@ -328,8 +328,8 @@ public:
       // resize vectors for Jacobi determinants so that they can store one value at each Gauss point
       // (nnode-1) values for under-integration and nnode values for exact integration
       jacobi_.resize(nnode-1);
-      kapparef_.resize(nnode-1);
-      gammaref_.resize(nnode-1);
+      Kref_.resize(nnode-1);
+      Gammaref_.resize(nnode-1);
       jacobimass_.resize(nnode);
       jacobinode_.resize(nnode);
 
@@ -441,10 +441,10 @@ public:
         Calc_Psi_l_s<nnode,double>(Psi_li, I_i_xi[numgp], jacobi_[numgp], Psi_l_s);
         Calc_Lambda<double>(Psi_l,Q_r,Lambda);
 
-        // compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12) for reference configuration,
+        // compute material strains gamma and kappa according to Jelenic 1999, eq. (2.12) for reference configuration,
         // i.e. call this function with gammaref=zerovector and kapparef=zerovector
         dummy.Clear();
-        computestrain<double>(Psi_l,Psi_l_s,drdxi,Lambda,dummy,dummy,gammaref_[numgp],kapparef_[numgp]);
+        computestrain<double>(Psi_l,Psi_l_s,drdxi,Lambda,dummy,dummy,Gammaref_[numgp],Kref_[numgp]);
       }
 
 
@@ -517,7 +517,7 @@ public:
 
 
       // **************************************** statmech-specific calculation ********************************
-      // TODO not yet functional for nnode>2 => dserror in public methods Beam3ii::Tcurr() and Beam3ii::Tref()
+      // TODO not yet functional for nnode>2 => dserror in public methods Beam3r::Tcurr() and Beam3r::Tref()
 
       double norm2=0;
       // For 2 nodes the axial tangents are same for both direction
@@ -531,7 +531,7 @@ public:
     }//if(!isinit_)
 
     return;
-  }//DRT::ELEMENTS::Beam3ii::SetUpReferenceGeometry()
+  }//DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry()
 
   //@}
 
@@ -633,7 +633,7 @@ public:
 
 private:
 
-  //! action parameters recognized by Beam3ii
+  //! action parameters recognized by Beam3r
   enum ActionType
   {
     calc_none,
@@ -671,7 +671,7 @@ private:
   //! vector storing internal forces at gauss point in material configuration
   LINALG::Matrix<3,1> Ngp_;
   //! norm of maximal bending curvature occurring in this element
-  double kappa_max_;
+  double K_max_;
 
   //! nodal triads in quaternion form at the end of the preceeding time step
   std::vector<LINALG::Matrix<4,1> > Qconv_;
@@ -719,16 +719,16 @@ private:
   std::vector<LINALG::Matrix<3,1> > dispthetanew_;
   //!rotational pseudovectors at nodes in reference configuration
   std::vector<LINALG::Matrix<3,1> > theta0_;
-  //! Matrix holding current tangent at the node connected to Beam3ii element for statmech problem
+  //! Matrix holding current tangent at the node connected to Beam3r element for statmech problem
   LINALG::Matrix<3,1> Tcurr_;
-  //! Matrix holding reference tangent at the node connected to Beam3ii element for statmech problem
+  //! Matrix holding reference tangent at the node connected to Beam3r element for statmech problem
   LINALG::Matrix<3,1> Tref_;
 
-  //!initial curvature at Gauss points for elasticity (corresponding to \Lambda_0^t \Labmda'_0 in eq. (3.5), Crisfield 1999
-  std::vector<LINALG::Matrix<3,1> > kapparef_;
+  //!initial material curvature at Gauss points for elasticity (corresponding to \Lambda_0^t \Labmda'_0 in eq. (3.5), Crisfield 1999
+  std::vector<LINALG::Matrix<3,1> > Kref_;
 
   //!initial axial tension (allways zero) and shear deformation at Gauss points for elasticity (corresponding to \Lambda_0^t rprime_0 - (1,0,0) )
-  std::vector<LINALG::Matrix<3,1> > gammaref_;
+  std::vector<LINALG::Matrix<3,1> > Gammaref_;
 
   //!node I for determination of reference triad, eq. (3.9), (3.10), Jelenic 1999
   unsigned int nodeI_;
@@ -988,16 +988,16 @@ private:
                      const LINALG::TMatrix<T,3,1>& Psi_l_s,
                      const LINALG::TMatrix<T,3,1>& r_s,
                      const LINALG::TMatrix<T,3,3>& Lambda,
-                     const LINALG::Matrix<3,1>& gammaref,
-                     const LINALG::Matrix<3,1>& kapparef,
-                     LINALG::TMatrix<T,3,1>& gamma,
-                     LINALG::TMatrix<T,3,1>& kappa)
+                     const LINALG::Matrix<3,1>& Gammaref,
+                     const LINALG::Matrix<3,1>& Kref,
+                     LINALG::TMatrix<T,3,1>& Gamma,
+                     LINALG::TMatrix<T,3,1>& K)
   {
-    gamma.Clear();
-    kappa.Clear();
+    Gamma.Clear();
+    K.Clear();
 
     //convected strain gamma according to Crisfield 1999, eq. (3.4)
-    gamma.MultiplyTN(Lambda,r_s);
+    Gamma.MultiplyTN(Lambda,r_s);
 
     //In contrary to Crisfield 1999, eq. (3.4), the current implementation allows for initial values of the vector gammaref which
     //has also a second and a third component, i.e. it allows for initial shear deformation. This is the case, when the initial triad
@@ -1009,7 +1009,7 @@ private:
     //In order to avoid this additional effort and to allow for an independent prescription of the nodal triads (e.g. prescribed by an analytical
     //geometry definition), the approach of considering arbitrary initial shear angles at the Gauss points is applied here.
     for (int i=0; i<3; ++i)
-      gamma(i) -= gammaref(i);
+      Gamma(i) -= Gammaref(i);
 
     //Calculation of material curvature vector according to Crisfield 1999, eq. (4.2) (this equation has been derived
     //for a different beam element formulation but is also valid for the element type considered here),
@@ -1017,19 +1017,19 @@ private:
     LINALG::TMatrix<T,3,3> Tinv(true);
     Tinv=LARGEROTATIONS::Tinvmatrix<T>(Psi_l);
     //It is important to use the transposed matrix Tinv^T instead of Tinv (these two only differ in one of three terms)
-    kappa.MultiplyTN(Tinv,Psi_l_s);
+    K.MultiplyTN(Tinv,Psi_l_s);
 
     //mechanically relevant curvature is current curvature minus curvature in reference position
     for (int i=0; i<3; ++i)
-      kappa(i) -= kapparef(i);
+      K(i) -= Kref(i);
 
      return;
-  } // DRT::ELEMENTS::Beam3ii::computestrain
+  } // DRT::ELEMENTS::Beam3r::computestrain
 
   //!computing convected stresses from convected strains vector and returning also convected constitutive matrix between both
   template <typename T>
-  void strainstress(const LINALG::TMatrix<T,3,1>& gamma,
-                    const LINALG::TMatrix<T,3,1>& kappa,
+  void strainstress(const LINALG::TMatrix<T,3,1>& Gamma,
+                    const LINALG::TMatrix<T,3,1>& K,
                     LINALG::TMatrix<T,3,1>& stressN,
                     LINALG::TMatrix<T,3,3>& CN,
                     LINALG::TMatrix<T,3,1>& stressM,
@@ -1116,7 +1116,7 @@ private:
     }
 
      return;
-  } // DRT::ELEMENTS::Beam3ii::computeItilde
+  } // DRT::ELEMENTS::Beam3r::computeItilde
 
 
   /*----------------------------------------------------------------------------------------------------------------------*
@@ -1144,7 +1144,7 @@ private:
     computeItilde(Psil_double,Itilde,phiIJ_double,Lambdar_double,Psili_double,funct);
 
      return;
-  } // DRT::ELEMENTS::Beam3ii::computeItilde
+  } // DRT::ELEMENTS::Beam3r::computeItilde
 
   /*----------------------------------------------------------------------------------------------------------------------*
    |compute \tilde{I}^{i'} in (3.19), page 152, Jelenic 1999 for all nodes i at a certain Gauss point          cyron 04/10|
@@ -1236,7 +1236,7 @@ private:
     }
 
      return;
-  } // DRT::ELEMENTS::Beam3ii::computeItildeprime
+  } // DRT::ELEMENTS::Beam3r::computeItildeprime
 
   //!compute matrix v_I as outlined in the equations above (3.15) on page 152 of Jelenic 1999
   /*----------------------------------------------------------------------------------------------------------------------*
@@ -1259,7 +1259,7 @@ private:
     result.Scale(0.5);
 
     return result;
-  } // DRT::ELEMENTS::Beam3ii::vI
+  } // DRT::ELEMENTS::Beam3r::vI
 
    /*----------------------------------------------------------------------------------------------------------------------*
    |compute matrix v_J as outlined in the equations above (3.15) on page 152 of Jelenic 1999                   cyron 04/10|
@@ -1281,7 +1281,7 @@ private:
     result.Scale(0.5);
 
     return result;
-  } // DRT::ELEMENTS::Beam3ii::vJ
+  } // DRT::ELEMENTS::Beam3r::vJ
 
   //!calculation of nonlinear stiffness and mass matrix
   template<unsigned int nnode>
@@ -1383,10 +1383,10 @@ private:
 
 
   // don't want = operator
-  Beam3ii& operator = (const Beam3ii& old);
+  Beam3r& operator = (const Beam3r& old);
 
 
-}; // class Beam3ii
+}; // class Beam3r
 
 
 // << operator

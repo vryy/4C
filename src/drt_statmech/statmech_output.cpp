@@ -25,7 +25,7 @@ Maintainer: Kei Müller
 #include "../drt_beamcontact/beam3contact_octtree.H"
 
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_truss3/truss3.H"
 #include "../drt_truss3cl/truss3cl.H"

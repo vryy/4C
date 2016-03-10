@@ -680,7 +680,7 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList&   params,
     LINALG::Matrix<3,1> Tcurr2(true);
 
     this->GetCurrTangents(disp, Tcurr);
-    this->TcurrBeam3ii(Tcurr1,Tcurr2);
+    this->TcurrBeam3r(Tcurr1,Tcurr2);
     for(int i=0; i<3; i++)
     {
       tcurrNode1(i)=Tcurr[0](i);

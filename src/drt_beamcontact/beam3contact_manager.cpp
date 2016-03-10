@@ -26,7 +26,7 @@ Maintainer: Christoph Meier
 #include <Teuchos_Time.hpp>
 
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_beam3eb/beam3eb.H"
 #include "../drt_beam3ebtor/beam3ebtor.H"
 #include "../drt_beam3k/beam3k.H"
@@ -1185,12 +1185,12 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
       if(fabs(beam3ebelement->GetKappaMax())>kappa_max)
         kappa_max=fabs(beam3ebelement->GetKappaMax());
     }
-    else if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
+    else if (eot == DRT::ELEMENTS::Beam3rType::Instance())
     {
-      const DRT::ELEMENTS::Beam3ii* beam3iielement = dynamic_cast<const DRT::ELEMENTS::Beam3ii*>(element);
+      const DRT::ELEMENTS::Beam3r* beam3relement = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(element);
 
-      if(fabs(beam3iielement->GetKappaMax())>kappa_max)
-        kappa_max=fabs(beam3iielement->GetKappaMax());
+      if(fabs(beam3relement->GetKappaMax())>kappa_max)
+        kappa_max=fabs(beam3relement->GetKappaMax());
     }
     else
     {
@@ -1361,7 +1361,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(const std::vector<std::vect
       //ele1 and ele2 (in case this is a beam element) have to be of the same type as ele1 of the first pair
       if ( ele1_type!=pair1_ele1_type or (BEAMCONTACT::BeamElement(*(formattedelementpairs[k])[1]) and ele2_type!=pair1_ele1_type))
       {
-        dserror("All contacting beam elements have to be of the same type (beam3eb, beam3 or beam3ii). Change your input file!");
+        dserror("All contacting beam elements have to be of the same type (beam3eb, beam3 or beam3r). Change your input file!");
       }
     }
   }
@@ -2344,13 +2344,13 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
         if (eot != DRT::ELEMENTS::Beam3ebType::Instance() and
             eot != DRT::ELEMENTS::Beam3ebtorType::Instance() and
             eot != DRT::ELEMENTS::Beam3Type::Instance() and
-            eot != DRT::ELEMENTS::Beam3iiType::Instance() and
+            eot != DRT::ELEMENTS::Beam3rType::Instance() and
             eot != DRT::ELEMENTS::Beam3kType::Instance()and
             eot != DRT::ELEMENTS::RigidsphereType::Instance())
           continue;
 
         // standard procedure for Reissner beams or rigid spheres
-        if ( eot == DRT::ELEMENTS::Beam3Type::Instance() or eot == DRT::ELEMENTS::Beam3iiType::Instance() or eot == DRT::ELEMENTS::RigidsphereType::Instance())
+        if ( eot == DRT::ELEMENTS::Beam3Type::Instance() or eot == DRT::ELEMENTS::Beam3rType::Instance() or eot == DRT::ELEMENTS::RigidsphereType::Instance())
 
         {
 
@@ -4136,9 +4136,9 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
         const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(thisele);
         eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
       }
-    if ( eot == DRT::ELEMENTS::Beam3iiType::Instance() )
+    if ( eot == DRT::ELEMENTS::Beam3rType::Instance() )
       {
-        const DRT::ELEMENTS::Beam3ii* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ii*>(thisele);
+        const DRT::ELEMENTS::Beam3r* thisbeam = static_cast<const DRT::ELEMENTS::Beam3r*>(thisele);
         eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
       }
 
@@ -5040,7 +5040,7 @@ void CONTACT::Beam3cmanager::SetElementTypeAndDistype(DRT::Element* ele1)
   numnodes_ = ele1->NumNode();
 
   const DRT::ElementType & ele1_type = ele1->ElementType();
-  if (ele1_type ==DRT::ELEMENTS::Beam3Type::Instance() or ele1_type ==DRT::ELEMENTS::Beam3iiType::Instance())
+  if (ele1_type ==DRT::ELEMENTS::Beam3Type::Instance() or ele1_type ==DRT::ELEMENTS::Beam3rType::Instance())
   {
     numnodalvalues_ = 1;
   }
@@ -5050,7 +5050,7 @@ void CONTACT::Beam3cmanager::SetElementTypeAndDistype(DRT::Element* ele1)
   }
   else
   {
-    dserror("Element type not valid: only beam3, beam3ii, beam3eb and beam3ebtor is possible for beam contact!");
+    dserror("Element type not valid: only beam3, beam3r, beam3eb and beam3ebtor is possible for beam contact!");
   }
 
   return;

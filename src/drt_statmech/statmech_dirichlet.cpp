@@ -18,7 +18,7 @@ Maintainer: Kei Müller
 #include "../drt_inpar/inpar_statmech.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 
 
 /*----------------------------------------------------------------------*
@@ -226,16 +226,16 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
         if(CheckForBrokenElement(coord,cut))
         {
           // reduce the axial stiffness of the element drastically, close to zero in order to take this element out
-          // only for Beam3ii case
-          if(element->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance() && dbctype == INPAR::STATMECH::dbctype_shearfixeddel)
+          // only for Beam3r case
+          if(element->ElementType()==DRT::ELEMENTS::Beam3rType::Instance() && dbctype == INPAR::STATMECH::dbctype_shearfixeddel)
           {
             for(int n=0; n<cut.N(); n++)
             {
               if(cut(2,n)>0.0)
               {
                 //std::cout<<"Element "<<element->Id()<<" now has a reduced cross section"<<std::endl;
-                dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSec(1.0e-9);
-                dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSecShear(1.1e-9);
+                dynamic_cast<DRT::ELEMENTS::Beam3r*>(element)->SetCrossSec(1.0e-9);
+                dynamic_cast<DRT::ELEMENTS::Beam3r*>(element)->SetCrossSecShear(1.1e-9);
                 break;
               }
             }
@@ -449,12 +449,12 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
         if(CheckForBrokenElement(coord,cut))
         {
           // reduce the axial stiffness of the element drastically, close to zero in order to take this element out
-          // only for Beam3ii case
+          // only for Beam3r case
           for(int n=0; n<cut.N(); n++)
-            if(element->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance() && cut(2,n)>0.0)
+            if(element->ElementType()==DRT::ELEMENTS::Beam3rType::Instance() && cut(2,n)>0.0)
             {
-              dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSec(1.0e-12);
-              dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSecShear(1.1e-12);
+              dynamic_cast<DRT::ELEMENTS::Beam3r*>(element)->SetCrossSec(1.0e-12);
+              dynamic_cast<DRT::ELEMENTS::Beam3r*>(element)->SetCrossSecShear(1.1e-12);
               break;
             }
 
@@ -630,14 +630,14 @@ void STATMECH::StatMechManager::DBCMovableSupport1D(Teuchos::ParameterList&     
         GetElementNodeCoords(element, discol, coord, &doflids);
         if(CheckForBrokenElement(coord,cut))
         {
-//          if(element->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance())
+//          if(element->ElementType()==DRT::ELEMENTS::Beam3rType::Instance())
 //          {
 //            for(int n=0; n<cut.N(); n++)
 //            {
 //              if(cut(2,n)>0.0)
 //              {
-//                dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSec(1.0e-12);
-//                dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSecShear(1.1e-12);
+//                dynamic_cast<DRT::ELEMENTS::Beam3r*>(element)->SetCrossSec(1.0e-12);
+//                dynamic_cast<DRT::ELEMENTS::Beam3r*>(element)->SetCrossSecShear(1.1e-12);
 //                break;
 //              }
 //            }

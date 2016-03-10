@@ -15,7 +15,7 @@ Maintainer: Christoph Meier
 
 #include "beam3.H"
 #include "../drt_statmech/statmech_manager.H"
-#include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beam3r/beam3r.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"

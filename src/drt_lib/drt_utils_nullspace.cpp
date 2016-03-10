@@ -227,7 +227,7 @@ void DRT::UTILS::ComputeBeam3DNullSpace( DRT::Discretization & dis, std::vector<
    * for beam3 elements just amounts to an error as no properly working
    * implementation has been available so far*/
 
-//   else if (ele->Type() == DRT::Element::element_beam3 || ele->Type() == DRT::Element::element_beam3ii)
+//   else if (ele->Type() == DRT::Element::element_beam3 || ele->Type() == DRT::Element::element_beam3r)
   {
     //looping through all nodes
     for (int i=0; i<dis.NumMyRowNodes(); ++i)
@@ -305,7 +305,7 @@ void DRT::UTILS::ComputeBeam3DNullSpace( DRT::Discretization & dis, std::vector<
       } // for (int j=0; j<actnode->Dof().NumDof(); ++j)
     } // for (int i=0; i<NumMyRowNodes(); ++i)
 
-  } // else if (ele->Type() == DRT::Element::element_beam3 || ele->Type() == DRT::Element::element_beam3ii)
+  } // else if (ele->Type() == DRT::Element::element_beam3 || ele->Type() == DRT::Element::element_beam3r)
 }
 
 
