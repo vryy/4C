@@ -2,7 +2,7 @@
 \file micromaterialgp_static.cpp
 
 <pre>
-Maintainer: Lena Yoshihara
+\maintainer Lena Yoshihara
             yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
@@ -229,6 +229,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
                             ndim,
                             restart,
                             macrocontrol->FileSteps(),
+                            DRT::INPUT::IntegralValue<int>(microproblem->IOParams(),"OUTPUT_BIN"),
                             adaptname));
 
     micro_output_ = Teuchos::rcp(new IO::DiscretizationWriter(microdis));
