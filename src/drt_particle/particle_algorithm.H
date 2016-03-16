@@ -4,12 +4,7 @@
 
 \brief Algorithm to control particle simulations
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Georg Hammerl
 *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*

@@ -4,12 +4,7 @@
 
 \brief Binning strategy for neighborhood search
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Georg Hammerl
 *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -271,7 +266,7 @@ void BINSTRATEGY::BinningStrategy::DistributeNodesToBins(
     const double* coords = node->X();
     int ijk[3];
     ConvertPosToijk(coords, ijk);
-    int binid = ConvertijkToGid(&ijk[0]);
+    const int binid = ConvertijkToGid(&ijk[0]);
 
     // assign node to bin
     nodesinbin[binid].push_back(node->Id());
@@ -1022,7 +1017,7 @@ void BINSTRATEGY::BinningStrategy::CreateXAABB(
 /*----------------------------------------------------------------------*
 | convert position first to i,j,k, then into bin id         ghamm 01/13 |
  *----------------------------------------------------------------------*/
-int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const std::vector<double>& pos)
+const int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const std::vector<double>& pos)
 {
   int ijk[3] = {0,0,0};
   for(int dim=0; dim < 3; dim++)
@@ -1037,7 +1032,7 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const std::vector<double>& pos
 /*----------------------------------------------------------------------*
 | convert position first to i,j,k, then into bin id         ghamm 01/13 |
  *----------------------------------------------------------------------*/
-int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const double* pos)
+const int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const double* pos)
 {
   int ijk[3];
   for(int dim=0; dim<3; ++dim)
@@ -1065,7 +1060,7 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const double* pos, int* ijk)
 /*----------------------------------------------------------------------*
 | convert position first to i,j,k, then into bin id         ghamm 03/13 |
  *----------------------------------------------------------------------*/
-int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const LINALG::Matrix<3,1> pos)
+const int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const LINALG::Matrix<3,1>& pos)
 {
   int ijk[3];
   for(int dim=0; dim<3; ++dim)
@@ -1080,7 +1075,7 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const LINALG::Matrix<3,1> pos)
 /*----------------------------------------------------------------------*
 | convert position first to i,j,k, then into bin id         ghamm 03/13 |
  *----------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const LINALG::Matrix<3,1> pos, int* ijk)
+void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const LINALG::Matrix<3,1>& pos, int* ijk)
 {
   for(int dim=0; dim<3; ++dim)
   {
@@ -1093,7 +1088,7 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const LINALG::Matrix<3,1> pos
 /*----------------------------------------------------------------------*
 | convert i,j,k into bin id                                 ghamm 09/12 |
  *----------------------------------------------------------------------*/
-int BINSTRATEGY::BinningStrategy::ConvertijkToGid(int* ijk)
+const int BINSTRATEGY::BinningStrategy::ConvertijkToGid(const int* ijk)
 {
   // given ijk is outside of XAABB
   if( ijk[0]<0 || ijk[1]<0 || ijk[2]<0 || ijk[0]>=bin_per_dir_[0] || ijk[1]>=bin_per_dir_[1] || ijk[2]>=bin_per_dir_[2] )
@@ -1106,11 +1101,11 @@ int BINSTRATEGY::BinningStrategy::ConvertijkToGid(int* ijk)
 /*----------------------------------------------------------------------*
 | convert bin id into i,j,k                                 ghamm 09/12 |
  *----------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::ConvertGidToijk(int gid, int* ijk)
+void BINSTRATEGY::BinningStrategy::ConvertGidToijk(const int gid, int* ijk)
 {
   ijk[2] = gid / (bin_per_dir_[0]*bin_per_dir_[1]);
 
-  int tmp = gid - ijk[2]*bin_per_dir_[0]*bin_per_dir_[1];
+  const int tmp = gid - ijk[2]*bin_per_dir_[0]*bin_per_dir_[1];
 
   ijk[1] = tmp / bin_per_dir_[0];
 
@@ -1127,7 +1122,7 @@ void BINSTRATEGY::BinningStrategy::ConvertGidToijk(int gid, int* ijk)
 /*----------------------------------------------------------------------*
  | get all bins in ijk range                               ghamm 02/13  |
  *----------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::GidsInijkRange(int* ijk_range, std::set<int>& binIds, bool checkexistence)
+void BINSTRATEGY::BinningStrategy::GidsInijkRange(const int* ijk_range, std::set<int>& binIds, bool checkexistence)
 {
   if(checkexistence == true and particledis_ == Teuchos::null)
     dserror("particle discretization is not set up correctly");
@@ -1138,9 +1133,9 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(int* ijk_range, std::set<int>&
     {
       for(int k=ijk_range[4]; k<=ijk_range[5]; ++k)
       {
-        int ijk[3] = {i,j,k};
+        const int ijk[3] = {i,j,k};
 
-        int gid = ConvertijkToGid(&ijk[0]);
+        const int gid = ConvertijkToGid(&ijk[0]);
         if(gid != -1)
         {
           if(checkexistence)
@@ -1164,7 +1159,7 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(int* ijk_range, std::set<int>&
 /*----------------------------------------------------------------------*
  | get all bins in ijk range                               ghamm 03/16  |
  *----------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::GidsInijkRange(int* ijk_range, std::vector<int>& binIds, bool checkexistence)
+void BINSTRATEGY::BinningStrategy::GidsInijkRange(const int* ijk_range, std::vector<int>& binIds, bool checkexistence)
 {
   if(checkexistence == true and particledis_ == Teuchos::null)
     dserror("particle discretization is not set up correctly");
@@ -1175,9 +1170,9 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(int* ijk_range, std::vector<in
     {
       for(int k=ijk_range[4]; k<=ijk_range[5]; ++k)
       {
-        int ijk[3] = {i,j,k};
+        const int ijk[3] = {i,j,k};
 
-        int gid = ConvertijkToGid(&ijk[0]);
+        const int gid = ConvertijkToGid(&ijk[0]);
         if(gid != -1)
         {
           if(checkexistence)
@@ -1201,7 +1196,7 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(int* ijk_range, std::vector<in
 /*----------------------------------------------------------------------*
  | get 26 neighboring bin ids to binId (if existing)       ghamm 08/13  |
 *-----------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::GetBinConnectivity(int binId, std::vector<int>& binIds)
+void BINSTRATEGY::BinningStrategy::GetBinConnectivity(const int binId, std::vector<int>& binIds)
 {
   int ijk_base[3];
   ConvertGidToijk(binId, &ijk_base[0]);
@@ -1211,8 +1206,8 @@ void BINSTRATEGY::BinningStrategy::GetBinConnectivity(int binId, std::vector<int
     {
       for(int k=ijk_base[2]-1; k<=ijk_base[2]+1; ++k)
       {
-        int ijk[3] = {i,j,k};
-        int gid = ConvertijkToGid(&ijk[0]);
+        const int ijk[3] = {i,j,k};
+        const int gid = ConvertijkToGid(&ijk[0]);
         if(gid!=-1 and gid!=binId)
         {
           binIds.push_back(gid);
@@ -1228,7 +1223,7 @@ void BINSTRATEGY::BinningStrategy::GetBinConnectivity(int binId, std::vector<int
 /*----------------------------------------------------------------------*
 | corner position for given bin id                          ghamm 03/13 |
  *----------------------------------------------------------------------*/
-void BINSTRATEGY::BinningStrategy::GetBinCorners(int binId, std::vector<LINALG::Matrix<3,1> >& bincorners)
+void BINSTRATEGY::BinningStrategy::GetBinCorners(const int binId, std::vector<LINALG::Matrix<3,1> >& bincorners)
 {
   bincorners.clear();
   bincorners.reserve(8);
@@ -1242,7 +1237,7 @@ void BINSTRATEGY::BinningStrategy::GetBinCorners(int binId, std::vector<LINALG::
     {
       for(int i=ijk_base[0]; i<(ijk_base[0]+2); ++i)
       {
-        int ijk_curr[] = {i,j,k};
+        const int ijk_curr[] = {i,j,k};
         LINALG::Matrix<3,1> curr_corner;
         for(int dim=0; dim<3; ++dim)
         {
@@ -1261,7 +1256,7 @@ void BINSTRATEGY::BinningStrategy::GetBinCorners(int binId, std::vector<LINALG::
 /*----------------------------------------------------------------------*
 | centroid position for given bin id                        ghamm 04/13 |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3,1> BINSTRATEGY::BinningStrategy::GetBinCentroid(int binId)
+LINALG::Matrix<3,1> BINSTRATEGY::BinningStrategy::GetBinCentroid(const int binId)
 {
   int ijk[3];
   ConvertGidToijk(binId, ijk);

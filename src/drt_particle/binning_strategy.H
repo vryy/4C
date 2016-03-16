@@ -4,12 +4,7 @@
 
 \brief Binning strategy for neighborhood search
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Georg Hammerl
 *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -135,20 +130,20 @@ namespace BINSTRATEGY
       );
 
     /// convert i,j,k into bin id
-    virtual int ConvertijkToGid(
-      int* ijk  ///< i,j,k to be converted into a bin id
+    virtual const int ConvertijkToGid(
+      const int* ijk  ///< i,j,k to be converted into a bin id
       );
 
     /// get all bin ids for given range of ijk
     virtual void GidsInijkRange(
-      int* ijk_bound,   ///< given range of ijk
+      const int* ijk_bound,   ///< given range of ijk
       std::set<int>& binIds,   ///< all bin ids in the specified range
       bool checkexistence   ///< check can be added whether the gids are on this proc
       );
 
     /// get all bin ids for given range of ijk
     virtual void GidsInijkRange(
-      int* ijk_bound,   ///< given range of ijk
+      const int* ijk_bound,   ///< given range of ijk
       std::vector<int>& binIds,   ///< all bin ids in the specified range
       bool checkexistence   ///< check can be added whether the gids are on this proc
       );
@@ -160,12 +155,12 @@ namespace BINSTRATEGY
       );
 
     /// convert position into bin id
-    virtual int ConvertPosToGid(
+    virtual const int ConvertPosToGid(
       const std::vector<double>& pos  ///< position of which the corresponding bin id is asked for
       );
 
     /// convert position into bin id
-    virtual int ConvertPosToGid(
+    virtual const int ConvertPosToGid(
       const double* pos   ///< position of which the corresponding bin id is asked for
       );
 
@@ -176,31 +171,31 @@ namespace BINSTRATEGY
       );
 
     /// convert position into bin id
-    virtual int ConvertPosToGid(
-      const LINALG::Matrix<3,1> pos   ///< position of which the corresponding bin id is asked for
+    virtual const int ConvertPosToGid(
+      const LINALG::Matrix<3,1>& pos   ///< position of which the corresponding bin id is asked for
       );
 
     ///convert position into i,j,k
     virtual void ConvertPosToijk(
-      const LINALG::Matrix<3,1> pos,   ///< position to be converted into i,j,k
+      const LINALG::Matrix<3,1>& pos,   ///< position to be converted into i,j,k
       int* ijk  ///< resulting i,j,k
       );
 
     /// get 26 neighboring bin ids to binId (if existing)
     virtual void GetBinConnectivity(
-      int binId,   ///< bin id whose connectivity is asked for
+      const int binId,   ///< bin id whose connectivity is asked for
       std::vector<int>& binIds   ///< all neighboring bins on axes
       );
 
     /// get nodal coordinates of bin with given id
     virtual void GetBinCorners(
-      int binId,   ///< bin id of which corners are calculated
+      const int binId,   ///< bin id of which corners are calculated
       std::vector<LINALG::Matrix<3,1> >& bincorners   ///< corner position of given bin
       );
 
     /// centroid position for given bin id is returned
     virtual LINALG::Matrix<3,1> GetBinCentroid(
-      int binId   ///< bin id of which centroid is calculated
+      const int binId   ///< bin id of which centroid is calculated
       );
 
     virtual void RevertExtendedGhosting(std::vector<Teuchos::RCP<DRT::Discretization> > dis,

@@ -4,12 +4,7 @@
 
 \brief Helper methods for cavitation simulations
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Georg Hammerl
 *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -55,7 +50,7 @@ void CAVITATION::Algorithm::CalculateFluidFraction()
     DRT::Node *currentparticle = particledis_->lRowNode(i);
     DRT::Element** currentbin = currentparticle->Elements();
 
-    int binId=currentbin[0]->Id();
+    const int binId=currentbin[0]->Id();
 
     if(examinedbins.count(binId) == 1)
     {

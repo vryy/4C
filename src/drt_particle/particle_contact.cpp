@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file particle_contact.cpp
+
 \brief Particle collision handling
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Georg Hammerl
 */
 
 /*----------------------------------------------------------------------*/
@@ -108,7 +104,7 @@ void PARTICLE::ParticleCollisionHandlerBase::GetNeighbouringParticlesAndWalls(
     dserror("More than one element for this particle");
 
   DRT::Element** CurrentBin = particle->Elements();
-  int binId = CurrentBin[0]->Id();
+  const int binId = CurrentBin[0]->Id();
 
   int ijk[3];
   particle_algorithm_->ConvertGidToijk(binId,ijk);
@@ -2006,51 +2002,81 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
 {
   TEUCHOS_FUNC_TIME_MONITOR("InitializingEventqueue");
 
+  std::set<int> examinedbins;
   for (int i=0; i<discret_->NodeColMap()->NumMyElements(); ++i)
   {
     // particle for which contact will be detected
     DRT::Node *currparticle = discret_->lColNode(i);
 
+    DRT::Element** currele = currparticle->Elements();
+    DRT::Element* currbin = currele[0];
+    const int binId = currbin->Id();
+
+    // if a bin has already been examined --> continue with next particle
+    if( examinedbins.count(binId) == 1 )
+    {
+      continue;
+    }
+    // else: bin is examined for the first time --> new entry in examinedbins
+    else
+    {
+      examinedbins.insert(binId);
+    }
+
+    // now all particles in this bin are processed
     std::set<DRT::Node*> neighbouring_particles;
     std::set<DRT::Element*> neighbouring_walls;
 
-    // gather all neighbouring particles and wall elements
+    // gather all neighboring particles and wall elements
     GetNeighbouringParticlesAndWalls(currparticle, neighbouring_particles, neighbouring_walls);
+    // add currparticle to neighbor list again
+    neighbouring_particles.insert(currparticle);
 
-    // loop over all neighbouring particles and check if they collide with currparticle
-    for (std::set<DRT::Node*>::iterator iter=neighbouring_particles.begin(); iter!=neighbouring_particles.end(); ++iter)
+    DRT::Node** particles = currbin->Nodes();
+    for(int iparticle=0; iparticle<currbin->NumNode(); ++iparticle)
     {
-      // in order to avoid double evaluation of the same contact, only search for contact when id_1 < id_2
-      if (currparticle->Id() > (*iter)->Id())
+      DRT::Node* currnode = particles[iparticle];
+      // remove current node from neighbor list
+      neighbouring_particles.erase(currnode);
+
+      // loop over all neighbouring particles and check if they collide with currnode
+      for (std::set<DRT::Node*>::iterator iter=neighbouring_particles.begin(); iter!=neighbouring_particles.end(); ++iter)
       {
-        continue; // with next particle in neighbourhood
+        // in order to avoid double evaluation of the same contact, only search for contact when id_1 < id_2
+        if (currnode->Id() > (*iter)->Id())
+        {
+          continue; // with next particle in neighborhood
+        }
+
+        Teuchos::RCP<PARTICLE::Event> newevent = ComputeCollisionWithParticle(currnode, *iter, dt);
+
+        // insert event into event queue if collision is valid
+        if (newevent->time >= 0.0)
+        {
+#ifdef OUTPUT
+          std::cout << "inserting inter-particle collision in the event queue" << std::endl;
+#endif
+          eventqueue.insert(newevent);
+        }
       }
 
-      Teuchos::RCP<PARTICLE::Event> newevent = ComputeCollisionWithParticle(currparticle, *iter, dt);
+      // add current node to neighbor list again
+      neighbouring_particles.insert(currnode);
 
-      // insert event into event queue if collision is valid
-      if (newevent->time >= 0.0)
+      // loop over all neighbouring wall elements and check if they collide with currparticle
+      for (std::set<DRT::Element*>::iterator iter=neighbouring_walls.begin(); iter!=neighbouring_walls.end(); ++iter)
       {
-#ifdef OUTPUT
-        std::cout << "inserting inter-particle collision in the event queue" << std::endl;
-#endif
-        eventqueue.insert(newevent);
-      }
-    }
+        Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(currnode, *iter, dt);
 
-    // loop over all neighbouring wall elements and check if they collide with currparticle
-    for (std::set<DRT::Element*>::iterator iter=neighbouring_walls.begin(); iter!=neighbouring_walls.end(); ++iter)
-    {
-      Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(currparticle, *iter, dt);
-
-      // insert event into event queue if collision is valid
-      if (newevent->time >= -GEO::TOL14)
-      {
+        // insert event into event queue if collision is valid
+        if (newevent->time >= -GEO::TOL14)
+        {
 #ifdef OUTPUT
-        std::cout << "inserting particle-wall collision in the event queue" << std::endl;
+          std::cout << "inserting particle-wall collision in the event queue" << std::endl;
 #endif
-        // here we are at the beginning of the time step so that event.time does not need an update
-        eventqueue.insert(newevent);
+          // here we are at the beginning of the time step so that event.time does not need an update
+          eventqueue.insert(newevent);
+        }
       }
     }
   }
