@@ -1017,7 +1017,7 @@ void BINSTRATEGY::BinningStrategy::CreateXAABB(
 /*----------------------------------------------------------------------*
 | convert position first to i,j,k, then into bin id         ghamm 01/13 |
  *----------------------------------------------------------------------*/
-const int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const std::vector<double>& pos)
+int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const std::vector<double>& pos)
 {
   int ijk[3] = {0,0,0};
   for(int dim=0; dim < 3; dim++)
@@ -1032,7 +1032,7 @@ const int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const std::vector<double
 /*----------------------------------------------------------------------*
 | convert position first to i,j,k, then into bin id         ghamm 01/13 |
  *----------------------------------------------------------------------*/
-const int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const double* pos)
+int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const double* pos)
 {
   int ijk[3];
   for(int dim=0; dim<3; ++dim)
@@ -1060,7 +1060,7 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const double* pos, int* ijk)
 /*----------------------------------------------------------------------*
 | convert position first to i,j,k, then into bin id         ghamm 03/13 |
  *----------------------------------------------------------------------*/
-const int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const LINALG::Matrix<3,1>& pos)
+int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const LINALG::Matrix<3,1>& pos)
 {
   int ijk[3];
   for(int dim=0; dim<3; ++dim)
@@ -1088,7 +1088,7 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const LINALG::Matrix<3,1>& po
 /*----------------------------------------------------------------------*
 | convert i,j,k into bin id                                 ghamm 09/12 |
  *----------------------------------------------------------------------*/
-const int BINSTRATEGY::BinningStrategy::ConvertijkToGid(const int* ijk)
+int BINSTRATEGY::BinningStrategy::ConvertijkToGid(const int* ijk)
 {
   // given ijk is outside of XAABB
   if( ijk[0]<0 || ijk[1]<0 || ijk[2]<0 || ijk[0]>=bin_per_dir_[0] || ijk[1]>=bin_per_dir_[1] || ijk[2]>=bin_per_dir_[2] )

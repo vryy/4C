@@ -130,7 +130,7 @@ namespace BINSTRATEGY
       );
 
     /// convert i,j,k into bin id
-    virtual const int ConvertijkToGid(
+    virtual int ConvertijkToGid(
       const int* ijk  ///< i,j,k to be converted into a bin id
       );
 
@@ -155,12 +155,12 @@ namespace BINSTRATEGY
       );
 
     /// convert position into bin id
-    virtual const int ConvertPosToGid(
+    virtual int ConvertPosToGid(
       const std::vector<double>& pos  ///< position of which the corresponding bin id is asked for
       );
 
     /// convert position into bin id
-    virtual const int ConvertPosToGid(
+    virtual int ConvertPosToGid(
       const double* pos   ///< position of which the corresponding bin id is asked for
       );
 
@@ -171,7 +171,7 @@ namespace BINSTRATEGY
       );
 
     /// convert position into bin id
-    virtual const int ConvertPosToGid(
+    virtual int ConvertPosToGid(
       const LINALG::Matrix<3,1>& pos   ///< position of which the corresponding bin id is asked for
       );
 
