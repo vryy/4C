@@ -1,3 +1,9 @@
+/*----------------------------------------------------------------------------*/
+/*!
+\file drt_parobjectregister.cpp
+\maintainer Martin Kronbichler
+*/
+/*----------------------------------------------------------------------------*/
 
 #include <sstream>
 #include <string>
@@ -57,6 +63,7 @@
 #include "../drt_so3/so_sh8.H"
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_so3/so_tet4.H"
+#include "../drt_so3/so_tet4av.H"
 //#include "../drt_so3/so_ptet.H"
 #include "../drt_so3/so_nstet.H"
 #include "../drt_so3/so_nstet5.H"
@@ -252,6 +259,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::So_tet4PoroP1Type::Instance().Name() << " "
     << DRT::ELEMENTS::So_tet4ScatraType::Instance().Name() << " "
     << DRT::ELEMENTS::So_tet4ThermoType::Instance().Name() << " "
+    << DRT::ELEMENTS::So_tet4avType::Instance().Name() << " "
     << DRT::ELEMENTS::So_tet10ThermoType::Instance().Name() << " "
     << DRT::ELEMENTS::So_weg6Type::Instance().Name() << " "
     << DRT::ELEMENTS::So_pyramid5Type::Instance().Name() << " "

@@ -949,6 +949,9 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_tet4_evaluate.cpp
   src/drt_so3/so_tet4_multiscale.cpp
   src/drt_so3/so_tet4_input.cpp
+  src/drt_so3/so_tet4av.cpp
+  src/drt_so3/so_tet4av_evaluate.cpp
+  src/drt_so3/so_tet4av_input.cpp
   src/drt_so3/so_weg6.cpp
   src/drt_so3/so_weg6_evaluate.cpp
   src/drt_so3/so_weg6_input.cpp
