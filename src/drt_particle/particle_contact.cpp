@@ -1854,7 +1854,23 @@ Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeColli
 
   static LINALG::Matrix<3,1> pos_1, pos_2, vel_1, vel_2;
   double rad_1, rad_2, ddt_1, ddt_2;
-  GetCollisionData(particle_1, particle_2, pos_1, pos_2, vel_1, vel_2, rad_1, rad_2, ddt_1, ddt_2);
+  if(particledata_.size() != 0)
+  {
+    ParticleCollData particle1 = particledata_[particle_1->LID()];
+    pos_1 = particle1.pos;
+    vel_1 = particle1.vel;
+    rad_1 = particle1.rad;
+    ddt_1 = particle1.ddt;
+    ParticleCollData particle2 = particledata_[particle_2->LID()];
+    pos_2 = particle2.pos;
+    vel_2 = particle2.vel;
+    rad_2 = particle2.rad;
+    ddt_2 = particle2.ddt;
+  }
+  else
+  {
+    GetCollisionData(particle_1, particle_2, pos_1, pos_2, vel_1, vel_2, rad_1, rad_2, ddt_1, ddt_2);
+  }
 
   static LINALG::Matrix<3,1> deltax, deltav;
 
@@ -1867,19 +1883,21 @@ Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeColli
     deltav(i) = vel_1(i) - vel_2(i);
   }
 
-  double sigma = rad_1 + rad_2;
+  const double sigma = rad_1 + rad_2;
 
   // finding possible collision times
-  double a = deltav.Dot(deltav);
-  double b = 2.0 * deltav.Dot(deltax);
-  double c = deltax.Dot(deltax) - sigma * sigma;
+  const double a = deltav.Dot(deltav);
+  const double b = 2.0 * deltav.Dot(deltax);
+  const double c = deltax.Dot(deltax) - sigma * sigma;
 
-  double discriminant = b * b - 4.0 * a * c;
+  const double discriminant = b * b - 4.0 * a * c;
 
   if (discriminant >= 0.0 and a>0.0)
   {
-    double tc1 = (-b - sqrt(discriminant)) / (2.0 * a);
-    double tc2 = (-b + sqrt(discriminant)) / (2.0 * a);
+    const double sqrdiscr = sqrt(discriminant);
+    const double inv2a = 1.0 / (2.0 * a);
+    const double tc1 = (-b - sqrdiscr) * inv2a;
+    const double tc2 = (-b + sqrdiscr) * inv2a;
 
     // immediate collision of particles expected
     if (std::fabs(tc1) <= GEO::TOL14 or std::fabs(tc2) <= GEO::TOL14)
@@ -1889,8 +1907,8 @@ Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeColli
       colnormal.Update(1.0, pos_2, -1.0, pos_1);
 
       // velocities of particles in normal direction
-      double vel_col_1 =   vel_1.Dot(colnormal);
-      double vel_col_2 = - vel_2.Dot(colnormal);
+      const double vel_col_1 =   vel_1.Dot(colnormal);
+      const double vel_col_2 = - vel_2.Dot(colnormal);
 
       if ((vel_col_1 + vel_col_2) > GEO::TOL14)
       {
@@ -1935,7 +1953,18 @@ Teuchos::RCP<PARTICLE::WallEvent> PARTICLE::ParticleCollisionHandlerMD::ComputeC
   double radius;
   double particle_time;
 
-  GetCollisionData(particle, position, velocity, radius, particle_time);
+  if(particledata_.size() != 0)
+  {
+    ParticleCollData particle_data = particledata_[particle->LID()];
+    position = particle_data.pos;
+    velocity = particle_data.vel;
+    radius = particle_data.rad;
+    particle_time = particle_data.ddt;
+  }
+  else
+  {
+    GetCollisionData(particle, position, velocity, radius, particle_time);
+  }
 
   // variables to be filled with collision data
   double timetocollision = 0.0;;
@@ -2002,6 +2031,34 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
 {
   TEUCHOS_FUNC_TIME_MONITOR("InitializingEventqueue");
 
+
+  // gather data for all particles initially
+  const int numparticles = discret_->NodeColMap()->NumMyElements();
+  particledata_.resize(numparticles);
+  {
+    for (int i=0; i<numparticles; ++i)
+    {
+      // particle for which data will be collected
+      DRT::Node *particle = discret_->lColNode(i);
+
+      static LINALG::Matrix<3,1> position;
+      static LINALG::Matrix<3,1> velocity;
+      double radius;
+      double particle_time;
+
+      GetCollisionData(particle, position, velocity, radius, particle_time);
+
+      ParticleCollData data;
+      data.pos = position;
+      data.vel = velocity;
+      data.rad = radius;
+      data.ddt = particle_time;
+
+      particledata_[particle->LID()] = data;
+    }
+  }
+
+  // setup of initial event queue
   std::set<int> examinedbins;
   for (int i=0; i<discret_->NodeColMap()->NumMyElements(); ++i)
   {
@@ -2080,6 +2137,9 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
       }
     }
   }
+
+  // important to erase initial data here as content is no longer valid during collisions
+  particledata_.clear();
 
   return;
 }
@@ -2492,7 +2552,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
 
     // solve linear problem A dx = b
     static LINALG::Matrix<3,1> dx;
-    double det = LINALG::gaussElimination<true,3>(A, b, dx);
+    const double det = LINALG::gaussElimination<true,3>(A, b, dx);
 
     if (std::fabs(det) < GEO::TOL14)
     {
@@ -2714,7 +2774,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
       dotprod_v_deriv1   += - particle_vel(i)*F_deriv1(i);
     }
 
-    double pos2subtractrad2 = dotprod_pos_pos - radius*radius;
+    const double pos2subtractrad2 = dotprod_pos_pos - radius*radius;
 
     b_line(0) = pos2subtractrad2*2.0*dotprod_pos_deriv1 +
                   dotprod_pos_deriv1*(dotprod_deriv1_deriv1 + dotprod_pos_deriv2);
@@ -2771,7 +2831,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
 
     // solve linear problem A dx = b
     static LINALG::Matrix<2,1> dx_line;
-    double det = LINALG::gaussElimination<true,2>(A_line, b_line, dx_line);
+    const double det = LINALG::gaussElimination<true,2>(A_line, b_line, dx_line);
 
     if (std::fabs(det) < GEO::TOL14)
     {
@@ -2797,8 +2857,8 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
     // check whether collision time is reasonable
     if (coll_solution(1) >= -GEO::TOL14)
     {
-      double scalar_partvel = F.Dot(particle_vel);
-      double scalar_wallvel = F.Dot(wallcollpoint_vel);
+      const double scalar_partvel = F.Dot(particle_vel);
+      const double scalar_wallvel = F.Dot(wallcollpoint_vel);
 
       // decide if collision is still going to happen (--> valid) or has already happened in the last time step (--> invalid)
       if ((scalar_partvel - scalar_wallvel) > GEO::TOL14)
@@ -2871,7 +2931,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
   static LINALG::TMatrix<FAD,3,numnodes> vele_fad;
   static LINALG::TMatrix<FAD,3,numnodes> xyze_n_fad;
   static LINALG::TMatrix<FAD,3,numnodes> xyze_colltime;
-  double invdt = 1.0 / dt;
+  const double invdt = 1.0 / dt;
   for(int i=0; i<3; ++i)
   {
     for(int j=0; j<numnodes; ++j)
@@ -2997,9 +3057,9 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
                   dotprod_pos_deriv1*(dotprod_v_deriv1+dotprod_pos_derivv);
 
     // distance between particle and edge
-    double distance_old = distance;
+    const double distance_old = distance;
     distance = std::pow(dotprod_pos_pos, 0.5).val() - radius;
-    double residualnorm1 = std::fabs(residual(0).val()) + std::fabs(residual(1).val());
+    const double residualnorm1 = std::fabs(residual(0).val()) + std::fabs(residual(1).val());
 
 #ifdef OUTPUT
     std::cout << "iteration: " << iter << "residualnorm: " << residualnorm1 << " distance: " << distance <<
@@ -3035,7 +3095,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
       heuristic_break = true;
 #endif
     }
-    double remainingtime = std::max(2.0*remaining_dt,GEO::TOL2*dt);
+    const double remainingtime = std::max(2.0*remaining_dt,GEO::TOL2*dt);
 #ifdef OUTPUT
   std::cout << "remainingtime: " << remainingtime << " coll_solution(1).val(): " << coll_solution(1).val() << " coll_solution(1).val()-ttc_old: " << (coll_solution(1).val()-ttc_old) << std::endl;
 #endif
@@ -3076,7 +3136,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
 
     // solve linear problem A dx = b
     static LINALG::Matrix<2,1> dx;
-    double det = LINALG::gaussElimination<true,2>(A, b, dx);
+    const double det = LINALG::gaussElimination<true,2>(A, b, dx);
 
     if (std::fabs(det) < GEO::TOL14)
     {
@@ -3225,21 +3285,23 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithCorner(
     deltav(i) = corner_vel(i) - particle_vel(i);
   }
 
-  double sigma = radius;
+  const double sigma = radius;
 
   // finding possible collision times
-  double a = deltav.Dot(deltav);
-  double b = 2.0 * deltav.Dot(deltax);
-  double c = deltax.Dot(deltax) - sigma * sigma;
+  const double a = deltav.Dot(deltav);
+  const double b = 2.0 * deltav.Dot(deltax);
+  const double c = deltax.Dot(deltax) - sigma * sigma;
 
-  double discriminant = b * b - 4.0 * a * c;
+  const double discriminant = b * b - 4.0 * a * c;
 
   timetocollision = -1000.0;
 
   if (discriminant >= 0.0 and a>0.0)
   {
-    double tc1 = (-b - sqrt(discriminant)) / (2.0 * a);
-    double tc2 = (-b + sqrt(discriminant)) / (2.0 * a);
+    const double sqrdiscr = sqrt(discriminant);
+    const double inv2a = 1.0 / (2.0 * a);
+    const double tc1 = (-b - sqrdiscr) * inv2a;
+    const double tc2 = (-b + sqrdiscr) * inv2a;
 
     // tc1 is negative
     if (tc1 < -GEO::TOL14 and tc2 > -GEO::TOL14)
@@ -3260,8 +3322,8 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithCorner(
     // check whether collision time is reasonable
     if (timetocollision >= -GEO::TOL14 && timetocollision < 1.1*remaining_dt)
     {
-      double scalar_partvel = particle_vel.Dot(deltax);
-      double scalar_wallvel = corner_vel.Dot(deltax);
+      const double scalar_partvel = particle_vel.Dot(deltax);
+      const double scalar_wallvel = corner_vel.Dot(deltax);
 
       // decide if collision is still going to happen (--> valid) or has already happened in the last time step (--> invalid)
       if ((scalar_partvel - scalar_wallvel) > GEO::TOL14)

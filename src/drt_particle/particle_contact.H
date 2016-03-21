@@ -561,11 +561,21 @@ namespace PARTICLE
       double& ddt
       );
 
+    /// struct to store particle data for faster access
+    struct ParticleCollData {
+      LINALG::Matrix<3,1> pos;
+      LINALG::Matrix<3,1> vel;
+      double rad;
+      double ddt;
+    };
+
      //@}
 
    private:
 
    Teuchos::RCP<Epetra_Vector> ddt_;   ///< col vector containing the current time of each particle between [0,dt)
+
+   std::vector<ParticleCollData> particledata_;   ///< temporary storage for all particle collision relevant data
 
 
    };  // class ParticleCollisionHandlerMD
