@@ -1,5 +1,6 @@
 /*!----------------------------------------------------------------------
 \file contact_tsi_lagrange_strategy.cpp
+\maintainer Alexander Seitz
 
 <pre>
 Maintainer: Alexander Seitz
@@ -280,6 +281,7 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
     }
   }
   AddVector(*gact,*rcsa);
+  rcsa->Norm2(&mech_contact_res_);
 
   // complete all the new matrix blocks
   // Note: since the contact interace assemled them, they are all based
@@ -784,6 +786,13 @@ void CONTACT::CoTSILagrangeStrategy::RecoverCoupled(
     Teuchos::RCP<Epetra_Vector> tinc,
     Teuchos::RCP<ADAPTER::Coupling> coupST)
 {
+  Teuchos::RCP<Epetra_Vector> z_old=Teuchos::null;
+  if (z_!=Teuchos::null)
+    z_old = Teuchos::rcp(new Epetra_Vector(*z_));
+  Teuchos::RCP<Epetra_Vector> z_thr_old=Teuchos::null;
+  if (z_thr_!=Teuchos::null)
+    z_thr_old = Teuchos::rcp(new Epetra_Vector(*z_thr_));
+
   // recover contact LM
   if (gactivedofs_->NumGlobalElements()>0)
   {
@@ -834,6 +843,17 @@ void CONTACT::CoTSILagrangeStrategy::RecoverCoupled(
     z_=Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
     z_thr_=Teuchos::rcp(new Epetra_Vector(*thr_s_dofs_));
   }
+
+  if (z_old!=Teuchos::null)
+    {
+      z_old->Update(-1.,*z_,1.);
+      z_old->Norm2(&mech_contact_incr_);
+    }
+  if (z_thr_old!=Teuchos::null)
+    {
+      z_thr_old->Update(-1.,*z_thr_,1.);
+      z_thr_old->Norm2(&thr_contact_incr_);
+    }
 
   // store updated LM into nodes
   StoreNodalQuantities(MORTAR::StrategyBase::lmupdate,Teuchos::null);

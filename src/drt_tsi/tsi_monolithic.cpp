@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file tsi_monolithic.cpp
+\maintainer Alexander Seitz
 
 \brief  Basis of all monolithic TSI algorithms that perform a coupling between
         the linear momentum equation and the heat conduction equation
@@ -103,20 +104,20 @@ TSI::Monolithic::Monolithic(
   const Teuchos::ParameterList& tdyn
     = DRT::Problem::Instance()->ThermalDynamicParams();
 
-  // check time integration algo -> currently only one-step-theta scheme supported
-  INPAR::STR::DynamicType structtimealgo
-    = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn_,"DYNAMICTYP");
-  INPAR::THR::DynamicType thermotimealgo
-    = DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP");
-
-  // use the same time integrator for both fields
-  if ( ( (structtimealgo != INPAR::STR::dyna_statics) or (thermotimealgo != INPAR::THR::dyna_statics) )
-       and
-       ( (structtimealgo != INPAR::STR::dyna_onesteptheta) or (thermotimealgo != INPAR::THR::dyna_onesteptheta) )
-       and
-       ( (structtimealgo!=INPAR::STR::dyna_genalpha) or (thermotimealgo!=INPAR::THR::dyna_genalpha) )
-     )
-    dserror("same time integration scheme for STR and THR required for monolithic.");
+//  // check time integration algo -> currently only one-step-theta scheme supported
+//  INPAR::STR::DynamicType structtimealgo
+//    = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn_,"DYNAMICTYP");
+//  INPAR::THR::DynamicType thermotimealgo
+//    = DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP");
+//
+//  // use the same time integrator for both fields
+//  if ( ( (structtimealgo != INPAR::STR::dyna_statics) or (thermotimealgo != INPAR::THR::dyna_statics) )
+//       and
+//       ( (structtimealgo != INPAR::STR::dyna_onesteptheta) or (thermotimealgo != INPAR::THR::dyna_onesteptheta) )
+//       and
+//       ( (structtimealgo!=INPAR::STR::dyna_genalpha) or (thermotimealgo!=INPAR::THR::dyna_genalpha) )
+//     )
+//    dserror("same time integration scheme for STR and THR required for monolithic.");
 
   errfile_ = DRT::Problem::Instance()->ErrorFile()->Handle();
   if (errfile_)
@@ -533,6 +534,40 @@ void TSI::Monolithic::NewtonFull()
   zeros_ = LINALG::CreateVector(*DofRowMap(), true);
   zeros_->PutScalar(0.0);
 
+  // iter==1 is after predictor, i.e. no solver call yet
+  if (iter_==1)
+    if (StructureField()->HaveSemiSmoothPlasticity())
+      StructureField()->GetPlasticityManager()->SetData().no_recovery_=true;
+
+  // compute residual forces #rhs_ and tangent #systemmatrix_
+  // whose components are globally oriented
+  // build linear system stiffness matrix and rhs/force residual for each
+  // field, here e.g. for structure field: field want the iteration increment
+  // 1.) Update(iterinc_),
+  // 2.) EvaluateForceStiffResidual(),
+  // 3.) PrepareSystemForNewtonSolve() --> if (locsysman_!=null) k_ss is rotated
+  Evaluate(iterinc_);
+
+  // create the linear system
+  // \f$J(x_i) \Delta x_i = - R(x_i)\f$
+  // create the systemmatrix
+  SetupSystemMatrix();
+
+  // check whether we have a sanely filled tangent matrix
+  if (not systemmatrix_->Filled())
+    dserror("Effective tangent matrix must be filled here");
+
+  // create full monolithic rhs vector
+  // make negative residual not necessary: rhs_ is already negative
+  // (STR/THR)-RHS is put negative in PrepareSystemForNewtonSolve()
+  SetupRHS();
+
+  // do the thermo contact modifications all at once
+  if (cmtman_!=Teuchos::null)
+    dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).Evaluate(
+        SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
+        StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor(),iter_==1);
+
   //------------------------------------------------------ iteration loop
 
   // equilibrium iteration loop (loop over k)
@@ -540,40 +575,6 @@ void TSI::Monolithic::NewtonFull()
   {
     // reset timer
     timernewton_.ResetStartTime();
-
-    // iter==1 is after predictor, i.e. no solver call yet
-    if (iter_==1)
-      if (StructureField()->HaveSemiSmoothPlasticity())
-        StructureField()->GetPlasticityManager()->SetData().no_recovery_=true;
-
-    // compute residual forces #rhs_ and tangent #systemmatrix_
-    // whose components are globally oriented
-    // build linear system stiffness matrix and rhs/force residual for each
-    // field, here e.g. for structure field: field want the iteration increment
-    // 1.) Update(iterinc_),
-    // 2.) EvaluateForceStiffResidual(),
-    // 3.) PrepareSystemForNewtonSolve() --> if (locsysman_!=null) k_ss is rotated
-    Evaluate(iterinc_);
-
-    // create the linear system
-    // \f$J(x_i) \Delta x_i = - R(x_i)\f$
-    // create the systemmatrix
-    SetupSystemMatrix();
-
-    // check whether we have a sanely filled tangent matrix
-    if (not systemmatrix_->Filled())
-      dserror("Effective tangent matrix must be filled here");
-
-    // create full monolithic rhs vector
-    // make negative residual not necessary: rhs_ is already negative
-    // (STR/THR)-RHS is put negative in PrepareSystemForNewtonSolve()
-    SetupRHS();
-
-    // do the thermo contact modifications all at once
-    if (cmtman_!=Teuchos::null)
-      dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).Evaluate(
-          SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
-          StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor(),iter_==1);
 
     // *********** time measurement ***********
     double dtcpu = timernewton_.WallTime();
@@ -611,6 +612,42 @@ void TSI::Monolithic::NewtonFull()
     norminc_ = CalculateVectorNorm(iternorm_, iterinc_);
     normdisi_ = CalculateVectorNorm(iternormstr_, sx);
     normtempi_ = CalculateVectorNorm(iternormthr_, tx);
+
+    // reset timer
+    timernewton_.ResetStartTime();
+
+    // iter==1 is after predictor, i.e. no solver call yet
+    if (StructureField()->HaveSemiSmoothPlasticity())
+      StructureField()->GetPlasticityManager()->SetData().no_recovery_=false;
+
+    // compute residual forces #rhs_ and tangent #systemmatrix_
+    // whose components are globally oriented
+    // build linear system stiffness matrix and rhs/force residual for each
+    // field, here e.g. for structure field: field want the iteration increment
+    // 1.) Update(iterinc_),
+    // 2.) EvaluateForceStiffResidual(),
+    // 3.) PrepareSystemForNewtonSolve() --> if (locsysman_!=null) k_ss is rotated
+    Evaluate(iterinc_);
+
+    // create the linear system
+    // \f$J(x_i) \Delta x_i = - R(x_i)\f$
+    // create the systemmatrix
+    SetupSystemMatrix();
+
+    // check whether we have a sanely filled tangent matrix
+    if (not systemmatrix_->Filled())
+      dserror("Effective tangent matrix must be filled here");
+
+    // create full monolithic rhs vector
+    // make negative residual not necessary: rhs_ is already negative
+    // (STR/THR)-RHS is put negative in PrepareSystemForNewtonSolve()
+    SetupRHS();
+
+    // do the thermo contact modifications all at once
+    if (cmtman_!=Teuchos::null)
+      dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).Evaluate(
+          SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
+          StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor(),iter_==1);
 
     // in case of 'Mix'-convergence criterion: save the norm of the 1st
     // iteration in (norm . iter0_)
@@ -654,8 +691,12 @@ void TSI::Monolithic::NewtonFull()
     PrintNewtonConv();
   }
   else if (iter_ >= itermax_)
-    dserror("Newton unconverged in %d iterations", iter_);
-
+  {
+    if (DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdyn_,"DIVERCONT")==INPAR::STR::divcont_continue)
+      ; // do nothing
+    else
+      dserror("Newton unconverged in %d iterations", iter_);
+  }
   // for validation with literature calculate nodal TSI values
   if ((DRT::INPUT::IntegralValue<bool>(tsidynmono_, "CALC_NECKING_TSI_VALUES")) == true)
     CalculateNeckingTSIResults();
@@ -1560,7 +1601,13 @@ bool TSI::Monolithic::Converged()
 
   // convergence of active contact set
   if (cmtman_!=Teuchos::null)
+  {
+    CONTACT::CoTSILagrangeStrategy& cs=dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(
+        cmtman_->GetStrategy());
+    conv = conv && (cs.mech_contact_res_ < cs.Params().get<double>("TOLCONTCONSTR"));
+    conv = conv && (cs.mech_contact_incr_ < cs.Params().get<double>("TOLLAGR"));
     conv = conv && cmtman_->GetStrategy().ActiveSetSemiSmoothConverged();
+  }
 
   // return things
   return conv;
@@ -1708,6 +1755,13 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
     dserror("You should not turn up here.");
     break;
   }  // switch (normtypetempi_)
+
+  if (cmtman_!=Teuchos::null)
+  {
+    oss <<std::setw(16)<< "sLMres-norm";
+    oss <<std::setw(16)<< "sLMinc-norm";
+    oss <<std::setw(16)<< "tLMinc-norm";
+  }
 
   // ------------------------------------------------------------- plasticity
   if (structure_->HaveSemiSmoothPlasticity())
@@ -1874,6 +1928,15 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
     dserror("You should not turn up here.");
     break;
   }  // switch (normtypetempi_)
+
+  if (cmtman_!=Teuchos::null)
+  {
+    CONTACT::CoTSILagrangeStrategy& cs=dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(
+        cmtman_->GetStrategy());
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << cs.mech_contact_res_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << cs.mech_contact_incr_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << cs.thr_contact_incr_;
+  }
 
   // ------------------------------------------------------------- plasticity
   if (structure_->HaveSemiSmoothPlasticity())

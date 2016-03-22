@@ -1,5 +1,6 @@
 /*!----------------------------------------------------------------------
 \file contact_tsi_lagrange_strategy.H
+\maintainer Alexander Seitz
 
 <pre>
 Maintainer: Alexander Seitz
@@ -153,6 +154,11 @@ public:
   void SetAlphafThermo(const Teuchos::ParameterList& tdyn);
 
   //@}
+
+  // residual and increment norms
+  double mech_contact_res_;
+  double mech_contact_incr_;
+  double thr_contact_incr_;
 
 protected:
 
