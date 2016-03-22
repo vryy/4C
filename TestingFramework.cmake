@@ -1613,6 +1613,7 @@ baci_test(fpsi_bending_struct_BGSAMG 2 "")
 # electrochemistry using the AMGnxn framework
 baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_4x4 3 "")
+baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_standard_BGS-AMG_3x3 3 "")
 endif (HAVE_MueLu)
 
 if (HAVE_DEAL_II)

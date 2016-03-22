@@ -4,7 +4,7 @@
 \brief Scatra-scatra interface coupling strategy for standard scalar transport problems
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
@@ -597,112 +597,166 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         dserror("Assembly of auxiliary residual vector for master residuals not successful!");
     }
 
-    // extract global system matrix from time integrator
-    const Teuchos::RCP<LINALG::SparseMatrix> systemmatrix = scatratimint_->SystemMatrix();
-    if(systemmatrix == Teuchos::null)
-      dserror("System matrix is not a sparse matrix!");
-
-    // assemble interface contributions into global system of equations
-    switch(mortartype_)
+    // assemble global system of equations depending on matrix type
+    switch(matrixtype_)
     {
-      case INPAR::S2I::mortar_standard:
+      case INPAR::S2I::matrix_sparse:
       {
-        systemmatrix->Add(*islavematrix_,false,1.,1.);
-        systemmatrix->Add(*imastermatrix_,false,1.,1.);
-        interfacemaps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
-        interfacemaps_->AddVector(*imasterresidual_,2,*scatratimint_->Residual());
+        // extract global system matrix from time integrator
+        const Teuchos::RCP<LINALG::SparseMatrix> systemmatrix = scatratimint_->SystemMatrix();
+        if(systemmatrix == Teuchos::null)
+          dserror("System matrix is not a sparse matrix!");
+
+        // assemble interface contributions into global system of equations
+        switch(mortartype_)
+        {
+          case INPAR::S2I::mortar_standard:
+          {
+            systemmatrix->Add(*islavematrix_,false,1.,1.);
+            systemmatrix->Add(*imastermatrix_,false,1.,1.);
+            interfacemaps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
+            interfacemaps_->AddVector(*imasterresidual_,2,*scatratimint_->Residual());
+
+            break;
+          }
+
+          case INPAR::S2I::mortar_saddlepoint_petrov:
+          case INPAR::S2I::mortar_saddlepoint_bubnov:
+          {
+            if(lmside_ == INPAR::S2I::side_slave)
+            {
+              // assemble slave-side interface contributions into global residual vector
+              Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
+              if(D_->Multiply(true,*lm_,islaveresidual))
+                dserror("Matrix-vector multiplication failed!");
+              interfacemaps_->AddVector(islaveresidual,1,*scatratimint_->Residual(),-1.);
+
+              // assemble master-side interface contributions into global residual vector
+              Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
+              if(M_->Multiply(true,*lm_,imasterresidual))
+                dserror("Matrix-vector multiplication failed!");
+              interfacemaps_->AddVector(imasterresidual,2,*scatratimint_->Residual());
+
+              // build constraint residual vector associated with Lagrange multiplier dofs
+              Epetra_Vector ilmresidual(*islaveresidual_);
+              if(ilmresidual.ReplaceMap(*extendedmaps_->Map(1)))
+                dserror("Couldn't replace map!");
+              if(lmresidual_->Update(1.,ilmresidual,0.))
+                dserror("Vector update failed!");
+              if(E_->Multiply(true,*lm_,ilmresidual))
+                dserror("Matrix-vector multiplication failed!");
+              if(lmresidual_->Update(1.,ilmresidual,1.))
+                dserror("Vector update failed!");
+            }
+            else
+            {
+              // assemble slave-side interface contributions into global residual vector
+              Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
+              if(M_->Multiply(true,*lm_,islaveresidual))
+                dserror("Matrix-vector multiplication failed!");
+              interfacemaps_->AddVector(islaveresidual,1,*scatratimint_->Residual());
+
+              // assemble master-side interface contributions into global residual vector
+              Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
+              if(D_->Multiply(true,*lm_,imasterresidual))
+                dserror("Matrix-vector multiplication failed!");
+              interfacemaps_->AddVector(imasterresidual,2,*scatratimint_->Residual(),-1.);
+
+              // build constraint residual vector associated with Lagrange multiplier dofs
+              Epetra_Vector ilmresidual(Copy,*imasterresidual_,0);
+              if(ilmresidual.ReplaceMap(*extendedmaps_->Map(1)))
+                dserror("Couldn't replace map!");
+              if(lmresidual_->Update(1.,ilmresidual,0.))
+                dserror("Vector update failed!");
+              if(E_->Multiply(true,*lm_,ilmresidual))
+                dserror("Matrix-vector multiplication failed!");
+              if(lmresidual_->Update(1.,ilmresidual,1.))
+                dserror("Vector update failed!");
+            }
+
+            break;
+          }
+
+          case INPAR::S2I::mortar_condensed_petrov:
+          {
+            if(lmside_ == INPAR::S2I::side_slave)
+            {
+              systemmatrix->Add(*islavematrix_,false,1.,1.);
+              systemmatrix->Add(*LINALG::MLMultiply(*P_,true,*islavematrix_,false,false,false,true),false,-1.,1.);
+              interfacemaps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
+              Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
+              if(P_->Multiply(true,*islaveresidual_,imasterresidual))
+                dserror("Matrix-vector multiplication failed!");
+              interfacemaps_->AddVector(imasterresidual,2,*scatratimint_->Residual(),-1.);
+            }
+            else
+            {
+              systemmatrix->Add(*LINALG::MLMultiply(*P_,true,*imastermatrix_,false,false,false,true),false,-1.,1.);
+              systemmatrix->Add(*imastermatrix_,false,1.,1.);
+              Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
+              if(P_->Multiply(true,*imasterresidual_,islaveresidual))
+                dserror("Matrix-vector multiplication failed!");
+              interfacemaps_->AddVector(islaveresidual,1,*scatratimint_->Residual(),-1.);
+              interfacemaps_->AddVector(*imasterresidual_,2,*scatratimint_->Residual());
+            }
+
+            break;
+          }
+
+          case INPAR::S2I::mortar_condensed_bubnov:
+          {
+            // during calculation of initial time derivative, condensation must not be performed here, but after assembly of the modified global system of equations
+            if(scatratimint_->Step() > 0)
+              CondenseMatAndRHS(systemmatrix,scatratimint_->Residual());
+
+            break;
+          }
+
+          default:
+          {
+            dserror("Not yet implemented!");
+            break;
+          }
+        }
 
         break;
       }
 
-      case INPAR::S2I::mortar_saddlepoint_petrov:
-      case INPAR::S2I::mortar_saddlepoint_bubnov:
+      case INPAR::S2I::matrix_block_condition:
       {
-        if(lmside_ == INPAR::S2I::side_slave)
+        // extract global system matrix from time integrator
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix = scatratimint_->BlockSystemMatrix();
+        if(blocksystemmatrix == Teuchos::null)
+          dserror("System matrix is not a block matrix!");
+
+        // assemble interface contributions into global system of equations
+        switch(mortartype_)
         {
-          // assemble slave-side interface contributions into global residual vector
-          Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
-          if(D_->Multiply(true,*lm_,islaveresidual))
-            dserror("Matrix-vector multiplication failed!");
-          interfacemaps_->AddVector(islaveresidual,1,*scatratimint_->Residual(),-1.);
+          case INPAR::S2I::mortar_standard:
+          {
+            // split interface sparse matrices into block matrices
+            Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockslavematrix(islavematrix_->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_,*blockmaps_slave_));
+            blockslavematrix->Complete();
+            Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockmastermatrix(imastermatrix_->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_,*blockmaps_master_));
+            blockmastermatrix->Complete();
 
-          // assemble master-side interface contributions into global residual vector
-          Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
-          if(M_->Multiply(true,*lm_,imasterresidual))
-            dserror("Matrix-vector multiplication failed!");
-          interfacemaps_->AddVector(imasterresidual,2,*scatratimint_->Residual());
+            // assemble interface block matrices into global block system matrix
+            blocksystemmatrix->Add(*blockslavematrix,false,1.,1.);
+            blocksystemmatrix->Add(*blockmastermatrix,false,1.,1.);
 
-          // build constraint residual vector associated with Lagrange multiplier dofs
-          Epetra_Vector ilmresidual(*islaveresidual_);
-          if(ilmresidual.ReplaceMap(*extendedmaps_->Map(1)))
-            dserror("Couldn't replace map!");
-          if(lmresidual_->Update(1.,ilmresidual,0.))
-            dserror("Vector update failed!");
-          if(E_->Multiply(true,*lm_,ilmresidual))
-            dserror("Matrix-vector multiplication failed!");
-          if(lmresidual_->Update(1.,ilmresidual,1.))
-            dserror("Vector update failed!");
+            // assemble interface residual vectors into global residual vector
+            interfacemaps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
+            interfacemaps_->AddVector(*imasterresidual_,2,*scatratimint_->Residual());
+
+            break;
+          }
+
+          default:
+          {
+            dserror("Not yet implemented!");
+            break;
+          }
         }
-        else
-        {
-          // assemble slave-side interface contributions into global residual vector
-          Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
-          if(M_->Multiply(true,*lm_,islaveresidual))
-            dserror("Matrix-vector multiplication failed!");
-          interfacemaps_->AddVector(islaveresidual,1,*scatratimint_->Residual());
-
-          // assemble master-side interface contributions into global residual vector
-          Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
-          if(D_->Multiply(true,*lm_,imasterresidual))
-            dserror("Matrix-vector multiplication failed!");
-          interfacemaps_->AddVector(imasterresidual,2,*scatratimint_->Residual(),-1.);
-
-          // build constraint residual vector associated with Lagrange multiplier dofs
-          Epetra_Vector ilmresidual(Copy,*imasterresidual_,0);
-          if(ilmresidual.ReplaceMap(*extendedmaps_->Map(1)))
-            dserror("Couldn't replace map!");
-          if(lmresidual_->Update(1.,ilmresidual,0.))
-            dserror("Vector update failed!");
-          if(E_->Multiply(true,*lm_,ilmresidual))
-            dserror("Matrix-vector multiplication failed!");
-          if(lmresidual_->Update(1.,ilmresidual,1.))
-            dserror("Vector update failed!");
-        }
-
-        break;
-      }
-
-      case INPAR::S2I::mortar_condensed_petrov:
-      {
-        if(lmside_ == INPAR::S2I::side_slave)
-        {
-          systemmatrix->Add(*islavematrix_,false,1.,1.);
-          systemmatrix->Add(*LINALG::MLMultiply(*P_,true,*islavematrix_,false,false,false,true),false,-1.,1.);
-          interfacemaps_->AddVector(islaveresidual_,1,scatratimint_->Residual());
-          Epetra_Vector imasterresidual(*interfacemaps_->Map(2));
-          if(P_->Multiply(true,*islaveresidual_,imasterresidual))
-            dserror("Matrix-vector multiplication failed!");
-          interfacemaps_->AddVector(imasterresidual,2,*scatratimint_->Residual(),-1.);
-        }
-        else
-        {
-          systemmatrix->Add(*LINALG::MLMultiply(*P_,true,*imastermatrix_,false,false,false,true),false,-1.,1.);
-          systemmatrix->Add(*imastermatrix_,false,1.,1.);
-          Epetra_Vector islaveresidual(*interfacemaps_->Map(1));
-          if(P_->Multiply(true,*imasterresidual_,islaveresidual))
-            dserror("Matrix-vector multiplication failed!");
-          interfacemaps_->AddVector(islaveresidual,1,*scatratimint_->Residual(),-1.);
-          interfacemaps_->AddVector(*imasterresidual_,2,*scatratimint_->Residual());
-        }
-
-        break;
-      }
-
-      case INPAR::S2I::mortar_condensed_bubnov:
-      {
-        // during calculation of initial time derivative, condensation must not be performed here, but after assembly of the modified global system of equations
-        if(scatratimint_->Step() > 0)
-          CondenseMatAndRHS(systemmatrix,scatratimint_->Residual());
 
         break;
       }
@@ -1026,31 +1080,6 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     // initialize auxiliary residual vector
     islaveresidual_ = Teuchos::rcp(new Epetra_Vector(*(icoup_->SlaveDofMap())));
 
-    // further initializations depending on type of global system matrix
-    switch(matrixtype_)
-    {
-    case INPAR::S2I::matrix_sparse:
-      // nothing needs to be done in this case
-      break;
-
-    case INPAR::S2I::matrix_block_condition:
-    case INPAR::S2I::matrix_block_condition_dof:
-    case INPAR::S2I::matrix_block_geometry:
-    {
-      // safety check
-      if(!scatratimint_->Solver()->Params().isSublist("AMGnxn Parameters"))
-        dserror("Global system matrix with block structure requires AMGnxn block preconditioner!");
-
-      // initialize map extractors associated with blocks of global system matrix
-      BuildBlockMapExtractors();
-
-      // feed AMGnxn block preconditioner with null space information for each block of global block system matrix
-      BuildBlockNullSpaces();
-
-      break;
-    }
-    }
-
     break;
   }
 
@@ -1333,6 +1362,31 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
   }
   }
 
+  // further initializations depending on type of global system matrix
+  switch(matrixtype_)
+  {
+  case INPAR::S2I::matrix_sparse:
+    // nothing needs to be done in this case
+    break;
+
+  case INPAR::S2I::matrix_block_condition:
+  case INPAR::S2I::matrix_block_condition_dof:
+  case INPAR::S2I::matrix_block_geometry:
+  {
+    // safety check
+    if(!scatratimint_->Solver()->Params().isSublist("AMGnxn Parameters"))
+      dserror("Global system matrix with block structure requires AMGnxn block preconditioner!");
+
+    // initialize map extractors associated with blocks of global system matrix
+    BuildBlockMapExtractors();
+
+    // feed AMGnxn block preconditioner with null space information for each block of global block system matrix
+    BuildBlockNullSpaces();
+
+    break;
+  }
+  }
+
   // initialize vectors for row and column sums of global system matrix if necessary
   if(rowequilibration_)
     invrowsums_ = Teuchos::rcp(new Epetra_Vector(*scatratimint_->Discretization()->DofRowMap(),false));
@@ -1374,14 +1428,14 @@ void SCATRA::MeshtyingStrategyS2I::BuildBlockMapExtractors()
     {
       std::vector<Teuchos::RCP<const Epetra_Map> > maps(2);
       maps[0] = blockmaps[iblock];
-      maps[1] = icoup_->SlaveDofMap();
+      maps[1] = interfacemaps_->Map(1);
       blockmaps_slave[iblock] = LINALG::MultiMapExtractor::IntersectMaps(maps);
-      maps[1] = icoup_->MasterDofMap();
+      maps[1] = interfacemaps_->Map(2);
       blockmaps_master[iblock] = LINALG::MultiMapExtractor::IntersectMaps(maps);
     }
-    blockmaps_slave_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*icoup_->SlaveDofMap(),blockmaps_slave));
+    blockmaps_slave_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*interfacemaps_->Map(1),blockmaps_slave));
     blockmaps_slave_->CheckForValidMapExtractor();
-    blockmaps_master_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*icoup_->MasterDofMap(),blockmaps_master));
+    blockmaps_master_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*interfacemaps_->Map(2),blockmaps_master));
     blockmaps_master_->CheckForValidMapExtractor();
   }
 
