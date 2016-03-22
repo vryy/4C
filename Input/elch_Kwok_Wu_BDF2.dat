@@ -1,8 +1,8 @@
 //
-// Maintainer: Andreas Ehrl
-// ehrl@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15252
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
 //
 ==================================================================
 General Data File CCARAT
@@ -21,17 +21,6 @@ General Data File CCARAT
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
-RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMALEDIS                       0
-NUMTHERMDIS                     0
-----------------------------------------------------------STRUCTURAL DYNAMIC
--------------------------------------------------------------CONTACT DYNAMIC
----------------------------------------------------------------FLUID DYNAMIC
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
@@ -44,7 +33,6 @@ RESTARTEVRY                     1000
 THETA                           0.5
 TIMEINTEGR                      BDF2
 TIMESTEP                        0.005
-VELFUNCNO                       -1
 VELOCITYFIELD                   zero
 WRITEFLUX                       totalflux_domain
 RESULTSEVRY                           1
@@ -62,7 +50,7 @@ EQUPOT                          ENC
 BLOCKPRECOND                    Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          CheapSIMPLE                   // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -98,7 +86,7 @@ SUB_SOLVER1                     2
 SUB_SOLVER2                     3
 --------------------------------------------------------------------SOLVER 2
 NAME                            Simple_predictor
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                            // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -132,7 +120,7 @@ ML_DAMPMED                      1.0                           // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 --------------------------------------------------------------------SOLVER 3
 NAME                            Sca_Tra_Electrical_Potential
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                            // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -168,11 +156,6 @@ ML_DAMPCOARSE                   1.0                           // damping coarse 
 MAT 1 MAT_ion DIFFUSIVITY 0.008 VALENCE 1.0
 MAT 2 MAT_ion DIFFUSIVITY 0.005 VALENCE -2.0
 MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 1 2 END
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
@@ -182,20 +165,16 @@ FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 2.0+(cos(pi*x)*cos(2*pi*y)*cos(3*pi*z))
 FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 1.0+0.5*(cos(pi*x)*cos(2*pi*y)*cos(3*pi*z))
 FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION (-0.1666666666666)*log((2.0+(cos(1*pi*x)*cos(2*pi*y)*cos(3*pi*z)))/3.0) //initial pot. field
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 131 QUANTITY fluxx VALUE -4.318538617e-03 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 131 QUANTITY fluxy VALUE -8.597676656e-03 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 131 QUANTITY fluxz VALUE -7.278424334e-10 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 131 QUANTITY phi1 VALUE 1.775483327e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 307 QUANTITY phi1 VALUE 2.898066937e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 131 QUANTITY phi2 VALUE 8.877416637e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 307 QUANTITY phi2 VALUE 1.449033468e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 131 QUANTITY phi3 VALUE 8.322678348e-02 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 307 QUANTITY phi3 VALUE 0.000000000e+00 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 131 QUANTITY fluxx VALUE -4.318538617e-03 TOLERANCE 1e-12
+SCATRA DIS scatra NODE 131 QUANTITY fluxy VALUE -8.597676656e-03 TOLERANCE 1e-12
+SCATRA DIS scatra NODE 131 QUANTITY fluxz VALUE -7.27828560721841906e-10 TOLERANCE 1e-16
+SCATRA DIS scatra NODE 131 QUANTITY phi1 VALUE 1.775483327e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 307 QUANTITY phi1 VALUE 2.898066937e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 131 QUANTITY phi2 VALUE 8.877416637e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 307 QUANTITY phi2 VALUE 1.449033468e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 131 QUANTITY phi3 VALUE 8.32267834974786819e-02 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 307 QUANTITY phi3 VALUE -3.20655952431372670e-10 TOLERANCE 1e-16
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          0
@@ -207,7 +186,6 @@ DPOINT                          1
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
@@ -405,7 +383,6 @@ NODE 301 DSURFACE 4
 NODE 303 DSURFACE 4
 NODE 305 DSURFACE 4
 NODE 307 DSURFACE 4
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 0.00000000e+00 0.00000000e+00
 NODE 2 COORD 0.00000000e+00 0.00000000e+00 -1.66666672e-01
@@ -750,8 +727,6 @@ NODE 340 COORD 1.00000000e+00 1.00000000e+00 -5.00000000e-01
 NODE 341 COORD 1.00000000e+00 1.00000000e+00 -6.66666687e-01
 NODE 342 COORD 1.00000000e+00 1.00000000e+00 -8.33333313e-01
 NODE 343 COORD 1.00000000e+00 1.00000000e+00 -1.00000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
---------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 1 TRANSP HEX8 1 2 3 4 5 6 7 8 MAT 3 TYPE ElchNP
 2 TRANSP HEX8 2 9 10 3 6 11 12 7 MAT 3 TYPE ElchNP
@@ -969,6 +944,4 @@ NODE 343 COORD 1.00000000e+00 1.00000000e+00 -1.00000000e+00
 214 TRANSP HEX8 284 285 292 291 333 334 341 340 MAT 3 TYPE ElchNP
 215 TRANSP HEX8 285 286 293 292 334 335 342 341 MAT 3 TYPE ElchNP
 216 TRANSP HEX8 286 287 294 293 335 336 343 342 MAT 3 TYPE ElchNP
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------------END
-//                              END

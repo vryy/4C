@@ -385,4 +385,3 @@ NODE       201 COORD  9.9874999954314980e-02  0.0000000000000000e+00  0.00000000
    99 TRANSP LINE3  196 198 199    MAT 1 TYPE ElchDiffCond
    100 TRANSP LINE3  198 200 201    MAT 1 TYPE ElchDiffCond
 ---------------------------------------------------------------END
-// END

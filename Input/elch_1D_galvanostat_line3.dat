@@ -24,7 +24,7 @@ THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.5
 VELOCITYFIELD                   zero
-RESULTSEVRY                           10
+RESULTSEVRY                     10
 OUTMEAN                         Yes
 MAXTIME                         10
 NUMSTEP                         20
@@ -845,4 +845,3 @@ NODE       501 COORD  2.9987500144781459e-01  0.0000000000000000e+00  0.00000000
    249 TRANSP LINE3  496 498 499    MAT 1 TYPE ElchNP
    250 TRANSP LINE3  498 500 501    MAT 1 TYPE ElchNP
 ---------------------------------------------------------------END
-// END

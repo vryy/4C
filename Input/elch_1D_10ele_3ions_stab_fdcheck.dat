@@ -1,8 +1,8 @@
 //
-// Maintainer: Andreas Ehrl
-// ehrl@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15252
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
 //
 ==================================================================
 General Data File CCARAT
@@ -15,19 +15,11 @@ Convection-Diffusion-Migration in 1D using a stabilized FEM
 DIM                             1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
-RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMALEDIS                       0
-NUMTHERMDIS                     0
-----------------------------------------------------------STRUCTURAL DYNAMIC
----------------------------------------------------------------FLUID DYNAMIC
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      Stationary
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     1000
 NUMSTEP                         101                           // series of stationary solutions from Pe=0 up to Pe=200
 MAXTIME                         1000
@@ -55,8 +47,7 @@ CONVTOL                         1e-09
 TEMPERATURE                     11.604506                     // abused as a scaling factor in order to have: F/RT = 100.0 -> F/RT\phi is the result stored in \phi
 EQUPOT                          ENC
 --------------------------------------------------------------------SOLVER 1
-NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ion DIFFUSIVITY 0.006666666666666666666 VALENCE +2.0
 MAT 2 MAT_ion DIFFUSIVITY 0.02 VALENCE -2.0
@@ -65,10 +56,6 @@ MAT 4 MAT_matlist LOCAL No NUMMAT 4 MATIDS 1 2 3 5 END
 MAT 5 MAT_ion DIFFUSIVITY 0.01 VALENCE 0.0 // a non-charged scalar for comparison
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t-1.0 t1 0.0 t2 1000.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.02 // 0.1*20 = 2.0 // 2.0
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
@@ -79,13 +66,9 @@ FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 2.0
 FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 2.0
 FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 1.0 // one uncharged species for comparison
 FUNCT2 COMPONENT 4 EXPR 0 0.0 0 FUNCTION 0.0 // el. potential
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 10 QUANTITY phi1 VALUE 1.00672772040393887e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 11 QUANTITY phi1 VALUE 1.0e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 11 QUANTITY phi1 VALUE 1.0e-01 TOLERANCE 1e-16
 SCATRA DIS scatra NODE 10 QUANTITY phi2 VALUE 2.00882795252882662e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 11 QUANTITY phi2 VALUE 1.13253012048192758e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 10 QUANTITY phi3 VALUE 2.00420046424977594e+00 TOLERANCE 1e-09
@@ -108,9 +91,6 @@ E 2 - NUMDOF 5 ONOFF 1 0 0 1 0 VAL 0.1 0.0 0.0 0.1 0.0 CURVE none none none none
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 11 DNODE 2
----------------------------------------------------------DLINE-NODE TOPOLOGY
----------------------------------------------------------DSURF-NODE TOPOLOGY
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 0.00000000e+00 0.00000000e+00
 NODE 2 COORD 1.00000001e-01 0.00000000e+00 0.00000000e+00
@@ -123,9 +103,6 @@ NODE 8 COORD 6.99999988e-01 0.00000000e+00 0.00000000e+00
 NODE 9 COORD 8.00000012e-01 0.00000000e+00 0.00000000e+00
 NODE 10 COORD 8.99999976e-01 0.00000000e+00 0.00000000e+00
 NODE 11 COORD 1.00000000e+00 0.00000000e+00 0.00000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 1 TRANSP LINE2 1 2 MAT 4 TYPE ElchNP
 2 TRANSP LINE2 2 3 MAT 4 TYPE ElchNP
@@ -137,6 +114,4 @@ NODE 11 COORD 1.00000000e+00 0.00000000e+00 0.00000000e+00
 8 TRANSP LINE2 8 9 MAT 4 TYPE ElchNP
 9 TRANSP LINE2 9 10 MAT 4 TYPE ElchNP
 10 TRANSP LINE2 10 11 MAT 4 TYPE ElchNP
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
-//                              END

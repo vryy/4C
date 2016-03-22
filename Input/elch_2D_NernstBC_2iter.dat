@@ -1,8 +1,8 @@
 //
-// Maintainer: Andreas Ehrl
-// ehrl@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15252
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
 //
 ==================================================================
                   General Data File BACI
@@ -14,13 +14,7 @@ created by pre_exodus
 //NODES       502
 DIM           2
 -------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Electrochemistry
-RESTART      0
-----------------------------------------------------DISCRETISATION
-NUMFLUIDDIS  1
-NUMSTRUCDIS  0
-NUMALEDIS    0
-NUMTHERMDIS  0
+PROBLEMTYP                      Electrochemistry
 -----------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
@@ -33,9 +27,8 @@ ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 TIMESTEP                        0.01
-VELFUNCNO                       -1
 VELOCITYFIELD                   zero
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 MATID                           1
 WRITEFLUX                       diffusiveflux_boundary
 OUTMEAN                         Yes
@@ -66,8 +59,7 @@ MAT_NEWMAN_CONST_B              -2.0
 MAT_NEWMAN_CONST_C              -1.0
 MAT_DIFFCOND_DIFFBASED          No
 --------------------------------------------------------------------SOLVER 1
-NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 ------------------------------------------------------MATERIALS
 MAT 1 MAT_elchmat NUMDOF 2 NUMSCAL 1 NUMPHASE 1 PHASEIDS 2 END
 MAT 2 MAT_elchphase EPSILON 1.0 TORTUOSITY 1.0 NUMMAT 1 MATIDS 3 END
@@ -84,13 +76,12 @@ CURVE4 on EXPR FUNC 0.5*(1-cos((t*pi)/2)) t1 0.0 t2 2.0 // potential
 ------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.1    //initial concentration field: µmol/mm³
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0    //initial potential field:
-------------------------------------------------------------FUNCT2
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 3.83973810376559838e-02 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE -1.25414814190631774e-01 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 73 QUANTITY phi1 VALUE 9.17629932290825040e-02 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 3.83973810376559838e-02 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE -1.25414814190631774e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 73 QUANTITY phi1 VALUE 9.17629932290825040e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 73 QUANTITY phi2 VALUE -9.84899318999510054e-02 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 217 QUANTITY phi1 VALUE 9.99999905714571979e-02 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 217 QUANTITY phi1 VALUE 9.99999905714571979e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 217 QUANTITY phi2 VALUE -7.02692069673481745e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 501 QUANTITY phi1 VALUE 1.61602618962343847e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 501 QUANTITY phi2 VALUE -1.23321123926032426e-02 TOLERANCE 1e-11
@@ -109,7 +100,6 @@ E 4 - ID 1 pot  0.0 curve none numscal 1 stoich -1 e- 1 epsilon -1 zero_cur 0 Ne
 DLINE  2
 E 3 -
 E 4 -
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    3 DLINE 1
 NODE    4 DLINE 1
@@ -617,8 +607,6 @@ NODE    1 DLINE 3
 NODE    4 DLINE 3
 NODE    501 DLINE 4
 NODE    502 DLINE 4
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0000000000000000e+00 -2.5000000000000001e-04 0.0000000000000000e+00
 NODE 2 COORD 2.4999640967218793e-04 -2.5000000000000001e-04 0.0000000000000000e+00

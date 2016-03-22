@@ -1,8 +1,8 @@
 //
-// Maintainer: Andreas Ehrl
-// ehrl@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15252
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
 //
 ==================================================================
 General Data File CCARAT
@@ -15,14 +15,6 @@ natural convection in a electrochemical cell (2-D problem)
 DIM                             2
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
-RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMALEDIS                       0
-NUMTHERMDIS                     0
-----------------------------------------------------------STRUCTURAL DYNAMIC
--------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function
@@ -32,7 +24,7 @@ NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-09
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     10
 NUMSTEP                         10
 NUMSTASTEPS                     0
@@ -43,7 +35,6 @@ START_THETA                     0.67
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
-
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
@@ -84,11 +75,10 @@ RESTARTEVRY                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1.0
-VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
 OUTMEAN                         Yes
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 MATID                           5
 NATURAL_CONVECTION              Yes
 NATCONVITEMAX                   10
@@ -107,7 +97,7 @@ TEMPERATURE                     11604.506                     // abused as a sca
 EQUPOT                          ENC_PDE_ELIM
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -141,41 +131,7 @@ ML_DAMPMED                      1.0                           // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT                        0                             // output every so often, 0 no output
-AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE                         0                             // how often to recompute some preconditioners
-AZDROP                          0.0                           // drop tolerance for ILUT
-IFPACKFILL                      1.0                           // fill-in for ILUT
-IFPACKGFILL                     0                             // graph fill for ILU
-AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
-AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER                          1000                          // max iterations
-AZSUB                           25                            // size of krylov space for gmres
-AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH                         1                             // unused
-AZPOLY                          1                             // polynomial order for Neumann
-IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
-AZSCAL                          none                          // none sym infnorm scaling of the system
-DWINDTAU                        2.5                           // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
-ML_PRINT                        0                             // ML print-out level (0-10)
-ML_MAXCOARSESIZE                5000                          // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     5                             // ML max number of levels
-ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
-ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  ILU                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE               KLU                           // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES                     2 0 0 0 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.67                          // damping fine grid
-ML_DAMPMED                      1.0                           // damping med grids
-ML_DAMPCOARSE                   1.0                           // damping coarse grid
---------------------------------------------------------------------SOLVER 3
-NAME                            Sca_Tra_Electrical_Potential
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -217,10 +173,6 @@ MAT 5 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 4 END
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5 t1 0.0 t2 5.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0 //initial concentration field
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 1.0 //initial concentration field
@@ -231,29 +183,25 @@ FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //initial x-vel. field
 FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //initial y-vel. field
 //FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 //initial z-vel. field
 FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -y*9.81*1.0+0.1*9.81*1.0 //initial pres. field
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 704 QUANTITY fluxx VALUE -2.114807021e-05 TOLERANCE 1e-13
-SCATRA DIS scatra NODE 704 QUANTITY fluxy VALUE  3.871927451e-05 TOLERANCE 1e-13
-SCATRA DIS scatra NODE 732 QUANTITY fluxx VALUE -2.114490002e-05 TOLERANCE 1e-13
-SCATRA DIS scatra NODE 732 QUANTITY fluxy VALUE -3.890664914e-05 TOLERANCE 1e-13
-SCATRA DIS scatra NODE 702 QUANTITY phi1 VALUE 9.832656526e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 735 QUANTITY phi1 VALUE 1.016734347e+00 TOLERANCE 1e-9
-//SCATRA DIS scatra NODE 702 QUANTITY phi2 VALUE 4.916328263e-01 TOLERANCE 1e-9 // eliminated species
-//SCATRA DIS scatra NODE 735 QUANTITY phi2 VALUE 5.083671737e-01 TOLERANCE 1e-9 // eliminated species
-SCATRA DIS scatra NODE 702 QUANTITY phi2 VALUE 1.000000000e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 735 QUANTITY phi2 VALUE 1.000000000e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 702 QUANTITY phi3 VALUE 4.846887322e-03 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 735 QUANTITY phi3 VALUE 3.225669100e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 704 QUANTITY velx VALUE -1.278519573e-10 TOLERANCE 1e-13
-FLUID DIS fluid NODE 704 QUANTITY vely VALUE  3.941838942e-05 TOLERANCE 1e-13
-FLUID DIS fluid NODE 704 QUANTITY pressure VALUE 9.810000036e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 732 QUANTITY velx VALUE  1.277857901e-10 TOLERANCE 1e-13
-FLUID DIS fluid NODE 732 QUANTITY vely VALUE -3.941822901e-05 TOLERANCE 1e-13
-FLUID DIS fluid NODE 732 QUANTITY pressure VALUE 9.810000036e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 704 QUANTITY fluxx VALUE -2.11480702253199386e-05 TOLERANCE 1e-14
+SCATRA DIS scatra NODE 704 QUANTITY fluxy VALUE 3.871927451e-05 TOLERANCE 1e-14
+SCATRA DIS scatra NODE 732 QUANTITY fluxx VALUE -2.11449000073785394e-05 TOLERANCE 1e-14
+SCATRA DIS scatra NODE 732 QUANTITY fluxy VALUE -3.890664914e-05 TOLERANCE 1e-14
+SCATRA DIS scatra NODE 702 QUANTITY phi1 VALUE 9.832656526e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 735 QUANTITY phi1 VALUE 1.016734347e+00 TOLERANCE 1e-09
+//SCATRA DIS scatra NODE 702 QUANTITY phi2 VALUE 4.916328263e-01 TOLERANCE 1e-10 // eliminated species
+//SCATRA DIS scatra NODE 735 QUANTITY phi2 VALUE 5.083671737e-01 TOLERANCE 1e-10 // eliminated species
+SCATRA DIS scatra NODE 702 QUANTITY phi2 VALUE 1.000000000e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 735 QUANTITY phi2 VALUE 1.000000000e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 702 QUANTITY phi3 VALUE 4.846887322e-03 TOLERANCE 1e-12
+SCATRA DIS scatra NODE 735 QUANTITY phi3 VALUE 3.225669100e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 704 QUANTITY velx VALUE -1.27867059904724461e-10 TOLERANCE 1e-16
+FLUID DIS fluid NODE 704 QUANTITY vely VALUE 3.941838942e-05 TOLERANCE 1e-14
+FLUID DIS fluid NODE 704 QUANTITY pressure VALUE 9.810000036e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 732 QUANTITY velx VALUE 1.27802536474486468e-10 TOLERANCE 1e-16
+FLUID DIS fluid NODE 732 QUANTITY vely VALUE -3.941822901e-05 TOLERANCE 1e-14
+FLUID DIS fluid NODE 732 QUANTITY pressure VALUE 9.810000036e-01 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          4
@@ -1874,7 +1822,6 @@ NODE 1432 DSURFACE 1
 NODE 1433 DSURFACE 1
 NODE 1434 DSURFACE 1
 NODE 1435 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD -5.00000007e-02 -1.00000001e-01 0.00000000e+00
 NODE 2 COORD -4.84999977e-02 -1.00000001e-01 0.00000000e+00
@@ -3311,7 +3258,6 @@ NODE 1432 COORD 4.51368950e-02 1.00000001e-01 0.00000000e+00
 NODE 1433 COORD 4.68820557e-02 1.00000001e-01 0.00000000e+00
 NODE 1434 COORD 4.84999977e-02 1.00000001e-01 0.00000000e+00
 NODE 1435 COORD 5.00000007e-02 1.00000001e-01 0.00000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
 --------------------------------------------------------------FLUID ELEMENTS
 1 FLUID QUAD4 1 2 3 4 MAT 1 NA Euler GP 2 2
 2 FLUID QUAD4 2 5 6 3 MAT 1 NA Euler GP 2 2
@@ -4673,7 +4619,4 @@ NODE 1435 COORD 5.00000007e-02 1.00000001e-01 0.00000000e+00
 1358 FLUID QUAD4 1397 1398 1433 1432 MAT 1 NA Euler GP 2 2
 1359 FLUID QUAD4 1398 1399 1434 1433 MAT 1 NA Euler GP 2 2
 1360 FLUID QUAD4 1399 1400 1435 1434 MAT 1 NA Euler GP 2 2
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------------END
-//                              END

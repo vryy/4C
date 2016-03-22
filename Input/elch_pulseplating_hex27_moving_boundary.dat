@@ -1,8 +1,8 @@
 //
-// Maintainer: Andreas Ehrl
-// ehrl@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15252
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
 //
 ==================================================================
 General Data File CCARAT
@@ -15,14 +15,6 @@ pulse-reverse plating on RDE with electrode surface growth
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
-RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMALEDIS                       0
-NUMTHERMDIS                     0
-----------------------------------------------------------STRUCTURAL DYNAMIC
--------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 ADAPTCONV                       yes
@@ -50,9 +42,7 @@ START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.0008
-RESULTSEVRY                           1
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
+RESULTSEVRY                     1
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 FSSUGRDIFF                      No
@@ -64,10 +54,9 @@ RESTARTEVRY                     2
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.0008
-VELFUNCNO                       1
-VELOCITYFIELD Navier_Stokes //function
+VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       diffusiveflux_boundary        // do not use totalflux_boundary due to introduction of mesh convection!
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 MATID                           2
 SOLVERTYPE                      nonlinear
 OUTMEAN                         Yes
@@ -90,7 +79,7 @@ MOVBOUNDARYITEMAX               10
 MOVBOUNDARYCONVTOL              1e-10
 MOVBOUNDARYTHETA                1.0                           // backward-Euler style
 MOLARVOLUME                     10.0                          // 7.11E-3 // molar volume of copper: V_m = M/rho [mm^3/\mu mol]
-//                                                             // Wikipedia: 7,11 x 10 a 6 m3/mol
+                                                              // Wikipedia: 7,11 x 10 a 6 m3/mol
 EQUPOT                          ENC
 BLOCKPRECOND                    Yes
 -----------------------------------------------------------------ALE DYNAMIC
@@ -102,7 +91,7 @@ RESULTSEVRY                     1
 LINEAR_SOLVER                   5
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          CheapSIMPLE                   // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -138,10 +127,10 @@ SUB_SOLVER1                     3
 SUB_SOLVER2                     4
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            SimplePredictor
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -175,7 +164,7 @@ ML_DAMPMED                      1.0                           // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Electrical_Potential
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -257,26 +246,23 @@ FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.348
 FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 2.408
 FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 4.12
 FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1 QUANTITY velx VALUE 0.00000000000000000e+00 TOLERANCE 1e-14
-FLUID DIS fluid NODE 1 QUANTITY vely VALUE -4.04852104305662465e-07 TOLERANCE 1e-14
-FLUID DIS fluid NODE 1 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-14
+FLUID DIS fluid NODE 1 QUANTITY velx VALUE 0.00000000000000000e+00 TOLERANCE 1e-16
+FLUID DIS fluid NODE 1 QUANTITY vely VALUE -4.04852104305662465e-07 TOLERANCE 1e-16
+FLUID DIS fluid NODE 1 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-16
 FLUID DIS fluid NODE 1 QUANTITY pressure VALUE -9.94439792250837340e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 1 QUANTITY fluxx VALUE 0.00000000000000000e+00 TOLERANCE 1e-14
-SCATRA DIS scatra NODE 1 QUANTITY fluxy VALUE 4.04861839101116412e-08 TOLERANCE 1e-14
-SCATRA DIS scatra NODE 1 QUANTITY fluxz VALUE 0.00000000000000000e+00 TOLERANCE 1e-14
+SCATRA DIS scatra NODE 1 QUANTITY fluxx VALUE 0.00000000000000000e+00 TOLERANCE 1e-16
+SCATRA DIS scatra NODE 1 QUANTITY fluxy VALUE 4.04861839101116412e-08 TOLERANCE 1e-16
+SCATRA DIS scatra NODE 1 QUANTITY fluxz VALUE 0.00000000000000000e+00 TOLERANCE 1e-16
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 3.47800045480743891e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 2.40788619118417913e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 1 QUANTITY phi3 VALUE 4.12017229140687213e+00 TOLERANCE 1e-09
-SCATRA DIS scatra NODE 1 QUANTITY phi4 VALUE -8.78603918704553817e-07 TOLERANCE 1e-14
+SCATRA DIS scatra NODE 1 QUANTITY phi4 VALUE -8.78603918704553817e-07 TOLERANCE 1e-16
 SCATRA DIS scatra NODE 28 QUANTITY phi1 VALUE 3.47426313233420547e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 28 QUANTITY phi4 VALUE -2.03744711154004160e-06 TOLERANCE 1e-14
-ALE DIS ale NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1e-14
+SCATRA DIS scatra NODE 28 QUANTITY phi4 VALUE -2.03744711154004160e-06 TOLERANCE 1e-15
+ALE DIS ale NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1e-16
 ALE DIS ale NODE 1 QUANTITY dispy VALUE 2.07236784683175871e-05 TOLERANCE 1e-14
-ALE DIS ale NODE 1 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1e-14
+ALE DIS ale NODE 1 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1e-16
 ALE DIS ale NODE 28 QUANTITY dispy VALUE 2.02931945345120346e-05 TOLERANCE 1e-14
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
@@ -315,8 +301,6 @@ E 2 - ID 0 pot -0.0 curve none numscal 3 stoich -1 0 0 e- 2 epsilon -1 zero_cur 
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           1
 E 2 -
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 892 DSURFACE 1
 NODE 893 DSURFACE 1

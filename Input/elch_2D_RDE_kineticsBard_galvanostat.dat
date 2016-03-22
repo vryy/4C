@@ -1,8 +1,8 @@
 //
-// Maintainer: Andreas Ehrl
-// ehrl@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15252
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
 //
 // example: reaction model Bard
 // simulation of potential sweep experiment described in
@@ -24,14 +24,6 @@ created by pre_exodus
 DIM                             2
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
-RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMTHERMDIS                     0
 ----------------------------------------------------------------ELCH CONTROL
 GALVANOSTATIC                   Yes
 GSTAT_APPROX_ELECT_RESIST       effective_length_with_initial_cond //relation_pot_cur effective_length_with_initial_cond
@@ -68,8 +60,7 @@ SOLVERTYPE                      nonlinear
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
-RESULTSEVRY                           1
-VELCURVENO                      -1
+RESULTSEVRY                     1
 VELFUNCNO                       2
 VELOCITYFIELD                   function
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
@@ -89,7 +80,7 @@ EVALUATION_TAU                  element_center
 STABTYPE                        no_stabilization
 SUGRVEL                         no
 --------------------------------------------------------------------SOLVER 1
-SOLVER UMFPACK //Aztec_MSR // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ion DIFFUSIVITY 1e-3 VALENCE 2.0 //DENSIFICATION 0.7 // A++ diffusivity: cm^2/s, densification: cm^3/mmol
 MAT 2 MAT_ion DIFFUSIVITY 1e-3 VALENCE 1.0 //DENSIFICATION 0.7 //B+
@@ -100,8 +91,6 @@ MAT 5 MAT_matlist LOCAL No NUMMAT 4 MATIDS 1 2 3 4 END
 CURVE1 on EXPR FUNC -50*1e-6*(0.5*(sin((t*pi/0.1)-(pi/2)))+0.5) t1 0.0 t2 0.1
 ----------------------------------------------------------------------CURVE2
 CURVE2 on EXPR FUNC 5*t-0.2 t1 0.0 t2 0.36 //scan rate 5 V/s
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.00995 //initial concentration field:A+ mmol/cm^3 = mol/l = M
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0001 //initial concentration field A
@@ -113,13 +102,11 @@ FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION (52.35987756*2)^0.5*(-0.51023*(52.35987
 FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //initial y-vel. field
 //FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 //initial z-vel. field
 FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0 //initial pres. field
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 5.31781680035964960e-03 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 4.76173248522811319e-03 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 1 QUANTITY phi3 VALUE 9.92922325861318678e-01 TOLERANCE 1e-10
-SCATRA DIS scatra NODE 1 QUANTITY phi4 VALUE 1.00831969193487070e+00 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 1 QUANTITY phi4 VALUE 1.00831969193487070e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 1 QUANTITY phi5 VALUE -2.71436509668631417e-04 TOLERANCE 1e-13
 SCATRA DIS scatra NODE 125 QUANTITY phi1 VALUE 5.56794783103450267e-03 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 125 QUANTITY phi5 VALUE -2.68226441967135676e-04 TOLERANCE 1e-13
@@ -138,14 +125,11 @@ E 2 - NUMDOF 5 ONOFF 1 1 1 1 1 VAL 0.00995 0.0001 0.990 1.010 0.0 CURVE none non
 DLINE                           1
 //                              left_electrode
 E 1 - ID 0 pot -0.45 curve none numscal 4 stoich -1 1 0 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer-Bard e0 -1.1813e-1 k0 1.0338e-5 beta 0.5 c_c0 0.00995 c_a0 0.0001 dl_spec_cap 0.0 END
----------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 4 DLINE 1
 NODE 201 DLINE 2
 NODE 202 DLINE 2
----------------------------------------------------------DSURF-NODE TOPOLOGY
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD -5.0000000000000003e-02 -4.9999999999999998e-07 0.0000000000000000e+00
 NODE 2 COORD -4.9999987226568204e-02 -4.9999999999999998e-07 0.0000000000000000e+00
@@ -349,9 +333,6 @@ NODE 199 COORD 3.6956510631798445e-02 -4.9999999999999998e-07 0.0000000000000000
 NODE 200 COORD 3.6956510631798452e-02 4.9999999999999998e-07 0.0000000000000000e+00
 NODE 201 COORD 5.0000000000000003e-02 -4.9999999999999998e-07 0.0000000000000000e+00
 NODE 202 COORD 5.0000000000000003e-02 4.9999999999999998e-07 0.0000000000000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 1 TRANSP QUAD4 1 2 3 4 MAT 5 TYPE ElchNP
 2 TRANSP QUAD4 2 5 6 3 MAT 5 TYPE ElchNP
@@ -453,6 +434,4 @@ NODE 202 COORD 5.0000000000000003e-02 4.9999999999999998e-07 0.0000000000000000e
 98 TRANSP QUAD4 195 197 198 196 MAT 5 TYPE ElchNP
 99 TRANSP QUAD4 197 199 200 198 MAT 5 TYPE ElchNP
 100 TRANSP QUAD4 199 201 202 200 MAT 5 TYPE ElchNP
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
-//                              END

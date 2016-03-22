@@ -1,8 +1,8 @@
 //
-// Maintainer: Andreas Ehrl
-// ehrl@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15252
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
 //
 ==================================================================
 General Data File CCARAT
@@ -16,20 +16,11 @@ DIM                             2
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
 SHAPEFCT                        Nurbs
-RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMALEDIS                       0
-NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
----------------------------------------------------------------FLUID DYNAMIC
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      Gen_Alpha
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 MAXTIME                         1000.0
 NUMSTEP                         10
@@ -39,7 +30,6 @@ ALPHA_M                         0.833333
 GAMMA                           0.666666
 THETA                           0.666666
 VELOCITYFIELD                   zero
-VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
@@ -50,8 +40,7 @@ OUTPUT_GMSH                     No
 OUTMEAN                         Yes
 CALCERROR                       No
 CONVFORM                        conservative
-VELCURVENO                      -1
-WRITEFLUX_IDS 1 2 // do not write flux of species 3
+WRITEFLUX_IDS                   1 2 // do not write flux of species 3
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10
 ITEMAX                          2
@@ -83,7 +72,6 @@ MOVINGBOUNDARY                  No
 TEMPERATURE                     293
 EQUPOT                          ENC
 --------------------------------------------------------------------SOLVER 1
-NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
@@ -98,8 +86,6 @@ DLINE                           2
 E 1 - ID 0 pot  0.0    curve none numscal 3 stoich -1 0 0 e- 2 epsilon -1 zero_cur 0 linear alpha 1.5 i0 4.0 gamma 0.0 refcon 0.1 dl_spec_cap 0.0 END
 // cathodic reaction
 E 2 - ID 1 pot -0.0125 curve none numscal 3 stoich -1 0 0 e- 2 epsilon -1 zero_cur 0 linear alpha 0.5 i0 4.0 gamma 0.0 refcon 0.1 dl_spec_cap 0.0 END
------------------------------------------------------------FLUID KNOTVECTORS
--------------------------------------------------------------ALE KNOTVECTORS
 -------------------------------------------------------TRANSPORT KNOTVECTORS
 BEGIN                           NURBSPATCH
 ID                              1
@@ -339,7 +325,6 @@ NODE 108 DLINE 4
 NODE 120 DLINE 4
 NODE 132 DLINE 4
 NODE 144 DLINE 4
---------------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 1 TRANSP NURBS9 1 2 3 13 14 15 25 26 27 MAT 2 TYPE ElchNP
 2 TRANSP NURBS9 2 3 4 14 15 16 26 27 28 MAT 2 TYPE ElchNP
@@ -456,15 +441,11 @@ CURVE2 on EXPR FUNC 1.0-sin(t*pi/(5.0*2.0)) t1 0.0 t2 5.0
 ----------------------------------------------------------------------CURVE3
 CURVE3 on EXPR FUNC -20.0 t1 0.0 t2 0.8
 CURVE3 on EXPR FUNC -20.0*((t-0.6)/0.2) t1 0.8 t2 10000.0
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0 0 FUNCTION 0.1
 FUNCT1 COMPONENT 1 EXPR 0 0 0 FUNCTION 1.1
 FUNCT1 COMPONENT 2 EXPR 0 0 0 FUNCTION 2.0
 FUNCT1 COMPONENT 3 EXPR 0 0 0 FUNCTION 0.0
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 79 QUANTITY phi1 VALUE 1.00006226870501605e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 123 QUANTITY phi1 VALUE 1.03492754294910144e-01 TOLERANCE 1e-10
@@ -476,4 +457,3 @@ SCATRA DIS scatra NODE 144 QUANTITY fluxx VALUE -7.25498817462971865e-04 TOLERAN
 SCATRA DIS scatra NODE 9 QUANTITY fluxx VALUE 7.25498817463371827e-04 TOLERANCE 1e-13
 SCATRA DIS scatra NODE 137 QUANTITY fluxx VALUE -7.25498817463030520e-04 TOLERANCE 1e-13
 -------------------------------------------------------------------------END
-//                              END

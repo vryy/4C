@@ -1,8 +1,8 @@
 //
-// Maintainer: Andreas Ehrl
-// ehrl@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15252
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
 //
 ==================================================================
                   General Data File BACI
@@ -14,24 +14,7 @@ created by pre_exodus
 //NODES       8745
 DIM           2
 -------------------------------------------------------PROBLEM TYP
-PROBLEMTYP   Electrochemistry
-RESTART      0
-----------------------------------------------------DISCRETISATION
-NUMFLUIDDIS  1
-NUMSTRUCDIS  0
-NUMALEDIS    0
-NUMTHERMDIS  0
-----------------------------------------------------------------IO
-OUTPUT_BIN             Yes
-STRUCT_DISP            No
-STRUCT_STRESS          No
-STRUCT_STRAIN          No
-FLUID_SOL              Yes
-FLUID_STRESS           No
-FLUID_VIS              No
-THERM_TEMPERATURE      No
-THERM_HEATFLUX         No
-FILESTEPS              1000
+PROBLEMTYP                      Electrochemistry
 -----------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
@@ -44,9 +27,8 @@ ALPHA_M                         0.83333333333333
 ALPHA_F                         0.66666666666666
 GAMMA                           0.66666666666666
 TIMESTEP                        0.05
-VELFUNCNO                       -1
 VELOCITYFIELD                   zero
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 MATID                           1
 WRITEFLUX                       No
 OUTMEAN                         Yes
@@ -86,7 +68,7 @@ MAT_NEWMAN_CONST_B              -2.0
 MAT_NEWMAN_CONST_C              -1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        10                              // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                              // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -137,26 +119,25 @@ CURVE4 on EXPR FUNC 1.4+0.5*t^2-0.4*t t1 0.0 t2 1000000 // thermodynamic factor
 ------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0    //initial concentration field: µmol/mm³
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0    //initial potential field:
-------------------------------------------------------------FUNCT2
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 1.03064669194122227e+00 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 1 QUANTITY phi1 VALUE 1.03064669194122227e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE -9.32000944534164127e-02 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 137 QUANTITY phi1 VALUE 1.00751024618543261e+00 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 137 QUANTITY phi1 VALUE 1.00751024618543261e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 137 QUANTITY phi2 VALUE -9.52228630160314032e-02 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 193 QUANTITY phi1 VALUE 1.02533694806342823e+00 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 193 QUANTITY phi1 VALUE 1.02533694806342823e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 193 QUANTITY phi2 VALUE -9.35984063757638179e-02 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 1283 QUANTITY phi1 VALUE 1.00043324348448381e+00 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 1283 QUANTITY phi1 VALUE 1.00043324348448381e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 1283 QUANTITY phi2 VALUE -9.70977868952871831e-02 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 847 QUANTITY phi1 VALUE 9.99944795527130559e-01 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 847 QUANTITY phi1 VALUE 9.99944795527130559e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 847 QUANTITY phi2 VALUE -9.79936855128887424e-02 TOLERANCE 1e-11
 // Butler-Volmer boundary
-SCATRA DIS scatra NODE 2337 QUANTITY phi1 VALUE 9.66923588539271517e-01 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 2337 QUANTITY phi2 VALUE -1.02709010609702264e-01 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 2809 QUANTITY phi1 VALUE 9.67003931209713952e-01 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 2809 QUANTITY phi2 VALUE -1.02703351407157140e-01 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 2737 QUANTITY phi1 VALUE 1.03362973675552694e+00 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 2337 QUANTITY phi1 VALUE 9.66923588539271517e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 2337 QUANTITY phi2 VALUE -1.02709010609702264e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 2809 QUANTITY phi1 VALUE 9.67003931209713952e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 2809 QUANTITY phi2 VALUE -1.02703351407157140e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 2737 QUANTITY phi1 VALUE 1.03362973675552694e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 2737 QUANTITY phi2 VALUE -9.30021234369250438e-02 TOLERANCE 1e-11
-SCATRA DIS scatra NODE 2377 QUANTITY phi1 VALUE 1.03363090485696096e+00 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 2377 QUANTITY phi1 VALUE 1.03363090485696096e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 2377 QUANTITY phi2 VALUE -9.30019719118148902e-02 TOLERANCE 1e-11
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
@@ -8996,7 +8977,6 @@ NODE    8742 DSURFACE 1
 NODE    8743 DSURFACE 1
 NODE    8744 DSURFACE 1
 NODE    8745 DSURFACE 1
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1    COORD 3.3915926535920002e-02  1.5707963267999999e-02  0.0000000000000000e+00
 NODE 2    COORD 3.3911535865330800e-02  1.5559861698265714e-02  0.0000000000000000e+00
@@ -17743,9 +17723,6 @@ NODE 8742   COORD 8.6916962488260904e-03  1.1451244168719983e-02  0.000000000000
 NODE 8743   COORD 1.1750961239167903e-02  8.3683137328248464e-03  0.0000000000000000e+00
 NODE 8744   COORD 1.5959771762382776e-02  1.1867062037479439e-02  0.0000000000000000e+00
 NODE 8745   COORD 3.1496715585682594e-02  1.8867586729702707e-02  0.0000000000000000e+00
-------------------------------------------------STRUCTURE ELEMENTS
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
    1 TRANSP QUAD4  1 2 3 4    MAT 1 TYPE ElchDiffCond
    2 TRANSP QUAD4  2 5 6 3    MAT 1 TYPE ElchDiffCond
@@ -25545,6 +25522,4 @@ NODE 8745   COORD 3.1496715585682594e-02  1.8867586729702707e-02  0.000000000000
    7796 TRANSP QUAD4  4467 6858 7691 5848    MAT 1 TYPE ElchDiffCond
    7797 TRANSP QUAD4  8635 8636 8637 8638    MAT 1 TYPE ElchDiffCond
    7798 TRANSP QUAD4  8635 8638 8673 8633    MAT 1 TYPE ElchDiffCond
----------------------------------------------------THERMO ELEMENTS
 ---------------------------------------------------------------END
-// END

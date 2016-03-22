@@ -1,8 +1,8 @@
 //
-// Maintainer: Andreas Ehrl
-// ehrl@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15252
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
 //
 ==================================================================
 General Data File CCARAT
@@ -16,12 +16,6 @@ with Butler-Volmer electrode kinetics
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
-RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMALEDIS                       0
-NUMTHERMDIS                     0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function
@@ -31,7 +25,7 @@ NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-09
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     10
 NUMSTEP                         7
 NUMSTASTEPS                     0
@@ -80,11 +74,10 @@ RESTARTEVRY                     10
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1.0
-VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
 OUTMEAN                         Yes
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 MATID                           5
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09
@@ -98,7 +91,7 @@ EQUPOT                          ENC
 BLOCKPRECOND                    Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          CheapSIMPLE                   // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -134,7 +127,7 @@ SUB_SOLVER1                     3
 SUB_SOLVER2                     4
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -168,7 +161,7 @@ ML_DAMPMED                      1.0                           // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 --------------------------------------------------------------------SOLVER 3
 NAME                            SimplerPredictor
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -202,7 +195,7 @@ ML_DAMPMED                      1.0                           // damping med gri
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Electrical_Potential
-SOLVER                          Aztec_MSR                     // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        0                             // output every so often, 0 no output
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -248,9 +241,6 @@ CURVE1 on Explicit FUNC f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 c1 0.0 c2 6.0
 ----------------------------------------------------------------------CURVE2
 CURVE2 on EXPR FUNC 0.5*cos(pi*t/6.0)+0.5 t1 0.0 t2 6.0
 //decreasing ramp function from 1 to 0 with horizontal slopes
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0.0 0 FUNCTION 0.75*64*(0.125-y)*(0.125+y)
 //inflow velocity profile with U_max = 0.75
@@ -268,8 +258,6 @@ FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 //initial pot. field
 FUNCT4 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0 //magnetic field
 FUNCT4 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //magnetic field
 FUNCT4 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0 //magnetic field
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 691 QUANTITY fluxx VALUE 2.90953275222064073e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 691 QUANTITY fluxy VALUE -3.50074282885878395e-03 TOLERANCE 1e-12
@@ -283,7 +271,7 @@ SCATRA DIS scatra NODE 121 QUANTITY phi3 VALUE 4.50249577086791697e-01 TOLERANCE
 SCATRA DIS scatra NODE 695 QUANTITY phi4 VALUE 4.15636168817858753e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 121 QUANTITY phi4 VALUE 4.70595431518292084e-01 TOLERANCE 1e-10
 FLUID DIS fluid NODE 695 QUANTITY velx VALUE 2.06906385081091798e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 695 QUANTITY vely VALUE -1.86107661563632190e-06 TOLERANCE 1e-14
+FLUID DIS fluid NODE 695 QUANTITY vely VALUE -1.86107661689178397e-06 TOLERANCE 1e-15
 FLUID DIS fluid NODE 695 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-09
 FLUID DIS fluid NODE 695 QUANTITY pressure VALUE 3.82942436384208773e-02 TOLERANCE 1e-11
 ----------------------------------------------------------DESIGN DESCRIPTION
@@ -313,14 +301,10 @@ E 8 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE none none none none FUNCT
 E 9 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 //                              cathode
 E 10 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL                            0
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           2
 //                              inflow
 E 8 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.5 1.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-//                              anode
-//E 9 - 6 1 1 0 0 0 0 1.0 1.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 // cathode (for neutral species use a Dirichlet b.c.)
 E 10 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 1.0 0.0 CURVE none none 2 none FUNCT 0 0 0 0
 ---------------------------------ELECTRODE BOUNDARY KINETICS SURF CONDITIONS
@@ -329,15 +313,12 @@ DSURF                           2
 E 9 - ID 0 pot 1.0 curve 1 numscal 3 stoich -1 0 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.853399 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 END //i0 = 0.01
 //                              cathode
 E 10 - ID 1 pot 0.0 curve 1 numscal 3 stoich -1 0 0 e- 1 epsilon -1 zero_cur 0 Butler-Volmer alpha_a 0.5 alpha_c 0.5 i0 964.853399 gamma 1.0 refcon 1.0 dl_spec_cap 0.0 END //i0 = 0.01
------------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
-DLINE                           0
 --------------------------------------------DESIGN FLOW RATE SURF CONDITIONS
 DSURF                           2
 E 8 - 1
 E 5 - 2
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 29 DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 2 DSURFACE 1
 NODE 3 DSURFACE 1
@@ -2073,7 +2054,6 @@ NODE 1201 DSURFACE 10
 NODE 1202 DSURFACE 10
 NODE 1231 DSURFACE 10
 NODE 1232 DSURFACE 10
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 -1.25000000e-01 9.99999978e-03
 NODE 2 COORD 0.00000000e+00 -1.25000000e-01 -9.99999978e-03
@@ -3545,7 +3525,6 @@ NODE 1467 COORD 8.00000012e-01 1.16707295e-01 -9.99999978e-03
 NODE 1468 COORD 8.00000012e-01 1.16707295e-01 9.99999978e-03
 NODE 1469 COORD 8.00000012e-01 1.25000000e-01 -9.99999978e-03
 NODE 1470 COORD 8.00000012e-01 1.25000000e-01 9.99999978e-03
-----------------------------------------------------------STRUCTURE ELEMENTS
 --------------------------------------------------------------FLUID ELEMENTS
 1 FLUID HEX8 1 2 3 4 5 6 7 8 MAT 1 NA Euler GP 2 2 2
 2 FLUID HEX8 4 3 9 10 8 7 11 12 MAT 1 NA Euler GP 2 2 2
@@ -4219,7 +4198,4 @@ NODE 1470 COORD 8.00000012e-01 1.25000000e-01 9.99999978e-03
 670 FLUID HEX8 1434 1433 1435 1436 1464 1463 1465 1466 MAT 1 NA Euler GP 2 2 2
 671 FLUID HEX8 1436 1435 1437 1438 1466 1465 1467 1468 MAT 1 NA Euler GP 2 2 2
 672 FLUID HEX8 1438 1437 1439 1440 1468 1467 1469 1470 MAT 1 NA Euler GP 2 2 2
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------------END
-//                              END

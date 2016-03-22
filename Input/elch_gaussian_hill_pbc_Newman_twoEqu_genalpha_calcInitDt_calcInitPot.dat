@@ -1,8 +1,8 @@
 //
-// Maintainer: Andreas Ehrl
-// ehrl@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15252
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
 //
 ==================================================================
 General Data File CCARAT
@@ -21,29 +21,12 @@ DIM                             3
 MATERIALS                       4
 NUMDF                           2
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP Electrochemistry //Scalar_Transport
-RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMALEDIS                       0
-NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-OUTPUT_BIN                      Yes
-STRUCT_DISP                     No
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
-FILESTEPS                       1000
+PROBLEMTYP                      Electrochemistry
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear //linear_incremental
 TIMEINTEGR                      Gen_Alpha
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     2
 NUMSTEP                         2 // shorter run for nightly test case! //100
 MAXTIME                         1.0 //hill reaches point of departure (x0=2/15) for 100 steps
@@ -83,12 +66,9 @@ MAT_NEWMAN_CONST_A              1.0
 MAT_NEWMAN_CONST_B              -2.0
 MAT_NEWMAN_CONST_C              -1.0
 MAT_DIFFCOND_DIFFBASED          No
------------------------------------------------------------------FSI DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Aztec_MSR
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ILU                             // !!!!!!! // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
@@ -140,10 +120,6 @@ FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0+((5.0/7.0)*exp((-1.0)*((x-(2.0/15.0))^2)/((0.0329983)^2)))
 FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.5 // potential field -> integral of phi in domain will be always kept to 0.5, since integral over increments will be enforced to have integral value of zero!!!
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 // result test for doing 2steps (one cycle):
 // values below are identical to scatra version of this test case and must be fulfilled!!!
@@ -151,14 +127,14 @@ FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.5 // potential field -> integral of p
 // - stabilization is deactivated
 // - same results as for classical elch with option elim (ENC formulation yields in different results)
 // - results for potential are also different when using more processors
-SCATRA DIS scatra NODE 222 QUANTITY phi1 VALUE 1.27037766103374672e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 230 QUANTITY phi1 VALUE 1.38485047903366887e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 246 QUANTITY phi1 VALUE 1.50369828714955500e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 261 QUANTITY phi1 VALUE 1.60730925483209219e+00 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 222 QUANTITY phi2 VALUE 5.01792044977914742e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 230 QUANTITY phi2 VALUE 5.02530962576295259e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 246 QUANTITY phi2 VALUE 5.03223244391328262e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 261 QUANTITY phi2 VALUE 5.03774290528121060e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 222 QUANTITY phi1 VALUE 1.27037766103374672e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 230 QUANTITY phi1 VALUE 1.38485047903366887e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 246 QUANTITY phi1 VALUE 1.50369828714955500e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 261 QUANTITY phi1 VALUE 1.60730925483209219e+00 TOLERANCE 1e-09
+SCATRA DIS scatra NODE 222 QUANTITY phi2 VALUE 5.01792045504047546e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 230 QUANTITY phi2 VALUE 5.02530963043273271e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 246 QUANTITY phi2 VALUE 5.03223244803431613e-01 TOLERANCE 1e-10
+SCATRA DIS scatra NODE 261 QUANTITY phi2 VALUE 5.03774290883966636e-01 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -178,8 +154,6 @@ E 1 - scatra NUMMODES 2 ONOFF 1 1 integration
 DVOL                            1
 // surface 1 equals the whole computational domain!
 E 1 - ScaTra 2 // set initial fields as defined by FUNCT 2
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
@@ -3831,9 +3805,6 @@ NODE 1809 COORD 1.00000000e+00 6.00000005e-03 -3.33333341e-03
 NODE 1810 COORD 1.00000000e+00 6.00000005e-03 3.33333341e-03
 NODE 1811 COORD 1.00000000e+00 9.99999978e-03 -3.33333341e-03
 NODE 1812 COORD 1.00000000e+00 9.99999978e-03 3.33333341e-03
-----------------------------------------------------------STRUCTURE ELEMENTS
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 1 TRANSP HEX8 1 2 3 4 5 6 7 8 MAT 1 TYPE ElchDiffCond
 2 TRANSP HEX8 4 3 9 10 8 7 11 12 MAT 1 TYPE ElchDiffCond
@@ -4586,4 +4557,3 @@ NODE 1812 COORD 1.00000000e+00 9.99999978e-03 3.33333341e-03
 749 TRANSP HEX8 1796 1795 1797 1798 1808 1807 1809 1810 MAT 1 TYPE ElchDiffCond
 750 TRANSP HEX8 1798 1797 1799 1800 1810 1809 1811 1812 MAT 1 TYPE ElchDiffCond
 -------------------------------------------------------------------------END
-//                              END

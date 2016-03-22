@@ -601,4 +601,3 @@ NODE       251 COORD  1.0000000000000001e-01  0.0000000000000000e+00  0.00000000
    249 TRANSP LINE2  249 250    MAT 1 TYPE ElchDiffCond
    250 TRANSP LINE2  250 251    MAT 1 TYPE ElchDiffCond
 ---------------------------------------------------------------END
-// END

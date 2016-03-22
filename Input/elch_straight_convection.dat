@@ -1,8 +1,8 @@
 //
-// Maintainer: Andreas Ehrl
-// ehrl@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15252
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
 //
 ==================================================================
 General Data File CCARAT
@@ -18,14 +18,6 @@ Electrochemistry problem for testing the stabilization parameter
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Electrochemistry
-RESTART                         0
---------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                     1
-NUMSTRUCDIS                     0
-NUMALEDIS                       0
-NUMTHERMDIS                     0
-----------------------------------------------------------STRUCTURAL DYNAMIC
--------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_function
@@ -35,7 +27,7 @@ NONLINITER                      Newton
 ITEMAX                          8
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     10
 NUMSTEP                         10
 NUMSTASTEPS                     0
@@ -53,13 +45,13 @@ SIMPLER                         No
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      Stationary
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     1000
 NUMSTEP                         1
 MAXTIME                         1000.0
 TIMESTEP                        1
 THETA                           0.66
-VELOCITYFIELD Navier_Stokes //function
+VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
@@ -67,8 +59,7 @@ FSSUGRDIFF                      No
 WRITEFLUX                       totalflux_domain
 MATID                           4
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-CONVTOL                         1e-9
-ITEMAX                          10
+CONVTOL                         1.e-9
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
 DEFINITION_TAU                  Taylor_Hughes_Zarins
@@ -100,10 +91,10 @@ C_SMAGORINSKY                   0.17
 CHANNEL_L_TAU                   0.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
-SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          14
@@ -119,8 +110,6 @@ E 13 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 CURVE none none none FUNCT 0 0 3
 E 14 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 CURVE none none none FUNCT 0 0 3
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           1
-//E 2 - 6 1 1 0 0 0 0 1.0 1.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
-//E 4 - 6 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 7 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 1.0 CURVE none none none FUNCT 0 0 3 // all potential dof are dirichlet points!!
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 643 DNODE 1
@@ -5228,7 +5217,6 @@ NODE 1328 COORD 1.000000000000000e+00 0.000000000000000e+00 9.000000000000000e-0
 NODE 1329 COORD 9.000000000000000e-01 0.000000000000000e+00 1.000000000000000e+00
 NODE 1330 COORD 1.000000000000000e+00 9.999999999999998e-02 1.000000000000000e+00
 NODE 1331 COORD 1.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
 --------------------------------------------------------------FLUID ELEMENTS
 1 FLUID HEX8 8 5 3 7 6 2 1 4 MAT 1 NA Euler GP 2 2 2
 2 FLUID HEX8 19 8 7 17 15 6 4 11 MAT 1 NA Euler GP 2 2 2
@@ -6230,8 +6218,6 @@ NODE 1331 COORD 1.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+0
 998 FLUID HEX8 1325 1321 1304 1317 1318 1303 1276 1299 MAT 1 NA Euler GP 2 2 2
 999 FLUID HEX8 1328 1325 1317 1323 1322 1318 1299 1312 MAT 1 NA Euler GP 2 2 2
 1000 FLUID HEX8 1331 1328 1323 1329 1330 1322 1312 1324 MAT 1 NA Euler GP 2 2 2
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0
 MAT 2 MAT_ion DIFFUSIVITY 0.01 VALENCE 1.0
@@ -6239,11 +6225,6 @@ MAT 3 MAT_ion DIFFUSIVITY 0.01 VALENCE -1.0
 MAT 4 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 3 END
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 4
-----------------------------------------------------------------------CURVE1
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
@@ -6255,18 +6236,14 @@ FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 1.0
 FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -250.0*z+250.0
 ----------------------------------------------------------------------FUNCT3
 FUNCT3 EXPR 0 0.0 0 FUNCTION -250.0*z+250.0
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 922 QUANTITY phi1 VALUE 1.10560897761088794e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 784 QUANTITY phi1 VALUE 9.88846744058957672e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 922 QUANTITY phi2 VALUE 1.00000036242398282e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 784 QUANTITY phi2 VALUE 2.00000064430914781e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 922 QUANTITY phi3 VALUE 2.5e+01 TOLERANCE 1e-08
-SCATRA DIS scatra NODE 784 QUANTITY phi3 VALUE 5e+01 TOLERANCE 1e-08
-SCATRA DIS scatra NODE 922 QUANTITY fluxx VALUE 1.02914663392072999e-15 TOLERANCE 1e-14
-SCATRA DIS scatra NODE 922 QUANTITY fluxy VALUE 1.78369959376748830e-15 TOLERANCE 1e-14
+SCATRA DIS scatra NODE 784 QUANTITY phi3 VALUE 5.0e+01 TOLERANCE 1e-08
+SCATRA DIS scatra NODE 922 QUANTITY fluxx VALUE 1.02914663392072999e-15 TOLERANCE 1e-16
+SCATRA DIS scatra NODE 922 QUANTITY fluxy VALUE 1.78369959376748830e-15 TOLERANCE 1e-16
 SCATRA DIS scatra NODE 922 QUANTITY fluxz VALUE 4.55884454202454137e+00 TOLERANCE 1e-09
 -------------------------------------------------------------------------END
-//                              END
