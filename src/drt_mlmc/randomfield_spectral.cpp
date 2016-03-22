@@ -5,13 +5,23 @@ Created on: 15 May, 2014
 
 
  <pre>
-Maintainer: Jonas Biehler
+\maintainer Jonas Biehler
             biehler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15276
 </pre>
 */
 #ifdef HAVE_FFTW
+
+// disable boost long double functions because they do not work together with
+// valgrind. valgrind emulates long double as double and therefore some
+// routines inside boost do not converge to the expected precision, crashing
+// the program at the global initialization stage (before main()). we never
+// use <long double> distributions anyway, so no harm is caused by disabling
+// these methods.
+#define BOOST_MATH_NO_LONG_DOUBLE_MATH_FUNCTIONS
+
+
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 #include "randomfield.H"
 #include "randomfield_spectral.H"
@@ -32,14 +42,6 @@ Maintainer: Jonas Biehler
 #include"fftw3.h"
 
 #include <fstream>
-
-// disable boost long double functions because they do not work together with
-// valgrind. valgrind emulates long double as double and therefore some
-// routines inside boost do not converge to the expected precision, crashing
-// the program at the global initialization stage (before main()). we never
-// use <long double> distributions anyway, so no harm is caused by disabling
-// these methods.
-#define BOOST_MATH_NO_LONG_DOUBLE_MATH_FUNCTIONS
 
 #include <boost/math/distributions/beta.hpp> // for beta_distribution.
 #include <boost/math/distributions/normal.hpp> // for normal_distribution.
