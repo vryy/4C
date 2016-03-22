@@ -1,0 +1,1548 @@
+Index: ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.H
+===================================================================
+--- ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.H	(revision 21907)
++++ ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.H	(working copy)
+@@ -239,6 +239,7 @@
+         const std::string&                        name                   ///< name of the condition
+         );
+ 
++#if 0
+     /// Writes debug output for volumetric coupling
+     void WriteBoundarySurfacesVolumeCoupling(
+         std::map< std::vector<int>, Teuchos::RCP<DRT::Element> > surfmap, //map containing the surfaces of the boundary condition
+@@ -246,6 +247,7 @@
+         int numproc,                                                      //number of procs
+         int mypid                                                         //current proc
+         );
++#endif
+ 
+   }
+ }
+Index: ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.cpp
+===================================================================
+--- ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.cpp	(revision 21907)
++++ ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.cpp	(working copy)
+@@ -22,11 +22,9 @@
+ #include "drt_condition_utils.H"
+ #include "drt_condition_selector.H"
+ #include "drt_discret_iterator.H"
+-#include "drt_globalproblem.H"
+ 
+ #include "../drt_lib/drt_utils_parallel.H"
+ #include "../linalg/linalg_utils.H"
+-#include "../drt_io/io_control.H"
+ 
+ /*----------------------------------------------------------------------*
+  *----------------------------------------------------------------------*/
+@@ -683,6 +681,7 @@
+     dserror("not all elements collected.");
+ }
+ 
++#if 0
+ /*-----------------------------------------------------------------------*
+  * Writes boundary surfaces of a volumetrically coupled problem to file  *
+  * 'boundarysurfaces.log' storing the condition-Id as surface-Id. For    *
+@@ -723,4 +722,5 @@
+     std::cout << " No 'boundarysurfaces.log' written as number of procs = "<< numproc <<" is bigger than 1." << std::endl;
+   }
+ }
++#endif
+ 
+Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_conditions.cpp
+===================================================================
+--- ccarat_RR_03_16_mod/src/drt_lib/drt_discret_conditions.cpp	(revision 21907)
++++ ccarat_RR_03_16_mod/src/drt_lib/drt_discret_conditions.cpp	(working copy)
+@@ -16,7 +16,6 @@
+ #include "drt_dserror.H"
+ #include "drt_parobject.H"
+ 
+-#include "drt_globalproblem.H"
+ #include "drt_condition_utils.H"
+ #include "../linalg/linalg_utils.H"
+ 
+@@ -82,11 +81,11 @@
+     //  - line conditions in 1D
+     //  - surface conditions in 2D
+     //  - volume conditions in 3D
+-    else if ((int)(fool->second->GType())==DRT::Problem::Instance()->NDim())
+-      havenewelements = BuildVolumesinCondition(fool->first,fool->second);
+-    // dimension of condition must not larger than the one of the problem itself
+-    else if ((int)(fool->second->GType())>DRT::Problem::Instance()->NDim())
+-      dserror("Dimension of condition is larger than the problem dimension.");
++//    else if ((int)(fool->second->GType())==DRT::Problem::Instance()->NDim())
++//      havenewelements = BuildVolumesinCondition(fool->first,fool->second);
++//    // dimension of condition must not larger than the one of the problem itself
++//    else if ((int)(fool->second->GType())>DRT::Problem::Instance()->NDim())
++//      dserror("Dimension of condition is larger than the problem dimension.");
+     // build a line element geometry description
+     else if (fool->second->GType()==DRT::Condition::Line)
+       havenewelements = BuildLinesinCondition(fool->first,fool->second);
+@@ -597,6 +596,7 @@
+     }
+   }
+ 
++#if 0
+   //Write output for Gmsh format for debugging of StructFluidSurfCoupling surface correction,
+   //note that this can only be done on one proc
+   if ((cond->Type() == DRT::Condition::StructFluidSurfCoupling) or (cond->Type() == DRT::Condition::RedAirwayTissue))
+@@ -603,6 +603,7 @@
+   {
+     DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(surfmap,cond->Id(),cond->comm_->NumProc(),cond->comm_->MyPID());
+   }
++#endif
+ 
+   // Surfaces be added to the condition: (line_id) -> (surface).
+   Teuchos::RCP<std::map< int, Teuchos::RCP<DRT::Element> > > finalsurfs = Teuchos::rcp(new std::map<int,Teuchos::RCP<DRT::Element> >() );
+Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_evaluate.cpp
+===================================================================
+--- ccarat_RR_03_16_mod/src/drt_lib/drt_discret_evaluate.cpp	(revision 21907)
++++ ccarat_RR_03_16_mod/src/drt_lib/drt_discret_evaluate.cpp	(working copy)
+@@ -11,11 +11,8 @@
+ 
+ *----------------------------------------------------------------------*/
+ 
+-#include "drt_globalproblem.H"
+ #include "drt_discret.H"
+ #include "drt_dserror.H"
+-#include "drt_timecurve.H"
+-#include "drt_function.H"
+ #include "drt_parobjectfactory.H"
+ #include "../linalg/linalg_utils.H"
+ #include "../linalg/linalg_sparsematrix.H"
+@@ -241,7 +238,7 @@
+         double curvefac = 1.0;
+         if (curve) curvenum = (*curve)[j];
+         if (curvenum >= 0 && usetime)
+-          curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
++          dserror("No support for curves in contact module.");
+ 
+         value *= curvefac;
+         const int lid = systemvector.Map().LID(gid);
+@@ -549,7 +546,8 @@
+       int curvenum = -1;
+       if (curve) curvenum = (*curve)[onesetj];
+       if (curvenum>=0 && usetime)
+-        curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
++        dserror("No support for curves in contact module.");
++//        curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
+       else
+         for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
+ 
+@@ -560,11 +558,12 @@
+       {
+         funct_num = (*funct)[onesetj];
+         if (funct_num>0)
+-          functfac =
+-            DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(onesetj,
+-                                                                  actnode->X(),
+-                                                                  time,
+-                                                                  this);
++          dserror("No support for functions in contact module.");
++//          functfac =
++//            DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(onesetj,
++//                                                                  actnode->X(),
++//                                                                  time,
++//                                                                  this);
+       }
+ 
+       // apply factors to Dirichlet value
+@@ -698,7 +697,8 @@
+         if (curve) curvenum = (*curve)[0];
+         double curvefac = 1.0;
+         if (curvenum>=0 && usetime)
+-          curvefac = Problem::Instance()->Curve(curvenum).f(time);
++          dserror("No support for curves in contact module.");
++//          curvefac = Problem::Instance()->Curve(curvenum).f(time);
+ 
+         // Get ConditionID of current condition if defined and write value in parameter list
+         const std::vector<int>*    CondIDVec  = cond.Get<std::vector<int> >("ConditionID");
+@@ -1115,7 +1115,7 @@
+       // evaluate function
+       if (dosomething)
+       {
+-        double time = 0.0; // dummy time here
++        //double time = 0.0; // dummy time here
+         double functfac = 0.0;
+         int funct_num = -1;
+         if (funct)
+@@ -1122,7 +1122,8 @@
+         {
+           funct_num = (*funct)[0];
+           if (funct_num > 0)
+-            functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(localdof,actnode->X(),time,this);
++            dserror("No support for functions in contact module.");
++//            functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(localdof,actnode->X(),time,this);
+         }
+ 
+         // assign value
+Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_partition.cpp
+===================================================================
+--- ccarat_RR_03_16_mod/src/drt_lib/drt_discret_partition.cpp	(revision 21907)
++++ ccarat_RR_03_16_mod/src/drt_lib/drt_discret_partition.cpp	(working copy)
+@@ -17,7 +17,6 @@
+ #include "drt_discret.H"
+ #include "drt_exporter.H"
+ #include "drt_dserror.H"
+-#include "drt_utils_metis.H"
+ #include "drt_dofset_pbc.H"
+ #include "../linalg/linalg_utils.H"
+ 
+@@ -860,6 +859,9 @@
+                                         bool initelements           ,
+                                         bool doboundaryconditions   )
+ {
++#if 1
++  dserror("SetupGhostingWrongNameDoNotUse not needed here");
++#else
+   if (Filled())
+     dserror("there is really no need to setup ghosting if the discretization is already filled");
+ 
+@@ -963,7 +965,7 @@
+                assigndegreesoffreedom,
+                initelements,
+                doboundaryconditions);
+-
++#endif
+ }
+ 
+ void DRT::Discretization::SetupGhosting(
+Index: ccarat_RR_03_16_mod/src/drt_lib/drt_dofset.cpp
+===================================================================
+--- ccarat_RR_03_16_mod/src/drt_lib/drt_dofset.cpp	(revision 21907)
++++ ccarat_RR_03_16_mod/src/drt_lib/drt_dofset.cpp	(working copy)
+@@ -18,7 +18,6 @@
+ #include "drt_dofset.H"
+ #include "drt_dofset_proxy.H"
+ #include "drt_discret.H"
+-#include "drt_discret_hdg.H"
+ #include "drt_utils.H"
+ 
+ #include "../linalg/linalg_utils.H"
+@@ -170,10 +169,6 @@
+   // Get highest GID used so far and add one
+   int count = MaxGIDinList(dis.Comm()) + 1;
+ 
+-  // Check if we have a face discretization which supports degrees of freedom on faces
+-  Teuchos::RCP<const DiscretizationHDG> facedis =
+-    Teuchos::rcp_dynamic_cast<const DiscretizationHDG>(Teuchos::rcp(&dis,false));
+-
+   // Now this is tricky. We have to care for nodes, faces, and elements, both
+   // row and column maps. In general both nodes, faces, and elements can have
+   // dofs. In all cases these dofs might be shared with other nodes, faces,
+@@ -193,14 +188,10 @@
+   // numdf for all nodes and elements
+   numdfcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
+   numdfcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
+-  if (facedis != Teuchos::null && facedis->FaceColMap() != NULL)
+-    numdfcolfaces_ = Teuchos::rcp(new Epetra_IntVector(*facedis->FaceColMap()));
+ 
+   // index of first dof for all nodes and elements
+   idxcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
+   idxcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
+-  if (facedis != Teuchos::null && facedis->FaceColMap() != NULL)
+-    idxcolfaces_ = Teuchos::rcp(new Epetra_IntVector(*facedis->FaceColMap()));
+ 
+   //////////////////////////////////////////////////////////////////
+   //////////////////////////////////////////////////////////////////
+@@ -577,69 +568,6 @@
+ 
+     count = maxnodenumdf>0 ? idxrownodes.MaxValue() + maxnodenumdf : 0;
+ 
+-    //////////////////////////////////////////////////////////////////
+-
+-    // Now do it again for the faces
+-    if (facedis != Teuchos::null && facedis->FaceRowMap() != NULL)
+-    {
+-      Epetra_IntVector numdfrowfaces(*facedis->FaceRowMap());
+-      Epetra_IntVector idxrowfaces(*facedis->FaceRowMap());
+-      int numcolelements = dis.NumMyColElements();
+-
+-      const int mypid = dis.Comm().MyPID();
+-      for (int i=0; i<numcolelements; ++i)
+-      {
+-        DRT::FaceElement** faces = dis.lColElement(i)->Faces();
+-        // If no faces are found, continue...
+-        if (faces == NULL)
+-          continue;
+-        for (int face=0; face<dis.lColElement(i)->NumFace(); ++face)
+-          if (faces[face]->Owner() == mypid) {
+-            const int mylid = facedis->FaceRowMap()->LID(faces[face]->Id());
+-            numdfrowfaces[mylid] = NumDofPerFace(*(dis.lColElement(i)),face);
+-          }
+-      }
+-
+-      int minfacegid = facedis->FaceRowMap()->MinAllGID();
+-      int maxfacenumdf = numdfrowfaces.MaxValue();
+-
+-      for (int i=0; i<numcolelements; ++i)
+-      {
+-        DRT::FaceElement** faces = dis.lColElement(i)->Faces();
+-        if (faces == NULL)
+-          continue;
+-        for (int face=0; face<dis.lColElement(i)->NumFace(); ++face)
+-          if (faces[face]->Owner() == mypid)
+-          {
+-            const int gid = faces[face]->Id();
+-            const int mylid = facedis->FaceRowMap()->LID(gid);
+-            int numdf = numdfrowfaces[mylid];
+-            int dof = count + ( gid-minfacegid )*maxfacenumdf;
+-            idxrowfaces[mylid] = dof;
+-            std::vector<int> & dofs = facedofset[gid];
+-            // do not visit the same face more than once
+-            if (dofs.empty())
+-            {
+-              dofs.reserve( numdf );
+-              for ( int j=0; j<numdf; ++j )
+-              {
+-                dofs.push_back( dof+j );
+-              }
+-            }
+-          }
+-      }
+-
+-      Epetra_Import faceimporter( numdfcolfaces_->Map(), numdfrowfaces.Map() );
+-      err = numdfcolfaces_->Import( numdfrowfaces, faceimporter, Insert );
+-      if (err) dserror( "Import using importer returned err=%d", err );
+-      err = idxcolfaces_->Import( idxrowfaces, faceimporter, Insert );
+-      if (err) dserror( "Import using importer returned err=%d", err );
+-
+-      count = idxrowfaces.MaxValue() + maxfacenumdf;
+-    }
+-
+-    //////////////////////////////////////////////////////////////////
+-
+     // Now do it again for the elements
+     Epetra_IntVector numdfrowelements(*dis.ElementRowMap());
+     Epetra_IntVector idxrowelements(*dis.ElementRowMap());
+@@ -736,12 +664,6 @@
+   Exporter elementexporter( *dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm() );
+   elementexporter.Export( elementdofset );
+ 
+-  if (facedis != Teuchos::null && facedis->FaceRowMap() != NULL)
+-  {
+-    Exporter faceexporter( *facedis->FaceRowMap(), *facedis->FaceColMap(), dis.Comm() );
+-    faceexporter.Export( facedofset );
+-  }
+-
+   for ( std::map<int,std::vector<int> >::iterator i=nodedofset.begin();
+         i!=nodedofset.end();
+         ++i )
+Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.H
+===================================================================
+--- ccarat_RR_03_16_mod/src/drt_lib/drt_element.H	(revision 21907)
++++ ccarat_RR_03_16_mod/src/drt_lib/drt_element.H	(working copy)
+@@ -21,11 +21,6 @@
+ #include "drt_condition.H"
+ 
+ // forward declarations
+-namespace MAT
+-{
+-  class Material;
+-}
+-
+ namespace DRT
+ {
+ 
+@@ -624,21 +619,6 @@
+   virtual void Print(std::ostream& os) const;
+ 
+   /*!
+-  \brief Return the material of this element
+-
+-  Note: The input parameter nummat is not the material number from input file
+-        as in SetMaterial(int matnum), but the number of the material within
+-        the vector of materials the element holds
+-
+-  \param nummat (in): number of requested material
+-  */
+-  virtual Teuchos::RCP<MAT::Material> Material(int nummat=0) const
+-  {
+-    dsassert(nummat<(int)mat_.size(),"invalid material number");
+-    return mat_[nummat];
+-  }
+-
+-  /*!
+   \brief Check whether the element has only ghost nodes
+ 
+   Note: If the element has only ghost nodes, the element will not be allowed
+@@ -727,13 +707,6 @@
+   void SetId(const int id) { id_ = id; }
+ 
+   /*!
+-  \brief Read input for this element
+-  */
+-  virtual bool ReadElement(const std::string& eletype,
+-                           const std::string& distype,
+-                           DRT::INPUT::LineDefinition* linedef);
+-
+-  /*!
+     \brief Set processor local col id
+ 
+     \param lid: processor local col id
+@@ -770,13 +743,6 @@
+   void SetNodeIds(const int nnode, const int* nodes);
+ 
+   /*!
+-  \brief Set a list of node ids this element is connected to
+-
+-  Here the node ids are directly taken from an input line.
+-  */
+-  void SetNodeIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef);
+-
+-  /*!
+   \brief Set a the face with index faceindex this element is connected to
+ 
+   Sets the face pointer of the face adjacent to this element, using NumFace() as
+@@ -790,39 +756,6 @@
+   void SetFace(const int         faceindex,
+                DRT::FaceElement* faceelement);
+ 
+-  /// Set element material
+-  /*!
+-    Material numbers are read from the input file. The element stores
+-    a corresponding material object. These material objects can be
+-    anything from very simple (just a little calculation) to highly
+-    sophisticated with history data. The material is packed and
+-    unpacked along with its element.
+-
+-    \param matnum : material number from input file
+-   */
+-  virtual void SetMaterial(int matnum);
+-
+-  /// Add element material
+-  /*!
+-    In case of volume coupled problems the element needs information
+-    from the material of the other field. Therefore, it is possible to
+-    add pointers on other materials from other elements.
+-
+-    \param mat: material to be added
+-    \param nummat (out):  number of materials the element holds
+-   */
+-  int AddMaterial(Teuchos::RCP<MAT::Material> mat);
+-
+-  /// Number of materials of the element
+-  /*!
+-    In case of volume coupled problems the element needs information
+-    from the material of the other field. Therefore, it is possible to
+-    add pointers on other materials from other elements.
+-
+-    \param nummat (out):  number of materials the element holds
+-   */
+-  int NumMaterial() const {return mat_.size();};
+-
+   //@}
+ 
+   //! @name Conditions
+@@ -1211,9 +1144,6 @@
+   //! \brief Some conditions e.g. BCs
+   std::multimap<std::string,Teuchos::RCP<Condition> > condition_;
+ 
+-  //! vector of material objects of element
+-  std::vector<Teuchos::RCP<MAT::Material> > mat_;
+-
+   //! is this a nurbs element?
+   bool isNurbs_;
+ 
+Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp
+===================================================================
+--- ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp	(revision 21907)
++++ ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp	(working copy)
+@@ -17,11 +17,7 @@
+ #include "drt_dserror.H"
+ #include "drt_condition.H"
+ #include "../drt_lib/drt_utils_factory.H"
+-#include "drt_linedefinition.H"
+ 
+-#include "../drt_mat/material.H"
+-
+-
+ /*----------------------------------------------------------------------*/
+ /*----------------------------------------------------------------------*/
+ DRT::Element::DiscretizationType DRT::StringToDistype(std::string name)
+@@ -70,9 +66,7 @@
+ ParObject(),
+ id_(id),
+ lid_(-1),
+-owner_(owner),
+-mat_(1,Teuchos::null),
+-isNurbs_(false)
++owner_(owner)
+ {}
+ 
+ /*----------------------------------------------------------------------*
+@@ -85,9 +79,7 @@
+ owner_(old.owner_),
+ nodeid_(old.nodeid_),
+ node_(old.node_),
+-face_(old.face_),
+-mat_(1,Teuchos::null),
+-isNurbs_(old.isNurbs_)
++face_(old.face_)
+ {
+   // we do NOT want a deep copy of the condition_ as the condition
+   // is only a reference in the elements anyway
+@@ -95,16 +87,6 @@
+   for (fool=old.condition_.begin(); fool!=old.condition_.end(); ++fool)
+     SetCondition(fool->first,fool->second);
+ 
+-  if(old.mat_.size())
+-  {
+-    mat_.resize(old.mat_.size());
+-    for (unsigned iter=0; iter<old.mat_.size(); ++iter)
+-      if ( old.mat_[iter]!=Teuchos::null )
+-        mat_[iter]=(old.mat_[iter]->Clone());
+-  }
+-  else
+-    mat_[0] = Teuchos::null;
+-
+   return;
+ }
+ 
+@@ -157,17 +139,7 @@
+   return;
+ }
+ 
+-/*----------------------------------------------------------------------*/
+-/*----------------------------------------------------------------------*/
+-bool DRT::Element::ReadElement(const std::string& eletype,
+-                               const std::string& distype,
+-                               DRT::INPUT::LineDefinition* linedef)
+-{
+-  dserror("subclass implementations missing");
+-  return false;
+-}
+ 
+-
+ /*----------------------------------------------------------------------*
+  |  set node numbers to element (public)                     mwgee 11/06|
+  *----------------------------------------------------------------------*/
+@@ -180,43 +152,7 @@
+ }
+ 
+ 
+-/*----------------------------------------------------------------------*/
+-/*----------------------------------------------------------------------*/
+-void DRT::Element::SetNodeIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef)
+-{
+-  linedef->ExtractIntVector(distype,nodeid_);
+-  for (unsigned i=0; i<nodeid_.size(); ++i)
+-    nodeid_[i] -= 1;
+-  node_.resize(0);
+-}
+-
+-
+ /*----------------------------------------------------------------------*
+- |  create material class (public)                                 05/07|
+- *----------------------------------------------------------------------*/
+-void DRT::Element::SetMaterial(int matnum)
+-{
+-  Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matnum);
+-  if(mat == Teuchos::null)
+-    dserror("Invalid material given to the element. \n"
+-        "Invalid are Summands of the Elasthyper-Toolbox and single Growth-Materials. \n"
+-        "If you like to use a Summand of the Elasthyper-Material define it via MAT_ElastHyper. \n"
+-        "If you like to use a Growth-Material define it via the according base material.");
+-  mat_[0] = mat;
+-}
+-
+-/*----------------------------------------------------------------------*
+- |  add material to element (public)                          vuong 02/14|
+- *----------------------------------------------------------------------*/
+-int DRT::Element::AddMaterial(Teuchos::RCP<MAT::Material> mat)
+-{
+-  mat_.push_back(mat);
+-
+-  return mat_.size();
+-}
+-
+-
+-/*----------------------------------------------------------------------*
+  |  Pack data                                                  (public) |
+  |                                                            gee 02/07 |
+  *----------------------------------------------------------------------*/
+@@ -234,17 +170,9 @@
+   AddtoPack(data,owner_);
+   // add vector nodeid_
+   AddtoPack(data,nodeid_);
+-  // add material
+-  if (mat_[0]!=Teuchos::null)
+-  {
+-    //pack only first material
+-    mat_[0]->Pack(data);
+-  }
+-  else
+-  {
+-    int size = 0;
+-    AddtoPack(data,size);
+-  }
++  // add material (none)
++  int size = 0;
++  AddtoPack(data,size);
+ 
+   return;
+ }
+@@ -270,19 +198,6 @@
+   // mat_
+   std::vector<char> tmp;
+   ExtractfromPack(position,data,tmp);
+-  if (tmp.size()>0)
+-  {
+-    DRT::ParObject* o = DRT::UTILS::Factory(tmp);
+-    MAT::Material* mat = dynamic_cast<MAT::Material*>(o);
+-    if (mat==NULL)
+-      dserror("failed to unpack material");
+-    //unpack only first material
+-    mat_[0] = Teuchos::rcp(mat);
+-  }
+-  else
+-  {
+-    mat_[0] = Teuchos::null;
+-  }
+ 
+   // node_, face_, parent_master_, parent_slave_ are NOT communicated
+   node_.resize(0);
+Index: ccarat_RR_03_16_mod/src/drt_lib/drt_parobjectfactory.H
+===================================================================
+--- ccarat_RR_03_16_mod/src/drt_lib/drt_parobjectfactory.H	(revision 21907)
++++ ccarat_RR_03_16_mod/src/drt_lib/drt_parobjectfactory.H	(working copy)
+@@ -99,11 +99,13 @@
+   \author u.kue
+   \date 06/10
+  */
+-class ParObjectFactory : public SingletonDestruction
++class ParObjectFactory
+ {
+   friend class ParObjectType;
+ public:
+ 
++  virtual ~ParObjectFactory(){;};
++
+   static ParObjectFactory& Instance();
+ 
+   /// create a parobject from its data stream
+Index: ccarat_RR_03_16_mod/src/drt_lib/drt_utils.H
+===================================================================
+--- ccarat_RR_03_16_mod/src/drt_lib/drt_utils.H	(revision 21907)
++++ ccarat_RR_03_16_mod/src/drt_lib/drt_utils.H	(working copy)
+@@ -226,44 +226,6 @@
+       const int num);
+ 
+   /*!
+-    \brief compute L2 projection of a dof based field onto a node based field in a least
+-    squares sense.
+-    WARNING: Make sure to pass down a dofrowmap appropriate for your discretization.
+-
+-    \return an Epetra_MultiVector based on the discret's node row map containing numvec vectors
+-            with the projected state
+-
+-    \author Georg Hammerl
+-    \date 06/14
+-   */
+-  Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
+-      Teuchos::RCP<DRT::Discretization> dis,   ///< underlying discretization
+-      const std::string statename,             ///< name of state which will be set
+-      const int numvec,                        ///< number of entries per node to project
+-      Teuchos::ParameterList& params,          ///< parameter list that contains the element action
+-      const int solvernumber                   ///< solver number for solving the resulting global system
+-    );
+-
+-  /*!
+-    \brief reconstruct nodal values via superconvergent patch recovery
+-
+-    \return an Epetra_MultiVector based on the discret's node row map containing numvec vectors
+-            with the reconstruced state
+-
+-    \author Georg Hammerl
+-    \date 05/15
+-   */
+-  template<int dim>
+-  Teuchos::RCP<Epetra_MultiVector> ComputeSuperconvergentPatchRecovery(
+-      Teuchos::RCP<DRT::Discretization> dis,   ///< underlying discretization
+-      Teuchos::RCP<const Epetra_Vector> state, ///< state vector needed on element level
+-      const std::string statename,             ///< name of state which will be set
+-      const int numvec,                        ///< number of entries per node to project
+-      Teuchos::ParameterList& params          ///< parameter list that contains the element action
+-    );
+-
+-
+-  /*!
+     \brief Return Element center coordinates
+   */
+   std::vector<double> ElementCenterRefeCoords(const DRT::Element* const ele);
+Index: ccarat_RR_03_16_mod/src/drt_lib/drt_utils.cpp
+===================================================================
+--- ccarat_RR_03_16_mod/src/drt_lib/drt_utils.cpp	(revision 21907)
++++ ccarat_RR_03_16_mod/src/drt_lib/drt_utils.cpp	(working copy)
+@@ -21,14 +21,7 @@
+ #include "drt_utils.H"
+ #include "drt_discret.H"
+ #include "../linalg/linalg_utils.H"
+-#include "../linalg/linalg_solver.H"
+-#include "../drt_lib/drt_globalproblem.H"
+-#include "../drt_io/io_control.H"
+-#include <Epetra_FEVector.h>
+-#include "../linalg/linalg_gauss.H"
+ 
+-
+-
+ /*----------------------------------------------------------------------*
+  |  locally extract a subset of values  (public)            mwgee 12/06|
+  *----------------------------------------------------------------------*/
+@@ -221,857 +214,6 @@
+ }
+ 
+ 
+-/*----------------------------------------------------------------------*
+- | compute node based L2 projection originating from a dof based        |
+- | state vector                                                         |
+- | WARNING: Make sure to pass down a discretization with a SetState     |
+- |          .                                               ghamm 06/14 |
+- *----------------------------------------------------------------------*/
+-Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
+-  Teuchos::RCP<DRT::Discretization> dis,
+-  const std::string statename,
+-  const int numvec,
+-  Teuchos::ParameterList& params,
+-  const int solvernumber
+-  )
+-{
+-
+-  // check if the statename has been set
+-  if(! dis->HasState(statename))
+-    dserror("The discretization does not know about this statename. Please review how you call this function.");
+-
+-  // check whether action type is set
+-  if(params.getEntryRCP("action") == Teuchos::null)
+-    dserror("action type for element is missing");
+-
+-  // handle pbcs if existing
+-  // build inverse map from slave to master nodes
+-  std::map<int,int> slavetomastercolnodesmap;
+-  {
+-    Teuchos::RCP<std::map<int,std::vector<int> > > allcoupledcolnodes = dis->GetAllPBCCoupledColNodes();
+-
+-    for(std::map<int,std::vector<int> >::const_iterator masterslavepair = allcoupledcolnodes->begin();
+-        masterslavepair != allcoupledcolnodes->end() ; ++masterslavepair)
+-    {
+-      // loop slave nodes associated with master
+-      for(std::vector<int>::const_iterator iter=masterslavepair->second.begin(); iter!=masterslavepair->second.end(); ++iter)
+-      {
+-        const int slavegid = *iter;
+-        slavetomastercolnodesmap[slavegid] = masterslavepair->first;
+-      }
+-    }
+-  }
+-
+-  // get reduced node row map of fluid field --> will be used for setting up linear system
+-  const Epetra_Map* fullnoderowmap = dis->NodeRowMap();
+-  // remove pbc slave nodes from full noderowmap
+-  std::vector<int> reducednoderowmap;
+-  // a little more memory than necessary is possibly reserved here
+-  reducednoderowmap.reserve(fullnoderowmap->NumMyElements());
+-  for(int i=0; i<fullnoderowmap->NumMyElements(); ++i)
+-  {
+-    const int nodeid = fullnoderowmap->GID(i);
+-    // do not add slave pbc nodes here
+-    if(slavetomastercolnodesmap.count(nodeid) == 0)
+-      reducednoderowmap.push_back(nodeid);
+-  }
+-
+-  // build node row map which does not include slave pbc nodes
+-  Epetra_Map noderowmap(-1,(int)reducednoderowmap.size(),&reducednoderowmap[0],0,fullnoderowmap->Comm());
+-
+-  // create empty matrix
+-  Teuchos::RCP<LINALG::SparseMatrix> massmatrix = Teuchos::rcp(new LINALG::SparseMatrix(noderowmap,108,false,true));
+-  // create empty right hand side
+-  Teuchos::RCP<Epetra_MultiVector> rhs = Teuchos::rcp(new Epetra_MultiVector(noderowmap,numvec));
+-
+-  std::vector<int> lm;
+-  std::vector<int> lmowner;
+-  std::vector<int> lmstride;
+-  DRT::Element::LocationArray la(dis->NumDofSets());
+-
+-  // define element matrices and vectors
+-  Epetra_SerialDenseMatrix elematrix1;
+-  Epetra_SerialDenseMatrix elematrix2;
+-  Epetra_SerialDenseVector elevector1;
+-  Epetra_SerialDenseVector elevector2;
+-  Epetra_SerialDenseVector elevector3;
+-
+-  // get number of elements
+-  const int numele = dis->NumMyColElements();
+-
+-  // loop column elements
+-  for (int i=0; i<numele; ++i)
+-  {
+-    DRT::Element* actele = dis->lColElement(i);
+-    const int numnode = actele->NumNode();
+-
+-    actele->LocationVector(*dis,la,false);
+-    lmowner=la[0].lmowner_;
+-    lmstride=la[0].stride_;
+-    lm=la[0].lm_;
+-
+-    // Reshape element matrices and vectors and initialize to zero
+-    elevector1.Size(numnode);
+-    elematrix1.Shape(numnode,numnode);
+-    elematrix2.Shape(numnode,numvec);
+-
+-    // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
+-//    actele->Evaluate(params,*dis,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+-    int err = actele->Evaluate(params,*dis,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+-    if (err) dserror("Element %d returned err=%d",actele->Id(),err);
+-
+-    // get element location vector for nodes
+-    lm.resize(numnode);
+-    lmowner.resize(numnode);
+-
+-    DRT::Node** nodes = actele->Nodes();
+-    for(int n=0; n<numnode; ++n)
+-    {
+-      const int nodeid = nodes[n]->Id();
+-
+-      std::map<int,int>::iterator slavemasterpair = slavetomastercolnodesmap.find(nodeid);
+-      if(slavemasterpair != slavetomastercolnodesmap.end())
+-        lm[n] = slavemasterpair->second;
+-      else
+-        lm[n] = nodeid;
+-
+-      // owner of pbc master and slave nodes are identical
+-      lmowner[n] = nodes[n]->Owner();
+-    }
+-
+-    // mass matrix assembling into node map
+-    massmatrix->Assemble(actele->Id(),elematrix1,lm,lmowner);
+-    // assemble numvec entries sequentially
+-    for(int n=0; n<numvec; ++n)
+-    {
+-      // copy results into Serial_DenseVector for assembling
+-      for(int inode=0; inode<numnode; ++inode)
+-        elevector1(inode) = elematrix2(inode,n);
+-      // assemble into nth vector of MultiVector
+-      LINALG::Assemble(*rhs,n,elevector1,lm,lmowner);
+-    }
+-  } //end element loop
+-
+-  // finalize the matrix
+-  massmatrix->Complete();
+-
+-  // get solver parameter list of linear solver
+-  const Teuchos::ParameterList& solverparams = DRT::Problem::Instance()->SolverParams(solvernumber);
+-  const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(solverparams, "SOLVER");
+-
+-  Teuchos::RCP<LINALG::Solver> solver =
+-                                  Teuchos::rcp(new LINALG::Solver(solverparams,
+-                                  dis->Comm(),
+-                                  DRT::Problem::Instance()->ErrorFile()->Handle()));
+-
+-  // skip setup of preconditioner in case of a direct solver
+-  if(solvertype != INPAR::SOLVER::umfpack and solvertype != INPAR::SOLVER::superlu)
+-  {
+-    const int prectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(solverparams,"AZPREC");
+-    switch (prectyp)
+-    {
+-    case INPAR::SOLVER::azprec_ML:
+-    case INPAR::SOLVER::azprec_MLfluid:
+-    case INPAR::SOLVER::azprec_MLAPI:
+-    case INPAR::SOLVER::azprec_MLfluid2:
+-    case INPAR::SOLVER::azprec_MueLuAMG_sym:
+-    case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
+-    {
+-      Teuchos::ParameterList* preclist_ptr = NULL;
+-      // switch here between ML and MueLu cases
+-      if(prectyp == INPAR::SOLVER::azprec_ML
+-          or prectyp == INPAR::SOLVER::azprec_MLfluid
+-          or prectyp == INPAR::SOLVER::azprec_MLAPI
+-          or prectyp == INPAR::SOLVER::azprec_MLfluid2)
+-        preclist_ptr = &((solver->Params()).sublist("ML Parameters"));
+-      else if(prectyp == INPAR::SOLVER::azprec_MueLuAMG_sym
+-          or prectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym)
+-        preclist_ptr = &((solver->Params()).sublist("MueLu Parameters"));
+-      else
+-        dserror("please add correct parameter list");
+-
+-      Teuchos::ParameterList& preclist = *preclist_ptr;
+-      preclist.set<Teuchos::RCP<std::vector<double> > > ("nullspace",Teuchos::null);
+-      // ML would not tolerate this Teuchos::rcp-ptr in its list otherwise
+-      preclist.set<bool>("ML validate parameter list",false);
+-
+-      preclist.set("PDE equations",1);
+-      preclist.set("null space: dimension",1);
+-      preclist.set("null space: type","pre-computed");
+-      preclist.set("null space: add default vectors",false);
+-
+-      // allocate the local length of the rowmap
+-      const int lrows = noderowmap.NumMyElements();
+-      Teuchos::RCP<std::vector<double> > ns = Teuchos::rcp(new std::vector<double>(lrows));
+-      double* nullsp = &((*ns)[0]);
+-
+-      // compute null space manually
+-      for (int j=0; j<lrows; ++j)
+-        nullsp[j] = 1.0;
+-
+-      preclist.set<Teuchos::RCP<std::vector<double> > >("nullspace",ns);
+-      preclist.set("null space: vectors",nullsp);
+-    }
+-    break;
+-    case INPAR::SOLVER::azprec_ILU:
+-    case INPAR::SOLVER::azprec_ILUT:
+-      // do nothing
+-    break;
+-    default:
+-      dserror("You have to choose ML, MueLu or ILU preconditioning");
+-    break;
+-    }
+-  }
+-
+-  // solution vector based on reduced node row map
+-  Teuchos::RCP<Epetra_MultiVector> nodevec = Teuchos::rcp(new Epetra_MultiVector(noderowmap,numvec));
+-
+-  switch(solvertype)
+-  {
+-    case INPAR::SOLVER::belos:
+-    {
+-      // solve for numvec rhs at the same time using Belos solver
+-      solver->Solve(massmatrix->EpetraOperator(), nodevec, rhs, true, true);
+-      break;
+-    }
+-    default:
+-    {
+-      if(numvec != 1 and dis->Comm().MyPID()==0)
+-        std::cout << "Think about using a Belos solver which can handle several rhs vectors at the same time" << std::endl;
+-
+-      // solve for numvec rhs iteratively
+-      for(int i=0; i<numvec; i++)
+-      {
+-        solver->Solve(massmatrix->EpetraOperator(), Teuchos::rcp(((*nodevec)(i)),false), Teuchos::rcp(((*rhs)(i)),false), true, true);
+-      }
+-      break;
+-    }
+-  }
+-
+-  // if no pbc are involved leave here
+-  if(noderowmap.PointSameAs(*fullnoderowmap))
+-    return nodevec;
+-
+-  // solution vector based on full row map in which the solution of the master node is inserted into slave nodes
+-  Teuchos::RCP<Epetra_MultiVector> fullnodevec = Teuchos::rcp(new Epetra_MultiVector(*fullnoderowmap,numvec));
+-
+-  for(int i=0; i<fullnoderowmap->NumMyElements(); ++i)
+-  {
+-    const int nodeid = fullnoderowmap->GID(i);
+-
+-    std::map<int,int>::iterator slavemasterpair = slavetomastercolnodesmap.find(nodeid);
+-    if(slavemasterpair != slavetomastercolnodesmap.end())
+-    {
+-      const int mastergid = slavemasterpair->second;
+-      const int masterlid = noderowmap.LID(mastergid);
+-      for(int j=0; j<numvec; ++j)
+-        fullnodevec->ReplaceMyValue(i, j, ((*(*nodevec)(j))[masterlid]));
+-    }
+-    else
+-    {
+-      const int lid = noderowmap.LID(nodeid);
+-      for(int j=0; j<numvec; ++j)
+-        fullnodevec->ReplaceMyValue(i, j, ((*(*nodevec)(j))[lid]));
+-    }
+-  }
+-
+-  return fullnodevec;
+-}
+-
+-/*----------------------------------------------------------------------*
+- | compute superconvergent patch recovery by polynomial of degree p = 1 |
+- | (identical order as shape functions)for a given vector (either       |
+- | dof or element based)                                    ghamm 06/14 |
+- *----------------------------------------------------------------------*/
+-template<int dim>
+-Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery(
+-  Teuchos::RCP<DRT::Discretization> dis,
+-  Teuchos::RCP<const Epetra_Vector> state,
+-  const std::string statename,
+-  const int numvec,
+-  Teuchos::ParameterList& params
+-  )
+-{
+-  const int dimp = dim+1;
+-  const int myrank = dis->Comm().MyPID();
+-
+-  // check whether action type is set
+-  if(params.getEntryRCP("action") == Teuchos::null)
+-    dserror("action type for element is missing");
+-
+-  // decide whether a dof or an element based map is given
+-  bool dofmaptoreconstruct = false;
+-  if(state->Map().PointSameAs(*dis->DofRowMap()))
+-    dofmaptoreconstruct = true;
+-  else if(state->Map().PointSameAs(*dis->ElementRowMap()))
+-  {
+-    dofmaptoreconstruct = false;
+-    if(numvec != state->NumVectors())
+-      dserror("numvec and number of vectors of state vector must match");
+-  }
+-  else
+-  {
+-    dserror("input map is neither a dof row map nor an element row map of the given discret");
+-  }
+-
+-  // handle pbcs if existing
+-  // build inverse map from slave to master nodes
+-  std::map<int,int> slavetomastercolnodesmap;
+-  Teuchos::RCP<std::map<int,std::vector<int> > > allcoupledcolnodes = dis->GetAllPBCCoupledColNodes();
+-
+-  for(std::map<int,std::vector<int> >::const_iterator masterslavepair = allcoupledcolnodes->begin();
+-      masterslavepair != allcoupledcolnodes->end() ; ++masterslavepair)
+-  {
+-    // loop slave nodes associated with master
+-    for(std::vector<int>::const_iterator iter=masterslavepair->second.begin(); iter!=masterslavepair->second.end(); ++iter)
+-    {
+-      const int slavegid = *iter;
+-      slavetomastercolnodesmap[slavegid] = masterslavepair->first;
+-    }
+-  }
+-
+-  // set up reduced node row map of fluid field
+-  std::vector<int> reducednoderowmap;
+-  std::vector<int> reducednodecolmap;
+-  const Epetra_Map* fullnoderowmap = dis->NodeRowMap();
+-  const Epetra_Map* fullnodecolmap = dis->NodeColMap();
+-
+-  // a little more memory than necessary is possibly reserved here
+-  reducednoderowmap.reserve(fullnoderowmap->NumMyElements());
+-  reducednodecolmap.reserve(fullnodecolmap->NumMyElements());
+-
+-  for(int i=0; i<fullnodecolmap->NumMyElements(); ++i)
+-  {
+-    const int nodeid = fullnodecolmap->GID(i);
+-    // do not add slave pbc nodes to reduced node maps
+-    if(slavetomastercolnodesmap.count(nodeid) == 0)
+-    {
+-      // fill reduced node col map
+-      reducednodecolmap.push_back(nodeid);
+-      // fill reduced node row map
+-      if(fullnoderowmap->MyGID(nodeid))
+-       reducednoderowmap.push_back(nodeid);
+-    }
+-  }
+-
+-  // build node row map which does not include slave pbc nodes
+-  Epetra_Map noderowmap(-1,(int)reducednoderowmap.size(),&reducednoderowmap[0],0,fullnoderowmap->Comm());
+-  // build node col map which does not include slave pbc nodes
+-  Epetra_Map nodecolmap(-1,(int)reducednodecolmap.size(),&reducednodecolmap[0],0,fullnodecolmap->Comm());
+-
+-
+-  //step 1: get state to be reconstruced (e.g. velocity gradient) at element
+-  // centers (for linear elements the centers are the superconvergent sampling points!)
+-  dis->ClearState();
+-  // Set ALE displacements here
+-  if(dofmaptoreconstruct)
+-  {
+-    dis->SetState(statename, state);
+-  }
+-
+-  const Epetra_Map* elementrowmap = dis->ElementRowMap();
+-  Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered = Teuchos::rcp(new Epetra_MultiVector(*elementrowmap,numvec,true));
+-  Teuchos::RCP<Epetra_MultiVector> centercoords = Teuchos::rcp(new Epetra_MultiVector(*elementrowmap,dim,true));
+-
+-  std::vector<int> lm;
+-  std::vector<int> lmowner;
+-  std::vector<int> lmstride;
+-
+-  // define element matrices and vectors
+-  Epetra_SerialDenseMatrix elematrix1;
+-  Epetra_SerialDenseMatrix elematrix2;
+-  Epetra_SerialDenseVector elevector1;
+-  Epetra_SerialDenseVector elevector2;
+-  Epetra_SerialDenseVector elevector3;
+-
+-  // get number of elements
+-   const int numele = dis->NumMyRowElements();
+-
+-  // loop only row elements
+-  for (int i=0; i<numele; ++i)
+-  {
+-    DRT::Element* actele = dis->lRowElement(i);
+-
+-    // get element location vector
+-    DRT::Element::LocationArray la(1);
+-    actele->LocationVector(*dis,la,false);
+-
+-    // Reshape element matrices and vectors and initialize to zero
+-    elevector1.Size(numvec);
+-    elevector2.Size(dim);
+-
+-    // call the element specific evaluate method (elevec1 = velocity gradient, elevec2 = element centroid)
+-    actele->Evaluate(params,*dis,la[0].lm_,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+-
+-    // store computed values (e.g. velocity gradient) for each element
+-    for (int j=0; j<numvec; ++j)
+-    {
+-      double val = 0.0;
+-      if(dofmaptoreconstruct)
+-        val = elevector1(j);
+-      else
+-        val = (*(*state)(j))[i];
+-
+-      int err = elevec_toberecovered->ReplaceMyValue(i, j, val);
+-      if(err < 0) dserror("multi vector insertion failed");
+-    }
+-
+-    // store corresponding element centroid
+-    for (int d=0; d<dim; ++d)
+-    {
+-      int err = centercoords->ReplaceMyValue(i, d, elevector2(d));
+-      if(err < 0) dserror("multi vector insertion failed");
+-    }
+-  } //end element loop
+-
+-  Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered_col =
+-      Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementColMap()),numvec,true));
+-  LINALG::Export(*elevec_toberecovered,*elevec_toberecovered_col);
+-  Teuchos::RCP<Epetra_MultiVector> centercoords_col = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementColMap()),dim,true));
+-  LINALG::Export(*centercoords,*centercoords_col);
+-
+-  // step 2: use precalculated (velocity) gradient for patch-recovery of gradient
+-  // solution vector based on reduced node row map
+-  Teuchos::RCP<Epetra_FEVector> nodevec = Teuchos::rcp(new Epetra_FEVector(noderowmap,numvec));
+-
+-  std::vector<DRT::Condition*> conds;
+-  dis->GetCondition("SPRboundary", conds);
+-
+-  // SPR boundary condition must be set for all boundaries except pbc
+-  if(conds.size() != 1 && conds.size() != 0)
+-    dserror("exactly one boundary including all outer nodes expected");
+-
+-  if(allcoupledcolnodes->begin() == allcoupledcolnodes->end() && conds.size() == 0)
+-    dserror("Neither periodic boundary conditions nor an SPRboundary is specified! Missing bc?");
+-
+-  // loop all nodes
+-  for (int i=0;i<nodecolmap.NumMyElements();++i)
+-  {
+-    const int nodegid = nodecolmap.GID(i);
+-    const DRT::Node* node = dis->gNode(nodegid);
+-    if(!node)
+-      dserror("Cannot find with gid: %d", nodegid);
+-
+-    // distinction between inner nodes and boundary nodes
+-    if(conds.size() == 0 || !conds[0]->ContainsNode(nodegid))
+-    {
+-      // continue with next node in case a ghost node is inner node
+-      if(node->Owner() != myrank)
+-        continue;
+-
+-      // distinction between normal inner node and pbc master node
+-      if(allcoupledcolnodes->find(nodegid) == allcoupledcolnodes->end())
+-      {
+-        //---------------------------------------------
+-        // we have an inner node here
+-        //---------------------------------------------
+-
+-        const DRT::Element* const * adjacentele = node->Elements();
+-        const int numadjacent = node->NumElement();
+-
+-        // patch-recovery for each entry of the velocity gradient
+-        for(int j=0; j<numvec; ++j)
+-        {
+-          static LINALG::Matrix<dimp,1> p;
+-          p(0) = 1.0;
+-          static LINALG::Matrix<dimp,dimp> A;
+-          static LINALG::Matrix<dimp,1> x;
+-          static LINALG::Matrix<dimp,1> b;
+-
+-          A.Clear();
+-          b.Clear();
+-
+-          // loop over all surrounding elements
+-          for (int k=0; k<numadjacent; ++k)
+-          {
+-            const int elelid = elevec_toberecovered_col->Map().LID(adjacentele[k]->Id());
+-            for (int d=0; d<dim; ++d)
+-              p(d+1) = (*(*centercoords_col)(d))[elelid] - node->X()[d] /* + ALE_DISP*/;
+-
+-            // compute outer product of p x p and add to A
+-            A.MultiplyNT(1.0,p,p,1.0);
+-
+-            b.Update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
+-          }
+-
+-          // solve for coefficients of interpolation
+-          const double det = LINALG::scaledGaussElemination<dimp>( A, b, x );
+-          if(det < 1.0e-14)
+-            dserror("system singular");
+-
+-          // patch-recovery interpolation -> only first entry necessary, remaining ones are zero
+-          const double recoveredgradient = p(0)*x(0);
+-
+-          // write solution vector
+-          nodevec->ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
+-        }
+-      } // end normal inner node
+-      else
+-      {
+-        //---------------------------------------------
+-        // we have a pbc master node which is inner node
+-        //---------------------------------------------
+-
+-        // get master nodes and corresponding slave nodes
+-        std::map<int,std::vector<int> >::const_iterator masternode = allcoupledcolnodes->find(nodegid);
+-        std::vector<int> slavenodeids = masternode->second;
+-        const int numslavenodes = (int)(masternode->second.size());
+-        // containers for adjacent elements to slave+master nodes
+-        std::vector<const DRT::Element* const *> adjacenteles(numslavenodes+1);
+-        std::vector<int> numadjacenteles(numslavenodes+1);
+-        std::vector<double> offset(dim, 0.0);
+-        std::vector<std::vector<double> > eleoffsets(numslavenodes+1, offset);
+-        for (int s=0; s<numslavenodes; ++s)
+-        {
+-          const DRT::Node* slavenode = dis->gNode(slavenodeids[s]);
+-          // compute offset for slave elements
+-          for(int d=0; d<dim; ++d)
+-            eleoffsets[s][d] = (node->X()[d] - slavenode->X()[d]) /* + ALE DISP */;
+-
+-          // add adjacent elements of slave nodes to vector
+-          adjacenteles[s] = slavenode->Elements();
+-          numadjacenteles[s] = slavenode->NumElement();
+-        }
+-        // add elements connected to master node -> offset is zero for master elements
+-        adjacenteles[numslavenodes] = node->Elements();
+-        numadjacenteles[numslavenodes] = node->NumElement();
+-
+-        // patch-recovery for each entry of the velocity gradient
+-        for(int j=0; j<numvec; ++j)
+-        {
+-          static LINALG::Matrix<dimp,1> p;
+-          p(0) = 1.0;
+-          static LINALG::Matrix<dimp,dimp> A;
+-          static LINALG::Matrix<dimp,1> x;
+-          static LINALG::Matrix<dimp,1> b;
+-
+-          A.Clear();
+-          b.Clear();
+-
+-          // loop over all surrounding elements
+-          for (size_t s=0; s<adjacenteles.size(); ++s)
+-          {
+-            for (int k=0; k<numadjacenteles[s]; ++k)
+-            {
+-              const int elelid = elevec_toberecovered_col->Map().LID(adjacenteles[s][k]->Id());
+-              for (int d=0; d<dim; ++d)
+-                p(d+1) = (*(*centercoords_col)(d))[elelid] + eleoffsets[s][d] - node->X()[d] /* + ALE_DISP*/;
+-
+-              // compute outer product of p x p and add to A
+-              A.MultiplyNT(1.0,p,p,1.0);
+-
+-              b.Update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
+-            }
+-          }
+-
+-          // solve for coefficients of interpolation
+-          const double det = LINALG::scaledGaussElemination<dimp>( A, b, x );
+-          if(det < 1.0e-14)
+-            dserror("system singular");
+-
+-          // patch-recovery interpolation -> only first entry necessary, remaining ones are zero
+-          const double recoveredgradient = p(0)*x(0);
+-
+-          // write solution vector
+-          nodevec->ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
+-        }
+-      } // end inner pbc master node
+-    } // end inner nodes
+-    else
+-    {
+-      // we have a boundary node here -> patch is set up for closest inner node
+-
+-      // distinction between normal boundary node and pbc master boundary node
+-      if(allcoupledcolnodes->find(nodegid) == allcoupledcolnodes->end())
+-      {
+-        //---------------------------------------------
+-        // we have a normal node at the boundary
+-        //---------------------------------------------
+-
+-        // get all neighboring nodes of boundary node and find closest one
+-        const DRT::Element* const * adjacentele = node->Elements();
+-        const int numadjacentele = node->NumElement();
+-        double distance = 1.0e12;
+-        int closestnodeid = -1;
+-        for (int k=0; k<numadjacentele; ++k)
+-        {
+-          const DRT::Node* const * adjacentnodes = adjacentele[k]->Nodes();
+-          const int numnode = adjacentele[k]->NumNode();
+-          for(int n=0; n<numnode; ++n)
+-          {
+-            // continue with next node in case the neighbor is also on the boundary
+-            if(conds[0]->ContainsNode(adjacentnodes[n]->Id()))
+-              continue;
+-
+-            const double* pos = adjacentnodes[n]->X();  /* + ALE DISP */
+-            static LINALG::Matrix<dim,1> dist;
+-            for(int d=0; d<dim; ++d)
+-              dist(d) = pos[d] - node->X()[d];  /* + ALE DISP */
+-            const double tmp = dist.Norm2();
+-            if(tmp < distance and tmp > 1.0e-14)
+-            {
+-              distance = tmp;
+-              closestnodeid = adjacentnodes[n]->Id();
+-            }
+-          }
+-        }
+-
+-        if(closestnodeid == -1)
+-          dserror("no closest node not lying on a boundary could be found. The problem seems very small (at least in one direction)");
+-
+-        // build patch for closest node and evaluate patch at boundary node
+-        const DRT::Node* closestnode = dis->gNode(closestnodeid);
+-        const DRT::Element* const * closestnodeadjacentele = closestnode->Elements();
+-        const int numadjacent = closestnode->NumElement();
+-
+-        // leave here in case the closest node is a ghost node
+-        // only row nodes have all neighboring elements on this proc
+-        // this will result in off processor assembling (boundary node as ghost node)
+-        if(closestnode->Owner() != myrank)
+-          continue;
+-
+-        // patch-recovery for each entry of the velocity gradient
+-        for(int j=0; j<numvec; ++j)
+-        {
+-          static LINALG::Matrix<dimp,1> p;
+-          p(0) = 1.0;
+-          static LINALG::Matrix<dimp,dimp> A;
+-          static LINALG::Matrix<dimp,1> x;
+-          static LINALG::Matrix<dimp,1> b;
+-
+-          A.Clear();
+-          b.Clear();
+-
+-          // loop over all surrounding elements
+-          for (int k=0; k<numadjacent; ++k)
+-          {
+-            const int elelid = elevec_toberecovered_col->Map().LID(closestnodeadjacentele[k]->Id());
+-            for (int d=0; d<dim; ++d)
+-              p(d+1) = (*(*centercoords_col)(d))[elelid] - closestnode->X()[d]; /* + ALE_DISP*/
+-
+-            // compute outer product of p x p and add to A
+-            A.MultiplyNT(1.0,p,p,1.0);
+-
+-            b.Update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
+-          }
+-
+-          // solve for coefficients of interpolation
+-          const double det = LINALG::scaledGaussElemination<dimp>( A, b, x );
+-          if(det < 1.0e-14)
+-            dserror("system singular");
+-
+-          // patch-recovery interpolation for boundary point
+-          double recoveredgradient = p(0)*x(0);
+-          for (int d=0; d<dim; ++d)
+-          {
+-            p(d+1) = node->X()[d] - closestnode->X()[d] /* + ALE_DISP*/;
+-            recoveredgradient += p(d+1)*x(d+1);
+-          }
+-
+-          // write solution vector
+-          nodevec->ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
+-        }
+-      } // end normal boundary node
+-      else
+-      {
+-        //---------------------------------------------
+-        // we have a pbc master node at the boundary
+-        //---------------------------------------------
+-
+-        // often bounds are axis aligned -> another pbc (master) node is closest node
+-        const DRT::Element* const * adjacentele = node->Elements();
+-        const int numadjacentele = node->NumElement();
+-
+-        // leave here if the boundary node is a ghost node and has no adjacent elements on this proc
+-        // only boundary ghost nodes which have an inner node as a row node have all neighboring elements on this proc
+-        // this will result in off processor assembling (boundary ghost node but closest node as row node)
+-        if (node->Owner() != myrank && numadjacentele == 0)
+-          continue;
+-
+-        double distance = 1.0e12;
+-        int closestnodeid = -1;
+-        for (int k=0; k<numadjacentele; ++k)
+-        {
+-          const DRT::Node* const * adjacentnodes = adjacentele[k]->Nodes();
+-          for(int n=0; n<adjacentele[k]->NumNode(); ++n)
+-          {
+-            // continue with next node in case the neighbor is also on the boundary
+-            if(conds[0]->ContainsNode(adjacentnodes[n]->Id()))
+-              continue;
+-
+-            const double* pos = adjacentnodes[n]->X();  /* + ALE DISP */
+-            static LINALG::Matrix<dim,1> dist;
+-            for(int d=0; d<dim; ++d)
+-              dist(d) = pos[d] - node->X()[d];  /* + ALE DISP */
+-            const double tmp = dist.Norm2();
+-            if(tmp < distance and tmp > 1.0e-14)
+-            {
+-              distance = tmp;
+-              closestnodeid = adjacentnodes[n]->Id();
+-            }
+-          }
+-        }
+-
+-        if(closestnodeid == -1)
+-          dserror("no closest node _not_ lying on a boundary could be found. The problem seems very small (at least in one direction)");
+-
+-        // build patch for closest node and evaluate patch at boundary node
+-
+-        // get master nodes and corresponding slave nodes
+-        DRT::Node* closestnode = dis->gNode(closestnodeid);
+-
+-        // leave here in case the closest node is a ghost node
+-        // only row nodes have all neighboring elements on this proc
+-        // this will result in off processor assembling (boundary node as ghost node)
+-        if(closestnode->Owner() != myrank)
+-          continue;
+-
+-        std::map<int,std::vector<int> >::iterator masternode = allcoupledcolnodes->find(closestnodeid);
+-
+-        int numslavenodes = -1;
+-        if(masternode != allcoupledcolnodes->end())
+-        {
+-          // closest node is (as expected) a master node
+-          numslavenodes = (int)(masternode->second.size());
+-        }
+-        else if(slavetomastercolnodesmap.count(closestnodeid) != 0)
+-        {
+-          // closest node is (surprisingly) a slave node
+-          int mastergid = slavetomastercolnodesmap[closestnodeid];
+-          masternode = allcoupledcolnodes->find(mastergid);
+-          numslavenodes = (int)(masternode->second.size());
+-        }
+-        else
+-        {
+-          // closest node is a standard node
+-          numslavenodes = 0;
+-        }
+-
+-        // containers for adjacent elements to slave+master nodes
+-        std::vector<const DRT::Element* const *> closestnodeadjacenteles(numslavenodes+1);
+-        std::vector<int> numadjacenteles(numslavenodes+1);
+-        std::vector<double> offset(dim, 0.0);
+-        std::vector<std::vector<double> > eleoffsets(numslavenodes+1, offset);
+-        for (int s=0; s<numslavenodes; ++s)
+-        {
+-          const DRT::Node* slavenode = dis->gNode(masternode->second[s]);
+-          // compute offset for slave elements
+-          for(int d=0; d<dim; ++d)
+-            eleoffsets[s][d] = (closestnode->X()[d] - slavenode->X()[d]); /* + ALE DISP */
+-
+-          // add adjacent elements of slave nodes to vectors
+-          closestnodeadjacenteles[s] = slavenode->Elements();
+-          numadjacenteles[s] = slavenode->NumElement();
+-        }
+-          // add elements connected to master node -> offset is zero for master elements
+-        closestnodeadjacenteles[numslavenodes] = closestnode->Elements();
+-        numadjacenteles[numslavenodes] = closestnode->NumElement();
+-
+-        // patch-recovery for each entry of the velocity gradient
+-        for(int j=0; j<numvec; ++j)
+-        {
+-          static LINALG::Matrix<dimp,1> p;
+-          p(0) = 1.0;
+-          static LINALG::Matrix<dimp,dimp> A;
+-          static LINALG::Matrix<dimp,1> x;
+-          static LINALG::Matrix<dimp,1> b;
+-
+-          A.Clear();
+-          b.Clear();
+-
+-          // loop over all surrounding elements
+-          for (size_t s=0; s<closestnodeadjacenteles.size(); ++s)
+-          {
+-            for (int k=0; k<numadjacenteles[s]; ++k)
+-            {
+-              const int elelid = elevec_toberecovered_col->Map().LID(closestnodeadjacenteles[s][k]->Id());
+-              for(int d=0; d<dim; ++d)
+-                p(d+1) = (*(*centercoords_col)(d))[elelid] + eleoffsets[s][d] - closestnode->X()[d]; /* + ALE_DISP*/
+-
+-              // compute outer product of p x p and add to A
+-              A.MultiplyNT(1.0,p,p,1.0);
+-
+-              b.Update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
+-            }
+-          }
+-
+-          // solve for coefficients of interpolation
+-          const double det = LINALG::scaledGaussElemination<dimp>( A, b, x );
+-          if(det < 1.0e-14)
+-            dserror("system singular");
+-
+-          // patch-recovery interpolation for boundary point
+-          double recoveredgradient = p(0)*x(0);
+-          for (int d=0; d<dim; ++d)
+-          {
+-            p(d+1) = node->X()[d] - closestnode->X()[d] /* + ALE_DISP*/;
+-            recoveredgradient += p(d+1)*x(d+1);
+-          }
+-
+-          // write solution vector
+-          nodevec->ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
+-        }
+-      } // end boundary master pbc node
+-    } // end boundary nodes
+-
+-  } // end loop over all nodes
+-
+-  // call global assemble
+-  const int err = nodevec->GlobalAssemble(Insert, false);
+-  if (err<0)
+-    dserror("global assemble into nodevec failed");
+-
+-  // if no pbc are involved leave here
+-  if(noderowmap.PointSameAs(*fullnoderowmap))
+-    return nodevec;
+-
+-  // solution vector based on full row map in which the solution of the master node is inserted into slave nodes
+-  Teuchos::RCP<Epetra_MultiVector> fullnodevec = Teuchos::rcp(new Epetra_MultiVector(*fullnoderowmap,numvec));
+-
+-  for(int i=0; i<fullnoderowmap->NumMyElements(); ++i)
+-  {
+-    const int nodeid = fullnoderowmap->GID(i);
+-
+-    std::map<int,int>::iterator slavemasterpair = slavetomastercolnodesmap.find(nodeid);
+-    if(slavemasterpair != slavetomastercolnodesmap.end())
+-    {
+-      const int mastergid = slavemasterpair->second;
+-      const int masterlid = noderowmap.LID(mastergid);
+-      for(int j=0; j<numvec; ++j)
+-        fullnodevec->ReplaceMyValue(i, j, ((*(*nodevec)(j))[masterlid]));
+-    }
+-    else
+-    {
+-      const int lid = noderowmap.LID(nodeid);
+-      for(int j=0; j<numvec; ++j)
+-        fullnodevec->ReplaceMyValue(i, j, ((*(*nodevec)(j))[lid]));
+-    }
+-  }
+-
+-  return fullnodevec;
+-}
+-
+-template Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery<1>(
+-    Teuchos::RCP<DRT::Discretization>,
+-    Teuchos::RCP<const Epetra_Vector>,
+-    const std::string,
+-    const int,
+-    Teuchos::ParameterList&);
+-template Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery<2>(
+-    Teuchos::RCP<DRT::Discretization>,
+-    Teuchos::RCP<const Epetra_Vector>,
+-    const std::string,
+-    const int,
+-    Teuchos::ParameterList&);
+-template Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery<3>(
+-    Teuchos::RCP<DRT::Discretization>,
+-    Teuchos::RCP<const Epetra_Vector>,
+-    const std::string,
+-    const int,
+-    Teuchos::ParameterList&);
+-
+-
+-
+ DRT::UTILS::Random::Random():
+       rand_engine_(0),                        //< set random seed
+       uni_dist_(-1.0, 1.0),                         //< set range of uniform distributed rnd no
