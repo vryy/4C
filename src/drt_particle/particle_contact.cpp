@@ -1844,10 +1844,8 @@ Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeColli
   const double remaining_dt
   )
 {
+  Teuchos::RCP<Event> newevent = Teuchos::null;
   // IMPORTANT: First Particle is the colliding particle which carries the current time in the ddt_-vector
-
-  // create event in which the time still needs to be set correctly
-  Teuchos::RCP<Event> newevent = Teuchos::rcp(new Event(INPAR::PARTICLE::particle_particle, -1000.0, particle_1, particle_2));
 
   if (particle_1->Id() == particle_2->Id())
     dserror("Particle %i cannot collide with itself!", particle_1->Id());
@@ -1912,27 +1910,26 @@ Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeColli
 
       if ((vel_col_1 + vel_col_2) > GEO::TOL14)
       {
-        newevent->time = 0.0;
+        // create event
+        newevent = Teuchos::rcp(new Event(INPAR::PARTICLE::particle_particle, 0.0, particle_1, particle_2));
       }
     }
     // tc1 is negative
-    else if (tc1 < -GEO::TOL14 and tc2 > GEO::TOL14)
+    else if (tc1 < -GEO::TOL14 and tc2 > GEO::TOL14 and tc2 < 1.1*remaining_dt)
     {
-      newevent->time = tc2;
+      // create event
+      newevent = Teuchos::rcp(new Event(INPAR::PARTICLE::particle_particle, tc2, particle_1, particle_2));
     }
     // tc2 is negative
-    else if (tc1 > GEO::TOL14 and tc2 < -GEO::TOL14)
+    else if (tc1 > GEO::TOL14 and tc2 < -GEO::TOL14 and tc1 < 1.1*remaining_dt)
     {
-      newevent->time = tc1;
+      newevent = Teuchos::rcp(new Event(INPAR::PARTICLE::particle_particle, tc1, particle_1, particle_2));
     }
     // both positive, smaller one is chosen (tc1 is almost identical to tc2)
-    else if (tc1 > GEO::TOL14 and tc2 > GEO::TOL14)
+    else if (tc1 > GEO::TOL14 and tc2 > GEO::TOL14 and std::min(tc1, tc2) < 1.1*remaining_dt)
     {
-      newevent->time = tc1 < tc2 ? tc1 : tc2;
+      newevent = Teuchos::rcp(new Event(INPAR::PARTICLE::particle_particle, std::min(tc1, tc2), particle_1, particle_2));
     }
-
-    if(newevent->time > 1.1*remaining_dt)
-      newevent->time = -1000.0;
   }
 
   return newevent;
@@ -1977,7 +1974,7 @@ Teuchos::RCP<PARTICLE::WallEvent> PARTICLE::ParticleCollisionHandlerMD::ComputeC
   Teuchos::RCP<const Epetra_Vector> walldisnp = walldiscret->GetState("walldisnp");
 
   DRT::Node** nodes = wall->Nodes();
-  int numnodes = wall->NumNode();
+  const int numnodes = wall->NumNode();
 
   std::vector<int> lm;
   lm.reserve(numnodes * 3);
@@ -2010,12 +2007,13 @@ Teuchos::RCP<PARTICLE::WallEvent> PARTICLE::ParticleCollisionHandlerMD::ComputeC
   // Note: particles can already be advanced to some point in [0,dt)
   // Hence, their position is already updated to that point in time (done in HandleCollision) while wall positions are always
   // interpolated to the respective time using displacements from time n and n+1
-  ComputeCollisionOfParticleWithWall(wall, xyze_n, xyze_np, position, velocity,
+  const bool validcollision = ComputeCollisionOfParticleWithWall(wall, xyze_n, xyze_np, position, velocity,
       radius, timetocollision, wallcoll_pos, wallcoll_vel, dt - particle_time, dt);
 
   // fill particle-wall event in which time to collision is inserted here so that current time needs to be added
-  Teuchos::RCP<WallEvent> wallevent =
-      Teuchos::rcp(new WallEvent(INPAR::PARTICLE::particle_wall, timetocollision, particle, wall, wallcoll_pos, wallcoll_vel));
+  Teuchos::RCP<WallEvent> wallevent = Teuchos::null;
+  if(validcollision == true)
+    wallevent = Teuchos::rcp(new WallEvent(INPAR::PARTICLE::particle_wall, timetocollision, particle, wall, wallcoll_pos, wallcoll_vel));
 
   return wallevent;
 }
@@ -2108,7 +2106,7 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
         Teuchos::RCP<PARTICLE::Event> newevent = ComputeCollisionWithParticle(currnode, *iter, dt);
 
         // insert event into event queue if collision is valid
-        if (newevent->time >= 0.0)
+        if (newevent != Teuchos::null)
         {
 #ifdef OUTPUT
           std::cout << "inserting inter-particle collision in the event queue" << std::endl;
@@ -2126,7 +2124,7 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
         Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(currnode, *iter, dt);
 
         // insert event into event queue if collision is valid
-        if (newevent->time >= -GEO::TOL14)
+        if (newevent != Teuchos::null)
         {
 #ifdef OUTPUT
           std::cout << "inserting particle-wall collision in the event queue" << std::endl;
@@ -2171,19 +2169,19 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
     // IMPORTANT: first particle must be the particle, that collided in this time step
     Teuchos::RCP<Event> newevent = ComputeCollisionWithParticle(lastevent->particle_1, *iter, dt-lastevent->time);
 
-    if (lastevent->coltype == INPAR::PARTICLE::particle_particle)
+    if(newevent != Teuchos::null)
     {
-      // do not add event of particles that has already been processed in lastevent
-      if (newevent->time >= -GEO::TOL14 and newevent->particle_2->Id() != lastevent->particle_2->Id())
+      if (lastevent->coltype == INPAR::PARTICLE::particle_particle)
       {
-        // only time to collision is returned --> time of the last event needs to be added
-        newevent->time += lastevent->time;
-        eventqueue.insert(newevent);
+        // do not add event of particles that has already been processed in lastevent
+        if (newevent->particle_2->Id() != lastevent->particle_2->Id())
+        {
+          // only time to collision is returned --> time of the last event needs to be added
+          newevent->time += lastevent->time;
+          eventqueue.insert(newevent);
+        }
       }
-    }
-    else
-    {
-      if (newevent->time >= -GEO::TOL14)
+      else
       {
         // only time to collision is returned --> time of the last event needs to be added
         newevent->time += lastevent->time;
@@ -2197,7 +2195,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
   {
     Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(lastevent->particle_1, *iter, dt);
 
-    if (newevent->time >= -GEO::TOL14)
+    if (newevent != Teuchos::null)
     {
       // only time to collision is returned --> time of the last event needs to be added
       newevent->time += lastevent->time;
@@ -2219,7 +2217,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
       Teuchos::RCP<Event> newevent = ComputeCollisionWithParticle(lastevent->particle_2, *iter, dt-lastevent->time);
 
       // do not add event of particles that has already been processed in lastevent
-      if (newevent->time >= -GEO::TOL14 and newevent->particle_2->Id() != lastevent->particle_1->Id())
+      if (newevent != Teuchos::null and newevent->particle_2->Id() != lastevent->particle_1->Id())
       {
         // only time to collision is returned --> time of the last event needs to be added
         newevent->time += lastevent->time;
@@ -2232,7 +2230,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
     {
       Teuchos::RCP<WallEvent> newevent = ComputeCollisionWithWall(lastevent->particle_2, *iter, dt);
 
-      if (newevent->time >= -GEO::TOL14)
+      if (newevent != Teuchos::null)
       {
         // only time to collision is returned --> time of the last event needs to be added
         newevent->time += lastevent->time;
@@ -2249,7 +2247,7 @@ void PARTICLE::ParticleCollisionHandlerMD::SearchForNewCollisions(
  | computes time to collision between a particle and a     ghamm 05/14  |
  | wall: searches hierarchically element, edges, corners                |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithWall(
+bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithWall(
     DRT::Element* wallele,
     const Epetra_SerialDenseMatrix& xyze_n,
     const Epetra_SerialDenseMatrix& xyze_np,
@@ -2266,7 +2264,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithWall(
   bool checkcorners = false;
 
   // check collision with element itself first
-  ComputeCollisionOfParticleWithElement(wallele, xyze_n, xyze_np, particle_pos, particle_vel,
+  bool validcollision = ComputeCollisionOfParticleWithElement(wallele, xyze_n, xyze_np, particle_pos, particle_vel,
       radius, timetocollision, wall_pos, wall_vel, remaining_dt, dt, checkedges);
 
   // if necessary, check for collision of particle with edges of element
@@ -2287,6 +2285,8 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithWall(
     Epetra_SerialDenseMatrix xyze_line_n(3,numnodes_line);
     Epetra_SerialDenseMatrix xyze_line_np(3,numnodes_line);
 
+    bool validlinecollision = false;
+    bool checkcorners_iter = false;
     for(int i=0; i<wallele->NumLine(); ++i)
     {
       for(int inode=0; inode<numnodes_line; ++inode)
@@ -2320,28 +2320,26 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithWall(
       }
 
       // find possible collision point for this line
-      ComputeCollisionOfParticleWithLine(eleLines[i]->Shape(), xyze_line_n, xyze_line_np, particle_pos, particle_vel,
-          radius, timetocollision_line, wallcollpoint_pos_line, wallcollpoint_vel_line, remaining_dt, dt, checkcorners);
+      validlinecollision = ComputeCollisionOfParticleWithLine(eleLines[i]->Shape(), xyze_line_n, xyze_line_np, particle_pos, particle_vel,
+          radius, timetocollision_line, wallcollpoint_pos_line, wallcollpoint_vel_line, remaining_dt, dt, checkcorners_iter);
 
       // find closest valid edge contact point if more than one exists
       // check whether collision time is reasonable
-      if (timetocollision_line != -1000.0 && timetocollision_line < timetocollision)
+      if (validlinecollision && timetocollision_line < timetocollision)
       {
+        validcollision = true;
         timetocollision = timetocollision_line;
         wall_pos.Update(wallcollpoint_pos_line);
         wall_vel.Update(wallcollpoint_vel_line);
       }
+      if(checkcorners_iter == true)
+        checkcorners = true;
     }
 
-    // if nothing was found, reset time to collision variable
     // if something was found, corners do not need to be checked
-    if(timetocollision == GEO::LARGENUMBER)
+    if(validcollision == true)
     {
-      timetocollision = -1000.0;
-    }
-    else
-    {
-      checkcorners = false;
+      return validcollision;
     }
   }
 
@@ -2357,6 +2355,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithWall(
     timetocollision = GEO::LARGENUMBER;
 
     // loop all corner nodes
+    bool validcornercollision = false;
     for(int inode=0; inode<DRT::UTILS::getNumberOfElementCornerNodes(wallele->Shape()); ++inode)
     {
       Epetra_SerialDenseMatrix xyze_corner_n(3,1);
@@ -2369,27 +2368,22 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithWall(
       }
 
       // find possible collision point for this corner
-      ComputeCollisionOfParticleWithCorner(xyze_corner_n, xyze_corner_np, particle_pos, particle_vel,
+      validcornercollision = ComputeCollisionOfParticleWithCorner(xyze_corner_n, xyze_corner_np, particle_pos, particle_vel,
           radius, timetocollision_corner, wallcollpoint_pos_corner, wallcollpoint_vel_corner, remaining_dt, dt);
 
       // find closest valid corner contact point if more than one exists
       // check whether collision time is reasonable
-      if (timetocollision_corner >= -GEO::TOL14 && timetocollision_corner < 1.1 * remaining_dt && timetocollision_corner < timetocollision)
+      if (validcornercollision && timetocollision_corner < timetocollision)
       {
+        validcollision = true;
         timetocollision = timetocollision_corner;
         wall_pos.Update(wallcollpoint_pos_corner);
         wall_vel.Update(wallcollpoint_vel_corner);
       }
     }
-
-    // if nothing was found, reset time to collision variable
-    if(timetocollision == GEO::LARGENUMBER)
-    {
-      timetocollision = -1000.0;
-    }
   }
 
-  return;
+  return validcollision;
 }
 
 /*----------------------------------------------------------------------*
@@ -2397,7 +2391,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithWall(
  | an element for hard sphere particles (templated on distype of ele)   |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType DISTYPE>
-void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElementT_FAD(
+bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElementT_FAD(
     DRT::Element* wallele,
     const Epetra_SerialDenseMatrix& xyze_n,
     const Epetra_SerialDenseMatrix& xyze_final,
@@ -2411,6 +2405,8 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
     const double dt,
     bool& checkedges)
 {
+  bool validcollision = false;
+
   const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // solution vector
@@ -2559,8 +2555,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
       if(unitnormal.Dot(particle_vel_fad) < GEO::TOL10 and iter>1)
       {
 //        std::cout << "particle path is parallel to wall --> left iteration" << std::endl;
-        coll_solution(2) = -1000.0;
-        break;
+        return validcollision;
       }
     }
 
@@ -2574,20 +2569,8 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
     if (std::fabs(coll_solution(0)) > 1.0e3 or std::fabs(coll_solution(1)) > 1.0e3)
     {
 //      std::cout << "elecoord is extremely large --> left iteration" << std::endl;
-      coll_solution(2) = -1000.0;
-      break;
+      return validcollision;
     }
-  }
-
-  // check if collision with wall element is valid
-  timetocollision = -1000.0;
-
-  // check whether parallel movement of particle and wall occurs
-  if(coll_solution(2) == -1000.0)
-  {
-//    std::cout << "left wall coll detection loop due to parallel movement" << std::endl;
-    // leave here
-    return;
   }
 
   // check whether collision position is valid and otherwise check for edge collision points
@@ -2601,6 +2584,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
       // decide if collision is still going to happen (--> valid) or has already happened in the last time step (--> invalid)
       if ((scalar_partvel - scalar_wallvel) > GEO::TOL14)
       {
+        validcollision = true;
         timetocollision = coll_solution(2).val();
         for(int j=0; j<3; ++j)
         {
@@ -2615,7 +2599,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
     checkedges = true;
   }
 
-  return;
+  return validcollision;
 }
 
 
@@ -2623,7 +2607,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
  | computes time to collision between a particle and       ghamm 09/13  |
  | an element for hard sphere particles                                 |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement(
+bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement(
     DRT::Element* wallele,
     const Epetra_SerialDenseMatrix& xyze_current,
     const Epetra_SerialDenseMatrix& xyze_final,
@@ -2637,30 +2621,31 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
     const double dt,
     bool& checkedges)
 {
+  bool validcollision = false;
   switch (wallele->Shape())
   {
   case DRT::Element::quad4:
-    ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::quad4>(
+    validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::quad4>(
         wallele, xyze_current, xyze_final, particle_pos, particle_vel, radius,
         timetocollision, wall_pos, wall_vel, remaining_dt, dt, checkedges);
     break;
   case DRT::Element::quad8:
-    ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::quad8>(
+    validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::quad8>(
         wallele, xyze_current, xyze_final, particle_pos, particle_vel, radius,
         timetocollision, wall_pos, wall_vel, remaining_dt, dt, checkedges);
     break;
   case DRT::Element::quad9:
-    ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::quad9>(
+    validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::quad9>(
         wallele, xyze_current, xyze_final, particle_pos, particle_vel, radius,
         timetocollision, wall_pos, wall_vel, remaining_dt, dt, checkedges);
     break;
   case DRT::Element::tri3:
-    ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::tri3>(
+    validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::tri3>(
         wallele, xyze_current, xyze_final, particle_pos, particle_vel, radius,
         timetocollision, wall_pos, wall_vel, remaining_dt, dt, checkedges);
     break;
   case DRT::Element::tri6:
-    ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::tri6>(
+    validcollision = ComputeCollisionOfParticleWithElementT_FAD<DRT::Element::tri6>(
         wallele, xyze_current, xyze_final, particle_pos, particle_vel, radius,
         timetocollision, wall_pos, wall_vel, remaining_dt, dt, checkedges);
     break;
@@ -2669,7 +2654,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
     break;
   }
 
-  return;
+  return validcollision;
 }
 
 
@@ -2679,7 +2664,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithElement
  | of wall element edge)                                                |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType DISTYPE>
-void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
+bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
     const Epetra_SerialDenseMatrix& xyze_line_n,
     const Epetra_SerialDenseMatrix& xyze_line_np,
     const LINALG::Matrix<3,1>& particle_pos,
@@ -2693,6 +2678,8 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
   // TODO:
   // TODO: this method only works for fixed walls, terms with time derivatives of wall position are missing
   // TODO:
+  bool validlinecollision = false;
+
   const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // coll_solution contains: r and time to collision (r is element coord)
@@ -2839,17 +2826,14 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
       crossproduct.CrossProduct(particle_vel, F_deriv1);
       if(crossproduct.Norm1() < GEO::TOL10 and iter>1)
       {
-        coll_solution(1) = -1000.0;
-        break;
+        // leave here
+        return validlinecollision;
       }
     }
 
     // update of coll_solution
     coll_solution.Update(1.0, dx_line, 1.0);
   }
-
-  // check if collision is valid
-  timetocollision = -1000.0;
 
   // check whether collision position is valid and otherwise check for corner collision points
   if (GEO::checkPositionWithinElementParameterSpace(coll_solution, DISTYPE) == true and distance/radius < GEO::TOL7)
@@ -2864,6 +2848,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
       if ((scalar_partvel - scalar_wallvel) > GEO::TOL14)
       {
         timetocollision = coll_solution(1);
+        validlinecollision = true;
       }
     }
   }
@@ -2872,7 +2857,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
     checkcorners = true;
   }
 
-  return;
+  return validlinecollision;
 }
 
 
@@ -2882,7 +2867,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT(
  | of wall element edge)                                                |
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType DISTYPE>
-void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_FAD(
+bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_FAD(
     const Epetra_SerialDenseMatrix& xyze_line_n,
     const Epetra_SerialDenseMatrix& xyze_line_np,
     const LINALG::Matrix<3,1>& particle_pos,
@@ -2898,6 +2883,8 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
 #ifdef DEBUG
   bool heuristic_break = false;
 #endif
+  bool validlinecollision = false;
+
   const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // solution vector
@@ -3150,8 +3137,8 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
       crossproduct.CrossProduct(copy_particle_vel, copy_F_deriv1);
       if(crossproduct.Norm1() < GEO::TOL10 and iter>1)
       {
-        coll_solution(1) = -1000.0;
-        break;
+        // leave here
+        return validlinecollision;
       }
     }
 
@@ -3165,13 +3152,9 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
     if (std::fabs(coll_solution(0)) > 1.0e3)
     {
 //      std::cout << "elecoord is extremely large --> left iteration" << std::endl;
-      coll_solution(1) = -1000.0;
-      break;
+      return validlinecollision;
     }
   }
-
-  // check if collision is valid
-  timetocollision = -1000.0;
 
   // check whether collision position is valid and otherwise check for corner collision points
   if (GEO::checkPositionWithinElementParameterSpace(coll_solution, DISTYPE) == true and distance < GEO::TOL7*radius)
@@ -3186,6 +3169,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
       if ((scalar_partvel - scalar_wallvel) > GEO::TOL14)
       {
         timetocollision = coll_solution(1).val();
+        validlinecollision = true;
         for(int j=0; j<3; ++j)
         {
           wallcollpoint_pos(j) = wallcollpoint_pos_fad(j).val();
@@ -3203,7 +3187,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
     checkcorners = true;
   }
 
-  return;
+  return validlinecollision;
 }
 
 
@@ -3211,7 +3195,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLineT_F
  | computes time to collision between a particle and       ghamm 04/14  |
  | an element edge for hard sphere particles                            |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLine(
+bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLine(
     const DRT::Element::DiscretizationType distype,
     const Epetra_SerialDenseMatrix& xyze_line_n,
     const Epetra_SerialDenseMatrix& xyze_line_np,
@@ -3225,21 +3209,22 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLine(
     const double dt,
     bool& checkcorners)
 {
+  bool validlinecollision = false;
   switch (distype)
   {
   case DRT::Element::line2:
-//    ComputeCollisionOfParticleWithLineT<DRT::Element::line2>(
+//    validlinecollision = ComputeCollisionOfParticleWithLineT<DRT::Element::line2>(
 //        xyze_line_n, xyze_line_np, particle_pos, particle_vel, radius,
 //        timetocollision, wallcollpoint_pos, wallcollpoint_vel, checkcorners);
-    ComputeCollisionOfParticleWithLineT_FAD<DRT::Element::line2>(
+    validlinecollision = ComputeCollisionOfParticleWithLineT_FAD<DRT::Element::line2>(
         xyze_line_n, xyze_line_np, particle_pos, particle_vel, radius,
         timetocollision, wallcollpoint_pos, wallcollpoint_vel,remaining_dt, dt, checkcorners);
     break;
   case DRT::Element::line3:
-//    ComputeCollisionOfParticleWithLineT<DRT::Element::line3>(
+//    validlinecollision = ComputeCollisionOfParticleWithLineT<DRT::Element::line3>(
 //        xyze_line_n, xyze_line_np, particle_pos, particle_vel, radius,
 //        timetocollision, wallcollpoint_pos, wallcollpoint_vel, checkcorners);
-    ComputeCollisionOfParticleWithLineT_FAD<DRT::Element::line3>(
+    validlinecollision = ComputeCollisionOfParticleWithLineT_FAD<DRT::Element::line3>(
         xyze_line_n, xyze_line_np, particle_pos, particle_vel, radius,
         timetocollision, wallcollpoint_pos, wallcollpoint_vel,remaining_dt, dt, checkcorners);
     break;
@@ -3248,7 +3233,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLine(
     break;
   }
 
-  return;
+  return validlinecollision;
 }
 
 
@@ -3256,7 +3241,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithLine(
  | computes time to collision between a particle and       ghamm 05/14  |
  | an element corner for hard sphere particles                          |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithCorner(
+bool PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithCorner(
     const Epetra_SerialDenseMatrix& xyze_corner_n,
     const Epetra_SerialDenseMatrix& xyze_corner_np,
     const LINALG::Matrix<3,1>& particle_pos,
@@ -3268,6 +3253,8 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithCorner(
     const double remaining_dt,
     const double dt)
 {
+  bool validcornercollision = false;
+
   // velocity of wall element is constant over the time step
   Epetra_SerialDenseMatrix vcorner(xyze_corner_n);
   vcorner.Scale(-1.0);
@@ -3294,8 +3281,6 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithCorner(
 
   const double discriminant = b * b - 4.0 * a * c;
 
-  timetocollision = -1000.0;
-
   if (discriminant >= 0.0 and a>0.0)
   {
     const double sqrdiscr = sqrt(discriminant);
@@ -3316,7 +3301,7 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithCorner(
     // both positive, smaller one is chosen (tc1 is almost identical to tc2)
     else if (tc1 > -GEO::TOL14 and tc2 > -GEO::TOL14)
     {
-      timetocollision = tc1 < tc2 ? tc1 : tc2;
+      timetocollision = std::min(tc1, tc2);
     }
 
     // check whether collision time is reasonable
@@ -3328,18 +3313,17 @@ void PARTICLE::ParticleCollisionHandlerMD::ComputeCollisionOfParticleWithCorner(
       // decide if collision is still going to happen (--> valid) or has already happened in the last time step (--> invalid)
       if ((scalar_partvel - scalar_wallvel) > GEO::TOL14)
       {
+        validcornercollision = true;
         for(int j=0; j<3; ++j)
         {
           wallcollpoint_pos(j) = xyze_corner_n(j,0) + (dt - remaining_dt + timetocollision) *  corner_vel(j);
           wallcollpoint_vel(j) = corner_vel(j);
         }
       }
-      else // collision happened in the past
-      {
-        timetocollision = -1000.0;
-      }
     }
   }
+
+  return validcornercollision;
 }
 
 

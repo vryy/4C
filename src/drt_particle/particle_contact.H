@@ -435,7 +435,7 @@ namespace PARTICLE
 
     /// computes time to collision between a particle and an element for hard sphere
     /// particles: searches hierarchically element, edges, corners
-    void ComputeCollisionOfParticleWithWall(
+    bool ComputeCollisionOfParticleWithWall(
         DRT::Element* wallele,
         const Epetra_SerialDenseMatrix& xyze_current,
         const Epetra_SerialDenseMatrix& xyze_final,
@@ -451,7 +451,7 @@ namespace PARTICLE
     /// computes time to collision between a particle and an element for hard sphere
     /// particles (templated on distype of element) using FAD
     template<DRT::Element::DiscretizationType DISTYPE>
-    void ComputeCollisionOfParticleWithElementT_FAD(
+    bool ComputeCollisionOfParticleWithElementT_FAD(
         DRT::Element* wallele,
         const Epetra_SerialDenseMatrix& xyze_n,
         const Epetra_SerialDenseMatrix& xyze_final,
@@ -466,7 +466,7 @@ namespace PARTICLE
         bool& checkedges);
 
     /// computes time to collision between a particle and an element for hard sphere particles
-    void ComputeCollisionOfParticleWithElement(
+    bool ComputeCollisionOfParticleWithElement(
         DRT::Element* wallele,
         const Epetra_SerialDenseMatrix& xyze_current,
         const Epetra_SerialDenseMatrix& xyze_final,
@@ -483,7 +483,7 @@ namespace PARTICLE
     /// computes time to collision between a particle and a line for hard sphere
     /// particles (templated on distype of line)
     template<DRT::Element::DiscretizationType DISTYPE>
-    void ComputeCollisionOfParticleWithLineT(
+    bool ComputeCollisionOfParticleWithLineT(
         const Epetra_SerialDenseMatrix& xyze_line_n,
         const Epetra_SerialDenseMatrix& xyze_line_final,
         const LINALG::Matrix<3,1>& particle_pos,
@@ -497,7 +497,7 @@ namespace PARTICLE
     /// computes time to collision between a particle and a line for hard sphere
     /// particles (templated on distype of line) using FAD
     template<DRT::Element::DiscretizationType DISTYPE>
-    void ComputeCollisionOfParticleWithLineT_FAD(
+    bool ComputeCollisionOfParticleWithLineT_FAD(
         const Epetra_SerialDenseMatrix& xyze_line_n,
         const Epetra_SerialDenseMatrix& xyze_line_final,
         const LINALG::Matrix<3,1>& particle_pos,
@@ -511,7 +511,7 @@ namespace PARTICLE
         bool& checkcorners);
 
     /// computes time to collision between a particle and a line for hard sphere particles
-    void ComputeCollisionOfParticleWithLine(
+    bool ComputeCollisionOfParticleWithLine(
         const DRT::Element::DiscretizationType distype,
         const Epetra_SerialDenseMatrix& xyze_line_n,
         const Epetra_SerialDenseMatrix& xyze_line_final,
@@ -526,7 +526,7 @@ namespace PARTICLE
         bool& checkcorners);
 
     /// computes time to collision between a particle and a corner of an element
-    void ComputeCollisionOfParticleWithCorner(
+    bool ComputeCollisionOfParticleWithCorner(
         const Epetra_SerialDenseMatrix& xyze_corner_n,
         const Epetra_SerialDenseMatrix& xyze_corner_np,
         const LINALG::Matrix<3,1>& particle_pos,
