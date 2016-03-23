@@ -272,7 +272,7 @@ void CAVITATION::Algorithm::InitCavitation()
   }
 
   // start round robin loop to fill particles into their correct bins
-  FillParticlesIntoBins(homelessparticles);
+  FillParticlesIntoBinsRoundRobin(homelessparticles);
 
   // ghost bins, particles and fluid elements according to the bins
   SetupGhosting(binrowmap, rowfluideles, fluidelecolmapold);

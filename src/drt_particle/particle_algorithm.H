@@ -136,8 +136,13 @@ namespace PARTICLE
     virtual void BinSizeSafetyCheck(const double dt);
 
     /// round robin loop to fill particles into its correct bin on according proc
-    virtual void FillParticlesIntoBins(
+    virtual void FillParticlesIntoBinsRoundRobin(
       std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles  ///< set of homeless particles
+      );
+
+    /// fill particles into their correct bin on according proc
+    virtual void FillParticlesIntoBinsRemoteIdList(
+      std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles   ///< set of homeless particles
       );
 
     /// node is placed into the correct row bin or put into the set of homeless particles

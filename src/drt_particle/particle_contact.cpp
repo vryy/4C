@@ -465,11 +465,52 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   // define vector for contact force
   Teuchos::RCP<Epetra_FEVector> f_structure = Teuchos::rcp(new Epetra_FEVector(*discret_->DofRowMap()));
 
+
+  // gather data for all particles initially
+  const int numcolparticles = discret_->NodeColMap()->NumMyElements();
+  particledata_.resize(numcolparticles);
+  {
+    for (int i=0; i<numcolparticles; ++i)
+    {
+      // particle for which data will be collected
+      DRT::Node *particle = discret_->lColNode(i);
+
+      static LINALG::Matrix<3,1> position;
+      static LINALG::Matrix<3,1> velocity;
+      static LINALG::Matrix<3,1> angvel;
+
+      std::vector<int> lm;
+      lm.reserve(3);
+
+      // extract global dof ids and fill into lm_i
+      discret_->Dof(particle, lm);
+
+      //position, velocity and angular velocity of particle
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_,position,lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_,velocity,lm);
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*ang_velncol_,angvel,lm);
+
+      const int lid = particle->LID();
+      // radius and mass of particle
+      const double radius = (*radiusncol_)[lid];
+      const double mass = (*masscol_)[lid];
+
+      ParticleCollData& data = particledata_[particle->LID()];
+      data.pos = position;
+      data.vel = velocity;
+      data.angvel = angvel;
+      data.rad = radius;
+      data.mass = mass;
+      data.lm = lm;
+    }
+  }
+
+
   // store bins, which have already been examined
   std::set<int> examinedbins;
 
   // loop over all particles
-  for(int i=0; i<discret_->NodeColMap()->NumMyElements(); ++i)
+  for(int i=0; i<numcolparticles; ++i)
   {
     DRT::Node *currparticle = discret_->lColNode(i);
 
@@ -499,39 +540,23 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
     GetNeighbouringParticlesAndWalls(currparticle, neighboringparticles, neighboringwalls);
 
     DRT::Node **NodesInCurrentBin = CurrentBin[0]->Nodes();
-    int numparticle = CurrentBin[0]->NumNode();
+    const int numparticle = CurrentBin[0]->NumNode();
 
     // loop over all particles in CurrentBin
     for(int i=0; i<numparticle; ++i)
     {
       DRT::Node *particle_i = NodesInCurrentBin[i];
 
-      std::vector<int> lm_i;
-      lm_i.reserve(3);
-
-      // extract global dof ids and fill into lm_i
-      discret_->Dof(particle_i, lm_i);
+      // extract data
+      static LINALG::Matrix<3,1> position_i, vel_i, angvel_i;
+      ParticleCollData& data = particledata_[particle_i->LID()];
+      position_i = data.pos;
+      vel_i = data.vel;
+      angvel_i = data.angvel;
+      const double radius_i = data.rad;
+      const double mass_i = data.mass;
+      std::vector<int> lm_i = data.lm;
       const int owner_i = particle_i->Owner();
-
-      //position of particle i
-      static LINALG::Matrix<3,1> position_i;
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_,position_i,lm_i);
-
-      //velocity of particle i
-      static LINALG::Matrix<3,1> vel_i;
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_,vel_i,lm_i);
-
-      //angular-velocity of particle i
-      static LINALG::Matrix<3,1> angvel_i;
-      DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*ang_velncol_,angvel_i,lm_i);
-
-      int lid = particle_i->LID();
-
-      // radius of particle i
-      const double radius_i = (*radiusncol_)[lid];
-
-      // mass of particle i
-      const double mass_i = (*masscol_)[lid];
 
       // evaluate contact with walls first
       std::vector<WallContactPoint> surfaces;
@@ -869,32 +894,17 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
         if(particle_i->Id() >= gid_j)
           continue;
 
+        // extract data
+        static LINALG::Matrix<3,1> position_j, vel_j, angvel_j;
+        ParticleCollData& data = particledata_[neighborparticle->LID()];
+        position_j = data.pos;
+        vel_j = data.vel;
+        angvel_j = data.angvel;
+        const double radius_j = data.rad;
+        const double mass_j = data.mass;
+        std::vector<int> lm_j = data.lm;
         const int owner_j = neighborparticle->Owner();
-        std::vector<int> lm_j;
-        lm_j.reserve(3);
 
-        // extract global dof ids
-        discret_->Dof(neighborparticle, lm_j);
-
-        // position of particle j
-        static LINALG::Matrix<3,1> position_j;
-        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*disncol_,position_j,lm_j);
-
-        // velocity of particle j
-        static LINALG::Matrix<3,1> vel_j;
-        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*velncol_,vel_j,lm_j);
-
-        // angular velocity of particle j
-        static LINALG::Matrix<3,1> angvel_j;
-        DRT::UTILS::ExtractMyValues<LINALG::Matrix<3,1> >(*ang_velncol_,angvel_j,lm_j);
-
-        lid = neighborparticle->LID();
-
-        // radius of particle j
-        const double radius_j = (*radiusncol_)[lid];
-
-        // mass of particle j
-        const double mass_j = (*masscol_)[lid];
 
         // normalized mass
         const double m_eff = mass_i * mass_j / (mass_i + mass_j);
@@ -1008,6 +1018,9 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
       }
     }
   }
+
+  // erase temporary storage for collision data
+  particledata_.clear();
 
   // call global assemble for particle forces on walls
   const int err = f_structure->GlobalAssemble(Add, false);
@@ -1854,12 +1867,12 @@ Teuchos::RCP<PARTICLE::Event> PARTICLE::ParticleCollisionHandlerMD::ComputeColli
   double rad_1, rad_2, ddt_1, ddt_2;
   if(particledata_.size() != 0)
   {
-    ParticleCollData particle1 = particledata_[particle_1->LID()];
+    const ParticleCollData& particle1 = particledata_[particle_1->LID()];
     pos_1 = particle1.pos;
     vel_1 = particle1.vel;
     rad_1 = particle1.rad;
     ddt_1 = particle1.ddt;
-    ParticleCollData particle2 = particledata_[particle_2->LID()];
+    const ParticleCollData& particle2 = particledata_[particle_2->LID()];
     pos_2 = particle2.pos;
     vel_2 = particle2.vel;
     rad_2 = particle2.rad;
@@ -1952,7 +1965,7 @@ Teuchos::RCP<PARTICLE::WallEvent> PARTICLE::ParticleCollisionHandlerMD::ComputeC
 
   if(particledata_.size() != 0)
   {
-    ParticleCollData particle_data = particledata_[particle->LID()];
+    const ParticleCollData& particle_data = particledata_[particle->LID()];
     position = particle_data.pos;
     velocity = particle_data.vel;
     radius = particle_data.rad;
@@ -2046,13 +2059,11 @@ void PARTICLE::ParticleCollisionHandlerMD::InitializeEventQueue(
 
       GetCollisionData(particle, position, velocity, radius, particle_time);
 
-      ParticleCollData data;
+      ParticleCollData& data = particledata_[particle->LID()];
       data.pos = position;
       data.vel = velocity;
       data.rad = radius;
       data.ddt = particle_time;
-
-      particledata_[particle->LID()] = data;
     }
   }
 

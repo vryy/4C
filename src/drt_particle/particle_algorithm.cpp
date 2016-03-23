@@ -177,7 +177,7 @@ void PARTICLE::Algorithm::Init(bool restarted)
   }
 
   // start round robin loop to fill particles into their correct bins
-  FillParticlesIntoBins(homelessparticles);
+  FillParticlesIntoBinsRoundRobin(homelessparticles);
 
   // ghost bins and particles according to the bins --> final FillComplete() call included
   SetupGhosting(binrowmap);
@@ -598,7 +598,7 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
 /*----------------------------------------------------------------------*
 | fill particles into their correct bin on according proc   ghamm 09/12 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::FillParticlesIntoBins(std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles)
+void PARTICLE::Algorithm::FillParticlesIntoBinsRoundRobin(std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles)
 {
   //--------------------------------------------------------------------
   // -> 2) round robin loop
@@ -674,9 +674,161 @@ void PARTICLE::Algorithm::FillParticlesIntoBins(std::set<Teuchos::RCP<DRT::Node>
   } // end for irobin
 
   if(homelessparticles.size())
+  {
     std::cout << " There are " << homelessparticles.size() << " particles which have left the computational domain on rank " << myrank << std::endl;
-  // erase everything that is left
+    // erase everything that is left
+    homelessparticles.clear();
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+| fill particles into their correct bin on according proc   ghamm 03/16 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles)
+{
+  const int numproc = particledis_->Comm().NumProc();
+  if(numproc == 1)
+  {
+    if(homelessparticles.size())
+    {
+      std::cout << " There are " << homelessparticles.size() << " particles which have left the computational domain on rank " << myrank_ << std::endl;
+      std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>::const_iterator hlp;
+      for(hlp = homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp)
+      {
+        particledis_->DeleteNode((*hlp)->Id());
+      }
+      homelessparticles.clear();
+    }
+
+    return;
+  }
+
+  // parallel case
+  // ---- find new host procs for particles -----
+  const int fullsize = (int)homelessparticles.size();
+  std::vector<int> targetbinIdlist;
+  targetbinIdlist.reserve(fullsize);
+  std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>::const_iterator hlp;
+  for(hlp=homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp)
+  {
+    const int binId = ConvertPosToGid((*hlp)->X());
+    targetbinIdlist.push_back(binId);
+  }
+
+  // get proc which will be the future host of homeless particles
+  std::vector<int> pidlist(fullsize);
+  {
+    // only unique id lists are accepted in RemoteIDList
+    // 1) make gid list unique
+    std::set<int> unique_targetbinIdlist(targetbinIdlist.begin(), targetbinIdlist.end());
+    std::vector<int> uniquevec_targetbinIdlist(unique_targetbinIdlist.begin(), unique_targetbinIdlist.end());
+    const int uniquesize = (int)unique_targetbinIdlist.size();
+
+    // 2) communication
+    std::vector<int> unique_pidlist(uniquesize);
+    int err = particledis_->ElementRowMap()->RemoteIDList(uniquesize,uniquevec_targetbinIdlist.data(),unique_pidlist.data(),NULL);
+    if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d",err);
+
+    // 3) build full pid list via lookup table
+    std::map<int,int> lookuptable;
+    for(int s=0; s<uniquesize; ++s)
+      lookuptable.insert(lookuptable.end(), std::pair<int,int>(uniquevec_targetbinIdlist[s], unique_pidlist[s]));
+    for(int s=0; s<fullsize; ++s)
+      pidlist[s] = lookuptable[targetbinIdlist[s]];
+  }
+
+  // ---- pack data for sending -----
+  std::map<int, std::vector<char> > sdata;
+  std::vector<int> targetprocs(numproc,0);
+  int counter=0;
+  int iter=0;
+  for(hlp = homelessparticles.begin(); hlp != homelessparticles.end(); ++hlp)
+  {
+    Teuchos::RCP<DRT::Node> iterhomelessparticle= *hlp;
+
+    // ---- pack data for sending -----
+    const int targetproc = pidlist[iter];
+    if(targetproc != -1)
+    {
+      DRT::PackBuffer data;
+      iterhomelessparticle->Pack(data);
+      data.StartPacking();
+      iterhomelessparticle->Pack(data);
+      particledis_->DeleteNode(iterhomelessparticle->Id());
+      sdata[targetproc].insert(sdata[targetproc].end(),data().begin(),data().end());
+      targetprocs[targetproc] = 1;
+    }
+    else
+    {
+      ++counter;
+      particledis_->DeleteNode(iterhomelessparticle->Id());
+    }
+    ++iter;
+  }
+  if(counter)
+    std::cout << " There are " << counter << " particles which have left the computational domain on rank " << myrank_ << std::endl;
   homelessparticles.clear();
+
+  // ---- prepare receiving procs -----
+  std::vector<int> summedtargets(numproc,0);
+  particledis_->Comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+
+
+  // ---- send ----
+  DRT::Exporter exporter(particledis_->Comm());
+  const int length = sdata.size();
+  std::vector<MPI_Request> request(length);
+  int tag = 0;
+  for(std::map<int, std::vector<char> >::const_iterator p=sdata.begin(); p!=sdata.end(); ++p)
+  {
+    exporter.ISend(myrank_, p->first, &((p->second)[0]), (int)(p->second).size(), 1234, request[tag]);
+    ++tag;
+  }
+  if (tag != length) dserror("Number of messages is mixed up");
+
+  // ---- receive ----
+  for(int rec=0; rec<summedtargets[myrank_]; ++rec)
+  {
+    std::vector<char> rdata;
+    int length = 0;
+    int tag = -1;
+    int from = -1;
+    exporter.ReceiveAny(from,tag,rdata,length);
+    if (tag != 1234)
+      dserror("Received on proc %i data with wrong tag from proc %i", myrank_, from);
+
+    // ---- unpack ----
+    {
+      // Put received nodes into discretization
+      std::vector<char>::size_type index = 0;
+      while (index < rdata.size())
+      {
+        std::vector<char> data;
+        DRT::ParObject::ExtractfromPack(index,rdata,data);
+        // this Teuchos::rcp holds the memory of the node
+        Teuchos::RCP<DRT::ParObject> object = Teuchos::rcp(DRT::UTILS::Factory(data),true);
+        Teuchos::RCP<DRT::Node> node = Teuchos::rcp_dynamic_cast<DRT::Node>(object);
+        if (node == Teuchos::null) dserror("Received object is not a node");
+
+        // process received particle
+        const double* currpos = node->X();
+        PlaceNodeCorrectly(node, currpos, homelessparticles);
+        if(homelessparticles.size())
+          dserror("particle (id: %i) was sent to proc %i but corresponding bin (gid: %i) is missing", node->Id(), myrank_, ConvertPosToGid(currpos));
+      }
+    }
+  }
+
+  // wait for all communications to finish
+  {
+    for (int i=0; i<length; ++i)
+      exporter.Wait(request[i]);
+  }
+
+  particledis_->Comm().Barrier(); // I feel better this way ;-)
 
   return;
 }
@@ -691,7 +843,7 @@ bool PARTICLE::Algorithm::PlaceNodeCorrectly
   std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles
   )
 {
-//  cout << "node with ID: " << node->Id() << " and owner: " << node->Owner() << " arrived in PlaceNodeCorrectly" << endl;
+//  std::cout << "on proc: " << myrank_ << " node with ID: " << node->Id() << " and owner: " << node->Owner() << " arrived in PlaceNodeCorrectly" << std::endl;
   const int binId = ConvertPosToGid(currpos);
 
   // check whether the current node belongs into a bin on this proc
@@ -707,7 +859,7 @@ bool PARTICLE::Algorithm::PlaceNodeCorrectly
     // check whether it is a row bin
     if(currbin->Owner() == myrank_) // row bin
     {
-//      cout << "for node " << node->Id() << " a row bin was found on proc " << myrank_ << endl;
+//      std::cout << "on proc: " << myrank_ << " for node " << node->Id() << " a row bin was found" << std::endl;
       // node already exists (either row or ghost)
       if( particledis_->HaveGlobalNode(node->Id()) == true)
       {
@@ -715,14 +867,14 @@ bool PARTICLE::Algorithm::PlaceNodeCorrectly
         // existing node is a row node, this means that node is equal existingnode
         if(existingnode->Owner() == myrank_)
         {
-//          cout << "existingnode row node " << existingnode->Id() << " (ID from outside node: " << node->Id() << ") is added to element: " << currbin->Id() << " on proc " << myrank_ << endl;
+//          std::cout << "on proc: " << myrank_ << " existingnode row node " << existingnode->Id() << " (ID from outside node: " << node->Id() << ") is added to element: " << currbin->Id() << std::endl;
 
           // assign node to the correct bin
           currbin->AddNode(existingnode);
         }
         else // ghost node becomes row node and node from outside is trashed
         {
-//          cout << "existingnode ghost node " << existingnode->Id() << " (ID from outside node: " << node->Id() << ") is added to element: " << currbin->Id() << " on proc " << myrank_ << " after setting ownership" << endl;
+//          std::cout << "on proc: " << myrank_ << " existingnode ghost node " << existingnode->Id() << " (ID from outside node: " << node->Id() << ") is added to element: " << currbin->Id() << " after setting ownership" << std::endl;
 
           // change owner of the node to this proc
           existingnode->SetOwner(myrank_);
@@ -746,7 +898,7 @@ bool PARTICLE::Algorithm::PlaceNodeCorrectly
         // change owner of the node to this proc and add it to the discretization
         node->SetOwner(myrank_);
         particledis_->AddNode(node);
-//        cout << "node " << node->Id() << " is added to the discretization and assigned to element: " << currbin->Id() << " on proc " << myrank_ << endl;
+//        std::cout << "on proc: " << myrank_ << " node " << node->Id() << " is added to the discretization and assigned to element: " << currbin->Id() << std::endl;
         // assign node to the correct bin
         currbin->AddNode(node.get());
       }
@@ -756,12 +908,14 @@ bool PARTICLE::Algorithm::PlaceNodeCorrectly
     else // ghost bin
     {
       homelessparticles.insert(node);
+//      std::cout << "on proc: " << myrank_ << " node " << node->Id() << " is added to homeless because of becoming a future ghost node" << std::endl;
       return false;
     }
   }
   else // bin not found on this proc
   {
     homelessparticles.insert(node);
+//    std::cout << "on proc: " << myrank_ << " node " << node->Id() << " is added to homeless because bin is not on this proc " << std::endl;
     return false;
   }
 
@@ -922,8 +1076,10 @@ void PARTICLE::Algorithm::TransferParticles(const bool updatestates, const bool 
   {
     DRT::Node *currparticle = particledis_->lRowNode(i);
 
+#ifdef DEBUG
     if(currparticle->NumElement() != 1)
       dserror("ERROR: A particle is assigned to more than one bin!");
+#endif
 
     DRT::Element** currele = currparticle->Elements();
     DRT::Element* currbin = currele[0];
@@ -998,7 +1154,7 @@ void PARTICLE::Algorithm::TransferParticles(const bool updatestates, const bool 
 #endif
 
   // homeless particles are sent to their new processors where they are inserted into their correct bin
-  FillParticlesIntoBins(homelessparticles);
+  FillParticlesIntoBinsRemoteIdList(homelessparticles);
 
   // check whether all procs have a filled particledis_,
   // oldmap in ExportColumnElements must be Reset() on every proc or nowhere

@@ -4,12 +4,7 @@
 
 \brief Algorithm to track particles for level-set problems
 
-<pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
+\maintainer Ursula Rasthofer
 *----------------------------------------------------------------------*/
 
 #include "particle_algorithm.H"
@@ -94,7 +89,7 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
     }
 
     // start round robin loop to fill particles into their correct bins
-    FillParticlesIntoBins(homelessparticles);
+    FillParticlesIntoBinsRoundRobin(homelessparticles);
 
     particledis_->FillComplete(true, false, true);
     return;
@@ -122,7 +117,7 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   }
 
   // start round robin loop to fill particles into their correct bins
-  FillParticlesIntoBins(homelessparticles);
+  FillParticlesIntoBinsRoundRobin(homelessparticles);
 
   // ghost bins, particles and fluid elements according to the bins
   SetupGhosting(binrowmap, scatraelesinbins);
