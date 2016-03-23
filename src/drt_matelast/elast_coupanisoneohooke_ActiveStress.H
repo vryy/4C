@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupanisoneohooke_ActiveStress.H
-\brief
-This file contains the routines required for the anisotropic material
-using a neo-Hooke material according to
 
-<pre>
-Maintainer: Cristobal Bertoglio
-            bertoglio@lnm.mw.tum.de
-            089/289 15264
-</pre>
+\brief Active stress material
+
+\maintainer Marc Hirschvogel
+*----------------------------------------------------------------------*/
 
 *----------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISONEOHOOKE_ACTIVESTRESS_H_
@@ -27,12 +23,10 @@ namespace ELASTIC
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for anisochoric contribution of a
-    /// neo-Hooke material with one fiber direction with space-time varying coefficients
     ///
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 CoupAnisoNeoHooke_ActiveStress C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
+    /// MAT 1 ELAST_CoupAnisoNeoHooke_ActiveStress SIGMA 100.0 TAUC0 0.0 MAX_ACTIVATION 30.0 MIN_ACTIVATION -20.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0
     class CoupAnisoNeoHooke_ActiveStress : public MAT::PAR::Parameter
     {
     public:
@@ -91,24 +85,18 @@ namespace ELASTIC
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// Coupled anisotropic exponential fiber function, implemented for one possible fiber family
-  /// [1]
-  /// This is a hyperelastic, anisotropic material
-  /// of the most simple kind. The material parameter can vary in space and time
-  ///
-  /// Strain energy function is given by
+  /// This is a simplification of the muscle contraction law proposed in [1], essentially adds an active stress tau
+  /// along a given fiber direction f_0
+  /// active 2nd Piola-Kirchhoff stress:
   ///\f[
-  ///   \Psi = c(X,t) \left(IV_{\boldsymbol C}-1\right).
+  ///   S_{active} = \tau(t) f_0 \otimes f_0
   ///\f]
-  ///
-  ///
   /// <h3>References</h3>
   /// <ul>
-  /// <li> [1] GA Holzapfel, TC Gasser, A viscoelastic model for fiber-reinforced composites at finite strains: ... 2000
+  /// <li> [1] 2001_Bestel, Clément, Sorine - A Biomechanical Model of Muscle Contraction (2001), Medical Image Computing and
+  /// Computer-Assisted Intervention (MICCAI'01), vol. 2208, Springer-Verlag Berlin, 1159-1161
   /// </ul>
   ///
-  /// \author rausch
-  /// \date 05/09
   class CoupAnisoNeoHooke_ActiveStress : public Summand
   {
 

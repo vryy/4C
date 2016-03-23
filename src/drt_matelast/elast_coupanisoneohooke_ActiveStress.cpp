@@ -1,18 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupanisoneohooke_ActiveStress.cpp
-\brief
 
+\brief Active stress material
 
-the input line should read
-  MAT 1 CoupAnisoNeoHooke_ActiveStress C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
-
-<pre>
-Maintainer: Cristobal Bertoglio
-            bertoglio@lnm.mw.tum.de
-            089/289 15264
-</pre>
-*/
+\maintainer Marc Hirschvogel
+*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/
 /* headers */
