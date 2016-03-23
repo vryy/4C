@@ -13,7 +13,7 @@ Maintainer: Alexander Seitz
 #ifndef CONTACT_TSI_LAGRANGE_STRATEGY_H
 #define CONTACT_TSI_LAGRANGE_STRATEGY_H
 
-#include "contact_monocoupled_lagrange_strategy.H"
+#include "contact_lagrange_strategy.H"
 #include "../drt_lib/drt_dserror.H"
 #include "contact_defines.H"
 #include <Epetra_Operator.h>
@@ -48,7 +48,7 @@ namespace CONTACT
 
  \author popp (popp@lnm.mw.tum.de)
  */
-class CoTSILagrangeStrategy : public MonoCoupledLagrangeStrategy
+class CoTSILagrangeStrategy : public CoLagrangeStrategy
 {
 public:
 
@@ -93,9 +93,17 @@ public:
    */
   void SetState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec);
 
-  virtual void Evaluate(
-      Teuchos::RCP<LINALG::SparseOperator>& kteff,
-      Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
+  //Overload CONTACT::CoAbstractStrategy::ApplyForceStiffCmt as this is called in the structure --> to early for monolithically coupled algorithms!
+  virtual void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+      Teuchos::RCP<LINALG::SparseOperator>& kt,
+      Teuchos::RCP<Epetra_Vector>& f,
+      const int step,
+      const int iter,
+      bool predictor)
+  {
+    // structure single-field predictors (e.g.TangDis) may evaluate the structural contact part
+    if (predictor) CoAbstractStrategy::ApplyForceStiffCmt(dis,kt,f,step,iter,predictor);
+  }
 
   /*!
     \brief Apply thermo-contact to matrix blocks
@@ -117,9 +125,12 @@ public:
       Teuchos::RCP<Epetra_Vector> dis,
       Teuchos::RCP<Epetra_Vector> temp,
       Teuchos::RCP<const LINALG::MapExtractor> str_dbc,
-      Teuchos::RCP<const LINALG::MapExtractor> thr_dbc,
-      bool predictor
+      Teuchos::RCP<const LINALG::MapExtractor> thr_dbc
       );
+
+  //Overload CONTACT::CoLagrangeStrategy::Recover as this is called in the structure --> no enought information available for monolithically coupled algorithms!
+   virtual void Recover(Teuchos::RCP<Epetra_Vector> disi)
+   {};
 
   virtual void RecoverCoupled(
       Teuchos::RCP<Epetra_Vector> sinc,/// displacement  increment

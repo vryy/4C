@@ -566,7 +566,7 @@ void TSI::Monolithic::NewtonFull()
   if (cmtman_!=Teuchos::null)
     dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).Evaluate(
         SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
-        StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor(),iter_==1);
+        StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor());
 
   //------------------------------------------------------ iteration loop
 
@@ -613,9 +613,6 @@ void TSI::Monolithic::NewtonFull()
     normdisi_ = CalculateVectorNorm(iternormstr_, sx);
     normtempi_ = CalculateVectorNorm(iternormthr_, tx);
 
-    // reset timer
-    timernewton_.ResetStartTime();
-
     // iter==1 is after predictor, i.e. no solver call yet
     if (StructureField()->HaveSemiSmoothPlasticity())
       StructureField()->GetPlasticityManager()->SetData().no_recovery_=false;
@@ -647,7 +644,7 @@ void TSI::Monolithic::NewtonFull()
     if (cmtman_!=Teuchos::null)
       dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).Evaluate(
           SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
-          StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor(),iter_==1);
+          StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor());
 
     // in case of 'Mix'-convergence criterion: save the norm of the 1st
     // iteration in (norm . iter0_)

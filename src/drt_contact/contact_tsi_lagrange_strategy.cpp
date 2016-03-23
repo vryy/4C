@@ -42,7 +42,7 @@ CONTACT::CoTSILagrangeStrategy::CoTSILagrangeStrategy(
     Teuchos::RCP<Epetra_Comm> comm,
     double alphaf,
     int maxdof):
-    MonoCoupledLagrangeStrategy(DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+    CoLagrangeStrategy(DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
     tsi_alpha_(1.)
 {
 
@@ -103,28 +103,6 @@ void CONTACT::CoTSILagrangeStrategy::SetState(const std::string& statename, cons
 }
 
 
-/*----------------------------------------------------------------------*
- | call appropriate evaluate for contact evaluation           popp 06/09|
- *----------------------------------------------------------------------*/
-void CONTACT::CoTSILagrangeStrategy::Evaluate(
-    Teuchos::RCP<LINALG::SparseOperator>& kteff,
-    Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
-{
-  // in the new framework, we don't want to perform the condensation
-  // directly in the structure evaluation routine. Hence we overload
-  // this function by an empty one.
-  // Instead, the condensation is performed once on the fully coupled
-  // TSI system using the routine
-  // CONTACT::CoTSILagrangeStrategy::Evaluate(
-  // Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
-  // Teuchos::RCP<Epetra_Vector>& combined_RHS,
-  // Epetra_Vector sRHS,
-  // Epetra_Vector tRHS
-  // )
-  return;
-}
-
-
 void CONTACT::CoTSILagrangeStrategy::Evaluate(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
     Teuchos::RCP<Epetra_Vector>& combined_RHS,
@@ -132,8 +110,7 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
     Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<Epetra_Vector> temp,
     Teuchos::RCP<const LINALG::MapExtractor> str_dbc,
-    Teuchos::RCP<const LINALG::MapExtractor> thr_dbc,
-    bool predictor
+    Teuchos::RCP<const LINALG::MapExtractor> thr_dbc
     )
 {
   if (thr_s_dofs_==Teuchos::null)
@@ -160,14 +137,13 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
   AssembleMortar();
 
   // get the relative movement for frictional contact
-  if (predictor)
-    EvaluateRelMovPredict();
-  else
-    EvaluateRelMov();
+  EvaluateRelMov();
 
   // update active set
-  if (!predictor)
-    UpdateActiveSetSemiSmooth();
+  UpdateActiveSetSemiSmooth();
+
+  // init lin-matrices
+  Initialize();
 
   // get the necessary maps on the thermo dofs
   Teuchos::RCP<Epetra_Map> gactive_themo_dofs = coupST->MasterToSlaveMap(gactivedofs_);
