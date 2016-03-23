@@ -124,6 +124,7 @@ drt_lib_mod
 drt_utils_mod
 linalg_mod
 ${LIBRARIES}
+${LAPACK_LIBRARIES}
 )
 
 add_custom_command (
