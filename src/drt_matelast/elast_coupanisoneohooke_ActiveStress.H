@@ -7,7 +7,7 @@
 \maintainer Marc Hirschvogel
 *----------------------------------------------------------------------*/
 
-*----------------------------------------------------------------------*/
+
 #ifndef ELAST_COUPANISONEOHOOKE_ACTIVESTRESS_H_
 #define ELAST_COUPANISONEOHOOKE_ACTIVESTRESS_H_
 
