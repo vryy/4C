@@ -2,7 +2,7 @@
 \file pat_utils.cpp
 
 <pre>
-Maintainer: Svenja Schoeder
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/staff/svenja-schoeder/
             089 - 289-15271
@@ -150,10 +150,11 @@ Teuchos::RCP<Epetra_Vector> ACOU::PATSearchDirection::ComputeDirection(Teuchos::
 ACOU::PATLineSearch::PATLineSearch(Teuchos::RCP<PatImageReconstruction> imagereconstruction)
 {
   itermax_ = imagereconstruction->acouparams_->sublist("PA IMAGE RECONSTRUCTION").get<int>("INV_LS_MAX_RUN");
-  alpha_max_ = 15.0;
 
   c1_ =  1.0e-12;
   c2_ = 0.9;
+
+  alpha_max_ = 10.0; // initial step length ususally allows a change of 0.1
 
   imagereconstruction_ =  imagereconstruction;
   myrank_ = imagereconstruction_->myrank_;
@@ -254,6 +255,17 @@ bool ACOU::PATLineSearch::Run()
     // update alphas
     alpha_im1_ = alpha_i_;
     alpha_i_ *= 2.0; // = PredictStepLength();
+
+    if(alpha_i_>alpha_max_ && J_0_ > J_i_)
+    {
+      alpha_x_ = alpha_im1_;
+      break;
+    }
+    else if(alpha_i_>alpha_max_ && J_0_ <= J_i_)
+    {
+      alpha_x_ = 0.0;
+      break;
+    }
   }
 
   if(alpha_x_ != 0.0)
@@ -375,6 +387,11 @@ double ACOU::PATLineSearch::Zoom(double alpha_lo, double alpha_hi, double J_alph
           std::cout<<"*************** zoom condition 2 met, |\\/phi|_j "<<normgradphi_j<<", |\\/phi|_0 "<<normgradphi_0_<<std::endl;
         return alpha_j;
       }
+      else
+      {
+        if(!myrank_)
+          std::cout<<"*************** zoom condition 2 NOT met, |\\/phi|_j "<<normgradphi_j<<", |\\/phi|_0 "<<normgradphi_0_<<std::endl;
+      }
 
       // check third condition
       if( normgradphi_j * (alpha_hi - alpha_lo) >= 0 )
@@ -383,12 +400,18 @@ double ACOU::PATLineSearch::Zoom(double alpha_lo, double alpha_hi, double J_alph
           std::cout<<"*************** zoom condition 3 met"<<std::endl;
         alpha_hi = alpha_lo;
       }
+      else
+        if(!myrank_)
+          std::cout<<"*************** zoom condition 3 NOT met"<<std::endl;
 
       alpha_lo = alpha_j;
     }
   }
 
-  return 0.0;
+  if(J_j<J_0_) // line search does not fulfill both wolfe conditions but i would not call it fail anyhow
+    return alpha_j;
+  else
+   return 0.0;
 }
 
 

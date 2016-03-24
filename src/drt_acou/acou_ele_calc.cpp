@@ -1,10 +1,10 @@
 /*--------------------------------------------------------------------------*/
 /*!
- \file acou_ele_calc.cpp
- \brief
+\file acou_ele_calc.cpp
+\brief
 
  <pre>
- Maintainer: Svenja Schoeder
+\maintainer Svenja Schoeder
  schoeder@lnm.mw.tum.de
  http://www.lnm.mw.tum.de
  089 - 289-15271
@@ -292,17 +292,6 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::Evaluate(DRT::ELEMENTS::Acou* ele,
     const int useacouoptvecs = params.get<int>("useacouoptvecs");
     ReadGlobalVectors(ele, discretization, lm, padapty, useacouoptvecs);
     ComputePressureAverage(elevec1);
-    break;
-  }
-  case ACOU::eval_ele_ader:
-  {
-    double dt = params.get<double>("dt");
-    bool adjoint = params.get<bool>("adjoint");
-    bool padapty = params.get<bool>("padaptivity");
-    const int useacouoptvecs = params.get<int>("useacouoptvecs");
-    ReadGlobalVectors(ele, discretization, lm, padapty, useacouoptvecs);
-    localSolver_->ComputeMatrices(discretization, mat, *ele, dt, dyna_, adjoint);
-    localSolver_->EvaluateElementADER(discretization, mat, *ele, dt, elevec1, interiorVelnp_, interiorPressnp_);
     break;
   }
   default:
@@ -977,7 +966,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::NodeBasedValues(
       elevec1(d * nen_ + i) = sum;
     }
   }
-  if (!padaptivity && (traceVal_.size()>0)) // (trace val size is zero for explicit time integration)
+  if ( (!padaptivity && (traceVal_.size()>0)) && dyna_==INPAR::ACOU::acou_impleuler) // (trace val size is zero for explicit time integration)
   {
     Epetra_SerialDenseVector fvalues(1);
     Epetra_SerialDenseVector touchcount(nen_);
@@ -2396,44 +2385,6 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ComputeMatrices(
 
   return;
 }
-
-/*----------------------------------------------------------------------*
- * EvaluateElementADER
- *----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateElementADER(
-    DRT::Discretization &         discretization,
-    const Teuchos::RCP<MAT::Material> &mat,
-    DRT::ELEMENTS::Acou &             ele,
-    double                            dt,
-    Epetra_SerialDenseVector          &elevec,
-    Epetra_SerialDenseVector          & interiorVeln,
-    Epetra_SerialDenseVector          & interiorPressn)
-{
-/*  const MAT::AcousticMat* actmat = static_cast<const MAT::AcousticMat*>(mat.get());
-  double rho = actmat->Density(discretization.ElementColMap()->LID(ele.Id()));
-  double c = actmat->SpeedofSound(discretization.ElementColMap()->LID(ele.Id()));
-
-  // to be read from input file
-  int ORDER = 1; // the capital N in the papers
-
-  // input is the pressure and velocity from the last time level
-  // output is the element contributions to the equation (a vector of size tracedofs!!)
-  if(elevec.Length()!=Gmat.N())
-    dserror("at this point, the element vector has to be of size face*nfdofs");
-
-  // first contribution is from ********** k=0 ********** (this is easy since S is the unit matrix
-  elevec.Multiply('N','N',dt,Imat,interiorVeln,0.0);
-  elevec.Multiply('N','N',dt,Jmat,interiorPressn,1.0);
-  // that's it
-
-  // now the next higher contribution ********** k=1 **********
-*/
-
-
-  return;
-}
-
 
 // template classes
 template class DRT::ELEMENTS::AcouEleCalc<DRT::Element::hex8>;

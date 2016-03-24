@@ -3,7 +3,7 @@
 \file inpar_acou.cpp
 
 <pre>
-Maintainer: Svenja Schoeder
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -35,6 +35,7 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   IntParameter("LINEAR_SOLVER",-1,"Number of linear solver used for acoustical problem",&acousticdyn);
   IntParameter("STARTFUNCNO",-1,"Function for Initial Starting Field",&acousticdyn);
   IntParameter("SOURCETERMFUNCNO",-1,"Function for source term in volume",&acousticdyn);
+  BoolParameter("DOUBLEORFLOAT","Yes","Yes, if evaluation with double, no if with float",&acousticdyn);
 
   BoolParameter("ALLELESEQUAL","No","Yes, if all elements have same shape and material",&acousticdyn);
 
@@ -70,7 +71,8 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                     "lsrk45reg2",
                     "lsrk33reg2",
                     "lsrk45reg3",
-                    "ssprk"),
+                    "ssprk",
+                    "ader"),
                     tuple<int>(
                     acou_impleuler,
                     acou_expleuler,
@@ -78,7 +80,8 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                     acou_lsrk45reg2,
                     acou_lsrk33reg2,
                     acou_lsrk45reg3,
-                    acou_ssprk),
+                    acou_ssprk,
+                    acou_ader),
                     &acousticdyn);
 
   BoolParameter("WRITEMONITOR","No","Write a monitor file for Pressure Monitor Condition",&acousticdyn);

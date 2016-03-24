@@ -3,7 +3,7 @@
 \brief Main control routine for acoustic simulations
 
 <pre>
-Maintainer: Svenja Schoeder
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15271
@@ -113,8 +113,7 @@ void acoustics_drt()
 
   // for explicit time integration, need to provide some additional ghosting
   {
-    INPAR::ACOU::DynamicType dyna = DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(acouparams,"TIMEINT");
-    switch(dyna)
+    switch(DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(acouparams,"TIMEINT"))
     {
     case INPAR::ACOU::acou_expleuler:
     case INPAR::ACOU::acou_classrk4:
@@ -122,6 +121,7 @@ void acoustics_drt()
     case INPAR::ACOU::acou_lsrk33reg2:
     case INPAR::ACOU::acou_lsrk45reg3:
     case INPAR::ACOU::acou_ssprk:
+    case INPAR::ACOU::acou_ader:
     {
       acoudishdg->AddElementGhostLayer();
       break;
@@ -129,6 +129,22 @@ void acoustics_drt()
     default:
       break;
     }
+  }
+
+  // if explicit time integration and float evaluation, we need to set something for denormal numbers:
+  {
+    if(DRT::INPUT::IntegralValue<INPAR::ACOU::DynamicType>(acouparams,"TIMEINT") != INPAR::ACOU::acou_impleuler)
+      if( (DRT::INPUT::IntegralValue<bool>(acouparams,"DOUBLEORFLOAT")) == false)
+      {
+        // change mode for rounding: denormals are flushed to zero to avoid computing
+        // on denormals which can slow down things.
+        #define MXCSR_DAZ (1 << 6)      /* Enable denormals are zero mode */
+        #define MXCSR_FTZ (1 << 15)     /* Enable flush to zero mode */
+
+        unsigned int mxcsr = __builtin_ia32_stmxcsr ();
+        mxcsr |= MXCSR_DAZ | MXCSR_FTZ;
+        __builtin_ia32_ldmxcsr (mxcsr);
+      }
   }
 
   // set degrees of freedom in the discretization
@@ -176,11 +192,7 @@ void acoustics_drt()
   }
 
   // set restart step if we do not perform inverse analysis
-  int restart = -1;
-  if(!invanalysis)
-  {
-    restart = DRT::Problem::Instance()->Restart();
-  }
+  int restart = DRT::Problem::Instance()->Restart();
   params->set<int>("restart",restart);
 
 
@@ -208,6 +220,7 @@ void acoustics_drt()
     case INPAR::ACOU::acou_lsrk33reg2:
     case INPAR::ACOU::acou_lsrk45reg3:
     case INPAR::ACOU::acou_ssprk:
+    case INPAR::ACOU::acou_ader:
     {
       acoualgo = Teuchos::rcp(new ACOU::AcouExplicitTimeInt(acoudishdg,solver,params,output));
       break;
@@ -375,6 +388,10 @@ void acoustics_drt()
     }
     if(DRT::INPUT::IntegralValue<bool>(acouparams.sublist("PA IMAGE RECONSTRUCTION"),"SAMPLEOBJECTIVE"))
       myinverseproblem->SampleObjectiveFunction();
+
+    if(restart>0)
+      myinverseproblem->ReadRestart(restart);
+
     myinverseproblem->Optimize();
 
     // do testing if required

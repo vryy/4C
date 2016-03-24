@@ -3,7 +3,7 @@
 \brief Control routine for acoustic explicit time integration.
 
 <pre>
-Maintainer: Svenja Schoeder
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15271
@@ -78,17 +78,23 @@ AcouExplicitTimeInt::AcouExplicitTimeInt(
   const Teuchos::RCP<Teuchos::ParameterList>&   params,
   const Teuchos::RCP<IO::DiscretizationWriter>& output
   ):
-  AcouTimeInt(actdis,solver,params,output)
+  AcouTimeInt(actdis,solver,params,output),
+  doubleorfloat_(DRT::INPUT::IntegralValue<bool>(*params_,"DOUBLEORFLOAT"))
 {
   dealii::MultithreadInfo::set_thread_limit(1);
 
-  if(numdim_==2)
-    wave2d_ = Teuchos::rcp(new WaveEquationProblem<2>(actdis,params,Teuchos::rcp(this,false)));
-  else if(numdim_==3)
-    wave3d_ = Teuchos::rcp(new WaveEquationProblem<3>(actdis,params,Teuchos::rcp(this,false)));
+  if(numdim_==2 && doubleorfloat_==true)
+    wave2dd_ = Teuchos::rcp(new WaveEquationProblem<2,double>(actdis,params,Teuchos::rcp(this,false)));
+  else if(numdim_==3 && doubleorfloat_==true)
+    wave3dd_ = Teuchos::rcp(new WaveEquationProblem<3,double>(actdis,params,Teuchos::rcp(this,false)));
+  else if(numdim_==2 && doubleorfloat_==false)
+    wave2df_ = Teuchos::rcp(new WaveEquationProblem<2,float>(actdis,params,Teuchos::rcp(this,false)));
+  else if(numdim_==3 && doubleorfloat_==false)
+    wave3df_ = Teuchos::rcp(new WaveEquationProblem<3,float>(actdis,params,Teuchos::rcp(this,false)));
   else
     dserror("number of dimensions must be 2 or 3 for explicit time integration of acoustic problems");
 
+  // in case time step is reduced through deal cfl, tell baci
   UpdateTimeStepSize();
 
   output_->WriteMesh(0,0.0);
@@ -108,15 +114,25 @@ void ACOU::AcouExplicitTimeInt::ReadRestart(int step)
   ACOU::AcouTimeInt::ReadRestart(step);
 
   // read initial conditions by loop over elements of discret.
-  if(numdim_==2)
+  if(numdim_==2 && doubleorfloat_==true)
   {
-    wave2d_->evaluator->read_initial_conditions(discret_, wave2d_->solutions);
-    wave2d_->set_time_and_step(time_,step_);
+    wave2dd_->evaluator->read_initial_conditions(discret_, wave2dd_->solutions);
+    wave2dd_->set_time_and_step(time_,step_);
   }
-  else if(numdim_==3)
+  else if(numdim_==3 && doubleorfloat_==true)
   {
-    wave3d_->evaluator->read_initial_conditions(discret_, wave3d_->solutions);
-    wave3d_->set_time_and_step(time_,step_);
+    wave3dd_->evaluator->read_initial_conditions(discret_, wave3dd_->solutions);
+    wave3dd_->set_time_and_step(time_,step_);
+  }
+  else if(numdim_==2 && doubleorfloat_==false)
+  {
+    wave2df_->evaluator->read_initial_conditions(discret_, wave2df_->solutions);
+    wave2df_->set_time_and_step(time_,step_);
+  }
+  else if(numdim_==3 && doubleorfloat_==false)
+  {
+    wave3df_->evaluator->read_initial_conditions(discret_, wave3df_->solutions);
+    wave3df_->set_time_and_step(time_,step_);
   }
 }
 
@@ -128,10 +144,15 @@ void AcouExplicitTimeInt::SetInitialZeroField()
   ACOU::AcouTimeInt::SetInitialZeroField();
 
   // read initial conditions by loop over elements of discret.
-  if(numdim_==2)
-    wave2d_->evaluator->read_initial_conditions(discret_, wave2d_->solutions);
-  else if(numdim_==3)
-    wave3d_->evaluator->read_initial_conditions(discret_, wave3d_->solutions);
+  if(numdim_==2 && doubleorfloat_==true)
+    wave2dd_->evaluator->read_initial_conditions(discret_, wave2dd_->solutions);
+  else if(numdim_==3 && doubleorfloat_==true)
+    wave3dd_->evaluator->read_initial_conditions(discret_, wave3dd_->solutions);
+  else if(numdim_==2 && doubleorfloat_==false)
+    wave2df_->evaluator->read_initial_conditions(discret_, wave2df_->solutions);
+  else if(numdim_==3 && doubleorfloat_==false)
+    wave3df_->evaluator->read_initial_conditions(discret_, wave3df_->solutions);
+
   return;
 }
 
@@ -167,10 +188,14 @@ void AcouExplicitTimeInt::SetInitialField(int startfuncno)
   }
 
   // read initial conditions by loop over elements of discret.
-  if(numdim_==2)
-    wave2d_->evaluator->read_initial_conditions(discret_, wave2d_->solutions);
-  else if(numdim_==3)
-    wave3d_->evaluator->read_initial_conditions(discret_, wave3d_->solutions);
+  if(numdim_==2 && doubleorfloat_==true)
+    wave2dd_->evaluator->read_initial_conditions(discret_, wave2dd_->solutions);
+  else if(numdim_==3 && doubleorfloat_==true)
+    wave3dd_->evaluator->read_initial_conditions(discret_, wave3dd_->solutions);
+  else if(numdim_==2 && doubleorfloat_==false)
+    wave2df_->evaluator->read_initial_conditions(discret_, wave2df_->solutions);
+  else if(numdim_==3 && doubleorfloat_==false)
+    wave3df_->evaluator->read_initial_conditions(discret_, wave3df_->solutions);
 
   return;
 }
@@ -185,11 +210,16 @@ void ACOU::AcouExplicitTimeInt::SetInitialPhotoAcousticField(
 {
   ACOU::AcouTimeInt::SetInitialPhotoAcousticField(light,scatradis,meshconform);
 
+
   // read initial conditions by loop over elements of discret.
-  if(numdim_==2)
-    wave2d_->evaluator->read_initial_conditions(discret_, wave2d_->solutions);
-  else if(numdim_==3)
-    wave3d_->evaluator->read_initial_conditions(discret_, wave3d_->solutions);
+  if(numdim_==2 && doubleorfloat_==true)
+    wave2dd_->evaluator->read_initial_conditions(discret_, wave2dd_->solutions);
+  else if(numdim_==3 && doubleorfloat_==true)
+    wave3dd_->evaluator->read_initial_conditions(discret_, wave3dd_->solutions);
+  else if(numdim_==2 && doubleorfloat_==false)
+    wave2df_->evaluator->read_initial_conditions(discret_, wave2df_->solutions);
+  else if(numdim_==3 && doubleorfloat_==false)
+    wave3df_->evaluator->read_initial_conditions(discret_, wave3df_->solutions);
 
   return;
 } // SetInitialPhotoAcousticField
@@ -199,10 +229,15 @@ void ACOU::AcouExplicitTimeInt::SetInitialPhotoAcousticField(
  *----------------------------------------------------------------------*/
 void AcouExplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> history)
 {
-  if(numdim_==2)
-      wave2d_->run(history);
-  else if(numdim_==3)
-      wave3d_->run(history);
+
+  if(numdim_==2 && doubleorfloat_==true)
+      wave2dd_->run(history);
+  else if(numdim_==3 && doubleorfloat_==true)
+      wave3dd_->run(history);
+  else if(numdim_==2 && doubleorfloat_==false)
+      wave2df_->run(history);
+  else if(numdim_==3 && doubleorfloat_==false)
+      wave3df_->run(history);
 
   return;
 }
@@ -213,10 +248,14 @@ void AcouExplicitTimeInt::Integrate(Teuchos::RCP<Epetra_MultiVector> history)
 void AcouExplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec)
 {
   // first: get the deal values and put them in the baci elements (output is probably a bit more expensive than usually)
-  if(numdim_==2)
-      wave2d_->write_deal_cell_values();
-  else if(numdim_==3)
-      wave3d_->write_deal_cell_values();
+  if(numdim_==2 && doubleorfloat_==true)
+      wave2dd_->write_deal_cell_values();
+  else if(numdim_==3 && doubleorfloat_==true)
+      wave3dd_->write_deal_cell_values();
+  else if(numdim_==2 && doubleorfloat_==false)
+    wave2df_->write_deal_cell_values();
+  else if(numdim_==3 && doubleorfloat_==false)
+    wave3df_->write_deal_cell_values();
 
   // output of solution
   Teuchos::RCP<Epetra_Vector> pressure;
@@ -286,10 +325,14 @@ void AcouExplicitTimeInt::NodalPressureField(Teuchos::RCP<Epetra_Vector> outvec)
  *----------------------------------------------------------------------*/
 void AcouExplicitTimeInt::UpdateTimeStepSize()
 {
-  if(numdim_==2)
-    dtp_ = wave2d_->time_step;
-  else if(numdim_==3)
-    dtp_ = wave3d_->time_step;
+  if(numdim_==2 && doubleorfloat_==true)
+    dtp_ = wave2dd_->time_step;
+  else if(numdim_==3 && doubleorfloat_==true)
+    dtp_ = wave3dd_->time_step;
+  else if(numdim_==2 && doubleorfloat_==false)
+    dtp_ = wave2df_->time_step;
+  else if(numdim_==3 && doubleorfloat_==false)
+    dtp_ = wave3df_->time_step;
   return;
 }
 
@@ -326,6 +369,11 @@ std::string AcouExplicitTimeInt::Name()
   case INPAR::ACOU::acou_ssprk:
   {
     name = "StrongStabilityPreservingRK";
+    break;
+  }
+  case INPAR::ACOU::acou_ader:
+  {
+    name = "ADER";
     break;
   }
   default:
@@ -457,8 +505,8 @@ double DirichletBoundaryFunction<dim>::value (const Point<dim>   &p,
   return return_value;
 }
 
-template<int dim>
-WaveEquationProblem<dim>::WaveEquationProblem(Teuchos::RCP<DRT::DiscretizationHDG>       discretin,
+template<int dim, typename Number>
+WaveEquationProblem<dim,Number>::WaveEquationProblem(Teuchos::RCP<DRT::DiscretizationHDG>       discretin,
                                               const Teuchos::RCP<Teuchos::ParameterList> params,
                                               Teuchos::RCP<ACOU::AcouExplicitTimeInt>    timeintin)
   :
@@ -491,17 +539,17 @@ WaveEquationProblem<dim>::WaveEquationProblem(Teuchos::RCP<DRT::DiscretizationHD
   Teuchos::RCP<Function<dim> > diriboundary (new DirichletBoundaryFunction<dim>(comps,0.0,discret));
 
   if (fe_degree==1)
-    evaluator.reset(new WaveEquationOperation<dim,1>(dof_handler, discret, diriboundary, rhs, solid, bacitimeint->AdjointSourceVec()));
+    evaluator.reset(new WaveEquationOperation<dim,1,Number>(dof_handler, discret, diriboundary, rhs, solid, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
   else if (fe_degree==2)
-    evaluator.reset(new WaveEquationOperation<dim,2>(dof_handler, discret, diriboundary, rhs, solid, bacitimeint->AdjointSourceVec()));
+    evaluator.reset(new WaveEquationOperation<dim,2,Number>(dof_handler, discret, diriboundary, rhs, solid, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
   else if (fe_degree==3)
-    evaluator.reset(new WaveEquationOperation<dim,3>(dof_handler, discret, diriboundary, rhs, solid, bacitimeint->AdjointSourceVec()));
+    evaluator.reset(new WaveEquationOperation<dim,3,Number>(dof_handler, discret, diriboundary, rhs, solid, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
   else if (fe_degree==4)
-    evaluator.reset(new WaveEquationOperation<dim,4>(dof_handler, discret, diriboundary, rhs, solid, bacitimeint->AdjointSourceVec()));
+    evaluator.reset(new WaveEquationOperation<dim,4,Number>(dof_handler, discret, diriboundary, rhs, solid, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
   else if (fe_degree==5)
-    evaluator.reset(new WaveEquationOperation<dim,5>(dof_handler, discret, diriboundary, rhs, solid, bacitimeint->AdjointSourceVec()));
+    evaluator.reset(new WaveEquationOperation<dim,5,Number>(dof_handler, discret, diriboundary, rhs, solid, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
   else if (fe_degree==6)
-    evaluator.reset(new WaveEquationOperation<dim,6>(dof_handler, discret, diriboundary, rhs, solid, bacitimeint->AdjointSourceVec()));
+    evaluator.reset(new WaveEquationOperation<dim,6,Number>(dof_handler, discret, diriboundary, rhs, solid, sourcetermfuncno, bacitimeint->AdjointSourceVec()));
   else
     dserror("Only degrees between 1 and 6 are implemented!");
 
@@ -583,8 +631,8 @@ WaveEquationProblem<dim>::WaveEquationProblem(Teuchos::RCP<DRT::DiscretizationHD
   }
 }
 
-template <int dim>
-WaveEquationProblem<dim>::~WaveEquationProblem()
+template <int dim, typename Number>
+WaveEquationProblem<dim,Number>::~WaveEquationProblem()
 {
   evaluator.reset();
   dof_handler.clear();
@@ -592,8 +640,8 @@ WaveEquationProblem<dim>::~WaveEquationProblem()
 
 
 
-template<int dim>
-void WaveEquationProblem<dim>::make_grid_and_dofs(Teuchos::RCP<DRT::DiscretizationHDG> discret, Teuchos::RCP<Epetra_MultiVector> adjoint_source)
+template<int dim, typename Number>
+void WaveEquationProblem<dim,Number>::make_grid_and_dofs(Teuchos::RCP<DRT::DiscretizationHDG> discret, Teuchos::RCP<Epetra_MultiVector> adjoint_source)
 {
   if(!invana)
   {
@@ -711,9 +759,9 @@ void WaveEquationProblem<dim>::make_grid_and_dofs(Teuchos::RCP<DRT::Discretizati
   }
 }
 
-template <int dim>
+template <int dim, typename Number>
 void
-WaveEquationProblem<dim>::compute_post_pressure()
+WaveEquationProblem<dim,Number>::compute_post_pressure()
 {
   for (unsigned int d=0; d<dim+1; ++d)
     previous_solutions[d] = 0;
@@ -810,9 +858,9 @@ WaveEquationProblem<dim>::compute_post_pressure()
   post_quantity[0].compress(VectorOperation::insert);
 }
 
-template <int dim>
+template <int dim, typename Number>
 void
-WaveEquationProblem<dim>::compute_post_velocity()
+WaveEquationProblem<dim,Number>::compute_post_velocity()
 {
   evaluator->set_adjoint_eval(false);
   for (unsigned int d=0; d<dim*dim+dim+1; ++d)
@@ -937,79 +985,79 @@ namespace
 
 
 
-template <int dim>
+template <int dim, typename Number>
 void
-WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Teuchos::RCP<Epetra_MultiVector> history)
+WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_number, Teuchos::RCP<Epetra_MultiVector> history)
 {
 
   if (exactsolutionfuncno>=0 && this->solid==false)
   {
-    Vector<double> norm_per_cell_p (triangulation.n_active_cells());
+    for(int d=0; d<dim+1; ++d)
+    {
+      Vector<double> norm_per_cell_p (triangulation.n_active_cells());
 
-    IndexSet relevant_set;
-    get_relevant_set(dof_handler, relevant_set);
-    parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
-                                                      solutions[dim].get_mpi_communicator());
-    ghosted_sol = solutions[dim];
-    ghosted_sol.update_ghost_values();
+      IndexSet relevant_set;
+      get_relevant_set(dof_handler, relevant_set);
+      parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
+                                                        solutions[d].get_mpi_communicator());
+      ghosted_sol = solutions[d];
+      ghosted_sol.update_ghost_values();
 
-    // calculate norm of pressure
-    VectorTools::integrate_difference (dof_handler,
-                                       ghosted_sol,
-                                       ZeroFunction<dim>(1),
-                                       norm_per_cell_p,
-                                       QGauss<dim>(fe.degree+1),
-                                       VectorTools::L2_norm);
-    double solution_mag = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+      // calculate norm of field
+      VectorTools::integrate_difference (dof_handler,
+                                         ghosted_sol,
+                                         ZeroFunction<dim>(1),
+                                         norm_per_cell_p,
+                                         QGauss<dim>(fe.degree+1),
+                                         VectorTools::L2_norm);
+      double solution_mag = (Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
 
-    double solution_norm_p = 0;//, solution_norm_p_post = 0;
+      // calculate norm of difference between field and analytic field
+      norm_per_cell_p = 0;
+      VectorTools::integrate_difference (dof_handler,
+          ghosted_sol,
+          ExactSolution<dim>(dim,time,exactsolutionfuncno+d),
+          norm_per_cell_p,
+          QGauss<dim>(fe.degree+2),
+          VectorTools::L2_norm);
+      double error_mag = (Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
 
-    // calculate norm of difference between pressure and analytic solution
-    norm_per_cell_p = 0;
-    VectorTools::integrate_difference (dof_handler,
-        ghosted_sol,
-        ExactSolution<dim>(dim,time,exactsolutionfuncno),
-        norm_per_cell_p,
-        QGauss<dim>(fe.degree+2),
-        VectorTools::L2_norm);
-    solution_norm_p = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+      // calculate norm of analytic solution
+      norm_per_cell_p =0;
+      ghosted_sol*=0.0;
+      VectorTools::integrate_difference (dof_handler,
+          ghosted_sol,
+          ExactSolution<dim>(dim,time,exactsolutionfuncno+d),
+          norm_per_cell_p,
+          QGauss<dim>(fe.degree+2),
+          VectorTools::L2_norm);
+      double exact_sol_mag = (Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+
+      pcout<<"d "<<d<<" absolute error "<<std::sqrt(error_mag)<<" exact solution norm "<<std::sqrt(exact_sol_mag)<<" solution norm "<<std::sqrt(solution_mag)<<std::endl;
+
+    }
 
     // calculate norm of difference betwenn POSTPROCESSED pressure and analytic solution
-    /*
-    norm_per_cell_p = 0;
+    /*Vector<double> norm_per_cell_p (triangulation.n_active_cells());
+
     compute_post_pressure();
+
     IndexSet relevant_set;
     get_relevant_set(dof_handler_post_disp, relevant_set);
     parallel::distributed::Vector<double> ghosted_post(dof_handler_post_disp.locally_owned_dofs(),relevant_set,
                                                        solutions[dim].get_mpi_communicator());
-    ghosted_post = post_pressure;
+    ghosted_post = post_quantity[0];
     ghosted_post.update_ghost_values();
     VectorTools::integrate_difference (dof_handler_post_disp,
-        ghosted_post,
-        ExactSolution<dim>(dim,time,exactsolutionfuncno),
-        norm_per_cell_p,
-        QGauss<dim>(fe.degree+3),
-        VectorTools::L2_norm);
-    solution_norm_p_post = std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+                                       ghosted_post,
+                                       ExactSolution<dim>(dim,time,exactsolutionfuncno+dim),
+                                       norm_per_cell_p,
+                                       QGauss<dim>(fe.degree+3),
+                                       VectorTools::L2_norm);
+    double error_post_mag = (Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
+    pcout<<"post absolute error "<<std::sqrt(error_post_mag)<<std::endl;
+  */
 
-    ghosted_post = 0;
-    VectorTools::integrate_difference (dof_handler_post_disp,
-        ghosted_post,
-        ExactSolution<dim>(dim,time,exactsolutionfuncno),
-        norm_per_cell_p,
-        QGauss<dim>(fe.degree+2),
-        VectorTools::L2_norm);
-    solution_mag =
-        std::sqrt(Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
-    */
-    if(solution_mag!=0.0)
-      pcout << "   Time:"
-        << std::setw(8) << std::setprecision(3) << time
-        << ", solution norm p: "
-        << std::setprecision(5) << std::setw(10) << solution_norm_p/solution_mag
-        //<< ", solution norm p post: "
-        //<< std::setprecision(5) << std::setw(9) << solution_norm_p_post/solution_mag
-        << std::endl;
   }
   else if (exactsolutionfuncno>=0 && this->solid==true)
   {
@@ -1061,11 +1109,11 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Te
 
 
       if(d<dim)
-        std::cout<<"d "<<d<<" absolute error in v "<<std::sqrt(v_error_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<std::endl;
+        pcout<<"d "<<d<<" absolute error in v "<<std::sqrt(v_error_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<std::endl;
       else if(d==dim)
-        std::cout<<"d "<<d<<" absolute error in p "<<std::sqrt(v_error_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<std::endl;
+        pcout<<"d "<<d<<" absolute error in p "<<std::sqrt(v_error_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<std::endl;
       else
-        std::cout<<"d "<<d<<" absolute error in H "<<std::sqrt(v_error_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<" solution norm "<< std::sqrt(v_solution_mag)<<std::endl;
+        pcout<<"d "<<d<<" absolute error in H "<<std::sqrt(v_error_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<" solution norm "<< std::sqrt(v_solution_mag)<<std::endl;
     }
 
     // postprocessed solution
@@ -1093,7 +1141,7 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Te
                                            VectorTools::L2_norm);
         v_error_mag  = Utilities::MPI::sum (norm_per_cell_v.norm_sqr(), MPI_COMM_WORLD);
 
-        std::cout<<"d "<<d<<" absolute error in v****** "<<std::sqrt(v_error_mag)<<std::endl;
+        pcout<<"d "<<d<<" absolute error in v****** "<<std::sqrt(v_error_mag)<<std::endl;
       }
     }
     // stress sigma_xy
@@ -1140,7 +1188,7 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Te
       double v_exactsol_mag  = Utilities::MPI::sum (norm_per_cell_v.norm_sqr(), MPI_COMM_WORLD);
 
 
-      std::cout<<"stress! absolute error in stressxy "<<std::sqrt(v_error_mag)<<" solution norm "<< std::sqrt(v_solution_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<std::endl;
+     pcout<<"stress! absolute error in stressxy "<<std::sqrt(v_error_mag)<<" solution norm "<< std::sqrt(v_solution_mag)<<" exakt solution norm "<< std::sqrt(v_exactsol_mag) <<std::endl;
 
     }*/
 
@@ -1167,6 +1215,7 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Te
 
   // write baci output
   write_deal_cell_values();
+
   //if(!adjoint)
   {
     if(bacitimeint->Step()%bacitimeint->UpRes()==0)
@@ -1210,8 +1259,8 @@ WaveEquationProblem<dim>::output_results (const unsigned int timestep_number, Te
 
 
 
-template<int dim>
-void WaveEquationProblem<dim>::run(Teuchos::RCP<Epetra_MultiVector> history)
+template<int dim, typename Number>
+void WaveEquationProblem<dim,Number>::run(Teuchos::RCP<Epetra_MultiVector> history)
 {
   previous_solutions = solutions;
 
@@ -1220,39 +1269,44 @@ void WaveEquationProblem<dim>::run(Teuchos::RCP<Epetra_MultiVector> history)
 
   output_results(0,history);
 
-  Teuchos::RCP<RungeKuttaIntegrator<WaveEquationOperationBase<dim> > > integrator;
+  Teuchos::RCP<ExplicitIntegrator<WaveEquationOperationBase<dim,Number> > > integrator;
   switch(dyna)
   {
   case INPAR::ACOU::acou_expleuler:
-    {
-      integrator.reset(new ExplicitEuler<WaveEquationOperationBase<dim> >(*evaluator));
-      break;
-    }
+  {
+    integrator.reset(new ExplicitEuler<WaveEquationOperationBase<dim,Number> >(*evaluator));
+    break;
+  }
   case INPAR::ACOU::acou_classrk4:
-    {
-      integrator.reset(new ClassicalRK4<WaveEquationOperationBase<dim> >(*evaluator));
-      break;
-    }
+  {
+    integrator.reset(new ClassicalRK4<WaveEquationOperationBase<dim,Number> >(*evaluator));
+    break;
+  }
   case INPAR::ACOU::acou_lsrk45reg2:
-    {
-      integrator.reset(new LowStorageRK45Reg2<WaveEquationOperationBase<dim> >(*evaluator));
-      break;
-    }
+  {
+    integrator.reset(new LowStorageRK45Reg2<WaveEquationOperationBase<dim,Number> >(*evaluator));
+    break;
+  }
   case INPAR::ACOU::acou_lsrk33reg2:
-    {
-      integrator.reset(new LowStorageRK33Reg2<WaveEquationOperationBase<dim> >(*evaluator));
-      break;
-    }
+  {
+    integrator.reset(new LowStorageRK33Reg2<WaveEquationOperationBase<dim,Number> >(*evaluator));
+    break;
+  }
   case INPAR::ACOU::acou_lsrk45reg3:
-    {
-      integrator.reset(new LowStorageRK45Reg3<WaveEquationOperationBase<dim> >(*evaluator));
-      break;
-    }
+  {
+    integrator.reset(new LowStorageRK45Reg3<WaveEquationOperationBase<dim,Number> >(*evaluator));
+    break;
+  }
   case INPAR::ACOU::acou_ssprk:
-    {
-      integrator.reset(new StrongStabilityPreservingRK<WaveEquationOperationBase<dim> >(*evaluator, 4, 8));
-      break;
-    }
+  {
+    integrator.reset(new StrongStabilityPreservingRK<WaveEquationOperationBase<dim,Number> >(*evaluator, 4, 8));
+    break;
+  }
+  case INPAR::ACOU::acou_ader:
+  {
+    integrator.reset(new ArbitraryHighOrderDG<WaveEquationOperationBase<dim,Number> >(*evaluator));
+    break;
+  }
   default:
     dserror("unknown explicit time integration scheme");
     break;
@@ -1265,6 +1319,12 @@ void WaveEquationProblem<dim>::run(Teuchos::RCP<Epetra_MultiVector> history)
   double output_time = 0;
   step=1;
   evaluator->set_adjoint_eval(invana&&adjoint);
+
+  // for percent output in inverse run
+  int maxstep = step_max;
+  if(int(final_time/time_step)<maxstep)
+    maxstep = final_time/time_step;
+  int percent_count = 0;
 
   // the time loop
   for (time+=time_step; time<=final_time && step<step_max; time+=time_step, ++step)
@@ -1290,10 +1350,11 @@ void WaveEquationProblem<dim>::run(Teuchos::RCP<Epetra_MultiVector> history)
     // output to screen
     if(invana)
     {
-      if(adjoint)
-        pcout<< "<";
-      else
-        pcout<< ">";
+      if( int(step*100)/maxstep > 10*percent_count )
+      {
+        pcout<<"-> "<< int(step*100)/maxstep-1<<"% ";
+        percent_count++;
+      }
     }
     else
     {
@@ -1312,6 +1373,8 @@ void WaveEquationProblem<dim>::run(Teuchos::RCP<Epetra_MultiVector> history)
     // intermediate integration for acoutic adjoint with acouopt
     intermediate_integrate(integrator);
   }
+  if(invana)
+    pcout<<std::endl;
 
   if(invana&&adjoint&&acouopt)
     evaluator->write_gradient_contributions(discret,time_step);
@@ -1329,8 +1392,8 @@ void WaveEquationProblem<dim>::run(Teuchos::RCP<Epetra_MultiVector> history)
         << wtime << "s on computations." << std::endl;
 }
 
-template<int dim>
-void WaveEquationProblem<dim>::intermediate_integrate(Teuchos::RCP<RungeKuttaIntegrator<WaveEquationOperationBase<dim> > > integrator)
+template<int dim, typename Number>
+void WaveEquationProblem<dim,Number>::intermediate_integrate(Teuchos::RCP<ExplicitIntegrator<WaveEquationOperationBase<dim,Number> > > integrator)
 {
    // only do this all in case of adjoint run and acoustical parameter optimization
   if(acouopt==false || adjoint==false)
@@ -1353,6 +1416,13 @@ void WaveEquationProblem<dim>::intermediate_integrate(Teuchos::RCP<RungeKuttaInt
   double restarttime = 0.0;
   int restartstep = -1;
   {
+    // output to screen
+    if(!bacitimeint->ProcId())
+    {
+      pcout<< " <";
+      pcout<<std::flush;
+    }
+
     restartstep = (step_max<(final_time/time_step)) ? step_max : (final_time/time_step);
     restartstep -= step + up_res;
     if(restartstep < 0) return; // happens in the last adjoint step
@@ -1389,13 +1459,6 @@ void WaveEquationProblem<dim>::intermediate_integrate(Teuchos::RCP<RungeKuttaInt
     int maxstep = restartstep + up_res;
     while (restartstep<maxstep)
     {
-      // output to screen
-      if(!bacitimeint->ProcId())
-      {
-        pcout<< ">";
-        pcout<<std::flush;
-      }
-
       // increment time and step
       restartstep++;
       restarttime += time_step;
@@ -1425,22 +1488,24 @@ void WaveEquationProblem<dim>::intermediate_integrate(Teuchos::RCP<RungeKuttaInt
   return;
 }
 
-template<int dim>
-void WaveEquationProblem<dim>::write_deal_cell_values()
+template<int dim, typename Number>
+void WaveEquationProblem<dim,Number>::write_deal_cell_values()
 {
   evaluator->write_deal_cell_values(discret,solutions);
 }
 
-template<int dim>
-void WaveEquationProblem<dim>::set_time_and_step(double timein, int stepin)
+template<int dim, typename Number>
+void WaveEquationProblem<dim,Number>::set_time_and_step(double timein, int stepin)
 {
   step = stepin;
   time = timein;
 }
 
 // explicit instantiation
-template class WaveEquationProblem<2>;
-template class WaveEquationProblem<3>;
+template class WaveEquationProblem<2,double>;
+template class WaveEquationProblem<3,double>;
+template class WaveEquationProblem<2,float>;
+template class WaveEquationProblem<3,float>;
 }
 
 #endif // HAVE_DEAL_II

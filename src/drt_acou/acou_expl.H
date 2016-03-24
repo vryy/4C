@@ -3,7 +3,7 @@
 \brief Control routine for acoustic explicit time integration.
 
 <pre>
-Maintainer: Svenja Schoeder
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15271
@@ -35,13 +35,13 @@ class AcouExplicitTimeInt;
 
 using namespace dealii;
 
-template <typename Operator> class RungeKuttaIntegrator;
+template <typename Operator> class ExplicitIntegrator;
 
-template<int dim>
+template<int dim, typename Number>
 class WaveEquationProblem
 {
 public:
-  typedef typename WaveEquationOperationBase<dim>::value_type value_type;
+  typedef typename WaveEquationOperationBase<dim,Number>::value_type value_type;
   WaveEquationProblem(Teuchos::RCP<DRT::DiscretizationHDG>       discretin,
                       const Teuchos::RCP<Teuchos::ParameterList> params,
                       Teuchos::RCP<ACOU::AcouExplicitTimeInt>    timeintin);
@@ -55,7 +55,7 @@ public:
   void write_deal_cell_values();
 
   // evaluator
-  Teuchos::RCP<WaveEquationOperationBase<dim> > evaluator;
+  Teuchos::RCP<WaveEquationOperationBase<dim,Number> > evaluator;
 
   // actual and previous pressure and velocity solution
   std::vector<parallel::distributed::Vector<value_type> > solutions, previous_solutions;
@@ -110,7 +110,7 @@ private:
   bool invana, adjoint, acouopt, timereversal, solid;
 
   // forward time integration in the adjoint run
-  void intermediate_integrate(Teuchos::RCP<RungeKuttaIntegrator<WaveEquationOperationBase<dim> > > integrator);
+  void intermediate_integrate(Teuchos::RCP<ExplicitIntegrator<WaveEquationOperationBase<dim,Number> > > integrator);
 };
 
 class AcouExplicitTimeInt : public AcouTimeInt
@@ -164,8 +164,12 @@ private:
   void UpdateTimeStepSize();
 
   // the two possible wave equation problems
-  Teuchos::RCP<WaveEquationProblem<2> > wave2d_;
-  Teuchos::RCP<WaveEquationProblem<3> > wave3d_;
+  Teuchos::RCP<WaveEquationProblem<2,double> > wave2dd_;
+  Teuchos::RCP<WaveEquationProblem<3,double> > wave3dd_;
+  Teuchos::RCP<WaveEquationProblem<2,float> > wave2df_;
+  Teuchos::RCP<WaveEquationProblem<3,float> > wave3df_;
+
+  bool doubleorfloat_;
 
 };
 

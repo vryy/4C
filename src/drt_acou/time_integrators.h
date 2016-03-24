@@ -3,10 +3,10 @@
 
 \brief Templated explicit time integration classes: forward Euler, classical
 Runge-Kutta method of order 4, low-storage RK methods, strong stability
-preserving RK methods
+preserving RK methods and ADER
 
 <pre>
-Maintainer: Martin Kronbichler
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -27,20 +27,20 @@ namespace ACOU
 using namespace dealii;
 
 /**
- * Base class for the Runge-Kutta explicit time integration
+ * Base class for explicit time integration
  */
 template <typename Operator>
-class RungeKuttaIntegrator
+class ExplicitIntegrator
 {
 public:
   typedef typename Operator::vector_type vector_type;
 
-  RungeKuttaIntegrator(const Operator &operation)
+  ExplicitIntegrator(const Operator &operation)
   :
     operation(operation)
   {}
 
-  ~RungeKuttaIntegrator() {}
+  ~ExplicitIntegrator() {}
 
   virtual void do_time_step(std::vector<vector_type> &vec_n,
       std::vector<vector_type> &vec_np,
@@ -52,6 +52,43 @@ protected:
 };
 
 /**
+ * Implementation of the ADER method, taking the input in @p vec_n
+ * and producing an output at <code>current_time + time_step</code> in the
+ * output @p vec_np. The function evaluation is doing through
+ * Operator::applyader.
+ *
+ * @author Svenja Schoeder, 2016
+ */
+template <typename Operator>
+class ArbitraryHighOrderDG : public ExplicitIntegrator<Operator>
+{
+public:
+  typedef typename Operator::vector_type vector_type;
+
+  ArbitraryHighOrderDG (const Operator &operation)
+  :
+    ExplicitIntegrator<Operator>(operation)
+    {};
+
+  virtual void do_time_step( std::vector<vector_type> &vec_n,
+      std::vector<vector_type> &vec_np,
+      const double              current_time,
+      const double              time_step)
+  {
+    // init
+    for (unsigned int d=0; d<vec_n.size(); ++d)
+      vec_np[d] = 0;
+
+    // apply ader scheme
+    this->operation.applyader(vec_n,vec_np,current_time,time_step);
+
+    // add
+    for (unsigned int d=0; d<vec_n.size(); ++d)
+      vec_np[d].sadd(-1.0,1.0,vec_n[d]);
+  }
+};
+
+/**
  * Implementation of the forward Euler method, taking the input in @p vec_n
  * and producing an output at <code>current_time + time_step</code> in the
  * output @p vec_np. The function evaluation is doing through
@@ -60,14 +97,14 @@ protected:
  * @author Martin Kronbichler, 2015
  */
 template <typename Operator>
-class ExplicitEuler : public RungeKuttaIntegrator<Operator>
+class ExplicitEuler : public ExplicitIntegrator<Operator>
 {
 public:
   typedef typename Operator::vector_type vector_type;
 
   ExplicitEuler (const Operator &operation)
   :
-    RungeKuttaIntegrator<Operator>(operation)
+    ExplicitIntegrator<Operator>(operation)
     {};
 
   virtual void do_time_step( std::vector<vector_type> &vec_n,
@@ -94,14 +131,14 @@ public:
  * @author Martin Kronbichler, 2015
  */
 template <typename Operator>
-class ClassicalRK4 : public RungeKuttaIntegrator<Operator>
+class ClassicalRK4 : public ExplicitIntegrator<Operator>
 {
 public:
   typedef typename Operator::vector_type vector_type;
 
   ClassicalRK4 (const Operator &operation)
   :
-    RungeKuttaIntegrator<Operator>(operation)
+    ExplicitIntegrator<Operator>(operation)
     {};
 
   virtual void do_time_step( std::vector<vector_type> &vec_n,
@@ -303,14 +340,14 @@ struct RKVectorUpdatesRange : public parallel::ParallelForInteger
  * @author Martin Kronbichler, 2015
  */
 template <typename Operator>
-class LowStorageRK33Reg2 : public RungeKuttaIntegrator<Operator>
+class LowStorageRK33Reg2 : public ExplicitIntegrator<Operator>
 {
 public:
   typedef typename Operator::vector_type vector_type;
 
   LowStorageRK33Reg2 (const Operator &operation)
   :
-    RungeKuttaIntegrator<Operator>(operation)
+    ExplicitIntegrator<Operator>(operation)
     {};
 
   virtual void do_time_step( std::vector<vector_type> &vec_n,
@@ -367,14 +404,14 @@ private:
  * @author Martin Kronbichler, 2015
  */
 template <typename Operator>
-class LowStorageRK45Reg2 : public RungeKuttaIntegrator<Operator>
+class LowStorageRK45Reg2 : public ExplicitIntegrator<Operator>
 {
 public:
   typedef typename Operator::vector_type vector_type;
 
   LowStorageRK45Reg2 (const Operator &operation)
   :
-    RungeKuttaIntegrator<Operator>(operation)
+    ExplicitIntegrator<Operator>(operation)
     {};
 
   virtual void do_time_step( std::vector<vector_type> &vec_n,
@@ -444,14 +481,14 @@ private:
  * @author Martin Kronbichler, 2015
  */
 template <typename Operator>
-class LowStorageRK45Reg3 : public RungeKuttaIntegrator<Operator>
+class LowStorageRK45Reg3 : public ExplicitIntegrator<Operator>
 {
 public:
   typedef typename Operator::vector_type vector_type;
 
   LowStorageRK45Reg3 (const Operator &operation)
   :
-    RungeKuttaIntegrator<Operator>(operation)
+    ExplicitIntegrator<Operator>(operation)
     {};
 
   virtual void do_time_step( std::vector<vector_type> &vec_n,
@@ -562,7 +599,7 @@ private:
  * @author Martin Kronbichler, 2015
  */
 template <typename Operator>
-class StrongStabilityPreservingRK : public RungeKuttaIntegrator<Operator>
+class StrongStabilityPreservingRK : public ExplicitIntegrator<Operator>
 {
 public:
   typedef typename Operator::vector_type vector_type;
@@ -571,7 +608,7 @@ public:
       const unsigned int order,
       const unsigned int stages)
   :
-    RungeKuttaIntegrator<Operator>(operation),
+    ExplicitIntegrator<Operator>(operation),
     coeffs_are_initialized(false),
     order(order)
     {

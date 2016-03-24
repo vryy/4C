@@ -2,7 +2,7 @@
 \file pat_imagereconstruction.cpp
 
 <pre>
-Maintainer: Svenja Schoeder
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/staff/svenja-schoeder/
             089 - 289-15271
@@ -209,7 +209,6 @@ error_start_(0.0)
       foundit = buffer;
       num_imprespvals++;
       norm += impulseresponse[num_imprespvals-1];
-      std::cout<<"num_imprespvals "<<num_imprespvals<<" value "<<impulseresponse[num_imprespvals-1]<<std::endl;
     } while(test!=NULL);
 
     double dtacou = acouparams_->get<double>("TIMESTEP");
@@ -237,7 +236,6 @@ error_start_(0.0)
       }
       imp_resp_.Scale(double(num_imprespvals)/std::abs(norm)/double(num_baciimprespvals));
     }
-    imp_resp_.Print(std::cout);
   } // read impulse response end
 
   // set parameter for aocustic time integration
@@ -247,6 +245,12 @@ error_start_(0.0)
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstruction::ReplaceParams(Teuchos::RCP<Epetra_Vector> params)
 {
+  for(int i=0; i<params->MyLength(); ++i)
+  {
+    if(params->operator [](i)<0.0)
+      params->ReplaceMyValue(i,0,0.0);
+  }
+
   Teuchos::RCP<Epetra_Vector> paramscol = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementColMap()),false));
   LINALG::Export(*params,*paramscol);
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
@@ -947,6 +951,20 @@ ACOU::PatImageReconstructionOptiSplit::PatImageReconstructionOptiSplit(
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplit::ReplaceParams(Teuchos::RCP<Epetra_Vector> params)
 {
+  // check for negative entries
+  if(reacordifforcorrho_==0)
+    for(int i=0; i<params->MyLength(); ++i)
+    {
+      if(params->operator [](i)<0.0)
+        params->ReplaceMyValue(i,0,0.0);
+    }
+  else
+    for(int i=0; i<params->MyLength(); ++i)
+    {
+      if(params->operator [](i)<0.001)
+        params->ReplaceMyValue(i,0,0.001);
+    }
+
   Teuchos::RCP<Epetra_Vector> paramscol = Teuchos::rcp(new Epetra_Vector(*(scatra_discret_->ElementColMap()),false));
   LINALG::Export(*params,*paramscol);
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
@@ -973,6 +991,18 @@ void ACOU::PatImageReconstructionOptiSplit::ReplaceParams(Teuchos::RCP<Epetra_Ve
   // update node based vector
   if(reacordifforcorrho_==0)
     ComputeNodeBasedReactionCoefficient();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::PatImageReconstructionOptiSplit::SetRestartParameters(Teuchos::RCP<Epetra_Vector> reacs, Teuchos::RCP<Epetra_Vector> diffs, Teuchos::RCP<Epetra_Vector> cs, Teuchos::RCP<Epetra_Vector> rhos)
+{
+  reacordifforcorrho_ = 0;
+  ReplaceParams(reacs);
+
+  reacordifforcorrho_ = 1;
+  ReplaceParams(diffs);
 
   return;
 }
@@ -1423,8 +1453,10 @@ bool ACOU::PatImageReconstructionOptiSplit::PerformIteration()
     if(!myrank_)
     {
       std::cout<<"*** relative objective function value "<<J_/J_start_<<std::endl;
+      std::cout<<"*** objective function value          "<<J_<<std::endl;
       std::cout<<"*** relative error value              "<<error_/error_start_<<std::endl;
-      std::cout<<"*** ouput count                       "<<output_count_<<std::endl;
+      std::cout<<"*** error value                       "<<error_<<std::endl;
+      std::cout<<"*** output count                      "<<output_count_<<std::endl;
     }
     if(reacsucc==false)
       break;
@@ -1446,8 +1478,10 @@ bool ACOU::PatImageReconstructionOptiSplit::PerformIteration()
     if(!myrank_)
     {
       std::cout<<"*** relative objective function value "<<J_/J_start_<<std::endl;
+      std::cout<<"*** objective function value          "<<J_<<std::endl;
       std::cout<<"*** relative error value              "<<error_/error_start_<<std::endl;
-      std::cout<<"*** ouput count                       "<<output_count_<<std::endl;
+      std::cout<<"*** error value                       "<<error_<<std::endl;
+      std::cout<<"*** output count                      "<<output_count_<<std::endl;
     }
     if(diffsucc==false)
       break;
@@ -1802,6 +1836,19 @@ ACOU::PatImageReconstructionOptiSplitAcouSplit::PatImageReconstructionOptiSplitA
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReplaceParams(Teuchos::RCP<Epetra_Vector> params)
 {
+  if(reacordifforcorrho_==0)
+    for(int i=0; i<params->MyLength(); ++i)
+    {
+      if(params->operator [](i)<0.0)
+        params->ReplaceMyValue(i,0,0.0);
+    }
+  else
+    for(int i=0; i<params->MyLength(); ++i)
+    {
+      if(params->operator [](i)<0.001)
+        params->ReplaceMyValue(i,0,0.001);
+    }
+
   const std::map<int,Teuchos::RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
   if(reacordifforcorrho_==0)
   {
@@ -1861,6 +1908,24 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::ReplaceParams(Teuchos::RCP<
 }
 
 /*----------------------------------------------------------------------*/
+void ACOU::PatImageReconstructionOptiSplitAcouSplit::SetRestartParameters(Teuchos::RCP<Epetra_Vector> reacs, Teuchos::RCP<Epetra_Vector> diffs, Teuchos::RCP<Epetra_Vector> cs, Teuchos::RCP<Epetra_Vector> rhos)
+{
+  reacordifforcorrho_ = 0;
+  ReplaceParams(reacs);
+
+  reacordifforcorrho_ = 1;
+  ReplaceParams(diffs);
+
+  reacordifforcorrho_ = 2;
+  ReplaceParams(cs);
+
+  reacordifforcorrho_ = 3;
+  ReplaceParams(rhos);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
 double ACOU::PatImageReconstructionOptiSplitAcouSplit::EvalulateObjectiveFunction()
 {
   // evaluate error contribution
@@ -1912,8 +1977,8 @@ void ACOU::PatImageReconstructionOptiSplitAcouSplit::EvaluateGradient()
     FDCheck();
 
   // PATCHREAC
-  if(reducedbasis_ && setidsdiff != Teuchos::null) // in the first iteration, the set ids are null pointer
   //if(0)
+  if(reducedbasis_ && setidsdiff != Teuchos::null) // in the first iteration, the set ids are null pointer
   {
 
     if(meshconform_==false)
@@ -2490,8 +2555,10 @@ bool ACOU::PatImageReconstructionOptiSplitAcouSplit::PerformIteration()
     if(!myrank_)
     {
       std::cout<<"*** relative objective function value "<<J_/J_start_<<std::endl;
+      std::cout<<"*** objective function value          "<<J_<<std::endl;
       std::cout<<"*** relative error value              "<<error_/error_start_<<std::endl;
-      std::cout<<"*** ouput count                       "<<output_count_<<std::endl;
+      std::cout<<"*** error value                       "<<error_<<std::endl;
+      std::cout<<"*** output count                      "<<output_count_<<std::endl;
     }
     ComputeParameterError();
     if(reacsucc==false)
@@ -2516,54 +2583,66 @@ bool ACOU::PatImageReconstructionOptiSplitAcouSplit::PerformIteration()
     if(!myrank_)
     {
       std::cout<<"*** relative objective function value "<<J_/J_start_<<std::endl;
+      std::cout<<"*** objective function value          "<<J_<<std::endl;
       std::cout<<"*** relative error value              "<<error_/error_start_<<std::endl;
-      std::cout<<"*** ouput count                       "<<output_count_<<std::endl;
+      std::cout<<"*** error value                       "<<error_<<std::endl;
+      std::cout<<"*** output count                      "<<output_count_<<std::endl;
     }
     ComputeParameterError();
     if(diffsucc==false)
       break;
   }
 
-  std::cout<<std::endl;
-  std::cout<<"SOUND SPEED LINE SEARCH"<<std::endl;
-  std::cout<<std::endl;
-
+  if(!myrank_)
+  {
+    std::cout<<std::endl;
+    std::cout<<"SOUND SPEED LINE SEARCH"<<std::endl;
+    std::cout<<std::endl;
+  }
   reacordifforcorrho_ = 2;
   bool csucc = false;
   for(int i=0; i<sequenzeiter_; ++i)
   {
-    std::cout<<"ITERATION "<<i<<std::endl;
+    if(!myrank_)
+      std::cout<<"ITERATION "<<i<<std::endl;
     linesearch_->Init(J_,c_objgrad_,c_searchdirection_->ComputeDirection(c_objgrad_,c_vals_,iter_),c_vals_,acou_discret_->ElementRowMap());
     csucc = linesearch_->Run();
 
     if(!myrank_)
     {
       std::cout<<"*** relative objective function value "<<J_/J_start_<<std::endl;
+      std::cout<<"*** objective function value          "<<J_<<std::endl;
       std::cout<<"*** relative error value              "<<error_/error_start_<<std::endl;
-      std::cout<<"*** ouput count                       "<<output_count_<<std::endl;
+      std::cout<<"*** error value                       "<<error_<<std::endl;
+      std::cout<<"*** output count                      "<<output_count_<<std::endl;
     }
     ComputeParameterError();
     if(csucc==false)
       break;
   }
 
-  std::cout<<std::endl;
-  std::cout<<"DENSITY LINE SEARCH"<<std::endl;
-  std::cout<<std::endl;
-
+  if(!myrank_)
+  {
+    std::cout<<std::endl;
+    std::cout<<"DENSITY LINE SEARCH"<<std::endl;
+    std::cout<<std::endl;
+  }
   reacordifforcorrho_ = 3;
   bool rhosucc = false;
   for(int i=0; i<sequenzeiter_; ++i)
   {
-    std::cout<<"ITERATION "<<i<<std::endl;
+    if(!myrank_)
+      std::cout<<"ITERATION "<<i<<std::endl;
     linesearch_->Init(J_,rho_objgrad_,rho_searchdirection_->ComputeDirection(rho_objgrad_,rho_vals_,iter_),rho_vals_,acou_discret_->ElementRowMap());
     rhosucc = linesearch_->Run();
 
     if(!myrank_)
     {
       std::cout<<"*** relative objective function value "<<J_/J_start_<<std::endl;
+      std::cout<<"*** objective function value          "<<J_<<std::endl;
       std::cout<<"*** relative error value              "<<error_/error_start_<<std::endl;
-      std::cout<<"*** ouput count                       "<<output_count_<<std::endl;
+      std::cout<<"*** error value                       "<<error_<<std::endl;
+      std::cout<<"*** output count                      "<<output_count_<<std::endl;
     }
     ComputeParameterError();
     if(rhosucc==false)
@@ -2927,6 +3006,19 @@ ACOU::PatImageReconstructionOptiSplitAcouIdent::PatImageReconstructionOptiSplitA
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstructionOptiSplitAcouIdent::ReplaceParams(Teuchos::RCP<Epetra_Vector> params)
 {
+  if(reacordifforcorrho_==0)
+    for(int i=0; i<params->MyLength(); ++i)
+    {
+      if(params->operator [](i)<0.0)
+        params->ReplaceMyValue(i,0,0.0);
+    }
+  else
+    for(int i=0; i<params->MyLength(); ++i)
+    {
+      if(params->operator [](i)<0.001)
+        params->ReplaceMyValue(i,0,0.001);
+    }
+
   Teuchos::RCP<Epetra_Vector> paramscol;
   if(reacordifforcorrho_==0||reacordifforcorrho_==1)
     paramscol = Teuchos::rcp(new Epetra_Vector(*scatra_discret_->ElementColMap(),false));
@@ -2975,6 +3067,24 @@ void ACOU::PatImageReconstructionOptiSplitAcouIdent::ReplaceParams(Teuchos::RCP<
   // update node based vector
   if(reacordifforcorrho_==0)
     ComputeNodeBasedReactionCoefficient();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+void ACOU::PatImageReconstructionOptiSplitAcouIdent::SetRestartParameters(Teuchos::RCP<Epetra_Vector> reacs, Teuchos::RCP<Epetra_Vector> diffs, Teuchos::RCP<Epetra_Vector> cs, Teuchos::RCP<Epetra_Vector> rhos)
+{
+  reacordifforcorrho_ = 0;
+  ReplaceParams(reacs);
+
+  reacordifforcorrho_ = 1;
+  ReplaceParams(diffs);
+
+  reacordifforcorrho_ = 2;
+  ReplaceParams(cs);
+
+  reacordifforcorrho_ = 3;
+  ReplaceParams(rhos);
 
   return;
 }
@@ -4041,6 +4151,7 @@ void ACOU::PatImageReconstruction::OutputReactionAndDiffusion()
   }
   scatraoutput_->WriteVector("rea_coeff",reacvec);
   scatraoutput_->WriteVector("diff_coeff",diffvec);
+  scatraoutput_->WriteInt("iteration",iter_);
 
   return;
 }
@@ -4308,6 +4419,71 @@ void ACOU::PatImageReconstruction::OutputStats()
     std::cout<<"*** simulation time since start [h]:      "<<(Teuchos::Time::wallTime()-tstart_)/(60.0*60.0)<<std::endl;
     std::cout<<"*** parameters:                           "<<std::endl;
   }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+void ACOU::PatImageReconstruction::ReadRestart(int restartoutputcount)
+{
+  output_count_ = restartoutputcount;
+
+  // first step is to get rid of the "-1" which one automatically gets from restart
+  name_.erase(name_.size()-2,2);
+
+  // create file name
+  std::string scainputfilename;
+  {
+    std::ostringstream temp;
+    temp<<name_<<"_invforward_opti_run_"<<restartoutputcount;
+    scainputfilename = temp.str();
+  }
+  std::string acouinputfilename;
+  {
+    std::ostringstream temp;
+    temp<<name_<<"_invforward_acou_run_"<<restartoutputcount+1;
+    acouinputfilename = temp.str();
+  }
+
+  if(!myrank_)
+  {
+    std::cout<<"READING RESTART FROM OUTPUTCOUNT "<<restartoutputcount<<" FROM FILES:"<<std::endl;
+    std::cout<<scainputfilename<<std::endl;
+    std::cout<<acouinputfilename<<std::endl;
+    std::cout<<std::endl;
+  }
+
+  Teuchos::RCP<IO::InputControl> scainputfile = Teuchos::rcp(new IO::InputControl(scainputfilename,scatra_discret_->Comm()));
+  Teuchos::RCP<IO::InputControl> acouinputfile = Teuchos::rcp(new IO::InputControl(acouinputfilename,acou_discret_->Comm()));
+
+  IO::DiscretizationReader scareader(scatra_discret_,scainputfile,1);
+  IO::DiscretizationReader acoureader(acou_discret_,acouinputfile,0);
+
+  iter_ = scareader.ReadInt("iteration");
+
+  // vectors
+  Teuchos::RCP<Epetra_Vector> reacs = Teuchos::rcp(new Epetra_Vector(*scatra_discret_->ElementRowMap()));
+  Teuchos::RCP<Epetra_Vector> diffs = Teuchos::rcp(new Epetra_Vector(*scatra_discret_->ElementRowMap()));
+  Teuchos::RCP<Epetra_Vector> cs = Teuchos::rcp(new Epetra_Vector(*acou_discret_->ElementRowMap()));
+  Teuchos::RCP<Epetra_Vector> rhos = Teuchos::rcp(new Epetra_Vector(*acou_discret_->ElementRowMap()));
+
+  // read all vectors
+  scareader.ReadVector(reacs,"rea_coeff");
+  scareader.ReadVector(diffs,"diff_coeff");
+  acoureader.ReadVector(rhos,"density");
+  acoureader.ReadVector(cs,"speedofsound");
+
+  SetRestartParameters(reacs,diffs,cs,rhos);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+void ACOU::PatImageReconstruction::SetRestartParameters(Teuchos::RCP<Epetra_Vector> reacs, Teuchos::RCP<Epetra_Vector> diffs, Teuchos::RCP<Epetra_Vector> cs, Teuchos::RCP<Epetra_Vector> rhos)
+{
+  //reac_vals_->Update(1.0,*reacs,0.0);
+  ReplaceParams(reacs);
   return;
 }
 

@@ -1556,6 +1556,7 @@ baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_standard_BGS-AMG_3x3 3 "")
 endif (HAVE_MueLu)
 
 if (HAVE_DEAL_II)
+baci_test(acou_ader_conv10 2 "")
 baci_test(acou_sol_conv10 1 "")
 baci_test(acou_2d_lsrk33reg2 2 "")
 baci_test(acou_2d_ssprk 2 "")

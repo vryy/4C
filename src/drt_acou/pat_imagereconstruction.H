@@ -3,7 +3,7 @@
  * \file pat_imagereconstruction.H
 
 <pre>
-Maintainer: Svenja Schoeder
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/staff/svenja-schoeder/
             089 - 289-15271
@@ -87,7 +87,7 @@ public:
   virtual void InitialRun();
 
   //! read restart from given iteration
-  virtual void ReadRestart(int restartiteration) { return; }
+  void ReadRestart(int restartoutputcount);
 
   //! create test field
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
@@ -327,6 +327,9 @@ protected:
   //! convert gradient to different basis
   void ConvertGradient(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<Epetra_Vector> gradient);
 
+  //! bring the restart parameters to the vectors and elements (each derived class implements this, since derived classes have different parameter fields)
+  virtual void SetRestartParameters(Teuchos::RCP<Epetra_Vector> reacs, Teuchos::RCP<Epetra_Vector> diffs, Teuchos::RCP<Epetra_Vector> cs, Teuchos::RCP<Epetra_Vector> rhos);
+
 };
 
 class PatImageReconstructionOptiSplit : public PatImageReconstruction
@@ -346,9 +349,6 @@ public:
 
   //! standard destructor
   virtual ~PatImageReconstructionOptiSplit() {}
-
-  //! read restart from given iteration
-  virtual void ReadRestart(int restartiteration) {return;}
 
   //! replace parameters
   virtual void ReplaceParams(Teuchos::RCP<Epetra_Vector> params);
@@ -397,6 +397,9 @@ protected:
   //! calculation of error in parameter field for analytic examples
   virtual void ComputeParameterError() { std::cout<<"here could be a parameter error evaluation"<<std::endl; return; }
 
+  //! bring restart parameters to vectors and elements
+  virtual void SetRestartParameters(Teuchos::RCP<Epetra_Vector> reacs, Teuchos::RCP<Epetra_Vector> diffs, Teuchos::RCP<Epetra_Vector> cs, Teuchos::RCP<Epetra_Vector> rhos);
+
 private:
 
 };
@@ -418,9 +421,6 @@ public:
 
   //! standard destructor
   virtual ~PatImageReconstructionOptiSplitAcouSplit() {}
-
-  //! read restart from given iteration
-  virtual void ReadRestart(int restartiteration) {return;}
 
   //! replace parameters
   virtual void ReplaceParams(Teuchos::RCP<Epetra_Vector> params);
@@ -477,9 +477,11 @@ protected:
   void CheckNeighborsSoSGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
   void CheckNeighborsRhoGrad(DRT::Element* actele, int owner, Teuchos::RCP<Epetra_Vector> setsids, double set, double reacval, double interval, Teuchos::RCP<Epetra_Vector> auxvals);
 
-
   //! calculation of error in parameter field for analytic examples
   virtual void ComputeParameterError();
+
+  //! bring restart parameters to vectors and elements
+  virtual void SetRestartParameters(Teuchos::RCP<Epetra_Vector> reacs, Teuchos::RCP<Epetra_Vector> diffs, Teuchos::RCP<Epetra_Vector> cs, Teuchos::RCP<Epetra_Vector> rhos);
 
 private:
 
@@ -544,6 +546,10 @@ private:
 
   //! calculation of error in parameter field for analytic examples
   virtual void ComputeParameterError();
+
+  //! bring restart parameters to vectors and elements
+  virtual void SetRestartParameters(Teuchos::RCP<Epetra_Vector> reacs, Teuchos::RCP<Epetra_Vector> diffs, Teuchos::RCP<Epetra_Vector> cs, Teuchos::RCP<Epetra_Vector> rhos);
+
 };
 
 } // namespace ACOU

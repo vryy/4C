@@ -3,7 +3,7 @@
 \brief Control routine for acoustic explicit time integration.
 
 <pre>
-Maintainer: Svenja Schoeder
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15271
@@ -44,12 +44,12 @@ namespace ACOU
   }
 
 
-  template <int dim>
+  template <int dim, typename Number>
   class WaveEquationOperationBase
   {
   public:
 
-    typedef double value_type;
+    typedef Number value_type;
 
     typedef parallel::distributed::Vector<value_type> vector_type;
 
@@ -59,10 +59,15 @@ namespace ACOU
                         std::vector<parallel::distributed::Vector<value_type> >        &dst,
                         const double                                              &cur_time) const = 0;
 
+    virtual void applyader (const std::vector<parallel::distributed::Vector<value_type> >  &src,
+                            std::vector<parallel::distributed::Vector<value_type> >        &dst,
+                            const double                                              &cur_time,
+                            const double                                                    &dt) const = 0;
+
     virtual void initialize_dof_vector(parallel::distributed::Vector<value_type> &src) const = 0;
 
     virtual void read_initial_conditions(Teuchos::RCP<DRT::DiscretizationHDG> &discret,
-                                         std::vector<parallel::distributed::Vector<value_type> > &dst) const = 0;
+                                         std::vector<parallel::distributed::Vector<value_type> > &dst) = 0;
 
     virtual void write_deal_cell_values(Teuchos::RCP<DRT::DiscretizationHDG> &discret,
                                         const std::vector<parallel::distributed::Vector<value_type> >   &src) const = 0;
@@ -93,17 +98,18 @@ namespace ACOU
 
 
 
-  template<int dim, int fe_degree>
-  class WaveEquationOperation : public WaveEquationOperationBase<dim>
+  template<int dim, int fe_degree, typename Number>
+  class WaveEquationOperation : public WaveEquationOperationBase<dim,Number>
   {
   public:
-    typedef typename WaveEquationOperationBase<dim>::value_type value_type;
+    typedef typename WaveEquationOperationBase<dim,Number>::value_type value_type;
 
     WaveEquationOperation(const DoFHandler<dim> &dof_handler,
                           Teuchos::RCP<DRT::DiscretizationHDG> &discret,
                           Teuchos::RCP<Function<dim> > boundary_conditions,
                           Teuchos::RCP<Function<dim> > source_term,
                           bool sol_in,
+                          int sourceno = 0,
                           Teuchos::RCP<Epetra_MultiVector> source_adjoint = Teuchos::null);
 
     virtual ~WaveEquationOperation();
@@ -112,8 +118,13 @@ namespace ACOU
                         std::vector<parallel::distributed::Vector<value_type> >        &dst,
                         const double                                              &cur_time) const;
 
+    virtual void applyader (const std::vector<parallel::distributed::Vector<value_type> >  &src,
+                            std::vector<parallel::distributed::Vector<value_type> >        &dst,
+                            const double                                              &cur_time,
+                            const double                                                    &dt) const;
+
     virtual void read_initial_conditions(Teuchos::RCP<DRT::DiscretizationHDG> &discret,
-                                         std::vector<parallel::distributed::Vector<value_type> > &dst) const;
+                                         std::vector<parallel::distributed::Vector<value_type> > &dst);
 
     virtual void write_deal_cell_values(Teuchos::RCP<DRT::DiscretizationHDG> &discret,
                                         const std::vector<parallel::distributed::Vector<value_type> >   &src) const;
@@ -130,12 +141,17 @@ namespace ACOU
     }
 
     AlignedVector<VectorizedArray<value_type> > densities, speeds, densities_grad, speeds_grad, viscs;
+    std::vector<unsigned int> dofpermutations;
+
+    Table<2,unsigned int> permutevalues; // each cell has to have the same number of dofs (this does not work for p-adaptivity!)
 
     MatrixFree<dim,value_type> data;
 
   private:
     mutable double                           time;
+    mutable double                           time_step;
     mutable std::vector<double>              computing_times;
+    mutable int                              source_term_no;
 
     Table<4,value_type >                     table_node_coords;
     Table<3,unsigned int>                    table_node_ids;
@@ -179,6 +195,22 @@ namespace ACOU
                                            const std::vector<parallel::distributed::Vector<value_type> >  &src,
                                            const std::pair<unsigned int,unsigned int>              &cell_range) const;
 
+    void local_apply_firstader_domain (const MatrixFree<dim,value_type>                              &data,
+                                       std::vector<parallel::distributed::Vector<value_type> >        &dst,
+                                       const std::vector<parallel::distributed::Vector<value_type> >  &src,
+                                       const std::pair<unsigned int,unsigned int>                &cell_range) const;
+    void local_apply_ader_face (const MatrixFree<dim,value_type>       &data,
+                                std::vector<parallel::distributed::Vector<value_type> >         &dst,
+                                const std::vector<parallel::distributed::Vector<value_type> >   &src,
+                                const std::pair<unsigned int,unsigned int>                 &cell_range) const;
+    void local_apply_ader_boundary_face (const MatrixFree<dim,value_type>                              &data,
+                                         std::vector<parallel::distributed::Vector<value_type> >        &dst,
+                                         const std::vector<parallel::distributed::Vector<value_type> >  &src,
+                                         const std::pair<unsigned int,unsigned int>              &cell_range) const;
+    void local_apply_secondader_domain (const MatrixFree<dim,value_type>                              &data,
+                                       std::vector<parallel::distributed::Vector<value_type> >        &dst,
+                                       const std::vector<parallel::distributed::Vector<value_type> >  &src,
+                                       const std::pair<unsigned int,unsigned int>                &cell_range) const;
 
     value_type evaluate_source_adjoint(const Point<dim> &p, const std::vector<std::vector<value_type> > nodes, std::vector<value_type> values) const;
     value_type evaluate_source_timereversal(const Point<dim> &p, const std::vector<std::vector<value_type> > nodes, std::vector<value_type> values) const;

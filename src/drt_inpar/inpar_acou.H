@@ -3,7 +3,7 @@
 \file inpar_acou.H
 
 <pre>
-Maintainer: Svenja Schoeder
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -33,7 +33,8 @@ namespace INPAR
       acou_lsrk45reg2,  // low storage Runge-Kutta
       acou_lsrk33reg2,  // low storage Runge-Kutta
       acou_lsrk45reg3,  // low storage Runge-Kutta
-      acou_ssprk        // strong stability preserving Runge-Kutta
+      acou_ssprk,       // strong stability preserving Runge-Kutta
+      acou_ader         // ader time integration
     };
 
     // physical type
