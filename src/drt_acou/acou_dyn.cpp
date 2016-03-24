@@ -138,12 +138,17 @@ void acoustics_drt()
       {
         // change mode for rounding: denormals are flushed to zero to avoid computing
         // on denormals which can slow down things.
+        // TODO: uses syntax specific to the gcc compiler, must avoid that other
+        // compilers end up here. ICC is particularly tricky because it exports
+        // the __GNUC__ symbol.
+#if defined(__GNUC__) && !defined(__INTEL_COMPILER)
         #define MXCSR_DAZ (1 << 6)      /* Enable denormals are zero mode */
         #define MXCSR_FTZ (1 << 15)     /* Enable flush to zero mode */
 
         unsigned int mxcsr = __builtin_ia32_stmxcsr ();
         mxcsr |= MXCSR_DAZ | MXCSR_FTZ;
         __builtin_ia32_ldmxcsr (mxcsr);
+#endif
       }
   }
 
