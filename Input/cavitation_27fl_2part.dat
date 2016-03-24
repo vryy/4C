@@ -195,7 +195,7 @@ E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 --------------------------------------------DESIGN PARTICLE INFLOW CONDITION
 DPARTICLE                       1
 // particle inflow
-E 1 - vertex1 -0.4 -0.4 -1.0 vertex2 0.4 0.4 -1.0 num_per_dir 2 2 1 inflow_vel 0.2 0.0 0.0 inflow_vel_curve 0 inflow_freq 100
+E 1 - vertex1 -0.4 -0.4 -1.0 vertex2 0.4 0.4 -1.0 num_per_dir 2 2 1 inflow_vel 0.2 0.0 0.0 inflow_vel_curve 0 inflow_freq 100 timedelay 0.0 stopinflowtime 1000.0
 -----------------------------------------------------DPARTICLE-NODE TOPOLOGY
 NODE                            0 DPARTICLE 1
 ---------------------------------------------------------DLINE-NODE TOPOLOGY

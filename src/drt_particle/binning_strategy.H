@@ -123,11 +123,17 @@ namespace BINSTRATEGY
       );
 
     /// collect information of content in bins from other procs via Round Robin loop
-    void CollectInformation(
+    virtual void CollectInformation(
       Teuchos::RCP<Epetra_Map> rowbins,
       std::map<int, std::vector<int> >& nodesinbin,
       std::map<int, std::vector<int> >& mynodesinbin
       );
+
+    /// return flag whether pbcs are applied to the problem
+    virtual bool HavePBCs() { return havepbc_; }
+
+    /// return pbc boundaries of the problem
+    virtual const std::vector<std::vector<double> >& PBCbounds() { return pbcbounds_; }
 
     /// convert i,j,k into bin id
     virtual int ConvertijkToGid(
@@ -210,9 +216,13 @@ namespace BINSTRATEGY
       );
 
     // create XAABB for discretization
-    void CreateXAABB(Teuchos::RCP<DRT::Discretization> dis);
+    virtual void CreateXAABB(Teuchos::RCP<DRT::Discretization> dis);
 
-    void CreateXAABB(Teuchos::RCP<DRT::Discretization> dis, LINALG::Matrix<3,2>& XAABB, double& cutoff);
+    // create XAABB for discretization and compute cutoff with largest element in discret
+    virtual void CreateXAABB(Teuchos::RCP<DRT::Discretization> dis, LINALG::Matrix<3,2>& XAABB, double& cutoff);
+
+    /// build periodic boundary conditions
+    virtual void BuildParticlePeriodicBC();
 
     Teuchos::RCP<DRT::Discretization> particledis_;     ///< particle discretization with bins
 
@@ -223,6 +233,10 @@ namespace BINSTRATEGY
     double bin_size_[3];    ///< size of each bin in Cartesian coordinates
 
     int bin_per_dir_[3];    ///< number of bins per direction
+
+    bool havepbc_;   ///< flag whether periodic boundary conditions are specified for particles
+
+    std::vector<std::vector<double> > pbcbounds_;   ///< bounds for pbcs in x, y, z direction
 
     const INPAR::PARTICLE::ParticleDim particle_dim_;   ///< dimension of problem
 

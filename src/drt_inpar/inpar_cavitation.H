@@ -4,13 +4,8 @@
 
 \brief Input parameters for particle and cavitation problems
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
-*----------------------------------------------------------------------*/
+\maintainer Georg Hammerl
+*-----------------------------------------------------------------------*/
 #ifndef INPAR_CAVITATION_H
 #define INPAR_CAVITATION_H
 

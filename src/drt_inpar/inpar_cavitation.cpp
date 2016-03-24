@@ -4,17 +4,8 @@
 
 \brief Input parameters for particle and cavitation problems
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
-*/
-
-/*----------------------------------------------------------------------*/
-
-
+\maintainer Georg Hammerl
+*-----------------------------------------------------------------------*/
 
 #include "drt_validparameters.H"
 #include "inpar_cavitation.H"
@@ -103,7 +94,6 @@ void INPAR::CAVITATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
 
   BoolParameter("SPARSE_BIN_DISTRIBUTION","no","decide whether empty bins are removed",&cavitationdyn);
 }
-
 
 
 void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
@@ -217,8 +207,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 }
 
 
-
-
 void INPAR::PARTICLE::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> >& condlist)
 {
   using namespace DRT::INPUT;
@@ -245,8 +233,11 @@ void INPAR::PARTICLE::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Co
   particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("inflow_freq")));
   particleinflowcomponents.push_back(Teuchos::rcp(new RealConditionComponent("inflow_freq")));
   // time delay of inflow particles
-  particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("timedelay", true)));
+  particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("timedelay")));
   particleinflowcomponents.push_back(Teuchos::rcp(new RealConditionComponent("timedelay")));
+  // inflow stopping time
+  particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("stopinflowtime")));
+  particleinflowcomponents.push_back(Teuchos::rcp(new RealConditionComponent("stopinflowtime")));
 
 
   Teuchos::RCP<ConditionDefinition> particlecond =

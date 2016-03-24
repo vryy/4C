@@ -45,6 +45,8 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   particledis_(Teuchos::null),
   cutoff_radius_(cutoff_radius),
   XAABB_(XAABB),
+  havepbc_(false),
+  pbcbounds_(0),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
   sparse_binning_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"SPARSE_BIN_DISTRIBUTION")),
   myrank_(comm.MyPID())
@@ -69,6 +71,8 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   const Epetra_Comm& comm
   ) :
   particledis_(Teuchos::null),
+  havepbc_(false),
+  pbcbounds_(0),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
   sparse_binning_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"SPARSE_BIN_DISTRIBUTION")),
   myrank_(comm.MyPID())
@@ -124,6 +128,8 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   ) :
   particledis_(Teuchos::null),
   cutoff_radius_(0.0),
+  havepbc_(false),
+  pbcbounds_(0),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
   sparse_binning_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"SPARSE_BIN_DISTRIBUTION")),
   myrank_(dis[0]->Comm().MyPID())
@@ -1010,6 +1016,64 @@ void BINSTRATEGY::BinningStrategy::CreateXAABB(
       XAABB_(dim,1) = globmax[dim];
     }
   }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | build periodic boundary conditions                       ghamm 04/14 |
+ *----------------------------------------------------------------------*/
+void BINSTRATEGY::BinningStrategy::BuildParticlePeriodicBC()
+{
+  // build periodic boundary condition
+  std::vector<DRT::Condition*> conds;
+  particledis_->GetCondition("ParticlePeriodic", conds);
+  if(conds.size() > 1)
+    dserror("only one periodic boundary condition allowed for particles");
+
+  // leave when no pbc available
+  if(conds.size() == 0)
+    return;
+  else
+    havepbc_ = true;
+
+  // now read in the available condition
+  const std::vector<int>* onoff = conds[0]->Get<std::vector<int> >("ONOFF");
+  const std::vector<double>* boundaries = conds[0]->Get<std::vector<double> >("boundaries");
+
+  // pbcbounds_ contains: x_min x_max y_min y_max z_min z_max
+  for(int dim=0; dim<3; ++dim)
+  {
+    if((*onoff)[dim])
+    {
+      std::vector<double> bound(2);
+      bound[0] = (*boundaries)[2*dim+0];
+      bound[1] = (*boundaries)[2*dim+1];
+
+      // compute pbc bounds based on XAABB of bins in case nothing is specified in input file
+      if(bound[0] == 0.0 && bound[1] == 0.0)
+      {
+        bound[0] = XAABB_(dim,0);
+        bound[1] = XAABB_(dim,1);
+        if(myrank_ == 0)
+          std::cout << "INFO: PBC bounds for particles is computed automatically for direction " << dim
+                    << " based on XAABB of bins (left: " <<  bound[0] << " , right: " <<  bound[1] << " )" << std::endl;
+      }
+
+      // additional safety check whether at least some bin layers exist in pbc direction
+      // --> facilitates neighbor search --> see contact
+      if(bin_per_dir_[dim] < 3)
+        dserror("There are just very few bins in pbc direction -> maybe nasty for neighborhood search (especially in contact)");
+
+      pbcbounds_.push_back(bound);
+    }
+    else
+    {
+      std::vector<double> nobound(2,0.0);
+      pbcbounds_.push_back(nobound);
+    }
+  }
+
   return;
 }
 

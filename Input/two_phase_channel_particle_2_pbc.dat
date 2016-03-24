@@ -202,7 +202,7 @@ E 6 - 2 Master PLANE xy LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 E 5 - 2 Slave PLANE xy LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 ------------------------------------DESIGN PARTICLE PERIODIC BOUNDARY CONDITION
 DPARTICLE                       1
-E 1 - ONOFF 1 0 1 boundaries -2.0 2.0 0.0 0.0 -1.0 1.0
+E 1 - ONOFF 1 0 1 boundaries 0.0 0.0 0.0 0.0 0.0 0.0
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 //DVOL                            1
 //                              fluid_volume

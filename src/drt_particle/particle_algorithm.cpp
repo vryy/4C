@@ -50,9 +50,7 @@ PARTICLE::Algorithm::Algorithm(
   bincolmap_(Teuchos::null),
   structure_(Teuchos::null),
   particlewalldis_(Teuchos::null),
-  moving_walls_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS")),
-  havepbc_(false),
-  pbcbounds_(0)
+  moving_walls_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS"))
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
   // safety check
@@ -86,9 +84,6 @@ PARTICLE::Algorithm::Algorithm(
 
   if(sparse_binning_ && DRT::Problem::Instance()->ProblemType() == prb_particle)
     dserror("sparse bin scheme cannot be used for pure particle problems");
-
-  // setup pbcs
-  BuildParticlePeriodicBC();
 
   return;
 }
@@ -161,6 +156,9 @@ void PARTICLE::Algorithm::Init(bool restarted)
   {
     binrowmap = Teuchos::rcp(new Epetra_Map(*particledis_->ElementRowMap()));
   }
+
+  // setup pbcs after bins have been created
+  BuildParticlePeriodicBC();
 
   if(binrowmap->NumGlobalElements() > particlerowmap->NumGlobalElements() / 4.0)
     IO::cout << "\n\n\n WARNING: Reduction of number of bins recommended!! Increase cutoff radius. \n\n\n" << IO::endl;
@@ -583,10 +581,12 @@ void PARTICLE::Algorithm::BinSizeSafetyCheck(const double dt)
         }
       }
 
+#ifdef DEBUG
       particles_->Veln()->Print(std::cout);
+#endif
       if(lid != -1)
       {
-        int gid = particles_->Veln()->Map().GID(lid);
+        const int gid = particles_->Veln()->Map().GID(lid);
         dserror("Particle %i (gid) travels more than one bin per time step (%f > %f). Increase bin size or reduce step size."
             "Max radius is: %f", (int)gid/3, 2.0*(maxrad + maxvel*dt), cutoff_radius_, maxrad);
       }
@@ -1303,48 +1303,6 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
   DRT::UTILS::PrintParallelDistribution(*particlewalldis_);
   if(moving_walls_)
     wallextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*(structure_->Discretization()->DofRowMap()),Teuchos::rcp(particlewalldis_->DofRowMap(), false)));
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | build periodic boundary conditions                       ghamm 04/14 |
- *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::BuildParticlePeriodicBC()
-{
-  // build periodic boundary condition
-  std::vector<DRT::Condition*> conds;
-  particledis_->GetCondition("ParticlePeriodic", conds);
-  if(conds.size() > 1)
-    dserror("only one periodic boundary condition allowed for particles");
-
-  // leave when no pbc available
-  if(conds.size() == 0)
-    return;
-  else
-    havepbc_ = true;
-
-  // now read in the available condition
-  const std::vector<int>* onoff = conds[0]->Get<std::vector<int> >("ONOFF");
-  const std::vector<double>* boundaries = conds[0]->Get<std::vector<double> >("boundaries");
-
-  // pbcbounds_ contains: x_min x_max y_min y_max z_min z_max
-  for(int dim=0; dim<3; ++dim)
-  {
-    if((*onoff)[dim])
-    {
-      std::vector<double> bound(2);
-      bound[0] = (*boundaries)[2*dim+0];
-      bound[1] = (*boundaries)[2*dim+1];
-      pbcbounds_.push_back(bound);
-    }
-    else
-    {
-      std::vector<double> nobound(2,0.0);
-      pbcbounds_.push_back(nobound);
-    }
-  }
 
   return;
 }

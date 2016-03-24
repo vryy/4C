@@ -101,6 +101,9 @@ void PARTICLE::ScatraParticleCoupling::Init(bool restarted)
   Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*particledis_->NodeRowMap()));
   CreateBins(scatradis_);
 
+  // setup pbcs after bins have been created
+  BuildParticlePeriodicBC();
+
   // gather all scatra col eles in each bin for proper extended ghosting
   std::map<int, std::set<int> > scatraelesinbins;
   Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcsBasedOnUnderlyingDiscret(scatradis_, scatraelesinbins);
