@@ -4,15 +4,8 @@
 
 \brief VTK filter
 
-<pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
-</pre>
-
-*/
-/*----------------------------------------------------------------------*/
+\maintainer Martin Kronbichler
+*-----------------------------------------------------------------------*/
 
 
 #include "post_drt_vtk_writer.H"
@@ -418,11 +411,11 @@ VtkWriter::WriteResult(const std::string groupname,
                        const int from,
                        const bool fillzeros)
 {
-  PostResult result(field_);
+  Teuchos::RCP<PostResult> result = Teuchos::rcp(new PostResult(field_));
   bool foundit = false;
-  while (result.next_result(groupname))
+  while (result->next_result(groupname))
   {
-    if (map_has_map(result.group(), groupname.c_str()))
+    if (map_has_map(result->group(), groupname.c_str()))
     {
       foundit = true;
       break;
@@ -434,15 +427,17 @@ VtkWriter::WriteResult(const std::string groupname,
   // be stored once, so need to catch that case as well
   bool once = false;
   for (int i=0; i<timestep_; ++i)
-    if ( not result.next_result(groupname) )
+    if ( not result->next_result(groupname) )
     {
       once = true;
       break;
     }
+
   if (once)
   {
-    result = PostResult(field_);
-    result.next_result(groupname);
+    // recreate PostResult, go one step and throw away the old one
+    result = Teuchos::rcp(new PostResult(field_));
+    result->next_result(groupname);
   }
 
   if ( not (field_->problem()->SpatialApproximation()=="Polynomial" or
@@ -459,24 +454,27 @@ VtkWriter::WriteResult(const std::string groupname,
     {
     case dofbased:
       {
-        const Teuchos::RCP<Epetra_Vector> data = result.read_result(groupname);
+        const Teuchos::RCP<Epetra_Vector> data = result->read_result(groupname);
         this->WriteDofResultStep(currentout_, data, dummy, groupname, name, numdf, from, fillzeros);
         break;
       }
     case nodebased:
       {
-        const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
+        const Teuchos::RCP<Epetra_MultiVector> data = result->read_multi_result(groupname);
         this->WriteNodalResultStep(currentout_, data, dummy, groupname, name, numdf);
         break;
       }
     case elementbased:
       {
-        const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
+        const Teuchos::RCP<Epetra_MultiVector> data = result->read_multi_result(groupname);
         this->WriteElementResultStep(currentout_, data, dummy, groupname, name, numdf, from);
         break;
       }
     default:
-      dserror("Result type not yet implemented");
+      {
+        dserror("Result type not yet implemented");
+        break;
+      }
     }
 }
 
