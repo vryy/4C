@@ -1,15 +1,10 @@
 /*!----------------------------------------------------------------------
 \file bele3.cpp
-\brief
 
-<pre>
-Maintainer: Raffaela Kruse
-            kruse@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
-</pre>
+\maintainer Martin Pfaller
 
-*----------------------------------------------------------------------*/
+\brief dummy 3D boundary element without any physics
+ *----------------------------------------------------------------------*/
 
 #include "bele3.H"
 #include "../drt_lib/drt_discret.H"

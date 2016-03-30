@@ -1,15 +1,10 @@
 /*!----------------------------------------------------------------------
 \file bele3_line_evaluate.cpp
-\brief
 
-<pre>
-Maintainer: Raffaela Kruse
-            kruse@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
-</pre>
+\maintainer Martin Pfaller
 
-*----------------------------------------------------------------------*/
+\brief dummy 3D boundary element without any physics
+ *----------------------------------------------------------------------*/
 
 #include "bele3.H"
 #include "../linalg/linalg_utils.H"
@@ -264,7 +259,7 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(Teuchos::ParameterList& pa
   Epetra_SerialDenseMatrix   deriv(1,iel);
 
   // node coordinates
-  Epetra_SerialDenseMatrix 	xye(2,iel);
+  Epetra_SerialDenseMatrix xye(2,iel);
 
   // get node coordinates
   for(size_t i=0;i<iel;++i)

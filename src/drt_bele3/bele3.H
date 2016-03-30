@@ -1,13 +1,10 @@
-/*!
- * \file bele3.H
- *
-<pre>
-Maintainer: Raffaela Kruse
-            kruse@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
-</pre>
- */
+/*!----------------------------------------------------------------------
+\file bele3.H
+
+\maintainer Martin Pfaller
+
+\brief dummy 3D boundary element without any physics
+ *----------------------------------------------------------------------*/
 
 #ifndef BELE3_H
 #define BELE3_H
@@ -206,6 +203,32 @@ private:
       }
       return hoel;
     };
+
+  /*!
+    \brief Create matrix with spatial configuration
+
+    \param x     (out)  : nodal coords in spatial frame
+    \param disp  (int)  : displacements
+  */
+  inline void SpatialConfiguration(LINALG::SerialDenseMatrix& x,
+                                     const std::vector<double> disp) const
+    {
+      const int numnode = NumNode();
+      for (int i=0; i<numnode; ++i)
+      {
+        x(i,0) = Nodes()[i]->X()[0] + disp[i*3+0];
+        x(i,1) = Nodes()[i]->X()[1] + disp[i*3+1];
+        x(i,2) = Nodes()[i]->X()[2] + disp[i*3+2];
+      }
+      return;
+    }
+
+  //! Submethod to compute the enclosed volume for volume constraint boundary condition
+  double ComputeConstrVols
+  (
+      const LINALG::SerialDenseMatrix& xscurr, ///< current configuration
+      const int numnode ///< num nodes
+  );
 
   //! vector with line elements
 //  std::vector<Teuchos::RCP<DRT::Element> >                      lines_;
