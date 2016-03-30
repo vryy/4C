@@ -17,7 +17,7 @@ the input line should read
 
 
 <pre>
-Maintainer: Hamman de Vaal
+\maintainer Hamman de Vaal
             devaal@lnm.mw.tum.de
             089/289 15251
 </pre>
@@ -247,7 +247,7 @@ void MAT::ELASTIC::IsoAnisoExpoDispersion::AddStressAnisoModified(
   std::cout << "this is I1, I4: " << I1 << " " << I4 << std::endl;
   std::cout << "this is R and Q: " << R << " " << Q << std::endl;*/
 
-  if (isinf(Q))
+  if (std::isinf(Q))
   {
     std::cout << "\n" << std::endl;
     std::cout << "this is rcg(0) and rcg(1) and rcg(2): " << rcg(0) << " " << rcg(1) << " " << rcg(2) << std::endl;
@@ -257,7 +257,7 @@ void MAT::ELASTIC::IsoAnisoExpoDispersion::AddStressAnisoModified(
     std::cout << "this is R and Q: " << R << " " << Q << std::endl;
     dserror("The exponential Q became infinite");
   }
-  if (isnan(Q))
+  if (std::isnan(Q))
   {
     std::cout << "\n" << std::endl;
     std::cout << "this is rcg(0) and rcg(1) and rcg(2): " << rcg(0) << " " << rcg(1) << " " << rcg(2) << std::endl;

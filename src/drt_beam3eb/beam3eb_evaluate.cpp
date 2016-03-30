@@ -4,7 +4,7 @@
 \brief three dimensional nonlinear torsionless rod based on a C1 curve
 
 <pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15301
@@ -3103,8 +3103,8 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(std::vector<double>& disp,
         stiff_relerr(line,col)= fabs(  (    pow(stiffmatrix_check(line,col),2) - pow( (*stiffmatrix)(line,col),2 )    )/(  (  (*stiffmatrix)(line,col) + stiffmatrix_check(line,col)  ) * (*stiffmatrix)(line,col)  )  );
 
         //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
-        //if ( fabs( stiff_relerr(line,col) ) < h_rel*50 || isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
-        if ( fabs( stiff_relerr(line,col) ) < 1.0e-15 || isnan( stiff_relerr(line,col)) || (*stiffmatrix)(line,col) == 0) //isnan = is not a number
+        //if ( std::abs( stiff_relerr(line,col) ) < h_rel*50 || std::isnan( stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
+        if ( std::abs( stiff_relerr(line,col) ) < 1.0e-15 || std::isnan( stiff_relerr(line,col)) || (*stiffmatrix)(line,col) == 0) //isnan = is not a number
           stiff_relerr(line,col) = 0;
       } //for(int col=0; col<3*nnode; col++)
     } //for(int line=0; line<3*nnode; line++)
@@ -3325,7 +3325,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
       stiff_relerr(line,col)= fabs((pow(stiffmatrix_check(line,col),2) - pow((*elemat1)(line,col),2))/(((*elemat1)(line,col) + stiffmatrix_check(line,col)) * (*elemat1)(line,col)));
 
       //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
-      if ( fabs( stiff_relerr(line,col) ) < 1.0e-10 || isnan( stiff_relerr(line,col)) || (*elemat1)(line,col) == 0) //isnan = is not a number
+      if ( std::abs( stiff_relerr(line,col) ) < 1.0e-10 || std::isnan( stiff_relerr(line,col)) || (*elemat1)(line,col) == 0) //isnan = is not a number
         stiff_relerr(line,col) = 0;
     } //for(int col=0; col<3*nnode; col++)
   } //for(int line=0; line<3*nnode; line++)
@@ -4177,4 +4177,3 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
 //***************************************************************************************
 //End: Methods for arbitrary precision calculation
 //***************************************************************************************
-

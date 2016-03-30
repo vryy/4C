@@ -40,7 +40,7 @@
   --> Future topic: extend to fully TSI.
 
 <pre>
-Maintainer: Caroline Danowski
+\maintainer Caroline Danowski
             danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15253
@@ -765,12 +765,12 @@ void MAT::Robinson::CalcBEViscousStrainRate(
     // calculate theta1 used for the material constant \bar{\mu}
     // \bar{\mu} = (23.8 . tempnp - 2635.0) . (1.0/811.0 - 1.0/tempnp)), vgl. (14)
     double th1 = (23.8 * tempnp - 2635.0) * (1.0/811.0 - 1.0/tempnp);
-    if (isinf(th1))
+    if (std::isinf(th1))
       dserror("Infinite theta1");
     // theory is the same as in literature, but present implementation differs, e.g.,
     // here: A == \bar{\mu} = 0.5/(mu exp(theta1)) = 1/(2 mu exp(theta1)
     // cf. Arya: \bar{\mu} := \mu . exp(- theta1), vgl. (12), f(F) includes mu
-    aa = 0.5 / (mu * exp(-th1));
+    aa = 0.5 / (mu * std::exp(-th1));
   }
   else  // "Butler","Arya","Arya_NarloyZ"
   {
@@ -1122,7 +1122,7 @@ void MAT::Robinson::CalcBEBackStressFlow(
   else
   {
     rr = rr0 * exp(q0 * (tempnp - tem0) / (tempnp * tem0));
-    if (isinf(rr))
+    if (std::isinf(rr))
     {
       rr = rr0;
     }

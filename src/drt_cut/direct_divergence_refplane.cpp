@@ -4,12 +4,10 @@
 \brief Construct reference plane for direct divergence method when used in global
 coordinate system
 
-<pre>
-Maintainer: Sudhakar
+\maintainer Sudhakar Yogaraj
             sudhakar@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
-</pre>
  *------------------------------------------------------------------------------------------------*/
 #include "direct_divergence_refplane.H"
 #include "cut_kernel.H"
@@ -233,8 +231,8 @@ bool GEO::CUT::DirectDivergenceGlobalRefplane::isAllProjectedCornersInsideEle( s
     elem1_->LocalCoordinates( xyz_proj, rst_proj );
 
     // Check whether the local coordinate of the projected point is within the specified limits
-   if( fabs(rst_proj(0,0)) > 1.0+1e-8 or fabs(rst_proj(1,0)) > 1.0+1e-8 or fabs(rst_proj(2,0)) > 1.0+1e-8 or
-       isnan(rst_proj(0,0)) or isnan(rst_proj(1,0)) or isnan(rst_proj(2,0)))
+    if( std::abs(rst_proj(0,0)) > 1.0+1e-8 or std::abs(rst_proj(1,0)) > 1.0+1e-8 or std::abs(rst_proj(2,0)) > 1.0+1e-8 or
+       std::isnan(rst_proj(0,0)) or std::isnan(rst_proj(1,0)) or std::isnan(rst_proj(2,0)))
       return false;
   }
   return true;

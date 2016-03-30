@@ -1,8 +1,8 @@
 /*!---------------------------------------------------------------------------
-\file drt_utils_maxent_basisfunctions..cpp
+\file drt_utils_maxent_basisfunctions.cpp
 
 <pre>
-Maintainer: Keijo Nissen
+\maintainer Keijo Nissen
             nissen@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15253
@@ -228,7 +228,7 @@ int DRT::MESHFREE::MaxEntApprox::DualProblem<dim>::maxent_basisfunction(
   dualprob_->UpdateParams(*funct,r,Jinv,na,q,c,lam);
 
   // NaN-check
-  if (isnan(funct->Norm2()) or isnan(r.Norm2())) {
+  if (std::isnan(funct->Norm2()) or std::isnan(r.Norm2())) {
     dserror("NaN in MaxEnt-Optimization.");
   }
 

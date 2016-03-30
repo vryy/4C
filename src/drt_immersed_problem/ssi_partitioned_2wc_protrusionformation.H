@@ -4,14 +4,14 @@
 \brief specialization of ssi2wc, which includes "structale"-surface growth
 
 <pre>
-Maintainers: Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+\maintainer Andreas Rauch
+            rauch@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 -15240
 </pre>
 *----------------------------------------------------------------------*/
 #ifndef SSI_PARTITIONED2_WC_PROTRUSIONFORMATION_H_
-#define SSI_PARTITIONED2_WC__PROTRUSIONFORMATION_H_
+#define SSI_PARTITIONED2_WC_PROTRUSIONFORMATION_H_
 
 #include "../drt_ssi/ssi_partitioned_2wc.H"
 #include "../drt_inpar/inpar_ssi.H"

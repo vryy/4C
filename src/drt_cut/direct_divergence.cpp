@@ -2,7 +2,8 @@
 \file direct_divergence.cpp
 
 \brief Generate main Gauss points when using "DirectDivergence" approach.
-equations
+
+\maintainer Sudhakar Yogaraj
  *------------------------------------------------------------------------------------------------*/
 
 #include "direct_divergence.H"
@@ -577,7 +578,7 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
 
   volcell_->SetVolume(volGlobal);
 //  volcell_->SetVolume(TotalInteg);
-  if(isnan(volGlobal))
+  if(std::isnan(volGlobal))
   {
     std::cout<<"-------------------------------------------------------------\n";
     std::cout<<"There are two possible sources of this problem \n";

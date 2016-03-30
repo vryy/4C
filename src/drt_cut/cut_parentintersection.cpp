@@ -4,7 +4,7 @@
 \brief provides the basic functionality for cutting a mesh
 
 <pre>
-Maintainer: Benedikt Schott and Magnus Winter
+\maintainer Benedikt Schott and Magnus Winter
             schott@lnm.mw.tum.de, winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -1087,7 +1087,7 @@ void GEO::CUT::ParentIntersection::DebugCut(Mesh &m)
        std::cout << "\t difference: " << fabs(tessVol[i]-dirDivVol[i]);// << "\n";
        error = true;
      }
-     else if(isnan(tessVol[i]) or isnan(dirDivVol[i]))
+     else if(std::isnan(tessVol[i]) or std::isnan(dirDivVol[i]))
        error = true;
      std::cout << "\n";
    }

@@ -18,7 +18,7 @@ For a detailed description see:
   Biomechanics and Modeling in Mechanobiology, 2003, 2, 109-126
 
 <pre>
-Maintainer: Susanna Tinkl
+\maintainer Susanna Tinkl
             tinkl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15265
@@ -1414,8 +1414,8 @@ void MAT::ConstraintMixture::EvaluateSingleFiberScalars
   }
 
   // stress
-  const double exp1 = exp(k2*(I4-1.)*(I4-1.));
-  if (isinf(exp1))
+  const double exp1 = std::exp(k2*(I4-1.)*(I4-1.));
+  if (std::isinf(exp1))
     dserror("stretch in fiber direction is too high %e", sqrt(I4));
   fac_stress = 2.*(k1*(I4-1.)*exp1);  // 2 dW/dI4
 
@@ -1548,8 +1548,8 @@ void MAT::ConstraintMixture::EvaluateMuscle
     //--- determine 2nd Piola Kirchhoff stresses S -----------------------------------------
     double preI4 = I4 * prestretchmuscle*prestretchmuscle;
     LINALG::Matrix<NUM_STRESS_3D,1> Saniso(A); // first compute S = 2 dW/dI4 A
-    const double exp1 = exp(k2*(preI4-1.)*(preI4-1.));
-    if (isinf(exp1))
+    const double exp1 = std::exp(k2*(preI4-1.)*(preI4-1.));
+    if (std::isinf(exp1))
       dserror("stretch in fiber direction is too high");
     const double fib1 = 2.*(k1*(preI4-1.)*exp1);  // 2 dW/dI4
     Saniso.Scale(fib1);  //S
@@ -3208,4 +3208,3 @@ void MAT::ConstraintMixtureOutputToGmsh
 
   return;
 }
-
