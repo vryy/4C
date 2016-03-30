@@ -4,7 +4,7 @@
 \brief Standard solution strategy for standard scalar transport problems (without meshtying)
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
@@ -66,13 +66,13 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStd::InitSystemMat
  | solve linear system of equations for standard scalar transport   fang 12/14 |
  *-----------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyStd::Solve(
-    const Teuchos::RCP<LINALG::Solver>&            solver,         //! solver
-    const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //! system matrix
-    const Teuchos::RCP<Epetra_Vector>&             increment,      //! increment vector
-    const Teuchos::RCP<Epetra_Vector>&             residual,       //! residual vector
-    const Teuchos::RCP<Epetra_Vector>&             phinp,          //! state vector at time n+1
-    const int&                                     iteration,      //! number of current Newton-Raphson iteration
-    const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //! Krylov projector
+    const Teuchos::RCP<LINALG::Solver>&            solver,         //!< solver
+    const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //!< system matrix
+    const Teuchos::RCP<Epetra_Vector>&             increment,      //!< increment vector
+    const Teuchos::RCP<Epetra_Vector>&             residual,       //!< residual vector
+    const Teuchos::RCP<Epetra_Vector>&             phinp,          //!< state vector at time n+1
+    const int&                                     iteration,      //!< number of current Newton-Raphson iteration
+    const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
     ) const
 {
   solver->Solve(systemmatrix->EpetraOperator(),increment,residual,true,iteration==1,projector);

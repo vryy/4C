@@ -38,7 +38,6 @@ VELFUNCNO                       1
 INITIALFIELD                    field_by_condition              // test this option! //field_by_function
 //INITFUNCNO                    2
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 MATID                           4
 //
 // Calculation of initial derivative yields in different results for the uncharged particle and

@@ -33,7 +33,7 @@ WRITEFLUX                       totalflux_boundary
 RESULTSEVRY                     1
 MATID                           5
 SOLVERTYPE                      nonlinear
-OUTMEAN                         Yes
+OUTPUTSCALARS                   Yes
 CONVFORM                        convective
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09

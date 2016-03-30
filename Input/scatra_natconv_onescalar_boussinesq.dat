@@ -76,8 +76,8 @@ TIMESTEP                        1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_boundary
-OUTMEAN                         Yes
-RESULTSEVRY                           1
+OUTPUTSCALARS                   Yes
+RESULTSEVRY                     1
 MATID                           2
 CONVFORM                        conservative                  // just to be tested
 NATURAL_CONVECTION              Yes

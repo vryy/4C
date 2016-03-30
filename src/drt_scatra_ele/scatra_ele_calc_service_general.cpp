@@ -5,10 +5,10 @@
 \brief Internal implementation of ScaTra element
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -143,7 +143,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
     break;
   }
 
-  case SCATRA::calc_mean_scalars:
+  case SCATRA::calc_total_and_mean_scalars:
   {
     // get flag for inverting
     bool inverting = params.get<bool>("inverting");

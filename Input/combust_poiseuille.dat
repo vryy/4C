@@ -112,7 +112,6 @@ TIMESTEP                        1.0
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
-OUTMEAN                         No
 RESULTSEVRY                           1
 MATID                           2
 ALPHA_F                         1.0

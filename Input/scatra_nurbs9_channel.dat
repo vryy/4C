@@ -78,7 +78,7 @@ WRITEFLUX                       diffusiveflux_boundary
 MATID                           2
 SKIPINITDER                     No
 OUTPUT_GMSH                     No
-OUTMEAN                         Yes
+OUTPUTSCALARS                   Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK

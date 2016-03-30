@@ -56,7 +56,6 @@ MAXTIME                         1000
 MESHTYING                       no
 NEUMANNINFLOW                   no
 NUMSTEP                         20
-OUTMEAN                         No
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
 SKIPINITDER                     yes

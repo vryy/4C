@@ -206,7 +206,6 @@ INITFUNCNO                      1
 INITIALFIELD                    field_by_function
 MAXTIME                         10000.0
 NUMSTEP                         5
-OUTMEAN                         No
 OUTPUT_GMSH                     No
 RESTARTEVRY                     100
 SKIPINITDER                     yes

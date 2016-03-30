@@ -14,10 +14,10 @@
      and stationary solver.
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -106,7 +106,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   flux_(Teuchos::null),
   sumnormfluxintegral_(Teuchos::null),
   lastfluxoutputstep_(-1),
-  outmean_  (DRT::INPUT::IntegralValue<int>(*params,"OUTMEAN")),
+  outputscalars_(DRT::INPUT::IntegralValue<int>(*params,"OUTPUTSCALARS")),
   outputgmsh_(DRT::INPUT::IntegralValue<int>(*params,"OUTPUT_GMSH")),
   output_state_matlab_(DRT::INPUT::IntegralValue<int>(*params,"MATLAB_STATE_OUTPUT")),
   fdcheck_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FDCheck>(*params,"FDCHECK")),
@@ -133,6 +133,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   phidtnp_(Teuchos::null),
   hist_(Teuchos::null),
   densafnp_(Teuchos::null),
+  totalscalars_(),
+  meanscalars_(),
   cdvel_(DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
   meanconc_(Teuchos::null),
   nds_vel_(-1),
@@ -432,6 +434,31 @@ void SCATRA::ScaTraTimIntImpl::Init()
     densafnp_->PutScalar(1.);
   }
 
+  // -------------------------------------------------------------------
+  // preparations for total and mean values of transported scalars
+  // -------------------------------------------------------------------
+  if(outputscalars_)
+  {
+    // extract conditions for calculation of total and mean values of transported scalars
+    std::vector<DRT::Condition*> conditions;
+    discret_->GetCondition("TotalAndMeanScalar",conditions);
+
+    // loop over all conditions
+    for(unsigned icond=0; icond<conditions.size(); ++icond)
+    {
+      // extract condition ID
+      const int condid(conditions[icond]->GetInt("ConditionID"));
+
+      // initialize result vectors associated with current condition
+      totalscalars_[condid].resize(numscal_,0.);
+      meanscalars_[condid].resize(numscal_,0.);
+    }
+
+    // initialize result vectors associated with entire domain
+    totalscalars_[-1].resize(numscal_,0.);
+    meanscalars_[-1].resize(numscal_,0.);
+  }
+
   return;
 } // ScaTraTimIntImpl::Init()
 
@@ -450,7 +477,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
 
   // set action for elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",SCATRA::calc_mean_scalars);
+  eleparams.set<int>("action",SCATRA::calc_total_and_mean_scalars);
   eleparams.set("inverting",false);
 
   // provide displacement field in case of ALE
@@ -1345,7 +1372,7 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     }
 
     // write mean values of scalar(s)
-    OutputMeanScalars(num);
+    OutputTotalAndMeanScalars(num);
 
     // write domain and boundary integrals, i.e., surface areas and volumes of specified nodesets
     OutputDomainOrBoundaryIntegrals("DomainIntegral");

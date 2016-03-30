@@ -5,7 +5,7 @@
 \brief result tests for electrochemistry problems
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
@@ -19,8 +19,7 @@ Maintainer: Rui Fang
  | constructor                                               fang 03/15 |
  *----------------------------------------------------------------------*/
 SCATRA::ElchResultTest::ElchResultTest(Teuchos::RCP<ScaTraTimIntElch> elchtimint) :
-ScaTraResultTest::ScaTraResultTest(elchtimint),
-elchtimint_(elchtimint)
+ScaTraResultTest::ScaTraResultTest(elchtimint)
 {
   return;
 }
@@ -37,23 +36,23 @@ double SCATRA::ElchResultTest::ResultSpecial(
   double result(0.);
 
   if(quantity == "meanc" or quantity == "meanc1")
-    result = (*elchtimint_->ElectrodeConc())[0];
+    result = (*ElchTimInt()->ElectrodeConc())[0];
   else if(quantity == "meanc2")
-    result = (*elchtimint_->ElectrodeConc())[1];
+    result = (*ElchTimInt()->ElectrodeConc())[1];
   else if(quantity == "meaneta" or quantity == "meaneta1")
-    result = (*elchtimint_->ElectrodeEta())[0];
+    result = (*ElchTimInt()->ElectrodeEta())[0];
   else if(quantity == "meaneta2")
-    result = (*elchtimint_->ElectrodeEta())[1];
+    result = (*ElchTimInt()->ElectrodeEta())[1];
   else if(quantity == "meancur" or quantity == "meancur1")
-    result = (*elchtimint_->ElectrodeCurr())[0];
+    result = (*ElchTimInt()->ElectrodeCurr())[0];
   else if(quantity == "meancur2")
-    result = (*elchtimint_->ElectrodeCurr())[1];
+    result = (*ElchTimInt()->ElectrodeCurr())[1];
   else if(quantity == "soc" or quantity == "soc1")
-    result = (*elchtimint_->ElectrodeSOC())[0];
+    result = (*ElchTimInt()->ElectrodeSOC())[0];
   else if(quantity == "soc2")
-    result = (*elchtimint_->ElectrodeSOC())[1];
+    result = (*ElchTimInt()->ElectrodeSOC())[1];
   else if(quantity == "cellvoltage")
-    result = elchtimint_->CellVoltage();
+    result = ElchTimInt()->CellVoltage();
   else
     result = ScaTraResultTest::ResultSpecial(quantity);
 

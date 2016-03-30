@@ -5,10 +5,10 @@
 \brief Transport of passive scalars in Navier-Stokes velocity field
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -377,7 +377,7 @@ void SCATRA::ScaTraAlgorithm::OuterIterationConvection()
     printf("\n");
     printf("Flux: Outer Iterations step: %3d \n", natconvitnum);
     ScaTraField().OutputProblemSpecific();
-    ScaTraField().OutputMeanScalars();
+    ScaTraField().OutputTotalAndMeanScalars();
     printf("\n");
     }
 

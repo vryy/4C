@@ -5,7 +5,7 @@
  \brief
 
  <pre>
-   Maintainer: Anh-Tu Vuong
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15264
@@ -186,7 +186,7 @@ int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(
   // determine and evaluate action
   switch(action)
   {
-  case SCATRA::calc_mean_scalars:
+  case SCATRA::calc_total_and_mean_scalars:
   {
     // get flag for inverting
     bool inverting = params.get<bool>("inverting");

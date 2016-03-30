@@ -4,7 +4,7 @@
 \brief Scatra-scatra interface coupling strategy for electrochemistry problems
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
@@ -42,8 +42,8 @@ class MeshtyingStrategyS2IElch : public MeshtyingStrategyS2I
 
     //! constructor
     explicit MeshtyingStrategyS2IElch(
-        SCATRA::ScaTraTimIntElch*       elchtimint,   //! elch time integrator
-        const Teuchos::ParameterList&   parameters    //! input parameters for scatra-scatra interface coupling
+        SCATRA::ScaTraTimIntElch*       elchtimint,   //!< elch time integrator
+        const Teuchos::ParameterList&   parameters    //!< input parameters for scatra-scatra interface coupling
         );
 
     //! destructor
@@ -62,8 +62,8 @@ class MeshtyingStrategyS2IElch : public MeshtyingStrategyS2I
 
     //! build maps associated with blocks of global system matrix
     void BuildBlockMaps(
-        const std::vector<Teuchos::RCP<DRT::Condition> >&   partitioningconditions,   //! domain partitioning conditions
-        std::vector<Teuchos::RCP<const Epetra_Map> >&       blockmaps                 //! empty vector for maps to be built
+        const std::vector<Teuchos::RCP<DRT::Condition> >&   partitioningconditions,   //!< domain partitioning conditions
+        std::vector<Teuchos::RCP<const Epetra_Map> >&       blockmaps                 //!< empty vector for maps to be built
         ) const;
 
     //! build null spaces associated with blocks of global system matrix

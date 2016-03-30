@@ -4,10 +4,10 @@
 \brief Service routines of the scalar transport time integration class
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -660,79 +660,158 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
 
 
 /*----------------------------------------------------------------------*
- | output mean values of scalar(s)                             vg 05/15 |
+ | output total and mean values of transported scalars       fang 03/16 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
+void SCATRA::ScaTraTimIntImpl::OutputTotalAndMeanScalars(const int num)
 {
-  if(outmean_)
+  if(outputscalars_)
   {
-    // set scalar values needed by elements
+    // add state vector to discretization
     discret_->ClearState();
     discret_->SetState("phinp",phinp_);
-    // set action for elements
+
+    // create parameter list
     Teuchos::ParameterList eleparams;
-    eleparams.set<int>("action",SCATRA::calc_mean_scalars);
+
+    // set action for elements
+    eleparams.set<int>("action",SCATRA::calc_total_and_mean_scalars);
     eleparams.set("inverting",false);
 
     // provide displacement field in case of ALE
-    if (isale_)
+    if(isale_)
       eleparams.set<int>("ndsdisp",nds_disp_);
 
     eleparams.set<int>("ndsvel",nds_vel_);
 
-    // evaluate integrals of scalar(s) and domain
-    Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
-    discret_->EvaluateScalars(eleparams, scalars);
-    discret_->ClearState();   // clean up
+    // generate name of output file
+    std::ostringstream number;
+    number << num;
+    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".scalarvalues.txt";
 
-    // extract domain integral
-    const double domint = (*scalars)[numscal_];
+    // extract conditions for calculation of total and mean values of transported scalars
+    std::vector<DRT::Condition*> conditions;
+    discret_->GetCondition("TotalAndMeanScalar",conditions);
 
-    // print out results to screen and file
-    if (myrank_ == 0)
+    // print header of output table to screen and file
+    if(myrank_ == 0)
     {
       // screen output
-      std::cout << "Mean scalar values:" << std::endl;
-      std::cout << "+-------------------------------+" << std::endl;
-      for(int k = 0; k < numscal_; k++)
-        std::cout << "| Mean scalar " << k+1 << ":   " << std::scientific << std::setprecision(6) << (*scalars)[k]/domint << " |" << std::endl;
-      std::cout << "+-------------------------------+" << std::endl << std::endl;
+      std::cout << "Total and mean values of transported scalars:" << std::endl;
+      std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl;
+      std::cout << "| domain ID | scalar ID | total scalar value | domain integral | mean scalar value |" << std::endl;
+      std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl;
 
       // file output
-      std::stringstream number;
-      number << num;
-      const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".meanvalues.txt";
-
-      std::ofstream f;
-      if (Step() <= 1)
+      if(Step() == 0)
       {
+        std::ofstream f;
         f.open(fname.c_str(),std::fstream::trunc);
-        f << "#| Step | Time | Domain integral |";
-        for (int k = 0; k < numscal_; k++)
+        f << "#| Step | Time |";
+        for(unsigned icond=0; icond<conditions.size(); ++icond)
         {
-          f << " Total scalar " << k+1 << " |";
-          f << " Mean scalar " << k+1 << " |";
+          const int condid(conditions[icond]->GetInt("ConditionID"));
+          f << " Integral of domain " << condid << " |";
+          for(int k=0; k<numscal_; ++k)
+          {
+            f << " Total value of scalar " << k+1 << " in domain " << condid << " |";
+            f << " Mean value of scalar " << k+1 << " in domain " << condid << " |";
+          }
         }
-        f << "\n";
+        f << " Integral of entire domain |";
+        for(int k=0; k<numscal_; ++k)
+        {
+          f << " Total value of scalar " << k+1 << " in entire domain |";
+          f << " Mean value of scalar " << k+1 << " in entire domain |";
+        }
+        f << std::endl;
+        f.flush();
+        f.close();
       }
-      else f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+    }
 
-      f << Step() << " " << Time() << " " << std::setprecision (9) << domint;
-      for (int k = 0; k < numscal_; k++)
-      {
-        f << " " << std::setprecision (9) << (*scalars)[k];
-        f << " " << std::setprecision (9) << (*scalars)[k]/domint;
-      }
-      f << "\n";
+    // file output
+    if(myrank_ == 0)
+    {
+      std::ofstream f;
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+      f << Step() << " " << Time();
       f.flush();
       f.close();
     }
 
-  } // if(outmean_)
+    // evaluate scalar integrals and domain integral for each subdomain (icond < conditions.size()) as well as for entire domain (icond == conditions.size())
+    for(unsigned icond=0; icond<=conditions.size(); ++icond)
+    {
+      // set domain ID equal to condition ID for subdomains, or equal to -1 for entire domain
+      int domainid_int(-1);
+      if(icond < conditions.size())
+        domainid_int = conditions[icond]->GetInt("ConditionID");
+
+      // initialize result vector
+      // first numscal_ components = scalar integrals, last component = domain integral
+      Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+
+      // perform integration
+      if(icond < conditions.size())
+        discret_->EvaluateScalars(eleparams,scalars,"TotalAndMeanScalar",domainid_int);
+      else
+        discret_->EvaluateScalars(eleparams,scalars);
+
+      // extract domain integral
+      const double domint = (*scalars)[numscal_];
+
+      // compute results
+      for(int k=0; k<numscal_; ++k)
+      {
+        totalscalars_[domainid_int][k] = (*scalars)[k];
+        meanscalars_[domainid_int][k] =(*scalars)[k]/domint;
+      }
+
+      // print out results to screen and file
+      if(myrank_ == 0)
+      {
+        // screen output
+        if(conditions.size() > 0 and icond == conditions.size())
+          std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl;
+        std::ostringstream domainid_string;
+        if(icond < conditions.size())
+          domainid_string << "|    " << std::setw(2) << domainid_int << "     |";
+        else
+          domainid_string << "|  overall  |";
+        for(int k=0; k<numscal_; ++k)
+          std::cout << domainid_string.str() << "    " << std::setw(2) << k+1 << "     |    " << std::scientific << std::setprecision(6) << (*scalars)[k] << "    |   " << domint << "  |    " << (*scalars)[k]/domint << "   |" << std::endl;
+
+        // file output
+        std::ofstream f;
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+        f << " " << std::setprecision(9) << domint;
+        for(int k=0; k<numscal_; ++k)
+          f << " " << (*scalars)[k] << " " << (*scalars)[k]/domint;
+        f.flush();
+        f.close();
+      }
+    } // for(unsigned icond=0; icond<=conditions.size(); ++icond)
+
+    // finalize screen and file outputs
+    if(myrank_ == 0)
+    {
+      // screen output
+      std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl << std::endl;
+
+      // file output
+      std::ofstream f;
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+      f << std::endl;
+      f.flush();
+      f.close();
+    }
+
+    // clean up
+    discret_->ClearState();
+  } // if(outputscalars_)
 
   return;
-} // SCATRA::ScaTraTimIntImpl::OutputMeanScalars
+} // SCATRA::ScaTraTimIntImpl::OutputTotalAndMeanScalars
 
 
 /*--------------------------------------------------------------------------------------------------------*

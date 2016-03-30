@@ -30,8 +30,7 @@ TIMESTEP                        0.05
 VELOCITYFIELD                   zero
 RESULTSEVRY                     1
 MATID                           1
-WRITEFLUX                       No
-OUTMEAN                         Yes
+OUTPUTSCALARS                   Yes
 SKIPINITDER                     yes
 MAXTIME                         0.25
 NUMSTEP                         5

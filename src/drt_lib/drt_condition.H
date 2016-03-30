@@ -2,7 +2,7 @@
 \file drt_condition.H
 
 <pre>
-Maintainer: Michael Gee
+\maintainer Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
@@ -232,6 +232,7 @@ public:
     DomainIntegral,
     BoundaryIntegral,
     ScaTraFluxCalc,
+    TotalAndMeanScalar,
     ScaTraCoupling,
     SpringDashpot,
     SpringDashpotCoupling,

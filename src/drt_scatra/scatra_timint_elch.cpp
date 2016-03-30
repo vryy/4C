@@ -4,10 +4,10 @@
   \brief scatra time integration for elch
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
  *------------------------------------------------------------------------------------------------*/
 #include "../drt_fluid/fluid_utils.H" // for splitter
@@ -1119,7 +1119,7 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
 
   // set action for elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",SCATRA::calc_mean_scalars);
+  eleparams.set<int>("action",SCATRA::calc_total_and_mean_scalars);
   eleparams.set("inverting",false);
 
   // provide displacement field in case of ALE

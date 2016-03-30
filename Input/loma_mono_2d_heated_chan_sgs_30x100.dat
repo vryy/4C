@@ -110,10 +110,10 @@ TIMESTEP                        1.0
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       diffusiveflux_boundary
-RESULTSEVRY                           10
+RESULTSEVRY                     10
 CONVFORM                        convective
 MATID                           1
-OUTMEAN                         Yes
+OUTPUTSCALARS                   Yes
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
 SUGRVEL                         yes

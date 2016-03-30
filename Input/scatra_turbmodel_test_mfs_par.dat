@@ -110,10 +110,10 @@ TIMESTEP                        0.004
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       diffusiveflux_boundary
-RESULTSEVRY                           50000
+RESULTSEVRY                     50000
 CONVFORM                        convective
 MATID                           2
-OUTMEAN                         Yes
+OUTPUTSCALARS                   Yes
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          2
 CONVTOL                         1e-4

@@ -5,14 +5,13 @@
 \brief testing of scalar transport calculation results
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
 #ifndef SCATRA_RESULTTEST_H
 #define SCATRA_RESULTTEST_H
 
@@ -46,7 +45,7 @@ public:
   /*!
   \brief constructor
   */
-  ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatra);
+  ScaTraResultTest(Teuchos::RCP<ScaTraTimIntImpl> scatratimint);
 
 
   /// our version of nodal value tests
@@ -71,22 +70,10 @@ protected:
       const std::string   quantity   //! name of quantity to be tested
       ) const;
 
-private:
+  //! time integrator
+  const Teuchos::RCP<const ScaTraTimIntImpl> scatratimint_;
 
-  /// Teuchos::RCP to scalar transport discretization
-  Teuchos::RCP<DRT::Discretization> dis_;
-  /// Teuchos::RCP to solution vector
-  Teuchos::RCP<Epetra_Vector>       mysol_;
-  /// Teuchos::RCP to solution at nodes (meshfree)
-  Teuchos::RCP<Epetra_Vector>       myvan_;
-  /// Teuchos::RCP to mass/heat flux vector
-  Teuchos::RCP<Epetra_MultiVector>  myflux_;
-  /// Teuchos::RCP to scatra structure biofilm growth vector
-  Teuchos::RCP<Epetra_MultiVector>  mystrgrowth_;
-  /// Teuchos::RCP to scatra fluid biofilm growth vector
-  Teuchos::RCP<Epetra_MultiVector>  myfldgrowth_;
-  /// number of iterations in last newton iteration
-  int mynumiter_;
+private:
 };
 } // namespace SCATRA
 #endif

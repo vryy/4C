@@ -5,10 +5,10 @@
 \brief Basis of all ELCH algorithms
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -52,7 +52,7 @@ void ELCH::Algorithm::PrepareTimeLoop()
   if (Step()==0)
   {
     ScaTraField()->OutputProblemSpecific();
-    ScaTraField()->OutputMeanScalars();
+    ScaTraField()->OutputTotalAndMeanScalars();
 
     // compute error for problems with analytical solution (initial field!)
     ScaTraField()->EvaluateErrorComparedToAnalyticalSol();

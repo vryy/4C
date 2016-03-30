@@ -58,7 +58,6 @@ INITFUNCNO                      1
 CALCERROR                       No
 WRITEFLUX                       No
 WRITEFLUX_IDS                   -1
-OUTMEAN                         No
 OUTINTEGRREAC                   No
 OUTPUT_GMSH                     No
 CONVFORM                        convective

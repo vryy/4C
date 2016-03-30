@@ -4,7 +4,7 @@
  * \brief evaluation of a meshfree scatra cell
  *
  * <pre>
- * Maintainer: Keijo Nissen (nis)
+ * \maintainer Keijo Nissen (nis)
  *             nissen@lnm.mw.tum.de
  *             http://www.lnm.mw.tum.de
  *             089 - 289-15253
@@ -124,7 +124,7 @@ int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
 //    }
     case SCATRA::calc_initial_time_deriv:
     case SCATRA::calc_flux_domain:
-    case SCATRA::calc_mean_scalars:
+    case SCATRA::calc_total_and_mean_scalars:
     case SCATRA::calc_domain_and_bodyforce:
     case SCATRA::calc_scatra_box_filter:
     case SCATRA::calc_turbulent_prandtl_number:

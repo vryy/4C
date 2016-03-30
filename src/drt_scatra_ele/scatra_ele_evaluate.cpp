@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
 
 */
@@ -262,7 +262,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_initial_time_deriv:
     case SCATRA::integrate_shape_functions:
     case SCATRA::calc_flux_domain:
-    case SCATRA::calc_mean_scalars:
+    case SCATRA::calc_total_and_mean_scalars:
     case SCATRA::calc_domain_and_bodyforce:
     case SCATRA::calc_scatra_box_filter:
     case SCATRA::calc_turbulent_prandtl_number:

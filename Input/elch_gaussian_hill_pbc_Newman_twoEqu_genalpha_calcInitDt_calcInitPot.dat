@@ -39,7 +39,6 @@ VELOCITYFIELD                   function
 VELFUNCNO                       1
 INITIALFIELD                    field_by_condition              // test this option! //field_by_function
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 MATID                           1
 SKIPINITDER                     no
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

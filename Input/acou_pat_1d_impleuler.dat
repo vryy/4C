@@ -46,7 +46,6 @@ INITIALFIELD                    field_by_condition
 INITFUNCNO                      2
 FSSUGRDIFF                      No
 WRITEFLUX                       No
-OUTMEAN                         No
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Zero
 ---------------------------------------------------------------FLUID DYNAMIC

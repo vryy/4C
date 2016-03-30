@@ -34,7 +34,6 @@ VELCURVENO                      1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 FDCHECK                         global
 FDCHECKEPS                      1.e-8
 FDCHECKTOL                      1.e-4

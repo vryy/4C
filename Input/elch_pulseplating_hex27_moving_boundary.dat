@@ -59,7 +59,7 @@ WRITEFLUX                       diffusiveflux_boundary        // do not use tota
 RESULTSEVRY                     1
 MATID                           2
 SOLVERTYPE                      nonlinear
-OUTMEAN                         Yes
+OUTPUTSCALARS                   Yes
 CONVFORM                        convective
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09

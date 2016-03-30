@@ -28,7 +28,7 @@ VELOCITYFIELD                   zero
 RESULTSEVRY                     10
 MATID                           1
 WRITEFLUX                       totalflux_boundary
-OUTMEAN                         Yes
+OUTPUTSCALARS                   Yes
 MAXTIME                         10
 NUMSTEP                         20
 RESTARTEVRY                     10

@@ -5,7 +5,7 @@
 \brief result tests for electrochemistry problems
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
@@ -32,13 +32,13 @@ namespace SCATRA
 
     private:
 
+      //! return pointer to elch time integrator after cast
+      Teuchos::RCP<const SCATRA::ScaTraTimIntElch> ElchTimInt() const {return Teuchos::rcp_dynamic_cast<const SCATRA::ScaTraTimIntElch>(scatratimint_);};
+
       //! get special result to be tested
       double ResultSpecial(
           const std::string   quantity   //! name of quantity to be tested
           ) const;
-
-      //! time integrator
-      const Teuchos::RCP<const ScaTraTimIntElch> elchtimint_;
   }; // class ElchResultTest : public ScaTraResultTest
 } // namespace SCATRA
 #endif

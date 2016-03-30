@@ -42,8 +42,8 @@
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
 SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
-    SCATRA::ScaTraTimIntImpl*       scatratimint,   //! scalar transport time integrator
-    const Teuchos::ParameterList&   parameters      //! input parameters for scatra-scatra interface coupling
+    SCATRA::ScaTraTimIntImpl*       scatratimint,   //!< scalar transport time integrator
+    const Teuchos::ParameterList&   parameters      //!< input parameters for scatra-scatra interface coupling
     ) :
 MeshtyingStrategyBase(scatratimint),
 interfacemaps_(Teuchos::null),
@@ -1451,8 +1451,8 @@ void SCATRA::MeshtyingStrategyS2I::BuildBlockMapExtractors()
  | build maps associated with blocks of global system matrix       fang 06/15 |
  *----------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::BuildBlockMaps(
-    const std::vector<Teuchos::RCP<DRT::Condition> >&   partitioningconditions,   //! domain partitioning conditions
-    std::vector<Teuchos::RCP<const Epetra_Map> >&       blockmaps                 //! empty vector for maps to be built
+    const std::vector<Teuchos::RCP<DRT::Condition> >&   partitioningconditions,   //!< domain partitioning conditions
+    std::vector<Teuchos::RCP<const Epetra_Map> >&       blockmaps                 //!< empty vector for maps to be built
     ) const
 {
   if(matrixtype_ == INPAR::S2I::matrix_block_condition)
@@ -1586,13 +1586,13 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyS2I::InitSystemMat
  | solve linear system of equations for scatra-scatra interface coupling   fang 12/14 |
  *------------------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::Solve(
-    const Teuchos::RCP<LINALG::Solver>&            solver,         //! solver
-    const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //! system matrix
-    const Teuchos::RCP<Epetra_Vector>&             increment,      //! increment vector
-    const Teuchos::RCP<Epetra_Vector>&             residual,       //! residual vector
-    const Teuchos::RCP<Epetra_Vector>&             phinp,          //! state vector at time n+1
-    const int&                                     iteration,      //! number of current Newton-Raphson iteration
-    const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //! Krylov projector
+    const Teuchos::RCP<LINALG::Solver>&            solver,         //!< solver
+    const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //!< system matrix
+    const Teuchos::RCP<Epetra_Vector>&             increment,      //!< increment vector
+    const Teuchos::RCP<Epetra_Vector>&             residual,       //!< residual vector
+    const Teuchos::RCP<Epetra_Vector>&             phinp,          //!< state vector at time n+1
+    const int&                                     iteration,      //!< number of current Newton-Raphson iteration
+    const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
     ) const
 {
   switch(mortartype_)
@@ -1677,8 +1677,8 @@ void SCATRA::MeshtyingStrategyS2I::Solve(
  | equilibrate global system of equations if necessary       fang 05/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
-    const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,   //! system matrix
-    const Teuchos::RCP<Epetra_Vector>&            residual        //! residual vector
+    const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,   //!< system matrix
+    const Teuchos::RCP<Epetra_Vector>&            residual        //!< residual vector
     ) const
 {
   if(rowequilibration_ or colequilibration_)
@@ -1785,8 +1785,8 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateSystem(
  | compute inverse sums of absolute values of matrix row entries   fang 06/15 |
  *----------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::ComputeInvRowSums(
-    const LINALG::SparseMatrix&          matrix,      //! matrix
-    const Teuchos::RCP<Epetra_Vector>&   invrowsums   //! inverse sums of absolute values of row entries in matrix
+    const LINALG::SparseMatrix&          matrix,      //!< matrix
+    const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< inverse sums of absolute values of row entries in matrix
     ) const
 {
   // compute inverse row sums of matrix
@@ -1806,8 +1806,8 @@ void SCATRA::MeshtyingStrategyS2I::ComputeInvRowSums(
  | compute inverse sums of absolute values of matrix column entries   fang 06/15 |
  *-------------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::ComputeInvColSums(
-    const LINALG::SparseMatrix&          matrix,      //! matrix
-    const Teuchos::RCP<Epetra_Vector>&   invcolsums   //! inverse sums of absolute values of column entries in matrix
+    const LINALG::SparseMatrix&          matrix,      //!< matrix
+    const Teuchos::RCP<Epetra_Vector>&   invcolsums   //!< inverse sums of absolute values of column entries in matrix
     ) const
 {
   // compute inverse column sums of matrix
@@ -1827,8 +1827,8 @@ void SCATRA::MeshtyingStrategyS2I::ComputeInvColSums(
  | equilibrate matrix rows                                   fang 06/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::EquilibrateMatrixRows(
-    LINALG::SparseMatrix&                matrix,      //! matrix
-    const Teuchos::RCP<Epetra_Vector>&   invrowsums   //! sums of absolute values of row entries in matrix
+    LINALG::SparseMatrix&                matrix,      //!< matrix
+    const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< sums of absolute values of row entries in matrix
     ) const
 {
   if(matrix.LeftScale(*invrowsums))
@@ -1842,8 +1842,8 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateMatrixRows(
  | equilibrate matrix columns                                fang 06/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::EquilibrateMatrixColumns(
-    LINALG::SparseMatrix&                matrix,      //! matrix
-    const Teuchos::RCP<Epetra_Vector>&   invcolsums   //! sums of absolute values of column entries in matrix
+    LINALG::SparseMatrix&                matrix,      //!< matrix
+    const Teuchos::RCP<Epetra_Vector>&   invcolsums   //!< sums of absolute values of column entries in matrix
     ) const
 {
   if(matrix.RightScale(*invcolsums))
@@ -1857,7 +1857,7 @@ void SCATRA::MeshtyingStrategyS2I::EquilibrateMatrixColumns(
  | unequilibrate global increment vector if necessary        fang 05/15 |
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::UnequilibrateIncrement(
-    const Teuchos::RCP<Epetra_Vector>&   increment   //! increment vector
+    const Teuchos::RCP<Epetra_Vector>&   increment   //!< increment vector
     ) const
 {
   // unequilibrate global increment vector if necessary
@@ -2038,9 +2038,9 @@ template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationT
 void SCATRA::MortarCellCalc<distypeS,distypeM>::ExtractNodeValues(
     std::vector<LINALG::Matrix<nen_slave_,1> >&    ephinp_slave,    //!< state variables at slave-side nodes
     std::vector<LINALG::Matrix<nen_master_,1> >&   ephinp_master,   //!< state variables at master-side nodes
-    const DRT::Discretization&                    idiscret,        //!< interface discretization
-    DRT::Element::LocationArray&                  la_slave,        //!< slave-side location array
-    DRT::Element::LocationArray&                  la_master        //!< master-side location array
+    const DRT::Discretization&                     idiscret,        //!< interface discretization
+    DRT::Element::LocationArray&                   la_slave,        //!< slave-side location array
+    DRT::Element::LocationArray&                   la_master        //!< master-side location array
     ) const
 {
   // extract interface state vector from interface discretization

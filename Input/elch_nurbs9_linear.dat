@@ -37,7 +37,7 @@ WRITEFLUX                       diffusiveflux_boundary
 MATID                           2
 SKIPINITDER                     yes
 OUTPUT_GMSH                     No
-OUTMEAN                         Yes
+OUTPUTSCALARS                   Yes
 CALCERROR                       No
 CONVFORM                        conservative
 WRITEFLUX_IDS                   1 2 // do not write flux of species 3

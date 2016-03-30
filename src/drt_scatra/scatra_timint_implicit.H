@@ -16,10 +16,10 @@
      and stationary solver.
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -281,7 +281,7 @@ public:
   int NdsDisp() { return nds_disp_; }
 
   //! return flux vector
-  Teuchos::RCP<Epetra_MultiVector> Flux() { return flux_; };
+  Teuchos::RCP<const Epetra_MultiVector> Flux() const { return flux_; };
 
   //! return Dirichlet map
   const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
@@ -407,7 +407,7 @@ public:
   Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; }
 
   //! return values of scalar field phi at nodes (meshfree)
-  Teuchos::RCP<Epetra_Vector> Phiatmeshfreenodes() { return phiatmeshfreenodes_; }
+  Teuchos::RCP<const Epetra_Vector> Phiatmeshfreenodes() const { return phiatmeshfreenodes_; }
 
   //! return time derivative of scalar field phi at time n
   Teuchos::RCP<Epetra_Vector> Phidtn() { return phidtn_; }
@@ -433,8 +433,8 @@ public:
   //! return fine-scale scalar field fsphi at time n+1 or alpha_M
   virtual Teuchos::RCP<Epetra_Vector> FsPhi() = 0;
 
-  //! output mean values of scalar(s)
-  virtual void OutputMeanScalars(const int num=0);
+  //! output total and mean values of transported scalars
+  virtual void OutputTotalAndMeanScalars(const int num=0);
 
   //! output domain or boundary integrals, i.e., surface areas or volumes of specified nodesets
   void OutputDomainOrBoundaryIntegrals(const std::string condstring);
@@ -455,6 +455,12 @@ public:
 
   //! return time for solution of linear system of equations
   const double& DtSolve() const {return dtsolve_;};
+
+  //! return total values of transported scalars
+  const std::map<const int,std::vector<double> >& TotalScalars() const {return totalscalars_;};
+
+  //! return mean values of transported scalars
+  const std::map<const int,std::vector<double> >& MeanScalars() const {return meanscalars_;};
 
   /*========================================================================*/
   //! @name turbulence and related
@@ -489,10 +495,10 @@ public:
   /*========================================================================*/
 
   //! return scatra structure growth vector
-  Teuchos::RCP<Epetra_MultiVector> StrGrowth() { return scstrgrdisp_; };
+  Teuchos::RCP<const Epetra_MultiVector> StrGrowth() const { return scstrgrdisp_; };
 
   //! return scatra fluid growth vector
-  Teuchos::RCP<Epetra_MultiVector> FldGrowth() { return scfldgrdisp_; };
+  Teuchos::RCP<const Epetra_MultiVector> FldGrowth() const { return scfldgrdisp_; };
 
   //! set scatra fluid displacement vector due to biofilm growth
   void SetScFldGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp);
@@ -828,8 +834,8 @@ protected:
   //! the last step number when fluxes have been computed
   int lastfluxoutputstep_;
 
-  //! flag for printing out mean values of scalars
-  const bool outmean_;
+  //! flag for printing out total and mean values of transported scalars
+  const bool outputscalars_;
 
   //! boolean to write Gmsh postprocessing files (input parameter)
   const bool outputgmsh_;
@@ -907,10 +913,16 @@ protected:
 
   //! histvector --- a linear combination of phinm, phin (BDF)
   //!                or phin, phidtn (One-Step-Theta)
-  Teuchos::RCP<Epetra_Vector>    hist_;
+  Teuchos::RCP<Epetra_Vector> hist_;
 
   //! density at time n+alpha_F (gen-alpha) or n+1 (otherwise) for natural convection algorithm
   Teuchos::RCP<Epetra_Vector> densafnp_;
+
+  //! total values of transported scalars
+  std::map<const int,std::vector<double> > totalscalars_;
+
+  //! mean values of transported scalars
+  std::map<const int,std::vector<double> > meanscalars_;
 
   /*========================================================================*/
   //! @name velocity, pressure, and related

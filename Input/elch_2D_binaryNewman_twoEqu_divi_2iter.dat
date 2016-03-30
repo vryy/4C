@@ -30,8 +30,6 @@ TIMESTEP                        0.1
 VELOCITYFIELD                   zero
 RESULTSEVRY                     1
 MATID                           1
-WRITEFLUX                       No
-OUTMEAN                         No
 SKIPINITDER                     Yes
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-10

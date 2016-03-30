@@ -52,7 +52,7 @@ MATID                           5
 MAXTIME                         1000
 MESHTYING                       no
 NUMSTEP                         12
-OUTMEAN                         yes
+OUTPUTSCALARS                   yes
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
 SKIPINITDER                     yes

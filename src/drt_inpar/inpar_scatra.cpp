@@ -5,7 +5,7 @@
 \brief Input parameters for scatra
 
 <pre>
-Maintainer: Anh-Tu Vuong
+\maintainer Anh-Tu Vuong
             vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -171,7 +171,7 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       "Write diffusive/total flux vector fields for these scalar fields only (starting with 1)",
       &scatradyn);
 
-  BoolParameter("OUTMEAN","No","Output of mean values for scalars and density",&scatradyn);
+  BoolParameter("OUTPUTSCALARS","No","Output of total and mean values for transported scalars",&scatradyn);
   BoolParameter("OUTINTEGRREAC","No","Output of integral reaction values",&scatradyn);
   BoolParameter("OUTPUT_GMSH","No","Do you want to write Gmsh postprocessing files?",&scatradyn);
 
@@ -514,6 +514,51 @@ void INPAR::SCATRA::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
                                          DRT::Condition::Surface));
   condlist.push_back(linebndryfluxeval);
   condlist.push_back(surfbndryfluxeval);
+
+  /*--------------------------------------------------------------------*/
+  // conditions for calculation of total and mean values of transported scalars
+  Teuchos::RCP<ConditionDefinition> totalandmeanscalarline =
+      Teuchos::rcp(new ConditionDefinition("DESIGN TOTAL AND MEAN SCALAR LINE CONDITIONS",
+                                           "TotalAndMeanScalar",
+                                           "calculation of total and mean values of transported scalars",
+                                           DRT::Condition::TotalAndMeanScalar,
+                                           true,
+                                           DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> totalandmeanscalarsurf =
+      Teuchos::rcp(new ConditionDefinition("DESIGN TOTAL AND MEAN SCALAR SURF CONDITIONS",
+                                           "TotalAndMeanScalar",
+                                           "calculation of total and mean values of transported scalars",
+                                           DRT::Condition::TotalAndMeanScalar,
+                                           true,
+                                           DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> totalandmeanscalarvol =
+      Teuchos::rcp(new ConditionDefinition("DESIGN TOTAL AND MEAN SCALAR VOL CONDITIONS",
+                                           "TotalAndMeanScalar",
+                                           "calculation of total and mean values of transported scalars",
+                                           DRT::Condition::TotalAndMeanScalar,
+                                           true,
+                                           DRT::Condition::Volume));
+
+  // equip condition definitions with input file line components
+  std::vector<Teuchos::RCP<ConditionComponent> > totalandmeanscalarcomponents;
+
+  {
+    totalandmeanscalarcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
+    totalandmeanscalarcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  }
+
+  // insert input file line components into condition definitions
+  for (unsigned i=0; i<totalandmeanscalarcomponents.size(); ++i)
+  {
+    totalandmeanscalarline->AddComponent(totalandmeanscalarcomponents[i]);
+    totalandmeanscalarsurf->AddComponent(totalandmeanscalarcomponents[i]);
+    totalandmeanscalarvol->AddComponent(totalandmeanscalarcomponents[i]);
+  }
+
+  // insert condition definitions into global list of valid condition definitions
+  condlist.push_back(totalandmeanscalarline);
+  condlist.push_back(totalandmeanscalarsurf);
+  condlist.push_back(totalandmeanscalarvol);
 
   /*--------------------------------------------------------------------*/
   // Coupling of different scalar transport fields

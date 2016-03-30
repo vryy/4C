@@ -4,7 +4,7 @@
 \brief Scatra-scatra interface coupling strategy for standard scalar transport problems
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
@@ -86,8 +86,8 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! constructor
     explicit MeshtyingStrategyS2I(
-        SCATRA::ScaTraTimIntImpl*       scatratimint,   //! scalar transport time integrator
-        const Teuchos::ParameterList&   parameters      //! input parameters for scatra-scatra interface coupling
+        SCATRA::ScaTraTimIntImpl*       scatratimint,   //!< scalar transport time integrator
+        const Teuchos::ParameterList&   parameters      //!< input parameters for scatra-scatra interface coupling
         );
 
     //! destructor
@@ -132,21 +132,21 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! solve resulting linear system of equations
     void Solve(
-        const Teuchos::RCP<LINALG::Solver>&            solver,         //! solver
-        const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //! system matrix
-        const Teuchos::RCP<Epetra_Vector>&             increment,      //! increment vector
-        const Teuchos::RCP<Epetra_Vector>&             residual,       //! residual vector
-        const Teuchos::RCP<Epetra_Vector>&             phinp,          //! state vector at time n+1
-        const int&                                     iteration,      //! number of current Newton-Raphson iteration
-        const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //! Krylov projector
+        const Teuchos::RCP<LINALG::Solver>&            solver,         //!< solver
+        const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>&             increment,      //!< increment vector
+        const Teuchos::RCP<Epetra_Vector>&             residual,       //!< residual vector
+        const Teuchos::RCP<Epetra_Vector>&             phinp,          //!< state vector at time n+1
+        const int&                                     iteration,      //!< number of current Newton-Raphson iteration
+        const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
         ) const;
 
   protected:
 
     //! build maps associated with blocks of global system matrix
     virtual void BuildBlockMaps(
-        const std::vector<Teuchos::RCP<DRT::Condition> >&   partitioningconditions,   //! domain partitioning conditions
-        std::vector<Teuchos::RCP<const Epetra_Map> >&       blockmaps                 //! empty vector for maps to be built
+        const std::vector<Teuchos::RCP<DRT::Condition> >&   partitioningconditions,   //!< domain partitioning conditions
+        std::vector<Teuchos::RCP<const Epetra_Map> >&       blockmaps                 //!< empty vector for maps to be built
         ) const;
 
     //! build null spaces associated with blocks of global system matrix
@@ -259,37 +259,37 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! equilibrate global system of equations if necessary
     void EquilibrateSystem(
-        const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,   //! system matrix
-        const Teuchos::RCP<Epetra_Vector>&            residual        //! residual vector
+        const Teuchos::RCP<LINALG::SparseOperator>&   systemmatrix,   //!< system matrix
+        const Teuchos::RCP<Epetra_Vector>&            residual        //!< residual vector
         ) const;
 
     //! compute inverse sums of absolute values of matrix row entries
     void ComputeInvRowSums(
-        const LINALG::SparseMatrix&          matrix,      //! matrix
-        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //! inverse sums of absolute values of row entries in matrix
+        const LINALG::SparseMatrix&          matrix,      //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< inverse sums of absolute values of row entries in matrix
         ) const;
 
     //! compute inverse sums of absolute values of matrix column entries
     void ComputeInvColSums(
-        const LINALG::SparseMatrix&          matrix,      //! matrix
-        const Teuchos::RCP<Epetra_Vector>&   invcolsums   //! inverse sums of absolute values of column entries in matrix
+        const LINALG::SparseMatrix&          matrix,      //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&   invcolsums   //!< inverse sums of absolute values of column entries in matrix
         ) const;
 
     //! equilibrate matrix rows
     void EquilibrateMatrixRows(
-        LINALG::SparseMatrix&                matrix,      //! matrix
-        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //! sums of absolute values of row entries in matrix
+        LINALG::SparseMatrix&                matrix,      //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&   invrowsums   //!< sums of absolute values of row entries in matrix
         ) const;
 
     //! equilibrate matrix columns
     void EquilibrateMatrixColumns(
-        LINALG::SparseMatrix&                matrix,      //! matrix
-        const Teuchos::RCP<Epetra_Vector>&   invcolsums   //! sums of absolute values of column entries in matrix
+        LINALG::SparseMatrix&                matrix,      //!< matrix
+        const Teuchos::RCP<Epetra_Vector>&   invcolsums   //!< sums of absolute values of column entries in matrix
         ) const;
 
     //! unequilibrate global increment vector if necessary
     void UnequilibrateIncrement(
-        const Teuchos::RCP<Epetra_Vector>&   increment   //! increment vector
+        const Teuchos::RCP<Epetra_Vector>&   increment   //!< increment vector
         ) const;
 
     //! slave-side scatra-scatra interface coupling conditions
@@ -445,9 +445,9 @@ class MortarCellCalc : public MortarCellInterface
     void ExtractNodeValues(
         std::vector<LINALG::Matrix<nen_slave_,1> >&    ephinp_slave,    //!< state variables at slave-side nodes
         std::vector<LINALG::Matrix<nen_master_,1> >&   ephinp_master,   //!< state variables at master-side nodes
-        const DRT::Discretization&                    idiscret,        //!< interface discretization
-        DRT::Element::LocationArray&                  la_slave,        //!< slave-side location array
-        DRT::Element::LocationArray&                  la_master        //!< master-side location array
+        const DRT::Discretization&                     idiscret,         //!< interface discretization
+        DRT::Element::LocationArray&                   la_slave,         //!< slave-side location array
+        DRT::Element::LocationArray&                   la_master         //!< master-side location array
         ) const;
 
     //! evaluate shape functions and domain integration factor at integration point

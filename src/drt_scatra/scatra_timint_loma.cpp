@@ -4,7 +4,7 @@
   \brief scatra time integration for loma
 
 <pre>
-Maintainer: Ursula Rasthofer / Volker Gravemeier
+\maintainer Ursula Rasthofer / Volker Gravemeier
             {rasthofer,vgravem}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236/45
@@ -209,7 +209,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
   discret_->SetState("phinp",phin_);
   // set action for elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",SCATRA::calc_mean_scalars);
+  eleparams.set<int>("action",SCATRA::calc_total_and_mean_scalars);
   // inverted scalar values are required here
   eleparams.set("inverting",true);
 
@@ -249,7 +249,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeThermPressureFromMassCons()
   discret_->SetState("phinp",phinp_);
   // set action for elements
   Teuchos::ParameterList eleparams;
-  eleparams.set<int>("action",SCATRA::calc_mean_scalars);
+  eleparams.set<int>("action",SCATRA::calc_total_and_mean_scalars);
   // inverted scalar values are required here
   eleparams.set("inverting",true);
 

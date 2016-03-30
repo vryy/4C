@@ -31,7 +31,6 @@ VELCURVENO                      1
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
 FSSUGRDIFF                      No
-WRITEFLUX                       No
 FDCHECK                         local
 FDCHECKTOL                      2.e-3
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

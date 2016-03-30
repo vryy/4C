@@ -51,7 +51,6 @@ INITFUNCNO                      1
 FSSUGRDIFF                      No
 WRITEFLUX                       No
 CALCERROR                       No
-OUTMEAN                         No
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG //SUPG
 SUGRVEL                         no

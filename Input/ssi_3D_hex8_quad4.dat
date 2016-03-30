@@ -55,7 +55,6 @@ FSSUGRDIFF                      No
 WRITEFLUX                       No
 CONVFORM                        conservative
 SKIPINITDER                     no
-OUTMEAN                         no
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
 DEFINITION_TAU                  Franca_Valentin

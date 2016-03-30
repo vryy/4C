@@ -33,7 +33,7 @@ VELOCITYFIELD                   zero
 RESULTSEVRY                     1
 MATID                           1
 WRITEFLUX                       totalflux_boundary
-OUTMEAN                         Yes
+OUTPUTSCALARS                   Yes
 SKIPINITDER                     yes
 MAXTIME                         0.1
 NUMSTEP                         10

@@ -5,10 +5,10 @@
 comparison instead of a cumbersome std::string compare.
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
 
 *---------------------------------------------------------------------------*/
@@ -47,7 +47,7 @@ namespace SCATRA
     calc_mat_and_rhs,                            // calc_condif_systemmat_and_residual,
     calc_mat_and_rhs_lsreinit_correction_step,   // level-set action: setup of system for correction step
     calc_mean_Cai,                               // calc_mean_Cai (multifractal subgrid-scales)
-    calc_mean_scalars,                           // calc_mean_scalars,
+    calc_total_and_mean_scalars,                 // calculate total and mean values of transported scalars
     calc_node_based_reinit_velocity,             // level-set action: compute node-based velocity field for reinitialization equation
     calc_scatra_box_filter,                      // calc_scatra_box_filter,
     calc_scatra_mono_odblock_fluid,              // calculate off diagonal matrix block for coupling with fluid

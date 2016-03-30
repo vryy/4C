@@ -4,7 +4,7 @@
 \brief Fluid-fluid meshtying strategy for standard scalar transport problems
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089 - 289-15251
@@ -105,13 +105,13 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyFluid::InitSystemM
  | solve linear system of equations for fluid-fluid meshtying   fang 12/14 |
  *-------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyFluid::Solve(
-    const Teuchos::RCP<LINALG::Solver>&            solver,         //! solver
-    const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //! system matrix
-    const Teuchos::RCP<Epetra_Vector>&             increment,      //! increment vector
-    const Teuchos::RCP<Epetra_Vector>&             residual,       //! residual vector
-    const Teuchos::RCP<Epetra_Vector>&             phinp,          //! state vector at time n+1
-    const int&                                     iteration,      //! number of current Newton-Raphson iteration
-    const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //! Krylov projector
+    const Teuchos::RCP<LINALG::Solver>&            solver,         //!< solver
+    const Teuchos::RCP<LINALG::SparseOperator>&    systemmatrix,   //!< system matrix
+    const Teuchos::RCP<Epetra_Vector>&             increment,      //!< increment vector
+    const Teuchos::RCP<Epetra_Vector>&             residual,       //!< residual vector
+    const Teuchos::RCP<Epetra_Vector>&             phinp,          //!< state vector at time n+1
+    const int&                                     iteration,      //!< number of current Newton-Raphson iteration
+    const Teuchos::RCP<LINALG::KrylovProjector>&   projector       //!< Krylov projector
     ) const
 {
   meshtying_->SolveMeshtying(*solver,systemmatrix,increment,residual,phinp,iteration,projector);

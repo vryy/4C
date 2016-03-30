@@ -90,7 +90,6 @@ INITFUNCNO                      2
 INITIALFIELD                    field_by_function //zero_field //
 MAXTIME                         10000
 NUMSTEP                         10
-OUTMEAN                         No
 OUTPUT_GMSH                     No
 RESTARTEVRY                     1
 SKIPINITDER                     no //yes

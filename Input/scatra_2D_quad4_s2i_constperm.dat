@@ -38,6 +38,7 @@ WRITEFLUX                       totalflux_boundary
 CONVFORM                        convective
 SKIPINITDER                     no
 LINEAR_SOLVER                   1
+OUTPUTSCALARS                   yes
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          2
 CONVTOL                         1e-15
@@ -80,10 +81,16 @@ SCATRA DIS scatra NODE 86 QUANTITY fluxy VALUE 0.0e+00 TOLERANCE 1e-09   // need
 SCATRA DIS scatra NODE 546 QUANTITY fluxy VALUE 0.0e+00 TOLERANCE 1e-09   // needs to be zero due to impermeability
 SCATRA DIS scatra NODE 338 QUANTITY fluxz VALUE 0.0e+00 TOLERANCE 1e-09   // needs to be zero due to impermeability
 SCATRA DIS scatra NODE 798 QUANTITY fluxz VALUE 0.0e+00 TOLERANCE 1e-09   // needs to be zero due to impermeability
+SCATRA DIS scatra SPECIAL QUANTITY totalphi VALUE 1.0e+00 TOLERANCE 1e-15
+SCATRA DIS scatra SPECIAL QUANTITY totalphi2 VALUE 1.0e+00 TOLERANCE 1e-15
+SCATRA DIS scatra SPECIAL QUANTITY totalphi3 VALUE 1.0e+00 TOLERANCE 1e-15
+SCATRA DIS scatra SPECIAL QUANTITY meanphi_2 VALUE 8.46358359847117714e-01 TOLERANCE 1e-10
+SCATRA DIS scatra SPECIAL QUANTITY meanphi2_2 VALUE 1.0e+00 TOLERANCE 1e-15
+SCATRA DIS scatra SPECIAL QUANTITY meanphi3_2 VALUE 3.59397220603472511e-01 TOLERANCE 1e-10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  8
-NDSURF  2
+NDSURF  4
 NDVOL   0
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  2
@@ -103,6 +110,10 @@ E 1 -
 E 2 -
 E 3 -
 E 4 -
+----------------------DESIGN TOTAL AND MEAN SCALAR SURF CONDITIONS
+DSURF  2
+E 1 - ID 3
+E 2 - ID 2
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1
 NODE    4 DLINE 1
