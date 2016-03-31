@@ -412,13 +412,13 @@ VtkWriter::WriteResult(const std::string groupname,
                        const bool fillzeros)
 {
   Teuchos::RCP<PostResult> result = Teuchos::rcp(new PostResult(field_));
+  // only write results which exist in the first result step
   bool foundit = false;
-  while (result->next_result(groupname))
+  if (result->next_result())
   {
     if (map_has_map(result->group(), groupname.c_str()))
     {
       foundit = true;
-      break;
     }
   }
   if (!foundit) return;
