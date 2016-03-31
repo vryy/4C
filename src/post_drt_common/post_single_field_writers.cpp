@@ -3,13 +3,7 @@
 
   \brief main routine of the Ensight filter
 
-  <pre>
-  Maintainer: Martin Kronbichler
-  kronbichler@lnm.mw.tum.de
-  http://www.lnm.mw.tum.de/Members/kronbichler
-  089 - 289-15236
-  </pre>
-
+  \maintainer Martin Kronbichler
 */
 
 
@@ -18,6 +12,7 @@
 #include "post_drt_common.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_discret.H"
+#include "../post_vtk/post_drt_vtp_writer.H"
 #include <string>
 
 
@@ -432,12 +427,25 @@ void ThermoFilter::WriteAllResults(PostField* field)
 
 } // ThermoFilter::WriteAllResults
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+ParticleFilter::ParticleFilter(
+          PostField* field,
+          std::string name) :
+      PostFilterBase (field, name)
+{
+  // overwrite writer to have *.vtp output for particles,
+  // comment this line for getting back to ensight output
+  writer_ = Teuchos::rcp(new VtpWriter(field, name));
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ParticleFilter::WriteAllResults(PostField* field)
 {
   bool fillzeros = true;
-  writer_->WriteResult("displacement", "displacement", dofbased, field->problem()->num_dim(), 0, fillzeros);
   writer_->WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim(), 0, fillzeros);
   writer_->WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim(), 0, fillzeros);
   writer_->WriteResult("radius", "radius", nodebased, 1);

@@ -1512,6 +1512,7 @@ set(OBJS_POST_DRT_ENSIGHT
 set(OBJS_POST_DRT_VTK
   src/post_vtk/post_drt_vtu_writer.cpp
   src/post_vtk/post_drt_vti_writer.cpp
+  src/post_vtk/post_drt_vtp_writer.cpp
   src/post_vtk/post_drt_vtk_writer.cpp
 )
 set(OBJS_INV_ANALYSIS

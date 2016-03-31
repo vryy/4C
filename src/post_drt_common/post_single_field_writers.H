@@ -3,13 +3,7 @@
 
  \brief main routine of the Ensight filter
 
- <pre>
- Maintainer: Martin Kronbichler
- kronbichler@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15235
- </pre>
-
+ \maintainer Martin Kronbichler
  */
 
 
@@ -263,10 +257,7 @@ class ParticleFilter : public PostFilterBase
 public:
   ParticleFilter(
             PostField* field,
-            std::string name) :
-        PostFilterBase (field, name)
-  {
-  }
+            std::string name);
 
 protected:
 
