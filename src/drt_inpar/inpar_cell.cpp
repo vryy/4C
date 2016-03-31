@@ -3,10 +3,10 @@
 \file inpar_cell.cpp
 
 <pre>
-Maintainers: Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
+\maintainer Andreas Rauch
+            rauch@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 -15240
 </pre>
 */
 
@@ -375,7 +375,7 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Write diffusive/total flux vector fields for these scalar fields only (starting with 1)",
       &cellscatradyn);
 
-  BoolParameter("OUTMEAN","No","Output of mean values for scalars and density",&cellscatradyn);
+  BoolParameter("OUTPUTSCALARS","No","Output of total and mean values for transported scalars",&cellscatradyn);
   BoolParameter("OUTINTEGRREAC","No","Output of integral reaction values",&cellscatradyn);
   BoolParameter("OUTPUT_GMSH","No","Do you want to write Gmsh postprocessing files?",&cellscatradyn);
 

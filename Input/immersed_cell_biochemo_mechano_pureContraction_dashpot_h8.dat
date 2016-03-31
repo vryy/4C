@@ -111,7 +111,6 @@ INITIALFIELD                    field_by_function
 LINEAR_SOLVER                   1
 MESHTYING                       no
 NEUMANNINFLOW                   no
-OUTMEAN                         No
 OUTPUT_GMSH                     No
 SKIPINITDER                     yes
 SOLVERTYPE                      nonlinear
