@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file so3_ssn_plast_evaluate.cpp
+\maintainer Alexander Seitz
 \brief
 
 <pre>
@@ -60,7 +61,8 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
   else if (action=="calc_struct_update_istep")                    act =  calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")                     act =  calc_struct_reset_istep;
   else if (action=="postprocess_stress")                          act =  postprocess_stress;
-  else if (action == "calc_struct_stifftemp")                     act = calc_struct_stifftemp;
+  else if (action == "calc_struct_stifftemp")                     act =  calc_struct_stifftemp;
+  else if (action=="calc_struct_energy")                          act =  calc_struct_energy;
   else
     dserror("Unknown type of action for So3_Plast: %s",action.c_str());
 
@@ -500,6 +502,18 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(
 
     // calculate matrix block
     nln_kdT_tsi(&k_dT,params);
+  }
+  break;
+
+  case calc_struct_energy:
+  {
+    // need current displacement
+    Teuchos::RCP<const Epetra_Vector> disp
+      = discretization.GetState(0,"displacement");
+    std::vector<double> mydisp(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
+
+    elevec1_epetra(0) = CalcIntEnergy(mydisp,params);
   }
   break;
 
@@ -1484,7 +1498,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
           plmat->HepDiss(gp)=He;
 
           // derivative of elastic heating w.r.t. temperature *******************
-          plmat->dHepDT(gp) =He/gp_temp;
+          plmat->dHepDT(gp) =he_fac * j_dot;
 
           LINALG::Matrix<numdofperelement_,1> deriv_jdot_d(true);
           LINALG::Matrix<numdofperelement_,1> deriv_j_d(true);
@@ -1538,7 +1552,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
           plmat->HepDiss(gp)=He;
 
           // derivative of elastic heating w.r.t. temperature *******************
-          plmat->dHepDT(gp) =He/gp_temp;
+          plmat->dHepDT(gp) =he_fac * j_dot;
 
           LINALG::Matrix<numdofperelement_,1> deriv_jdot_d(true);
           LINALG::Matrix<numdofperelement_,1> deriv_j_d(true);
@@ -1624,7 +1638,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
         plmat->HepDiss(gp)=He;
 
         // derivative of elastic heating w.r.t. temperature *******************
-        plmat->dHepDT(gp) =He/gp_temp;
+        plmat->dHepDT(gp) =.5*cTvol.Dot(RCGrateVec);
 
         // derivative of elastic heating w.r.t. displacement ******************
         LINALG::Matrix<numdofperelement_,1> dHedd(true);
@@ -2462,3 +2476,172 @@ void DRT::ELEMENTS::So3_Plast<distype>::UpdatePlasticDeformation_nln(PlSpinType 
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  calculate internal energy of the element (private)                  |
+ *----------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::So3_Plast<distype>::CalcIntEnergy(
+  std::vector<double>&   disp          , // current displacements
+  Teuchos::ParameterList&         params        ) // strain output option
+{
+  double energy=0.;
+
+  // update element geometry
+  LINALG::Matrix<nen_,3> xrefe(false);      // X, material coord. of element
+  LINALG::Matrix<nen_,3> xcurr(false);      // x, current  coord. of element
+
+  DRT::Node** nodes = Nodes();
+  for (int i=0; i<nen_; ++i)
+  {
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+
+    xcurr(i,0) = xrefe(i,0) + disp[i*numdofpernode_+0];
+    xcurr(i,1) = xrefe(i,1) + disp[i*numdofpernode_+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
+  }
+
+
+  // compute derivatives N_XYZ at gp w.r.t. material coordinates
+  // by N_XYZ = J^-1 * N_rst
+  LINALG::Matrix<nsd_,nen_> N_XYZ;
+  // build deformation gradient wrt to material configuration
+  LINALG::Matrix<nsd_,nsd_> defgrd(false);
+  // shape functions and their first derivatives
+  LINALG::Matrix<nen_,1> shapefunct;
+  LINALG::Matrix<nsd_,nen_> deriv;
+
+  // ---------------------- deformation gradient at centroid of element
+  double detF_0 = -1.0;
+  LINALG::Matrix<nsd_,nsd_> defgrd_0(false);
+  LINALG::Matrix<nsd_,nsd_> invdefgrd_0(false);
+  LINALG::Matrix<3,nen_> N_XYZ_0(false);
+  if(fbar_)
+  {
+    //element coordinate derivatives at centroid
+    LINALG::Matrix<nsd_,nen_> N_rst_0(false);
+    DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
+
+    //inverse jacobian matrix at centroid
+    LINALG::Matrix<3,3> invJ_0(false);
+    invJ_0.Multiply(N_rst_0,xrefe);
+    invJ_0.Invert();
+    //material derivatives at centroid
+    N_XYZ_0.Multiply(invJ_0,N_rst_0);
+
+    //deformation gradient and its determinant at centroid
+    defgrd_0.MultiplyTT(xcurr,N_XYZ_0);
+    invdefgrd_0.Invert(defgrd_0);
+    detF_0 = defgrd_0.Determinant();
+  }
+
+  // get plastic hyperelastic material
+  MAT::PlasticElastHyper* plmat = NULL;
+  if (Material()->MaterialType()==INPAR::MAT::m_plelasthyper)
+    plmat= static_cast<MAT::PlasticElastHyper*>(Material().get());
+  else
+    dserror("elastic strain energy in so3plast elements only for plastic material");
+
+  /* evaluation of EAS variables (which are constant for the following):
+  ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
+  ** -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
+  ** -> T0^{-T}
+  */
+  std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;   // EAS matrix M at all GPs
+  LINALG::SerialDenseMatrix M;      // EAS matrix M at current GP
+  double detJ0;                     // detJ(origin)
+  // transformation matrix T0, maps M-matrix evaluated at origin
+  // between local element coords and global coords
+  // here we already get the inverse transposed T0
+  LINALG::Matrix<numstr_,numstr_> T0invT;  // trafo matrix
+
+  if (eastype_!=soh8p_easnone)
+    EasSetup(&M_GP,detJ0,T0invT,xrefe);
+
+  /* =========================================================================*/
+  /* ================================================= Loop over Gauss Points */
+  /* =========================================================================*/
+  for (int gp=0; gp<numgpt_; ++gp)
+  {
+    // shape functions (shapefunct) and their first derivatives (deriv)
+    DRT::UTILS::shape_function<distype>(xsi_[gp],shapefunct);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp],deriv);
+
+    /* get the inverse of the Jacobian matrix which looks like:
+     **            [ x_,r  y_,r  z_,r ]^-1
+     **     J^-1 = [ x_,s  y_,s  z_,s ]
+     **            [ x_,t  y_,t  z_,t ]
+     */
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    N_XYZ.Multiply(invJ_[gp],deriv); // (6.21)
+    double detJ = detJ_[gp]; // (6.22)
+
+    // (material) deformation gradient
+    // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+    defgrd.MultiplyTT(xcurr,N_XYZ);
+
+    // calcualte total rcg
+    // no F-bar modification here
+    LINALG::Matrix<3,3> total_cauchygreen(false);
+    total_cauchygreen.MultiplyTN(defgrd,defgrd);
+    LINALG::Matrix<numstr_,1> RCG;// total Cauchy green in strain-like voigt notation
+    for (int i=0; i<3; i++) RCG(i)=total_cauchygreen(i,i);
+    RCG(3)=total_cauchygreen(0,1)*2.;
+    RCG(4)=total_cauchygreen(1,2)*2.;
+    RCG(5)=total_cauchygreen(0,2)*2.;
+
+    // deformation gradient consistent with (potentially EAS-modified) GL strains
+    // without eas this is equal to the regular defgrd.
+    LINALG::Matrix<3,3> defgrd_mod(defgrd);
+
+    // EAS technology: "enhance the strains"  ----------------------------- EAS
+    if (eastype_ != soh8p_easnone)
+    {
+      // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+      LINALG::Matrix<numstr_,1> total_glstrain(false);
+      total_glstrain(0) = 0.5 * (total_cauchygreen(0,0) - 1.0);
+      total_glstrain(1) = 0.5 * (total_cauchygreen(1,1) - 1.0);
+      total_glstrain(2) = 0.5 * (total_cauchygreen(2,2) - 1.0);
+      total_glstrain(3) = total_cauchygreen(0,1);
+      total_glstrain(4) = total_cauchygreen(1,2);
+      total_glstrain(5) = total_cauchygreen(2,0);
+      M.LightShape(numstr_,neas_);
+      // add enhanced strains = M . alpha to GL strains to "unlock" element
+      switch(eastype_)
+      {
+      case soh8p_easfull:
+        LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,soh8p_easfull>(M.A(), detJ0/detJ, T0invT.A(), (M_GP->at(gp)).A());
+        LINALG::DENSEFUNCTIONS::multiply<double,numstr_,soh8p_easfull,1>(1.0,total_glstrain.A(),1.0,M.A(),alpha_eas_->A());
+        break;
+      case soh8p_easmild:
+        LINALG::DENSEFUNCTIONS::multiply<double,numstr_,numstr_,soh8p_easmild>(M.A(), detJ0/detJ, T0invT.A(), (M_GP->at(gp)).A());
+        LINALG::DENSEFUNCTIONS::multiply<double,numstr_,soh8p_easmild,1>(1.0,total_glstrain.A(),1.0,M.A(),alpha_eas_->A());
+        break;
+      case soh8p_easnone: break;
+      default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+      }
+
+      // calculate deformation gradient consistent with modified GL strain tensor
+      CalcConsistentDefgrd(defgrd,total_glstrain,defgrd_mod);
+    } // ------------------------------------------------------------------ EAS
+
+    if (fbar_)
+    {
+      double detF=defgrd.Determinant();
+      double f_bar_factor=std::pow(detF_0/detF,1/3.);
+      defgrd_mod.Scale(f_bar_factor);
+    }
+
+    double psi = plmat->StrainEnergy(defgrd_mod,gp,Id());
+
+    double detJ_w = detJ*wgt_[gp];
+    energy += detJ_w*psi;
+
+  } // gp loop
+
+  return energy;
+}

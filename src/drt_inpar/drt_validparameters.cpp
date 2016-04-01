@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file drt_validparameters.cpp
+\maintainer Martin Kronbichler
 
 \brief Setup of the list of valid input parameters
 
@@ -68,6 +69,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_volmortar.H"
 #include "inpar_windkessel.H"
 #include "inpar_loca_continuation.H"
+#include "inpar_plasticity.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -604,6 +606,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::STATMECH::SetValidParameters(list);
   INPAR::CRACK::SetValidParameters(list);
   INPAR::LOCA::SetValidParameters(list);
+  INPAR::PLASTICITY::SetValidParameters(list);
 
   INPAR::THR::SetValidParameters(list);
   INPAR::TSI::SetValidParameters(list);

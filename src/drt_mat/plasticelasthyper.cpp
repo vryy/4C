@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file plasticelasthyper.cpp
+\maintainer Alexander Seitz
 \brief
 This file contains the hyperelastic toolbox with application to finite
 strain plasticity using a semi-smooth Newton method. It allows summing up
@@ -50,6 +51,7 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(
   inittemp_(matdata->GetDouble("INITTEMP")),
   yieldsoft_(matdata->GetDouble("YIELDSOFT")),
   hardsoft_(matdata->GetDouble("HARDSOFT")),
+  taylor_quinney_(matdata->GetDouble("TAYLOR_QUINNEY")),
   plspin_chi_(-1.*matdata->GetDouble("PL_SPIN_CHI")),
   rY_11_(matdata->GetDouble("rY_11")),
   rY_22_(matdata->GetDouble("rY_22")),
@@ -590,6 +592,35 @@ void MAT::PlasticElastHyper::EvaluateElast(
 }
 
 /*----------------------------------------------------------------------*
+ |  evaluate elastic strain energy                          seitz 03/16 |
+ *----------------------------------------------------------------------*/
+double MAT::PlasticElastHyper::StrainEnergy(const LINALG::Matrix<3,3>& defgrd,const int gp,const int eleGID)
+{
+  double psi=0.;
+
+  LINALG::Matrix<3,3> Fe;
+  Fe.Multiply(defgrd,last_plastic_defgrd_inverse_[gp]);
+  LINALG::Matrix<3,3> elRCG;
+  elRCG.MultiplyTN(Fe,Fe);
+  LINALG::Matrix<6,1> elRCGv;
+  for(int i=0;i<3;++i)
+    elRCGv(i)=elRCG(i,i);
+  elRCGv(3)=elRCG(0,1)+elRCG(1,0);
+  elRCGv(4)=elRCG(2,1)+elRCG(1,2);
+  elRCGv(5)=elRCG(0,2)+elRCG(2,0);
+  LINALG::Matrix<3,1> prinv;
+  InvariantsPrincipal(prinv,elRCGv);
+  LINALG::Matrix<3,1> modinv;
+  InvariantsModified(modinv,prinv);
+
+  // loop map of associated potential summands
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+    potsum_[p]->AddStrainEnergy(psi,prinv,modinv, eleGID);
+
+  return psi;
+}
+
+/*----------------------------------------------------------------------*
  |  evaluate thermal stress and stiffness                   seitz 06/14 |
  *----------------------------------------------------------------------*/
 void MAT::PlasticElastHyper::EvaluateThermalStress(
@@ -1020,119 +1051,135 @@ void MAT::PlasticElastHyper::EvaluateNCP(
     //TSI
     if (dNCPdT!=NULL)
     {
-      // plastic heating
-      double plHeating = (0.
-          -Isohard()*HardSoft()*aI
-          -(Infyield()*HardSoft()-Inityield()*YieldSoft())
-          *(1.-exp(-Expisohard()*aI))
-      )*temp*delta_alpha_i_[gp];
-      switch (DisMode())
+      if (DisMode()==INPAR::TSI::Taylor_Quinney)
       {
-      case INPAR::TSI::pl_multiplier:
-        plHeating+=delta_alpha_i_[gp]*(0.
-            +Inityield()*(1.-YieldSoft()*dT)
-            +Isohard()*(1.-HardSoft()*dT)*aI
-            +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
-              *(1.-exp(-Expisohard()*aI))
-                              );
-        break;
-      case INPAR::TSI::pl_flow:
-        plHeating += eta_v_strainlike.Dot(deltaDp_v);
-        break;
-      default:
-        dserror("unknown plastic dissipation mode: %d",DisMode());
-        break;
+        double plHeating =TaylorQuinney()*eta_v_strainlike.Dot(deltaDp_v);
+        LINALG::Matrix<6,1> dHpDeta(true);
+        dHpDeta.Update(TaylorQuinney(),deltaDp_v_strainlike,1.);
+        dHdC->MultiplyTN(*dMdC,dHpDeta);
+        dHdDp->MultiplyTN(detaddp,dHpDeta);
+        dHdDp->Update(TaylorQuinney(),eta_v_strainlike,1.);
+        plHeating          /=dt;
+        dHdC-> Scale(1./dt);
+        dHdDp->Scale(1./dt);
+        HepDiss(gp)+=plHeating;
       }
-
-      // derivative w.r.t. temperature
-      double dPlHeatingDT = (0.
-          -Isohard()*HardSoft()*aI
-          +(Infyield()*(-HardSoft())-Inityield()*(-YieldSoft()))
-          *(1.-exp(-Expisohard()*aI))
-      )*delta_alpha_i_[gp];
-      switch (DisMode())
+      else
       {
-      case INPAR::TSI::pl_multiplier:
-        dPlHeatingDT+=-delta_alpha_i_[gp]*(0.
-            +Inityield()*YieldSoft()
-            +Isohard()*HardSoft()*aI
-            +(Infyield()*HardSoft()-Inityield()*YieldSoft())
+        // plastic heating
+        double plHeating = (0.
+            -Isohard()*HardSoft()*aI
+            -(Infyield()*HardSoft()-Inityield()*YieldSoft())
             *(1.-exp(-Expisohard()*aI))
-        );
-        break;
-      case INPAR::TSI::pl_flow:
-        // do nothing
-        break;
-      default:
-        dserror("unknown plastic dissipation mode: %d",DisMode());
-        break;
+        )*temp*delta_alpha_i_[gp];
+        switch (DisMode())
+        {
+        case INPAR::TSI::pl_multiplier:
+          plHeating+=delta_alpha_i_[gp]*(0.
+              +Inityield()*(1.-YieldSoft()*dT)
+              +Isohard()*(1.-HardSoft()*dT)*aI
+              +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
+              *(1.-exp(-Expisohard()*aI))
+          );
+          break;
+        case INPAR::TSI::pl_flow:
+          plHeating += eta_v_strainlike.Dot(deltaDp_v);
+          break;
+        default:
+          dserror("unknown plastic dissipation mode: %d",DisMode());
+          break;
+        }
+
+        // derivative w.r.t. temperature
+        double dPlHeatingDT = (0.
+            -Isohard()*HardSoft()*aI
+            +(Infyield()*(-HardSoft())-Inityield()*(-YieldSoft()))
+            *(1.-exp(-Expisohard()*aI))
+        )*delta_alpha_i_[gp];
+        switch (DisMode())
+        {
+        case INPAR::TSI::pl_multiplier:
+          dPlHeatingDT+=-delta_alpha_i_[gp]*(0.
+              +Inityield()*YieldSoft()
+              +Isohard()*HardSoft()*aI
+              +(Infyield()*HardSoft()-Inityield()*YieldSoft())
+              *(1.-exp(-Expisohard()*aI))
+          );
+          break;
+        case INPAR::TSI::pl_flow:
+          // do nothing
+          break;
+        default:
+          dserror("unknown plastic dissipation mode: %d",DisMode());
+          break;
+        }
+
+        // derivative w.r.t. Delta alpha i
+        double dPlHeatingDdai = temp*(0.
+            -Isohard()*HardSoft()*aI
+            +(Infyield()*(-HardSoft())-Inityield()*(-YieldSoft()))
+            *(1.-exp(-Expisohard()*aI))
+        )
+          +temp*delta_alpha_i_[gp]*(0.
+              -Isohard()*HardSoft()
+              +(-Infyield()*HardSoft()+Inityield()*YieldSoft())
+              *Expisohard()*exp(-Expisohard()*aI)
+          );
+        switch (DisMode())
+        {
+        case INPAR::TSI::pl_multiplier:
+          dPlHeatingDdai+= +Inityield()*(1.-YieldSoft()*dT)
+          +Isohard()*(1.-HardSoft()*dT)*(last_alpha_isotropic_[gp]+2.*delta_alpha_i_[gp])
+          +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
+          *( (1.-exp(-Expisohard()*aI)) + delta_alpha_i_[gp]*Expisohard()*exp(-Expisohard()*aI) );
+          break;
+        case INPAR::TSI::pl_flow:
+          // do nothing
+          break;
+        default:
+          dserror("unknown plastic dissipation mode: %d",DisMode());
+          break;
+        }
+
+        // this factor is from the evolution equation for delta_alpha_i
+        dPlHeatingDdai*=sq;
+
+        // derivative w.r.t. eta
+        LINALG::Matrix<6,1> dHpDeta(true);
+        if (dDpHeta>0.)
+        {
+          tmp61.Multiply(PlAniso_full_,eta_v_strainlike);
+          dHpDeta.Update(dPlHeatingDdai*dDpHeta/(abseta_H*absHeta*absHeta),tmp61,1.);
+          dHpDeta.Update(dPlHeatingDdai*abseta_H/(absHeta*absHeta),HdDp_strainlike,1.);
+          dHpDeta.Update(-2.*dPlHeatingDdai*abseta_H*dDpHeta/(pow(absHeta,4.)),HetaH_strainlike,1.);
+        }
+
+        if (DisMode()==INPAR::TSI::pl_flow)
+          dHpDeta.Update(1.,deltaDp_v_strainlike,1.);
+
+        //derivative w.r.t. C
+        dHdC->MultiplyTN(*dMdC,dHpDeta);
+
+        // derivative w.r.t. Delta Dp
+        dHdDp->MultiplyTN(detaddp,dHpDeta);
+        if (dDpHeta>0.)
+        {
+          tmp61.Multiply(PlAniso_full_,eta_v_strainlike);
+          dHdDp->Update(dPlHeatingDdai*abseta_H/(absHeta*absHeta),tmp61,1.);
+        }
+        if (DisMode()==INPAR::TSI::pl_flow)
+          dHdDp->Update(1.,eta_v_strainlike,1.);
+
+        // scaling with time step
+        plHeating          /=dt;
+        dPlHeatingDT       /=dt;
+        dHdC-> Scale(1./dt);
+        dHdDp->Scale(1./dt);
+
+        // communicate to the element via params (not nice)
+        HepDiss(gp)+=plHeating;
+        (*dHepDissdT_)[gp]+= dPlHeatingDT;
       }
-
-      // derivative w.r.t. Delta alpha i
-      double dPlHeatingDdai = temp*(0.
-          -Isohard()*HardSoft()*aI
-          +(Infyield()*(-HardSoft())-Inityield()*(-YieldSoft()))
-          *(1.-exp(-Expisohard()*aI))
-      )
-      +temp*delta_alpha_i_[gp]*(0.
-          -Isohard()*HardSoft()
-          +(-Infyield()*HardSoft()+Inityield()*YieldSoft())
-          *Expisohard()*exp(-Expisohard()*aI)
-      );
-      switch (DisMode())
-      {
-      case INPAR::TSI::pl_multiplier:
-        dPlHeatingDdai+= +Inityield()*(1.-YieldSoft()*dT)
-        +Isohard()*(1.-HardSoft()*dT)*(last_alpha_isotropic_[gp]+2.*delta_alpha_i_[gp])
-        +(Infyield()*(1.-HardSoft()*dT)-Inityield()*(1.-YieldSoft()*dT))
-        *( (1.-exp(-Expisohard()*aI)) + delta_alpha_i_[gp]*Expisohard()*exp(-Expisohard()*aI) );
-        break;
-      case INPAR::TSI::pl_flow:
-        // do nothing
-        break;
-      default:
-        dserror("unknown plastic dissipation mode: %d",DisMode());
-        break;
-      }
-
-      // this factor is from the evolution equation for delta_alpha_i
-      dPlHeatingDdai*=sq;
-
-      // derivative w.r.t. eta
-      LINALG::Matrix<6,1> dHpDeta(true);
-      if (dDpHeta>0.)
-      {
-        tmp61.Multiply(PlAniso_full_,eta_v_strainlike);
-        dHpDeta.Update(dPlHeatingDdai*dDpHeta/(abseta_H*absHeta*absHeta),tmp61,1.);
-        dHpDeta.Update(dPlHeatingDdai*abseta_H/(absHeta*absHeta),HdDp_strainlike,1.);
-        dHpDeta.Update(-2.*dPlHeatingDdai*abseta_H*dDpHeta/(pow(absHeta,4.)),HetaH_strainlike,1.);
-      }
-
-      if (DisMode()==INPAR::TSI::pl_flow)
-        dHpDeta.Update(1.,deltaDp_v_strainlike,1.);
-
-      //derivative w.r.t. C
-      dHdC->MultiplyTN(*dMdC,dHpDeta);
-
-      // derivative w.r.t. Delta Dp
-      dHdDp->MultiplyTN(detaddp,dHpDeta);
-      if (dDpHeta>0.)
-      {
-        tmp61.Multiply(PlAniso_full_,eta_v_strainlike);
-        dHdDp->Update(dPlHeatingDdai*abseta_H/(absHeta*absHeta),tmp61,1.);
-      }
-      if (DisMode()==INPAR::TSI::pl_flow)
-        dHdDp->Update(1.,eta_v_strainlike,1.);
-
-      // scaling with time step
-      plHeating          /=dt;
-      dPlHeatingDT       /=dt;
-      dHdC-> Scale(1./dt);
-      dHdDp->Scale(1./dt);
-
-      // communicate to the element via params (not nice)
-      HepDiss(gp)+=plHeating;
-      (*dHepDissdT_)[gp]+= dPlHeatingDT;
     } //TSI
 
     // plastic gp

@@ -1,14 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file inpar_tsi.H
+\maintainer Alexander Seitz
 
 \brief
 
 <pre>
-Maintainer: Caroline Danowski
-            danowski@lnm.mw.tum.de
+Maintainer: Alexander Seitz
+            seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15253
+            089 - 289-15271
 </pre>
 */
 
@@ -150,7 +151,8 @@ namespace TSI
   enum DissipationMode
   {
     pl_multiplier,   //!< Dissipation = yield stress times plastic multipler
-    pl_flow          //!< Dissipation = Mandel stress : sym(L^p)
+    pl_flow,         //!< Dissipation = Mandel stress : sym(L^p)
+    Taylor_Quinney   //!< Dissipation based on Taylor Quinney factor
   };
 
   //@}

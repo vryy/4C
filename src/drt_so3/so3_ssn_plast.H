@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file so3_ssn_plast.H
+\maintainer Alexander Seitz
 
 <pre>
    Maintainer: Alexander Seitz
@@ -294,7 +295,8 @@ namespace ELEMENTS
                                  //!< during iteration to last converged state
                                  //!< needed for predictor TangDis
       postprocess_stress,        //!< postprocess stresses
-      calc_struct_stifftemp      //!< calculate the coupling block K_dT in monolithic TSI
+      calc_struct_stifftemp,      //!< calculate the coupling block K_dT in monolithic TSI
+      calc_struct_energy          //!< compute internal elastic energy
     };
 
     /*!
@@ -476,6 +478,12 @@ namespace ELEMENTS
     /*! \brief Return if plastic spin is solved for.
      */
     virtual bool HavePlasticSpin();
+
+
+    //! calculate internal elastic energy
+    double CalcIntEnergy(
+        std::vector<double>&   disp,
+        Teuchos::ParameterList&         params);
 
     //@}
 

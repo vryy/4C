@@ -772,6 +772,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_mlmc.cpp
   src/drt_inpar/inpar_mortar.cpp
   src/drt_inpar/inpar_poroelast.cpp
+  src/drt_inpar/inpar_plasticity.cpp
   src/drt_inpar/inpar_poroscatra.cpp
   src/drt_inpar/inpar_potential.cpp
   src/drt_inpar/inpar_problemtype.cpp

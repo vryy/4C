@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file plasticelasthyper.H
+\maintainer Alexander Seitz
 
 <pre>
 Maintainer: Alexander Seitz
@@ -91,6 +92,8 @@ namespace MAT
       const double yieldsoft_;
       //! hardening softening
       const double hardsoft_;
+      //! taylor quinney factor
+      const double taylor_quinney_;
       /// plastic spin parameter
       const double plspin_chi_;
       /// parameters of Hill yield criterion (relative yield stresses)
@@ -242,6 +245,9 @@ private:
     /// isotropic Hardening softening with temperature
     virtual double HardSoft() const {return MatParams()->hardsoft_;}
 
+    /// Taylor Quinney factor
+    virtual double TaylorQuinney() const {return MatParams()->taylor_quinney_;}
+
     /// set dissipation mode
     virtual void SetDissipationMode(INPAR::TSI::DissipationMode mode)
     {if (MatParams()!=NULL) MatParams()->dis_mode_=mode;}
@@ -335,6 +341,8 @@ private:
                           LINALG::Matrix<6,6>* cmat,          ///< Constitutive matrix
                           const int eleGID)                    ///< Element GID
     {dserror("PlasticHyperElast cannot be called by standard evaluate routine"); return;}
+
+    virtual double StrainEnergy(const LINALG::Matrix<3,3>& defgrd,const int gp,const int eleGID);
 
     /// setup material data
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
