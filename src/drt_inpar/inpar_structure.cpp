@@ -5,7 +5,7 @@
 \brief Input parameters for combustion
 
 <pre>
-Maintainer: Alexander Seitz
+\maintainer Alexander Seitz
             seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -311,7 +311,8 @@ namespace INPAR
                                     "adapt_step",
                                     "rand_adapt_step",
                                     "rand_adapt_step_ele_err",
-                                    "repeat_simulation"),
+                                    "repeat_simulation",
+                                    "adapt_penaltycontact"),
                                   tuple<int>(
                                     divcont_stop,
                                     divcont_continue,
@@ -320,7 +321,8 @@ namespace INPAR
                                     divcont_adapt_step,
                                     divcont_rand_adapt_step,
                                     divcont_rand_adapt_step_ele_err,
-                                    divcont_repeat_simulation),
+                                    divcont_repeat_simulation,
+                                    divcont_adapt_penaltycontact),
                                   &sdyn);
 
     setStringToIntegralParameter<int>("NLNSOL","fullnewton","Nonlinear solution technique",

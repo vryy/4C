@@ -2,7 +2,7 @@
 \file meshtying_lagrange_strategy.H
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -132,6 +132,7 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) {}
     double InitialPenalty() {return 0.0;}
     void ResetPenalty() {}
+    void ModifyPenalty() {}
     void SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis) {}
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}

@@ -2,7 +2,7 @@
 \file meshtying_abstract_strategy.H
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -311,6 +311,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     virtual double InitialPenalty() = 0;
     virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
     virtual void ResetPenalty() = 0;
+    virtual void ModifyPenalty() = 0;
     virtual void BuildSaddlePointSystem(Teuchos::RCP<LINALG::SparseOperator> kdd, Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<LINALG::MapExtractor> dbcmaps, int numiter,Teuchos::RCP<Epetra_Operator>& blockMat, Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) = 0;
     virtual void UpdateDisplacementsAndLMincrements(Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<Epetra_Vector> blocksol) = 0;
     virtual void UpdateUzawaAugmentedLagrange() = 0;

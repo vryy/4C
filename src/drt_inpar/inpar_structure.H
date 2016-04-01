@@ -3,7 +3,7 @@
 \file inpar_structure.H
 
 <pre>
-Maintainer: Burkhard Bornemann
+\maintainer Burkhard Bornemann
             bornemann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -329,6 +329,7 @@ namespace INPAR
       divcont_rand_adapt_step,    ///< adapt randomly time step and carry on with simulation
       divcont_rand_adapt_step_ele_err,    ///< adapt randomly time step and carry on with simulation, including acceptance of element errors in form of negative Jacobian determinant
       divcont_repeat_simulation,  ///< repeat the whole simulation
+      divcont_adapt_penaltycontact,  ///< slightly adapt the penalty contact parameter if timestep doesn't converge
     };
 
     /// Map  enum to string
@@ -361,8 +362,11 @@ namespace INPAR
         return "rand_adapt_step_ele_err";
         break;
       case divcont_repeat_simulation :
-         return "repeat_simulation";
-         break;
+        return "repeat_simulation";
+        break;
+      case divcont_adapt_penaltycontact :
+        return "adapt_penaltycontact";
+        break;
       default :
         dserror("Cannot make string for solution div cont technique %d", name);
         return "";

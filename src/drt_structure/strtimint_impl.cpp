@@ -4,7 +4,7 @@
 \brief Implicit time integration for structural dynamics
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -2028,7 +2028,7 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror, int eleerror)
   }
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
-  else if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
+  else if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation or divcontype_==INPAR::STR::divcont_adapt_penaltycontact))
   {
     return linerror;
   }
@@ -2048,7 +2048,7 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror, int eleerror)
         IO::cout<<"Newton unconverged in " << iter_ << " iterations, continuing" <<IO::endl;
       return 0;
     }
-    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
+    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation or divcontype_==INPAR::STR::divcont_adapt_penaltycontact))
     {
       if (myrank_ == 0)
         IO::cout<< "Newton unconverged in " << iter_ << " iterations " << IO::endl;
@@ -2064,7 +2064,7 @@ int STR::TimIntImpl::NewtonFullErrorCheck(int linerror, int eleerror)
 int STR::TimIntImpl::LinSolveErrorCheck(int linerror)
 {
   // we only care about problems in the linear solver if we have a fancy divcont action
-  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation) )
+  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step_ele_err or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation or divcontype_==INPAR::STR::divcont_adapt_penaltycontact) )
   {
     if (myrank_ == 0)
     IO::cout<< "Linear solver is having trouble " << IO::endl;
@@ -3140,7 +3140,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
   // now some error checks
   // do we have a problem in the linear solver
   // only check if we want to do something fancy other wise we ignore the error in the linear solver
-  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation) )
+  if(linerror and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation or divcontype_==INPAR::STR::divcont_adapt_penaltycontact) )
   {
     return linerror;
   }
@@ -3162,7 +3162,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
           conman_->ComputeMonitorValues(disn_);
       return 0;
     }
-    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation))
+    else if ( (iter_ >= itermax_) and (divcontype_==INPAR::STR::divcont_halve_step or divcontype_==INPAR::STR::divcont_adapt_step or divcontype_==INPAR::STR::divcont_rand_adapt_step or divcontype_==INPAR::STR::divcont_repeat_step or divcontype_==INPAR::STR::divcont_repeat_simulation or divcontype_==INPAR::STR::divcont_adapt_penaltycontact))
     {
       if (myrank_ == 0)
         IO::cout<< "Newton unconverged in " << iter_ << " iterations " << IO::endl;

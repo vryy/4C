@@ -2,7 +2,7 @@
 \file contact_penalty_strategy.cpp
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -423,6 +423,30 @@ void CONTACT::CoPenaltyStrategy::ResetPenalty()
   {
     interface_[i]->IParams().set<double>("PENALTYPARAM",InitialPenalty());
     interface_[i]->IParams().set<double>("PENALTYPARAMTAN",InitialPenaltyTan());
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | modify penalty parameter to intial value                    mhv 03/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoPenaltyStrategy::ModifyPenalty()
+{
+
+  // generate random number between 0.95 and 1.05
+  double randnum = ((double) rand()/(double) RAND_MAX) * 0.1 + 0.95;
+  double pennew = randnum * InitialPenalty();
+
+  // modify penalty parameter in strategy
+  Params().set<double>("PENALTYPARAM",pennew);
+  Params().set<double>("PENALTYPARAMTAN",pennew);
+
+  // modify penalty parameter in all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->IParams().set<double>("PENALTYPARAM",pennew);
+    interface_[i]->IParams().set<double>("PENALTYPARAMTAN",pennew);
   }
 
   return;

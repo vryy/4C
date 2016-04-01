@@ -4,7 +4,7 @@
 \brief Time integration for structural dynamics
 
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -3562,6 +3562,15 @@ INPAR::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(INPAR::STR::Conver
       ResetStep();
 
       return INPAR::STR::conv_success;
+    }
+    break;
+    case INPAR::STR::divcont_adapt_penaltycontact:
+    {
+      // adapt penalty and search parameter
+      if(cmtbridge_->HaveContact())
+      {
+        cmtbridge_->GetStrategy().ModifyPenalty();
+      }
     }
     break;
     case INPAR::STR::divcont_repeat_simulation:

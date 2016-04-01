@@ -2,7 +2,7 @@
 \file smoothing_strategy.H
 
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -262,6 +262,7 @@ class SmoothingStrategy : public CoAbstractStrategy
     double InitialPenalty() {return 0.0;}
     void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) {}
     void ResetPenalty() {}
+    void ModifyPenalty() {}
     void SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis) {}
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
