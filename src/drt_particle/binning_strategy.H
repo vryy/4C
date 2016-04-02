@@ -130,14 +130,14 @@ namespace BINSTRATEGY
       );
 
     /// return flag whether pbcs are applied to the problem
-    virtual bool HavePBCs() { return havepbc_; }
+    virtual bool HavePBCs(const int dim = -1) { if(dim == -1) return havepbc_; else return pbconoff_[dim]; };
 
-    /// return pbc boundaries of the problem
-    virtual const std::vector<std::vector<double> >& PBCbounds() { return pbcbounds_; }
+    /// return delta for pbc in x, y, or z direction
+    virtual double PBCDelta(const int dim) { return pbcdeltas_[dim]; };
 
     /// convert i,j,k into bin id
     virtual int ConvertijkToGid(
-      const int* ijk  ///< i,j,k to be converted into a bin id
+      int* ijk  ///< i,j,k to be converted into a bin id
       );
 
     /// get all bin ids for given range of ijk
@@ -232,11 +232,17 @@ namespace BINSTRATEGY
 
     double bin_size_[3];    ///< size of each bin in Cartesian coordinates
 
+    double inv_bin_size_[3];   ///< inverse of size of each bin in Cartesian coordinates
+
     int bin_per_dir_[3];    ///< number of bins per direction
 
     bool havepbc_;   ///< flag whether periodic boundary conditions are specified for particles
 
-    std::vector<std::vector<double> > pbcbounds_;   ///< bounds for pbcs in x, y, z direction
+    bool pbconoff_[3];   ///< flags for existence of pbcs in x, y, z direction
+
+    LINALG::Matrix<3,2> pbcbounds_;   ///< bounds for pbcs in x, y, z direction
+
+    double pbcdeltas_[3];   ///< deltas for pbcs in x, y, z direction
 
     const INPAR::PARTICLE::ParticleDim particle_dim_;   ///< dimension of problem
 

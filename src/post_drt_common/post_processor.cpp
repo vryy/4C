@@ -4,10 +4,10 @@
  \brief main routine of the main postprocessor filters
 
  <pre>
- Maintainer: Martin Kronbichler
- kronbichler@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15235
+ \maintainer Martin Kronbichler
+             kronbichler@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15235
  </pre>
 
  */
@@ -181,13 +181,36 @@ void runEnsightVtuFilter(PostProblem    &problem)
     }
     case prb_particle:
     {
-      PostField* particlewallfield = problem.get_discretization(0);
-      StructureFilter writer(particlewallfield, problem.outname(), problem.stresstype(), problem.straintype());
-      writer.WriteFiles();
+      switch(problem.num_discr())
+      {
+        case 1:
+        {
+          PostField* particlefield = problem.get_discretization(0);
+          ParticleFilter  particlewriter(particlefield, problem.outname());
+          particlewriter.WriteFiles();
 
-      PostField* particlefield = problem.get_discretization(1);
-      ParticleFilter  particlewriter(particlefield, problem.outname());
-      particlewriter.WriteFiles();
+          break;
+        }
+
+        case 2:
+        {
+          PostField* particlewallfield = problem.get_discretization(0);
+          StructureFilter writer(particlewallfield, problem.outname(), problem.stresstype(), problem.straintype());
+          writer.WriteFiles();
+
+          PostField* particlefield = problem.get_discretization(1);
+          ParticleFilter  particlewriter(particlefield, problem.outname());
+          particlewriter.WriteFiles();
+
+          break;
+        }
+
+        default:
+        {
+          dserror("Particle problem has illegal number of discretizations!");
+          break;
+        }
+      }
 
       break;
     }

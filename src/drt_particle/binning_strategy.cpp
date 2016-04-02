@@ -46,7 +46,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   cutoff_radius_(cutoff_radius),
   XAABB_(XAABB),
   havepbc_(false),
-  pbcbounds_(0),
+  pbcbounds_(true),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
   sparse_binning_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"SPARSE_BIN_DISTRIBUTION")),
   myrank_(comm.MyPID())
@@ -55,7 +55,17 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
     dserror("XAABB is not computed correctly");
 
   if(cutoff_radius_ <= 0.0)
-    dserror("cutoff radius cannot be zero or negativ");
+    dserror("Cutoff radius cannot be zero or negative!");
+
+  // initialize arrays
+  for(unsigned idim=0; idim<3; ++idim)
+  {
+    bin_size_[idim] = 0.0;
+    inv_bin_size_[idim] = 0.0;
+    bin_per_dir_[idim] = 0;
+    pbconoff_[idim] = false;
+    pbcdeltas_[idim] = 0.0;
+  }
 
   // compute bins
   CreateBins(Teuchos::null);
@@ -72,7 +82,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   ) :
   particledis_(Teuchos::null),
   havepbc_(false),
-  pbcbounds_(0),
+  pbcbounds_(true),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
   sparse_binning_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"SPARSE_BIN_DISTRIBUTION")),
   myrank_(comm.MyPID())
@@ -108,10 +118,13 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
     }
   }
 
-  // initialize bin size
-  for(int dim=0; dim<3; ++dim)
+  // initialize arrays
+  for(int idim=0; idim<3; ++idim)
   {
-    bin_size_[dim] = 0.0;
+    bin_size_[idim] = 0.0;
+    inv_bin_size_[idim] = 0.0;
+    pbconoff_[idim] = false;
+    pbcdeltas_[idim] = 0.0;
   }
 
   return;
@@ -129,11 +142,21 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   particledis_(Teuchos::null),
   cutoff_radius_(0.0),
   havepbc_(false),
-  pbcbounds_(0),
+  pbcbounds_(true),
   particle_dim_(DRT::INPUT::IntegralValue<INPAR::PARTICLE::ParticleDim>(DRT::Problem::Instance()->ParticleParams(),"DIMENSION")),
   sparse_binning_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"SPARSE_BIN_DISTRIBUTION")),
   myrank_(dis[0]->Comm().MyPID())
 {
+  // initialize arrays
+  for(int idim=0; idim<3; ++idim)
+  {
+    bin_size_[idim] = 0.0;
+    inv_bin_size_[idim] = 0.0;
+    bin_per_dir_[idim] = 0;
+    pbconoff_[idim] = false;
+    pbcdeltas_[idim] = 0.0;
+  }
+
   WeightedRepartitioning(dis,stdelecolmap,stdnodecolmap);
 
   return;
@@ -867,7 +890,12 @@ void BINSTRATEGY::BinningStrategy::CreateBins(Teuchos::RCP<DRT::Discretization> 
       bin_per_dir_[dim] = std::max(1, (int)((XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_));
 
     bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0))/bin_per_dir_[dim];
+    inv_bin_size_[dim] = 1.0/bin_size_[dim];
   }
+
+  // determine cutoff radius for prescribed number of bins per direction
+  if(cutoff_radius_ <= 0.)
+    cutoff_radius_ = std::min(bin_size_[0],std::min(bin_size_[1],bin_size_[2]));
 
   if(particle_dim_ != INPAR::PARTICLE::particle_3D)
   {
@@ -891,6 +919,7 @@ void BINSTRATEGY::BinningStrategy::CreateBins(Teuchos::RCP<DRT::Discretization> 
     // one bin in pseudo direction is enough
     bin_per_dir_[entry] = 1;
     bin_size_[entry] = (XAABB_(entry,1)-XAABB_(entry,0))/bin_per_dir_[entry];
+    inv_bin_size_[entry] = 1.0/bin_size_[entry];
   }
 
 //  if(myrank_ == 0)
@@ -1065,12 +1094,12 @@ void BINSTRATEGY::BinningStrategy::BuildParticlePeriodicBC()
       if(bin_per_dir_[dim] < 3)
         dserror("There are just very few bins in pbc direction -> maybe nasty for neighborhood search (especially in contact)");
 
-      pbcbounds_.push_back(bound);
-    }
-    else
-    {
-      std::vector<double> nobound(2,0.0);
-      pbcbounds_.push_back(nobound);
+      pbconoff_[dim] = true;
+      pbcbounds_(dim,0) = bound[0];
+      pbcbounds_(dim,1) = bound[1];
+
+      // offset delta for pbc direction
+      pbcdeltas_[dim] = bound[1] - bound[0];
     }
   }
 
@@ -1085,9 +1114,7 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const std::vector<double>& pos
 {
   int ijk[3] = {0,0,0};
   for(int dim=0; dim < 3; dim++)
-  {
-    ijk[dim] = (int)(std::floor((pos[dim]-XAABB_(dim,0)) / bin_size_[dim]));
-  }
+    ijk[dim] = (int)(std::floor((pos[dim]-XAABB_(dim,0)) * inv_bin_size_[dim]));
 
   return ConvertijkToGid(&ijk[0]);
 }
@@ -1100,9 +1127,7 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const double* pos)
 {
   int ijk[3];
   for(int dim=0; dim<3; ++dim)
-  {
-    ijk[dim] = (int)(std::floor((pos[dim]-XAABB_(dim,0)) / bin_size_[dim]));
-  }
+    ijk[dim] = (int)(std::floor((pos[dim]-XAABB_(dim,0)) * inv_bin_size_[dim]));
 
   return ConvertijkToGid(&ijk[0]);
 }
@@ -1114,9 +1139,8 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const double* pos)
 void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const double* pos, int* ijk)
 {
   for(int dim=0; dim<3; ++dim)
-  {
-    ijk[dim] = (int)(std::floor((pos[dim]-XAABB_(dim,0)) / bin_size_[dim]));
-  }
+    ijk[dim] = (int)(std::floor((pos[dim]-XAABB_(dim,0)) * inv_bin_size_[dim]));
+
   return;
 }
 
@@ -1128,9 +1152,7 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const LINALG::Matrix<3,1>& pos
 {
   int ijk[3];
   for(int dim=0; dim<3; ++dim)
-  {
-    ijk[dim] = (int)(std::floor((pos(dim)-XAABB_(dim,0)) / bin_size_[dim]));
-  }
+    ijk[dim] = (int)(std::floor((pos(dim)-XAABB_(dim,0)) * inv_bin_size_[dim]));
 
   return ConvertijkToGid(&ijk[0]);
 }
@@ -1142,9 +1164,8 @@ int BINSTRATEGY::BinningStrategy::ConvertPosToGid(const LINALG::Matrix<3,1>& pos
 void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const LINALG::Matrix<3,1>& pos, int* ijk)
 {
   for(int dim=0; dim<3; ++dim)
-  {
-    ijk[dim] = (int)(std::floor((pos(dim)-XAABB_(dim,0)) / bin_size_[dim]));
-  }
+    ijk[dim] = (int)(std::floor((pos(dim)-XAABB_(dim,0)) * inv_bin_size_[dim]));
+
   return;
 }
 
@@ -1152,8 +1173,23 @@ void BINSTRATEGY::BinningStrategy::ConvertPosToijk(const LINALG::Matrix<3,1>& po
 /*----------------------------------------------------------------------*
 | convert i,j,k into bin id                                 ghamm 09/12 |
  *----------------------------------------------------------------------*/
-int BINSTRATEGY::BinningStrategy::ConvertijkToGid(const int* ijk)
+int BINSTRATEGY::BinningStrategy::ConvertijkToGid(int* ijk)
 {
+  // might need to modify ijk connectivity in the presence of periodic boundary conditions
+  if(havepbc_)
+  {
+    for(unsigned idim=0; idim<3; ++idim)
+    {
+      if(pbconoff_[idim])
+      {
+        if(ijk[idim] == -1)
+          ijk[idim] = bin_per_dir_[idim] - 1;
+        else if(ijk[idim] == bin_per_dir_[idim])
+          ijk[idim] = 0;
+      }
+    }
+  }
+
   // given ijk is outside of XAABB
   if( ijk[0]<0 || ijk[1]<0 || ijk[2]<0 || ijk[0]>=bin_per_dir_[0] || ijk[1]>=bin_per_dir_[1] || ijk[2]>=bin_per_dir_[2] )
     return -1;
@@ -1197,7 +1233,7 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(const int* ijk_range, std::set
     {
       for(int k=ijk_range[4]; k<=ijk_range[5]; ++k)
       {
-        const int ijk[3] = {i,j,k};
+        int ijk[3] = {i,j,k};
 
         const int gid = ConvertijkToGid(&ijk[0]);
         if(gid != -1)
@@ -1234,7 +1270,7 @@ void BINSTRATEGY::BinningStrategy::GidsInijkRange(const int* ijk_range, std::vec
     {
       for(int k=ijk_range[4]; k<=ijk_range[5]; ++k)
       {
-        const int ijk[3] = {i,j,k};
+        int ijk[3] = {i,j,k};
 
         const int gid = ConvertijkToGid(&ijk[0]);
         if(gid != -1)
@@ -1270,7 +1306,7 @@ void BINSTRATEGY::BinningStrategy::GetBinConnectivity(const int binId, std::vect
     {
       for(int k=ijk_base[2]-1; k<=ijk_base[2]+1; ++k)
       {
-        const int ijk[3] = {i,j,k};
+        int ijk[3] = {i,j,k};
         const int gid = ConvertijkToGid(&ijk[0]);
         if(gid!=-1 and gid!=binId)
         {

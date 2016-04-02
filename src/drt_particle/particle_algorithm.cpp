@@ -185,21 +185,34 @@ void PARTICLE::Algorithm::Init(bool restarted)
   {
     // add fully redundant discret for particle walls with identical dofs to full structural discret
 
-    // get input lists
+    // get input parameters for particles
     const Teuchos::ParameterList& particledyn = DRT::Problem::Instance()->ParticleParams();
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
     // access the structural discretization
     Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
 
-    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(particledyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-    structure_ = structure->StructureField();
+    // initialize structure if necessary
+    if(structdis->NumGlobalElements())
+    {
+      // get input parameters for structure
+      const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
-    SetupParticleWalls(structdis);
+      // initialize structural time integrator
+      Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
+          Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(particledyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+      structure_ = structure->StructureField();
 
-    // assign wall elements to bins initially once for fixed walls (additionally rebuild pointers after ghosting)
-    if(!moving_walls_)
-      AssignWallElesToBins();
+      // add particle walls
+      SetupParticleWalls(structdis);
+
+      // assign wall elements to bins initially once for fixed walls (additionally rebuild pointers after ghosting)
+      if(!moving_walls_)
+        AssignWallElesToBins();
+    }
+
+    // safety check
+    else if(moving_walls_)
+      dserror("Moving walls indicated in input file despite empty structure discretization!");
 
     // create time integrator based on structural time integration
     Teuchos::RCP<ADAPTER::ParticleBaseAlgorithm> particles =
@@ -243,7 +256,7 @@ void PARTICLE::Algorithm::PrepareTimeStep()
   // apply dirichlet boundary conditions
   particles_->PrepareTimeStep();
 
-  if(structure_ != Teuchos::null)
+  if(moving_walls_)
     structure_->PrepareTimeStep();
 
   // do rough safety check if bin size is appropriate
@@ -260,34 +273,37 @@ void PARTICLE::Algorithm::Integrate()
 {
   CalculateAndApplyForcesToParticles();
 
-  Teuchos::RCP<Epetra_Vector> walldisn = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> walldisnp = Teuchos::null;
-  Teuchos::RCP<Epetra_Vector> wallvelnp = Teuchos::null;
-
-  // solve for structural (wall) problem
-  if(moving_walls_)
+  if(particlewalldis_ != Teuchos::null)
   {
-    structure_->Solve();
+    Teuchos::RCP<Epetra_Vector> walldisn = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> walldisnp = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> wallvelnp = Teuchos::null;
 
-    // extract displacement and velocity from full structural field to obtain wall states
-    walldisn = wallextractor_->ExtractCondVector(structure_->Dispn());
-    walldisnp = wallextractor_->ExtractCondVector(structure_->Dispnp());
-    wallvelnp = wallextractor_->ExtractCondVector(structure_->Velnp());
+    // solve for structural (wall) problem
+    if(moving_walls_)
+    {
+      structure_->Solve();
+
+      // extract displacement and velocity from full structural field to obtain wall states
+      walldisn = wallextractor_->ExtractCondVector(structure_->Dispn());
+      walldisnp = wallextractor_->ExtractCondVector(structure_->Dispnp());
+      wallvelnp = wallextractor_->ExtractCondVector(structure_->Velnp());
+    }
+    else
+    {
+      walldisn = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
+      walldisnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
+      wallvelnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
+    }
+
+    particlewalldis_->SetState("walldisn", walldisn);
+    particlewalldis_->SetState("walldisnp", walldisnp);
+    particlewalldis_->SetState("wallvelnp", wallvelnp);
+
+    // assign wall elements dynamically to bins
+    if(moving_walls_)
+      AssignWallElesToBins();
   }
-  else
-  {
-    walldisn = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
-    walldisnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
-    wallvelnp = LINALG::CreateVector(*particlewalldis_->DofRowMap(), true);
-  }
-
-  particlewalldis_->SetState("walldisn", walldisn);
-  particlewalldis_->SetState("walldisnp", walldisnp);
-  particlewalldis_->SetState("wallvelnp", wallvelnp);
-
-  // assign wall elements dynamically to bins
-  if(moving_walls_)
-    AssignWallElesToBins();
 
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::Integrate");
   particles_->IntegrateStep();
@@ -944,7 +960,7 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
         {
           for(int k=-1;k<2;k++)
           {
-            const int ijk_neighbor[3] = {ijk[0]+i, ijk[1]+j, ijk[2]+k};
+            int ijk_neighbor[3] = {ijk[0]+i, ijk[1]+j, ijk[2]+k};
 
             const int neighborgid = ConvertijkToGid(&ijk_neighbor[0]);
             if(neighborgid != -1)
@@ -1013,7 +1029,7 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
         int ijk[3] = {-1,-1,-1};
         for(int dim=0; dim<3; ++dim)
         {
-          ijk[dim] = (int)((particles[iparticle]->X()[dim]-XAABB_(dim,0)) / bin_size_[dim]);
+          ijk[dim] = (int)((particles[iparticle]->X()[dim]-XAABB_(dim,0)) * inv_bin_size_[dim]);
         }
 
         int gidofbin = ConvertijkToGid(&ijk[0]);
@@ -1048,22 +1064,16 @@ void PARTICLE::Algorithm::TransferParticles(const bool updatestates, const bool 
   // apply periodic boundary conditions for particles
   if(havepbc_)
   {
-    // offset delta for pbc direction
-    // delta equal zero otherwise
-    std::vector<double> delta(3);
-    for(int dim=0; dim<3; ++dim)
-      delta[dim] = pbcbounds_[dim][1] - pbcbounds_[dim][0];
-
     for(int i=0; i<disnp->MyLength(); i++)
     {
       const int dim = i%3;
-      if((*disnp)[i] < pbcbounds_[dim][0])
+      if((*disnp)[i] < pbcbounds_(dim,0))
       {
-        (*disnp)[i] += delta[dim];
+        (*disnp)[i] += pbcdeltas_[dim];
          continue;
       }
-      if((*disnp)[i] > pbcbounds_[dim][1])
-        (*disnp)[i] -= delta[dim];
+      if((*disnp)[i] > pbcbounds_(dim,1))
+        (*disnp)[i] -= pbcdeltas_[dim];
     }
   }
 
