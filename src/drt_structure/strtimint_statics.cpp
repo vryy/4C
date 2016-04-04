@@ -3,12 +3,7 @@
 \file strtimint_statics.cpp
 \brief Statics analysis
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Alexander Popp
 */
 
 /*----------------------------------------------------------------------*/
@@ -441,7 +436,7 @@ void STR::TimIntStatics::UpdateStepElement()
   if( (dismat_!=Teuchos::null))
     discret_->SetState("material_displacement",(*dismat_)(0));
 
-  discret_->Evaluate(p, null, null, null, null,Teuchos::null);
+  discret_->Evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,Teuchos::null);
   discret_->ClearState();
 }
 

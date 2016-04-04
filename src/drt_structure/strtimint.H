@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimint.H
-\brief Time integration for structural dynamics
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Alexander Popp
+
+\brief Time integration for structural dynamics
 */
 
 /*----------------------------------------------------------------------*/
@@ -33,9 +29,6 @@ Maintainer: Alexander Popp
 #include <NOX_Epetra.H>
 #include <ml_common.h>
 #include <ml_include.h>
-#include <nlnml_preconditioner.H>
-#include <nlnml_linearsystem.H>
-#include <nlnml_finelevelnoxinterface.H>
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_timestepping/timintmstep.H"

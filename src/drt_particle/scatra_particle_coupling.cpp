@@ -267,7 +267,7 @@ void PARTICLE::ScatraParticleCoupling::InitialSeeding()
   // this is necessary here, since the elements adjacent to a row node may have
   // ghosted nodes, which are only contained in the col format
   const Epetra_Map* scatra_dofcolmap = scatradis_->DofColMap();
-  RCP<Epetra_Vector> phinp = Teuchos::rcp(new Epetra_Vector(*scatra_dofcolmap));
+  Teuchos::RCP<Epetra_Vector> phinp = Teuchos::rcp(new Epetra_Vector(*scatra_dofcolmap));
   LINALG::Export(*row_phinp,*phinp);
 
   // loop all row bins on this proc
@@ -1008,7 +1008,7 @@ Teuchos::RCP<Epetra_Vector> PARTICLE::ScatraParticleCoupling::CorrectionStep()
   // this is necessary here, since the elements adjacent to a row node may have
   // ghosted nodes, which are only contained in the col format
   const Epetra_Map* scatra_dofcolmap = scatradis_->DofColMap();
-  RCP<Epetra_Vector> phinp = Teuchos::rcp(new Epetra_Vector(*scatra_dofcolmap));
+  Teuchos::RCP<Epetra_Vector> phinp = Teuchos::rcp(new Epetra_Vector(*scatra_dofcolmap));
   LINALG::Export(*row_phinp,*phinp);
 
   // get sign vector
@@ -1353,7 +1353,7 @@ void PARTICLE::ScatraParticleCoupling::AdjustParticleRadii()
   // this is necessary here, since the elements adjacent to a row node may have
   // ghosted nodes, which are only contained in the col format
   const Epetra_Map* scatra_dofcolmap = scatradis_->DofColMap();
-  RCP<Epetra_Vector> phinp = Teuchos::rcp(new Epetra_Vector(*scatra_dofcolmap));
+  Teuchos::RCP<Epetra_Vector> phinp = Teuchos::rcp(new Epetra_Vector(*scatra_dofcolmap));
   LINALG::Export(*row_phinp,*phinp);
 
   // get radius and sign vector
@@ -1458,7 +1458,7 @@ void PARTICLE::ScatraParticleCoupling::Reseeding()
   // this is necessary here, since the elements adjacent to a row node may have
   // ghosted nodes, which are only contained in the col format
   const Epetra_Map* scatra_dofcolmap = scatradis_->DofColMap();
-  RCP<Epetra_Vector> phinp = Teuchos::rcp(new Epetra_Vector(*scatra_dofcolmap));
+  Teuchos::RCP<Epetra_Vector> phinp = Teuchos::rcp(new Epetra_Vector(*scatra_dofcolmap));
   LINALG::Export(*row_phinp,*phinp);
 
   // loop all row bins on this proc
@@ -2644,7 +2644,7 @@ void PARTICLE::ScatraParticleCoupling::Attraction(
   // this is necessary here, since the elements adjacent to a row node may have
   // ghosted nodes, which are only contained in the col format
   const Epetra_Map* scatra_dofcolmap = scatradis_->DofColMap();
-  RCP<Epetra_Vector> phinp = Teuchos::rcp(new Epetra_Vector(*scatra_dofcolmap));
+  Teuchos::RCP<Epetra_Vector> phinp = Teuchos::rcp(new Epetra_Vector(*scatra_dofcolmap));
   LINALG::Export(*row_phinp,*phinp);
 
   // number of placed particles should finally be equal to the number of seeded particles (here global_num_particles)
