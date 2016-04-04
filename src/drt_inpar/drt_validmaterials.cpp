@@ -1083,6 +1083,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"INITTEMP","initial, reference temperature",0.,true);
     AddNamedReal(m,"YIELDSOFT","yield stress softening",0.,true);
     AddNamedReal(m,"HARDSOFT","hardening softening",0.,true);
+    AddNamedReal(m,"TAYLOR_QUINNEY","Taylor-Quinney factor for plastic heat conversion",1.,true);
 
 
     AppendMaterialDefinition(matlist,m);
