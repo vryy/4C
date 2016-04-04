@@ -1,6 +1,12 @@
+/*----------------------------------------------------------------------*/
 /*!
-\brief main routine
+\file baci.cpp
+
+\maintainer Martin Kronbichler
+
+\brief Main routine
 */
+/*----------------------------------------------------------------------*/
 
 #include <iostream>
 #include <stdexcept>
@@ -184,6 +190,7 @@ int main(int argc, char *argv[])
     /* Over- and underflow seem to happen sometimes. Does it worry us?
      * Will that spoil the results? */
     /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
+    feclearexcept(FE_ALL_EXCEPT);
     feenableexcept(FE_INVALID | FE_DIVBYZERO);
 
     /* The hard GNU way. But it does too much. */
