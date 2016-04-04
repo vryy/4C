@@ -2,11 +2,9 @@
 /*!
 \file inpar_fsi.H
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\maintainer Matthias Mayr
+
+\brief Input parameters for fluid structure interaction
 */
 
 /*----------------------------------------------------------------------*/
@@ -83,6 +81,12 @@ namespace INPAR
       HybridSchwarz ///< hybrid additive/multiplicative Schwarz
     };
 
+    enum HybridASType
+    {
+      hybrid_as_type_ILU, ///< do processor-local ILU
+      hybrid_as_type_Amesos_LU ///< do processor-local direct solve
+    };
+
     /// Projection methods for sliding fluid-structure interface
     enum SlideALEProj
     {
@@ -148,7 +152,8 @@ namespace INPAR
       Redistribute_off, ///< no redistribution
       Redistribute_structure, ///< redistribute structure field only
       Redistribute_fluid, ///< redistribute fluid field only
-      Redistribute_both ///< redistribute both structure and fluid field
+      Redistribute_both, ///< redistribute both structure and fluid field
+      Redistribute_monolithic ///< redistribute monolithic graph (fluid + structure)
     };
 
     //@}

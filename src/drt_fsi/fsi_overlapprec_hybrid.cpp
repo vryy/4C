@@ -2,11 +2,9 @@
 /*!
 \file fsi_overlapprec_hybrid.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\maintainer Matthias Mayr
+
+\brief Hybrid Additive/Multiplicative Schwarz Block Preconditioner for FSI
 */
 /*----------------------------------------------------------------------------*/
 
@@ -87,7 +85,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
 
   Epetra_Time timer(FullRowMap().Comm());
 
-  FILE outfile;       // FRAGEN: Welches File soll hier verwendet werden?
+  FILE outfile;       // ToDo (mayr) Specify output file
   Teuchos::ParameterList ifpacklist;
   Teuchos::ParameterList azlist;
 
@@ -101,13 +99,32 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
       fsimono.get<int>("HYBRID_FILL_LEVEL"));
   ifpacklist.set<std::string>("amesos: solver type", "Amesos_Umfpack");
 
-  azlist.set<std::string>("Preconditioner Type", "ILU");
+  // check whether ILU or LU (Amesos) should be used to calculate processor-local inverse
+  INPAR::FSI::HybridASType type =
+      DRT::INPUT::IntegralValue<INPAR::FSI::HybridASType>(fsimono, "HYBRID_AS_TYPE");
+
+  switch (type)
+  {
+  case INPAR::FSI::hybrid_as_type_Amesos_LU:
+  {
+    azlist.set<std::string>("Preconditioner Type", "Amesos");
+    break;
+  }
+  case INPAR::FSI::hybrid_as_type_ILU:
+  {
+    azlist.set<std::string>("Preconditioner Type", "ILU");
+    break;
+  }
+  default:
+  {
+    dserror("Unknown type %s for Hybrid Additive Schwarz local solver type "
+        "'HYBRID_AS_TYPE'.");
+    break;
+  }
+  }
 
   ifpackprec_ = Teuchos::rcp(
       new LINALG::SOLVER::IFPACKPreconditioner(&outfile, ifpacklist, azlist));
-
-  azlist.print();
-  ifpacklist.print();
 
   // get blocks of system matrix and save them in 2-dim array
   std::vector<std::vector<Teuchos::RCP<Epetra_CrsMatrix> > > rows;
@@ -146,9 +163,12 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
    * 3*81 works for pressure wave
    * aortic arch requires roughly 1200
    */
+  /* ToDo (mayr) Estimation of storage requirement needs to be automated or
+   * circumvented. Currently, just take the maximum number of entries per row
+   * and multiply it with 3. Works in most cases.
+   */
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp(
-      new Epetra_CrsMatrix(Copy, rowmap, 163));
-
+      new Epetra_CrsMatrix(Copy, rowmap, 400));
 
   bool interfaceproc = (std::find(interfaceprocs_.begin(),
       interfaceprocs_.end(), comm.MyPID()) != interfaceprocs_.end());
@@ -194,7 +214,8 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
           int err = A->InsertGlobalValues(fieldmap.GID(i), numEntries,
               &values[0], &indices[0]);
           if (err != 0)
-            dserror("InsertGlobalValues failed, error = %d!",err);
+            dserror("InsertGlobalValues failed, error = %d!.\n"
+                "Available number of row entries is %d.", err, numEntries);
         }
       }
     }
@@ -225,7 +246,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
     printf("ILU in %f seconds.\n",timer.ElapsedTime());
   timer.ResetStartTime();
 
-  // setup 'mulitplicative' part of hybrid preconditioner
+  // setup 'multiplicative' part of hybrid preconditioner
   amgprec_->SetupPreconditioner();
 
   comm.Barrier();

@@ -2,11 +2,10 @@
 /*!
 \file fsi_mortarmonolithic_structuresplit.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\maintainer Matthias Mayr
+
+\brief Solve FSI problem with non-matching grids using a monolithic scheme
+with condensed structure interface displacements
 */
 
 /*----------------------------------------------------------------------------*/
@@ -268,14 +267,14 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
       // MeshInit possibly modifies reference configuration of slave side --> recompute element volume in InitializeElements()
       StructureField()->Discretization()->FillComplete(false,true,true);
       // set up sliding ale utils
-      slideale_ = Teuchos::rcp(new FSI::UTILS::SlideAleUtils(StructureField()->Discretization(),
-                                                    FluidField()->Discretization(),
-                                                    *coupsfm_,
-                                                    false,
-                                                    aleproj_));
+      slideale_ = Teuchos::rcp(
+          new FSI::UTILS::SlideAleUtils(StructureField()->Discretization(),
+              FluidField()->Discretization(), *coupsfm_, false, aleproj_));
 
-      iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->MasterDofMap(), true));
-      iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->MasterDofMap(), true));
+      iprojdisp_ = Teuchos::rcp(
+          new Epetra_Vector(*coupsfm_->MasterDofMap(), true));
+      iprojdispinc_ = Teuchos::rcp(
+          new Epetra_Vector(*coupsfm_->MasterDofMap(), true));
     }
     notsetup_=false;
   }
@@ -859,16 +858,13 @@ void FSI::MortarMonolithicStructureSplit::Update()
   // update history variables for sliding ale
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
   {
-    iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->MasterDofMap(),true));
-    Teuchos::RCP<Epetra_Vector> idispale =
-        AleToFluidInterface(AleField()->Interface()->ExtractFSICondVector(AleField()->Dispnp()));
+    iprojdisp_ = Teuchos::rcp(
+        new Epetra_Vector(*coupsfm_->MasterDofMap(), true));
+    Teuchos::RCP<Epetra_Vector> idispale = AleToFluidInterface(
+        AleField()->Interface()->ExtractFSICondVector(AleField()->Dispnp()));
 
-    slideale_->Remeshing(*StructureField(),
-                         FluidField()->Discretization(),
-                         idispale,
-                         iprojdisp_,
-                         *coupsfm_,
-                         Comm());
+    slideale_->Remeshing(*StructureField(), FluidField()->Discretization(),
+        idispale, iprojdisp_, *coupsfm_, Comm());
 
     iprojdispinc_->Update(-1.0,*iprojdisp_,1.0,*idispale,0.0);
 

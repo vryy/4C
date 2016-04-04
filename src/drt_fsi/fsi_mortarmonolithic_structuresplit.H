@@ -2,14 +2,10 @@
 /*!
 \file fsi_mortarmonolithic_structuresplit.H
 
+\maintainer Matthias Mayr
+
 \brief Solve FSI problem with non-matching grids using a monolithic scheme
 with condensed structure interface displacements
-
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
 */
 
 /*----------------------------------------------------------------------*/
@@ -211,8 +207,8 @@ namespace FSI
     virtual void CreateNodeOwnerRelationship(
         std::map<int,int>* nodeOwner,
         std::map<int,std::list<int> >* inverseNodeOwner,
-        std::map<int, DRT::Node*>* fluidnodesPtr,
-        std::map<int, DRT::Node*>* structuregnodesPtr,
+        std::map<int, DRT::Node*>* structurenodesPtr,
+        std::map<int, DRT::Node*>* fluidgnodesPtr,
         Teuchos::RCP<DRT::Discretization> structuredis,
         Teuchos::RCP<DRT::Discretization> fluiddis,
         const INPAR::FSI::Redistribute domain

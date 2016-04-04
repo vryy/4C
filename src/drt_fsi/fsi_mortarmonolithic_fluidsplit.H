@@ -2,14 +2,10 @@
 /*!
 \file fsi_mortarmonolithic_fluidsplit.H
 
+\maintainer Matthias Mayr
+
 \brief Solve FSI problem with non-matching grids using a monolithic scheme
 with condensed fluid interface velocities
-
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
 */
 
 /*----------------------------------------------------------------------------*/
@@ -219,6 +215,20 @@ namespace FSI
         Teuchos::RCP<DRT::Discretization> fluiddis,
         const INPAR::FSI::Redistribute domain
         );
+
+
+    /*! \brief Find neighboring node of the opposing field for each node at the interface
+     *
+     * The relation is saved in the map \c fluidToStructureMap as fluidnode -- structurenode and
+     * in the map \c structureToFluidMap as structurenode -- fluidnode.
+     */
+    virtual void CreateInterfaceMapping(
+        Teuchos::RCP<DRT::Discretization> structuredis,
+        Teuchos::RCP<DRT::Discretization> fluiddis,
+        std::map<int, DRT::Node*>* fluidnodesPtr,
+        std::map<int, DRT::Node*>* structuregnodesPtr,
+        std::map<int,std::vector<int> > &fluidToStructureMap,
+        std::map<int,std::vector<int> > &structureToFluidMap);
 
   protected:
 

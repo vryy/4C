@@ -2,15 +2,10 @@
 /*!
 \file fsi_monolithic.H
 
+\maintainer Matthias Mayr
+
 \brief General framework for monolithic fsi solution schemes
-
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
 */
-
 /*----------------------------------------------------------------------*/
 
 #ifndef FSI_MONOLITHIC_H
@@ -373,6 +368,24 @@ namespace FSI
     //! Get number of time step repetitions in case of time step adaptivity
     int GetNumAdaptSteps() const { return adaptstep_; }
 
+    //! @name Parallel redistribution for hybrid preconditioner
+    //@{
+
+    /*! \brief Redistribute domain decomposition
+     *
+     *  We want to achieve a distribution with matching processor patches at the
+     *  FSI interface. Therefore, we analyze the current non-matching
+     *  distribution to find a matching node-to-node mapping. Then, we call
+     *  Isorropia/Zoltan to repartition fluid or/and structure field.
+     *
+     *  This implementation only works for matching grids at the interface
+     *  but produces better results than RedistributeDomainDecomposition.
+     */
+    virtual void RedistributeMonolithicGraph(
+        const FSI_COUPLING coupling, ///< coupling algorithm
+        const Epetra_Comm& comm ///< communicator
+        ) = 0;
+
     /*! \brief Redistribute domain decomposition
      *
      *  We want to achieve a distribution with matching processor patches at the
@@ -381,12 +394,15 @@ namespace FSI
      *  Isorropia/Zoltan to repartition fluid or/and structure field.
      */
     virtual void RedistributeDomainDecomposition(
-        const INPAR::FSI::Redistribute domain, ///< redistribute structure or fluid
-        const FSI_COUPLING coupling, ///< structure split or fluid split
+        const INPAR::FSI::Redistribute domain, ///< type of redistribution algorithm
+        const FSI_COUPLING coupling, ///< coupling algorithm
         const double inputWeight1, ///< weight for graph
         const double inputWeight2, ///< weight for graph
-        const Epetra_Comm& comm ///< communicator
+        const Epetra_Comm& comm, ///< communicator
+        int unbalance
         ) = 0;
+
+    //@}
 
   protected:
 
@@ -1024,6 +1040,24 @@ namespace FSI
     //! Set #notsetup_ = true after redistribution
     virtual void SetNotSetup(){};
 
+    //! @name Parallel redistribution for hybrid preconditioner
+    //@{
+
+    /*! \brief Redistribute domain decomposition
+     *
+     *  We want to achieve a distribution with matching processor patches at the
+     *  FSI interface. Therefore, we analyze the current non-matching
+     *  distribution to find a matching node-to-node mapping. Then, we call
+     *  Isorropia/Zoltan to repartition fluid or/and structure field.
+     *
+     *  This implementation only works for matching grids at the interface
+     *  but produces better results than RedistributeDomainDecomposition.
+     */
+    virtual void RedistributeMonolithicGraph(
+        const FSI_COUPLING coupling, ///< coupling algorithm
+        const Epetra_Comm& comm ///< communicator
+        );
+
     /*! \brief Redistribute domain decomposition
      *
      *  We want to achieve a distribution with matching processor patches at the
@@ -1033,10 +1067,11 @@ namespace FSI
      */
     virtual void RedistributeDomainDecomposition(
         const INPAR::FSI::Redistribute domain, ///< redistribute structure or fluid
-        const FSI_COUPLING coupling, ///< structure split or fluid split
+        const FSI_COUPLING coupling, ///< coupling algorithm
         const double inputWeight1, ///< weight for graph
         const double inputWeight2, ///< weight for graph
-        const Epetra_Comm& comm ///< communicator
+        const Epetra_Comm& comm, ///< communicator
+        int unbalance
         );
 
     /*! \brief Find future / desired owner for each node at the interface
@@ -1058,6 +1093,41 @@ namespace FSI
         Teuchos::RCP<DRT::Discretization> fluiddis, ///< fluid discretization
         const INPAR::FSI::Redistribute domain
         ) = 0;
+
+    /*! \brief Find neighboring node of the opposing field for each node at the interface
+     *
+     * The relation is saved in the map \c fluidToStructureMap as fluidnode -- structurenode and
+     * in the map \c structureToFluidMap as structurenode -- fluidnode.
+     */
+    virtual void CreateInterfaceMapping(
+        Teuchos::RCP<DRT::Discretization> structuredis,
+        Teuchos::RCP<DRT::Discretization> fluiddis,
+        std::map<int, DRT::Node*>* fluidnodesPtr,
+        std::map<int, DRT::Node*>* structuregnodesPtr,
+        std::map<int,std::vector<int> > &fluidToStructureMap,
+        std::map<int,std::vector<int> > &structureToFluidMap
+        ){};
+
+    /*! \brief Build nodal connectivity graph for complete domain, i.e. fluid and structure
+     *    discretization
+     *
+     * A nodal connectivity graph \c monolithicGraph for the whole domain is built. The coupling
+     * between structure and fluid is assured by deleting the fluid interface nodes and connecting
+     * the next layer of fluid (field) nodes with the structure interface nodes. This only works for
+     * matching grids at the interface (so far).
+     *
+     * During the coupling process some connections have to be deleted or inserted, these are stored
+     * in \c deletedEdges and \c insertedEdges, repectively.
+     *
+     */
+    virtual void BuildMonolithicGraph(
+        Teuchos::RCP<Epetra_CrsGraph> monolithicGraph,
+        std::map<int, std::vector<int> > &deletedEdges,
+        std::map<int,std::vector<int> > &insertedEdges,
+        std::map<int, std::vector<int> > &fluidToStructureMap,
+        std::map<int, std::vector<int> > &structureToFluidMap,
+        Teuchos::RCP<DRT::Discretization> structuredis, ///< structure discretization
+        Teuchos::RCP<DRT::Discretization> fluiddis); ///< fluid discretization);
 
     /*! \brief Build weighted graph to influence distribution made by ZOLTAN
      *
@@ -1093,7 +1163,10 @@ namespace FSI
      */
     virtual Teuchos::RCP<Epetra_CrsGraph> CallZoltan(
         Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip, ///< manipulated graph
-        Teuchos::RCP<const Epetra_CrsMatrix> crs_ge_weights ///< matrix with weights
+        Teuchos::RCP<const Epetra_CrsMatrix> matrix_weights, ///< matrix with weights
+        Teuchos::RCP<Epetra_Vector> vector_weights,
+        std::string partitioningMethod,                      ///< graph or hypergraph partitioning
+        int unbalance
         );
 
     /*! \brief Switch the nodes of the patches between processors
@@ -1108,6 +1181,40 @@ namespace FSI
         std::map<int,int>* nodeOwner,
         Teuchos::RCP<Epetra_CrsGraph> bal_graph,
         const Epetra_Comm& comm ///< communicator
+        );
+
+    /*! \brief Restore structure and fluid nodal connectivity graph from \c monolithicGraph
+     *
+     * After the redistribution of \c monolithicGrpah the single field nodal connectivity
+     * graphs \c fluidGraphRedist and \c structureGraphRedist have to be restored. Edges
+     * deleted or inserted in the previous method BuildMonolithicGraph are inserted or
+     * deleted now, respectively.
+     *
+     */
+    virtual void RestoreRedistStructFluidGraph(
+        std::map<int, std::vector<int> > &edgesToRemove,
+        std::map<int, std::vector<int> > &edgesToInsert,
+        Teuchos::RCP<Epetra_CrsGraph> monolithicGraph,
+        Teuchos::RCP<Epetra_Map> rowmap,
+        Teuchos::RCP<Epetra_Map> colmap,
+        Teuchos::RCP<Epetra_CrsGraph> structureGraphRedist,
+        Teuchos::RCP<Epetra_CrsGraph> fluidGraphRedist,
+        std::map<int,std::vector<int> > &fluidToStructureMap
+        );
+
+    /*! \brief Get row maps for fluid and structure after redistribution of monolithic Graph
+     *
+     * Row maps are obtained from \c monolithicRowmap by separating fluid and structure row
+     * nodes. All keys in \c fluidToStructureMap are global IDs of fluid interface nodes
+     * that have been deleted previously. They have to be inserted in the fluid map now
+     * (flag \c fluid).
+     *
+     */
+    virtual Teuchos::RCP<Epetra_Map> GetRedistRowMap(
+        const Epetra_Map& oldMap,
+        Teuchos::RCP<Epetra_Map> monolithicRownodes,
+        std::map<int,std::vector<int> > &fluidToStructureMap,
+        bool fluid=false
         );
 
     /*! \brief Insert edges that were deleted in BuildWeightedGraph()
@@ -1140,6 +1247,8 @@ namespace FSI
         Teuchos::RCP<DRT::Discretization> discretization, ///< discretization
         int* re ///< pointer to array with global id of node related to gdofid and owner id of node
         );
+
+    //@}
 
   protected:
 

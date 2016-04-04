@@ -2,15 +2,11 @@
 /*!
 \file inpar_fsi.cpp
 
+\maintainer Matthias Mayr
+
 \brief Input parameters for fluid structure interaction
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
 */
-
 /*----------------------------------------------------------------------------*/
 
 #include "drt_validparameters.H"
@@ -235,6 +231,19 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("FSIAMGANALYZE", "No",
       "run analysis on fsiamg multigrid scheme", &fsimono);
 
+  setStringToIntegralParameter<int>(
+        "HYBRID_AS_TYPE", "ILU",
+        "Type of inverse in additive part of hybrid preconditioner.",
+        tuple<std::string>(
+            "ILU",
+            "Amesos_LU"
+            ),
+        tuple<int>(
+            INPAR::FSI::hybrid_as_type_ILU,
+            INPAR::FSI::hybrid_as_type_Amesos_LU
+            ),
+        &fsimono);
+
   IntParameter("HYBRID_FILL_LEVEL", 0,
       "Level of fill of the hybrid ILU preconditioner.", &fsimono);
 
@@ -335,12 +344,14 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "off",
           "structure",
           "fluid",
-          "both"),
+          "both",
+          "monolithic"),
       tuple<int>(
           INPAR::FSI::Redistribute_off,
           INPAR::FSI::Redistribute_structure,
           INPAR::FSI::Redistribute_fluid,
-          INPAR::FSI::Redistribute_both
+          INPAR::FSI::Redistribute_both,
+          INPAR::FSI::Redistribute_monolithic
           ),
       &fsimono);
 

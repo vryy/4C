@@ -2,11 +2,10 @@
 /*!
 \file fsi_mortarmonolithic_fluidsplit.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\maintainer Matthias Mayr
+
+\brief Solve FSI problem with non-matching grids using a monolithic scheme
+with condensed fluid interface velocities
 */
 
 /*----------------------------------------------------------------------------*/
@@ -2081,6 +2080,235 @@ void FSI::MortarMonolithicFluidSplit::CreateSystemMatrix()
   FSI::BlockMonolithic::CreateSystemMatrix(systemmatrix_, false);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MortarMonolithicFluidSplit::CreateInterfaceMapping(
+    Teuchos::RCP<DRT::Discretization> structuredis,
+    Teuchos::RCP<DRT::Discretization> fluiddis,
+    std::map<int, DRT::Node*>* fluidnodesPtr,
+    std::map<int, DRT::Node*>* structuregnodesPtr,
+    std::map<int,std::vector<int> > &fluidStructMap,
+    std::map<int,std::vector<int> > &structFluidMap)
+{
+
+  int numproc = comm_.NumProc();
+  int myrank = comm_.MyPID();
+
+  // get mortar coupling matrix P_
+  Teuchos::RCP<LINALG::SparseMatrix> P = coupsfm_->GetMortarTrafo(); // P matrix that couples fluid dofs with structure dofs
+  Teuchos::RCP<Epetra_CrsMatrix> P_ = P->EpetraMatrix();
+  //P_ = P->EpetraMatrix();
+  const Epetra_Map& P_Map = P_->RowMap();
+
+
+  // build node connectivity maps at interface
+
+  std::map<int, std::vector<int> > fluidToStructure;
+  std::map<int, std::vector<int> > structureToFluid;
+
+  int NumMyElementsP = P_Map.NumMyElements();
+  int numStructureDofs = P_->NumGlobalCols();               // number of related structure dofs on interface
+
+  int NumMaxElementsP;
+  comm_.MaxAll(&NumMyElementsP, &NumMaxElementsP, 1);
+
+  int skip = DRT::Problem::Instance()->NDim();  // Only evaluate one dof per node, skip the other dofs related to the node. It is nsd_=skip.
+
+  int re[2];            // return: re[0] = global node id, re[1] = owner of node
+  int flnode;           // fluid
+  int stnode;           // structure
+
+
+  // loop over fluid dofs, i.e. rows in the P matrix
+  /* We loop over NumMaxElements because all procs have to stay in the loop until
+   * the last proc checked each of its rows.
+   */
+
+
+  for (int fldofLID = 0; fldofLID < NumMaxElementsP; fldofLID = fldofLID + skip)
+  {
+
+    flnode = -1;
+    stnode = -1;
+
+    int NumEntries = 0;
+    double Values[numStructureDofs];
+    int stdofGID[numStructureDofs];
+
+    if (NumMyElementsP > 0)
+    {
+      int fldofGID = P_Map.GID(fldofLID); // gid of fluid dof
+      // find related node and owner to fldofGID
+      FindNodeRelatedToDof(fluidnodesPtr, fldofGID, fluiddis, re);   //fluid
+      flnode = re[0];
+
+      P_->ExtractGlobalRowCopy(fldofGID, numStructureDofs, NumEntries, Values, stdofGID);
+    }
+
+    // Loop over related structure dofs and get related nodes.
+
+    int maxNumEntries;
+    comm_.MaxAll(&NumEntries,&maxNumEntries,1);
+
+    for (int j = 0; j < maxNumEntries; ++j){
+      if (j < NumEntries){
+        FindNodeRelatedToDof(structuregnodesPtr, stdofGID[j], structuredis, re);
+        stnode = re[0];
+      }
+
+      /************************************************************************************************************/
+      // A processor can only find a neighbored node if it belongs to its domain (which in general is not the case).
+      // Therefore, we have to search in the other processors' domains.
+
+      int copy;
+      int foundNode = -2;
+      int sendNode = -2;
+      int saveNode = -2;
+      int foundOwner;
+      int sendOwner;
+      int saveOwner = -2;
+      int dofid;
+
+      for (int proc = 0; proc < numproc; ++proc){
+        copy = stnode;
+        comm_.Broadcast(&copy, 1, proc);    // send nodeid to check if the processor needs help to find its neighbor, code: copy=-2
+        if (copy == -2){
+          dofid = stdofGID[j];
+          comm_.Broadcast(&dofid, 1, proc);
+          FindNodeRelatedToDof(structuregnodesPtr, dofid, structuredis,re); // let each processor look for the node related to gstid
+          foundNode = re[0];
+          foundOwner = re[1];
+          for (int j = 0; j < numproc; ++j){
+            sendNode = foundNode;
+            sendOwner = foundOwner;
+            comm_.Broadcast(&sendNode, 1, j);
+            comm_.Broadcast(&sendOwner, 1, j);
+            if (sendNode != -2){ // check which processor found the node
+              saveNode = sendNode;
+              saveOwner = sendOwner;
+              break;
+            }
+          }
+          if (myrank == proc && saveNode != -2){ // save the nodegid on the respective processor
+            stnode = saveNode;
+          }
+        }
+      }
+
+      /************************************************************************************************************/
+
+
+
+      if (stnode != -1) {
+        fluidToStructure[flnode].push_back(stnode);
+        structureToFluid[stnode].push_back(flnode);
+      }
+
+    } //for (int j = 0; j < maxNumEntries; ++j){
+
+    if (NumMyElementsP != 0){
+      NumMyElementsP -= skip;
+    }
+
+  } // end loop over fluid dofs
+
+
+
+  // communicate connectivity information of structure interface nodes among all procs
+
+  std::vector<int> transferVec;
+  int transfer[1000];
+  std::map<int, std::vector<int> >::iterator mapIter;
+
+  for (int p=0; p<numproc; ++p)
+  {
+
+    // fluid to structure map
+
+    int numNodes = fluidToStructure.size();
+    comm_.Broadcast(&numNodes,1,p);
+
+    mapIter = fluidToStructure.begin();
+
+    for (int n=0; n<numNodes; ++n)
+    {
+
+      int gid = 0;
+      int numCoupl = 0;
+
+      if (myrank == p){
+        gid = mapIter->first;
+        numCoupl = (int) fluidToStructure[gid].size();
+        transferVec = mapIter->second;
+        for (int t=0; t<numCoupl; ++t)
+          transfer[t] = transferVec[t];
+      }
+
+      comm_.Broadcast(&gid,1,p);
+      comm_.Broadcast(&numCoupl,1,p);
+      comm_.Broadcast(transfer,numCoupl,p);
+
+      std::vector<int> nodes;
+
+      for (int a=0; a<numCoupl; ++a){
+        nodes.push_back(transfer[a]);
+      }
+
+      fluidStructMap[gid] = nodes;
+
+      if (myrank == p)
+        mapIter++;
+
+    }
+
+    // structure to fluid map
+
+    numNodes = structureToFluid.size();
+    comm_.Broadcast(&numNodes,1,p);
+
+    mapIter = structureToFluid.begin();
+
+    for (int n=0; n<numNodes; ++n)
+    {
+
+      int gid = 0;
+      int numCoupl = 0;
+
+      if (myrank == p){
+        gid = mapIter->first;
+        numCoupl = (int) structureToFluid[gid].size();
+        transferVec = mapIter->second;
+        for (int t=0; t<numCoupl; ++t)
+          transfer[t] = transferVec[t];
+      }
+
+      comm_.Broadcast(&gid,1,p);
+      comm_.Broadcast(&numCoupl,1,p);
+      comm_.Broadcast(transfer,numCoupl,p);
+
+      std::vector<int> nodes;
+
+      for (int a=0; a<numCoupl; ++a){
+        nodes.push_back(transfer[a]);
+      }
+
+      structFluidMap[gid] = nodes;
+
+      if (myrank == p)
+        mapIter++;
+
+    }
+
+  }
+
+}
+
+
+
+
+
+
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::CreateNodeOwnerRelationship(
@@ -2255,7 +2483,6 @@ void FSI::MortarMonolithicFluidSplit::CreateNodeOwnerRelationship(
       if (myrank == proc)
         ++nodeOwnerIt;
     }
-
   }
 
 //  std::map<int,int>::iterator nodeOwnerPrint;
