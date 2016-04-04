@@ -2,15 +2,10 @@
 /*!
 \file fsi_monolithic_redistribution.cpp
 
+\maintainer Matthias Mayr
+
 \brief Parallel Domain Redistribution of monolithic FSI
-
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
 */
-
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
@@ -55,10 +50,271 @@ Maintainer: Matthias Mayr
 #include "../drt_lib/drt_node.H"
 
 /*----------------------------------------------------------------------------*/
+void FSI::BlockMonolithic::RedistributeMonolithicGraph(
+    const FSI_COUPLING coupling, const Epetra_Comm& comm)
+{
+
+  Epetra_Time timer(comm);
+
+  const int myrank = comm.MyPID();
+
+  /***********************/
+  /* get interface nodes */
+  /***********************/
+
+  // initialize maps for row nodes
+  std::map<int, DRT::Node*> structurenodes;
+  std::map<int, DRT::Node*> fluidnodes;
+
+  // initialize maps for column nodes
+  std::map<int, DRT::Node*> structuregnodes;
+  std::map<int, DRT::Node*> fluidgnodes;
+
+  //initialize maps for elements
+  std::map<int, Teuchos::RCP<DRT::Element> > structureelements;
+  std::map<int, Teuchos::RCP<DRT::Element> > fluidelements;
+
+
+  // access the discretizations
+  Teuchos::RCP<DRT::Discretization> structuredis = DRT::Problem::Instance()->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+  Teuchos::RCP<DRT::Discretization> aledis = DRT::Problem::Instance()->GetDis("ale");
+
+  // Fill maps based on condition for master side (masterdis != slavedis)
+  DRT::UTILS::FindConditionObjects(*structuredis, structurenodes, structuregnodes,
+      structureelements, "FSICoupling");
+
+  // Fill maps based on condition for slave side (masterdis != slavedis)
+  DRT::UTILS::FindConditionObjects(*fluiddis, fluidnodes, fluidgnodes,
+      fluidelements, "FSICoupling");
+
+  std::map<int, DRT::Node*>* slavenodesPtr = NULL;
+  std::map<int, DRT::Node*>* mastergnodesPtr = NULL;
+
+  // ToDo (mayr) Move this to routine in derived classes to replace the if-clause by inheritence
+  if (coupling == fsi_iter_mortar_monolithicfluidsplit
+      or coupling == fsi_iter_sliding_monolithicfluidsplit)
+  {
+    slavenodesPtr = &fluidnodes;
+    mastergnodesPtr = &structuregnodes;
+  }
+  else if (coupling == fsi_iter_mortar_monolithicstructuresplit
+      or coupling == fsi_iter_sliding_monolithicstructuresplit)
+  {
+    slavenodesPtr = &structurenodes;
+    mastergnodesPtr = &fluidgnodes;
+  }
+  else
+    dserror("\nDomain redistribution / rebalancing only implemented for mortar "
+        "coupling!");
+
+  std::map<int,std::vector<int> > fluidToStructureMap; // maps fluid nodes to opposing structure nodes
+  std::map<int,std::vector<int> > structureToFluidMap; // maps fluid nodes to opposing structure nodes
+
+  /*********************************/
+  /* get node mapping at interface */
+  /*********************************/
+  CreateInterfaceMapping(structuredis, fluiddis, slavenodesPtr, mastergnodesPtr,
+      fluidToStructureMap, structureToFluidMap);
+
+
+  /***************************/
+  /* create monolithic graph */
+  /***************************/
+
+  // create nodal graphs and maps of structure and fluid field
+  Teuchos::RCP<const Epetra_CrsGraph> structureGraph = structuredis->BuildNodeGraph();
+  Teuchos::RCP<const Epetra_CrsGraph> fluidGraph = fluiddis->BuildNodeGraph();
+  const Epetra_Map& structureGraph_map = (Epetra_Map&) structureGraph->RowMap();
+  const Epetra_Map& fluidGraph_map = (Epetra_Map&) fluidGraph->RowMap();
+
+  // Create monolithic map. Interface fluid nodes are omitted.
+
+  int numGlobalStructureNodes = structureGraph_map.NumGlobalElements();
+
+  int numMyStructureNodes = structureGraph_map.NumMyElements();
+  int numMyFluidNodes = fluidGraph_map.NumMyElements();
+
+  int prelimNumMyNodes = numMyStructureNodes + numMyFluidNodes;
+
+  // vector of global gids of structure + fluid
+  int gid[prelimNumMyNodes];
+  int* gid_structure = structureGraph_map.MyGlobalElements();
+  int* gid_fluid = fluidGraph_map.MyGlobalElements();
+
+  for (int i=0; i<numMyStructureNodes; ++i)
+    gid[i] = gid_structure[i];
+  int countMyFluidNodes = 0;
+  for (int i=0; i<numMyFluidNodes; ++i)
+  {
+    try
+    {
+      fluidToStructureMap.at(gid_fluid[i]);
+    }
+    catch (std::exception &exc)
+    {
+      gid[numMyStructureNodes + countMyFluidNodes] = gid_fluid[i];
+      countMyFluidNodes++;
+    }
+  }
+
+  int countGlobalFluidNodes = 0;
+  comm.SumAll(&countMyFluidNodes,&countGlobalFluidNodes,1);
+  int numMyNodes = numMyStructureNodes + countMyFluidNodes;
+  int numGlobalNodes = numGlobalStructureNodes + countGlobalFluidNodes;
+
+  const Epetra_Map& monolithicMap = Epetra_Map(numGlobalNodes,numMyNodes,gid,0,comm);
+
+  // create monolithic graph
+  Teuchos::RCP<Epetra_CrsGraph> monolithicGraph = Teuchos::rcp(new Epetra_CrsGraph(Copy, monolithicMap, 0));
+
+  std::map<int, std::vector<int> > deletedEdges; // edges deleted during construction of monolithic graph:
+                                                 // have to be inserted after redistribution
+  std::map<int,std::vector<int> > insertedEdges; // edges inserted during construction of monolithic graph:
+                                                 // have to be removed after redistribution
+
+  BuildMonolithicGraph(monolithicGraph, deletedEdges, insertedEdges,
+      fluidToStructureMap, structureToFluidMap, structuredis, fluiddis);
+
+  /******************/
+  /* redistribution */
+  /******************/
+  // dummy matrix for Zoltan call function
+  Teuchos::RCP<Epetra_CrsMatrix> dummy;
+  Teuchos::RCP<Epetra_Vector> crs_hge_weights = Teuchos::rcp(new Epetra_Vector(monolithicMap));
+  crs_hge_weights->PutScalar(1.0);
+  Teuchos::RCP<Epetra_CrsGraph> bal_graph = CallZoltan(monolithicGraph, dummy, crs_hge_weights,"HYPERGRAPH", 0);
+
+  // get maps of monolithic graph with deleted fluid interface nodes and inserted couplings
+
+  bal_graph->FillComplete();
+
+  // Extract row map
+  Teuchos::RCP<Epetra_Map> monolithicRownodes;
+  monolithicRownodes = Teuchos::rcp(
+      new Epetra_Map(-1, bal_graph->RowMap().NumMyElements(),
+          bal_graph->RowMap().MyGlobalElements(), 0, comm));
+
+  // Extract col map
+  Teuchos::RCP<Epetra_Map> monolithicColnodes;
+  monolithicColnodes = Teuchos::rcp(
+      new Epetra_Map(-1, bal_graph->ColMap().NumMyElements(),
+          bal_graph->ColMap().MyGlobalElements(), 0, comm));
+
+  /*************************************************/
+  /* reconstruct actual fluid and structure graphs */
+  /*************************************************/
+
+  // get fluid and structure row maps with inserted fluid interface nodes (final rowmaps)
+
+  Teuchos::RCP<Epetra_Map> structureRowmap =   GetRedistRowMap(structureGraph_map,
+                                                               monolithicRownodes,
+                                                               fluidToStructureMap);
+
+  Teuchos::RCP<Epetra_Map> fluidRowmap =   GetRedistRowMap(fluidGraph_map,
+                                                           monolithicRownodes,
+                                                           fluidToStructureMap,
+                                                           true);
+
+  // Now create structure and fluid graph with inserted / removed edges such that the final column maps can be extracted
+  Teuchos::RCP<Epetra_CrsGraph> structureGraphRedist = Teuchos::rcp(new Epetra_CrsGraph(Copy, *structureRowmap, 0));
+  Teuchos::RCP<Epetra_CrsGraph> fluidGraphRedist = Teuchos::rcp(new Epetra_CrsGraph(Copy, *fluidRowmap, 0));
+
+  RestoreRedistStructFluidGraph(insertedEdges,
+                                deletedEdges,
+                                bal_graph,
+                                monolithicRownodes,
+                                monolithicColnodes,
+                                structureGraphRedist,
+                                fluidGraphRedist,
+                                fluidToStructureMap);
+
+  fluidGraphRedist->FillComplete();
+  structureGraphRedist->FillComplete();
+
+
+  // Extract structure and fluid column maps
+  Teuchos::RCP<Epetra_Map> structureColmap;
+  structureColmap = Teuchos::rcp(
+      new Epetra_Map(-1, structureGraphRedist->ColMap().NumMyElements(),
+          structureGraphRedist->ColMap().MyGlobalElements(), 0, comm));
+
+  Teuchos::RCP<Epetra_Map> fluidColmap;
+  fluidColmap = Teuchos::rcp(
+      new Epetra_Map(-1, fluidGraphRedist->ColMap().NumMyElements(),
+          fluidGraphRedist->ColMap().MyGlobalElements(), 0, comm));
+
+  /*************************/
+  /* Actual redistribution */
+  /*************************/
+  /*
+   * Now the actual redistribution, i.e. the redistribution of the
+   * discretization is done. Some vectors and the time integrators have to
+   * be rebuilt as well in order to be conforming to the new row maps.
+   */
+
+  // redistribute nodes to procs
+  structuredis->Redistribute(*structureRowmap, *structureColmap);
+  fluiddis->Redistribute(*fluidRowmap, *fluidColmap);
+  aledis->Redistribute(*fluidRowmap, *fluidColmap);
+
+
+  // Distribute dofs in time integration vectors to right procs by creating time integrators new.
+  // The Control File has to be rewritten as well.
+  DRT::Problem* problem = DRT::Problem::Instance();
+  Teuchos::RCP<Teuchos::ParameterList> ioflags
+    = Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
+  Teuchos::RCP<IO::DiscretizationWriter> structureoutput = structuredis->Writer();
+  Teuchos::RCP<IO::DiscretizationWriter> fluidoutput = fluiddis->Writer();
+  Teuchos::RCP<IO::DiscretizationWriter> aleoutput = aledis->Writer();
+
+  const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
+
+    fluidoutput->OverwriteResultFile();
+    aleoutput->OverwriteResultFile();
+    structureoutput->OverwriteResultFile();
+    CreateStructureTimeIntegrator(fsidyn, structuredis);
+    SetLambda();
+
+    fluidoutput->OverwriteResultFile();
+    aleoutput->OverwriteResultFile();
+    structureoutput->OverwriteResultFile();
+    CreateFluidAndALETimeIntegrator(fsidyn, fluiddis, aledis);
+    SetLambda();
+
+
+  /*
+   * In the control file the three fields have to appear in the order
+   * structure - fluid - ale. The easiest and most stable way to achieve this
+   * is to overwrite the file and write the three fields in this order.
+   */
+
+  structureoutput->OverwriteResultFile();
+  fluidoutput->OverwriteResultFile();
+  aleoutput->OverwriteResultFile();
+
+  structureoutput->WriteMesh(0, 0.0);
+  fluidoutput->WriteMesh(0, 0.0);
+  aleoutput->WriteMesh(0, 0.0);
+
+  // setup has do be done again
+  SetNotSetup();
+
+  if (myrank==0)
+    printf("Redistribution of domain in %f seconds.\n",timer.ElapsedTime());
+
+  // just to be safe
+  comm.Barrier();
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::RedistributeDomainDecomposition(
     const INPAR::FSI::Redistribute domain,
     const FSI_COUPLING coupling, const double inputWeight1,
-    const double inputWeight2, const Epetra_Comm& comm)
+    const double inputWeight2, const Epetra_Comm& comm,
+    int unbalance)
 {
   Epetra_Time timer(comm);
 
@@ -99,16 +355,23 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(
   std::map<int, DRT::Node*>* slavenodesPtr = NULL;
   std::map<int, DRT::Node*>* mastergnodesPtr = NULL;
 
-  if (coupling == fsi_iter_mortar_monolithicfluidsplit or coupling == fsi_iter_sliding_monolithicfluidsplit){
+  // ToDo (mayr) Move this to routine in derived classes to replace the if-clause by inheritence
+  if (coupling == fsi_iter_mortar_monolithicfluidsplit
+      or coupling == fsi_iter_sliding_monolithicfluidsplit)
+  {
     slavenodesPtr = &fluidnodes;
     mastergnodesPtr = &structuregnodes;
   }
-  else if (coupling == fsi_iter_mortar_monolithicstructuresplit or coupling == fsi_iter_sliding_monolithicstructuresplit){
+  else if (coupling == fsi_iter_mortar_monolithicstructuresplit
+      or coupling == fsi_iter_sliding_monolithicstructuresplit)
+  {
     slavenodesPtr = &structurenodes;
     mastergnodesPtr = &fluidgnodes;
   }
   else
-    dserror("\nDomain redistribution / rebalancing only implemented for mortar coupling!");
+    dserror(
+        "\nDomain redistribution / rebalancing only implemented for mortar "
+        "coupling!");
 
 
   /*******************************************/
@@ -151,7 +414,12 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(
   /* redistribution */
   /******************/
 
-  Teuchos::RCP<Epetra_CrsGraph> bal_graph = CallZoltan(initgraph_manip, crs_ge_weights);
+  // dummy vector for Zoltan call function
+  Teuchos::RCP<Epetra_Vector> dummy;
+  Teuchos::RCP<Epetra_CrsGraph> bal_graph = CallZoltan(initgraph_manip, crs_ge_weights,dummy,"GRAPH",unbalance);
+
+  bal_graph->FillComplete();
+  bal_graph->OptimizeStorage();
 
   // Extract row map
   Teuchos::RCP<Epetra_Map> rownodes;
@@ -549,47 +817,60 @@ void FSI::BlockMonolithic::BuildWeightedGraph(
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallZoltan(
     Teuchos::RCP<const Epetra_CrsGraph> initgraph_manip,
-    Teuchos::RCP<const Epetra_CrsMatrix> crs_ge_weights)
+    Teuchos::RCP<const Epetra_CrsMatrix> matrix_weights,
+    Teuchos::RCP<Epetra_Vector> vector_weights, std::string partitioningMethod,
+    int unbalance)
 {
-
   Teuchos::ParameterList paramlist;
 
-    paramlist.set("PARTITIONING METHOD", "GRAPH");
-    paramlist.set("PRINT ZOLTAN METRICS", "2");
-    Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
-    sublist.set("GRAPH_PACKAGE", "PHG");
-    sublist.set("EDGE_WEIGHT_DIM", "1");      // One weight per edge
-    sublist.set("LB_APPROACH", "PARTITION");  // Build partition from scratch, in contrast to "REPARTITION"
+  Teuchos::RCP<Isorropia::Epetra::CostDescriber> costs = Teuchos::rcp(
+      new Isorropia::Epetra::CostDescriber);
 
-    Teuchos::RCP<Isorropia::Epetra::CostDescriber> costs = Teuchos::rcp(
-        new Isorropia::Epetra::CostDescriber);
+  if (partitioningMethod == "GRAPH")
+    costs->setGraphEdgeWeights(matrix_weights);
 
-    costs->setGraphEdgeWeights(crs_ge_weights);
+  if (partitioningMethod == "HYPERGRAPH")
+    costs->setHypergraphEdgeWeights(vector_weights);
 
-    Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner = Teuchos::rcp(
-        new Isorropia::Epetra::Partitioner(initgraph_manip, costs, paramlist));
+  int numproc = initgraph_manip->Comm().NumProc();
+  std::stringstream ss;
+  ss << numproc-unbalance;
 
-    Isorropia::Epetra::Redistributor rd(partitioner);
-    Teuchos::RCP<Epetra_CrsGraph> bal_graph;
+  paramlist.set("PARTITIONING METHOD", partitioningMethod);
+  paramlist.set("PRINT ZOLTAN METRICS", "2");
+  Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
+  sublist.set("GRAPH_PACKAGE", "PHG");
+  sublist.set("EDGE_WEIGHT_DIM", "1");      // One weight per edge
+  sublist.set("LB_APPROACH", "PARTITION");  // Build partition from scratch, in contrast to "REPARTITION"
+  sublist.set("NUM_GLOBAL_PARTS", ss.str());
 
-    //Use a try-catch block because Isorropia will throw an exception
-    //if it encounters an error.
+//  Teuchos::RCP<Isorropia::Epetra::CostDescriber> costs = Teuchos::rcp(
+//      new Isorropia::Epetra::CostDescriber);
+//
+//  costs->setGraphEdgeWeights(crs_ge_weights);
 
-    try
-    {
-      bal_graph = rd.redistribute(*initgraph_manip);
-    } catch (std::exception& exc)
-    {
-      std::cout << "Redistribute domain: Isorropia::Epetra::Redistributor threw "
-          << "exception '" << exc.what() << std::endl;
-      MPI_Finalize();
-    }
+  Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner = Teuchos::rcp(
+      new Isorropia::Epetra::Partitioner(initgraph_manip, costs, paramlist));
 
-    bal_graph->FillComplete();
-    bal_graph->OptimizeStorage();
+  Isorropia::Epetra::Redistributor rd(partitioner);
+  Teuchos::RCP<Epetra_CrsGraph> bal_graph;
 
-    return bal_graph;
+  /* Use a try-catch block because Isorropia will throw an exception
+  if it encounters an error. */
+  try
+  {
+    bal_graph = rd.redistribute(*initgraph_manip,false);
+  } catch (std::exception& exc)
+  {
+    std::cout << "Redistribute domain: Isorropia::Epetra::Redistributor threw "
+        << "exception '" << exc.what() << std::endl;
+    MPI_Finalize();
+  }
 
+  //bal_graph->FillComplete();
+  //bal_graph->OptimizeStorage();
+
+  return bal_graph;
 }
 
 
@@ -598,7 +879,6 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::SwitchDomains(
     Teuchos::RCP<Epetra_Map> rownodes, std::map<int, int>* nodeOwner,
     Teuchos::RCP<Epetra_CrsGraph> bal_graph, const Epetra_Comm& comm)
 {
-
   /******************/
   /* switch domains */
   /******************/
@@ -814,6 +1094,185 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::SwitchDomains(
     return switched_bal_graph;
 }
 
+/*---------------------------------------------------------------------------*/
+void FSI::BlockMonolithic::RestoreRedistStructFluidGraph(
+    std::map<int, std::vector<int> > &edgesToRemove,
+    std::map<int, std::vector<int> > &edgesToInsert,
+    Teuchos::RCP<Epetra_CrsGraph> monolithicGraph,
+    Teuchos::RCP<Epetra_Map> monolithicRowmap,
+    Teuchos::RCP<Epetra_Map> monolithicColmap,
+    Teuchos::RCP<Epetra_CrsGraph> structureGraphRedist,
+    Teuchos::RCP<Epetra_CrsGraph> fluidGraphRedist,
+    std::map<int, std::vector<int> > &fluidToStructureMap)
+{
+
+  // todo: edgesToRemove not necessarily needed. just remove every fluid col node from structure row and vice versa with info from what is a fluid node
+
+  Epetra_Map finalStructureMap = (Epetra_Map&) structureGraphRedist->RowMap();
+  Epetra_Map finalFluidMap = (Epetra_Map&) fluidGraphRedist->RowMap();
+
+  int numMyNodes = monolithicRowmap->NumMyElements();
+  int maxNumIndices = monolithicGraph->MaxNumIndices();
+  int actNumMyNodes = 0;
+  int ind[maxNumIndices];
+
+  for (int i=0; i<numMyNodes; ++i){
+
+    int gid = monolithicRowmap->GID(i);
+    int err = monolithicGraph->ExtractGlobalRowCopy(gid,maxNumIndices,actNumMyNodes,ind);
+    if (err != 0)
+      dserror("\nExtractGlobalRowCopy failed, error code %d!", err);
+
+    std::vector<int> insertCoupl;
+    std::vector<int> removeCoupl;
+
+    // edges to insert?
+    int numInsert = 0;
+    try
+    {
+      // yes
+      insertCoupl = edgesToInsert.at(gid);
+      numInsert = insertCoupl.size();
+    }
+    catch (std::exception &exc) {} //no
+
+    // edges to remove?
+    int numRemove = 0;
+    try
+    {
+      // yes
+      removeCoupl = edgesToRemove.at(gid);
+      numRemove = removeCoupl.size();
+    }
+    catch (std::exception &exc) {}//no
+
+    std::vector<int> structureInd;
+    std::vector<int> fluidInd;
+
+    // First deal with nodes that were already present in monolithicGraph. Just don't insert nodes included in removeCoupl
+
+    int countStructure = 0;
+    int countFluid = 0;
+
+    // check if fluid or structure ROW
+
+    int rowlid = finalStructureMap.LID(gid);
+    if (rowlid == -1){  // not a structure row node
+      rowlid = finalFluidMap.LID(gid);
+      if (rowlid == -1) // not a fluid row node either
+        dserror("\nNode has to be either structure or fluid node!");
+      else  // fluid row node
+      {
+        for (int j=0; j<actNumMyNodes; ++j)
+        {
+          if (numRemove > 0)
+          {
+            bool insert = true;
+            for (int k=0; k<numRemove; ++k)
+            {
+              if (removeCoupl[k]==ind[j]){
+                insert = false;
+                break;
+              }
+            }
+            if (insert==true)
+            {
+              // edge will be inserted
+              fluidInd.push_back(ind[j]);
+              countFluid++;
+            }
+          }// if (numRemove>0)
+
+          else    // nothing to remove
+          {
+            fluidInd.push_back(ind[j]);
+            countFluid++;
+          }
+        }
+
+        // insertion
+
+        if (numInsert > 0)
+        {
+          for (int k=0; k<numInsert; ++k){
+            fluidInd.push_back(insertCoupl[k]);
+            countFluid++;
+          }
+        }
+        // else: do nothing
+      }
+    }
+
+    else  // structure row node
+    {
+      for (int j=0; j<actNumMyNodes; ++j)
+      {
+        if (numRemove > 0)
+        {
+          bool insert = true;
+          for (int k=0; k<numRemove; ++k)
+          {
+            if (removeCoupl[k]==ind[j]){
+              insert = false;
+              break;
+            }
+          }
+          if (insert==true)
+          {
+            // edge will be inserted
+            structureInd.push_back(ind[j]);
+            countStructure++;
+          }
+        }// if (numRemove>0)
+        else    // nothing to remove
+        {
+          structureInd.push_back(ind[j]);
+          countStructure++;
+        }
+      }
+
+      // insertion
+
+      // Not needed here. No structure nodes have been removed previously.
+    }
+
+
+    if (countFluid > 0){
+      int err = fluidGraphRedist->InsertGlobalIndices(gid,countFluid,&fluidInd[0]);
+      if (err != 0)
+        dserror("\nInsert global indices failed, error code %d!", err);
+    }
+    else if (countStructure > 0){
+      int err = structureGraphRedist->InsertGlobalIndices(gid,countStructure,&structureInd[0]);
+      if (err != 0)
+        dserror("\nInsert global indices failed, error code %d!", err);
+    }
+
+  }
+
+
+  // FINALLY: insert the deleted rows connected to fluid interface nodes
+
+  std::map<int, std::vector<int> >::iterator it;
+
+  for (it = fluidToStructureMap.begin(); it != fluidToStructureMap.end(); it++)
+  {
+    int gid = it->first;
+    int lid = finalFluidMap.LID(gid);
+
+    if (lid != -1)
+    {
+      std::vector<int> insert = edgesToInsert[gid];
+      int num = insert.size();
+
+      int err = fluidGraphRedist->InsertGlobalIndices(gid,num,&insert[0]);
+      if (err != 0)
+        dserror("\nInsert global indices failed, error code %d!", err);
+    }
+  }
+
+}
+
 /*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::InsertDeletedEdges(
     std::map<int, std::list<int> >* deletedEdges,
@@ -875,3 +1334,678 @@ void FSI::BlockMonolithic::FindNodeRelatedToDof(
     dofs.clear();
   }
 }
+
+void FSI::BlockMonolithic::BuildMonolithicGraph(
+    Teuchos::RCP<Epetra_CrsGraph> monolithicGraph,
+    std::map<int, std::vector<int> > &deletedEdges,
+    std::map<int,std::vector<int> > &insertedEdges,
+    std::map<int, std::vector<int> > &fluidToStructureMap,
+    std::map<int, std::vector<int> > &structureToFluidMap,
+    Teuchos::RCP<DRT::Discretization> structuredis, ///< structure discretization
+    Teuchos::RCP<DRT::Discretization> fluiddis
+    )
+{
+
+  int numproc = monolithicGraph->Comm().NumProc();
+  int myrank = monolithicGraph->Comm().MyPID();
+
+  // create nodal graphs and maps of structure and fluid field
+
+  Teuchos::RCP<const Epetra_CrsGraph> structureGraph = structuredis->BuildNodeGraph();
+  Teuchos::RCP<const Epetra_CrsGraph> fluidGraph = fluiddis->BuildNodeGraph();
+  const Epetra_Map& structureGraph_map = (Epetra_Map&) structureGraph->RowMap();
+  const Epetra_Map& fluidGraph_map = (Epetra_Map&) fluidGraph->RowMap();
+//
+//  // hypergraph edge weights: set all values to weight1
+//  crs_hge_weights->PutScalar(weight1);
+//  double weight = weight2;
+//
+
+  /*******************************************/
+  /* copy line after line in monolithicGraph */
+  /*******************************************/
+  // Note: Fluid interface lines are omitted. Respective Columns are omitted too.
+
+
+  // fluid part: nothing is inserted in monolithicGraph, only information is collected
+  // insertion happens later
+
+  int numMyFluidNodes = fluidGraph_map.NumMyElements();
+  int maxNumFluidIndices = fluidGraph->MaxNumIndices();
+  int actNumIndices = 0;  // actual number of entries in "indices"
+  int indices_f[maxNumFluidIndices];
+  std::vector<int> coupling;
+  bool insertCoupling = false;
+
+  std::map<int,std::vector<int> > strNodesCouplToFluid;     // which structure interface node is coupled to which fluid nodes
+  std::map<int,std::vector<int> > fluidInterfNodesConnect;  // which fluid interface node is coupled to which fluid nodes
+  std::map<int,std::vector<int> > fluidFieldNodesConnect;   // connectivity of fluid field nodes
+
+  for (int i=0; i<numMyFluidNodes; ++i)
+  {
+
+    int gid = fluidGraph_map.GID(i);
+
+    // extract indices
+
+    int err = fluidGraph->ExtractGlobalRowCopy(gid,maxNumFluidIndices,actNumIndices,indices_f);
+    if (err != 0)
+      dserror("ExtractGlobalRowCopy failed, error = %d!",err);
+
+    // check if interface node
+
+    try{
+      coupling = fluidToStructureMap.at(gid);          // Try to get vector with coupling entries
+      insertCoupling = true;
+      //crs_hge_weights->ReplaceGlobalValues(1,&weight,&gid);
+    }
+    catch (std::exception& exc)    {}                  // Not an interface node. Do nothing
+
+
+    // get insertion information
+
+    if (insertCoupling == false)                       // field node
+    {
+
+      // do not insert fluid interface nodes
+
+      std::vector<int> insert_ind;
+      int numInsert = 0;
+
+      // save deleted edges
+      for (int k=0; k<actNumIndices; ++k)
+      {
+        try
+        {
+          fluidToStructureMap.at(indices_f[k]);
+          deletedEdges[gid].push_back(indices_f[k]);
+        }
+        catch (std::exception &exc)
+        {
+          insert_ind.push_back(indices_f[k]);
+          numInsert++;
+        }
+      }
+
+      fluidFieldNodesConnect[gid] = insert_ind;
+
+    }
+    else                                               // interface node
+    {
+      // cast array to std::vector
+      std::vector<int> indices_f_coupl(indices_f, indices_f + actNumIndices);
+
+      for (int v=0; v<actNumIndices; ++v){
+        try
+        {
+          fluidToStructureMap.at(indices_f_coupl[v]);   // don't consider fluid interface nodes
+        }
+        catch (std::exception &exc)
+        {
+          if (indices_f_coupl[v] != gid)
+          {
+            strNodesCouplToFluid[coupling[0]].push_back(indices_f_coupl[v]);  // structure nodes --- coupled fluid nodes
+            fluidInterfNodesConnect[gid].push_back(indices_f_coupl[v]);       // fluid nodes ----- coupled fluid nodes
+          }
+          fluidInterfNodesConnect[gid].push_back(gid);
+        }
+      }
+
+      // save deleted edges
+      for (int k=0; k<actNumIndices; ++k)
+      {
+        deletedEdges[gid].push_back(indices_f[k]);
+      }
+
+      insertCoupling = false;
+    }
+  }   // end of fluid part I
+
+
+
+  // communicate connectivity information of structure interface nodes among all procs
+
+  std::map<int,std::vector<int> > connectInfo;   // structure interface node to fluid field nodes
+
+  std::vector<int> transferVec;
+  int transfer[1000];
+  std::map<int, std::vector<int> >::iterator mapIter;
+
+  for (int p=0; p<numproc; ++p)
+  {
+    int numNodes = strNodesCouplToFluid.size();
+    monolithicGraph->Comm().Broadcast(&numNodes,1,p);
+
+    mapIter = strNodesCouplToFluid.begin();
+
+    for (int n=0; n<numNodes; ++n)
+    {
+
+      int gid = 0;
+      int numCoupl = 0;
+
+      if (myrank == p){
+        gid = mapIter->first;
+        numCoupl = (int) strNodesCouplToFluid[gid].size();
+        transferVec = mapIter->second;
+        for (int t=0; t<numCoupl; ++t)
+          transfer[t] = transferVec[t];
+      }
+
+      monolithicGraph->Comm().Broadcast(&gid,1,p);
+      monolithicGraph->Comm().Broadcast(&numCoupl,1,p);
+      monolithicGraph->Comm().Broadcast(transfer,numCoupl,p);
+
+      std::vector<int> nodes;
+
+      for (int a=0; a<numCoupl; ++a){
+        nodes.push_back(transfer[a]);
+      }
+
+      connectInfo[gid] = nodes;
+
+      if (myrank == p)
+        mapIter++;
+    }
+
+    // communicate deleted edges
+
+    numNodes = deletedEdges.size();
+    monolithicGraph->Comm().Broadcast(&numNodes,1,p);
+
+    mapIter = deletedEdges.begin();
+
+    for (int n=0; n<numNodes; ++n)
+    {
+
+      int gid = 0;
+      int numDelEd = 0;
+
+      if (myrank == p){
+        gid = mapIter->first;
+        numDelEd = (int) deletedEdges[gid].size();
+        transferVec = mapIter->second;
+        for (int t=0; t<numDelEd; ++t)
+          transfer[t] = transferVec[t];
+      }
+
+      monolithicGraph->Comm().Broadcast(&gid,1,p);
+      monolithicGraph->Comm().Broadcast(&numDelEd,1,p);
+      monolithicGraph->Comm().Broadcast(transfer,numDelEd,p);
+
+      std::vector<int> delEd;
+
+      for (int a=0; a<numDelEd; ++a){
+        delEd.push_back(transfer[a]);
+      }
+
+      deletedEdges[gid] = delEd;
+
+      if (myrank == p)
+        mapIter++;
+    }
+
+
+  } // end of communication
+
+
+  // build inverse map
+
+  std::map<int,std::vector<int> > inverseConnectInfo;   // fluid field nodes to structure interface nodes
+  std::map<int,std::vector<int> >::iterator connectIt;
+
+  for (connectIt = connectInfo.begin(); connectIt != connectInfo.end(); connectIt++)
+  {
+
+    int first = connectIt->first;
+    std::vector<int> second = connectIt->second;
+    int num = second.size();
+
+    for (int i=0; i<num; ++i)
+    {
+
+      try
+      {
+        inverseConnectInfo[second[i]].at(first);  // check if "first" is already contained in inverse map
+      }
+      catch (std::exception &exc)
+      {
+        inverseConnectInfo[second[i]].push_back(first);
+      }
+    }
+  }
+
+  // Merge both maps. This is needed later for removal of inserted edges.
+
+  insertedEdges = connectInfo;
+  insertedEdges.insert(inverseConnectInfo.begin(),inverseConnectInfo.end());
+
+  // end of map building
+
+  // structure part
+
+  int numMyStructureNodes = structureGraph_map.NumMyElements();
+  int maxNumStructureIndices = structureGraph->MaxNumIndices();
+  int indices_s[maxNumStructureIndices];
+
+  for (int i=0; i<numMyStructureNodes; ++i)
+  {
+
+    int gid = structureGraph_map.GID(i);
+
+    // extract indices
+
+    int err = structureGraph->ExtractGlobalRowCopy(gid,maxNumStructureIndices,actNumIndices,indices_s);
+    if (err != 0)
+      dserror("ExtractGlobalRowCopy failed, error = %d!",err);
+
+
+    // Check if interface node. If so: insert coupling entries from fluid
+
+    try{
+      coupling = structureToFluidMap.at(gid);          // Try to get vector with coupling entries
+      insertCoupling = true;
+      //crs_hge_weights->ReplaceGlobalValues(1,&weight,&gid);
+    }
+    catch (std::exception& exc)    {}               // Not an interface node. Do nothing
+
+
+    if (insertCoupling == false)
+    {
+
+      // do not insert indices at fluid interface
+
+      std::vector<int> insert_ind;
+      int numInsert = 0;
+
+      // save deleted edges
+      for (int k=0; k<actNumIndices; ++k)
+      {
+        try
+        {
+          fluidToStructureMap.at(indices_s[k]);
+          deletedEdges[gid].push_back(indices_s[k]);
+        }
+        catch (std::exception &exc)
+        {
+          insert_ind.push_back(indices_s[k]);
+          numInsert++;
+        }
+      }
+
+      err = monolithicGraph->InsertGlobalIndices(gid,numInsert,&insert_ind[0]);
+      if (err != 0)
+        dserror("InsertGlobalIndices failed, error = %d!",err);
+    }
+    else
+    {
+
+      // do not insert indices at fluid interface
+
+      std::vector<int> insert_ind;
+      int numInsert = 0;
+      std::vector<int> delEd = deletedEdges[gid];
+
+      // save deleted edges
+      for (int k=0; k<actNumIndices; ++k)
+      {
+        try
+        {
+          fluidToStructureMap.at(indices_s[k]);
+          delEd.push_back(indices_s[k]);
+        }
+        catch (std::exception &exc)
+        {
+          insert_ind.push_back(indices_s[k]);
+          numInsert++;
+        }
+      }
+
+      std::vector<int> nodesFromFluid = connectInfo[gid];
+
+      int numTransfer = nodesFromFluid.size();
+      for (int k=0; k<numTransfer; ++k)
+      {
+        try
+        {
+          fluidToStructureMap.at(nodesFromFluid[k]);
+          deletedEdges[gid].push_back(nodesFromFluid[k]);
+        }
+        catch (std::exception &exc)
+        {
+          insert_ind.push_back(nodesFromFluid[k]);
+          numInsert++;
+        }
+      }
+
+      numInsert = insert_ind.size();
+
+      err = monolithicGraph->InsertGlobalIndices(gid,numInsert,&insert_ind[0]);
+      if (err != 0)
+        dserror("InsertGlobalIndices failed, error = %d!",err);
+
+    }
+  } // end of structure part
+
+
+
+  // now run again through fluid rows to insert elements for symmetric graph
+
+  //for (connectIt = inverseConnectInfo.begin(); connectIt != inverseConnectInfo.end(); ++connectIt)
+  for (int i=0; i<numMyFluidNodes; ++i)
+  {
+
+    int gid = fluidGraph_map.GID(i);
+    //int lid = fluidGraph_map.LID(gid);
+
+//    if (lid != -1)
+//    {
+
+      try
+      {
+        fluidToStructureMap.at(gid);      // Interface node. Do nothing
+      }
+      catch (std::exception &exc)
+      {
+
+        std::vector<int> insert_ind;
+        int numInsert = 0;
+
+        // coupling nodes
+
+        try
+        {
+          std::vector<int> nodesFromStructure = inverseConnectInfo.at(gid);
+
+          //std::vector<int> nodesFromStructure = inverseConnectInfo[gid];
+
+          int numTransfer = nodesFromStructure.size();
+          for (int k=0; k<numTransfer; ++k)
+          {
+            try
+            {
+              fluidToStructureMap.at(nodesFromStructure[k]);
+              deletedEdges[gid].push_back(nodesFromStructure[k]);
+            }
+            catch (std::exception &exc)
+            {
+              insert_ind.push_back(nodesFromStructure[k]);
+              numInsert++;
+            }
+          }
+
+        }
+        catch (std::exception &exc) {}
+
+        // field nodes
+
+        insert_ind.insert(insert_ind.end(),fluidFieldNodesConnect[gid].begin(),fluidFieldNodesConnect[gid].end());
+        numInsert += (int) fluidFieldNodesConnect[gid].size();
+
+//        std::cout<<"gid: "<<gid<<" rank: "<<myrank<<" numInsert: "<<numInsert<<std::endl;
+//        for (int m=0; m<numInsert; ++m)
+//          std::cout<<"rank: "<<myrank<<" ind: "<<insert_ind[m]<<std::endl;
+
+        // insertion
+
+        int err = monolithicGraph->InsertGlobalIndices(gid,numInsert,&insert_ind[0]);
+        if (err != 0)
+          dserror("InsertGlobalIndices failed, error = %d!",err);
+
+      }
+
+    //}
+
+  } // end of fluid part II
+
+  monolithicGraph->FillComplete();
+
+}
+
+
+//Teuchos::RCP<Epetra_Map> FSI::BlockMonolithic::GetStructureRowMap(
+//    const Epetra_Map& oldStructureMap,
+//    Teuchos::RCP<Epetra_Map> monolithicRownodes,
+//    std::map<int,std::vector<int> > &fluidToStructureMap)
+//{
+//
+//  int numproc = oldStructureMap.Comm().NumProc();
+//  int myrank = oldStructureMap.Comm().MyPID();
+//
+//  // build arrays with all structure and all fluid nodes from all procs
+//
+//  int numGlobalStructureNodes = oldStructureMap.NumGlobalElements();
+//  int numMyStructureNodes = oldStructureMap.NumMyElements();
+//
+//  std::vector<int> allStructureNodes;
+//
+//  int* myStructureNodes = oldStructureMap.MyGlobalElements();
+//
+//  // communicate information among procs
+//
+//  for (int p=0; p<numproc; ++p)
+//  {
+//    int numReceivedStructureNodes = numMyStructureNodes;
+//    oldStructureMap.Comm().Broadcast(&numReceivedStructureNodes,1,p);
+//
+//    int receivedStructureNodes[numReceivedStructureNodes];
+//
+//    if (myrank == p)
+//    {
+//      for (int i=0; i<numReceivedStructureNodes; ++i)
+//        receivedStructureNodes[i] = myStructureNodes[i];
+//    }
+//
+//    oldStructureMap.Comm().Broadcast(receivedStructureNodes,numReceivedStructureNodes,p);
+//
+//    for (int i=0; i<numReceivedStructureNodes; ++i)
+//      allStructureNodes.push_back(receivedStructureNodes[i]);
+//
+//  } // end of communication
+//
+//
+//  // separate fluid and structure nodes from monolithic maps
+//
+//  std::vector<int> myRedistStructureRowNodes;
+//  int numMyRedistStructureRowNodes = 0;
+//
+//
+//  for (int i=0; i<numGlobalStructureNodes; ++i)
+//  {
+//    int lid = monolithicRownodes->LID(allStructureNodes[i]);
+//    if (lid != -1)  // proc owns this structure node
+//    {
+//      myRedistStructureRowNodes.push_back(allStructureNodes[i]);
+//      numMyRedistStructureRowNodes++;
+//    }
+//  }
+//
+//  Teuchos::RCP<Epetra_Map> structureRowmap = Teuchos::rcp(new Epetra_Map(numGlobalStructureNodes,numMyRedistStructureRowNodes,&myRedistStructureRowNodes[0],0,oldStructureMap.Comm()));
+//
+//  return structureRowmap;
+//
+//}
+//
+//
+//Teuchos::RCP<Epetra_Map> FSI::BlockMonolithic::GetFluidRowMap(
+//    const Epetra_Map& oldFluidMap,
+//    Teuchos::RCP<Epetra_Map> monolithicRownodes,
+//    std::map<int,std::vector<int> > &fluidToStructureMap,
+//    std::vector<int> &allFluidNodes)
+//{
+//
+//  int numproc = oldFluidMap.Comm().NumProc();
+//  int myrank = oldFluidMap.Comm().MyPID();
+//
+//  // build arrays with all structure and all fluid nodes from all procs
+//
+//  int numGlobalFluidNodes = oldFluidMap.NumGlobalElements();
+//  int numMyFluidNodes = oldFluidMap.NumMyElements();
+//
+//  int* myFluidNodes = oldFluidMap.MyGlobalElements();
+//
+//  // communicate information among procs
+//
+//  for (int p=0; p<numproc; ++p)
+//  {
+//
+//    int numReceivedFluidNodes = numMyFluidNodes;
+//    oldFluidMap.Comm().Broadcast(&numReceivedFluidNodes,1,p);
+//
+//    int receivedFluidNodes[numReceivedFluidNodes];
+//
+//    if (myrank == p)
+//    {
+//      for (int i=0; i<numReceivedFluidNodes; ++i)
+//        receivedFluidNodes[i] = myFluidNodes[i];
+//    }
+//
+//    oldFluidMap.Comm().Broadcast(receivedFluidNodes,numReceivedFluidNodes,p);
+//
+//    for (int i=0; i<numReceivedFluidNodes; ++i)
+//      allFluidNodes.push_back(receivedFluidNodes[i]);
+//
+//  } // end of communication
+//
+//
+//  // separate fluid and structure nodes from monolithic maps
+//
+//  std::vector<int> myRedistFluidRowNodes;
+//  int numMyRedistFluidRowNodes = 0;
+//
+//  for (int i=0; i<numGlobalFluidNodes; ++i)
+//  {
+//    int lid = monolithicRownodes->LID(allFluidNodes[i]);
+//    if (lid != -1)  // proc owns this structure node
+//    {
+//      try
+//      {
+//        fluidToStructureMap.at(allFluidNodes[i]);
+//      }
+//      catch (std::exception& exc)
+//      {
+//        myRedistFluidRowNodes.push_back(allFluidNodes[i]);
+//        numMyRedistFluidRowNodes++;
+//      }
+//    }
+//  }
+//
+//
+//  // fluid: in monolithicGraph all fluid interface nodes have been omitted. Insert now
+//
+//  std::map<int, std::vector<int> >::iterator it;
+//
+//  for (it = fluidToStructureMap.begin(); it != fluidToStructureMap.end(); ++it)
+//  {
+//
+//    int structGID = it->second[0];
+//    int structLID = monolithicRownodes->LID(structGID);
+//
+//    if (structLID != -1)
+//    {
+//      int fluidGID = it->first;
+//      myRedistFluidRowNodes.push_back(fluidGID);
+//      numMyRedistFluidRowNodes++;
+//    }
+//  }
+//
+//  Teuchos::RCP<Epetra_Map> fluidRowmap = Teuchos::rcp(new Epetra_Map(numGlobalFluidNodes,numMyRedistFluidRowNodes,&myRedistFluidRowNodes[0],0,oldFluidMap.Comm()));
+//
+//  return fluidRowmap;
+//
+//}
+
+
+Teuchos::RCP<Epetra_Map> FSI::BlockMonolithic::GetRedistRowMap(
+    const Epetra_Map& oldMap,
+    Teuchos::RCP<Epetra_Map> monolithicRownodes,
+    std::map<int,std::vector<int> > &fluidToStructureMap,
+    bool fluid)
+{
+
+  int numproc = oldMap.Comm().NumProc();
+  int myrank = oldMap.Comm().MyPID();
+
+  // build arrays with all structure and all fluid nodes from all procs
+
+  int numGlobalNodes = oldMap.NumGlobalElements();
+  int numMyNodes = oldMap.NumMyElements();
+
+  int* myNodes = oldMap.MyGlobalElements();
+
+  std::vector<int> allNodes;
+
+  // communicate information among procs
+
+  for (int p=0; p<numproc; ++p)
+  {
+
+    int numReceivedNodes = numMyNodes;
+    oldMap.Comm().Broadcast(&numReceivedNodes,1,p);
+
+    int receivedNodes[numReceivedNodes];
+
+    if (myrank == p)
+    {
+      for (int i=0; i<numReceivedNodes; ++i)
+        receivedNodes[i] = myNodes[i];
+    }
+
+    oldMap.Comm().Broadcast(receivedNodes,numReceivedNodes,p);
+
+    for (int i=0; i<numReceivedNodes; ++i)
+      allNodes.push_back(receivedNodes[i]);
+
+  } // end of communication
+
+
+  // separate fluid and structure nodes from monolithic maps
+
+  std::vector<int> myRedistRowNodes;
+  int numMyRedistRowNodes = 0;
+
+  for (int i=0; i<numGlobalNodes; ++i)
+  {
+    int lid = monolithicRownodes->LID(allNodes[i]);
+    if (lid != -1)  // proc owns this structure node
+    {
+      try
+      {
+        fluidToStructureMap.at(allNodes[i]);
+      }
+      catch (std::exception& exc)
+      {
+        myRedistRowNodes.push_back(allNodes[i]);
+        numMyRedistRowNodes++;
+      }
+    }
+  }
+
+
+  // fluid: in monolithicGraph all fluid interface nodes have been omitted. Insert now
+  if (fluid == true)
+  {
+    std::map<int, std::vector<int> >::iterator it;
+
+    for (it = fluidToStructureMap.begin(); it != fluidToStructureMap.end(); ++it)
+    {
+
+      int structGID = it->second[0];
+      int structLID = monolithicRownodes->LID(structGID);
+
+      if (structLID != -1)
+      {
+        int fluidGID = it->first;
+        myRedistRowNodes.push_back(fluidGID);
+        numMyRedistRowNodes++;
+      }
+    }
+
+  }
+
+  Teuchos::RCP<Epetra_Map> redistRowmap = Teuchos::rcp(new Epetra_Map(numGlobalNodes,numMyRedistRowNodes,&myRedistRowNodes[0],0,oldMap.Comm()));
+
+  return redistRowmap;
+
+}
+

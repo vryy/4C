@@ -2,13 +2,9 @@
 /*!
 \file fsi_dyn.cpp
 
-\brief Entry routines for FSI problems and some other problem types as well
+\maintainer Matthias Mayr
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief Entry routines for FSI problems and some other problem types as well
 */
 
 /*----------------------------------------------------------------------*/
@@ -491,7 +487,8 @@ void fsi_ale_drt()
         {
           // redistribute either structure or fluid domain
           fsi->RedistributeDomainDecomposition(redistribute, coupling, weight1,
-              weight2, comm);
+              weight2, comm,0);
+
           // do setup again after redistribution
           fsi->SetupSystem();
 
@@ -503,7 +500,7 @@ void fsi_ale_drt()
           {
             // redistribute either structure or fluid domain
             fsi->RedistributeDomainDecomposition(redistribute, coupling, secweight1,
-              secweight2, comm);
+              secweight2, comm,0);
 
             // do setup again after redistribution
             fsi->SetupSystem();
@@ -511,14 +508,25 @@ void fsi_ale_drt()
         }
         else if (redistribute==INPAR::FSI::Redistribute_both)
         {
+
+          int numproc = comm.NumProc();
+
           // redistribute both structure and fluid domain
           fsi->RedistributeDomainDecomposition(INPAR::FSI::Redistribute_structure,
-              coupling, weight1, weight2, comm);
+              coupling, weight1, weight2, comm, numproc/2);
 
           // do setup again after redistribution (do this again here in between because the P matrix changed!)
           fsi->SetupSystem();
           fsi->RedistributeDomainDecomposition(INPAR::FSI::Redistribute_fluid,
-              coupling, weight1, weight2, comm);
+              coupling, weight1, weight2, comm, numproc/2 -1);
+
+          // do setup again after redistribution
+          fsi->SetupSystem();
+
+        }
+        else if (redistribute==INPAR::FSI::Redistribute_monolithic)
+        {
+          fsi->RedistributeMonolithicGraph(coupling, comm);
 
           // do setup again after redistribution
           fsi->SetupSystem();
