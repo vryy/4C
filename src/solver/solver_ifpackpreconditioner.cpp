@@ -1,59 +1,69 @@
-/*
- * solver_ifpackpreconditioner.cpp
- *
- *  Created on: Jul 4, 2011
- *      Author: wiesner
- */
+/*----------------------------------------------------------------------------*/
+/*!
+\file solver_ifpackpreconditioner.cpp
+
+\maintainer Tobias Wiesner
+
+\brief LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "../drt_lib/drt_dserror.H"
 
 #include "solver_ifpackpreconditioner.H"
 
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-LINALG::SOLVER::IFPACKPreconditioner::IFPACKPreconditioner( FILE * outfile,
-                                                            Teuchos::ParameterList & ifpacklist,
-                                                            Teuchos::ParameterList & azlist )
-  : PreconditionerType( outfile ),
-    ifpacklist_( ifpacklist ),
-    azlist_( azlist )
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+LINALG::SOLVER::IFPACKPreconditioner::IFPACKPreconditioner(FILE * outfile,
+    Teuchos::ParameterList & ifpacklist, Teuchos::ParameterList & azlist)
+  : PreconditionerType(outfile),
+    ifpacklist_(ifpacklist),
+    azlist_(azlist)
 {
+  return;
 }
 
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-void LINALG::SOLVER::IFPACKPreconditioner::Setup( bool create,
-                                                  Epetra_Operator * matrix,
-                                                  Epetra_MultiVector * x,
-                                                  Epetra_MultiVector * b )
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+void LINALG::SOLVER::IFPACKPreconditioner::Setup(bool create,
+    Epetra_Operator * matrix, Epetra_MultiVector * x, Epetra_MultiVector * b)
 {
   SetupLinearProblem( matrix, x, b );
 
-  if ( create )
+  if (create)
   {
-    Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>( matrix );
-    if ( A==NULL )
-      dserror( "CrsMatrix expected" );
+    Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(matrix);
+    if (A == NULL)
+      dserror("CrsMatrix expected");
 
     // free old matrix first
-    prec_    = Teuchos::null;
+    prec_ = Teuchos::null;
     Pmatrix_ = Teuchos::null;
 
     // create a copy of the scaled matrix
     // so we can reuse the preconditioner
     Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
 
-    // get the type of ifpack preconditioner from aztec
-    std::string prectype = azlist_.get("Preconditioner Type","ILU");
-    int    overlap  = azlist_.get("AZ_overlap",0);
+    // get the type of ifpack preconditioner from aztec parameter list
+    std::string prectype = azlist_.get("Preconditioner Type", "ILU");
+    const int overlap = azlist_.get("AZ_overlap", 0);
+
+    // create the preconditioner
     Ifpack Factory;
-    prec_ = Teuchos::rcp( Factory.Create(prectype,Pmatrix_.get(),overlap) );
+    prec_ = Teuchos::rcp(Factory.Create(prectype, Pmatrix_.get(), overlap));
+
+    if (prec_.is_null())
+      dserror("Creation of IFPACK preconditioner of type '%s' failed.",
+          prectype.c_str());
+
+    // setup
     prec_->SetParameters(ifpacklist_);
     prec_->Initialize();
     prec_->Compute();
 
-    //cout << ifpacklist_ << endl;
-    //prec_->Print(std::cout);
+    prec_->Print(std::cout);
+
+    return;
   }
 }
 

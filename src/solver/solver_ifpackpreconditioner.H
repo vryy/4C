@@ -1,60 +1,69 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file solver_ifpackpreconditioner.H
 
-<pre>
-Maintainer: Tobias Wiesner
-            wiesner@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-Created on: Jul 4, 2011
-</pre>
-*----------------------------------------------------------------------*/
+\maintainer Tobias Wiesner
+
+\brief LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
+*/
+/*----------------------------------------------------------------------------*/
 #ifndef SOLVER_IFPACKPRECONDITIONER_H_
 #define SOLVER_IFPACKPRECONDITIONER_H_
 
 #include "Ifpack.h"
-//#include "Ifpack_AdditiveSchwarz.h"
 
 #include "solver_preconditionertype.H"
 
 namespace LINALG
 {
-  namespace SOLVER
+namespace SOLVER
+{
+  /*! \brief  IFPACK preconditioners
+   *
+   *  Set of standard single-matrix preconditioners.
+   */
+  class IFPACKPreconditioner : public SOLVER::PreconditionerType
   {
-    /// ifpack preconditioners
-    /*!
-      Set of standard single-matrix preconditioners.
-     */
-    class IFPACKPreconditioner : public SOLVER::PreconditionerType
-    {
-    public:
+  public:
 
-      IFPACKPreconditioner( FILE * outfile, Teuchos::ParameterList & ifpacklist, Teuchos::ParameterList & azlist );
+    //! Constructor (empty)
+    IFPACKPreconditioner(FILE * outfile,
+        Teuchos::ParameterList & ifpacklist, ///< parameter list for IFPACK
+        Teuchos::ParameterList & azlist ///< parameter list for Aztec
+        );
 
-      virtual void Setup( bool create,
-                          Epetra_Operator * matrix,
-                          Epetra_MultiVector * x,
-                          Epetra_MultiVector * b );
+    //! Setup
+    virtual void Setup(bool create, ///< enforce rebuiling of the preconditioner
+        Epetra_Operator* matrix, ///< matrix
+        Epetra_MultiVector* x, ///< solution vector
+        Epetra_MultiVector* b ///< right-hand side vector
+        );
 
-      virtual Epetra_Operator * PrecOperator() const { return &*prec_; }
+    //! Access to preconditioner operator
+    virtual Epetra_Operator * PrecOperator() const { return &*prec_; }
 
-      virtual void Print( std::ostream & stream ) { stream << "IFPACK"; }
+    //! Print name of preconditioner
+    virtual void Print( std::ostream & stream ) { stream << "IFPACK"; }
 
-      /// return name of sublist in paramterlist which contains parameters for preconditioner
-      virtual const std::string getParameterListName() const { return "IFPACK Parameters"; }
-    private:
+    //! return name of sublist in parameter list which contains parameters for preconditioner
+    virtual const std::string getParameterListName() const { return "IFPACK Parameters"; }
 
-      Teuchos::ParameterList & ifpacklist_;
-      Teuchos::ParameterList & azlist_;
+  private:
 
-      //! system of equations used for preconditioning used by P_ only
-      Teuchos::RCP<Epetra_RowMatrix>                 Pmatrix_;
+    //! IFPACK parameter list
+    Teuchos::ParameterList & ifpacklist_;
 
-      /// preconditioner
-      Teuchos::RCP<Ifpack_Preconditioner> prec_;
-    };
+    //! AZTEC parameter list
+    Teuchos::ParameterList & azlist_;
 
-  }
-}
+    //! system of equations used for preconditioning used by P_ only
+    Teuchos::RCP<Epetra_RowMatrix> Pmatrix_;
+
+    //! preconditioner
+    Teuchos::RCP<Ifpack_Preconditioner> prec_;
+
+  }; // class IFPACKPreconditioner
+} // namespace SOLVER
+} // namespace LINALG
 
 #endif /* SOLVER_IFPACKPRECONDITIONER_H_ */
