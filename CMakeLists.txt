@@ -1768,6 +1768,7 @@ set(OBJS_LINALG
   src/linalg/linalg_sparsematrix.cpp
   src/linalg/linalg_sparsematrixbase.cpp
   src/linalg/linalg_utils.cpp
+  src/linalg/linalg_gauss.cpp
 )
 set(OBJS_SOLVER
   src/linalg/linalg_multiply.cpp
