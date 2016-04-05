@@ -5,7 +5,7 @@
 \brief Setup of the list of valid conditions for input
 
 <pre>
-Maintainer: Martin Kronbichler
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -764,13 +764,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          "PointCoupling",
                                          "Point Coupling",
                                          DRT::Condition::PointCoupling,
-                                          false,
+                                         false,
+                                         DRT::Condition::Point));
+
+  Teuchos::RCP<ConditionDefinition> pointthermocoupling =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT THERMO COUPLING CONDITIONS",
+                                         "PointThermoCoupling",
+                                         "Point Coupling",
+                                         DRT::Condition::PointCoupling,
+                                         false,
                                          DRT::Condition::Point));
 
   for (unsigned i=0; i<couplingcomponents.size(); ++i)
+  {
     pointcoupling->AddComponent(couplingcomponents[i]);
+    pointthermocoupling->AddComponent(couplingcomponents[i]);
+  }
 
   condlist.push_back(pointcoupling);
+  condlist.push_back(pointthermocoupling);
 
   /*--------------------------------------------------------------------*/
   // Initial fields

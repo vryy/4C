@@ -333,7 +333,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
         // In case the interface linearizations and residuals are evaluated on slave side only,
         // we now apply a standard meshtying algorithm to condense out the master-side degrees of freedom.
-        else
+        else if(!scatratimint_->Discretization()->GetCondition("PointCoupling"))
         {
           // initialize temporary matrix for master-side rows of system matrix
           LINALG::SparseMatrix systemmatrixrowsmaster(*icoup_->MasterDofMap(),81);
@@ -504,7 +504,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
     // In case the interface linearizations and residuals are evaluated on slave side only,
     // we now apply a standard meshtying algorithm to condense out the master-side degrees of freedom.
-    else
+    else if(!scatratimint_->Discretization()->GetCondition("PointCoupling"))
     {
       // initialize temporary vector for master-side entries of residual vector
       Teuchos::RCP<Epetra_Vector> residualmaster = Teuchos::rcp(new Epetra_Vector(*icoup_->MasterDofMap()));
@@ -1050,7 +1050,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     icoup_->SetupCoupling(*(scatratimint_->Discretization()),*(scatratimint_->Discretization()),imasternodegidvec,islavenodegidvec,scatratimint_->NumDofPerNode(),true,1.e-8);
 
     // generate interior and interface maps
-    Teuchos::RCP<Epetra_Map> ifullmap = LINALG::MergeMap(icoup_->SlaveDofMap(),icoup_->MasterDofMap(),false);
+    Teuchos::RCP<Epetra_Map> ifullmap = LINALG::MergeMap(icoup_->SlaveDofMap(),icoup_->MasterDofMap());
     std::vector<Teuchos::RCP<const Epetra_Map> > imaps;
     imaps.push_back(LINALG::SplitMap(*(scatratimint_->Discretization()->DofRowMap()),*ifullmap));
     imaps.push_back(icoup_->SlaveDofMap());

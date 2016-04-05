@@ -5,7 +5,7 @@
 \brief Proxy to a set of degrees of freedom
 
 <pre>
-Maintainer: Martin Kronbichler
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -70,7 +70,14 @@ void DRT::DofSetProxy::NotifyAssigned()
     numdfcolelements_ = dofset_->numdfcolelements_;
     idxcolnodes_      = dofset_->idxcolnodes_;
     idxcolelements_   = dofset_->idxcolelements_;
+
+    // special dof handling due to point coupling conditions
+    pccdofhandling_   = dofset_->pccdofhandling_;
+    dofscolnodes_     = dofset_->dofscolnodes_;
+    shiftcolnodes_    = dofset_->shiftcolnodes_;
   }
+
+  return;
 }
 
 

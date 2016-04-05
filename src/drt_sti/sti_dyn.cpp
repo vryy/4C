@@ -5,7 +5,7 @@
 \brief main control routine for monolithic scalar-thermo interaction
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -78,8 +78,9 @@ void sti_dyn(
   if (thermodis->BuildDofSetAuxProxy(problem->NDim()+1,0,0,true) != 1)
     dserror("Thermo discretization has illegal number of dofsets!");
 
-  // finalize thermo discretization
-  thermodis->FillComplete();
+  // equip thermo discretization with noderowmap for subsequent safety check
+  // final FillComplete() is called at the end of discretization cloning
+  thermodis->FillComplete(false,false,false);
 
   // safety check
   if(thermodis->NumGlobalNodes() != 0)

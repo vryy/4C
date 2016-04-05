@@ -3,7 +3,7 @@
 \brief A set of degrees of freedom
 
 <pre>
-Maintainer: Martin Kronbichler
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -476,13 +476,16 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
       // **********************************************************************
       // **********************************************************************
       int relevantcondid = -1;
-      for (int k=0; k<(int)couplingconditions.size();++k)
+      if(dspos_ == 0)
       {
-        if (couplingconditions[k]->ContainsNode(gid))
+        for (int k=0; k<(int)couplingconditions.size();++k)
         {
-          if (relevantcondid != -1)
-            dserror("ERROR: Two coupling conditions on one node");
-          relevantcondid = k;
+          if (couplingconditions[k]->ContainsNode(gid))
+          {
+            if (relevantcondid != -1)
+              dserror("ERROR: Two coupling conditions on one node");
+            relevantcondid = k;
+          }
         }
       }
 
@@ -500,21 +503,10 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
           // critical case
           specialtreatment = true;
 
-          // check which dofs are to be coupled
-          int numdofcond = couplingconditions[relevantcondid]->GetInt("numdof");
-          if (numdofcond != numdfrownodes[i])
+          // check total number of dofs and determine which dofs are to be coupled
+          if (couplingconditions[relevantcondid]->GetInt("numdof") != numdfrownodes[i])
             dserror("ERROR: Number of DoFs in coupling condition does not match node");
-
-          // check number of coupled DoFs
-          int numdepdof = 0;
           const std::vector<int>* onoffcond = couplingconditions[relevantcondid]->Get<std::vector<int> >("onoff");
-          for (int n=0;n<(int)(onoffcond->size());++n)
-          {
-            if ((*onoffcond)[n]==1)
-              numdepdof++;
-          }
-          if (numdepdof==numdfrownodes[i])
-            dserror("ERROR: All DoFs coupled at junction --> no junction needeed, just merge nodes!");
 
           // get master node of this condition
           int mgid = (*nodeids)[0];

@@ -5,7 +5,7 @@
 \brief strategy for cloning thermo discretization from scatra discretization
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -58,6 +58,7 @@ std::map<std::string,std::string> STI::ScatraThermoCloneStrategy::ConditionsToCo
   std::map<std::string,std::string> conditions;
 
   // insert thermo conditions
+  conditions.insert(std::pair<std::string,std::string>("PointThermoCoupling","PointCoupling"));
   conditions.insert(std::pair<std::string,std::string>("S2ICoupling","S2ICoupling"));
   conditions.insert(std::pair<std::string,std::string>("ScaTraFluxCalc","ScaTraFluxCalc"));
   conditions.insert(std::pair<std::string,std::string>("ThermoDirichlet","Dirichlet"));

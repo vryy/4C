@@ -4,7 +4,7 @@
 \brief A set of degrees of freedom
 
 <pre>
-Maintainer: Martin Kronbichler
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -394,12 +394,12 @@ protected:
   // joints in structural mechanics (where certain dofs of two nodes at the same
   // geometrical position are to be coupled and certain others not), this basic
   // assumption does not hold anymore. Instead, we want to assign the same(!)
-  // dof to both nodes in his case, i.e. the same dof is then shared by more
+  // dof to both nodes in this case, i.e. the same dof is then shared by more
   // than one node and the numbering logic mentioned above is not sufficient
-  // anymmore. For such cases in particular (but maybe also in general?), we
+  // anymore. For such cases in particular (but maybe also in general?), we
   // should store not only the first dof for each node, but all(!) dofs for
   // each node. The idxcolnodes_ vector defined above is then replaced by the
-  // two following data containters:
+  // two following data containers:
   //    dofscolnodes_ (Epetra_Map) and shiftcolnodes_ (Epetra_IntVector)
   // Nevertheless, for the time being, the old version with idxcolnodes_ stays
   // around, since the new version is only implemented for the standard DofSet

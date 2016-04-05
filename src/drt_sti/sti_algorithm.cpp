@@ -5,7 +5,7 @@
 \brief monolithic algorithm for scatra-thermo interaction
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -709,41 +709,44 @@ void STI::Algorithm::AssembleODBlockThermoScatra()
 
     // linearizations of master-side thermo fluxes w.r.t. scatra dofs are not needed, since thermo fluxes are source terms and thus only evaluated once on slave side
 
-    // initialize temporary matrix for master-side rows of thermo-scatra matrix block
-    LINALG::SparseMatrix thermoscatrarowsmaster(*icoupthermo_->MasterDofMap(),81);
-
-    // loop over all master-side rows of thermo-scatra matrix block
-    for(int masterdoflid=0; masterdoflid<icoupthermo_->MasterDofMap()->NumMyElements(); ++masterdoflid)
+    if(!thermo_->Discretization()->GetCondition("PointCoupling"))
     {
-      // determine global ID of current matrix row
-      const int masterdofgid = icoupthermo_->MasterDofMap()->GID(masterdoflid);
-      if(masterdofgid < 0)
-        dserror("Couldn't find local ID %d in map!",masterdoflid);
+      // initialize temporary matrix for master-side rows of thermo-scatra matrix block
+      LINALG::SparseMatrix thermoscatrarowsmaster(*icoupthermo_->MasterDofMap(),81);
 
-      // extract current matrix row from thermo-scatra matrix block
-      const int length = thermoscatrablock_->EpetraMatrix()->NumGlobalEntries(masterdofgid);
-      int numentries(0);
-      std::vector<double> values(length,0.);
-      std::vector<int> indices(length,0);
-      if(thermoscatrablock_->EpetraMatrix()->ExtractGlobalRowCopy(masterdofgid,length,numentries,&values[0],&indices[0]) != 0)
-        dserror("Cannot extract matrix row with global ID %d from thermo-scatra matrix block!",masterdofgid);
+      // loop over all master-side rows of thermo-scatra matrix block
+      for(int masterdoflid=0; masterdoflid<icoupthermo_->MasterDofMap()->NumMyElements(); ++masterdoflid)
+      {
+        // determine global ID of current matrix row
+        const int masterdofgid = icoupthermo_->MasterDofMap()->GID(masterdoflid);
+        if(masterdofgid < 0)
+          dserror("Couldn't find local ID %d in map!",masterdoflid);
 
-      // copy current matrix row of thermo-scatra matrix block into temporary matrix
-      if(thermoscatrarowsmaster.EpetraMatrix()->InsertGlobalValues(masterdofgid,numentries,&values[0],&indices[0]) < 0)
-        dserror("Cannot insert matrix row with global ID %d into temporary matrix!",masterdofgid);
+        // extract current matrix row from thermo-scatra matrix block
+        const int length = thermoscatrablock_->EpetraMatrix()->NumGlobalEntries(masterdofgid);
+        int numentries(0);
+        std::vector<double> values(length,0.);
+        std::vector<int> indices(length,0);
+        if(thermoscatrablock_->EpetraMatrix()->ExtractGlobalRowCopy(masterdofgid,length,numentries,&values[0],&indices[0]) != 0)
+          dserror("Cannot extract matrix row with global ID %d from thermo-scatra matrix block!",masterdofgid);
+
+        // copy current matrix row of thermo-scatra matrix block into temporary matrix
+        if(thermoscatrarowsmaster.EpetraMatrix()->InsertGlobalValues(masterdofgid,numentries,&values[0],&indices[0]) < 0)
+          dserror("Cannot insert matrix row with global ID %d into temporary matrix!",masterdofgid);
+      }
+
+      // finalize temporary matrix with master-side rows of thermo-scatra matrix block
+      thermoscatrarowsmaster.Complete(*maps_->Map(0),*icoupthermo_->MasterDofMap());
+
+      // add master-side rows of thermo-scatra matrix block to corresponding slave-side rows
+      (*imastertoslaverowtransformthermood_)(
+          thermoscatrarowsmaster,
+          1.,
+          ADAPTER::CouplingMasterConverter(*icoupthermo_),
+          *thermoscatrablock_,
+          true
+          );
     }
-
-    // finalize temporary matrix with master-side rows of thermo-scatra matrix block
-    thermoscatrarowsmaster.Complete(*maps_->Map(0),*icoupthermo_->MasterDofMap());
-
-    // add master-side rows of thermo-scatra matrix block to corresponding slave-side rows
-    (*imastertoslaverowtransformthermood_)(
-        thermoscatrarowsmaster,
-        1.,
-        ADAPTER::CouplingMasterConverter(*icoupthermo_),
-        *thermoscatrablock_,
-        true
-        );
   }
 
   // finalize thermo-scatra matrix block
@@ -752,7 +755,7 @@ void STI::Algorithm::AssembleODBlockThermoScatra()
   // apply Dirichlet boundary conditions to scatra-thermo matrix block
   thermoscatrablock_->ApplyDirichlet(*thermo_->DirichMaps()->CondMap(),false);
 
-  if(thermo_->S2ICoupling())
+  if(thermo_->S2ICoupling() and !thermo_->Discretization()->GetCondition("PointCoupling"))
     // zero out master-side rows of thermo-scatra matrix block after having added them to the
     // corresponding slave-side rows to finalize condensation of master-side thermo dofs
     thermoscatrablock_->ApplyDirichlet(*icoupthermo_->MasterDofMap(),false);
