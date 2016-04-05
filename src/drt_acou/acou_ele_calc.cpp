@@ -574,7 +574,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
   // internal variables
   if (elevec2.M() > 0)
   {
-    Epetra_SerialDenseMatrix localMat(shapes_.ndofs_,nsd_+ 1);
+    /*Epetra_SerialDenseMatrix localMat(shapes_.ndofs_,nsd_+ 1);
 
     for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
     {
@@ -610,7 +610,21 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectField(
       ele->eleinteriorPressnp_(r) += localMat(r, nsd_); // pressure
       for (unsigned int i=0;i<nsd_;++i)
         ele->eleinteriorVelnp_(i*shapes_.ndofs_+r) += localMat(r, i); // velocity
+    }*/
+
+    for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
+    {
+      double xyz[nsd_];
+      double p;
+      double gradient[nsd_];
+      for (unsigned int d = 0; d < nsd_; ++d)
+        xyz[d] = shapes_.nodexyzreal(d,r);
+      EvaluateAll(*start_func, xyz, p, gradient);
+      ele->eleinteriorPressnp_(r) += p; //localMat(r, nsd_); // pressure
+      for (unsigned int i=0;i<nsd_;++i)
+        ele->eleinteriorVelnp_(i*shapes_.ndofs_+r) += gradient[i]; //velocity
     }
+
   }
 
   return 0;
@@ -743,7 +757,7 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectOpticalField(
   // internal variables
   if (elevec2.M() > 0)
   {
-    Epetra_SerialDenseMatrix localMat(shapes_.ndofs_, 1);
+    /*Epetra_SerialDenseMatrix localMat(shapes_.ndofs_, 1);
 
     for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
     {
@@ -775,6 +789,20 @@ int DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::ProjectOpticalField(
       elevec2[r * (nsd_ + 1) + nsd_] += localMat(r, 0); // pressure
       ele->eleinteriorPressnp_(r) += localMat(r, 0); // pressure
     }
+    */
+    for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
+    {
+      double xyz[nsd_];
+      for (unsigned int d = 0; d < nsd_; ++d)
+        xyz[d] = shapes_.nodexyzreal(d, r);
+      double p = 0.0;
+      EvaluateLight(lightxyz, values, numlightnode, xyz, p, absorptioncoeff); // p at quadrature point
+
+      elevec2[r * (nsd_ + 1) + nsd_] += p; // pressure
+      ele->eleinteriorPressnp_(r) += p; // pressure
+    }
+
+
   }
 
   return 0;
@@ -820,7 +848,7 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateLight(
       dserror("wrong number of nodes given");
 
     //*******************************************************************
-    LINALG::Matrix<4, 4> coeff(true);
+    /*LINALG::Matrix<4, 4> coeff(true);
     for(int i=0; i<4; ++i)
     {
       coeff(i,0)=1.0;
@@ -845,10 +873,10 @@ void DRT::ELEMENTS::AcouEleCalc<distype>::LocalSolver::EvaluateLight(
       + ( coeff_N(0,1) + coeff_N(1,1) * xyz[0] + coeff_N(2,1) * xyz[1] + coeff_N(3,1) * xyz[0] * xyz[1] ) * values[1]
       + ( coeff_N(0,2) + coeff_N(1,2) * xyz[0] + coeff_N(2,2) * xyz[1] + coeff_N(3,2) * xyz[0] * xyz[1] ) * values[2]
       + ( coeff_N(0,3) + coeff_N(1,3) * xyz[0] + coeff_N(2,3) * xyz[1] + coeff_N(3,3) * xyz[0] * xyz[1] ) * values[3];
-
+     */
     double average = (values[0]+values[1]+values[2]+values[3])/4.0;
-    if(p>10.0*average|| p<average/10.0)
-      p = average;
+    //if(p>10.0*average|| p<average/10.0)
+    p = average;
     p *= -absorptioncoeff;
   }
   else if (distype == DRT::Element::hex8)

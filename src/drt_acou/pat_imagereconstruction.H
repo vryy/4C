@@ -205,6 +205,9 @@ protected:
   //! consider impulse response or not
   bool conv_imp_resp_;
 
+  //! overwrite output (recommended for big simulations)
+  bool overwrite_output_;
+
   //! the impulse respone already calculated for dtacou_
   Epetra_SerialDenseVector imp_resp_;
 

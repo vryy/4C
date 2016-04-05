@@ -73,7 +73,8 @@ fdcheck_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTR
 J_(0.0),
 J_start_(0.0),
 error_(0.0),
-error_start_(0.0)
+error_start_(0.0),
+overwrite_output_(DRT::INPUT::IntegralValue<bool>(acouparams_->sublist("PA IMAGE RECONSTRUCTION"),("OVERWRITEOUTPUT")))
 {
   // set time reversal to false
   acouparams_->set<bool>("timereversal",false);
@@ -241,6 +242,7 @@ error_start_(0.0)
   // set parameter for aocustic time integration
   acouparams_->set<bool>("acouopt",false);
 }
+
 
 /*----------------------------------------------------------------------*/
 void ACOU::PatImageReconstruction::ReplaceParams(Teuchos::RCP<Epetra_Vector> params)
@@ -3647,7 +3649,11 @@ void ACOU::PatImageReconstruction::SolveStandardScatra()
 
       std::string outname = name_;
       outname.append("_invforward_opti");
-      scatraoutput_->NewResultFile(outname,output_count_);
+      if(overwrite_output_)
+        scatraoutput_->NewResultFile(outname,0);
+      else
+        scatraoutput_->NewResultFile(outname,output_count_);
+      scatraoutput_->OverwriteResultFile();
       output_count_++;
       scatraoutput_->WriteMesh(0,0.0);
 
@@ -3692,8 +3698,16 @@ void ACOU::PatImageReconstruction::SolveStandardAcou()
 
   std::string outname = name_;
   outname.append("_invforward_acou");
-  acououtput_->NewResultFile(outname,output_count_);
-  last_acou_fw_output_count_ = output_count_;
+  if(overwrite_output_)
+  {
+    acououtput_->NewResultFile(outname,0);
+    last_acou_fw_output_count_ = 0;
+  }
+  else
+  {
+    acououtput_->NewResultFile(outname,output_count_);
+    last_acou_fw_output_count_ = output_count_;
+  }
   output_count_++;
 
   switch(dyna_)
@@ -3802,7 +3816,10 @@ void ACOU::PatImageReconstruction::SolveAdjointAcou()
   // prepare the output
   std::string outname = name_;
   outname.append("_invadjoint_acou");
-  acououtput_->NewResultFile(outname,output_count_);
+  if(overwrite_output_)
+    acououtput_->NewResultFile(outname,0);
+  else
+    acououtput_->NewResultFile(outname,output_count_);
   output_count_++;
 
   // create the acoustic algorithm
@@ -3923,8 +3940,16 @@ void ACOU::PatImageReconstruction::TimeReversalEstimate()
   // initialize output
   std::string outname = name_;
   outname.append("_invforward_acou");
-  acououtput_->NewResultFile(outname,output_count_);
-  last_acou_fw_output_count_ = output_count_;
+  if(overwrite_output_)
+  {
+    acououtput_->NewResultFile(outname,0);
+    last_acou_fw_output_count_ = 0;
+  }
+  else
+  {
+    acououtput_->NewResultFile(outname,output_count_);
+    last_acou_fw_output_count_ = output_count_;
+  }
   output_count_++;
 
   // set parameter for acoustic time integration
@@ -4435,13 +4460,19 @@ void ACOU::PatImageReconstruction::ReadRestart(int restartoutputcount)
   std::string scainputfilename;
   {
     std::ostringstream temp;
-    temp<<name_<<"_invforward_opti_run_"<<restartoutputcount;
+    if(overwrite_output_)
+      temp<<name_<<"_invforward_opti_run_"<<0;
+    else
+      temp<<name_<<"_invforward_opti_run_"<<restartoutputcount;
     scainputfilename = temp.str();
   }
   std::string acouinputfilename;
   {
     std::ostringstream temp;
-    temp<<name_<<"_invforward_acou_run_"<<restartoutputcount+1;
+    if(overwrite_output_)
+      temp<<name_<<"_invforward_acou_run_"<<0;
+    else
+      temp<<name_<<"_invforward_acou_run_"<<restartoutputcount+1;
     acouinputfilename = temp.str();
   }
 

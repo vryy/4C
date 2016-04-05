@@ -26,7 +26,7 @@ NUMSTEP                         2000000
 RESTARTEVRY                     5
 STARTFUNCNO                     1
 SOURCETERMFUNCNO                2
-CALCERRORFUNCNO                 3
+CALCERRORFUNCNO                 0 //3
 PHOTOACOU                       No
 PHYSICAL_TYPE                   lossless
 ERRORMAPS                       No

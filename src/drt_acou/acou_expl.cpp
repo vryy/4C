@@ -766,7 +766,6 @@ WaveEquationProblem<dim,Number>::compute_post_pressure()
   for (unsigned int d=0; d<dim+1; ++d)
     previous_solutions[d] = 0;
   evaluator->apply(solutions,previous_solutions,time);
-
   QGauss<dim> quadrature_post(dof_handler_post_disp.get_fe().degree+1);
   FEValues<dim> fe_values(dof_handler.get_fe(),quadrature_post,
                           update_values | update_gradients | update_quadrature_points |
@@ -789,7 +788,7 @@ WaveEquationProblem<dim,Number>::compute_post_pressure()
   Tensor<1,dim> flux_values;
 
   std::vector<types::global_dof_index> local_dof_indices_post(dofs_per_cell_post),
-      local_dof_indices(dofs_per_cell);
+                                       local_dof_indices(dofs_per_cell);
   double replace_value;
 
   typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active();
@@ -802,7 +801,6 @@ WaveEquationProblem<dim,Number>::compute_post_pressure()
       Teuchos::RCP<MAT::Material> mat = discret->lColElement(element_index)->Material();
       MAT::AcousticMat* actmat = static_cast<MAT::AcousticMat*>(mat.get());
       double rho = actmat->Density();
-
       cell_matrix = 0;
       rhs_vector = 0.;
       replace_vector = 0.;
@@ -812,39 +810,39 @@ WaveEquationProblem<dim,Number>::compute_post_pressure()
       cell->get_dof_indices(local_dof_indices);
       replace_value = 0.;
       for (unsigned int i=0; i<dofs_per_cell; ++i)
+      {
+        for (unsigned int d=0; d<dim; ++d)
+          solution_vector[d][i] = previous_solutions[d](local_dof_indices[i]);
+        solution_vector[dim][i] = solutions[dim](local_dof_indices[i]);
+      }
+      for (unsigned int q_index=0; q_index<n_q_points; ++q_index)
+      {
+        flux_values = 0.;
+        for (unsigned int i=0; i<dofs_per_cell; ++i)
+        {
+          replace_value += fe_values.shape_value(i,q_index)*solution_vector[dim][i]*fe_values.JxW(q_index);
+          for (unsigned int d=0; d<dim; ++d)
+            flux_values[d] += fe_values.shape_value(i,q_index) * solution_vector[d][i];
+        }
+        const double weight = std::sqrt(fe_values_post.JxW(q_index));
+        for (unsigned int i=0; i<dofs_per_cell_post; ++i)
         {
           for (unsigned int d=0; d<dim; ++d)
-            solution_vector[d][i] = previous_solutions[d](local_dof_indices[i]);
-          solution_vector[dim][i] = solutions[dim](local_dof_indices[i]);
-        }
-      for (unsigned int q_index=0; q_index<n_q_points; ++q_index)
-        {
-          flux_values = 0.;
-          for (unsigned int i=0; i<dofs_per_cell; ++i)
-            {
-              replace_value += fe_values.shape_value(i,q_index)*solution_vector[dim][i]*fe_values.JxW(q_index);
-              for (unsigned int d=0; d<dim; ++d)
-                flux_values[d] += fe_values.shape_value(i,q_index) * solution_vector[d][i];
-            }
-          const double weight = std::sqrt(fe_values_post.JxW(q_index));
-          for (unsigned int i=0; i<dofs_per_cell_post; ++i)
-            {
-              for (unsigned int d=0; d<dim; ++d)
-                half_matrix(q_index*dim+d,i) = fe_values_post.shape_grad(i,q_index)[d] * weight;
+            half_matrix(q_index*dim+d,i) = fe_values_post.shape_grad(i,q_index)[d] * weight;
 
-              rhs_vector(i) -= rho*flux_values *
-                               fe_values_post.shape_grad(i,q_index) *
-                               fe_values_post.JxW(q_index);
-              replace_vector(i) += fe_values_post.shape_value(i,q_index) * 1.0 *
-                                   fe_values_post.JxW(q_index);
-            }
+          rhs_vector(i) -= rho*flux_values *
+              fe_values_post.shape_grad(i,q_index) *
+              fe_values_post.JxW(q_index);
+          replace_vector(i) += fe_values_post.shape_value(i,q_index) * 1.0 *
+              fe_values_post.JxW(q_index);
         }
+      }
       half_matrix.Tmmult(cell_matrix, half_matrix);
       for (unsigned int i=0; i<dofs_per_cell_post; ++i)
-        {
-          cell_matrix(0,i) = replace_vector(i);
-          //rhs_vector(i) *= -1.;
-        }
+      {
+        cell_matrix(0,i) = replace_vector(i);
+        //rhs_vector(i) *= -1.;
+      }
 
       cell_matrix.compute_lu_factorization();
 
@@ -1038,7 +1036,7 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
     }
 
     // calculate norm of difference betwenn POSTPROCESSED pressure and analytic solution
-    /*Vector<double> norm_per_cell_p (triangulation.n_active_cells());
+    Vector<double> norm_per_cell_p (triangulation.n_active_cells());
 
     compute_post_pressure();
 
@@ -1056,7 +1054,7 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
                                        VectorTools::L2_norm);
     double error_post_mag = (Utilities::MPI::sum (norm_per_cell_p.norm_sqr(), MPI_COMM_WORLD));
     pcout<<"post absolute error "<<std::sqrt(error_post_mag)<<std::endl;
-  */
+
 
   }
   else if (exactsolutionfuncno>=0 && this->solid==true)
@@ -1196,22 +1194,29 @@ WaveEquationProblem<dim,Number>::output_results (const unsigned int timestep_num
   }
 
   /* VTU output */
-  // if(!invana && step%up_res == 0) // otherwise we  get way too much output files
-  // {
-  //   DataOut<dim> data_out;
-  //
-  //   data_out.attach_dof_handler (dof_handler);
-  //   data_out.add_data_vector (ghosted_sol, "solution_pressure");
-  //   data_out.build_patches (/*2*/);
-  //
-  //   const std::string filename_pressure = DRT::Problem::Instance()->OutputControlFile()->FileName() +
-  //       ".solution-pressure_" +
-  //       Utilities::int_to_string(Utilities::MPI::this_mpi_process(solutions[dim].get_mpi_communicator()))
-  //       + "-" + Utilities::int_to_string (timestep_number, 3);
-  //
-  //   std::ofstream output_pressure ((filename_pressure + ".vtu").c_str());
-  //   data_out.write_vtu (output_pressure);
-  // }
+   if(!invana && step%up_res == 0) // otherwise we  get way too much output files
+   {
+     IndexSet relevant_set;
+     get_relevant_set(dof_handler, relevant_set);
+     parallel::distributed::Vector<double> ghosted_sol(dof_handler.locally_owned_dofs(),relevant_set,
+                                                       solutions[0].get_mpi_communicator());
+     ghosted_sol = solutions[dim];
+     ghosted_sol.update_ghost_values();
+
+     DataOut<dim> data_out;
+
+     data_out.attach_dof_handler (dof_handler);
+     data_out.add_data_vector (ghosted_sol, "solution_pressure");
+     data_out.build_patches (/*2*/);
+
+     const std::string filename_pressure = DRT::Problem::Instance()->OutputControlFile()->FileName() +
+         ".solution-pressure_" +
+         Utilities::int_to_string(Utilities::MPI::this_mpi_process(solutions[dim].get_mpi_communicator()))
+         + "-" + Utilities::int_to_string (timestep_number, 3);
+
+     std::ofstream output_pressure ((filename_pressure + ".vtu").c_str());
+     data_out.write_vtu (output_pressure);
+   }
 
   // write baci output
   write_deal_cell_values();
@@ -1374,7 +1379,7 @@ void WaveEquationProblem<dim,Number>::run(Teuchos::RCP<Epetra_MultiVector> histo
     intermediate_integrate(integrator);
   }
   if(invana)
-    pcout<<std::endl;
+    pcout<<"-> 100%"<<std::endl;
 
   if(invana&&adjoint&&acouopt)
     evaluator->write_gradient_contributions(discret,time_step);
@@ -1417,11 +1422,11 @@ void WaveEquationProblem<dim,Number>::intermediate_integrate(Teuchos::RCP<Explic
   int restartstep = -1;
   {
     // output to screen
-    if(!bacitimeint->ProcId())
-    {
-      pcout<< " <";
-      pcout<<std::flush;
-    }
+    //if(!bacitimeint->ProcId())
+    //{
+    //  pcout<< " <";
+    //  pcout<<std::flush;
+    //}
 
     restartstep = (step_max<(final_time/time_step)) ? step_max : (final_time/time_step);
     restartstep -= step + up_res;
@@ -1429,6 +1434,7 @@ void WaveEquationProblem<dim,Number>::intermediate_integrate(Teuchos::RCP<Explic
     std::stringstream name;
     name<< bacitimeint->Params()->get<std::string>("name");
     name<<"_invforward_acou_run_"<<bacitimeint->Params()->get<int>("outputcount");
+
     Teuchos::RCP<IO::InputControl> inputfile = Teuchos::rcp(new IO::InputControl(name.str(), discret->Comm()));
     IO::DiscretizationReader reader(discret,inputfile,restartstep);
     restarttime = reader.ReadDouble("time");

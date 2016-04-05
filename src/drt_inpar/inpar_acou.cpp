@@ -127,6 +127,7 @@ void INPAR::ACOU::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                       pat_regula_tikhtvd),
                                     &acou_inv);
 
+  BoolParameter("OVERWRITEOUTPUT","Yes","overwrite output (recommended)", &acou_inv);
   StringParameter("MONITORFILE","none.monitor","Filename of file containing measured pressure values",&acou_inv);
   BoolParameter("FDCHECK","No","Finite difference check",&acou_inv);
   DoubleParameter("INV_TOL",1e-16,"Tolerance for objective function of inverse pat analysis",&acou_inv);
