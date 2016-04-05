@@ -177,7 +177,9 @@ private:
   //! action parameters recognized by bele3
   enum ActionType
   {
-    none
+    none,
+    calc_struct_constrvol,
+    calc_struct_volconstrstiff
   };
 
   /*!
@@ -228,6 +230,19 @@ private:
   (
       const LINALG::SerialDenseMatrix& xscurr, ///< current configuration
       const int numnode ///< num nodes
+  );
+
+  //! Submethod to compute constraint volume and its first and second derivatives w.r.t. the displacements
+  void ComputeVolDeriv
+  (
+      const LINALG::SerialDenseMatrix& x, ///< spatial configuration
+      const int numnode, ///< number of nodes
+      const int ndof,  ///< number of degrees of freedom
+      double& V,  ///< volume
+      Teuchos::RCP<Epetra_SerialDenseVector> Vdiff, ///< first derivative
+      Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2, ///< second derivative
+      const int minind = 0,  ///<minimal index to compute enclosed volume with
+      const int maxind = 2   ///<maximal index to compute enclosed volume with
   );
 
   //! vector with line elements
