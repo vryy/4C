@@ -2,7 +2,7 @@
 /*!
 \file linalg_gauss.H
 
-\brief Gauss elemination for small nxn systems
+\brief Gauss elimination for small nxn systems
 
 \maintainer Martin Kronbichler
 
@@ -39,7 +39,7 @@ double gaussElimination(
   \return determinant of system matrix
 */
 template<unsigned dim>
-double scaledGaussElemination(
+double scaledGaussElimination(
   typename LINALG::Matrix<dim, dim> & A,  ///< (in)    : system matrix
   typename LINALG::Matrix<dim, 1>   & b,  ///< (in)    : right-hand-side
   typename LINALG::Matrix<dim, 1>   & x   ///< (out)   : solution vector

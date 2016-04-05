@@ -94,7 +94,7 @@ VtpWriter::WriteGeo()
   if (timestep_ == 0 && myrank_ == 0)
   {
     int maxnodeid = field_->problem()->get_max_nodeid("particle");
-    std::cout << "at most "<< maxnodeid << " particle(s) will be written in vtk PolyData format..." << std::endl;
+    std::cout << "at most "<< maxnodeid+1 << " particle(s) will be written in vtk PolyData format..." << std::endl;
   }
   // find maximum number of possible particles during simulation
 

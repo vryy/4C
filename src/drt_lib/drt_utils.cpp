@@ -1,12 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_utils.cpp
+
 \brief A collection of helper methods for namespace DRT
-<pre>
-Maintainer: Michael Gee
+
+\maintainer Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -695,7 +695,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::scaledGaussElemination<dimp>( A, b, x );
+          const double det = LINALG::scaledGaussElimination<dimp>( A, b, x );
           if(det < 1.0e-14)
             dserror("system singular");
 
@@ -765,7 +765,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::scaledGaussElemination<dimp>( A, b, x );
+          const double det = LINALG::scaledGaussElimination<dimp>( A, b, x );
           if(det < 1.0e-14)
             dserror("system singular");
 
@@ -856,7 +856,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::scaledGaussElemination<dimp>( A, b, x );
+          const double det = LINALG::scaledGaussElimination<dimp>( A, b, x );
           if(det < 1.0e-14)
             dserror("system singular");
 
@@ -996,7 +996,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
           }
 
           // solve for coefficients of interpolation
-          const double det = LINALG::scaledGaussElemination<dimp>( A, b, x );
+          const double det = LINALG::scaledGaussElimination<dimp>( A, b, x );
           if(det < 1.0e-14)
             dserror("system singular");
 

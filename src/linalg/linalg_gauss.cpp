@@ -2,7 +2,7 @@
 /*!
 \file linalg_gauss.cpp
 
-\brief Gauss elemination for small nxn systems
+\brief Gauss elimination for small nxn systems
 
 \maintainer Martin Kronbichler
 
@@ -194,7 +194,7 @@ double gaussElimination<false, 4>(
   \return determinant of system matrix
 */
 template<unsigned dim>
-double scaledGaussElemination(
+double scaledGaussElimination(
   typename LINALG::Matrix<dim, dim> & A,  ///< (in)    : system matrix
   typename LINALG::Matrix<dim, 1>   & b,  ///< (in)    : right-hand-side
   typename LINALG::Matrix<dim, 1>   & x   ///< (out)   : solution vector
@@ -232,19 +232,19 @@ double scaledGaussElemination(
 
 
 template
-double scaledGaussElemination<2>(
+double scaledGaussElimination<2>(
   typename LINALG::Matrix<2, 2>   & A,  ///< (in)    : system matrix
   typename LINALG::Matrix<2, 1>   & b,  ///< (in)    : right-hand-side
   typename LINALG::Matrix<2, 1>   & x   ///< (out)   : solution vector
   );
 template
-double scaledGaussElemination<3>(
+double scaledGaussElimination<3>(
   typename LINALG::Matrix<3, 3>   & A,  ///< (in)    : system matrix
   typename LINALG::Matrix<3, 1>   & b,  ///< (in)    : right-hand-side
   typename LINALG::Matrix<3, 1>   & x   ///< (out)   : solution vector
   );
 template
-double scaledGaussElemination<4>(
+double scaledGaussElimination<4>(
   typename LINALG::Matrix<4, 4>   & A,  ///< (in)    : system matrix
   typename LINALG::Matrix<4, 1>   & b,  ///< (in)    : right-hand-side
   typename LINALG::Matrix<4, 1>   & x   ///< (out)   : solution vector

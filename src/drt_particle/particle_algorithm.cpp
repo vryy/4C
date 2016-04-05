@@ -192,7 +192,10 @@ void PARTICLE::Algorithm::Init(bool restarted)
     Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
 
     // initialize structure if necessary
-    if(structdis->NumGlobalElements())
+    int numstructnode = structdis->NumMyColElements();
+    int eleexist = 0;
+    structdis->Comm().MaxAll(&numstructnode, &eleexist, 1);
+    if(eleexist)
     {
       // get input parameters for structure
       const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
