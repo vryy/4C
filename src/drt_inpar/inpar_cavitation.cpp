@@ -39,13 +39,15 @@ void INPAR::CAVITATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
                                 "cavitation_oneway",
                                 "cavitation_twowaymomentum",
                                 "cavitation_voidfrac_only",
-                                "cavitation_twowayfull"
+                                "cavitation_twowayfull_weak",
+                                "cavitation_twowayfull_strong"
                                 ),
                               tuple<int>(
                                 OneWay,
                                 TwoWayMomentum,
                                 VoidFracOnly,
-                                TwoWayFull
+                                TwoWayFull_weak,
+                                TwoWayFull_strong
                                 ),
                               &cavitationdyn);
   setStringToIntegralParameter<int>(

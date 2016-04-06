@@ -4,14 +4,8 @@
 
 \brief Particle field adapter
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Georg Hammerl
 */
-
 
 /*----------------------------------------------------------------------*
  | definitions                                              ghamm 12/13 |
@@ -153,6 +147,12 @@ namespace ADAPTER
     //! Return accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accnp() = 0;
 
+    //! unknown angular velocities \f$V_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> AngVeln() = 0;
+
+    //! unknown angular accelerations \f$A_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> AngAccn() = 0;
+
     //! Return radii of particles \f$R_{0}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() = 0;
 
@@ -164,6 +164,9 @@ namespace ADAPTER
 
     //! Return mass of particles
     virtual Teuchos::RCP<const Epetra_Vector> Mass() = 0;
+
+    //! Return inertia of particles
+    virtual Teuchos::RCP<const Epetra_Vector> Inertia() = 0;
 
     //! Return density
     virtual double ParticleDensity() = 0;

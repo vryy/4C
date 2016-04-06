@@ -136,7 +136,7 @@ CAVITATION::Algorithm::Algorithm(
     }
   }
 
-  if(coupalgo_ == INPAR::CAVITATION::TwoWayFull)
+  if(coupalgo_ == INPAR::CAVITATION::TwoWayFull_weak || coupalgo_ == INPAR::CAVITATION::TwoWayFull_strong)
   {
     // check for correct time integration scheme of fluid
     if(fluid_->TimIntScheme() != INPAR::FLUID::timeint_afgenalpha)
@@ -200,6 +200,28 @@ CAVITATION::Algorithm::Algorithm(
  | time loop of the cavitation algorithm                    ghamm 11/12 |
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Timeloop()
+{
+  switch (coupalgo_)
+  {
+  case INPAR::CAVITATION::TwoWayFull_strong:
+    dserror("not yet implemented");
+    break;
+  case INPAR::CAVITATION::TwoWayFull_weak:
+  case INPAR::CAVITATION::TwoWayMomentum:
+  case INPAR::CAVITATION::OneWay:
+  case INPAR::CAVITATION::VoidFracOnly:
+    TimeloopSequStaggered();
+    break;
+  default:
+    dserror("coupling algorithm does not exist");
+    break;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | time loop of the weakly coupled cavitation algorithm     ghamm 11/12 |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::TimeloopSequStaggered()
 {
   // time loop
   while (NotFinished() || (particles_->StepOld()-restartparticles_) % timestepsizeratio_ != 0)
@@ -328,7 +350,9 @@ void CAVITATION::Algorithm::InitCavitation()
   }
 
   // compute initial fluid fraction
-  if(coupalgo_ == INPAR::CAVITATION::TwoWayFull || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
+  if(coupalgo_ == INPAR::CAVITATION::TwoWayFull_weak ||
+      coupalgo_ == INPAR::CAVITATION::TwoWayFull_strong ||
+      coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
   {
     fluidfracnp_ = LINALG::CreateVector(*fluiddis_->DofRowMap(), true);
     CalculateFluidFraction();
@@ -524,7 +548,9 @@ void CAVITATION::Algorithm::Integrate()
 {
   if((particles_->StepOld()-restartparticles_) % timestepsizeratio_ == 0)
   {
-    if(coupalgo_ == INPAR::CAVITATION::TwoWayFull || coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
+    if(coupalgo_ == INPAR::CAVITATION::TwoWayFull_weak ||
+        coupalgo_ == INPAR::CAVITATION::TwoWayFull_strong ||
+        coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
     {
       TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateFluidFraction");
       CalculateFluidFraction();
@@ -638,7 +664,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   // fluid density and dynamic viscosity
   double rho_l;
   double mu_l;
-  if(coupalgo_ == INPAR::CAVITATION::TwoWayFull)
+  if(coupalgo_ == INPAR::CAVITATION::TwoWayFull_weak || coupalgo_ == INPAR::CAVITATION::TwoWayFull_strong)
   {
     // get cavitation material
     int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_cavitation);
@@ -966,7 +992,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     // coupling forces between fluid and particle only include certain forces
     switch(coupalgo_)
     {
-    case INPAR::CAVITATION::TwoWayFull:
+    case INPAR::CAVITATION::TwoWayFull_weak:
+    case INPAR::CAVITATION::TwoWayFull_strong:
     case INPAR::CAVITATION::TwoWayMomentum:
     {
       // calculate added mass force
@@ -1110,7 +1137,8 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 
   switch(coupalgo_)
   {
-  case INPAR::CAVITATION::TwoWayFull:
+  case INPAR::CAVITATION::TwoWayFull_weak:
+  case INPAR::CAVITATION::TwoWayFull_strong:
   {
     // divide nodal wise fluid forces by fluid fraction
     // due to the special choice of Euler-Lagrange coupling

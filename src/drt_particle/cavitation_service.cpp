@@ -135,11 +135,14 @@ void CAVITATION::Algorithm::CalculateFluidFraction()
       }
 
       // get particle radius and influence of bubble
-      const double r_p = (*particleradius)[ particleradius->Map().LID(currparticle->Id()) ];
+      const int lid = particleradius->Map().LID(currparticle->Id());
+      if(lid<0)
+        dserror("lid to gid %d not on this proc", currparticle->Id());
+      const double r_p = (*particleradius)[lid];
       double influence = scale*r_p;
 
       // bubble volume which is assigned to fluid elements
-      const double bubblevol = 4.0/3.0*M_PI*pow(r_p,3.0);
+      const double bubblevol = 4.0/3.0*M_PI*std::pow(r_p,3);
 
       // store all elements in which the bubble might be located fully inside
       std::vector<int> insideeles;

@@ -36,7 +36,7 @@ CUTOFF_RADIUS                   1.0
 DYNAMICTYP                      CentrDiff
 GRAVITY_ACCELERATION            0.0 0.0 -980.0
 ----------------------------------------------------------CAVITATION DYNAMIC
-COUPALGO                        cavitation_twowayfull
+COUPALGO                        cavitation_twowayfull_weak
 RESULTSEVRY                     5
 RESTARTEVRY                     18
 TIMESTEP                        5.0e-3

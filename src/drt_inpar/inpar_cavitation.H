@@ -86,7 +86,8 @@ namespace INPAR
       OneWay,
       TwoWayMomentum,
       VoidFracOnly,
-      TwoWayFull
+      TwoWayFull_weak,
+      TwoWayFull_strong
     };
 
     /// Strategy for calculation of void fraction of fluid elements

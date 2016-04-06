@@ -47,7 +47,7 @@ MOVING_WALLS                    No
 RANDOM_AMPLITUDE                0.0
 ----------------------------------------------------------CAVITATION DYNAMIC
 COMPUTE_RADIUS_RP_BASED         yes
-COUPALGO                        cavitation_twowayfull
+COUPALGO                        cavitation_twowayfull_weak
 RESULTSEVRY                     1
 RESTARTEVRY                     50
 TIMESTEP                        5.0e-7

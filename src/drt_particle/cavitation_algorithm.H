@@ -77,8 +77,11 @@ namespace CAVITATION
     /// setup of the system
     virtual void SetupSystem();
 
-    /// outer time loop for cavitation problem
+    /// general time loop for cavitation problem
     virtual void Timeloop();
+
+    /// time loop for cavitation problem with sequential staggering (weak coupling)
+    virtual void TimeloopSequStaggered();
 
     /// test results (if necessary)
     virtual void TestResults(

@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file particle_timint.H
-\brief Time integration for structural dynamics
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\brief Time integration for particle dynamics
+
+\maintainer Georg Hammerl
 */
 
 /*----------------------------------------------------------------------*/
@@ -262,6 +258,12 @@ namespace PARTICLE
     //! Return accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accnp() { return accn_; }
 
+    //! unknown angular velocities \f$V_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> AngVeln() { return (*ang_vel_)(0); }
+
+    //! unknown angular accelerations \f$A_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> AngAccn() { return (*ang_acc_)(0); }
+
     //! Return radii of particles \f$R_{0}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius0() {return radius0_; }
 
@@ -273,6 +275,9 @@ namespace PARTICLE
 
     //! Return mass of particles
     virtual Teuchos::RCP<const Epetra_Vector> Mass() { return mass_; }
+
+    //! Return inertia of particles
+    virtual Teuchos::RCP<const Epetra_Vector> Inertia() { return inertia_; }
 
     //! Return density
     virtual double ParticleDensity() { return density_; }
