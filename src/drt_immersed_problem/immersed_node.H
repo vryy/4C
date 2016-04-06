@@ -1,12 +1,13 @@
 /*!----------------------------------------------------------------------
 \file immersed_node.H
 
-<pre>
-Maintainers: Andreas Rauch
+
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
+\brief immersed node with special immersed functionality
 
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_NODE_H
@@ -113,20 +114,24 @@ public:
   virtual void Unpack(const std::vector<char>& data);
 
   /*!
-  \brief immersed rauch
+  \brief set 'true' if node is covered by an immersed discretization
   */
   void SetIsMatched(int ismatched) { ismatched_=ismatched; }
 
   /*!
-  \brief immersed rauch
+  \brief is node covered by an immersed discretization ?
   */
   int IsMatched() const { return ismatched_; }
 
   /*!
-  \brief immersed rauch
+  \brief set 'true' if parent element is cut by an immersed boundary
+  */
+  void SetIsBoundaryImmersed(bool isbdryimmersed) { IsBoundaryImmersed_=isbdryimmersed; }
+
+  /*!
+  \brief is an boundary immersed in parent element ?
   */
   int IsBoundaryImmersed()  const { return IsBoundaryImmersed_; }
-
 
   /*!
   \brief Print this node
