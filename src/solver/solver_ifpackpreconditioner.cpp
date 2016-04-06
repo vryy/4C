@@ -61,8 +61,6 @@ void LINALG::SOLVER::IFPACKPreconditioner::Setup(bool create,
     prec_->Initialize();
     prec_->Compute();
 
-    prec_->Print(std::cout);
-
     return;
   }
 }
