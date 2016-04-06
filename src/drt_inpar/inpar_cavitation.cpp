@@ -263,8 +263,6 @@ void INPAR::PARTICLE::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Co
   // two vertices describing the bounding box for the pbc
   particlepbccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
   particlepbccomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("ONOFF",3)));
-  particlepbccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("boundaries")));
-  particlepbccomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("boundaries",6)));
 
   Teuchos::RCP<ConditionDefinition> particlepbccond =
     Teuchos::rcp(new ConditionDefinition("DESIGN PARTICLE PERIODIC BOUNDARY CONDITION",

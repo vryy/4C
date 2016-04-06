@@ -1070,13 +1070,13 @@ void PARTICLE::Algorithm::TransferParticles(const bool updatestates, const bool 
     for(int i=0; i<disnp->MyLength(); i++)
     {
       const int dim = i%3;
-      if((*disnp)[i] < pbcbounds_(dim,0))
+      if(pbconoff_[dim])
       {
-        (*disnp)[i] += pbcdeltas_[dim];
-         continue;
+        if((*disnp)[i] < XAABB_(dim,0))
+          (*disnp)[i] += pbcdeltas_[dim];
+        else if((*disnp)[i] > XAABB_(dim,1))
+          (*disnp)[i] -= pbcdeltas_[dim];
       }
-      if((*disnp)[i] > pbcbounds_(dim,1))
-        (*disnp)[i] -= pbcdeltas_[dim];
     }
   }
 

@@ -240,8 +240,6 @@ namespace BINSTRATEGY
 
     bool pbconoff_[3];   ///< flags for existence of pbcs in x, y, z direction
 
-    LINALG::Matrix<3,2> pbcbounds_;   ///< bounds for pbcs in x, y, z direction
-
     double pbcdeltas_[3];   ///< deltas for pbcs in x, y, z direction
 
     const INPAR::PARTICLE::ParticleDim particle_dim_;   ///< dimension of problem

@@ -32,6 +32,7 @@ FAST_CHECK                      yes
 TYPE                            Particle
 //CUTOFF_RADIUS                   0.4
 BIN_PER_DIR                     20 5 1
+BOUNDINGBOX                     -4.0 4.0 0.0 0.0 0.0 0.0
 ------------------------------------------------------------PARTICLE DYNAMIC
 DIMENSION                       2Dz
 DYNAMICTYP                      RK2
@@ -102,7 +103,7 @@ E 2 - 1 Master PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 E 3 - 1 Slave PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 ------------------------------------DESIGN PARTICLE PERIODIC BOUNDARY CONDITION
 DPARTICLE                       1
-E 1 - ONOFF 1 0 0 boundaries -4.0 4.0 0.0 0.0 0.0 0.0
+E 1 - ONOFF 1 0 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 2 DNODE 1
 NODE 1 DNODE 2
