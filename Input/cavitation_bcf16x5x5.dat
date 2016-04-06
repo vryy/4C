@@ -62,6 +62,8 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
 RESULTSEVRY                     1
 INITIALFIELD                    field_by_function
+------------------------------------------------FLUID DYNAMIC/TIMEADAPTIVITY
+ADAPTIVE_TIME_STEP_ESTIMATOR    only_print_cfl_number
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes

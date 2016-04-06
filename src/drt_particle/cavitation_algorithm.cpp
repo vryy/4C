@@ -532,6 +532,9 @@ void CAVITATION::Algorithm::Integrate()
     }
     TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::IntegrateFluid");
     fluid_->Solve();
+
+    // compute cfl number and print it to screen if chosen in input file
+    Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_)->EvaluateDtViaCflIfApplicable();
   }
   else
   {
