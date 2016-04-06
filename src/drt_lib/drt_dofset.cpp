@@ -496,6 +496,18 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
         const std::vector<int>* nodeids = couplingconditions[relevantcondid]->Nodes();
         if (!nodeids) dserror("ERROR: Condition does not have Node Ids");
 
+        // check if all nodes in this condition are on same processor
+        // (otherwise throw a dserror for now - not yet implemented)
+        bool allononeproc = true;
+        for (int k=0; k<(int)(nodeids->size());++k)
+        {
+          int checkgid = (*nodeids)[k];
+          if (!dis.NodeRowMap()->MyGID(checkgid))
+            allononeproc = false;
+        }
+        if (!allononeproc)
+          dserror("ERRROR: Nodes in point coupling condition must all be on same processsor (for now)");
+
         // do nothing for first (master) node in coupling condition
         // do something for second, third, ... (slave) node
         if ((*nodeids)[0]!=gid)
