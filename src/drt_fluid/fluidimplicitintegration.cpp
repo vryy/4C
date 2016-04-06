@@ -13,12 +13,10 @@
 
      and a stationary solver.
 
-<pre>
-Maintainers: Benjamin Krank & Volker Gravemeier
+\maintainer Benjamin Krank & Volker Gravemeier
              {krank,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-245
-</pre>
 
 *----------------------------------------------------------------------*/
 #undef WRITEOUTSTATISTICS
@@ -148,10 +146,11 @@ void FLD::FluidImplicitTimeInt::Init()
   // parameter theta for time-integration schemes (required for all schemes)
   theta_ = params_->get<double>("theta");
 
-  // cfl number for adaptive time step
+  // cfl computation type and cfl number for adaptive time stepping
+  cfl_estimator_ = DRT::INPUT::IntegralValue<INPAR::FLUID::AdaptiveTimeStepEstimator>
+                      ((params_->sublist("TIMEADAPTIVITY")),"ADAPTIVE_TIME_STEP_ESTIMATOR");
   cfl_ = params_->sublist("TIMEADAPTIVITY").get<double>("CFL_NUMBER",-1.0);
-  if(DRT::INPUT::IntegralValue<INPAR::FLUID::AdaptiveTimeStepEstimator>
-  ((params_->sublist("TIMEADAPTIVITY")),"ADAPTIVE_TIME_STEP_ESTIMATOR") == INPAR::FLUID::cfl_number && cfl_<0.0)
+  if(cfl_estimator_ == INPAR::FLUID::cfl_number && cfl_<0.0)
     dserror("specify cfl number for adaptive time step via cfl");
 
   // number of steps for starting algorithm, only for GenAlpha so far
@@ -4975,7 +4974,7 @@ double FLD::FluidImplicitTimeInt::EvaluateDtViaCflIfApplicable()
   int stependadaptivedt =     params_->sublist("TIMEADAPTIVITY").get<int>   ("FREEZE_ADAPTIVE_DT_AT",10000000);
   if(step_+1==stependadaptivedt&&myrank_==0)
     std::cout << "\n    !!time step is kept constant from now on for sampling of turbulence statistics!!\n" << std::endl;
-  if(cfl_>0.0 && step_+1<stependadaptivedt)
+  if((cfl_>0.0 && step_+1<stependadaptivedt) || (cfl_estimator_==INPAR::FLUID::only_print_cfl_number))
   {
     // create the parameters for the discretization
     Teuchos::ParameterList eleparams;
@@ -4996,7 +4995,7 @@ double FLD::FluidImplicitTimeInt::EvaluateDtViaCflIfApplicable()
     const Epetra_Map* elementrowmap = discret_->ElementRowMap();
     Teuchos::RCP<Epetra_MultiVector> h_u = Teuchos::rcp(new Epetra_MultiVector(*elementrowmap,1,true));
 
-    // optional: elementwise defined div u may be written to standard output file (not implemented yet)
+    // optional: elementwise defined h_u may be written to standard output file (not implemented yet)
     discret_->EvaluateScalars(eleparams, h_u);
 
     discret_->ClearState();
@@ -5004,6 +5003,13 @@ double FLD::FluidImplicitTimeInt::EvaluateDtViaCflIfApplicable()
     double min_h_u = 0.0;
 
     h_u->MinValue(&min_h_u);
+
+    if(cfl_estimator_==INPAR::FLUID::only_print_cfl_number && myrank_==0)
+    {
+      if(min_h_u!=0.0)
+        std::cout << "CFL number is: " << dta_ / min_h_u << std::endl;
+      return -1.0;
+    }
 
     //if the initial velocity field is zero and there are no non-zero Dirichlet-boundaries,
     //min_h_u is zero. In this case, we use the time step stated in the input file

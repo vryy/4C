@@ -13,12 +13,10 @@
 
      and a stationary solver.
 
-<pre>
-Maintainers: Benjamin Krank & Volker Gravemeier
+\maintainer Benjamin Krank & Volker Gravemeier
              {krank,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15252/-245
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -1108,6 +1106,7 @@ protected:
   std::string statistics_outfilename_;
 
   //! @name cfl number for adaptive time step
+  INPAR::FLUID::AdaptiveTimeStepEstimator cfl_estimator_; ///< type of adaptive estimator
   double cfl_; ///< cfl number
   //@}
 

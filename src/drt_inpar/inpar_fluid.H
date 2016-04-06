@@ -4,11 +4,10 @@
 
 \brief Input parameters for fluid
 
-<pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\maintainer Benjamin Krank
+            krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-</pre>
+            089 - 289-15252
 */
 
 /*----------------------------------------------------------------------*/
@@ -371,7 +370,8 @@ namespace INPAR
     enum AdaptiveTimeStepEstimator
     {
       const_dt,
-      cfl_number
+      cfl_number,
+      only_print_cfl_number
     };
 
     //! reconstruction type of gradients (e.g. velocity gradient)

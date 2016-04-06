@@ -4,11 +4,9 @@
 
 \brief Input parameters for fluid and related problems
 
-<pre>
-Maintainer: Magnus Winter
+\maintainer Magnus Winter
             winter@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-</pre>
 */
 
 /*----------------------------------------------------------------------*/
@@ -1680,16 +1678,19 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                 "Method used to determine adaptive time step size.",
                                 tuple<std::string>(
                                   "none",
-                                  "cfl_number"
+                                  "cfl_number",
+                                  "only_print_cfl_number"
                                   ),
                                 tuple<std::string>(
                                   "constant time step",
-                                  "evaluated via CFL number"
+                                  "evaluated via CFL number",
+                                  "CFL number evaluated and printed"
                                   //""
                                   ),
                                 tuple<int>(
                                     const_dt,
-                                    cfl_number
+                                    cfl_number,
+                                    only_print_cfl_number
                                  ),
                                 &fdyn_timintada);
 
