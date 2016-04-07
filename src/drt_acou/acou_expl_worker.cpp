@@ -641,7 +641,7 @@ WaveEquationOperation<dim,fe_degree,Number>::write_deal_cell_values(Teuchos::RCP
   {
     for (int i=0; i<discret->NumMyColElements(); ++i)
     {
-      typename DoFHandler<dim>::active_cell_iterator cell(&data.get_dof_handler().get_tria(), 0, i, &data.get_dof_handler());
+      typename DoFHandler<dim>::active_cell_iterator cell(&data.get_dof_handler().get_triangulation(), 0, i, &data.get_dof_handler());
       DRT::ELEMENTS::AcouSol * acouele = dynamic_cast<DRT::ELEMENTS::AcouSol*>(discret->lColElement(i));
 
       int permutationtype = dofpermutations[i];
@@ -683,7 +683,7 @@ WaveEquationOperation<dim,fe_degree,Number>::write_deal_cell_values(Teuchos::RCP
     for (int i=0; i<discret->NumMyColElements(); ++i)
     {
 
-      typename DoFHandler<dim>::active_cell_iterator cell(&data.get_dof_handler().get_tria(), 0, i, &data.get_dof_handler());
+      typename DoFHandler<dim>::active_cell_iterator cell(&data.get_dof_handler().get_triangulation(), 0, i, &data.get_dof_handler());
       DRT::ELEMENTS::Acou * acouele = dynamic_cast<DRT::ELEMENTS::Acou*>(discret->lColElement(i));
 
       int permutationtype = dofpermutations[i];

@@ -3,7 +3,7 @@
 \brief Computes a deal.II Triangulation from DRT::Discretization
 
 <pre>
-Maintainer: Martin Kronbichler
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -168,7 +168,7 @@ namespace dealii
       }
 
     const DistributedTriangulation<dim> * tria =
-        dynamic_cast<const DistributedTriangulation<dim> *>(&get_tria());
+        dynamic_cast<const DistributedTriangulation<dim> *>(&get_triangulation());
     if (tria == 0)
       dserror("Only works for baci wrapper into DistributedTriangulation<dim>!");
 
@@ -222,7 +222,7 @@ namespace dealii
                       DoFHandler<dim>          &dof_handler)
   {
     const DistributedTriangulation<dim> * tria =
-        dynamic_cast<const DistributedTriangulation<dim> *>(&dof_handler.get_tria());
+        dynamic_cast<const DistributedTriangulation<dim> *>(&dof_handler.get_triangulation());
     if (tria == 0)
       dserror("Only works for baci wrapper into DistributedTriangulation<dim>!");
 
