@@ -74,6 +74,27 @@ namespace CAVITATION
       int restart  ///< time step from which to restart
       );
 
+    /// compute norms for normalization during conv check
+    virtual void ComputePressAndRadiusNorm(double& pressnorm_L2, double& radiusnorm_L2);
+
+    /// prepare relaxation (save data in the beginning)
+    virtual void PrepareRelaxation(const int outeriter);
+
+    /// convergence check and Aitken relaxation
+    virtual void ConvergenceCheckAndRelaxation(
+      const int outeriter,
+      const double pressnorm_L2,
+      const double radiusnorm_L2,
+      bool& converged,
+      bool& particlereset
+      );
+
+    /// save bubble data for possible time step repetition
+    virtual void SaveParticleData();
+
+    /// reset bubble data when time step is repeated
+    virtual void ResetParticleData();
+
     /// setup of the system
     virtual void SetupSystem();
 
@@ -82,6 +103,9 @@ namespace CAVITATION
 
     /// time loop for cavitation problem with sequential staggering (weak coupling)
     virtual void TimeloopSequStaggered();
+
+    /// time loop for cavitation problem with iterative staggering (strong coupling)
+    virtual void TimeloopIterStaggered();
 
     /// test results (if necessary)
     virtual void TestResults(
@@ -123,7 +147,7 @@ namespace CAVITATION
     virtual void PrepareTimeStep();
 
     /// solve the current particle time step
-    virtual void Integrate();
+    virtual void Integrate(bool& particlereset);
 
     /// apply fluid fraction to fluid field
     virtual void SetFluidFraction();
@@ -173,7 +197,7 @@ namespace CAVITATION
     virtual void ParticleInflow();
 
     /// update the current time step
-    virtual void Update();
+    virtual void Update(const bool converged);
 
     /// output particle time step
     virtual void Output(bool forced_writerestart = false);
@@ -209,7 +233,9 @@ namespace CAVITATION
     //@{
 
     /// fluid fraction calculation of dispersed phase in fluid
-    virtual void CalculateFluidFraction();
+    virtual void CalculateFluidFraction(
+      Teuchos::RCP<const Epetra_Vector> particleradius
+      );
 
     /// use Gaussian integration for solving volume integral to obtain void volume
     virtual void DoGaussianIntegrationFluidFrac(
@@ -399,6 +425,44 @@ namespace CAVITATION
     //@}
 
     int count_;   ///< counter for triggering particle transfer
+
+    //! @name Aitken relaxation
+
+    Teuchos::RCP<Epetra_Vector>  del_;   ///< difference of last solution and relaxed solution which was used to compute last solution
+                                         ///< del = r^{i+1}_{n+1} = d^{i+1}_{n+1} - d^{i,relaxed}_{n+1}
+
+    Teuchos::RCP<Epetra_Vector> delhist_;   ///< difference of difference of last two pair of solutions
+                                            ///< delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
+
+    double mu_;   ///< Aitken factor
+
+    Teuchos::RCP<Epetra_Vector> radius_i_;   ///< radius of last outer iteration for dynamic relaxation
+
+    Teuchos::RCP<Epetra_Vector> couplingradius_;   ///< radius at current outer iteration for dynamic relaxation
+
+    Teuchos::RCP<Epetra_Vector> pressnp_;   ///< fluid pressure for convergence check
+
+    const int itmax_;   ///<  maximum iteration steps
+
+    const double ittol_;   ///< convergence tolerance
+
+    /// safe data for repeating time steps
+    int storecount_;
+    double storetime_;
+    int storestep_;
+    Teuchos::RCP<const Epetra_Vector> storedis_;
+    Teuchos::RCP<const Epetra_Vector> storevel_;
+    Teuchos::RCP<const Epetra_Vector> storeacc_;
+    Teuchos::RCP<const Epetra_Vector> storeang_vel_;
+    Teuchos::RCP<const Epetra_Vector> storeang_acc_;
+    Teuchos::RCP<const Epetra_Vector> storerad_;
+    Teuchos::RCP<const Epetra_Vector> storeraddot_;
+    Teuchos::RCP<const Epetra_Vector> storemass_;
+    Teuchos::RCP<const Epetra_Vector> storeinertia_;
+    Teuchos::RCP<const Epetra_Vector> storedtsub_;
+
+    //@}
+
 
   }; // Algorithm
 

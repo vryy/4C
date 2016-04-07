@@ -62,6 +62,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
     bin_size_[idim] = 0.0;
     inv_bin_size_[idim] = 0.0;
     bin_per_dir_[idim] = 0;
+    inv_bin_per_dir_[idim] = 0.0;
     pbconoff_[idim] = false;
     pbcdeltas_[idim] = 0.0;
   }
@@ -119,6 +120,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
   // initialize arrays
   for(int idim=0; idim<3; ++idim)
   {
+    inv_bin_per_dir_[idim] = 1.0 / bin_per_dir_[idim];
     bin_size_[idim] = 0.0;
     inv_bin_size_[idim] = 0.0;
     pbconoff_[idim] = false;
@@ -150,6 +152,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy(
     bin_size_[idim] = 0.0;
     inv_bin_size_[idim] = 0.0;
     bin_per_dir_[idim] = 0;
+    inv_bin_per_dir_[idim] = 0.0;
     pbconoff_[idim] = false;
     pbcdeltas_[idim] = 0.0;
   }
@@ -885,8 +888,13 @@ void BINSTRATEGY::BinningStrategy::CreateBins(Teuchos::RCP<DRT::Discretization> 
     // std::floor leads to bins that are at least of size cutoff_radius
     if (cutoff_radius_>0.0)
       bin_per_dir_[dim] = std::max(1, (int)((XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_));
+    else
+      dserror("cutoff_radius <= zero");
 
-    bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0))/bin_per_dir_[dim];
+    inv_bin_per_dir_[dim] = 1.0/bin_per_dir_[dim];
+
+    bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0)) * inv_bin_per_dir_[dim];
+
     inv_bin_size_[dim] = 1.0/bin_size_[dim];
   }
 
@@ -915,7 +923,8 @@ void BINSTRATEGY::BinningStrategy::CreateBins(Teuchos::RCP<DRT::Discretization> 
 
     // one bin in pseudo direction is enough
     bin_per_dir_[entry] = 1;
-    bin_size_[entry] = (XAABB_(entry,1)-XAABB_(entry,0))/bin_per_dir_[entry];
+    inv_bin_per_dir_[entry] = 1.0 / bin_per_dir_[entry];
+    bin_size_[entry] = (XAABB_(entry,1)-XAABB_(entry,0)) * inv_bin_per_dir_[entry];
     inv_bin_size_[entry] = 1.0/bin_size_[entry];
   }
 
@@ -1189,11 +1198,11 @@ int BINSTRATEGY::BinningStrategy::ConvertijkToGid(int* ijk)
  *----------------------------------------------------------------------*/
 void BINSTRATEGY::BinningStrategy::ConvertGidToijk(const int gid, int* ijk)
 {
-  ijk[2] = gid / (bin_per_dir_[0]*bin_per_dir_[1]);
+  ijk[2] = gid * (inv_bin_per_dir_[0] * inv_bin_per_dir_[1]);
 
   const int tmp = gid - ijk[2]*bin_per_dir_[0]*bin_per_dir_[1];
 
-  ijk[1] = tmp / bin_per_dir_[0];
+  ijk[1] = tmp * inv_bin_per_dir_[0];
 
   ijk[0] = tmp - ijk[1]*bin_per_dir_[0];
 

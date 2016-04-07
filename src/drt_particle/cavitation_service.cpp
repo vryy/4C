@@ -33,15 +33,16 @@
 /*----------------------------------------------------------------------*
  | fluid fraction calculation                              ghamm 08/13  |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::CalculateFluidFraction()
+void CAVITATION::Algorithm::CalculateFluidFraction(
+  Teuchos::RCP<const Epetra_Vector> particleradius
+  )
 {
   Teuchos::RCP<Epetra_FEVector> fluid_fraction = Teuchos::rcp(new Epetra_FEVector(*fluiddis_->ElementRowMap()));
   // export element volume to col layout
   Teuchos::RCP<Epetra_Vector> ele_volume_col = LINALG::CreateVector(*fluiddis_->ElementColMap(), false);
   LINALG::Export(*ele_volume_, *ele_volume_col);
 
-  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispn();
-  Teuchos::RCP<const Epetra_Vector> particleradius = particles_->Radius();
+  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispnp();
 
   std::set<int> examinedbins;
   int numrownodes = particledis_->NodeRowMap()->NumMyElements();

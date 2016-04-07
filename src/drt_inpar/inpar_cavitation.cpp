@@ -30,6 +30,8 @@ void INPAR::CAVITATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
   IntParameter("RESULTSEVRY",1,"Increment for writing solution",&cavitationdyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&cavitationdyn);
   IntParameter("RESTARTSTEP_PARTICLES",-1,"Step for restarting particles in cavitation problem",&cavitationdyn);
+  IntParameter("ITEMAX",500,"maximum number of iterations over fields",&cavitationdyn);
+  DoubleParameter("CONVTOL",1e-5,"tolerance for convergence check of iteratively coupled cavitation problems",&cavitationdyn);
 
   // Coupling strategy
   setStringToIntegralParameter<int>(

@@ -1,0 +1,225 @@
+//
+// Maintainer: Georg Hammerl
+// hammerl@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/staff/georg-hammerl
+// 089/289-15237
+//
+==================================================================
+General Data File BACI
+==================================================================
+-----------------------------------------------------------------------TITLE
+single bubble sedimenting due to gravity
+RP equation leads to radius adaption
+walls with slip condition and Krylov projection for pressure
+superconvergent patch recovery for fluid fraction applied
+strongly coupled four-way coupling applied
+sparse bin distribution applied
+----------------------------------------------------------------PROBLEM SIZE
+//ELEMENTS                      45
+//NODES                         96
+DIM                             3
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Cavitation
+//RESTART                         2
+--------------------------------------------------------------------------IO
+FILESTEPS                       1000
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRESS                   No
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+WRITE_TO_SCREEN                 Yes
+WRITE_TO_FILE                   No
+LIMIT_OUTP_TO_PROC              -1
+--------------------------------------------------------------------MESHFREE
+TYPE                            Particle
+CUTOFF_RADIUS                   5.0
+----------------------------------------------------------PARTICLE DYNAMIC
+DYNAMICTYP                      CentrDiff
+GRAVITY_ACCELERATION            0.0 0.0 -980.0
+CONTACT_STRATEGY                NormalContact_DEM
+NORMAL_CONTACT_LAW              LinearSpringDamp
+MIN_RADIUS                      0.7
+MAX_RADIUS                      0.8
+REL_PENETRATION                 0.05
+MAX_VELOCITY                    5.0
+COEFF_RESTITUTION               0.33
+COEFF_RESTITUTION_WALL          0.25
+TENSION_CUTOFF                  Yes
+MOVING_WALLS                    No
+RANDOM_AMPLITUDE                0.0
+----------------------------------------------------------CAVITATION DYNAMIC
+ITEMAX                          20
+COMPUTE_RADIUS_RP_BASED         yes
+CONVTOL                         1.0e-5
+COUPALGO                        cavitation_twowayfull_strong
+RESULTSEVRY                     1
+RESTARTEVRY                     2
+TIMESTEP                        5.0e-3
+TIME_STEP_SIZE_RATIO            3
+NUMSTEP                         3
+MAXTIME                         5.0
+SIMPLIFIED_BUBBLE_FORCES        No
+SPARSE_BIN_DISTRIBUTION         Yes
+FLUIDFRAC_PROJ_METHOD           superconvergent_patch_recovery
+VOID_FRACTION_CALC              analytical_constpoly
+---------------------------------------------------------------FLUID DYNAMIC
+LINEAR_SOLVER                   1
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.01
+ALPHA_M                         0.83333333333333
+ALPHA_F                         0.66666666666666
+GAMMA                           0.66666666666666
+CONVCHECK                       L_2_norm
+CONVFORM                        convective
+CONVTOL                         1e-8
+GEOMETRY                        box
+ITEMAX                          10
+MAXTIME                         0.5
+NONLINITER                      Newton
+NUMSTEP                         8
+PHYSICAL_TYPE                   Loma
+PREDICTOR                       steady_state
+RESTARTEVRY                     20
+STARTFUNCNO                     1
+TIMEINTEGR                      Af_Gen_Alpha
+INITIALFIELD                    field_by_function
+VELGRAD_PROJ_METHOD             superconvergent_patch_recovery
+----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+CROSS-STRESS                    no_cross
+GRAD_DIV                        yes
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
+PSPG                            yes
+STABTYPE                        residual_based
+SUPG                            yes
+EVALUATION_TAU                  integration_point
+--------------------------------------------------------------------SOLVER 1
+NAME                            Fluid_Solver
+SOLVER                          Aztec_MSR                     // UMFPACK //Aztec_MSR // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        0                             // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ILU                           // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE                         0                             // how often to recompute some preconditioners
+AZDROP                          0.0                           // drop tolerance for ILUT
+IFPACKFILL                      1.0
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+AZTOL                           1.0E-10                       // tolerance in (un)scaled residual
+AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                          // max iterations
+AZSUB                           1000                          // size of krylov space for gmres
+AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH                         1                             // unused
+AZPOLY                          1                             // polynomial order for Neumann
+AZSCAL                          none                          // none sym infnorm scaling of the system
+DWINDTAU                        2.5                           // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
+ML_PRINT                        0                             // ML print-out level (0-10)
+ML_MAXCOARSESIZE                125                           // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL                     3                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0                           // damping factor for prolongator smoother (usually 1.33 or 0.0)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 SGS                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  SGS                           // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack                       // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     2 2 1                         // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.45                          // damping fine grid
+ML_DAMPMED                      0.66                          // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
+--------------------------------------------------------------------SOLVER 2
+NAME                            L2_projection solver for void fraction projection
+SOLVER                          UMFPACK
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_cavitation DYNVISCOSITY 3.73 DENSITY 0.970 GAMMA 0.0 PVAPOR 0.0
+MAT 2 MAT_Particle DENSITY 1.120 INITRADIUS 0.75 NUE 0.0 YOUNG 1.0
+MAT 3 MAT_Struct_StVenantKirchhoff   YOUNG 210.0E9 NUE 0.3 DENS 7.8E3
+----------------------------------------------------------------------CURVE1
+----------------------------------------------------------------------CURVE2
+----------------------------------------------------------------------CURVE3
+----------------------------------------------------------------------CURVE4
+----------------------------------------------------------------------FUNCT1
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 15209.6-950.6*z  // p_init = \rho_fl * g * z + offset
+----------------------------------------------------------------------FUNCT2
+----------------------------------------------------------------------FUNCT3
+----------------------------------------------------------------------FUNCT4
+----------------------------------------------------------RESULT DESCRIPTION
+FLUID DIS fluid NODE 424 QUANTITY velx VALUE     -8.60327521436226976e-03 TOLERANCE 3.000e-12
+FLUID DIS fluid NODE 424 QUANTITY vely VALUE     8.60327521436663779e-03  TOLERANCE 3.000e-12
+FLUID DIS fluid NODE 424 QUANTITY velz VALUE     3.46363464645929320e-02  TOLERANCE 3.000e-12
+FLUID DIS fluid NODE 424 QUANTITY pressure VALUE  3.03807142772218231e+03 TOLERANCE 1.000e-06
+FLUID DIS fluid ELEMENT 41 QUANTITY fluidfraction VALUE 9.76741381578297707e-01 TOLERANCE 1.000e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispx VALUE 5.0 TOLERANCE 1.000e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispy VALUE 5.0 TOLERANCE 1.000e-12
+PARTICLE DIS particle NODE 1 QUANTITY dispz VALUE 1.27408863989707264e+01  TOLERANCE 1.000e-12
+PARTICLE DIS particle NODE 1 QUANTITY velx VALUE 0.0 TOLERANCE 1.000e-12
+PARTICLE DIS particle NODE 1 QUANTITY vely VALUE 0.0 TOLERANCE 1.000e-12
+PARTICLE DIS particle NODE 1 QUANTITY velz VALUE -1.15282710860943149e+00 TOLERANCE 4.000e-12
+PARTICLE DIS particle NODE 1 QUANTITY radius VALUE 7.50424436044599297e-01 TOLERANCE 1.000e-12
+
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 0
+NDLINE  0
+NDSURF  7
+NDVOL   1
+NDPARTICLE  0
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+DVOL   1
+// fluid_volume
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 -980.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0 Dead
+------------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
+DVOL 1
+// fluid_volume
+E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF  6
+// neg_x_surface
+E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// pos_x_surface
+E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// neg_y_surface
+E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// pos_y_surface
+E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// neg_z_surface
+E 5 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+// pos_z_surface
+E 6 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+--------------------DESIGN PATCH RECOVERY BOUNDARY SURF CONDITIONS
+DSURF  1
+// all_boundaries
+E 7 -
+--------------------------------------DESIGN SURFACE PARTICLE WALL
+DSURF  1
+// all_boundaries
+E 7 - 1
+-----------------------------------------------------DPARTICLE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
+SIDE fluid x- DSURFACE 1
+SIDE fluid x+ DSURFACE 2
+SIDE fluid y- DSURFACE 3
+SIDE fluid y+ DSURFACE 4
+SIDE fluid z- DSURFACE 5
+SIDE fluid z+ DSURFACE 6
+SIDE fluid x- DSURFACE 7
+SIDE fluid x+ DSURFACE 7
+SIDE fluid y- DSURFACE 7
+SIDE fluid y+ DSURFACE 7
+SIDE fluid z- DSURFACE 7
+SIDE fluid z+ DSURFACE 7
+------------------------------------------------DVOL-NODE TOPOLOGY
+VOLUME fluid DVOL 1
+-------------------------------------------------------NODE COORDS
+PARTICLE 1      COORD   5.0000000000000000e+00  5.0000000000000000e+00  1.2750000000000000e+01
+----------------------------------------------------------FLUID DOMAIN
+LOWER_BOUND 0.0 0.0 0.0
+UPPER_BOUND 10.0 10.0 16.0
+INTERVALS   3 3 5
+ELEMENTS    FLUID HEX8 MAT 1 NA Euler GP 2 2 2
+---------------------------------------------------------------END

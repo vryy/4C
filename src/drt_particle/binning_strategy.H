@@ -236,6 +236,8 @@ namespace BINSTRATEGY
 
     int bin_per_dir_[3];    ///< number of bins per direction
 
+    double inv_bin_per_dir_[3];    ///< inverse of number of bins per direction
+
     bool havepbc_;   ///< flag whether periodic boundary conditions are specified for particles
 
     bool pbconoff_[3];   ///< flags for existence of pbcs in x, y, z direction

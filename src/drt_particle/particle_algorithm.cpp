@@ -708,6 +708,7 @@ void PARTICLE::Algorithm::FillParticlesIntoBinsRoundRobin(std::set<Teuchos::RCP<
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList(std::set<Teuchos::RCP<DRT::Node>, BINSTRATEGY::Less>& homelessparticles)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::FillParticlesIntoBinsRemoteIdList");
   const int numproc = particledis_->Comm().NumProc();
   if(numproc == 1)
   {
@@ -1015,6 +1016,9 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
     if(bincolmap_->NumGlobalElements() == 1 && bincolmap_->Comm().NumProc() > 1)
       dserror("one bin cannot be run in parallel -> reduce CUTOFF_RADIUS");
 
+    // make sure that all procs are either filled or unfilled
+    particledis_->CheckFilledGlobally();
+
     // create ghosting for bins (each knowing its particle ids)
     particledis_->ExtendedGhosting(*bincolmap_,true,false,true,false);
   }
@@ -1188,6 +1192,7 @@ void PARTICLE::Algorithm::TransferParticles(const bool updatestates, const bool 
   // update state vectors in time integrator to the new layout
   if(updatestates)
   {
+    TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::TransferParticles::UpdateStates");
     particles_->UpdateStatesAfterParticleTransfer();
     UpdateStates();
   }

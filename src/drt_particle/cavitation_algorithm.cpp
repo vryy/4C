@@ -68,7 +68,28 @@ CAVITATION::Algorithm::Algorithm(
   computeradiusRPbased_((bool)DRT::INPUT::IntegralValue<int>(params,"COMPUTE_RADIUS_RP_BASED")),
   dtsub_(Teuchos::null),
   pg0_(Teuchos::null),
-  count_(0)
+  count_(0),
+  del_(Teuchos::null),
+  delhist_(Teuchos::null),
+  mu_(0.0),
+  radius_i_(Teuchos::null),
+  couplingradius_(Teuchos::null),
+  pressnp_(Teuchos::null),
+  itmax_(params.get<int>("ITEMAX")),
+  ittol_(params.get<double>("CONVTOL")),
+  storecount_(0),
+  storetime_(0.0),
+  storestep_(0),
+  storedis_(Teuchos::null),
+  storevel_(Teuchos::null),
+  storeacc_(Teuchos::null),
+  storeang_vel_(Teuchos::null),
+  storeang_acc_(Teuchos::null),
+  storerad_(Teuchos::null),
+  storeraddot_(Teuchos::null),
+  storemass_(Teuchos::null),
+  storeinertia_(Teuchos::null),
+  storedtsub_(Teuchos::null)
 {
   const Teuchos::ParameterList& fluidparams = DRT::Problem::Instance()->FluidDynamicParams();
   // setup fluid time integrator
@@ -135,6 +156,9 @@ CAVITATION::Algorithm::Algorithm(
         dserror("no solver for L2 projection of velocity gradient specified: check VELGRAD_PROJ_SOLVER");
     }
   }
+
+  if(coupalgo_ == INPAR::CAVITATION::TwoWayFull_strong && not computeradiusRPbased_)
+    dserror("iteratively staggered coupling scheme is tailored for use with radius adaptions using RP equation");
 
   if(coupalgo_ == INPAR::CAVITATION::TwoWayFull_weak || coupalgo_ == INPAR::CAVITATION::TwoWayFull_strong)
   {
@@ -204,7 +228,7 @@ void CAVITATION::Algorithm::Timeloop()
   switch (coupalgo_)
   {
   case INPAR::CAVITATION::TwoWayFull_strong:
-    dserror("not yet implemented");
+    TimeloopIterStaggered();
     break;
   case INPAR::CAVITATION::TwoWayFull_weak:
   case INPAR::CAVITATION::TwoWayMomentum:
@@ -230,7 +254,8 @@ void CAVITATION::Algorithm::TimeloopSequStaggered()
     PrepareTimeStep();
 
     // particle time step is solved
-    Integrate();
+    bool reset = false;
+    Integrate(reset);
 
     // deal with particle inflow
     ParticleInflow();
@@ -247,13 +272,426 @@ void CAVITATION::Algorithm::TimeloopSequStaggered()
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
     // update time and step
-    Update();
+    Update(true);
 
     // write output to screen and files
     Output();
 
   }  // NotFinished
 
+}
+
+
+/*----------------------------------------------------------------------*
+ | time loop of the cavitation algorithm                    ghamm 11/12 |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::TimeloopIterStaggered()
+{
+  // time loop
+  while (NotFinished() || (particles_->StepOld()-restartparticles_) % timestepsizeratio_ != 0)
+  {
+    // counter and print header; predict solution of both fields
+    PrepareTimeStep();
+
+    // auxiliary variables for relaxation
+    int outeriter = 0;
+    bool converged = false;
+    bool particlereset = false;
+
+    // prepare for convergence check
+    double pressnorm_L2(0.0);
+    double radiusnorm_L2(0.0);
+    ComputePressAndRadiusNorm(pressnorm_L2, radiusnorm_L2);
+
+    while(not converged)
+    {
+      // safe data in the very beginning before start of subcycling
+      if((particles_->Step()-restartparticles_) % timestepsizeratio_ == 1)
+      {
+        PrepareRelaxation(outeriter);
+        ++outeriter;
+      }
+
+      // fluid and particle time step is solved
+      Integrate(particlereset);
+
+      // after subcycling has finished: check for convergence and adapt/reset if necessary
+      if((particles_->Step()-restartparticles_) % timestepsizeratio_ == 0)
+        ConvergenceCheckAndRelaxation(outeriter, pressnorm_L2, radiusnorm_L2, converged, particlereset);
+
+      if(converged)
+      {
+        // deal with particle inflow
+        ParticleInflow();
+      }
+
+      // transfer particles into their correct bins at least every 10th of the fluid time step size;
+      // underlying assumptions: CFL number will be not too far from one, bubbles have appr. the same
+      // velocity as the fluid
+      if(particles_->Time() > Time()-Dt()+0.1*count_*Dt())
+      {
+        ++count_;
+        TransferParticles(true);
+      }
+
+      // update displacements, velocities, accelerations
+      // after this call we will have disn_==dis_, etc
+      // update time and step
+      if(particlereset == false)
+        Update(converged);
+    }
+
+    // write output to screen and files
+    Output();
+
+  }  // NotFinished
+
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute norms for normalization during conv check        ghamm 02/16 |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::ComputePressAndRadiusNorm(double& pressnorm_L2, double& radiusnorm_L2)
+{
+  // normalization of fluid pressure for convergence check
+  fluid_->ExtractPressurePart(fluid_->Veln())->Norm2(&pressnorm_L2);
+  // if pressure norm is almost zero
+  if (pressnorm_L2 < 1e-6)
+  {
+    if(myrank_ == 0)
+      std::cout << "press norm is almost zero: " << pressnorm_L2 << " --> set to one " << std::endl;
+    pressnorm_L2 = 1.0;
+  }
+
+  // normalization for bubble radius for convergence check
+  particles_->Radius()->Norm2(&radiusnorm_L2);
+  // if radius norm is almost zero
+  if (radiusnorm_L2 < 1e-6 && particles_->Radius()->GlobalLength() != 0)
+  {
+    if(myrank_ == 0)
+      std::cout << "radius norm is almost zero: " << radiusnorm_L2 << " --> set to one " << std::endl;
+    radiusnorm_L2 = 1.0;
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | prepare relaxation                                       ghamm 02/16 |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::PrepareRelaxation(const int outeriter)
+{
+  // do not iterate if particle field is empty and leave here
+  if(particles_->Radius()->GlobalLength() == 0)
+  {
+    if(myrank_ == 0)
+    {
+      std::cout << "/***********************/\n"
+          << "NO OUTER ITERATION BECAUSE PARTICLE FIELD IS EMPTY\n/***********************/\n" << std::endl;
+    }
+    return;
+  }
+
+  if(myrank_ == 0)
+  {
+    std::cout << "/***********************/\n"
+        << "START OUTER ITERATION NO. " << outeriter << "\n/***********************/\n" << std::endl;
+  }
+
+  // save initial data for resetting
+  if(outeriter==0)
+  {
+    SaveParticleData();
+    radius_i_ = Teuchos::rcp(new Epetra_Vector(*particles_->Radius()));
+    couplingradius_ = Teuchos::rcp(new Epetra_Vector(*particles_->Radius()));
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | convergence check and Aitken relaxation                   ghamm 02/16 |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::ConvergenceCheckAndRelaxation(
+  const int outeriter,
+  const double pressnorm_L2,
+  const double radiusnorm_L2,
+  bool& converged,
+  bool& particlereset
+)
+{
+  // do not iterate if particle field is empty and leave here
+  if(particles_->Radius()->GlobalLength() == 0)
+  {
+    converged = true;
+    particlereset = false;
+    return;
+  }
+
+  // do convergence check in the coupled case
+  converged = false;
+
+  // reset everything after end of first run
+  if(outeriter == 1)
+  {
+    particlereset = true;
+    // reset time and step
+    particles_->SetTimeStep(storetime_,storestep_);
+
+    // only save data in the very beginning and update later
+    // -> convergence check for the most important and most sensitive quantity, i.e. fluid pressure
+    pressnp_->Update(1.0, *fluid_->ExtractPressurePart(fluid_->Velnp()), 0.0);
+
+    // dynamic relaxation
+    {
+      // two previous residuals are required (initial guess and result of 1st iteration)
+      // --> start relaxation process if two iterative residuals are available
+      // save initial increment del_ = r^{1}_{n+1} = R^{1}_{n+1} - R^{0}_{n+1}
+      // and radius solution from current step
+
+      del_ = Teuchos::rcp(new Epetra_Vector(*radius_i_));
+      del_->Update(1.0, *particles_->Radius(), -1.0);
+      radius_i_->Update(1.0, *particles_->Radius(), 0.0);
+      delhist_ = LINALG::CreateVector(*particles_->NodeRowMap(), true);
+
+      // constrain the Aitken factor in the 1st relaxation step of new time
+      // step n+1 to maximal value maxomega
+      double maxomega = 0.33;
+      // omega_{n+1} = min( omega_n, maxomega ) with omega = 1-mu
+      if ( (maxomega > 0.0) and (maxomega < (1 - mu_)) )
+        mu_ = 1 - maxomega;
+
+      // relaxation parameter
+      // omega^{i+1} = 1 - mu^{i+1}
+      const double omega = 1.0 - mu_;
+
+      if(myrank_ == 0)
+        std::cout << "omega for dynamic relaxation is: " <<  omega << std::endl;
+
+      // relax radius solution for next iteration step
+      // overwrite temp_ with relaxed solution vector
+      // d^{i+1} = omega^{i+1} . d^{i+1} + (1- omega^{i+1}) d^i
+      //         = d^i + omega^{i+1} * ( d^{i+1} - d^i )
+      int err = couplingradius_->Update(omega, *del_, 1.0);
+      if(err<0) dserror("updated failed");
+    }
+  }
+  // convergence check for outeriter > 1 and reset if not converged
+  else
+  {
+    // compute delta press ...
+    Teuchos::RCP<Epetra_Vector> deltapress = Teuchos::rcp(new Epetra_Vector(*fluid_->ExtractPressurePart(fluid_->Velnp())));
+    deltapress->Update(1.0,*pressnp_,-1.0);
+    // ... and update pressnp
+    pressnp_->Update(1.0, *fluid_->ExtractPressurePart(fluid_->Velnp()), 0.0);
+
+    // build the L2-norm of the increment and the old(!) solution vector -> does not oscillate
+    double pressincnorm_L2(0.0);
+    deltapress->Norm2(&pressincnorm_L2);
+
+    // compute delta R: increment R^{i+1}_{n+1} - R^{i}_{n+1}
+    double radiusincnorm_L2(0.0);
+    Teuchos::RCP<Epetra_Vector> res = Teuchos::rcp(new Epetra_Vector(*radius_i_));
+    res->Update(1.0,*particles_->Radius(),-1.0);
+    res->Norm2(&radiusincnorm_L2);
+
+    if(pressincnorm_L2 / pressnorm_L2 < ittol_ && radiusincnorm_L2 / radiusnorm_L2 < ittol_)
+      converged = true;
+
+    // save radius from current iteration i+1 which will be iter i next time
+    radius_i_->Update(1.0, *particles_->Radius(), 0.0);
+
+    double radiusincnorm_Linf(0.0);
+    res->ReciprocalMultiply(1.0, *radius_i_, *res, 0.0);
+    res->NormInf(&radiusincnorm_Linf);
+
+    // reset everything if not converged
+    if(not converged)
+    {
+      if(myrank_ == 0)
+        std::cout << "\n relative L2 error press: " << pressincnorm_L2 / pressnorm_L2 << " >? " << ittol_ << "\n"
+            << " and relative L2 error radius: " << radiusincnorm_L2 / radiusnorm_L2 << " >? "  << ittol_ << "\n"
+            << " info: and relative inf error radius: " << radiusincnorm_Linf << std::endl;
+
+      // do dynamic relaxation
+      {
+        // BACI:
+        // increment inc := new - old
+
+        //                                         ( r^{i+1} - r^i )^T . ( - r^{i+1} )
+        //   nu^{i+1} = nu^i + (nu^i - 1) . -------------------------------------------------
+        //                                                  | r^{i+1} - r^i |^2
+        //
+        //
+
+
+        // calculate difference of current (i+1) and old (i) residual vector
+        // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
+        // update history vector with negative of old increment -r^i_{n+1} ...
+        delhist_->Update(-1.0,*del_,0.0);  // -r^i_{n+1}
+
+        // in between update new increment del_ = r^{i+1}_{n+1} = R^{i+1} - R^{i,relaxed}
+        del_->Update(1.0,*particles_->Radius(),-1.0, *couplingradius_, 0.0);
+
+        // ... and add new increment +r^{i+1}_{n+1}
+        delhist_->Update(1.0,*del_,1.0);
+
+        // denom = |r^{i+1} - r^{i}|_2
+        double denom = 0.0;
+        delhist_->Norm2(&denom);
+        // calculate dot product
+        // nom = delhist_ . del_ = ( r^{i+1} - r^i )^T . r^{i+1}
+        double nom = 0.0;
+        delhist_->Dot(*del_,&nom);
+
+        if(denom == 0.0)
+          denom = 1.0e6;
+
+        // Aikten factor
+        // nu^{i+1} = nu^i + (nu^i -1) . (r^{i+1} - r^i)^T . (-r^{i+1}) / |r^{i+1} - r^{i}|^2
+        // nom = ( r^{i+1} - r^i )^T . r^{i+1} --> use -nom
+        // Uli's implementation: mu_ = mu_ + (mu_ - 1.0) * nom / (denom*denom). with '-' included in nom
+        mu_ = mu_ + (mu_ - 1.0) * (-nom)/(denom * denom);
+
+        // relaxation parameter
+        // omega^{i+1} = 1 - mu^{i+1}
+        const double omega = 1.0 - mu_;
+
+        // relax radius solution for next iteration step
+        // R^{i+1} = omega^{i+1} . R^{i+1} + (1- omega^{i+1}) R^i
+        //         = R^i + omega^{i+1} * ( R^{i+1} - R^i )
+        int err = couplingradius_->Update(omega, *del_, 1.0);
+        if(err<0) dserror("updated failed");
+
+        // safety check: compute difference of latest converged solution and relaxed solution
+        double diffnorm(0.0);
+        Teuchos::RCP<Epetra_Vector> finaldiff = Teuchos::rcp(new Epetra_Vector(*couplingradius_));
+        finaldiff->Update(1.0,*particles_->Radius(),-1.0);
+        finaldiff->Norm2(&diffnorm);
+        double radiusnorm(0.0);
+        particles_->Radius()->Norm2(&radiusnorm);
+        if(myrank_ == 0)
+          std::cout << " info: abs norm of difference of coupling radius and real radius is: " << diffnorm << "\n"
+              << " info: relative norm of differences is: " << diffnorm / radiusnorm << "\n"
+              << " --> omega for dynamic relaxation is: " << omega << std::endl;
+      }
+
+      particlereset = true;
+      // care about time and step already here as this must be already reset for next call to PrepareRelaxation()
+      particles_->SetTimeStep(storetime_,storestep_);
+    }
+    else
+    {
+      particlereset = false;
+      // safety check: compare latest converged solution and latest relaxed solution
+      double diffnorm(0.0);
+      Teuchos::RCP<Epetra_Vector> finaldiff = Teuchos::rcp(new Epetra_Vector(*couplingradius_));
+      finaldiff->Update(1.0,*particles_->Radius(),-1.0);
+      finaldiff->Norm2(&diffnorm);
+      double radiusnorm(0.0);
+      particles_->Radius()->Norm2(&radiusnorm);
+      if(myrank_ == 0)
+      {
+        std::cout << "\n relative L2 error press: " << pressincnorm_L2 / pressnorm_L2 << " < " << ittol_ << "\n"
+            << " and relative L2 error radius: " << radiusincnorm_L2 / radiusnorm_L2 << " < "  << ittol_ << "\n"
+            << " info: relative inf error radius: " << radiusincnorm_Linf << "\n"
+            << " info: abs norm of difference of coupling radius and real radius is: " << diffnorm << "\n"
+            << " info: relative norm of differences is: " << diffnorm / radiusnorm << std::endl;
+      }
+    }
+
+    if(outeriter > itmax_)
+      dserror("maximum number (%i) of outer iterations reached", itmax_);
+  }
+
+  if(myrank_ == 0)
+  {
+    std::stringstream info;
+    converged==true ? info << "true" : info << "false";
+    std::cout <<  "\n/***********************/\n converged = " << info.str() << "\n/***********************/" << std::endl;
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | save bubble data for possible time step repetition       ghamm 02/16 |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::SaveParticleData()
+{
+  storecount_ = count_;
+  // save states of explicit particle time integrator
+  // care about time and step
+  storetime_ = particles_->TimeOld();
+  storestep_ = particles_->StepOld();
+
+  // care about state vectors
+  storedis_ = Teuchos::rcp(new Epetra_Vector(*particles_->Dispn()));
+  storevel_ = Teuchos::rcp(new Epetra_Vector(*particles_->Veln()));
+  storeacc_ = Teuchos::rcp(new Epetra_Vector(*particles_->Accn()));
+  if(particles_->HaveCollHandler())
+  {
+    storeang_vel_ = Teuchos::rcp(new Epetra_Vector(*particles_->AngVeln()));
+    storeang_acc_ = Teuchos::rcp(new Epetra_Vector(*particles_->AngAccn()));
+    storeinertia_ = Teuchos::rcp(new Epetra_Vector(*particles_->Inertia()));
+  }
+
+  storerad_ = Teuchos::rcp(new Epetra_Vector(*particles_->Radius()));
+  storemass_ = Teuchos::rcp(new Epetra_Vector(*particles_->Mass()));
+
+  if(computeradiusRPbased_)
+  {
+    storeraddot_ = Teuchos::rcp(new Epetra_Vector(*particles_->RadiusDot()));
+    storedtsub_ = Teuchos::rcp(new Epetra_Vector(*dtsub_));
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | reset bubble data when time step is repeated             ghamm 02/16 |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::ResetParticleData()
+{
+  count_ = storecount_;
+  // reset everything in explicit particle time integrator
+  // time and step have already been reset in time loop
+
+  // reset layout of particles --> DOES NOT WORK WHEN BUBBLES HAVE LEFT THE DOMAIN
+  if(storedis_->GlobalLength() != particles_->Dispnp()->GlobalLength())
+    dserror("bubbles left the domain in outer loop of iteratively staggered scheme -> not yet implemented");
+  LINALG::Export(*storedis_, *particles_->WriteAccessDispnp());
+  TransferParticles(true);
+
+  // care about state vectors
+  Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Dispn())->Update(1.0, *storedis_, 0.0);
+  Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Veln())->Update(1.0, *storevel_, 0.0);
+  Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Accn())->Update(1.0, *storeacc_, 0.0);
+  if(particles_->HaveCollHandler())
+  {
+    Teuchos::rcp_const_cast<Epetra_Vector>(particles_->AngVeln())->Update(1.0, *storeang_vel_, 0.0);
+    Teuchos::rcp_const_cast<Epetra_Vector>(particles_->AngAccn())->Update(1.0, *storeang_acc_, 0.0);
+    Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Inertia())->Update(1.0, *storeinertia_, 0.0);
+  }
+  Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Radius())->Update(1.0, *storerad_, 0.0);
+  Teuchos::rcp_const_cast<Epetra_Vector>(particles_->Mass())->Update(1.0, *storemass_, 0.0);
+
+  if(computeradiusRPbased_)
+  {
+    Teuchos::rcp_const_cast<Epetra_Vector>(particles_->RadiusDot())->Update(1.0, *storeraddot_, 0.0);
+    dtsub_->Update(1.0, *storedtsub_, 0.0);
+    // export pg0_ as this vector is not stored
+    Teuchos::RCP<Epetra_Vector> old = pg0_;
+    pg0_ = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *pg0_);
+  }
+
+  return;
 }
 
 
@@ -338,6 +776,9 @@ void CAVITATION::Algorithm::InitCavitation()
   if(initbubblevelfromfluid_)
     InitBubbleVelFromFluidVel();
 
+  // fill pressure into vector for convergence check
+  pressnp_ = Teuchos::rcp(new Epetra_Vector(*fluid_->ExtractPressurePart(fluid_->Veln())));
+
   // compute volume of each fluid element and store it
   ele_volume_ = LINALG::CreateVector(*fluiddis_->ElementRowMap(), false);
   int numfluidele = fluiddis_->NumMyRowElements();
@@ -355,7 +796,7 @@ void CAVITATION::Algorithm::InitCavitation()
       coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
   {
     fluidfracnp_ = LINALG::CreateVector(*fluiddis_->DofRowMap(), true);
-    CalculateFluidFraction();
+    CalculateFluidFraction(particles_->Radius());
     // and copy values from n+1 to n
     // leading to an initial zero time derivative
     fluidfracn_ = Teuchos::rcp(new Epetra_Vector(*fluidfracnp_));
@@ -364,14 +805,13 @@ void CAVITATION::Algorithm::InitCavitation()
   }
   else
   {
-    // fluid fraction is assumed constant equal unity
+    // fluid fraction is assumed constant equal one
     fluidfracnp_ = LINALG::CreateVector(*fluiddis_->DofRowMap(), false);
     fluidfracnp_->PutScalar(1.0);
     fluidfracn_ = Teuchos::rcp(new Epetra_Vector(*fluidfracnp_));
-    Teuchos::RCP<Epetra_Vector> fluid_fraction = Teuchos::rcp(new Epetra_Vector(*fluiddis_->ElementRowMap()));
-    fluid_fraction->PutScalar(1.0);
+    Teuchos::RCP<Epetra_Vector> fluidelefrac = Teuchos::rcp(new Epetra_Vector(*fluiddis_->ElementRowMap()));
     // apply fluid fraction to fluid on element level for visualization purpose
-    Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_)->SetFluidFraction(fluid_fraction);
+    Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_)->SetFluidFraction(fluidelefrac);
   }
 
   // determine consistent initial acceleration for the particles
@@ -544,18 +984,32 @@ void CAVITATION::Algorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*
  | solve the current particle time step                    ghamm 11/12  |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::Integrate()
+void CAVITATION::Algorithm::Integrate(bool& particlereset)
 {
   if((particles_->StepOld()-restartparticles_) % timestepsizeratio_ == 0)
   {
-    if(coupalgo_ == INPAR::CAVITATION::TwoWayFull_weak ||
-        coupalgo_ == INPAR::CAVITATION::TwoWayFull_strong ||
-        coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
+    switch (coupalgo_)
     {
-      TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateFluidFraction");
-      CalculateFluidFraction();
+    case INPAR::CAVITATION::TwoWayFull_weak:
+    case INPAR::CAVITATION::VoidFracOnly:
+    {
+      CalculateFluidFraction(particles_->Radius());
       SetFluidFraction();
+      break;
     }
+    case INPAR::CAVITATION::TwoWayFull_strong:
+    {
+      // coupling radius has already been set in Prepare Relaxation
+      TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateFluidFraction");
+      CalculateFluidFraction(couplingradius_);
+      SetFluidFraction();
+      break;
+    }
+    default:
+      // do nothing
+      break;
+    }
+    // solve fluid time step
     TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::IntegrateFluid");
     fluid_->Solve();
 
@@ -565,6 +1019,12 @@ void CAVITATION::Algorithm::Integrate()
   else
   {
     SubcyclingInfoToScreen();
+  }
+
+  if(particlereset)
+  {
+    ResetParticleData();
+    particlereset = false;
   }
 
   if(computeradiusRPbased_ == true)
@@ -1857,12 +2317,12 @@ void CAVITATION::Algorithm::ParticleInflow()
 /*----------------------------------------------------------------------*
  | update the current time step                            ghamm 11/12  |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::Update()
+void CAVITATION::Algorithm::Update(const bool converged)
 {
   // here is the transition from n+1 -> n
   PARTICLE::Algorithm::Update();
 
-  if((particles_->StepOld()-restartparticles_) % timestepsizeratio_ == 0)
+  if((particles_->StepOld()-restartparticles_) % timestepsizeratio_ == 0 && converged)
   {
     fluid_->Update();
 
@@ -2115,6 +2575,34 @@ void CAVITATION::Algorithm::UpdateStates()
     old = pg0_;
     pg0_ = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
     LINALG::Export(*old, *pg0_);
+  }
+
+  if (radius_i_ != Teuchos::null)
+  {
+    old = radius_i_;
+    radius_i_ = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *radius_i_);
+  }
+
+  if (couplingradius_ != Teuchos::null)
+  {
+    old = couplingradius_;
+    couplingradius_ = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *couplingradius_);
+  }
+
+  if (delhist_ != Teuchos::null)
+  {
+    old = delhist_;
+    delhist_ = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *delhist_);
+  }
+
+  if (del_ != Teuchos::null)
+  {
+    old = del_;
+    del_ = LINALG::CreateVector(*particledis_->NodeRowMap(),true);
+    LINALG::Export(*old, *del_);
   }
 
   return;
