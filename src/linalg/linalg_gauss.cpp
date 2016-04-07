@@ -36,6 +36,7 @@ double gaussElimination(
     LINALG::Matrix<dim, dim> cA( A );
     LINALG::Matrix<dim, 1>   cb( b );
 #endif
+    bool changesign = false;
     if ( not do_piv )
     {
       for ( unsigned k=0; k<dim; ++k )
@@ -79,6 +80,7 @@ double gaussElimination(
             std::swap( A(k,j), A(pivot,j) );
           }
           std::swap( b(k,0), b(pivot,0) );
+          changesign = not changesign;
         }
 
         if ( fabs( A(k,k) ) < std::numeric_limits<double>::min() )
@@ -121,6 +123,9 @@ double gaussElimination(
     double det = 1.0;
     for ( unsigned i = 0 ; i < dim; ++i )
       det *= 1.0/A(i,i);
+
+    if(changesign)
+      det *= -1.0;
 
 #if 0
     double nx = x.Norm2();
@@ -203,18 +208,19 @@ double scaledGaussElimination(
   // infnorm scaling
   for(unsigned i=0; i<dim; ++i)
   {
-    // find max entry in row
-    double max = A(i,0);
+    // find norm of max entry in row
+    double max = std::abs(A(i,0));
     for(unsigned j=1; j<dim; ++j)
     {
-      if(std::abs(A(i,j)) > std::abs(max))
-        max = A(i,j);
+      const double norm = std::abs(A(i,j));
+      if(norm > max)
+        max = norm;
     }
 
     // close to zero row detected -> matrix does probably not have full rank
-    if(std::abs(max) < 1.0e-14)
+    if(max < 1.0e-14)
     {
-      return LINALG::gaussElimination<true, dim>( A, b, x );;
+      return LINALG::gaussElimination<true, dim>( A, b, x );
     }
 
     // scale row with inv of max entry
