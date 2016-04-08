@@ -316,7 +316,6 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(
     elematrix2.Shape(numnode,numvec);
 
     // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
-//    actele->Evaluate(params,*dis,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
     int err = actele->Evaluate(params,*dis,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
     if (err) dserror("Element %d returned err=%d",actele->Id(),err);
 
@@ -598,7 +597,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeSuperconvergentPatchRecovery
 
     // Reshape element matrices and vectors and initialize to zero
     elevector1.Size(numvec);
-    elevector2.Size(dim);
+    elevector2.Size(3);
 
     // call the element specific evaluate method (elevec1 = velocity gradient, elevec2 = element centroid)
     actele->Evaluate(params,*dis,la[0].lm_,elematrix1,elematrix2,elevector1,elevector2,elevector3);
