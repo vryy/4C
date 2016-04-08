@@ -1,14 +1,9 @@
 /*!----------------------------------------------------------------------
 \file mortar_coupling2d.cpp
 
-\brief Classes for mortar coupling in 2D.
+\maintainer Philipp Farah, Alexander Seitz
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Classes for mortar coupling in 2D.
 
 *-----------------------------------------------------------------------*/
 
@@ -1064,8 +1059,8 @@ void MORTAR::Coupling2dManager::IntegrateCoupling()
         {
           //std::cout << "Boundary segmentation for element: " << SlaveElement().Id() << "\n" ;
           // switch, if consistent boundary modification chosen
-          if (DRT::INPUT::IntegralValue<int>(imortar_, "LM_DUAL_CONSISTENT")
-              == true && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
+          if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(imortar_, "LM_DUAL_CONSISTENT")!=INPAR::MORTAR::consistent_none
+              && ShapeFcn() != INPAR::MORTAR::shape_standard // so for petrov-Galerkin and dual
               )
           {
             // loop over all master elements associated with this slave element
@@ -1173,15 +1168,15 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
  *----------------------------------------------------------------------*/
 void MORTAR::Coupling2dManager::ConsistDualShape()
 {
-  bool consistent=DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT");
+  INPAR::MORTAR::ConsistentDualType consistent=DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(imortar_,"LM_DUAL_CONSISTENT");
 
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard || consistent==false)
+  if (ShapeFcn() == INPAR::MORTAR::shape_standard || consistent==INPAR::MORTAR::consistent_none)
     return;
 
   // Consistent modification only for linear LM interpolation or NURBS
-  if (Quad()==true && consistent==true && !SlaveElement().IsNurbs())
+  if (Quad()==true && consistent!=INPAR::MORTAR::consistent_none && !SlaveElement().IsNurbs())
     dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
 
   // not implemented for nurbs yet

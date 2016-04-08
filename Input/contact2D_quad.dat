@@ -73,7 +73,7 @@ LM_SHAPEFCN                     Dual
 LM_QUAD                         quad
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
-LM_DUAL_CONSISTENT              no
+LM_DUAL_CONSISTENT              none
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

@@ -1,14 +1,10 @@
 /*!----------------------------------------------------------------------
 \file mortar_coupling3d.cpp
 
+\maintainer Philipp Farah, Alexander Seitz
+
 \brief Classes for mortar coupling in 3D.
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
 
 *-----------------------------------------------------------------------*/
 #include "mortar_coupling3d.H"
@@ -4225,7 +4221,7 @@ MORTAR::Coupling3dManager::Coupling3dManager(DRT::Discretization& idiscret,
     integrationtype_(DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(params, "INTTYPE")),
     shapefcn_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(params, "LM_SHAPEFCN")),
     lmnodalscale_(DRT::INPUT::IntegralValue<int>(params, "LM_NODAL_SCALE")),
-    lmdualconsistent_(DRT::INPUT::IntegralValue<int>(params, "LM_DUAL_CONSISTENT")),
+    lmdualconsistent_(DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(params, "LM_DUAL_CONSISTENT")),
     quad_(quad),
     imortar_(params),
     sele_(sele),
@@ -4331,8 +4327,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling()
       {
         if (boundary_ele == true)
         {
-          if (DRT::INPUT::IntegralValue<int>(imortar_, "LM_DUAL_CONSISTENT")
-              == false)
+          if (lmdualconsistent_!=INPAR::MORTAR::consistent_none)
           {
             // loop over all master elements associated with this slave element
             for (int m = 0; m < (int) MasterElements().size(); ++m)
@@ -4528,21 +4523,19 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling()
  *----------------------------------------------------------------------*/
 void MORTAR::Coupling3dManager::ConsistDualShape()
 {
-  bool consistent=DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT");
-
   // For standard shape functions no modification is necessary
   // A switch erlier in the process improves computational efficiency
-  if (ShapeFcn() == INPAR::MORTAR::shape_standard || consistent==false)
+  if (ShapeFcn() == INPAR::MORTAR::shape_standard || lmdualconsistent_==INPAR::MORTAR::consistent_none)
     return;
 
   // Consistent modification only for linear LM interpolation
-  if (Quad() == true && consistent == true)
+  if (Quad() == true && lmdualconsistent_!=INPAR::MORTAR::consistent_none)
     dserror("ERROR: Consistent dual shape functions in boundary elements only for linear LM interpolation");
 
   if (Coupling().size() == 0)
     return;
 
-  if (IntType() == INPAR::MORTAR::inttype_segments)
+  if (IntType() == INPAR::MORTAR::inttype_segments && lmdualconsistent_==INPAR::MORTAR::consistent_boundary)
   {
     // check if fully projecting
     bool boundary_ele = false;

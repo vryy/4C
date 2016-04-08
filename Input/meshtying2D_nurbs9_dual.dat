@@ -78,7 +78,7 @@ SEARCH_PARAM                    0.3
 INTTYPE                         elements
 NUMGP_PER_DIM                   3
 LM_QUAD                         quad
-LM_DUAL_CONSISTENT              No
+LM_DUAL_CONSISTENT              none
 PARALLEL_REDIST                 none
 --------------------------------------------------------------------SOLVER 1
 NAME                            Struct_Solver

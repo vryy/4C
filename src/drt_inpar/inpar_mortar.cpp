@@ -2,13 +2,10 @@
 /*!
 \file inpar_mortar.cpp
 
+\maintainer Philipp Farah, Alexander Seitz
+
 \brief Input parameters for mortar coupling
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
 */
 
 /*----------------------------------------------------------------------*/
@@ -73,8 +70,14 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   setStringToIntegralParameter<int>("CROSSPOINTS","No","If chosen, multipliers are removed from crosspoints / edge nodes",
                                yesnotuple,yesnovalue,&mortar);
 
-  setStringToIntegralParameter<int>("LM_DUAL_CONSISTENT","Yes","If chosen consistent dual shape functions are calculated",
-                               yesnotuple,yesnovalue,&mortar);
+  setStringToIntegralParameter<int>("LM_DUAL_CONSISTENT","boundary","For which elements should the dual basis be calculated on EXACTLY the same GPs as the contact terms",
+      tuple<std::string>("none",
+                         "boundary",
+                         "all"),
+      tuple<int>(consistent_none,
+                 consistent_boundary,
+                 consistent_all),
+      &mortar);
 
   setStringToIntegralParameter<int>("LM_NODAL_SCALE","No","If chosen a nodal scaling factor is calculated for each LM",
                                yesnotuple,yesnovalue,&mortar);

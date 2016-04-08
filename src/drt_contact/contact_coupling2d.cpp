@@ -1,14 +1,9 @@
 /*!----------------------------------------------------------------------
 \file contact_coupling2d.cpp
 
-\brief Classes for mortar contact coupling in 2D.
+\maintainer Philipp Farah, Alexander Seitz
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Classes for mortar contact coupling in 2D.
 
 *-----------------------------------------------------------------------*/
 
@@ -419,12 +414,12 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
   if (ShapeFcn() == INPAR::MORTAR::shape_standard)
     return;
 
-  bool consistent=DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT");
-  if (consistent==false)
+  INPAR::MORTAR::ConsistentDualType consistent=DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(imortar_,"LM_DUAL_CONSISTENT");
+  if (consistent==INPAR::MORTAR::consistent_none)
     return;
 
   // Consistent modification only for linear LM interpolation or NURBS
-  if (Quad()==true && consistent==true && !SlaveElement().IsNurbs())
+  if (Quad()==true && consistent!=INPAR::MORTAR::consistent_none && !SlaveElement().IsNurbs())
     dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation");
 
   // do nothing if there are no coupling pairs

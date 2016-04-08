@@ -53,7 +53,7 @@ SEARCH_PARAM                    1.3
 SEARCH_USE_AUX_POS              Yes
 LM_QUAD                         undefined
 CROSSPOINTS                     No
-LM_DUAL_CONSISTENT              Yes
+LM_DUAL_CONSISTENT              boundary
 LM_NODAL_SCALE                  No
 MESH_RELOCATION                 Initial
 REDUNDANT_STORAGE               Master

@@ -55,7 +55,7 @@ ERROR_NORMS          plate
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN           dual
 LM_QUAD               quad
-LM_DUAL_CONSISTENT    no
+LM_DUAL_CONSISTENT    none
 ----------------------------------------------------------SOLVER 1
 SOLVER                    UMFPACK
 ----------------------------------------------------------SOLVER 2

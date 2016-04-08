@@ -80,7 +80,7 @@ SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    1000
 SEARCH_USE_AUX_POS              Yes
 CROSSPOINTS                     No
-LM_DUAL_CONSISTENT              Yes
+LM_DUAL_CONSISTENT              boundary
 LM_NODAL_SCALE                  No
 MESH_RELOCATION                 Initial
 REDUNDANT_STORAGE               Master

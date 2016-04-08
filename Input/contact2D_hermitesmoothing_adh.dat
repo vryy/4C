@@ -76,7 +76,7 @@ LM_SHAPEFCN          std
 HERMITE_SMOOTHING    Yes
 INTTYPE              elements
 NUMGP_PER_DIM        5
-LM_DUAL_CONSISTENT   No
+LM_DUAL_CONSISTENT   none
 ----------------------------------------------------------SOLVER 1
 NAME                 Structure_Solver
 SOLVER               Superlu//UMFPACK

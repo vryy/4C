@@ -67,7 +67,7 @@ SEMI_SMOOTH_CT                  1.0
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Standard
 LM_QUAD                         lin
-LM_DUAL_CONSISTENT              no
+LM_DUAL_CONSISTENT              none
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC

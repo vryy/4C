@@ -1,12 +1,7 @@
 /*!----------------------------------------------------------------------
 \file meshtying_abstract_strategy.cpp
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Philipp Farah, Alexander Seitz
 
 *----------------------------------------------------------------------*/
 
@@ -414,7 +409,7 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
 
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
   if (   (shapefcn == INPAR::MORTAR::shape_dual || shapefcn == INPAR::MORTAR::shape_petrovgalerkin)
-      && DRT::INPUT::IntegralValue<int>(Params(),"LM_DUAL_CONSISTENT")==false
+      && DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(Params(), "LM_DUAL_CONSISTENT") == INPAR::MORTAR::consistent_none
      )
     dserror("ERROR: RestrictMeshtyingZone for dual shape functions "
         "only implemented in combination with consistent boundary modification");

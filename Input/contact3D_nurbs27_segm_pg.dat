@@ -51,7 +51,7 @@ LINEAR_SOLVER        2
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN            pg
 LM_QUAD                quad
-LM_DUAL_CONSISTENT     yes
+LM_DUAL_CONSISTENT     boundary
 NUMGP_PER_DIM          7
 TRIANGULATION          center
 ----------------------------------------------------------SOLVER 1

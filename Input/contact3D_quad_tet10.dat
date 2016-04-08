@@ -68,7 +68,7 @@ STRATEGY                        Lagrange
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 LM_QUAD                         quad
-LM_DUAL_CONSISTENT              no
+LM_DUAL_CONSISTENT              none
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

@@ -73,7 +73,7 @@ INTTYPE              elements
 NUMGP_PER_DIM        8
 LM_QUAD              quad
 PARALLEL_REDIST      dynamic
-LM_DUAL_CONSISTENT   no
+LM_DUAL_CONSISTENT   none
 ----------------------------------------------------------SOLVER 1
 NAME                 Structure_Solver
 SOLVER               Superlu //UMFPACK

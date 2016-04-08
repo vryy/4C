@@ -55,7 +55,7 @@ SYSTEM               sp
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN         dual
 LM_QUAD             quad
-LM_DUAL_CONSISTENT  yes
+LM_DUAL_CONSISTENT  boundary
 ----------------------------------------------------------SOLVER 1
 SOLVER                         UMFPACK
 ----------------------------------------------------------SOLVER 2

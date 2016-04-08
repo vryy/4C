@@ -69,7 +69,7 @@ LM_SHAPEFCN                     dual
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
 INTTYPE                         Segments
-LM_DUAL_CONSISTENT              yes
+LM_DUAL_CONSISTENT              boundary
 LM_NODAL_SCALE                  yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

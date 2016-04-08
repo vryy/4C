@@ -1,14 +1,9 @@
 /*!----------------------------------------------------------------------
 \file meshtying_manager.cpp
 
-\brief BACI implementation of main class to control all meshtying
+\maintainer Philipp Farah, Alexander Seitz
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief BACI implementation of main class to control all meshtying
 
 *-----------------------------------------------------------------------*/
 
@@ -492,12 +487,12 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
                                                    mortar.get<int>("MIN_ELEPROC") <  0)
     dserror("ERROR: Minimum number of elements per processor for parallel redistribution must be >= 0");
 
-  if(DRT::INPUT::IntegralValue<int>(mortar,"LM_DUAL_CONSISTENT")==true &&
+  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar,"LM_DUAL_CONSISTENT")!=INPAR::MORTAR::consistent_none &&
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying,"STRATEGY") != INPAR::CONTACT::solution_lagmult&&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") != INPAR::MORTAR::shape_standard)
     dserror("ERROR: Consistent dual shape functions in boundary elements only for Lagrange multiplier strategy.");
 
-  if(DRT::INPUT::IntegralValue<int>(mortar,"LM_DUAL_CONSISTENT")==true &&
+  if(DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar,"LM_DUAL_CONSISTENT")!=INPAR::MORTAR::consistent_none &&
        DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_elements &&
        (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_dual ||
         DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_petrovgalerkin   ))

@@ -1,14 +1,9 @@
 /*!----------------------------------------------------------------------
 \file contact_coupling3d.cpp
 
-\brief Classes for mortar contact coupling in 3D.
+\maintainer Philipp Farah, Alexander Seitz
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Classes for mortar contact coupling in 3D.
 
 *-----------------------------------------------------------------------*/
 
@@ -1580,14 +1575,16 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   if (ShapeFcn() != INPAR::MORTAR::shape_dual && ShapeFcn() != INPAR::MORTAR::shape_petrovgalerkin)
     return;
 
-  bool consistent_bound = DRT::INPUT::IntegralValue<int>(imortar_,"LM_DUAL_CONSISTENT");
-
-  if (consistent_bound==false)
+  INPAR::MORTAR::ConsistentDualType consistent=DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(imortar_,"LM_DUAL_CONSISTENT");
+  if (consistent==INPAR::MORTAR::consistent_none)
     return;
 
   // Consistent modification only for linear LM interpolation
-  if (Quad()==true && consistent_bound && !SlaveElement().IsNurbs())
+  if (Quad()==true && consistent!=INPAR::MORTAR::consistent_none && !SlaveElement().IsNurbs())
     dserror("Consistent dual shape functions in boundary elements only for linear LM interpolation or NURBS");
+
+  if (consistent==INPAR::MORTAR::consistent_all && IntType()!=INPAR::MORTAR::inttype_segments)
+    dserror("consistent dual shape functions on all elements only for segment-based integration");
 
   // do nothing if there are no coupling pairs
   if (Coupling().size()==0)
@@ -1603,7 +1600,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   // For Lagrange FE, the calculation of dual shape functions for fully
   // projecting elements is ok, since the integrands are polynomials (except
   // the jacobian)
-  if (IntType()==INPAR::MORTAR::inttype_segments && !SlaveElement().IsNurbs())
+  if (IntType()==INPAR::MORTAR::inttype_segments && consistent==INPAR::MORTAR::consistent_boundary)
   {
     // check, if slave element is fully projecting
     // for convenience, we don't check each quadrature point

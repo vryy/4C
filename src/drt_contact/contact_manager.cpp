@@ -1,14 +1,9 @@
 /*!----------------------------------------------------------------------
 \file contact_manager.cpp
 
-\brief BACI implementation of main class to control all contact
+\maintainer Philipp Farah, Alexander Seitz
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief BACI implementation of main class to control all contact
 
 *-----------------------------------------------------------------------*/
 
@@ -898,12 +893,12 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
             "SYSTEM") == INPAR::CONTACT::system_condensed)
       dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
-    if (DRT::INPUT::IntegralValue<int>(mortar, "LM_DUAL_CONSISTENT") == true
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") != INPAR::MORTAR::consistent_none
         && DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") != INPAR::CONTACT::solution_lagmult
         && DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") != INPAR::MORTAR::shape_standard)
       dserror("ERROR: Consistent dual shape functions in boundary elements only for Lagrange multiplier strategy.");
 
-    if (DRT::INPUT::IntegralValue<int>(mortar, "LM_DUAL_CONSISTENT") == true
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") != INPAR::MORTAR::consistent_none
         && DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") == INPAR::MORTAR::inttype_elements
         && (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") == INPAR::MORTAR::shape_dual))
       dserror( "ERROR: Consistent dual shape functions in boundary elements not for purely element-based integration.");
@@ -962,7 +957,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         && contact.get<double>("INITCONTACTGAPVALUE") == 0.0)
       dserror("ERROR: For initialization of init contact with gap, the INITCONTACTGAPVALUE is needed.");
 
-    if (DRT::INPUT::IntegralValue<int>(mortar, "LM_DUAL_CONSISTENT") == true
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ConsistentDualType>(mortar, "LM_DUAL_CONSISTENT") != INPAR::MORTAR::consistent_none
         && DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar,"LM_QUAD") != INPAR::MORTAR::lagmult_undefined
         && distype!="Nurbs")
       dserror("ERROR: Consistent dual shape functions in boundary elements only for linear shape functions or NURBS.");

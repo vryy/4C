@@ -1,14 +1,9 @@
 /*!----------------------------------------------------------------------
 \file mortar_coupling3d.H
 
-\brief Classes for mortar coupling in 3D.
+\maintainer Philipp Farah, Alexander Seitz
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Classes for mortar coupling in 3D.
 
 *-----------------------------------------------------------------------*/
 #ifndef MORTAR_COUPLING3D_H
@@ -763,7 +758,7 @@ protected:
   INPAR::MORTAR::IntType integrationtype_;              // integration type
   INPAR::MORTAR::ShapeFcn shapefcn_;                    // lm shape function type
   bool lmnodalscale_;                                   // flag indicating scaling of lm
-  bool lmdualconsistent_;                               // flag indicating dual consistent lm
+  INPAR::MORTAR::ConsistentDualType lmdualconsistent_;  // flag indicating dual consistent lm
   bool quad_;                                           // flag indicating coupling type (true = quadratic)
   Teuchos::ParameterList& imortar_;                     // containing contact input parameters
   MORTAR::MortarElement* sele_;                         // slave element

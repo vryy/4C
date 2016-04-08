@@ -68,7 +68,7 @@ PENALTYPARAM                    20000
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Standard
 LM_QUAD                         quad
-LM_DUAL_CONSISTENT              no
+LM_DUAL_CONSISTENT              none
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

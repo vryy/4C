@@ -32,7 +32,7 @@ TOLLAGR                         1e-04
 ----------------------------------------------------MORTAR COUPLING
 CROSSPOINTS                     No
 INTTYPE                         Elements
-LM_DUAL_CONSISTENT              No
+LM_DUAL_CONSISTENT              none
 MAX_BALANCE                     2
 MIN_ELEPROC                     0
 NUMGP_PER_DIM                   5

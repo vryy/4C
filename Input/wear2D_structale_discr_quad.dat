@@ -68,7 +68,7 @@ SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.5
 PARALLEL_REDIST                 dynamic//dynamic
 LM_QUAD                         quad
-LM_DUAL_CONSISTENT              no
+LM_DUAL_CONSISTENT              none
 -------------------------------------------------------------WEAR
 WEARLAW                         Archard
 WEARTYPE                        primvar

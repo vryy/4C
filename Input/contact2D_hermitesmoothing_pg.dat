@@ -76,7 +76,7 @@ SEARCH_PARAM                    0.3
 INTTYPE                         Elements
 NUMGP_PER_DIM                   3
 HERMITE_SMOOTHING               Yes
-LM_DUAL_CONSISTENT              No
+LM_DUAL_CONSISTENT              none
 PARALLEL_REDIST                 none
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

@@ -2,11 +2,8 @@
 /*!
 \file inpar_mortar.H
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\maintainer Philipp Farah, Alexander Seitz
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_MORTAR_H
@@ -118,6 +115,14 @@ namespace INPAR
     {
       triangulation_center,   ///< simpler center-based triangulation (see e.g. Popp et al. 2010)
       triangulation_delaunay  ///< delaunay triangulation
+    };
+
+    /// Determining, on which quadrature points biorthogonality is enforced
+    enum ConsistentDualType
+    {
+      consistent_none,                  ///< always use element GP (fastest option)
+      consistent_boundary,              ///< use triangulation GPs only in partially integrated elements
+      consistent_all,                   ///< use triangulation GPs for all elements
     };
 
     /// set the mortar parameters

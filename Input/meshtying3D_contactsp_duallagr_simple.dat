@@ -63,7 +63,7 @@ LM_SHAPEFCN                     Dual
 LM_QUAD                         quad
 INTTYPE                         elements
 NUMGP_PER_DIM                   7
-LM_DUAL_CONSISTENT              no
+LM_DUAL_CONSISTENT              none
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        10                            // output every so often, 0 no output

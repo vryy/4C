@@ -78,7 +78,7 @@ BEAMS_BTSOL             Yes
 LM_SHAPEFCN                     Standard
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    10.0
-LM_DUAL_CONSISTENT              no
+LM_DUAL_CONSISTENT              none
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff  YOUNG 2.0   NUE 0.3  DENS 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 10.0  NUE 0.0  DENS 1.0  THEXPANS 0.0

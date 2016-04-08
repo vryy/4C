@@ -49,7 +49,7 @@ SYSTEM               sp
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN           dual
 LM_QUAD               quad
-LM_DUAL_CONSISTENT    no
+LM_DUAL_CONSISTENT    none
 NUMGP_PER_DIM         16
 TRIANGULATION         Delaunay
 ----------------------------------------------------------SOLVER 1

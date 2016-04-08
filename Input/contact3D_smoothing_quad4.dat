@@ -72,7 +72,7 @@ SEARCH_PARAM         0.3
 INTTYPE              elements
 NUMGP_PER_DIM        3
 PARALLEL_REDIST      dynamic
-LM_DUAL_CONSISTENT   Yes
+LM_DUAL_CONSISTENT   boundary
 ----------------------------------------------------------SOLVER 1
 NAME                 Structure_Solver
 SOLVER               Superlu //UMFPACK

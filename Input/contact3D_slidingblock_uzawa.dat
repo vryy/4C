@@ -73,7 +73,7 @@ LM_SHAPEFCN                     Standard
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    2.0
 PARALLEL_REDIST                 Dynamic
-LM_DUAL_CONSISTENT              no
+LM_DUAL_CONSISTENT              none
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

@@ -69,7 +69,7 @@ STRATEGY                        Penalty
 PENALTYPARAM                    1.0e4
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Standard
-LM_DUAL_CONSISTENT              no
+LM_DUAL_CONSISTENT              none
 ---------------------------------------------------------------FLUID DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 -----------------------------------------------------------------TSI DYNAMIC
