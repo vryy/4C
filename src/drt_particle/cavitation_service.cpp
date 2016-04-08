@@ -290,7 +290,7 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
   double maxfluidfrac = 0.0;
   fluid_fraction->MaxValue(&maxfluidfrac);
   if(myrank_ == 0)
-    IO::cout << "minimum fluid fraction is: " << minfluidfrac << " and maximimum fluid fraction is: " << maxfluidfrac << IO::endl;
+    std::cout << std::setprecision(16) << "minimum fluid fraction is: " << minfluidfrac << " and maximimum fluid fraction is: " << maxfluidfrac << std::endl;
 
   // apply fluid fraction to fluid on element level for visualization purpose
   Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_)->SetFluidFraction(fluid_fraction);

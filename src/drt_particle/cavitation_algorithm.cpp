@@ -65,6 +65,7 @@ CAVITATION::Algorithm::Algorithm(
   ele_volume_(Teuchos::null),
   fluidfracn_(Teuchos::null),
   fluidfracnp_(Teuchos::null),
+  fluidfrac_relevant(false),
   computeradiusRPbased_((bool)DRT::INPUT::IntegralValue<int>(params,"COMPUTE_RADIUS_RP_BASED")),
   dtsub_(Teuchos::null),
   pg0_(Teuchos::null),
@@ -98,6 +99,23 @@ CAVITATION::Algorithm::Algorithm(
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
       Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(),fluidparams,"fluid",false));
   fluid_ = fluid->FluidField();
+
+  // decide if fluid fraction is relevant for the problem
+  switch (coupalgo_)
+  {
+  case INPAR::CAVITATION::TwoWayFull_strong:
+  case INPAR::CAVITATION::TwoWayFull_weak:
+  case INPAR::CAVITATION::VoidFracOnly:
+    fluidfrac_relevant = true;
+    break;
+  case INPAR::CAVITATION::OneWay:
+  case INPAR::CAVITATION::TwoWayMomentum:
+    fluidfrac_relevant = false;
+    break;
+  default:
+    dserror("add your problem type here");
+    break;
+  }
 
   // validate input file
 
@@ -791,9 +809,7 @@ void CAVITATION::Algorithm::InitCavitation()
   }
 
   // compute initial fluid fraction
-  if(coupalgo_ == INPAR::CAVITATION::TwoWayFull_weak ||
-      coupalgo_ == INPAR::CAVITATION::TwoWayFull_strong ||
-      coupalgo_ == INPAR::CAVITATION::VoidFracOnly)
+  if(fluidfrac_relevant)
   {
     fluidfracnp_ = LINALG::CreateVector(*fluiddis_->DofRowMap(), true);
     CalculateFluidFraction(particles_->Radius());
@@ -802,16 +818,6 @@ void CAVITATION::Algorithm::InitCavitation()
     fluidfracn_ = Teuchos::rcp(new Epetra_Vector(*fluidfracnp_));
     // set fluid fraction in fluid for computation
     SetFluidFraction();
-  }
-  else
-  {
-    // fluid fraction is assumed constant equal one
-    fluidfracnp_ = LINALG::CreateVector(*fluiddis_->DofRowMap(), false);
-    fluidfracnp_->PutScalar(1.0);
-    fluidfracn_ = Teuchos::rcp(new Epetra_Vector(*fluidfracnp_));
-    Teuchos::RCP<Epetra_Vector> fluidelefrac = Teuchos::rcp(new Epetra_Vector(*fluiddis_->ElementRowMap()));
-    // apply fluid fraction to fluid on element level for visualization purpose
-    Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_)->SetFluidFraction(fluidelefrac);
   }
 
   // determine consistent initial acceleration for the particles
@@ -2326,8 +2332,11 @@ void CAVITATION::Algorithm::Update(const bool converged)
   {
     fluid_->Update();
 
-    // update fluid fraction
-    fluidfracn_->Update(1.0,*fluidfracnp_,0.0);
+    if(fluidfrac_relevant)
+    {
+      // update fluid fraction
+      fluidfracn_->Update(1.0,*fluidfracnp_,0.0);
+    }
   }
 
   return;
@@ -2350,9 +2359,12 @@ void CAVITATION::Algorithm::ReadRestart(int restart)
   // correct time and step in algorithm base
   SetTimeStep(fluid_->Time(),restart);
 
-  // additionally read restart data for fluid fraction
-  IO::DiscretizationReader reader_fl(fluid_->Discretization(), restart);
-  reader_fl.ReadVector(fluidfracn_,"fluid_fraction");
+  if(fluidfrac_relevant)
+  {
+    // additionally read restart data for fluid fraction
+    IO::DiscretizationReader reader_fl(fluid_->Discretization(), restart);
+    reader_fl.ReadVector(fluidfracn_,"fluid_fraction");
+  }
 
   if(particles_->Radius()->GlobalLength() != 0)
   {
@@ -2523,7 +2535,10 @@ void CAVITATION::Algorithm::Output(bool forced_writerestart)
     if(Step()%uprestart == 0 && uprestart != 0)
     {
       dofluidrestart = true;
-      fluid_->DiscWriter()->WriteVector("fluid_fraction", fluidfracn_, IO::DiscretizationWriter::dofvector);
+      if(fluidfrac_relevant)
+      {
+        fluid_->DiscWriter()->WriteVector("fluid_fraction", fluidfracn_, IO::DiscretizationWriter::dofvector);
+      }
     }
   }
 
@@ -2616,24 +2631,14 @@ void CAVITATION::Algorithm::SubcyclingInfoToScreen()
 {
   if (myrank_ == 0)
   {
-    if(timestepsizeratio_<100)
+    const int writeevry = std::max(1,(int)(timestepsizeratio_/10));
+    if ( (particles_->Step()-restartparticles_)%writeevry == 0)
     {
       const int substep = (particles_->Step()-restartparticles_) % timestepsizeratio_;
       if(substep != 0)
-        IO::cout << "particle substep no. " << substep << IO::endl;
+        IO::cout << "particle substep no. " << substep << " / " << timestepsizeratio_ << IO::endl;
       else
-        IO::cout << "particle substep no. " << timestepsizeratio_ << IO::endl;
-    }
-    else
-    {
-      if ( (particles_->Step()-restartparticles_)%10 == 0)
-      {
-        const int substep = (particles_->Step()-restartparticles_) % timestepsizeratio_;
-        if(substep != 0)
-          IO::cout << "particle substep no. " << substep << IO::endl;
-        else
-          IO::cout << "particle substep no. " << timestepsizeratio_ << IO::endl;
-      }
+        IO::cout << "particle substep no. " << timestepsizeratio_ << " / " << timestepsizeratio_ << IO::endl;
     }
   }
   return;

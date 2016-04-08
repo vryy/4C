@@ -411,6 +411,8 @@ namespace CAVITATION
 
     Teuchos::RCP<Epetra_Vector> fluidfracnp_;   ///< fluid fraction in pressure dof of dofrowmap at t_n+1
 
+    bool fluidfrac_relevant;   ///< bool to check whether fluid fraction is considered in the problem type
+
     //@}
 
     //! @name Rayleigh-Plesset specific stuff for bubble radius variation
@@ -424,7 +426,12 @@ namespace CAVITATION
 
     //@}
 
+    //! @name performance related stuff
+    //@{
+
     int count_;   ///< counter for triggering particle transfer
+
+    //@}
 
     //! @name Aitken relaxation
 

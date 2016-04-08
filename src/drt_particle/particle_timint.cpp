@@ -1,14 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file particle_timint.cpp
+
 \brief Time integration for particle dynamics
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Georg Hammerl
 */
 /*----------------------------------------------------------------------*/
 
@@ -66,7 +62,7 @@ PARTICLE::TimInt::TimInt
   writeresultsevery_(particledynparams.get<int>("RESULTSEVRY")),
   writeenergyevery_(particledynparams.get<int>("RESEVRYERGY")),
   energyfile_(Teuchos::null),
-  writeorientation_(true),
+  writeorientation_(false),
   time_(Teuchos::null),
   timen_(0.0),
   dt_(Teuchos::null),

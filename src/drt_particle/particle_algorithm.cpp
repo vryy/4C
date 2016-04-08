@@ -160,8 +160,8 @@ void PARTICLE::Algorithm::Init(bool restarted)
   // setup pbcs after bins have been created
   BuildParticlePeriodicBC();
 
-  if(binrowmap->NumGlobalElements() > particlerowmap->NumGlobalElements() / 4.0)
-    IO::cout << "\n\n\n WARNING: Reduction of number of bins recommended!! Increase cutoff radius. \n\n\n" << IO::endl;
+  if(binrowmap->NumGlobalElements() > particlerowmap->NumGlobalElements() / 4.0 && myrank_ == 0)
+    IO::cout << "\n\n\n CAREFUL: Reduction of number of bins recommended! Performance might be deteriorated. Increase cutoff radius. \n\n\n" << IO::endl;
 
   //--------------------------------------------------------------------
   // -> 1) create a set of homeless particles that are not in a bin on this proc
@@ -1283,7 +1283,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> b
          ExtendGhosting(particlewalldis->ElementColMap(), rowelesinbin, dummy, bincolmap_);
 
      // extend ghosting (add nodes/elements) according to the new column layout
-     particlewalldis->ExtendedGhosting(*wallelecolmap,false, false, false, true);
+     particlewalldis->ExtendedGhosting(*wallelecolmap,false, false, false, false);
   }
   else  // ... or otherwise do fully redundant storage of wall elements in case of moving boundaries
   {

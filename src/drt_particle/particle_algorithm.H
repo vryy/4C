@@ -174,7 +174,8 @@ namespace PARTICLE
       );
 
     /// assign wall elements to bins
-    void AssignWallElesToBins();
+    virtual void AssignWallElesToBins();
+
 
     //! @name particle related stuff
     //@{
