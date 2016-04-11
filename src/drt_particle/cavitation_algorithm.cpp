@@ -821,6 +821,8 @@ void CAVITATION::Algorithm::InitCavitation()
   }
 
   // determine consistent initial acceleration for the particles
+  velgradn_ = FLD::UTILS::ProjectGradient(fluiddis_,fluid_->Veln(),false);
+  velgradnp_ = FLD::UTILS::ProjectGradient(fluiddis_,fluid_->Velnp(),false);
   CalculateAndApplyForcesToParticles();
   particles_->DetermineMassDampConsistAccel();
 
@@ -988,6 +990,61 @@ void CAVITATION::Algorithm::PrepareTimeStep()
 
 
 /*----------------------------------------------------------------------*
+ | set coupling states for force computation               ghamm 04/16  |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::SetCouplingStates(Teuchos::ParameterList& p)
+{
+  // find theta for linear interpolation in fluid time step
+  double theta = 1.0;
+  if((particles_->Step()-restartparticles_) % timestepsizeratio_ != 0)
+    theta = (double)((particles_->Step()-restartparticles_) % timestepsizeratio_) / (double)timestepsizeratio_;
+
+  // fluid velocity linearly interpolated between n and n+1 in case of subcycling
+  Teuchos::RCP<Epetra_Vector> vel = Teuchos::rcp(new Epetra_Vector(*fluid_->Velnp()));
+  if(theta != 1.0)
+    vel->Update(1.0-theta, *fluid_->Veln(), theta);
+
+  if(!simplebubbleforce_)
+  {
+    // no interpolation necessary in case no subcycling is applied
+    if(timestepsizeratio_ == 1)
+    {
+      // project velocity gradient of fluid to nodal level and store it in a ParameterList
+      FLD::UTILS::ProjectGradientAndSetParam(fluiddis_,p,vel,"velgradient",false);
+    }
+    else
+    {
+      // store veloctiy gradients in the first subcycling step
+      if((particles_->Step()-restartparticles_) % timestepsizeratio_ == 1)
+      {
+        velgradn_ = FLD::UTILS::ProjectGradient(fluiddis_,fluid_->Veln(),false);
+        velgradnp_ = FLD::UTILS::ProjectGradient(fluiddis_,fluid_->Velnp(),false);
+      }
+
+      // do linear interpolation in time
+      Teuchos::RCP<Epetra_MultiVector> velgrad = Teuchos::rcp(new Epetra_MultiVector(*velgradnp_));
+      velgrad->Update(1.0-theta, *velgradn_, theta);
+
+      fluiddis_->AddMultiVectorToParameterList(p,"velgradient",velgrad);
+
+      // clear the stored gradients after last subcycling step
+      if((particles_->Step()-restartparticles_) % timestepsizeratio_ == 0)
+      {
+        velgradn_ = Teuchos::null;
+        velgradnp_ = Teuchos::null;
+      }
+    }
+  }
+
+  // set fluid states here because states may have been cleared in gradient computation
+  fluiddis_->SetState("vel",vel);
+  fluiddis_->SetState("acc",fluid_->Accnp());
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | solve the current particle time step                    ghamm 11/12  |
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Integrate(bool& particlereset)
@@ -1092,28 +1149,11 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 {
   TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateAndApplyForcesToParticles");
 
+  // clear states in the beginning and set fluid states for proper coupling
   fluiddis_->ClearState();
   particledis_->ClearState();
-
-  double theta = 1.0;
-  if((particles_->Step()-restartparticles_) % timestepsizeratio_ != 0)
-    theta = (double)((particles_->Step()-restartparticles_) % timestepsizeratio_) / (double)timestepsizeratio_;
-
-  // fluid velocity linearly interpolated between n and n+1 in case of subcycling
-  Teuchos::RCP<Epetra_Vector> vel = Teuchos::rcp(new Epetra_Vector(*fluid_->Velnp()));
-  if(theta != 1.0)
-    vel->Update(1.0-theta, *fluid_->Veln(), theta);
-
   Teuchos::ParameterList p;
-  if(!simplebubbleforce_)
-  {
-    // project velocity gradient of fluid to nodal level and store it in a ParameterList
-    FLD::UTILS::ProjectGradientAndSetParam(fluiddis_,p,vel,"velgradient",false);
-  }
-
-  // set fluid states
-  fluiddis_->SetState("vel",vel);
-  fluiddis_->SetState("acc",fluid_->Accnp());
+  SetCouplingStates(p);
 
   // state at n+1 contains already dbc values due to PrepareTimeStep(), otherwise n = n+1
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispnp();

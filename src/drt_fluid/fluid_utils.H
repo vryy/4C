@@ -3,12 +3,10 @@
 \brief utility functions for fluid problems
 
 
-<pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
-             {krank,kronbichler}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15252/-235
-</pre>
+\maintainer Benjamin Krank & Martin Kronbichler
+            {krank,kronbichler}@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252/-235
 
 *----------------------------------------------------------------------*/
 
@@ -623,11 +621,26 @@ void WriteVolumeToFile(
   );
 
 /*!
-\brief Project gradient for reconstruction of second derivatives of residual, depends on time integrator used
+\brief Project gradient and store vector in param list
 
 */
-void ProjectGradientAndSetParam(Teuchos::RCP<DRT::Discretization> discret, Teuchos::ParameterList& eleparams, Teuchos::RCP<Epetra_Vector> vel, const std::string paraname, bool alefluid);
+void ProjectGradientAndSetParam(
+    Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::ParameterList& eleparams,
+    Teuchos::RCP<const Epetra_Vector> vel,
+    const std::string paraname,
+    bool alefluid
+    );
 
+/*!
+\brief Project velocity gradient, depends on time integrator used
+
+*/
+Teuchos::RCP<Epetra_MultiVector> ProjectGradient(
+    Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<const Epetra_Vector> vel,
+    bool alefluid
+    );
 
 /*!
   \brief integrate impulse rate over surfaces

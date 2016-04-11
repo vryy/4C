@@ -2,12 +2,10 @@
 \file fluid_utils.cpp
 \brief utility functions for fluid problems
 
-<pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
-             {krank,kronbichler}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15252/-235
-</pre>
+\maintainer Benjamin Krank & Martin Kronbichler
+            {krank,kronbichler}@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252/-235
 
 *----------------------------------------------------------------------*/
 
@@ -1273,37 +1271,65 @@ void FLD::UTILS::WriteDoublesToFile(
   }
 }
 
+
 /*----------------------------------------------------------------------*|
- | Set Eleparams for turbulence models                          bk 05/15 |
+ | project vel gradient and store it in given param list        bk 05/15 |
  *----------------------------------------------------------------------*/
 void FLD::UTILS::ProjectGradientAndSetParam(
   Teuchos::RCP<DRT::Discretization> discret,
   Teuchos::ParameterList& eleparams,
-  Teuchos::RCP<Epetra_Vector> vel,
+  Teuchos::RCP<const Epetra_Vector> vel,
   const std::string paraname,
   bool alefluid
   )
 {
+  // project gradient
+  Teuchos::RCP<Epetra_MultiVector> projected_velgrad = FLD::UTILS::ProjectGradient(
+    discret, vel, alefluid);
+
+  // store multi vector in parameter list after export to col layout
+  if(projected_velgrad != Teuchos::null)
+    discret->AddMultiVectorToParameterList(eleparams,paraname,projected_velgrad);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*|
+ | Project velocity gradient                                    bk 05/15 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::ProjectGradient(
+  Teuchos::RCP<DRT::Discretization> discret,
+  Teuchos::RCP<const Epetra_Vector> vel,
+  bool alefluid
+  )
+{
   //reconstruction of second derivatives for fluid residual
-  INPAR::FLUID::GradientReconstructionMethod recomethod = DRT::INPUT::IntegralValue<INPAR::FLUID::GradientReconstructionMethod>(DRT::Problem::Instance()->FluidDynamicParams(),"VELGRAD_PROJ_METHOD");
+  INPAR::FLUID::GradientReconstructionMethod recomethod =
+      DRT::INPUT::IntegralValue<INPAR::FLUID::GradientReconstructionMethod>(DRT::Problem::Instance()->FluidDynamicParams(),"VELGRAD_PROJ_METHOD");
 
   const int dim = DRT::Problem::Instance()->NDim();
   const int numvec = dim*dim;
   Teuchos::ParameterList params;
+  Teuchos::RCP<Epetra_MultiVector> projected_velgrad = Teuchos::null;
 
-    // dependent on the desired projection, just remove this line
-    if(not vel->Map().SameAs(*discret->DofRowMap()))
-      dserror("input map is not a dof row map of the fluid");
+  // dependent on the desired projection, just remove this line
+  if(not vel->Map().SameAs(*discret->DofRowMap()))
+    dserror("input map is not a dof row map of the fluid");
 
-  if(recomethod == INPAR::FLUID::gradreco_none)
-    ;//no projection and no parameter in parameter list
-  else if(recomethod == INPAR::FLUID::gradreco_spr)
+  switch (recomethod)
+  {
+  case INPAR::FLUID::gradreco_none:
+  {
+    // no projection and no parameter in parameter list
+  }
+  break;
+  case INPAR::FLUID::gradreco_spr:
   {
     if(alefluid)
-      dserror("ale fluid is currently not supported everywhere for superconvergent patch recovery, but it is easy to implement");
+         dserror("ale fluid is currently not supported everywhere for superconvergent patch recovery, but it is easy to implement");
     params.set<int>("action",FLD::calc_velgrad_ele_center);
-    // project velocity gradient of fluid to nodal level via superconvergent patch recovery and store it in a ParameterList
-    Teuchos::RCP<Epetra_MultiVector> projected_velgrad;
+    // project velocity gradient of fluid to nodal level via superconvergent patch recovery
     switch (dim)
     {
     case 3:
@@ -1319,9 +1345,9 @@ void FLD::UTILS::ProjectGradientAndSetParam(
       dserror("only 1/2/3D implementation available for superconvergent patch recovery");
       break;
     }
-    discret->AddMultiVectorToParameterList(eleparams,paraname,projected_velgrad);
   }
-  else if(recomethod == INPAR::FLUID::gradreco_l2)
+  break;
+  case INPAR::FLUID::gradreco_l2:
   {
     const int solvernumber = DRT::Problem::Instance()->FluidDynamicParams().get<int>("VELGRAD_PROJ_SOLVER");
     if(solvernumber<1)
@@ -1332,11 +1358,14 @@ void FLD::UTILS::ProjectGradientAndSetParam(
     discret->ClearState();
     discret->SetState("vel",vel);
 
-    // project velocity gradient of fluid to nodal level via L2 projection and store it in a ParameterList
-    Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
-        DRT::UTILS::ComputeNodalL2Projection(discret,"vel", numvec, params, solvernumber);
-    discret->AddMultiVectorToParameterList(eleparams,paraname,projected_velgrad);
+    // project velocity gradient of fluid to nodal level via L2 projection
+    projected_velgrad = DRT::UTILS::ComputeNodalL2Projection(discret,"vel", numvec, params, solvernumber);
+  }
+  break;
+  default:
+    dserror("desired projection method not available");
+    break;
   }
 
-  return;
+  return projected_velgrad;
 }

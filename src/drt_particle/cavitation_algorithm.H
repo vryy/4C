@@ -146,6 +146,11 @@ namespace CAVITATION
     /// prepare time step
     virtual void PrepareTimeStep();
 
+    /// set coupling states for force computation
+    virtual void SetCouplingStates(
+      Teuchos::ParameterList& p
+      );
+
     /// solve the current particle time step
     virtual void Integrate(bool& particlereset);
 
@@ -412,6 +417,10 @@ namespace CAVITATION
     Teuchos::RCP<Epetra_Vector> fluidfracnp_;   ///< fluid fraction in pressure dof of dofrowmap at t_n+1
 
     bool fluidfrac_relevant;   ///< bool to check whether fluid fraction is considered in the problem type
+
+    Teuchos::RCP<Epetra_MultiVector> velgradn_;   ///< velocity gradient at t_n
+
+    Teuchos::RCP<Epetra_MultiVector> velgradnp_;   ///< velocity gradient at t_n+1
 
     //@}
 
