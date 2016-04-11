@@ -688,7 +688,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_utils.cpp
  /*----------------------------------------------------------------------*
   |  locally extract a subset of values  (public)            mwgee 12/06|
   *----------------------------------------------------------------------*/
-@@ -221,857 +214,6 @@
+@@ -221,856 +214,6 @@
  }
  
  
@@ -787,7 +787,6 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_utils.cpp
 -    elematrix2.Shape(numnode,numvec);
 -
 -    // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
--//    actele->Evaluate(params,*dis,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
 -    int err = actele->Evaluate(params,*dis,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
 -    if (err) dserror("Element %d returned err=%d",actele->Id(),err);
 -
@@ -1069,7 +1068,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_utils.cpp
 -
 -    // Reshape element matrices and vectors and initialize to zero
 -    elevector1.Size(numvec);
--    elevector2.Size(dim);
+-    elevector2.Size(3);
 -
 -    // call the element specific evaluate method (elevec1 = velocity gradient, elevec2 = element centroid)
 -    actele->Evaluate(params,*dis,la[0].lm_,elematrix1,elematrix2,elevector1,elevector2,elevector3);
