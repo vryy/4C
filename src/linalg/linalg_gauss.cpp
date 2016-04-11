@@ -155,39 +155,39 @@ double gaussElimination(
 
 template
 double gaussElimination<true, 2>(
-  typename LINALG::Matrix<2, 2>   & A,  ///< (in)    : system matrix
-  typename LINALG::Matrix<2, 1>   & b,  ///< (in)    : right-hand-side
-  typename LINALG::Matrix<2, 1>   & x   ///< (out)   : solution vector
+  LINALG::Matrix<2, 2>   & A,  ///< (in)    : system matrix
+  LINALG::Matrix<2, 1>   & b,  ///< (in)    : right-hand-side
+  LINALG::Matrix<2, 1>   & x   ///< (out)   : solution vector
   );
 template
 double gaussElimination<false, 2>(
-  typename LINALG::Matrix<2, 2>   & A,  ///< (in)    : system matrix
-  typename LINALG::Matrix<2, 1>   & b,  ///< (in)    : right-hand-side
-  typename LINALG::Matrix<2, 1>   & x   ///< (out)   : solution vector
+  LINALG::Matrix<2, 2>   & A,  ///< (in)    : system matrix
+  LINALG::Matrix<2, 1>   & b,  ///< (in)    : right-hand-side
+  LINALG::Matrix<2, 1>   & x   ///< (out)   : solution vector
   );
 template
 double gaussElimination<true, 3>(
-  typename LINALG::Matrix<3, 3>   & A,  ///< (in)    : system matrix
-  typename LINALG::Matrix<3, 1>   & b,  ///< (in)    : right-hand-side
-  typename LINALG::Matrix<3, 1>   & x   ///< (out)   : solution vector
+  LINALG::Matrix<3, 3>   & A,  ///< (in)    : system matrix
+  LINALG::Matrix<3, 1>   & b,  ///< (in)    : right-hand-side
+  LINALG::Matrix<3, 1>   & x   ///< (out)   : solution vector
   );
 template
 double gaussElimination<false, 3>(
-  typename LINALG::Matrix<3, 3>   & A,  ///< (in)    : system matrix
-  typename LINALG::Matrix<3, 1>   & b,  ///< (in)    : right-hand-side
-  typename LINALG::Matrix<3, 1>   & x   ///< (out)   : solution vector
+  LINALG::Matrix<3, 3>   & A,  ///< (in)    : system matrix
+  LINALG::Matrix<3, 1>   & b,  ///< (in)    : right-hand-side
+  LINALG::Matrix<3, 1>   & x   ///< (out)   : solution vector
   );
 template
 double gaussElimination<true, 4>(
-  typename LINALG::Matrix<4, 4>   & A,  ///< (in)    : system matrix
-  typename LINALG::Matrix<4, 1>   & b,  ///< (in)    : right-hand-side
-  typename LINALG::Matrix<4, 1>   & x   ///< (out)   : solution vector
+  LINALG::Matrix<4, 4>   & A,  ///< (in)    : system matrix
+  LINALG::Matrix<4, 1>   & b,  ///< (in)    : right-hand-side
+  LINALG::Matrix<4, 1>   & x   ///< (out)   : solution vector
   );
 template
 double gaussElimination<false, 4>(
-  typename LINALG::Matrix<4, 4>   & A,  ///< (in)    : system matrix
-  typename LINALG::Matrix<4, 1>   & b,  ///< (in)    : right-hand-side
-  typename LINALG::Matrix<4, 1>   & x   ///< (out)   : solution vector
+  LINALG::Matrix<4, 4>   & A,  ///< (in)    : system matrix
+  LINALG::Matrix<4, 1>   & b,  ///< (in)    : right-hand-side
+  LINALG::Matrix<4, 1>   & x   ///< (out)   : solution vector
   );
 
 
@@ -239,21 +239,21 @@ double scaledGaussElimination(
 
 template
 double scaledGaussElimination<2>(
-  typename LINALG::Matrix<2, 2>   & A,  ///< (in)    : system matrix
-  typename LINALG::Matrix<2, 1>   & b,  ///< (in)    : right-hand-side
-  typename LINALG::Matrix<2, 1>   & x   ///< (out)   : solution vector
+  LINALG::Matrix<2, 2>   & A,  ///< (in)    : system matrix
+  LINALG::Matrix<2, 1>   & b,  ///< (in)    : right-hand-side
+  LINALG::Matrix<2, 1>   & x   ///< (out)   : solution vector
   );
 template
 double scaledGaussElimination<3>(
-  typename LINALG::Matrix<3, 3>   & A,  ///< (in)    : system matrix
-  typename LINALG::Matrix<3, 1>   & b,  ///< (in)    : right-hand-side
-  typename LINALG::Matrix<3, 1>   & x   ///< (out)   : solution vector
+  LINALG::Matrix<3, 3>   & A,  ///< (in)    : system matrix
+  LINALG::Matrix<3, 1>   & b,  ///< (in)    : right-hand-side
+  LINALG::Matrix<3, 1>   & x   ///< (out)   : solution vector
   );
 template
 double scaledGaussElimination<4>(
-  typename LINALG::Matrix<4, 4>   & A,  ///< (in)    : system matrix
-  typename LINALG::Matrix<4, 1>   & b,  ///< (in)    : right-hand-side
-  typename LINALG::Matrix<4, 1>   & x   ///< (out)   : solution vector
+  LINALG::Matrix<4, 4>   & A,  ///< (in)    : system matrix
+  LINALG::Matrix<4, 1>   & b,  ///< (in)    : right-hand-side
+  LINALG::Matrix<4, 1>   & x   ///< (out)   : solution vector
   );
 
 }
