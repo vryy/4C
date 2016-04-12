@@ -1,15 +1,12 @@
 /*!----------------------------------------------------------------------
 \file beam3k.H
 
+\maintainer Christoph Meier
+
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
+*----------------------------------------------------------------------*/
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15301
-</pre>
-
+/*
 3D nonlinear Kirchhoff-like beam element. It can be switched between a variant with weak enforcement of the Kirchhoff
 constraint and variant with strong enforcement of the Kirchhoff constraint. This variant with weak constraint enforcement is based
 on a rotation interpolation that is similar to beam3r. As the beam curve has to be C^1-continous, it is interpolated
@@ -32,8 +29,7 @@ rotation increments are multiplicative. Consequently, the inhomogeneous rotation
 can be interpreted as additive increments added to the initial values (i.e. if the initial value is zero, the
 Dirichlet values in the input file are the total nodal rotation angles). This is not true for beam3r,
 where prescribed 3D rotation values have no direct physical interpretation. For 2D rotations both variants are identical.
-*----------------------------------------------------------------------*/
-
+*/
 
 //header file only included if not yet included!
 #ifndef BEAM3K_H
@@ -236,7 +232,7 @@ public:
     *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
     *number of DOF to this node requested by any element connected to this node*/
 
-    int dofpn_aux=0.0;
+    int dofpn_aux=0;
 
     if (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id())
     {

@@ -1,14 +1,9 @@
 /*!----------------------------------------------------------------------
 \file statmech_utils.cpp
+
+\maintainer Kei Müller
+
 \brief management and auxiliary functions for statistical mechanics
-
-<pre>
-Maintainer: Kei Müller
-            mueller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
-
 *----------------------------------------------------------------------*/
 
 #include "statmech_manager.H"
@@ -291,26 +286,30 @@ void STATMECH::StatMechManager::PeriodicBoundaryBeam3rInit(DRT::Element* element
     }
   }
 
+  // only Lagrange (not Hermite) interpolation of beam centerline is used in StatMech applications so far, therefore second template parameter of SetUpReferenceGeometry is always vpernode=1 here
+  if (beam->HermiteCenterlineInterpolation())
+    dserror("beam3r: Hermite interpolation of the beam centerline is not implemented for Statmech applications yet!");
+
   switch(beam->NumNode())
   {
     case 2:
     {
-      beam->SetUpReferenceGeometry<2>(xrefe,rotrefe,true);
+      beam->SetUpReferenceGeometry<2,2,1>(xrefe,rotrefe,true);
       break;
     }
     case 3:
     {
-      beam->SetUpReferenceGeometry<3>(xrefe,rotrefe,true);
+      beam->SetUpReferenceGeometry<3,3,1>(xrefe,rotrefe,true);
       break;
     }
     case 4:
     {
-      beam->SetUpReferenceGeometry<4>(xrefe,rotrefe,true);
+      beam->SetUpReferenceGeometry<4,4,1>(xrefe,rotrefe,true);
       break;
     }
     case 5:
     {
-      beam->SetUpReferenceGeometry<5>(xrefe,rotrefe,true);
+      beam->SetUpReferenceGeometry<5,5,1>(xrefe,rotrefe,true);
       break;
     }
     default:

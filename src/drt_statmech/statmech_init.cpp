@@ -1,14 +1,9 @@
 /*!----------------------------------------------------------------------
 \file statmech_init.cpp
+
+\maintainer Kei Müller
+
 \brief intialize statistical mechanics problems
-
-<pre>
-Maintainer: Kei Müller
-            mueller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
-
 *----------------------------------------------------------------------*/
 
 #include "statmech_manager.H"
@@ -185,7 +180,7 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
   if(statmechparams_.get<double>("MAXRANDFORCE",-1.0)< 0.0 && statmechparams_.get<double>("MAXRANDFORCE",-1.0)!= -1.0)
     dserror("Choose a positive value for MAXRANDFORCE! Default value: -1.0 (no threshold for random forces!)");
 
-  switch(DRT::INPUT::IntegralValue<INPAR::STATMECH::LinkerModel>(statmechparams_, "FRICTION_MODEL"))
+  switch(DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechparams_, "FRICTION_MODEL"))
   {
     case INPAR::STATMECH::frictionmodel_isotropiclumped:
       if(!discret_->Comm().MyPID())

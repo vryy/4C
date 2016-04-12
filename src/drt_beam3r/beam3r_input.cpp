@@ -1,14 +1,9 @@
 /*!----------------------------------------------------------------------
 \file beam3r_input.cpp
-\brief
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
+\maintainer Christoph Meier
 
+\brief input related methods of 3D nonlinear Reissner beam element
 *----------------------------------------------------------------------*/
 
 #include "beam3r.H"
@@ -18,10 +13,25 @@ Maintainer: Christoph Meier
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
-                                         const std::string&          distype,
-                                         DRT::INPUT::LineDefinition* linedef)
+                                        const std::string&          distype,
+                                        DRT::INPUT::LineDefinition* linedef)
 {
-  // read number of material model
+  /* the triad field is discretized with Lagrange polynomials of order NumNode()-1;
+   * the centerline is either discretized in the same way or with 3rd order Hermite polynomials;
+   * we thus make a difference between nnodetriad and nnodecl;
+   * assumptions: nnodecl<=nnodetriad
+   * first nodes with local ID 0...nnodecl-1 are used for interpolation of centerline AND triad field*/
+  const int nnodetriad=NumNode();
+
+  if(linedef->HaveNamed("HERM2LIN2") or linedef->HaveNamed("HERM2LINE2") or
+      linedef->HaveNamed("HERM2LIN3") or linedef->HaveNamed("HERM2LINE3") or
+      linedef->HaveNamed("HERM2LIN4") or linedef->HaveNamed("HERM2LINE4") or
+      linedef->HaveNamed("HERM2LIN5") or linedef->HaveNamed("HERM2LINE5"))
+    centerline_hermite_=true;
+  else
+    centerline_hermite_=false;
+
+  // read number of material model and cross-section specs
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
@@ -36,33 +46,45 @@ bool DRT::ELEMENTS::Beam3r::ReadElement(const std::string&          eletype,
   linedef->ExtractDouble("IZZ",Izz_);
   linedef->ExtractDouble("IRR",Irr_);
 
-  linedef->ExtractDouble("IT",inertscaletrans_);
-  linedef->ExtractDouble("IR1",inertscalerot1_);
-  linedef->ExtractDouble("IR2",inertscalerot2_);
+  if(linedef->HaveNamed("IT"))
+    linedef->ExtractDouble("IT",inertscaletrans_);
+  else
+    inertscaletrans_=1.0;
 
-  //set nodal tridas according to input file
-  Qnew_.resize(NumNode());
-  Qold_.resize(NumNode());
-  Qconv_.resize(NumNode());
-  theta0_.resize(NumNode());
+  if(linedef->HaveNamed("IR1"))
+    linedef->ExtractDouble("IR1",inertscalerot1_);
+  else
+    inertscalerot1_=1.0;
 
-  // Attention! expression "TRIADS" in input file is misleading.
-  // The 3 specified values per node define a rotational pseudovector, which
-  // parameterizes the orientation of the triad at this node
-  // (relative to the global reference coordinate system)
-  // extract rotational pseudovectors at element nodes in reference configuration and save them as quaternions at each node, respectively
-  std::vector<double> triads;
-  linedef->ExtractDoubleVector("TRIADS",triads);
-    for(int i=0; i<NumNode(); i++)
-    {
-      for(int j=0; j<3; j++)
-        theta0_[i](j) = triads[3*i+j];
+  if(linedef->HaveNamed("IR2"))
+    linedef->ExtractDouble("IR2",inertscalerot2_);
+  else
+    inertscalerot2_=1.0;
 
-      LARGEROTATIONS::angletoquaternion(theta0_[i],Qnew_[i]);
-    }
+  // set nodal triads according to input file
+  Qnewnode_.resize(nnodetriad);
+  Qoldnode_.resize(nnodetriad);
+  Qconvnode_.resize(nnodetriad);
+  theta0node_.resize(nnodetriad);
 
-  Qold_  = Qnew_;
-  Qconv_ = Qnew_;
+  /* Attention! expression "TRIADS" in input file is misleading.
+   * The 3 specified values per node define a rotational pseudovector, which
+   * parameterizes the orientation of the triad at this node
+   * (relative to the global reference coordinate system)*/
+  /* extract rotational pseudovectors at element nodes in reference configuration
+   *  and save them as quaternions at each node, respectively*/
+  std::vector<double> nodal_rotvecs;
+  linedef->ExtractDoubleVector("TRIADS",nodal_rotvecs);
+  for(int i=0; i<nnodetriad; i++)
+  {
+    for(int j=0; j<3; j++)
+      theta0node_[i](j) = nodal_rotvecs[3*i+j];
+
+    LARGEROTATIONS::angletoquaternion(theta0node_[i],Qnewnode_[i]);
+  }
+
+  Qoldnode_ = Qnewnode_;
+  Qconvnode_ = Qnewnode_;
 
   return true;
 }
