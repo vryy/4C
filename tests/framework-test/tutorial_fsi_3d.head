@@ -456,8 +456,8 @@ LM_QUAD                         undefined
 CROSSPOINTS                     No
 //
 // If chosen consistent dual shape functions are calculated
-//     Yes,No,yes,no,YES,NO
-LM_DUAL_CONSISTENT              Yes
+//     none,boundary,all
+LM_DUAL_CONSISTENT              boundary
 //
 // If chosen a nodal scaling factor is calculated for each LM
 //     Yes,No,yes,no,YES,NO
