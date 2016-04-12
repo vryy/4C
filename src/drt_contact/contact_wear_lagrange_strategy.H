@@ -1,12 +1,7 @@
 /*!----------------------------------------------------------------------
 \file contact_wear_lagrange_strategy.H
 
-<pre>
-Maintainer: Philipp Farah
-            farah@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\maintainer Philipp Farah
 
 *----------------------------------------------------------------------*/
 
@@ -140,11 +135,8 @@ public:
   performed on the level of the contact algorithm, for short: here's the right place.
 
   */
-  void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,
-                      Teuchos::RCP<Epetra_Vector>& sliptoggle,
-                      Teuchos::RCP<Epetra_Vector>& weightedwear,
-                      Teuchos::RCP<Epetra_Vector>& realwear,
-                      bool forcedrestart = false);
+  void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
+      bool forcedrestart = false);
 
   /*!
   \brief Perform a write restart

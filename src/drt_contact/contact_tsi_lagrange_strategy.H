@@ -164,6 +164,30 @@ public:
    */
   void SetAlphafThermo(const Teuchos::ParameterList& tdyn);
 
+
+  /*!
+  \brief Perform a write restart
+
+  A write restart is initiated by the contact manager. However, the manager has no
+  direct access to the nodal quantities. Hence, a portion of the restart has to be
+  performed on the level of the contact algorithm, for short: here's the right place.
+
+  */
+  void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
+      bool forcedrestart = false);
+
+  /*!
+  \brief Perform a write restart
+
+  A write restart is initiated by the contact manager. However, the manager has no
+  direct access to the nodal quantities. Hence, all the restart action has to be
+  performed on the level of the contact algorithm, for short: here's the right place.
+
+  */
+  void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis);
+
+  void SetCoupling(Teuchos::RCP<ADAPTER::Coupling> coupST){coupST_=coupST;};
+
   //@}
 
   // residual and increment norms
@@ -200,6 +224,8 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> kts_a_;          // Part of coupling-stiffness  (kts) that corresponds to active slave rows
   Teuchos::RCP<Epetra_Vector>        rt_a_;           // Part of structural residual that corresponds to active slave rows
 
+  // pointer to TSI coupling object
+  Teuchos::RCP<ADAPTER::Coupling> coupST_;
 }; // class CoTSILagrangeStrategy
 } // namespace CONTACT
 

@@ -1,12 +1,7 @@
 /*!----------------------------------------------------------------------
 \file mortar_strategy_base.H
 
-<pre>
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Philipp Farah, Alexander Seitz
 
 *----------------------------------------------------------------------*/
 #ifndef MORTAR_STRATEGY_BASE_H
@@ -163,7 +158,7 @@ class StrategyBase
     virtual Teuchos::RCP<Epetra_Vector> ContactTanStress() = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> DMatrix() = 0;
     virtual void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis) = 0;
-    virtual void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,Teuchos::RCP<Epetra_Vector>& sliptoggle,Teuchos::RCP<Epetra_Vector>& weightedwear,Teuchos::RCP<Epetra_Vector>& realwear, bool forcedrestart = false) = 0;
+    virtual void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors, bool forcedrestart = false) = 0;
     virtual void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis) = 0;

@@ -1,12 +1,7 @@
 /*!----------------------------------------------------------------------
 \file contact_abstract_strategy.H
 
-<pre>
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Philipp Farah, Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 #ifndef CONTACT_STRATEGY_H
@@ -437,10 +432,8 @@ public:
    performed on the level of the contact algorithm, for short: here's the right place.
 
    */
-  void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,
-      Teuchos::RCP<Epetra_Vector>& sliptoggle,
-      Teuchos::RCP<Epetra_Vector>& weightedwear,
-      Teuchos::RCP<Epetra_Vector>& realwear, bool forcedrestart = false);
+  void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
+              bool forcedrestart = false);
 
   /*!
    \brief Perform a write restart

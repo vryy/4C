@@ -1231,47 +1231,24 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output,
     bool forcedrestart)
 {
   // quantities to be written for restart
-  Teuchos::RCP<Epetra_Vector> activetoggle;
-  Teuchos::RCP<Epetra_Vector> sliptoggle;
-  Teuchos::RCP<Epetra_Vector> weightedwear;
-  Teuchos::RCP<Epetra_Vector> realwear;
+  std::map<std::string,Teuchos::RCP<Epetra_Vector> > restart_vectors;
 
   // quantities to be written for restart
-  GetStrategy().DoWriteRestart(activetoggle, sliptoggle, weightedwear, realwear, forcedrestart);
+  GetStrategy().DoWriteRestart(restart_vectors, forcedrestart);
 
   // export restart information for contact to problem dof row map
   Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
   Teuchos::RCP<Epetra_Vector> lagrmultoldexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
   LINALG::Export(*(GetStrategy().LagrMultOld()), *lagrmultoldexp);
-  Teuchos::RCP<Epetra_Vector> activetoggleexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  LINALG::Export(*activetoggle, *activetoggleexp);
-
-  // write restart information for contact
   output.WriteVector("lagrmultold", lagrmultoldexp);
-  output.WriteVector("activetoggle", activetoggleexp);
 
-  // friction
-  if (GetStrategy().Friction())
+  // write all vectors specified by used strategy
+  for (std::map<std::string,Teuchos::RCP<Epetra_Vector> >::const_iterator p=restart_vectors.begin();
+      p!=restart_vectors.end();++p)
   {
-    Teuchos::RCP<Epetra_Vector> sliptoggleexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    LINALG::Export(*sliptoggle, *sliptoggleexp);
-    output.WriteVector("sliptoggle", sliptoggleexp);
-  }
-
-  // weighted wear
-  if (weightedwear != Teuchos::null)
-  {
-    Teuchos::RCP<Epetra_Vector> weightedwearexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    LINALG::Export(*weightedwear, *weightedwearexp);
-    output.WriteVector("weightedwear", weightedwearexp);
-  }
-
-  // unweighted  wear
-  if (realwear != Teuchos::null)
-  {
-    Teuchos::RCP<Epetra_Vector> realwearexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    LINALG::Export(*realwear, *realwearexp);
-    output.WriteVector("realwear", realwearexp);
+    Teuchos::RCP<Epetra_Vector> expVec = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+    LINALG::Export(*p->second,*expVec);
+    output.WriteVector(p->first,expVec);
   }
 
   return;

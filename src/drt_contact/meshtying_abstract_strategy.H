@@ -1,12 +1,7 @@
 /*!----------------------------------------------------------------------
 \file meshtying_abstract_strategy.H
 
-<pre>
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Philipp Farah, Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 #ifndef MESHTYING_ABSTRACT_STRATEGY_H
@@ -336,7 +331,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<Epetra_Vector> ContactTanStress() {return Teuchos::null;}
     void AssembleMortar() {}
     void InitBinStrategyforTimestep(Teuchos::RCP<Epetra_Vector> vel) {}
-    void DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle, Teuchos::RCP<Epetra_Vector>& sliptoggle, Teuchos::RCP<Epetra_Vector>& weightedwear,Teuchos::RCP<Epetra_Vector>& realwear, bool forcedrestart = false) {}
+    void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors, bool forcedrestart = false) {}
     void InitEvalInterface() {}
     void InitMortar() {}
     void Initialize() {}

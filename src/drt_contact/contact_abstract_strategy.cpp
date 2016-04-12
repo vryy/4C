@@ -1,12 +1,7 @@
 /*!----------------------------------------------------------------------
 \file contact_abstract_strategy.cpp
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Philipp Farah, Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 #include "Epetra_SerialComm.h"
@@ -1755,15 +1750,20 @@ void CONTACT::CoAbstractStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
  |  write restart information for contact                     popp 03/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::DoWriteRestart(
-    Teuchos::RCP<Epetra_Vector>& activetoggle,
-    Teuchos::RCP<Epetra_Vector>& sliptoggle,
-    Teuchos::RCP<Epetra_Vector>& weightedwear,
-    Teuchos::RCP<Epetra_Vector>& realwear, bool forcedrestart)
+    std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
+    bool forcedrestart)
 {
   // initalize
-  activetoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
+  Teuchos::RCP<Epetra_Vector> activetoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
+  Teuchos::RCP<Epetra_Vector> sliptoggle = Teuchos::null;
+
+  // write toggle
+  restart_vectors["activetoggle"]=activetoggle;
   if (friction_)
+  {
     sliptoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
+    restart_vectors["sliptoggle"]=sliptoggle;
+  }
 
   // loop over all interfaces
   for (int i = 0; i < (int) interface_.size(); ++i)

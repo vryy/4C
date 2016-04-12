@@ -1,12 +1,7 @@
 /*!----------------------------------------------------------------------
 \file contact_wear_lagrange_strategy.cpp
 
-<pre>
-Maintainer: Philipp Farah
-            farah@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\maintainer Philipp Farah
 
 *----------------------------------------------------------------------*/
 
@@ -4075,23 +4070,31 @@ void WEAR::WearLagrangeStrategy::OutputWear()
 /*----------------------------------------------------------------------*
  |  write restart information for contact                     popp 03/08|
  *----------------------------------------------------------------------*/
-void WEAR::WearLagrangeStrategy::DoWriteRestart(Teuchos::RCP<Epetra_Vector>& activetoggle,
-                                                 Teuchos::RCP<Epetra_Vector>& sliptoggle,
-                                                 Teuchos::RCP<Epetra_Vector>& weightedwear,
-                                                 Teuchos::RCP<Epetra_Vector>& realwear,
-                                                 bool forcedrestart)
+void WEAR::WearLagrangeStrategy::DoWriteRestart(
+    std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
+    bool forcedrestart)
 {
   //TODO: extend this function to forcedrestart -- write output for
   // last converged wear... see contact_lagrange_strategy.cpp!
 
   // initalize
-  activetoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
+  Teuchos::RCP<Epetra_Vector> activetoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
+  Teuchos::RCP<Epetra_Vector> sliptoggle, weightedwear,realwear;
+
+  // write toggle
+  restart_vectors["activetoggle"]=activetoggle;
   if (friction_)
+  {
     sliptoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
+    restart_vectors["sliptoggle"]=sliptoggle;
+  }
+
   if (weightedwear_)
   {
     weightedwear = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));   // weighted
+    restart_vectors["weightedwear"]=weightedwear;
     realwear = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));       // unweighted
+    restart_vectors["realwear"]=realwear;
   }
 
   // loop over all interfaces

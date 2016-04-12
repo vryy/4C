@@ -158,6 +158,7 @@ TSI::Monolithic::Monolithic(
     {
       cmtman_ = StructureField()->MeshtyingContactBridge()->ContactManager();
       dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).SetAlphafThermo(tdyn);
+      dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).SetCoupling(coupST_);
     }
 
 
@@ -2980,6 +2981,13 @@ void TSI::Monolithic::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector>
                                               Teuchos::RCP<const Epetra_Vector> temp_res)
 {
   TSI::Algorithm::ApplyThermoCouplingState(temp,temp_res);
+
+  // set new temperatures to contact
+  if (cmtman_!=Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> temp2 = coupST_()->SlaveToMaster(ThermoField()->Tempnp());
+    cmtman_->GetStrategy().SetState("temp",temp2);
+  }
 }  // ApplyThermoCouplingState()
 
 

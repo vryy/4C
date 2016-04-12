@@ -72,7 +72,8 @@ void CONTACT::CoTSILagrangeStrategy::SetState(const std::string& statename, cons
         std::vector<int> lm(1,node->Dofs()[0]);
 
         DRT::UTILS::ExtractMyValues(*global,mytemp,lm);
-        node->CoTSIData().Temp() = mytemp[0];
+        if (node->HasCoTSIData()) // in case the interface has not been initialized yet
+          node->CoTSIData().Temp() = mytemp[0];
       }
     }
   }
@@ -960,4 +961,31 @@ void CONTACT::CoTSILagrangeStrategy::SetAlphafThermo(const Teuchos::ParameterLis
     dserror("unknown thermal time integration type");
   }
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  write restart information for contact                     popp 03/08|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoTSILagrangeStrategy::DoWriteRestart(
+    std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
+    bool forcedrestart)
+{
+  CONTACT::CoAbstractStrategy::DoWriteRestart(restart_vectors,forcedrestart);
+
+  restart_vectors["last_contact_force"]=fscn_;
+  restart_vectors["last_thermo_force"]=coupST_->SlaveToMaster(ftcn_);
+}
+
+void CONTACT::CoTSILagrangeStrategy::DoReadRestart(IO::DiscretizationReader& reader,
+                                                Teuchos::RCP<Epetra_Vector> dis)
+{
+  CONTACT::CoAbstractStrategy::DoReadRestart(reader,dis);
+
+  fscn_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  reader.ReadVector(fscn_, "last_contact_force");
+
+  Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  reader.ReadVector(tmp,"last_thermo_force");
+  ftcn_=coupST_->MasterToSlave(tmp);
 }
