@@ -440,6 +440,13 @@ namespace CAVITATION
 
     int count_;   ///< counter for triggering particle transfer
 
+    struct UnderlyingEle{
+      DRT::Element* ele;
+      LINALG::Matrix<3,1> elecoord;
+    };
+
+    std::vector<UnderlyingEle> underlyingelecache_;   ///< temporary storage for underlying fluid element
+
     //@}
 
     //! @name Aitken relaxation

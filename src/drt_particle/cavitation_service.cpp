@@ -1292,6 +1292,15 @@ bool CAVITATION::Algorithm::ComputePressureAtBubblePosition(
   static LINALG::Matrix<3,1> elecoord(false);
   DRT::Element* targetfluidele = GetEleCoordinatesFromPosition(particleposition, currbin, elecoord, approxelecoordsinit_);
 
+  // fill cache for force computation
+  const size_t i   = currparticle->LID();
+  if(underlyingelecache_.size() > i)
+  {
+    UnderlyingEle& e = underlyingelecache_[i];
+    e.ele = targetfluidele;
+    e.elecoord = elecoord;
+  }
+
   if(targetfluidele == NULL)
   {
     std::cout << "WARNING: pressure for bubble (id: " << currparticle->Id() << " ) could not be computed at position: "

@@ -1230,10 +1230,22 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
     if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
-    DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+    DRT::MESHFREE::MeshfreeMultiBin* currbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
 
     static LINALG::Matrix<3,1> elecoord(false);
-    DRT::Element* targetfluidele = GetEleCoordinatesFromPosition(particleposition, currbin, elecoord, approxelecoordsinit_);
+    DRT::Element* targetfluidele = NULL;
+
+    // use cache for underlying fluid element and elecoords if possible
+    if(underlyingelecache_.empty())
+    {
+      targetfluidele = GetEleCoordinatesFromPosition(particleposition, currbin, elecoord, approxelecoordsinit_);
+    }
+    else
+    {
+      UnderlyingEle& e = underlyingelecache_[currparticle->LID()];
+      targetfluidele = e.ele;
+      elecoord = e.elecoord;
+    }
 
     //--------------------------------------------------------------------
     // 2nd step: forces on this bubble are calculated
@@ -1677,6 +1689,9 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
     break;
   }
 
+  // clear cache with underlying fluid element data
+  underlyingelecache_.clear();
+
   return;
 }
 
@@ -1686,6 +1701,10 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::ComputeRadius()
 {
+  // setup cache for underlying fluid elements and elecoords for later force computation
+  // note: lid corresponding to nodal col map is used for addressing entries!
+  underlyingelecache_.resize(particledis_->NodeColMap()->NumMyElements());
+
   // unit conversion for integrating bubble radius in order to account for
   // fast changes of small bubbles
   // --> TODO: are these units general enough?
@@ -1704,7 +1723,7 @@ void CAVITATION::Algorithm::ComputeRadius()
   const double dt_max = particles_->Dt()*0.3*TIMESCALE;
 
   // get needed variables for RP equation for all particles
-  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispn();
+  Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispnp();
   Teuchos::RCP<const Epetra_Vector> bubbleradius0 = particles_->Radius0();
   Teuchos::RCP<Epetra_Vector> bubbleradiusn = particles_->WriteAccessRadius();
   Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDot();
