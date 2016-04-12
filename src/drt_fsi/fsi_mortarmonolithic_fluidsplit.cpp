@@ -291,6 +291,22 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     }
     notsetup_ = false;
   }
+
+  // NOTE: if we restart from an part. fsi problem we still have to read lambda_. But since this requires coupsf_
+  // in order to map the nodal fluid forces on the structure nodes we have to do it e.g. in here. But:
+  // TODO: Move this to ReadRestart() when possible
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
+  {
+    const bool restartfrompartfsi = DRT::INPUT::IntegralValue<bool>(timeparams_,"RESTART_FROM_PART_FSI");
+    if( restartfrompartfsi ) //restart from part. fsi
+    {
+      if (comm_.MyPID() == 0)
+        std::cout<<"Warning: RESTART_FROM_PART_FSI for mortar fsi is not jet implemented. For now lambda_ is simply assumed to be zero!"<<std::endl;
+
+      //mortar business still has to be done here..
+    }
+  }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1595,6 +1611,8 @@ void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
   FluidField()->ReadRestart(step);
 
   // read Lagrange multiplier
+  const bool restartfrompartfsi = DRT::INPUT::IntegralValue<bool>(timeparams_,"RESTART_FROM_PART_FSI");
+  if( not restartfrompartfsi ) //standard restart
   {
     Teuchos::RCP<Epetra_Vector> lambdafull = Teuchos::rcp(
         new Epetra_Vector(*FluidField()->DofRowMap(), true));

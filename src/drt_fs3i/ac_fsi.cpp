@@ -73,10 +73,10 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
   const Teuchos::ParameterList& fs3idynpart = fs3idyn.sublist("PARTITIONED");
   const Teuchos::ParameterList& fs3idynac = fs3idyn.sublist("AC");
 
-  if ( fs3idyn.get<int>("RESULTSEVRY") != 1 )
-    dserror("If you want the fsi problem to be periodically repeated from some point, you have to have RESULTSEVRY set to 1!");
-  if ( fs3idyn.get<int>("RESTARTEVRY") != 1 )
-    dserror("If you want the fsi problem to be periodically repeated from some point, you have to have RESTARTEVRY set to 1!");
+  // if ( fs3idyn.get<int>("RESULTSEVRY") != 1 )
+  //   dserror("If you want the fsi problem to be periodically repeated from some point, you have to have RESULTSEVRY set to 1!");
+  // if ( fs3idyn.get<int>("RESTARTEVRY") != 1 )
+  //   dserror("If you want the fsi problem to be periodically repeated from some point, you have to have RESTARTEVRY set to 1!");
 
   if ( fsiperiod_ <= 1e-14 )
     dserror("You need to specify the PERIODICITY. If you don't want that change your PROBLEMTYPE to gas_fluid_structure_interaction!");
@@ -135,25 +135,19 @@ FS3I::ACFSI::ACFSI(const Epetra_Comm& comm)
  *----------------------------------------------------------------------*/
 void FS3I::ACFSI::ReadRestart()
 {
-  // read restart information, set vectors and variables
-  // (Note that dofmaps might have changed in a redistribution call!)
+  //standard restart business
+  PartFS3I::ReadRestart();
+
+  //AC specific restart stuff
   const int restart = DRT::Problem::Instance()->Restart();
 
   if (restart)
   {
-    const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC");
+    const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams();
     const bool restartfrompartfsi = DRT::INPUT::IntegralValue<int>(fs3idynac,"RESTART_FROM_PART_FSI");
 
     if (not restartfrompartfsi) //standard restart
     {
-      fsi_->ReadRestart(restart);
-
-      for (unsigned i=0; i<scatravec_.size(); ++i)
-      {
-        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-        currscatra->ScaTraField()->ReadRestart(restart);
-      }
-
       IO::DiscretizationReader fluidreader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),restart);
       meanmanager_->ReadRestart(fluidreader);
 
@@ -174,46 +168,10 @@ void FS3I::ACFSI::ReadRestart()
     }
     else //we do not want to read the scatras values and the lagrange multiplyer, since we start from a partitioned FSI
     {
-      //restart FSI problem
-      fsi_->StructureField()->ReadRestart(restart);
-      fsi_->FluidField()->ReadRestart(restart);
-
-      fsi_->AleField()->ReadRestart(restart);
-
-      fsi_->SetTimeStep(fsi_->FluidField()->Time(),fsi_->FluidField()->Step());
-
       //AC-FSI specific input
       IO::DiscretizationReader reader = IO::DiscretizationReader(fsi_->FluidField()->Discretization(),restart);
       reader.ReadVector(WallShearStress_lp_, "wss");
-
-      // We may want to calculate the initial time deriv, since the scatra field is new.
-      // This has to be done before setting the step in the scatra fields, because step_ it needs to be zero.
-      const Teuchos::ParameterList& scatradynparams = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-      const bool skiptimederiv = DRT::INPUT::IntegralValue<int>(scatradynparams,"SKIPINITDER");
-
-      if (not skiptimederiv)
-      {
-        SetMeshDisp();
-        SetVelocityFields();
-        //SetWallShearStresses(); //Note: We can not do this since we don't have trueresidual_ in the fluid discretisation
-
-        for (unsigned i=0; i<scatravec_.size(); ++i)
-        {
-          Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-          currscatra->ScaTraField()->PrepareFirstTimeStep();
-        }
-      }
-
-      //we need to set time and step in scatra to have it matching with the fsi ones
-      for (unsigned i=0; i<scatravec_.size(); ++i)
-      {
-        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-        currscatra->ScaTraField()->SetTimeStep(fsi_->FluidField()->Time(),fsi_->FluidField()->Step());
-      }
     }
-
-    time_ = fsi_->FluidField()->Time();
-    step_ = fsi_->FluidField()->Step();
 
     //recover IsPeriodic flags by recalculating them
     IsFsiPeriodic();

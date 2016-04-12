@@ -6,11 +6,9 @@
        solution approaches to one -or two-way-coupled problem
        configurations, respectively
 
-<pre>
-Maintainers: Lena Yoshihara & Volker Gravemeier
+\maintainer Lena Yoshihara & Volker Gravemeier
              {yoshihara,vgravem}@lnm.mw.tum.de
              089/289-15303,-15245
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -275,19 +273,56 @@ void FS3I::PartFS3I::ReadRestart()
   // read restart information, set vectors and variables
   // (Note that dofmaps might have changed in a redistribution call!)
   const int restart = DRT::Problem::Instance()->Restart();
+
   if (restart)
   {
-    fsi_->ReadRestart(restart);
+    const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams();
+    const bool restartfrompartfsi = DRT::INPUT::IntegralValue<int>(fs3idynac,"RESTART_FROM_PART_FSI");
 
-    for (unsigned i=0; i<scatravec_.size(); ++i)
+    if (not restartfrompartfsi) //standard restart
     {
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-      currscatra->ScaTraField()->ReadRestart(restart);
+      fsi_->ReadRestart(restart);
+
+      for (unsigned i=0; i<scatravec_.size(); ++i)
+      {
+        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
+        currscatra->ScaTraField()->ReadRestart(restart);
+      }
+    }
+    else //we do not want to read the scatras values and the lagrange multiplyer, since we start from a partitioned FSI
+    {
+      fsi_->ReadRestart(restart);
+
+      // We may want to calculate the initial time deriv, since the scatra field is new.
+      // This has to be done before setting the step in the scatra fields, because step_ it needs to be zero.
+      const Teuchos::ParameterList& scatradynparams = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+      const bool skiptimederiv = DRT::INPUT::IntegralValue<int>(scatradynparams,"SKIPINITDER");
+
+      if (not skiptimederiv)
+      {
+        SetMeshDisp();
+        SetVelocityFields();
+        //SetWallShearStresses(); //Note: We can not do this since we don't have trueresidual_ in the fluid discretisation
+
+        for (unsigned i=0; i<scatravec_.size(); ++i)
+        {
+          Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
+          currscatra->ScaTraField()->PrepareFirstTimeStep();
+        }
+      }
+
+      //we need to set time and step in scatra to have it matching with the fsi ones
+      for (unsigned i=0; i<scatravec_.size(); ++i)
+      {
+        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
+        currscatra->ScaTraField()->SetTimeStep(fsi_->FluidField()->Time(),fsi_->FluidField()->Step());
+      }
     }
 
     time_ = fsi_->FluidField()->Time();
     step_ = fsi_->FluidField()->Step();
   }
+
 }
 
 

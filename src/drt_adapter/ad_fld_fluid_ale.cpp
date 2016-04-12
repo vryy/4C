@@ -2,13 +2,11 @@
 /*!
 \file ad_fld_fluid_ale.cpp
 
-\brief
+\brief Solver for fluid field on a moving ALE mesh
 
-<pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289 10362
-</pre>
 */
 /*----------------------------------------------------------------------------*/
 #include "../drt_lib/drt_globalproblem.H"
@@ -23,10 +21,13 @@ Maintainer: Matthias Mayr
 #include "adapter_coupling_volmortar.H"
 #include "../drt_inpar/inpar_fsi.H"
 
+#include "../drt_io/io.H"
+
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
-                            std::string condname)
+                            std::string condname):
+  timeparams_(prbdyn)
 {
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
       Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",true,false));
@@ -147,6 +148,20 @@ void ADAPTER::FluidAle::Update()
 void ADAPTER::FluidAle::Output()
 {
   FluidField()->StatisticsAndOutput();
+
+  {
+    //we want to be able to restart monolithicaly from an partitioned fsi scheme
+    const int uprestart = timeparams_.get<int>("RESTARTEVRY");
+    const int upres = timeparams_.get<int>("RESULTSEVRY");
+
+    if ((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
+    {
+      Teuchos::RCP<Epetra_Vector> lambda = FluidField()->ExtractInterfaceForces();
+      Teuchos::RCP<Epetra_Vector> lambdafull = FluidField()->Interface()->InsertFSICondVector(lambda);
+      FluidField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
+    }
+  }
+
   AleField()->Output();
 }
 

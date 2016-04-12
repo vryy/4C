@@ -60,6 +60,7 @@ LINEAR_SOLVER2                  6                             // ScaTra STRUCT s
 STRUCTSCAL_INITIALFIELD         field_by_function
 STRUCTSCAL_INITFUNCNO           3
 STRUCTSCAL_SCATRATYPE           Advanced_Reaction //ConvectionDiffusion //
+RESTART_FROM_PART_FSI           yes
 ----------------------------------------------------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no
@@ -81,7 +82,6 @@ FLUID_SCATRA_REL_TOL            3.0e-1
 GROWTH_UPDATES                  1
 FSI_UPDATE_TOL                  1.0e-3
 LARGE_TIMESCALE_TIMESTEP        60.0
-RESTART_FROM_PART_FSI           yes
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 CALCERROR                       No
 CONVFORM                        conservative

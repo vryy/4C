@@ -43,8 +43,8 @@ FLD::TimIntAC::~TimIntAC()
  *----------------------------------------------------------------------*/
 void FLD::TimIntAC::ReadRestart(int step)
 {
-  const Teuchos::ParameterList& fs3idynac = DRT::Problem::Instance()->FS3IDynamicParams().sublist("AC");
-  const bool restartfrompartfsi = DRT::INPUT::IntegralValue<int>(fs3idynac,"RESTART_FROM_PART_FSI");
+  const Teuchos::ParameterList& fs3idyn = DRT::Problem::Instance()->FS3IDynamicParams();
+  const bool restartfrompartfsi = DRT::INPUT::IntegralValue<int>(fs3idyn,"RESTART_FROM_PART_FSI");
 
   if (not restartfrompartfsi) //standard restart
   {
@@ -64,7 +64,7 @@ void FLD::TimIntAC::Output()
   FluidImplicitTimeInt::Output();
 
   // output of solution
-  if (step_%upres_ == 0 or (uprestart_ > 0 and step_%uprestart_ == 0) )
+  if ( uprestart_ > 0 and step_%uprestart_ == 0 )
   {
     output_->WriteVector("trueresidual", trueresidual_);
   }

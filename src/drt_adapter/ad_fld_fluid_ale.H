@@ -4,11 +4,9 @@
 
 \brief Solver for fluid field on a moving ALE mesh
 
-<pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
-</pre>
 */
 /*----------------------------------------------------------------------------*/
 
@@ -137,6 +135,9 @@ namespace ADAPTER
 
     /// problem-specific ALE-wrapper
     Teuchos::RCP<ADAPTER::AleFluidWrapper> ale_;
+
+    /// problem specific time parameter list
+    const Teuchos::ParameterList& timeparams_;
 
   };
 

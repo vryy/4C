@@ -4,11 +4,9 @@
 
 \brief Input parameters for fs3i
 
-<pre>
-Maintainer: Thon Moritz
+\maintainer Thon Moritz
             thon@mhpc.mw.tum.de
             089 - 289-10364
-</pre>
 */
 
 /*----------------------------------------------------------------------*/
@@ -126,6 +124,9 @@ void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                  INPAR::SCATRA::impltype_chemoreac),
                                  &fs3idyn);
 
+  //Restart from FSI instead of FS3I
+  BoolParameter("RESTART_FROM_PART_FSI","No","restart from partitioned fsi problem (e.g. from prestress calculations) instead of fs3i",&fs3idyn);
+
   /*----------------------------------------------------------------------*/
   /* parameters for partitioned FS3I */
   /*----------------------------------------------------------------------*/
@@ -198,7 +199,4 @@ void INPAR::FS3I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // time step of the large time scale
   DoubleParameter("LARGE_TIMESCALE_TIMESTEP",-1.0,"time step of the large time scale",&fs3idynac);
-
-  //Restart from FSI instead of FS3I
-  BoolParameter("RESTART_FROM_PART_FSI","no","restart from partitioned fsi problem (e.g. from prestress calculations) instead of fs3i",&fs3idynac);
 }

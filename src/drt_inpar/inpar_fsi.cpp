@@ -96,6 +96,10 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   IntParameter("RESTARTEVRY", 1, "Increment for writing restart", &fsidyn);
 
+  BoolParameter("RESTART_FROM_PART_FSI", "No",
+      "restart from partitioned fsi (e.g. from prestress calculations) instead of monolithic fsi",
+        &fsidyn);
+
   BoolParameter("SECONDORDER", "No",
       "Second order displacement-velocity conversion at the interface.",
       &fsidyn);

@@ -5,11 +5,9 @@
 \brief Solve FSI problem with matching grids using a monolithic scheme
 with condensed structure interface displacements
 
-<pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
-</pre>
 */
 
 /*----------------------------------------------------------------------*/
@@ -214,6 +212,27 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   }
 
   CreateSystemMatrix();
+
+  // NOTE: if we restart from an part. fsi problem we still have to read lambda_. But since this requires coupsf_
+  // in order to map the nodal fluid forces on the structure nodes we have to do it e.g. in here. But:
+  // TODO: Move this to ReadRestart() when possible
+  const int restart = DRT::Problem::Instance()->Restart();
+  if (restart)
+  {
+    const bool restartfrompartfsi = DRT::INPUT::IntegralValue<bool>(timeparams_,"RESTART_FROM_PART_FSI");
+    if( restartfrompartfsi ) //restart from part. fsi
+    {
+      Teuchos::RCP<Epetra_Vector> lambdafullfluid = Teuchos::rcp(new Epetra_Vector(*FluidField()->DofRowMap(),true));
+      IO::DiscretizationReader reader = IO::DiscretizationReader(FluidField()->Discretization(),restart);
+      reader.ReadVector(lambdafullfluid, "fsilambda");
+
+      Teuchos::RCP<Epetra_Vector> lambdafluid = Teuchos::rcp(new Epetra_Vector(*FluidField()->Interface()->FullMap(),true));
+      lambdafluid = FluidField()->Interface()->ExtractFSICondVector(lambdafullfluid);
+
+      lambda_ = FluidToStruct(lambdafluid);
+    }
+  }
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -1294,7 +1313,10 @@ void FSI::MonolithicStructureSplit::OutputLambda()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicStructureSplit::ReadRestart(int step)
 {
+  const bool restartfrompartfsi = DRT::INPUT::IntegralValue<bool>(timeparams_,"RESTART_FROM_PART_FSI");
+
   // read Lagrange multiplier
+  if( not restartfrompartfsi ) //standard restart
   {
     Teuchos::RCP<Epetra_Vector> lambdafull = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(),true));
     IO::DiscretizationReader reader = IO::DiscretizationReader(StructureField()->Discretization(),step);
