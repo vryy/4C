@@ -1,13 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_hex8_evaluate.cpp
-\brief
 
-<pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15240
-</pre>
+\maintainer Moritz Frenzel
 
 *----------------------------------------------------------------------*/
 
@@ -41,6 +35,7 @@ Maintainer: Moritz Frenzel
 #include "prestress.H"
 
 #include "../drt_fluid_ele/fluid_ele_parameter_timint.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 #include "so3_defines.H"
 
@@ -56,6 +51,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
                                     Epetra_SerialDenseVector& elevec2_epetra,
                                     Epetra_SerialDenseVector& elevec3_epetra)
 {
+  SetParamsInterfacePtr(params);
+
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat1(elemat1_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> elemat2(elemat2_epetra.A(),true);
   LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
@@ -63,41 +60,47 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
   LINALG::Matrix<NUMDOF_SOH8,1> elevec3(elevec3_epetra.A(),true);
 
   // start with "none"
-  DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
+  ELEMENTS::ActionType act = ELEMENTS::none;
 
-  // get the required action
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff")                        act = So_hex8::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff")                        act = So_hex8::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce")                   act = So_hex8::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass")                    act = So_hex8::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass")                    act = So_hex8::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass")                   act = So_hex8::calc_struct_nlnstifflmass;
-  else if (action=="calc_struct_nlnstiff_gemm")                   act = So_hex8::calc_struct_nlnstiff_gemm;
-  else if (action=="calc_struct_stress")                          act = So_hex8::calc_struct_stress;
-  else if (action=="calc_struct_eleload")                         act = So_hex8::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload")                         act = So_hex8::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep")                    act = So_hex8::calc_struct_update_istep;
-  else if (action=="calc_struct_reset_istep")                     act = So_hex8::calc_struct_reset_istep;
-  else if (action=="calc_struct_store_istep")                     act = So_hex8::calc_struct_store_istep;
-  else if (action=="calc_struct_recover_istep")                   act = So_hex8::calc_struct_recover_istep;
-  else if (action=="calc_struct_reset_all")                       act = So_hex8::calc_struct_reset_all;
-  else if (action=="calc_struct_energy")                          act = So_hex8::calc_struct_energy;
-  else if (action=="calc_struct_errornorms")                      act = So_hex8::calc_struct_errornorms;
-  else if (action=="multi_eas_init")                              act = So_hex8::multi_eas_init;
-  else if (action=="multi_eas_set")                               act = So_hex8::multi_eas_set;
-  else if (action=="multi_readrestart")                           act = So_hex8::multi_readrestart;
-  else if (action=="multi_calc_dens")                             act = So_hex8::multi_calc_dens;
-  else if (action=="postprocess_stress")                          act = So_hex8::postprocess_stress;
-  else if (action=="calc_potential_stiff")                        act = So_hex8::calc_potential_stiff;
-  else if (action=="calc_struct_prestress_update")                act = So_hex8::prestress_update;
-  else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
-  else if (action=="calc_struct_inversedesign_switch")            act = So_hex8::inversedesign_switch;
-  else if (action=="calc_global_gpstresses_map")                  act = So_hex8::calc_global_gpstresses_map;
-  else if (action=="interpolate_velocity_to_given_point")         act = So_hex8::interpolate_velocity_to_point;
-  else dserror("Unknown type of action for So_hex8: %s", action.c_str());
-
+  if (IsParamsInterface())
+  {
+    act = ParamsInterface().GetActionType();
+  }
+  else
+  {
+    // get the required action
+    std::string action = params.get<std::string>("action","none");
+    if (action == "none") dserror("No action supplied");
+    else if (action=="calc_struct_linstiff")                        act = ELEMENTS::struct_calc_linstiff;
+    else if (action=="calc_struct_nlnstiff")                        act = ELEMENTS::struct_calc_nlnstiff;
+    else if (action=="calc_struct_internalforce")                   act = ELEMENTS::struct_calc_internalforce;
+    else if (action=="calc_struct_linstiffmass")                    act = ELEMENTS::struct_calc_linstiffmass;
+    else if (action=="calc_struct_nlnstiffmass")                    act = ELEMENTS::struct_calc_nlnstiffmass;
+    else if (action=="calc_struct_nlnstifflmass")                   act = ELEMENTS::struct_calc_nlnstifflmass;
+    else if (action=="calc_struct_nlnstiff_gemm")                   act = ELEMENTS::struct_calc_nlnstiff_gemm;
+    else if (action=="calc_struct_stress")                          act = ELEMENTS::struct_calc_stress;
+    else if (action=="calc_struct_eleload")                         act = ELEMENTS::struct_calc_eleload;
+    else if (action=="calc_struct_fsiload")                         act = ELEMENTS::struct_calc_fsiload;
+    else if (action=="calc_struct_update_istep")                    act = ELEMENTS::struct_calc_update_istep;
+    else if (action=="calc_struct_reset_istep")                     act = ELEMENTS::struct_calc_reset_istep;
+    else if (action=="calc_struct_store_istep")                     act = ELEMENTS::struct_calc_store_istep;
+    else if (action=="calc_struct_recover_istep")                   act = ELEMENTS::struct_calc_recover_istep;
+    else if (action=="calc_struct_reset_all")                       act = ELEMENTS::struct_calc_reset_all;
+    else if (action=="calc_struct_energy")                          act = ELEMENTS::struct_calc_energy;
+    else if (action=="calc_struct_errornorms")                      act = ELEMENTS::struct_calc_errornorms;
+    else if (action=="multi_eas_init")                              act = ELEMENTS::multi_init_eas;
+    else if (action=="multi_eas_set")                               act = ELEMENTS::multi_set_eas;
+    else if (action=="multi_readrestart")                           act = ELEMENTS::multi_readrestart;
+    else if (action=="multi_calc_dens")                             act = ELEMENTS::multi_calc_dens;
+    else if (action=="postprocess_stress")                          act = ELEMENTS::struct_postprocess_stress;
+    else if (action=="calc_potential_stiff")                        act = ELEMENTS::calc_potential_stiff;
+    else if (action=="calc_struct_prestress_update")                act = ELEMENTS::struct_update_prestress;
+    else if (action=="calc_struct_inversedesign_update")            act = ELEMENTS::inversedesign_update;
+    else if (action=="calc_struct_inversedesign_switch")            act = ELEMENTS::inversedesign_switch;
+    else if (action=="calc_global_gpstresses_map")                  act = ELEMENTS::struct_calc_global_gpstresses_map;
+    else if (action=="interpolate_velocity_to_given_point")         act = ELEMENTS::struct_interpolate_velocity_to_point;
+    else dserror("Unknown type of action for So_hex8: %s", action.c_str());
+  }
   // check for patient specific data
   PATSPEC::GetILTDistance(Id(),params,discretization);
   PATSPEC::GetLocalRadius(Id(),params,discretization);
@@ -106,11 +109,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
   // what should the element do
   switch(act)
   {
-
     //==================================================================================
     // nonlinear stiffness and internal force vector
-    case calc_struct_nlnstiff:
-    case calc_struct_linstiff:
+    case ELEMENTS::struct_calc_nlnstiff:
+    case ELEMENTS::struct_calc_linstiff:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -140,11 +142,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
 
       break;
     }
-
-
     //==================================================================================
     // internal force vector only
-    case calc_struct_internalforce:
+    case ELEMENTS::struct_calc_internalforce:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -160,7 +160,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
-        Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");;
+        Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material_displacement");
         DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
       }
 
@@ -169,12 +169,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
 
       break;
     }
-
     //==================================================================================
     // nonlinear stiffness, internal force vector, and consistent mass matrix
-    case calc_struct_nlnstiffmass:
-    case calc_struct_nlnstifflmass:
-    case calc_struct_linstiffmass:
+    case ELEMENTS::struct_calc_nlnstiffmass:
+    case ELEMENTS::struct_calc_nlnstifflmass:
+    case ELEMENTS::struct_calc_linstiffmass:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -209,14 +208,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         nlnstiffmass(lm,mydisp,&myvel,&myacc,myres,mydispmat,&elemat1,&elemat2,&elevec1,&elevec2,&elevec3,NULL,NULL,NULL,params,
           INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
-      if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
+      if (act==ELEMENTS::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
 
       break;
     }
-
     //==================================================================================
     // nonlinear stiffness, internal force vector (GEMM)
-    case calc_struct_nlnstiff_gemm:
+    case ELEMENTS::struct_calc_nlnstiff_gemm:
     {
       // need old displacement, current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> dispo = discretization.GetState("old displacement");
@@ -245,19 +243,62 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
 
      break;
     }
-
+    //==================================================================================
+    // recover elementwise stored quantities (e.g. EAS)
+    case ELEMENTS::struct_calc_recover:
+    {
+      // need current displacement and residual forces
+      Teuchos::RCP<const Epetra_Vector> disp =
+          discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  =
+          discretization.GetState("residual displacement");
+      if (disp==Teuchos::null || res==Teuchos::null)
+        dserror("Cannot get state vectors \"displacement\" "
+          "and/or \"residual displacement\"");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      std::vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      soh8_recover(lm,mydisp,myres);
+      /* ToDo Probably we have to recover the history information of some special
+       * materials as well.                                 hiermeier 04/2016  */
+      break;
+    }
     //==================================================================================
     // evaluate stresses and strains at gauss points
-    case calc_struct_stress:
+    case ELEMENTS::struct_calc_stress:
     {
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
       {
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        Teuchos::RCP<std::vector<char> > stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress",Teuchos::null);
-        Teuchos::RCP<std::vector<char> > straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos::null);
-        Teuchos::RCP<std::vector<char> > plstraindata = params.get<Teuchos::RCP<std::vector<char> > >("plstrain",Teuchos::null);
+        Teuchos::RCP<std::vector<char> > stressdata = Teuchos::null;
+        Teuchos::RCP<std::vector<char> > straindata = Teuchos::null;
+        Teuchos::RCP<std::vector<char> > plstraindata = Teuchos::null;
+        INPAR::STR::StressType iostress = INPAR::STR::stress_none;
+        INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
+        INPAR::STR::StrainType ioplstrain = INPAR::STR::strain_none;
+        if (IsParamsInterface())
+        {
+          stressdata   = ParamsInterface().MutableStressDataPtr();
+          straindata   = ParamsInterface().MutableStrainDataPtr();
+          plstraindata = ParamsInterface().MutablePlasticStrainDataPtr();
+
+          iostress   = ParamsInterface().GetStressOutputType();
+          iostrain   = ParamsInterface().GetStrainOutputType();
+          ioplstrain = ParamsInterface().GetPlasticStrainOutputType();
+        }
+        else
+        {
+          stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress",Teuchos::null);
+          straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos::null);
+          iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+          iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+          // in case of small strain materials calculate plastic strains for post processing
+          plstraindata = params.get<Teuchos::RCP<std::vector<char> > >("plstrain",Teuchos::null);
+          ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
+        }
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
@@ -269,9 +310,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
         LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D> stress;
         LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D> strain;
         LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D> plstrain;
-        INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        INPAR::STR::StrainType ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
 
         std::vector<double> mydispmat(lm.size());
         if (structale_)
@@ -312,13 +350,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       }
     }
     break;
-
     //==================================================================================
     // postprocess stresses/strains at gauss points
     // note that in the following, quantities are always referred to as
     // "stresses" etc. although they might also apply to strains
     // (depending on what this routine is called for from the post filter)
-    case postprocess_stress:
+    case ELEMENTS::struct_postprocess_stress:
     {
       const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
         params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
@@ -359,19 +396,16 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       }
     }
     break;
-
     //==================================================================================
-    case calc_struct_eleload:
+    case ELEMENTS::struct_calc_eleload:
       dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
     break;
-
     //==================================================================================
-    case calc_struct_fsiload:
+    case ELEMENTS::struct_calc_fsiload:
       dserror("Case not yet implemented");
     break;
-
     //==================================================================================
-    case calc_struct_update_istep:
+    case ELEMENTS::struct_calc_update_istep:
     {
       // determine new fiber directions
       bool remodel;
@@ -402,9 +436,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       SolidMaterial()->Update();
     }
     break;
-
     //==================================================================================
-    case calc_struct_reset_istep:
+    case ELEMENTS::struct_calc_reset_istep:
     {
       // do something with internal EAS, etc parameters
       if (eastype_ != soh8_easnone)
@@ -423,9 +456,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       SolidMaterial()->ResetStep();
     }
     break;
-
     //==================================================================================
-    case calc_struct_store_istep:
+    case ELEMENTS::struct_calc_store_istep:
     {
       int timestep = params.get<int>("timestep",-1);
 
@@ -445,9 +477,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       SolidMaterial()->StoreHistory(timestep);
     }
     break;
-
     //==================================================================================
-    case calc_struct_recover_istep:
+    case ELEMENTS::struct_calc_recover_istep:
     {
       int timestep = params.get<int>("timestep",-1);
 
@@ -467,9 +498,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       SolidMaterial()->SetHistory(timestep);
     }
     break;
-
     //==================================================================================
-    case calc_struct_reset_all:
+    case ELEMENTS::struct_calc_reset_all:
     {
       // Reset of history for materials
       SolidMaterial()->ResetAll(NUMGPT_SOH8);
@@ -496,9 +526,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       }
     }
     break;
-
     //==================================================================================
-    case calc_struct_energy:
+    case ELEMENTS::struct_calc_energy:
     {
       // check length of elevec1
       if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
@@ -712,9 +741,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       elevec1_epetra(0) = intenergy;
     }
     break;
-
     //==================================================================================
-    case calc_struct_errornorms:
+    case ELEMENTS::struct_calc_errornorms:
     {
       // IMPORTANT NOTES (popp 10/2010):
       // - error norms are based on a small deformation assumption (linear elasticity)
@@ -895,16 +923,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       elevec1_epetra(2) = energynorm;
     }
     break;
-
     //==================================================================================
-  case multi_calc_dens:
+  case ELEMENTS::multi_calc_dens:
   {
     soh8_homog(params);
   }
   break;
-
     //==================================================================================
-  case interpolate_velocity_to_point:
+  case ELEMENTS::struct_interpolate_velocity_to_point:
   {
     static bool is_immersed_ale_fsi = (DRT::Problem::Instance()->ProblemType() == prb_immersed_ale_fsi);
     static DRT::Condition* porocondition = discretization.GetCondition("PoroCoupling");
@@ -1060,40 +1086,36 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
 
   }
   break;
-
   //==================================================================================
   // in case of multi-scale problems, possible EAS internal data on microscale
   // have to be stored in every macroscopic Gauss point
   // allocation and initializiation of these data arrays can only be
   // done in the elements that know the number of EAS parameters
-  case multi_eas_init:
+  case ELEMENTS::multi_init_eas:
   {
     soh8_eas_init_multi(params);
   }
   break;
-
   //==================================================================================
   // in case of multi-scale problems, possible EAS internal data on microscale
   // have to be stored in every macroscopic Gauss point
   // before any microscale simulation, EAS internal data has to be
   // set accordingly
-  case multi_eas_set:
+  case ELEMENTS::multi_set_eas:
   {
     soh8_set_eas_multi(params);
   }
   break;
-
   //==================================================================================
   // read restart of microscale
-  case multi_readrestart:
+  case ELEMENTS::multi_readrestart:
   {
     soh8_read_restart_multi();
   }
   break;
-
   //==================================================================================
   // compute additional stresses due to intermolecular potential forces
-  case calc_potential_stiff:
+  case ELEMENTS::calc_potential_stiff:
   {
     Teuchos::RCP<POTENTIAL::PotentialManager> potentialmanager =
       params.get<Teuchos::RCP<POTENTIAL::PotentialManager> >("pot_man",Teuchos::null);
@@ -1117,9 +1139,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       dserror("Unknown condition type %d",cond->Type());
   }
   break;
-
   //==================================================================================
-  case prestress_update:
+  case ELEMENTS::struct_update_prestress:
   {
     time_ = params.get<double>("total time");
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -1159,7 +1180,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
   }
   break;
   //==================================================================================
-  case inversedesign_update:
+  case ELEMENTS::inversedesign_update:
   {
     time_ = params.get<double>("total time");
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -1171,14 +1192,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
   }
   break;
   //==================================================================================
-  case inversedesign_switch:
+  case ELEMENTS::inversedesign_switch:
   {
     time_ = params.get<double>("total time");
   }
   break;
   //==================================================================================
   // evaluate stresses and strains at gauss points and store gpstresses in map <EleId, gpstresses >
-  case calc_global_gpstresses_map:
+  case ELEMENTS::struct_calc_global_gpstresses_map:
   {
     // nothing to do for ghost elements
     if (discretization.Comm().MyPID()==Owner())
@@ -1283,7 +1304,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
     }
   }
   break;
-
   //==================================================================================
   default:
     dserror("Unknown type of action for So_hex8");
@@ -1303,6 +1323,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList&   params,
                                             Epetra_SerialDenseVector& elevec1,
                                             Epetra_SerialDenseMatrix* elemat1)
 {
+  SetParamsInterfacePtr(params);
   // get values and switches from the condition
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
@@ -1312,7 +1333,11 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList&   params,
   */
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  double time = -1.0;
+  if (IsParamsInterface())
+    time = ParamsInterface().GetTotalTime();
+  else
+    time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
   // ensure that at least as many curves/functs as dofs are available
@@ -1493,6 +1518,104 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping(std::vector<double>& dispmat)
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::soh8_recover(
+    std::vector<int>&         lm,
+    std::vector<double>&      disp,
+    std::vector<double>&      residual)
+{
+  // for eas
+  Epetra_SerialDenseMatrix* alpha      = NULL;
+  Epetra_SerialDenseMatrix* eas_inc    = NULL;
+  // get access to the interface parameters
+  const double step_length   = ParamsInterface().GetStepLength();
+  const bool iseas = (eastype_ != soh8_easnone);
+
+  // have eas?
+  if (iseas)
+  {
+    // access general eas history stuff stored in element
+    // get alpha of previous iteration
+    alpha      = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");
+    // get the old eas increment
+    eas_inc    = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+    if (!alpha || !eas_inc)
+      dserror("Missing EAS history data (eas_inc and/or alpha)");
+  }
+
+  /* if it is a default step, we have to recover the condensed
+   * solution vectors */
+  if (ParamsInterface().IsDefaultStep())
+  {
+    /* recovery of the enhanced assumed strain increment and
+     * update of the eas dofs. */
+    if (iseas)
+    {
+      // first, store the eas state of the previous accepted Newton step
+      ParamsInterface().SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas,
+          neas_,(*alpha)[0],Owner());
+
+      Epetra_SerialDenseMatrix* oldKaainv =
+          data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+      Epetra_SerialDenseMatrix* oldKda       =
+          data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
+      Epetra_SerialDenseMatrix* oldfeas      =
+          data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+      if (!oldKaainv|| !oldKda || !oldfeas)
+        dserror("Missing EAS history data");
+
+      // we need the (residual) displacement at the previous step
+      LINALG::SerialDenseVector res_d_eas(NUMDOF_SOH8);
+      for (int i = 0; i < NUMDOF_SOH8; ++i)
+        res_d_eas(i) = residual[i];
+      // --- EAS default update ---------------------------
+      Epetra_SerialDenseMatrix eashelp(neas_,1);
+      /*----------- make multiplication eashelp = oldLt * disp_incr[kstep] */
+      oldKda->Multiply(false,res_d_eas,eashelp);
+      /*---------------------------------------- add old Rtilde to eashelp */
+      eashelp += *oldfeas;
+      /*--------- make multiplication alpha_inc = - old Dtildinv * eashelp */
+      oldKaainv->Multiply(false,eashelp,*eas_inc);
+      eas_inc->Scale(-1.0);
+      /*--------------------------- update alpha += step_length * alfa_inc */
+      for (int i=0;i<neas_;++i)
+        (*alpha)(i,0) += step_length*(*eas_inc)(i,0);
+    } // if (iseas)
+  } // if (*isdefault_step_ptr_)
+  /* if it is no default step, we can correct the update and the current eas
+   * state without the need for any matrix-vector products. */
+  else
+  {
+    // The first step has to be a default step!
+    if (old_step_length_<0.0)
+      dserror("The old step length was not defined!");
+    /* if this is no full step, we have to adjust the length of the
+     * enhanced assumed strain incremental step. */
+    if (iseas)
+    {
+      /* undo the previous step:
+       *            alpha_new = alpha_old - old_step * alpha_inc
+       * and update the solution variable with the new step length:
+       *            alpha_new = alpha_new + new_step * alpha_inc */
+      for (int i=0;i<neas_;++i)
+        (*alpha)(i,0) += (step_length-old_step_length_)*(*eas_inc)(i,0);
+    } // if (nhyb_)
+  } // else
+  // save the old step length
+  old_step_length_ = step_length;
+
+  // Check if the eas incr is tested and if yes, calculated the element
+  // contribution to the norm
+  if (iseas)
+    ParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
+        neas_,(*eas_inc)[0],(*alpha)[0],step_length,Owner());
+
+  // the element internal stuff should be up-to-date for now...
+  return;
+}
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
@@ -1601,52 +1724,53 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
     eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
     if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc) dserror("Missing EAS history-data");
+    // FixMe deprecated implementation
+    if (not IsParamsInterface())
+    {
+      // we need the (residual) displacement at the previous step
+      LINALG::SerialDenseVector res_d_eas(NUMDOF_SOH8);
+      for (int i = 0; i < NUMDOF_SOH8; ++i)
+        res_d_eas(i) = residual[i];
 
-    // we need the (residual) displacement at the previous step
-    LINALG::SerialDenseVector res_d_eas(NUMDOF_SOH8);
-    for (int i = 0; i < NUMDOF_SOH8; ++i)
-    {
-      res_d_eas(i) = residual[i];
-    }
-
-    // this is a line search step, i.e. the direction of the eas increments
-    // has been calculated by a Newton step and now it is only scaled
-    if (params.isParameter("alpha_ls"))
-    {
-      double alpha_ls=params.get<double>("alpha_ls");
-      // undo step
-      eas_inc->Scale(-1.);
-      alpha->operator +=(*eas_inc);
-      // scale increment
-      eas_inc->Scale(-1.*alpha_ls);
-      // add reduced increment
-      alpha->operator +=(*eas_inc);
-    }
-    // add Kda . res_d to feas
-    // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-    else
-    {
-      switch(eastype_)
+      // this is a line search step, i.e. the direction of the eas increments
+      // has been calculated by a Newton step and now it is only scaled
+      if (params.isParameter("alpha_ls"))
       {
-      case DRT::ELEMENTS::So_hex8::soh8_easfull:
-        LINALG::DENSEFUNCTIONS::multiply<double,soh8_easfull,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
-        LINALG::DENSEFUNCTIONS::multiply<double,soh8_easfull,soh8_easfull,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
-        LINALG::DENSEFUNCTIONS::update<double,soh8_easfull,1>(1.,*alpha,1.,*eas_inc);
-        break;
-      case DRT::ELEMENTS::So_hex8::soh8_easmild:
-        LINALG::DENSEFUNCTIONS::multiply<double,soh8_easmild,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
-        LINALG::DENSEFUNCTIONS::multiply<double,soh8_easmild,soh8_easmild,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
-        LINALG::DENSEFUNCTIONS::update<double,soh8_easmild,1>(1.,*alpha,1.,*eas_inc);
-        break;
-      case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-        LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
-        LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8,soh8_eassosh8,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
-        LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(1.,*alpha,1.,*eas_inc);
-        break;
-      case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
-      default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+        double alpha_ls=params.get<double>("alpha_ls");
+        // undo step
+        eas_inc->Scale(-1.);
+        alpha->operator +=(*eas_inc);
+        // scale increment
+        eas_inc->Scale(-1.*alpha_ls);
+        // add reduced increment
+        alpha->operator +=(*eas_inc);
       }
-    }
+      // add Kda . res_d to feas
+      // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+      else
+      {
+        switch(eastype_)
+        {
+        case DRT::ELEMENTS::So_hex8::soh8_easfull:
+          LINALG::DENSEFUNCTIONS::multiply<double,soh8_easfull,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
+          LINALG::DENSEFUNCTIONS::multiply<double,soh8_easfull,soh8_easfull,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
+          LINALG::DENSEFUNCTIONS::update<double,soh8_easfull,1>(1.,*alpha,1.,*eas_inc);
+          break;
+        case DRT::ELEMENTS::So_hex8::soh8_easmild:
+          LINALG::DENSEFUNCTIONS::multiply<double,soh8_easmild,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
+          LINALG::DENSEFUNCTIONS::multiply<double,soh8_easmild,soh8_easmild,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
+          LINALG::DENSEFUNCTIONS::update<double,soh8_easmild,1>(1.,*alpha,1.,*eas_inc);
+          break;
+        case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
+          LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8,NUMDOF_SOH8,1>(1.0, *oldfeas, 1.0, *oldKda, res_d_eas);
+          LINALG::DENSEFUNCTIONS::multiply<double,soh8_eassosh8,soh8_eassosh8,1>(0.0,*eas_inc,-1.0,*oldKaainv,*oldfeas);
+          LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(1.,*alpha,1.,*eas_inc);
+          break;
+        case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
+        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
+        }
+      }
+    } // if (not IsInterface())
     /* end of EAS Update ******************/
 
     // EAS portion of internal forces, also called enhacement vector s or Rtilde
@@ -1732,6 +1856,23 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
       // in kinematically linear analysis the deformation gradient is equal to identity
       // no difference between reference and current state
       for (int i=0; i<3; ++i) defgrd(i,i) = 1.0;
+    }
+
+    if (IsParamsInterface())
+    {
+      double det_defgrd =defgrd.Determinant();
+      if (det_defgrd<0.0)
+      {
+        if (ParamsInterface().IsTolerateErrors())
+        {
+          ParamsInterface().SetEleEvalErrorFlag(STR::ELEMENTS::ele_error_negative_def_gradient);
+          stiffmatrix->Clear();
+          force->Clear();
+          return;
+        }
+        else
+          dserror("negative deformation gradient determinant");
+      } // if (det_defgrd<0.0)
     }
 
     if (pstype_==INPAR::STR::prestress_id && pstime_ < time_)
@@ -2254,12 +2395,19 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
          We write all the additional terms into the mass matrix, hence, conversion from accelerations to velocities
          and displacements are needed. As those conversions depend on the time integration scheme, the factors are
          set within the respective time integrators and read from the parameter list inside the element (this is
-         a little ugly...).
-         */
-
-        double timintfac_dis = params.get<double>("timintfac_dis");
-        double timintfac_vel = params.get<double>("timintfac_vel");
-
+         a little ugly...). */
+        double timintfac_dis = 0.0;
+        double timintfac_vel = 0.0;
+        if (IsParamsInterface())
+        {
+          timintfac_dis = ParamsInterface().GetTimIntFactorDisp();
+          timintfac_vel = ParamsInterface().GetTimIntFactorVel();
+        }
+        else
+        {
+          timintfac_dis = params.get<double>("timintfac_dis");
+          timintfac_vel = params.get<double>("timintfac_vel");
+        }
         LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass_disp(true);
         LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass_vel(true);
         LINALG::Matrix<MAT::NUM_STRESS_3D,1> linmass(true);

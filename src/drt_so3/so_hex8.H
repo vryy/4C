@@ -1,14 +1,11 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file so_hex8.H
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\maintainer Michael Gee
 
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifndef SOH8_H
 #define SOH8_H
 
@@ -385,6 +382,7 @@ public:
 protected:
 
   //! action parameters recognized by so_hex8
+  //  FixMe Deprecated: Should be replaced by the DRT::ELEMENTS::ActionType! hiermeier 04/16
   enum ActionType
   {
     none,
@@ -464,8 +462,10 @@ protected:
   INPAR::STR::PreStress                                                 pstype_;
   double                                                                pstime_;
   double                                                                time_;
+  // line search parameter (old step length)
+  double                                                                old_step_length_;
   /// Prestressing object
-  Teuchos::RCP<DRT::ELEMENTS::PreStress>                                         prestress_;
+  Teuchos::RCP<DRT::ELEMENTS::PreStress>                                prestress_;
   // compute Jacobian mapping wrt to deformed configuration
   virtual void UpdateJacobianMapping(const std::vector<double>& disp,
                                      DRT::ELEMENTS::PreStress& prestress);
@@ -476,7 +476,7 @@ protected:
 
   // inverse design analysis objects
   friend class DRT::ELEMENTS::InvDesign;
-  Teuchos::RCP<DRT::ELEMENTS::InvDesign>                                         invdesign_;
+  Teuchos::RCP<DRT::ELEMENTS::InvDesign>                                invdesign_;
 
 
   // internal calculation methods
@@ -661,7 +661,13 @@ protected:
       );
 
 private:
-
+  /* recover elementwise stored stuff
+   *
+   * \author hiermeier
+   * \date 04/16 */
+  void soh8_recover(std::vector<int>&         lm,
+                    std::vector<double>&      disp,
+                    std::vector<double>&      residual);
 
 }; // class So_hex8
 

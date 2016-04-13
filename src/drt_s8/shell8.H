@@ -1,12 +1,7 @@
 /*!----------------------------------------------------------------------
 \file shell8.H
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\maintainer Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifndef SHELL8_H
@@ -29,7 +24,11 @@ Maintainer: Michael Gee
 struct _MATERIAL;
 struct _S8_DATA;
 
-
+namespace STR {
+namespace ELEMENTS {
+  class ParamsInterface;
+} // namespace ELMENTS
+} // namespace STR
 namespace DRT
 {
 // forward declarations
@@ -170,8 +169,16 @@ public:
 
   //@}
 
-  //! @name Acess methods
+  //! @name Access methods
 
+  /*!
+  \brief Does this element use EAS?
+
+  ToDo: This function can be declared as pure virtual and each concrete derived
+        class has to implement this function. This can be done during the up-coming
+        cleaning procedure.                                      hiermeier 09/15
+  */
+  virtual bool HaveEAS() const { return (nhyb_>0); };
 
   /*!
   \brief Get number of degrees of freedom of a certain node
@@ -331,26 +338,31 @@ public:
 
   //@}
 
+  /** \brief set the parameter interface ptr for the solid elements
+   *
+   *  \param p (in): Parameter list coming from the time integrator.
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
+
+  /** \brief returns true if the parameter interface is defined and initialized, otherwise false
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  inline bool IsParamsInterface() const
+  { return (not interface_ptr_.is_null()); }
+
+  /** \brief get access to the parameter interface
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
+  { if (not IsParamsInterface())
+      dserror("The interface ptr is not set!");
+    return *interface_ptr_; }
 
 private:
-
-  //! action parameters recognized by shell8
-  enum ActionType
-  {
-    none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,
-    calc_struct_stress,
-    calc_struct_eleload,
-    calc_struct_fsiload,
-    calc_struct_update_istep,
-    calc_struct_reset_istep  //!< reset elementwise internal variables
-                             //!< during iteration to last converged state
-  };
 
   //! type of forces to be calculated in postprocessing
   enum ForceType
@@ -380,11 +392,19 @@ private:
   int                                             material_;
   //! container containing all kind of shell8 thisandthat
   DRT::Container                                  data_;
+  //! old step length for elementwise internal variables (e.g. eas)
+  double                                         old_step_length_;
+  //! pointer to the ELEMENTS::ParamsInterface object
+  Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
   // internal calculation methods
 
   // don't want = operator
   Shell8& operator = (const Shell8& old);
+
+  void s8_recover(std::vector<int>&         lm,
+                  std::vector<double>&      disp,
+                  std::vector<double>&      residual);
 
   void s8_nlnstiffmass(std::vector<int>&         lm,
                        std::vector<double>&      disp,

@@ -1,13 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_line_evaluate.cpp
-\brief
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\maintainer Michael Gee
 
 *----------------------------------------------------------------------*/
 
@@ -19,6 +13,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_lib/drt_elements_paramsinterface.H"
 
 
 /*-----------------------------------------------------------------------*
@@ -31,6 +26,8 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
                                                    Epetra_SerialDenseVector& elevec1,
                                                    Epetra_SerialDenseMatrix* elemat1)
 {
+  // set the interface ptr in the parent element
+  ParentElement()->SetParamsInterfacePtr(params);
   // get type of condition
   enum LoadType
   {
@@ -68,7 +65,11 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   par
   */
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  double time = -1.0;
+  if (ParentElement()->IsParamsInterface())
+    time = ParentElement()->ParamsInterfacePtr()->GetTotalTime();
+  else
+    time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
   const int numdim = 3;

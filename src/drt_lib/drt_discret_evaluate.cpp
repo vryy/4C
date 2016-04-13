@@ -2,12 +2,7 @@
 \file drt_discret_evaluate.cpp
 \brief
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\maintainer Michael Gee
 
 *----------------------------------------------------------------------*/
 
@@ -17,6 +12,7 @@ Maintainer: Michael Gee
 #include "drt_timecurve.H"
 #include "drt_function.H"
 #include "drt_parobjectfactory.H"
+#include "drt_elements_paramsinterface.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "drt_assemblestrategy.H"
@@ -200,8 +196,17 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // get the current time
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
+  double time = params.get("total time",-1.0);
+  if (time<0.0)
+  {
+    if (params.isParameter("interface"))
+    {
+      time = params.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface")->
+          GetTotalTime();
+    }
+    else
+      usetime = false;
+  }
 
   std::multimap<std::string,Teuchos::RCP<Condition> >::iterator fool;
   //--------------------------------------------------------

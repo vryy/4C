@@ -1,12 +1,8 @@
 /*!----------------------------------------------------------------------
 \file drt_element.H
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\maintainer Michael Gee
+
 *----------------------------------------------------------------------*/
 #ifndef ELEMENT_H
 #define ELEMENT_H
@@ -39,6 +35,10 @@ namespace MESHFREE
   template <typename> class MeshfreeBin;
 }
 
+namespace ELEMENTS
+{
+  class ParamsInterface;
+}
 
 // forward declarations
   class Discretization;
@@ -1180,6 +1180,33 @@ public:
   virtual bool BuildElementPointers(std::map<int,Teuchos::RCP<DRT::Element> >& elements) {return true;}
 
   //@}
+
+  /// @name Parameter interface access and management functions
+  /// @{
+  /** \brief set the interface ptr for the elements
+   *
+   *  \param p (in): Parameter list coming from the time integrator.
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+  { /* This is a dummy function. Please implement the function in the derived classes, if necessary. */ };
+
+  /** \brief returns true if the interface is defined and initialized, otherwise false
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual inline bool IsParamsInterface() const
+  { /* dummy implementation */ return false; }
+
+  /** \brief get access to the interface pointer
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr()
+  { dserror("This is a dummy function. Please implement the function in the derived classes, if necessary.");
+    return Teuchos::null; }
+  /// @}
 
 private:
 

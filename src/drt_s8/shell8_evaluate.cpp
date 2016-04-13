@@ -1,13 +1,7 @@
 /*!----------------------------------------------------------------------
 \file shell8_evaluate.cpp
-\brief
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\maintainer Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
@@ -22,8 +16,11 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/elasthyper.H"
+#include "../drt_matelast/elast_coupneohooke.H"
 #include "../drt_mat/compogden.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 extern "C"
 {
@@ -32,6 +29,17 @@ extern "C"
 #include "../pss_full/pss_prototypes.h"
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Shell8::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
+{
+  if (p.isParameter("interface"))
+    interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>
+        (p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> >("interface"));
+  else
+    interface_ptr_ = Teuchos::null;
+}
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
@@ -45,23 +53,30 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
                                     Epetra_SerialDenseVector& elevec2,
                                     Epetra_SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::Shell8::ActionType act = Shell8::none;
+  SetParamsInterfacePtr(params);
+  ActionType act = none;
 
   // get the action required
-  std::string action = params.get<std::string>("action","none");
-  if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff")      act = Shell8::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff")      act = Shell8::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce") act = Shell8::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass")  act = Shell8::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass")  act = Shell8::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass") act = Shell8::calc_struct_nlnstifflmass;
-  else if (action=="calc_struct_stress")        act = Shell8::calc_struct_stress;
-  else if (action=="calc_struct_eleload")       act = Shell8::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload")       act = Shell8::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep")  act = Shell8::calc_struct_update_istep;
-  else if (action=="calc_struct_reset_istep")   act = Shell8::calc_struct_reset_istep;
-  else dserror("Unknown type of action for Shell8");
+  if (IsParamsInterface())
+    act = ParamsInterface().GetActionType();
+  else
+  {
+    std::string action = params.get<std::string>("action","none");
+    if (action == "none") dserror("No action supplied");
+    else if (action=="calc_struct_linstiff")      act = struct_calc_linstiff;
+    else if (action=="calc_struct_nlnstiff")      act = struct_calc_nlnstiff;
+    else if (action=="calc_struct_internalforce") act = struct_calc_internalforce;
+    else if (action=="calc_struct_linstiffmass")  act = struct_calc_linstiffmass;
+    else if (action=="calc_struct_nlnstiffmass")  act = struct_calc_nlnstiffmass;
+    else if (action=="calc_struct_nlnstifflmass") act = struct_calc_nlnstifflmass;
+    else if (action=="calc_struct_recover")       act = struct_calc_recover;
+    else if (action=="calc_struct_stress")        act = struct_calc_stress;
+    else if (action=="calc_struct_eleload")       act = struct_calc_eleload;
+    else if (action=="calc_struct_fsiload")       act = struct_calc_fsiload;
+    else if (action=="calc_struct_update_istep")  act = struct_calc_update_istep;
+    else if (action=="calc_struct_reset_istep")   act = struct_calc_reset_istep;
+    else dserror("Unknown type of action for Shell8");
+  }
 
   // get the material law
   Teuchos::RCP<MAT::Material> material = Material();
@@ -76,6 +91,29 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
     actmat->m.stvenant->youngs = mat->Youngs();
     actmat->m.stvenant->possionratio = mat->PoissonRatio();
     actmat->m.stvenant->density = mat->Density();
+    break;
+  }
+  case INPAR::MAT::m_elasthyper:
+  {
+    const MAT::ElastHyper* mat = static_cast<const MAT::ElastHyper*>(material.get());
+    // check if there are more than one materials
+    if (mat->NumMat()>1)
+      dserror("The Shell8 element supports only one ElastHyper "
+          "material (CoupNeoHooke)! The remaining ElastHyper material definitions would be ignored!");
+
+    // check if there is a MAT::ELASTIC::CoupNeoHooke material
+    Teuchos::RCP<const MAT::ELASTIC::Summand> summand_ptr =
+        mat->GetPotSummandPtr(INPAR::MAT::mes_coupneohooke);
+    if (summand_ptr.is_null())
+      dserror("Currently only the MAT::ELASTIC::CoupNeoHooke material is supported!");
+    const MAT::ELASTIC::CoupNeoHooke& mat_elast_neohooke =
+        dynamic_cast<const MAT::ELASTIC::CoupNeoHooke&>(*summand_ptr);
+    // copy the parameters
+    actmat->mattyp = m_neohooke;
+    actmat->m.neohooke = new NEO_HOOKE();
+    actmat->m.neohooke->density = mat->Density();
+    actmat->m.neohooke->possionratio = mat_elast_neohooke.NUE();
+    actmat->m.neohooke->youngs = mat_elast_neohooke.YOUNGS();
     break;
   }
   case INPAR::MAT::m_compogden:
@@ -101,7 +139,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
 
   switch(act)
   {
-    case calc_struct_linstiff:
+    case struct_calc_linstiff:
     {
       // need current displacement and residual forces
       std::vector<double> mydisp(lm.size());
@@ -111,7 +149,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
       s8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
     }
     break;
-    case calc_struct_nlnstiff:
+    case struct_calc_nlnstiff:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -124,7 +162,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
       s8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
     }
     break;
-    case calc_struct_internalforce: // do internal force
+    case struct_calc_internalforce: // do internal force
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -134,16 +172,14 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      // create a dummy element matrix to apply linearised EAS-stuff onto
-      Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
-      s8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,actmat);
+      s8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,&elevec1,actmat);
     }
     break;
-    case calc_struct_linstiffmass:
+    case struct_calc_linstiffmass:
       dserror("Case not yet implemented");
     break;
-    case calc_struct_nlnstiffmass: // do mass, stiffness and internal forces
-    case calc_struct_nlnstifflmass: // do lumped mass, stiffness and internal forces
+    case struct_calc_nlnstiffmass: // do mass, stiffness and internal forces
+    case struct_calc_nlnstifflmass: // do lumped mass, stiffness and internal forces
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -154,29 +190,52 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       s8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
-      if (act==calc_struct_nlnstifflmass) s8_lumpmass(&elemat2);
+      if (act==struct_calc_nlnstifflmass) s8_lumpmass(&elemat2);
     }
     break;
-    case calc_struct_stress:
+    case struct_calc_recover:
     {
-      // disabled stress output for shell8 temporarily since it does
-      // not match the new stress output framework
-      dserror("stress output for shell8 currently not supported");
-
-//       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-//       if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-//       std::vector<double> mydisp(lm.size());
-//       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-//       s8stress(actmat,mydisp);
+      // need current displacement and residual forces
+      Teuchos::RCP<const Epetra_Vector> disp =
+          discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  =
+          discretization.GetState("residual displacement");
+      if (disp==Teuchos::null || res==Teuchos::null)
+        dserror("Cannot get state vectors \"displacement\" "
+          "and/or \"residual displacement\"");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      std::vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      s8_recover(lm,mydisp,myres);
     }
     break;
-    case calc_struct_eleload:
+    case struct_calc_stress:
+    {
+      // nothing to do for ghost elements
+      if (discretization.Comm().MyPID()==Owner())
+      {
+        if (not IsParamsInterface())
+          dserror("The stress calculation is not supported for the old structural time"
+              " integration framework!");
+
+        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        // check the data initialization
+        if (disp.is_null())
+          dserror("Cannot get state vectors 'displacement'");
+        std::vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        s8stress(actmat,mydisp);
+      }
+    }
+    break;
+    case struct_calc_eleload:
       dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
     break;
-    case calc_struct_fsiload:
+    case struct_calc_fsiload:
       dserror("Case not yet implemented");
     break;
-    case calc_struct_update_istep:
+    case struct_calc_update_istep:
     {
       // EAS
       if (nhyb_)
@@ -190,7 +249,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
       }
     }
     break;
-    case calc_struct_reset_istep:
+    case struct_calc_reset_istep:
     {
       // EAS
       if (nhyb_)
@@ -205,7 +264,8 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
     }
     break;
     default:
-      dserror("Unknown type of action for Shell8");
+      dserror("Unknown type of action for Shell8: (%s|%i)",
+          ActionType2String(act).c_str(),act);
   }
 
   // remove material object
@@ -214,6 +274,11 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
   case INPAR::MAT::m_stvenant:
   {
     delete actmat->m.stvenant;
+    break;
+  }
+  case INPAR::MAT::m_elasthyper:
+  {
+    delete actmat->m.neohooke;
     break;
   }
   case INPAR::MAT::m_compogden:
@@ -232,7 +297,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
 }
 
 
-// tesnor transformtation routine, used on in s8stress
+// tensor transformation routine, used on in s8stress
 static void s8tettr(double x[][3], double a[][3], double b[][3]);
 /*----------------------------------------------------------------------*
  |  Do stress calculation (private)                          mwgee 02/07|
@@ -292,7 +357,7 @@ void DRT::ELEMENTS::Shell8::s8stress(struct _MATERIAL* material,
   //--------------------------------------------------------------- integrate
   int ngauss=0;
   Epetra_SerialDenseMatrix gp_stress;
-  gp_stress.Shape(18,nir*nis);
+  gp_stress.Shape(nir*nis,18);
   ARRAY C_a;
   double** C = (double**)amdef((char*)"C",&C_a,6 ,6,(char*)"DA");
   for (int lr=0; lr<nir; ++lr)
@@ -393,48 +458,48 @@ void DRT::ELEMENTS::Shell8::s8stress(struct _MATERIAL* material,
             xu23 += gkovr[i][2]*akonr[i][1];
             xu33 += gkovr[i][2]*akonr[i][2];
           }
-          gp_stress(0,ngauss)  += (s11*xu11+s12*xu21+s13*xu31) * wgt;    // N11
-          gp_stress(2,ngauss)  += (s11*xu12+s12*xu22+s13*xu32) * wgt;    // N12
-          gp_stress(8,ngauss)  += (s21*xu11+s22*xu21+s23*xu31) * wgt;    // N21
-          gp_stress(1,ngauss)  += (s21*xu12+s22*xu22+s23*xu32) * wgt;    // N22
-          gp_stress(3,ngauss)  += (s11*xu13+s12*xu23+s13*xu33) * wgt;    // Q1
-          gp_stress(4,ngauss)  += (s21*xu13+s22*xu23+s23*xu33) * wgt;    // Q2
-          gp_stress(16,ngauss) += (s31*xu11+s32*xu21+s33*xu31) * wgt;    // N31
-          gp_stress(17,ngauss) += (s31*xu12+s32*xu22+s33*xu32) * wgt;    // N32
-          gp_stress(9,ngauss)  += (s31*xu13+s32*xu23+s33*xu33) * wgt;    // N33
-          gp_stress(5,ngauss)  += (s11*xu11+s12*xu21+s13*xu31) * wgthe3; // M11
-          gp_stress(7,ngauss)  += (s11*xu12+s12*xu22+s13*xu32) * wgthe3; // M12
-          gp_stress(6,ngauss)  += (s21*xu12+s22*xu22+s23*xu32) * wgthe3; // M22
-          gp_stress(10,ngauss) += (s11*xu13+s12*xu23+s13*xu33) * wgthe3; // M13
-          gp_stress(11,ngauss) += (s21*xu13+s22*xu23+s23*xu33) * wgthe3; // M23
-          gp_stress(12,ngauss) += (s31*xu11+s32*xu21+s33*xu31) * wgthe3; // M31
-          gp_stress(13,ngauss) += (s31*xu12+s32*xu22+s33*xu32) * wgthe3; // M32
-          gp_stress(14,ngauss) += (s21*xu11+s22*xu21+s23*xu31) * wgthe3; // M21
-          gp_stress(15,ngauss) += (s31*xu13+s32*xu23+s33*xu33) * wgthe3; // M33
+          gp_stress(ngauss,0)  += (s11*xu11+s12*xu21+s13*xu31) * wgt;    // N11
+          gp_stress(ngauss,2)  += (s11*xu12+s12*xu22+s13*xu32) * wgt;    // N12
+          gp_stress(ngauss,8)  += (s21*xu11+s22*xu21+s23*xu31) * wgt;    // N21
+          gp_stress(ngauss,1)  += (s21*xu12+s22*xu22+s23*xu32) * wgt;    // N22
+          gp_stress(ngauss,3)  += (s11*xu13+s12*xu23+s13*xu33) * wgt;    // Q1
+          gp_stress(ngauss,4)  += (s21*xu13+s22*xu23+s23*xu33) * wgt;    // Q2
+          gp_stress(ngauss,16) += (s31*xu11+s32*xu21+s33*xu31) * wgt;    // N31
+          gp_stress(ngauss,17) += (s31*xu12+s32*xu22+s33*xu32) * wgt;    // N32
+          gp_stress(ngauss,9)  += (s31*xu13+s32*xu23+s33*xu33) * wgt;    // N33
+          gp_stress(ngauss,5)  += (s11*xu11+s12*xu21+s13*xu31) * wgthe3; // M11
+          gp_stress(ngauss,7)  += (s11*xu12+s12*xu22+s13*xu32) * wgthe3; // M12
+          gp_stress(ngauss,6)  += (s21*xu12+s22*xu22+s23*xu32) * wgthe3; // M22
+          gp_stress(ngauss,10) += (s11*xu13+s12*xu23+s13*xu33) * wgthe3; // M13
+          gp_stress(ngauss,11) += (s21*xu13+s22*xu23+s23*xu33) * wgthe3; // M23
+          gp_stress(ngauss,12) += (s31*xu11+s32*xu21+s33*xu31) * wgthe3; // M31
+          gp_stress(ngauss,13) += (s31*xu12+s32*xu22+s33*xu32) * wgthe3; // M32
+          gp_stress(ngauss,14) += (s21*xu11+s22*xu21+s23*xu31) * wgthe3; // M21
+          gp_stress(ngauss,15) += (s31*xu13+s32*xu23+s33*xu33) * wgthe3; // M33
         }
       } // for (int lt=0; lt<nit; ++lt)
       //------------------------ calculate forces wrt local/global coordsystems
       // akovr, akonr
       {
         double sn[3][3],sm[3][3];
-        sn[0][0] = gp_stress(0,ngauss);
-        sn[0][1] = gp_stress(2,ngauss);
-        sn[0][2] = gp_stress(3,ngauss);
-        sn[1][0] = gp_stress(8,ngauss);
-        sn[1][1] = gp_stress(1,ngauss);
-        sn[1][2] = gp_stress(4,ngauss);
-        sn[2][0] = gp_stress(16,ngauss);
-        sn[2][1] = gp_stress(17,ngauss);
-        sn[2][2] = gp_stress(9,ngauss);
-        sm[0][0] = gp_stress(5,ngauss);
-        sm[0][1] = gp_stress(7,ngauss);
-        sm[0][2] = gp_stress(10,ngauss);
-        sm[1][0] = gp_stress(14,ngauss);
-        sm[1][1] = gp_stress(6,ngauss);
-        sm[1][2] = gp_stress(11,ngauss);
-        sm[2][0] = gp_stress(12,ngauss);
-        sm[2][1] = gp_stress(13,ngauss);
-        sm[2][2] = gp_stress(15,ngauss);
+        sn[0][0] = gp_stress(ngauss,0);
+        sn[0][1] = gp_stress(ngauss,2);
+        sn[0][2] = gp_stress(ngauss,3);
+        sn[1][0] = gp_stress(ngauss,8);
+        sn[1][1] = gp_stress(ngauss,1);
+        sn[1][2] = gp_stress(ngauss,4);
+        sn[2][0] = gp_stress(ngauss,16);
+        sn[2][1] = gp_stress(ngauss,17);
+        sn[2][2] = gp_stress(ngauss,9);
+        sm[0][0] = gp_stress(ngauss,5);
+        sm[0][1] = gp_stress(ngauss,7);
+        sm[0][2] = gp_stress(ngauss,10);
+        sm[1][0] = gp_stress(ngauss,14);
+        sm[1][1] = gp_stress(ngauss,6);
+        sm[1][2] = gp_stress(ngauss,11);
+        sm[2][0] = gp_stress(ngauss,12);
+        sm[2][1] = gp_stress(ngauss,13);
+        sm[2][2] = gp_stress(ngauss,15);
         switch(forcetype_)
         {
         case s8_xyz:
@@ -519,24 +584,24 @@ void DRT::ELEMENTS::Shell8::s8stress(struct _MATERIAL* material,
           dserror("Unknown type of force");
         break;
         } // switch(forcetype_)
-        gp_stress(0,ngauss)  = sn[0][0];
-        gp_stress(2,ngauss)  = sn[0][1];
-        gp_stress(3,ngauss)  = sn[0][2];
-        gp_stress(8,ngauss)  = sn[1][0];
-        gp_stress(1,ngauss)  = sn[1][1];
-        gp_stress(4,ngauss)  = sn[1][2];
-        gp_stress(16,ngauss) = sn[2][0];
-        gp_stress(17,ngauss) = sn[2][1];
-        gp_stress(9,ngauss)  = sn[2][2];
-        gp_stress(5,ngauss)  = sm[0][0];
-        gp_stress(7,ngauss)  = sm[0][1];
-        gp_stress(10,ngauss) = sm[0][2];
-        gp_stress(14,ngauss) = sm[1][0];
-        gp_stress(6,ngauss)  = sm[1][1];
-        gp_stress(11,ngauss) = sm[1][2];
-        gp_stress(12,ngauss) = sm[2][0];
-        gp_stress(13,ngauss) = sm[2][1];
-        gp_stress(15,ngauss) = sm[2][2];
+        gp_stress(ngauss,0)  = sn[0][0];
+        gp_stress(ngauss,2)  = sn[0][1];
+        gp_stress(ngauss,3)  = sn[0][2];
+        gp_stress(ngauss,8)  = sn[1][0];
+        gp_stress(ngauss,1)  = sn[1][1];
+        gp_stress(ngauss,4)  = sn[1][2];
+        gp_stress(ngauss,16) = sn[2][0];
+        gp_stress(ngauss,17) = sn[2][1];
+        gp_stress(ngauss,9)  = sn[2][2];
+        gp_stress(ngauss,5)  = sm[0][0];
+        gp_stress(ngauss,7)  = sm[0][1];
+        gp_stress(ngauss,10) = sm[0][2];
+        gp_stress(ngauss,14) = sm[1][0];
+        gp_stress(ngauss,6)  = sm[1][1];
+        gp_stress(ngauss,11) = sm[1][2];
+        gp_stress(ngauss,12) = sm[2][0];
+        gp_stress(ngauss,13) = sm[2][1];
+        gp_stress(ngauss,15) = sm[2][2];
       }
       ++ngauss;
     } // for (int ls=0; ls<nis; ++ls)
@@ -605,14 +670,14 @@ bool DRT::ELEMENTS::Shell8::VisData(const std::string& name, std::vector<double>
   if (!gp_stress) return false; // no stresses present, do nothing
 
   // Need to average the values of the gaussian point
-  const int nforce = gp_stress->M(); // first dimension is # of forces and moments
-  const int ngauss = gp_stress->N(); // second dimension is # gaussian point
+  const int ngauss = gp_stress->M(); // first dimension is # gaussian point
+  const int nforce = gp_stress->N(); // second dimension is # of forces and moments
 
   Epetra_SerialDenseMatrix centervalues(nforce,1);
   for (int i=0; i<nforce; ++i)
   {
     for (int j=0; j<ngauss; ++j)
-      centervalues(i,0) += (*gp_stress)(i,j);
+      centervalues(i,0) += (*gp_stress)(j,i);
     centervalues(i,0) /= ngauss;
   }
 
@@ -705,7 +770,8 @@ static void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
                          const enum LoadType ltype,
                          const std::vector<int>& onoff,
                          const std::vector<double>& val,
-                         const double curvefac,
+                         const std::vector<double>& curvefacs,
+                         const std::vector<double>& sp_functfacs,
                          const double time);
 /*----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)  mwgee 01/07|
@@ -717,6 +783,7 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
+  SetParamsInterfacePtr(params);
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   std::vector<double> mydisp(lm.size());
@@ -724,7 +791,14 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  double time = -1.0;
+  if (IsParamsInterface())
+    time = ParamsInterface().GetTotalTime();
+  else
+    time = params.get<double>("total time",-1.0);
+
+
+
   if (time<0.0) usetime = false;
 
   // no. of nodes on this surface
@@ -812,11 +886,23 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // find out whether we will use a time curve and get the factor
   const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
-  int curvenum = -1;
-  if (curve) curvenum = (*curve)[0];
-  double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
-    curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  std::vector<double> curvefacs(6,1.0);
+  for (int i=0; i<6; ++i)
+  {
+    const int curvenum = (curve) ? (*curve)[i] : -1;
+    if (curvenum>=0 && usetime)
+      curvefacs[i] = DRT::Problem::Instance()->Curve(curvenum).f(time);
+  }
+
+  // (spatial) function business
+  std::vector<double> sp_functfacs(6,1.0);
+  const std::vector<int>* sp_funct = condition.Get<std::vector<int> >("funct");
+  LINALG::Matrix<3,1> xrefegp(false);
+  bool have_sp_funct = false;
+  if (sp_funct)
+    for (int dim=0; dim<3; dim++)
+      if ((*sp_funct)[dim] > 0)
+        have_sp_funct = (have_sp_funct or true);
 
   // get type of condition
   LoadType ltype = neum_none;
@@ -831,6 +917,16 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
   // get values and switches from the condition
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val");
+
+  // ensure that at least as many curves/functs as dofs are available
+  if (int(onoff->size()) < 6)
+    dserror("Fewer functions or curves defined than the element has dofs.");
+
+  for (int checkdof = 3; checkdof < int(onoff->size()); ++checkdof)
+  {
+    if ((*onoff)[checkdof] != 0)
+      dserror("Number of DoFs in Neumann_Evalutaion is only 3. The remaining 3 DoFs are not considered.");
+  }
 
   // start integration
   double e3=0.0;
@@ -867,9 +963,32 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
           yi += xcure[1][i]*funct[i];
           zi += xcure[2][i]*funct[i];
         }
+      // evaluate the spatial function in the reference state
+      if (have_sp_funct)
+      {
+        for (int dim=0; dim<3; ++dim)
+        {
+          xrefegp(dim) = 0.0;
+          // loop over all nodes of the element
+          for (int nnum=0; nnum<iel; ++nnum)
+            xrefegp(dim) += funct[nnum]*xrefe[dim][nnum];
+        }
+        for (int dim=0; dim<3; ++dim)
+        {
+          if ((*onoff)[dim])
+          {
+            // spatial function evaluation
+            const int sp_functnum = (sp_funct) ? (*sp_funct)[dim] : -1;
+            sp_functfacs[dim]
+                = (sp_functnum>0)
+                ? DRT::Problem::Instance()->Funct(sp_functnum-1).Evaluate(dim,xrefegp.A(),time,NULL)
+                : 1.0;
+          }
+        }
+      }
       // do load calculation at gaussian point
       s8loadgaussianpoint(eload,hhi,wgt,xjm,funct,deriv,iel,xi,yi,zi,ltype,
-                            *onoff,*val,curvefac,time);
+                            *onoff,*val,curvefacs,sp_functfacs,time);
       } // for (int ls=0; ls<nis; ++ls)
     } // for (int lr=0; lr<nir; ++lr)
 
@@ -879,6 +998,94 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
       elevec1[inode*6+dof] += eload[dof][inode];
 
   return 0;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Shell8::s8_recover(std::vector<int>&         lm,
+                                       std::vector<double>&      disp,
+                                       std::vector<double>&      residual)
+{
+  // for eas
+  std::vector<double>*      alfa        = NULL;
+  std::vector<double>*      alfa_inc    = NULL;
+  // get access to the interface parameters
+  const double step_length   = ParamsInterface().GetStepLength();
+
+  // have eas?
+  if (nhyb_)
+  {
+    // access general eas history stuff stored in element
+    alfa        = data_.GetMutable<std::vector<double> >("alfa");
+    alfa_inc    = data_.GetMutable<std::vector<double> >("alfa_inc");
+    if (!alfa || !alfa_inc)
+      dserror("Missing data");
+  }
+
+  /* if it is a default step, we have to recover the condensed
+   * solution vectors */
+  if (ParamsInterface().IsDefaultStep())
+  {
+    /* recovery of the enhanced assumed strain increment and
+     * update of the eas dofs. */
+    if (nhyb_)
+    {
+      // first, store the eas state of the previous accepted Newton step
+      ParamsInterface().SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas,
+          nhyb_,&(*alfa)[0],Owner());
+
+      Epetra_SerialDenseMatrix* oldDtildinv =
+          data_.GetMutable<Epetra_SerialDenseMatrix>("Dtildinv");
+      Epetra_SerialDenseMatrix* oldLt       =
+          data_.GetMutable<Epetra_SerialDenseMatrix>("Lt");
+      std::vector<double>* oldRtild         =
+          data_.GetMutable<std::vector<double> >("Rtild");
+      if (!oldDtildinv || !oldLt || !oldRtild)
+        dserror("Missing data");
+
+      /*----------- make multiplication eashelp = oldLt * disp_incr[kstep] */
+      std::vector<double> eashelp(nhyb_);
+      s8_YpluseqAx(eashelp,*oldLt,residual,1.0,true);
+      /*---------------------------------------- add old Rtilde to eashelp */
+      for (int i=0; i<nhyb_; ++i)
+        eashelp[i] += (*oldRtild)[i];
+      /*---------- make multiplication alfa_inc = - old Dtildinv * eashelp */
+      s8_YpluseqAx(*alfa_inc,*oldDtildinv,eashelp,-1.0,true);
+      /*------------------------------------------ update alfa += alfa_inc */
+      for (int i=0; i<nhyb_; ++i)
+        (*alfa)[i] += step_length*(*alfa_inc)[i];
+    } // if (nhyb_)
+  } // if (*isdefault_step_ptr_)
+  /* if it is no default step, we can correct the update and the current eas
+   * state without the need for any matrix-vector products. */
+  else
+  {
+    // The first step has to be a default step!
+    if (old_step_length_<0.0)
+      dserror("The old step length was not defined!");
+    /* if this is no full step, we have to adjust the length of the
+     * enhanced assumed strain incremental step. */
+    if (nhyb_)
+    {
+      /* undo the previous step:
+       *            alpha_new = alpha_old - old_step * alpha_inc
+       * and update the solution variable with the new step length:
+       *            alpha_new = alpha_new + new_step * alpha_inc */
+      for (int i=0; i<nhyb_; ++i)
+        (*alfa)[i] += (step_length-old_step_length_) * (*alfa_inc)[i];
+    } // if (nhyb_)
+  } // else
+  // save the old step length
+  old_step_length_ = step_length;
+
+  // Check if the eas incr is tested and if yes, calculated the element
+  // contribution to the norm
+  if (nhyb_)
+    ParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
+        nhyb_,&(*alfa_inc)[0],&(*alfa)[0],step_length,Owner());
+
+  // the element internal stuff should be up-to-date for now...
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -997,6 +1204,7 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>&         lm,
   double amkonc0[3][3];
   double detc0;
   std::vector<double>*      alfa        = NULL;
+  std::vector<double>*      alfa_inc    = NULL;
   Epetra_SerialDenseMatrix* oldDtildinv = NULL;
   Epetra_SerialDenseMatrix* oldLt       = NULL;
   std::vector<double>*      oldRtild    = NULL;
@@ -1010,7 +1218,7 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>&         lm,
   thick = data_.Get<std::vector<double> >("thick");
   if (!thick) dserror("Cannot find nodal thicknesses");
 
-  // eas
+  // set all eas data
   if (nhyb_)
   {
     // init to zero
@@ -1025,17 +1233,24 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>&         lm,
 
     // access history stuff stored in element
     alfa        = data_.GetMutable<std::vector<double> >("alfa");
+    alfa_inc    = data_.GetMutable<std::vector<double> >("alfa_inc");
     oldDtildinv = data_.GetMutable<Epetra_SerialDenseMatrix>("Dtildinv");
     oldLt       = data_.GetMutable<Epetra_SerialDenseMatrix>("Lt");
     oldRtild    = data_.GetMutable<std::vector<double> >("Rtild");
-    if (!alfa || !oldDtildinv || !oldLt || !oldRtild) dserror("Missing data");
-    /*---------------- make multiplication eashelp = oldLt * disp[kstep] */
-    std::vector<double> eashelp(nhyb_);
-    s8_YpluseqAx(eashelp,*oldLt,residual,1.0,true);
-    /*---------------------------------------- add old Rtilde to eashelp */
-    for (int i=0; i<nhyb_; ++i) eashelp[i] += (*oldRtild)[i];
-    /*----------------- make multiplication alfa -= olDtildinv * eashelp */
-    s8_YpluseqAx(*alfa,*oldDtildinv,eashelp,-1.0,false);
+    if (!alfa || !alfa_inc || !oldDtildinv || !oldLt || !oldRtild) dserror("Missing data");
+    // FixMe deprecated implementation
+    if (not IsParamsInterface())
+    {
+      /*---------------- make multiplication eashelp = oldLt * disp[kstep] */
+      std::vector<double> eashelp(nhyb_);
+      s8_YpluseqAx(eashelp,*oldLt,residual,1.0,true);
+      /*---------------------------------------- add old Rtilde to eashelp */
+      for (int i=0; i<nhyb_; ++i) eashelp[i] += (*oldRtild)[i];
+      /*------------ make multiplication alfa_inc = - olDtildinv * eashelp */
+      s8_YpluseqAx(*alfa_inc,*oldDtildinv,eashelp,-1.0,true);
+      /*------------------------------------ update alfa += 1.0 * alfa_inc */
+      for (int i=0; i<nhyb_; ++i) (*alfa)[i] += (*alfa_inc)[i];
+    } // if (not IsInterface())
   } // if (nhyb_)
 
   // ------------------------------------ check calculation of mass matrix
@@ -1204,12 +1419,15 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>&         lm,
        } // for (int lt=0; lt<nit; ++lt)
        /*------------ product of all weights and jacobian of mid surface */
        double weight = facr*facs*da;
-       /*----------------------------------- elastic stiffness matrix ke */
-       s8BtDB(*stiffmatrix,bop,D,iel,numdf,weight);
-       /*--------------------------------- geometric stiffness matrix kg */
-       if (!ansq) s8tvkg(*stiffmatrix,stress_r,funct,deriv,numdf,iel,weight,e1,e2);
-       else       s8anstvkg(*stiffmatrix,stress_r,funct,deriv,numdf,iel,weight,e1,e2,
-                            frq,fsq,funct1q,funct2q,deriv1q,deriv2q,ansq,nsansq);
+       if (stiffmatrix!=NULL)
+       {
+         /*--------------------------------- elastic stiffness matrix ke */
+         s8BtDB(*stiffmatrix,bop,D,iel,numdf,weight);
+         /*------------------------------- geometric stiffness matrix kg */
+         if (!ansq) s8tvkg(*stiffmatrix,stress_r,funct,deriv,numdf,iel,weight,e1,e2);
+         else       s8anstvkg(*stiffmatrix,stress_r,funct,deriv,numdf,iel,weight,e1,e2,
+                              frq,fsq,funct1q,funct2q,deriv1q,deriv2q,ansq,nsansq);
+       }
        /*-------------------------------- calculation of internal forces */
        if (force) s8intforce(intforce,stress_r,bop,iel,numdf,12,weight);
        /*------------- mass matrix : gaussian point on shell mid surface */
@@ -1262,7 +1480,8 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>&         lm,
     /*------------------------------------------- make Ltrans * Dtildinv */
     s8mattrnmatdense(workeas,Lt,Dtildinv,nd,nhyb_,nhyb_,0,0.0);
     /*---------------------------------- make estif -= Lt * Dtildinv * L */
-    s8matmatdense(*stiffmatrix,workeas,Lt,nd,nhyb_,nd,1,-1.0);
+    if (stiffmatrix!=NULL)
+      s8matmatdense(*stiffmatrix,workeas,Lt,nd,nhyb_,nd,1,-1.0);
     /*===================================================================*/
     /* R(nd) = R(nd) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * Rtilde(nhyb) */
     /*===================================================================*/
@@ -1278,20 +1497,23 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>&         lm,
                                   (*oldRtild)[i]      = Rtild[i];
     }
   } // if (nhyb_)
+  /*------------------------------------- make estif absolute symmetric */
+  if (stiffmatrix!=NULL)
+  {
+    for (int i=0; i<nd; ++i)
+      for (int j=i+1; j<nd; ++j)
+      {
+        const double average = 0.5*( (*stiffmatrix)(i,j) + (*stiffmatrix)(j,i) );
+        (*stiffmatrix)(i,j) = average;
+        (*stiffmatrix)(j,i) = average;
+      }
+  }
   /*- add internal forces to global vector, if a global vector was passed */
   /*                                                      to this routine */
   if (force)
     for (int i=0; i<nd; ++i) (*force)[i] += intforce[i];
   //------------------------------------------------ delete the only ARRAY
   amdel(&C_a);
-  /*------------------------------------- make estif absolute symmetric */
-  for (int i=0; i<nd; ++i)
-    for (int j=i+1; j<nd; ++j)
-    {
-      const double average = 0.5*( (*stiffmatrix)(i,j) + (*stiffmatrix)(j,i) );
-      (*stiffmatrix)(i,j) = average;
-      (*stiffmatrix)(j,i) = average;
-    }
 
 
 #if 0
@@ -1723,8 +1945,25 @@ void DRT::ELEMENTS::Shell8::s8tmat(
       s8_mat_linel(material->m.stvenant,gmkonrtmp,C);
       s8_mat_stress1(stress,strain,C);
       amdel(&tmp);
+      break;
     }
-    break;
+    case m_neohooke:/*--------------------------------- neo-hooke-material */
+    {
+      ARRAY tmp1;
+      ARRAY tmp2;
+      double** gmkonrtmp = (double**)amdef((char*)"tmp",&tmp1,3,3,(char*)"DA");
+      double** gmkonctmp = (double**)amdef((char*)"tmp",&tmp2,3,3,(char*)"DA");
+      for (int i=0; i<3; ++i)
+        for (int j=0; j<3; ++j)
+        {
+          gmkonrtmp[i][j] = gmkonr[i][j];
+          gmkonctmp[i][j] = gmkonc[i][j];
+        }
+      s8_mat_neohooke(material->m.neohooke,stress,C,gmkonrtmp,gmkonctmp,detr,detc);
+      amdel(&tmp1);
+      amdel(&tmp2);
+      break;
+    }
     case m_compogden:/*--------------------------------- kompressible ogden */
     {
       ARRAY tmp1;
@@ -1752,11 +1991,13 @@ void DRT::ELEMENTS::Shell8::s8tmat(
       /*-------------------------------------------------------------------*/
       amdel(&tmp1);
       amdel(&tmp2);
+      break;
     }
-    break;
     default:
+    {
       dserror("Ilegal typ of material for element shell8");
-    break;
+      break;
+    }
   } // switch (material->mattyp)
 
 
@@ -3719,7 +3960,8 @@ void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
                          const enum LoadType ltype,
                          const std::vector<int>& onoff,
                          const std::vector<double>& val,
-                         const double curvefac,
+                         const std::vector<double>& curvefacs,
+                         const std::vector<double>& sp_functfacs,
                          const double time)
 {
 /*----------------------------------------------------------------------*/
@@ -3739,7 +3981,7 @@ void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
       double ar[3];
       ar[0]=ar[1]=ar[2]= sqrt( ap[0]*ap[0] + ap[1]*ap[1] + ap[2]*ap[2] );
       for (int i=0; i<3; ++i)
-        ar[i] = ar[i] * wgt * onoff[i] * val[i] * curvefac;
+        ar[i] = ar[i] * wgt * onoff[i] * val[i] * curvefacs[i] * sp_functfacs[i];
       for (int i=0; i<iel; ++i)
         for (int j=0; j<3; ++j)
           eload[j][i] += funct[i]*ar[j];
@@ -3749,9 +3991,9 @@ void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
     case neum_consthydro_z:
     {
       if (onoff[2] != 1) dserror("hydropressure must be on third dof");
-      ar[0] = ap[0] * val[2] * wgt * curvefac;
-      ar[1] = ap[1] * val[2] * wgt * curvefac;
-      ar[2] = ap[2] * val[2] * wgt * curvefac;
+      ar[0] = ap[0] * val[2] * wgt * curvefacs[2] * sp_functfacs[2];
+      ar[1] = ap[1] * val[2] * wgt * curvefacs[2] * sp_functfacs[2];
+      ar[2] = ap[2] * val[2] * wgt * curvefacs[2] * sp_functfacs[2];
       for (int i=0; i<iel; ++i)
         for (int j=0; j<3; ++j)
           eload[j][i] += funct[i]*ar[j];
@@ -3778,7 +4020,7 @@ void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
     case neum_opres_FSI:
     {
       if (onoff[2] != 1) dserror("orthopressure must be on third dof");
-      double pressure = -val[2]*curvefac;
+      double pressure = -val[2]*curvefacs[2]*sp_functfacs[2];
       ar[0] = ap[0] * pressure * wgt;
       ar[1] = ap[1] * pressure * wgt;
       ar[2] = ap[2] * pressure * wgt;

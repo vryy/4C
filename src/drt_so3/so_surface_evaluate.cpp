@@ -1,13 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_surface_evaluate.cpp
-\brief
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\maintainer Michael Gee
 
 *----------------------------------------------------------------------*/
 
@@ -33,6 +27,7 @@ Maintainer: Michael Gee
 #include "../drt_immersed_problem/immersed_base.H"
 #include "../drt_immersed_problem/immersed_field_exchange_manager.H"
 #include "../drt_crack/crackUtils.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 using UTILS::SurfStressManager;
 using POTENTIAL::PotentialManager;
@@ -47,7 +42,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
                                                       Epetra_SerialDenseVector& elevec1,
                                                       Epetra_SerialDenseMatrix* elemat1)
 {
-
+  // set the interface ptr in the parent element
+  ParentElement()->SetParamsInterfacePtr(params);
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
   double pstime = sdyn.get<double>("PRESTRESSTIME");
@@ -120,7 +116,11 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  p
   */
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  double time = -1.0;
+  if (ParentElement()->IsParamsInterface())
+    time = ParentElement()->ParamsInterfacePtr()->GetTotalTime();
+  else
+    time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
   const int numdim = 3;

@@ -1,13 +1,7 @@
 /*!----------------------------------------------------------------------
 \file shell8_input.cpp
-\brief
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\maintainer Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
@@ -98,9 +92,10 @@ bool DRT::ELEMENTS::Shell8::ReadElement(const std::string& eletype,
   nhyb_ = 0;
   for (int i=0; i<5; ++i) nhyb_ += eas_[i];
 
-  // create arrays alfa, Dtildinv, Lt, Rtild in data_
+  // create arrays alfa, alfa_inc, Dtildinv, Lt, Rtild in data_
   std::vector<double> alfa(nhyb_);
   std::vector<double> alfao(nhyb_);
+  std::vector<double> alfa_inc(nhyb_);
   std::vector<double> Rtild(nhyb_);
   std::fill(alfa.begin(), alfa.end(), 0);
   std::fill(alfao.begin(),alfao.end(),0);
@@ -113,6 +108,7 @@ bool DRT::ELEMENTS::Shell8::ReadElement(const std::string& eletype,
 
   data_.Add("alfa",alfa);
   data_.Add("alfao",alfao);
+  data_.Add("alfa_inc",alfa_inc);
   data_.Add("Rtild",Rtild);
   data_.Add("Dtildinv",Dtildinv);
   data_.Add("Lt",Lt);

@@ -1,13 +1,7 @@
 /*!----------------------------------------------------------------------
 \file shell8.cpp
-\brief
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\maintainer Michael Gee
 
 *----------------------------------------------------------------------*/
 #include "shell8.H"
@@ -174,10 +168,13 @@ nhyb_(0),
 ans_(0),
 sdc_(1.0),
 material_(0),
-data_()
+data_(),
+old_step_length_(-1.0),
+interface_ptr_(Teuchos::null)
 {
   ngp_[0] = ngp_[1] = ngp_[2] = 0;
   eas_[0] = eas_[1] = eas_[2] = eas_[3] = eas_[4] = 0;
+
   return;
 }
 
@@ -194,7 +191,9 @@ nhyb_(old.nhyb_),
 ans_(old.ans_),
 sdc_(old.sdc_),
 material_(old.material_),
-data_(old.data_)
+data_(old.data_),
+old_step_length_(old.old_step_length_),
+interface_ptr_(old.interface_ptr_)
 {
   for (int i=0; i<3; ++i) ngp_[i] = old.ngp_[i];
   for (int i=0; i<5; ++i) eas_[i] = old.eas_[i];
@@ -260,6 +259,8 @@ void DRT::ELEMENTS::Shell8::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,sdc_);
   // material_
   AddtoPack(data,material_);
+  // old_step_length_
+  AddtoPack(data,old_step_length_);
   // data_
   AddtoPack(data,data_);
 
@@ -300,6 +301,8 @@ void DRT::ELEMENTS::Shell8::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,sdc_);
   // material_
   ExtractfromPack(position,data,material_);
+  // old_step_length_
+  ExtractfromPack(position,data,old_step_length_);
   // data_
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

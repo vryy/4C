@@ -1,13 +1,7 @@
 /*!----------------------------------------------------------------------
 \file shell8_line_evaluate.cpp
-\brief
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\maintainer Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
@@ -18,6 +12,7 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 extern "C"
 {
@@ -36,6 +31,7 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
+  ParentElement()->SetParamsInterfacePtr(params);
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   std::vector<double> mydisp(lm.size());
@@ -43,7 +39,11 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
 
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  double time = -1.0;
+  if (ParentElement()->IsParamsInterface())
+    time = ParentElement()->ParamsInterface().GetTotalTime();
+  else
+    time = params.get<double>("total time",-1.0);
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor

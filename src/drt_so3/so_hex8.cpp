@@ -1,13 +1,7 @@
 /*!----------------------------------------------------------------------
 \file so_hex8.cpp
-\brief
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\maintainer Michael Gee
 
 *----------------------------------------------------------------------*/
 
@@ -116,7 +110,8 @@ data_(),
 analyticalmaterialtangent_(true),
 pstype_(INPAR::STR::prestress_none),
 pstime_(0.0),
-time_(0.0)
+time_(0.0),
+old_step_length_(0.0)
 {
   eastype_ = soh8_easnone;
   neas_ = 0;
@@ -168,7 +163,8 @@ detJ_(old.detJ_),
 analyticalmaterialtangent_(old.analyticalmaterialtangent_),
 pstype_(old.pstype_),
 pstime_(old.pstime_),
-time_(old.time_)
+time_(old.time_),
+old_step_length_(old.old_step_length_)
 {
   invJ_.resize(old.invJ_.size());
   for (int i=0; i<(int)invJ_.size(); ++i)
@@ -241,7 +237,8 @@ void DRT::ELEMENTS::So_hex8::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,analyticalmaterialtangent_);
   // data_
   AddtoPack(data,data_);
-
+  // line search
+  AddtoPack(data,old_step_length_);
   // prestress_
   AddtoPack(data,pstype_);
   AddtoPack(data,pstime_);
@@ -250,7 +247,6 @@ void DRT::ELEMENTS::So_hex8::Pack(DRT::PackBuffer& data) const
   {
     DRT::ParObject::AddtoPack(data,*prestress_);
   }
-
   // invdesign_
   else if (pstype_==INPAR::STR::prestress_id)
   {
@@ -295,7 +291,8 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
-
+  // line search
+  ExtractfromPack(position,data,old_step_length_);
   // prestress_
   pstype_ = static_cast<INPAR::STR::PreStress>( ExtractInt(position,data) );
   ExtractfromPack(position,data,pstime_);
@@ -314,7 +311,6 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
     }
     prestress_->Unpack(tmpprestress);
   }
-
   // invdesign_
   else if (pstype_==INPAR::STR::prestress_id)
   {
