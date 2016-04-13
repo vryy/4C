@@ -2,13 +2,9 @@
 /*!
 \file inpar_solver_nonlin.cpp
 
-\brief Input parameters for nonlinear solvers
+\maintainer Matthias Mayr, Michael Hiermeier
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\brief Input parameters for nonlinear solvers
 */
 
 /*----------------------------------------------------------------------*/
@@ -116,7 +112,7 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         "If the new step size is greater than this value, the transient terms will be eliminated "
         "from the Newton iteration resulting in a full Newton solve.",&ptc);
     DoubleParameter("deltaMin",1.0e-5,"Minimum step size.",&ptc);
-    IntParameter("Maximum Number of Pseudo-Transient Iterations",std::numeric_limits<int>::max(),"",&ptc);
+    IntParameter("Max Number of PTC Iterations",std::numeric_limits<int>::max(),"",&ptc);
     Teuchos::Array<std::string> time_step_control = Teuchos::tuple<std::string>(
         "SER",
         "Switched Evolution Relaxation",

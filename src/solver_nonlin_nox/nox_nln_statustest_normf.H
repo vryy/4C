@@ -65,6 +65,13 @@ namespace StatusTest {
     //! Returns the initial tolerance of the corresponding quantity.
     virtual double GetInitialTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
 
+    /*! \brief Returns the norm type as <int> of the desired quantity
+     *
+     *  If the given quantity cannot be found a default value of -100 is returned. */
+    int GetNormType(const NOX::NLN::StatusTest::QuantityType& qType) const;
+
+    //! Check for the given quantity
+    bool IsQuantity(const NOX::NLN::StatusTest::QuantityType& qType) const;
     //@}
 
     //! derived

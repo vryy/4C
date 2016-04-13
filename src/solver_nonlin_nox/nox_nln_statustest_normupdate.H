@@ -1,9 +1,15 @@
-/*
- * nox_nln_statustest_normupdate.H
- *
- *  Created on: Sep 17, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file nox_nln_statustest_normupdate.H
+
+\maintainer Michael Hiermeier
+
+\date Sep 17, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_NORMUPDATE_H_
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_NORMUPDATE_H_
@@ -77,6 +83,14 @@ namespace StatusTest {
     virtual NOX::StatusTest::StatusType checkStatus(
         const NOX::Solver::Generic& problem,
         NOX::StatusTest::CheckType checkType);
+
+    /*! \brief Returns the norm type as <int> of the desired quantity
+     *
+     *  If the given quantity cannot be found a default value of -100 is returned. */
+    int GetNormType(const NOX::NLN::StatusTest::QuantityType& qType) const;
+
+    //! Check for the given quantity
+    bool IsQuantity(const NOX::NLN::StatusTest::QuantityType& qType) const;
 
     //! derived
     //! NOTE: returns the global status of all normF tests

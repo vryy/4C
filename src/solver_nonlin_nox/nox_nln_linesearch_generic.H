@@ -31,37 +31,31 @@ namespace LineSearch {
     virtual ~Generic() {};
 
     //! @name NOX::NLN::LineSearch::Generic
-    //!@{
-
+    //! @{
     //! returns the slope in the current search direction
     virtual const NOX::Abstract::Vector& GetSearchDirection() const = 0;
 
     //! returns the stepSize
     virtual const double& GetStepLength() const = 0;
-
-    //!@}
+    //! @}
 
     //! @name NOX::LineSearch::Generic
-    //!@{
-
-    //! derived
+    //! @{
+    //! [derived]
     virtual bool compute(NOX::Abstract::Group& grp,
         double& step,
         const NOX::Abstract::Vector& dir,
         const NOX::Solver::Generic& s) = 0;
-
-    //!@}
+    //! @}
 
     //! @name NOX::NLN::INNER::StatusTest::Interface::Required
-    //@{
-
-    //! derived
+    //! @{
+    //! get the number of line search iterations
     virtual const int& GetNumIterations() const = 0;
 
-    //! derived
+    //! get the merit function
     virtual const NOX::MeritFunction::Generic& GetMeritFunction() const = 0;
-
-    //@}
+    //! @}
   };
 }
 }

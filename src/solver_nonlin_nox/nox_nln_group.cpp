@@ -77,19 +77,12 @@ void NOX::NLN::Group::computeX(
     const NOX::Epetra::Vector& d,
     double step)
 {
-  // -------------------------------------
-  // Update the external variables
-  // -------------------------------------
-  // We have to remove the const state, because we want to change class variables
-  // of the required interface.
-//  Teuchos::RCP<NOX::NLN::Interface::Required> iReq =
-//      Teuchos::rcp_const_cast<NOX::NLN::Interface::Required>(GetNlnReqInterfacePtr());
-//  iReq->SetPrimarySolution(grp.xVector,d,step);
-  // -------------------------------------
+  prePostOperatorPtr_->runPreComputeX(grp,d.getEpetraVector(),step,*this);
+
   // Update the nox internal variables
-  // -------------------------------------
   NOX::Epetra::Group::computeX(grp,d,step);
 
+  prePostOperatorPtr_->runPostComputeX(grp,d.getEpetraVector(),step,*this);
   return;
 }
 
@@ -136,7 +129,7 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeF()
 
   if (status == false)
   {
-    throw "NOX Error: Fill Failed";
+    throw "NOX::NLN::Group::computeF() - fill failed";
   }
 
   isValidRHS = true;
@@ -436,6 +429,16 @@ Teuchos::RCP<const Epetra_Vector> NOX::NLN::Group::GetLumpedMassMatrixPtr() cons
 {
   return Teuchos::rcp_dynamic_cast<NOX::NLN::Interface::Required>(
       userInterfacePtr)->GetLumpedMassMatrixPtr();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool NOX::NLN::Group::isJacobian() const
+{
+  if (isValidJacobian and not sharedLinearSystem.isOwner(this))
+    sharedLinearSystem.getObject(this);
+
+  return NOX::Epetra::Group::isJacobian();
 }
 
 /*----------------------------------------------------------------------*

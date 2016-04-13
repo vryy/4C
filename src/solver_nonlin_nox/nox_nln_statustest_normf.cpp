@@ -132,7 +132,8 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormF::checkStatus(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::StatusTest::NormF::GetNormF(const NOX::NLN::StatusTest::QuantityType& qType) const
+double NOX::NLN::StatusTest::NormF::GetNormF(
+    const NOX::NLN::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i=0;i<nChecks_;++i)
     if (checkList_[i]==qType)
@@ -144,7 +145,8 @@ double NOX::NLN::StatusTest::NormF::GetNormF(const NOX::NLN::StatusTest::Quantit
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::StatusTest::NormF::GetTrueTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const
+double NOX::NLN::StatusTest::NormF::GetTrueTolerance(
+    const NOX::NLN::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i=0;i<nChecks_;++i)
     if (checkList_[i]==qType)
@@ -156,7 +158,8 @@ double NOX::NLN::StatusTest::NormF::GetTrueTolerance(const NOX::NLN::StatusTest:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::StatusTest::NormF::GetSpecifiedTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const
+double NOX::NLN::StatusTest::NormF::GetSpecifiedTolerance(
+    const NOX::NLN::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i=0;i<nChecks_;++i)
     if (checkList_[i]==qType)
@@ -168,7 +171,8 @@ double NOX::NLN::StatusTest::NormF::GetSpecifiedTolerance(const NOX::NLN::Status
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::NLN::StatusTest::NormF::GetInitialTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const
+double NOX::NLN::StatusTest::NormF::GetInitialTolerance(
+    const NOX::NLN::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i=0;i<nChecks_;++i)
     if (checkList_[i]==qType)
@@ -176,6 +180,31 @@ double NOX::NLN::StatusTest::NormF::GetInitialTolerance(const NOX::NLN::StatusTe
 
   // if we cannot find the right quantity in the class list we will return -1.0
   return (-1.0);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int NOX::NLN::StatusTest::NormF::GetNormType(
+    const NOX::NLN::StatusTest::QuantityType& qType) const
+{
+  for (std::size_t i=0;i<nChecks_;++i)
+    if (checkList_[i]==qType)
+      return normType_[i];
+
+  // if we cannot find the right quantity in the class list we will return -100
+  return (-100);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool NOX::NLN::StatusTest::NormF::IsQuantity(
+    const NOX::NLN::StatusTest::QuantityType& qType) const
+{
+  for (std::size_t i=0;i<nChecks_;++i)
+    if (checkList_[i]==qType)
+      return true;
+
+  return false;
 }
 
 /*----------------------------------------------------------------------------*

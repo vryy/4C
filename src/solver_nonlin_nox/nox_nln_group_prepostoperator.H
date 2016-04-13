@@ -1,9 +1,15 @@
-/*
- * nox_nln_group_prepostoperator.H
- *
- *  Created on: Oct 19, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file nox_nln_group_prepostoperator.H
+
+\maintainer Michael Hiermeier
+
+\date Oct 19, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #ifndef SRC_SOLVER_NONLIN_NOX_NOX_NLN_GROUP_PREPOSTOPERATOR_H_
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_GROUP_PREPOSTOPERATOR_H_
@@ -23,8 +29,9 @@ namespace GROUP {
   //! Currently supported group pre/post operators.
   enum PrePostOpType
   {
-    prepost_ptc,        //!< pseudo transient continuation pre/post operator
-    prepost_tangdis     //!< tangdis (predictor) pre/post operator
+    prepost_ptc,         //!< pseudo transient continuation pre/post operator
+    prepost_tangdis,     //!< tangdis (predictor) pre/post operator
+    prepost_impl_generic //!< implicit generic (time integrator) pre/post operator
   };
 
 /*!
@@ -81,6 +88,32 @@ namespace GROUP {
     virtual void runPostComputeF( Epetra_Vector& F,
         const NOX::NLN::Group& grp);
 
+    /** User defined method that will be executed at the start of a call to NOX::NLN::Group::computeX().
+     *
+     * \param input_grp: read only access to the input group (holds the old X).
+     * \param dir      : read only access to the direction vector (step length equal 1.0).
+     * \param step     : read only access to the current step length (line search).
+     * \param curr_grp : read only access to the called/current group (will hold the new X).
+     */
+    virtual void runPreComputeX(
+        const NOX::NLN::Group& input_grp,
+        const Epetra_Vector& dir,
+        const double& step,
+        const NOX::NLN::Group& curr_grp);
+
+    /** User defined method that will be executed at the end of a call to NOX::NLN::Group::computeX().
+     *
+     * \param input_grp: read only access to the input group (holds the old X).
+     * \param dir      : read only access to the direction vector (step length equal 1.0).
+     * \param step     : read only access to the current step length (line search).
+     * \param curr_grp : read only access to the called/current group (holds the new X).
+     */
+    virtual void runPostComputeX(
+        const NOX::NLN::Group& input_grp,
+        const Epetra_Vector& dir,
+        const double& step,
+        const NOX::NLN::Group& curr_grp);
+
   protected:
     //! Flag that determines if a pre/post operator has been supplied by user.
     bool havePrePostOperator_;
@@ -120,6 +153,34 @@ inline void NOX::NLN::GROUP::PrePostOperator::runPostComputeF(
     Map::iterator it;
     for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
       it->second->runPostComputeF(F,grp);
+  }
+}
+
+inline void NOX::NLN::GROUP::PrePostOperator::runPreComputeX(
+    const NOX::NLN::Group& input_grp,
+    const Epetra_Vector& dir,
+    const double& step,
+    const NOX::NLN::Group& curr_grp)
+{
+  if (havePrePostOperator_)
+  {
+    Map::iterator it;
+    for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
+      it->second->runPreComputeX(input_grp,dir,step,curr_grp);
+  }
+}
+
+inline void NOX::NLN::GROUP::PrePostOperator::runPostComputeX(
+    const NOX::NLN::Group& input_grp,
+    const Epetra_Vector& dir,
+    const double& step,
+    const NOX::NLN::Group& curr_grp)
+{
+  if (havePrePostOperator_)
+  {
+    Map::iterator it;
+    for (it=prePostOperatorMapPtr_->begin();it!=prePostOperatorMapPtr_->end();++it)
+      it->second->runPostComputeX(input_grp,dir,step,curr_grp);
   }
 }
 

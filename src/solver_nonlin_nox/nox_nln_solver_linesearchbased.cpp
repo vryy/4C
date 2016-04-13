@@ -39,8 +39,8 @@ NOX::NLN::Solver::LineSearchBased::LineSearchBased
    (const Teuchos::RCP<NOX::Abstract::Group>& grp,
     const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
-    const Teuchos::RCP<Teuchos::ParameterList>& params) :
-    NOX::Solver::LineSearchBased(grp,outerTests,params)
+    const Teuchos::RCP<Teuchos::ParameterList>& params)
+    : NOX::Solver::LineSearchBased(grp,outerTests,params)
 {
   // call derived init() after base init() was called.
   init(innerTests);
@@ -89,7 +89,10 @@ void NOX::NLN::Solver::LineSearchBased::printUpdate()
   }
 
   // ...But only the print process actually prints the result.
-  if (utilsPtr->isPrintType(NOX::Utils::OuterIteration))
+  // ------ standard output ------------------------------------------
+  if (utilsPtr->isPrintType(NOX::Utils::OuterIteration)
+      and (utilsPtr->isPrintType(NOX::Utils::OuterIterationStatusTest)
+      or utilsPtr->isPrintType(NOX::Utils::InnerIteration)))
   {
     utilsPtr->out() << "\n" << NOX::Utils::fill(72) << "\n";
     utilsPtr->out() << "-- Nonlinear Solver Step " << nIter << " -- \n";
@@ -101,6 +104,28 @@ void NOX::NLN::Solver::LineSearchBased::printUpdate()
     if (status == NOX::StatusTest::Failed)
       utilsPtr->out() << " (Failed!)";
     utilsPtr->out() << "\n" << NOX::Utils::fill(72) << "\n" << std::endl;
+  }
+  // ------ short output ---------------------------------------------
+  else if (utilsPtr->isPrintType(NOX::Utils::OuterIteration))
+  {
+    // print the head line
+    if (nIter==0)
+    {
+      utilsPtr->out() << std::setw(4) << "#It"
+          << std::setw(13) << "||F||_2"
+          << std::setw(13) << "step"
+          << std::setw(13) << "||dx||_2\n";
+      utilsPtr->out() << NOX::Utils::fill(50,'^') << "\n";
+    }
+    utilsPtr->out() << std::setw(4) << nIter;
+    utilsPtr->out() << "  " << utilsPtr->sciformat(normSoln);
+    utilsPtr->out() << "  " << utilsPtr->sciformat(stepSize);
+    utilsPtr->out() << "  " << utilsPtr->sciformat(normStep);
+    if (status == NOX::StatusTest::Converged)
+      utilsPtr->out() << " (Converged!)";
+    if (status == NOX::StatusTest::Failed)
+      utilsPtr->out() << " (Failed!)";
+    utilsPtr->out() << "\n";
   }
 
   // Print the final parameter values of the status test

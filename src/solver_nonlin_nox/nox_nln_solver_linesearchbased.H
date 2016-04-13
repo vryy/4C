@@ -20,24 +20,24 @@
 namespace NOX {
 namespace Abstract {
   class Group;
-}
+} // namespace Abstract
 
 namespace StatusTest {
   class Generic;
-}
-}
+} // namespace StatusTest
+} // namespace NOX
 
 namespace Teuchos {
   class ParameterList;
-}
+} // namespace Teuchos
 
 namespace NOX {
 namespace NLN {
 namespace INNER {
 namespace StatusTest {
   class Generic;
-}
-}
+} // namespace StatusTest
+} // namspace INNER
 namespace Solver {
   class LineSearchBased : public NOX::Solver::LineSearchBased
   {
@@ -76,7 +76,7 @@ namespace Solver {
 
     // derived
     virtual void printUpdate();
-  };
+  }; // class LineSearchBased
 } // namespace Solver
 } // namespace NLN
 } // namespace NOX

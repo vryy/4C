@@ -175,13 +175,13 @@ NOX::NLN::LinearSystem::LinearSystem(
  *----------------------------------------------------------------------*/
 void NOX::NLN::LinearSystem::reset(Teuchos::ParameterList& p)
 {
-  zeroInitialGuess_ = p.get("Zero Initial Guess", false);
+  zeroInitialGuess_ = p.get<bool>("Zero Initial Guess", false);
 
-  manualScaling_ = p.get("Compute Scaling Manually", true);
+  manualScaling_ = p.get<bool>("Compute Scaling Manually", true);
 
   // Place linear solver details in the "Output" sublist of the
   // "Linear Solver" parameter list
-  outputSolveDetails_ = p.get("Output Solver Details", true);
+  outputSolveDetails_ = p.get<bool>("Output Solver Details", true);
 
   // set the pre/post-operator
   resetPrePostOperator(p);

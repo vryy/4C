@@ -79,7 +79,7 @@ void NOX::NLN::Solver::PseudoTransient::init()
   pseudoTime_ = 0.0;
 
   maxPseudoTransientIterations_ =
-      p_ptc.get<int>("Maximum Number of Pseudo-Transient Iterations");
+      p_ptc.get<int>("Max Number of PTC Iterations");
 
   // get the time step control type
   const std::string& control_str = p_ptc.get<std::string>("Time Step Control");
@@ -338,6 +338,8 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
   usePseudoTransientResidual_ = true;
   // Do line search and compute new soln.
   ok = lineSearchPtr->compute(soln, stepSize, *dirPtr, *this);
+  // call the computeF routine again, to be sure that it has been evaluated!
+  solnPtr->computeF();
   usePseudoTransientResidual_ = false;
   // evaluate the model reduction ratio if desired
   if (ok)
@@ -680,7 +682,10 @@ void NOX::NLN::Solver::PseudoTransient::printUpdate()
   }
 
   // ...But only the print process actually prints the result.
-  if (utilsPtr->isPrintType(NOX::Utils::OuterIteration))
+  // ------ standard output ------------------------------------------
+  if (utilsPtr->isPrintType(NOX::Utils::OuterIteration)
+      and (utilsPtr->isPrintType(NOX::Utils::OuterIterationStatusTest)
+          or utilsPtr->isPrintType(NOX::Utils::InnerIteration)))
   {
     utilsPtr->out() << "\n" << NOX::Utils::fill(82) << "\n";
     utilsPtr->out() << "-- Nonlinear Solver Step " << nIter << " -- \n";
@@ -696,6 +701,33 @@ void NOX::NLN::Solver::PseudoTransient::printUpdate()
     if (status == NOX::StatusTest::Failed)
       utilsPtr->out() << " (Failed!)";
     utilsPtr->out() << "\n" << NOX::Utils::fill(82) << "\n" << std::endl;
+  }
+  // ------ short output ---------------------------------------------
+  else if (utilsPtr->isPrintType(NOX::Utils::OuterIteration))
+  {
+    // print the head line
+    if (nIter==0)
+    {
+      utilsPtr->out() << std::setw(4) << "#It"
+          << std::setw(13) << "||F||_2"
+          << std::setw(13) << "step"
+          << std::setw(13) << "||dx||_2"
+          << std::setw(13) << "dt_ptc\n";
+      utilsPtr->out() << NOX::Utils::fill(60,'^') << "\n";
+    }
+    utilsPtr->out() << std::setw(4) << nIter;
+    utilsPtr->out() << "  " << utilsPtr->sciformat(normSoln);
+    utilsPtr->out() << "  " << utilsPtr->sciformat(stepSize);
+    utilsPtr->out() << "  " << utilsPtr->sciformat(normStep);
+    if (delta_==-1.0)
+      utilsPtr->out() << std::setw(13) << "auto";
+    else
+      utilsPtr->out() << "  " << utilsPtr->sciformat(delta_);
+    if (status == NOX::StatusTest::Converged)
+      utilsPtr->out() << " (Converged!)";
+    if (status == NOX::StatusTest::Failed)
+      utilsPtr->out() << " (Failed!)";
+    utilsPtr->out() << "\n";
   }
 
   // Print the final parameter values of the status test

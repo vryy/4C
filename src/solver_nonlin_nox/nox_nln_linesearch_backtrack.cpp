@@ -220,7 +220,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute
     catch (const char* e)
     {
       if (not allowExceptions_)
-        dserror("An exception occurred!");
+        dserror("An exception occurred: %s",e);
 
       if (utils_->isPrintType(NOX::Utils::Warning))
           utils_->out() << "WARNING: Error caught = " << e << "\n";

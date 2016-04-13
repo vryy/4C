@@ -175,6 +175,42 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+bool NOX::NLN::StatusTest::NormWRMS::IsQuantity(
+    const NOX::NLN::StatusTest::QuantityType& qType) const
+{
+  for (std::size_t i=0;i<nChecks_;++i)
+    if (checkList_[i]==qType)
+      return true;
+
+  return false;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double NOX::NLN::StatusTest::NormWRMS::GetAbsoluteTolerance(
+    const NOX::NLN::StatusTest::QuantityType& qType) const
+{
+  for (std::size_t i=0;i<nChecks_;++i)
+    if (checkList_[i]==qType)
+      return atol_[i];
+
+  return -1.0;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double NOX::NLN::StatusTest::NormWRMS::GetRelativeTolerance(
+    const NOX::NLN::StatusTest::QuantityType& qType) const
+{
+  for (std::size_t i=0;i<nChecks_;++i)
+    if (checkList_[i]==qType)
+      return rtol_[i];
+
+  return -1.0;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::getStatus() const
 {
   return gStatus_;
@@ -194,17 +230,20 @@ std::ostream& NOX::NLN::StatusTest::NormWRMS::print(
     stream << indent_string;
     stream << status_[i];
     stream << QuantityType2String(checkList_[i]) << "-";
-    stream << "WRMS-Norm = " << NOX::Utils::sciformat((*normWRMS_)[i], 3) << " < " << tol_[i];
+    stream << "WRMS-Norm = " << NOX::Utils::sciformat((*normWRMS_)[i], 3)
+           << " < " << tol_[i];
   }
   if (printCriteria2Info_) {
     stream << std::endl << indent_string;
     stream << std::setw(13) << " ";
-    stream << "(Min Step Size:  " << NOX::Utils::sciformat(computedStepSize_, 3) << " >= " << alpha_ << ")";
+    stream << "(Min Step Size:  " << NOX::Utils::sciformat(computedStepSize_, 3)
+           << " >= " << alpha_ << ")";
   }
   if (printCriteria3Info_) {
     stream << std::endl << indent_string;
     stream << std::setw(13) << " ";
-    stream << "(Max Lin Solv Tol:  " << NOX::Utils::sciformat(achievedTol_, 3) << " < " << beta_ << ")";
+    stream << "(Max Lin Solv Tol:  " << NOX::Utils::sciformat(achievedTol_, 3)
+           << " < " << beta_ << ")";
   }
   stream << std::endl;
   return stream;

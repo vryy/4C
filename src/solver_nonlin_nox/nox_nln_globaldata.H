@@ -67,7 +67,7 @@ namespace Interface {
   };
 
   //! Map quantity enum to std::string
-  static inline const std::string SolutionType2String(const enum SolutionType type)
+  static inline const std::string SolutionType2String(const enum SolutionType& type)
   {
     switch (type)
     {
@@ -215,16 +215,6 @@ namespace Interface {
     //! setup the nln_utils class
     void Setup();
 
-    //! set printing parameters
-    //! translate dat file input into NOX input
-    void SetPrintingParameters();
-
-    //! set solver option parameters
-    void SetSolverOptionParameters();
-
-    //! set status test parameters
-    void SetStatusTestParameters();
-
     //! return the nox_utils class
     const NOX::Utils& GetNoxUtils() const;
 
@@ -264,6 +254,17 @@ namespace Interface {
   private:
     //! check the constructor input
     void CheckInput() const;
+
+    /*! \brief set printing parameters
+     *
+     * translate dat file input into NOX input */
+    void SetPrintingParameters();
+
+    //! set solver option parameters
+    void SetSolverOptionParameters();
+
+    //! set status test parameters
+    void SetStatusTestParameters();
 
   private:
     Teuchos::RCP<const Epetra_Comm> comm_;

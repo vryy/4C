@@ -207,6 +207,34 @@ namespace Abstract {
         const NOX::NLN::Group& grp)
     { return; };
 
+    /** User defined method that will be executed at the start of a call to NOX::NLN::Group::computeX().
+     *
+     * \param input_grp: read only access to the input group (holds the old X).
+     * \param dir      : read only access to the direction vector (step length equal 1.0).
+     * \param step     : read only access to the current step length (line search).
+     * \param curr_grp : read only access to the called/current group (will hold the new X).
+     */
+    virtual void runPreComputeX(
+        const NOX::NLN::Group& input_grp,
+        const Epetra_Vector& dir,
+        const double& step,
+        const NOX::NLN::Group& curr_grp)
+    { return; };
+
+    /** User defined method that will be executed at the end of a call to NOX::NLN::Group::computeX().
+     *
+     * \param input_grp: read only access to the input group (holds the old X).
+     * \param dir      : read only access to the direction vector (step length equal 1.0).
+     * \param step     : read only access to the current step length (line search).
+     * \param curr_grp : read only access to the called/current group (holds the new X).
+     */
+    virtual void runPostComputeX(
+        const NOX::NLN::Group& input_grp,
+        const Epetra_Vector& dir,
+        const double& step,
+        const NOX::NLN::Group& curr_grp)
+    { return; };
+
     ///@}
 
   };  // class PrePostOperator

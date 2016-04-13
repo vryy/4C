@@ -65,7 +65,8 @@ void STR::NLN::SOLVER::Nox::Setup()
       NoxInterfacePtr();
 
   // pre-conditioner interface
-  Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> iprec = NoxInterfacePtr();
+  Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> iprec =
+      NoxInterfacePtr();
 
   // vector of currently present solution types
   std::vector<enum NOX::NLN::SolutionType> soltypes(0);
@@ -114,8 +115,7 @@ void STR::NLN::SOLVER::Nox::Setup()
   // Create NOX group
   // -------------------------------------------------------------------------
   /* use NOX::NLN::Group to enable access to time integration
-   * use NOX::NLN::Constraint::Group to enable access to the constraint data
-   */
+   * use NOX::NLN::Constraint::Group to enable access to the constraint data*/
   GroupPtr() = problem_->CreateGroup(linsys_);
 
   // -------------------------------------------------------------------------

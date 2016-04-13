@@ -26,12 +26,10 @@ namespace StatusTest {
   class NormWRMS : public NOX::StatusTest::Generic
   {
   public:
-    //! Constructor
-    /*!
-       At the moment we support only scalar \c ATOL input values for each quantity.
-       Extensions to a vector-based ATOL are possible. See \c NOX_StatusTest_NormWRMS.H
-       for more information.
-     */
+    /*! \brief Constructor
+     *  At the moment we support only scalar \c ATOL input values for each quantity.
+     *  Extensions to a vector-based ATOL are possible. See \c NOX::StatusTest::NormWRMS
+     *  for more information. */
     NormWRMS(const std::vector<NOX::NLN::StatusTest::QuantityType>& checkList,
          const std::vector<double>& rtol,
          const std::vector<double>& atol,
@@ -48,8 +46,17 @@ namespace StatusTest {
     NOX::StatusTest::StatusType checkStatus(const NOX::Solver::Generic& problem,
         NOX::StatusTest::CheckType checkType);
 
+    //! Check for the given quantity
+    bool IsQuantity(const NOX::NLN::StatusTest::QuantityType& qType) const;
+
     //! derived
     NOX::StatusTest::StatusType getStatus() const;
+
+    //! returns the absolute tolerance of the given quantity
+    double GetAbsoluteTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
+
+    //! returns the relative tolerance of the given quantity
+    double GetRelativeTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
 
     //! derived
     std::ostream& print(std::ostream& stream, int indent) const;

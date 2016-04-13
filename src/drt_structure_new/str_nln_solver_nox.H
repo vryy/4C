@@ -51,14 +51,30 @@ namespace SOLVER {
     //! destructor
     virtual ~Nox() {};
 
-    // derived from the base class
+    //! derived from the base class
     virtual void Setup();
 
-    // derived from the base class
+    //! derived from the base class
     virtual void  Reset();
 
-    // derived from the base class
+    //! derived from the base class
     virtual INPAR::STR::ConvergenceStatus Solve();
+
+    //! returns the outer status test object pointer
+    const NOX::StatusTest::Generic& GetOStatusTest() const
+    {
+      CheckInitSetup();
+      if (ostatus_.is_null())
+        dserror("The outer status test object is not defined!");
+      return *ostatus_;
+    }
+
+    //! returns the inner status test object pointer
+    Teuchos::RCP<const NOX::NLN::INNER::StatusTest::Generic> GetIStatusPtr() const
+    {
+      CheckInitSetup();
+      return istatus_;
+    }
 
   protected:
     //! Reset the non-linear solver parameters and variables

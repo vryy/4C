@@ -80,6 +80,12 @@ namespace GROUP {
     //! set jacobian operator
     virtual NOX::Abstract::Group::ReturnType setJacobianOperator(const Teuchos::RCP<const Epetra_Operator> jacOperator);
 
+    /* Check the isValidJacobian flag and the ownership of the linear system
+     * separately and get the ownership, if necessary. This prevents unnecessary
+     * evaluation calls of the expensive computeJacobian() routines! Afterwards
+     * the base class function is called.                   hiermeier 03/2016 */
+    virtual bool isJacobian() const;
+
     //! returns the nox_nln_interface_required pointer
     Teuchos::RCP<const NOX::NLN::Interface::Required> GetNlnReqInterfacePtr() const;
 

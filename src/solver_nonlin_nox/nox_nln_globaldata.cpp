@@ -15,6 +15,7 @@
 #include "nox_nln_constraint_interface_required.H"
 #include "nox_nln_meritfunction_factory.H"
 #include "nox_nln_solver_prepostop_generic.H"
+#include "nox_nln_aux.H"
 
 #include <NOX_Utils.H>
 #include <NOX_Epetra_Interface_Required.H>
@@ -176,44 +177,7 @@ void NOX::NLN::GlobalData::Setup()
  *----------------------------------------------------------------------------*/
 void NOX::NLN::GlobalData::SetPrintingParameters()
 {
-// make all Yes/No integral values to Boolean
-  DRT::INPUT::BoolifyValidInputParameters(*nlnparams_);
-
-  // adjust printing parameter list
-  Teuchos::ParameterList& printParams = nlnparams_->sublist("Printing");
-  printParams.set("MyPID", comm_->MyPID());
-  printParams.set("Output Precision", 5);
-  printParams.set("Output Processor", 0);
-  int outputinformationlevel = NOX::Utils::Error;  // NOX::Utils::Error==0
-  if (printParams.get<bool>("Error"))
-    outputinformationlevel += NOX::Utils::Error;
-  if (printParams.get<bool>("Warning"))
-    outputinformationlevel += NOX::Utils::Warning;
-  if (printParams.get<bool>("Outer Iteration"))
-    outputinformationlevel += NOX::Utils::OuterIteration;
-  if (printParams.get<bool>("Inner Iteration"))
-    outputinformationlevel += NOX::Utils::InnerIteration;
-  if (printParams.get<bool>("Parameters"))
-    outputinformationlevel += NOX::Utils::Parameters;
-  if (printParams.get<bool>("Details"))
-    outputinformationlevel += NOX::Utils::Details;
-  if (printParams.get<bool>("Outer Iteration StatusTest"))
-    outputinformationlevel += NOX::Utils::OuterIterationStatusTest;
-  if (printParams.get<bool>("Linear Solver Details"))
-    outputinformationlevel += NOX::Utils::LinearSolverDetails;
-  if (printParams.get<bool>("Test Details"))
-    outputinformationlevel += NOX::Utils::TestDetails;
-  /*  // for LOCA
-  if (printParams.get<bool>("Stepper Iteration"))
-    outputinformationlevel += NOX::Utils::StepperIteration;
-  if (printParams.get<bool>("Stepper Details"))
-    outputinformationlevel += NOX::Utils::StepperDetails;
-  if (printParams.get<bool>("Stepper Parameters"))
-    outputinformationlevel += NOX::Utils::StepperParameters;
-  */
-  if (printParams.get<bool>("Debug"))
-    outputinformationlevel += NOX::Utils::Debug;
-  printParams.set("Output Information", outputinformationlevel);
+  NOX::NLN::AUX::SetPrintingParameters(*nlnparams_,*comm_);
 
   return;
 }

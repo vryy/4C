@@ -1,9 +1,15 @@
-/*
- * nox_nln_statustest_normupdate.cpp
- *
- *  Created on: Sep 17, 2015
- *      Author: hiermeier
- */
+/*-----------------------------------------------------------*/
+/*!
+\file nox_nln_statustest_normupdate.cpp
+
+\maintainer Michael Hiermeier
+
+\date Sep 17, 2015
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
 
 #include "nox_nln_statustest_normupdate.H"
 #include "nox_nln_group.H"
@@ -195,6 +201,32 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormUpdate::checkStatus(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+int NOX::NLN::StatusTest::NormUpdate::GetNormType(
+    const NOX::NLN::StatusTest::QuantityType& qType) const
+{
+  for (std::size_t i=0;i<nChecks_;++i)
+    if (checkList_[i]==qType)
+      return normType_[i];
+
+  // if we cannot find the right quantity in the class list we will return -100
+  return (-100);
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool NOX::NLN::StatusTest::NormUpdate::IsQuantity(
+    const NOX::NLN::StatusTest::QuantityType& qType) const
+{
+  for (std::size_t i=0;i<nChecks_;++i)
+    if (checkList_[i]==qType)
+      return true;
+
+  return false;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormUpdate::getStatus() const
 {
   return gStatus_;
@@ -212,10 +244,12 @@ std::ostream& NOX::NLN::StatusTest::NormUpdate::print(
 
   for (std::size_t i=0;i<nChecks_;++i)
   {
+    if (i>0) stream << "\n";
     stream << indent_string;
     stream << status_[i];
     stream << QuantityType2String(checkList_[i]) << "-";
-    stream << "Update-Norm = " << NOX::Utils::sciformat(normUpdate_->at(i), 3) << " < " << trueTolerance_[i];
+    stream << "Update-Norm = " << NOX::Utils::sciformat(normUpdate_->at(i), 3)
+           << " < " << trueTolerance_[i];
     stream << std::endl;
 
     stream << indent_string;
@@ -249,12 +283,14 @@ std::ostream& NOX::NLN::StatusTest::NormUpdate::print(
   if (printCriteria2Info_) {
     stream << std::endl << indent_string;
     stream << std::setw(13) << " ";
-    stream << "(Min Step Size:  " << NOX::Utils::sciformat(computedStepSize_, 3) << " >= " << alpha_ << ")";
+    stream << "(Min Step Size:  " << NOX::Utils::sciformat(computedStepSize_, 3)
+           << " >= " << alpha_ << ")";
   }
   if (printCriteria3Info_) {
     stream << std::endl << indent_string;
     stream << std::setw(13) << " ";
-    stream << "(Max Lin Solv Tol:  " << NOX::Utils::sciformat(achievedTol_, 3) << " < " << beta_ << ")";
+    stream << "(Max Lin Solv Tol:  " << NOX::Utils::sciformat(achievedTol_, 3)
+           << " < " << beta_ << ")";
   }
   stream << std::endl;
 
