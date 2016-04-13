@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupneohooke.H
-\brief
-This file contains the routines required to calculate the isochoric contribution
-of a CoupNeoHookean material material.
 
-<pre>
-Maintainer: Sophie Rausch
-            rausch@lnm.mw.tum.de
-            089/289 15255
-</pre>
+\maintainer Sophie Rausch
 
+\brief This file contains the routines required to calculate the isochoric
+contribution of a CoupNeoHookean material material.
 *----------------------------------------------------------------------*/
 #ifndef ELAST_COUPNEOHOOKE_H_
 #define ELAST_COUPNEOHOOKE_H_
@@ -153,7 +148,8 @@ namespace ELASTIC
     //@{
     double C() const { return params_->c_; }
     double BETA() const { return params_->beta_; }
-
+    double NUE() const { return params_->nue_; }
+    double YOUNGS() const { return params_->youngs_; }
     //@}
 
     /// Indicator for formulation

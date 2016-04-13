@@ -1,23 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elasthyper.cpp
-\brief
-This file contains the hyperelastic toolbox. It allows summing up several summands
+
+\maintainer Anna Birzle, Burkhard Bornemann
+
+\brief This file contains the hyperelastic toolbox. It allows summing up several summands
 of several types (isotropic or anisotropic, splitted or not) to build a hyperelastic
 strain energy function.
 
 The input line should read
 MAT 0   MAT_ElastHyper   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 INIT_MODE -1
-
-<pre>
-Maintainer: Anna Birzle
-            birzle@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-Former Maintainer: Burkhard Bornemann
-</pre>
 */
-
 /*----------------------------------------------------------------------*/
 
 #include "elasthyper.H"
@@ -1211,4 +1204,17 @@ bool MAT::ElastHyper::VisData(const std::string& name, std::vector<double>& data
     return_val+=potsum_[p]->VisData(name,data,numgp,eleID);
   }
   return (bool)return_val;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::ElastHyper::GetPotSummandPtr(
+    const INPAR::MAT::MaterialType& materialtype) const
+{
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+  {
+    if (potsum_[p]->MaterialType()==materialtype)
+      return potsum_[p];
+  }
+  return Teuchos::null;
 }

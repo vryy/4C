@@ -1,17 +1,11 @@
-/*----------------------------------------------------------------------*/
+/*-----------------------------------------------------------*/
 /*!
 \file elasthyper.H
 
-<pre>
-Maintainer: Anna Birzle
-            birzle@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-Former Maintainer: Burkhard Bornemann
-</pre>
-*/
+\maintainer Anna Birzle, Burkhard Bornemann
 
-/*----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------*/
 #ifndef ELASTHYPER_H
 #define ELASTHYPER_H
 
@@ -265,6 +259,9 @@ private:
       const LINALG::Matrix<3,3>& locsys,   ///< local coordinate system
       const LINALG::Matrix<3,3>& defgrd   ///< deformation gradient
     );
+
+    /// Return potential summand pointer for the given material type
+    Teuchos::RCP<const MAT::ELASTIC::Summand> GetPotSummandPtr(const INPAR::MAT::MaterialType& materialtype) const;
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
