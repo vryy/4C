@@ -23,9 +23,16 @@
 class Epetra_Vector;
 
 namespace STR {
-  //! Assemble the force right hand side vector
-  void AssembleForce(Epetra_Vector& target,
-      const Epetra_Vector& source, const double& scalar_source);
+  /*! \brief Assemble a source Epetra_Vector into a target Epetra_Vector
+   *
+   *  The map of the source vector has to be a sub-map of the target vector.
+   *  The entries of the source vector are added to the target vector:
+   *
+   *      target_vector[gid] = source_scalar * source[gid] + target_scalar * target[gid]
+   *
+   *  The remaining gids, which are no part of the source map stay untouched! */
+  void AssembleVector(const double& scalar_target, Epetra_Vector& target,
+      const double& scalar_source, const Epetra_Vector& source);
 
 namespace NLN {
   //! Convert the structural vector types to a corresponding nox norm type

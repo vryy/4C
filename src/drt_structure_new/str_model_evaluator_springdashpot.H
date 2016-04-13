@@ -55,10 +55,22 @@ namespace MODELEVALUATOR{
         LINALG::SparseOperator& jac);
 
     //! derived
+    virtual void RecoverState(
+        const Epetra_Vector& xold,
+        const Epetra_Vector& dir,
+        const Epetra_Vector& xnew);
+
+    //! derived
     virtual void UpdateStepState();
 
     //! derived
     virtual void UpdateStepElement();
+
+    //! derived
+    virtual void DetermineStressStrain();
+
+    //!derived
+    virtual void DetermineEnergy();
 
     //! derived
     virtual void OutputStepState();

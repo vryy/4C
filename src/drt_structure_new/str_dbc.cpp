@@ -72,6 +72,7 @@ void STR::Dbc::Setup()
   dbcmap_ptr_ = Teuchos::rcp(new LINALG::MapExtractor());
   discret_ptr_->EvaluateDirichlet(p,zeros_ptr_,
       Teuchos::null,Teuchos::null,Teuchos::null,dbcmap_ptr_);
+  zeros_ptr_->Scale(0.0);
 
   // ---------------------------------------------------------------------------
   // Create local coordinate system manager
@@ -155,9 +156,9 @@ Teuchos::RCP<Epetra_Vector> STR::Dbc::GetDirichletIncrement()
   // get the new value for the Dirichlet DOFs
   ApplyDirichletBC(timenp,dbcincr,Teuchos::null,Teuchos::null,false);
 
-  /* Subtract the displacements of the last converged step
-   * DBC-DOFs hold increments of current step
-   * free-DOFs hold zeros. */
+  /* Subtract the displacements of the last converged step:
+   * --> DBC-DOFs hold increments of current step
+   * --> free-DOFs hold zeros. */
   dbcincr->Update(-1.0,*disn,1.0);
 
   return dbcincr;
@@ -362,11 +363,22 @@ void STR::Dbc::ExtractFreact(Teuchos::RCP<Epetra_Vector>& b) const
 
   freact_ptr_->Update(-1.0,*b,0.0);
 
-  dbcmap_ptr_->InsertOtherVector(
-      dbcmap_ptr_->ExtractOtherVector(zeros_ptr_),freact_ptr_);
+  // put zeros on all non-DBC dofs
+  InsertVectorInNonDbcDofs(zeros_ptr_,freact_ptr_);
 
   // turn the reaction forces back to the global coordinate system if necessary
   RotateLocalToGlobal(freact_ptr_);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::Dbc::InsertVectorInNonDbcDofs(
+    Teuchos::RCP<const Epetra_Vector> source_ptr,
+    Teuchos::RCP<Epetra_Vector> target_ptr) const
+{
+  CheckInitSetup();
+  dbcmap_ptr_->InsertOtherVector(
+      dbcmap_ptr_->ExtractOtherVector(source_ptr),target_ptr);
 }
 
 /*----------------------------------------------------------------------------*

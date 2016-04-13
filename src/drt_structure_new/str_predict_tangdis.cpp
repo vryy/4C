@@ -120,6 +120,7 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
   // Reset the state variables
   const NOX::Epetra::Vector& x_eptra =
       dynamic_cast<const NOX::Epetra::Vector&>(grp_ptr->getX());
+  // set the consistent state in the active implicit time integrator
   ImplInt().SetState(x_eptra.getEpetraVector());
 
   // For safety purposes, we set the dbc_incr vector to zero
@@ -188,7 +189,7 @@ void NOX::NLN::GROUP::PrePostOp::TangDis::runPostComputeF(
     dserror("Multiply failed!");
 
   // finally add the linear reaction forces to the current rhs
-  ::STR::AssembleForce(F,*freact_ptr,1.0);
+  ::STR::AssembleVector(1.0,F,1.0,*freact_ptr);
 
   return;
 }

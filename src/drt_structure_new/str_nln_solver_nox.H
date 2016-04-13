@@ -69,7 +69,7 @@ namespace SOLVER {
       return *ostatus_;
     }
 
-    //! returns the inner status test object pointer
+    //! returns the outer status test object pointer
     Teuchos::RCP<const NOX::NLN::INNER::StatusTest::Generic> GetIStatusPtr() const
     {
       CheckInitSetup();

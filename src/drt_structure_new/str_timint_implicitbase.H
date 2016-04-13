@@ -59,7 +59,7 @@ namespace TIMINT {
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
 
     /// right-hand-side of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> RHS();
+    virtual Teuchos::RCP<const Epetra_Vector> GetF() const;
 
     /// Return reaction forces at \f$t_{n+1}\f$ (read and write)
     virtual Teuchos::RCP<Epetra_Vector> Freact();
@@ -78,9 +78,6 @@ namespace TIMINT {
         Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
         Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
     /// @}
-
-    //! Output routine for coupled problems with monolithic approach
-    virtual void Output(bool forced_writerestart = false);
 
     //! print summary after step
     virtual void PrintStep();

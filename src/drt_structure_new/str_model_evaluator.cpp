@@ -15,6 +15,7 @@
 #include "str_model_evaluator.H"
 #include "str_model_evaluator_factory.H"
 #include "str_model_evaluator_generic.H"
+#include "str_model_evaluator_data.H"
 #include "str_timint_base.H"
 
 #include "../drt_lib/drt_dserror.H"
@@ -28,9 +29,12 @@ STR::ModelEvaluator::ModelEvaluator()
     : isinit_(false),
       issetup_(false),
       modeltypes_ptr_(Teuchos::null),
-      modelevaluators_ptr_(Teuchos::null),
+      me_map_ptr_(Teuchos::null),
+      me_vec_ptr_(Teuchos::null),
+      eval_data_ptr_(Teuchos::null),
       gstate_ptr_(Teuchos::null),
       gio_ptr_(Teuchos::null),
+      int_ptr_(Teuchos::null),
       timint_ptr_(Teuchos::null)
 {
   // empty constructor
@@ -55,15 +59,19 @@ void STR::ModelEvaluator::CheckInit() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::Init(const std::set<enum INPAR::STR::ModelType>& mt,
+    const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
     const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
     const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
+    const Teuchos::RCP<STR::Integrator>& int_ptr,
     const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr)
 {
   issetup_ = false;
 
   modeltypes_ptr_ = Teuchos::rcp(&mt,false);
+  eval_data_ptr_ = eval_data_ptr;
   gstate_ptr_ = gstate_ptr;
   gio_ptr_ = gio_ptr;
+  int_ptr_ = int_ptr;
   timint_ptr_ = timint_ptr;
 
 
@@ -76,16 +84,17 @@ void STR::ModelEvaluator::Setup()
 {
   CheckInit();
 
-  modelevaluators_ptr_ =
+  me_map_ptr_ =
       STR::MODELEVALUATOR::BuildModelEvaluators(*modeltypes_ptr_);
 
   Map::iterator me_iter;
-  for (me_iter=modelevaluators_ptr_->begin();
-      me_iter!=modelevaluators_ptr_->end();++me_iter)
+  for (me_iter=me_map_ptr_->begin();me_iter!=me_map_ptr_->end();++me_iter)
   {
-    me_iter->second->Init(gstate_ptr_,gio_ptr_,timint_ptr_);
+    me_iter->second->Init(eval_data_ptr_,gstate_ptr_,gio_ptr_,int_ptr_,timint_ptr_);
     me_iter->second->Setup();
   }
+
+  me_vec_ptr_ = Sort(*me_map_ptr_);
 
   issetup_ = true;
 }
@@ -96,14 +105,13 @@ bool STR::ModelEvaluator::ApplyForce(const Epetra_Vector& x, Epetra_Vector& f)
     const
 {
   CheckInitSetup();
-  Map::iterator me_iter;
+  Vector::iterator me_iter;
   bool ok = true;
   // initialize right hand side to zero
   f.PutScalar(0.0);
-  for (me_iter=modelevaluators_ptr_->begin();
-      me_iter!=modelevaluators_ptr_->end();++me_iter)
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? me_iter->second->ApplyForce(x,f) : false);
+    ok = (ok ? (*me_iter)->ApplyForce(x,f) : false);
 
   return ok;
 }
@@ -114,16 +122,13 @@ bool STR::ModelEvaluator::ApplyStiff(const Epetra_Vector& x,
     LINALG::SparseOperator& jac) const
 {
   CheckInitSetup();
-  Map::iterator me_iter;
+  Vector::iterator me_iter;
   bool ok = true;
   // initialize stiffness matrix to zero
   jac.Zero();
-  for (me_iter=modelevaluators_ptr_->begin();
-      me_iter!=modelevaluators_ptr_->end();++me_iter)
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? me_iter->second->ApplyStiff(x,jac) : false);
-
-  jac.Complete();
+    ok = (ok ? (*me_iter)->ApplyStiff(x,jac) : false);
 
   return ok;
 }
@@ -134,19 +139,37 @@ bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x,
     Epetra_Vector& f, LINALG::SparseOperator& jac) const
 {
   CheckInitSetup();
-  Map::iterator me_iter;
+  Vector::iterator me_iter;
   bool ok = true;
   // initialize stiffness matrix and right hand side to zero
   f.PutScalar(0.0);
   jac.Zero();
-  for (me_iter=modelevaluators_ptr_->begin();
-      me_iter!=modelevaluators_ptr_->end();++me_iter)
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? me_iter->second->ApplyForceStiff(x,f,jac) : false);
-
-  jac.Complete();
+    ok = (ok ? (*me_iter)->ApplyForceStiff(x,f,jac) : false);
 
   return ok;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::RecoverState(
+    const Epetra_Vector& xold,
+    const Epetra_Vector& dir,
+    const double& step,
+    const Epetra_Vector& xnew,
+    const bool& isdefaultstep) const
+{
+  CheckInitSetup();
+  // set some parameters for the element evaluation
+  eval_data_ptr_->SetIsDefaultStep(isdefaultstep);
+  eval_data_ptr_->SetStepLength(step);
+  eval_data_ptr_->ResetMyNorms(isdefaultstep);
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin(); me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->RecoverState(xold,dir,xnew);
+
+  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -176,13 +199,21 @@ const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(
+    const enum INPAR::STR::ModelType& mt)
+{
+  CheckInitSetup();
+  return *(me_map_ptr_->at(mt));
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::UpdateStepState()
 {
   CheckInitSetup();
-  Map::iterator me_iter;
-  for (me_iter=modelevaluators_ptr_->begin();
-      me_iter!=modelevaluators_ptr_->end();++me_iter)
-    me_iter->second->UpdateStepState();
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->UpdateStepState();
 }
 
 /*----------------------------------------------------------------------------*
@@ -190,20 +221,73 @@ void STR::ModelEvaluator::UpdateStepState()
 void STR::ModelEvaluator::UpdateStepElement()
 {
   CheckInitSetup();
-  Map::iterator me_iter;
-  for (me_iter=modelevaluators_ptr_->begin();
-      me_iter!=modelevaluators_ptr_->end();++me_iter)
-    me_iter->second->UpdateStepElement();
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->UpdateStepElement();
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::DetermineStressStrain()
+{
+  CheckInitSetup();
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->DetermineStressStrain();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::DetermineEnergy()
+{
+  CheckInitSetup();
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->DetermineEnergy();
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::OutputStepState()
 {
   CheckInitSetup();
-  Map::iterator me_iter;
-  for (me_iter=modelevaluators_ptr_->begin();
-      me_iter!=modelevaluators_ptr_->end();++me_iter)
-    me_iter->second->OutputStepState();
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->OutputStepState();
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::ModelEvaluator::Vector> STR::ModelEvaluator::Sort(
+    STR::ModelEvaluator::Map model_map
+    ) const
+{
+  Teuchos::RCP<STR::ModelEvaluator::Vector> me_vec_ptr =
+      Teuchos::rcp(new STR::ModelEvaluator::Vector(model_map.size(),
+      Teuchos::null));
+
+  STR::ModelEvaluator::Map::iterator miter;
+  int i=0;
+  // --------------------------------------------------------------------------
+  // There has to be a structural model evaluator and we put it at first place
+  // --------------------------------------------------------------------------
+  miter = model_map.find(INPAR::STR::model_structure);
+  if (miter==model_map.end())
+    dserror("The structural model evaluator could not be found!");
+  (*me_vec_ptr)[i] = miter->second;
+  ++i;
+  // erase the structural model evaluator
+  model_map.erase(miter);
+
+  // --------------------------------------------------------------------------
+  // insert the remaining model evaluators into the model vector
+  // --------------------------------------------------------------------------
+  for (miter=model_map.begin();miter!=model_map.end();++miter)
+  {
+    (*me_vec_ptr)[i] = miter->second;
+    ++i;
+  }
+
+  return me_vec_ptr;
 }

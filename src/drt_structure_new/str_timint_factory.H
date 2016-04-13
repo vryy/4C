@@ -26,6 +26,7 @@ namespace STR {
   class TimAda;
 namespace TIMINT {
   class Base;
+  class BaseDataSDyn;
   /*! \brief Factory to build the desired time integration strategy and
    *  the desired adaptive wrapper object
    *
@@ -52,6 +53,11 @@ namespace TIMINT {
         Teuchos::RCP<STR::TIMINT::Base> ti_strategy    //!< marching time integrator
         ) const;
 
+    //! Build the structural dynamics data container
+    Teuchos::RCP<STR::TIMINT::BaseDataSDyn> BuildDataSDyn(
+        const Teuchos::ParameterList& sdyn
+        ) const;
+
   private:
     //! Build the implicit time integration strategies
     Teuchos::RCP<STR::TIMINT::Base> BuildImplicitStrategy(
@@ -74,6 +80,12 @@ namespace TIMINT {
       const Teuchos::ParameterList& xparams,         //!< extra flags
       const Teuchos::ParameterList& taflags,         //!< adaptive input flags
       Teuchos::RCP<STR::TIMINT::Base> ti_strategy    //!< marching time integrator
+      );
+
+  /*! Non-member function, which relates to the STR::TIMINT::Factory
+   *  Please call this method, if you want to build a new structural dynamics data container. */
+  Teuchos::RCP<STR::TIMINT::BaseDataSDyn> BuildDataSDyn(
+      const Teuchos::ParameterList& sdyn
       );
 } // namespace TIMINT
 } // namespace STR

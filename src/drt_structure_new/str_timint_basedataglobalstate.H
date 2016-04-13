@@ -81,12 +81,8 @@ namespace TIMINT {
         const Epetra_Vector& source) const;
 
     /// Get the block of the stiffness matrix which belongs to the displacement dofs.
-    /// Full modifiable version.
     Teuchos::RCP<LINALG::SparseMatrix> ExtractDisplBlock(
-        LINALG::SparseOperator& jac);
-    /// Read only version.
-    Teuchos::RCP<const LINALG::SparseMatrix> ExtractDisplBlock(
-        const LINALG::SparseOperator& jac) const;
+        LINALG::SparseOperator& jac) const;
 
     /// Get the displacement block of the global jacobian matrix in the global
     /// state data container.
@@ -321,6 +317,27 @@ namespace TIMINT {
       return freactnp_;
     }
 
+    /// Return inertia force \f$finertial_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> GetFinertialN() const
+    {
+      CheckInitSetup();
+      return finertialn_;
+    }
+
+    /// Return inertial force \f$finertial_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> GetFinertialNp() const
+    {
+      CheckInitSetup();
+      return finertialnp_;
+    }
+
+
+    /// Return entire force \f$fstructure_{n}\f$
+    Teuchos::RCP<const Epetra_Vector> GetFstructureN() const
+    {
+      CheckInitSetup();
+      return fstructn_;
+    }
     ///@}
 
     /// @name Get system matrices (read only access)
@@ -527,6 +544,27 @@ namespace TIMINT {
       return freactnp_;
     }
 
+    /// Return inertia force \f$finertial_{n}\f$
+    Teuchos::RCP<Epetra_Vector>& GetMutableFinertialN()
+    {
+      CheckInitSetup();
+      return finertialn_;
+    }
+
+    /// Return inertial force \f$finertial_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector>& GetMutableFinertialNp()
+    {
+      CheckInitSetup();
+      return finertialnp_;
+    }
+
+    /// Return entire force \f$fstructure_{n}\f$
+    Teuchos::RCP<Epetra_Vector>& GetMutableFstructureN()
+    {
+      CheckInitSetup();
+      return fstructn_;
+    }
+
     ///@}
 
     /// @name Get mutable system matrices
@@ -635,6 +673,19 @@ namespace TIMINT {
     /// global reaction force vector at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> freactnp_;
 
+    /// global inertial force vector at \f$t_{n}\f$
+    Teuchos::RCP<Epetra_Vector> finertialn_;
+
+    /// global inertial force vector at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> finertialnp_;
+
+    /** \brief structural right hand side of the previous time step
+     *
+     *  The vector fstructn holds the structural right hand side without dynamic effects
+     *  at \f$t_{n}\f$:
+     *
+     *  f_{struct,n} = f_{int,n} - f_{ext,n} + f_{contact,n} + ... */
+    Teuchos::RCP<Epetra_Vector> fstructn_;
     ///@}
     /// @name System matrices
     ///@{

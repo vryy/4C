@@ -21,6 +21,8 @@
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Abstract_Group.H>
 
+#include <Epetra_Time.h>
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::TIMINT::ImplicitBase::ImplicitBase()
@@ -30,12 +32,12 @@ STR::TIMINT::ImplicitBase::ImplicitBase()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::RHS()
+Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::GetF() const
 {
   const NOX::Abstract::Group& solgrp = GetSolutionGroup();
   const NOX::Epetra::Vector& F =
       dynamic_cast<const NOX::Epetra::Vector&>(solgrp.getF());
-  return DataGlobalState().ExportDisplEntries(F.getEpetraVector());
+  return GetDataGlobalState().ExportDisplEntries(F.getEpetraVector());
 }
 
 /*----------------------------------------------------------------------------*
@@ -125,18 +127,40 @@ void STR::TIMINT::ImplicitBase::Update(double endtime)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::ImplicitBase::Output(bool forced_writerestart)
-{
-  CheckInitSetup();
-  Integrator().OutputStepState();
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void STR::TIMINT::ImplicitBase::PrintStep()
 {
   CheckInitSetup();
-  // FixMe
-  if (DataGlobalState().GetMyRank() == 0)
-    std::cout << "FixMe: The PrintStep() routine is not yet implemented!" << std::endl;
+  if (DataGlobalState().GetMyRank()!=0)
+    return;
+
+  const int& newtoniter = DataSDyn().GetMutableNoxParams().sublist("Output").
+      get<int>("Nonlinear Iterations",0);
+  const int& stepmax    = DataSDyn().GetStepMax();
+  const int& stepn      = DataGlobalState().GetStepN();
+  const double& timen   = DataGlobalState().GetTimeN();
+  const double& dt      = (*DataGlobalState().GetDeltaTime())[0];
+  double wct            = DataGlobalState().GetTimer()->ElapsedTime();
+
+  // open outstd::stringstream
+  std::ostringstream oss;
+
+  /* Output of the following quantities
+   * time   : total simulated time
+   * dt     : used time step
+   * nlniter: number of nonlinear solver steps
+   * wct    : wall clock time */
+  oss << "Finalised step " << std::setw(1) << stepn;
+  oss << " / " << std::setw(1) << stepmax;
+  oss << " | time " << std::setw(9) << std::setprecision(3) << std::scientific << timen;
+  oss << " | dt " << std::setw(9) << std::setprecision(3) << std::scientific << dt;
+  oss << " | nlniter " << std::setw(1) << newtoniter;
+  oss << " | wct " << std::setw(8) << std::setprecision(2) << std::scientific << wct;
+  oss << "\n--------------------------------------------------------------------------------\n";
+
+  // print to ofile (could be done differently...)
+  fprintf(stdout, "%s\n", oss.str().c_str());
+
+  // print it, now
+  fflush(stdout);
+
 }

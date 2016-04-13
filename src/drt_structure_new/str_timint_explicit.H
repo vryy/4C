@@ -59,9 +59,6 @@ namespace TIMINT {
     //! Update routine for coupled problems with monolithic approach with time adaptivity
     virtual void Update(double endtime);
 
-    /// has to be renamed either here or PrintStep()
-    virtual void Output(bool forced_writerestart);
-
     //! print summary after step
     virtual void PrintStep();
 
@@ -77,7 +74,7 @@ namespace TIMINT {
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
 
     /// right-hand-side of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> RHS();
+    virtual Teuchos::RCP<const Epetra_Vector> GetF() const;
 
     /// Return reaction forces at \f$t_{n+1}\f$ (read and write)
     virtual Teuchos::RCP<Epetra_Vector> Freact();

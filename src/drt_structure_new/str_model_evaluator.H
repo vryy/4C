@@ -25,12 +25,14 @@ namespace LINALG {
   class SparseOperator;
 } // namespace LINALG
 namespace STR {
+  class Integrator;
 namespace TIMINT {
   class Base;
   class BaseDataGlobalState;
   class BaseDataIO;
 } // namespace TIMINT
 namespace MODELEVALUATOR {
+  class Data;
   class Generic;
 } // namespace MODELEVALUATOR
   //! Wrapper class for the STR::MODELEVALUATOR::Generic derived objects.
@@ -38,6 +40,8 @@ namespace MODELEVALUATOR {
   {
   public:
     typedef std::map<enum INPAR::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic> > Map;
+    typedef std::vector<Teuchos::RCP<STR::MODELEVALUATOR::Generic> > Vector;
+
     //! constructor
     ModelEvaluator();
 
@@ -46,8 +50,10 @@ namespace MODELEVALUATOR {
 
     //! initialize
     void Init(const std::set<enum INPAR::STR::ModelType>& mt,
+        const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
         const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
         const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
+        const Teuchos::RCP<STR::Integrator>& int_ptr,
         const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
 
     //! setup
@@ -73,6 +79,7 @@ namespace MODELEVALUATOR {
     //! return pointer to the underlying time integrator (read-only)
     const Teuchos::RCP<const STR::TIMINT::Base>& GetTimIntPtr() const;
 
+    STR::MODELEVALUATOR::Generic& Evaluator(const enum INPAR::STR::ModelType& mt);
     //! @}
 
     //! @name Monolithic update routines
@@ -83,7 +90,24 @@ namespace MODELEVALUATOR {
     //! Update everything on element level after time step and after output
     void UpdateStepElement();
 
+    //! calculation of stresses and strains
+    void DetermineStressStrain();
+
+    //! calculation of engery
+    void DetermineEnergy();
+
+    //! Write the current step state
     void OutputStepState();
+
+    /*! \brief Recover the current state
+     *
+     * Necessary for condensed systems, e.g. EAS, dual mortar, etc.*/
+    void RecoverState(
+        const Epetra_Vector& xold,
+        const Epetra_Vector& dir,
+        const double& step,
+        const Epetra_Vector& xnew,
+        const bool& isdefaultstep) const;
     //! @}
 
   protected:
@@ -99,6 +123,10 @@ namespace MODELEVALUATOR {
     //! Check the init state
     void CheckInit() const;
 
+  private:
+    Teuchos::RCP<STR::ModelEvaluator::Vector> Sort(
+        STR::ModelEvaluator::Map model_map
+        ) const;
   protected:
     bool isinit_;
 
@@ -106,11 +134,17 @@ namespace MODELEVALUATOR {
 
     Teuchos::RCP<const std::set<enum INPAR::STR::ModelType> > modeltypes_ptr_;
 
-    Teuchos::RCP<STR::ModelEvaluator::Map> modelevaluators_ptr_;
+    Teuchos::RCP<STR::ModelEvaluator::Map> me_map_ptr_;
+
+    Teuchos::RCP<STR::ModelEvaluator::Vector> me_vec_ptr_;
+
+    Teuchos::RCP<STR::MODELEVALUATOR::Data> eval_data_ptr_;
 
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
 
     Teuchos::RCP<STR::TIMINT::BaseDataIO> gio_ptr_;
+
+    Teuchos::RCP<STR::Integrator> int_ptr_;
 
     Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
   };  // class ModelEvaluator

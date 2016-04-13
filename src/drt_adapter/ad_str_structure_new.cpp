@@ -54,6 +54,7 @@
 #include "../drt_so3/so3_ssn_plast_sosh8.H"
 #include "../drt_so3/so3_ssn_plast_sosh18.H"
 #include "../drt_so3/so_hex8fbar.H"
+#include "../drt_s8/shell8.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -256,7 +257,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // container
   // ---------------------------------------------------------------------------
   Teuchos::RCP<STR::TIMINT::BaseDataSDyn> datasdyn =
-      Teuchos::rcp(new STR::TIMINT::BaseDataSDyn());
+      STR::TIMINT::BuildDataSDyn(*sdyn_);
   datasdyn->Init(actdis_,*sdyn_,*xparams,modeltypes,eletechs,linsolvers);
   datasdyn->Setup();
 
@@ -401,7 +402,7 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
   for (int i=0;i<actdis_->NumMyRowElements();++i)
   {
     DRT::Element* actele = actdis_->lRowElement(i);
-    // Detect plasticity
+    // Detect plasticity -------------------------------------------------------
     if (actele->ElementType() == DRT::ELEMENTS::So_hex8PlastType::Instance() or
         actele->ElementType() == DRT::ELEMENTS::So_hex27PlastType::Instance() or
         actele->ElementType() == DRT::ELEMENTS::So_sh8PlastType::Instance() or
@@ -413,13 +414,24 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
       break;
     }
 
-    // Detect EAS
+    // Detect EAS --------------------------------------------------------------
     DRT::ELEMENTS::So_base* so_base_ele = dynamic_cast<DRT::ELEMENTS::So_base*>(actele);
     if (so_base_ele!=NULL)
+    {
       if (so_base_ele->HaveEAS())
         iseas_local = 1;
+    }
+    /* additional check for shell8 elements, since these elements are not derived
+     * from the So_base class */
+    else
+    {
+      DRT::ELEMENTS::Shell8* shell8_ele = dynamic_cast<DRT::ELEMENTS::Shell8*>(actele);
+          if (shell8_ele!=NULL)
+            if (shell8_ele->HaveEAS())
+              iseas_local = 1;
+    }
 
-    // Detect additional pressure dofs
+    // Detect additional pressure dofs -----------------------------------------
     if (actele->ElementType() == DRT::ELEMENTS::So_sh8p8Type::Instance())
       ispressure_local = 1;
 

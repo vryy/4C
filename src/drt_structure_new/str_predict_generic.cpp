@@ -14,6 +14,7 @@
 #include "str_predict_generic.H"
 #include "str_dbc.H"
 #include "str_timint_base.H"
+#include "str_impl_generic.H"
 
 #include "../solver_nonlin_nox/nox_nln_group.H"
 
@@ -104,7 +105,9 @@ void STR::PREDICT::Generic::PostPredict(NOX::Abstract::Group& grp)
   if (nlngrp_ptr == NULL)
     dserror("Group cast failed!");
   // evaluate the right hand side and the jacobian
+  implint_ptr_->SetIsPredictorState(true);
   nlngrp_ptr->computeFandJacobian();
+  implint_ptr_->SetIsPredictorState(false);
 }
 
 /*----------------------------------------------------------------------------*

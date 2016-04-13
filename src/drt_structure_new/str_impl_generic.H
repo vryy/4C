@@ -15,6 +15,7 @@
 #define STR_IMPL_GENERIC_H_
 
 #include "str_integrator.H"
+#include "../solver_nonlin_nox/nox_nln_abstract_prepostoperator.H"
 // required because of used enums
 #include <NOX_Abstract_Vector.H>
 
@@ -28,13 +29,13 @@ namespace IMPLICIT {
   {
   public:
     //! constructor
-    Generic() {};
+    Generic();
 
     //! destructor
     virtual ~Generic() {};
 
     //! Setup (has to be implemented by the derived classes)
-    virtual void Setup() = 0;
+    virtual void Setup();
 
     //! Set state variables (derived)
     virtual void SetState(const Epetra_Vector& x) = 0;
@@ -74,6 +75,9 @@ namespace IMPLICIT {
     //! return time integration factor
     virtual double GetIntParam() const = 0;
 
+    //! return the default step length of the used NOX::LineSearch method
+    double GetDefaultStepLength() const;
+
     //! @name Monolithic update routines
     //! @{
     //! things that should be done before updating (derived)
@@ -84,9 +88,6 @@ namespace IMPLICIT {
 
     //! Update everything on element level after time step and after output (derived)
     virtual void UpdateStepElement() = 0;
-
-    //! Output routine
-    virtual void OutputStepState() = 0;
 
     //! things that should be done after updating (derived)
     virtual void PostUpdate() {/* do nothing for now */};
@@ -126,9 +127,73 @@ namespace IMPLICIT {
         Epetra_Vector& accnp) const = 0;
     //! @}
 
-  };
+    //! Set the predictor state flag
+    void SetIsPredictorState(const bool& ispredictor_state);
+
+    //! Get the predictor state flag
+    const bool& IsPredictorState() const;
+
+  private:
+    /*! \brief Flag indicating if the current state is the predictor state.
+     *
+     *  In the evaluation of the predictor state the SetState() routine is
+     *  not allowed to calculate the consistent velocities and accelerations
+     *  as usual. This is due to the fact, that the predictor might lead to
+     *  velocities and accelerations that are not consistently computed from
+     *  the displacements based on the time integration scheme. Instead we
+     *  leave the predictor state untouched during the first evaluation. */
+    bool ispredictor_state_;
+
+  };  // class Generic
 } // namespace IMPLICIT
 } // namespace STR
+namespace NOX {
+namespace NLN {
+namespace GROUP {
+namespace PrePostOp {
+namespace IMPLICIT {
+  /*! \brief Implicit time integration helper class
+   *
+   *  This class is an implementation of the NOX::NLN::Abstract::PrePostOperator
+   *  and is used to modify the computeX() routine of the given NOX::NLN::Group.
+   *  It's called by the wrapper class NOX::NLN::GROUP::PrePostOperator.
+   *
+   *  \author Michael Hiermeier */
+  class Generic : public NOX::NLN::Abstract::PrePostOperator
+  {
+  public:
+    //! constructor
+    Generic(const Teuchos::RCP<const ::STR::IMPLICIT::Generic>& implicit_ptr);
+
+    //! destructor
+    virtual ~Generic() {};
+
+    /*! \brief Derived function, which is called at the end of a call to
+     * NOX::NLN::Group::computeX()
+     *
+     *  This method is used to get access to the current direction vector. The
+     *  direction vector is needed for different internal update routines. Two
+     *  examples on element level are the EAS recovery, since the EAS DoFs are
+     *  condensed and the calculation of the strain increments. The displacement
+     *  increment plays also a role in other condensation approaches, like the
+     *  mortar dual strategies. */
+    virtual void runPostComputeX(
+        const NOX::NLN::Group& input_grp,
+        const Epetra_Vector& dir,
+        const double& step,
+        const NOX::NLN::Group& curr_grp);
+
+  private:
+    //! pointer to the STR::IMPLICIT::Generic objects (read-only)
+    Teuchos::RCP<const ::STR::IMPLICIT::Generic> impl_ptr_;
+
+    const double default_step_;
+  }; // class Generic
+} // namespace IMPLICIT
+} // namespace PrePostOp
+} // namespace GROUP
+} // namespace NLN
+} // namespace NOX
 
 
 #endif /* STR_IMPL_GENERIC_H_ */

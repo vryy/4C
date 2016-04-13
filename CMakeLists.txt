@@ -1675,12 +1675,14 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_dbc.cpp
   src/drt_structure_new/str_resulttest.cpp
   src/drt_structure_new/str_factory.cpp
+  src/drt_structure_new/str_impl_generic.cpp
   src/drt_structure_new/str_impl_statics.cpp
   src/drt_structure_new/str_impl_genalpha.cpp
   src/drt_structure_new/str_impl_gemm.cpp
   src/drt_structure_new/str_impl_ost.cpp
   src/drt_structure_new/str_integrator.cpp
   src/drt_structure_new/str_model_evaluator.cpp
+  src/drt_structure_new/str_model_evaluator_data.cpp
   src/drt_structure_new/str_model_evaluator_factory.cpp
   src/drt_structure_new/str_model_evaluator_generic.cpp
   src/drt_structure_new/str_model_evaluator_structure.cpp

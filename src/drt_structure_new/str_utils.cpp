@@ -170,29 +170,17 @@ void STR::NLN::CreateConstraintInterfaces(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::AssembleForce(Epetra_Vector& target,
-    const Epetra_Vector& source, const double& scalar_source)
+void STR::AssembleVector(const double& scalar_target, Epetra_Vector& target,
+    const double& scalar_source, const Epetra_Vector& source)
 {
-  Teuchos::RCP<const Epetra_Vector> source_ptr;
-  // brief check if a export is necessary
-  if (not target.Map().PointSameAs(source.Map()))
+  for (int slid=0; slid<source.Map().NumMyElements();++slid)
   {
-    // brief check if the source map is a sub-map of the target map
-    if (target.Map().NumMyElements() < source.Map().NumMyElements())
-      dserror("The target map should be greater or equal than the "
-          "source map on each single processor, since the source map "
-          "is supposed to be a sub-map of the target map.");
-
-    Teuchos::RCP<Epetra_Vector> source_exp_ptr =
-        Teuchos::rcp(new Epetra_Vector(target.Map()));
-    LINALG::Export(source,*source_exp_ptr);
-    source_ptr = source_exp_ptr;
+    int sgid = source.Map().GID(slid);
+    int tlid = target.Map().LID(sgid);
+    if (tlid==-1)
+      dserror("The target vector has no global row %i"
+          " on processor %i!",sgid,target.Comm().MyPID());
+    // update the vector row
+    target[tlid] = scalar_target*target[tlid] + scalar_source*source[slid];
   }
-  else
-    source_ptr = Teuchos::rcp(&source,false);
-
-  if (target.Update(scalar_source,*source_ptr,1.0))
-    dserror("Update failed");
-
-  return;
 }

@@ -93,22 +93,6 @@ void STR::TIMINT::Explicit::Update(double endtime)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Explicit::Output(bool forced_writerestart)
-{
-  CheckInitSetup();
-  PreOutput();
-  // FixMe
-  if (DataGlobalState().GetMyRank() == 0)
-    std::cout << "FixMe: The Output() routine is not yet implemented!" << std::endl;
-  //OutputStep(forced_writerestart);
-  // write Gmsh output
-  //writeGmshStrucOutputStep();
-  return;
-}
-
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void STR::TIMINT::Explicit::PrintStep()
 {
   CheckInitSetup();
@@ -177,7 +161,7 @@ Teuchos::RCP<const Epetra_Vector> STR::TIMINT::Explicit::InitialGuess()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::TIMINT::Explicit::RHS()
+Teuchos::RCP<const Epetra_Vector> STR::TIMINT::Explicit::GetF() const
 {
   dserror("RHS() is not available for explicit time integration");
   return Teuchos::null;

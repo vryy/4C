@@ -13,6 +13,7 @@
 
 #include "str_impl_statics.H"
 #include "str_model_evaluator.H"
+#include "str_model_evaluator_data.H"
 #include "str_timint_implicit.H"
 #include "str_predict_generic.H"
 #include "str_dbc.H"
@@ -34,6 +35,8 @@ STR::IMPLICIT::Statics::Statics()
 void STR::IMPLICIT::Statics::Setup()
 {
   CheckInit();
+  // Call the Setup() of the abstract base class first.
+  Generic::Setup();
 
   issetup_ = true;
 }
@@ -42,8 +45,12 @@ void STR::IMPLICIT::Statics::Setup()
  *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::SetState(const Epetra_Vector& x)
 {
-  CheckInitSetup();
-  GlobalState().GetMutableDisNp() = GlobalState().ExportDisplEntries(x);
+  CheckInit();
+  if (IsPredictorState())
+    return;
+
+  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExportDisplEntries(x);
+  GlobalState().GetMutableDisNp()->Scale(1.0,*disnp_ptr);
 }
 
 /*----------------------------------------------------------------------------*
@@ -52,6 +59,7 @@ bool STR::IMPLICIT::Statics::ApplyForce(const Epetra_Vector& x,
     Epetra_Vector& f)
 {
   CheckInitSetup();
+  ResetEvalParams();
   return ModelEval().ApplyForce(x,f);
 }
 
@@ -61,7 +69,10 @@ bool STR::IMPLICIT::Statics::ApplyStiff(const Epetra_Vector& x,
     LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
-  return ModelEval().ApplyStiff(x,jac);
+  ResetEvalParams();
+  bool ok =  ModelEval().ApplyStiff(x,jac);
+  jac.Complete();
+  return ok;
 }
 
 /*----------------------------------------------------------------------------*
@@ -70,7 +81,10 @@ bool STR::IMPLICIT::Statics::ApplyForceStiff(const Epetra_Vector& x,
     Epetra_Vector& f, LINALG::SparseOperator& jac)
 {
   CheckInitSetup();
-  return ModelEval().ApplyForceStiff(x,f,jac);
+  ResetEvalParams();
+  bool ok = ModelEval().ApplyForceStiff(x,f,jac);
+  jac.Complete();
+  return ok;
 }
 
 /*----------------------------------------------------------------------------*
@@ -135,7 +149,7 @@ void STR::IMPLICIT::Statics::PreUpdate()
     {
       // read-only access
       Teuchos::RCP<const Epetra_Vector> veln_ptr = GlobalState().GetVelN();
-      // update the pseudo acceleration
+      // update the pseudo acceleration (statics!)
       accnp_ptr->Update(1.0/dt,*velnp_ptr,-1.0/dt,*veln_ptr,0.0);
     }
     // case: constant acceleration OR constant velocity
@@ -170,15 +184,6 @@ void STR::IMPLICIT::Statics::UpdateStepElement()
 {
   CheckInitSetup();
   ModelEval().UpdateStepElement();
-}
-
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::OutputStepState()
-{
-  CheckInitSetup();
-  ModelEval().OutputStepState();
 }
 
 /*----------------------------------------------------------------------------*
@@ -252,4 +257,16 @@ bool STR::IMPLICIT::Statics::PredictConstAcc(
   accnp.Update(1.0, *GlobalState().GetAccN(), 0.0);
 
   return true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Statics::ResetEvalParams()
+{
+  // set the time step dependent parameters for the element evaluation
+  const double& dt = (*GlobalState().GetDeltaTime())[0];
+
+  EvalData().SetTotalTime(GlobalState().GetTimeNp());
+  EvalData().SetDeltaTime(dt);
+  EvalData().SetIsTolerateError(true);
 }

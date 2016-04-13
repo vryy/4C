@@ -83,6 +83,10 @@ namespace TIMINT {
         Teuchos::RCP<Epetra_Vector> acc,
         bool recreatemap);
 
+    //! Insert non-dbc dof values of the source vector into the non-dbc dofs of the target vector
+    void InsertVectorInNonDbcDofs(Teuchos::RCP<const Epetra_Vector> source_ptr,
+        Teuchos::RCP<Epetra_Vector> target_ptr) const;
+
     //! @name Access functions
     //!@{
     //! Get the Dirichlet Boundary Condition map extractor

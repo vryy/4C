@@ -30,6 +30,8 @@ STR::IMPLICIT::Gemm::Gemm()
 void STR::IMPLICIT::Gemm::Setup()
 {
   CheckInit();
+  // Call the Setup() of the abstract base class first.
+  Generic::Setup();
 
   issetup_ = true;
 }
@@ -40,13 +42,6 @@ void STR::IMPLICIT::Gemm::SetState(const Epetra_Vector& x)
 {
   CheckInitSetup();
   dserror("Not yet implemented! (see the Statics integration for an example)");
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Gemm::OutputStepState()
-{
-  dserror("Output not yet implemented for GEMM!");
 }
 
 /*----------------------------------------------------------------------------*

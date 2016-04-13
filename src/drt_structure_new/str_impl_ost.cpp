@@ -30,6 +30,8 @@ STR::IMPLICIT::OneStepTheta::OneStepTheta()
 void STR::IMPLICIT::OneStepTheta::Setup()
 {
   CheckInit();
+  // Call the Setup() of the abstract base class first.
+  Generic::Setup();
 
   issetup_ = true;
 }
@@ -40,14 +42,6 @@ void STR::IMPLICIT::OneStepTheta::SetState(const Epetra_Vector& x)
 {
   dserror("Not yet implemented! (see the Statics integration for an example)");
 }
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::OutputStepState()
-{
-  dserror("Output not yet implemented for ost!");
-}
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

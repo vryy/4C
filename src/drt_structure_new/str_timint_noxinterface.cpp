@@ -97,11 +97,7 @@ bool STR::TIMINT::NoxInterface::computeF(const Epetra_Vector& x,
 {
   CheckInitSetup();
 
-  // check for local errors on each processor and communicate the information
-  int lerr = (implint_ptr_->ApplyForce(x,F) ? 0 : 1);
-  int gerr = 0;
-  gstate_ptr_->GetComm().SumAll(&lerr,&gerr,1);
-  if (gerr)
+  if (not implint_ptr_->ApplyForce(x,F))
     return false;
 
   /* Apply the DBC on the right hand side, since we need the Dirchilet free
@@ -124,11 +120,7 @@ bool STR::TIMINT::NoxInterface::computeJacobian(const Epetra_Vector& x,
   if (jac_ptr == NULL)
     dserror("Dynamic cast failed.");
 
-  // check for local errors on each processor and communicate the information
-  int lerr = (implint_ptr_->ApplyStiff(x,*jac_ptr) ? 0 : 1);
-  int gerr = 0;
-  gstate_ptr_->GetComm().SumAll(&lerr,&gerr,1);
-  if (gerr)
+  if (not implint_ptr_->ApplyStiff(x,*jac_ptr))
     return false;
 
   /* We do not consider the jacobian DBC at this point. The Dirichlet conditions
@@ -151,11 +143,7 @@ bool STR::TIMINT::NoxInterface::computeFandJacobian(const Epetra_Vector& x,
   if (jac_ptr==NULL)
     dserror("Dynamic cast failed!");
 
-  // check for local errors on each processor and communicate the information
-  int lerr = (implint_ptr_->ApplyForceStiff(x,rhs,*jac_ptr) ? 0 : 1);
-  int gerr = 0;
-  gstate_ptr_->GetComm().SumAll(&lerr,&gerr,1);
-  if (gerr)
+  if (not implint_ptr_->ApplyForceStiff(x,rhs,*jac_ptr))
     return false;
 
   /* Apply the DBC on the right hand side, since we need the Dirchilet free
@@ -249,6 +237,11 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateRMS(
           disable_implicit_weighting);
       break;
     }
+    case NOX::NLN::StatusTest::quantity_eas:
+    {
+      rms = implint_ptr_->GetCondensedSolutionUpdateRMS(checkquantity);
+      break;
+    }
     default:
     {
       /* Nothing to do. Functionality is supposed to be extended. */
@@ -292,6 +285,19 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(
 
       break;
     }
+    case NOX::NLN::StatusTest::quantity_eas:
+    {
+      // get the update norm of the condensed quantities
+      updatenorm =
+          implint_ptr_->GetCondensedUpdateNorm(checkquantity);
+      // do the scaling if desired
+      if (isscaled)
+      {
+        int gdofnumber = implint_ptr_->GetCondensedDofNumber(checkquantity);
+        updatenorm /= static_cast<double>(gdofnumber);
+      }
+      break;
+    }
     default:
     {
       /* Nothing to do. Functionality is supposed to be extended. */
@@ -330,6 +336,18 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(
       if (isscaled)
         xoldnorm /= static_cast<double>(disold_nox_ptr->length());
 
+      break;
+    }
+    case NOX::NLN::StatusTest::quantity_eas:
+    {
+      // get the update norm of the condensed quantities
+      xoldnorm =
+          implint_ptr_->GetCondensedPreviousSolNorm(checkquantity);
+      if (isscaled)
+      {
+        int gdofnumber = implint_ptr_->GetCondensedDofNumber(checkquantity);
+        xoldnorm /= static_cast<double>(gdofnumber);
+      }
       break;
     }
     default:

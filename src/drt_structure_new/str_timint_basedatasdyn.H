@@ -70,6 +70,13 @@ namespace TIMINT {
     /// get the indicator state
     inline const bool& IsSetup() const { return issetup_; };
 
+    /// Check if Init() has been called, yet.
+    inline void CheckInit() const
+    {
+      if (!IsInit())
+        dserror("Call Init() and Setup() first!");
+    }
+
     /// Check if Init() and Setup() have been called, yet.
     inline void CheckInitSetup() const
     {
@@ -230,6 +237,12 @@ namespace TIMINT {
       CheckInitSetup();
       return masslintype_;
     };
+
+    const bool& IsMassLumping() const
+    {
+      CheckInitSetup();
+      return lumpmass_;
+    }
     ///@}
 
     /// @name Get model evaluator control parameters (read only access)
@@ -477,6 +490,16 @@ namespace TIMINT {
       return *eletechs_;
     };
     ///@}
+  protected:
+    /** \brief returns the structural dynamics parameter list (internal use only!)
+     *
+     * Do not touch this. It should be used only in derived Setup routines.
+     * Do not call it from outside! */
+    const Teuchos::ParameterList& GetSDynParams() const
+    {
+      CheckInit();
+      return *sdynparams_ptr_;
+    }
 
   protected:
     /// @name variables for internal use only
@@ -525,6 +548,9 @@ namespace TIMINT {
     ///@{
     /// have inertia forces to be linearized?
     enum INPAR::STR::MassLin masslintype_;
+
+    /// lump the mass matrix?
+    bool lumpmass_;
     ///@}
 
     /// @name Model evaluator control parameters
@@ -709,7 +735,97 @@ namespace TIMINT {
 
     ///@}
     ///@}
+    /** \brief Ptr to the structural dynamics parameter list
+     *
+     * Do not touch this. It should be used only in derived Setup routines. Do not call it from outside! */
+    Teuchos::RCP<const Teuchos::ParameterList> sdynparams_ptr_;
   };  // class BaseDataSDyn
+
+  /** \brief Generalized alpha structural dynamics data container
+   *
+   * This data container is derived from the standard structural dynamics data container
+   * and contains some special GenAlpha input parameters.
+   *
+   * \author Michael Hiermeier */
+  class GenAlphaDataSDyn : public BaseDataSDyn
+  {
+  public:
+    //! contructor
+    GenAlphaDataSDyn();
+
+    //! destructor
+    virtual ~GenAlphaDataSDyn() {};
+
+    //! Setup function [derived]
+    virtual void Setup();
+
+  public:
+    //! @name Read-only accessors
+    //! @{
+    //! returns the mid-average type (for more information see MidAverageEnum)
+    const enum INPAR::STR::MidAverageEnum& GetMidAverageType() const
+    {
+      CheckInitSetup();
+      return midavg_;
+    };
+
+    //! returns beta
+    const double& GetBeta() const
+    {
+      CheckInitSetup();
+      return beta_;
+    };
+
+    //! returns gamma
+    const double& GetGamma() const
+    {
+      CheckInitSetup();
+      return gamma_;
+    };
+
+    //! returns alpha_f
+    const double& GetAlphaF() const
+    {
+      CheckInitSetup();
+      return alphaf_;
+    };
+
+    //! returns alpha_m
+    const double& GetAlphaM() const
+    {
+      CheckInitSetup();
+      return alpham_;
+    };
+
+    //! returns rho_inf
+    const double& GetRhoInf() const
+    {
+      CheckInitSetup();
+      return rhoinf_;
+    };
+
+    //! @}
+
+  private:
+    //! mid-average type more at MidAverageEnum
+    enum INPAR::STR::MidAverageEnum midavg_;
+
+    //! beta factor: feasible interval (0,1/2]
+    double beta_;
+
+    //! gamma factor: feasible interval (0,1]
+    double gamma_;
+
+    //! alpha_f factor: feasible interval [0,1)
+    double alphaf_;
+
+    //! alpha_m factor: feasible interval [-1,1)
+    double alpham_;
+
+    //! rho_inf factor: feasible interval [0,1]
+    double rhoinf_;
+  };
+
 } // namespace TIMINT
 } // namespace STR
 

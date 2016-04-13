@@ -115,9 +115,19 @@ bool STR::MODELEVALUATOR::SpringDashpot::ApplyForceStiff(
   for (int i=0; i<n_conds_; ++i)
     springs_[i]->EvaluateForceStiff(*stiff_ptr_, *f_disp, disnp_ptr_);
 
-  STR::AssembleForce(f,*f_disp,1.0);
+  STR::AssembleVector(1.0,f,1.0,*f_disp);
 
   return true;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::SpringDashpot::RecoverState(
+    const Epetra_Vector& xold,
+    const Epetra_Vector& dir,
+    const Epetra_Vector& xnew)
+{
+  // empty
 }
 
 /*----------------------------------------------------------------------*
@@ -132,6 +142,23 @@ void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState()
 void STR::MODELEVALUATOR::SpringDashpot::UpdateStepElement()
 {
   // empty
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::SpringDashpot::DetermineStressStrain()
+{
+  // nothing to do
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::SpringDashpot::DetermineEnergy()
+{
+  // nothing to do
+  return;
 }
 
 /*----------------------------------------------------------------------*

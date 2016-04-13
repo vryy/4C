@@ -65,7 +65,6 @@ namespace TIMINT {
     }
 
   public:
-
     /// get the binary output writer
     Teuchos::RCP<IO::DiscretizationWriter> GetMutableOutputPtr()
     {
@@ -143,6 +142,13 @@ namespace TIMINT {
     {
       CheckInitSetup();
       return writevelacc_;
+    };
+
+    /// Is this the first output of the current run?
+    const bool& IsFirstOutputOfRun() const
+    {
+      CheckInitSetup();
+      return firstoutputofrun_;
     };
 
     /// Print infos to standard out every n step
@@ -244,6 +250,13 @@ namespace TIMINT {
     };
     ///@}
 
+    /// set the flag indicator firstoutputofrun_
+    void SetFirstOutputOfRun(const bool& firstoutputofrun)
+    {
+      CheckInitSetup();
+      firstoutputofrun_ = firstoutputofrun;
+    }
+
   protected:
     /// @name variables for internal use only
     /// @{
@@ -289,6 +302,9 @@ namespace TIMINT {
 
     /// write velocity and acceleration on/off
     bool writevelacc_;
+
+    /// flag whether this output step is the first one (restarted or not)
+    bool firstoutputofrun_;
 
     /// print infos to standard out every n steps
     int printscreen_;

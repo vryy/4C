@@ -29,12 +29,14 @@ namespace DRT {
   class Discretization;
 } // namespace DRT
 namespace STR {
+  class Integrator;
 namespace TIMINT {
   class BaseDataGlobalState;
   class BaseDataIO;
   class Base;
 } // namespace TIMINT
 namespace MODELEVALUATOR {
+  class Data;
   class Generic
   {
   public:
@@ -45,8 +47,11 @@ namespace MODELEVALUATOR {
     virtual ~Generic() {};
 
     //! initialize the class variables
-    virtual void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
+    virtual void Init(
+        const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
+        const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
         const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
+        const Teuchos::RCP<STR::Integrator>& int_ptr,
         const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
 
     //! setup class variables
@@ -72,10 +77,12 @@ namespace MODELEVALUATOR {
     /*! \brief Check the evaluation procedures for possible errors.
      *
      *  In the standard case we check for exceptions like overflow, invalid results
-     *  or divide by zero operations. Furthermore, we look in the parameter-list for
-     *  an (optional) parameter named "eval_error". This is universal and should be
-     *  usable by all model evaluators. */
-    virtual bool EvalErrorCheck(const Teuchos::ParameterList& p) const;
+     *  or divide by zero operations. Furthermore, we look for an (optional) parameter
+     *  named ele_eval_error_flag_. This is universal and should be usable by all model
+     *  evaluators.
+     *
+     *  \author hiermeier*/
+    virtual bool EvalErrorCheck() const;
 
   public:
 
@@ -92,13 +99,24 @@ namespace MODELEVALUATOR {
         Epetra_Vector& f,
         LINALG::SparseOperator& jac) = 0;
 
+    virtual void RecoverState(
+        const Epetra_Vector& xold,
+        const Epetra_Vector& dir,
+        const Epetra_Vector& xnew) = 0;
+
     virtual void UpdateStepState() = 0;
 
     virtual void UpdateStepElement() = 0;
 
+    virtual void DetermineStressStrain() = 0;
+
+    virtual void DetermineEnergy() = 0;
+
     //! output routine for model evlaluator
     virtual void OutputStepState() = 0;
 
+  protected:
+    STR::MODELEVALUATOR::Data& EvalData();
 
   protected:
     //! init flag
@@ -107,12 +125,16 @@ namespace MODELEVALUATOR {
     //! setup flag
     bool issetup_;
 
+    Teuchos::RCP<STR::MODELEVALUATOR::Data> eval_data_ptr_;
+
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
 
     Teuchos::RCP<STR::TIMINT::BaseDataIO> gio_ptr_;
 
     //! problem discretization
     Teuchos::RCP<DRT::Discretization> discret_ptr_;
+
+    Teuchos::RCP<STR::Integrator> int_ptr_;
 
     Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
   }; // class Generic

@@ -31,6 +31,7 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       writesurfactant_(false),
       writestate_(false),
       writevelacc_(false),
+      firstoutputofrun_(false),
       printscreen_(-1),
       oei_filecounter_(-1),
       outputcounter_(-1),
@@ -78,6 +79,7 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     writereducedrestart_ = xparams.get<int>("REDUCED_OUTPUT");
     writestate_ = (bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_DISP");
     writevelacc_ = (bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_VEL_ACC");
+    firstoutputofrun_ = true;
     writeresultsevery_ = sdynparams.get<int>("RESULTSEVRY");
     writestress_ = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_STRESS");
     writecouplstress_ = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_COUPLING_STRESS");

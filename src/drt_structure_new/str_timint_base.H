@@ -430,11 +430,11 @@ namespace TIMINT {
 
     /// Calculate all output quantities depending on the constitutive model
     /// (and, hence, on a potential material history)
-    virtual void PrepareOutput()
-    {
-      if (dataglobalstate_->GetMyRank() == 0)
-        std::cout << "PrepareOutput is not yet implemented!" << std::endl;
-    };
+    virtual void PrepareOutput();
+
+    /// output results (implicit and explicit)
+    virtual void Output() { Output(false); };
+    virtual void Output(bool forced_writerestart);
 
     /// Write Gmsh output for structural field
     virtual void writeGmshStrucOutputStep();
@@ -511,8 +511,6 @@ namespace TIMINT {
     virtual int IntegrateStep() = 0;
     /// nonlinear solve (implicit and explicit)
     virtual INPAR::STR::ConvergenceStatus Solve() = 0;
-    /// output results (implicit and explicit)
-    virtual void Output(bool forced_writerestart = false) = 0;
     //! print summary after step (implicit and explicit)
     virtual void PrintStep() = 0;
     /// start new time step (implicit and explicit)
@@ -532,7 +530,8 @@ namespace TIMINT {
     /// initial guess of Newton's method (implicit only)
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() = 0;
     /// right-hand-side of Newton's method (implicit only)
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> RHS() { return GetF(); };
+    virtual Teuchos::RCP<const Epetra_Vector> GetF() const = 0;
     /// Return reaction forces at \f$t_{n+1}\f$ (read and write) (implicit only)
     virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
     //! Return stiffness (implicit only)
@@ -623,7 +622,7 @@ namespace TIMINT {
         dserror("Call Init() first!");
     }
 
-    /// Get internal TimIntBase data for global state quantities (read and write access)
+
     BaseDataGlobalState& DataGlobalState()
     {
       CheckInit();
@@ -664,20 +663,6 @@ namespace TIMINT {
       return datasdyn_;
     };
 
-    /// return a reference to the model evaluator wrapper (read and write access)
-    STR::ModelEvaluator& ModelEvaluator()
-    {
-      CheckInitSetup();
-      return *modelevaluator_ptr_;
-    }
-
-    /// return a pointer to the model evaluator wrapper (read and write access)
-    const Teuchos::RCP<STR::ModelEvaluator>& ModelEvaluatorPtr()
-    {
-      CheckInitSetup();
-      return modelevaluator_ptr_;
-    }
-
     /// return a reference to the Dirichlet Boundary Condition handler (read and write access)
     STR::Dbc& DBC()
     {
@@ -712,6 +697,20 @@ namespace TIMINT {
     /// check if the given element technology is active.
     bool HaveEleTech(const INPAR::STR::EleTech& eletech) const;
 
+    /** \brief Output to file
+     *
+     *  This routine always prints the last converged state, i.e.
+     *  \f$D_{n}, V_{n}, A_{n}\f$. So, #UpdateIncrement should be called
+     *  upon object prior to writing stuff here.
+     *  \author mwgee (originally)                        \date 03/07 */
+    void OutputStep(bool forced_writerestart);
+  private:
+    /// create a new input/output step in the output writer, if no data were written till now
+    void NewIOStep(bool& datawritten);
+
+    /// output of the current state
+    void OutputState();
+
   protected:
     /// flag indicating if Init() has been called
     bool isinit_;
@@ -724,9 +723,6 @@ namespace TIMINT {
     Teuchos::RCP<BaseDataIO>          dataio_;
     Teuchos::RCP<BaseDataSDyn>        datasdyn_;
     Teuchos::RCP<BaseDataGlobalState> dataglobalstate_;
-
-    /// pointer to the model evaluator
-    Teuchos::RCP<STR::ModelEvaluator> modelevaluator_ptr_;
 
     /// pointer to the integrator (implicit or explicit)
     Teuchos::RCP<STR::Integrator> int_ptr_;

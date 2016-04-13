@@ -66,8 +66,6 @@ namespace IMPLICIT {
 
     //! Update everything on element level after time step and after output (derived)
     virtual void UpdateStepElement();
-
-    virtual void OutputStepState();
     //! @}
 
     //! @name Predictor routines (dependent on the implicit integration scheme)
@@ -90,6 +88,10 @@ namespace IMPLICIT {
         Epetra_Vector& velnp,
         Epetra_Vector& accnp) const;
     //! @}
+
+  protected:
+    //! reset the time step dependent parameters for the element evaluation [derived]
+    void ResetEvalParams();
   };
 } // namespace IMPLICIT
 } // namespace STR

@@ -34,6 +34,7 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       dampk_(-1.0),
       dampm_(-1.0),
       masslintype_(INPAR::STR::ml_none),
+      lumpmass_(false),
       modeltypes_(Teuchos::null),
       eletechs_(Teuchos::null),
       dyntype_(INPAR::STR::dyna_statics),
@@ -85,7 +86,8 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       toltype_contact_lm_incr_(INPAR::STR::convnorm_abs),
       tol_contact_lm_incr_(-1.0),
       normcombo_fres_contact_res_(INPAR::STR::bop_and),
-      normcombo_disp_contact_lm_incr_(INPAR::STR::bop_and)
+      normcombo_disp_contact_lm_incr_(INPAR::STR::bop_and),
+      sdynparams_ptr_(Teuchos::null)
 {
   // empty constructor
 }
@@ -133,6 +135,7 @@ void STR::TIMINT::BaseDataSDyn::Init(
   // ---------------------------------------------------------------------------
   {
     masslintype_ = DRT::INPUT::IntegralValue<INPAR::STR::MassLin>(sdynparams,"MASSLIN");
+    lumpmass_ = (DRT::INPUT::IntegralValue<int>(sdynparams,"LUMPMASS") == 1);
   }
   // ---------------------------------------------------------------------------
   // initialize model evaluator control parameters
@@ -251,6 +254,11 @@ void STR::TIMINT::BaseDataSDyn::Init(
         DRT::Problem::Instance()->ContactDynamicParams(),"NORMCOMBI_RESFCONTCONSTR");
     normcombo_disp_contact_lm_incr_ = DRT::INPUT::IntegralValue<INPAR::STR::BinaryOp>(
         DRT::Problem::Instance()->ContactDynamicParams(),"NORMCOMBI_DISPLAGR");
+  }
+
+  {
+    // store the structural dynamics parameter list for derived Setup routines
+    sdynparams_ptr_ = Teuchos::rcpFromRef(sdynparams);
   }
 
   isinit_ = true;
@@ -549,4 +557,34 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResIncrComboType(
         NOX::NLN::StatusTest::QuantityType2String(qtype_incr).c_str());
 
   return INPAR::STR::bop_and;
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+STR::TIMINT::GenAlphaDataSDyn::GenAlphaDataSDyn()
+    : midavg_(INPAR::STR::midavg_vague),
+      beta_(-1.0),
+      gamma_(-1.0),
+      alphaf_(-1.0),
+      alpham_(-1.0),
+      rhoinf_(-1.0)
+{
+  // empty constructor
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::GenAlphaDataSDyn::Setup()
+{
+  CheckInit();
+
+  midavg_ = DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(GetSDynParams().sublist("GENALPHA"),"GENAVG");
+  beta_   = GetSDynParams().sublist("GENALPHA").get<double>("BETA");
+  gamma_  = GetSDynParams().sublist("GENALPHA").get<double>("GAMMA");
+  alphaf_ = GetSDynParams().sublist("GENALPHA").get<double>("ALPHA_F");
+  alpham_ = GetSDynParams().sublist("GENALPHA").get<double>("ALPHA_M");
+  rhoinf_ = GetSDynParams().sublist("GENALPHA").get<double>("RHO_INF");
+
+  issetup_ = true;
 }

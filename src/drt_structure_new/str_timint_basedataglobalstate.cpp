@@ -49,6 +49,9 @@ STR::TIMINT::BaseDataGlobalState::BaseDataGlobalState()
       fintnp_(Teuchos::null),
       fextnp_(Teuchos::null),
       freactnp_(Teuchos::null),
+      finertialn_(Teuchos::null),
+      finertialnp_(Teuchos::null),
+      fstructn_(Teuchos::null),
       jac_(Teuchos::null),
       mass_(Teuchos::null),
       damp_(Teuchos::null),
@@ -134,11 +137,18 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
   // accelerations A_{n+1} at t_{n+1}
   accnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
+  fintn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   fintnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
+  fextn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   fextnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   freactnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+
+  finertialn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  finertialnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+
+  fstructn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   // --------------------------------------
   // sparse operators
@@ -380,7 +390,7 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExportDisplEntries
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
-    ExtractDisplBlock(LINALG::SparseOperator& jac)
+    ExtractDisplBlock(LINALG::SparseOperator& jac) const
 {
   Teuchos::RCP<LINALG::SparseMatrix> stiff = Teuchos::null;
 
@@ -400,33 +410,6 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
         "a LINALG::SparseMatrix!");
 
   stiff = Teuchos::rcp(dynamic_cast<LINALG::SparseMatrix*>(&jac),false);
-
-  return stiff;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
-    ExtractDisplBlock(const LINALG::SparseOperator& jac) const
-{
-  Teuchos::RCP<const LINALG::SparseMatrix> stiff = Teuchos::null;
-
-  const LINALG::SparseOperator* testop = 0;
-  testop = dynamic_cast<const LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* >(&jac);
-  if (testop != NULL)
-  {
-    const LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* blockmat =
-        dynamic_cast<const LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* >(&jac);
-    // get block (0,0)
-    stiff = Teuchos::rcp(&(blockmat->Matrix(0,0)),false);
-  }
-
-  testop = dynamic_cast<const LINALG::SparseMatrix*>(&jac);
-  if (testop == NULL)
-    dserror("Structural stiffness matrix has to be a LINALG::BlockSparseMatrix or "
-        "a LINALG::SparseMatrix!");
-
-  stiff = Teuchos::rcp(dynamic_cast<const LINALG::SparseMatrix*>(&jac),false);
 
   return stiff;
 }

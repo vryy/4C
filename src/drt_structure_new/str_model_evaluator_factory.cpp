@@ -35,7 +35,7 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
     ) const
 {
   // create a new standard map
-  Teuchos::RCP<STR::ModelEvaluator::Map> models =
+  Teuchos::RCP<STR::ModelEvaluator::Map> model_map =
       Teuchos::rcp(new STR::ModelEvaluator::Map());
 
   std::set<enum INPAR::STR::ModelType>::const_iterator mt_iter;
@@ -44,10 +44,10 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
     switch(*mt_iter)
     {
       case INPAR::STR::model_structure:
-        (*models)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Structure());
+        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Structure());
         break;
       case INPAR::STR::model_springdashpot:
-        (*models)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::SpringDashpot());
+        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::SpringDashpot());
         break;
       case INPAR::STR::model_contact:
       case INPAR::STR::model_meshtying:
@@ -59,7 +59,7 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
     }
   }
 
-  return models;
+  return model_map;
 }
 
 

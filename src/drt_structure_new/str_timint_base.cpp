@@ -24,6 +24,8 @@
 
 #include "../linalg/linalg_blocksparsematrix.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+
 #include <Teuchos_ParameterList.hpp>
 
 #include <Epetra_Vector.h>
@@ -39,7 +41,6 @@ STR::TIMINT::Base::Base()
       dataio_(Teuchos::null),
       datasdyn_(Teuchos::null),
       dataglobalstate_(Teuchos::null),
-      modelevaluator_ptr_(Teuchos::null),
       int_ptr_(Teuchos::null),
       dbc_ptr_(Teuchos::null)
 {
@@ -81,21 +82,6 @@ void STR::TIMINT::Base::Init(
 void STR::TIMINT::Base::Setup()
 {
   CheckInit();
-  // ---------------------------------------------------------------------------
-  // build model evaluator
-  // ---------------------------------------------------------------------------
-  modelevaluator_ptr_ =
-      Teuchos::rcp(new STR::ModelEvaluator());
-  modelevaluator_ptr_->Init(DataSDyn().GetModelTypes(),
-      DataGlobalStatePtr(),DataIOPtr(),Teuchos::rcp(this,false));
-  modelevaluator_ptr_->Setup();
-
-  // ---------------------------------------------------------------------------
-  // Create the explicit/implicit integrator
-  // ---------------------------------------------------------------------------
-  int_ptr_ = STR::BuildIntegrator(DataSDyn());
-  int_ptr_->Init(modelevaluator_ptr_);
-  int_ptr_->Setup();
 
   // ---------------------------------------------------------------------------
   // Create the Dirichlet Boundary Condition handler
@@ -110,6 +96,14 @@ void STR::TIMINT::Base::Setup()
   dbc_ptr_->Init(discret_ptr,DataGlobalState().GetMutableFreactNp(),
       Teuchos::rcp(this,false));
   dbc_ptr_->Setup();
+
+  // ---------------------------------------------------------------------------
+  // Create the explicit/implicit integrator
+  // ---------------------------------------------------------------------------
+  int_ptr_ = STR::BuildIntegrator(DataSDyn());
+  int_ptr_->Init(DataSDynPtr(),DataGlobalStatePtr(),DataIOPtr(),dbc_ptr_,
+      Teuchos::rcp(this,false));
+  int_ptr_->Setup();
 
   issetup_ = true;
 }
@@ -358,6 +352,177 @@ void STR::TIMINT::Base::GetRestartData(
 
   return;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::PrepareOutput()
+{
+  CheckInitSetup();
+  // --- stress and strain calculation -----------------------------------------
+  if (dataio_->GetWriteResultsEveryNStep()
+      and ((dataio_->GetStressOutputType() != INPAR::STR::stress_none)
+      or   (dataio_->GetCouplingStressOutputType() != INPAR::STR::stress_none)
+      or   (dataio_->GetStrainOutputType() != INPAR::STR::strain_none)
+      or   (dataio_->GetPlasticStrainOutputType() != INPAR::STR::strain_none))
+      and (dataglobalstate_->GetStepN()%dataio_->GetWriteResultsEveryNStep() == 0))
+  {
+    int_ptr_->DetermineStressStrain();
+  }
+ // --- energy calculation ------------------------------------------------------
+  if (     dataio_->GetWriteEnergyEveryNStep()
+      and (dataglobalstate_->GetStepN()%dataio_->GetWriteEnergyEveryNStep() == 0))
+  {
+    int_ptr_->DetermineEnergy();
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::Output(bool forced_writerestart)
+{
+  CheckInitSetup();
+  PreOutput();
+  OutputStep(forced_writerestart);
+  // write Gmsh output
+  writeGmshStrucOutputStep();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
+{
+  CheckInitSetup();
+  // print iterations instead of steps
+  if (dataio_->IsOutputEveryIter())
+  {
+    dserror("OutputEveryIter is not yet implemented!");
+    // OutputEveryIter();
+    return;
+  }
+
+  // special treatment is necessary when restart is forced
+  if(forced_writerestart)
+  {
+    // reset possible history data on element level
+    ResetStep();
+    // restart has already been written or simulation has just started
+    if((    dataio_->GetWriteRestartEveryNStep()
+        and (dataglobalstate_->GetStepN()%dataio_->GetWriteRestartEveryNStep() == 0))
+        or   dataglobalstate_->GetStepN() == DRT::Problem::Instance()->Restart())
+      return;
+    // if state already exists, add restart information
+    if(    dataio_->GetWriteResultsEveryNStep()
+       and (dataglobalstate_->GetStepN()%dataio_->GetWriteResultsEveryNStep() == 0))
+    {
+      dserror("AddRestartToOutputState() is not yet implemented!");
+//      AddRestartToOutputState();
+      return;
+    }
+  }
+
+  // this flag is passed along subroutines and prevents
+  // repeated initialising of output writer, printing of
+  // state vectors, or similar
+  bool datawritten = false;
+
+  // output restart (try this first)
+  // write restart step
+  if (    (dataio_->GetWriteRestartEveryNStep()
+      and (dataglobalstate_->GetStepN()%dataio_->GetWriteRestartEveryNStep() == 0)
+      and  dataglobalstate_->GetStepN() != 0)
+      or   forced_writerestart )
+  {
+    dserror("OutputRestart() is not yet implemented!");
+    NewIOStep(datawritten);
+//    OutputRestart();
+  }
+
+  // output results (not necessary if restart in same step)
+  if ( dataio_->IsWriteState()
+       and dataio_->GetWriteResultsEveryNStep()
+       and (dataglobalstate_->GetStepN()%dataio_->GetWriteResultsEveryNStep() == 0)
+       and (not datawritten) )
+  {
+    NewIOStep(datawritten);
+    OutputState();
+  }
+
+  // output stress & strain
+  if ( dataio_->GetWriteResultsEveryNStep()
+       and ( (dataio_->GetStressOutputType() != INPAR::STR::stress_none)
+             or (dataio_->GetCouplingStressOutputType() != INPAR::STR::stress_none)
+             or (dataio_->GetStrainOutputType() != INPAR::STR::strain_none)
+             or (dataio_->GetPlasticStrainOutputType() != INPAR::STR::strain_none) )
+       and (dataglobalstate_->GetStepN()%dataio_->GetWriteResultsEveryNStep() == 0) )
+  {
+//    dserror("OutputStressStrain() is not yet implemented!");
+//    // has to be done by the corresponding model evaluators
+//    NewIOStep(datawritten);
+//    OutputStressStrain();
+  }
+
+  // output energy
+  if (     dataio_->GetWriteEnergyEveryNStep()
+      and (dataglobalstate_->GetStepN()%dataio_->GetWriteEnergyEveryNStep() == 0) )
+  {
+    dserror("OutputEnergy() is not yet implemented!");
+//    OutputEnergy();
+  }
+
+  // ToDo print error norms
+//  OutputErrorNorms();
+
+//  OutputVolumeMass();
+
+  // ToDo output of nodal positions in current configuration
+//  OutputNodalPositions();
+
+  // ToDo write output on micro-scale (multi-scale analysis)
+//  if (HaveMicroMat())
+//    dserror("OutputMicro() is not yet implemented!"); // OutputMicro();
+
+  // write patient specific output
+  if (     dataio_->GetWriteResultsEveryNStep()
+      and (dataglobalstate_->GetStepN()%dataio_->GetWriteResultsEveryNStep() == 0))
+  {
+    // ToDo OutputPatspec()
+    // ToDo OutputCell()
+  }
+
+  // what's next?
+  return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::NewIOStep(bool& datawritten)
+{
+  if (datawritten)
+    return;
+
+  // Make new step
+  if (not datawritten)
+    dataio_->GetMutableOutputPtr()->NewStep(dataglobalstate_->GetStepN(),
+        dataglobalstate_->GetTimeN());
+
+  datawritten = true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::Base::OutputState()
+{
+  CheckInitSetup();
+  int_ptr_->OutputStepState();
+  // owner of elements is just written once because it does not change during simulation (so far)
+  IO::DiscretizationWriter& owriter = *(dataio_->GetMutableOutputPtr());
+  owriter.WriteElementData(dataio_->IsFirstOutputOfRun());
+  owriter.WriteNodeData(dataio_->IsFirstOutputOfRun());
+  dataio_->SetFirstOutputOfRun(false);
+
+}
+
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -54,9 +54,6 @@ namespace IMPLICIT {
     //! (derived)
     virtual double GetIntParam() const;
 
-    //! (derived) output routine
-    virtual void OutputStepState();
-
     //! @name Monolithic update routines
     //! @{
     //! Update configuration after time step (derived)

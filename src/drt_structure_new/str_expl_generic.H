@@ -18,7 +18,7 @@
 
 namespace STR {
 namespace EXPLICIT {
-  class Generic : public Integrator
+  class Generic : public STR::Integrator
   {
   public:
     //! constructor

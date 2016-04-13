@@ -1,0 +1,473 @@
+/*-----------------------------------------------------------*/
+/*!
+\file str_model_evaluator_data.H
+
+\maintainer Michael Hiermeier
+
+\date Mar 24, 2016
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+#ifndef SRC_DRT_STRUCTURE_NEW_STR_MODEL_EVALUATOR_DATA_H_
+#define SRC_DRT_STRUCTURE_NEW_STR_MODEL_EVALUATOR_DATA_H_
+
+#include "../drt_lib/drt_dserror.H"
+#include <NOX_Abstract_Vector.H>
+#include "str_elements_paramsinterface.H"   // base class
+
+// forward declaration ...
+class Epetra_Comm;
+namespace STR {
+namespace TIMINT {
+  class BaseDataSDyn;
+  class BaseDataIO;
+  class Base;
+} // namespace TIMINT
+namespace MODELEVALUATOR {
+  /*! \brief Discrete implementation of the STR::ELEMENTS::ParamsInterface
+   *
+   *  This class represents an actual implementation of the STR::ELEMENTS::ParamsInterface class
+   *  and gives you all the functionality to interchange data between the elements and the structural
+   *  time integrators.
+   *  Please consider to derive a special interface class, if you need special parameters inside
+   *  of your element. Keep everything else untouched and cast the interface object to the
+   *  desired object at the place you need access.
+   *
+   *  \date 03/2016
+   *  \author hiermeier */
+  class Data : public STR::ELEMENTS::ParamsInterface
+  {
+  public:
+    //! constructor
+    Data();
+
+    //! destructor
+    virtual ~Data() {};
+
+    //! initialize the stuff coming from outside
+    void Init(
+        const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& sdyn_ptr,
+        const Teuchos::RCP<const STR::TIMINT::BaseDataIO>& io_ptr,
+        const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr,
+        const Teuchos::RCP<const Epetra_Comm>& comm_ptr);
+
+    //! setup member variables
+    void Setup();
+
+    //! @name Derived STR::ELEMENTS::ParamsInterface accessors
+    //! @{
+    //! get the desired action type [derived]
+    virtual inline enum DRT::ELEMENTS::ActionType GetActionType() const
+    {
+      CheckInitSetup();
+      return ele_action_;
+    }
+
+    //! get the total time for the element evaluation [derived]
+    virtual inline double GetTotalTime() const
+    {
+      CheckInitSetup();
+      return total_time_;
+    }
+
+    //! get the current time step for the element evaluation [derived]
+    virtual inline double GetDeltaTime() const
+    {
+      CheckInitSetup();
+      return delta_time_;
+    }
+
+    //! get the current step length [derived]
+    virtual inline double GetStepLength() const
+    {
+      CheckInitSetup();
+      return step_length_;
+    }
+
+    //! get the is_default_step indicator [derived]
+    virtual inline bool IsDefaultStep() const
+    {
+      CheckInitSetup();
+      return is_default_step_;
+    }
+
+    //! get the current damping type [derived]
+    virtual enum INPAR::STR::DampKind GetDampingType() const;
+
+    //! get the tolerate errors indicator [derived]
+    virtual inline bool IsTolerateErrors() const
+    {
+      CheckInitSetup();
+      return is_tolerate_errors_;
+    }
+
+    //! get the structural time integration factor for the displacement [derived]
+    virtual inline double GetTimIntFactorDisp() const
+    {
+      CheckInitSetup();
+      return timintfactor_disp_;
+    }
+
+    //! get the structural time integration factor for the velocities [derived]
+    virtual inline double GetTimIntFactorVel() const
+    {
+      CheckInitSetup();
+      return timintfactor_vel_;
+    }
+
+    //! mutable access to the stress data vector
+    virtual Teuchos::RCP<std::vector<char> >& MutableStressDataPtr();
+
+    //! mutable access to the strain data vector
+    virtual Teuchos::RCP<std::vector<char> >& MutableStrainDataPtr();
+
+    //! mutable access to the plastic strain data vector
+    virtual Teuchos::RCP<std::vector<char> >& MutablePlasticStrainDataPtr();
+
+    //! get the current stress type [derived]
+    virtual enum INPAR::STR::StressType GetStressOutputType() const;
+
+    //! get the current strain type [derived]
+    virtual enum INPAR::STR::StrainType GetStrainOutputType() const;
+
+    //! get the current plastic strain type [derived]
+    virtual enum INPAR::STR::StrainType GetPlasticStrainOutputType() const;
+    //! @}
+
+    //!@name set routines which can be called inside of the element [derived]
+    //! @{
+    //! set the element evaluation error flag inside of the element
+    virtual inline void SetEleEvalErrorFlag(const enum STR::ELEMENTS::EvalErrorFlag& error_flag)
+    {
+      ele_eval_error_flag_ = error_flag;
+    }
+
+    //! collects and calculates the update norm of the current processor
+    virtual void SumIntoMyUpdateNorm(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype,
+        const int& numentries,
+        const double* my_update_values,
+        const double* my_new_sol_values,
+        const double& step_length,
+        const int& owner);
+
+    //! collects and calculates the solution norm of the previous accepted Newton step on the current proc
+    void SumIntoMyPreviousSolNorm(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype,
+        const int& numentries,
+        const double* my_old_sol_values,
+        const int& owner);
+    //! @}
+
+    //! returns the partial update norm of the given quantity on the current processor
+    inline double GetMyUpdateNorm(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+    {
+      CheckInitSetup();
+      std::map<enum NOX::NLN::StatusTest::QuantityType,double>::const_iterator c_it;
+      c_it = my_update_norm_.find(qtype);
+      if (c_it == my_update_norm_.end())
+        dserror("The corresponding partial update norm could not be found! (quantity: %s)",
+            NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      return c_it->second;
+    }
+
+    //! returns the partial rms norm of the given quantity on the current processor
+    inline double GetMyRMSNorm(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+    {
+      CheckInitSetup();
+      std::map<enum NOX::NLN::StatusTest::QuantityType,double>::const_iterator c_it;
+      c_it = my_rms_norm_.find(qtype);
+      if (c_it == my_rms_norm_.end())
+        dserror("The corresponding partial rms norm could not be found! (quantity: %s)",
+            NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      return c_it->second;
+    }
+
+    //! returns the partial solution norm of the previous accepted Newton step of the given quantity on the current processor
+    inline double GetMyPreviousSolNorm(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+    {
+      CheckInitSetup();
+      std::map<enum NOX::NLN::StatusTest::QuantityType,double>::const_iterator c_it;
+      c_it = my_prev_sol_norm_.find(qtype);
+      if (c_it == my_prev_sol_norm_.end())
+        dserror("The corresponding partial solution norm could not be found! (quantity: %s)",
+            NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      return c_it->second;
+    }
+
+    //! returns the update norm type
+    inline enum NOX::Abstract::Vector::NormType GetUpdateNormType(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+    {
+      CheckInitSetup();
+      std::map<enum NOX::NLN::StatusTest::QuantityType,
+          enum NOX::Abstract::Vector::NormType>::const_iterator c_it;
+      c_it = normtype_update_.find(qtype);
+      if (c_it == normtype_update_.end())
+        dserror("The corresponding norm type could not be found! (quantity: %s)",
+            NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      return c_it->second;
+    }
+
+    //! returns the dof number
+    inline int GetMyDofNumber(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype) const
+    {
+      CheckInitSetup();
+      std::map<enum NOX::NLN::StatusTest::QuantityType,std::size_t>::const_iterator c_it;
+      c_it = my_dof_number_.find(qtype);
+      if (c_it == my_dof_number_.end())
+        dserror("The corresponding dof number could not be found! (quantity: %s)",
+            NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+      return static_cast<int>(c_it->second);
+    }
+
+    //! Did an element evaluation error occur?
+    bool IsEleEvalError() const;
+
+    /*! @name set routines which are used to set the parameters of the data container
+     *
+     *  These functions are not allowed to be called by the elements! */
+    //! @{
+    //! set the action type
+    inline void SetActionType(const enum DRT::ELEMENTS::ActionType& actiontype)
+    {
+      ele_action_ = actiontype;
+    }
+
+    //! set the tolerate errors flag
+    inline void SetIsTolerateError(const bool& is_tolerate_errors)
+    {
+      is_tolerate_errors_ = is_tolerate_errors;
+    }
+
+    //! set the current step length
+    inline void SetStepLength(const double& step_length)
+    {
+      step_length_ = step_length;
+    }
+
+    //! set the default step flag
+    inline void SetIsDefaultStep(const bool& is_default_step)
+    {
+      is_default_step_ = is_default_step;
+    }
+
+    //! set the total time for the evaluation call
+    inline void SetTotalTime(const double& total_time)
+    {
+      total_time_ = total_time;
+    }
+
+    //! set the current time step for the evaluation call
+    inline void SetDeltaTime(const double& dt)
+    {
+      delta_time_ = dt;
+    }
+
+    //! set the time integration factor for the displacements
+    inline void  SetTimIntFactorDisp(const double& timintfactor_disp)
+    {
+      timintfactor_disp_ = timintfactor_disp;
+    }
+
+    //! set the time integration factor for the velocities
+    inline void  SetTimIntFactorVel(const double& timintfactor_vel)
+    {
+      timintfactor_vel_ = timintfactor_vel;
+    }
+
+    //! set stress data vector
+    inline void SetStressData(const Teuchos::RCP<std::vector<char> >& stressdata)
+    {
+      stressdata_ptr_ = stressdata;
+    }
+
+    //! set strain data vector
+    inline void SetStrainData(const Teuchos::RCP<std::vector<char> >& straindata)
+    {
+      straindata_ptr_ = straindata;
+    }
+
+    //! set plastic strain data vector
+    inline void SetPlasticStrainData(const Teuchos::RCP<std::vector<char> >& plastic_straindata)
+    {
+      plastic_straindata_ptr_ = plastic_straindata;
+    }
+
+    //! reset the partial update norm value of the current processor
+    void ResetMyNorms(const bool& isdefaultstep);
+    //! @}
+
+  protected:
+    //! returns the isinit_ flag
+    inline const bool& IsInit() const
+    { return isinit_; };
+
+    //! returns the issetup_ flag
+    inline const bool& IsSetup() const
+    { return issetup_; };
+
+    //! Checks the init and setup status
+    inline void CheckInitSetup() const
+    {
+      if (!IsInit() or !IsSetup())
+        dserror("Call Init() and Setup() first!");
+    }
+
+    //! Checks the init status
+    inline void CheckInit() const
+    {
+      if (!IsInit())
+        dserror("Init() has not been called, yet!");
+    }
+
+  private:
+    //! fill the normtype maps
+    void FillNormTypeMaps();
+
+    /*! \brief Get the norm type of the desired quantity.
+     *
+     *  If the norm type can be found, the function returns true,
+     *  otherwise false. */
+    bool GetUpdateNormType(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype,
+        enum NOX::Abstract::Vector::NormType& normtype);
+
+    /*! \brief Get the WRMS absolute and relative tolerances of the desired quantity.
+     *
+     *  If the tolerances can be found, the function returns true,
+     *  otherwise false. */
+    bool GetWRMSTolerances(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype,
+        double& atol, double& rtol);
+
+    //! Sum locally values into a norm of the desired type
+    void SumIntoMyNorm(
+        const int& numentries,
+        const double* my_values,
+        const enum NOX::Abstract::Vector::NormType& normtype,
+        double& my_norm) const;
+
+    /*! \brief Calculate a local relative mean square sum for the global WRMS status test
+     *
+     * (1)  \f$ v_i = x_{i}^{k-1} = x_{i}^{k} - sl* \Delta x_{i}^{k} \f$
+     * (2)  \f$ my_rms_norm = \sum_{i} [(x_i^{k}-x_{i}^{k-1}) / (RTOL * |x_{i}^{k-1}| + ATOL)]^{2} \f$ */
+    void SumIntoMyRelativeMeanSquare(
+        const double& atol,
+        const double& rtol,
+        const double& step_length,
+        const int& numentries,
+        const double* my_update_values,
+        const double* my_new_sol_values,
+        double& my_rms) const;
+
+  private:
+    //! indicator if the Init() routine has been called, yet.
+    bool isinit_;
+
+    //! indicator if the Setup() routine has been called, yet.
+    bool issetup_;
+
+    bool isntmaps_filled_;
+
+    //! @name General element control parameters
+    //! @{
+    //! Current action type
+    enum DRT::ELEMENTS::ActionType ele_action_;
+
+    //! element evaluation error flag
+    enum STR::ELEMENTS::EvalErrorFlag ele_eval_error_flag_;
+
+    //! tolerate errors flag
+    bool is_tolerate_errors_;
+
+    //! total time for the evaluation
+    double total_time_;
+
+    //! current time step for the evaluation
+    double delta_time_;
+    //! @}
+
+    //! @name Control parameters for the handling of element internal variables (e.g. EAS)
+    //! @{
+    //! Current step length of the nonlinear solver
+    double step_length_;
+
+    /*! \brief Indicator if the current step is a default step
+     *
+     *  Only important for the internal elementwise update. */
+    bool is_default_step_;
+    //! @}
+
+    //! @name time integration parameters
+    //! @{
+    //! time integration factor for the displacements
+    double timintfactor_disp_;
+
+    //! time integration factor for the velocities
+    double timintfactor_vel_;
+    //! @}
+
+    //! @name output parameters
+    //! @{
+    //! stress data vector
+    Teuchos::RCP<std::vector<char> > stressdata_ptr_;
+
+    //! strain data vector
+    Teuchos::RCP<std::vector<char> > straindata_ptr_;
+
+    //! strain data vector
+    Teuchos::RCP<std::vector<char> > plastic_straindata_ptr_;
+    //! @}
+
+    //! map holding the force/rhs norm type of the active quantities
+    std::map<enum NOX::NLN::StatusTest::QuantityType,
+    enum NOX::Abstract::Vector::NormType> normtype_force_;
+
+    //! map holding the update norm type of the active quantities
+    std::map<enum NOX::NLN::StatusTest::QuantityType,
+    enum NOX::Abstract::Vector::NormType> normtype_update_;
+
+    //! map holding the dof number of the the active quantities on the current processor
+    std::map<enum NOX::NLN::StatusTest::QuantityType,std::size_t> my_dof_number_;
+
+    /*! map holding the absolute tolerance for the wrms status test of the active
+     *  quantities on the current processor */
+    std::map<enum NOX::NLN::StatusTest::QuantityType,double> atol_wrms_;
+
+    /*! map holding the relative tolerance for the wrms status test of the active
+     *  quantities on the current processor */
+    std::map<enum NOX::NLN::StatusTest::QuantityType,double> rtol_wrms_;
+
+    //! partial update norm of the current processor
+    std::map<enum NOX::NLN::StatusTest::QuantityType,double> my_update_norm_;
+
+    //! partial relative mean square norm of the current processor
+    std::map<enum NOX::NLN::StatusTest::QuantityType,double> my_rms_norm_;
+
+    //! global partial solution norm of the previous step
+    std::map<enum NOX::NLN::StatusTest::QuantityType,double> my_prev_sol_norm_;
+
+    //! read-only access to the structural dynamic parameters
+    Teuchos::RCP<const STR::TIMINT::BaseDataSDyn> sdyn_ptr_;
+
+    //! read-only access to the input/output parameters
+    Teuchos::RCP<const STR::TIMINT::BaseDataIO> io_ptr_;
+
+    //! read-only access to the timint object
+    Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
+
+    //! read-only access to the epetra communicator
+    Teuchos::RCP<const Epetra_Comm> comm_ptr_;
+  };  // class Data
+} // namespace MODELEVALUATOR
+} // namespace STR
+
+
+#endif /* SRC_DRT_STRUCTURE_NEW_STR_MODEL_EVALUATOR_DATA_H_ */

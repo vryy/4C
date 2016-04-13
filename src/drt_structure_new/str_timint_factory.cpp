@@ -24,6 +24,9 @@
 #include "str_timint_explicit.H"
 #include "str_timint_loca_continuation.H"
 
+// supported data containers
+#include "str_timint_basedatasdyn.H"
+
 #include "../drt_structure/strtimada.H"
 
 
@@ -121,7 +124,6 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildStrategy(
   return ti_strategy;
 }
 
-
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
@@ -147,7 +149,6 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildImplicitStrategy(
 
   return ti_strategy;
 }
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -180,6 +181,29 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildExplicitStrategy(
   return ti_strategy;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::Factory::BuildDataSDyn(
+    const Teuchos::ParameterList& sdyn
+    ) const
+{
+  Teuchos::RCP<STR::TIMINT::BaseDataSDyn> sdyndata_ptr = Teuchos::null;
+
+  const enum INPAR::STR::DynamicType dyntype =
+      DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
+
+  switch (dyntype)
+  {
+    case INPAR::STR::dyna_genalpha:
+      sdyndata_ptr = Teuchos::rcp(new STR::TIMINT::GenAlphaDataSDyn());
+      break;
+    default:
+      sdyndata_ptr = Teuchos::rcp(new STR::TIMINT::BaseDataSDyn());
+      break;
+  }
+
+  return sdyndata_ptr;
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -202,4 +226,14 @@ Teuchos::RCP<STR::TimAda> STR::TIMINT::BuildAdaptiveWrapper(
 {
   Factory factory;
   return factory.BuildAdaptiveWrapper(ioflags,sdyn,xparams,taflags,ti_strategy);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::BuildDataSDyn(
+    const Teuchos::ParameterList& sdyn
+    )
+{
+  Factory factory;
+  return factory.BuildDataSDyn(sdyn);
 }
