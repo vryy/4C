@@ -2,15 +2,11 @@
 /*!
 \file tsi_monolithic.H
 
+\maintainer Alexander Seitz
+
 \brief Basis of all monolithic TSI algorithms that perform a coupling between
        the structure field equation and temperature field equations
 
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
 */
 
 /*----------------------------------------------------------------------*
@@ -412,6 +408,7 @@ namespace TSI
 
     Epetra_Time timernewton_; //!< timer for measurement of solution time of newton iterations
     double dtsolve_; //!< linear solver time
+    double dtcmt_; //!< contact evaluation time
     //@}
 
     //! @name Pseudo-transient continuation parameters

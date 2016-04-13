@@ -643,10 +643,19 @@ void TSI::Monolithic::NewtonFull()
 
     // do the thermo contact modifications all at once
     if (cmtman_!=Teuchos::null)
+    {
+      // *********** time measurement ***********
+      double dtcpu = timernewton_.WallTime();
+      // *********** time measurement ***********
+
       dynamic_cast<CONTACT::CoTSILagrangeStrategy&>(cmtman_->GetStrategy()).Evaluate(
           SystemMatrix(),rhs_,coupST_,StructureField()->WriteAccessDispnp(),ThermoField()->WriteAccessTempnp(),
           StructureField()->GetDBCMapExtractor(),ThermoField()->GetDBCMapExtractor());
 
+      // *********** time measurement ***********
+      dtcmt_ = timernewton_.WallTime() - dtcpu;
+      // *********** time measurement ***********
+    }
     // in case of 'Mix'-convergence criterion: save the norm of the 1st
     // iteration in (norm . iter0_)
     if (iter_ == 1)
@@ -1785,6 +1794,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   // add contact set information
   if (cmtman_!=Teuchos::null)
   {
+    oss << std::setw(12)<< "tc";
       oss << std::setw(11)<< "#active";
       if (cmtman_->GetStrategy().Friction())
         oss << std::setw(10)<< "#slip";
@@ -1960,6 +1970,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   // add contact information
   if (cmtman_!=Teuchos::null)
   {
+    oss << std::setw(12) << std::setprecision(2) << std::scientific << dtcmt_;
     oss << std::setw(11) << cmtman_->GetStrategy().NumberOfActiveNodes();
     if (cmtman_->GetStrategy().Friction())
       oss << std::setw(10) << cmtman_->GetStrategy().NumberOfSlipNodes();
