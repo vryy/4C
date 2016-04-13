@@ -1,15 +1,10 @@
 /*!----------------------------------------------------------------------
 \file contact_integrator.cpp
 
+\maintainer Philipp Farah, Alexander Seitz
+
 \brief A class to perform integrations of Mortar matrices on the overlap
        of two MortarElements in 1D and 2D (derived version for contact)
-
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -9120,6 +9115,9 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(
     jumpvalv1+=tanv1[i]*jumpv[i];
     jumpvalv2+=tanv2[i]*jumpv[i];
   }
+
+  jumpvalv[0]=jumpvalv1;
+  jumpvalv[1]=jumpvalv2;
 
   // ***************************
   // Add to node!
