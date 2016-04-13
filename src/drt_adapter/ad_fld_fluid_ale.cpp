@@ -149,8 +149,13 @@ void ADAPTER::FluidAle::Output()
 {
   FluidField()->StatisticsAndOutput();
 
+  // Note: We want to write the fsi interface tractions in order to restart
+  // monolithically from an partitioned fsi scheme (e.g. fsi prestress simulation).
+  // TODO (Thon): this is not the nice way, but fluid-ale and xfem problems may have now FSI interface,
+  // so we can not do this in general :(
+  if ( DRT::Problem::Instance()->ProblemType() == prb_fsi )
   {
-    //we want to be able to restart monolithicaly from an partitioned fsi scheme
+    //we want to be able to restart monolithically from an partitioned fsi scheme
     const int uprestart = timeparams_.get<int>("RESTARTEVRY");
     const int upres = timeparams_.get<int>("RESULTSEVRY");
 
