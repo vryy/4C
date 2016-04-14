@@ -215,7 +215,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
 
     const char* index(suffix.c_str());
     char* locator(NULL);
-    unsigned species(0), domain(-1);
+    int species(0), domain(-1);
 
     if(*index == '\0')
     {
