@@ -2619,6 +2619,10 @@ void STR::TimInt::AddRestartToOutputState()
                           windkman_->GetRefDDFluxValue());
   }
 
+  // springdashpot output
+  if (springman_->HaveSpringDashpot())
+    springman_->OutputRestart(output_, discret_, disn_);
+
   // contact/meshtying
   if(HaveContactMeshtying())
     cmtbridge_->WriteRestart(output_,true);
