@@ -148,7 +148,8 @@ namespace CAVITATION
 
     /// set coupling states for force computation
     virtual void SetCouplingStates(
-      Teuchos::ParameterList& p
+      Teuchos::ParameterList& p,
+      bool init = false
       );
 
     /// solve the current particle time step
@@ -158,7 +159,7 @@ namespace CAVITATION
     virtual void SetFluidFraction();
 
     /// force on particles is calculated and applied
-    virtual void CalculateAndApplyForcesToParticles();
+    virtual void CalculateAndApplyForcesToParticles(bool init = false);
 
     /// calculate radius based on RP equation
     //! For details see Semesterarbeit Christoph Schmidt
@@ -418,9 +419,15 @@ namespace CAVITATION
 
     bool fluidfrac_relevant;   ///< bool to check whether fluid fraction is considered in the problem type
 
-    Teuchos::RCP<Epetra_MultiVector> velgradn_;   ///< velocity gradient at t_n
+    Teuchos::RCP<Epetra_Vector> velcoln_;   ///< velocity in col layout at t_n
 
-    Teuchos::RCP<Epetra_MultiVector> velgradnp_;   ///< velocity gradient at t_n+1
+    Teuchos::RCP<Epetra_Vector> velcolnp_;   ///< velocity in col layout at t_n+1
+
+    Teuchos::RCP<Epetra_Vector> acccolnp_;   ///< acceleration in col layout at t_n+1
+
+    Teuchos::RCP<Epetra_MultiVector> velgradcoln_;   ///< velocity gradient in col layout at t_n
+
+    Teuchos::RCP<Epetra_MultiVector> velgradcolnp_;   ///< velocity gradient in col layout at t_n+1
 
     //@}
 

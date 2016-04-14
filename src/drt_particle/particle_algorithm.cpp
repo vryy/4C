@@ -318,7 +318,7 @@ void PARTICLE::Algorithm::Integrate()
 /*----------------------------------------------------------------------*
  | calculate forces on particle and apply it               ghamm 02/13  |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::CalculateAndApplyForcesToParticles()
+void PARTICLE::Algorithm::CalculateAndApplyForcesToParticles(bool init)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLE::Algorithm::CalculateAndApplyForcesToParticles");
 

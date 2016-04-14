@@ -821,9 +821,7 @@ void CAVITATION::Algorithm::InitCavitation()
   }
 
   // determine consistent initial acceleration for the particles
-  velgradn_ = FLD::UTILS::ProjectGradient(fluiddis_,fluid_->Veln(),false);
-  velgradnp_ = FLD::UTILS::ProjectGradient(fluiddis_,fluid_->Velnp(),false);
-  CalculateAndApplyForcesToParticles();
+  CalculateAndApplyForcesToParticles(true);
   particles_->DetermineMassDampConsistAccel();
 
   if(computeradiusRPbased_ == true)
@@ -992,53 +990,86 @@ void CAVITATION::Algorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*
  | set coupling states for force computation               ghamm 04/16  |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::SetCouplingStates(Teuchos::ParameterList& p)
+void CAVITATION::Algorithm::SetCouplingStates(Teuchos::ParameterList& p, bool init)
 {
   // find theta for linear interpolation in fluid time step
   double theta = 1.0;
   if((particles_->Step()-restartparticles_) % timestepsizeratio_ != 0)
     theta = (double)((particles_->Step()-restartparticles_) % timestepsizeratio_) / (double)timestepsizeratio_;
 
-  // fluid velocity linearly interpolated between n and n+1 in case of subcycling
-  Teuchos::RCP<Epetra_Vector> vel = Teuchos::rcp(new Epetra_Vector(*fluid_->Velnp()));
-  if(theta != 1.0)
-    vel->Update(1.0-theta, *fluid_->Veln(), theta);
-
   if(!simplebubbleforce_)
   {
     // no interpolation necessary in case no subcycling is applied
-    if(timestepsizeratio_ == 1)
+    if(timestepsizeratio_ == 1 || init)
     {
       // project velocity gradient of fluid to nodal level and store it in a ParameterList
-      FLD::UTILS::ProjectGradientAndSetParam(fluiddis_,p,vel,"velgradient",false);
+      FLD::UTILS::ProjectGradientAndSetParam(fluiddis_,p,fluid_->Velnp(),"velgradient",false);
     }
     else
     {
-      // store veloctiy gradients in the first subcycling step
+      // store velocity gradients in col layout in the first subcycling step
       if((particles_->Step()-restartparticles_) % timestepsizeratio_ == 1)
       {
-        velgradn_ = FLD::UTILS::ProjectGradient(fluiddis_,fluid_->Veln(),false);
-        velgradnp_ = FLD::UTILS::ProjectGradient(fluiddis_,fluid_->Velnp(),false);
+        Teuchos::RCP<Epetra_MultiVector> tmp = FLD::UTILS::ProjectGradient(fluiddis_,fluid_->Veln(),false);
+        velgradcoln_ = Teuchos::rcp(new Epetra_MultiVector(*fluiddis_->NodeColMap(),dim_*dim_));
+        LINALG::Export(*tmp,*velgradcoln_);
+
+        tmp = FLD::UTILS::ProjectGradient(fluiddis_,fluid_->Velnp(),false);
+        velgradcolnp_ = Teuchos::rcp(new Epetra_MultiVector(*fluiddis_->NodeColMap(),dim_*dim_));
+        LINALG::Export(*tmp,*velgradcolnp_);
       }
 
       // do linear interpolation in time
-      Teuchos::RCP<Epetra_MultiVector> velgrad = Teuchos::rcp(new Epetra_MultiVector(*velgradnp_));
-      velgrad->Update(1.0-theta, *velgradn_, theta);
+      Teuchos::RCP<Epetra_MultiVector> velgradcol = Teuchos::rcp(new Epetra_MultiVector(*velgradcolnp_));
+      velgradcol->Update(1.0-theta, *velgradcoln_, theta);
 
-      fluiddis_->AddMultiVectorToParameterList(p,"velgradient",velgrad);
+      fluiddis_->AddMultiVectorToParameterList(p,"velgradient",velgradcol);
 
       // clear the stored gradients after last subcycling step
       if((particles_->Step()-restartparticles_) % timestepsizeratio_ == 0)
       {
-        velgradn_ = Teuchos::null;
-        velgradnp_ = Teuchos::null;
+        velgradcoln_ = Teuchos::null;
+        velgradcolnp_ = Teuchos::null;
       }
     }
   }
 
-  // set fluid states here because states may have been cleared in gradient computation
-  fluiddis_->SetState("vel",vel);
-  fluiddis_->SetState("acc",fluid_->Accnp());
+  // no interpolation necessary in case no subcycling is applied
+  if(timestepsizeratio_ == 1 || init)
+  {
+    fluiddis_->SetState("vel",fluid_->Velnp());
+    fluiddis_->SetState("acc",fluid_->Accnp());
+  }
+  else
+  {
+    // export and store velocity gradients in the first subcycling step
+    if((particles_->Step()-restartparticles_) % timestepsizeratio_ == 1)
+    {
+      velcoln_ = LINALG::CreateVector(*fluiddis_->DofColMap(),false);
+      LINALG::Export(*fluid_->Veln(), *velcoln_);
+      velcolnp_ = LINALG::CreateVector(*fluiddis_->DofColMap(),false);
+      LINALG::Export(*fluid_->Velnp(), *velcolnp_);
+      acccolnp_ = LINALG::CreateVector(*fluiddis_->DofColMap(),false);
+      LINALG::Export(*fluid_->Accnp(), *acccolnp_);
+    }
+
+    // fluid velocity linearly interpolated between n and n+1 in case of subcycling
+    Teuchos::RCP<Epetra_Vector> vel = Teuchos::rcp(new Epetra_Vector(*velcolnp_));
+    if(theta != 1.0)
+      vel->Update(1.0-theta, *velcoln_, theta);
+
+    // set fluid states here because states may have been cleared in gradient computation
+    fluiddis_->SetState("vel",vel);
+    fluiddis_->SetState("acc",acccolnp_);
+
+    // clear the stored gradients after last subcycling step
+    if((particles_->Step()-restartparticles_) % timestepsizeratio_ == 0)
+    {
+      velcoln_ = Teuchos::null;
+      velcolnp_ = Teuchos::null;
+      acccolnp_ = Teuchos::null;
+    }
+  }
 
   return;
 }
@@ -1145,7 +1176,7 @@ void CAVITATION::Algorithm::SetFluidFraction()
 /*----------------------------------------------------------------------*
  | calculate fluid forces on particle and apply it         ghamm 01/13  |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
+void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateAndApplyForcesToParticles");
 
@@ -1153,7 +1184,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   fluiddis_->ClearState();
   particledis_->ClearState();
   Teuchos::ParameterList p;
-  SetCouplingStates(p);
+  SetCouplingStates(p, init);
 
   // state at n+1 contains already dbc values due to PrepareTimeStep(), otherwise n = n+1
   Teuchos::RCP<const Epetra_Vector> bubblepos = particles_->Dispnp();

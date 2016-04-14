@@ -109,7 +109,7 @@ namespace PARTICLE
     virtual void Integrate();
 
     /// force on particles is calculated and applied
-    virtual void CalculateAndApplyForcesToParticles();
+    virtual void CalculateAndApplyForcesToParticles(bool init = false);
 
     /// update the current time step
     virtual void Update();

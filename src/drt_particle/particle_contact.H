@@ -17,6 +17,7 @@
 #include "../drt_inpar/inpar_cavitation.H"
 #include "particle_node.H"
 #include "../drt_lib/drt_element.H"
+#include <Epetra_FEVector.h>
 
 
 // forward declarations
@@ -246,6 +247,17 @@ namespace PARTICLE
 
   public:
 
+  /// struct to store particle data for faster access
+  struct ParticleCollData {
+    LINALG::Matrix<3,1> pos;
+    LINALG::Matrix<3,1> vel;
+    LINALG::Matrix<3,1> angvel;
+    double rad;
+    double mass;
+    std::vector<int> lm;
+    int owner;
+  };
+
   //! @name Life
   //@{
 
@@ -271,6 +283,36 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> m_contact
     );
 
+  /// collect collision data for faster access
+  virtual void CollectCacheData(
+    const int numcolparticles
+    );
+
+  /// calculate contact with neighboring particles
+  virtual void CalcNeighboringParticlesContact(
+    DRT::Node* particle_i,
+    const ParticleCollData& data_i,
+    const std::vector<DRT::Node*>& neighboring_particles,
+    const bool havepbc,
+    const double dt,
+    const Teuchos::RCP<Epetra_Vector>& f_contact,
+    const Teuchos::RCP<Epetra_Vector>& m_contact
+    );
+
+  /// calculate contact with neighboring walls
+  virtual void CalcNeighboringWallsContact(
+    DRT::Node* particle_i,
+    const ParticleCollData& data_i,
+    const std::set<DRT::Element*>& neighboring_walls,
+    const double dt,
+    const Teuchos::RCP<DRT::Discretization>& walldiscret,
+    const Teuchos::RCP<const Epetra_Vector>& walldisn,
+    const Teuchos::RCP<const Epetra_Vector>& wallveln,
+    const Teuchos::RCP<Epetra_Vector>& f_contact,
+    const Teuchos::RCP<Epetra_Vector>& m_contact,
+    const Teuchos::RCP<Epetra_FEVector>& f_structure
+    );
+
   /// calculate normal contact force for single contact pair
   virtual void CalculateNormalContactForce(
     const double g,
@@ -294,24 +336,13 @@ namespace PARTICLE
     const int owner_j
     );
 
-  /// struct to store particle data for faster access
-  struct ParticleCollData {
-    LINALG::Matrix<3,1> pos;
-    LINALG::Matrix<3,1> vel;
-    LINALG::Matrix<3,1> angvel;
-    double rad;
-    double mass;
-    std::vector<int> lm;
-  };
-
   //@}
 
-   private:
+  private:
 
   std::vector<ParticleCollData> particledata_;   ///< temporary storage for all particle collision relevant data
 
    };  // class ParticleCollisionHandlerDEM
-
 
 
   // event to store future inter-particle collision
