@@ -971,7 +971,6 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so3_poro_p1.cpp
   src/drt_so3/so3_poro_p1_eletypes.cpp
   src/drt_so3/so3_poro_p1_evaluate.cpp
-  src/drt_so3/so3_poro_p1_evaluate_immersed.cpp
   src/drt_so3/so3_scatra.cpp
   src/drt_so3/so3_scatra_evaluate.cpp
   src/drt_so3/so3_scatra_eletypes.cpp
