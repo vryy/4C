@@ -267,7 +267,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
 
     // extract relevant result from map
     std::map<const int,std::vector<double> >::const_iterator iterator = map->find(domain);
-    if(iterator == map->end() or species < 0 or species >= iterator->second.size())
+    if(iterator == map->end() or species < 0 or species >= (int) iterator->second.size())
       dserror("Couldn't extract total or mean value of transported scalar with ID %d inside domain with ID %d from time integrator!",species,domain);
     result = iterator->second[species];
   }
