@@ -792,6 +792,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_wear.cpp
   src/drt_inpar/inpar_windkessel.cpp
   src/drt_inpar/inpar_xfem.cpp
+  src/drt_tutorial/inpar_tutorial.cpp
 )
 set(OBJS_DRT_ARTNET
   src/drt_art_net/art_net_dyn_drt.cpp
@@ -970,6 +971,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so3_poro_p1.cpp
   src/drt_so3/so3_poro_p1_eletypes.cpp
   src/drt_so3/so3_poro_p1_evaluate.cpp
+  src/drt_so3/so3_poro_p1_evaluate_immersed.cpp
   src/drt_so3/so3_scatra.cpp
   src/drt_so3/so3_scatra_evaluate.cpp
   src/drt_so3/so3_scatra_eletypes.cpp
@@ -2278,6 +2280,18 @@ src/drt_immersed_problem/ssi_partitioned_2wc_protrusionformation.cpp
 src/drt_immersed_problem/ssi_partitioned_2wc_biochemomechano.cpp
 src/drt_immersed_problem/fsi_partitioned_immersed.cpp
 )
+
+set(OBJS_DRT_TUTORIAL
+src/drt_tutorial/tutorial_dyn.cpp
+src/drt_tutorial/tutorial_utils.cpp
+src/drt_tutorial/tutorial_nln_truss.cpp
+src/drt_tutorial/tutorial_struct_ale_coupling.cpp
+src/drt_tutorial/tutorial_fixedpoint_scheme.cpp
+src/drt_tutorial/tutorial_material/tutorial_mat_stvenantkirchhoff.cpp
+src/drt_tutorial/tutorial_ele/tutorial_ele_calc.cpp
+src/drt_tutorial/tutorial_ele/tutorial_ele.cpp
+)
+
 ###------------------------------------------------------------------ Element flags
 
 #   all possible elements
@@ -2473,6 +2487,7 @@ add_library(alg_fluid_adjoint ${OBJS_DRT_TOPOPT_ADJOINT})
 add_library(alg_opti ${OBJS_OPTI})
 add_library(alg_particle ${OBJS_DRT_PARTICLE})
 add_library(alg_acou ${OBJS_DRT_ACOU})
+add_library(alg_tutorial ${OBJS_DRT_TUTORIAL})
 
 set(SINGLEFIELD_LIBRARIES
   alg_ale
@@ -2500,6 +2515,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_opti
   alg_particle
   alg_acou
+  alg_tutorial
   )
 
 # general framework
