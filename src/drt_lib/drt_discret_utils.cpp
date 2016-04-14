@@ -2,12 +2,10 @@
 \file drt_discret_utils.cpp
 \brief
 
-<pre>
-Maintainer: Michael Gee
+\maintainer Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -254,10 +252,23 @@ void DRT::Discretization::AddMultiVectorToParameterList(Teuchos::ParameterList& 
   if (vec != Teuchos::null)
   {
     const Epetra_Map* nodecolmap = NodeColMap();
-    int numcol = vec->NumVectors();
-    Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
-    LINALG::Export(*vec,*tmp);
-    p.set(name,tmp);
+    const int numcol = vec->NumVectors();
+
+    // if it's already in column map just copy it
+    // This is a rough test, but it might be ok at this place.
+    if (vec->Map().PointSameAs(*nodecolmap))
+    {
+      // make a copy as in parallel such that no additional RCP points to the state vector
+      Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+      tmp->Update(1.0, *vec, 0.0);
+      p.set(name,tmp);
+    }
+    else // if it's not in column map export and allocate
+    {
+      Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+      LINALG::Export(*vec,*tmp);
+      p.set(name,tmp);
+    }
   }
   else
     p.set(name,Teuchos::null);
