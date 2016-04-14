@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <csignal>
 #include <Epetra_MpiComm.h>
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -35,6 +36,18 @@
  | size of buffer to attach to intra-communicator in byte               |
  *----------------------------------------------------------------------*/
 #define MPIBUFFSIZE      (52428800) /* this is 50 MB */
+
+/*!
+ * \brief FPE signal handle
+ *
+ * A function to handle floating point exceptions by raising a dserror.
+ * So we get a stack-trace also on systems where this is not provided
+ * through core-dumps from MPI_Abort() (e.g. OpenMPI does whereas
+ * Intel MPI doesn't).
+ */
+void sigfpe_handler(int sig){
+  dserror("Baci produced a floating point exception.");
+}
 
 
 /*----------------------------------------------------------------------*
@@ -192,6 +205,13 @@ int main(int argc, char *argv[])
     /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
     feclearexcept(FE_ALL_EXCEPT);
     feenableexcept(FE_INVALID | FE_DIVBYZERO);
+
+    // Initialize a signal handle for SIGFPE
+    struct sigaction act;
+    act.sa_handler = sigfpe_handler;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = 0;
+    sigaction(SIGFPE, &act, 0);
 
     /* The hard GNU way. But it does too much. */
     /*fesetenv((fenv_t*)-2);*/
