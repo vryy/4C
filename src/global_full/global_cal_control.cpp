@@ -2,12 +2,10 @@
 \file global_cal_control.cpp
 \brief routine to control execution phase
 
-<pre>
-Maintainer: Michael Gee
+\maintainer Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -44,6 +42,7 @@ Maintainer: Michael Gee
   #include "../drt_mlmc/drt_uq_dyn.H"
 #endif
 #include "../drt_inv_analysis/invana_cal_drt.H"
+#include "../drt_tutorial/tutorial_dyn.H"
 
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |
@@ -204,6 +203,10 @@ void ntacal()
 
     case prb_invana:
       invana_cal();
+      break;
+
+    case prb_tutorial:
+      tutorial_drt();
       break;
 
     default:

@@ -69,6 +69,7 @@ Maintainer: Martin Kronbichler
 #include "inpar_volmortar.H"
 #include "inpar_windkessel.H"
 #include "inpar_loca_continuation.H"
+#include "../drt_tutorial/inpar_tutorial.H"
 #include "inpar_plasticity.H"
 
 
@@ -652,6 +653,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   INPAR::SOLVER::SetValidParameters(list);
   INPAR::NLNSOL::SetValidParameters(list);
+
+  INPAR::TUTORIAL::SetValidParameters(list);
 
   return list;
 }

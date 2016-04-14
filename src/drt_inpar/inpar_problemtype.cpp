@@ -2,11 +2,11 @@
 /*!
 \file inpar_problemtype.cpp
 
-<pre>
-Maintainer: Georg Bauer
+
+\maintainer Georg Bauer
             bauer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-</pre>
+
 */
 
 /*----------------------------------------------------------------------*/
@@ -73,6 +73,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Thermo"]                                           = prb_thermo;
     string2prbtype["Thermo_Structure_Interaction"]                     = prb_tsi;
     string2prbtype["Thermo_Fluid_Structure_Interaction"]               = prb_thermo_fsi;
+    string2prbtype["Tutorial"]                                         = prb_tutorial;
     string2prbtype["Two_Phase_Flow"]                                   = prb_two_phase_flow;
     string2prbtype["UQ"]                                               = prb_uq;
   }

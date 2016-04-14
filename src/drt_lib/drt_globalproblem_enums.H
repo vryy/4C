@@ -2,12 +2,10 @@
 \file drt_globalproblem_enums.H
 \brief Some important enums used in conjunction with DRT::Problem
 
-<pre>
-Maintainer: Martin Kronbichler
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
 
 ---------------------------------------------------------------------*/
 
@@ -75,6 +73,7 @@ typedef enum _PROBLEM_TYP
   prb_thermo,               // thermal problem
   prb_thermo_fsi,           // thermo-fluid-structure-interaction problem
   prb_tsi,                  // thermal structure interaction
+  prb_tutorial,             // student's c++/baci tutorial
   prb_two_phase_flow,       // two phase flow problem using the fluid and levelset modules
   prb_uq                    // uncertainty quantification
 } PROBLEM_TYP;

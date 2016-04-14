@@ -4,12 +4,11 @@
 
 \brief internal representation of an input file
 
-<pre>
-Maintainer: Martin Kronbichler
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -341,6 +340,7 @@ public:
   const Teuchos::ParameterList& AcousticParams() const { return getParameterList()->sublist("ACOUSTIC DYNAMIC"); }
   const Teuchos::ParameterList& VolmortarParams() const { return getParameterList()->sublist("VOLMORTAR COUPLING"); }
   const Teuchos::ParameterList& NonlinearSolverParams() const { return getParameterList()()->sublist("NONLINEAR SOLVER"); }
+  const Teuchos::ParameterList& TutorialParams()const { return getParameterList()()->sublist("TUTORIAL DYNAMIC"); };
 
   const Teuchos::ParameterList& SolverParams(int solverNr) const;
   const Teuchos::ParameterList& RandomFieldParams(int randomfieldNr) const;

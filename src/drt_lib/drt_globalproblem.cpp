@@ -4,12 +4,11 @@
 
 \brief global list of problems
 
-<pre>
-Maintainer: Martin Kronbichler
+\maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -329,6 +328,9 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--ACOUSTIC DYNAMIC/PA IMAGE RECONSTRUCTION", *list);
   reader.ReadGidSection("--VOLMORTAR COUPLING", *list);
   reader.ReadGidSection("--NONLINEAR SOLVER", *list);
+  reader.ReadGidSection("--TUTORIAL DYNAMIC", *list);
+  reader.ReadGidSection("--TUTORIAL DYNAMIC/NONLINEAR TRUSS", *list);
+  reader.ReadGidSection("--TUTORIAL DYNAMIC/FIXED POINT SCHEME", *list);
 
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);
@@ -2070,6 +2072,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
   }
   break;
+  case prb_tutorial:
+  {
+
+  }
+  break;
   default:
     dserror("Unknown problem type: %d",ProblemType());
     break;
@@ -2139,6 +2146,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       // read microscale fields from second, third, ... inputfile for supporting processors
       ReadMicrofields_NPsupport();
+      break;
+    }
+    case prb_tutorial:
+    {
       break;
     }
     default:
