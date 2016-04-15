@@ -284,7 +284,7 @@ namespace PARTICLE
     );
 
   /// collect collision data for faster access
-  virtual void CollectCacheData(
+  virtual void PreFetchCollData(
     const int numcolparticles
     );
 

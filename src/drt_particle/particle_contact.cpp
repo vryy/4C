@@ -482,7 +482,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
   // gather data for all particles initially
   const int numcolparticles = discret_->NodeColMap()->NumMyElements();
   particledata_.resize(numcolparticles);
-  CollectCacheData(numcolparticles);
+  PreFetchCollData(numcolparticles);
 
   const bool havepbc = particle_algorithm_->HavePBCs();
 
@@ -603,7 +603,7 @@ double PARTICLE::ParticleCollisionHandlerDEM::EvaluateParticleContact(
 /*----------------------------------------------------------------------*
  | collect collision data for faster access                ghamm 04/16  |
  *----------------------------------------------------------------------*/
-void PARTICLE::ParticleCollisionHandlerDEM::CollectCacheData(
+void PARTICLE::ParticleCollisionHandlerDEM::PreFetchCollData(
   const int numcolparticles
   )
 {
@@ -632,12 +632,12 @@ void PARTICLE::ParticleCollisionHandlerDEM::CollectCacheData(
     // lm vector and owner
     data.lm.swap(lm);
     data.owner = particle->Owner();
-  }
 
 #ifdef DEBUG
-  if(currparticle->NumElement() != 1)
+  if(particle->NumElement() != 1)
     dserror("More than one element for this particle");
 #endif
+  }
 
   return;
 }
