@@ -2119,6 +2119,8 @@ void MAT::PlasticElastHyper::VisNames(std::map<std::string,int>& names)
 {
   std::string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1; // scalar
+  std::string plastic_strain_incr = "plastic_strain_incr";
+  names[plastic_strain_incr] = 1; // scalar
   std::string plastic_zone = "plastic_zone";
   names[plastic_zone] = 1; // scalar
 
@@ -2142,6 +2144,14 @@ bool MAT::PlasticElastHyper::VisData(
     for (unsigned gp=0; gp<last_alpha_isotropic_.size(); gp++)
       tmp+= AccumulatedStrain(gp);
     data[0] = tmp/last_alpha_isotropic_.size();
+  }
+  if (name == "plastic_strain_incr")
+  {
+    if ((int)data.size()!=1) dserror("size mismatch");
+    double tmp=0.;
+    for (unsigned gp=0; gp<delta_alpha_i_.size(); gp++)
+      tmp+= delta_alpha_i_.at(gp);
+    data[0] = tmp/delta_alpha_i_.size();
   }
   if (name == "plastic_zone")
   {
