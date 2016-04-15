@@ -986,6 +986,12 @@ void MAT::PlasticElastHyper::EvaluateNCP(
                     *pow(1.+Visc()*(1.-ViscSoft()*dT)*delta_alpha_i_[gp]/dt,ViscRate()-1)
                       *ViscRate()*Visc()*(1.-ViscSoft()*dT)/dt;
 
+  // safety check: due to thermal softening, we might get a negative yield stress
+  // in that case, no viable solution to the plasticity probleme exists, since we
+  // need abs(dev(Sigma)) - Y = 0 --> abs(dev(Sigma))=Y, but abs(dev(Sigma))>0, Y<0 --> error
+  if (ypl <=0.)
+    dserror("negative effective yield stress! Thermal softening and large temperature increase???");
+
   // activity state check
   if (ypl<absetatr_H)
   {
