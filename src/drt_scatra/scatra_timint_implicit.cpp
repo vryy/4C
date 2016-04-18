@@ -106,7 +106,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   flux_(Teuchos::null),
   sumnormfluxintegral_(Teuchos::null),
   lastfluxoutputstep_(-1),
-  outputscalars_(DRT::INPUT::IntegralValue<int>(*params,"OUTPUTSCALARS")),
+  outputscalars_(DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(*params,"OUTPUTSCALARS")),
   outputgmsh_(DRT::INPUT::IntegralValue<int>(*params,"OUTPUT_GMSH")),
   output_state_matlab_(DRT::INPUT::IntegralValue<int>(*params,"MATLAB_STATE_OUTPUT")),
   fdcheck_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FDCheck>(*params,"FDCHECK")),
@@ -123,8 +123,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   iternum_(0),
   timealgo_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
   nsd_(DRT::Problem::Instance()->NDim()),
-  numscal_(0),
-  numdofpernode_(0),
+  scalarhandler_(Teuchos::null),
+  outputscalarstrategy_(Teuchos::null),
   // Initialization of degrees of freedom variables
   phin_(Teuchos::null),
   phinp_(Teuchos::null),
@@ -133,8 +133,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   phidtnp_(Teuchos::null),
   hist_(Teuchos::null),
   densafnp_(Teuchos::null),
-  totalscalars_(),
-  meanscalars_(),
   cdvel_(DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
   meanconc_(Teuchos::null),
   nds_vel_(-1),
@@ -237,17 +235,8 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // -----------------------------------------------------------------------
   // determine number of degrees of freedom and transported scalars per node
   // -----------------------------------------------------------------------
-  int mynumdofpernode = 0;
-  if (discret_->NumMyRowNodes() > 0)
-    mynumdofpernode = discret_->NumDof(0,discret_->lRowNode(0));
-
-  // to support completely empty procs, communication is required
-  discret_->Comm().MaxAll(&mynumdofpernode,&numdofpernode_,1);
-
-  numscal_ = numdofpernode_;
-
-  // adapt number of transported scalars if necessary
-  AdaptNumScal();
+  CreateScalarHandler();
+  scalarhandler_->Init(this);
 
   // -----------------------------------------------------------------------------
   // initialize meshtying strategy (including standard strategy without meshtying)
@@ -378,7 +367,11 @@ void SCATRA::ScaTraTimIntImpl::Init()
   sumnormfluxintegral_ = Teuchos::rcp(new Epetra_SerialDenseVector(10));
 
   // get desired scalar id's for flux output
+  if (writeflux_!=INPAR::SCATRA::flux_no)
   {
+    if(not scalarhandler_->EqualNumDof())
+      dserror("Flux output only implement for equal number of DOFs per node within ScaTra discretization!");
+
     // write one by one of scalars (as flux output in the input file defined)
     // to the temporary variable word1
     int word1 = 0;
@@ -393,11 +386,11 @@ void SCATRA::ScaTraTimIntImpl::Init()
     // -> current flux for potential only if div i is used to close the system otherwise zero
     if ((*writefluxids_)[0]==(-1)) //default is to perform flux output for ALL scalars
     {
-      writefluxids_->resize(numdofpernode_);
-      for(int k=0;k<numdofpernode_;++k)
+      writefluxids_->resize(NumDofPerNode());
+      for(int k=0;k<NumDofPerNode();++k)
         (*writefluxids_)[k]=k+1;
     }
-    // flux_ vector is initized when CalcFlux() is called
+    // flux_ vector is initialized when CalcFlux() is called
     if ((writeflux_!=INPAR::SCATRA::flux_no) and (myrank_ == 0))
     {
       IO::cout << "Flux output is performed for scalars: ";
@@ -405,7 +398,7 @@ void SCATRA::ScaTraTimIntImpl::Init()
       {
         const int id = (*writefluxids_)[i];
         IO::cout << (*writefluxids_)[i] << " ";
-        if ((id<1) or (id > numdofpernode_)) // check validity of these numbers as well !
+        if ((id<1) or (id > NumDofPerNode())) // check validity of these numbers as well !
           dserror("Received illegal scalar id for flux output: %d",id);
       }
       IO::cout << IO::endl;
@@ -437,26 +430,53 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // -------------------------------------------------------------------
   // preparations for total and mean values of transported scalars
   // -------------------------------------------------------------------
-  if(outputscalars_)
+  if(outputscalars_!=INPAR::SCATRA::outputscalars_none)
   {
-    // extract conditions for calculation of total and mean values of transported scalars
-    std::vector<DRT::Condition*> conditions;
-    discret_->GetCondition("TotalAndMeanScalar",conditions);
-
-    // loop over all conditions
-    for(unsigned icond=0; icond<conditions.size(); ++icond)
+    //input check
+    if(outputscalars_==INPAR::SCATRA::outputscalars_entiredomain)
     {
-      // extract condition ID
-      const int condid(conditions[icond]->GetInt("ConditionID"));
-
-      // initialize result vectors associated with current condition
-      totalscalars_[condid].resize(numscal_,0.);
-      meanscalars_[condid].resize(numscal_,0.);
+      std::vector<DRT::Condition*> conditions;
+      // extract conditions for calculation of total and mean values of transported scalars
+      discret_->GetCondition("TotalAndMeanScalar",conditions);
+      //input check
+      if(conditions.size())
+        dserror("Found 'DESIGN TOTAL AND MEAN SCALAR' condition on ScaTra discretization, but 'OUTPUTSCALAR' \n"
+            "in 'SCALAR TRANSPORT DYNAMIC' is set to 'entire domain'. Either switch on the output of mean and total scalars\n"
+            "on conditions or remoove the 'DESIGN TOTAL AND MEAN SCALAR' condition from your input file!");
     }
 
-    // initialize result vectors associated with entire domain
-    totalscalars_[-1].resize(numscal_,0.);
-    meanscalars_[-1].resize(numscal_,0.);
+    // build helper class for total and mean scalar output depending on input parameter
+    switch(outputscalars_)
+    {
+    case INPAR::SCATRA::outputscalars_entiredomain:
+      outputscalarstrategy_ = Teuchos::rcp(new OutputScalarsDomainStrategy);
+      break;
+    case INPAR::SCATRA::outputscalars_condition:
+      outputscalarstrategy_ = Teuchos::rcp(new OutputScalarsStrategyCondition);
+      break;
+    case INPAR::SCATRA::outputscalars_entiredomain_condition:
+      outputscalarstrategy_ = Teuchos::rcp(new OutputScalarsDomainAndConditionStrategy);
+      break;
+    default:
+      dserror("Unknown option for output of total and mean scalars!");
+      break;
+    }
+
+    // initialize scalar output strategy
+    outputscalarstrategy_->Init(this);
+  }
+  else
+  {
+    //input check
+
+    std::vector<DRT::Condition*> conditions;
+    // extract conditions for calculation of total and mean values of transported scalars
+    discret_->GetCondition("TotalAndMeanScalar",conditions);
+    //input check
+    if(conditions.size())
+      dserror("Found 'DESIGN TOTAL AND MEAN SCALAR' condition on ScaTra discretization, but 'OUTPUTSCALAR' \n"
+          "in 'SCALAR TRANSPORT DYNAMIC' is set to 'none'. Either switch on the output of mean and total scalars\n"
+          "or removoe the 'DESIGN TOTAL AND MEAN SCALAR' condition from your input file!");
   }
 
   return;
@@ -469,8 +489,8 @@ void SCATRA::ScaTraTimIntImpl::Init()
 void SCATRA::ScaTraTimIntImpl::SetupNatConv()
 {
   // calculate the initial mean concentration value
-  if (numscal_ < 1) dserror("Error since numscal = %d. Not allowed since < 1",numscal_);
-  c0_.resize(numscal_);
+  if (NumScal() < 1) dserror("Error since numscal = %d. Not allowed since < 1",NumScal());
+  c0_.resize(NumScal());
 
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
@@ -486,19 +506,19 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
 
   // evaluate integrals of concentrations and domain
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
-  = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+  = Teuchos::rcp(new Epetra_SerialDenseVector(NumScal()+1));
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();   // clean up
 
   // calculate mean concentrations
-  const double domint = (*scalars)[numscal_];
+  const double domint = (*scalars)[NumScal()];
   if (std::abs(domint) < EPS15)
     dserror("Domain has zero volume!");
-  for(int k=0; k<numscal_; ++k)
+  for(int k=0; k<NumScal(); ++k)
     c0_[k] = (*scalars)[k]/domint;
 
   // initialization of the densification coefficient vector
-  densific_.resize(numscal_);
+  densific_.resize(NumScal());
   DRT::Element*   element = discret_->lRowElement(0);
   Teuchos::RCP<MAT::Material>  mat = element->Material();
 
@@ -506,7 +526,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   {
     Teuchos::RCP<const MAT::MatList> actmat = Teuchos::rcp_static_cast<const MAT::MatList>(mat);
 
-    for (int k = 0;k<numscal_;++k)
+    for (int k = 0;k<NumScal();++k)
     {
       const int matid = actmat->MatID(k);
       Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
@@ -532,7 +552,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
     densific_[0] = actmat->Densification();
 
     if (densific_[0] < 0.0) dserror("received negative densification value");
-    if (numscal_ > 1) dserror("Single species calculation but numscal = %d > 1",numscal_);
+    if (NumScal() > 1) dserror("Single species calculation but numscal = %d > 1",NumScal());
   }
   else
     dserror("Material type is not allowed!");
@@ -654,7 +674,7 @@ void SCATRA::ScaTraTimIntImpl::InitTurbulenceModel(
       dserror("No combination of classical turbulence model and fine-scale subgrid-diffusivity approach currently possible!");
   }
 
-  if (turbmodel_ != INPAR::FLUID::no_model and numscal_ > 1)
+  if (turbmodel_ != INPAR::FLUID::no_model and NumScal() > 1)
     dserror("Turbulent passive scalar transport not supported for more than one scalar!");
 
   // -------------------------------------------------------------------
@@ -1518,11 +1538,34 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
   }
   case INPAR::SCATRA::initfield_field_by_condition:
   {
-    // set initial field for ALL existing scatra fields
+    // set initial field for ALL existing scatra fields in condition
     const std::string field = "ScaTra";
-    std::vector<int> localdofs(numdofpernode_);
 
-    for (int i = 0; i < numdofpernode_; i++)
+    // get initial field conditions
+    std::vector<DRT::Condition*> initfieldconditions(0);
+    discret_->GetCondition("Initfield",initfieldconditions);
+
+    if(not initfieldconditions.size())
+      dserror("Tried to evaluate initial field by condition without a corresponding condition defined on the ScaTra discretization!");
+    if(scalarhandler_==Teuchos::null)
+      dserror("scalarhandler_ is null pointer!");
+
+    std::set<int> numdofpernode;
+    for(unsigned icond=0; icond<initfieldconditions.size(); icond++)
+    {
+      const int condmaxnumdofpernode = scalarhandler_->NumDofPerNodeInCondition(*(initfieldconditions[icond]),discret_);
+
+      if(condmaxnumdofpernode != 0)
+        numdofpernode.insert(condmaxnumdofpernode);
+    }
+
+    if(numdofpernode.empty())
+      dserror("No DOFs defined on initial field condtion!");
+
+    const int maxnumdofpernode = *(numdofpernode.rbegin());
+
+    std::vector<int> localdofs(maxnumdofpernode);
+    for (int i = 0; i < maxnumdofpernode; i++)
     {
       localdofs[i] = i;
     }
@@ -1933,7 +1976,7 @@ void SCATRA::ScaTraTimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcon
 
   // confirm that mode flags are number of nodal dofs/scalars
   const int nummodes = kspcond->GetInt("NUMMODES");
-  if (nummodes!=numdofpernode_)
+  if (nummodes!=NumDofPerNode())
     dserror("Expecting as many mode flags as nodal dofs in Krylov projection definition. Check dat-file!");
 
   // get vector of mode flags as given in dat-file
@@ -1941,7 +1984,7 @@ void SCATRA::ScaTraTimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcon
 
   // count actual active modes selected in dat-file
   std::vector<int> activemodeids;
-  for(int rr=0;rr<numdofpernode_;++rr)
+  for(int rr=0;rr<NumDofPerNode();++rr)
   {
     if(((*modeflags)[rr])!=0)
     {
@@ -1996,8 +2039,8 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
     std::vector<int> modeids = projector_->Modes();
 
     // initialize dofid vector to -1
-    Epetra_IntSerialDenseVector dofids(numdofpernode_);
-    for (int rr=0;rr<numdofpernode_;++rr)
+    Epetra_IntSerialDenseVector dofids(NumDofPerNode());
+    for (int rr=0;rr<NumDofPerNode();++rr)
     {
       dofids[rr] = -1;
     }
@@ -2099,6 +2142,16 @@ void SCATRA::ScaTraTimIntImpl::CreateMeshtyingStrategy()
   // standard case without meshtying
   else
     strategy_ = Teuchos::rcp(new MeshtyingStrategyStd(this));
+
+  return;
+} // ScaTraTimIntImpl::CreateMeshtyingStrategy
+
+/*----------------------------------------------------------------------------------------*
+ | create scalar manager                                                      fang 12/14 |
+ *----------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CreateScalarHandler()
+{
+  scalarhandler_ = Teuchos::rcp(new ScalarHandler());
 
   return;
 } // ScaTraTimIntImpl::CreateMeshtyingStrategy
@@ -2783,3 +2836,42 @@ void SCATRA::ScaTraTimIntImpl::AddContributionToRHS(const Teuchos::RCP<const Epe
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  return number of scalars in scatra discretization       vuong   04/16|
+ *----------------------------------------------------------------------*/
+int SCATRA::ScaTraTimIntImpl::NumScal() const
+{
+  return scalarhandler_->NumScal();
+}
+
+/*----------------------------------------------------------------------*
+ |  return number of DOFs in scatra discretization          vuong   04/16|
+ *----------------------------------------------------------------------*/
+int SCATRA::ScaTraTimIntImpl::NumDofPerNode() const
+{
+  return scalarhandler_->NumDofPerNode();
+}
+
+/*-----------------------------------------------------------------------------*
+ |  return total values of transported scalars (for output only)   vuong   04/16|
+ *-----------------------------------------------------------------------------*/
+const std::map<const int,std::vector<double> >& SCATRA::ScaTraTimIntImpl::TotalScalars()  const
+{
+  if(outputscalarstrategy_ == Teuchos::null)
+    dserror("output strategy was not initialized!");
+
+  return outputscalarstrategy_->TotalScalars();
+}
+
+/*-----------------------------------------------------------------------------*
+ |  return mean values of transported scalars (for output only)   vuong   04/16|
+ *-----------------------------------------------------------------------------*/
+const std::map<const int,std::vector<double> >& SCATRA::ScaTraTimIntImpl::MeanScalars()  const
+{
+  if(outputscalarstrategy_ == Teuchos::null)
+    dserror("output strategy was not initialized!");
+
+  return outputscalarstrategy_->MeanScalars();
+}
+

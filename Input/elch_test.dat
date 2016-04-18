@@ -36,7 +36,7 @@ TIMEINTEGR                      Stationary
 TIMESTEP                        1.0
 VELOCITYFIELD                   zero
 WRITEFLUX                       totalflux_domain
-OUTPUTSCALARS                   Yes
+OUTPUTSCALARS                   entire_domain
 RESULTSEVRY                     1
 MATID                           4
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR

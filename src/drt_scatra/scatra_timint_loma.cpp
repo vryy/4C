@@ -58,10 +58,10 @@ SCATRA::ScaTraTimIntLoma::ScaTraTimIntLoma(
 void SCATRA::ScaTraTimIntLoma::Init()
 {
   // set up a species-temperature splitter (if more than one scalar)
-  if (numscal_ > 1)
+  if (NumScal() > 1)
   {
     splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
-    FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,*splitter_);
+    FLD::UTILS::SetupFluidSplit(*discret_,NumScal()-1,*splitter_);
   }
 
   // safety check
@@ -219,7 +219,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+    = Teuchos::rcp(new Epetra_SerialDenseVector(NumScal()+1));
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();   // clean up
 
@@ -259,7 +259,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeThermPressureFromMassCons()
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
-    = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+    = Teuchos::rcp(new Epetra_SerialDenseVector(NumScal()+1));
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();   // clean up
 

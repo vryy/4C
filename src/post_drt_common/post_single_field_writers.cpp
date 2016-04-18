@@ -297,7 +297,7 @@ void ScaTraFilter::WriteAllResults(PostField* field)
     std::ostringstream temp;
     temp << k;
     std::string name = "phi_"+temp.str();
-    writer_->WriteResult("phinp", name, dofbased, 1,k-1);
+    writer_->WriteResult("phinp", name, dofbased, 1,k-1,true);
     writer_->WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1,k-1);
     // additional fields for meshfree problems
     writer_->WriteResult("phiatmeshfreenodes", name+"_atnodes", dofbased, 1,k-1);
@@ -305,8 +305,9 @@ void ScaTraFilter::WriteAllResults(PostField* field)
     writer_->WriteResult("normalflux","normalflux"+name,dofbased,1,k-1);
     // write flux vectors (always 3D)
     writer_->WriteResult("flux_"+name, "flux_"+name, nodebased, 3);
-    writer_->WriteResult("activation_time_np","act_time",dofbased,1);
   }
+
+  writer_->WriteResult("activation_time_np","act_time",dofbased,1);
 
   // write velocity field
   writer_->WriteResult("convec_velocity", "velocity", nodebased, field->problem()->num_dim());

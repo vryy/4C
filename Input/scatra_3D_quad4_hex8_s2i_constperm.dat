@@ -28,7 +28,6 @@ ALPHA_F                         0.5
 GAMMA                           0.5
 RESTARTEVRY                     1
 VELOCITYFIELD                   zero
-INITIALFIELD                    field_by_condition
 CONVFORM                        convective
 SKIPINITDER                     no
 LINEAR_SOLVER                   1

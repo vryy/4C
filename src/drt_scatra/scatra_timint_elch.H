@@ -4,10 +4,10 @@
 \brief scatra time integration for elch
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
@@ -135,7 +135,7 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   double FRT() const {return frt_;}
 
   //! return elch parameter list
-  Teuchos::RCP<Teuchos::ParameterList> ElchParameterList() { return elchparams_;}
+  const Teuchos::RCP<const Teuchos::ParameterList> ElchParameterList() const { return elchparams_;}
 
   //! return states of charge of resolved electrodes
   const Teuchos::RCP<std::vector<double> >& ElectrodeSOC() const {return electrodesoc_;};
@@ -176,6 +176,9 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   //! initialization procedure prior to evaluation of first time step
   void PrepareFirstTimeStep();
 
+  //! initialize meshtying strategy (including standard case without meshtying)
+  virtual void CreateScalarHandler();
+
   /*========================================================================*/
   //! @name ELCH methods
   /*========================================================================*/
@@ -190,9 +193,6 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! initialize meshtying strategy (including standard case without meshtying)
   void CreateMeshtyingStrategy();
-
-  //! adapt number of transported scalars
-  void AdaptNumScal();
 
   /*--- calculate and update -----------------------------------------------*/
 
@@ -247,7 +247,7 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   /*========================================================================*/
 
   //! the parameter list for elch problems
-  Teuchos::RCP<Teuchos::ParameterList> elchparams_;
+  Teuchos::RCP<const Teuchos::ParameterList> elchparams_;
 
   //! type of closing equation for electric potential
   INPAR::ELCH::EquPot equpot_;
@@ -286,6 +286,49 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
 
   //! cell voltage
   double cellvoltage_;
-};
-};
+}; // class ScaTraTimIntElch
+
+/*========================================================================*/
+/*========================================================================*/
+/*!
+ * \brief Helper class for managing different number of degrees of freedom per node
+ */
+class ScalarHandlerElch : public ScalarHandler
+{
+public:
+  /*========================================================================*/
+  //! @name Constructors and destructors and related methods
+  /*========================================================================*/
+
+  //! Standard Constructor
+  ScalarHandlerElch();
+
+  //! Destructor
+  virtual ~ScalarHandlerElch(){};
+
+  //! initialize time integration
+  virtual void Init(const ScaTraTimIntImpl* const scatratimint);
+
+  /*========================================================================*/
+  //! @name Access and Query methods
+  /*========================================================================*/
+
+  //! return maximum number of transported scalars per node (not including potential and current density)
+  virtual int NumScal() const { return *(numscal_.rbegin()); }
+
+  //! return maximum number of transported scalars per node (not including potential and current density)
+  virtual int NumScalInCondition(
+      const DRT::Condition& condition,
+      const Teuchos::RCP<const DRT::Discretization>& discret) const;
+
+  /*========================================================================*/
+  //! @name Internal variables
+  /*========================================================================*/
+protected:
+  //! number of transported scalars (without potential and current density)
+  std::set<int> numscal_;
+
+}; //class ScalarHandlerElch
+
+};//namespace SCATRA
 #endif

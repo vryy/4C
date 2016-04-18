@@ -56,7 +56,7 @@ TIMESTEP                        0.001                            // Cr = 1.5
 THETA                           0.5
 VELOCITYFIELD                   zero
 VELFUNCNO                       1
-INITIALFIELD                    field_by_condition
+INITIALFIELD                    zero_field
 INITFUNCNO                      2
 FSSUGRDIFF                      No
 WRITEFLUX                       No

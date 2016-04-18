@@ -50,7 +50,7 @@ INITFUNCNO                      1
 FSSUGRDIFF                      No
 WRITEFLUX                       No
 CALCERROR                       SphereDiffusion
-OUTPUTSCALARS                   yes
+OUTPUTSCALARS                   entire_domain
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

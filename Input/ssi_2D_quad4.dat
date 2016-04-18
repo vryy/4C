@@ -56,7 +56,7 @@ CALCERROR                       error_by_function
 CALCERRORNO                     2
 CONVFORM                        conservative
 SKIPINITDER                     no
-OUTPUTSCALARS                   yes
+OUTPUTSCALARS                   entire_domain
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 -----------------------------------------------------------------SSI CONTROL

@@ -56,7 +56,7 @@ CALCERROR                       error_by_function
 CALCERRORNO                     2
 CONVFORM                        conservative
 SKIPINITDER                     yes
-OUTPUTSCALARS                   yes
+OUTPUTSCALARS                   entire_domain
 --------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-14
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

@@ -77,7 +77,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1.0
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_domain
-OUTPUTSCALARS                   Yes
+OUTPUTSCALARS                   entire_domain
 RESULTSEVRY                     1
 MATID                           5
 NATURAL_CONVECTION              Yes

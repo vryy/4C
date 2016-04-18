@@ -3,10 +3,9 @@
 \file inpar_scatra.H
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089-289-15252
 </pre>
 */
 
@@ -210,6 +209,15 @@ namespace INPAR
       fdcheck_none,
       fdcheck_local,
       fdcheck_global
+    };
+
+    /// possible options for output of means of scalars
+    enum OutputScalarType
+    {
+      outputscalars_none,
+      outputscalars_entiredomain,
+      outputscalars_condition,
+      outputscalars_entiredomain_condition
     };
 
     /// possible options for computation of domain and boundary integrals, i.e., surface areas and volumes

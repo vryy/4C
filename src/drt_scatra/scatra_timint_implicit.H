@@ -85,6 +85,10 @@ namespace SCATRA
 
 class HomIsoTurbScalarForcing;
 class MeshtyingStrategyBase;
+class ScalarHandler;
+class OutputScalarsBaseStrategy;
+class OutputScalarsDomainStrategy;
+class OutputScalarsStrategyCondition;
 
 /*!
  * \brief implicit time integration for scalar transport problems
@@ -94,6 +98,9 @@ class ScaTraTimIntImpl
 {
   friend class HomIsoTurbInitialScalarField;
   friend class HomIsoTurbScalarForcing;
+  friend class OutputScalarsBaseStrategy;
+  friend class OutputScalarsDomainStrategy;
+  friend class OutputScalarsStrategyCondition;
 
 public:
 
@@ -392,10 +399,10 @@ public:
   /*--- query and output ---------------------------------------------------*/
 
   //! return number of transported scalars
-  int NumScal() const { return numscal_; }
+  int NumScal() const;
 
   //! return number of dofs per node
-  int NumDofPerNode() const { return numdofpernode_; }
+  int NumDofPerNode() const;
 
   // return scalar field phi at time n-1
   virtual Teuchos::RCP<Epetra_Vector> Phinm() = 0;
@@ -457,10 +464,10 @@ public:
   const double& DtSolve() const {return dtsolve_;};
 
   //! return total values of transported scalars
-  const std::map<const int,std::vector<double> >& TotalScalars() const {return totalscalars_;};
+  const std::map<const int,std::vector<double> >& TotalScalars() const;
 
   //! return mean values of transported scalars
-  const std::map<const int,std::vector<double> >& MeanScalars() const {return meanscalars_;};
+  const std::map<const int,std::vector<double> >& MeanScalars() const;
 
   /*========================================================================*/
   //! @name turbulence and related
@@ -708,9 +715,8 @@ protected:
   /*========================================================================*/
 
   /*--- set, prepare, and predict ------------------------------------------*/
-
-  //! adapt number of transported scalars if necessary
-  virtual void AdaptNumScal(){return;};
+  //! initialize meshtying strategy (including standard case without meshtying)
+  virtual void CreateScalarHandler();
 
   /*--- calculate and update -----------------------------------------------*/
 
@@ -835,7 +841,7 @@ protected:
   int lastfluxoutputstep_;
 
   //! flag for printing out total and mean values of transported scalars
-  const bool outputscalars_;
+  const INPAR::SCATRA::OutputScalarType outputscalars_;
 
   //! boolean to write Gmsh postprocessing files (input parameter)
   const bool outputgmsh_;
@@ -844,7 +850,7 @@ protected:
   const bool output_state_matlab_;
 
   //! flag for finite difference check
-  INPAR::SCATRA::FDCheck fdcheck_;
+  const INPAR::SCATRA::FDCheck fdcheck_;
 
   //! perturbation magnitude for finite difference check
   const double fdcheckeps_;
@@ -853,7 +859,7 @@ protected:
   const double fdchecktol_;
 
   //! flag for computation of domain and boundary integrals, i.e., of surface areas and volumes associated with specified nodesets
-  INPAR::SCATRA::ComputeIntegrals computeintegrals_;
+  const INPAR::SCATRA::ComputeIntegrals computeintegrals_;
 
   /*========================================================================*/
   //! @name Time, time-step, and iteration variables
@@ -893,11 +899,11 @@ protected:
   //! number of space dimensions
   int nsd_;
 
-  //! number of transported scalars
-  int numscal_;
+  //! scalar mangager
+  Teuchos::RCP<ScalarHandler> scalarhandler_;
 
-  //! number of transported scalars
-  int numdofpernode_;
+  //! scalar mangager
+  Teuchos::RCP<OutputScalarsBaseStrategy> outputscalarstrategy_;
 
   //! phi at time n
   Teuchos::RCP<Epetra_Vector> phin_;
@@ -917,12 +923,6 @@ protected:
 
   //! density at time n+alpha_F (gen-alpha) or n+1 (otherwise) for natural convection algorithm
   Teuchos::RCP<Epetra_Vector> densafnp_;
-
-  //! total values of transported scalars
-  std::map<const int,std::vector<double> > totalscalars_;
-
-  //! mean values of transported scalars
-  std::map<const int,std::vector<double> > meanscalars_;
 
   /*========================================================================*/
   //! @name velocity, pressure, and related
@@ -1086,5 +1086,251 @@ protected:
   //! flag for printing out integral values of reaction
   const bool outintegrreac_;
 }; // class ScaTraTimIntImpl
+
+/*========================================================================*/
+/*========================================================================*/
+/*!
+ * \brief Helper class for managing different number of degrees of freedom per node
+ */
+class ScalarHandler
+{
+public:
+  /*========================================================================*/
+  //! @name Constructors and destructors and related methods
+  /*========================================================================*/
+
+  //! Standard Constructor
+  ScalarHandler():
+    numdofpernode_(),
+    equalnumdof_(true){};
+
+  //! Destructor
+  virtual ~ScalarHandler(){};
+
+  //! initialize time integration
+  virtual void Init(const ScaTraTimIntImpl* const scatratimint);
+
+  /*========================================================================*/
+  //! @name Access and Query methods
+  /*========================================================================*/
+
+  //! return maximum number of dofs per node
+  int NumDofPerNodeInCondition(
+      const DRT::Condition& condition,
+      const Teuchos::RCP<const DRT::Discretization>& discret) const;
+
+  //! return maximum number of transported scalars per node
+  virtual int NumScalInCondition(
+      const DRT::Condition& condition,
+      const Teuchos::RCP<const DRT::Discretization>& discret) const
+  {
+    return NumDofPerNodeInCondition(condition,discret);
+  };
+
+  //! return maximum number of dofs per node
+  virtual int NumDofPerNode() const;
+
+  //! return maximum number of transported scalars per node
+  virtual int NumScal() const { return NumDofPerNode(); }
+
+  //! return flag indicating equal number of DOFs per node in whole discretization
+  bool EqualNumDof() {return equalnumdof_;};
+
+protected:
+
+  /*========================================================================*/
+  //! @name Internal variables
+  /*========================================================================*/
+  //! number of transported scalars
+  std::set<int> numdofpernode_;
+
+  //! flag indicating equal number of DOFs per node in whole discretization
+  bool equalnumdof_;
+};
+
+/*========================================================================*/
+/*========================================================================*/
+/*!
+ * \brief Base class for output of mean and total scalar values
+ */
+class OutputScalarsBaseStrategy
+{
+public:
+  /*========================================================================*/
+  //! @name Constructors and destructors and related methods
+  /*========================================================================*/
+
+  //! Standard Constructor
+  OutputScalarsBaseStrategy(){};
+
+  //! Destructor
+  virtual ~OutputScalarsBaseStrategy(){};
+
+  //! initialize time integration
+  virtual void Init(const ScaTraTimIntImpl* const scatratimint)=0;
+
+  //! do the output
+  virtual void OutputTotalAndMeanScalars(const ScaTraTimIntImpl* const scatratimint, const int num);
+
+  /*========================================================================*/
+  //! @name Access methods
+  /*========================================================================*/
+
+  //! return total values of transported scalars
+  const std::map<const int,std::vector<double> >& TotalScalars() const {return totalscalars_;};
+
+  //! return mean values of transported scalars
+  const std::map<const int,std::vector<double> >& MeanScalars() const {return meanscalars_;};
+
+protected:
+
+  /*========================================================================*/
+  //! @name Helper methods
+  /*========================================================================*/
+
+  //! fill parameter list and set variables in discretization for evaluation of mean scalars
+  void PrepareEvaluate(const ScaTraTimIntImpl* const scatratimint, Teuchos::ParameterList& eleparams);
+
+  //! print header of table for summary of mean values to screen
+  void PrintHeaderToScreen();
+
+  //! print default header (step and time) to file with name fname
+  virtual void PrintDefaultHeaderToFile(const std::string& fname);
+
+  //! print output-type-specific header to file with name fname
+  virtual void PrintHeaderToFile(const std::string& fname)=0;
+
+  //! finalize the output of screen and file (just for beauty)
+  void FinalizeOutput(const std::string& fname);
+
+  //! evaluate mean and total scalars and print them to file and screen
+  virtual void EvaluateIntegralsAndPrintResults(
+      const ScaTraTimIntImpl* const scatratimint,
+      const std::string& fname,
+      Teuchos::ParameterList& eleparams)=0;
+
+  /*========================================================================*/
+  //! @name Internal variables
+  /*========================================================================*/
+
+  //! total values of transported scalars
+  std::map<const int,std::vector<double> > totalscalars_;
+
+  //! mean values of transported scalars
+  std::map<const int,std::vector<double> > meanscalars_;
+};
+
+/*!
+ * \brief Strategy evaluating total and mean scalars on entire domain
+ */
+class OutputScalarsDomainStrategy : virtual public OutputScalarsBaseStrategy
+{
+public:
+  /*========================================================================*/
+  //! @name Constructors and destructors and related methods
+  /*========================================================================*/
+
+  //! Standard Constructor
+  OutputScalarsDomainStrategy():numscal_(0){};
+
+  //! Destructor
+  virtual ~OutputScalarsDomainStrategy(){};
+
+  //! initialize time integration
+  virtual void Init(const ScaTraTimIntImpl* const scatratimint);
+
+protected:
+
+  //! print output-type-specific header to file with name fname
+  virtual void PrintHeaderToFile(const std::string& fname);
+
+  virtual void EvaluateIntegralsAndPrintResults(
+      const ScaTraTimIntImpl* const scatratimint,
+      const std::string& fname,
+      Teuchos::ParameterList& eleparams);
+
+private:
+  //! number of transported scalars
+  int numscal_;
+};
+
+/*========================================================================*/
+/*========================================================================*/
+/*!
+ * \brief Strategy evaluating total and mean scalars on given condition
+ */
+class OutputScalarsStrategyCondition : virtual public OutputScalarsBaseStrategy
+{
+public:
+  /*========================================================================*/
+  //! @name Constructors and destructors and related methods
+  /*========================================================================*/
+
+  //! Standard Constructor
+  OutputScalarsStrategyCondition():
+    conditions_(),
+    numscalpercondition_()
+  {};
+
+  //! Destructor
+  virtual ~OutputScalarsStrategyCondition(){};
+
+  //! initialize time integration
+  virtual void Init(const ScaTraTimIntImpl* const scatratimint);
+
+protected:
+
+  //! print output-type-specific header to file with name fname
+  virtual void PrintHeaderToFile(const std::string& fname);
+
+  //! evaluate mean and total scalars and print them to file and screen
+  virtual void EvaluateIntegralsAndPrintResults(
+      const ScaTraTimIntImpl* const scatratimint,
+      const std::string& fname,
+      Teuchos::ParameterList& eleparams);
+
+private:
+  //! vector of 'TotalAndMeanScalar'-conditions
+  std::vector<DRT::Condition*> conditions_;
+  //! number of transported scalars per 'TotalAndMeanScalar'-conditions
+  std::vector<int> numscalpercondition_;
+};
+
+/*========================================================================*/
+/*========================================================================*/
+/*!
+ * \brief Strategy evaluating total and mean scalars on entire domain and on given condition
+ */
+class OutputScalarsDomainAndConditionStrategy : public OutputScalarsDomainStrategy,
+                                                public OutputScalarsStrategyCondition
+{
+public:
+  /*========================================================================*/
+  //! @name Constructors and destructors and related methods
+  /*========================================================================*/
+
+  //! Standard Constructor
+  OutputScalarsDomainAndConditionStrategy(){};
+
+  //! Destructor
+  virtual ~OutputScalarsDomainAndConditionStrategy(){};
+
+  //! initialize time integration
+  virtual void Init(const ScaTraTimIntImpl* const scatratimint);
+
+protected:
+
+  //! print output-type-specific header to file with name fname
+  virtual void PrintHeaderToFile(const std::string& fname);
+
+  //! evaluate mean and total scalars and print them to file and screen
+  virtual void EvaluateIntegralsAndPrintResults(
+      const ScaTraTimIntImpl* const scatratimint,
+      const std::string& fname,
+      Teuchos::ParameterList& eleparams);
+
+};
+
+
 } // namespace SCATRA
 #endif  // #ifndef SCATRA_TIMINT_IMPLICIT_H

@@ -113,7 +113,7 @@ WRITEFLUX                       diffusiveflux_boundary
 RESULTSEVRY                     50000
 CONVFORM                        convective
 MATID                           2
-OUTPUTSCALARS                   Yes
+OUTPUTSCALARS                   entire_domain
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          2
 CONVTOL                         1e-4

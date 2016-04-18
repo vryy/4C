@@ -87,7 +87,7 @@ WRITEFLUX                       diffusiveflux_boundary
 RESULTSEVRY                     10
 CONVFORM                        convective
 MATID                           1
-OUTPUTSCALARS                   Yes
+OUTPUTSCALARS                   entire_domain
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
 SUGRVEL                         yes

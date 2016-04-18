@@ -34,7 +34,7 @@ RESULTSEVRY                     1
 CALCERROR                       No
 MATID                           3
 MESHTYING                       Condensed_Smat
-OUTPUTSCALARS                   yes
+OUTPUTSCALARS                   entire_domain
 SKIPINITDER                     yes
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-09

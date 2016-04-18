@@ -79,7 +79,7 @@ void SCATRA::ScaTraTimIntElch::Init()
 
   // set up the concentration-el.potential splitter
   splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
-  FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
+  FLD::UTILS::SetupFluidSplit(*discret_,NumScal(),*splitter_);
 
   // initialize time-dependent electrode kinetics variables (galvanostatic mode or double layer contribution)
   ComputeTimeDerivPot0(true);
@@ -94,12 +94,12 @@ void SCATRA::ScaTraTimIntElch::Init()
 
   // screen output (has to come after SetInitialField)
   // a safety check for the solver type
-  if ((numscal_ > 1) && (solvtype_!=INPAR::SCATRA::solvertype_nonlinear))
+  if ((NumScal() > 1) && (solvtype_!=INPAR::SCATRA::solvertype_nonlinear))
     dserror("Solver type has to be set to >>nonlinear<< for ion transport.");
 
   if (myrank_==0)
   {
-    std::cout<<"\nSetup of splitter: numscal = "<<numscal_<<std::endl;
+    std::cout<<"\nSetup of splitter: numscal = "<<NumScal()<<std::endl;
     std::cout<<"Temperature value T (Kelvin)     = "<<elchparams_->get<double>("TEMPERATURE")<<std::endl;
     std::cout<<"Constant F/RT                    = "<<frt_<<std::endl;
   }
@@ -245,6 +245,15 @@ void SCATRA::ScaTraTimIntElch::PrepareFirstTimeStep()
   return;
 } // SCATRA::ScaTraTimIntElch::PrepareFirstTimeStep
 
+/*----------------------------------------------------------------------------------------*
+ | create scalar manager                                                      fang 12/14 |
+ *----------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElch::CreateScalarHandler()
+{
+  scalarhandler_ = Teuchos::rcp(new ScalarHandlerElch());
+
+  return;
+} // ScaTraTimIntImpl::CreateMeshtyingStrategy
 
 /*----------------------------------------------------------------------*
  |  calculate error compared to analytical solution            gjb 10/08|
@@ -295,12 +304,12 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
     double conerr1 = 0.0;
     double conerr2 = 0.0;
     // for the L2 norm, we need the square root
-    if(numscal_==2)
+    if(NumScal()==2)
     {
       conerr1 = sqrt((*errors)[0]);
       conerr2 = sqrt((*errors)[1]);
     }
-    else if(numscal_==1)
+    else if(NumScal()==1)
     {
       conerr1 = sqrt((*errors)[0]);
       conerr2 = 0.0;
@@ -1111,8 +1120,8 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
 void SCATRA::ScaTraTimIntElch::SetupNatConv()
 {
   // calculate the initial mean concentration value
-  if (numscal_ < 1) dserror("Error since numscal = %d. Not allowed since < 1",numscal_);
-  c0_.resize(numscal_);
+  if (NumScal() < 1) dserror("Error since numscal = %d. Not allowed since < 1",NumScal());
+  c0_.resize(NumScal());
 
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
@@ -1128,21 +1137,21 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
 
   // evaluate integrals of concentrations and domain
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
-  = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+  = Teuchos::rcp(new Epetra_SerialDenseVector(NumScal()+1));
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();   // clean up
 
   // calculate mean concentration
-  const double domint = (*scalars)[numscal_];
+  const double domint = (*scalars)[NumScal()];
 
   if (std::abs(domint) < EPS15)
     dserror("Division by zero!");
 
-  for(int k=0;k<numscal_;k++)
+  for(int k=0;k<NumScal();k++)
     c0_[k] = (*scalars)[k]/domint;
 
   // initialization of the densification coefficient vector
-  densific_.resize(numscal_);
+  densific_.resize(NumScal());
   DRT::Element*   element = discret_->lRowElement(0);
   Teuchos::RCP<MAT::Material>  mat = element->Material();
 
@@ -1150,7 +1159,7 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
   {
     Teuchos::RCP<const MAT::MatList> actmat = Teuchos::rcp_static_cast<const MAT::MatList>(mat);
 
-    for (int k = 0;k<numscal_;++k)
+    for (int k = 0;k<NumScal();++k)
     {
       const int matid = actmat->MatID(k);
       Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
@@ -1176,7 +1185,7 @@ void SCATRA::ScaTraTimIntElch::SetupNatConv()
     densific_[0] = actmat->Densification();
 
     if (densific_[0] < 0.0) dserror("received negative densification value");
-    if (numscal_ > 1) dserror("Single species calculation but numscal = %d > 1",numscal_);
+    if (NumScal() > 1) dserror("Single species calculation but numscal = %d > 1",NumScal());
   }
   else
     dserror("Material type is not allowed!");
@@ -1289,7 +1298,7 @@ void SCATRA::ScaTraTimIntElch::InitNernstBC()
 
             // define electrode kinetics toggle
             // later on this toggle is used to blanck the sysmat and rhs
-            ektoggle_->ReplaceGlobalValues(1,&one,&nodedofs[numscal_]);
+            ektoggle_->ReplaceGlobalValues(1,&one,&nodedofs[NumScal()]);
           }
         }
       }
@@ -1325,31 +1334,6 @@ void SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
 
   return;
 } // SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
-
-
-/*----------------------------------------------------------------------*
- | adapt number of transported scalars                       fang 12/14 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::AdaptNumScal()
-{
-  if (numscal_ > 1) // we have at least two ion species + el. potential
-  {
-    // number of concentrations transported is numdof-1
-    numscal_ -= 1;
-
-    // current is a solution variable
-    if(DRT::INPUT::IntegralValue<int>(elchparams_->sublist("DIFFCOND"),"CURRENT_SOLUTION_VAR"))
-    {
-      // shape of local row element(0) -> number of space dimensions
-      // int dim = DRT::Problem::Instance()->NDim();
-      int dim = DRT::UTILS::getDimension(discret_->lRowElement(0)->Shape());
-      // number of concentrations transported is numdof-1-nsd
-      numscal_ -= dim;
-    }
-  }
-
-  return;
-}
 
 
 /*----------------------------------------------------------------------*
@@ -1582,16 +1566,16 @@ double SCATRA::ScaTraTimIntElch::ComputeConductivity(
 
   // evaluate integrals of scalar(s) and domain
   Teuchos::RCP<Epetra_SerialDenseVector> sigma_domint
-  = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+2));
+  = Teuchos::rcp(new Epetra_SerialDenseVector(NumScal()+2));
   discret_->EvaluateScalars(eleparams, sigma_domint);
   discret_->ClearState();   // clean up
-  const double domint = (*sigma_domint)[numscal_+1];
+  const double domint = (*sigma_domint)[NumScal()+1];
 
   if(specresist == false)
-    for (int ii=0; ii<numscal_+1; ++ii)
+    for (int ii=0; ii<NumScal()+1; ++ii)
       sigma[ii] = (*sigma_domint)[ii]/domint;
   else
-    specific_resistance = (*sigma_domint)[numscal_]/domint;
+    specific_resistance = (*sigma_domint)[NumScal()]/domint;
 
   return specific_resistance;
 } // ScaTraTimIntImpl::ComputeConductivity
@@ -1843,7 +1827,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         //            -> use approxelctresist_efflenintegcond or approxelctresist_relpotcur
 
         // initialize conductivity vector
-        Epetra_SerialDenseVector sigma(numdofpernode_);
+        Epetra_SerialDenseVector sigma(NumDofPerNode());
 
         // compute conductivity
         ComputeConductivity(sigma);
@@ -1851,25 +1835,25 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         // print conductivity
         if(myrank_==0)
         {
-          for(int k=0; k<numscal_; ++k)
+          for(int k=0; k<NumScal(); ++k)
             std::cout << "| Electrolyte conductivity (species " << k+1 << "):          " << std::setw(14) << std::right << sigma[k] << "         |" << std::endl;
 
           if(equpot_ == INPAR::ELCH::equpot_enc_pde_elim)
           {
             double diff = sigma[0];
 
-            for(int k=1; k<numscal_; ++k)
+            for(int k=1; k<NumScal(); ++k)
               diff += sigma[k];
 
-            std::cout << "| Electrolyte conductivity (species elim) = " << sigma[numscal_]-diff << "         |" << std::endl;
+            std::cout << "| Electrolyte conductivity (species elim) = " << sigma[NumScal()]-diff << "         |" << std::endl;
           }
 
-          std::cout << "| Electrolyte conductivity (all species):        " << std::setw(14) << std::right << sigma[numscal_] << "         |" << std::endl;
+          std::cout << "| Electrolyte conductivity (all species):        " << std::setw(14) << std::right << sigma[NumScal()] << "         |" << std::endl;
           std::cout << "+-----------------------------------------------------------------------+" << std::endl;
         }
 
         // compute electrolyte resistance
-        resistance = effective_length/(sigma[numscal_]*meanelectrodesurface);
+        resistance = effective_length/(sigma[NumScal()]*meanelectrodesurface);
       }
 
       else if(approxelctresist==INPAR::ELCH::approxelctresist_relpotcur and conditions.size()==2)
@@ -2216,7 +2200,7 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
   // this option can be helpful in some rare situations
   bool makepositive(false);
 
-  std::vector<int> numfound(numscal_,0);
+  std::vector<int> numfound(NumScal(),0);
 #if 0
   std::stringstream myerrormessage;
 #endif
@@ -2226,7 +2210,7 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
     std::vector<int> dofs;
     dofs = discret_->Dof(0,lnode);
 
-    for (int k = 0; k < numscal_; k++)
+    for (int k = 0; k < NumScal(); k++)
     {
       const int lid = discret_->DofRowMap()->LID(dofs[k]);
       if (((*vec)[lid]) < EPS13 )
@@ -2244,7 +2228,7 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
   }
 
   // print warning to screen
-  for (int k = 0; k < numscal_; k++)
+  for (int k = 0; k < NumScal(); k++)
   {
     if (numfound[k] > 0)
     {
@@ -2281,3 +2265,68 @@ void SCATRA::ScaTraTimIntElch::CheckConcentrationValues(Teuchos::RCP<Epetra_Vect
   // so much code for a simple check!
   return;
 } // ScaTraTimIntImpl::CheckConcentrationValues
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+SCATRA::ScalarHandlerElch::ScalarHandlerElch():
+        numscal_()
+{
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScalarHandlerElch::Init(const ScaTraTimIntImpl* const scatratimint)
+{
+  //call base class
+  ScalarHandler::Init(scatratimint);
+
+  // for now only equal dof numbers are supported
+  if(not equalnumdof_)
+    dserror("Different number of DOFs per node within ScaTra discretization! This is not supported for Elch!");
+
+  // cast to ElCh time integrator
+  const ScaTraTimIntElch* const elchtimint =dynamic_cast<const ScaTraTimIntElch* const> (scatratimint);
+  if(elchtimint == NULL)
+    dserror("cast to ScaTraTimIntElch failed!");
+
+  // adapt number of transported scalars if necessary
+  if (NumDofPerNode() > 1) // we have at least two ion species + el. potential
+  {
+    // current is a solution variable
+    if(DRT::INPUT::IntegralValue<int>(elchtimint->ElchParameterList()->sublist("DIFFCOND"),"CURRENT_SOLUTION_VAR"))
+    {
+      // shape of local row element(0) -> number of space dimensions
+      // int dim = DRT::Problem::Instance()->NDim();
+      int dim = DRT::UTILS::getDimension(elchtimint->Discretization()->lRowElement(0)->Shape());
+      // number of concentrations transported is numdof-1-nsd
+      numscal_.clear();
+      numscal_.insert(NumDofPerNode()-1-dim);
+    }
+    else
+    {
+      // number of concentrations transported is numdof-1
+      numscal_.clear();
+      numscal_.insert(NumDofPerNode()-1);
+    }
+  }
+
+  return;
+}
+
+/*-------------------------------------------------------------------------*
+|  Determine number of Scalars per node in given condition    vuong   04/16|
+ *-------------------------------------------------------------------------*/
+int SCATRA::ScalarHandlerElch::NumScalInCondition(
+    const DRT::Condition& condition,
+    const Teuchos::RCP<const DRT::Discretization>& discret
+    ) const
+{
+  // for now only equal dof numbers are supported
+  if(not equalnumdof_)
+    dserror("Different number of DOFs per node within ScaTra discretization! This is not supported for Elch!");
+
+  return NumScal();
+}

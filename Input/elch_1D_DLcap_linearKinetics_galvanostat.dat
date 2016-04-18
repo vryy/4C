@@ -24,7 +24,7 @@ THETA                           0.67
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.0005
 VELOCITYFIELD                   zero
-OUTPUTSCALARS                   Yes
+OUTPUTSCALARS                   entire_domain
 SKIPINITDER                     Yes
 MAXTIME                         0.02
 NUMSTEP                         20

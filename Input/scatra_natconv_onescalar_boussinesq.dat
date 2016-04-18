@@ -76,7 +76,7 @@ TIMESTEP                        1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 WRITEFLUX                       totalflux_boundary
-OUTPUTSCALARS                   Yes
+OUTPUTSCALARS                   entire_domain
 RESULTSEVRY                     1
 MATID                           2
 CONVFORM                        conservative                  // just to be tested

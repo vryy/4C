@@ -315,7 +315,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   // vector for effective flux over all defined boundary conditions
   // maximal number of fluxes  (numscal+1 -> ionic species + potential) is generated
   // for OUTPUT standard -> last entry is not used
-  std::vector<double> normfluxsum(numdofpernode_);
+  std::vector<double> normfluxsum(NumDofPerNode());
 
   for (unsigned int i=0; i < condnames.size(); i++)
   {
@@ -372,14 +372,14 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       discret_->ClearState();
 
       // maximal number of fluxes
-      std::vector<double> normfluxintegral(numdofpernode_);
+      std::vector<double> normfluxintegral(NumDofPerNode());
 
       // insert values into final flux vector for visualization
       int numrownodes = discret_->NumMyRowNodes();
       for (int lnodid = 0; lnodid < numrownodes; ++lnodid )
       {
         DRT::Node* actnode = discret_->lRowNode(lnodid);
-        for (int idof = 0; idof < numdofpernode_; ++idof)
+        for (int idof = 0; idof < discret_->NumDof(0,actnode); ++idof)
         {
           int dofgid = discret_->Dof(0,actnode,idof);
           int doflid = dofrowmap->LID(dofgid);
@@ -418,12 +418,12 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       double boundaryint = params.get<double>("area");
 
       // care for the parallel case
-      std::vector<double> parnormfluxintegral(numdofpernode_);
-      discret_->Comm().SumAll(&normfluxintegral[0],&parnormfluxintegral[0],numdofpernode_);
+      std::vector<double> parnormfluxintegral(NumDofPerNode());
+      discret_->Comm().SumAll(&normfluxintegral[0],&parnormfluxintegral[0],NumDofPerNode());
       double parboundaryint = 0.0;
       discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
 
-      for (int idof = 0; idof < numdofpernode_; ++idof)
+      for (int idof = 0; idof < NumDofPerNode(); ++idof)
       {
         // print out results
         if (myrank_ == 0)
@@ -473,7 +473,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         {
           f.open(fname.c_str(),std::fstream::trunc);
           f << "#| ID | Step | Time | Area of boundary |";
-          for(int idof = 0; idof < numdofpernode_; ++idof)
+          for(int idof = 0; idof < NumDofPerNode(); ++idof)
           {
             f<<" Integral of normal flux "<<idof<<" | Mean normal flux density "<<idof<<" |";
           }
@@ -483,7 +483,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
           f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
         f << condid << " " << Step() << " " << Time() << " "<< parboundaryint<< " ";
-        for (int idof = 0; idof < numdofpernode_; ++idof)
+        for (int idof = 0; idof < NumDofPerNode(); ++idof)
         {
           f << parnormfluxintegral[idof] << " "<< parnormfluxintegral[idof]/parboundaryint<< " ";
         }
@@ -502,7 +502,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   // the accumulated normal flux over all indicated boundaries is not printed for numscal+1
   if (myrank_ == 0)
   {
-    for (int idof = 0; idof < numscal_; ++idof)
+    for (int idof = 0; idof < NumScal(); ++idof)
     {
       printf("| Sum of all normal flux boundary integrals for scalar %d: %+10.5E             |\n"
           ,idof,normfluxsum[idof]);
@@ -618,10 +618,10 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
     double density = 1.;
 
     // loop over all transported scalars
-    for(int k=0; k<numscal_; ++k)
+    for(int k=0; k<NumScal(); ++k)
     {
       /*
-        //                  k=numscal_-1
+        //                  k=NumScal()-1
         //          /       ----                         \
         //         |        \                            |
         // rho_0 * | 1 +    /      alpha_k * (c_k - c_0) |
@@ -664,150 +664,11 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::OutputTotalAndMeanScalars(const int num)
 {
-  if(outputscalars_)
+  if(outputscalars_!=INPAR::SCATRA::outputscalars_none)
   {
-    // add state vector to discretization
-    discret_->ClearState();
-    discret_->SetState("phinp",phinp_);
-
-    // create parameter list
-    Teuchos::ParameterList eleparams;
-
-    // set action for elements
-    eleparams.set<int>("action",SCATRA::calc_total_and_mean_scalars);
-    eleparams.set("inverting",false);
-
-    // provide displacement field in case of ALE
-    if(isale_)
-      eleparams.set<int>("ndsdisp",nds_disp_);
-
-    eleparams.set<int>("ndsvel",nds_vel_);
-
-    // generate name of output file
-    std::ostringstream number;
-    number << num;
-    const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".scalarvalues.txt";
-
-    // extract conditions for calculation of total and mean values of transported scalars
-    std::vector<DRT::Condition*> conditions;
-    discret_->GetCondition("TotalAndMeanScalar",conditions);
-
-    // print header of output table to screen and file
-    if(myrank_ == 0)
-    {
-      // screen output
-      std::cout << "Total and mean values of transported scalars:" << std::endl;
-      std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl;
-      std::cout << "| domain ID | scalar ID | total scalar value | domain integral | mean scalar value |" << std::endl;
-      std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl;
-
-      // file output
-      if(Step() == 0)
-      {
-        std::ofstream f;
-        f.open(fname.c_str(),std::fstream::trunc);
-        f << "#| Step | Time |";
-        for(unsigned icond=0; icond<conditions.size(); ++icond)
-        {
-          const int condid(conditions[icond]->GetInt("ConditionID"));
-          f << " Integral of domain " << condid << " |";
-          for(int k=0; k<numscal_; ++k)
-          {
-            f << " Total value of scalar " << k+1 << " in domain " << condid << " |";
-            f << " Mean value of scalar " << k+1 << " in domain " << condid << " |";
-          }
-        }
-        f << " Integral of entire domain |";
-        for(int k=0; k<numscal_; ++k)
-        {
-          f << " Total value of scalar " << k+1 << " in entire domain |";
-          f << " Mean value of scalar " << k+1 << " in entire domain |";
-        }
-        f << std::endl;
-        f.flush();
-        f.close();
-      }
-    }
-
-    // file output
-    if(myrank_ == 0)
-    {
-      std::ofstream f;
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-      f << Step() << " " << Time();
-      f.flush();
-      f.close();
-    }
-
-    // evaluate scalar integrals and domain integral for each subdomain (icond < conditions.size()) as well as for entire domain (icond == conditions.size())
-    for(unsigned icond=0; icond<=conditions.size(); ++icond)
-    {
-      // set domain ID equal to condition ID for subdomains, or equal to -1 for entire domain
-      int domainid_int(-1);
-      if(icond < conditions.size())
-        domainid_int = conditions[icond]->GetInt("ConditionID");
-
-      // initialize result vector
-      // first numscal_ components = scalar integrals, last component = domain integral
-      Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
-
-      // perform integration
-      if(icond < conditions.size())
-        discret_->EvaluateScalars(eleparams,scalars,"TotalAndMeanScalar",domainid_int);
-      else
-        discret_->EvaluateScalars(eleparams,scalars);
-
-      // extract domain integral
-      const double domint = (*scalars)[numscal_];
-
-      // compute results
-      for(int k=0; k<numscal_; ++k)
-      {
-        totalscalars_[domainid_int][k] = (*scalars)[k];
-        meanscalars_[domainid_int][k] =(*scalars)[k]/domint;
-      }
-
-      // print out results to screen and file
-      if(myrank_ == 0)
-      {
-        // screen output
-        if(conditions.size() > 0 and icond == conditions.size())
-          std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl;
-        std::ostringstream domainid_string;
-        if(icond < conditions.size())
-          domainid_string << "|    " << std::setw(2) << domainid_int << "     |";
-        else
-          domainid_string << "|  overall  |";
-        for(int k=0; k<numscal_; ++k)
-          std::cout << domainid_string.str() << "    " << std::setw(2) << k+1 << "     |    " << std::scientific << std::setprecision(6) << (*scalars)[k] << "    |   " << domint << "  |    " << (*scalars)[k]/domint << "   |" << std::endl;
-
-        // file output
-        std::ofstream f;
-        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-        f << " " << std::setprecision(9) << domint;
-        for(int k=0; k<numscal_; ++k)
-          f << " " << (*scalars)[k] << " " << (*scalars)[k]/domint;
-        f.flush();
-        f.close();
-      }
-    } // for(unsigned icond=0; icond<=conditions.size(); ++icond)
-
-    // finalize screen and file outputs
-    if(myrank_ == 0)
-    {
-      // screen output
-      std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl << std::endl;
-
-      // file output
-      std::ofstream f;
-      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-      f << std::endl;
-      f.flush();
-      f.close();
-    }
-
-    // clean up
-    discret_->ClearState();
+    if(outputscalarstrategy_==Teuchos::null)
+      dserror("output strategy was not initialized!");
+    outputscalarstrategy_->OutputTotalAndMeanScalars(this,num);
   } // if(outputscalars_)
 
   return;
@@ -1038,7 +899,7 @@ void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(
   // get the noderowmap
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   Teuchos::RCP<Epetra_MultiVector> fluxk = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-  for(int k=0;k<numscal_;++k)
+  for(int k=0;k<NumScal();++k)
   {
     std::ostringstream temp;
     temp << k;
@@ -1319,22 +1180,22 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
     // set action for elements
     Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::calc_integr_reaction);
-    Teuchos::RCP<std::vector<double> > myreacnp = Teuchos::rcp(new std::vector<double>(numscal_,0.0));
+    Teuchos::RCP<std::vector<double> > myreacnp = Teuchos::rcp(new std::vector<double>(NumScal(),0.0));
     eleparams.set<Teuchos::RCP<std::vector<double> > >("local reaction integral",myreacnp);
 
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
     myreacnp = eleparams.get<Teuchos::RCP<std::vector<double> > >("local reaction integral");
     // global integral of reaction terms
-    std::vector<double> intreacterm(numscal_,0.0);
-    for (int k=0; k<numscal_; ++k)
+    std::vector<double> intreacterm(NumScal(),0.0);
+    for (int k=0; k<NumScal(); ++k)
       phinp_->Map().Comm().SumAll(&((*myreacnp)[k]),&intreacterm[k],1);
     discret_->ClearState();   // clean up
 
     // print out values
     if (myrank_ == 0)
     {
-      for (int k = 0; k < numscal_; k++)
+      for (int k = 0; k < NumScal(); k++)
       {
         std::cout << "Total reaction (r_"<<k<<"): "<< std::setprecision (9) << intreacterm[k] << std::endl;
       }
@@ -1353,7 +1214,7 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
       {
         f.open(fname.c_str(),std::fstream::trunc);
         f << "#| Step | Time ";
-        for (int k = 0; k < numscal_; k++)
+        for (int k = 0; k < NumScal(); k++)
         {
           f << "| Total reaction (r_"<<k<<") ";
         }
@@ -1364,7 +1225,7 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 
       f << Step() << " " << Time() << " ";
-      for (int k = 0; k < numscal_; k++)
+      for (int k = 0; k < NumScal(); k++)
       {
         f << std::setprecision (9) << intreacterm[k] << " ";
       }
@@ -1891,7 +1752,7 @@ bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int          itnum,
   double phi2norm_L2(0.0);
 
   // distinguish whether one or two scalars are considered
-  if (numscal_ == 2)
+  if (NumScal() == 2)
   {
     Teuchos::RCP<Epetra_Vector> vec1 = splitter_->ExtractOtherVector(residual_);
     Teuchos::RCP<Epetra_Vector> vec2 = splitter_->ExtractCondVector(residual_);
@@ -1958,7 +1819,7 @@ bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int          itnum,
       }
     }
   }
-  else if (numscal_ == 1)
+  else if (NumScal() == 1)
   {
     // compute L2-norm of residual, incremental scalar and scalar
     residual_ ->Norm2(&res1norm_L2);
@@ -2242,25 +2103,25 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
   // get (squared) error values
   Teuchos::RCP<Epetra_SerialDenseVector> errors
-    = Teuchos::rcp(new Epetra_SerialDenseVector(4*numscal_));
+    = Teuchos::rcp(new Epetra_SerialDenseVector(4*NumScal()));
   discret_->EvaluateScalars(eleparams, errors);
   discret_->ClearState();
 
   // std::vector containing
   // [0]: relative L2 scalar error
   // [1]: relative H1 scalar error
-  Teuchos::RCP<std::vector<double> > relerror = Teuchos::rcp(new std::vector<double>(2*numscal_));
+  Teuchos::RCP<std::vector<double> > relerror = Teuchos::rcp(new std::vector<double>(2*NumScal()));
 
-  for(int k=0;k<numscal_;k++)
+  for(int k=0;k<NumScal();k++)
   {
-    if( std::abs((*errors)[k*numscal_+2])>1e-14 )
-      (*relerror)[k*numscal_+0] = sqrt((*errors)[k*numscal_+0])/sqrt((*errors)[k*numscal_+2]);
+    if( std::abs((*errors)[k*NumScal()+2])>1e-14 )
+      (*relerror)[k*NumScal()+0] = sqrt((*errors)[k*NumScal()+0])/sqrt((*errors)[k*NumScal()+2]);
     else
-      (*relerror)[k*numscal_+0] = sqrt((*errors)[k*numscal_+0]);
-    if( std::abs((*errors)[k*numscal_+2])>1e-14 )
-      (*relerror)[k*numscal_+1] = sqrt((*errors)[k*numscal_+1])/sqrt((*errors)[k*numscal_+3]);
+      (*relerror)[k*NumScal()+0] = sqrt((*errors)[k*NumScal()+0]);
+    if( std::abs((*errors)[k*NumScal()+2])>1e-14 )
+      (*relerror)[k*NumScal()+1] = sqrt((*errors)[k*NumScal()+1])/sqrt((*errors)[k*NumScal()+3]);
     else
-      (*relerror)[k*numscal_+1] = sqrt((*errors)[k*numscal_+1]);
+      (*relerror)[k*NumScal()+1] = sqrt((*errors)[k*NumScal()+1]);
 
     if (myrank_ == 0)
     {
@@ -2279,7 +2140,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 //          f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
 //          f << "#| " << simulation << "\n";
 //          f << "#| Step | Time | rel. L2-error scalar | rel. H1-error scalar  |\n";
-//          f << step_ << " " << time_ << " " << (*relerror)[k*numscal_+0] << " " << (*relerror)[k*numscal_+1] << "\n";
+//          f << step_ << " " << time_ << " " << (*relerror)[k*NumScal()+0] << " " << (*relerror)[k*NumScal()+1] << "\n";
 //          f.flush();
 //          f.close();
 //        }
@@ -2297,7 +2158,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
         f << "#| Step | Time | rel. L2-error  | rel. H1-error  |\n";
         f << std::setprecision(10) << step_ << " " << std::setw(1)<< std::setprecision(5)
           << time_ << std::setw(1) << std::setprecision(6) << " "
-          << (*relerror)[k*numscal_+0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[k*numscal_+1] << "\n";
+          << (*relerror)[k*NumScal()+0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[k*NumScal()+1] << "\n";
 
         f.flush();
         f.close();
@@ -2308,7 +2169,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
         f << std::setprecision(10) << step_ << " " << std::setw(3)<< std::setprecision(5)
         << time_ << std::setw(1) << std::setprecision(6) << " "
-        << (*relerror)[k*numscal_+0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[k*numscal_+1] <<"\n";
+        << (*relerror)[k*NumScal()+0] << std::setw(1) << std::setprecision(6) << " " << (*relerror)[k*NumScal()+1] <<"\n";
 
         f.flush();
         f.close();
@@ -2318,3 +2179,515 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
   return;
 } // SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |  Prepare evaluation of mean scalars                      vuong   04/16|
+ *----------------------------------------------------------------------*/
+void SCATRA::OutputScalarsBaseStrategy::PrepareEvaluate(
+    const ScaTraTimIntImpl* const scatratimint,
+    Teuchos::ParameterList& eleparams)
+{
+  const Teuchos::RCP<DRT::Discretization>&   discret = scatratimint->discret_;
+
+  // add state vector to discretization
+  discret->ClearState();
+  discret->SetState("phinp",scatratimint->phinp_);
+
+  // set action for elements
+  eleparams.set<int>("action",SCATRA::calc_total_and_mean_scalars);
+  eleparams.set("inverting",false);
+
+  // provide number of dof set for mesh displacements in case of ALE
+  if(scatratimint->isale_)
+    eleparams.set<int>("ndsdisp",scatratimint->nds_disp_);
+
+  // provide number of dof set for transport veloctiy
+  eleparams.set<int>("ndsvel",scatratimint->nds_vel_);
+} // SCATRA::OutputScalarsBaseStrategy::PrepareEvaluate
+
+/*----------------------------------------------------------------------------------*
+ |  print header of table for summary of mean values to screen          vuong   04/16|
+ *----------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsBaseStrategy::PrintHeaderToScreen()
+{
+  // screen output
+  std::cout << "Total and mean values of transported scalars:" << std::endl;
+  std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl;
+  std::cout << "| domain ID | scalar ID | total scalar value | domain integral | mean scalar value |" << std::endl;
+  std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl;
+
+  return;
+} //SCATRA::OutputScalarsBaseStrategy::PrintHeaderToScreen()
+
+/*----------------------------------------------------------------------------------*
+ |  print default header of table for summary of mean values to file      vuong   04/16|
+ *----------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsBaseStrategy::PrintDefaultHeaderToFile(
+    const std::string& fname)
+{
+  std::ofstream f;
+  f.open(fname.c_str(),std::fstream::trunc);
+  f << "#| Step | Time |";
+
+  f.flush();
+  f.close();
+
+  return;
+} // SCATRA::OutputScalarsBaseStrategy::PrintDefaultHeaderToFile
+
+/*----------------------------------------------------------------------------------*
+ |  finalize the output of screen and file                             vuong   04/16|
+ *----------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsBaseStrategy::FinalizeOutput(const std::string& fname)
+{
+  // screen output
+  std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl << std::endl;
+
+  // file output
+  std::ofstream f;
+  f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+  f << std::endl;
+  f.flush();
+  f.close();
+
+  return;
+} // SCATRA::OutputScalarsBaseStrategy::FinalizeOutput
+
+/*----------------------------------------------------------------------------------*
+ |  output total and mean values of transported scalars                 vuong   04/16|
+ *----------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsBaseStrategy::OutputTotalAndMeanScalars(
+    const ScaTraTimIntImpl* const scatratimint,
+    const int num)
+{
+  const Teuchos::RCP<DRT::Discretization>&   discret = scatratimint->discret_;
+
+  // create parameter list
+  Teuchos::ParameterList eleparams;
+
+  // generate name of output file
+  std::ostringstream number;
+  number << num;
+  const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".scalarvalues.txt";
+
+  // print header of output table to screen and file
+  if(scatratimint->myrank_ == 0)
+  {
+    // screen output
+    PrintHeaderToScreen();
+
+    // file output
+    if(scatratimint->Step() == 0)
+    {
+      PrintDefaultHeaderToFile(fname);
+      PrintHeaderToFile(fname);
+    }
+  }
+
+  // file output
+  if(scatratimint->myrank_ == 0)
+  {
+    std::ofstream f;
+    f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+    f << scatratimint->Step() << " " << scatratimint->Time();
+    f.flush();
+    f.close();
+  }
+
+  // evaluate scalar integrals and domain integral for for entire domain
+  EvaluateIntegralsAndPrintResults(scatratimint,fname,eleparams);
+
+  // finalize screen and file outputs
+  if(scatratimint->myrank_ == 0)
+    FinalizeOutput(fname);
+
+  // clean up
+  discret->ClearState();
+
+  return;
+} // SCATRA::OutputScalarsBaseStrategy::OutputTotalAndMeanScalars
+
+/*--------------------------------------------------------------------------------------*
+ |  Initialize output class                                                vuong   04/16|
+ *--------------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsDomainStrategy::Init(const ScaTraTimIntImpl* const scatratimint)
+{
+  if( not scatratimint->scalarhandler_->EqualNumDof())
+    dserror("Output of scalars for entire domain not valid for different numbers of DOFs per nodein ScaTra discretization. \n"
+        "Use option `by_condition' for the parameter 'OUTPUTSCALARS' in the SCALAR TRANSPORT DYNAMIC section instead!");
+
+  numscal_ = scatratimint->scalarhandler_->NumScal();
+
+  // initialize result vectors associated with entire domain
+  totalscalars_[-1].resize(numscal_,0.);
+  meanscalars_[-1].resize(numscal_,0.);
+
+  return;
+}
+
+/*----------------------------------------------------------------------------------*
+ |  print header of table for summary of mean values to file            vuong   04/16|
+ *----------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsDomainStrategy::PrintHeaderToFile(
+    const std::string& fname)
+{
+  std::ofstream f;
+  f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+  f << " Integral of entire domain |";
+  for(int k=0; k<numscal_; ++k)
+  {
+    f << " Total value of scalar " << k+1 << " in entire domain |";
+    f << " Mean value of scalar " << k+1 << " in entire domain |";
+  }
+  f << std::endl;
+  f.flush();
+  f.close();
+
+  return;
+} // SCATRA::OutputScalarsDomainStrategy::PrintHeaderToFile
+
+/*--------------------------------------------------------------------------------------*
+ |  evaluate mean and total scalars and print them to file and screen       vuong   04/16|
+ *--------------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsDomainStrategy::EvaluateIntegralsAndPrintResults(
+    const ScaTraTimIntImpl* const scatratimint,
+    const std::string& fname,
+    Teuchos::ParameterList& eleparams)
+{
+  // fill parameter list and set states in discretization
+  PrepareEvaluate(scatratimint,eleparams);
+
+  // set domain ID equal to -1 for entire domain
+  int domainid_int(-1);
+
+  // initialize result vector
+  // first NumScal() components = scalar integrals, last component = domain integral
+  Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(numscal_+1));
+
+  // perform integration
+  scatratimint->discret_->EvaluateScalars(eleparams,scalars);
+
+  // extract domain integral
+  const double domint = (*scalars)[numscal_];
+
+  // compute results
+  for(int k=0; k<numscal_; ++k)
+  {
+    totalscalars_[domainid_int][k] = (*scalars)[k];
+    meanscalars_[domainid_int][k] =(*scalars)[k]/domint;
+  }
+
+  // print out results to screen and file
+  if(scatratimint->myrank_ == 0)
+  {
+    // screen output
+    std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl;
+    std::ostringstream domainid_string;
+    domainid_string << "|  overall  |";
+    for(int k=0; k<numscal_; ++k)
+      std::cout << domainid_string.str() << "    " << std::setw(2) << k+1 << "     |    " << std::scientific << std::setprecision(6) << (*scalars)[k] << "    |   " << domint << "  |    " << (*scalars)[k]/domint << "   |" << std::endl;
+
+    // file output
+    std::ofstream f;
+    f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+    f << " " << std::setprecision(9) << domint;
+    for(int k=0; k<numscal_; ++k)
+      f << " " << (*scalars)[k] << " " << (*scalars)[k]/domint;
+    f.flush();
+    f.close();
+  }
+
+  return;
+} // SCATRA::OutputScalarsDomainStrategy::EvaluateIntegralsAndPrintResults
+
+/*--------------------------------------------------------------------------------------*
+ |  Initialize output class                                                vuong   04/16|
+ *--------------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsStrategyCondition::Init(const ScaTraTimIntImpl* const scatratimint)
+{
+  // extract conditions for calculation of total and mean values of transported scalars
+  scatratimint->discret_->GetCondition("TotalAndMeanScalar",conditions_);
+
+  if(conditions_.empty())
+    dserror("No 'TotalAndMeanScalar' conditions defined for scalar output by condition!\n"
+        "Change the parameter 'OUTPUTSCALARS' in the SCALAR TRANSPORT DYNAMIC section \n"
+        "or include 'DESIGN TOTAL AND MEAN SCALAR' conditions!");
+
+  numscalpercondition_.clear();
+  numscalpercondition_.resize(conditions_.size(),0);
+
+  // loop over all conditions
+  for(unsigned icond=0; icond<conditions_.size(); ++icond)
+  {
+    // extract condition ID
+    const int condid(conditions_[icond]->GetInt("ConditionID"));
+
+    // determine the number of dofs on the current condition
+    const int numscal =
+        scatratimint->scalarhandler_->NumScalInCondition(
+                                            *conditions_[icond],
+                                            scatratimint->discret_);
+
+    //save the number of dofs on the current condition
+    numscalpercondition_[icond] = numscal;
+
+    // initialize result vectors associated with current condition
+    totalscalars_[condid].resize(numscal,0.);
+    meanscalars_[condid].resize(numscal,0.);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------------*
+ |  print header of table for summary of mean values to file            vuong   04/16|
+ *----------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsStrategyCondition::PrintHeaderToFile(
+    const std::string& fname)
+{
+  std::ofstream f;
+  f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+  for(unsigned icond=0; icond<conditions_.size(); ++icond)
+  {
+    const int condid(conditions_[icond]->GetInt("ConditionID"));
+    f << " Integral of domain " << condid << " |";
+    for(int k=0; k<numscalpercondition_[icond]; ++k)
+    {
+      f << " Total value of scalar " << k+1 << " in domain " << condid << " |";
+      f << " Mean value of scalar " << k+1 << " in domain " << condid << " |";
+    }
+  }
+  f << std::endl;
+  f.flush();
+  f.close();
+
+  return;
+} // SCATRA::OutputScalarsStrategyCondition::PrintHeaderToFile
+
+/*--------------------------------------------------------------------------------------*
+ |  evaluate mean and total scalars and print them to file and screen       vuong   04/16|
+ *--------------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(
+    const ScaTraTimIntImpl* const scatratimint,
+    const std::string& fname,
+    Teuchos::ParameterList& eleparams)
+{
+  // fill parameter list and set states in discretization
+  PrepareEvaluate(scatratimint,eleparams);
+
+  // evaluate scalar integrals and domain integral for each subdomain (icond < conditions.size()) as well as for entire domain (icond == conditions.size())
+  for(unsigned icond=0; icond<conditions_.size(); ++icond)
+  {
+    // set domain ID equal to condition ID for subdomains, or equal to -1 for entire domain
+    int domainid_int(-1);
+    if(icond < conditions_.size())
+      domainid_int = conditions_[icond]->GetInt("ConditionID");
+
+    // determine the number of dofs on the current condition
+    const int numscal = numscalpercondition_[icond];
+
+    // initialize result vector
+    // first NumScal() components = scalar integrals, last component = domain integral
+    Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(numscal+1));
+
+    // perform integration
+    scatratimint->discret_->EvaluateScalars(eleparams,scalars,"TotalAndMeanScalar",domainid_int);
+
+    // extract domain integral
+    const double domint = (*scalars)[numscal];
+
+    // compute results
+    for(int k=0; k<numscal; ++k)
+    {
+      totalscalars_[domainid_int][k] = (*scalars)[k];
+      meanscalars_[domainid_int][k] =(*scalars)[k]/domint;
+    }
+
+    // print out results to screen and file
+    if(scatratimint->myrank_ == 0)
+    {
+      // screen output
+      std::ostringstream domainid_string;
+      if(icond < conditions_.size())
+        domainid_string << "|    " << std::setw(2) << domainid_int << "     |";
+      for(int k=0; k<numscal; ++k)
+        std::cout << domainid_string.str() << "    " << std::setw(2) << k+1 << "     |    " << std::scientific << std::setprecision(6) << (*scalars)[k] << "    |   " << domint << "  |    " << (*scalars)[k]/domint << "   |" << std::endl;
+
+      // file output
+      std::ofstream f;
+      f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+      f << " " << std::setprecision(9) << domint;
+      for(int k=0; k<numscal; ++k)
+        f << " " << (*scalars)[k] << " " << (*scalars)[k]/domint;
+      f.flush();
+      f.close();
+    }
+  } // for(unsigned icond=0; icond<=conditions.size(); ++icond)
+
+  return;
+} // SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults
+
+/*--------------------------------------------------------------------------------------*
+ |  Initialize output class                                                vuong   04/16|
+ *--------------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsDomainAndConditionStrategy::Init(const ScaTraTimIntImpl* const scatratimint)
+{
+  // initialize base classes
+  OutputScalarsStrategyCondition::Init(scatratimint);
+  OutputScalarsDomainStrategy::Init(scatratimint);
+
+  return;
+} // SCATRA::OutputScalarsDomainAndConditionStrategy::Init
+
+/*----------------------------------------------------------------------------------*
+ |  print header of table for summary of mean values to file            vuong   04/16|
+ *----------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsDomainAndConditionStrategy::PrintHeaderToFile(
+    const std::string& fname)
+{
+  // call base classes
+  OutputScalarsStrategyCondition::PrintHeaderToFile(fname);
+  OutputScalarsDomainStrategy::PrintHeaderToFile(fname);
+
+  return;
+} // SCATRA::OutputScalarsDomainAndConditionStrategy::PrintHeaderToFile
+
+/*--------------------------------------------------------------------------------------*
+ |  evaluate mean and total scalars and print them to file and screen       vuong   04/16|
+ *--------------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsDomainAndConditionStrategy::EvaluateIntegralsAndPrintResults(
+    const ScaTraTimIntImpl* const scatratimint,
+    const std::string& fname,
+    Teuchos::ParameterList& eleparams)
+{
+  // call base classes
+  OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(scatratimint,fname,eleparams);
+  OutputScalarsDomainStrategy::EvaluateIntegralsAndPrintResults(scatratimint,fname,eleparams);
+
+  return;
+} // SCATRA::OutputScalarsDomainAndConditionStrategy::EvaluateIntegralsAndPrintResults
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*
+ |  Initialize handler class                                vuong   04/16|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScalarHandler::Init(const ScaTraTimIntImpl* const scatratimint)
+{
+  // save reference to discretization for convenience
+  const Teuchos::RCP<DRT::Discretization>& discret = scatratimint->Discretization();
+
+  // initialize set of all number of dofs per node on this proc
+  std::set<int> mynumdofpernode ;
+
+  // collect number of DoFs for each node ob this proc
+  for(int i =0; i<discret->NumMyRowNodes() ; i++)
+    mynumdofpernode.insert(discret->NumDof(0,discret->lRowNode(i)));
+
+  // number of different numbers of dofs on all procs
+  int maxsize = 0;
+  // number of different numbers of dofs on this procs
+  int mysize = mynumdofpernode.size();
+  //communicate
+  discret->Comm().MaxAll(&mysize,&maxsize,1);
+
+  // copy mynumdofpernode into std::vector for communication
+  std::vector<int> vecmynumdofpernode(mynumdofpernode.begin(),mynumdofpernode.end());
+  vecmynumdofpernode.resize(maxsize,0);
+
+  // initialize std::vector for communication
+  std::vector<int> vecnumdofpernode(maxsize*discret->Comm().NumProc(),0);
+
+  //communicate
+  discret->Comm().GatherAll(&vecmynumdofpernode[0],&vecnumdofpernode[0],vecmynumdofpernode.size());
+
+  //copy back into set
+  for(unsigned i =0; i<vecnumdofpernode.size() ; i++)
+    if(vecnumdofpernode[i]!=0)
+      numdofpernode_.insert(vecnumdofpernode[i]);
+
+  //check for equal number of Dofs on all nodes in whole discretization
+  equalnumdof_ = (numdofpernode_.size()==1);
+
+  return;
+}
+
+/*-------------------------------------------------------------------------*
+|  Determine number of DoFs per node in given condition       vuong   04/16|
+ *-------------------------------------------------------------------------*/
+int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
+    const DRT::Condition& condition,
+    const Teuchos::RCP<const DRT::Discretization>& discret
+    ) const
+{
+
+  // get all nodes in condition
+  const std::vector<int>* nodegids = condition.Nodes();
+
+  // initialize set of all number of dofs per node on all procs
+  std::set<int> numdofpernode;
+  // initialize set of all number of dofs per node on this proc
+  std::set<int> mynumdofpernode;
+
+  // deterimine all number of dofs per node on this proc
+  for(unsigned inode=0; inode<nodegids->size(); inode++)
+  {
+    //get node GID
+    const int nodegid = (*nodegids)[inode];
+
+    //if on this proc
+    if(discret->NodeRowMap()->MyGID(nodegid))
+    {
+      //get node
+      DRT::Node* curnode = discret->gNode(nodegid);
+      //save number of dofs in set
+      mynumdofpernode.insert(discret->NumDof(0,curnode));
+    }
+  }
+
+  // number of different numbers of dofs on all procs
+  int maxsize = 0;
+  // number of different numbers of dofs on this procs
+  int mysize = mynumdofpernode.size();
+  //communicate
+  discret->Comm().MaxAll(&mysize,&maxsize,1);
+
+  // copy mynumdofpernode into std::vector for communication
+  std::vector<int> vecmynumdofpernode(mynumdofpernode.begin(),mynumdofpernode.end());
+  vecmynumdofpernode.resize(maxsize,0);
+
+  // initialize std::vector for communication
+  std::vector<int> vecnumdofpernode(maxsize*discret->Comm().NumProc(),0);
+
+  //communicate
+  discret->Comm().GatherAll(&vecmynumdofpernode[0],&vecnumdofpernode[0],vecmynumdofpernode.size());
+
+  //copy back into set
+  for(unsigned i =0; i<vecnumdofpernode.size() ; i++)
+    if(vecnumdofpernode[i]!=0)
+      numdofpernode.insert(vecnumdofpernode[i]);
+
+  // this is the maximum number of dofs per node within the discretization on all procs
+  int maxnumdofpernode = *numdofpernode.rbegin();
+
+  if(not (numdofpernode.size()==1))
+    dserror("Different number of DOFs within condition. This is not supported. Split the condition in your input file!");
+
+  return maxnumdofpernode;
+}
+
+/*-------------------------------------------------------------------------*
+|  Get number of DoFs per node within discretization            vuong   04/16|
+ *-------------------------------------------------------------------------*/
+int SCATRA::ScalarHandler::NumDofPerNode() const
+{
+  if(not equalnumdof_)
+    dserror("Number of DOFs per node is not equal for all nodes within the ScaTra discretization!\n"
+        "Calling this method is not valid in this case!");
+  return *(numdofpernode_.rbegin());
+}

@@ -30,7 +30,7 @@ TIMESTEP                        0.05
 VELOCITYFIELD                   zero
 RESULTSEVRY                     1
 MATID                           1
-OUTPUTSCALARS                   Yes
+OUTPUTSCALARS                   entire_domain
 SKIPINITDER                     yes
 MAXTIME                         0.25
 NUMSTEP                         5

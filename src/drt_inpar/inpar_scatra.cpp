@@ -171,7 +171,19 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       "Write diffusive/total flux vector fields for these scalar fields only (starting with 1)",
       &scatradyn);
 
-  BoolParameter("OUTPUTSCALARS","No","Output of total and mean values for transported scalars",&scatradyn);
+  setStringToIntegralParameter<int>("OUTPUTSCALARS","none","Output of total and mean values for transported scalars",
+                               tuple<std::string>(
+                                   "none",
+                                   "entire_domain",
+                                   "by_condition",
+                                   "entire_domain_and_by_condition"
+                                 ),
+                               tuple<int>(
+                                   outputscalars_none,
+                                   outputscalars_entiredomain,
+                                   outputscalars_condition,
+                                   outputscalars_entiredomain_condition),
+                               &scatradyn);
   BoolParameter("OUTINTEGRREAC","No","Output of integral reaction values",&scatradyn);
   BoolParameter("OUTPUT_GMSH","No","Do you want to write Gmsh postprocessing files?",&scatradyn);
 

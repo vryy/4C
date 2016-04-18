@@ -49,7 +49,7 @@ WRITEFLUX                       totalflux_domain
 RESULTSEVRY                     1
 CALCERROR                       No
 MESHTYING                       Condensed_Bmat_merged
-OUTPUTSCALARS                   yes
+OUTPUTSCALARS                   entire_domain
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-6
 ITEMAX                          2

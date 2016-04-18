@@ -63,7 +63,7 @@ WRITEFLUX_IDS                   1 2                           // do flux output 
 RESULTSEVRY                     1
 MATID                           5
 SOLVERTYPE                      nonlinear
-OUTPUTSCALARS                   Yes
+OUTPUTSCALARS                   entire_domain
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL                         1e-9
 ITEMAX                          20
