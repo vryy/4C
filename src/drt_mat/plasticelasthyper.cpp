@@ -1016,6 +1016,17 @@ void MAT::PlasticElastHyper::EvaluateNCP(
     *active=false;
   }
 
+  // check, if gp is at the corner of the root of the NCP function
+  if (abs(ypl-absetatr_H)>AS_CONVERGENCE_TOL*Inityield()
+      || deltaDp->NormInf()>AS_CONVERGENCE_TOL*Inityield()/cpl())
+  {/* gp not at the corner point */}
+  else
+  {
+    /* gp at the corner point --> elastic and plastic branch are equally valid, take the elastic one*/
+   *active=false;
+   activity_state_[gp] = false;
+  }
+
   // these cases have some terms in common
   if (*active || dDpHeta>0. || deltaDp->NormInf()>0.)
   {
@@ -1502,6 +1513,17 @@ void MAT::PlasticElastHyper::EvaluateNCPandSpin(
     }
     activity_state_[gp] = false;
     *active=false;
+  }
+
+  // check, if gp is at the corner of the root of the NCP function
+  if (abs(ypl-absetatr_H)>AS_CONVERGENCE_TOL*Inityield()
+      || deltaLp->NormInf()>AS_CONVERGENCE_TOL*Inityield()/cpl())
+  {/* gp not at the corner point */}
+  else
+  {
+    /* gp at the corner point --> elastic and plastic branch are equally valid, take the elastic one*/
+   *active=false;
+   activity_state_[gp] = false;
   }
 
   // these cases have some terms in common
