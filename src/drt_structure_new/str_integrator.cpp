@@ -124,10 +124,10 @@ void STR::Integrator::EquilibriateInitialState()
 
   // overwrite initial state vectors with Dirichlet BCs
   const double& timen = (*GlobalState().GetMultiTime())[0];
-  Teuchos::RCP<Epetra_Vector> disn_ptr = GlobalState().GetMutableDisN();
-  Teuchos::RCP<Epetra_Vector> veln_ptr = GlobalState().GetMutableVelN();
-  Teuchos::RCP<Epetra_Vector> accn_ptr = GlobalState().GetMutableAccN();
-  Dbc().ApplyDirichletBC(timen,disn_ptr,veln_ptr,acc_aux_ptr,false);
+  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().GetMutableDisNp();
+  Teuchos::RCP<Epetra_Vector> velnp_ptr = GlobalState().GetMutableVelNp();
+  Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetMutableAccNp();
+  Dbc().ApplyDirichletBC(timen,disnp_ptr,velnp_ptr,acc_aux_ptr,false);
 
 
   // ---------------------------------------------------------------------------
@@ -141,9 +141,11 @@ void STR::Integrator::EquilibriateInitialState()
   isequalibriate_initial_state_ = true;
   // evaluate the stiffness only on the structural model evaluator
   ModelEval().Evaluator(INPAR::STR::model_structure).
-      ApplyStiff(*disn_ptr,*stiff_ptr);
+      ApplyStiff(*disnp_ptr,*stiff_ptr);
   // build the entire right-hand-side
-  ModelEval().ApplyForce(*disn_ptr,*rhs_ptr);
+  ModelEval().ApplyForce(*disnp_ptr,*rhs_ptr);
+  // add viscous contributions to rhs
+  rhs_ptr->Update(1.0,*GlobalState().GetFviscoNp(),1.0);
   isequalibriate_initial_state_ = false;
 
   /* Meier 2015: Here, we copy the mass matrix in the stiffness block in order to
@@ -206,17 +208,28 @@ void STR::Integrator::EquilibriateInitialState()
   // ---------------------------------------------------------------------------
   // solve the linear system
   linsys_ptr->applyJacobianInverse(p_ls,*nox_rhs_ptr,*nox_soln_ptr);
+  nox_soln_ptr->scale(-1);
 
   // get the solution vector and copy it into the acceleration vector
-  accn_ptr->PutScalar(0.0);
-  accn_ptr->Update(1.0,nox_soln_ptr->getEpetraVector(),0.0);
+  accnp_ptr->PutScalar(0.0);
+  accnp_ptr->Update(1.0,nox_soln_ptr->getEpetraVector(),0.0);
   //*) Add contributions of inhomogeneous DBCs
-  accn_ptr->Update(1.0,*acc_aux_ptr,1.0);
+  accnp_ptr->Update(1.0,*acc_aux_ptr,1.0);
 
   /* We need to reset the stiffness matrix because its graph (topology)
    * is not finished yet in case of constraints and possibly other side
    * effects (basically remaining model evaluators). */
   stiff_ptr->Reset();
+
+  // re-build the entire right-hand-side with correct accelerations
+  ModelEval().ApplyForce(*disnp_ptr,*rhs_ptr);
+
+  // call update routines to copy states from t_{n+1} to t_{n}
+  // note that the time step is not incremented
+  PreUpdate();
+  UpdateStepState();
+  UpdateStepElement();
+  PostUpdate();
 
   return;
 }

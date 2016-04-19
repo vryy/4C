@@ -51,6 +51,8 @@ STR::TIMINT::BaseDataGlobalState::BaseDataGlobalState()
       freactnp_(Teuchos::null),
       finertialn_(Teuchos::null),
       finertialnp_(Teuchos::null),
+      fviscon_(Teuchos::null),
+      fvisconp_(Teuchos::null),
       fstructn_(Teuchos::null),
       jac_(Teuchos::null),
       mass_(Teuchos::null),
@@ -147,6 +149,9 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
 
   finertialn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
   finertialnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+
+  fviscon_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
+  fvisconp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 
   fstructn_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
 

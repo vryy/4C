@@ -125,6 +125,9 @@ namespace MODELEVALUATOR{
     //! inertial force at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> finertialnp_ptr_;
 
+    //! viscous force at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fvisconp_ptr_;
+
     //! structural displacement at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disnp_ptr_;
 

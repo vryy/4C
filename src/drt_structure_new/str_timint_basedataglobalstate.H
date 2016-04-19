@@ -331,6 +331,13 @@ namespace TIMINT {
       return finertialnp_;
     }
 
+    /// Return inertial force \f$finertial_{n+1}\f$
+    Teuchos::RCP<const Epetra_Vector> GetFviscoNp() const
+    {
+      CheckInitSetup();
+      return fvisconp_;
+    }
+
 
     /// Return entire force \f$fstructure_{n}\f$
     Teuchos::RCP<const Epetra_Vector> GetFstructureN() const
@@ -558,6 +565,20 @@ namespace TIMINT {
       return finertialnp_;
     }
 
+    /// Return viscous force \f$finertial_{n}\f$
+    Teuchos::RCP<Epetra_Vector>& GetMutableFviscoN()
+    {
+      CheckInitSetup();
+      return fviscon_;
+    }
+
+    /// Return viscous force \f$finertial_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector>& GetMutableFviscoNp()
+    {
+      CheckInitSetup();
+      return fvisconp_;
+    }
+
     /// Return entire force \f$fstructure_{n}\f$
     Teuchos::RCP<Epetra_Vector>& GetMutableFstructureN()
     {
@@ -678,6 +699,12 @@ namespace TIMINT {
 
     /// global inertial force vector at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> finertialnp_;
+
+    /// global viscous force vector at \f$t_{n}\f$
+    Teuchos::RCP<Epetra_Vector> fviscon_;
+
+    /// global viscous force vector at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fvisconp_;
 
     /** \brief structural right hand side of the previous time step
      *

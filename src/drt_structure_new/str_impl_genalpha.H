@@ -178,15 +178,6 @@ namespace IMPLICIT {
      *  global state data container and just store a pointer to the global
      *  state variable. */
     //! @{
-    //! internal mid-force vector F_{int;n+1-alpha_f}
-    Teuchos::RCP<Epetra_Vector> fintm_ptr_;
-
-    //! external mid-force vector F_{ext;n+1-alpha_f}
-    Teuchos::RCP<Epetra_Vector> fextm_ptr_;
-
-    //! inertial mid-force vector F_{int;n+1-alpha_m}
-    Teuchos::RCP<Epetra_Vector> finertm_ptr_;
-
     //! viscous mid-point force vector F_viscous F_{viscous;n+1}
     Teuchos::RCP<Epetra_Vector> fvisconp_ptr_;
 
@@ -203,18 +194,6 @@ namespace IMPLICIT {
 
     //! @name pointers to the global state data container content
     //! @{
-    //! pointer to internal force vector F_{int,n} at last time
-    Teuchos::RCP<Epetra_Vector> fintn_ptr_;
-
-    //! pointer to internal force vector F_{int,n+1} at new time
-    Teuchos::RCP<Epetra_Vector> fintnp_ptr_;
-
-    //! pointer to external force vector F_{ext,n} at last time
-    Teuchos::RCP<Epetra_Vector> fextn_ptr_;
-
-    //! pointer to external force vector F_{ext,n+1} at new time
-    Teuchos::RCP<Epetra_Vector> fextnp_ptr_;
-
     //! pointer to inertial force vector F_{inertial,n} at last time
     Teuchos::RCP<Epetra_Vector> finertian_ptr_;
 

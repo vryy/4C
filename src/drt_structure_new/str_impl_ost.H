@@ -16,6 +16,9 @@
 
 #include "str_impl_generic.H"
 
+//forward declarations
+class Epetra_MultiVector;
+
 namespace STR {
 namespace IMPLICIT {
   class OneStepTheta : public Generic
@@ -61,6 +64,12 @@ namespace IMPLICIT {
 
     //! Update everything on element level after time step and after output (derived)
     virtual void UpdateStepElement();
+
+    /*! \brief things that should be done after updating [derived]
+     *
+     *  We use in the OneStepTheta case to update constant contributions (during one time step)
+     *  of the SetState routine.*/
+    virtual void PostUpdate();
     //! @}
 
     //! @name Predictor routines (dependent on the implicit integration scheme)
@@ -83,6 +92,102 @@ namespace IMPLICIT {
         Epetra_Vector& velnp,
         Epetra_Vector& accnp) const;
     //! @}
+
+    /*! \brief Update constant contributions of the current state for the new time step \f$t_{n+1}\f$
+     *
+     *  The constant contributions are stored in the const_vel_acc_update_ptr_ multi-vector
+     *  pointer. The 1st entry represents the velocity, and the 2nd the acceleration.
+     *
+     *  Calculate the consistent velocity update part:
+     *  \f[
+     *    V_{n+1}^{0} =   \frac{\beta-\gamma}{\beta} V_{n}
+     *                  + \frac{(2 \beta - \gamma) \Delta t}{2 \beta} A_{n}
+     *  \f]
+     *
+     *  Calculate the consistent acceleration update part:
+     *  \f[
+     *    A_{n+1}^{0} = - \frac{1}{\beta (\Delta t)^{2}} V_{n}
+     *                  + \frac{2 \beta - 1}{2 \beta} A_{n}
+     *  \f]
+     *
+     *  Set the new DBC values at time \f$t=t_{n+1}\f$:
+     *  \f[
+     *    D_{n+1}^{0} \leftarrow DBC(D_{n+1}^{0}, t_{n+1}) \\
+     *    V_{n+1}^{0} \leftarrow DBC(V_{n+1}^{0}, t_{n+1}) \\
+     *    A_{n+1}^{0} \leftarrow DBC(A_{n+1}^{0}, t_{n+1})
+     *  \f]
+     *
+     *  Finally, add the constant displacement update part to the constant velocity and
+     *  acceleration vectors:
+     *  \f[
+     *    \tilde{V}_{n+1} = V_{n+1}^{0} - \frac{1}{\theta \Delta t} D_{n+1}^{0} \\
+     *    \tilde{A}_{n+1} = A_{n+1}^{0} - \frac{1}{theta^{2} (\Delta t)^{2}} D_{n+1}^{0}
+     *  \f]
+     *
+     *  See the SetState() routine for the iterative update of the current state.
+     *
+     *  \author vuong
+     *  \date 04/2016 */
+    void UpdateConstantStateContributions();
+
+  protected:
+    //! run directly after the setup routine has been finished
+    virtual void PostSetup();
+
+  private:
+    /*! \brief Calculate the right-hand-side vector at \f$ t_{n+\theta} \f$ (TR-rule)
+     *
+     *  \f[
+     *    Res = M . [\theta  * A_{n+1} + (1-\theta) * A_{n}]
+     *        + C . [\theta  * V_{n+1} + \(1-\theta) * V_{n}]
+     *        + \theta * Res_{\mathrm{statics},n+1} + (1-\theta) * Res_{\mathrm{statics},n}
+     *  \f] */
+    void EvaluateMidStateForce(Epetra_Vector& f) const;
+
+    /*! \brief Calculate the structural stiffness block at \f$ t_{n+\theta} \f$ (TR-rule)
+     *
+     *  \f[
+     *    \boldsymbol{K}_{T,effdyn} = (1 - \frac{1}{\theta (\Delta t)^{2}} \boldsymbol{M}
+     *                + (1 - \frac{1}{\Delta t} \boldsymbol{C}
+     *                + theta  \boldsymbol{K}_{T}
+     *  \f] */
+    void EvaluateMidStateJacobian(LINALG::SparseOperator& jac) const;
+
+  private:
+    //! theta factor: feasible interval (0,1]
+    double theta_;
+
+    /*! @name New vectors for internal use only
+     *
+     *  If an external use seems necessary, move these vectors to the
+     *  global state data container and just store a pointer to the global
+     *  state variable. */
+    //! @{
+
+    //! viscous mid-point force vector F_viscous F_{viscous;n+1}
+    Teuchos::RCP<Epetra_Vector> fvisconp_ptr_;
+
+    //! viscous mid-point force vector F_viscous F_{viscous;n}
+    Teuchos::RCP<Epetra_Vector> fviscon_ptr_;
+
+    /*! \brief Holds the during a time step constant contributions to
+     *  the velocity and acceleration state update.
+     *
+     *  entry (0): constant velocity contribution \f$\tilde{V}_{n+1}\f$
+     *  entry (1): constant acceleration contribution \f$\tilde{A}_{n+1}\f$ */
+    Teuchos::RCP<Epetra_MultiVector> const_vel_acc_update_ptr_;
+    //! @}
+
+    //! @name pointers to the global state data container content
+    //! @{
+
+    //! pointer to inertial force vector F_{inertial,n} at last time
+    Teuchos::RCP<Epetra_Vector> finertian_ptr_;
+
+    //! pointer to inertial force vector F_{inertial,n+1} at new time
+    Teuchos::RCP<Epetra_Vector> finertianp_ptr_;
+    //! @}
+
   };
 } // namespace IMPLICIT
 } // namespace STR

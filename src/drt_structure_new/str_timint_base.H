@@ -150,7 +150,7 @@ namespace TIMINT {
     /// @name Coupled problem routines
     /// @{
     /// wrapper for things that should be done before updating
-    virtual void PreUpdate();
+    virtual void PreUpdate(){};
 
     /// Update routine for coupled problems with monolithic approach
     virtual void Update();
@@ -159,7 +159,7 @@ namespace TIMINT {
     virtual void UpdateStepTime();
 
     /// wrapper for things that should be done after solving the update
-    virtual void PostUpdate();
+    virtual void PostUpdate(){};
     /// @}
 
     /// @name Access global state from outside via adapter (needed for coupled problems)

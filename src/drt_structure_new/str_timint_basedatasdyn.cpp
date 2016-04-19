@@ -588,3 +588,22 @@ void STR::TIMINT::GenAlphaDataSDyn::Setup()
 
   issetup_ = true;
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+STR::TIMINT::OneStepThetaDataSDyn::OneStepThetaDataSDyn()
+    : theta_(-1.0)
+{
+  // empty constructor
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::OneStepThetaDataSDyn::Setup()
+{
+  CheckInit();
+
+  theta_   = GetSDynParams().sublist("ONESTEPTHETA").get<double>("THETA");
+
+  issetup_ = true;
+}

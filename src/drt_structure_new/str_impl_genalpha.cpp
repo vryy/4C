@@ -120,30 +120,17 @@ void STR::IMPLICIT::GenAlpha::Setup()
   // ---------------------------------------------------------------------------
   // setup mid-point vectors
   // ---------------------------------------------------------------------------
-  fintm_ptr_ =
-      Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(),true));
-  fextm_ptr_ =
-      Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(),true));
-  finertm_ptr_ =
-      Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(),true));
-  fvisconp_ptr_ =
-      Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(),true));
-  fviscon_ptr_ =
-      Teuchos::rcp(new Epetra_Vector(*GlobalState().DofRowMapView(),true));
   const_vel_acc_update_ptr_ =
       Teuchos::rcp(new Epetra_MultiVector(*GlobalState().DofRowMapView(),2,true));
 
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container
   // ---------------------------------------------------------------------------
-  fintn_ptr_ = GlobalState().GetMutableFintN();
-  fintnp_ptr_ = GlobalState().GetMutableFintNp();
-
-  fextn_ptr_ = GlobalState().GetMutableFextN();
-  fextnp_ptr_ = GlobalState().GetMutableFextNp();
-
   finertian_ptr_ = GlobalState().GetMutableFinertialN();
   finertianp_ptr_ = GlobalState().GetMutableFinertialNp();
+
+  fviscon_ptr_ = GlobalState().GetMutableFviscoN();
+  fvisconp_ptr_ = GlobalState().GetMutableFviscoNp();
 
   // ---------------------------------------------------------------------------
   // initialize vectors and matrices
@@ -261,25 +248,6 @@ bool STR::IMPLICIT::GenAlpha::ApplyForce(const Epetra_Vector& x,
   if (not ok) return ok;
 
   // ---------------------------------------------------------------------------
-  // evaluate the inertial and viscous effects at t_{n+1}^{i}
-  // ---------------------------------------------------------------------------
-  /* calculate the inertial force at t_{n+1}
-   * Note: For the non-linear mass case, the inertial force has been calculated
-   * in the corresponding model evaluator on element level. */
-  if (TimInt().GetDataSDyn().GetMassLinType()==INPAR::STR::ml_none)
-  {
-    GlobalState().GetMassMatrix()->Multiply(false,
-        *GlobalState().GetAccNp(),*finertianp_ptr_);
-  }
-
-  // calculate the viscous/damping force at t_{n+1}
-  if (TimInt().GetDataSDyn().GetDampingType()==INPAR::STR::damp_rayleigh)
-  {
-    GlobalState().GetDampMatrix()->Multiply(false,
-        *GlobalState().GetVelNp(),*fvisconp_ptr_);
-  }
-
-  // ---------------------------------------------------------------------------
   // evaluate the mid state at t_{n+1-alpha_f}^{i}
   // ---------------------------------------------------------------------------
   EvaluateMidStateForce(f);
@@ -328,25 +296,6 @@ bool STR::IMPLICIT::GenAlpha::ApplyForceStiff(
   ResetEvalParams();
   bool ok = ModelEval().ApplyForceStiff(x,f,jac);
   if (not ok) return ok;
-
-  // ---------------------------------------------------------------------------
-  // evaluate the inertial and viscous effects at t_{n+1}^{i}
-  // ---------------------------------------------------------------------------
-  /* calculate the inertial force at t_{n+1}
-   * Note: For the non-linear mass case, the inertial force has been calculated
-   * in the corresponding model evaluator on element level. */
-  if (TimInt().GetDataSDyn().GetMassLinType()==INPAR::STR::ml_none)
-  {
-    GlobalState().GetMassMatrix()->Multiply(false,
-        *GlobalState().GetAccNp(),*finertianp_ptr_);
-  }
-
-  // calculate the viscous/damping force at t_{n+1}
-  if (TimInt().GetDataSDyn().GetDampingType()==INPAR::STR::damp_rayleigh)
-  {
-    GlobalState().GetDampMatrix()->Multiply(false,
-        *GlobalState().GetVelNp(),*fvisconp_ptr_);
-  }
 
   // ---------------------------------------------------------------------------
   // evaluate the mid state at t_{n+1-alpha_{f/m}}^{i}

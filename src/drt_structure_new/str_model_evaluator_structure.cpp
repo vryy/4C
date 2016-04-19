@@ -34,6 +34,7 @@ STR::MODELEVALUATOR::Structure::Structure()
     : fintnp_ptr_(Teuchos::null),
       fextnp_ptr_(Teuchos::null),
       finertialnp_ptr_(Teuchos::null),
+      fvisconp_ptr_(Teuchos::null),
       disnp_ptr_(Teuchos::null),
       stiff_ptr_(Teuchos::null),
       mass_ptr_(Teuchos::null),
@@ -59,6 +60,8 @@ void STR::MODELEVALUATOR::Structure::Setup()
     fextnp_ptr_ = gstate_ptr_->GetMutableFextNp();
     // setup the inertial force vector
     finertialnp_ptr_ = gstate_ptr_->GetMutableFinertialNp();
+    // setup the viscous force vector
+    fvisconp_ptr_ = gstate_ptr_->GetMutableFviscoNp();
     // setup the displacement pointer
     disnp_ptr_ = gstate_ptr_->GetMutableDisNp();
     // setup the dynamic matrix pointers
@@ -173,13 +176,23 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
       EvalData().SetActionType(DRT::ELEMENTS::struct_calc_nlnstiff);
       // set the discretization state
       discret_ptr_->SetState(0,"velocity", gstate_ptr_->GetVelNp());
+      // reset stiffness matrix
+      stiff_ptr_->Zero();
+      // reset damping matrix
+      damp_ptr_->Zero();
+      // set stiffness matrix
+      eval_mat[0] = stiff_ptr_;
+      // set damping matrix
+      eval_mat[1] = damp_ptr_;
       // evaluate ...
       EvaluateInternal(&eval_mat[0],&eval_vec[0]);
       break;
     }
     case INPAR::STR::damp_rayleigh:
     {
+      // reset stiffness matrix
       stiff_ptr_->Zero();
+      // set stiffness matrix
       eval_mat[0] = stiff_ptr_;
 
       switch (masslin_type_)
@@ -291,6 +304,17 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceInternal()
     damp_ptr_->Add(*stiff_ptr_,false,dampk,0.0);
     damp_ptr_->Add(*mass_ptr_,false,dampm,1.0);
     damp_ptr_->Complete();
+  }
+
+  // calculate the inertial force at t_{n+1}
+  mass_ptr_->Multiply(false,
+      *gstate_ptr_->GetAccNp(),*finertialnp_ptr_);
+
+  // calculate the viscous/damping force at t_{n+1}
+  if (EvalData().GetDampingType()!=INPAR::STR::damp_none)
+  {
+    damp_ptr_->Multiply(false,
+        *gstate_ptr_->GetVelNp(),*fvisconp_ptr_);
   }
 
   return EvalErrorCheck();
@@ -555,6 +579,17 @@ bool STR::MODELEVALUATOR::Structure::ApplyForceStiffInternal()
     damp_ptr_->Add(*stiff_ptr_,false,dampk,0.0);
     damp_ptr_->Add(*mass_ptr_,false,dampm,1.0);
     damp_ptr_->Complete();
+  }
+
+  // calculate the inertial force at t_{n+1}
+  mass_ptr_->Multiply(false,
+      *gstate_ptr_->GetAccNp(),*finertialnp_ptr_);
+
+  // calculate the viscous/damping force at t_{n+1}
+  if (EvalData().GetDampingType()!=INPAR::STR::damp_none)
+  {
+    damp_ptr_->Multiply(false,
+        *gstate_ptr_->GetVelNp(),*fvisconp_ptr_);
   }
 
   return EvalErrorCheck();

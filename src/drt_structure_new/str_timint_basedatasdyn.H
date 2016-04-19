@@ -826,6 +826,43 @@ namespace TIMINT {
     double rhoinf_;
   };
 
+  /** \brief Generalized alpha structural dynamics data container
+   *
+   * This data container is derived from the standard structural dynamics data container
+   * and contains some special GenAlpha input parameters.
+   *
+   * \author Michael Hiermeier */
+  class OneStepThetaDataSDyn : public BaseDataSDyn
+  {
+  public:
+    //! contructor
+    OneStepThetaDataSDyn();
+
+    //! destructor
+    virtual ~OneStepThetaDataSDyn() {};
+
+    //! Setup function [derived]
+    virtual void Setup();
+
+  public:
+    //! @name Read-only accessors
+    //! @{
+
+    //! returns rho_inf
+    const double& GetTheta() const
+    {
+      CheckInitSetup();
+      return theta_;
+    };
+
+    //! @}
+
+  private:
+
+    //! theta factor: feasible interval [0,1]
+    double theta_;
+  };
+
 } // namespace TIMINT
 } // namespace STR
 

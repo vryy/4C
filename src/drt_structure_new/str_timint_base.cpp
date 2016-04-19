@@ -260,31 +260,13 @@ void STR::TIMINT::Base::ResizeMStepTimAda()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::PreUpdate()
-{
-  CheckInitSetup();
-  int_ptr_->PreUpdate();
-}
-
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::Update()
 {
   CheckInitSetup();
-  PreUpdate();
+  int_ptr_->PreUpdate();
   int_ptr_->UpdateStepState();
   UpdateStepTime();
   int_ptr_->UpdateStepElement();
-  PostUpdate();
-}
-
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void STR::TIMINT::Base::PostUpdate()
-{
-  CheckInitSetup();
   int_ptr_->PostUpdate();
 }
 

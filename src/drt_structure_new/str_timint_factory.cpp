@@ -119,6 +119,7 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildStrategy(
       break;
     default:
       dserror("Unknown integration strategy!");
+      break;
   }
 
   return ti_strategy;
@@ -196,6 +197,9 @@ Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::Factory::BuildDataSDyn(
   {
     case INPAR::STR::dyna_genalpha:
       sdyndata_ptr = Teuchos::rcp(new STR::TIMINT::GenAlphaDataSDyn());
+      break;
+    case INPAR::STR::dyna_onesteptheta:
+      sdyndata_ptr = Teuchos::rcp(new STR::TIMINT::OneStepThetaDataSDyn());
       break;
     default:
       sdyndata_ptr = Teuchos::rcp(new STR::TIMINT::BaseDataSDyn());
