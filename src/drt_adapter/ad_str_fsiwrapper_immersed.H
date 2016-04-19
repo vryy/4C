@@ -5,12 +5,11 @@
 \brief Structural adapter for Immersed and Immersed + ALE FSI problems containing the interface
        and methods dependent on the interface
 
-<pre>
-Maintainer: Georg Hammerl
+\maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
-</pre>
+
 */
 
 #ifndef FSI_STRUCTURE_WRAPPER_IMMERSED_H
@@ -41,6 +40,7 @@ namespace ADAPTER
     /// Destructor
     virtual ~FSIStructureWrapperImmersed() { ; }
 
+    /// return the combined interface
     const Teuchos::RCP<LINALG::MapExtractor> CombinedInterface(){return combinedinterface_;};
 
     /// extract interface displacements at \f$t_{n+1}\f$ of immersed interface
@@ -67,7 +67,20 @@ namespace ADAPTER
     void ApplyImmersedInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce_fsi,
                                       Teuchos::RCP<Epetra_Vector> iforce_immersed);
 
-    /// output results
+    /*!
+      \brief Write extra output for specified step and time.
+             Useful if you want to write output every iteration in partitioned schemes.
+             If no step and time is provided, standard Output of structure field is invoked.
+
+      \param forced_writerestart (in) : Force to write restart
+      \param step (in) : Pseudo-step for which extra output is written
+      \param time (in) : Pseudo-time for which extra output is written
+
+      \note This is a pure DEBUG functionality. Originally used in immersed method development.
+
+      \warning This method partly re-implements redundantly few lines of the common structure Output() routine.
+      \return void
+    */
     virtual void Output(bool forced_writerestart = false, const int step = -1, const double time = -1.0);
 
   protected:

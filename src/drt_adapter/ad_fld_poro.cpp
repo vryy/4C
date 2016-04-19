@@ -3,12 +3,12 @@
 
  \brief Fluid field adapter for poroelasticity
 
- <pre>
-   Maintainer: Anh-Tu Vuong
+
+ \maintainer   Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
- </pre>
+
 *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/
@@ -174,3 +174,49 @@ Teuchos::RCP<LINALG::MapExtractor> ADAPTER::FluidPoro::VelPresSplitter()
 }
 
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidPoro::Output(const int step, const double time)
+{
+  // set variables that allow the forced
+  // output at this point.
+
+  // we surely want to write now
+  int upres_ = 1;
+  // poro is always ALE
+  bool alefluid_ = true;
+  // for immersed we want to write eledata in every step
+  bool write_eledata_every_step_=true;
+
+  // write standard output if no arguments are provided (default -1)
+  if(step == -1 and time == -1.0)
+    FluidField()->Output();
+  // write extra output for specified step and time
+  else
+  {
+    // print info to screen
+    if(FluidField()->Discretization()->Comm().MyPID()==0)
+      std::cout<<"\n   Write EXTRA FLUID Output Step="<<step<<" Time="<<time<<" ...   \n"<<std::endl;
+
+    // step number and time
+    FluidField()->DiscWriter()->NewStep(step,time);
+
+    // time step, especially necessary for adaptive dt
+    FluidField()->DiscWriter()->WriteDouble("timestep",FluidField()->Dt());
+
+    // velocity/pressure vector
+    FluidField()->DiscWriter()->WriteVector("velnp",FluidField()->Velnp());
+    // (hydrodynamic) pressure
+    Teuchos::RCP<Epetra_Vector> pressure = FluidField()->GetVelPressSplitter()->ExtractCondVector(FluidField()->Velnp());
+    FluidField()->DiscWriter()->WriteVector("pressure", pressure);
+
+    if (alefluid_) FluidField()->DiscWriter()->WriteVector("dispnp", FluidField()->Dispnp());
+
+    // write domain decomposition for visualization (only once!)
+    if (( FluidField()->Step()==upres_ or  FluidField()->Step() == 0) and !write_eledata_every_step_) FluidField()->DiscWriter()->WriteElementData(true);
+    else FluidField()->DiscWriter()->WriteElementData(true);
+
+    return;
+
+  } // write extra output
+}
+

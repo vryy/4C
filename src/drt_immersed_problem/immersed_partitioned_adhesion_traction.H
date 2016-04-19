@@ -4,12 +4,11 @@
 
 \brief partitioned immersed cell-ecm interaction via adhesion traction
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_PARTITIONED_ADHESION_TRACTION_H
 #define IMMERSED_PARTITIONED_ADHESION_TRACTION_H
@@ -92,7 +91,7 @@ protected:
    1) Loop over all nodes with 'CellFocalAdhesion' condition.
      -> 1.1 get displacement of current node.
 
-     -> 1.2 Loop over curr_subset_of_backgrounddis_.
+     -> 1.2 Loop over curr_subset_of_backgrounddis_ and search only in elements for which IsBoundaryImmersed() == true.
         -> 1.2.1 find backgrd. ECM element in which current node is immersed.
         -> 1.2.2 get parameter space coord. of current node in backgrd. element.
         -> 1.2.3 write pair 'cell adhesion node id' <-> 'xi' in adh_nod_param_coords_in_backgrd_ele_.
@@ -221,6 +220,10 @@ private:
   void DoImmersedDirichletCond(Teuchos::RCP<Epetra_Vector> statevector,
                                Teuchos::RCP<Epetra_Vector> dirichvals,
                                Teuchos::RCP<const Epetra_Map> dbcmap);
+
+
+  /// reset immersed information like e.g.: IsImmersed()
+  void ResetImmersedInformation();
 
 };// class ImmersedPartitionedAdhesionTraction
 } // namespace IMMERSED

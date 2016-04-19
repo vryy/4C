@@ -4,12 +4,11 @@
 
 \brief general service routines for calculation of fluid element
 
-<pre>
-Maintainer: Ursula Rasthofer & Volker Gravemeier
-            {rasthofer,vgravem}@lnm.mw.tum.de
+\maintainer Volker Gravemeier
+            vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236/-245
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -3273,7 +3272,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::InterpolateVelocityGradientAnd
 }
 
 /*-----------------------------------------------------------------------------*
- | Interpolate velocity                                          rauch 05/2014 |
+ | Update 'IsImmersed' info in nodes and elements                rauch 05/2014 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::UpdateImmersedInformation(
@@ -3284,8 +3283,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::UpdateImmersedInformation(
     )
 {
   DRT::Problem* globalproblem = DRT::Problem::Instance();
-  if(globalproblem->ProblemType()==prb_immersed_ale_fsi)
-    dserror("UpdateImmersedInformation() not intended to be used with ProblemType = prb_immersed_ale_fsi");
+  if(globalproblem->ProblemType()==prb_immersed_ale_fsi or globalproblem->ProblemType()==prb_immersed_fsi)
+    dserror("UpdateImmersedInformation() not intended to be used with ProblemType = prb_immersed_ale_fsi or prb_immersed_fsi");
 
   //-------------------------------------------------------------------------------
   //  This method provides the fluid discretization with the information about the
@@ -3304,9 +3303,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::UpdateImmersedInformation(
   const Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
 
 
-  // determine whether fluid mesh is deformable or not. True is the standard case for now.
-  // this line is meant to be the reminder to change this.
-  static int isALE = true;
+  // determine whether fluid mesh is deformable or not.
+  // true for immersed cell migration. Not used in any other case so far.
+  static int isALE = (globalproblem->ProblemType()==prb_immersed_cell);
 
   // initialize vectors for interpolation
   std::vector<double> dummy(4);
@@ -3425,6 +3424,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::UpdateImmersedInformation(
   else if (matchnum < nen_ and matchnum > 0)
   {
     immersedele -> SetBoundaryIsImmersed(1);
+
+    // loop over nodes of this ele and set IsBoundaryImmersed
+    for (int node=0; node<nen_; node++)
+      static_cast<IMMERSED::ImmersedNode* >(ele->Nodes()[node])->SetIsBoundaryImmersed(1);
+
   }
 
   return 0;
@@ -4990,11 +4994,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::CalcMassFlowPeriodicHill(
   immersedele->SetBoundaryIsImmersed(0);
   immersedele->SetHasProjectedDirichlet(0);
 
-  // reset element node information
+  // reset node information
   DRT::Node** nodes = immersedele->Nodes();
   for(int i=0;i<immersedele->NumNode();++i)
   {
     static_cast<IMMERSED::ImmersedNode* >(nodes[i])->SetIsMatched(0);
+    static_cast<IMMERSED::ImmersedNode* >(nodes[i])->SetIsBoundaryImmersed(0);
   }
 
   // reset element int point information

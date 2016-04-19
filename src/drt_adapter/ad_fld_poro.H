@@ -3,12 +3,11 @@
 
  \brief Fluid field adapter for poroelasticity
 
- <pre>
-   Maintainer: Anh-Tu Vuong
+ \maintainer   Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
- </pre>
+
 *----------------------------------------------------------------------*/
 
 
@@ -65,7 +64,25 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<LINALG::MapExtractor> VelPresSplitter();
 
+    /*!
+      \brief Write extra output for specified step and time.
+             Useful if you want to write output every iteration in partitioned schemes.
+             If no step and time is provided, standard Output of fluid field is invoked.
+
+      \param step (in) : Pseudo-step for which extra output is written
+      \param time (in) : Pseudo-time for which extra output is written
+
+      \note This is a pure DEBUG functionality. Originally used in immersed method development.
+
+      \warning This method partly re-implements redundantly few lines of the common fluid Output() routine.
+      \return void
+    */
+    virtual void Output(const int step=-1, const double time=-1);
+
   private:
+
+    /// fluid field
+    const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_; }
 
     std::vector<DRT::Condition*> nopencond_; ///< vector containing no penetration conditions
 

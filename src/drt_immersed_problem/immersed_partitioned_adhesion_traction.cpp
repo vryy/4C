@@ -4,12 +4,11 @@
 
 \brief partitioned immersed cell-ecm interaction via adhesion traction
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_adhesion_traction.H"
 
@@ -83,7 +82,7 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
   immersed_information_invalid_=true;
 
   // output after every fixed-point iteration?
-  output_evry_nlniter_=false;
+  output_evry_nlniter_=(DRT::INPUT::IntegralValue<int>(globalproblem_->ImmersedMethodParams(), "OUTPUT_EVRY_NLNITER"));
 
 }
 
@@ -92,6 +91,8 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedPartitionedAdhesionTracti
 void IMMERSED::ImmersedPartitionedAdhesionTraction::CouplingOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag)
 {
   ReinitTransferVectors();
+
+  //ResetImmersedInformation();
 
   // DISPLACEMENT COUPLING
   if (displacementcoupling_)
@@ -145,9 +146,11 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CouplingOp(const Epetra_Vect
   // max 100 partitioned iterations and max 100 timesteps in total
   if(output_evry_nlniter_)
   {
-    //int iter = ((IterationCounter())[0]);
-    cellstructure_->Output();
-    poroscatra_subproblem_->Output();
+    int iter = ((IterationCounter())[0]);
+    poroscatra_subproblem_->PrepareOutput();
+    poroscatra_subproblem_->FluidField()->Output((Step()*100)+(iter-1),Time()-Dt()*((100-iter)/100.0));
+    cellstructure_->PrepareOutput();
+    cellstructure_->Output(false,(Step()*100)+(iter-1),Time()-Dt()*((100-iter)/100.0));
   }
 
   return;
@@ -171,6 +174,9 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::BackgroundOp(Teuchos::RCP<Ep
 
     if(immersed_information_invalid_)
     {
+      if(myrank_==0)
+        std::cout<<"   \nUpdate Immersed Information ...\n"<<std::endl;
+
       if(curr_subset_of_backgrounddis_.empty()==false)
         EvaluateImmersedNoAssembly(params,
             backgroundfluiddis_,
@@ -190,6 +196,13 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::BackgroundOp(Teuchos::RCP<Ep
 
     // solve poro
     poroscatra_subproblem_->Solve();
+
+    // todo
+    // this is commented to improve performance of testing cases
+    // in general after solving the ECM. We need to update the
+    // immersed information. Only OK if immersed information
+    // do not change during simulation.
+    //immersed_information_invalid_=true;
 
   }
 
@@ -212,12 +225,12 @@ IMMERSED::ImmersedPartitionedAdhesionTraction::ImmersedOp(Teuchos::RCP<Epetra_Ve
   }
   else
   {
+    if(IterationCounter()[0]>1)
+      cellstructure_->PreparePartitionStep();
+
     //prescribe dirichlet values at cell adhesion nodes
     CalcAdhesionDisplacements();
     DoImmersedDirichletCond(cellstructure_->WriteAccessDispnp(),cell_adhesion_disp_, cellstructure_->GetDBCMapExtractor()->CondMap());
-
-    if(IterationCounter()[0]>1)
-      cellstructure_->PreparePartitionStep();
 
      //solve cell
     cellstructure_->Solve();
@@ -345,7 +358,11 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(Teuc
   backgroundstructuredis_->SetState(0,"displacement",porostructure_->Dispnp());
 
   // reinitialize map to insert new adhesion node -> background element pairs
-  adh_nod_param_coords_in_backgrd_ele_.clear();
+  // todo make dependent on immersed_information_invalid_
+  // for now, this doesn't change for the test simulations.
+  //adh_nod_param_coords_in_backgrd_ele_.clear();
+  // reinitialize mapping from adhesion node to backgrd. element id
+  //adh_nod_backgrd_ele_mapping_.clear();
 
   if(myrank_ == 0)
   {
@@ -353,7 +370,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(Teuc
     std::cout<<"###   Spread adhesion forces onto ecm ...                  "<<std::endl;
   }
 
-  double tol = 1e-13;
+  double tol = 1e-11;
 
   bool match = false;
 
@@ -388,7 +405,8 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(Teuc
   if(cellstate == Teuchos::null)
     dserror("Could not get state displacement from cell structure");
 
-
+ if(adh_nod_param_coords_in_backgrd_ele_.size()==0)
+ {
   // loop over all adhesion nodes
   for(int anode=0;anode<adhesion_nodesize;anode++)
   {
@@ -467,7 +485,7 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(Teuc
             for(int dof=0; dof<3;++dof)
               sourceeledisp[node*3+dof]=myvalues[node*4+dof];
 
-          // node 1  and node 7 coords of current source element (diagonal points)
+          // node 1  and node 7 coords of current backgrd. element (diagonal points)
           const double* X1 = ele->Nodes()[1]->X();
           double x1[3];
           x1[0]=X1[0]+sourceeledisp[1*3+0];
@@ -541,7 +559,64 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DistributeAdhesionForce(Teuc
       } // loop over element ids
     } // loop over curr_subset_of_backgrounddis_
 
-  } // loop over all adhesion nodes
+  } // // loop over all nodes with adhesion condition 'anode'
+ }// if adh_nod_param_coords_in_backgrd_ele_ not filled, yet
+ else
+ {
+   // loop over all adhesion nodes
+   for(int anode=0;anode<adhesion_nodesize;anode++)
+   {
+     // get node id of conditioned node
+     int anodeid = adhesion_nodes->at(anode);
+     // get node with this id from immersed discretization
+     adhesion_node = immerseddis_->gNode(anodeid);
+
+     // material points are fixed to each other.
+     // so there is no need to find anode<->ecm-element pairs again.
+     // the ecm-elements interpolate their displacements always to the same
+     // parameter space coordinate saved in adh_nod_param_coords_in_backgrd_ele_.
+     // this displacement is then prescribed at the anode.
+     xi(0)=(adh_nod_param_coords_in_backgrd_ele_.find(anodeid)->second)(0);
+     xi(1)=(adh_nod_param_coords_in_backgrd_ele_.find(anodeid)->second)(1);
+     xi(2)=(adh_nod_param_coords_in_backgrd_ele_.find(anodeid)->second)(2);
+
+     ele=backgroundstructuredis_->gElement(adh_nod_backgrd_ele_mapping_.find(anodeid)->second);
+     iele=backgroundfluiddis_->gElement(adh_nod_backgrd_ele_mapping_.find(anodeid)->second);
+
+       DRT::ELEMENTS::FluidImmersedBase* immersedele = dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(iele);
+       if(immersedele == NULL)
+         dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
+
+         // spread force to nodes of ecm ele
+         std::vector<int> dofs = immerseddis_->Dof(0,adhesion_node);
+         if(dofs.size()!=3)
+           dserror("dofs=3 expected. dofs=%d instead",dofs.size());
+
+         for(int dof=0;dof<(3-isPseudo2D_);dof++)
+         {
+           int doflid = freact->Map().LID(dofs[dof]);
+           double dofval = freact_values[doflid];
+
+           // evaluate shapefcts of ele at point xi
+           DRT::UTILS::shape_function<DRT::Element::hex8>(xi,shapefcts);
+
+           // write entry into ecm_adhesion_forces_
+           DRT::Node** spreadnodes = ele->Nodes();
+           for(int snode=0;snode<8;snode++)
+           {
+             std::vector<int> sdofs = backgroundstructuredis_->Dof(0,spreadnodes[snode]);
+             if(sdofs.size()!=4)
+               dserror("dofs=4 expected. dofs=%d instead",sdofs.size()); // 4 dofs per node in porostructure
+
+             int error = ecm_adhesion_forces_->SumIntoGlobalValue(sdofs[dof],0,0,shapefcts(snode)*dofval);
+             if(error != 0)
+               dserror("SumIntoGlobalValue returned err=%d",error);
+           } // node loop
+         }// dof loop
+
+   } // loop over all nodes with adhesion condition 'anode'
+
+ } // if already pairs of adhesion nodes, elements and coordinates on maps
 
   ecm_adhesion_forces_->Norm2(&adhesionforcenorm);
 
@@ -571,6 +646,9 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::CalcAdhesionDisplacements()
     LINALG::Matrix<3,1> adhesiondisp;    //!< displacement of ECM element interpolated to adhesion node
 
     DRT::Element* backgrdele; //! pointer to ECM element
+
+    std::cout<<"###   Size of 'adh_nod_param_coords_in_backgrd_ele_' = "<<adh_nod_param_coords_in_backgrd_ele_.size()<<std::endl;
+    std::cout<<"###   Size of 'adh_nod_backgrd_ele_mapping_'         = "<<adh_nod_backgrd_ele_mapping_.size()<<std::endl;
 
     // loop over all cell adhesion nodes
     for (std::map<int,LINALG::Matrix<3,1> >::iterator it=adh_nod_param_coords_in_backgrd_ele_.begin(); it!=adh_nod_param_coords_in_backgrd_ele_.end(); ++it)
@@ -726,6 +804,8 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DoImmersedDirichletCond(Teuc
     int gid = dbcmap->GID(i);
 
 #ifdef DEBUG
+    if(mynumvals==0)
+      dserror("dbcmap empty!");
     int err = -2;
     int lid = dirichvals->Map().LID(gid);
     err = statevector -> ReplaceGlobalValue(gid,0,myvals[lid]);
@@ -741,6 +821,22 @@ void IMMERSED::ImmersedPartitionedAdhesionTraction::DoImmersedDirichletCond(Teuc
 #endif
 
   }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IMMERSED::ImmersedPartitionedAdhesionTraction::ResetImmersedInformation()
+{
+  if(myrank_==0)
+    std::cout<<"\n Reset Immersed Information ...\n"<<std::endl;
+
+  Teuchos::ParameterList params;
+  params.set<int>("action",FLD::reset_immersed_ele);
+  params.set<int>("Physical Type", poroscatra_subproblem_->FluidField()->PhysicalType());
+  backgroundfluiddis_->Evaluate(params);
 
   return;
 }

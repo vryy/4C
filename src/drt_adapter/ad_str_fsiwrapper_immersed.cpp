@@ -5,12 +5,11 @@
 \brief Structural adapter for Immersed and Immersed + ALE FSI problems containing the interface
        and methods dependent on the interface
 
-<pre>
-Maintainer: Georg Hammerl
+\maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
-</pre>
+
 */
 
 
@@ -227,14 +226,17 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapperImmersed::PredictFullInt
 /*----------------------------------------------------------------------*/
 void ADAPTER::FSIStructureWrapperImmersed::Output(bool forced_writerestart, const int step, const double time)
 {
+  // always write velocity and displacement for extra output
   bool writevelacc_=true;
 
+  // write standard output if no arguments are provided (default -1)
   if(step == -1 and time == -1.0)
     structure_->Output(forced_writerestart);
+  // write extra output for specified step and time
   else
   {
     if(structure_->Discretization()->Comm().MyPID()==0)
-      std::cout<<"\n   Write EXTRA Fluid Output Step="<<step<<" Time="<<time<<" ...   \n"<<std::endl;
+      std::cout<<"\n   Write EXTRA STRUCTURE Output Step="<<step<<" Time="<<time<<" ...   \n"<<std::endl;
 
 
       structure_->DiscWriter()->NewStep(step, time);
@@ -246,6 +248,5 @@ void ADAPTER::FSIStructureWrapperImmersed::Output(bool forced_writerestart, cons
       structure_->DiscWriter()->WriteVector("velocity", structure_->Velnp());
       structure_->DiscWriter()->WriteVector("acceleration", structure_->Accnp());
     }
-
-  }
+  } // write extra output
 }
