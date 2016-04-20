@@ -71,6 +71,9 @@ namespace MAT
       /// material mass density
       const double density_;
 
+      /// 1.0 if polyconvexity of system is checked (0 = no = default)
+      const int polyconvex_;
+
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
@@ -271,6 +274,16 @@ private:
 
     /// Return visualization data
     virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+
+    /// Return whether the material requires the deformation gradient for its evaluation
+    virtual bool NeedsDefgrd()
+    {
+      if (params_->polyconvex_)
+        return true;
+      /* usual materials are based on GL-strains */
+      else
+        return false;
+    };
 
   protected:
     /// calculates the kinematic quantities and tensors used afterwards
@@ -523,6 +536,22 @@ private:
     const bool& havecoeffstrmod,    ///< true, if at least one summand is based on mod.pr.stretches
     const int eleGID                ///< element GID
     );
+
+    /// Check if material state is polyconvex:
+    /// Polyconvexity of isotropic hyperelastic material
+    /// dependent on principal or modified invariants)
+    /// is tested with eq. (5.31) of Vera Ebbing - PHD-thesis (p. 79).
+    /// Partial derivatives of SEF are used.
+    /// \author birzle
+    /// \date 04/2016
+    virtual void CheckPolyconvexity(
+        const LINALG::Matrix<3,3>& defgrd,
+        const LINALG::Matrix<3,1>& prinv,
+        const LINALG::Matrix<3,1>& dPI,
+        const LINALG::Matrix<6,1>& ddPII,
+        Teuchos::ParameterList& params,
+        const int eleGID
+        );
 
     /// @name Flags to specify the elastic formulations
     //@{

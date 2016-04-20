@@ -12,7 +12,7 @@ The input line should read
 MAT 0   MAT_ViscoElastHyper   NUMMAT 0 MATIDS  DENS 0
 
 <pre>
-Maintainer: Anna Birzle
+\maintainer Anna Birzle
             birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15255
@@ -34,6 +34,10 @@ Maintainer: Anna Birzle
 MAT::PAR::ViscoElastHyper::ViscoElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata)
   : MAT::PAR::ElastHyper(matdata)
 {
+  // polyconvexity check is just implemented for isotropic hyperlastic materials
+  if (polyconvex_)
+    dserror("This polyconvexity-check is just implemented for isotropic "
+        "hyperelastic-materials (do not use for viscoelastic materials).");
 }
 
 /*----------------------------------------------------------------------*/

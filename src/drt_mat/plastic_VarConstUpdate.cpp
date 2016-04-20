@@ -11,7 +11,7 @@ ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
 
 
 <pre>
-Maintainer: Alexander Seitz
+\maintainer Alexander Seitz
             seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15271
@@ -37,7 +37,12 @@ MAT::PAR::PlasticElastHyperVCU::PlasticElastHyperVCU(
     Teuchos::RCP<MAT::PAR::Material> matdata
 )
 : MAT::PAR::PlasticElastHyper(matdata)
-{}
+{
+  // polyconvexity check is just implemented for isotropic hyperlastic materials
+  if (polyconvex_)
+    dserror("This polyconvexity-check is just implemented for isotropic "
+        "hyperelastic-materials (do not use for plastic materials).");
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

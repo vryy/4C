@@ -77,6 +77,11 @@ MAT::PAR::PlasticElastHyper::PlasticElastHyper(
   if (expisohard_<0.)
     dserror("Nonlinear hardening exponent must be non-negative");
 
+  // polyconvexity check is just implemented for isotropic hyperlastic materials
+  if (polyconvex_)
+    dserror("This polyconvexity-check is just implemented for isotropic "
+        "hyperelastic-materials (do not use for plastic materials).");
+
 }
 
 /*----------------------------------------------------------------------*/

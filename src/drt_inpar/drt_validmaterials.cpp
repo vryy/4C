@@ -983,6 +983,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
     AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
     AddNamedReal(m,"DENS","material mass density");
+    AddNamedInt(m,"POLYCONVEX","1.0 if polyconvexity of system is checked",0.,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -998,6 +999,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedInt(m,"NUMMAT","number of materials/potentials in list");
     AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
     AddNamedReal(m,"DENS","material mass density");
+    AddNamedInt(m,"POLYCONVEX","1.0 if polyconvexity of system is checked",0.,true);
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -1014,6 +1016,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedIntVector(m,"MATIDS","the list material/potential IDs","NUMMAT");
     AddNamedReal(m,"DENS","material mass density");
     AddNamedReal(m,"INITYIELD","initial yield stress");
+    AddNamedInt(m,"POLYCONVEX","1.0 if polyconvexity of system is checked",0.,true);
     AddNamedReal(m,"ISOHARD","linear isotropic hardening modulus",0.,true);
     AddNamedReal(m,"EXPISOHARD","nonlinear isotropic hardening exponent",0.,true);
     AddNamedReal(m,"INFYIELD","saturation yield stress for nonlinear isotropic hardening",0.,true);
@@ -1084,6 +1087,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"YIELDSOFT","yield stress softening",0.,true);
     AddNamedReal(m,"HARDSOFT","hardening softening",0.,true);
     AddNamedReal(m,"TAYLOR_QUINNEY","Taylor-Quinney factor for plastic heat conversion",1.,true);
+
+    AddNamedInt(m,"POLYCONVEX","1.0 if polyconvexity of system is checked",0.,true);
 
 
     AppendMaterialDefinition(matlist,m);

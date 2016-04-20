@@ -30,11 +30,17 @@ MAT::PAR::ElastHyper::ElastHyper(
 : Parameter(matdata),
   nummat_(matdata->GetInt("NUMMAT")),
   matids_(matdata->Get<std::vector<int> >("MATIDS")),
-  density_(matdata->GetDouble("DENS"))
+  density_(matdata->GetDouble("DENS")),
+  polyconvex_(matdata->GetInt("POLYCONVEX"))
+
 {
   // check if sizes fit
   if (nummat_ != (int)matids_->size())
     dserror("number of materials %d does not fit to size of material vector %d", nummat_, matids_->size());
+
+  // output, that polyconvexity is checked
+  if(polyconvex_)
+    std::cout<<"Polyconvexity of your simulation is checked."<<std::endl;
 }
 
 /*----------------------------------------------------------------------*/
@@ -616,6 +622,11 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
   EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv);
   EvaluateInvariantDerivatives(prinv,dPI,ddPII,eleGID);
+
+  // check if system is polyconvex (set "POLYCONVEX 1" in material input-line)
+  if (params_!=NULL)
+    if (params_->polyconvex_)
+      CheckPolyconvexity(*defgrd,prinv,dPI,ddPII,params,eleGID);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
@@ -1217,4 +1228,150 @@ Teuchos::RCP<const MAT::ELASTIC::Summand> MAT::ElastHyper::GetPotSummandPtr(
       return potsum_[p];
   }
   return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*/
+/* Check polyconvexity:
+* Polyconvexity of isotropic hyperelastic material
+* (dependent on principal or modified invariants)
+* is tested with eq. (5.31) of Vera Ebbing - PHD-thesis (p. 79).
+* Partial derivatives of SEF are used for calculation of eq (5.31).
+*                                                        birzle 04/2016 */
+/*----------------------------------------------------------------------*/
+void MAT::ElastHyper::CheckPolyconvexity(
+    const LINALG::Matrix<3,3>& defgrd,
+    const LINALG::Matrix<3,1>& prinv,
+    const LINALG::Matrix<3,1>& dPI,
+    const LINALG::Matrix<6,1>& ddPII,
+    Teuchos::ParameterList& params,
+    const int eleGID
+    )
+{
+  // This polyconvexity-test is just implemented for isotropic hyperelastic-materials
+  // --> error if anisotropic material is tested (plastic and viscoelastic materials should not get in here)
+  if (anisoprinc_ || anisomod_)
+    dserror("This polyconvexity-check is just implemented for isotropic "
+        "hyperelastic-materials (do not use for anistropic materials).");
+
+  // principal invariants (i)
+  // first strain energy derivative dPI (i)
+  // second strain energy derivative ddPII (i)
+
+  // J = sqrt(I_3) = modinv(2)
+  double J=std::pow(prinv(2),1./2.);
+
+  // defgrd = F (i)
+  // dfgrd = F in Voigt - Notation
+  LINALG::Matrix<9,1> dfgrd (true);
+  dfgrd(0,0) = defgrd(0,0);
+  dfgrd(1,0) = defgrd(1,1);
+  dfgrd(2,0) = defgrd(2,2);
+  dfgrd(3,0) = defgrd(0,1);
+  dfgrd(4,0) = defgrd(1,2);
+  dfgrd(5,0) = defgrd(0,2);
+  dfgrd(6,0) = defgrd(1,0);
+  dfgrd(7,0) = defgrd(2,1);
+  dfgrd(8,0) = defgrd(2,0);
+
+  //Cof(F) = J*F^(-T)
+  LINALG::Matrix<3,3> CoFacF (true); //Cof(F) in Matrix-Notation
+  LINALG::Matrix<9,1> CofF (true); // Cof(F) in Voigt-Notation
+  CoFacF.Invert(defgrd);
+  CoFacF.Update(J,CoFacF);
+  // sort in Voigt-Notation and invert!
+  CofF(0,0) = CoFacF(0,0);
+  CofF(1,0) = CoFacF(1,1);
+  CofF(2,0) = CoFacF(2,2);
+  CofF(6,0) = CoFacF(0,1);
+  CofF(7,0) = CoFacF(1,2);
+  CofF(8,0) = CoFacF(0,2);
+  CofF(3,0) = CoFacF(1,0);
+  CofF(4,0) = CoFacF(2,1);
+  CofF(5,0) = CoFacF(2,0);
+
+  // id4 (9x9)
+  LINALG::Matrix<9,9> ID4 (true);
+  for (int i=0; i<9; i++)
+    for (int j=0; j<9; j++)
+      if (i==j)
+        ID4(i,j) = 1.0;
+
+  // Frechet Derivative according to Ebbing, PhD-thesis page 79, Eq: (5.31)
+  LINALG::Matrix<19,19> FreD(true);
+
+  // single matrices of Frechet Derivative:
+
+  //d²P/dFdF
+  // = 4 d^2\Psi/dI_1dI_1 F \otimes F + 2 \d\Psi/dI_1 *II
+  LINALG::Matrix<9,9> FreDFF (true);
+  FreDFF.MultiplyNT(4*ddPII(0), dfgrd, dfgrd, 1.0);
+  FreDFF.Update(2*dPI(0),ID4,1.0);
+
+  //d²P/d(cofF)d(cofF)
+  // = = 4 d^2\Psi/dI_2dI_2 cof(F) \otimes cof(F) + 2 \d\Psi/dI_2 *II
+  LINALG::Matrix<9,9> FreDcFcF (true);
+  FreDcFcF.MultiplyNT(4*ddPII(1), CofF, CofF, 1.0);
+  FreDcFcF.Update(2*dPI(1),ID4,1.0);
+
+  // d²P/d(detF)d(detF)
+  // = 2*d \Psi/dI_3 + 4*I_3*d²\Psi/dI_3dI_3
+  double FreDJJ (true);
+  FreDJJ += 2*dPI(2) + 4*prinv(2)*ddPII(2);
+
+  // d²P/d(cofF)dF
+  // = 4*d\Psi/dI_1dI_2 F /otimes CofF
+  LINALG::Matrix<9,9> FreDcFF (true);
+  FreDcFF.MultiplyNT(4*ddPII(5), dfgrd, CofF, 1.0);
+
+  // d²P/d(detF)d(cofF)
+  // = 4*J*d^2 \Psi /dI_2 dI_3 \mat{CofF}
+  LINALG::Matrix<9,1> FreDcFJ (true);
+  FreDcFJ.Update(4*J*ddPII(3),CofF,1.0);
+
+  // d²P/d(detF) dF = d²P/dF d(detF)
+  // = 4*J*d^2 \Psi /dI_1 dI_3 \mat{F}
+  LINALG::Matrix<9,1> FreDFJ (true);
+  FreDFJ.Update(4*J*ddPII(4),dfgrd,1.0);
+
+  // Sort values in Frechet Derivative
+
+  // FreD = [FreDFF   FreDcFF    FreDFJ
+  //         FreDcFF  FreDcFcF   FreDcFJ
+  //         FreDFJ   FreDcFJ    FreDJJ]
+  for (int i=0; i<9; i++)
+    for (int j=0; j<9; j++)
+    {
+      FreD(i,j) = FreDFF(i,j);
+      FreD(i,j+9) = FreDcFF(i,j);
+      FreD(i+9,j) = FreDcFF(i,j);
+      FreD(i+9,j+9) = FreDcFcF(i,j);
+    }
+
+  for (int i=0; i<9; i++)
+  {
+    FreD(i+9,18) = FreDcFJ(i);
+    FreD(18,i+9) = FreDcFJ(i);
+    FreD(i,18) = FreDFJ(i);
+    FreD(18,i) = FreDFJ(i);
+  }
+
+  FreD(18,18) = FreDJJ;
+
+  // EigenValues of Frechet Derivative
+  LINALG::Matrix<19,19> EWFreD (true); // EW on diagonal
+  LINALG::Matrix<19,19> EVFreD (true);
+  LINALG::SYEV(FreD,EWFreD,EVFreD);
+
+  // Just positive EigenValues --> System is polyconvex
+  for (int i=0; i<19; i++)
+    for (int j=0; j<19; j++)
+      if (i==j) // values on diagonal = EigenValues
+        if (EWFreD(i,i) < (-1.0e-10*EWFreD.NormInf())) // do not test < 0, but reasonable small value
+        {
+          std::cout<<"\nWARNING: Your system is not polyconvex!"<<std::endl;
+          std::cout<<"Polyconvexity fails at: Element-Id: "<< eleGID <<" and Gauß-Point: "<< params.get<int>("gp") <<std::endl;
+          std::cout<<"Eigenvalues of the Frechet Derivative are: "<<EWFreD<<std::endl;
+        }
+
+return ;
 }
