@@ -586,6 +586,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_coupblatzko.cpp
   src/drt_matelast/elast_couplogneohooke.cpp
   src/drt_matelast/elast_coupSaintVenantKirchhoff.cpp
+  src/drt_matelast/elast_coupsimopister.cpp
   src/drt_matelast/elast_couplogmixneohooke.cpp
   src/drt_matelast/elast_coupexppol.cpp
   src/drt_matelast/elast_coupneohooke.cpp

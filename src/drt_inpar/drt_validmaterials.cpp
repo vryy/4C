@@ -1124,6 +1124,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
+  // Simo-Pister type material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupSimoPister",
+                                            "Simo-Pister type material",
+                                            INPAR::MAT::mes_coupsimopister));
+
+    AddNamedReal(m,"MUE","material constant");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*--------------------------------------------------------------------*/
   // logarithmic mixed neo-Hooke material
   {
     Teuchos::RCP<MaterialDefinition> m

@@ -3,7 +3,7 @@
 \file inpar_material.H
 
 <pre>
-Maintainer: Burkhard Bornemann
+\maintainer Burkhard Bornemann
             bornemann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -134,7 +134,8 @@ namespace INPAR
       mes_coupmooneyrivlin,                    ///< Mooney-Rivlin  material as hyperelastic potential summand
       mes_coupmyocard,                         ///< isotropic viscous contribution of myocardial matrix
       mes_coupneohooke,                        ///< Neo-Hooke material as hyperelastic potential summand
-      mes_coupSVK,                             ///<Saint-Venant-Kirchhoff material
+      mes_coupSVK,                             ///< Saint-Venant-Kirchhoff material
+      mes_coupsimopister,                      ///< Simo-Pister type material
       mes_coupvarga,                           ///< isotropic Varga material
       mes_genmax,                              ///< viscous contribution according to SLS-Model
       mes_iso1pow,                             ///< isochoric general power hyperelastic potential summand for modinv I

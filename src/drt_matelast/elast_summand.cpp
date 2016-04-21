@@ -5,7 +5,7 @@
 \brief Interface class for complex materials at Gauss points
 
 <pre>
-Maintainer: Burkhard Bornemann
+\maintainer Burkhard Bornemann
             bornemann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
@@ -32,6 +32,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_isomooneyrivlin.H"
 #include "elast_isotestmaterial.H"
 #include "elast_coupSaintVenantKirchhoff.H"
+#include "elast_coupsimopister.H"
 #include "elast_remodelfiber.H"
 #include "elast_volgrowthpenalty.H"
 #include "elast_volsussmanbathe.H"
@@ -92,6 +93,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::CoupSVK(curmat));
     MAT::ELASTIC::PAR::CoupSVK* params = static_cast<MAT::ELASTIC::PAR::CoupSVK*>(curmat->Parameter());
     return Teuchos::rcp(new CoupSVK(params));
+  }
+  case INPAR::MAT::mes_coupsimopister:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupSimoPister(curmat));
+    MAT::ELASTIC::PAR::CoupSimoPister* params = static_cast<MAT::ELASTIC::PAR::CoupSimoPister*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupSimoPister(params));
   }
   case INPAR::MAT::mes_couplogmixneohooke:
   {

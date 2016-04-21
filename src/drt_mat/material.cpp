@@ -5,7 +5,7 @@
 \brief Interface class for complex materials at Gauss points
 
 <pre>
-Maintainer: Lena Wiechert
+\maintainer Lena Wiechert
             yoshihara@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15303
@@ -530,6 +530,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_coup1pow:
   case INPAR::MAT::mes_coup2pow:
   case INPAR::MAT::mes_coupmooneyrivlin:
+  case INPAR::MAT::mes_coupsimopister:
   case INPAR::MAT::mes_isoexpopow:
   case INPAR::MAT::mes_isomooneyrivlin:
   case INPAR::MAT::mes_volsussmanbathe:
