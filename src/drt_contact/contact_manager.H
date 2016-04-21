@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
 \file contact_manager.H
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\maintainer Philipp Farah, Alexander Seitz
 
-*----------------------------------------------------------------------*/
+\brief BACI implementation of main class to control all contact
+
+*-----------------------------------------------------------------------*/
 #ifndef CONTACT_MANAGER_H
 #define CONTACT_MANAGER_H
 
@@ -113,6 +110,14 @@ public:
 
   */
   void PostprocessQuantities(IO::DiscretizationWriter& output);
+
+  /*!
+  \brief Reconnect Contact Element -- Parent Element Pointers
+
+  (As during the Restart the initial created structural elements are destructed and created again,
+  the pointer of these elements changes and therefore needs to be reconnected)
+  */
+  void ReconnectParentElements();
 
   /*!
   \brief Set Parent Elements for Poro Face Elements

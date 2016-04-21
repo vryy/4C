@@ -1061,36 +1061,40 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     // *********************************************************************
     // poroelastic contact
     // *********************************************************************
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
-        (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual &&
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") != INPAR::MORTAR::shape_petrovgalerkin))
-      dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
-
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
-      dserror("POROCONTACT: Parallel Redistribution not implemented yet!"); //Since we use Pointers to Parent Elements, which are not copied to other procs!
-
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult)
-      dserror("POROCONTACT: Use Lagrangean Strategy for poro contact!");
-
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none)
-      dserror("POROCONTACT: Friction for poro contact not implemented!");
-
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
-        DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true)
-      dserror("POROCONTACT: Nodal scaling not yet implemented for poro contact problems");
-
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) &&
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact,"SYSTEM") != INPAR::CONTACT::system_condensed)
-      dserror("POROCONTACT: System has to be condensed for poro contact!");
-
-    if ((problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem) && (dim != 3) && (dim != 2))
+    if (problemtype==prb_poroelast || problemtype==prb_fpsi || problemtype==prb_fpsi_xfem)
     {
       const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
-      if (DRT::INPUT::IntegralValue<int>(porodyn,"CONTACTNOPEN"))
-        dserror("POROCONTACT: PoroContact with no penetration just tested for 3d (and 2d)!");
+      if((DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual &&
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") != INPAR::MORTAR::shape_petrovgalerkin) &&
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_lagmult)
+        dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
+
+      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(mortar,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_lagmult)
+        dserror("POROCONTACT: Parallel Redistribution not implemented yet!"); //Since we use Pointers to Parent Elements, which are not copied to other procs!
+
+      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") != INPAR::CONTACT::solution_lagmult &&
+          DRT::INPUT::IntegralValue<int>(porodyn,"CONTACTNOPEN"))
+        dserror("POROCONTACT: Use Lagrangean Strategy for poro contact!");
+
+      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact,"FRICTION") != INPAR::CONTACT::friction_none &&
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_lagmult)
+        dserror("POROCONTACT: Friction for poro contact not implemented!");
+
+      if (DRT::INPUT::IntegralValue<int>(mortar,"LM_NODAL_SCALE")==true &&
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_lagmult)
+        dserror("POROCONTACT: Nodal scaling not yet implemented for poro contact problems");
+
+      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact,"SYSTEM") != INPAR::CONTACT::system_condensed &&
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_lagmult)
+        dserror("POROCONTACT: System has to be condensed for poro contact!");
+
+      if ( (dim != 3) && (dim != 2))
+      {
+        const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+        if (DRT::INPUT::IntegralValue<int>(porodyn,"CONTACTNOPEN"))
+          dserror("POROCONTACT: PoroContact with no penetration just tested for 3d (and 2d)!");
+      }
     }
 
   #ifdef MORTARTRAFO
@@ -1260,6 +1264,11 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output,
 void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
     Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
 {
+  //If Parent Elements are required, we need to reconnect them before contact restart!
+  INPAR::CONTACT::SolvingStrategy stype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(GetStrategy().Params(), "STRATEGY");
+  if (stype == INPAR::CONTACT::solution_nitsche || GetStrategy().Params().get<int>("PROBTYPE")==INPAR::CONTACT::poro)
+    ReconnectParentElements();
+
   // this is contact, thus we need the displacement state for restart
   // let strategy object do all the work
   GetStrategy().DoReadRestart(reader, dis);
@@ -1513,6 +1522,42 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   return;
 }
 
+/*----------------------------------------------------------------------------------------------*
+ |  Reconnect Contact Element -- Parent Element Pointers (required for restart)       ager 04/16|
+ *---------------------------------------------------------------------------------------------*/
+void CONTACT::CoManager::ReconnectParentElements()
+{
+  {
+    const Epetra_Map* elecolmap = discret_.ElementColMap();
+
+    CONTACT::CoAbstractStrategy& strategy = dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy());
+
+    for (int intidx = 0; intidx < (int) strategy.ContactInterfaces().size(); ++intidx)
+    {
+      const Epetra_Map* ielecolmap = strategy.ContactInterfaces()[intidx]->Discret().ElementColMap();
+
+      for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
+      {
+        int gid = ielecolmap->GID(i);
+
+        DRT::Element* ele = strategy.ContactInterfaces()[intidx]->Discret().gElement(gid);
+        if (!ele)
+          dserror("ERROR: Cannot find element with gid %", gid);
+        DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+
+        int volgid = faceele->ParentElementId();
+        if (elecolmap->LID(volgid) == -1) //Volume Discretization has not Element
+          dserror("CoManager::ReconnectParentElements: Element %d does not exist on this Proc!",volgid);
+
+        DRT::Element* vele = discret_.gElement(volgid);
+        if (!vele)
+          dserror("ERROR: Cannot find element with gid %", volgid);
+
+        faceele->SetParentMasterElement(vele,faceele->FaceParentNumber());
+      }
+    }
+  }
+}
 /*----------------------------------------------------------------------*
  |  Set Parent Elements for Poro Face Elements                ager 11/15|
  *----------------------------------------------------------------------*/
