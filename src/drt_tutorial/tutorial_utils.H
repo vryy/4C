@@ -20,6 +20,7 @@ namespace TUTORIAL {
 
 namespace UTILS {
 
+inline
 void DoDirichletCond(LINALG::Matrix<7,7>* stiff, LINALG::Matrix<7,1>* RHS, LINALG::Matrix<7,1>* inc, LINALG::Matrix<7,1>* disp, LINALG::Matrix<7,1>* freact, LINALG::Matrix<7,1>* dirichcond)
 {
   // do dirichlet
@@ -47,6 +48,8 @@ void DoDirichletCond(LINALG::Matrix<7,7>* stiff, LINALG::Matrix<7,1>* RHS, LINAL
 }; // DoDirichletCond
 
 
+
+  inline
   void DoNeumannCond(LINALG::Matrix<7,1>* RHS, LINALG::Matrix<7,1>* neumanncond)
   {
     // do neumann
@@ -61,6 +64,8 @@ void DoDirichletCond(LINALG::Matrix<7,7>* stiff, LINALG::Matrix<7,1>* RHS, LINAL
   }; // DoNeumannCond
 
 
+
+  inline
   std::map<int, ELEMENTS::TutorialElement* >* BuildDiscretization(const int numberofelements, LINALG::Matrix<6,1> E, LINALG::Matrix<7,1> X)
   {
     // build map containing element id and pointer to element
