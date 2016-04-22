@@ -3,10 +3,8 @@
 \brief evaluation of impedance vascular bc
 
 <pre>
-Maintainer: Christiane Förster
-            foerster@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
+\maintainer  Moritz Thon
+             thon@mhpc.mw.tum.de
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -1913,7 +1911,7 @@ void FLD::UTILS::FluidImpedanceBc::interpolate(const Teuchos::RCP<const std::vec
   //                 => index2 = ----- index1
   //                              dt2
   // -------------------------------------------------------------------
-  index2 = int(double(index1)*(dt1/dt2));
+  index2 = int(double(index1)*(dt1/dt2)+1.0e-14);
 
 }//FLD::UTILS::FluidImpedanceBc::interpolate
 
