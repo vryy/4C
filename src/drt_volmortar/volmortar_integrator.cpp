@@ -2,7 +2,7 @@
 \file volmortar_integrator.cpp
 
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -251,7 +251,9 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
     Teuchos::RCP<const DRT::Discretization> Adis,
     Teuchos::RCP<const DRT::Discretization> Bdis,
     int dofseta,
-    int dofsetb)
+    int dofsetb,
+    const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
+    const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap)
 {
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -317,7 +319,9 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             Adis,
             Bdis,
             dofseta,
-            dofsetb);
+            dofsetb,
+            PAB_dofrowmap,
+            PAB_dofcolmap);
 
         break;
       }
@@ -341,7 +345,9 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             Adis,
             Bdis,
             dofseta,
-            dofsetb);
+            dofsetb,
+            PAB_dofrowmap,
+            PAB_dofcolmap);
 
         break;
       }
@@ -365,7 +371,9 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             Adis,
             Bdis,
             dofseta,
-            dofsetb);
+            dofsetb,
+            PAB_dofrowmap,
+            PAB_dofcolmap);
 
         break;
       }
@@ -389,7 +397,9 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             Adis,
             Bdis,
             dofseta,
-            dofsetb);
+            dofsetb,
+            PAB_dofrowmap,
+            PAB_dofcolmap);
 
         break;
       }
@@ -413,8 +423,9 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             Adis,
             Bdis,
             dofseta,
-            dofsetb);
-
+            dofsetb,
+            PAB_dofrowmap,
+            PAB_dofcolmap);
         break;
       }
       //************************************************
@@ -440,7 +451,9 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             Adis,
             Bdis,
             dofseta,
-            dofsetb);
+            dofsetb,
+            PAB_dofrowmap,
+            PAB_dofcolmap);
 
         break;
       }
@@ -464,7 +477,9 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             Adis,
             Bdis,
             dofseta,
-            dofsetb);
+            dofsetb,
+            PAB_dofrowmap,
+            PAB_dofcolmap);
 
         break;
       }
@@ -488,7 +503,9 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             Adis,
             Bdis,
             dofseta,
-            dofsetb);
+            dofsetb,
+            PAB_dofrowmap,
+            PAB_dofcolmap);
 
         break;
       }
@@ -512,7 +529,9 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             Adis,
             Bdis,
             dofseta,
-            dofsetb);
+            dofsetb,
+            PAB_dofrowmap,
+            PAB_dofcolmap);
 
         break;
       }
@@ -536,7 +555,9 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
             Adis,
             Bdis,
             dofseta,
-            dofsetb);
+            dofsetb,
+            PAB_dofrowmap,
+            PAB_dofcolmap);
 
         break;
       }
@@ -597,7 +618,9 @@ bool VOLMORTAR::VolMortarEleBasedGP(
     Teuchos::RCP<const DRT::Discretization> Adis,
     Teuchos::RCP<const DRT::Discretization> Bdis,
     int dofseta,
-    int dofsetb)
+    int dofsetb,
+    const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
+    const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap)
 {
   //! ns_: number of slave element nodes
   static const int ns_ = DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
@@ -657,15 +680,77 @@ bool VOLMORTAR::VolMortarEleBasedGP(
     if (cnode->Owner() != Adis->Comm().MyPID())
       continue;
 
-    int nsdof=Adis->NumDof(dofseta,cnode);
+    const int nsdof=Adis->NumDof(dofseta,cnode);
+
+//    if (true)//(shapefcn_ == INPAR::MORTAR::shape_standard)
+//    {
+//      for (int j=0; j<ns_; ++j)
+//      {
+//        DRT::Node* cnode = sele.Nodes()[j];
+//        int nsdof=Adis->NumDof(dofseta,cnode);
+//
+//        //loop over slave dofs
+//        for (int jdof=0;jdof<nsdof;++jdof)
+//        {
+//          int row = Adis->Dof(dofseta,cnode,jdof);
+//
+//          ////////////////////////////////////////
+//          // integrate M
+//          for (int k=0; k<nm_; ++k)
+//          {
+//            DRT::Node* mnode = mele->Nodes()[k];
+//            int nmdof=Bdis->NumDof(dofsetb,mnode);
+//
+//            for (int kdof=0;kdof<nmdof;++kdof)
+//            {
+//              int col = Bdis->Dof(dofsetb,mnode,kdof);
+//
+//              // multiply the two shape functions
+//              double prod = sval_A(j)*mval_A(k)*jac*wgt;
+//
+//              // dof to dof
+//              if (jdof==kdof)
+//              {
+//                if(abs(prod)>VOLMORTARINTTOL) M.Assemble(prod, row, col);
+//              }
+//            }
+//          }
+//
+//          ////////////////////////////////////////
+//          // integrate D
+//          for (int k=0; k<ns_; ++k)
+//          {
+//            DRT::Node* snode = sele.Nodes()[k];
+//            int nddof=Adis->NumDof(dofseta,snode);
+//
+//            for (int kdof=0;kdof<nddof;++kdof)
+//            {
+//              int col = Adis->Dof(dofseta,snode,kdof);
+//
+//              // multiply the two shape functions
+//              double prod = sval_A(j)*sval_A(k)*jac*wgt;
+//
+//              // dof to dof
+//              if (jdof==kdof)
+//              {
+//                if(abs(prod)>VOLMORTARINTTOL) D.Assemble(prod, row, col);
+//              }
+//            }
+//          }
+//        }
+//      }
+//    }
 
     //loop over slave dofs
     for (int jdof=0;jdof<nsdof;++jdof)
     {
-      int row = Adis->Dof(dofseta,cnode,jdof);
+      const int row = Adis->Dof(dofseta,cnode,jdof);
+
+      if(not PAB_dofrowmap->MyGID(row))
+        continue;
 
       // integrate D
-      double prod2 = lmval_A(j)*sval_A(j)*jac*wgt;
+      const double prod2 = lmval_A(j)*sval_A(j)*jac*wgt;
       if (abs(prod2)>VOLMORTARINTTOL)
         D.Assemble(prod2, row, row);
 
@@ -673,10 +758,13 @@ bool VOLMORTAR::VolMortarEleBasedGP(
       for (int k=0; k<nm_; ++k)
       {
         DRT::Node* mnode = mele->Nodes()[k];
-        int col = Bdis->Dof(dofsetb,mnode,jdof);
+        const int col = Bdis->Dof(dofsetb,mnode,jdof);
+
+        if(not PAB_dofcolmap->MyGID(col))
+          continue;
 
         // multiply the two shape functions
-        double prod = lmval_A(j)*mval_A(k)*jac*wgt;
+        const double prod = lmval_A(j)*mval_A(k)*jac*wgt;
 
         if (abs(prod)>VOLMORTARINTTOL)
           M.Assemble(prod, row, col);
@@ -905,7 +993,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
      LINALG::SparseMatrix& dmatrix,
      LINALG::SparseMatrix& mmatrix,
      Teuchos::RCP<const DRT::Discretization> slavedis,
-     Teuchos::RCP<const DRT::Discretization> masterdis)
+     Teuchos::RCP<const DRT::Discretization> masterdis,
+     int sdofset,
+     int mdofset)
 {
   // create empty vectors for shape fct. evaluation
   LINALG::Matrix<ns_,1> sval;
@@ -954,23 +1044,23 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
       for (int j=0; j<ns_; ++j)
       {
         DRT::Node* cnode = sele.Nodes()[j];
-        int nsdof=slavedis->NumDof(1,cnode);
+        int nsdof=slavedis->NumDof(sdofset,cnode);
 
         //loop over slave dofs
         for (int jdof=0;jdof<nsdof;++jdof)
         {
-          int row = slavedis->Dof(1,cnode,jdof);
+          int row = slavedis->Dof(sdofset,cnode,jdof);
 
           ////////////////////////////////////////
           // integrate M
           for (int k=0; k<nm_; ++k)
           {
             DRT::Node* mnode = mele.Nodes()[k];
-            int nmdof=masterdis->NumDof(0,mnode);
+            int nmdof=masterdis->NumDof(mdofset,mnode);
 
             for (int kdof=0;kdof<nmdof;++kdof)
             {
-              int col = masterdis->Dof(0,mnode,kdof);
+              int col = masterdis->Dof(mdofset,mnode,kdof);
 
               // multiply the two shape functions
               double prod = lmval(j)*mval(k)*jac*wgt;
@@ -988,11 +1078,11 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
           for (int k=0; k<ns_; ++k)
           {
             DRT::Node* snode = sele.Nodes()[k];
-            int nddof=slavedis->NumDof(1,snode);
+            int nddof=slavedis->NumDof(sdofset,snode);
 
             for (int kdof=0;kdof<nddof;++kdof)
             {
-              int col = slavedis->Dof(1,snode,kdof);
+              int col = slavedis->Dof(sdofset,snode,kdof);
 
               // multiply the two shape functions
               double prod = lmval(j)*sval(k)*jac*wgt;
@@ -1016,23 +1106,23 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells2D(
         if (cnode->Owner() != slavedis->Comm().MyPID())
           continue;
 
-        int nsdof=slavedis->NumDof(1,cnode);
+        int nsdof=slavedis->NumDof(sdofset,cnode);
 
         //loop over slave dofs
         for (int jdof=0;jdof<nsdof;++jdof)
         {
-          int row = slavedis->Dof(1,cnode,jdof);
+          int row = slavedis->Dof(sdofset,cnode,jdof);
 
           ////////////////////////////////////////////////////////////////
           // integrate M and D
           for (int k=0; k<nm_; ++k)
           {
             DRT::Node* mnode = mele.Nodes()[k];
-            int nmdof=masterdis->NumDof(0,mnode);
+            int nmdof=masterdis->NumDof(mdofset,mnode);
 
             for (int kdof=0;kdof<nmdof;++kdof)
             {
-              int col = masterdis->Dof(0,mnode,kdof);
+              int col = masterdis->Dof(mdofset,mnode,kdof);
 
               // multiply the two shape functions
               double prod = lmval(j)*mval(k)*jac*wgt;
@@ -1068,7 +1158,11 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D(
     LINALG::SparseMatrix& dmatrix_B,
     LINALG::SparseMatrix& mmatrix_B,
     Teuchos::RCP<const DRT::Discretization> Adis,
-    Teuchos::RCP<const DRT::Discretization> Bdis)
+    Teuchos::RCP<const DRT::Discretization> Bdis,
+    int sdofset_A,
+    int mdofset_A,
+    int sdofset_B,
+    int mdofset_B)
 {
   // create empty vectors for shape fct. evaluation
   LINALG::Matrix<ns_,1> sval_A;
@@ -1124,22 +1218,22 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D(
     for (int j=0;j<ns_;++j)
     {
       DRT::Node* cnode = Aele.Nodes()[j];
-      int nsdof=Adis->NumDof(1,cnode);
+      int nsdof=Adis->NumDof(sdofset_A,cnode);
 
       //loop over slave dofs
       for (int jdof=0;jdof<nsdof;++jdof)
       {
-        int row = Adis->Dof(1,cnode,jdof);
+        int row = Adis->Dof(sdofset_A,cnode,jdof);
 
         // integrate M and D
         for (int k=0; k<nm_; ++k)
         {
           DRT::Node* mnode = Bele.Nodes()[k];
-          int nmdof=Bdis->NumDof(0,mnode);
+          int nmdof=Bdis->NumDof(mdofset_A,mnode);
 
           for (int kdof=0;kdof<nmdof;++kdof)
           {
-            int col = Bdis->Dof(0,mnode,kdof);
+            int col = Bdis->Dof(mdofset_A,mnode,kdof);
 
             // multiply the two shape functions
             double prod = lmval_A(j)*mval_A(k)*jac*wgt;
@@ -1160,22 +1254,22 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D(
     for (int j=0;j<nm_;++j)
     {
       DRT::Node* cnode = Bele.Nodes()[j];
-      int nsdof=Bdis->NumDof(1,cnode);
+      int nsdof=Bdis->NumDof(sdofset_B,cnode);
 
       //loop over slave dofs
       for (int jdof=0;jdof<nsdof;++jdof)
       {
-        int row = Bdis->Dof(1,cnode,jdof);
+        int row = Bdis->Dof(sdofset_B,cnode,jdof);
 
         // integrate M and D
         for (int k=0; k<ns_; ++k)
         {
           DRT::Node* mnode = Aele.Nodes()[k];
-          int nmdof=Adis->NumDof(0,mnode);
+          int nmdof=Adis->NumDof(mdofset_B,mnode);
 
           for (int kdof=0;kdof<nmdof;++kdof)
           {
-            int col = Adis->Dof(0,mnode,kdof);
+            int col = Adis->Dof(mdofset_B,mnode,kdof);
 
             // multiply the two shape functions
             double prod = lmval_B(j)*sval_A(k)*jac*wgt;
@@ -1211,7 +1305,11 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D_DirectD
     LINALG::SparseMatrix& dmatrix_B,
     LINALG::SparseMatrix& mmatrix_B,
     Teuchos::RCP<const DRT::Discretization> Adis,
-    Teuchos::RCP<const DRT::Discretization> Bdis)
+    Teuchos::RCP<const DRT::Discretization> Bdis,
+    int sdofset_A,
+    int mdofset_A,
+    int sdofset_B,
+    int mdofset_B)
 {
   // create empty vectors for shape fct. evaluation
   LINALG::Matrix<ns_,1> sval_A;
@@ -1271,22 +1369,22 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D_DirectD
     for (int j=0;j<ns_;++j)
     {
       DRT::Node* cnode = Aele.Nodes()[j];
-      int nsdof=Adis->NumDof(1,cnode);
+      int nsdof=Adis->NumDof(sdofset_A,cnode);
 
       //loop over slave dofs
       for (int jdof=0;jdof<nsdof;++jdof)
       {
-        int row = Adis->Dof(1,cnode,jdof);
+        int row = Adis->Dof(sdofset_A,cnode,jdof);
 
         // integrate M and D
         for (int k=0; k<nm_; ++k)
         {
           DRT::Node* mnode = Bele.Nodes()[k];
-          int nmdof=Bdis->NumDof(0,mnode);
+          int nmdof=Bdis->NumDof(mdofset_A,mnode);
 
           for (int kdof=0;kdof<nmdof;++kdof)
           {
-            int col = Bdis->Dof(0,mnode,kdof);
+            int col = Bdis->Dof(mdofset_A,mnode,kdof);
 
             // multiply the two shape functions
             double prod = lmval_A(j)*mval_A(k)*jac*weight_out;
@@ -1308,22 +1406,22 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateCells3D_DirectD
     for (int j=0;j<nm_;++j)
     {
       DRT::Node* cnode = Bele.Nodes()[j];
-      int nsdof=Bdis->NumDof(1,cnode);
+      int nsdof=Bdis->NumDof(sdofset_B,cnode);
 
       //loop over slave dofs
       for (int jdof=0;jdof<nsdof;++jdof)
       {
-        int row = Bdis->Dof(1,cnode,jdof);
+        int row = Bdis->Dof(sdofset_B,cnode,jdof);
 
         // integrate M and D
         for (int k=0; k<ns_; ++k)
         {
           DRT::Node* mnode = Aele.Nodes()[k];
-          int nmdof=Adis->NumDof(0,mnode);
+          int nmdof=Adis->NumDof(mdofset_B,mnode);
 
           for (int kdof=0;kdof<nmdof;++kdof)
           {
-            int col = Adis->Dof(0,mnode,kdof);
+            int col = Adis->Dof(sdofset_B,mnode,kdof);
 
             // multiply the two shape functions
             double prod = lmval_B(j)*sval_A(k)*jac*weight_out;
@@ -1355,7 +1453,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
     LINALG::SparseMatrix& dmatrix_A,
     LINALG::SparseMatrix& mmatrix_A,
     Teuchos::RCP<const DRT::Discretization> Adis,
-    Teuchos::RCP<const DRT::Discretization> Bdis)
+    Teuchos::RCP<const DRT::Discretization> Bdis,
+    int dofsetA,
+    int dofsetB)
 {
   // create empty vectors for shape fct. evaluation
   LINALG::Matrix<ns_,1> sval_A;
@@ -1440,12 +1540,12 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
         if (cnode->Owner() != Adis->Comm().MyPID())
           continue;
 
-        int nsdof=Adis->NumDof(1,cnode);
+        int nsdof=Adis->NumDof(dofsetA,cnode);
 
         //loop over slave dofs
         for (int jdof=0;jdof<nsdof;++jdof)
         {
-          int row = Adis->Dof(1,cnode,jdof);
+          int row = Adis->Dof(dofsetA,cnode,jdof);
 
           // integrate D
           double prod2 = lmval_A(j)*sval_A(j)*jac*wgt;
@@ -1456,7 +1556,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_ADis
           for (int k=0; k<nm_; ++k)
           {
             DRT::Node* mnode = Bele->Nodes()[k];
-            int col = Bdis->Dof(0,mnode,jdof);
+            int col = Bdis->Dof(dofsetB,mnode,jdof);
 
             // multiply the two shape functions
             double prod = lmval_A(j)*mval_A(k)*jac*wgt;
@@ -1484,7 +1584,9 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
     LINALG::SparseMatrix& dmatrix_B,
     LINALG::SparseMatrix& mmatrix_B,
     Teuchos::RCP<const DRT::Discretization> Adis,
-    Teuchos::RCP<const DRT::Discretization> Bdis)
+    Teuchos::RCP<const DRT::Discretization> Bdis,
+    int dofsetA,
+    int dofsetB)
 {
   // create empty vectors for shape fct. evaluation
   LINALG::Matrix<ns_,1> mval_A;
@@ -1568,12 +1670,12 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
         if (cnode->Owner() != Bdis->Comm().MyPID())
           continue;
 
-        int nsdof=Bdis->NumDof(1,cnode);
+        int nsdof=Bdis->NumDof(dofsetB,cnode);
 
         //loop over slave dofs
         for (int jdof=0;jdof<nsdof;++jdof)
         {
-          int row = Bdis->Dof(1,cnode,jdof);
+          int row = Bdis->Dof(dofsetB,cnode,jdof);
 
           // integrate D
           double prod2 = lmval_B(j)*sval_B(j)*jac*wgt;
@@ -1584,7 +1686,7 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEleBased3D_BDis
           for (int k=0; k<ns_; ++k)
           {
             DRT::Node* mnode = Aele->Nodes()[k];
-            int col = Adis->Dof(0,mnode,jdof);
+            int col = Adis->Dof(dofsetA,mnode,jdof);
 
             // multiply the two shape functions
             double prod = lmval_B(j)*mval_A(k)*jac*wgt;
@@ -1618,7 +1720,11 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEle3D(
      LINALG::SparseMatrix& dmatrix_B,
      LINALG::SparseMatrix& mmatrix_B,
      Teuchos::RCP<const DRT::Discretization> Adis,
-     Teuchos::RCP<const DRT::Discretization> Bdis)
+     Teuchos::RCP<const DRT::Discretization> Bdis,
+     int sdofset_A,
+     int mdofset_A,
+     int sdofset_B,
+     int mdofset_B)
 {
   // create empty vectors for shape fct. evaluation
   LINALG::Matrix<ns_,1> sval_A;
@@ -1680,22 +1786,22 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEle3D(
     for (int j=0;j<ns_;++j)
     {
       DRT::Node* cnode = Aele.Nodes()[j];
-      int nsdof=Adis->NumDof(1,cnode);
+      int nsdof=Adis->NumDof(sdofset_A,cnode);
 
       //loop over slave dofs
       for (int jdof=0;jdof<nsdof;++jdof)
       {
-        int row = Adis->Dof(1,cnode,jdof);
+        int row = Adis->Dof(sdofset_A,cnode,jdof);
 
         // integrate M and D
         for (int k=0; k<nm_; ++k)
         {
           DRT::Node* mnode = Bele.Nodes()[k];
-          int nmdof=Bdis->NumDof(0,mnode);
+          int nmdof=Bdis->NumDof(mdofset_A,mnode);
 
           for (int kdof=0;kdof<nmdof;++kdof)
           {
-            int col = Bdis->Dof(0,mnode,kdof);
+            int col = Bdis->Dof(mdofset_A,mnode,kdof);
 
             // multiply the two shape functions
             double prod = lmval_A(j)*mval_A(k)*jac*wgt;
@@ -1716,22 +1822,22 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::IntegrateEle3D(
     for (int j=0;j<nm_;++j)
     {
       DRT::Node* cnode = Bele.Nodes()[j];
-      int nsdof=Bdis->NumDof(1,cnode);
+      int nsdof=Bdis->NumDof(sdofset_B,cnode);
 
       //loop over slave dofs
       for (int jdof=0;jdof<nsdof;++jdof)
       {
-        int row = Bdis->Dof(1,cnode,jdof);
+        int row = Bdis->Dof(sdofset_B,cnode,jdof);
 
         // integrate M and D
         for (int k=0; k<ns_; ++k)
         {
           DRT::Node* mnode = Aele.Nodes()[k];
-          int nmdof=Adis->NumDof(0,mnode);
+          int nmdof=Adis->NumDof(mdofset_B,mnode);
 
           for (int kdof=0;kdof<nmdof;++kdof)
           {
-            int col = Adis->Dof(0,mnode,kdof);
+            int col = Adis->Dof(mdofset_B,mnode,kdof);
 
             // multiply the two shape functions
             double prod = lmval_B(j)*sval_A(k)*jac*wgt;
@@ -1975,7 +2081,8 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
     Teuchos::RCP<const DRT::Discretization> elediscret,
     std::vector<int>& foundeles,
     std::pair<int,int>& dofset,
-    std::vector<int>& coupleddof)
+    const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
+    const Teuchos::RCP<const Epetra_Map>& P_dofcolmap)
 {
   // check ownership
   if (node->Owner() != nodediscret->Comm().MyPID())
@@ -2013,7 +2120,8 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           AuxXi,
           nodepos,
           dofset,
-          coupleddof);
+          P_dofrowmap,
+          P_dofcolmap);
       break;
     }
     case DRT::Element::tri6:
@@ -2031,7 +2139,8 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           AuxXi,
           nodepos,
           dofset,
-          coupleddof);
+          P_dofrowmap,
+          P_dofcolmap);
       break;
     }
     case DRT::Element::quad4:
@@ -2049,7 +2158,8 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           AuxXi,
           nodepos,
           dofset,
-          coupleddof);
+          P_dofrowmap,
+          P_dofcolmap);
       break;
     }
     case DRT::Element::quad8:
@@ -2067,7 +2177,8 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           AuxXi,
           nodepos,
           dofset,
-          coupleddof);
+          P_dofrowmap,
+          P_dofcolmap);
       break;
     }
     case DRT::Element::quad9:
@@ -2085,7 +2196,8 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           AuxXi,
           nodepos,
           dofset,
-          coupleddof);
+          P_dofrowmap,
+          P_dofcolmap);
       break;
     }
 
@@ -2105,7 +2217,8 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           AuxXi,
           nodepos,
           dofset,
-          coupleddof);
+          P_dofrowmap,
+          P_dofcolmap);
       break;
     }
     case DRT::Element::hex20:
@@ -2123,7 +2236,8 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           AuxXi,
           nodepos,
           dofset,
-          coupleddof);
+          P_dofrowmap,
+          P_dofcolmap);
       break;
     }
     case DRT::Element::hex27:
@@ -2141,7 +2255,8 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           AuxXi,
           nodepos,
           dofset,
-          coupleddof);
+          P_dofrowmap,
+          P_dofcolmap);
       break;
     }
     case DRT::Element::tet4:
@@ -2159,7 +2274,8 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           AuxXi,
           nodepos,
           dofset,
-          coupleddof);
+          P_dofrowmap,
+          P_dofcolmap);
       break;
     }
     case DRT::Element::tet10:
@@ -2177,7 +2293,8 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
           AuxXi,
           nodepos,
           dofset,
-          coupleddof);
+          P_dofrowmap,
+          P_dofcolmap);
       break;
     }
     default:
@@ -2216,7 +2333,8 @@ bool VOLMORTAR::ConsInterpolatorEval(
     double* AuxXi,
     double* nodepos,
     std::pair<int,int>& dofset,
-    std::vector<int>& coupleddof)
+    const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
+    const Teuchos::RCP<const Epetra_Map>& P_dofcolmap)
 {
   //! ns_: number of slave element nodes
   static const int n_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -2266,17 +2384,20 @@ bool VOLMORTAR::ConsInterpolatorEval(
   //loop over slave dofs
   for (int jdof=0;jdof<nsdof;++jdof)
   {
-    if(coupleddof[jdof]==0)
-      continue;
+    const int row = nodediscret->Dof(dofset.first,node,jdof);
 
-    int row = nodediscret->Dof(dofset.first,node,jdof);
+    if(not P_dofrowmap->MyGID(row))
+      continue;
 
     for (int k=0; k<ele->NumNode(); ++k)
     {
       DRT::Node* bnode = ele->Nodes()[k];
-      int col = elediscret->Dof(dofset.second,bnode,jdof);
+      const int col = elediscret->Dof(dofset.second,bnode,jdof);
 
-      double val2=val(k);
+      if(not P_dofcolmap->MyGID(col))
+        continue;
+
+      const double val2=val(k);
       //if (abs(val2)>VOLMORTARINTTOL)
         pmatrix.Assemble(val2, row, col);
     }

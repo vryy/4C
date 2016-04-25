@@ -2,7 +2,7 @@
  \file volmortar_coupling.cpp
 
  <pre>
- Maintainer: Philipp Farah
+\maintainer Philipp Farah
              farah@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15257
@@ -69,13 +69,12 @@ VOLMORTAR::VolMortarCoupl::VolMortarCoupl(
   //check
   if (not dis1_->Filled() or not dis2_->Filled())
     dserror("ERROR: FillComplete() has to be called on both discretizations before setup of VolMortarCoupl");
-  if ((dis1_->NumDofSets() == 1) or (dis2_->NumDofSets() == 1))
-    dserror("ERROR: Both discretizations need to own at least two dofsets for mortar coupling!");
 
   // its the same communicator for all discr.
   comm_ = Teuchos::rcp(dis1->Comm().Clone());
   myrank_ = comm_->MyPID();
 
+  // define dof sets
   if(dofset21 == NULL)
     dofset21_ = std::pair<int,int>(1,0);
   else
@@ -86,29 +85,65 @@ VOLMORTAR::VolMortarCoupl::VolMortarCoupl(
   else
     dofset12_ = *dofset12;
 
-  if(coupleddof12 == NULL)
-  {
-    int numdof = dis2_->NumDof(dofset12_.second,dis2_->lColNode(0));
-    coupleddof12_ = std::vector<int>(numdof,1);
-  }
-  else
-    coupleddof12_ = *coupleddof12;
+  const int* rownodes1   = dis1->NodeRowMap()->MyGlobalElements();
+  const int  numrownode1 = dis1->NodeRowMap()->NumMyElements();
 
-  if(coupleddof21 == NULL)
-  {
-    int numdof = dis1_->NumDof(dofset21_.second,dis1_->lColNode(0));
-    coupleddof21_ = std::vector<int>(numdof,1);
-  }
-  else
-    coupleddof21_ = *coupleddof21;
+  const int* rownodes2   = dis2->NodeRowMap()->MyGlobalElements();
+  const int  numrownode2 = dis2->NodeRowMap()->NumMyElements();
 
-  // define row/col map of projection operators
+  // determine row map of projection operators
+  BuildMaps(
+      dis1,
+      P12_dofrowmap_,
+      coupleddof12,
+      rownodes1,
+      numrownode1,
+      dofset12_.first);
+  BuildMaps(
+      dis2,
+      P21_dofrowmap_,
+      coupleddof21,
+      rownodes2,
+      numrownode2,
+      dofset21_.first);
 
-  BuildMaps(dis1, P12_dofrowmap_, coupleddof12_,dofset12_.first);
-  BuildMaps(dis2, P12_dofcolmap_, coupleddof12_,dofset12_.second);
+  // determine domain map of projection operators
+  BuildMaps(
+      dis1,
+      P21_dofdomainmap_,
+      coupleddof21,
+      rownodes1,
+      numrownode1,
+      dofset21_.second);
+  BuildMaps(
+      dis2,
+      P12_dofdomainmap_,
+      coupleddof12,
+      rownodes2,
+      numrownode2,
+      dofset12_.second);
 
-  BuildMaps(dis2, P21_dofrowmap_, coupleddof21_,dofset21_.first);
-  BuildMaps(dis1, P21_dofcolmap_, coupleddof21_,dofset21_.second);
+  const int* colnodes1   = dis1->NodeColMap()->MyGlobalElements();
+  const int  numcolnode1 = dis1->NodeColMap()->NumMyElements();
+
+  const int* colnodes2   = dis2->NodeColMap()->MyGlobalElements();
+  const int  numcolnode2 = dis2->NodeColMap()->NumMyElements();
+
+  // determine column map of projection operators
+  BuildMaps(
+      dis1,
+      P21_dofcolmap_,
+      coupleddof21,
+      colnodes1,
+      numcolnode1,
+      dofset21_.second);
+  BuildMaps(
+      dis2,
+      P12_dofcolmap_,
+      coupleddof12,
+      colnodes2,
+      numcolnode2,
+      dofset12_.second);
 
   // get required parameter list
   ReadAndCheckInput();
@@ -136,26 +171,44 @@ VOLMORTAR::VolMortarCoupl::VolMortarCoupl(
 void VOLMORTAR::VolMortarCoupl::BuildMaps(
     Teuchos::RCP<DRT::Discretization>& dis,
     Teuchos::RCP<const Epetra_Map>& dofmap,
-    std::vector<int>& coupleddof,
+    const std::vector<int>* coupleddof,
+    const int* nodes,
+    int numnode,
     int dofset
     )
 {
   std::vector<int> dofmapvec;
   std::map<int, std::vector<int> > dofs;
-  const int* nodes  = dis->NodeRowMap()->MyGlobalElements();
-  const int numnode = dis->NodeRowMap()->NumMyElements();
+
+  const bool couplalldofs = (coupleddof==NULL);
+
+  unsigned numcoupleddofs = 0;
+  if(not couplalldofs)
+  {
+    //count number of dofs per node that are coupled
+    for(unsigned j=0;j<coupleddof->size();++j)
+      if((*coupleddof)[j]==1)
+        numcoupleddofs++;
+  }
+  else
+    numcoupleddofs = dis->NumDof(dofset,dis->lRowNode(0));
 
   for (int i=0; i<numnode; ++i)
   {
     const DRT::Node* actnode = dis->gNode(nodes[i]);
 
     const std::vector<int> dof = dis->Dof(dofset,actnode);
-    if (coupleddof.size() > dof.size())
-      dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,coupleddof.size());
-    //copy(&dof[0], &dof[0]+numdof, back_inserter(dofmapvec));
-    for(unsigned j=0;j<coupleddof.size();++j)
-      if(coupleddof[j]==1)
-        dofmapvec.push_back(dof[j]);
+    if (numcoupleddofs > dof.size())
+      dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,numcoupleddofs);
+
+    for(unsigned j=0;j<dof.size();++j)
+    {
+      if(not couplalldofs)
+        if((*coupleddof)[j]==0)
+          continue;
+
+      dofmapvec.push_back(dof[j]);
+    }
   }
   // dof map is the original, unpermuted distribution of dofs
   dofmap = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, *comm_));
@@ -787,8 +840,8 @@ void VOLMORTAR::VolMortarCoupl::EvaluateConsistentInterpolation()
   /***********************************************************
    * Complete                                                *
    ***********************************************************/
-  P12_->Complete(*P12_dofcolmap_, *P12_dofrowmap_);
-  P21_->Complete(*P21_dofcolmap_, *P21_dofrowmap_);
+  P12_->Complete(*P12_dofdomainmap_, *P12_dofrowmap_);
+  P21_->Complete(*P21_dofdomainmap_, *P21_dofrowmap_);
 
   return;
 }
@@ -2144,7 +2197,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(
         static VolMortarIntegrator<DRT::Element::quad4, DRT::Element::quad4> integrator(
             Params());
         integrator.IntegrateCells2D(sele, mele, cells[q], *D1_,
-            *M12_, dis1_, dis2_);
+            *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
         break;
       }
       case DRT::Element::tri3:
@@ -2152,7 +2205,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(
         static VolMortarIntegrator<DRT::Element::quad4, DRT::Element::tri3> integrator(
             Params());
         integrator.IntegrateCells2D(sele, mele, cells[q], *D1_,
-            *M12_, dis1_, dis2_);
+            *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
         break;
       }
       default:
@@ -2173,7 +2226,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(
         static VolMortarIntegrator<DRT::Element::tri3, DRT::Element::quad4> integrator(
             Params());
         integrator.IntegrateCells2D(sele, mele, cells[q], *D1_,
-            *M12_, dis1_, dis2_);
+            *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
         break;
       }
       case DRT::Element::tri3:
@@ -2181,7 +2234,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(
         static VolMortarIntegrator<DRT::Element::tri3, DRT::Element::tri3> integrator(
             Params());
         integrator.IntegrateCells2D(sele, mele, cells[q], *D1_,
-            *M12_, dis1_, dis2_);
+            *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
         break;
       }
       default:
@@ -2214,7 +2267,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(
         static VolMortarIntegrator<DRT::Element::quad4, DRT::Element::quad4> integrator(
             Params());
         integrator.IntegrateCells2D(mele, sele, cells[q], *D2_,
-            *M21_, dis2_, dis1_);
+            *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
         break;
       }
       case DRT::Element::tri3:
@@ -2222,7 +2275,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(
         static VolMortarIntegrator<DRT::Element::quad4, DRT::Element::tri3> integrator(
             Params());
         integrator.IntegrateCells2D(mele, sele, cells[q], *D2_,
-            *M21_, dis2_, dis1_);
+            *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
         break;
       }
       default:
@@ -2243,7 +2296,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(
         static VolMortarIntegrator<DRT::Element::tri3, DRT::Element::quad4> integrator(
             Params());
         integrator.IntegrateCells2D(mele, sele, cells[q], *D2_,
-            *M21_, dis2_, dis1_);
+            *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
         break;
       }
       case DRT::Element::tri3:
@@ -2251,7 +2304,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate2D(
         static VolMortarIntegrator<DRT::Element::tri3, DRT::Element::tri3> integrator(
             Params());
         integrator.IntegrateCells2D(mele, sele, cells[q], *D2_,
-            *M21_, dis2_, dis1_);
+            *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
         break;
       }
       default:
@@ -2298,8 +2351,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex8> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::hex20:
@@ -2307,8 +2372,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex20> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::hex27:
@@ -2316,8 +2393,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex27> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::tet4:
@@ -2325,8 +2414,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet4> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::tet10:
@@ -2334,8 +2435,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet10> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       default:
@@ -2357,8 +2470,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex8> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::hex20:
@@ -2366,8 +2491,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex20> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::hex27:
@@ -2375,8 +2512,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex27> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::tet4:
@@ -2384,8 +2533,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet4> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::tet10:
@@ -2393,8 +2554,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet10> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       default:
@@ -2416,8 +2589,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex8> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::hex20:
@@ -2425,8 +2610,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex20> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::hex27:
@@ -2434,8 +2631,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex27> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::tet4:
@@ -2443,8 +2652,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet4> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::tet10:
@@ -2452,8 +2673,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet10> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       default:
@@ -2475,8 +2708,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex8> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::hex20:
@@ -2484,8 +2729,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex20> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::hex27:
@@ -2493,8 +2750,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex27> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::tet4:
@@ -2502,8 +2771,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet4> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::tet10:
@@ -2511,8 +2792,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet10> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       default:
@@ -2534,8 +2827,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex8> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::hex20:
@@ -2543,8 +2848,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex20> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::hex27:
@@ -2552,8 +2869,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex27> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::tet4:
@@ -2561,8 +2890,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet4> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::tet10:
@@ -2570,8 +2911,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
         static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet10> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
-        integrator.IntegrateCells3D(sele, mele, cells[q], *D1_,
-            *M12_, *D2_, *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       default:
@@ -2608,7 +2961,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   case DRT::Element::quad8:
@@ -2617,7 +2970,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   case DRT::Element::quad9:
@@ -2626,7 +2979,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   case DRT::Element::tri3:
@@ -2635,7 +2988,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   case DRT::Element::tri6:
@@ -2644,7 +2997,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   // 3D volume elements
@@ -2654,7 +3007,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   case DRT::Element::hex27:
@@ -2663,7 +3016,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   case DRT::Element::hex20:
@@ -2672,7 +3025,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   case DRT::Element::tet4:
@@ -2681,7 +3034,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   case DRT::Element::tet10:
@@ -2690,7 +3043,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
-        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second);
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   default:
@@ -2719,7 +3072,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   case DRT::Element::quad8:
@@ -2728,7 +3081,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   case DRT::Element::quad9:
@@ -2737,7 +3090,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   case DRT::Element::tri3:
@@ -2746,7 +3099,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   case DRT::Element::tri6:
@@ -2755,7 +3108,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   // 3D volume elements
@@ -2765,7 +3118,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   case DRT::Element::hex20:
@@ -2774,7 +3127,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   case DRT::Element::hex27:
@@ -2783,7 +3136,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   case DRT::Element::tet4:
@@ -2792,7 +3145,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   case DRT::Element::tet10:
@@ -2801,7 +3154,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
-        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second);
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   default:
@@ -2831,7 +3184,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixXA_,
-        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb);
+        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   case DRT::Element::tet4:
@@ -2840,7 +3193,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixXA_,
-        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb);
+        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   case DRT::Element::hex27:
@@ -2849,7 +3202,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixXA_,
-        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb);
+        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   case DRT::Element::hex20:
@@ -2858,7 +3211,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixXA_,
-        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb);
+        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   case DRT::Element::tet10:
@@ -2867,7 +3220,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixXA_,
-        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb);
+        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
   default:
@@ -2898,7 +3251,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixXB_,
-        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb);
+        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   case DRT::Element::tet4:
@@ -2907,7 +3260,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixXB_,
-        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb);
+        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   case DRT::Element::hex27:
@@ -2916,7 +3269,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixXB_,
-        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb);
+        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   case DRT::Element::hex20:
@@ -2925,7 +3278,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixXB_,
-        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb);
+        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   case DRT::Element::tet10:
@@ -2934,7 +3287,7 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixXB_,
-        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb);
+        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
   default:
@@ -2954,7 +3307,7 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P12(
     std::vector<int>& foundeles)
 {
   static ConsInterpolator interpolator;
-  interpolator.Interpolate(node, *P12_, dis1_, dis2_,foundeles,dofset12_,coupleddof12_);
+  interpolator.Interpolate(node, *P12_, dis1_, dis2_,foundeles,dofset12_,P12_dofrowmap_,P12_dofcolmap_);
 
   return;
 }
@@ -2967,7 +3320,7 @@ void VOLMORTAR::VolMortarCoupl::AssembleConsistentInterpolation_P21(
     std::vector<int>& foundeles)
 {
   static ConsInterpolator interpolator;
-  interpolator.Interpolate(node, *P21_, dis2_, dis1_,foundeles,dofset21_,coupleddof21_);
+  interpolator.Interpolate(node, *P21_, dis2_, dis1_,foundeles,dofset21_,P21_dofrowmap_,P21_dofcolmap_);
 
   return;
 }
@@ -3013,18 +3366,44 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
       {
         static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex8> integrator(
             Params());
-        integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc,
-            intpoints, switched_conf, *D1_, *M12_, *D2_,
-            *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D_DirectDiveregence(
+            sele,
+            mele,
+            *vc,
+            intpoints,
+            switched_conf,
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::tet4:
       {
         static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet4> integrator(
             Params());
-        integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc,
-            intpoints, switched_conf, *D1_, *M12_, *D2_,
-            *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D_DirectDiveregence(
+            sele,
+            mele,
+            *vc,
+            intpoints,
+            switched_conf,
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       default:
@@ -3044,18 +3423,44 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
       {
         static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex8> integrator(
             Params());
-        integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc,
-            intpoints, switched_conf, *D1_, *M12_, *D2_,
-            *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D_DirectDiveregence(
+            sele,
+            mele,
+            *vc,
+            intpoints,
+            switched_conf,
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       case DRT::Element::tet4:
       {
         static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet4> integrator(
             Params());
-        integrator.IntegrateCells3D_DirectDiveregence(sele, mele, *vc,
-            intpoints, switched_conf, *D1_, *M12_, *D2_,
-            *M21_, dis1_, dis2_);
+        integrator.IntegrateCells3D_DirectDiveregence(
+            sele,
+            mele,
+            *vc,
+            intpoints,
+            switched_conf,
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
         break;
       }
       default:
@@ -3100,8 +3505,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex8> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::hex20:
@@ -3109,8 +3526,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex20> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::hex27:
@@ -3118,8 +3547,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::hex27> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::tet4:
@@ -3127,8 +3568,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet4> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::tet10:
@@ -3136,8 +3589,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::tet10> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     default:
@@ -3159,8 +3624,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex8> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::hex20:
@@ -3168,8 +3645,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex20> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::hex27:
@@ -3177,8 +3666,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::hex27> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::tet4:
@@ -3186,8 +3687,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet4> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::tet10:
@@ -3195,8 +3708,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet10> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     default:
@@ -3218,8 +3743,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex8> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::hex20:
@@ -3227,8 +3764,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex20> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::hex27:
@@ -3236,8 +3785,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::hex27> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::tet4:
@@ -3245,8 +3806,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet4> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::tet10:
@@ -3254,8 +3827,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::tet10> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     default:
@@ -3277,8 +3862,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex8> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::hex20:
@@ -3286,8 +3883,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex20> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::hex27:
@@ -3295,8 +3904,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::hex27> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::tet4:
@@ -3304,8 +3925,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet4> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::tet10:
@@ -3313,8 +3946,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet10> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     default:
@@ -3336,8 +3981,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex8> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::hex20:
@@ -3345,8 +4002,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex20> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::hex27:
@@ -3354,8 +4023,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::hex27> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::tet4:
@@ -3363,8 +4044,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet4> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     case DRT::Element::tet10:
@@ -3372,8 +4065,20 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
       static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet10> integrator(
           Params());
       integrator.InitializeGP(true, domain);
-      integrator.IntegrateEle3D(domain, sele, mele, *D1_, *M12_,
-          *D2_, *M21_, dis1_, dis2_);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
       break;
     }
     default:
@@ -3436,10 +4141,10 @@ void VOLMORTAR::VolMortarCoupl::Complete()
 {
   //complete...
   D1_->Complete( *P12_dofrowmap_, *P12_dofrowmap_);
-  M12_->Complete(*P12_dofcolmap_, *P12_dofrowmap_);
+  M12_->Complete(*P12_dofdomainmap_, *P12_dofrowmap_);
 
   D2_->Complete( *P21_dofrowmap_, *P21_dofrowmap_);
-  M21_->Complete(*P21_dofcolmap_, *P21_dofrowmap_);
+  M21_->Complete(*P21_dofdomainmap_, *P21_dofrowmap_);
 
   // complete trafo operator for quadr. modification
   if (dualquad_ != INPAR::VOLMORTAR::dualquad_no_mod)

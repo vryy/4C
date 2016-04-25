@@ -2,7 +2,7 @@
 \file adapter_coupling_volmortar.cpp
 
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -41,14 +41,15 @@ ADAPTER::MortarVolCoupl::MortarVolCoupl() :
 /*----------------------------------------------------------------------*
  |  setup                                                    farah 10/13|
  *----------------------------------------------------------------------*/
-void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> dis1, // on Omega_1
-                                    Teuchos::RCP<DRT::Discretization> dis2, // on Omega_2
+void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> dis1, // masterdis - on Omega_1
+                                    Teuchos::RCP<DRT::Discretization> dis2, // slavedis  - on Omega_2
                                     std::vector<int>* coupleddof12,
                                     std::vector<int>* coupleddof21,
                                     std::pair<int,int>* dofsets12,
                                     std::pair<int,int>* dofsets21,
                                     Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy,
-                                    bool redistribute)
+                                    bool redistribute,
+                                    bool createauxdofs)
 {
   // get problem dimension (2D or 3D)
   const int dim = DRT::Problem::Instance()->NDim();
@@ -56,7 +57,7 @@ void ADAPTER::MortarVolCoupl::Setup(Teuchos::RCP<DRT::Discretization> dis1, // o
   const Teuchos::ParameterList& params =
       DRT::Problem::Instance()->VolmortarParams();
 
-  if ((dis1->NumDofSets() == 1) and (dis2->NumDofSets() == 1))
+  if ((dis1->NumDofSets() == 1) and (dis2->NumDofSets() == 1) and createauxdofs)
   {
     if(coupleddof12==NULL or coupleddof21==NULL)
       dserror("ERROR: No coupling dofs for volmortar algorithm specified!");
@@ -202,7 +203,9 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::MortarVolCoupl::ApplyVectorMapping12(
   CheckSetup();
 
   Teuchos::RCP<Epetra_Vector> mapvec = LINALG::CreateVector(P12_->RowMap(),true);
-  P12_->Multiply(false,*vec,*mapvec);
+  int err = P12_->Multiply(false,*vec,*mapvec);
+  if(err!=0)
+    dserror("ERROR: Matrix multiply returned error code %i", err);
 
   return mapvec;
 }
@@ -217,7 +220,9 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::MortarVolCoupl::ApplyVectorMapping21(
   CheckSetup();
 
   Teuchos::RCP<Epetra_Vector> mapvec = LINALG::CreateVector(P21_->RowMap(),true);
-  P21_->Multiply(false,*vec,*mapvec);
+  int err = P21_->Multiply(false,*vec,*mapvec);
+  if(err!=0)
+    dserror("ERROR: Matrix multiply returned error code %i", err);
 
   return mapvec;
 }
@@ -248,73 +253,25 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::MortarVolCoupl::ApplyMatrixMapping21
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::MortarVolCoupl::MasterToSlave(Teuchos::RCP<const Epetra_Vector> mv) const
+Teuchos::RCP<Epetra_Vector> ADAPTER::MortarVolCoupl::MasterToSlave(
+    Teuchos::RCP<const Epetra_Vector> mv) const
 {
   // safety check
   CheckSetup();
 
   //create vector
-  Teuchos::RCP<Epetra_Vector> sv = LINALG::CreateVector(P12_->ColMap(),true);
+  Teuchos::RCP<Epetra_Vector> sv = LINALG::CreateVector(P21_->RowMap(),true);
   //project
   MasterToSlave(mv,sv);
 
   return sv;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ADAPTER::MortarVolCoupl::SlaveToMaster(Teuchos::RCP<const Epetra_Vector> sv) const
-{
-  // safety check
-  CheckSetup();
-
-  //create vector
-  Teuchos::RCP<Epetra_Vector> mv = LINALG::CreateVector(P21_->ColMap(),true);
-  //project
-  SlaveToMaster(sv,mv);
-
-  return mv;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ADAPTER::MortarVolCoupl::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv) const
-{
-  // safety check
-  CheckSetup();
-
-  //create vector
-  Teuchos::RCP<Epetra_MultiVector> sv =
-    Teuchos::rcp(new Epetra_MultiVector(P12_->ColMap(),mv->NumVectors()));
-  //project
-  MasterToSlave(mv,sv);
-
-  return sv;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ADAPTER::MortarVolCoupl::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv) const
-{
-  // safety check
-  CheckSetup();
-
-  //create vector
-  Teuchos::RCP<Epetra_MultiVector> mv =
-    Teuchos::rcp(new Epetra_MultiVector(P21_->ColMap(),sv->NumVectors()));
-  //project
-  SlaveToMaster(sv,mv);
-
-  return mv;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::MortarVolCoupl::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
+void ADAPTER::MortarVolCoupl::MasterToSlave(
+    Teuchos::RCP<const Epetra_MultiVector> mv,
+    Teuchos::RCP<Epetra_MultiVector> sv) const
 {
 #ifdef DEBUG
   if (not mv->Map().PointSameAs(P21_->ColMap()))
@@ -332,7 +289,9 @@ void ADAPTER::MortarVolCoupl::MasterToSlave(Teuchos::RCP<const Epetra_MultiVecto
   Epetra_MultiVector sv_aux(P21_->RowMap(),sv->NumVectors());
 
   //project
-  P21_->Multiply(false,*mv,sv_aux);
+  int err = P21_->Multiply(false,*mv,sv_aux);
+  if(err!=0)
+    dserror("ERROR: Matrix multiply returned error code %i", err);
 
   //copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
   std::copy(sv_aux.Values(), sv_aux.Values()+(sv_aux.MyLength()*sv_aux.NumVectors()), sv->Values());
@@ -345,7 +304,61 @@ void ADAPTER::MortarVolCoupl::MasterToSlave(Teuchos::RCP<const Epetra_MultiVecto
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::MortarVolCoupl::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
+Teuchos::RCP<Epetra_MultiVector> ADAPTER::MortarVolCoupl::MasterToSlave(
+    Teuchos::RCP<const Epetra_MultiVector> mv) const
+{
+  // safety check
+  CheckSetup();
+
+  //create vector
+  Teuchos::RCP<Epetra_MultiVector> sv =
+    Teuchos::rcp(new Epetra_MultiVector(P21_->RowMap(),mv->NumVectors()));
+  //project
+  MasterToSlave(mv,sv);
+
+  return sv;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::MortarVolCoupl::SlaveToMaster(
+    Teuchos::RCP<const Epetra_Vector> sv) const
+{
+  // safety check
+  CheckSetup();
+
+  //create vector
+  Teuchos::RCP<Epetra_Vector> mv = LINALG::CreateVector(P12_->RowMap(),true);
+  //project
+  SlaveToMaster(sv,mv);
+
+  return mv;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_MultiVector> ADAPTER::MortarVolCoupl::SlaveToMaster(
+    Teuchos::RCP<const Epetra_MultiVector> sv) const
+{
+  // safety check
+  CheckSetup();
+
+  //create vector
+  Teuchos::RCP<Epetra_MultiVector> mv =
+    Teuchos::rcp(new Epetra_MultiVector(P12_->RowMap(),sv->NumVectors()));
+  //project
+  SlaveToMaster(sv,mv);
+
+  return mv;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::MortarVolCoupl::SlaveToMaster(
+    Teuchos::RCP<const Epetra_MultiVector> sv,
+    Teuchos::RCP<Epetra_MultiVector> mv) const
 {
 #ifdef DEBUG
   if (not mv->Map().PointSameAs(P21_->ColMap()))
@@ -363,7 +376,9 @@ void ADAPTER::MortarVolCoupl::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVecto
   Epetra_MultiVector mv_aux(P12_->RowMap(),mv->NumVectors());
 
   //project
-  P12_->Multiply(false,*sv,mv_aux);
+  int err = P12_->Multiply(false,*sv,mv_aux);
+  if(err!=0)
+    dserror("ERROR: Matrix multiply returned error code %i", err);
 
   //copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
   std::copy(mv_aux.Values(), mv_aux.Values()+(mv_aux.MyLength()*mv_aux.NumVectors()), mv->Values());
@@ -380,7 +395,7 @@ Teuchos::RCP<const Epetra_Map>  ADAPTER::MortarVolCoupl::MasterDofMap() const
   // safety check
   CheckSetup();
 
-  return Teuchos::rcpFromRef(P21_->ColMap());
+  return Teuchos::rcpFromRef(P12_->RowMap());
 }
 
 
@@ -391,5 +406,5 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::MortarVolCoupl::SlaveDofMap() const
   // safety check
   CheckSetup();
 
-  return Teuchos::rcpFromRef(P12_->ColMap());
+  return Teuchos::rcpFromRef(P21_->RowMap());
 }

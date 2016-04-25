@@ -2,7 +2,7 @@
 \file volmortar_integrator.H
 
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -79,7 +79,9 @@ public:
       LINALG::SparseMatrix& dmatrix,
       LINALG::SparseMatrix& mmatrix,
       Teuchos::RCP<const DRT::Discretization> slavedis,
-      Teuchos::RCP<const DRT::Discretization> masterdis);
+      Teuchos::RCP<const DRT::Discretization> masterdis,
+      int sdofset,
+      int mdofset);
 
   /*!
   \brief Integrate cell for 3D problems
@@ -94,7 +96,11 @@ public:
       LINALG::SparseMatrix& dmatrix_B,
       LINALG::SparseMatrix& mmatrix_B,
       Teuchos::RCP<const DRT::Discretization> Adis,
-      Teuchos::RCP<const DRT::Discretization> Bdis);
+      Teuchos::RCP<const DRT::Discretization> Bdis,
+      int sdofset_A,
+      int mdofset_A,
+      int sdofset_B,
+      int mdofset_B);
 
   /*!
   \brief Integrate cell for 3D problems
@@ -111,7 +117,11 @@ public:
       LINALG::SparseMatrix& dmatrix_B,
       LINALG::SparseMatrix& mmatrix_B,
       Teuchos::RCP<const DRT::Discretization> Adis,
-      Teuchos::RCP<const DRT::Discretization> Bdis);
+      Teuchos::RCP<const DRT::Discretization> Bdis,
+      int sdofset_A,
+      int mdofset_A,
+      int sdofset_B,
+      int mdofset_B);
 
   /*!
   \brief Integrate ele for 3D problems
@@ -126,7 +136,11 @@ public:
        LINALG::SparseMatrix& dmatrix_B,
        LINALG::SparseMatrix& mmatrix_B,
        Teuchos::RCP<const DRT::Discretization> Adis,
-       Teuchos::RCP<const DRT::Discretization> Bdis);
+       Teuchos::RCP<const DRT::Discretization> Bdis,
+       int sdofset_A,
+       int mdofset_A,
+       int sdofset_B,
+       int mdofset_B);
 
   /*!
   \brief Integrate ele for 3D problems
@@ -134,10 +148,12 @@ public:
   */
   void IntegrateEleBased3D_ADis(DRT::Element& sele,
                            std::vector<int>& foundeles,
-                           LINALG::SparseMatrix& dmatrixA_,
-                           LINALG::SparseMatrix& mmatrixA_,
-                           Teuchos::RCP<const DRT::Discretization> Adiscret_,
-                           Teuchos::RCP<const DRT::Discretization> Bdiscret_);
+                           LINALG::SparseMatrix& dmatrixA,
+                           LINALG::SparseMatrix& mmatrixA,
+                           Teuchos::RCP<const DRT::Discretization> Adiscret,
+                           Teuchos::RCP<const DRT::Discretization> Bdiscret,
+                           int dofsetA,
+                           int dofsetB);
 
   /*!
   \brief Integrate ele for 3D problems
@@ -145,10 +161,12 @@ public:
   */
   void IntegrateEleBased3D_BDis(DRT::Element& mele,
                            std::vector<int>& foundeles,
-                           LINALG::SparseMatrix& dmatrixB_,
-                           LINALG::SparseMatrix& mmatrixB_,
-                           Teuchos::RCP<const DRT::Discretization> Adiscret_,
-                           Teuchos::RCP<const DRT::Discretization> Bdiscret_);
+                           LINALG::SparseMatrix& dmatrixB,
+                           LINALG::SparseMatrix& mmatrixB,
+                           Teuchos::RCP<const DRT::Discretization> Adiscret,
+                           Teuchos::RCP<const DRT::Discretization> Bdiscret,
+                           int dofsetA,
+                           int dofsetB);
 protected:
   /*!
   \brief Check integration point mapping (2D)
@@ -209,12 +227,14 @@ public:
   */
   void IntegrateEleBased3D(DRT::Element& sele,
                            std::vector<int>& foundeles,
-                           LINALG::SparseMatrix& dmatrixA_,
-                           LINALG::SparseMatrix& mmatrixA_,
-                           Teuchos::RCP<const DRT::Discretization> Adiscret_,
-                           Teuchos::RCP<const DRT::Discretization> Bdiscret_,
+                           LINALG::SparseMatrix& dmatrixA,
+                           LINALG::SparseMatrix& mmatrixA,
+                           Teuchos::RCP<const DRT::Discretization> Adiscret,
+                           Teuchos::RCP<const DRT::Discretization> Bdiscret,
                            int dofseta,
-                           int dofsetb);
+                           int dofsetb,
+                           const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
+                           const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap);
 protected:
 
   /*!
@@ -372,7 +392,9 @@ bool VolMortarEleBasedGP(
       Teuchos::RCP<const DRT::Discretization> Adis,
       Teuchos::RCP<const DRT::Discretization> Bdis,
       int dofseta,
-      int dofsetb);
+      int dofsetb,
+      const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
+      const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap);
 
 // evaluation of nts approach
 template<DRT::Element::DiscretizationType distype>
@@ -389,7 +411,8 @@ bool ConsInterpolatorEval(
      double* AuxXi,
      double* nodepos,
      std::pair<int,int>& dofset,
-     std::vector<int>& coupleddof);
+     const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
+     const Teuchos::RCP<const Epetra_Map>& P_dofcolmap);
 
 //===================================
 // Alternative to VolMortar coupling:
@@ -413,7 +436,8 @@ public:
                    Teuchos::RCP<const DRT::Discretization> elediscret,
                    std::vector<int>& foundeles,
                    std::pair<int,int>& dofset,
-                   std::vector<int>& coupleddof);
+                   const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
+                   const Teuchos::RCP<const Epetra_Map>& P_dofcolmap);
 
 
 };

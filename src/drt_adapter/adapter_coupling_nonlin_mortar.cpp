@@ -2,7 +2,7 @@
 \file adapter_coupling_nonlin_mortar.cpp
 
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -250,10 +250,13 @@ void ADAPTER::CouplingNonLinMortar::ReadMortarCondition(
   input.set<bool>("NURBS",isnurbs);
 
   // check for invalid parameter values
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual)
-    if(myrank_== 0) dserror("Mortar coupling adapter only works for dual shape functions");
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"LM_SHAPEFCN") != INPAR::MORTAR::shape_dual and
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"LM_SHAPEFCN") != INPAR::MORTAR::shape_petrovgalerkin)
+    if(myrank_== 0)
+      dserror("Mortar coupling adapter only works for dual shape functions");
   if (DRT::INPUT::IntegralValue<int>(input,"LM_NODAL_SCALE")==true)
-    if(myrank_== 0) dserror("Mortar coupling adapter does not work with LM_NODAL_SCALE");
+    if(myrank_== 0)
+      dserror("Mortar coupling adapter does not work with LM_NODAL_SCALE");
 
   return;
 }

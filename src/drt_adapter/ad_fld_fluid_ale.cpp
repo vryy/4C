@@ -73,11 +73,20 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
     // unmark pressure dof
     coupleddof21[ndim]=0;
 
+    //define dof sets to be coupled for both projections
+    std::pair<int,int> dofsets12(0,0);
+    std::pair<int,int> dofsets21(0,0);
+
     //setup coupling adapter
     coupfa_volmortar->Setup( FluidField()->Discretization(),
                              AleField()->WriteAccessDiscretization(),
                              &coupleddof12,
-                             &coupleddof12);
+                             &coupleddof21,
+                             &dofsets12,
+                             &dofsets21,
+                             Teuchos::null,
+                             false,
+                             false);
     coupfa_ = coupfa_volmortar;
   }
 

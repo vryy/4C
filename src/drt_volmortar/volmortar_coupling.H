@@ -2,7 +2,7 @@
 \file volmortar_coupling.H
 
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -170,7 +170,9 @@ private:
   virtual void BuildMaps(
       Teuchos::RCP<DRT::Discretization>& dis,
       Teuchos::RCP<const Epetra_Map>& dofmap,
-      std::vector<int>& coupleddof,
+      const std::vector<int>* coupleddof,
+      const int* nodes,
+      int numnode,
       int dofset
       );
 
@@ -441,8 +443,6 @@ private:
   Teuchos::ParameterList             params_;          /// global parameter list for volmortar coupling
   std::pair<int,int>                 dofset12_;        /// dofset number dofs of Omega_2 and Omega_1 in P Omega_2 -> Omega_1
   std::pair<int,int>                 dofset21_;        /// dofset number dofs of Omega_1 and Omega_2 in P Omega_1 -> Omega_2
-  std::vector<int>                   coupleddof12_;    /// toggle vector for coupled dofs in P Omega_2 -> Omega_1
-  std::vector<int>                   coupleddof21_;    /// toggle vector for coupled dofs in P Omega_1 -> Omega_2
 
   Teuchos::RCP<Epetra_Comm>          comm_;            /// communicator
   int                                myrank_;          /// my proc id
@@ -472,8 +472,10 @@ private:
 
   //! @name maps
   Teuchos::RCP<const Epetra_Map> P12_dofrowmap_;      /// row map of projection matrix P Omega_2 -> Omega_1
-  Teuchos::RCP<const Epetra_Map> P12_dofcolmap_;      /// column map of projection matrix P Omega_2 -> Omega_1
+  Teuchos::RCP<const Epetra_Map> P12_dofdomainmap_;   /// domain map of projection matrix P Omega_2 -> Omega_1
   Teuchos::RCP<const Epetra_Map> P21_dofrowmap_;      /// row map of projection matrix P Omega_1 -> Omega_2
+  Teuchos::RCP<const Epetra_Map> P21_dofdomainmap_;   /// domain map of projection matrix P Omega_1 -> Omega_2
+  Teuchos::RCP<const Epetra_Map> P12_dofcolmap_;      /// column map of projection matrix P Omega_2 -> Omega_1
   Teuchos::RCP<const Epetra_Map> P21_dofcolmap_;      /// column map of projection matrix P Omega_1 -> Omega_2
   //@}
 

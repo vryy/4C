@@ -2,7 +2,7 @@
 \file adapter_coupling_volmortar.H
 
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -68,7 +68,8 @@ namespace ADAPTER
                std::pair<int,int>* dofsets12 = NULL,
                std::pair<int,int>* dofsets21 = NULL,
                Teuchos::RCP<VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null,
-               bool redistribute=true
+               bool redistribute=true,
+               bool createauxdofs = true
                );
 
     /*!

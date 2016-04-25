@@ -2,7 +2,7 @@
 \file volmortar_defines.H
 
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -18,7 +18,7 @@ Maintainer: Philipp Farah
 /************************************************************************/
 
 // MORTAR INTEGRATION
-#define VOLMORTARINTTOL   0.0       /* tolerance for assembling gp-values*/
+#define VOLMORTARINTTOL   1.0e-12       /* tolerance for assembling gp-values*/
 
 // GEOMETRIC TOLERANCES
 #define VOLMORTARELETOL   1.0e-12
