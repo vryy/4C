@@ -265,10 +265,10 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Surfaces()
 }
 
 
-DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule(const DRT::Element::DiscretizationType& distype) const
+DRT::UTILS::GaussRule2D DRT::ELEMENTS::Bele3::getOptimalGaussrule() const
 {
   DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule2D_undefined;
-    switch (distype)
+    switch (Shape())
     {
     case DRT::Element::quad4:
         rule = DRT::UTILS::intrule_quad_4point;

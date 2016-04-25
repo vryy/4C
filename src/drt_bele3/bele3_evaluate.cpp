@@ -41,6 +41,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
   std::string action = params.get<std::string>("action","none");
   if      (action=="calc_struct_constrvol")        act = Bele3::calc_struct_constrvol;
   else if (action=="calc_struct_volconstrstiff")   act = Bele3::calc_struct_volconstrstiff;
+  else if (action=="calc_struct_stress")           act = Bele3::calc_struct_stress;
 
   // what the element has to do
   switch(act)
@@ -48,6 +49,33 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
   // BELE speciality: element action not implemented -> do nothing
   case none:
     break;
+  case calc_struct_stress:
+  {
+    Teuchos::RCP<std::vector<char> > stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress",Teuchos::null);
+    Teuchos::RCP<std::vector<char> > straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos::null);
+
+    // dummy size for stress/strain. size does not matter. just write something that can be extracted later
+    LINALG::Matrix<1,1> dummy(true);
+
+    // write dummy stress
+    {
+      DRT::PackBuffer data;
+      AddtoPack(data, dummy);
+      data.StartPacking();
+      AddtoPack(data, dummy);
+      std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
+    }
+
+    // write dummy strain
+    {
+      DRT::PackBuffer data;
+      AddtoPack(data, dummy);
+      data.StartPacking();
+      AddtoPack(data, dummy);
+      std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+    }
+  }
+  break;
   case calc_struct_constrvol:
   {
     //create communicator
@@ -173,7 +201,7 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols
     int indb = (indc+2)%3;
 
     // get gaussrule
-    const DRT::UTILS::IntegrationPoints2D  intpoints(getOptimalGaussrule(Shape()));
+    const DRT::UTILS::IntegrationPoints2D  intpoints(getOptimalGaussrule());
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives
@@ -253,7 +281,7 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv
     int indb = (indc+2)%3;
 
     // get gaussrule
-    const DRT::UTILS::IntegrationPoints2D  intpoints(getOptimalGaussrule(Shape()));
+    const DRT::UTILS::IntegrationPoints2D  intpoints(getOptimalGaussrule());
     int ngp = intpoints.nquad;
 
     // allocate vector for shape functions and matrix for derivatives

@@ -179,7 +179,8 @@ private:
   {
     none,
     calc_struct_constrvol,
-    calc_struct_volconstrstiff
+    calc_struct_volconstrstiff,
+    calc_struct_stress
   };
 
   /*!
@@ -255,7 +256,7 @@ private:
   Bele3& operator = (const Bele3& old);
 
   //! set number of gauss points to element shape default
-  DRT::UTILS::GaussRule2D getOptimalGaussrule(const DiscretizationType& distype) const;
+  DRT::UTILS::GaussRule2D getOptimalGaussrule() const;
 
 }; // class Bele3
 
