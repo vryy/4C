@@ -87,9 +87,9 @@ macro(post_processing arg nproc stresstype straintype startstep)
   set(OUTPUTPREFIX xxx)
 
   # concatenate default output prefix with additional identifier if specified as optional input argument
-  if(${ARGN})
-    set(OUTPUTPREFIX ${OUTPUTPREFIX}${ARGN})
-  endif(${ARGN})
+  if(${ARGC} GREATER 5)
+    set(OUTPUTPREFIX ${OUTPUTPREFIX}${ARGV5})
+  endif()
 
   # define macros for serial and parallel runs
   set(RUNPOSTFILTER_SER ./post_drt_ensight\ --file=${OUTPUTPREFIX}\ --output=${OUTPUTPREFIX}_SER_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
@@ -955,7 +955,7 @@ baci_test(sohex8_easmild_cooks_nl_dynstas 2 "")
 baci_test(sohex8_incompr_block 2 "")
 baci_test(sohex8_incompr_block_nln 2 "")
 baci_test(sohex8_multiscale_macro 2 1)
-post_processing(sohex8_multiscale_macro 2 "" "" 3 "_el7_gp7")
+post_processing(sohex8_multiscale_macro 1 "" "" 3 "_el7_gp7")
 baci_test(sohex8_multiscale_macro_2micro 2 1)
 baci_test(sohex8_remodel 2 " ")
 baci_test(sohex8_surfactant 2 30)
