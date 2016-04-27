@@ -11,6 +11,8 @@
 
 /*----------------------------------------------------------------------*/
 
+/// All header files should have #define guards to prevent multiple inclusion.
+/// The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.
 #ifndef INPAR_TUTORIAL_H_
 #define INPAR_TUTORIAL_H_
 

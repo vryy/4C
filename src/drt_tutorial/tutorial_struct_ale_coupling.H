@@ -10,6 +10,9 @@
              089 - 289 -15240
 
 *----------------------------------------------------------------------*/
+
+/// All header files should have #define guards to prevent multiple inclusion.
+/// The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.
 #ifndef TUTORIAL_STRUCT_ALE_COUPLING_H
 #define TUTORIAL_STRUCT_ALE_COUPLING_H
 
@@ -23,7 +26,10 @@ class StructAleCoupling  : public NonlinearTruss
 public:
 
   /// constructor (ctor)
-  explicit StructAleCoupling();
+  StructAleCoupling();
+
+  /// constructor (ctor)
+  virtual ~StructAleCoupling(){};
 
 protected:
 
@@ -36,4 +42,4 @@ protected:
 };// class StructAleCoupling
 } // namespace TUTORIAL
 
-#endif
+#endif /* TUTORIAL_STRUCT_ALE_COUPLING_H */

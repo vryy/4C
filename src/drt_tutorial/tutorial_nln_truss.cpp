@@ -12,6 +12,8 @@
 #include "tutorial_utils.H"
 #include "tutorial_nln_truss.H"
 #include "tutorial_ele/tutorial_ele_calc.H"
+#include "../drt_tutorial/tutorial_ele/tutorial_ele.H"
+#include "../drt_tutorial/tutorial_material/tutorial_mat.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_fixedsizematrix.H"

@@ -9,6 +9,9 @@
              089 - 289 -15240
 
 *----------------------------------------------------------------------*/
+
+/// All header files should have #define guards to prevent multiple inclusion.
+/// The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.
 #ifndef TUTORIAL_ELE_H
 #define TUTORIAL_ELE_H
 

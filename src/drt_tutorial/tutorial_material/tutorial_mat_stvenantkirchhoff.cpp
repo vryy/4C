@@ -21,7 +21,7 @@ Young_(young)
 
 /*----------------------------------------------------------------------*/
 
-TUTORIAL::MATERIAL::TutorialMatStVenantKirchhoff::TutorialMatStVenantKirchhoff(double young) :
+TUTORIAL::MATERIAL::TutorialMatStVenantKirchhoff::TutorialMatStVenantKirchhoff(const double young) :
 TutorialMat(young)
 {
 
@@ -30,7 +30,13 @@ TutorialMat(young)
 
 /*-----------------------------------------------------------------------/
 /-----------------------------------------------------------------------*/
-void TUTORIAL::MATERIAL::TutorialMatStVenantKirchhoff::EvaluateMaterial(TUTORIAL::ELEMENTS::TutorialElement* ele, double* stress, LINALG::Matrix<2,2>* linearization, const double strain, const double defgrd, const double J, const LINALG::Matrix<2,1> B )
+void TUTORIAL::MATERIAL::TutorialMatStVenantKirchhoff::EvaluateMaterial(TUTORIAL::ELEMENTS::TutorialElement* ele,
+                                                                        double* stress,
+                                                                        LINALG::Matrix<2,2>* linearization,
+                                                                        const double strain,
+                                                                        const double defgrd,
+                                                                        const double J,
+                                                                        const LINALG::Matrix<2,1> B )
 {
 
   // see NiliFEM Script page 101 !

@@ -9,6 +9,9 @@
              089 - 289 -15240
 
 *----------------------------------------------------------------------*/
+
+/// All header files should have #define guards to prevent multiple inclusion.
+/// The format of the symbol name should be <PROJECT>_<PATH>_<FILE>_H_.
 #ifndef TUTORIAL_MAT_H
 #define TUTORIAL_MAT_H
 
@@ -35,23 +38,55 @@ class TutorialMat
 
 public:
 
-  /// constructor (ctor)
-  TutorialMat(double young);
+  /*!
+  \brief constructor (ctor)
 
-  /// empty destructor (dtor)
+  \param young (in) : Young's Modulus of this material
+
+  \note Use the C++ keyword explicit for constructors with one argument.
+        See LNM/Baci code style guide for further information.
+  */
+  explicit TutorialMat(const double young);
+
+  /*!
+  \brief destructor (dtor)
+
+  \note This Destructor is declared virtual, since class NonlinearTruss contains virtual methods.
+        This is an indicator, that this class is supposed to be part of some inheritance line.
+        Check the internet on why it is then important to declare the destructor virtual.
+  */
   virtual ~TutorialMat(){};
 
-  /// pure virtual evaluation routine for material law and its linearization
-  /// this pure virtual function ( with = 0 ) HAS TO be implemented by the
-  /// subclass inheriting from TutorialMat (see TutorialMatStVenantKirchhoff).
-  virtual void EvaluateMaterial(TUTORIAL::ELEMENTS::TutorialElement* ele, double* stress, LINALG::Matrix<2,2>* linearization, const double strain, const double defgrd, const double J, const LINALG::Matrix<2,1> B ) = 0;
+  /*!
+  \brief evaluate stress and material linearization (called for each integration point of elements)
+
+  \note Pure virtual evaluation routine for material law and its linearization.
+        This pure virtual function ( with = 0 ) HAS TO be implemented by the
+        subclass inheriting from TutorialMat (see TutorialMatStVenantKirchhoff).
+
+   \param ele (in)            : element that is evaluated
+   \param stress (out)        : stress at integration point (filled in this method)
+   \param linearization (out) : element matrix contribution of integration point (filled in this method)
+   \param strain (out)        : Green-Lagrange strain at integration point
+   \param defgrd (in)         : deformation gradient at integration point
+   \param J (in)              : Jacobian determinant at integration point
+   \param B (in)              : B Operator at integration point
+
+  */
+  virtual void EvaluateMaterial(TUTORIAL::ELEMENTS::TutorialElement* ele,
+                                double* stress,
+                                LINALG::Matrix<2,2>* linearization,
+                                const double strain,
+                                const double defgrd,
+                                const double J,
+                                const LINALG::Matrix<2,1> B ) = 0;
 
   /// return young's modulus
   double YoungModulus(){return Young_;};
 
 private:
 
-  // young's modulus
+  /// young's modulus
   double Young_;
 
 }; // class TutorialMat
@@ -64,14 +99,48 @@ class TutorialMatStVenantKirchhoff : public TutorialMat
 
 public:
 
-  /// constructor (ctor)
-  TutorialMatStVenantKirchhoff(double young);
+  /*!
+  \brief constructor (ctor)
 
-  /// empty destructor (dtor)
+  \param young (in) : Young's Modulus of this material
+
+  \note Use the C++ keyword explicit for constructors with one argument.
+        See LNM/Baci code style guide for further information.
+  */
+  TutorialMatStVenantKirchhoff(const double young);
+
+  /*!
+  \brief destructor (dtor)
+
+  \note This Destructor is declared virtual, since class NonlinearTruss contains virtual methods.
+        This is an indicator, that this class is supposed to be part of some inheritance line.
+        Check the internet on why it is then important to declare the destructor virtual.
+  */
   virtual ~TutorialMatStVenantKirchhoff(){};
 
-  /// here we implement the pure virtual
-  virtual void EvaluateMaterial(TUTORIAL::ELEMENTS::TutorialElement* ele, double* stress, LINALG::Matrix<2,2>* linearization, const double strain, const double defgrd, const double J, const LINALG::Matrix<2,1> B);
+  /*!
+  \brief evaluate stress and material linearization (called for each integration point of elements)
+
+  \note This is the implementation of EvaluateMaterial for the St. Venant-Kirchhoff material.
+        Any other class that would inherit from 'class TutorialMat', would have ti implement
+        this method, too. SEE 'class TutorialMat'.
+
+   \param ele (in)            : element that is evaluated
+   \param stress (out)        : stress at integration point (filled in this method)
+   \param linearization (out) : element matrix contribution of integration point (filled in this method)
+   \param strain (out)        : Green-Lagrange strain at integration point
+   \param defgrd (in)         : deformation gradient at integration point
+   \param J (in)              : Jacobian determinant at integration point
+   \param B (in)              : B Operator at integration point
+
+  */
+  virtual void EvaluateMaterial(TUTORIAL::ELEMENTS::TutorialElement* ele,
+                                double* stress,
+                                LINALG::Matrix<2,2>* linearization,
+                                const double strain,
+                                const double defgrd,
+                                const double J,
+                                const LINALG::Matrix<2,1> B);
 
 
 }; // class TutorialMatStVenantKirchhoff
