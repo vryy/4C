@@ -85,16 +85,33 @@ namespace ELASTIC
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// This is a simplification of the muscle contraction law proposed in [1], essentially adds an active stress tau
-  /// along a given fiber direction f_0
-  /// active 2nd Piola-Kirchhoff stress:
+  /// This is a simplification of the muscle contraction law proposed in [1], where the strain rate
+  /// dependency is dropped for the sake of simplicity, resulting in the following first order ODE
+  /// for the active stress tau, compare [2]:
+  ///\f[
+  ///   \frac{d}{dt} \tau = \tau_0 |u|_+ - \tau |u|, \quad \tau(0) = 0
+  ///\f]
+  /// where \f$\tau_0\f$ is the maximal contractility and u is a control variable either provided by
+  /// a electrophysiology simulation or by a user-specified function
+  ///
+  /// Due to the active stress approach, see [3], the active stress will be added along a given
+  /// fiber direction f_0 to the 2nd Piola-Kirchhoff stress:
   ///\f[
   ///   S_{active} = \tau(t) f_0 \otimes f_0
   ///\f]
+  /// Beware that the original study formulated the active stress for the cauchy stresses. For the
+  /// sake of simplicity, we drop the dependency of J, which would normally arise by the pull back
+  /// operation. Since we assure nearly incompressible material behaviour, where J\f$\approx\f$1, the
+  /// results should not be influenced much.
+  ///
   /// <h3>References</h3>
   /// <ul>
   /// <li> [1] 2001_Bestel, Clément, Sorine - A Biomechanical Model of Muscle Contraction (2001), Medical Image Computing and
   /// Computer-Assisted Intervention (MICCAI'01), vol. 2208, Springer-Verlag Berlin, 1159-1161
+  /// <li> [2] 2002_Sermesant, Coudièr, Delingette, Ayache - Progress towards an electromechanical model of the heart for cardiac image analysis. (2002)
+  /// IEEE International Symposium on Biomedical Imaging, 10-13
+  /// <li> [3] 1998_Hunter, McCulloch, ter Keurs - Modelling the mechanical properties of cardiac muscle (1998),
+  /// Progress in Biophysics and Molecular Biology
   /// </ul>
   ///
   class CoupAnisoNeoHooke_ActiveStress : public Summand
