@@ -72,6 +72,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
     else if (action=="calc_struct_prestress_update")                act = ELEMENTS::struct_update_prestress;
     else if (action=="calc_struct_inversedesign_update")            act = ELEMENTS::inversedesign_update;
     else if (action=="calc_struct_inversedesign_switch")            act = ELEMENTS::inversedesign_switch;
+    else if (action=="calc_struct_energy")                          act = ELEMENTS::struct_calc_energy;
     else dserror("Unknown type of action for So_hex8fbar");
   }
   // check for patient specific data
