@@ -556,6 +556,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/scatra_growth_scd.cpp
   src/drt_mat/scatra_mat.cpp
   src/drt_mat/scatra_mat_aniso.cpp
+  src/drt_mat/scatra_mat_multiscale.cpp
   src/drt_mat/scatra_mat_poro_ecm.cpp
   src/drt_mat/scatra_reaction_mat.cpp
   src/drt_mat/scatra_chemotaxis_mat.cpp
@@ -1568,6 +1569,10 @@ set(OBJS_DRT_MAT
   src/drt_mat/micromaterial_evaluate.cpp
   src/drt_mat/micromaterialgp_static.cpp
 )
+set(OBJS_DRT_MAT_SCATRA_MULTI
+  src/drt_mat/scatra_mat_multiscale_evaluate.cpp
+  src/drt_mat/scatra_mat_multiscale_gp.cpp
+)
 set(OBJS_BACI_MAIN
   src/global_full/global_init_control.cpp
   src/global_full/global_inp_control.cpp
@@ -2528,6 +2533,7 @@ add_library(drt_volmortar ${OBJS_DRT_VOLMORTAR})
 # material definitions
 add_library(drt_mat ${OBJS_DRT_MAT_LIB})
 add_library(drt_micromat ${OBJS_DRT_MAT} ${OBJS_DRT_STRU_MULTI})
+add_library(drt_scatra_multi ${OBJS_DRT_MAT_SCATRA_MULTI})
 
 # special library that demands all parobject types
 add_library(drt_lib_register ${OBJS_DRT_REGISTER})
@@ -2625,6 +2631,7 @@ target_link_libraries (${baciname}
   ${ELEMENT_LIBRARIES}
   ${SUPPORT_LIBRARIES}
   drt_micromat
+  drt_scatra_multi
   drt_mat
   drt_lib_utils
   locacontinuation

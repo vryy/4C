@@ -54,11 +54,14 @@ namespace DRT
   class Discretization;
   class DofSet;
   class Condition;
+  class Problem;
 }
 
 namespace IO
 {
+  class DiscretizationReader;
   class DiscretizationWriter;
+  class InputControl;
 }
 
 namespace LINALG
@@ -86,8 +89,8 @@ namespace SCATRA
 class HomIsoTurbScalarForcing;
 class MeshtyingStrategyBase;
 class ScalarHandler;
-class OutputScalarsBaseStrategy;
-class OutputScalarsDomainStrategy;
+class OutputScalarsStrategyBase;
+class OutputScalarsStrategyDomain;
 class OutputScalarsStrategyCondition;
 
 /*!
@@ -98,8 +101,8 @@ class ScaTraTimIntImpl
 {
   friend class HomIsoTurbInitialScalarField;
   friend class HomIsoTurbScalarForcing;
-  friend class OutputScalarsBaseStrategy;
-  friend class OutputScalarsDomainStrategy;
+  friend class OutputScalarsStrategyBase;
+  friend class OutputScalarsStrategyDomain;
   friend class OutputScalarsStrategyCondition;
 
 public:
@@ -109,11 +112,14 @@ public:
   /*========================================================================*/
 
   //! Standard Constructor
-  ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization>       dis,
-                   Teuchos::RCP<LINALG::Solver>            solver,
-                   Teuchos::RCP<Teuchos::ParameterList>    params,
-                   Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-                   Teuchos::RCP<IO::DiscretizationWriter>  output);
+  ScaTraTimIntImpl(
+      Teuchos::RCP<DRT::Discretization>        actdis,        //!< discretization
+      Teuchos::RCP<LINALG::Solver>             solver,        //!< linear solver
+      Teuchos::RCP<Teuchos::ParameterList>     params,        //!< parameter list
+      Teuchos::RCP<Teuchos::ParameterList>     extraparams,   //!< supplementary parameter list
+      Teuchos::RCP<IO::DiscretizationWriter>   output,        //!< output writer
+      const int                                probnum = 0    //!< global problem number
+      );
 
   //! Destructor
   virtual ~ScaTraTimIntImpl();
@@ -191,7 +197,7 @@ public:
   void ClearMeanConcentration(){ meanconc_ = Teuchos::null; };
 
   //! read restart data
-  virtual void ReadRestart(const int step) = 0;
+  virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null) = 0;
 
   //! setup natural convection
   virtual void SetupNatConv();
@@ -248,11 +254,17 @@ public:
   //! return ALE flag
   bool IsALE() const { return isale_; }
 
+  //! return flag for macro scale in multi-scale simulations
+  bool MacroScale() const { return macro_scale_; };
+
   //! Provide enum of time integration scheme
   INPAR::SCATRA::TimeIntegrationScheme MethodName() const { return timealgo_; }
 
   //! Provide title of time integration scheme
   std::string MethodTitle(){ return MapTimIntEnumToString(MethodName()); }
+
+  //! return flag for micro scale in multi-scale simulations
+  bool MicroScale() const { return micro_scale_; };
 
   //! print information about current time step to screen
   virtual void PrintTimeStepInfo();
@@ -317,7 +329,7 @@ public:
   virtual Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList() = 0;
 
   //! Access output object: CD-Rom and DVD only - no BlueRay support!!! ;)
-  IO::DiscretizationWriter& DiscWriter() { return *output_; }
+  const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() const { return output_; }
 
   //! returns map extractor used for convergence check either in ELCH or LOMA case
   Teuchos::RCP<LINALG::MapExtractor> Splitter() const { return splitter_; }
@@ -391,6 +403,9 @@ public:
   //! compute nodal density values from nodal concentration values (natural convection)
   void ComputeDensity();
 
+  //! evaluate macro-micro coupling on micro scale in multi-scale scalar transport problems
+  void EvaluateMacroMicroCoupling();
+
   //! iterative update of phinp
   void UpdateIter(
     const Teuchos::RCP<const Epetra_Vector> inc //!< increment vector for phi
@@ -455,7 +470,8 @@ public:
   //! problem-specific outputs
   virtual void OutputProblemSpecific(){return;};
 
-  virtual void RestartProblemSpecific( const int step ){return;};
+  //! problem-specific restart
+  virtual void RestartProblemSpecific( const int step, IO::DiscretizationReader& reader ){return;};
 
   //! return time for evaluation of elements
   const double& DtEle() const {return dtele_;};
@@ -468,6 +484,12 @@ public:
 
   //! return mean values of transported scalars
   const std::map<const int,std::vector<double> >& MeanScalars() const;
+
+  //! return micro-scale coupling flux for macro-micro coupling in multi-scale simulations
+  const double& Q() const {return q_;};
+
+  //! derivative of micro-scale coupling flux w.r.t. macro-scale state variable for macro-micro coupling in multi-scale simulations
+  const double& DqDphi() const {return dq_dphi_;};
 
   /*========================================================================*/
   //! @name turbulence and related
@@ -777,8 +799,14 @@ protected:
   //! @name general framework variables
   /*========================================================================*/
 
+  //! problem
+  DRT::Problem* const problem_;
+
+  //! problem number
+  const int probnum_;
+
   //! solver
-  Teuchos::RCP<LINALG::Solver>         solver_;
+  Teuchos::RCP<LINALG::Solver> solver_;
 
   //! parameter list
   const Teuchos::RCP<Teuchos::ParameterList> params_;
@@ -822,6 +850,12 @@ protected:
 
   //! flag for scatra-scatra interface coupling
   bool s2icoupling_;
+
+  //! flag for macro scale in multi-scale simulations
+  const bool macro_scale_;
+
+  //! flag for micro scale in multi-scale simulations
+  const bool micro_scale_;
 
   /*--- query and output ---------------------------------------------------*/
 
@@ -903,7 +937,7 @@ protected:
   Teuchos::RCP<ScalarHandler> scalarhandler_;
 
   //! scalar mangager
-  Teuchos::RCP<OutputScalarsBaseStrategy> outputscalarstrategy_;
+  Teuchos::RCP<OutputScalarsStrategyBase> outputscalarstrategy_;
 
   //! phi at time n
   Teuchos::RCP<Epetra_Vector> phin_;
@@ -1070,6 +1104,15 @@ protected:
   //! flag for potentially skipping computation of initial time derivative
   bool skipinitder_;
 
+  //! macro-scale state variable for macro-micro coupling in multi-scale simulations
+  double phinp_macro_;
+
+  //! micro-scale coupling flux for macro-micro coupling in multi-scale simulations
+  double q_;
+
+  //! derivative of micro-scale coupling flux w.r.t. macro-scale state variable for macro-micro coupling in multi-scale simulations
+  double dq_dphi_;
+
   /*========================================================================*/
 
   /*========================================================================*/
@@ -1153,7 +1196,7 @@ protected:
 /*!
  * \brief Base class for output of mean and total scalar values
  */
-class OutputScalarsBaseStrategy
+class OutputScalarsStrategyBase
 {
 public:
   /*========================================================================*/
@@ -1161,10 +1204,10 @@ public:
   /*========================================================================*/
 
   //! Standard Constructor
-  OutputScalarsBaseStrategy(){};
+  OutputScalarsStrategyBase(){};
 
   //! Destructor
-  virtual ~OutputScalarsBaseStrategy(){};
+  virtual ~OutputScalarsStrategyBase(){};
 
   //! initialize time integration
   virtual void Init(const ScaTraTimIntImpl* const scatratimint)=0;
@@ -1223,7 +1266,7 @@ protected:
 /*!
  * \brief Strategy evaluating total and mean scalars on entire domain
  */
-class OutputScalarsDomainStrategy : virtual public OutputScalarsBaseStrategy
+class OutputScalarsStrategyDomain : virtual public OutputScalarsStrategyBase
 {
 public:
   /*========================================================================*/
@@ -1231,10 +1274,10 @@ public:
   /*========================================================================*/
 
   //! Standard Constructor
-  OutputScalarsDomainStrategy():numscal_(0){};
+  OutputScalarsStrategyDomain():numscal_(0){};
 
   //! Destructor
-  virtual ~OutputScalarsDomainStrategy(){};
+  virtual ~OutputScalarsStrategyDomain(){};
 
   //! initialize time integration
   virtual void Init(const ScaTraTimIntImpl* const scatratimint);
@@ -1259,7 +1302,7 @@ private:
 /*!
  * \brief Strategy evaluating total and mean scalars on given condition
  */
-class OutputScalarsStrategyCondition : virtual public OutputScalarsBaseStrategy
+class OutputScalarsStrategyCondition : virtual public OutputScalarsStrategyBase
 {
 public:
   /*========================================================================*/
@@ -1301,7 +1344,7 @@ private:
 /*!
  * \brief Strategy evaluating total and mean scalars on entire domain and on given condition
  */
-class OutputScalarsDomainAndConditionStrategy : public OutputScalarsDomainStrategy,
+class OutputScalarsStrategyDomainAndCondition : public OutputScalarsStrategyDomain,
                                                 public OutputScalarsStrategyCondition
 {
 public:
@@ -1310,10 +1353,10 @@ public:
   /*========================================================================*/
 
   //! Standard Constructor
-  OutputScalarsDomainAndConditionStrategy(){};
+  OutputScalarsStrategyDomainAndCondition(){};
 
   //! Destructor
-  virtual ~OutputScalarsDomainAndConditionStrategy(){};
+  virtual ~OutputScalarsStrategyDomainAndCondition(){};
 
   //! initialize time integration
   virtual void Init(const ScaTraTimIntImpl* const scatratimint);

@@ -12,7 +12,7 @@ multipliers) computes, checks, and outputs different relevant vector norms and i
 in a subclass derived from an abstract, purely virtual interface class.
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -156,6 +156,59 @@ bool SCATRA::ConvCheckStrategyStd::AbortNonlinIter(
   // proceed with next iteration step
   return false;
 } // SCATRA::ConvCheckStrategyStd::AbortNonlinIter()
+
+
+/*----------------------------------------------------------------------*
+ | perform convergence check for Newton-Raphson iteration    fang 04/16 |
+ *----------------------------------------------------------------------*/
+bool SCATRA::ConvCheckStrategyStdMicroScale::AbortNonlinIter(
+    const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
+    double&                   actresidual     //!< return maximum current residual value
+    ) const
+{
+  // extract current Newton-Raphson iteration step
+  const int itnum = scatratimint.IterNum();
+
+  // compute L2 norm of concentration state vector
+  double conc_state_L2(0.0);
+  scatratimint.Phinp()->Norm2(&conc_state_L2);
+
+  // compute L2 norm of concentration residual vector
+  double conc_res_L2(0.);
+  scatratimint.Residual()->Norm2(&conc_res_L2);
+
+  // compute infinity norm of concentration residual vector
+  double conc_res_inf(0.);
+  scatratimint.Residual()->NormInf(&conc_res_inf);
+
+  // compute L2 norm of concentration increment vector
+  double conc_inc_L2(0.);
+  scatratimint.Increment()->Norm2(&conc_inc_L2);
+
+  // safety checks
+  if(std::isnan(conc_state_L2) or std::isnan(conc_res_L2) or std::isnan(conc_inc_L2))
+    dserror("Calculated vector norm for concentration is not a number!");
+  if(std::isinf(conc_state_L2) or std::isinf(conc_res_L2) or std::isinf(conc_inc_L2))
+    dserror("Calculated vector norm for concentration is infinity!");
+
+  // care for the case that nothing really happens in the concentration field
+  if(conc_state_L2 < 1.e-5)
+    conc_state_L2 = 1.;
+
+  // convergence check
+  if((itnum > 1 and conc_res_L2 <= ittol_ and conc_inc_L2/conc_state_L2 <= ittol_) or conc_res_L2 < abstolres_)
+    return true; // converged
+
+  // throw error in case maximum number of iteration steps is reached without convergence
+  if(itnum == itmax_)
+    dserror("Newton-Raphson algorithm on micro scale did not converge!");
+
+  // return maximum residual value for adaptivity of linear solver tolerance
+  actresidual = std::max(conc_res_L2,conc_inc_L2/conc_state_L2);
+
+  // proceed with next iteration step
+  return false;
+} // SCATRA::ConvCheckStrategyStdMicroScale::AbortNonlinIter()
 
 
 /*----------------------------------------------------------------------*

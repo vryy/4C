@@ -4,7 +4,7 @@
 \brief Generalized-alpha time-integration scheme
 
 <pre>
-Maintainer: Volker Gravemeier
+\maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15245
@@ -407,22 +407,27 @@ void SCATRA::TimIntGenAlpha::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                             vg 11/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::ReadRestart(const int step)
+void SCATRA::TimIntGenAlpha::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
-  IO::DiscretizationReader reader(discret_,step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if(input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  else
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
+
+  time_ = reader->ReadDouble("time");
+  step_ = reader->ReadInt("step");
 
   if (myrank_==0)
     std::cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<std::endl;
 
   // read state vectors that are needed for generalized-alpha restart
-  reader.ReadVector(phinp_,  "phinp");
-  reader.ReadVector(phin_,   "phin");
-  reader.ReadVector(phidtnp_,"phidtnp");
-  reader.ReadVector(phidtn_, "phidtn");
+  reader->ReadVector(phinp_,  "phinp");
+  reader->ReadVector(phin_,   "phin");
+  reader->ReadVector(phidtnp_,"phidtnp");
+  reader->ReadVector(phidtn_, "phidtn");
 
-  RestartProblemSpecific(step);
+  RestartProblemSpecific(step,*reader);
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)

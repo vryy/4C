@@ -4,7 +4,7 @@
 \brief A condition of any kind
 
 <pre>
-Maintainer: Michael Gee
+\maintainer Michael Gee
             gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15239
@@ -259,6 +259,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==RedAirwayVolDependentPleuralPressureCond) os <<"Reduced D airways evaluate lungs volume-dependent peural pressure condition";
   else if (Type()==RedAirwayEvalLungVolCond)      os <<"Reduced D airways evaluate lung volume condition";
   else if (Type()==TransportRobin)                os << "Scalar transport Robin boundary condition";
+  else if (Type()==ScatraMultiScaleCoupling)      os << "Scalar transport multi-scale coupling condition";
   else if (Type()==CellFocalAdhesion)             os << "Scalar transport boundary condition depending on structural surface stress";
   else dserror("no output std::string for condition defined in DRT::Condition::Print");
 

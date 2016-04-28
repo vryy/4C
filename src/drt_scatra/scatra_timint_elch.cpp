@@ -332,7 +332,7 @@ void SCATRA::ScaTraTimIntElch::EvaluateErrorComparedToAnalyticalSol()
       if ((step_==stepmax_) or (time_==maxtime_))// write results to file
       {
         ostd::stringstream temp;
-        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string simulation = problem_->OutputControlFile()->FileName();
         //const std::string fname = simulation+".relerror";
         const std::string fname = "XXX_kwok_xele.relerror";
 
@@ -484,13 +484,12 @@ void SCATRA::ScaTraTimIntElch::OutputProblemSpecific()
 /*----------------------------------------------------------------------*
  | problem-specific outputs                                  thon 11/15 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElch::RestartProblemSpecific( const int step )
+void SCATRA::ScaTraTimIntElch::RestartProblemSpecific( const int step, IO::DiscretizationReader& reader )
 {
   if (isale_)
-  {
-    IO::DiscretizationReader reader(discret_,step);
     reader.ReadVector(trueresidual_, "trueresidual");
-  }
+
+  return;
 }
 
 
@@ -806,8 +805,7 @@ void SCATRA::ScaTraTimIntElch::PostProcessSingleElectrodeInfo(
     // write results to file
     std::ostringstream temp;
     temp << id;
-    const std::string fname
-    = DRT::Problem::Instance()->OutputControlFile()->FileName()+".electrode_status_"+temp.str()+".txt";
+    const std::string fname = problem_->OutputControlFile()->FileName()+".electrode_status_"+temp.str()+".txt";
 
     std::ofstream f;
     if (Step() == 0)
@@ -986,7 +984,7 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoInterior()
         // set file name
         std::ostringstream id;
         id << condid;
-        const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".electrode_soc_"+id.str()+".txt");
+        const std::string filename(problem_->OutputControlFile()->FileName()+".electrode_soc_"+id.str()+".txt");
 
         // open file in appropriate mode and write header at beginning
         std::ofstream file;
@@ -1090,7 +1088,7 @@ void SCATRA::ScaTraTimIntElch::OutputCellVoltage()
       std::cout << "+----+-------------------------+" << std::endl << std::endl;
 
       // set file name
-      const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+".cell_voltage.txt");
+      const std::string filename(problem_->OutputControlFile()->FileName()+".cell_voltage.txt");
 
       // open file in appropriate mode and write header at beginning
       std::ofstream file;
@@ -1664,7 +1662,7 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
       // Otherwise you modify your output to file called during Output()
       ComputeTimeDerivative();
 
-      double targetcurrent = DRT::Problem::Instance()->Curve(curvenum-1).f(time_);
+      double targetcurrent = problem_->Curve(curvenum-1).f(time_);
       double timefacrhs = 1.0/ResidualScaling();
 
       double currtangent_anode(0.0);
@@ -2299,7 +2297,7 @@ void SCATRA::ScalarHandlerElch::Init(const ScaTraTimIntImpl* const scatratimint)
     if(DRT::INPUT::IntegralValue<int>(elchtimint->ElchParameterList()->sublist("DIFFCOND"),"CURRENT_SOLUTION_VAR"))
     {
       // shape of local row element(0) -> number of space dimensions
-      // int dim = DRT::Problem::Instance()->NDim();
+      // int dim = problem_->NDim();
       int dim = DRT::UTILS::getDimension(elchtimint->Discretization()->lRowElement(0)->Shape());
       // number of concentrations transported is numdof-1-nsd
       numscal_.clear();

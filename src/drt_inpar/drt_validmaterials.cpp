@@ -300,6 +300,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // scalar transport material for multi-scale approach
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_scatra_multiscale",
+                                            "scalar transport material for multi-scale approach",
+                                            INPAR::MAT::m_scatra_multiscale));
+
+    AddNamedString(m,"MICROFILE","input file for micro scale","filename.dat");
+    AddNamedInt(m,"MICRODIS_NUM","number of micro-scale discretization");
+    AddNamedReal(m,"POROSITY","porosity");
+    AddNamedReal(m,"TORTUOSITY","tortuosity");
+    AddNamedReal(m,"A_s","specific micro-scale surface area");
+    AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
+    AddNamedReal(m,"REACOEFF","reaction coefficient",0.0,true);
+    AddNamedReal(m,"SCNUM","Schmidt number",0.0,true);
+    AddNamedReal(m,"DENSIFICATION","densification coefficient",0.0,true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Myocard muscle material (with complicated reaction coefficient)
   {
     Teuchos::RCP<MaterialDefinition> m

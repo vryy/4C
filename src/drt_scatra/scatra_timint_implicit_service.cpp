@@ -465,8 +465,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
         std::ostringstream temp;
         temp << condid;
         temp << num;
-        const std::string fname
-        = DRT::Problem::Instance()->OutputControlFile()->FileName()+".boundaryflux_"+condnames[i]+"_"+temp.str()+".txt";
+        const std::string fname = problem_->OutputControlFile()->FileName()+".boundaryflux_"+condnames[i]+"_"+temp.str()+".txt";
 
         std::ofstream f;
         if (Step() <= 1)
@@ -735,7 +734,7 @@ void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string
          std::cout << "| " << std::setw(2) << condid << " |         " << std::setw(6) << std::setprecision(3) << std::fixed << (*integralvalue)(0) << "          |" << std::endl;
 
          // set file name
-         const std::string filename(DRT::Problem::Instance()->OutputControlFile()->FileName()+"."+label+"_integrals.txt");
+         const std::string filename(problem_->OutputControlFile()->FileName()+"."+label+"_integrals.txt");
 
          // open file in appropriate mode and write header at beginning
          std::ofstream file;
@@ -1183,7 +1182,7 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
     Teuchos::RCP<std::vector<double> > myreacnp = Teuchos::rcp(new std::vector<double>(NumScal(),0.0));
     eleparams.set<Teuchos::RCP<std::vector<double> > >("local reaction integral",myreacnp);
 
-    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+    discret_->Evaluate(eleparams);
 
     myreacnp = eleparams.get<Teuchos::RCP<std::vector<double> > >("local reaction integral");
     // global integral of reaction terms
@@ -1206,8 +1205,7 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
     {
       std::stringstream number;
       number << num;
-      const std::string fname
-      = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".integrreacvalues.txt";
+      const std::string fname = problem_->OutputControlFile()->FileName()+number.str()+".integrreacvalues.txt";
 
       std::ofstream f;
       if (Step() <= 1)
@@ -1294,9 +1292,9 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
     const int scale_sep_solvernumber = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES").get<int>("ML_SOLVER");
     if (scale_sep_solvernumber != (-1))     // create a dummy solver
     {
-      Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(scale_sep_solvernumber),
+      Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(problem_->SolverParams(scale_sep_solvernumber),
                                             discret_->Comm(),
-                                            DRT::Problem::Instance()->ErrorFile()->Handle()));
+                                            problem_->ErrorFile()->Handle()));
       // compute the null space,
       discret_->ComputeNullSpaceIfNecessary(solver->Params(),true);
       // and, finally, extract the ML parameters
@@ -1692,10 +1690,10 @@ Teuchos::RCP<Epetra_MultiVector>  SCATRA::ScaTraTimIntImpl::ReconstructGradientA
   // Probably not the nicest way...
   // Might want to have L2_projection incorporated into two-phase surface tension parameters
   const Teuchos::ParameterList& scatradyn =
-    DRT::Problem::Instance()->ScalarTransportDynamicParams();
+    problem_->ScalarTransportDynamicParams();
   const int lstsolver = scatradyn.get<int>("LINEAR_SOLVER");
 
-  const int dim = DRT::Problem::Instance()->NDim();
+  const int dim = problem_->NDim();
 
   Teuchos::RCP<Epetra_MultiVector> gradPhi = SCATRA::ScaTraTimIntImpl::ComputeNodalL2Projection(phi,"phinp",dim,eleparams,lstsolver);
 
@@ -2133,7 +2131,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 //        {
 //          std::ostringstream temp;
 //          temp << k;
-//          const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+//          const std::string simulation = problem_->OutputControlFile()->FileName();
 //          const std::string fname = simulation+"_c"+temp.str()+".relerror";
 //
 //          std::ofstream f;
@@ -2148,7 +2146,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
       std::ostringstream temp;
       temp << k;
-      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string simulation = problem_->OutputControlFile()->FileName();
       const std::string fname = simulation+"_c"+temp.str()+"_time.relerror";
 
       if(step_==0)
@@ -2186,7 +2184,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 /*----------------------------------------------------------------------*
  |  Prepare evaluation of mean scalars                      vuong   04/16|
  *----------------------------------------------------------------------*/
-void SCATRA::OutputScalarsBaseStrategy::PrepareEvaluate(
+void SCATRA::OutputScalarsStrategyBase::PrepareEvaluate(
     const ScaTraTimIntImpl* const scatratimint,
     Teuchos::ParameterList& eleparams)
 {
@@ -2206,12 +2204,12 @@ void SCATRA::OutputScalarsBaseStrategy::PrepareEvaluate(
 
   // provide number of dof set for transport veloctiy
   eleparams.set<int>("ndsvel",scatratimint->nds_vel_);
-} // SCATRA::OutputScalarsBaseStrategy::PrepareEvaluate
+} // SCATRA::OutputScalarsStrategyBase::PrepareEvaluate
 
 /*----------------------------------------------------------------------------------*
  |  print header of table for summary of mean values to screen          vuong   04/16|
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsBaseStrategy::PrintHeaderToScreen()
+void SCATRA::OutputScalarsStrategyBase::PrintHeaderToScreen()
 {
   // screen output
   std::cout << "Total and mean values of transported scalars:" << std::endl;
@@ -2220,12 +2218,12 @@ void SCATRA::OutputScalarsBaseStrategy::PrintHeaderToScreen()
   std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl;
 
   return;
-} //SCATRA::OutputScalarsBaseStrategy::PrintHeaderToScreen()
+} //SCATRA::OutputScalarsStrategyBase::PrintHeaderToScreen()
 
 /*----------------------------------------------------------------------------------*
  |  print default header of table for summary of mean values to file      vuong   04/16|
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsBaseStrategy::PrintDefaultHeaderToFile(
+void SCATRA::OutputScalarsStrategyBase::PrintDefaultHeaderToFile(
     const std::string& fname)
 {
   std::ofstream f;
@@ -2236,12 +2234,12 @@ void SCATRA::OutputScalarsBaseStrategy::PrintDefaultHeaderToFile(
   f.close();
 
   return;
-} // SCATRA::OutputScalarsBaseStrategy::PrintDefaultHeaderToFile
+} // SCATRA::OutputScalarsStrategyBase::PrintDefaultHeaderToFile
 
 /*----------------------------------------------------------------------------------*
  |  finalize the output of screen and file                             vuong   04/16|
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsBaseStrategy::FinalizeOutput(const std::string& fname)
+void SCATRA::OutputScalarsStrategyBase::FinalizeOutput(const std::string& fname)
 {
   // screen output
   std::cout << "+-----------+-----------+--------------------+-----------------+-------------------+" << std::endl << std::endl;
@@ -2254,12 +2252,12 @@ void SCATRA::OutputScalarsBaseStrategy::FinalizeOutput(const std::string& fname)
   f.close();
 
   return;
-} // SCATRA::OutputScalarsBaseStrategy::FinalizeOutput
+} // SCATRA::OutputScalarsStrategyBase::FinalizeOutput
 
 /*----------------------------------------------------------------------------------*
  |  output total and mean values of transported scalars                 vuong   04/16|
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsBaseStrategy::OutputTotalAndMeanScalars(
+void SCATRA::OutputScalarsStrategyBase::OutputTotalAndMeanScalars(
     const ScaTraTimIntImpl* const scatratimint,
     const int num)
 {
@@ -2271,7 +2269,7 @@ void SCATRA::OutputScalarsBaseStrategy::OutputTotalAndMeanScalars(
   // generate name of output file
   std::ostringstream number;
   number << num;
-  const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".scalarvalues.txt";
+  const std::string fname = scatratimint->DiscWriter()->Output()->FileName()+number.str()+".scalarvalues.txt";
 
   // print header of output table to screen and file
   if(scatratimint->myrank_ == 0)
@@ -2308,12 +2306,12 @@ void SCATRA::OutputScalarsBaseStrategy::OutputTotalAndMeanScalars(
   discret->ClearState();
 
   return;
-} // SCATRA::OutputScalarsBaseStrategy::OutputTotalAndMeanScalars
+} // SCATRA::OutputScalarsStrategyBase::OutputTotalAndMeanScalars
 
 /*--------------------------------------------------------------------------------------*
  |  Initialize output class                                                vuong   04/16|
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsDomainStrategy::Init(const ScaTraTimIntImpl* const scatratimint)
+void SCATRA::OutputScalarsStrategyDomain::Init(const ScaTraTimIntImpl* const scatratimint)
 {
   if( not scatratimint->scalarhandler_->EqualNumDof())
     dserror("Output of scalars for entire domain not valid for different numbers of DOFs per nodein ScaTra discretization. \n"
@@ -2331,7 +2329,7 @@ void SCATRA::OutputScalarsDomainStrategy::Init(const ScaTraTimIntImpl* const sca
 /*----------------------------------------------------------------------------------*
  |  print header of table for summary of mean values to file            vuong   04/16|
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsDomainStrategy::PrintHeaderToFile(
+void SCATRA::OutputScalarsStrategyDomain::PrintHeaderToFile(
     const std::string& fname)
 {
   std::ofstream f;
@@ -2347,12 +2345,12 @@ void SCATRA::OutputScalarsDomainStrategy::PrintHeaderToFile(
   f.close();
 
   return;
-} // SCATRA::OutputScalarsDomainStrategy::PrintHeaderToFile
+} // SCATRA::OutputScalarsStrategyDomain::PrintHeaderToFile
 
 /*--------------------------------------------------------------------------------------*
  |  evaluate mean and total scalars and print them to file and screen       vuong   04/16|
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsDomainStrategy::EvaluateIntegralsAndPrintResults(
+void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegralsAndPrintResults(
     const ScaTraTimIntImpl* const scatratimint,
     const std::string& fname,
     Teuchos::ParameterList& eleparams)
@@ -2369,6 +2367,10 @@ void SCATRA::OutputScalarsDomainStrategy::EvaluateIntegralsAndPrintResults(
 
   // perform integration
   scatratimint->discret_->EvaluateScalars(eleparams,scalars);
+
+  // modifications of domain integrals due to use of spherical coordinates
+  if(DRT::INPUT::IntegralValue<bool>(*scatratimint->params_,"SPHERICALCOORDS"))
+    scalars->Scale(4.*PI);
 
   // extract domain integral
   const double domint = (*scalars)[numscal_];
@@ -2401,7 +2403,7 @@ void SCATRA::OutputScalarsDomainStrategy::EvaluateIntegralsAndPrintResults(
   }
 
   return;
-} // SCATRA::OutputScalarsDomainStrategy::EvaluateIntegralsAndPrintResults
+} // SCATRA::OutputScalarsStrategyDomain::EvaluateIntegralsAndPrintResults
 
 /*--------------------------------------------------------------------------------------*
  |  Initialize output class                                                vuong   04/16|
@@ -2496,6 +2498,10 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(
     // perform integration
     scatratimint->discret_->EvaluateScalars(eleparams,scalars,"TotalAndMeanScalar",domainid_int);
 
+    // modifications of domain integrals due to use of spherical coordinates
+    if(DRT::INPUT::IntegralValue<bool>(*scatratimint->params_,"SPHERICALCOORDS"))
+      scalars->Scale(4.*PI);
+
     // extract domain integral
     const double domint = (*scalars)[numscal];
 
@@ -2533,42 +2539,42 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(
 /*--------------------------------------------------------------------------------------*
  |  Initialize output class                                                vuong   04/16|
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsDomainAndConditionStrategy::Init(const ScaTraTimIntImpl* const scatratimint)
+void SCATRA::OutputScalarsStrategyDomainAndCondition::Init(const ScaTraTimIntImpl* const scatratimint)
 {
   // initialize base classes
   OutputScalarsStrategyCondition::Init(scatratimint);
-  OutputScalarsDomainStrategy::Init(scatratimint);
+  OutputScalarsStrategyDomain::Init(scatratimint);
 
   return;
-} // SCATRA::OutputScalarsDomainAndConditionStrategy::Init
+} // SCATRA::OutputScalarsStrategyDomainAndCondition::Init
 
 /*----------------------------------------------------------------------------------*
  |  print header of table for summary of mean values to file            vuong   04/16|
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsDomainAndConditionStrategy::PrintHeaderToFile(
+void SCATRA::OutputScalarsStrategyDomainAndCondition::PrintHeaderToFile(
     const std::string& fname)
 {
   // call base classes
   OutputScalarsStrategyCondition::PrintHeaderToFile(fname);
-  OutputScalarsDomainStrategy::PrintHeaderToFile(fname);
+  OutputScalarsStrategyDomain::PrintHeaderToFile(fname);
 
   return;
-} // SCATRA::OutputScalarsDomainAndConditionStrategy::PrintHeaderToFile
+} // SCATRA::OutputScalarsStrategyDomainAndCondition::PrintHeaderToFile
 
 /*--------------------------------------------------------------------------------------*
  |  evaluate mean and total scalars and print them to file and screen       vuong   04/16|
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsDomainAndConditionStrategy::EvaluateIntegralsAndPrintResults(
+void SCATRA::OutputScalarsStrategyDomainAndCondition::EvaluateIntegralsAndPrintResults(
     const ScaTraTimIntImpl* const scatratimint,
     const std::string& fname,
     Teuchos::ParameterList& eleparams)
 {
   // call base classes
   OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(scatratimint,fname,eleparams);
-  OutputScalarsDomainStrategy::EvaluateIntegralsAndPrintResults(scatratimint,fname,eleparams);
+  OutputScalarsStrategyDomain::EvaluateIntegralsAndPrintResults(scatratimint,fname,eleparams);
 
   return;
-} // SCATRA::OutputScalarsDomainAndConditionStrategy::EvaluateIntegralsAndPrintResults
+} // SCATRA::OutputScalarsStrategyDomainAndCondition::EvaluateIntegralsAndPrintResults
 
 
 /*----------------------------------------------------------------------*

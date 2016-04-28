@@ -86,7 +86,10 @@ void SCATRA::MeshtyingStrategyStd::Solve(
  *------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyStd::InitConvCheckStrategy()
 {
-  convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStd(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  if(scatratimint_->MicroScale())
+    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMicroScale(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  else
+    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStd(scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
 
   return;
 } // SCATRA::MeshtyingStrategyStd::InitConvCheckStrategy

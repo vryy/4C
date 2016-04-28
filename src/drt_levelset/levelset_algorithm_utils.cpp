@@ -6,7 +6,7 @@
     detailed description in header file levelset_algorithm.H
 
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -172,7 +172,7 @@ void SCATRA::LevelSetAlgorithm::MassConservationCheck(
 
       if (writetofile)
       {
-        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string simulation = problem_->OutputControlFile()->FileName();
         const std::string fname = simulation+"_massconservation.relerror";
 
         if (step_==0)
@@ -229,7 +229,7 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
     {
       if (step_==0)
       {
-        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        const std::string simulation = problem_->OutputControlFile()->FileName();
         const std::string fname = simulation+"_shape.error";
 
         std::ofstream f;
@@ -270,7 +270,7 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
           const int dofgid = nodedofset[k];
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
-          double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(k,lnode->X(),time_,NULL);
+          double initialval = problem_->Funct(startfuncno-1).Evaluate(k,lnode->X(),time_,NULL);
           int err = phiref->ReplaceMyValues(1,&initialval,&doflid);
           if (err != 0) dserror("dof not on proc");
         }
@@ -293,7 +293,7 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
       double errLinf = 0.0;
       phidiff->NormInf(&errLinf);
 
-      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string simulation = problem_->OutputControlFile()->FileName();
       const std::string fname = simulation+"_shape.error";
 
       if (myrank_ == 0)
@@ -1021,7 +1021,7 @@ void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
     if (discret_->Comm().MyPID()==0)
     {
       // write to file
-      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string simulation = problem_->OutputControlFile()->FileName();
       const std::string fname = simulation+"_center_of_mass.txt";
 
       if (Step()==0)

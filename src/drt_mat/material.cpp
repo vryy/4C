@@ -38,6 +38,7 @@
 #include "lubrication_mat.H"
 #include "scatra_mat.H"
 #include "scatra_mat_poro_ecm.H"
+#include "scatra_mat_multiscale.H"
 #include "scatra_mat_aniso.H"
 #include "myocard.H"
 #include "mixfrac.H"
@@ -273,6 +274,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ScatraReactionMat(curmat));
     MAT::PAR::ScatraReactionMat* params = static_cast<MAT::PAR::ScatraReactionMat*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_scatra_multiscale:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ScatraMatMultiScale(curmat));
+    MAT::PAR::ScatraMatMultiScale* params = static_cast<MAT::PAR::ScatraMatMultiScale*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_scatra_chemotaxis:

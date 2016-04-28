@@ -5,7 +5,7 @@
        loma problems
 
 <pre>
-Maintainer: Volker Gravemeier
+\maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15245
@@ -280,26 +280,30 @@ void SCATRA::TimIntLomaOST::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaOST::ReadRestart(const int step)
+void SCATRA::TimIntLomaOST::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
   // do standard output
-  TimIntOneStepTheta::ReadRestart(step);
+  TimIntOneStepTheta::ReadRestart(step,input);
 
   // restart data of loma problems
   // required for restart of closed systems
 
-  IO::DiscretizationReader reader(discret_,step);
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if(input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  else
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
 
   // thermodynamic pressure at time n+1
-  thermpressnp_ = reader.ReadDouble("thermpressnp");
+  thermpressnp_ = reader->ReadDouble("thermpressnp");
   // thermodynamic pressure at time n
-  thermpressn_ = reader.ReadDouble("thermpressn");
+  thermpressn_ = reader->ReadDouble("thermpressn");
   // time derivative of thermodynamic pressure at time n+1
-  thermpressdtnp_ = reader.ReadDouble("thermpressdtnp");
+  thermpressdtnp_ = reader->ReadDouble("thermpressdtnp");
   // time derivative of thermodynamic pressure at time n
-  thermpressdtn_ = reader.ReadDouble("thermpressdtn");
+  thermpressdtn_ = reader->ReadDouble("thermpressdtn");
   // as well as initial mass
-  initialmass_ = reader.ReadDouble("initialmass");
+  initialmass_ = reader->ReadDouble("initialmass");
 
   return;
 }

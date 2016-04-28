@@ -33,6 +33,7 @@
 
 #include "../drt_immersed_problem/immersed_field_exchange_manager.H" // for cell migration
 
+#include "../drt_mat/scatra_mat_multiscale.H"
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
@@ -657,6 +658,93 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
+  case SCATRA::micro_scale_initialize:
+  {
+    if(ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+    {
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+      // loop over all Gauss points
+      for(int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+        // initialize micro scale in multi-scale simulations
+        Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())->Initialize(ele->Id(),iquad);
+    }
+
+    break;
+  }
+
+  case SCATRA::micro_scale_prepare_time_step:
+  {
+    if(ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+    {
+      // extract state variables at element nodes
+      DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_,1> >(*discretization.GetState("phinp"),ephinp_,lm);
+
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+      // loop over all Gauss points
+      for(int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+      {
+        // evaluate shape functions at Gauss point
+        EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+        // evaluate state variables at Gauss point
+        SetInternalVariablesForMatAndRHS();
+
+        // prepare time step on micro scale
+        Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())->PrepareTimeStep(iquad,scatravarmanager_->Phinp(0));
+      }
+    }
+
+    break;
+  }
+
+  case SCATRA::micro_scale_update:
+  {
+    if(ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+    {
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+      // loop over all Gauss points
+      for(int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+        // update multi-scale scalar transport material
+        Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())->Update(iquad);
+    }
+
+    break;
+  }
+
+  case SCATRA::micro_scale_output:
+  {
+    if(ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+    {
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+      // loop over all Gauss points
+      for(int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+        // create output on micro scale
+        Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())->Output(iquad);
+    }
+
+    break;
+  }
+
+  case SCATRA::micro_scale_read_restart:
+  {
+    if(ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+    {
+      const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+      // loop over all Gauss points
+      for(int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+        // read restart on micro scale
+        Teuchos::rcp_dynamic_cast<MAT::ScatraMatMultiScale>(ele->Material())->ReadRestart(iquad);
+    }
+
+    break;
+  }
+
   case SCATRA::calc_cell_mechanotransduction:
   {
     int NumPhi=6;

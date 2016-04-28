@@ -444,7 +444,7 @@ void SCATRA::ScaTraAlgorithm::Output()
   // we have to call the output of averaged fields for scatra separately
   if (  FluidField()->TurbulenceStatisticManager() != Teuchos::null)
     FluidField()->TurbulenceStatisticManager()
-        ->DoOutputForScaTra(ScaTraField()->DiscWriter(),ScaTraField()->Step());
+        ->DoOutputForScaTra(*ScaTraField()->DiscWriter(),ScaTraField()->Step());
 
   return;
 }

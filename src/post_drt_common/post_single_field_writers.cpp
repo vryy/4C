@@ -297,7 +297,7 @@ void ScaTraFilter::WriteAllResults(PostField* field)
     std::ostringstream temp;
     temp << k;
     std::string name = "phi_"+temp.str();
-    writer_->WriteResult("phinp", name, dofbased, 1,k-1,true);
+    writer_->WriteResult("phinp", name, dofbased, 1,k-1);
     writer_->WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1,k-1);
     // additional fields for meshfree problems
     writer_->WriteResult("phiatmeshfreenodes", name+"_atnodes", dofbased, 1,k-1);

@@ -45,6 +45,7 @@
 #include "../drt_inpar/drt_validmaterials.H"
 #include "../drt_inpar/inpar.H"
 #include "../drt_mat/micromaterial.H"
+#include "../drt_mat/scatra_mat_multiscale.H"
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
@@ -2123,6 +2124,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     case prb_fsi:
     case prb_fsi_redmodels:
     case prb_fsi_lung:
+    case prb_scatra:
     {
       // read microscale fields from second, third, ... inputfile if necessary
       // (in case of multi-scale material models in structure field)
@@ -2165,18 +2167,34 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 {
   // check whether micro material is specified
-  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_struct_multiscale);
-  if (id==-1)
+  const int id_struct = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_struct_multiscale);
+  const int id_scatra = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale);
+
+  // return if no multiscale material is used
+  if(id_struct == -1 and id_scatra == -1)
     return;
 
+  // safety check
+  if(id_struct != -1 and id_scatra != -1)
+    dserror("Cannot have multi-scale material for both structure and scalar transport!");
+
+  // store name of macro-scale discretization in string
+  std::string macro_dis_name("");
+  if(id_struct != -1)
+    macro_dis_name = "structure";
+  else
+    macro_dis_name = "scatra";
+
+  // fetch communicators
   Teuchos::RCP<Epetra_Comm> lcomm = npgroup_->LocalComm();
   Teuchos::RCP<Epetra_Comm> gcomm = npgroup_->GlobalComm();
 
   DRT::Problem* macro_problem = DRT::Problem::Instance();
-  Teuchos::RCP<DRT::Discretization> macro_dis = macro_problem->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> macro_dis = macro_problem->GetDis(macro_dis_name);
 
   // repartition macro problem for a good distribution of elements with micro material
-  DRT::UTILS::WeightedRepartitioning(macro_dis, true, true, true);
+  if(macro_dis_name == "structure")
+    DRT::UTILS::WeightedRepartitioning(macro_dis, true, true, true);
 
   // make sure that we read the micro discretizations only on the processors on
   // which elements with the corresponding micro material are evaluated
@@ -2189,7 +2207,8 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
     DRT::Element* actele = macro_dis->lColElement(i);
     Teuchos::RCP<MAT::Material> actmat = actele->Material();
 
-    if (actmat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+    if((actmat->MaterialType() == INPAR::MAT::m_struct_multiscale and macro_dis_name == "structure")
+    or (actmat->MaterialType() == INPAR::MAT::m_scatra_multiscale and macro_dis_name == "scatra"))
     {
       MAT::PAR::Parameter* actparams = actmat->Parameter();
       my_multimat_IDs.insert(actparams->Id());
@@ -2268,15 +2287,54 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
       if (my_multimat_IDs.find(matid)!=my_multimat_IDs.end())
       {
         Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
-        MAT::MicroMaterial* micromat = static_cast<MAT::MicroMaterial*>(mat.get());
-        int microdisnum = micromat->MicroDisNum();
 
-        // broadcast microdis number
-        subgroupcomm->Broadcast(&microdisnum, 1, 0);
+        // initialize variables storing micro-scale information
+        int microdisnum(-1);
+        std::string micro_dis_name = "";
+        std::string micro_inputfile_name("");
+        DRT::Problem* micro_problem(NULL);
 
-        DRT::Problem* micro_problem = DRT::Problem::Instance(microdisnum);
+        // structure case
+        if(macro_dis_name == "structure")
+        {
+          // access multi-scale structure material
+          MAT::MicroMaterial* micromat = static_cast<MAT::MicroMaterial*>(mat.get());
 
-        std::string micro_inputfile_name = micromat->MicroInputFileName();
+          // extract and broadcast number of micro-scale discretization
+          microdisnum = micromat->MicroDisNum();
+          subgroupcomm->Broadcast(&microdisnum,1,0);
+
+          // set name of micro-scale discretization
+          micro_dis_name = "structure";
+
+          // extract name of micro-scale input file
+          micro_inputfile_name = micromat->MicroInputFileName();
+
+          // instantiate micro-scale problem
+          micro_problem = DRT::Problem::Instance(microdisnum);
+        }
+
+        // scalar transport case
+        else
+        {
+          // access multi-scale scalar transport material
+          MAT::ScatraMatMultiScale* micromat = static_cast<MAT::ScatraMatMultiScale*>(mat.get());
+
+          // extract and broadcast number of micro-scale discretization
+          microdisnum = micromat->MicroDisNum();
+          subgroupcomm->Broadcast(&microdisnum,1,0);
+
+          // set unique name of micro-scale discretization
+          std::stringstream name;
+          name << "scatra_multiscale_" << microdisnum;
+          micro_dis_name = name.str();
+
+          // extract name of micro-scale input file
+          micro_inputfile_name = micromat->MicroInputFileName();
+
+          // instantiate micro-scale problem
+          micro_problem = DRT::Problem::Instance(microdisnum);
+        }
 
         if (micro_inputfile_name[0]!='/')
         {
@@ -2297,12 +2355,12 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         // start with actual reading
         DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
-        Teuchos::RCP<DRT::Discretization> structdis_micro = Teuchos::rcp(new DRT::Discretization("structure", micro_reader.Comm()));
+        Teuchos::RCP<DRT::Discretization> dis_micro = Teuchos::rcp(new DRT::Discretization(micro_dis_name,micro_reader.Comm()));
 
         // create discretization writer - in constructor set into and owned by corresponding discret
-        structdis_micro->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis_micro)));
+        dis_micro->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(dis_micro)));
 
-        micro_problem->AddDis("structure", structdis_micro);
+        micro_problem->AddDis(micro_dis_name,dis_micro);
 
         micro_problem->ReadParameter(micro_reader);
 
@@ -2318,7 +2376,12 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         micro_problem->ReadMaterials(micro_reader);
 
         DRT::INPUT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
-        micronodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
+
+        if(micro_dis_name == "structure")
+          micronodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(dis_micro,micro_reader,"--STRUCTURE ELEMENTS")));
+        else
+          micronodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(dis_micro,micro_reader,"--TRANSPORT ELEMENTS")));
+
         micronodereader.Read();
 
         // read conditions of microscale
@@ -2328,7 +2391,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
         // At this point, everything for the microscale is read,
         // subsequent reading is only for macroscale
-        structdis_micro->FillComplete();
+        dis_micro->FillComplete();
 
         // broadcast restart information
         subgroupcomm->Broadcast(&restartstep_, 1, 0);
@@ -2647,6 +2710,3 @@ void DRT::Problem::SetRestartStep(int r)
 
   restartstep_ = r;
 }
-
-
-

@@ -3,7 +3,7 @@
 \brief
 
 <pre>
-Maintainer: Volker Gravemeier
+\maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15245
@@ -59,7 +59,7 @@ public:
   void UpdateThermPressure();
 
   /// read restart data
-  void ReadRestart(const int step);
+  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
   /// routine to return thermo. press. at time step n+alpha_F for low-Mach-number flow
   double ThermPressAf() { return thermpressaf_; }

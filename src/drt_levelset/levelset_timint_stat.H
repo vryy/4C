@@ -3,7 +3,7 @@
 \brief
 
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -40,7 +40,7 @@ public:
   virtual void Init();
 
   /// read restart data
-  virtual void ReadRestart(int step){dserror("You should not need this function!"); return;};
+  virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null){dserror("You should not need this function!"); return;};
 
   /// redistribute the scatra discretization and vectors according to nodegraph
   void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph){dserror("You should not need this function!"); return;};

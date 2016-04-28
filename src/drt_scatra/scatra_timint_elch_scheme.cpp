@@ -5,10 +5,10 @@
        elch problems
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -153,11 +153,15 @@ void SCATRA::ScaTraTimIntElchOST::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step)
+void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
-  TimIntOneStepTheta::ReadRestart(step);
+  TimIntOneStepTheta::ReadRestart(step,input);
 
-  IO::DiscretizationReader reader(discret_,step);
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if(input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  else
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
 
   // Initialize Nernst-BC
   InitNernstBC();
@@ -187,13 +191,13 @@ void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step)
         std::stringstream temp;
         temp << condid;
 
-        double pot = reader.ReadDouble("pot_"+temp.str());
+        double pot = reader->ReadDouble("pot_"+temp.str());
         mycond->Add("pot",pot);
-        double pot0n = reader.ReadDouble("pot0n_"+temp.str());
+        double pot0n = reader->ReadDouble("pot0n_"+temp.str());
         mycond->Add("pot0n",pot0n);
-        double pot0hist = reader.ReadDouble("pot0hist_"+temp.str());
+        double pot0hist = reader->ReadDouble("pot0hist_"+temp.str());
         mycond->Add("pot0hist",pot0hist);
-        double pot0dtn = reader.ReadDouble("pot0dtn_"+temp.str());
+        double pot0dtn = reader->ReadDouble("pot0dtn_"+temp.str());
         mycond->Add("pot0dtn",pot0dtn);
         read_pot=true;
         if (myrank_==0)
@@ -299,7 +303,7 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
       // compute time derivative of applied potential
       if (curvenum>=0)
       {
-        const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time_);
+        const double curvefac = problem_->Curve(curvenum).f(time_);
         // adjust potential at metal side accordingly
         pot0np *= curvefac;
       }
@@ -460,11 +464,15 @@ void SCATRA::ScaTraTimIntElchBDF2::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(const int step)
+void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
-  TimIntBDF2::ReadRestart(step);
+  TimIntBDF2::ReadRestart(step,input);
 
-  IO::DiscretizationReader reader(discret_,step);
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if(input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  else
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
 
   // Initialize Nernst-BC
   InitNernstBC();
@@ -491,13 +499,13 @@ void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(const int step)
       const int condid = mycond->GetInt("ConditionID");
       if (condid_cathode==condid or dlcapexists_==true)
       {
-        double pot = reader.ReadDouble("pot");
+        double pot = reader->ReadDouble("pot");
         mycond->Add("pot",pot);
-        double potn = reader.ReadDouble("pot0n");
+        double potn = reader->ReadDouble("pot0n");
         mycond->Add("pot0n",potn);
-        double potnm = reader.ReadDouble("potnm");
+        double potnm = reader->ReadDouble("potnm");
         mycond->Add("potnm",potnm);
-        double pothist = reader.ReadDouble("pothist");
+        double pothist = reader->ReadDouble("pothist");
         mycond->Add("pothist",pothist);
         read_pot=true;
         if (myrank_==0)
@@ -761,11 +769,15 @@ void SCATRA::ScaTraTimIntElchGenAlpha::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(const int step)
+void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
-  TimIntGenAlpha::ReadRestart(step);
+  TimIntGenAlpha::ReadRestart(step,input);
 
-  IO::DiscretizationReader reader(discret_,step);
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if(input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  else
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
 
   // Initialize Nernst-BC
    InitNernstBC();
@@ -791,10 +803,10 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(const int step)
        const int condid = mycond->GetInt("ConditionID");
        if (condid_cathode==condid or dlcapexists_==true)
        {
-         double pot = reader.ReadDouble("pot");
+         double pot = reader->ReadDouble("pot");
          mycond->Add("pot",pot);
 
-         double potn = reader.ReadDouble("pot0n");
+         double potn = reader->ReadDouble("pot0n");
          mycond->Add("pot0n",potn);
 
          read_pot=true;
@@ -891,7 +903,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
       // compute time derivative of applied potential
       if (curvenum>=0)
       {
-        const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time_);
+        const double curvefac = problem_->Curve(curvenum).f(time_);
         // adjust potential at metal side accordingly
         pot0np *= curvefac;
       }
@@ -1007,11 +1019,15 @@ void SCATRA::ScaTraTimIntElchStationary::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::ReadRestart(const int step)
+void SCATRA::ScaTraTimIntElchStationary::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
-  TimIntStationary::ReadRestart(step);
+  TimIntStationary::ReadRestart(step,input);
 
-  IO::DiscretizationReader reader(discret_,step);
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if(input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  else
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
 
   // Initialize Nernst-BC
   InitNernstBC();
@@ -1038,7 +1054,7 @@ void SCATRA::ScaTraTimIntElchStationary::ReadRestart(const int step)
       const int condid = mycond->GetInt("ConditionID");
       if (condid_cathode==condid or dlcapexists_==true)
       {
-        double pot = reader.ReadDouble("pot");
+        double pot = reader->ReadDouble("pot");
         mycond->Add("pot",pot);
         read_pot=true;
         if (myrank_==0)

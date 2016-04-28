@@ -3,7 +3,7 @@
 \brief
 
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -48,7 +48,7 @@ public:
   virtual void Update(const int num=0);
 
   /// read restart data
-  virtual void ReadRestart(const int step);
+  virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
   // routine to return scalar field phi at time step n-1
   Teuchos::RCP<Epetra_Vector> Phinm(){return Teuchos::null;}

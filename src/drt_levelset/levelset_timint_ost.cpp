@@ -4,7 +4,7 @@
 \brief one-step theta time integration scheme for level-set problems
 
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -270,10 +270,10 @@ void SCATRA::LevelSetTimIntOneStepTheta::Redistribute(const Teuchos::RCP<Epetra_
 /*----------------------------------------------------------------------*
  | setup problem after restart                          rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-void SCATRA::LevelSetTimIntOneStepTheta::ReadRestart(int start)
+void SCATRA::LevelSetTimIntOneStepTheta::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
   // do basic restart
-  TimIntOneStepTheta::ReadRestart(start);
+  TimIntOneStepTheta::ReadRestart(step,input);
 
   // read restart for particles
   if (particle_ != Teuchos::null)
@@ -281,7 +281,7 @@ void SCATRA::LevelSetTimIntOneStepTheta::ReadRestart(int start)
     if(myrank_ == 0)
       std::cout << "===== Particle restart! =====" <<std::endl;
 
-    particle_->ReadRestart(start);
+    particle_->ReadRestart(step);
   }
 
   return;

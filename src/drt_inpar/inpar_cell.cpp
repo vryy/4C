@@ -352,6 +352,8 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&cellscatradyn);
 
+  BoolParameter("SPHERICALCOORDS","No","use of spherical coordinates",&cellscatradyn);
+
   setStringToIntegralParameter<int>("WRITEFLUX","No","output of diffusive/total flux vectors",
                                tuple<std::string>(
                                  "No",

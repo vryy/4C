@@ -16,6 +16,7 @@
 
 
 #include "drt_validparameters.H"
+#include "inpar_s2i.H"
 #include "inpar_scatra.H"
 #include "inpar_fluid.H"
 #include "inpar_thermo.H"
@@ -121,6 +122,8 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   }
 
   IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&scatradyn);
+
+  BoolParameter("SPHERICALCOORDS","No","use of spherical coordinates",&scatradyn);
 
   setStringToIntegralParameter<int>("CALCERROR","No",
                                "compute error compared to analytical solution",
@@ -677,6 +680,68 @@ void INPAR::SCATRA::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
                                          true,
                                          DRT::Condition::Surface));
 
-   condlist.push_back(linetransportneumanninflow);
-   condlist.push_back(surftransportneumanninflow);
+  condlist.push_back(linetransportneumanninflow);
+  condlist.push_back(surftransportneumanninflow);
+
+  /*--------------------------------------------------------------------*/
+  // Macro-micro coupling condition for micro scale in multi-scale scalar transport problems
+  {
+    // condition definition
+    Teuchos::RCP<ConditionDefinition> multiscalecouplingpoint =
+        Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA MULTI-SCALE COUPLING POINT CONDITIONS",
+                                             "ScatraMultiScaleCoupling",
+                                             "Scalar transport multi-scale coupling condition",
+                                             DRT::Condition::ScatraMultiScaleCoupling,
+                                             false,
+                                             DRT::Condition::Point));
+
+    // equip condition definition with input file line components
+    std::vector<Teuchos::RCP<ConditionComponent> > multiscalecouplingcomponents;
+
+    // kinetic models for macro-micro coupling
+    std::vector<Teuchos::RCP<CondCompBundle> > kineticmodels;
+    {
+      {
+        // constant permeability
+        std::vector<Teuchos::RCP<ConditionComponent> > constperm;
+        constperm.push_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));                // total number of existing scalars
+        std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepcomp;                           // empty vector --> no separators for integer vectors needed
+        std::vector<Teuchos::RCP<IntVectorConditionComponent> > intvectcomp;                          // empty vector --> no integer vectors needed
+        std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepcomp;
+        realsepcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("permeabilities")));       // string separator in front of real permeability vector in input file line
+        std::vector<Teuchos::RCP<RealVectorConditionComponent> > realvectcomp;
+        realvectcomp.push_back(Teuchos::rcp(new RealVectorConditionComponent("permeabilities",0)));   // real vector of constant permeabilities
+        constperm.push_back(Teuchos::rcp(new IntRealBundle(
+            "permeabilities",
+            Teuchos::rcp(new IntConditionComponent("numscal")),
+            intsepcomp,
+            intvectcomp,
+            realsepcomp,
+            realvectcomp
+        )));
+
+        kineticmodels.push_back(Teuchos::rcp(new CondCompBundle("ConstantPermeability",constperm,INPAR::S2I::kinetics_constperm)));
+      }
+    } // kinetic models for macro-micro coupling
+
+    // insert kinetic models into vector with condition components
+    multiscalecouplingcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("KineticModel")));
+    multiscalecouplingcomponents.push_back(Teuchos::rcp(new CondCompBundleSelector(
+        "kinetic models for macro-micro coupling",
+        Teuchos::rcp(new StringConditionComponent(
+            "kinetic model",
+            "ConstantPermeability",
+            Teuchos::tuple<std::string>("ConstantPermeability"),
+            Teuchos::tuple<int>(INPAR::S2I::kinetics_constperm))),
+        kineticmodels)));
+
+    // insert input file line components into condition definitions
+    for(unsigned i=0; i<multiscalecouplingcomponents.size(); ++i)
+      multiscalecouplingpoint->AddComponent(multiscalecouplingcomponents[i]);
+
+    // insert condition definitions into global list of valid condition definitions
+    condlist.push_back(multiscalecouplingpoint);
+  }
+
+  return;
 }

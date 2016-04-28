@@ -5,10 +5,10 @@
         elch-specific implementation (class ScaTraTimIntElch)
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -50,7 +50,7 @@ public:
   void Update(const int num=0);
 
   //! read restart data
-  void ReadRestart(const int step);
+  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
 protected:
 
@@ -99,7 +99,7 @@ public:
   void Update(const int num=0);
 
   //! read restart data
-  void ReadRestart(const int step);
+  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
 protected:
 
@@ -145,7 +145,7 @@ public:
   void Update(const int num=0);
 
   //! read restart data
-  void ReadRestart(const int step);
+  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
 protected:
 
@@ -188,7 +188,7 @@ public:
   void Update(const int num=0);
 
   //! read restart data
-  void ReadRestart(const int step);
+  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
 protected:
 

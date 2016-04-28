@@ -99,6 +99,7 @@ namespace INPAR
       m_scatra,                                ///< scalar transport material
       m_scatra_aniso,                          ///< anisotropic scalar transport material
       m_scatra_growth_scd,                     ///< scalar transport material for coupling with growth model
+      m_scatra_multiscale,                     ///< scalar transport material for multi-scale approach
       m_scatra_reaction_poroECM,               ///< reaction definition and parameters for reaction model in porous ECM
       m_scatra_reaction,                       ///< reaction definition and parameters
       m_scatra_chemotaxis,                     ///< chemotaxis definition parameters

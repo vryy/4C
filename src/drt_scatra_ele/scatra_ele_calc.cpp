@@ -4,7 +4,7 @@
 \brief main file containing routines for calculation of scatra element
 
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -32,6 +32,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_lib/drt_condition_utils.H"
 
 #include "../drt_mat/scatra_mat.H"
+#include "../drt_mat/scatra_mat_multiscale.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/newtonianfluid.H"
 
@@ -787,8 +788,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Sysmat(
       if (scatraparatimint_->IsIncremental() and turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
         CalcRHSMFS(erhs,k,rhsfac,densnp,mfsggradphi,mfsgvelint,mfssgphi,mfsvdiv);
 
+      //----------------------------------------------------------------
+      // 7) macro-scale matrix and vector contributions arising from
+      //    macro-micro coupling in multi-scale simulations
+      //----------------------------------------------------------------
+      if(ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+        CalcMatAndRhsMultiScale(ele,emat,erhs,k,iquad,timefacfac,rhsfac);
     }// end loop all scalars
-
   }// end loop Gauss points
 
   return;
@@ -1061,7 +1067,7 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvalShapeFuncAndDerivsInPa
     xjm_.MultiplyNT(deriv_,xyze_);
     det = xij_.Invert(xjm_);
   }
-  else //element dimension is smaller than problem dimension -> mannifold
+  else //element dimension is smaller than problem dimension -> manifold
   {
     static LINALG::Matrix<nsd_ele_,nen_> deriv_red;
 
@@ -1152,6 +1158,18 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvalShapeFuncAndDerivsInPa
     xij_.Invert(xjm_);
   }
 
+  // modify Jacobian determinant in case of spherical coordinates
+  if(scatrapara_->SphericalCoords())
+  {
+    static LINALG::Matrix<nsd_,1> xyzint;
+
+    // evaluate radial coordinate
+    xyzint.Multiply(xyze_,funct_);
+
+    // multiply standard Jacobian determinant by square of radial coordinate
+    det *= xyzint(0)*xyzint(0);
+  }
+
   return det;
 }
 
@@ -1209,13 +1227,25 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::Materials(
 {
   switch(material->MaterialType())
   {
-  case INPAR::MAT::m_scatra:
-    MatScaTra(material,k,densn,densnp,densam,visc,iquad);
-    break;
-  default:
-    dserror("Material type %i is not supported",material->MaterialType());
-    break;
+    case INPAR::MAT::m_scatra:
+    {
+      MatScaTra(material,k,densn,densnp,densam,visc,iquad);
+      break;
+    }
+
+    case INPAR::MAT::m_scatra_multiscale:
+    {
+      MatScaTraMultiScale(material,densn,densnp,densam);
+      break;
+    }
+
+    default:
+    {
+      dserror("Material type %i is not supported!",material->MaterialType());
+      break;
+    }
   }
+
   return;
 }
 
@@ -1281,6 +1311,35 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::MatScaTra(
 
   return;
 } // ScaTraEleCalc<distype>::MatScaTra
+
+
+/*----------------------------------------------------------------------*
+ | evaluate multi-scale scalar transport material            fang 01/16 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::MatScaTraMultiScale(
+    const Teuchos::RCP<const MAT::Material>   material,   //!< multi-scale scalar transport material
+    double&                                   densn,      //!< density at time t_(n)
+    double&                                   densnp,     //!< density at time t_(n+1) or t_(n+alpha_f)
+    double&                                   densam      //!< density at time t_(n+alpha_m)
+    ) const
+{
+  // safety check
+  if(numscal_ > 1)
+    dserror("Multi-scale scalar transport only implemented for one transported scalar!");
+
+  // extract multi-scale scalar transport material
+  const MAT::ScatraMatMultiScale* const matmultiscale = static_cast<const MAT::ScatraMatMultiScale* const>(material.get());
+
+  // set densities equal to porosity
+  densn = densnp = densam = matmultiscale->Porosity();
+
+  // set effective diffusion coefficient in diffusion manager
+  // effective diffusion coefficient = intrinsic diffusion coefficient * porosity / tortuosity
+  diffmanager_->SetIsotropicDiff(matmultiscale->Diffusivity()*matmultiscale->Porosity()/matmultiscale->Tortuosity(),0);
+
+  return;
+} // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::MatScaTraMultiScale
 
 
 /*---------------------------------------------------------------------------------------*
@@ -2173,6 +2232,50 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcRHSMFS(
 
   return;
 }
+
+
+/*-----------------------------------------------------------------------------------------------------------------------*
+ | macro-scale matrix and vector contributions arising from macro-micro coupling in multi-scale simulations   fang 03/16 |
+ *-----------------------------------------------------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcMatAndRhsMultiScale(
+    const DRT::Element* const   ele,          //!< element
+    Epetra_SerialDenseMatrix&   emat,         //!< element matrix
+    Epetra_SerialDenseVector&   erhs,         //!< element right-hand side vector
+    const int                   k,            //!< species index
+    const int                   iquad,        //!< Gauss point index
+    const double                timefacfac,   //!< domain integration factor times time integration factor
+    const double                rhsfac        //!< domain integration factor times time integration factor for right-hand side vector
+    )
+{
+  // extract multi-scale scalar transport material
+  const MAT::ScatraMatMultiScale* const matmultiscale = static_cast<const MAT::ScatraMatMultiScale* const>(ele->Material().get());
+
+  // initialize variables for micro-scale coupling flux and derivative of micro-scale coupling flux w.r.t. macro-scale state variable
+  double q_micro(0.), dq_dphi_micro(0.0);
+
+  // evaluate multi-scale scalar transport material
+  matmultiscale->Evaluate(iquad,scatravarmanager_->Phinp(k),q_micro,dq_dphi_micro);
+
+  // macro-scale matrix contribution
+  const double matrixterm = timefacfac*dq_dphi_micro*matmultiscale->A_s();
+  for(int vi=0; vi<nen_; ++vi)
+  {
+    const double v = funct_(vi)*matrixterm;
+    const int fvi = vi*numdofpernode_+k;
+
+    for(int ui=0; ui<nen_; ++ui)
+      emat(fvi,ui*numdofpernode_+k) += v*funct_(ui);
+  }
+
+  // macro-scale vector contribution
+  const double rhsterm = rhsfac*q_micro*matmultiscale->A_s();
+  for(int vi=0; vi<nen_; ++vi)
+    erhs[vi*numdofpernode_+k] -= funct_(vi)*rhsterm;
+
+  return;
+}
+
 
 /*------------------------------------------------------------------------------*
  | set internal variables                                          vuong 11/14  |

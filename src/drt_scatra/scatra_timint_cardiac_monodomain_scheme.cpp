@@ -5,7 +5,7 @@
        cardiac monodomain problems
 
 <pre>
-Maintainer: Lasse Jagschies
+\maintainer Lasse Jagschies
             lasse.jagschies@tum.de
             http://www.lnm.mw.tum.de
             089 - 289-10365
@@ -91,16 +91,20 @@ void SCATRA::TimIntCardiacMonodomainOST::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainOST::ReadRestart(const int step)
+void SCATRA::TimIntCardiacMonodomainOST::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
   // Call function from baseclass
-  TimIntOneStepTheta::ReadRestart(step);
+  TimIntOneStepTheta::ReadRestart(step,input);
 
-  IO::DiscretizationReader reader(discret_,step);
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if(input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  else
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
 
   // Cardiac Monodomain specific
-  reader.ReadVector(activation_time_np_, "activation_time_np");
-  reader.ReadHistoryData(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
+  reader->ReadVector(activation_time_np_, "activation_time_np");
+  reader->ReadHistoryData(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
 
   return;
 }
@@ -179,16 +183,20 @@ void SCATRA::TimIntCardiacMonodomainBDF2::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainBDF2::ReadRestart(const int step)
+void SCATRA::TimIntCardiacMonodomainBDF2::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
   // Call function from baseclass
-  TimIntBDF2::ReadRestart(step);
+  TimIntBDF2::ReadRestart(step,input);
 
-  IO::DiscretizationReader reader(discret_,step);
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if(input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  else
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
 
   // Cardiac Monodomain specific
-  reader.ReadVector(activation_time_np_, "activation_time_np");
-  reader.ReadHistoryData(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
+  reader->ReadVector(activation_time_np_, "activation_time_np");
+  reader->ReadHistoryData(step); // Read all saved data in nodes and elements und call nodal and element Unpacking each global variable has to be read
 
   return;
 }
@@ -266,10 +274,10 @@ void SCATRA::TimIntCardiacMonodomainGenAlpha::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntCardiacMonodomainGenAlpha::ReadRestart(const int step)
+void SCATRA::TimIntCardiacMonodomainGenAlpha::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
   // Call function from baseclass
-  TimIntGenAlpha::ReadRestart(step);
+  TimIntGenAlpha::ReadRestart(step,input);
 
   IO::DiscretizationReader reader(discret_,step);
 

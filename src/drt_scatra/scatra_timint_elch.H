@@ -90,7 +90,7 @@ class ScaTraTimIntElch : public virtual ScaTraTimIntImpl
   void OutputProblemSpecific();
 
   //! problem-specific restart reading
-  void RestartProblemSpecific( const int step );
+  void RestartProblemSpecific( const int step, IO::DiscretizationReader& reader );
 
   //! output electrode domain status information to screen and file
   void OutputElectrodeInfoDomain();

@@ -78,10 +78,10 @@ void SCATRA::ScaTraTimIntLoma::Init()
 void SCATRA::ScaTraTimIntLoma::SetInitialThermPressure()
 {
   // get thermodynamic pressure from material parameters
-  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_sutherland);
+  int id = problem_->Materials()->FirstIdByType(INPAR::MAT::m_sutherland);
   if (id !=-1) // i.e., Sutherland material found
   {
-    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::Parameter* mat = problem_->Materials()->ParameterById(id);
     const MAT::PAR::Sutherland* actmat = static_cast<const MAT::PAR::Sutherland*>(mat);
 
     thermpressn_ = actmat->thermpress_;

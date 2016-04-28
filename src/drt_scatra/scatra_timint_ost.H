@@ -3,7 +3,7 @@
 \brief
 
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -26,11 +26,14 @@ class TimIntOneStepTheta : public virtual ScaTraTimIntImpl
 public:
 
   /// Standard Constructor
-  TimIntOneStepTheta(Teuchos::RCP<DRT::Discretization>       dis,
-      Teuchos::RCP<LINALG::Solver>            solver,
-      Teuchos::RCP<Teuchos::ParameterList>    params,
-      Teuchos::RCP<Teuchos::ParameterList>    extraparams,
-      Teuchos::RCP<IO::DiscretizationWriter>  output);
+  TimIntOneStepTheta(
+      Teuchos::RCP<DRT::Discretization>        actdis,        //!< discretization
+      Teuchos::RCP<LINALG::Solver>             solver,        //!< linear solver
+      Teuchos::RCP<Teuchos::ParameterList>     params,        //!< parameter list
+      Teuchos::RCP<Teuchos::ParameterList>     extraparams,   //!< supplementary parameter list
+      Teuchos::RCP<IO::DiscretizationWriter>   output,        //!< output writer
+      const int                                probnum = 0    //!< global problem number
+      );
 
   /// Destructor
   virtual ~TimIntOneStepTheta();
@@ -55,7 +58,7 @@ public:
   virtual void Update(const int num=0);
 
   /// read restart data
-  void ReadRestart(const int step);
+  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
   // routine to return scalar field phi at time step n-1
   Teuchos::RCP<Epetra_Vector> Phinm() {return Teuchos::null;}
@@ -88,6 +91,21 @@ public:
     return timeparams;
   }
 
+  //! set state on micro scale in multi-scale simulations
+  void SetState(
+      Teuchos::RCP<Epetra_Vector>              phin,          //!< micro-scale state vector at old time step
+      Teuchos::RCP<Epetra_Vector>              phinp,         //!< micro-scale state vector at new time step
+      Teuchos::RCP<Epetra_Vector>              phidtn,        //!< time derivative of micro-scale state vector at old time step
+      Teuchos::RCP<Epetra_Vector>              phidtnp,       //!< time derivative of micro-scale state vector at new time step
+      Teuchos::RCP<Epetra_Vector>              hist,          //!< micro-scale history vector
+      Teuchos::RCP<IO::DiscretizationWriter>   output,        //!< micro-scale discretization writer
+      const double                             phinp_macro,   //!< value of state variable at macro-scale Gauss point
+      const int                                step,          //!< time step
+      const double                             time           //!< time
+      );
+
+  //! clear state on micro scale in multi-scale simulations
+  void ClearState();
 
 protected:
 

@@ -12,7 +12,7 @@ multipliers) computes, checks, and outputs different relevant vector norms and i
 in a subclass derived from an abstract, purely virtual interface class.
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -105,6 +105,38 @@ namespace SCATRA
       //! copy constructor
       ConvCheckStrategyStd(const ConvCheckStrategyStd& old);
   }; // class ConvCheckStrategyStd
+
+  /*!
+  \brief specific strategy for Newton-Raphson convergence check for micro scale in multi-scale simulations of scalar transport problems
+
+  \author fang (fang@lnm.mw.tum.de)
+  */
+
+  class ConvCheckStrategyStdMicroScale : public ConvCheckStrategyBase
+  {
+    public:
+
+      //! constructor
+      ConvCheckStrategyStdMicroScale(
+          const Teuchos::ParameterList&   parameters   //!< parameter list for Newton-Raphson iteration
+          ) :
+      ConvCheckStrategyBase(parameters)
+      {return;};
+
+      //! destructor
+      virtual ~ConvCheckStrategyStdMicroScale(){return;};
+
+      //! perform convergence check for Newton-Raphson iteration
+      bool AbortNonlinIter(
+          const ScaTraTimIntImpl&   scatratimint,   //!< scalar transport time integrator
+          double&                   actresidual     //!< return maximum current residual value
+          ) const;
+
+    private:
+
+      //! copy constructor
+      ConvCheckStrategyStdMicroScale(const ConvCheckStrategyStdMicroScale& old);
+  }; // class ConvCheckStrategyStdMicroScale
 
   /*!
   \brief specific strategy for Newton-Raphson convergence check for electrochemistry problems without scatra-scatra interface coupling involving Lagrange multipliers

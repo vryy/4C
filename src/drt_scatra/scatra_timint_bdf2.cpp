@@ -4,7 +4,7 @@
 \brief BDF2 time-integration scheme
 
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -346,21 +346,25 @@ void SCATRA::TimIntBDF2::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::ReadRestart(const int step)
+void SCATRA::TimIntBDF2::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
-  IO::DiscretizationReader reader(discret_,step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if(input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  else
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
+  time_ = reader->ReadDouble("time");
+  step_ = reader->ReadInt("step");
 
   if (myrank_==0)
     std::cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<std::endl;
 
   // read state vectors that are needed for BDF2 restart
-  reader.ReadVector(phinp_,"phinp");
-  reader.ReadVector(phin_, "phin");
-  reader.ReadVector(phinm_,"phinm");
+  reader->ReadVector(phinp_,"phinp");
+  reader->ReadVector(phin_, "phin");
+  reader->ReadVector(phinm_,"phinm");
 
-  RestartProblemSpecific(step);
+  RestartProblemSpecific(step,*reader);
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)

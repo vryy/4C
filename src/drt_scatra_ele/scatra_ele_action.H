@@ -63,6 +63,11 @@ namespace SCATRA
     get_material_ionic_currents,                 // get material ionic currents (for postprocessing for example),
     get_material_parameters,                     // get_material_parameters,
     integrate_shape_functions,                   // integrate_shape_functions,
+    micro_scale_initialize,                      // initialize micro scale in multi-scale simulations
+    micro_scale_output,                          // output micro-scale quantities in multi-scale simulations
+    micro_scale_prepare_time_step,               // prepare time step on micro scale in multi-scale simulations
+    micro_scale_read_restart,                    // read restart on micro scale in multi-scale simulations
+    micro_scale_update,                          // update micro scale in multi-scale simulations
     recon_curvature_at_nodes,                    // reconstruct curvature at node points through L2-projection
     recon_gradients_at_nodes,                    // reconstruct gradients at node points through L2-projection
     reinitialize_levelset,                       // reinitialize_levelset,

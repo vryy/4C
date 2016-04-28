@@ -21,6 +21,7 @@
 </pre>
 */
 /*----------------------------------------------------------------------*/
+#include "scatra_timint_implicit.H"
 
 #include "scatra_timint_meshtying_strategy_fluid.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
@@ -29,6 +30,7 @@
 #include "turbulence_hit_scalar_forcing.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
 
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_krylov_projector.H"
@@ -38,6 +40,7 @@
 #include "../drt_inpar/drt_validparameters.H"
 
 #include "../drt_mat/matlist.H"
+#include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/scatra_mat.H"
 
 #include "../drt_fluid/drt_periodicbc.H"
@@ -50,8 +53,6 @@
 #include "../drt_meshfree_discret/drt_meshfree_discret.H"
 
 #include "../drt_io/io.H"
-
-#include "scatra_timint_implicit.H"
 
 // for the condition writer output
 /*
@@ -81,26 +82,32 @@
  |  Constructor                                        (public) vg 05/07|
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
-    Teuchos::RCP<DRT::Discretization>      actdis,
-    Teuchos::RCP<LINALG::Solver>           solver,
-    Teuchos::RCP<Teuchos::ParameterList>   params,
-    Teuchos::RCP<Teuchos::ParameterList>   extraparams,
-    Teuchos::RCP<IO::DiscretizationWriter> output) :
+    Teuchos::RCP<DRT::Discretization>        actdis,        //!< discretization
+    Teuchos::RCP<LINALG::Solver>             solver,        //!< linear solver
+    Teuchos::RCP<Teuchos::ParameterList>     params,        //!< parameter list
+    Teuchos::RCP<Teuchos::ParameterList>     extraparams,   //!< supplementary parameter list
+    Teuchos::RCP<IO::DiscretizationWriter>   output,        //!< output writer
+    const int                                probnum        //!< global problem number
+    ) :
   // call constructor for "nontrivial" objects
-  solver_ (solver),
-  params_ (params),
+  problem_(DRT::Problem::Instance(probnum)),
+  probnum_(probnum),
+  solver_(solver),
+  params_(params),
   extraparams_(extraparams),
-  myrank_ (actdis->Comm().MyPID()),
+  myrank_(actdis->Comm().MyPID()),
   splitter_(Teuchos::null),
-  errfile_  (extraparams->get<FILE*>("err file")),
+  errfile_(extraparams->get<FILE*>("err file")),
   strategy_(Teuchos::null),
-  isale_    (extraparams->get<bool>("isale")),
-  solvtype_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
+  isale_(extraparams->get<bool>("isale")),
+  solvtype_(DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
   incremental_(true),
   initialvelset_(false),
-  fssgd_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
+  fssgd_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
   turbmodel_(INPAR::FLUID::no_model),
   s2icoupling_(actdis->GetCondition("S2ICoupling") != NULL),
+  macro_scale_(problem_->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) != -1),
+  micro_scale_(probnum != 0),
   writeflux_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params,"WRITEFLUX")),
   writefluxids_(Teuchos::rcp(new std::vector<int>)),
   flux_(Teuchos::null),
@@ -113,16 +120,16 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   fdcheckeps_(params->get<double>("FDCHECKEPS")),
   fdchecktol_(params->get<double>("FDCHECKTOL")),
   computeintegrals_(DRT::INPUT::IntegralValue<INPAR::SCATRA::ComputeIntegrals>(*params,"COMPUTEINTEGRALS")),
-  time_   (0.0),
-  maxtime_  (params->get<double>("MAXTIME")),
-  step_   (0),
-  stepmax_  (params->get<int>("NUMSTEP")),
-  dta_      (params->get<double>("TIMESTEP")),
+  time_(0.0),
+  maxtime_(params->get<double>("MAXTIME")),
+  step_(0),
+  stepmax_(params->get<int>("NUMSTEP")),
+  dta_(params->get<double>("TIMESTEP")),
   dtele_(0.0),
   dtsolve_(0.0),
   iternum_(0),
-  timealgo_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
-  nsd_(DRT::Problem::Instance()->NDim()),
+  timealgo_(DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
+  nsd_(problem_->NDim()),
   scalarhandler_(Teuchos::null),
   outputscalarstrategy_(Teuchos::null),
   // Initialization of degrees of freedom variables
@@ -170,9 +177,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   homisoturb_forcing_(Teuchos::null),
   // Initialization of Krylov
   updateprojection_(false),
-  projector_ (Teuchos::null),
+  projector_(Teuchos::null),
   // Initialization of
-  upres_    (params->get<int>("RESULTSEVRY")),
+  upres_(params->get<int>("RESULTSEVRY")),
   uprestart_(params->get<int>("RESTARTEVRY")),
   neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
   convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),
@@ -195,9 +202,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   {
     pbc->UpdateDofsForPeriodicBoundaryConditions();
 
-    if(DRT::Problem::Instance()->DoesExistDis("fluid") and DRT::Problem::Instance()->GetDis("fluid")->NumGlobalNodes() and DRT::Problem::Instance()->ProblemType() != prb_combust)
+    if(problem_->DoesExistDis("fluid") and problem_->GetDis("fluid")->NumGlobalNodes() and problem_->ProblemType() != prb_combust)
     {
-      Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+      Teuchos::RCP<DRT::Discretization> fluiddis = problem_->GetDis("fluid");
       discret_->ReplaceDofSet(1,fluiddis->GetDofSetProxy(),false);
     }
   }
@@ -449,13 +456,13 @@ void SCATRA::ScaTraTimIntImpl::Init()
     switch(outputscalars_)
     {
     case INPAR::SCATRA::outputscalars_entiredomain:
-      outputscalarstrategy_ = Teuchos::rcp(new OutputScalarsDomainStrategy);
+      outputscalarstrategy_ = Teuchos::rcp(new OutputScalarsStrategyDomain);
       break;
     case INPAR::SCATRA::outputscalars_condition:
       outputscalarstrategy_ = Teuchos::rcp(new OutputScalarsStrategyCondition);
       break;
     case INPAR::SCATRA::outputscalars_entiredomain_condition:
-      outputscalarstrategy_ = Teuchos::rcp(new OutputScalarsDomainAndConditionStrategy);
+      outputscalarstrategy_ = Teuchos::rcp(new OutputScalarsStrategyDomainAndCondition);
       break;
     default:
       dserror("Unknown option for output of total and mean scalars!");
@@ -476,8 +483,14 @@ void SCATRA::ScaTraTimIntImpl::Init()
     if(conditions.size())
       dserror("Found 'DESIGN TOTAL AND MEAN SCALAR' condition on ScaTra discretization, but 'OUTPUTSCALAR' \n"
           "in 'SCALAR TRANSPORT DYNAMIC' is set to 'none'. Either switch on the output of mean and total scalars\n"
-          "or removoe the 'DESIGN TOTAL AND MEAN SCALAR' condition from your input file!");
+          "or remove the 'DESIGN TOTAL AND MEAN SCALAR' condition from your input file!");
   }
+
+  // -------------------------------------------------------------------
+  // safety check for spherical coordinates
+  // -------------------------------------------------------------------
+  if(DRT::INPUT::IntegralValue<bool>(*params_,"SPHERICALCOORDS") and nsd_ > 1)
+    dserror("Spherical coordinates only available for 1D problems!");
 
   return;
 } // ScaTraTimIntImpl::Init()
@@ -759,7 +772,11 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
 {
   Teuchos::ParameterList eleparams;
 
+  // set action
   eleparams.set<int>("action",SCATRA::set_general_scatra_parameter);
+
+  // set problem number
+  eleparams.set<int>("probnum",probnum_);
 
   eleparams.set<int>("convform",convform_);
 
@@ -792,6 +809,9 @@ void SCATRA::ScaTraTimIntImpl::SetElementGeneralParameters(bool calcinitialtimed
 
   eleparams.set<double>("fdcheckeps",fdcheckeps_);
   eleparams.set<double>("fdchecktol",fdchecktol_);
+
+  // flag for spherical coordinates
+  eleparams.set<bool>("sphericalcoords",DRT::INPUT::IntegralValue<bool>(*params_,"SPHERICALCOORDS"));
 
   // additional problem-specific parameters for non-standard scalar transport problems (electrochemistry etc.)
   SetElementSpecificScaTraParameters(eleparams);
@@ -931,6 +951,24 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   ComputeIntermediateValues();
 
+  // -------------------------------------------------------------------
+  // prepare time step on micro scale if necessary
+  // -------------------------------------------------------------------
+  if(macro_scale_)
+  {
+    // create parameter list for macro-scale elements
+    Teuchos::ParameterList eleparams;
+
+    // set action
+    eleparams.set<int>("action",SCATRA::micro_scale_prepare_time_step);
+
+    // add state vectors
+    AddTimeIntegrationSpecificVectors();
+
+    // loop over macro-scale elements
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  }
+
   return;
 } // ScaTraTimIntImpl::PrepareTimeStep
 
@@ -1014,10 +1052,10 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField(const int nds)
 
         for(int index=0;index<nsd_;++index)
         {
-          double value = DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(index,lnode->X(),time_,NULL);
+          double value = problem_->Funct(velfuncno-1).Evaluate(index,lnode->X(),time_,NULL);
           if (cdvel_ == INPAR::SCATRA::velocity_function_and_curve)
           {
-            value *= DRT::Problem::Instance()->Curve(velcurveno-1).f(time_);
+            value *= problem_->Curve(velcurveno-1).f(time_);
           }
 
           // get global and local dof IDs
@@ -1415,7 +1453,19 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     {
       output_->WriteVector("scstr_growth_displ", scstrgrdisp_);
     }
+  }
 
+  // generate output on micro scale if necessary
+  if(macro_scale_)
+  {
+    // create parameter list for macro elements
+    Teuchos::ParameterList eleparams;
+
+    // set action
+    eleparams.set<int>("action",SCATRA::micro_scale_output);
+
+    // loop over macro-scale elements
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   }
 
   if ( (step_ != 0) and (output_state_matlab_) )
@@ -1469,7 +1519,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
         const int dofgid = nodedofset[k];
         int doflid = dofrowmap->LID(dofgid);
         // evaluate component k of spatial function
-        double initialval = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(k,lnode->X(),time_,NULL);
+        double initialval = problem_->Funct(startfuncno-1).Evaluate(k,lnode->X(),time_,NULL);
         int err = phin_->ReplaceMyValues(1,&initialval,&doflid);
         if (err != 0) dserror("dof not on proc");
       }
@@ -1478,7 +1528,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     // for NURBS discretizations we have to solve a least squares problem,
     // with high accuracy! (do nothing for Lagrangian polynomials)
     const Teuchos::ParameterList& scatradyn =
-      DRT::Problem::Instance()->ScalarTransportDynamicParams();
+      problem_->ScalarTransportDynamicParams();
     const int lstsolver = scatradyn.get<int>("LINEAR_SOLVER");
 
     DRT::NURBS::NurbsDiscretization* nurbsdis
@@ -1491,7 +1541,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       DRT::NURBS::apply_nurbs_initial_condition(
           *discret_  ,
           errfile_,
-          DRT::Problem::Instance()->SolverParams(lstsolver),
+          problem_->SolverParams(lstsolver),
           startfuncno,
           phin_     );
     }
@@ -1527,7 +1577,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // disturb initial field for all degrees of freedom
       for (int k=0; k < phinp_->MyLength(); ++k)
       {
-        double randomnumber = DRT::Problem::Instance()->Random()->Uni();
+        double randomnumber = problem_->Random()->Uni();
         double noise = perc * range * randomnumber;
         err += phinp_->SumIntoMyValues(1,&noise,&k);
         err += phin_ ->SumIntoMyValues(1,&noise,&k);
@@ -2305,8 +2355,11 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
   // evaluate Structure Solution Dependent Condition
   EvaluateStructSolutionDependingConditions(rhs);
 
+  // evaluate macro-micro coupling on micro scale in multi-scale scalar transport problems
+  EvaluateMacroMicroCoupling();
+
   return;
-} // ScaTraTimIntImpl::EvaluateSolutionDependingConditions
+} // SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions
 
 
 /*----------------------------------------------------------------------------*
@@ -2875,3 +2928,89 @@ const std::map<const int,std::vector<double> >& SCATRA::ScaTraTimIntImpl::MeanSc
   return outputscalarstrategy_->MeanScalars();
 }
 
+
+/*----------------------------------------------------------------------------------------------------*
+ | evaluate macro-micro coupling on micro scale in multi-scale scalar transport problems   fang 01/16 |
+ *----------------------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
+{
+  // extract multi-scale coupling conditions
+  std::vector<Teuchos::RCP<DRT::Condition> > conditions;
+  discret_->GetCondition("ScatraMultiScaleCoupling",conditions);
+
+  // loop over conditions
+  for(unsigned icond=0; icond<conditions.size(); ++icond)
+  {
+    // extract nodal cloud
+    const std::vector<int>* const nodeids = conditions[icond]->Nodes();
+    if(nodeids == NULL)
+      dserror("Multi-scale coupling condition does not have nodal cloud!");
+
+    // loop over all nodes in nodal cloud
+    for(unsigned inode=0; inode<(*nodeids).size(); ++inode)
+    {
+      // process row nodes only
+      if(discret_->NodeRowMap()->MyGID((*nodeids)[inode]))
+      {
+        // extract node
+        DRT::Node* node = discret_->gNode((*nodeids)[inode]);
+        if(node == NULL)
+          dserror("Cannot extract node with global ID %d from micro-scale discretization!",(*nodeids)[inode]);
+
+        // compute domain integration factor
+        double fac(1.);
+        if(DRT::INPUT::IntegralValue<bool>(*params_,"SPHERICALCOORDS"))
+          fac *= *node->X() * *node->X();
+
+        // extract degrees of freedom from node
+        const std::vector<int> dofs = discret_->Dof(0,node);
+
+        // loop over all degrees of freedom
+        for(unsigned idof=0; idof<dofs.size(); ++idof)
+        {
+          // extract global and local IDs of degree of freedom
+          const int gid = dofs[idof];
+          const int lid = discret_->DofRowMap()->LID(gid);
+          if(lid < 0)
+            dserror("Cannot extract degree of freedom with global ID %d!",gid);
+
+          // compute matrix and vector contributions according to kinetic model for current macro-micro coupling condition
+          switch(conditions[icond]->GetInt("kinetic model"))
+          {
+            case INPAR::S2I::kinetics_constperm:
+            {
+              // access real vector of constant permeabilities
+              const std::vector<double>* permeabilities = conditions[icond]->GetMutable<std::vector<double> >("permeabilities");
+              if(permeabilities == NULL)
+                dserror("Cannot access vector of permeabilities for macro-micro coupling!");
+              if(permeabilities->size() != (unsigned) NumScal())
+                dserror("Number of permeabilities does not match number of scalars!");
+
+              // compute and store micro-scale coupling flux
+              q_ = (*permeabilities)[0]*((*phinp_)[lid]-phinp_macro_);
+
+              // compute and store derivative of micro-scale coupling flux w.r.t. macro-scale state variable
+              dq_dphi_ = -(*permeabilities)[0];
+
+              // assemble contribution from macro-micro coupling into global residual vector
+              (*residual_)[lid] -= DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(discret_->Name())->TimeFacRhs()*q_*fac;
+
+              // assemble contribution from macro-micro coupling into global system matrix
+              sysmat_->Assemble(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(discret_->Name())->TimeFac()*(*permeabilities)[0]*fac,gid,gid);
+
+              break;
+            }
+
+            default:
+            {
+              dserror("Kinetic model for macro-micro coupling not yet implemented!");
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling

@@ -12,7 +12,7 @@ additional, problem specific singleton classes holding additional static paramet
 additional singleton classes are not meant to be derived from, but rather to coexist with this general class.
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -79,6 +79,7 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
     ) :
     is_ale_(false),
     is_conservative_(false),
+    sphericalcoords_(false),
     writeflux_(INPAR::SCATRA::flux_no),
     writefluxids_(Teuchos::null),
     fdcheck_(INPAR::SCATRA::fdcheck_none),
@@ -93,6 +94,7 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
     whichassgd_(INPAR::SCATRA::assgd_artificial),
     tau_gp_(false),
     mat_gp_(false),
+    probnum_(-1),
     // we have to know the time parameters here to check for illegal combinations
     scatraparatimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname))
 {
@@ -204,6 +206,12 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(
   fdcheck_ = DRT::INPUT::get<INPAR::SCATRA::FDCheck>(parameters,"fdcheck");
   fdcheckeps_ = parameters.get<double>("fdcheckeps");
   fdchecktol_ = parameters.get<double>("fdchecktol");
+
+  // set flag for use of spherical coordinates
+  sphericalcoords_ = parameters.get<bool>("sphericalcoords",false);
+
+  // set problem number
+  probnum_ = parameters.get<int>("probnum",0);
 
   return;
 }

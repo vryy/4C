@@ -4,13 +4,14 @@
 \brief One-Step-Theta time-integration scheme
 
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
 </pre>
 */
 /*----------------------------------------------------------------------*/
+#include "scatra_timint_ost.H"
 
 #include "scatra_timint_meshtying_strategy_base.H"
 #include "turbulence_hit_scalar_forcing.H"
@@ -20,22 +21,20 @@ Maintainer: Andreas Ehrl
 
 #include "../drt_io/io.H"
 
-#include "../drt_inpar/drt_validparameters.H"
-
 #include "../drt_scatra_ele/scatra_ele_action.H"
-
-#include "scatra_timint_ost.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
-  Teuchos::RCP<DRT::Discretization>      actdis,
-  Teuchos::RCP<LINALG::Solver>           solver,
-  Teuchos::RCP<Teuchos::ParameterList>   params,
-  Teuchos::RCP<Teuchos::ParameterList>   extraparams,
-  Teuchos::RCP<IO::DiscretizationWriter> output)
-: ScaTraTimIntImpl(actdis,solver,params,extraparams,output),
+    Teuchos::RCP<DRT::Discretization>        actdis,        //!< discretization
+    Teuchos::RCP<LINALG::Solver>             solver,        //!< linear solver
+    Teuchos::RCP<Teuchos::ParameterList>     params,        //!< parameter list
+    Teuchos::RCP<Teuchos::ParameterList>     extraparams,   //!< supplementary parameter list
+    Teuchos::RCP<IO::DiscretizationWriter>   output,        //!< output writer
+    const int                                probnum        //!< global problem number
+    )
+: ScaTraTimIntImpl(actdis,solver,params,extraparams,output,probnum),
   theta_(params_->get<double>("THETA")),
   fsphinp_(Teuchos::null)
 {
@@ -91,6 +90,21 @@ void SCATRA::TimIntOneStepTheta::Init()
       // initialize forcing algorithm
       homisoturb_forcing_->SetInitialSpectrum(DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_,"INITIALFIELD"));
     }
+  }
+
+  // -------------------------------------------------------------------
+  // initialize multi-scale material if necessary
+  // -------------------------------------------------------------------
+  if(macro_scale_)
+  {
+    // create parameter list for macro-scale elements
+    Teuchos::ParameterList eleparams;
+
+    // set action
+    eleparams.set<int>("action",SCATRA::micro_scale_initialize);
+
+    // loop over macro-scale elements
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   }
 
   return;
@@ -149,15 +163,15 @@ void SCATRA::TimIntOneStepTheta::SetTimeForNeumannEvaluation(
 *-----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::PrintTimeStepInfo()
 {
-  if (myrank_==0)
+  if (myrank_ == 0 and not micro_scale_)
   {
-    IO::cout << "TIME: "
-             << std::setw(11) << std::setprecision(4) << std::scientific << time_ << "/"
-             << std::setw(11) << std::setprecision(4) << std::scientific << maxtime_ << "  DT = "
-             << std::setw(11) << std::setprecision(4) << std::scientific << dta_ << "  "
-             << MethodTitle() << " (theta = "
-             << std::setw(3)  << std::setprecision(2) << theta_ << ") STEP = "
-             << std::setw(4) << step_ << "/" << std::setw(4) << stepmax_ << IO::endl;
+    std::cout << "TIME: "
+              << std::setw(11) << std::setprecision(4) << std::scientific << time_ << "/"
+              << std::setw(11) << std::setprecision(4) << std::scientific << maxtime_ << "  DT = "
+              << std::setw(11) << std::setprecision(4) << std::scientific << dta_ << "  "
+              << MethodTitle() << " (theta = "
+              << std::setw(3)  << std::setprecision(2) << theta_ << ") STEP = "
+              << std::setw(4) << step_ << "/" << std::setw(4) << stepmax_ << std::endl;
   }
   return;
 }
@@ -314,6 +328,19 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
   if (homisoturb_forcing_ != Teuchos::null)
     homisoturb_forcing_->TimeUpdateForcing();
 
+  // update micro scale in multi-scale simulations if necessary
+  if(macro_scale_)
+  {
+    // create parameter list for macro-scale elements
+    Teuchos::ParameterList eleparams;
+
+    // set action
+    eleparams.set<int>("action",SCATRA::micro_scale_update);
+
+    // loop over macro-scale elements
+    discret_->Evaluate(eleparams);
+  }
+
   return;
 }
 
@@ -334,25 +361,43 @@ void SCATRA::TimIntOneStepTheta::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::ReadRestart(const int step)
+void SCATRA::TimIntOneStepTheta::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
-  IO::DiscretizationReader reader(discret_,step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if(input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  else
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
+
+  time_ = reader->ReadDouble("time");
+  step_ = reader->ReadInt("step");
 
   if (myrank_==0)
     std::cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<std::endl;
 
   // read state vectors that are needed for One-Step-Theta restart
-  reader.ReadVector(phinp_, "phinp");
-  reader.ReadVector(phin_,  "phin");
-  reader.ReadVector(phidtn_,"phidtn");
+  reader->ReadVector(phinp_, "phinp");
+  reader->ReadVector(phin_,  "phin");
+  reader->ReadVector(phidtn_,"phidtn");
 
-  RestartProblemSpecific(step);
+  RestartProblemSpecific(step,*reader);
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     AVM3Preparation();
+
+  // read restart on micro scale in multi-scale simulations if necessary
+  if(macro_scale_)
+  {
+    // create parameter list for macro-scale elements
+    Teuchos::ParameterList eleparams;
+
+    // set action
+    eleparams.set<int>("action",SCATRA::micro_scale_read_restart);
+
+    // loop over macro-scale elements
+    discret_->Evaluate(eleparams);
+  }
 
   return;
 }
@@ -385,3 +430,51 @@ void SCATRA::TimIntOneStepTheta::CalcInitialTimeDerivative()
 
   return;
 }
+
+
+/*--------------------------------------------------------------------*
+ | set state on micro scale in multi-scale simulations     fang 11/15 |
+ *--------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::SetState(
+    Teuchos::RCP<Epetra_Vector>              phin,          //!< micro-scale state vector at old time step
+    Teuchos::RCP<Epetra_Vector>              phinp,         //!< micro-scale state vector at new time step
+    Teuchos::RCP<Epetra_Vector>              phidtn,        //!< time derivative of micro-scale state vector at old time step
+    Teuchos::RCP<Epetra_Vector>              phidtnp,       //!< time derivative of micro-scale state vector at new time step
+    Teuchos::RCP<Epetra_Vector>              hist,          //!< micro-scale history vector
+    Teuchos::RCP<IO::DiscretizationWriter>   output,        //!< micro-scale discretization writer
+    const double                             phinp_macro,   //!< value of state variable at macro-scale Gauss point
+    const int                                step,          //!< time step
+    const double                             time           //!< time
+    )
+{
+  phin_        = phin;
+  phinp_       = phinp;
+  phidtn_      = phidtn;
+  phidtnp_     = phidtnp;
+  hist_        = hist;
+  output_      = output;
+  phinp_macro_ = phinp_macro;
+  step_        = step;
+  time_        = time;
+
+  return;
+} // SCATRA::TimIntOneStepTheta::SetState
+
+
+/*--------------------------------------------------------------------*
+ | clear state on micro scale in multi-scale simulations   fang 11/15 |
+ *--------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::ClearState()
+{
+  phin_        = Teuchos::null;
+  phinp_       = Teuchos::null;
+  phidtn_      = Teuchos::null;
+  phidtnp_     = Teuchos::null;
+  hist_        = Teuchos::null;
+  output_      = Teuchos::null;
+  phinp_macro_ = 0.;
+  step_        = -1;
+  time_        = 0.;
+
+  return;
+} // SCATRA::TimIntOneStepTheta::ClearState

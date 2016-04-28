@@ -4,7 +4,7 @@
 \brief main file containing routines for calculation of scatra element
 
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -415,6 +415,14 @@ namespace ELEMENTS
       double&                                 visc,      //!< fluid viscosity
       const int                               iquad=-1   //!< id of current gauss point (default = -1)
     );
+
+    //! evaluate multi-scale scalar transport material
+    virtual void MatScaTraMultiScale(
+        const Teuchos::RCP<const MAT::Material>   material,   //!< multi-scale scalar transport material
+        double&                                   densn,      //!< density at time t_(n)
+        double&                                   densnp,     //!< density at time t_(n+1) or t_(n+alpha_f)
+        double&                                   densam      //!< density at time t_(n+alpha_m)
+        ) const;
 
     /*========================================================================*/
     //! @name stabilization and related functions
@@ -968,6 +976,17 @@ namespace ELEMENTS
       const LINALG::Matrix<nsd_,1>  mfsgvelint,  //!< multifractal fine-scale velocity
       const double                  mfssgphi,    //!< multifractal fine-scale scalar
       const double                  mfsvdiv      //!< divergence of fine-scale velocity
+    );
+
+    //! macro-scale matrix and vector contributions arising from macro-micro coupling in multi-scale simulations
+    void CalcMatAndRhsMultiScale(
+        const DRT::Element* const   ele,          //!< element
+        Epetra_SerialDenseMatrix&   emat,         //!< element matrix
+        Epetra_SerialDenseVector&   erhs,         //!< element right-hand side vector
+        const int                   k,            //!< species index
+        const int                   iquad,        //!< Gauss point index
+        const double                timefacfac,   //!< domain integration factor times time integration factor
+        const double                rhsfac        //!< domain integration factor times time integration factor for right-hand side vector
     );
 
     //! calculation of convective element matrix in convective form (off diagonal term fluid)

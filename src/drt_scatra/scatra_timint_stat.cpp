@@ -4,7 +4,7 @@
 \brief solution algorithm for stationary problems
 
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -187,19 +187,24 @@ void SCATRA::TimIntStationary::AddTimeIntegrationSpecificVectors(bool forcedincr
 /*----------------------------------------------------------------------*
  |                                                            gjb 09/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::ReadRestart(const int step)
+void SCATRA::TimIntStationary::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
-  IO::DiscretizationReader reader(discret_,step);
-  time_ = reader.ReadDouble("time");
-  step_ = reader.ReadInt("step");
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if(input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  else
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
+
+  time_ = reader->ReadDouble("time");
+  step_ = reader->ReadInt("step");
 
   if (myrank_==0)
     std::cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<std::endl;
 
   // read state vectors that are needed for restart
-  reader.ReadVector(phinp_, "phinp");
+  reader->ReadVector(phinp_, "phinp");
 
-  RestartProblemSpecific(step);
+  RestartProblemSpecific(step,*reader);
 
   return;
 }

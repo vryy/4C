@@ -4,7 +4,7 @@
 \brief entry point for level-set transport problems
 
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -57,7 +57,7 @@ void levelset_dyn(int restart)
     dserror("Other velocity fields than a field given by a function not yet supported for level-set problems");
 
   // add proxy of velocity related degrees of freedom to scatra discretization
-  if (scatradis->BuildDofSetAuxProxy(DRT::Problem::Instance()->NDim()+1, 0, 0, true ) != 1)
+  if (scatradis->BuildDofSetAuxProxy(problem->NDim()+1, 0, 0, true ) != 1)
     dserror("Scatra discretization has illegal number of dofsets!");
 
   // finalize discretization
@@ -73,7 +73,7 @@ void levelset_dyn(int restart)
     dserror("no linear solver defined for SCALAR_TRANSPORT problem. Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
   // create instance of scalar transport basis algorithm (empty fluid discretization)
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatrabase = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(levelsetcontrol,scatradyn,DRT::Problem::Instance()->SolverParams(linsolvernumber)));
+  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatrabase = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(levelsetcontrol,scatradyn,problem->SolverParams(linsolvernumber)));
 
   // get pointer to time integrator
   Teuchos::RCP<SCATRA::ScaTraTimIntImpl> levelsetalgo = scatrabase->ScaTraField();

@@ -1,0 +1,64 @@
+//
+// Maintainer: Rui Fang
+// fang@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de/
+// 089 - 289-15251
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+Academic test case for multi-scale scalar transport:
+- one 1D macro scale consisting of 10 line2 elements
+- two 1D micro scales, each consisting of 5 line2 elements
+- macro scale with initial scalar value 0
+- micro scale 1 with initial scalar value 0
+- micro scale 2 with intiial scalar value 1
+- coupling between macro and micro scales based on constant permeability
+- diffusion on macro scale from micro scale 2 region towards micro scale 1 region
+- symmetry boundary conditions, i.e., homogeneous Neumann boundary conditions, at both ends of macro scale
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    5
+//NODES       6
+DIM           1
+--------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Scalar_Transport
+-------------------------------------------SCALAR TRANSPORT DYNAMIC
+SOLVERTYPE                      nonlinear
+TIMEINTEGR                      One_Step_Theta
+NUMSTEP                         250
+RESULTSEVRY                     50
+RESTARTEVRY                     50
+INITIALFIELD                    field_by_function
+INITFUNCNO                      1
+SPHERICALCOORDS                 Yes
+LINEAR_SOLVER                   1
+---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+CONVTOL                         1e-10
+-----------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+----------------------------------------------------------MATERIALS
+MAT 1 MAT_scatra DIFFUSIVITY 0.1 REACOEFF 0 SCNUM 0 DENSIFICATION 0
+-------------------------------------------------------------FUNCT1
+FUNCT1 EXPR 0 0 0 FUNCTION 0.0
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 1
+---------------DESIGN SCATRA MULTI-SCALE COUPLING POINT CONDITIONS
+DPOINT 1
+E 1 - KineticModel ConstantPermeability numscal 1 permeabilities 0.1
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE 6 DNODE 1
+-------------------------------------------------------NODE COORDS
+NODE 1 COORD 0.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 2 COORD 2.0000000000000001e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 3 COORD 4.0000000000000002e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 4 COORD 6.0000000000000009e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 5 COORD 8.0000000000000004e-01 0.0000000000000000e+00 0.0000000000000000e+00
+NODE 6 COORD 1.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00
+------------------------------------------------TRANSPORT ELEMENTS
+1 TRANSP LINE2 1 2 MAT 1 TYPE Std
+2 TRANSP LINE2 2 3 MAT 1 TYPE Std
+3 TRANSP LINE2 3 4 MAT 1 TYPE Std
+4 TRANSP LINE2 4 5 MAT 1 TYPE Std
+5 TRANSP LINE2 5 6 MAT 1 TYPE Std
+---------------------------------------------------------------END

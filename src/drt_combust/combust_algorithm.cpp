@@ -6,7 +6,7 @@
     detailed description in header file combust_algorithm.H
 
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -872,7 +872,7 @@ void COMBUST::Algorithm::Output()
 
   // we have to call the output of averaged fields for scatra separately
   if (FluidField()->TurbulenceStatisticManager() != Teuchos::null)
-    FluidField()->TurbulenceStatisticManager()->DoOutputForScaTra(ScaTraField()->DiscWriter(),ScaTraField()->Step());
+    FluidField()->TurbulenceStatisticManager()->DoOutputForScaTra(*ScaTraField()->DiscWriter(),ScaTraField()->Step());
 
   // write position of center of mass to file
   if (DRT::INPUT::IntegralValue<bool>(combustdyn_,"WRITE_CENTER_OF_MASS"))

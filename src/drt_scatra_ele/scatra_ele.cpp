@@ -3,7 +3,7 @@
 \brief A finite element for simulation transport phenomena
 
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -306,6 +306,7 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
   Teuchos::RCP<MAT::Material> mat = Material();
   if(mat->MaterialType() == INPAR::MAT::m_scatra or
      mat->MaterialType() == INPAR::MAT::m_scatra_aniso or
+     mat->MaterialType() == INPAR::MAT::m_scatra_multiscale or
      mat->MaterialType() == INPAR::MAT::m_myocard or
      mat->MaterialType() == INPAR::MAT::m_mixfrac or
      mat->MaterialType() == INPAR::MAT::m_sutherland or

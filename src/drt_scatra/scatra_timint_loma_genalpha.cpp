@@ -5,7 +5,7 @@
        loma problems
 
 <pre>
-Maintainer: Volker Gravemeier
+\maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15245
@@ -287,34 +287,38 @@ void SCATRA::TimIntLomaGenAlpha::OutputRestart()
 /*----------------------------------------------------------------------*
  |                                                             vg 11/08 |
  -----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaGenAlpha::ReadRestart(const int step)
+void SCATRA::TimIntLomaGenAlpha::ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input)
 {
   // do standard output
-  TimIntGenAlpha::ReadRestart(step);
+  TimIntGenAlpha::ReadRestart(step,input);
 
   // restart data of loma problems
   // required for restart of closed systems
 
-  IO::DiscretizationReader reader(discret_,step);
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if(input == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,step));
+  else
+    reader = Teuchos::rcp(new IO::DiscretizationReader(discret_,input,step));
 
   // thermodynamic pressure at time n+1
-  thermpressnp_ = reader.ReadDouble("thermpressnp");
+  thermpressnp_ = reader->ReadDouble("thermpressnp");
   // thermodynamic pressure at time n
-  thermpressn_ = reader.ReadDouble("thermpressn");
+  thermpressn_ = reader->ReadDouble("thermpressn");
   // thermodynamic pressure at time n+alpha_f
-  thermpressaf_ = reader.ReadDouble("thermpressaf");
+  thermpressaf_ = reader->ReadDouble("thermpressaf");
   // thermodynamic pressure at time n+alpha_m
-  thermpressam_ = reader.ReadDouble("thermpressam");
+  thermpressam_ = reader->ReadDouble("thermpressam");
   // time derivative of thermodynamic pressure at time n+1
-  thermpressdtnp_ = reader.ReadDouble("thermpressdtnp");
+  thermpressdtnp_ = reader->ReadDouble("thermpressdtnp");
   // time derivative of thermodynamic pressure at time n
-  thermpressdtn_ = reader.ReadDouble("thermpressdtn");
+  thermpressdtn_ = reader->ReadDouble("thermpressdtn");
   // time derivative of thermodynamic pressure at time n+alpha_f
-  thermpressdtaf_ = reader.ReadDouble("thermpressdtaf");
+  thermpressdtaf_ = reader->ReadDouble("thermpressdtaf");
   // time derivative of thermodynamic pressure at time n+alpha_m
-  thermpressdtam_ = reader.ReadDouble("thermpressdtam");
+  thermpressdtam_ = reader->ReadDouble("thermpressdtam");
   // as well as initial mass
-  initialmass_ = reader.ReadDouble("initialmass");
+  initialmass_ = reader->ReadDouble("initialmass");
 
   return;
 }

@@ -5,7 +5,7 @@
 \brief Factory of scatra elements
 
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15252
@@ -33,6 +33,7 @@ Maintainer: Andreas Ehrl
 #include "scatra_ele_calc_elch_electrode_sti_thermo.H"
 #include "scatra_ele_calc_sti_diffcond.H"
 #include "scatra_ele_calc_sti_electrode.H"
+#include "scatra_ele_parameter_std.H"
 
 #include "../drt_meshfree_discret/meshfree_scatra_cell_calc_std.H"
 
@@ -54,9 +55,8 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
   const int numscal,
   const std::string& disname)
 {
-  // -------------------------------------- number of degrees of freedom
-  // number of degrees of freedom
-  static const int ndim = DRT::Problem::Instance()->NDim();
+  // number of space dimensions
+  const int ndim = DRT::Problem::Instance(DRT::ELEMENTS::ScaTraEleParameterStd::Instance(disname)->ProbNum())->NDim();
 
   switch(distype)
   {

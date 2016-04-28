@@ -276,6 +276,7 @@ public:
     SPRboundary,
     TransportRobin,
     ThermoRobin,
+    ScatraMultiScaleCoupling,
     CellFocalAdhesion
   };
 

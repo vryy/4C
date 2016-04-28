@@ -6,7 +6,7 @@
     detailed description in header file levelset_algorithm.H
 
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -521,11 +521,11 @@ const Teuchos::RCP< Epetra_Vector> SCATRA::LevelSetAlgorithm::ConVelTheta(double
  *----------------------------------------------------------------------*/
 void SCATRA::LevelSetAlgorithm::TestResults()
 {
-  DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new SCATRA::ScaTraResultTest(Teuchos::rcp(this,false))));
+  problem_->AddFieldTest(Teuchos::rcp(new SCATRA::ScaTraResultTest(Teuchos::rcp(this,false))));
   if (particle_ != Teuchos::null)
     particle_->TestResults(discret_->Comm());
   else
-    DRT::Problem::Instance()->TestAll(discret_->Comm());
+    problem_->TestAll(discret_->Comm());
 
   return;
 }

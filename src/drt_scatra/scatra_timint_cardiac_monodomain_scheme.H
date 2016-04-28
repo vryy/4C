@@ -5,7 +5,7 @@
         Cardiac-monodomain-specific implementation (class TimIntCardiacMonodomain)
 
 <pre>
-Maintainer: Lasse Jagschies
+\maintainer Lasse Jagschies
             lasse.jagschies@tum.de
             http://www.lnm.mw.tum.de
             089 - 289-10365
@@ -51,7 +51,7 @@ public:
   void Update(const int num=0);
 
   //! read restart data
-  void ReadRestart(const int step);
+  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
 protected:
 
@@ -86,7 +86,7 @@ public:
   void Update(const int num=0);
 
   //! read restart data
-  void ReadRestart(const int step);
+  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
 protected:
 
@@ -121,7 +121,7 @@ public:
   void Update(const int num=0);
 
   //! read restart data
-  void ReadRestart(const int step);
+  void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
 protected:
 
@@ -156,7 +156,7 @@ public:
   void Update(const int num=0);
 
   //! read restart data
-  void ReadRestart(int step);
+  void ReadRestart(int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null);
 
 protected:
 

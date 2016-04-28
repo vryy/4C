@@ -12,7 +12,7 @@ additional, problem specific singleton classes holding additional static paramet
 additional singleton classes are not meant to be derived from, but rather to coexist with this general class.
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -56,11 +56,13 @@ namespace DRT
         //! @{
         bool IsAle() const {return is_ale_;};
         bool IsConservative() const {return is_conservative_;};
+        bool SphericalCoords() const {return sphericalcoords_;};
         INPAR::SCATRA::FluxType WriteFlux() const {return writeflux_;};
         const Teuchos::RCP<std::vector<int> > WriteFluxIds() const {return writefluxids_;};
         INPAR::SCATRA::FDCheck FDCheck() const {return fdcheck_;};
         double FDCheckEps() const {return fdcheckeps_;};
         double FDCheckTol() const {return fdchecktol_;};
+        int ProbNum() const {return probnum_;};
         //! @}
 
         //! @name return stabilization parameters
@@ -93,6 +95,9 @@ namespace DRT
 
         //! flag for conservative form
         bool is_conservative_;
+
+        //! flag for use of spherical coordinates
+        bool sphericalcoords_;
 
         //! flag for writing the flux vector fields
         INPAR::SCATRA::FluxType writeflux_;
@@ -138,6 +143,9 @@ namespace DRT
 
         //! flag for evaluation of material at Gauss point
         bool mat_gp_;
+
+        //! problem number
+        int probnum_;
         //! @}
 
         //! parameter class for time integration

@@ -4,7 +4,7 @@
   \brief level-set algorithm
 
 <pre>
-Maintainer: Ursula Rasthofer
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -73,7 +73,7 @@ namespace SCATRA
     void Output(const int num =0);
 
     /// read restart data
-    virtual void ReadRestart(int step) = 0;
+    virtual void ReadRestart(const int step,Teuchos::RCP<IO::InputControl> input = Teuchos::null) = 0;
 
     //! set the velocity field (zero or field by function) (pure level-set problems)
     void SetVelocityField(bool init=false);
