@@ -1,4 +1,4 @@
-# Script for comparing result of the parellel and serial post processing by the post_drt_ensight filter
+# Script for comparing result of the parallel and serial post processing by the post_drt_ensight filter
 #
 # Maintainer: A. Nagler
 
@@ -20,7 +20,7 @@ def isEqual(ref,line,tol):
 if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
   sm.Connect()
 
-  # read in of parallel calculatet case file
+  # read in of parallel calculated case file
   ens_reader1 = sm.sources.ensight()
   #p1 = ['displacement', '1']
   #p2 = ['nodal_EA_strains_xyz', '1']
@@ -47,7 +47,7 @@ if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
   index1  = head1.index('Points:0')
 
 
-  # read in of serial calculatet case file
+  # read in of serial calculated case file
   ens_reader2 = sm.sources.ensight()
 
   ens_reader2.CaseFileName = sys.argv[2]
@@ -72,7 +72,7 @@ if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
   head_ref   = csv_reader_ref.next()
   index_ref  = head_ref.index('Points:0')
 
-  # sorting of data according to xyz coodinates of the Points
+  # sorting of data according to xyz coordinates of the Points
   sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2))
   sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2))
   sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2))
@@ -108,7 +108,7 @@ if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
 else:
   sm.Connect()
 
-  # read in of parallel calculatet case file
+  # read in of parallel calculated case file
   ens_reader1 = sm.sources.EnSightReader()
   #p1 = ['displacement', '1']
   #p2 = ['nodal_EA_strains_xyz', '1']
@@ -135,7 +135,7 @@ else:
   index1  = head1.index('Points:0')
 
 
-  # read in of serial calculatet case file
+  # read in of serial calculated case file
   ens_reader2 = sm.sources.EnSightReader()
 
   ens_reader2.CaseFileName = sys.argv[2]
@@ -152,7 +152,7 @@ else:
 
   csv_reader2 = csv.reader(open('./xxx_ser0.csv', 'r'), delimiter = ',')
   head2   = csv_reader2.next()
-  index2  = head1.index('Points:0')
+  index2  = head2.index('Points:0')
   
   # read in of reference file
   ref_sortlist_name = sys.argv[3]
@@ -160,10 +160,25 @@ else:
   head_ref   = csv_reader_ref.next()
   index_ref  = head_ref.index('Points:0')
 
-  # sorting of data according to xyz coodinates of the Points
-  sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2))
-  sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2))
-  sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2))
+  # sorting of data according to xyz coordinates of the points
+  # In scalar transport problems involving scatra-scatra interface coupling, several nodes may be located at
+  # exactly the same position. For the sorting to still be unique, we include the concentration values 'c_1'
+  # as additional sorting criterion.
+  if 'c_1' in head1:
+    sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2, head1.index('c_1')))
+  else:
+    sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2))
+    
+  if 'c_1' in head2:
+    sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2, head2.index('c_1')))
+  else:
+    sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2))
+
+  if 'c_1' in head_ref:
+    sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2, head_ref.index('c_1')))
+  else:
+    sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2))
+
   # sortlist* are lists with values of the corresponding csv-files. Each list contains further lists for each line in the csv-file.
     
   # remove last element (tolerance) in each list in sortlist_ref

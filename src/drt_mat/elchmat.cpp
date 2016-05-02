@@ -3,10 +3,10 @@
 \file elchmat.cpp
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -132,19 +132,15 @@ void MAT::ElchMat::Pack(DRT::PackBuffer& data) const
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data,matid);
 
-  if (params_->local_)
+  if(params_ != NULL and params_->local_)
   {
     // loop map of associated local materials
-    if (params_ != NULL)
-    {
-      //std::map<int, Teuchos::RCP<MAT::Material> >::const_iterator m;
-      std::vector<int>::const_iterator n;
-      for (n=params_->PhaseIds().begin(); n!=params_->PhaseIds().end(); n++)
-      {
-        (mat_.find(*n))->second->Pack(data);
-      }
-    }
+    std::vector<int>::const_iterator n;
+    for(n=params_->PhaseIds().begin(); n!=params_->PhaseIds().end(); n++)
+      (mat_.find(*n))->second->Pack(data);
   }
+
+  return;
 }
 
 
