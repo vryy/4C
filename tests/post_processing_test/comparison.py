@@ -16,7 +16,7 @@ def isEqual(ref,line,tol):
       return False
   return True
 
-    
+
 if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
   sm.Connect()
 
@@ -77,21 +77,21 @@ if sm.vtkSMProxyManager.GetVersionMajor() <= 3:
   sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2))
   sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2))
   # sortlist* are lists with values of the corresponding csv-files. Each list contains further lists for each line in the csv-file.
-    
+
   # remove last element (tolerance) in each list in sortlist_ref
   tol = []
   for i in range(0,len(sortlist_ref)):
     index_tol = len(sortlist_ref[i]) - 1
     tol.append(sortlist_ref[i][index_tol])
     sortlist_ref[i] = sortlist_ref[i][0:index_tol]
-    
+
   # comparison
   for ele1, ele2 in zip(sortlist1, sortlist2):
-      if ele1 != ele2:
-	  print 'csv lists are not equal for: '
-	  print ele1
-	  print ele2
-	  sys.exit(1)
+    if ele1 != ele2:
+      print 'csv lists are not equal for: '
+      print ele1
+      print ele2
+      sys.exit(1)
   print 'files are identical'
 
   # verification of results
@@ -162,39 +162,45 @@ else:
 
   # sorting of data according to xyz coordinates of the points
   # In scalar transport problems involving scatra-scatra interface coupling, several nodes may be located at
-  # exactly the same position. For the sorting to still be unique, we include the concentration values 'c_1'
-  # as additional sorting criterion.
-  if 'c_1' in head1:
+  # exactly the same position. For the sorting to still be unique, we include the concentration values 'phi_1'
+  # or 'c_1' as additional sorting criterion.
+  if 'phi_1' in head1:
+    sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2, head1.index('phi_1')))
+  elif 'c_1' in head1:
     sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2, head1.index('c_1')))
   else:
     sortlist1 = sorted(csv_reader1, key = operator.itemgetter(index1, index1 + 1, index1 + 2))
-    
-  if 'c_1' in head2:
+
+  if 'phi_1' in head2:
+    sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2, head2.index('phi_1')))
+  elif 'c_1' in head2:
     sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2, head2.index('c_1')))
   else:
     sortlist2 = sorted(csv_reader2, key = operator.itemgetter(index2, index2 + 1, index2 + 2))
 
-  if 'c_1' in head_ref:
+  if 'phi_1' in head_ref:
+    sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2, head_ref.index('phi_1')))
+  elif 'c_1' in head_ref:
     sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2, head_ref.index('c_1')))
   else:
     sortlist_ref = sorted(csv_reader_ref, key = operator.itemgetter(index_ref, index_ref + 1, index_ref + 2))
 
   # sortlist* are lists with values of the corresponding csv-files. Each list contains further lists for each line in the csv-file.
-    
+
   # remove last element (tolerance) in each list in sortlist_ref
   tol = []
   for i in range(0,len(sortlist_ref)):
     index_tol = len(sortlist_ref[i]) - 1
     tol.append(sortlist_ref[i][index_tol])
     sortlist_ref[i] = sortlist_ref[i][0:index_tol]
-  
+
   # comparison
   for ele1, ele2 in zip(sortlist1, sortlist2):
-      if ele1 != ele2:
-	  print 'csv lists are not equal for: '
-	  print ele1
-	  print ele2
-	  sys.exit(1)
+    if ele1 != ele2:
+      print 'csv lists are not equal for: '
+      print ele1
+      print ele2
+      sys.exit(1)
   print 'files are identical'
 
   # verification of results
@@ -206,5 +212,4 @@ else:
         print 'results in csv-files are NOT correct'
         print sortlist_ref[i],'in',sys.argv[3],'is not being found in xxx_par.csv'
         sys.exit(1)
-  print'results in csv-files are correct'  
-
+  print'results in csv-files are correct'

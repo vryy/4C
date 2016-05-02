@@ -874,6 +874,7 @@ post_processing(scatra_1D_line2_multiscale_constperm_macro 1 "" "" 250 "_microdi
 post_processing(scatra_1D_line2_multiscale_constperm_macro 1 "" "" 250 "_microdis2_el5_gp0")
 baci_test(scatra_1D_straight_convection 2 "")
 baci_test(scatra_2D_quad4_s2i_constperm 2 "")
+post_processing(scatra_2D_quad4_s2i_constperm 2 "" "" 20)
 baci_test(scatra_2D_skew_convection_10x10_maxent 1 "" )
 post_processing(scatra_2D_skew_convection_10x10_maxent 1 "" "" 0)
 baci_test(scatra_2D_straight_convection_direct 2 "")
