@@ -19,7 +19,6 @@ PROBLEMTYP                      Scalar_Transport
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
---------------------------------------------------------------------------IO
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   2
 PHYSICAL_TYPE                   Incompressible
@@ -147,7 +146,7 @@ ML_PROLONG_THRES                0.0                             // threshold for
 ML_SMOOTHERFINE                 ILU                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  SGS                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu Umfpack
-ML_SMOTIMES 2 2 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES                     2 2 1                           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     0.67                            // damping fine grid
 ML_DAMPMED                      0.67                            // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
@@ -180,7 +179,7 @@ ML_PROLONG_THRES                0.0                             // threshold for
 ML_SMOOTHERFINE                 ILU                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  SGS                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu Umfpack
-ML_SMOTIMES 2 2 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_SMOTIMES                     2 2 1                           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     0.67                            // damping fine grid
 ML_DAMPMED                      0.67                            // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
@@ -193,9 +192,6 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 CURVE1 on Explicit FUNC f(t)=(1-C2/C1)*T+C2 c1 0.4 c2 0.0
 ----------------------------------------------------------------------CURVE2
 CURVE2 on Explicit FUNC f(t)=(1-C2/C1)*T+C2 c1 0.4 c2 0.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION (1-y*y)*20.3
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
@@ -203,9 +199,6 @@ FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
 FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0
 ----------------------------------------------------------------------FUNCT2
 FUNCT2 EXPR 0 0.0 0 FUNCTION y //initial temperature field
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
@@ -249,8 +242,6 @@ DSURF                           2
 E 1 -
 // wall bottom
 E 2 -
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1201 DSURFACE 1
 NODE 1202 DSURFACE 1
@@ -35254,7 +35245,6 @@ NODE 15622 COORD 3.1415926535000001e+00 1.0000000000000000e+00 -1.57079632687500
 NODE 15623 COORD 3.1415926535000001e+00 1.0000000000000000e+00 -1.7453292520833332e+00
 NODE 15624 COORD 3.1415926535000001e+00 1.0000000000000000e+00 -1.9198621772916669e+00
 NODE 15625 COORD 3.1415926535000001e+00 1.0000000000000000e+00 -2.0943951025000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
 --------------------------------------------------------------FLUID ELEMENTS
 1 FLUID HEX8 1 2 3 4 5 6 7 8 MAT 1 NA Euler GP 2 2 2 CA No
 2 FLUID HEX8 2 9 10 3 6 11 12 7 MAT 1 NA Euler GP 2 2 2 CA No
@@ -49080,23 +49070,19 @@ NODE 15625 COORD 3.1415926535000001e+00 1.0000000000000000e+00 -2.09439510250000
 13822 FLUID HEX8 14972 14973 14998 14997 15597 15598 15623 15622 MAT 1 NA Euler GP 2 2 2 CA No
 13823 FLUID HEX8 14973 14974 14999 14998 15598 15599 15624 15623 MAT 1 NA Euler GP 2 2 2 CA No
 13824 FLUID HEX8 14974 14975 15000 14999 15599 15600 15625 15624 MAT 1 NA Euler GP 2 2 2 CA No
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 3531 QUANTITY velx VALUE 1.06168569807243163e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 3531 QUANTITY vely VALUE 7.52189312897520723e-15 TOLERANCE 1e-9
-FLUID DIS fluid NODE 3531 QUANTITY velz VALUE -1.47636244461132199e-14 TOLERANCE 1e-9
-FLUID DIS fluid NODE 3531 QUANTITY pressure VALUE -5.13679080350816671e-13 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 3531 QUANTITY phi VALUE 3.50339710092456807e-06 TOLERANCE 1e-9
-FLUID DIS fluid NODE 8438 QUANTITY velx VALUE 2.03242658713689579e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 8438 QUANTITY vely VALUE -3.00563534225638772e-14 TOLERANCE 1e-9
-FLUID DIS fluid NODE 8438 QUANTITY velz VALUE -5.21527375931950428e-15 TOLERANCE 1e-9
-FLUID DIS fluid NODE 8438 QUANTITY pressure VALUE -5.25982457526383458e-13 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 8438 QUANTITY phi VALUE -0.00000000000000000e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 3531 QUANTITY velx VALUE 1.00598839733708871e+01 TOLERANCE 1e-08
+FLUID DIS fluid NODE 3531 QUANTITY vely VALUE -3.32719096490480953e-02 TOLERANCE 1e-11
+FLUID DIS fluid NODE 3531 QUANTITY velz VALUE -1.39279485138451870e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 3531 QUANTITY pressure VALUE -3.51911082725440832e-02 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 3531 QUANTITY phi VALUE 3.36172957867056112e-06 TOLERANCE 1e-15
+FLUID DIS fluid NODE 8438 QUANTITY velx VALUE 2.03140658006212185e+01 TOLERANCE 1e-08
+FLUID DIS fluid NODE 8438 QUANTITY vely VALUE -2.24208308861323152e-03 TOLERANCE 1e-12
+FLUID DIS fluid NODE 8438 QUANTITY velz VALUE 1.17788655766734888e-03 TOLERANCE 1e-12
+FLUID DIS fluid NODE 8438 QUANTITY pressure VALUE 9.78541871717444472e-02 TOLERANCE 1e-11
+SCATRA DIS scatra NODE 8438 QUANTITY phi VALUE -5.14594082918719237e-09 TOLERANCE 1e-16
 FLUID DIS fluid NODE 1 QUANTITY velx VALUE 0.0 TOLERANCE 1e-20
 FLUID DIS fluid NODE 1 QUANTITY vely VALUE 0.0 TOLERANCE 1e-20
 FLUID DIS fluid NODE 1 QUANTITY velz VALUE 0.0 TOLERANCE 1e-20
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE -1.0 TOLERANCE 1e-20
 -------------------------------------------------------------------------END
-//                              END
