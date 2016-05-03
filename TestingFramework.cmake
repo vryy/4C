@@ -83,23 +83,29 @@ endmacro (cut_test)
 
 # POSTPROCESSING TEST
 macro(post_processing arg nproc stresstype straintype startstep)
-  # set default output prefix to "xxx"
-  set(OUTPUTPREFIX xxx)
+  # set additional output prefix identifier to empty string "" in default case or to specific string if specified as optional input argument
+  if(${ARGC} GREATER 6)
+    set(IDENTIFIER ${ARGV6})
+  else()
+    set(IDENTIFIER "")
+  endif()
 
-  # concatenate default output prefix with additional identifier if specified as optional input argument
+  # set field name to empty string "" in default case or to specific string if specified as optional input argument
   if(${ARGC} GREATER 5)
-    set(OUTPUTPREFIX ${OUTPUTPREFIX}${ARGV5})
+    set(FIELD ${ARGV5})
+  else()
+    set(FIELD "")
   endif()
 
   # define macros for serial and parallel runs
-  set(RUNPOSTFILTER_SER ./post_drt_ensight\ --file=${OUTPUTPREFIX}\ --output=${OUTPUTPREFIX}_SER_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
-  set(RUNPOSTFILTER_PAR ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=${OUTPUTPREFIX}\ --output=${OUTPUTPREFIX}_PAR_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
+  set(RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx${IDENTIFIER}\ --output=xxx${IDENTIFIER}_SER_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
+  set(RUNPOSTFILTER_PAR ${MPI_DIR}/bin/mpirun\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx${IDENTIFIER}\ --output=xxx${IDENTIFIER}_PAR_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
 
   # specify test case
-  add_test(NAME ${arg}${ARGN}-p${nproc}-pp
-    COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && pvpython\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py ${OUTPUTPREFIX}_PAR_${arg}*.case ${OUTPUTPREFIX}_SER_${arg}*.case ${PROJECT_SOURCE_DIR}/Input/${arg}${ARGN}.csv")
-  set_tests_properties(${arg}${ARGN}-p${nproc}-pp PROPERTIES TIMEOUT 1000)
-  set_tests_properties(${arg}${ARGN}-p${nproc}-pp PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}")
+  add_test(NAME ${arg}${IDENTIFIER}${FIELD}-p${nproc}-pp
+    COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && pvpython\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py xxx${IDENTIFIER}_PAR_${arg}${FIELD}*.case xxx${IDENTIFIER}_SER_${arg}${FIELD}*.case ${PROJECT_SOURCE_DIR}/Input/${arg}${IDENTIFIER}${FIELD}.csv")
+  set_tests_properties(${arg}${IDENTIFIER}${FIELD}-p${nproc}-pp PROPERTIES TIMEOUT 1000)
+  set_tests_properties(${arg}${IDENTIFIER}${FIELD}-p${nproc}-pp PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}")
 endmacro(post_processing)
 
 # CODE TESTING
@@ -870,8 +876,8 @@ baci_test(remodel_beam_aniso 2 "150")
 baci_test(rigidsphere_freefall 1 "")
 baci_test(scatra_1D_line2_multiscale_constperm_macro 2 200)
 post_processing(scatra_1D_line2_multiscale_constperm_macro 2 "" "" 250)
-post_processing(scatra_1D_line2_multiscale_constperm_macro 1 "" "" 250 "_microdis1_el4_gp1")
-post_processing(scatra_1D_line2_multiscale_constperm_macro 1 "" "" 250 "_microdis2_el5_gp0")
+post_processing(scatra_1D_line2_multiscale_constperm_macro 1 "" "" 250 "" "_microdis1_el4_gp1")
+post_processing(scatra_1D_line2_multiscale_constperm_macro 1 "" "" 250 "" "_microdis2_el5_gp0")
 baci_test(scatra_1D_straight_convection 2 "")
 baci_test(scatra_2D_quad4_s2i_constperm 2 "")
 post_processing(scatra_2D_quad4_s2i_constperm 2 "" "" 20)
@@ -959,7 +965,7 @@ baci_test(sohex8_easmild_cooks_nl_dynstas 2 "")
 baci_test(sohex8_incompr_block 2 "")
 baci_test(sohex8_incompr_block_nln 2 "")
 baci_test(sohex8_multiscale_macro 2 1)
-post_processing(sohex8_multiscale_macro 1 "" "" 3 "_el7_gp7")
+post_processing(sohex8_multiscale_macro 1 "" "" 3 "" "_el7_gp7")
 baci_test(sohex8_multiscale_macro_2micro 2 1)
 baci_test(sohex8_remodel 2 " ")
 baci_test(sohex8_surfactant 2 30)
@@ -1016,8 +1022,10 @@ baci_test(ssi_3D_tet4_tet4_tri3 2 "")
 baci_test(stc-mltube-sosh8 2 "")
 baci_test(stc-mltube-sosh8p8 2 "")
 baci_test(sti_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic 3 "")
-baci_test(sti_3D_tet4_elch_s2i_pointcoupling_butlervolmerpeltier_adiabatic 1 "")
 baci_test(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic 3 "")
+post_processing(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic 3 "" "" 20 "_scatra" "")
+post_processing(sti_3D_tet4_elch_s2i_butlervolmerpeltier_adiabatic 3 "" "" 20 "_thermo" "")
+baci_test(sti_3D_tet4_elch_s2i_pointcoupling_butlervolmerpeltier_adiabatic 1 "")
 baci_test(strufem_hex8_cantilever_nox 2 "")
 baci_test(strufem_hex8_eas_cantilever 2 "")
 baci_test(shell8_eas_cantilever_new_struc 2 "")
