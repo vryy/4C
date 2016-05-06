@@ -501,6 +501,11 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
 
     // create beam contact manager
     beamcman_ = Teuchos::rcp(new CONTACT::Beam3cmanager(*discret_,alphaf));
+
+    // gmsh output at beginning of simulation
+#ifdef GMSHTIMESTEPS
+    beamcman_->GmshOutput(*disn_, 0, 0, true);
+#endif
   }
 
   return;
