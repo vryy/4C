@@ -526,7 +526,17 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   discret_->GetCondition("Contact",contactconditions);
 
   // double-check for contact/meshtying conditions
-  if ((int)mortarconditions.size()==0 and (int)contactconditions.size()==0 )
+  if ((int)mortarconditions.size()==0 and (int)contactconditions.size()==0)
+    return;
+
+  // check if only beam-to-solid contact conditions (and leave if so)
+  bool realcontactconditions = false;
+  for (int i=0; i<(int)contactconditions.size(); ++i)
+  {
+    if(*(contactconditions[i]->Get<std::string>("Application"))!="Beamtosolidcontact")
+      realcontactconditions=true;
+  }
+  if ((int)mortarconditions.size()==0 and !realcontactconditions)
     return;
 
   // store integration parameter alphaf into cmtman_ as well
