@@ -1,16 +1,20 @@
-/*!-----------------------------------------------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file beam3contact_manager.cpp
 \brief Main class to control beam contact
 
 <pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
 </pre>
+*/
 
-*-----------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 
+/*----------------------------------------------------------------------*/
+/* headers */
 #include "beam3contact_manager.H"
 #include "beam3contact_defines.H"
 #include "beam3contact_octtree.H"
@@ -31,6 +35,7 @@ Maintainer: Christoph Meier
 #include "../drt_beam3ebtor/beam3ebtor.H"
 #include "../drt_beam3k/beam3k.H"
 #include "../drt_rigidsphere/rigidsphere.H"
+
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_contact/contact_element.H"
 #include "../drt_contact/contact_node.H"
@@ -682,6 +687,28 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   }
 
   t_start = Teuchos::Time::wallTime();
+
+  //**********************************************************************
+  //*********************************HACK*********************************
+  //**********************************************************************
+  // for beam elements where contact has not yet been implemented, just erase
+  // all potential contact pairs and continue (this is a temporary hack to allow
+  // for using the GMSH output for beam structures, even if not beam contact is
+  // present in the considered sytem)
+ if ((int)(elementpairs.size())>0)
+ {
+    const DRT::ElementType & ele1_type = elementpairs[0][0]->ElementType();
+    if (ele1_type != DRT::ELEMENTS::Beam3Type::Instance() and
+        ele1_type != DRT::ELEMENTS::Beam3rType::Instance() and
+        ele1_type != DRT::ELEMENTS::Beam3ebType::Instance() and
+        ele1_type != DRT::ELEMENTS::Beam3ebtorType::Instance())
+    {
+      elementpairs.resize(0);
+    }
+ }
+ //**********************************************************************
+ //*********************************HACK*********************************
+ //**********************************************************************
 
   // process the found element pairs and fill the BTB, BTSOL, BTSPH interaction pair vectors
   FillContactPairsVectors(elementpairs);
@@ -3785,7 +3812,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
     bool active = pairs_[i]->GetContactFlag();
 
     // if element is memeber of an active contact pair, choose different color
-    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.875;
+    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.5;
   }
   for (int i=0;i<(int)btsphpairs_.size();++i)
   {
@@ -3795,7 +3822,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
     bool active = btsphpairs_[i]->GetContactFlag();
 
     // if element is memeber of an active contact pair, choose different color
-    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.875;
+    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.5;
   }
 #endif
 
