@@ -5,7 +5,7 @@
 \brief evaluation of scatra elements for conservation of mass concentration and electronic charge within thermodynamic electrodes
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -105,9 +105,8 @@ namespace DRT
             const double                  timetaufac,   //!< domain-integration factor times tau times time-integration factor
             const double                  rhstaufac,    //!< time-integration factor for rhs times tau times domain-integration factor
             LINALG::Matrix<my::nen_,1>&   tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
-            double&                       rhsint,       //!< rhs at Gauss point
-            const double                  hist          //!< history
-          );
+            double&                       rhsint        //!< rhs at Gauss point
+            );
 
         //! fill element matrix with linearizations of discrete scatra residuals w.r.t. thermo dofs
         void SysmatODScatraThermo(

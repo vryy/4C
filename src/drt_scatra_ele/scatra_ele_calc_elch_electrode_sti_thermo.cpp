@@ -5,7 +5,7 @@
 \brief evaluation of scatra elements for conservation of mass concentration and electronic charge within thermodynamic electrodes
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -129,12 +129,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::CalcMatAndRhs(
     const double                  timetaufac,   //!< domain integration factor times stabilization parameter times time integration factor
     const double                  rhstaufac,    //!< domain integration factor times stabilization parameter times time integration factor for right-hand side vector
     LINALG::Matrix<my::nen_,1>&   tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
-    double&                       rhsint,       //!< body force value
-    const double                  hist          //!< history value
-  )
+    double&                       rhsint        //!< body force value
+    )
 {
   // call base class routine for isothermal problems
-  myelectrode::CalcMatAndRhs(emat,erhs,k,fac,timefacfac,rhsfac,taufac,timetaufac,rhstaufac,tauderpot,rhsint,hist);
+  myelectrode::CalcMatAndRhs(emat,erhs,k,fac,timefacfac,rhsfac,taufac,timetaufac,rhstaufac,tauderpot,rhsint);
 
   // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
   mythermo::CalcMatSoret(emat,timefacfac,VarManager()->Phinp(0),myelectrode::DiffManager()->GetIsotropicDiff(0),myelectrode::DiffManager()->GetDerivIsoDiffCoef(0,0),VarManager()->Temp(),VarManager()->GradTemp(),my::funct_,my::derxy_);

@@ -53,28 +53,28 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
   {
   case SCATRA::set_general_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+    ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
 
     break;
   }
 
   case SCATRA::set_turbulence_scatra_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterTurbulence::Instance(dis.Name())->SetParameters(p);
+    ScaTraEleParameterTurbulence::Instance(dis.Name())->SetParameters(p);
 
     break;
   }
 
   case SCATRA::set_time_parameter:
   {
-    DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis.Name())->SetParameters(p);
+    ScaTraEleParameterTimInt::Instance(dis.Name())->SetParameters(p);
 
     break;
   }
 
   case SCATRA::set_mean_Cai:
   {
-    DRT::ELEMENTS::ScaTraEleParameterTurbulence::Instance(dis.Name())->SetCsgsPhi(p.get<double>("meanCai"));
+    ScaTraEleParameterTurbulence::Instance(dis.Name())->SetCsgsPhi(p.get<double>("meanCai"));
 
     break;
   }
@@ -82,10 +82,10 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
   case SCATRA::set_lsreinit_scatra_parameter:
   {
     // set general parameters first
-    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+    ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
 
     // set additional, problem-dependent parameters
-    DRT::ELEMENTS::ScaTraEleParameterLsReinit::Instance(dis.Name())->SetParameters(p);
+    ScaTraEleParameterLsReinit::Instance(dis.Name())->SetParameters(p);
 
     break;
   }
@@ -93,10 +93,10 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
   case SCATRA::set_elch_scatra_parameter:
   {
     // set general parameters first
-    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+    ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
 
     // set additional, problem-dependent parameters
-    DRT::ELEMENTS::ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
+    ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
 
     break;
   }
@@ -104,11 +104,11 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization&             
   case SCATRA::set_diffcond_scatra_parameter:
   {
     // set general parameters first
-    DRT::ELEMENTS::ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
+    ScaTraEleParameterStd::Instance(dis.Name())->SetParameters(p);
 
     // set additional, problem-dependent parameters
-    DRT::ELEMENTS::ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
-    DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(dis.Name())->SetParameters(p);
+    ScaTraEleParameterElch::Instance(dis.Name())->SetParameters(p);
+    ScaTraEleParameterElchDiffCond::Instance(dis.Name())->SetParameters(p);
 
     break;
   }
@@ -225,7 +225,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     // be used in principle inside any element (at the moment: only Transport element)
     case SCATRA::calc_mat_and_rhs:
     {
-      return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->Evaluate(
+      return ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->Evaluate(
               this,
               params,
               discretization,
@@ -244,7 +244,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::calc_scatra_mono_odblock_scatrathermo:
     case SCATRA::calc_scatra_mono_odblock_thermoscatra:
     {
-      return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateOD(
+      return ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateOD(
               this,
               params,
               discretization,
@@ -297,7 +297,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::micro_scale_read_restart:
     case SCATRA::calc_cell_mechanotransduction:
     {
-      return DRT::ELEMENTS::ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateService(
+      return ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateService(
                this,
                params,
                discretization,
@@ -328,7 +328,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
   } // switch(action)
 
   return 0;
-} //DRT::ELEMENTS::Transport::Evaluate
+} // DRT::ELEMENTS::Transport::Evaluate
 
 
 /*----------------------------------------------------------------------*

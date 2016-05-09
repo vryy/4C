@@ -5,10 +5,10 @@
 \brief evaluation of ScaTra elements for ion-transport equation
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*--------------------------------------------------------------------------*/
@@ -156,9 +156,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
       const double timetaufac = my::scatraparatimint_->TimeFac() * taufac;
       const double rhstaufac = my::scatraparatimint_->TimeFacRhsTau() * taufac;
 
-      // get history data (or acceleration)
-      double hist = my::funct_.Dot(my::ehist_[k]);
-
       // compute rhs containing bodyforce (divided by specific heat capacity) and,
       // for temperature equation, the time derivative of thermodynamic pressure,
       // if not constant, and for temperature equation of a reactive
@@ -167,7 +164,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
       my::GetRhsInt(rhsint,densnp,k);
 
       // Compute element matrix and rhs
-      CalcMatAndRhs(emat,erhs,k,fac,timefacfac,rhsfac,taufac,timetaufac,rhstaufac,tauderpot[k],rhsint,hist);
+      CalcMatAndRhs(emat,erhs,k,fac,timefacfac,rhsfac,taufac,timetaufac,rhstaufac,tauderpot[k],rhsint);
     }  // end loop over scalar
 
     // Compute element matrix and rhs

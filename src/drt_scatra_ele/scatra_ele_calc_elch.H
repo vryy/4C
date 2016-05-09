@@ -5,10 +5,10 @@
 \brief evaluation of ScaTra elements for ion-transport equation
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*--------------------------------------------------------------------------*/
@@ -102,9 +102,8 @@ protected:
     const double                  timetaufac,   //!< domain-integration factor times tau times time-integration factor
     const double                  rhstaufac,    //!< time-integration factor for rhs times tau times domain-integration factor
     LINALG::Matrix<my::nen_,1>&   tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
-    double&                       rhsint,       //!< rhs at Gauss point
-    const double                  hist          //!< history
-  ) = 0;
+    double&                       rhsint        //!< rhs at Gauss point
+    ) = 0;
 
   //! calculate contributions to matrix and rhs (outside of loop over all scalars)
   virtual void CalcMatAndRhsOutsideScalarLoop(

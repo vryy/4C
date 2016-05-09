@@ -6,7 +6,7 @@
 
 
  <pre>
-   Maintainer: Moritz Thon
+   \maintainer Moritz Thon
                thon@mhpc.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-10364
@@ -151,7 +151,7 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype,probdim>::CalcMatChemo(
          for (int ui=0;ui<my::nen_;ui++)
          {
            const int fui = ui*my::numdofpernode_+partner;
-           emat(fvi,fui) -= chemofac*chemocoeff*my::funct_.Dot(my::ephinp_[k])*gradgradmatrix(vi,ui);
+           emat(fvi,fui) -= chemofac*chemocoeff*my::scatravarmanager_->Phinp(k)*gradgradmatrix(vi,ui);
          }
        }
 

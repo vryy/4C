@@ -5,10 +5,10 @@
 \brief evaluation of ScaTra elements for Nernst-Planck ion-transport equations
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*--------------------------------------------------------------------------*/
@@ -94,12 +94,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
     const double                  timetaufac,   //!< domain-integration factor times tau times time-integration factor
     const double                  rhstaufac,    //!< time-integration factor for rhs times tau times domain-integration factor
     LINALG::Matrix<my::nen_,1>&   tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
-    double&                       rhsint,       //!< rhs at Gauss point
-    const double                  hist          //!< history
-  )
+    double&                       rhsint        //!< rhs at Gauss point
+    )
 {
   // Compute residual of Nernst-Planck equation in strong form and subgrid-scale part of concentration c_k
-  const double residual = CalcRes(k,VarManager()->Phinp(k),hist,VarManager()->ConvPhi(k),VarManager()->FRT(),VarManager()->MigConv(),rhsint);
+  const double residual = CalcRes(k,VarManager()->Phinp(k),VarManager()->Hist(k),VarManager()->ConvPhi(k),VarManager()->FRT(),VarManager()->MigConv(),rhsint);
 
   //--------------------------------------------------------------------------
   // 1) element matrix: instationary terms arising from Nernst-Planck equation
@@ -194,7 +193,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
 
   // 4b) element rhs: standard Galerkin contributions from rhsint vector (contains body force vector and history vector)
   // need to adapt rhsint vector to time integration scheme first
-  my::ComputeRhsInt(rhsint,1.,1.,hist);
+  my::ComputeRhsInt(rhsint,1.,1.,VarManager()->Hist(k));
   my::CalcRHSHistAndSource(erhs,k,fac,rhsint);
 
   // 4c) element rhs: stabilization of mass term

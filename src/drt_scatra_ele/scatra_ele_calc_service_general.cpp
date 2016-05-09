@@ -1269,9 +1269,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
       // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
       LINALG::Matrix<nen_,1> conv = scatravarmanager_->Conv();
 
-      // scalar at integration point at time step n+1
-      const double phinp = funct_.Dot(ephinp_[k]);
-
       // velocity divergence required for conservative form
       double vdiv(0.0);
       if (scatrapara_->IsConservative()) GetDivergence(vdiv,evelnp_);
@@ -1319,7 +1316,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcInitialTimeDerivative(
       // whereas the rhs is based on the standard element evaluation routine
       // including contributions resulting from the time discretization.
       // The contribution from the time discretization has to be removed before solving the system:
-      CorrectRHSFromCalcRHSLinMass(erhs,k,fac,densnp,phinp);
+      CorrectRHSFromCalcRHSLinMass(erhs,k,fac,densnp,phiint);
     } // loop over each scalar k
   } // integration loop
 
@@ -1445,22 +1442,17 @@ const int                       k
     // evaluate shape functions and derivatives at integration point
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
+    SetInternalVariablesForMatAndRHS();
+
     // get material parameters (evaluation at integration point)
     if (scatrapara_->MatGP())
-    {
-      SetInternalVariablesForMatAndRHS();
-
       GetMaterialParams(ele,densn,densnp,densam,visc);
-    }
 
     // get velocity at integration point
     LINALG::Matrix<nsd_,1> velint(true);
     LINALG::Matrix<nsd_,1> convelint(true);
     velint.Multiply(evelnp_,funct_);
     convelint.Multiply(econvelnp_,funct_);
-
-    // get scalar at integration point
-    const double phi = funct_.Dot(ephinp_[k]);
 
     // get gradient of scalar at integration point
     LINALG::Matrix<nsd_,1> gradphi(true);
@@ -1474,7 +1466,7 @@ const int                       k
     {
     case INPAR::SCATRA::flux_total_domain:
       // convective flux contribution
-      q.Update(densnp*phi,convelint);
+      q.Update(densnp*scatravarmanager_->Phinp(k),convelint);
 
       // no break statement here!
     case INPAR::SCATRA::flux_diffusive_domain:

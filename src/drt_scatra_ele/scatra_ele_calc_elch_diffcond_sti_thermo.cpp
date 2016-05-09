@@ -5,7 +5,7 @@
 \brief evaluation of scatra elements for thermodynamic diffusion-conduction ion-transport equations
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -128,12 +128,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
     const double                  timetaufac,   //!< domain integration factor times stabilization parameter times time integration factor
     const double                  rhstaufac,    //!< domain integration factor times stabilization parameter times time integration factor for right-hand side vector
     LINALG::Matrix<my::nen_,1>&   tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
-    double&                       rhsint,       //!< body force value
-    const double                  hist          //!< history value
+    double&                       rhsint        //!< body force value
     )
 {
   // call base class routine for isothermal problems
-  mydiffcond::CalcMatAndRhs(emat,erhs,k,fac,timefacfac,rhsfac,taufac,timetaufac,rhstaufac,tauderpot,rhsint,hist);
+  mydiffcond::CalcMatAndRhs(emat,erhs,k,fac,timefacfac,rhsfac,taufac,timetaufac,rhstaufac,tauderpot,rhsint);
 
   // extract variables and parameters
   const double& concentration = VarManager()->Phinp(0);

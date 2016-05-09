@@ -5,7 +5,7 @@
  \brief routines for calculation of off diagonal terms of scatra element
 
  <pre>
-   Maintainer: Anh-Tu Vuong
+   \maintainer Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15251
@@ -214,10 +214,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
       double rea_phi(0.0);
       rea_phi = densnp*scatravarmanager_->Phinp(k)*reamanager_->GetReaCoeff(k);
 
-      // get history data (or acceleration)
-      double hist(0.0);
-      hist = funct_.Dot(ehist_[k]);
-
       // compute rhs containing bodyforce (divided by specific heat capacity) and,
       // for temperature equation, the time derivative of thermodynamic pressure,
       // if not constant, and for temperature equation of a reactive
@@ -265,7 +261,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODMesh(
 
       // the order of the following three functions is important
       // and must not be changed
-      ComputeRhsInt(rhsint,densam,densnp,hist);
+      ComputeRhsInt(rhsint,densam,densnp,scatravarmanager_->Hist(k));
 
       // diffusive part used in stabilization terms
       LINALG::Matrix<nen_,1> diff(true);
@@ -375,15 +371,13 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODFluid(
   {
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
 
+    SetInternalVariablesForMatAndRHS();
+
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
     if (scatrapara_->MatGP())
-    {
-      SetInternalVariablesForMatAndRHS();
-
       GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
-    }
 
     // velocity divergence required for conservative form
     double vdiv(0.0);
@@ -392,15 +386,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODFluid(
     // loop all scalars
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
-      // scalar at integration point at time step n+1
-      const double phinp = funct_.Dot(ephinp_[k]);
-      // scalar at integration point at time step n
-      //const double phin = funct_.Dot(ephin_[k]);
-
-      // gradient of current scalar value at integration point
-      LINALG::Matrix<nsd_,1> gradphi(true);
-      gradphi.Multiply(derxy_,ephinp_[k]);
-
       //----------------------------------------------------------------
       // standard Galerkin terms
       //----------------------------------------------------------------
@@ -414,11 +399,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::SysmatODFluid(
       //----------------------------------------------------------------
 
       // calculation of convective element matrix in convective form
-      CalcMatConvODFluid(emat,k,numdofpernode_fluid,timefacfac,densnp,gradphi);
+      CalcMatConvODFluid(emat,k,numdofpernode_fluid,timefacfac,densnp,scatravarmanager_->GradPhi(k));
 
       // add conservative contributions
       if (scatrapara_->IsConservative())
-        CalcMatConvAddConsODFluid(emat,k,numdofpernode_fluid,timefacfac,densnp,phinp);
+        CalcMatConvAddConsODFluid(emat,k,numdofpernode_fluid,timefacfac,densnp,scatravarmanager_->Phinp(k));
 
     }// end loop all scalars
 

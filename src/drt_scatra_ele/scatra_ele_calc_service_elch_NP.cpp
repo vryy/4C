@@ -5,10 +5,10 @@
 \brief evaluation of scatra elements for elch
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*--------------------------------------------------------------------------*/
@@ -164,29 +164,24 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity(
   const double frt = VarManager()->FRT();
   const double factor = frt*INPAR::ELCH::faraday_const; // = F^2/RT
 
-  // get concentration of transported scalar k at integration point
-  std::vector<double> conint(my::numscal_);
-  for (int k = 0;k<my::numscal_;++k)
-    conint[k] = my::funct_.Dot(my::ephinp_[k]);
-
   // Dilute solution theory:
   // Conductivity is computed by
   // sigma = F^2/RT*Sum(z_k^2 D_k c_k)
   for(int k=0; k < my::numscal_; k++)
   {
-    double sigma_k = factor*myelch::DiffManager()->GetValence(k)*myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k)*conint[k];
+    double sigma_k = factor*myelch::DiffManager()->GetValence(k)*myelch::DiffManager()->GetIsotropicDiff(k)*myelch::DiffManager()->GetValence(k)*VarManager()->Phinp(k);
     sigma[k] += sigma_k; // insert value for this ionic species
     sigma_all += sigma_k;
 
     // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
     if(equpot==INPAR::ELCH::equpot_enc_pde_elim)
     {
-      sigma_all += factor*myelch::DiffManager()->GetIsotropicDiff(my::numscal_)*myelch::DiffManager()->GetValence(my::numscal_)*myelch::DiffManager()->GetValence(k)*(-conint[k]);
+      sigma_all += factor*myelch::DiffManager()->GetIsotropicDiff(my::numscal_)*myelch::DiffManager()->GetValence(my::numscal_)*myelch::DiffManager()->GetValence(k)*(-VarManager()->Phinp(k));
     }
   }
 
   return;
-}
+} // DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::GetConductivity
 
 
 /*----------------------------------------------------------------------*
@@ -311,9 +306,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
 
       // get values of all transported scalars at integration point
       for (int k=0; k<my::numscal_; ++k)
-      {
         conint(k) = my::funct_.Dot(my::ephinp_[k]);
-      }
 
       // get el. potential solution at integration point
       potint = my::funct_.Dot(my::ephinp_[my::numscal_]);
@@ -404,9 +397,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSoluti
 
       // get values of all transported scalars at integration point
       for (int k=0; k<my::numscal_; ++k)
-      {
         conint(k) = my::funct_.Dot(my::ephinp_[k]);
-      }
 
       // get el. potential solution at integration point
       const double potint = my::funct_.Dot(my::ephinp_[my::numscal_]);

@@ -5,7 +5,7 @@
  \brief
 
  <pre>
-   Maintainer: Lasse Jagschies
+   \maintainer Lasse Jagschies
                jagschies@mhpc.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-10365
@@ -134,7 +134,7 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,probdim>::MatMyocard(
   diffmanageraniso->SetAnisotropicDiff(difftensor,k);
 
   // get membrane potential at n+1 or n+alpha_F at integration point
-  const double phinp = my::funct_.Dot(my::ephinp_[k]);
+  const double phinp = my::scatravarmanager_->Phinp(k);
 
   //clear
   advreamanager->Clear(my::numscal_);

@@ -5,10 +5,10 @@
 \brief evaluation of scatra elements for isothermal diffusion-conduction ion-transport equations
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*--------------------------------------------------------------------------*/
@@ -127,9 +127,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
     const double                  timetaufac,   //!< domain-integration factor times tau times time-integration factor
     const double                  rhstaufac,    //!< time-integration factor for rhs times tau times domain-integration factor
     LINALG::Matrix<my::nen_,1>&   tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
-    double&                       rhsint,       //!< rhs at Gauss point
-    const double                  hist          //!< history
-  )
+    double&                       rhsint        //!< rhs at Gauss point
+    )
 {
   //----------------------------------------------------------------
   // 1) element matrix: instationary terms
@@ -204,7 +203,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
     my::CalcRHSLinMass(erhs,k,rhsfac,fac,DiffManager()->GetPhasePoro(0),DiffManager()->GetPhasePoro(0));
 
   // adaption of rhs with respect to time integration
-  my::ComputeRhsInt(rhsint,DiffManager()->GetPhasePoro(0),DiffManager()->GetPhasePoro(0),hist);
+  my::ComputeRhsInt(rhsint,DiffManager()->GetPhasePoro(0),DiffManager()->GetPhasePoro(0),VarManager()->Hist(k));
 
   // add RHS and history contribution
   my::CalcRHSHistAndSource(erhs,k,fac,rhsint);

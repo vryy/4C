@@ -5,7 +5,7 @@
 \brief evaluation of scatra elements for thermodynamic diffusion-conduction ion-transport equations
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -101,8 +101,7 @@ namespace DRT
             const double                  timetaufac,   //!< domain integration factor times stabilization parameter times time integration factor
             const double                  rhstaufac,    //!< domain integration factor times stabilization parameter times time integration factor for right-hand side vector
             LINALG::Matrix<my::nen_,1>&   tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
-            double&                       rhsint,       //!< body force value
-            const double                  hist          //!< history value
+            double&                       rhsint        //!< body force value
             );
 
         //! fill element matrix with linearizations of discrete scatra residuals w.r.t. thermo dofs

@@ -5,7 +5,7 @@
 \brief evaluation of scatra elements for conservation of mass concentration and electronic charge within isothermal electrodes
 
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -101,9 +101,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcMatAndRhs(
     const double                  timetaufac,   //!< domain-integration factor times tau times time-integration factor
     const double                  rhstaufac,    //!< time-integration factor for rhs times tau times domain-integration factor
     LINALG::Matrix<my::nen_,1>&   tauderpot,    //!< derivatives of stabilization parameter w.r.t. electric potential
-    double&                       rhsint,       //!< rhs at Gauss point
-    const double                  hist          //!< history
-  )
+    double&                       rhsint        //!< rhs at Gauss point
+    )
 {
   //----------------------------------------------------------------------
   // 1) element matrix: instationary terms arising from transport equation
@@ -134,7 +133,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalcMatAndRhs(
 
   // 3b) element rhs: standard Galerkin contributions from rhsint vector (contains body force vector and history vector)
   // need to adapt rhsint vector to time integration scheme first
-  my::ComputeRhsInt(rhsint,1.,1.,hist);
+  my::ComputeRhsInt(rhsint,1.,1.,VarManager()->Hist(k));
   my::CalcRHSHistAndSource(erhs,k,fac,rhsint);
 
   // 3c) element rhs: standard Galerkin diffusion term
@@ -296,15 +295,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::GetMaterialParams(
   // get material
   Teuchos::RCP<const MAT::Material> material = ele->Material();
 
+  // evaluate electrode material
   if(material->MaterialType() == INPAR::MAT::m_electrode)
-  {
-    // concentration at integration point
-    const double conint = my::funct_.Dot(my::ephinp_[0]);
-
-    // evaluate electrode material
-    Utils()->MatElectrode(material,conint,DiffManager());
-  }
-
+    Utils()->MatElectrode(material,VarManager()->Phinp(0),DiffManager());
   else
     dserror("Material type not supported!");
 

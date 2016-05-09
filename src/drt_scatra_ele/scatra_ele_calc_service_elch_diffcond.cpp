@@ -5,10 +5,10 @@
 \brief evaluation of scatra elements for elch
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15252
+\maintainer Rui Fang
+            fang@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089-289-15251
 </pre>
 */
 /*--------------------------------------------------------------------------*/
@@ -838,7 +838,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetConductivity(
   }
 
   return;
-} // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::GetConductivity
+} // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetConductivity
 
 /*---------------------------------------------------------------------*
   |  calculate error compared to analytical solution           gjb 10/08|

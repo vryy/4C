@@ -5,7 +5,7 @@
 \brief Element evaluations for loma problems
 
 <pre>
-Maintainer: Ursula Rasthofer/Volker Gravemeier
+\maintainer Ursula Rasthofer/Volker Gravemeier
             {rasthofer,vgravem}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15236/45
@@ -161,7 +161,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatMixFrac(
     = Teuchos::rcp_dynamic_cast<const MAT::MixFrac>(material);
 
   // compute mixture fraction at n+1 or n+alpha_F
-  const double mixfracnp = my::funct_.Dot(my::ephinp_[0]);
+  const double mixfracnp = my::scatravarmanager_->Phinp(0);
 
   // compute dynamic diffusivity at n+1 or n+alpha_F based on mixture fraction
   my::diffmanager_->SetIsotropicDiff(actmat->ComputeDiffusivity(mixfracnp),k);
@@ -181,7 +181,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatMixFrac(
     if (not my::scatraparatimint_->IsIncremental())
     {
       // compute density at n
-      const double mixfracn = my::funct_.Dot(my::ephin_[0]);
+      const double mixfracn = my::scatravarmanager_->Phin(0);
       densn = actmat->ComputeDensity(mixfracn);
     }
     else densn = 1.0;
@@ -220,7 +220,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
   shc_ = actmat->Shc();
 
   // compute temperature at n+1 or n+alpha_F and check whether it is positive
-  const double tempnp = my::funct_.Dot(my::ephinp_[0]);
+  const double tempnp = my::scatravarmanager_->Phinp(0);
   if (tempnp < 0.0)
     dserror("Negative temperature in ScaTra Sutherland material evaluation!");
 
@@ -240,7 +240,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatSutherland(
     if (not my::scatraparatimint_->IsIncremental())
     {
       // compute density at n (thermodynamic pressure approximated at n+alpha_M)
-      const double tempn = my::funct_.Dot(my::ephin_[0]);
+      const double tempn = my::scatravarmanager_->Phin(0);
       densn = actmat->ComputeDensity(tempn,thermpressam_);
     }
     else densn = 1.0;
@@ -276,7 +276,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
     = Teuchos::rcp_dynamic_cast<const MAT::ArrheniusPV>(material);
 
   // get progress variable at n+1 or n+alpha_F
-  const double provarnp = my::funct_.Dot(my::ephinp_[0]);
+  const double provarnp = my::scatravarmanager_->Phinp(0);
 
   // get specific heat capacity at constant pressure and
   // compute temperature based on progress variable
@@ -299,7 +299,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusPV(
     if (not my::scatraparatimint_->IsIncremental())
     {
       // compute density at n
-      const double provarn = my::funct_.Dot(my::ephin_[0]);
+      const double provarn = my::scatravarmanager_->Phin(0);
       densn = actmat->ComputeDensity(provarn);
     }
     else densn = 1.0;
@@ -348,7 +348,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusSpec(
     = Teuchos::rcp_dynamic_cast<const MAT::ArrheniusSpec>(material);
 
   // compute temperature at n+1 or n+alpha_F and check whether it is positive
-  const double tempnp = my::funct_.Dot(my::ephinp_[my::numscal_-1]);
+  const double tempnp = my::scatravarmanager_->Phinp(my::numscal_-1);
   if (tempnp < 0.0)
     dserror("Negative temperature in ScaTra Arrhenius species material evaluation!");
 
@@ -368,7 +368,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusSpec(
     if (not my::scatraparatimint_->IsIncremental())
     {
       // compute density at n (thermodynamic pressure approximated at n+alpha_M)
-      const double tempn = my::funct_.Dot(my::ephin_[my::numscal_-1]);
+      const double tempn = my::scatravarmanager_->Phin(my::numscal_-1);
       densn = actmat->ComputeDensity(tempn,thermpressam_);
     }
     else densn = 1.0;
@@ -416,8 +416,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
   // check whether temperature is positive
   // (only two-equation systems, for the time being, such that only one species
   //  mass fraction possible)
-  const double spmfnp = my::funct_.Dot(my::ephinp_[0]);
-  const double tempnp = my::funct_.Dot(my::ephinp_[k]);
+  const double spmfnp = my::scatravarmanager_->Phinp(0);
+  const double tempnp = my::scatravarmanager_->Phinp(k);
   if (tempnp < 0.0)
     dserror("Negative temperature in ScaTra Arrhenius temperature material evaluation!");
 
@@ -437,7 +437,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatArrheniusTemp(
     if (not my::scatraparatimint_->IsIncremental())
     {
       // compute density at n (thermodynamic pressure approximated at n+alpha_M)
-      const double tempn = my::funct_.Dot(my::ephin_[k]);
+      const double tempn = my::scatravarmanager_->Phin(k);
       densn = actmat->ComputeDensity(tempn,thermpressam_);
     }
     else densn = 1.0;
@@ -478,7 +478,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
     = Teuchos::rcp_dynamic_cast<const MAT::FerEchPV>(material);
 
   // get progress variable at n+1 or n+alpha_F
-  const double provarnp = my::funct_.Dot(my::ephinp_[0]);
+  const double provarnp = my::scatravarmanager_->Phinp(0);
 
   // get specific heat capacity at constant pressure
   shc_ = actmat->ComputeShc(provarnp);
@@ -500,7 +500,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatFerechPV(
     if (not my::scatraparatimint_->IsIncremental())
     {
       // compute density at n
-      const double provarn = my::funct_.Dot(my::ephin_[0]);
+      const double provarn = my::scatravarmanager_->Phin(0);
       densn = actmat->ComputeDensity(provarn);
     }
     else densn = 1.0;
@@ -565,7 +565,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::MatYoghurt(
   if (my::scatrapara_->RBSubGrVel() or my::turbparams_->TurbModel() == INPAR::FLUID::multifractal_subgrid_scales)
   {
     // compute temperature at n+1 or n+alpha_F and check whether it is positive
-    const double tempnp = my::funct_.Dot(my::ephinp_[0]);
+    const double tempnp = my::scatravarmanager_->Phinp(0);
     if (tempnp < 0.0)
       dserror("Negative temperature in ScaTra yoghurt material evaluation!");
 

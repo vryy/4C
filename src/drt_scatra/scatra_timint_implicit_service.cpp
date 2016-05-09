@@ -2591,7 +2591,7 @@ void SCATRA::ScalarHandler::Init(const ScaTraTimIntImpl* const scatratimint)
   // initialize set of all number of dofs per node on this proc
   std::set<int> mynumdofpernode ;
 
-  // collect number of DoFs for each node ob this proc
+  // collect number of DoFs for each node on this proc
   for(int i =0; i<discret->NumMyRowNodes() ; i++)
     mynumdofpernode.insert(discret->NumDof(0,discret->lRowNode(i)));
 
@@ -2599,7 +2599,7 @@ void SCATRA::ScalarHandler::Init(const ScaTraTimIntImpl* const scatratimint)
   int maxsize = 0;
   // number of different numbers of dofs on this procs
   int mysize = mynumdofpernode.size();
-  //communicate
+  // communicate
   discret->Comm().MaxAll(&mysize,&maxsize,1);
 
   // copy mynumdofpernode into std::vector for communication
@@ -2609,15 +2609,15 @@ void SCATRA::ScalarHandler::Init(const ScaTraTimIntImpl* const scatratimint)
   // initialize std::vector for communication
   std::vector<int> vecnumdofpernode(maxsize*discret->Comm().NumProc(),0);
 
-  //communicate
+  // communicate
   discret->Comm().GatherAll(&vecmynumdofpernode[0],&vecnumdofpernode[0],vecmynumdofpernode.size());
 
-  //copy back into set
-  for(unsigned i =0; i<vecnumdofpernode.size() ; i++)
+  // copy back into set
+  for(unsigned i=0; i<vecnumdofpernode.size(); ++i)
     if(vecnumdofpernode[i]!=0)
       numdofpernode_.insert(vecnumdofpernode[i]);
 
-  //check for equal number of Dofs on all nodes in whole discretization
+  // check for equal number of Dofs on all nodes in whole discretization
   equalnumdof_ = (numdofpernode_.size()==1);
 
   return;
@@ -2640,18 +2640,18 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
   // initialize set of all number of dofs per node on this proc
   std::set<int> mynumdofpernode;
 
-  // deterimine all number of dofs per node on this proc
+  // determine all number of dofs per node on this proc
   for(unsigned inode=0; inode<nodegids->size(); inode++)
   {
-    //get node GID
+    // get node GID
     const int nodegid = (*nodegids)[inode];
 
-    //if on this proc
+    // if on this proc
     if(discret->NodeRowMap()->MyGID(nodegid))
     {
-      //get node
+      // get node
       DRT::Node* curnode = discret->gNode(nodegid);
-      //save number of dofs in set
+      // save number of dofs in set
       mynumdofpernode.insert(discret->NumDof(0,curnode));
     }
   }
@@ -2660,7 +2660,7 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
   int maxsize = 0;
   // number of different numbers of dofs on this procs
   int mysize = mynumdofpernode.size();
-  //communicate
+  // communicate
   discret->Comm().MaxAll(&mysize,&maxsize,1);
 
   // copy mynumdofpernode into std::vector for communication
@@ -2670,10 +2670,10 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
   // initialize std::vector for communication
   std::vector<int> vecnumdofpernode(maxsize*discret->Comm().NumProc(),0);
 
-  //communicate
+  // communicate
   discret->Comm().GatherAll(&vecmynumdofpernode[0],&vecnumdofpernode[0],vecmynumdofpernode.size());
 
-  //copy back into set
+  // copy back into set
   for(unsigned i =0; i<vecnumdofpernode.size() ; i++)
     if(vecnumdofpernode[i]!=0)
       numdofpernode.insert(vecnumdofpernode[i]);
