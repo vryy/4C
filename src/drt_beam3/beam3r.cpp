@@ -1487,3 +1487,29 @@ void DRT::ELEMENTS::Beam3r::Calculate_reflength(const LINALG::Matrix<3*vpernode*
 
   return;
 }
+
+// explicit template instantations (some compilers do not export symboles defined above)
+template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<2,2,1>(const std::vector<double>&,
+                                                                   const std::vector<double>&,
+                                                                   const bool                );
+template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<2,2,2>(const std::vector<double>&,
+                                                                   const std::vector<double>&,
+                                                                   const bool                );
+template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<3,3,1>(const std::vector<double>&,
+                                                                   const std::vector<double>&,
+                                                                   const bool                );
+template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<3,2,2>(const std::vector<double>&,
+                                                                   const std::vector<double>&,
+                                                                   const bool                );
+template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<4,4,1>(const std::vector<double>&,
+                                                                   const std::vector<double>&,
+                                                                   const bool                );
+template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<4,2,2>(const std::vector<double>&,
+                                                                   const std::vector<double>&,
+                                                                   const bool                );
+template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<5,5,1>(const std::vector<double>&,
+                                                                   const std::vector<double>&,
+                                                                   const bool                );
+template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<5,2,2>(const std::vector<double>&,
+                                                                   const std::vector<double>&,
+                                                                   const bool                );
