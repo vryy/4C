@@ -3,15 +3,13 @@
 \brief three dimensional nonlinear Reissner beam element of Type II
 with interpolated node positions
 
-<pre>
-Maintainer: Kei Müller
-            mueller@lnm.mw.tum.de
+
+\maintainer Christoph Meier
+            meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15276
+            089 - 289-15262
 
-</pre>
-
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 
 #include "beam3cl.H"
 #include "../drt_lib/drt_discret.H"
@@ -172,7 +170,7 @@ void DRT::ELEMENTS::BeamCLType::SetupElementDefinition( std::map<std::string,std
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::BeamCL::BeamCL(int id, int owner) :
-DRT::Element(id,owner),
+ DRT::ELEMENTS::Beam3Base(id,owner),
 isinit_(false),
 eps_(0.0),
 Qrot_(LINALG::Matrix<4,1>(true)),
@@ -195,7 +193,7 @@ mybindingposition_(0)
  |  copy-ctor (public)                                       cyron 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::BeamCL::BeamCL(const DRT::ELEMENTS::BeamCL& old) :
- DRT::Element(old),
+ DRT::ELEMENTS::Beam3Base(old),
  isinit_(old.isinit_),
  xrefe_(old.xrefe_),
  rQconv_(old.rQconv_),

@@ -1,15 +1,13 @@
 /*!----------------------------------------------------------------------
 \file beam3_input.cpp
-\brief
 
-<pre>
-Maintainer: Christoph Meier
+
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
 
-*----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 
 #include "beam3.H"
 #include "../drt_lib/drt_linedefinition.H"

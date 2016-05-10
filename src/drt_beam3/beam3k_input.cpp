@@ -3,16 +3,15 @@
 
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
 
-<pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
+
 
 *-----------------------------------------------------------------------------------------------------------*/
 
-#include "../drt_beam3k/beam3k.H"
+#include "beam3k.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/largerotations.H"
 

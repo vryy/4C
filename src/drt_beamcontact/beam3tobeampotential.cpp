@@ -2,14 +2,12 @@
 \file beam3tobeampotential.cpp
 \brief One beam potential pair (two beam elements)
 
-<pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
 
-*-----------------------------------------------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------------------------------------------*/
 
 #include "beam3tobeampotential.H"
 #include "beam3contact_defines.H"
@@ -25,8 +23,8 @@ Maintainer: Christoph Meier
 
 #include "../drt_structure/strtimint_impl.H"
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3r/beam3r.H"
-#include "../drt_beam3eb/beam3eb.H"
+#include "../drt_beam3/beam3r.H"
+#include "../drt_beam3/beam3eb.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../headers/FAD_utils.H"
 

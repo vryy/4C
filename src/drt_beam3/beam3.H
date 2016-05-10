@@ -3,13 +3,13 @@
 
 \brief three dimensional nonlinear Reissner beam element
 
-<pre>
-Maintainer: Christoph Meier
+
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
-*----------------------------------------------------------------------*/
+
+ *------------------------------------------------------------------------*/
 // administrative line in order to make a difference between BACI and Ccarat files
 
 //header file only included if not yet included!
@@ -17,17 +17,11 @@ Maintainer: Christoph Meier
 #define BEAM3_H
 
 
-#include "Teuchos_RCP.hpp"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
-
-#include "../drt_lib/drt_elementtype.H"
 #include "../drt_fem_general/largerotations.H"
-
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+
+#include "beam3_base.H"
 
 //#define BEAM3DISCRETELINENEUMANN 0.0 //Flag in order to interpret line Neumann condition as discrete force at given element parameter position DISCRETELINENEUMANN
 //Default: off                  //for all elements contained in the corresponding design line!
@@ -91,7 +85,7 @@ LIN6  1---6---2---3---4---5
 
 author cyron (cyron @lnm.mw.tum.de)
 */
-class Beam3 : public DRT::Element
+class Beam3 : public Beam3Base
 {
 public:
 
@@ -602,25 +596,6 @@ public:
   //@}
 
 private:
-
-  //! action parameters recognized by Beam3
-  enum ActionType
-  {
-    calc_none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-    calc_struct_stress,
-    calc_struct_eleload,
-    calc_struct_fsiload,
-    calc_struct_update_istep,
-    calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
-    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
-    calc_struct_energy, //calculate current elastic energy of element
-  };
 
   //! kind of integration to be performed
   enum IntegrationType

@@ -3,16 +3,15 @@
 
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
 
-<pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
+
 
 *-----------------------------------------------------------------------------------------------------------*/
 
-#include "../drt_beam3k/beam3k.H"
+#include "beam3k.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -169,7 +168,7 @@ void DRT::ELEMENTS::Beam3kType::SetupElementDefinition( std::map<std::string,std
  |  ctor (public)                                            meier 05/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3k::Beam3k(int id, int owner) :
-DRT::Element(id,owner),
+ DRT::ELEMENTS::Beam3Base(id,owner),
 isinit_(false),
 crosssec_(0),
 Iyy_(0),
@@ -213,7 +212,7 @@ inertscalerot2_(0)
  |  copy-ctor (public)                                       meier 05/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old) :
- DRT::Element(old),
+ DRT::ELEMENTS::Beam3Base(old),
  isinit_(old.isinit_),
  crosssec_(old.crosssec_),
  Iyy_(old.Iyy_),

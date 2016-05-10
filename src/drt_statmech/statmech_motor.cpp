@@ -2,12 +2,10 @@
 \file statmech_motor.cpp
 \brief management and auxiliary functions for molecular motors
 
-<pre>
-Maintainer: Kei Müller
+\maintainer Kei Müller
             mueller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15276
-</pre>
 
 *----------------------------------------------------------------------*/
 #include "statmech_manager.H"
@@ -17,7 +15,7 @@ Maintainer: Kei Müller
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3cl/beam3cl.H"
+#include "../drt_beam3/beam3cl.H"
 
 
 /*----------------------------------------------------------------------*

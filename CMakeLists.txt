@@ -1580,36 +1580,6 @@ set(OBJS_BACI_MAIN
   src/global_full/global_control.cpp
   src/global_full/baci.cpp
 )
-set(OBJS_DRT_B3R_LIB
-  src/drt_beam3r/beam3r.cpp
-  src/drt_beam3r/beam3r_evaluate.cpp
-  src/drt_beam3r/beam3r_input.cpp
-)
-set(OBJS_DRT_B3CL_LIB
-  src/drt_beam3cl/beam3cl.cpp
-  src/drt_beam3cl/beam3cl_evaluate.cpp
-  src/drt_beam3cl/beam3cl_input.cpp
-)
-set(OBJS_DRT_B3EB_LIB
-  src/drt_beam3eb/beam3eb.cpp
-  src/drt_beam3eb/beam3eb_evaluate.cpp
-  src/drt_beam3eb/beam3eb_input.cpp
-)
-set(OBJS_DRT_B3EBTOR_LIB
-  src/drt_beam3ebtor/beam3ebtor.cpp
-  src/drt_beam3ebtor/beam3ebtor_evaluate.cpp
-  src/drt_beam3ebtor/beam3ebtor_input.cpp
-)
-set(OBJS_DRT_B3EBANISOTROP_LIB
-  src/drt_beam3eb_anisotrop/beam3eb_anisotrop.cpp
-  src/drt_beam3eb_anisotrop/beam3eb_anisotrop_evaluate.cpp
-  src/drt_beam3eb_anisotrop/beam3eb_anisotrop_input.cpp
-)
-set(OBJS_DRT_B3WK_LIB
-  src/drt_beam3k/beam3k.cpp
-  src/drt_beam3k/beam3k_evaluate.cpp
-  src/drt_beam3k/beam3k_input.cpp
-)
 set(OBJS_DRT_RIGIDSPHERE_LIB
   src/drt_rigidsphere/rigidsphere.cpp
   src/drt_rigidsphere/rigidsphere_evaluate.cpp
@@ -1936,9 +1906,28 @@ set(OBJS_DRT_NURBS_DISCRET
   src/drt_nurbs_discret/drt_apply_nurbs_initial_condition.cpp
 )
 set(OBJS_DRT_B3_LIB
+  src/drt_beam3/beam3_base.cpp
   src/drt_beam3/beam3.cpp
   src/drt_beam3/beam3_evaluate.cpp
   src/drt_beam3/beam3_input.cpp
+  src/drt_beam3/beam3r.cpp
+  src/drt_beam3/beam3r_evaluate.cpp
+  src/drt_beam3/beam3r_input.cpp
+  src/drt_beam3/beam3cl.cpp
+  src/drt_beam3/beam3cl_evaluate.cpp
+  src/drt_beam3/beam3cl_input.cpp
+  src/drt_beam3/beam3eb.cpp
+  src/drt_beam3/beam3eb_evaluate.cpp
+  src/drt_beam3/beam3eb_input.cpp
+  src/drt_beam3/beam3ebtor.cpp
+  src/drt_beam3/beam3ebtor_evaluate.cpp
+  src/drt_beam3/beam3ebtor_input.cpp
+  src/drt_beam3/beam3eb_anisotrop.cpp
+  src/drt_beam3/beam3eb_anisotrop_evaluate.cpp
+  src/drt_beam3/beam3eb_anisotrop_input.cpp
+  src/drt_beam3/beam3k.cpp
+  src/drt_beam3/beam3k_evaluate.cpp
+  src/drt_beam3/beam3k_input.cpp
 )
 set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele.cpp
@@ -2368,13 +2357,7 @@ add_library(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
 add_library(ele_meshfree_fluid ${OBJS_DRT_MESHFREE_FLUID_CELL_LIB})
 add_library(ele_ale ${OBJS_DRT_ALE_LIB})
 add_library(ele_b3 ${OBJS_DRT_B3_LIB})
-add_library(ele_b3r ${OBJS_DRT_B3R_LIB})
-add_library(ele_b3eb ${OBJS_DRT_B3EB_LIB})
-add_library(ele_b3ebtor ${OBJS_DRT_B3EBTOR_LIB})
-add_library(ele_b3ebanisotrop ${OBJS_DRT_B3EBANISOTROP_LIB})
-add_library(ele_b3wk ${OBJS_DRT_B3WK_LIB})
 add_library(ele_rigidsphere ${OBJS_DRT_RIGIDSPHERE_LIB})
-add_library(ele_b3cl ${OBJS_DRT_B3CL_LIB})
 add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
 add_library(ele_opti ${OBJS_DRT_TOPOPT_LIB})
@@ -2397,13 +2380,7 @@ add_library(ele_acou ${OBJS_DRT_ACOU_LIB})
 set(ELEMENT_LIBRARIES
   ele_ale
   ele_b3
-  ele_b3r
-  ele_b3eb
-  ele_b3ebtor
-  ele_b3ebanisotrop
-  ele_b3wk
   ele_rigidsphere
-  ele_b3cl
   ele_bele3
   ele_combust3
   ele_discsh3

@@ -3,12 +3,11 @@
 
 \brief three dimensional nonlinear rod based on a C1 curve
 
-<pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15301
-</pre>
+            089 - 289-15262
+
 
 *-----------------------------------------------------------------------------------------------------------*/
 
@@ -26,6 +25,7 @@ Maintainer: Christoph Meier
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 //#include "Sacado.hpp"
 //typedef Sacado::Fad::DFad<double> FAD;
@@ -43,38 +43,47 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
                                         Epetra_SerialDenseVector& elevec3)
 {
 
-  DRT::ELEMENTS::Beam3ebtor::ActionType act = Beam3ebtor::calc_none;
-  // get the action required
-  std::string action = params.get<std::string>("action","calc_none");
+  SetParamsInterfacePtr(params);
 
-  if     (action == "calc_none")         dserror("No action supplied");
-  else if (action=="calc_struct_linstiff")     act = Beam3ebtor::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff")     act = Beam3ebtor::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce") act = Beam3ebtor::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass")   act = Beam3ebtor::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass")   act = Beam3ebtor::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass") act = Beam3ebtor::calc_struct_nlnstifflmass; //with lumped mass matrix
-  else if (action=="calc_struct_stress")     act = Beam3ebtor::calc_struct_stress;
-  else if (action=="calc_struct_eleload")     act = Beam3ebtor::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload")     act = Beam3ebtor::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep")  act = Beam3ebtor::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike")act = Beam3ebtor::calc_struct_update_imrlike;
-  else if (action=="calc_struct_reset_istep")   act = Beam3ebtor::calc_struct_reset_istep;
-  else if (action=="calc_struct_ptcstiff")    act = Beam3ebtor::calc_struct_ptcstiff;
-  else     dserror("Unknown type of action for Beam3ebtor");
+  // start with "none"
+  ELEMENTS::ActionType act = ELEMENTS::none;
+
+  if (IsParamsInterface())
+  {
+   act = ParamsInterface().GetActionType();
+  }
+  else
+  {
+    // get the action required
+    std::string action = params.get<std::string>("action","calc_none");
+    if     (action == "calc_none")         dserror("No action supplied");
+    else if (action=="calc_struct_linstiff")                               act = ELEMENTS::struct_calc_linstiff;
+    else if (action=="calc_struct_nlnstiff")                               act = ELEMENTS::struct_calc_nlnstiff;
+    else if (action=="calc_struct_internalforce")                          act = ELEMENTS::struct_calc_internalforce;
+    else if (action=="calc_struct_linstiffmass")                           act = ELEMENTS::struct_calc_linstiffmass;
+    else if (action=="calc_struct_nlnstiffmass")                           act = ELEMENTS::struct_calc_nlnstiffmass;
+    else if (action=="calc_struct_nlnstifflmass")                          act = ELEMENTS::struct_calc_nlnstifflmass; //with lumped mass matrix
+    else if (action=="calc_struct_stress")                                 act = ELEMENTS::struct_calc_stress;
+    else if (action=="calc_struct_eleload")                                act = ELEMENTS::struct_calc_eleload;
+    else if (action=="calc_struct_fsiload")                                act = ELEMENTS::struct_calc_fsiload;
+    else if (action=="calc_struct_update_istep")                           act = ELEMENTS::struct_calc_update_istep;
+    else if (action=="calc_struct_reset_istep")                            act = ELEMENTS::struct_calc_reset_istep;
+    else if (action=="calc_struct_ptcstiff")                               act = ELEMENTS::struct_calc_ptcstiff;
+    else     dserror("Unknown type of action for Beam3ebtor");
+  }
 
   std::string test = params.get<std::string>("action","calc_none");
 
   switch(act)
   {
 
-    case Beam3ebtor::calc_struct_ptcstiff:
+    case ELEMENTS::struct_calc_ptcstiff:
     {
       dserror("no ptc implemented for Beam3ebtor element");
     }
     break;
 
-    case Beam3ebtor::calc_struct_linstiff:
+    case ELEMENTS::struct_calc_linstiff:
     {
       //only nonlinear case implemented!
       dserror("linear stiffness matrix called, but not implemented");
@@ -82,10 +91,10 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
     break;
 
     //nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is required
-    case Beam3ebtor::calc_struct_nlnstiffmass:
-    case Beam3ebtor::calc_struct_nlnstifflmass:
-    case Beam3ebtor::calc_struct_nlnstiff:
-    case Beam3ebtor::calc_struct_internalforce:
+    case ELEMENTS::struct_calc_nlnstiffmass:
+    case ELEMENTS::struct_calc_nlnstifflmass:
+    case ELEMENTS::struct_calc_nlnstiff:
+    case ELEMENTS::struct_calc_internalforce:
     {
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacement and residual values for each degree of freedom
@@ -113,39 +122,35 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
         if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       }
-      if (act == Beam3ebtor::calc_struct_nlnstiffmass)
+      if (act == ELEMENTS::struct_calc_nlnstiffmass)
       {
       eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
       }
-      else if (act == Beam3ebtor::calc_struct_nlnstifflmass)
+      else if (act == ELEMENTS::struct_calc_nlnstifflmass)
       {
         eb_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
         lumpmass(&elemat2);
       }
-      else if (act == Beam3ebtor::calc_struct_nlnstiff)
+      else if (act == ELEMENTS::struct_calc_nlnstiff)
       {
         eb_nlnstiffmass(params,myvel,mydisp,&elemat1,NULL,&elevec1);
       }
-      else if (act == Beam3ebtor::calc_struct_internalforce)
+      else if (act == ELEMENTS::struct_calc_internalforce)
       {
         eb_nlnstiffmass(params,myvel,mydisp,NULL,NULL,&elevec1);
       }
     }
     break;
 
-    case calc_struct_stress:
+    case ELEMENTS::struct_calc_stress:
       dserror("No stress output implemented for beam3 elements");
     break;
 
-    case calc_struct_update_istep:
+    case ELEMENTS::struct_calc_update_istep:
       //not necessary since no class variables are modified in predicting steps
     break;
 
-    case calc_struct_update_imrlike:
-      //not necessary since no class variables are modified in predicting steps
-    break;
-
-    case calc_struct_reset_istep:
+    case ELEMENTS::struct_calc_reset_istep:
       //not necessary since no class variables are modified in predicting steps
     break;
 

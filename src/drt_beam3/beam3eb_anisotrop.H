@@ -3,12 +3,10 @@
 
 \brief three dimensional nonlinear rod based on a C1 curve
 
-<pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15301
-</pre>
+            089 - 289-15262
 
 3D nonlinear Kirchhoff-like beam element. In contrary to the beam3ebtor element this element can
 also display initially curved beams. To be able to use this element correctly structural dynamic
@@ -30,13 +28,10 @@ the material and a reference triad.
 #ifndef BEAM3EBANISOTROP_H
 #define BEAM3EBANISOTROP_H
 
-#include "Teuchos_RCP.hpp"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
-#include "../drt_lib/drt_elementtype.H"
+
 #include "../drt_lib/drt_node.H"
+
+#include "beam3_base.H"
 
 #include "Sacado.hpp"
 typedef Sacado::Fad::DFad<double> FAD;
@@ -130,7 +125,7 @@ also display initially curved beams.
 
 author meier (meier@lnm.mw.tum.de)
 */
-class Beam3ebanisotrop : public DRT::Element
+class Beam3ebanisotrop : public Beam3Base
 {
 public:
 
@@ -355,26 +350,6 @@ public:
 
 
 private:
-
-  //! action parameters recognized by Beam3ebanisotrop
-  enum ActionType
-  {
-    calc_none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-    calc_struct_stress,
-    calc_struct_eleload,
-    calc_struct_fsiload,
-    calc_struct_reset_istep,
-    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
-    calc_struct_energy, // calculate strain energy
-    calc_struct_update_istep,    // two actions necessary to update element data at the end of the
-    calc_struct_update_imrlike,  // step. The difference between the two methods is only relevant for EAS technology.
-  };
 
   //Variables
 

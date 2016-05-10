@@ -2,12 +2,10 @@
 \file statmech_mechanaly.cpp
 \brief mechanical analysis and output for StatMech network structures
 
-<pre>
-Maintainer: Kei Müller
+\maintainer Kei Müller
             mueller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15276
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -19,11 +17,11 @@ Maintainer: Kei Müller
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3r/beam3r.H"
-#include "../drt_beam3eb/beam3eb.H"
+#include "../drt_beam3/beam3r.H"
+#include "../drt_beam3/beam3eb.H"
 #include "../drt_truss3/truss3.H"
 #include "../drt_truss3cl/truss3cl.H"
-#include "../drt_beam3cl/beam3cl.H"
+#include "../drt_beam3/beam3cl.H"
 #include "../drt_torsion3/torsion3.H"
 #include "../drt_lib/drt_globalproblem.H"
 

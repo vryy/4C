@@ -3,12 +3,11 @@
 
 \brief three dimensional nonlinear rod based on a C1 curve
 
-<pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
+
 
 *-----------------------------------------------------------------------------------------------------------*/
 
@@ -153,7 +152,7 @@ void DRT::ELEMENTS::Beam3ebanisotropType::SetupElementDefinition( std::map<std::
  |  ctor (public)                                            meier 05/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3ebanisotrop::Beam3ebanisotrop(int id, int owner) :
-DRT::Element(id,owner),
+ DRT::ELEMENTS::Beam3Base(id,owner),
 isinit_(false),
 crosssec_(0),
 Iyy_(0),
@@ -189,7 +188,7 @@ timestepcount_(0)
  |  copy-ctor (public)                                       meier 05/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3ebanisotrop::Beam3ebanisotrop(const DRT::ELEMENTS::Beam3ebanisotrop& old) :
- DRT::Element(old),
+ DRT::ELEMENTS::Beam3Base(old),
  isinit_(old.isinit_),
  crosssec_(old.crosssec_),
  Iyy_(old.Iyy_),

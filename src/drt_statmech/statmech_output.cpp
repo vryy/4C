@@ -2,12 +2,10 @@
 \file statmech_output.cpp
 \brief output methods for statistical mechanics
 
-<pre>
-Maintainer: Kei Müller
+\maintainer Kei Müller
             mueller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15276
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -25,11 +23,11 @@ Maintainer: Kei Müller
 #include "../drt_beamcontact/beam3contact_octtree.H"
 
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3r/beam3r.H"
-#include "../drt_beam3eb/beam3eb.H"
+#include "../drt_beam3/beam3r.H"
+#include "../drt_beam3/beam3eb.H"
 #include "../drt_truss3/truss3.H"
 #include "../drt_truss3cl/truss3cl.H"
-#include "../drt_beam3cl/beam3cl.H"
+#include "../drt_beam3/beam3cl.H"
 #include "../drt_torsion3/torsion3.H"
 
 //MEASURETIME activates measurement of computation time for certain parts of the code

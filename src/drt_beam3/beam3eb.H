@@ -3,12 +3,12 @@
 
 \brief three dimensional nonlinear torsionless rod based on a C1 curve
 
-<pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15301
-</pre>
+            089 - 289-15262
+
+
 3D nonlinear Euler-Bernoulli-like beam element based on chapter 5 of the diploma thesis "Development of a finite element for
 nonlinear beams based on the formulas of Frenet-Serret" by Christoph Meier. The current formulation is only able to display axial
 tension and bending curvature based on the curve describing the centerline of an initially (i.e. stress free) straight beam.
@@ -58,16 +58,13 @@ high precission calculation. The following facts have to be considered when doin
 #define BEAM3EB_H
 
 
-#include "Teuchos_RCP.hpp"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
-#include "../drt_lib/drt_elementtype.H"
+
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/drt_node.H"
+
+#include "beam3_base.H"
 
 //#define PRECISION ;           // Flag to switch on arbitrary precision calculation. To use this functionality two
                                 // slight modification in the do-configure file and in linalg_fixesizematrix.H are
@@ -171,7 +168,7 @@ There is no shear deformation and no torsion. The expansion of the model to a fu
 
 author meier (meier@lnm.mw.tum.de)
 */
-class Beam3eb : public DRT::Element
+class Beam3eb : public Beam3Base
 {
 public:
 
@@ -477,24 +474,6 @@ public:
 
 private:
 
-  //! action parameters recognized by Beam3eb
-  enum ActionType
-  {
-    calc_none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-    calc_struct_stress,
-    calc_struct_eleload,
-    calc_struct_fsiload,
-    calc_struct_update_istep,
-    calc_struct_reset_istep,
-    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
-    calc_struct_energy
-  };
   //! vector storing the internal force vector
   Epetra_SerialDenseVector internalforces_;
 

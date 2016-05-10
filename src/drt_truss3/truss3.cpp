@@ -2,17 +2,17 @@
 \file truss3.cpp
 \brief three dimensional total Lagrange truss element
 
-<pre>
-Maintainer: Dhrubajyoti Mukherjee
+
+\maintainer Dhrubajyoti Mukherjee
             mukherjee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15270
-</pre>
 
-*----------------------------------------------------------------------*/
+
+ *-----------------------------------------------------------------------------------------------------------*/
 
 #include "truss3.H"
-#include "../drt_beam3eb/beam3eb.H"
+#include "../drt_beam3/beam3eb.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils_nullspace.H"

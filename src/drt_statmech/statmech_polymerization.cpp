@@ -2,12 +2,12 @@
 \file statmech_polymerization.cpp
 \brief (de-)polymerization  for StatMech problems
 
-<pre>
-Maintainer: Dhrubajyoti Mukherjee
+
+\maintainer Dhrubajyoti Mukherjee
             mukherjee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15270
-</pre>
+
 --------------------------------------------------------------------------*/
 #include "statmech_manager.H"
 
@@ -15,7 +15,7 @@ Maintainer: Dhrubajyoti Mukherjee
 
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_beam3eb/beam3eb.H"
+#include "../drt_beam3/beam3eb.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_beamcontact/beam3contact_manager.H"

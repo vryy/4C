@@ -2,12 +2,11 @@
 \file statmech_dirichlet.cpp
 \brief special Dirichlet boundary conditions for StatMech problems
 
-<pre>
-Maintainer: Kei Müller
+
+\maintainer Kei Müller
             mueller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15276
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -18,7 +17,7 @@ Maintainer: Kei Müller
 #include "../drt_inpar/inpar_statmech.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_beam3r/beam3r.H"
+#include "../drt_beam3/beam3r.H"
 
 
 /*----------------------------------------------------------------------*

@@ -1,10 +1,16 @@
 /*!----------------------------------------------------------------------
 \file beam3r.cpp
 
-\maintainer Christoph Meier
 
 \brief 3D nonlinear Reissner beam element
-*----------------------------------------------------------------------*/
+
+
+\maintainer Christoph Meier
+            meier@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15262
+
+*-----------------------------------------------------------------------------------------------------------*/
 
 #include "beam3r.H"
 #include "../drt_lib/drt_discret.H"
@@ -416,7 +422,7 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner) :
-DRT::Element(id,owner),
+ DRT::ELEMENTS::Beam3Base(id,owner),
 centerline_hermite_(false),
 isinit_(false),
 needstatmech_(false),
@@ -451,7 +457,7 @@ inertscalerot2_(0.0)
  |  copy-ctor (public)                                       cyron 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3r::Beam3r(const DRT::ELEMENTS::Beam3r& old) :
- DRT::Element(old),
+ DRT::ELEMENTS::Beam3Base(old),
  centerline_hermite_(old.centerline_hermite_),
  isinit_(old.isinit_),
  needstatmech_(old.needstatmech_),
@@ -1481,30 +1487,3 @@ void DRT::ELEMENTS::Beam3r::Calculate_reflength(const LINALG::Matrix<3*vpernode*
 
   return;
 }
-
-
-// explicit template instantations (some compilers do not export symboles defined above)
-template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<2,2,1>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
-template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<2,2,2>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
-template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<3,3,1>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
-template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<3,2,2>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
-template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<4,4,1>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
-template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<4,2,2>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
-template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<5,5,1>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );
-template void DRT::ELEMENTS::Beam3r::SetUpReferenceGeometry<5,2,2>(const std::vector<double>&,
-                                                                   const std::vector<double>&,
-                                                                   const bool                );

@@ -1,12 +1,14 @@
 /*!----------------------------------------------------------------------
 \file beam3r.H
 
-\maintainer Christoph Meier
-
 \brief 3D nonlinear Reissner beam element
-*----------------------------------------------------------------------*/
 
-/*
+
+\maintainer Christoph Meier
+            meier@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15262
+
 3D nonlinear Reissner beam element of type II (according to "The
 interpolation of rotations and its application to finite element models
 of geometrically exact rods", Romero 2004)
@@ -20,19 +22,15 @@ For 2D rotations, multiplicative and additive increments are identical and rotat
 #ifndef BEAM3R_H
 #define BEAM3R_H
 
-#include "Teuchos_RCP.hpp"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
 
-#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "Sacado.hpp"
 #include "../headers/FAD_utils.H"
+
+#include "beam3_base.H"
 
 
 //#define BEAM3RAUTOMATICDIFF  //default: off  //Decide whether automatic differentiation via Sacado is used or not for linearization of f_int
@@ -97,7 +95,7 @@ Crisfield, 2003, "Non-linear Finite Element Analysis of Solids and Structures", 
 
 author cyron (cyron @lnm.mw.tum.de)
 */
-class Beam3r : public DRT::Element
+class Beam3r : public Beam3Base
 {
 public:
 
@@ -403,25 +401,6 @@ public:
 
 
 private:
-
-  //! action parameters recognized by Beam3r
-  enum ActionType
-  {
-    calc_none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-    calc_struct_stress,
-    calc_struct_eleload,
-    calc_struct_fsiload,
-    calc_struct_update_istep,
-    calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
-    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
-    calc_struct_energy //calculate current elastic energy of element
-  };
 
   //! purposes of numerical integration
   enum IntegrationPurpose

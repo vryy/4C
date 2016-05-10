@@ -2,14 +2,13 @@
 \file beam3cl_input.cpp
 \brief
 
-<pre>
-Maintainer: Kei Müller
-            mueller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15276
-</pre>
 
-*----------------------------------------------------------------------*/
+\maintainer Christoph Meier
+            meier@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15262
+
+ *-----------------------------------------------------------------------*/
 
 
 #include "beam3cl.H"

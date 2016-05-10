@@ -1,21 +1,18 @@
 /*!-----------------------------------------------------------------------------------------------------------
  \file beam3_evaluate.cpp
- \brief
 
-<pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
 
  *-----------------------------------------------------------------------------------------------------------*/
 
 
 
 #include "beam3.H"
+#include "beam3r.H"
 #include "../drt_statmech/statmech_manager.H"
-#include "../drt_beam3r/beam3r.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
@@ -28,6 +25,7 @@ Maintainer: Christoph Meier
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
+#include "../drt_structure_new/str_elements_paramsinterface.H"
 
 #include "../drt_inpar/inpar_statmech.H"
 
@@ -43,28 +41,39 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
                                    Epetra_SerialDenseVector& elevec2,
                                    Epetra_SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::Beam3::ActionType act = Beam3::calc_none;
-  // get the action required
-  std::string action = params.get<std::string>("action","calc_none");
-  if (action == "calc_none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff") act = Beam3::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff") act = Beam3::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce") act = Beam3::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass") act = Beam3::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass") act = Beam3::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass") act = Beam3::calc_struct_nlnstifflmass; //with lumped mass matrix
-  else if (action=="calc_struct_stress") act = Beam3::calc_struct_stress;
-  else if (action=="calc_struct_eleload") act = Beam3::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload") act = Beam3::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep") act = Beam3::calc_struct_update_istep;
-  else if (action=="calc_struct_reset_istep") act = Beam3::calc_struct_reset_istep;
-  else if (action=="calc_struct_ptcstiff")        act = Beam3::calc_struct_ptcstiff;
-  else if (action=="calc_struct_energy")        act = Beam3::calc_struct_energy;
-  else dserror("Unknown type of action for Beam3");
+  SetParamsInterfacePtr(params);
+
+  // start with "none"
+  ELEMENTS::ActionType act = ELEMENTS::none;
+
+  if (IsParamsInterface())
+  {
+   act = ParamsInterface().GetActionType();
+  }
+  else
+  {
+    // get the action required
+    std::string action = params.get<std::string>("action","calc_none");
+    if (action == "calc_none") dserror("No action supplied");
+    else if (action=="calc_struct_linstiff")                               act = ELEMENTS::struct_calc_linstiff;
+    else if (action=="calc_struct_nlnstiff")                               act = ELEMENTS::struct_calc_nlnstiff;
+    else if (action=="calc_struct_internalforce")                          act = ELEMENTS::struct_calc_internalforce;
+    else if (action=="calc_struct_linstiffmass")                           act = ELEMENTS::struct_calc_linstiffmass;
+    else if (action=="calc_struct_nlnstiffmass")                           act = ELEMENTS::struct_calc_nlnstiffmass;
+    else if (action=="calc_struct_nlnstifflmass")                          act = ELEMENTS::struct_calc_nlnstifflmass; //with lumped mass matrix
+    else if (action=="calc_struct_stress")                                 act = ELEMENTS::struct_calc_stress;
+    else if (action=="calc_struct_eleload")                                act = ELEMENTS::struct_calc_eleload;
+    else if (action=="calc_struct_fsiload")                                act = ELEMENTS::struct_calc_fsiload;
+    else if (action=="calc_struct_update_istep")                           act = ELEMENTS::struct_calc_update_istep;
+    else if (action=="calc_struct_reset_istep")                            act = ELEMENTS::struct_calc_reset_istep;
+    else if (action=="calc_struct_ptcstiff")                               act = ELEMENTS::struct_calc_ptcstiff;
+    else if (action=="calc_struct_energy")                                 act = ELEMENTS::struct_calc_energy;
+    else dserror("Unknown type of action for Beam3");
+  }
 
   switch(act)
   {
-    case Beam3::calc_struct_ptcstiff:
+    case ELEMENTS::struct_calc_ptcstiff:
     {
       const int nnode = NumNode();
 
@@ -81,14 +90,14 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
     break;
     /*in case that only linear stiffness matrix is required b3_nlstiffmass is called with zero dispalcement and
      residual values*/
-    case Beam3::calc_struct_linstiff:
+    case ELEMENTS::struct_calc_linstiff:
     {
       //only nonlinear case implemented!
       dserror("linear stiffness matrix called, but not implemented");
 
     }
     break;
-    case Beam3::calc_struct_energy:
+    case ELEMENTS::struct_calc_energy:
     {
       // need current global displacement and and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
@@ -132,10 +141,10 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     //nonlinear stiffness and mass matrix are calculated even if only nonlinear stiffness matrix is required
-    case Beam3::calc_struct_nlnstiffmass:
-    case Beam3::calc_struct_nlnstifflmass:
-    case Beam3::calc_struct_nlnstiff:
-    case Beam3::calc_struct_internalforce:
+    case ELEMENTS::struct_calc_nlnstiffmass:
+    case ELEMENTS::struct_calc_nlnstifflmass:
+    case ELEMENTS::struct_calc_nlnstiff:
+    case ELEMENTS::struct_calc_internalforce:
     {
       // need current global displacement and residual forces and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
@@ -162,7 +171,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
 
       const int nnode = NumNode();
 
-      if (act == Beam3::calc_struct_nlnstiffmass)
+      if (act == ELEMENTS::struct_calc_nlnstiffmass)
       {
         switch(nnode)
         {
@@ -195,7 +204,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
             dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
         }
       }
-      else if (act == Beam3::calc_struct_nlnstifflmass)
+      else if (act == ELEMENTS::struct_calc_nlnstifflmass)
       {
         switch(nnode)
         {
@@ -233,7 +242,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
             dserror("Only Line2, Line3, Line4, Line5 and Line6 Elements implemented.");
         }
       }
-      else if (act == Beam3::calc_struct_nlnstiff)
+      else if (act == ELEMENTS::struct_calc_nlnstiff)
       {
         switch(nnode)
         {
@@ -267,7 +276,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
         }
       }
 
-      else if (act == Beam3::calc_struct_internalforce)
+      else if (act == ELEMENTS::struct_calc_internalforce)
       {
         switch(nnode)
         {
@@ -417,7 +426,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
 
     }
     break;
-    case calc_struct_update_istep:
+    case ELEMENTS::struct_calc_update_istep:
     {
       /*the action calc_struct_update_istep is called in the very end of a time step when the new dynamic
        * equilibrium has finally been found; this is the point where the variable representing the geometric
@@ -429,7 +438,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
       thetaprimeconv_ = thetaprimenew_;
     }
     break;
-    case calc_struct_reset_istep:
+    case ELEMENTS::struct_calc_reset_istep:
     {
       /*the action calc_struct_reset_istep is called by the adaptive time step controller; carries out one test
        * step whose purpose is only figuring out a suitabel timestep; thus this step may be a very bad one in order
@@ -447,7 +456,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
       thetaprimenew_ = thetaprimeconv_;
     }
     break;
-    case calc_struct_stress:
+    case ELEMENTS::struct_calc_stress:
       dserror("No stress output implemented for beam3 elements");
     break;
     default:

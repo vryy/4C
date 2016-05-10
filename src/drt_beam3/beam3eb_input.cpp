@@ -2,14 +2,13 @@
 \file beam3eb_input.cpp
 \brief
 
-<pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
 
-*----------------------------------------------------------------------*/
+
+*-----------------------------------------------------------------------------------------------------------*/
 
 #include "beam3eb.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -23,7 +22,7 @@ bool DRT::ELEMENTS::Beam3eb::ReadElement(const std::string& eletype,
                                        DRT::INPUT::LineDefinition* linedef)
 {
 
-	// read number of material model
+  // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);

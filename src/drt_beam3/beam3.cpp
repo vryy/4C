@@ -2,17 +2,16 @@
 \file beam3.cpp
 \brief three dimensional nonlinear corotational Timoshenko beam element
 
-<pre>
-Maintainer: Christoph Meier
+
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
 
-*----------------------------------------------------------------------*/
+ *------------------------------------------------------------------------*/
 
 #include "beam3.H"
-#include "../drt_beam3r/beam3r.H"
+#include "beam3r.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
@@ -183,7 +182,7 @@ void DRT::ELEMENTS::Beam3Type::SetupElementDefinition( std::map<std::string,std:
  |  ctor (public)                                            cyron 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3::Beam3(int id, int owner) :
-DRT::Element(id,owner),
+ DRT::ELEMENTS::Beam3Base(id,owner),
 isinit_(false),
 eps_(0.0),
 crosssec_(0),
@@ -202,7 +201,7 @@ jacobinode_(0)
  |  copy-ctor (public)                                       cyron 01/08|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
- DRT::Element(old),
+ DRT::ELEMENTS::Beam3Base(old),
  isinit_(old.isinit_),
  eps_(old.eps_),
  Qref_(old.Qref_),

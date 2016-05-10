@@ -1,12 +1,14 @@
 /*!----------------------------------------------------------------------
 \file beam3k.H
 
-\maintainer Christoph Meier
-
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
-*----------------------------------------------------------------------*/
 
-/*
+\maintainer Christoph Meier
+            meier@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15262
+
+
 3D nonlinear Kirchhoff-like beam element. It can be switched between a variant with weak enforcement of the Kirchhoff
 constraint and variant with strong enforcement of the Kirchhoff constraint. This variant with weak constraint enforcement is based
 on a rotation interpolation that is similar to beam3r. As the beam curve has to be C^1-continous, it is interpolated
@@ -35,16 +37,13 @@ where prescribed 3D rotation values have no direct physical interpretation. For 
 #ifndef BEAM3K_H
 #define BEAM3K_H
 
-#include "Teuchos_RCP.hpp"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
-#include "../drt_lib/drt_elementtype.H"
+
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/largerotations.H"
 #include <Sacado.hpp>
 #include "../headers/FAD_utils.H"
+
+#include "beam3_base.H"
 
 #include <unistd.h>
 #include <sys/times.h>
@@ -108,7 +107,7 @@ private:
 
 author meier (meier@lnm.mw.tum.de)
 */
-class Beam3k : public DRT::Element
+class Beam3k : public Beam3Base
 {
 public:
 
@@ -359,26 +358,6 @@ public:
   //@}
 
 private:
-
-  //! action parameters recognized by Beam3k
-  enum ActionType
-  {
-    calc_none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-    calc_struct_stress,
-    calc_struct_eleload,
-    calc_struct_fsiload,
-    calc_struct_reset_istep,
-    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
-    calc_struct_energy, // calculate strain energy
-    calc_struct_update_istep,    // two actions necessary to update element data at the end of the
-    calc_struct_update_imrlike,  // step. The difference between the two methods is only relevant for EAS technology.
-  };
 
   //Variables
 

@@ -2,12 +2,10 @@
 \file statmech_structanaly.cpp
 \brief structural analysis and output for StatMech network structures
 
-<pre>
-Maintainer: Kei Müller
+\maintainer Kei Müller
             mueller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15276
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -21,7 +19,7 @@ Maintainer: Kei Müller
 #include "../drt_lib/drt_element.H"
 #include "../drt_truss3/truss3.H"
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3r/beam3r.H"
+#include "../drt_beam3/beam3r.H"
 
 
 //MEASURETIME activates measurement of computation time for certain parts of the code

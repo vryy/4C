@@ -53,6 +53,7 @@ namespace ELEMENTS {
     calc_potential_stiff,                   //!< volume interaction potential
     shell_calc_stc_matrix,                  //!< calculate scaled director matrix for thin shell structures
     shell_calc_stc_matrix_inverse,          //!< calculate inverse of scaled director matrix for thin shell structures
+    struct_calc_ptcstiff,                   //!< calculate artificial stiffness due to PTC solution strategy
     struct_calc_stifftemp,                  //!< TSI specific: mechanical-thermal stiffness
     struct_calc_global_gpstresses_map,      //!< basically calc_struct_stress but with assembly of global gpstresses map
     struct_interpolate_velocity_to_point    //!< interpolate the structural velocity to a given point
@@ -152,6 +153,9 @@ namespace ELEMENTS {
         break;
       case shell_calc_stc_matrix_inverse:
         return "shell_calc_stc_matrix_inverse";
+        break;
+        case struct_calc_ptcstiff:
+        return "struct_calc_ptcstiff";
         break;
       case struct_calc_stifftemp:
         return "struct_calc_stifftemp";

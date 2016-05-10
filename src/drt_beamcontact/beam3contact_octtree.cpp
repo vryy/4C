@@ -2,12 +2,12 @@
 \file beam3contact_octtree.cpp
 \brief Octtree for beam contact search
 
-<pre>
-Maintainer: Kei Müller
+
+\maintainer Kei Müller
             mueller@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15276
-</pre>
+
 *----------------------------------------------------------------------*/
 
 #include "beam3contact_octtree.H"
@@ -33,8 +33,8 @@ Maintainer: Kei Müller
 #include <math.h>
 
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3r/beam3r.H"
-#include "../drt_beam3eb/beam3eb.H"
+#include "../drt_beam3/beam3r.H"
+#include "../drt_beam3/beam3eb.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "beam3contact_manager.H"
 

@@ -3,14 +3,13 @@
 
 \brief three dimensional nonlinear torsionless rod based on a C1 curve
 
-<pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15301
-</pre>
+            089 - 289-15262
 
-*----------------------------------------------------------------------*/
+
+*-----------------------------------------------------------------------------------------------------------*/
 
 #include "beam3eb.H"
 #include "../drt_lib/drt_discret.H"
@@ -115,7 +114,7 @@ void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition( std::map<std::string,st
  |  ctor (public)                                            meier 05/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3eb::Beam3eb(int id, int owner) :
-DRT::Element(id,owner),
+ DRT::ELEMENTS::Beam3Base(id,owner),
 isinit_(false),
 crosssec_(0),
 Iyy_(0),
@@ -143,7 +142,7 @@ epsilon_max_(0.0)
  |  copy-ctor (public)                                       meier 05/12|
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3eb::Beam3eb(const DRT::ELEMENTS::Beam3eb& old) :
- DRT::Element(old),
+ DRT::ELEMENTS::Beam3Base(old),
  isinit_(old.isinit_),
  crosssec_(old.crosssec_),
  Iyy_(old.Iyy_),

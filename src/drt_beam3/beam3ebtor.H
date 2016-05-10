@@ -3,12 +3,12 @@
 
 \brief three dimensional nonlinear rod based on a C1 curve
 
-<pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15301
-</pre>
+            089 - 289-15262
+
+
 3D nonlinear Euler-Bernoulli-like beam element based on chapter 5 of the diploma thesis "Development of a finite element for
 nonlinear beams based on the formulas of Frenet-Serret" by Christoph Meier. In contrary to the beam3eb element this element can
 also display torsion and is therefore a complete, geometrically exact Euler-Bernoulli beam element for initially (i.e. in the stress-free
@@ -31,12 +31,8 @@ be set to 0, otherwise the axial tension at the boundary would be prescribed. Th
 #ifndef BEAM3EBTOR_H
 #define BEAM3EBTOR_H
 
-#include "Teuchos_RCP.hpp"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
-#include "../drt_lib/drt_elementtype.H"
+
+#include "beam3_base.H"
 
 #define ScaleFactorLinetor 1;
 #define ScaleFactorColumntor 1;
@@ -92,7 +88,7 @@ There is no shear deformation and no torsion. The expansion of the model to a fu
 
 author meier (meier@lnm.mw.tum.de)
 */
-class Beam3ebtor : public DRT::Element
+class Beam3ebtor : public Beam3Base
 {
 public:
 
@@ -316,26 +312,6 @@ public:
 
 
 private:
-
-  //! action parameters recognized by Beam3ebtor
-  enum ActionType
-  {
-    calc_none,
-    calc_struct_linstiff,
-    calc_struct_nlnstiff,
-    calc_struct_internalforce,
-    calc_struct_linstiffmass,
-    calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
-    calc_struct_stress,
-    calc_struct_eleload,
-    calc_struct_fsiload,
-    calc_struct_update_istep,
-    calc_struct_update_imrlike,
-    calc_struct_reset_istep,
-    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
-    calc_struct_energy
-  };
 
 
   //! variable saving whether element has already been initialized (then isinit_ == true)

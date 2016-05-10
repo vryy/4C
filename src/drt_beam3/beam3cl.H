@@ -6,13 +6,13 @@
 The implementation follows: "The interpolation of rotations and its
 application to finite element models of geometrically exact rods", Romero 2004
 
- <pre>
- Maintainer: Kei Müller
- mueller@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15276
- </pre>
- *----------------------------------------------------------------------*/
+
+\maintainer Christoph Meier
+            meier@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15262
+
+ *------------------------------------------------------------------------*/
 
 // administrative line in order to make a difference between BACI and Ccarat files
 
@@ -20,18 +20,14 @@ application to finite element models of geometrically exact rods", Romero 2004
 #ifndef BEAMCL_H
 #define BEAMCL_H
 
-#include "Teuchos_RCP.hpp"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
 
-#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+
+#include "beam3_base.H"
 
 //! \brief DRT: namespace of the ccarat discretization module
 namespace DRT
@@ -89,7 +85,7 @@ namespace DRT
 
      author cyron (cyron @lnm.mw.tum.de)
      */
-    class BeamCL: public DRT::Element
+    class BeamCL: public Beam3Base
     {
       public:
 
@@ -695,26 +691,6 @@ namespace DRT
         void SetRotation(LINALG::Matrix<3,1>& theta);
 
       private:
-
-        //! action parameters recognized by Beam3r
-        enum ActionType
-        {
-          calc_none,
-          calc_struct_linstiff,
-          calc_struct_nlnstiff,
-          calc_struct_internalforce,
-          calc_struct_linstiffmass,
-          calc_struct_nlnstiffmass,
-          calc_struct_nlnstifflmass, //!< internal force, its stiffness and lumped mass matrix
-          calc_struct_stress,
-          calc_struct_eleload,
-          calc_struct_fsiload,
-          calc_struct_update_istep,
-          calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
-          calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
-          calc_struct_energy
-        //calculate current elastic energy of element
-        };
 
         //! kind of integration to be performed
         enum IntegrationType

@@ -2,14 +2,12 @@
 \file beam3tosolidcontact.cpp
 \brief One beam and solid contact pair (two elements)
 
-<pre>
-Maintainer: Christoph Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
 
-*-----------------------------------------------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------------------------------------------*/
 
 #include "beam3tosolidcontact.H"
 #include "beam3contact_defines.H"
@@ -25,8 +23,8 @@ Maintainer: Christoph Meier
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3r/beam3r.H"
-#include "../drt_beam3eb/beam3eb.H"
+#include "../drt_beam3/beam3r.H"
+#include "../drt_beam3/beam3eb.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_inpar/inpar_statmech.H"

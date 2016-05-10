@@ -1,14 +1,14 @@
 /*!----------------------------------------------------------------------
-\file beam3ebanisotrop.H
+\file beam3eb_anisotrop_input.cpp
 
 \brief three dimensional nonlinear rod based on a C1 curve
 
-<pre>
-Maintainer: Christoph Meier
+
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
+
 
 *-----------------------------------------------------------------------------------------------------------*/
 

@@ -1,10 +1,17 @@
 /*!----------------------------------------------------------------------
 \file beam3r_input.cpp
 
-\maintainer Christoph Meier
 
 \brief input related methods of 3D nonlinear Reissner beam element
-*----------------------------------------------------------------------*/
+
+
+\maintainer Christoph Meier
+            meier@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15262
+
+
+*-----------------------------------------------------------------------------------------------------------*/
 
 #include "beam3r.H"
 #include "../drt_lib/drt_linedefinition.H"

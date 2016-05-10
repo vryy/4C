@@ -30,10 +30,10 @@
 #include <Teuchos_Time.hpp>
 
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3r/beam3r.H"
-#include "../drt_beam3eb/beam3eb.H"
-#include "../drt_beam3ebtor/beam3ebtor.H"
-#include "../drt_beam3k/beam3k.H"
+#include "../drt_beam3/beam3r.H"
+#include "../drt_beam3/beam3eb.H"
+#include "../drt_beam3/beam3ebtor.H"
+#include "../drt_beam3/beam3k.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 
 #include "../drt_inpar/inpar_structure.H"

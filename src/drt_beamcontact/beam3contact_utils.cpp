@@ -3,21 +3,19 @@
 
 \brief A set of utility functions for beam contact
 
-<pre>
-Maintainer: Christoh Meier
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
 
-*----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------------------------------------------*/
 
 #include "beam3contact_utils.H"
 #include "../drt_beam3/beam3.H"
-#include "../drt_beam3r/beam3r.H"
-#include "../drt_beam3eb/beam3eb.H"
-#include "../drt_beam3ebtor/beam3ebtor.H"
-#include "../drt_beam3k/beam3k.H"
+#include "../drt_beam3/beam3r.H"
+#include "../drt_beam3/beam3eb.H"
+#include "../drt_beam3/beam3ebtor.H"
+#include "../drt_beam3/beam3k.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "beam3contact_manager.H"
 #include "../headers/FAD_utils.H"
