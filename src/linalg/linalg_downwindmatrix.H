@@ -1,11 +1,13 @@
 /*!----------------------------------------------------------------------
 \file linalg_downwindmatrix.H
 
+\brief Specification of convection downwind numbering of a matrix
+
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\level 2
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

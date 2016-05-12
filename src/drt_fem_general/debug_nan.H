@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file debug_nan.H
 
-A set of utility functions to identify NaNs in vectors and matrices
+\brief A set of utility functions to identify NaNs in vectors and matrices
 
 A set of utility functions to identify NaNs in vectors and matrices. Note,
 that the performed operations might be expensive and are meant to be
@@ -11,10 +11,10 @@ used during debugging, not in optimized runs.
 </pre>
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+\level 2
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

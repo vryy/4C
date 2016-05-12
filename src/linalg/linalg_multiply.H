@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file linalg_multiply.H
+\brief Declaration
+
+<pre>
+\level 1
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
 
 #include <Epetra_CrsMatrix.h>
 
@@ -11,7 +23,7 @@ class SparseOperator;
 
 
 /*!
-\brief Matrix-Matrix Multiply C = A*B using ML
+\brief Declaration Matrix-Matrix Multiply C = A*B using ML
 
 Depending on the structure of your matrix, this method is potentially
 (significantly) faster than the LINALG::Multiply implementations.
@@ -63,7 +75,7 @@ Teuchos::RCP<SparseMatrix> MLMultiply(const Epetra_CrsMatrix& Aorig,
                              bool complete);
 
 /*!
-\brief Matrix-Matrix Multiply C = A*B using ML
+\brief Declaration Matrix-Matrix Multiply C = A*B using ML
 
 \sa MLMultiply(const Epetra_CrsMatrix& A,const Epetra_CrsMatrix& B,bool complete);
 
@@ -75,7 +87,7 @@ Teuchos::RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
                              bool complete);
 
 /*!
-\brief Matrix-Matrix Multiply C = A*B using ML
+\brief Declaration Matrix-Matrix Multiply C = A*B using ML
 
 \sa MLMultiply(const Epetra_CrsMatrix& A,const Epetra_CrsMatrix& B,bool complete);
 

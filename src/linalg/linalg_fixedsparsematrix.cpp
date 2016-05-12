@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file linalg_fixedsparsematrix.cpp
+\brief Implementation
+
+<pre>
+\level 2
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
 
 #include "linalg_fixedsparsematrix.H"
 #include "../drt_lib/drt_dserror.H"

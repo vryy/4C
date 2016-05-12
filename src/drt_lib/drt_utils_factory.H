@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_factory.H
-\brief A collection of helper methods for namespace DRT
+\brief Declaration A collection of helper methods for namespace DRT
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -22,7 +23,7 @@ namespace UTILS
 {
 
   /*!
-  \brief Create an instance of a ParObject depending on the type stored in data
+  \brief Declaration Create an instance of a ParObject depending on the type stored in data
 
   An instance of ParObject is allocated and returned. The type of instance
   depends on the first entry in data and is an int (defined at the top of
@@ -40,7 +41,7 @@ namespace UTILS
   DRT::ParObject* Factory(const std::vector<char>& data);
 
   /*!
-  \brief Create an instance of a finite element depending on the type of element
+  \brief Declaration Create an instance of a finite element depending on the type of element
 
   A DRT::Element derived class is allocated and returned. The type of element
   allocated depends on the input parameter eletype.

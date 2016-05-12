@@ -2,10 +2,11 @@
 \file drt_elementregister.H
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -43,7 +44,7 @@ private:
 // forward declarations
 
 /*!
-\brief A virtual element register class
+\brief Declaration A virtual element register class
 
 This class is used to initialize the finite elements of a specific type
 in a discretization. Usage is as follows:<br>
@@ -69,13 +70,13 @@ public:
   //! @name Constructors and destructors and related methods
 
   /*!
-  \brief Standard Constructor
+  \brief Declaration Standard Constructor
 
   */
   ElementRegister(DRT::Element::ElementType etype);
 
   /*!
-  \brief Copy Constructor
+  \brief Declaration Copy Constructor
 
   Makes a deep copy
 
@@ -83,19 +84,19 @@ public:
   ElementRegister(const DRT::ElementRegister& old);
 
   /*!
-  \brief Deep copy the derived class and return pointer to it
+  \brief Declaration Deep copy the derived class and return pointer to it
 
   */
   virtual DRT::ElementRegister* Clone() const;
 
   /*!
-  \brief Destructor
+  \brief Declaration Destructor
 
   */
   virtual ~ElementRegister();
 
   /*!
-  \brief Return unique ParObject id
+  \brief Declaration Return unique ParObject id
 
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
@@ -103,7 +104,7 @@ public:
   virtual int UniqueParObjectId() const { return ElementRegisterType::Instance().UniqueParObjectId(); }
 
   /*!
-  \brief Pack this class so it can be communicated
+  \brief Declaration Pack this class so it can be communicated
 
   \ref Pack and \ref Unpack are used to communicate this element
 
@@ -111,7 +112,7 @@ public:
   virtual void Pack(DRT::PackBuffer& data) const;
 
   /*!
-  \brief Unpack data from a char vector into this class
+  \brief Declaration Unpack data from a char vector into this class
 
   \ref Pack and \ref Unpack are used to communicate this element
 
@@ -123,12 +124,12 @@ public:
   //! @name Acess methods
 
   /*!
-  \brief Get type of element
+  \brief Declaration Get type of element
   */
   inline DRT::Element::ElementType Type() const { return etype_; }
 
   /*!
-  \brief Print this element
+  \brief Declaration Print this element
 
   This class also implements the ostream << operator.
   */
@@ -139,7 +140,7 @@ public:
   //! @name Construction
 
   /*!
-  \brief Call Element init routines
+  \brief Declaration Call Element init routines
 
   This method performs all steps needed to initialize the
   finite elements in the discretization dis when reimplemented
@@ -166,7 +167,7 @@ public:
 
 
   /*!
-  \brief Call pre-evaluation of elements
+  \brief Declaration Call pre-evaluation of elements
 
   \param dis (in/out): Discretization with finite elements that have to
                        be initialized.

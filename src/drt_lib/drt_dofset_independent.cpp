@@ -1,6 +1,9 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_independent.cpp
 
+\brief Implementation
+\level 2
+\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 #include "drt_dofset_independent.H"

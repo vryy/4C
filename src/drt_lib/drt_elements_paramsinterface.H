@@ -2,11 +2,11 @@
 /*!
 \file drt_elements_paramsinterface.H
 
+\brief Declaration
+\level 3
 \maintainer Michael Hiermeier
 
 \date Mar 24, 2016
-
-\level 3
 
 */
 /*-----------------------------------------------------------*/
@@ -173,7 +173,7 @@ namespace ELEMENTS {
     return "";
   }; // ActionType2String
 
-  /*! \brief Parameter interface for the element <--> time integrator data exchange
+  /*! \brief Declaration Parameter interface for the element <--> time integrator data exchange
    *
    *  Pure virtual interface class. This class is supposed to replace the current
    *  tasks of the Teuchos::ParameterList.

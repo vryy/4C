@@ -1,13 +1,14 @@
 /*!----------------------------------------------------------------------
 \file drt_discret.cpp
 
-\brief a class to manage one discretization
+\brief Implementation a class to manage one discretization
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\brief Implementation
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

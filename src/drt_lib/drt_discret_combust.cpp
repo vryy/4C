@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_combust.cpp
 
-\brief a class to manage one discretization
+\brief Implementation a class to manage one discretization
 
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\brief Implementation
+\level 2
+\maintainer Ursula Rasthofer
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
@@ -33,7 +34,7 @@ Maintainer: Ursula Rasthofer
 #include "../drt_inpar/inpar_xfem.H"
 
 /*!
-\brief this is a modified copy of the original version DoDirchletCondition() for XFEM problems
+\brief Implementation this is a modified copy of the original version DoDirchletCondition() for XFEM problems
 
 - A severe problem occurs if an enriched XFEM element touches a Dirichlet boundary.
   Then values have to be prescribed on the dofs. Therefore all dofs of a node (standard and enriched

@@ -2,11 +2,12 @@
 /*!
 \file drt_elementdefinition.cpp
 
-\brief Central storage of element input line definitions
+\brief Implementation Central storage of element input line definitions
 
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\brief Implementation
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>

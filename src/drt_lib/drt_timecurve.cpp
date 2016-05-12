@@ -2,10 +2,11 @@
 /*!
 \file drt_timecurve.cpp
 
-\brief Managing and evaluating of time curves
+\brief Implementation Managing and evaluating of time curves
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\brief Implementation
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
@@ -55,7 +56,7 @@ namespace UTILS {
     /// evaluate time curve \c f at given time \c t
     virtual double f(double time) = 0;
 
-    /// \brief Evaluate time curve and its derivatives
+    /// \brief Implementation Evaluate time curve and its derivatives
     ///
     /// Delivers vector containing at position i of resulting vector
     /// the i-th derivative of the time curve function at time \c t.

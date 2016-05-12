@@ -1,12 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file drt_dofset_subproxy.H
+ \file drt_dofset_aux_proxy.H
 
- \brief
+ \brief Declaration
 
  <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
+\brief Declaration
+   \level 1
+   \maintainer Anh-Tu Vuong
                http://www.lnm.mw.tum.de
                089 - 289-15251
  </pre>

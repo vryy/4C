@@ -1,11 +1,13 @@
 /*!----------------------------------------------------------------------
 \file linalg_mlapi_operator.H
 
+\brief Declaration of MLAPI interface to ML
+
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\level 2
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

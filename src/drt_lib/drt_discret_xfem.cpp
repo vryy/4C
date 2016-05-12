@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_xfem.cpp
 
-\brief a class to manage one discretization with changing dofs
+\brief Implementation a class to manage one discretization with changing dofs
 
 <pre>
-Maintainer: Ager
-            ager@lnm.mw.tum.de
+\brief Implementation
+\level 1
+\maintainer Christoph Ager
             http://www.lnm.mw.tum.de
             089 - 289 - 15249
 </pre>

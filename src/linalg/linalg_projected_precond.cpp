@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file  linalg_projected_precond.cpp
 
+\brief Implementation
+
 <pre>
-Maintainer: Keijo Nissen
-            nissen@lnm.mw.tum.de
+\level 1
+\maintainer Keijo Nissen
             http://www.lnm.mw.tum.de
             089 - 289-15253
 </pre>

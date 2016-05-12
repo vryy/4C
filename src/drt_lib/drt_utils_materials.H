@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
-\file drt_utils.H
-\brief A collection of helper methods for namespace DRT
+\file drt_utils_materials.H
+\brief Declaration A collection of helper methods for namespace DRT
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\brief Declaration
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

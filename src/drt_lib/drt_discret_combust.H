@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_combust.H
 
-\brief a class to manage an XFEM discretization
+\brief Declaration a class to manage an XFEM discretization
 
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\brief Declaration
+\level 2
+\maintainer Ursula Rasthofer
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
@@ -38,14 +39,14 @@ namespace ELEMENTS
 }
 
 /*!
-\brief DRT: namespace of the baci discretization module
+\brief Declaration DRT: namespace of the baci discretization module
 
 */
 namespace DRT
 {
 
 /*!
-\brief A class to manage a discretization in parallel
+\brief Declaration A class to manage a discretization in parallel
 
 \author henke (henke@lnm.mw.tum.de)
 */
@@ -54,7 +55,7 @@ class DiscretizationCombust : public DiscretizationFaces
 public:
 
   /*!
-  \brief Standard Constructor
+  \brief Declaration Standard Constructor
 
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
@@ -63,7 +64,7 @@ public:
   :DiscretizationFaces(name, comm) { extension_filled_ = false; }; // use base class constructor
 
   /*!
-  \brief Destructor
+  \brief Declaration Destructor
 
   */
   virtual ~DiscretizationCombust()
@@ -72,7 +73,7 @@ public:
   };
 
   /*!
-  \brief Evaluate Dirichlet boundary conditions for COMBUST problems
+  \brief Declaration Evaluate Dirichlet boundary conditions for COMBUST problems
 
   this method is used instead of the base class method for XFEM discretizations
 
@@ -88,7 +89,7 @@ public:
 
 
   /*!
-  \brief Compute the nullspace of the discretization
+  \brief Declaration Compute the nullspace of the discretization
 
   This method looks in the solver parameters whether algebraic multigrid (AMG)
   is used as preconditioner. AMG desires the nullspace of the
@@ -113,7 +114,7 @@ public:
   }
 
   /*!
-  \brief Evaluate edge-based integrals
+  \brief Declaration Evaluate edge-based integrals
   */
   void EvaluateEdgeBasedCombust(
        Teuchos::ParameterList&              params,

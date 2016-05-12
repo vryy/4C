@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_transparent_independent.H
 
-\brief A set of degrees of freedom special for contact
+\brief Declaration A set of degrees of freedom special for contact
 
 <pre>
-Maintainer: Shadan Shahmiri
-            shahmiri@lnm.mw.tum.de
+\brief Declaration
+\level 2
+\maintainer Shadan Shahmiri
             http://www.lnm.mw.tum.de
             089 - 289-15240
 </pre>
@@ -47,7 +48,7 @@ namespace DRT
   public:
 
     /*!
-    \brief Standard Constructor
+    \brief Declaration Standard Constructor
     */
     explicit TransparentIndependentDofSet(
         Teuchos::RCP<DRT::Discretization> sourcedis,
@@ -55,7 +56,7 @@ namespace DRT
     );
 
     /*!
-    \brief Destructor
+    \brief Declaration Destructor
     */
     virtual ~TransparentIndependentDofSet() { return; }
 

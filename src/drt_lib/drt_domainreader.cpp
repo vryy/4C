@@ -2,11 +2,12 @@
 /*!
 \file drt_domainreader.cpp
 
-\brief Read domain sections of dat files.
+\brief Implementation Read domain sections of dat files.
 
 <pre>
-Maintainer: Karl-Robert Wichmann
-            wichmann@lnm.mw.tum.de
+\brief Implementation
+\level 0
+\maintainer Karl-Robert Wichmann
             http://www.lnm.mw.tum.de
             089 - 289-15237
 </pre>
@@ -398,7 +399,7 @@ void DomainReader::Partition(int* nodeoffset)
   // redistribute the elements
   if (autopartition)
   {
-#if defined(PARMETIS)
+#if defined(HAVE_PARMETIS)
     rownodes_ = Teuchos::null;
     colnodes_ = Teuchos::null;
     DRT::UTILS::PartUsingParMetis(dis_,roweles_,rownodes_,colnodes_,comm_,!reader_.MyOutputFlag());
@@ -657,4 +658,3 @@ void ParticleDomainReader::Partition(int* nodeoffset)
 
 }
 }
-

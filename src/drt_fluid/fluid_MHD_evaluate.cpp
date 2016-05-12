@@ -5,10 +5,13 @@
 \brief Class FLD::FluidMHDEvaluate
 
 <pre>
-Maintainer: Ursula Rasthofer
+
+\maintainer Ursula Rasthofer
             rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
+
+\level 1
 </pre>
 
 */
@@ -54,7 +57,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 {
   std::vector<DRT::Condition*> MHDcnd;
   pdiscret_->GetCondition("SurfaceMixHybDirichlet",MHDcnd);
-  
+
   std::vector <int> allcnd_MHDnodeids;
 
   if(MHDcnd.size()!=0)
@@ -70,7 +73,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     }
 
     // generate an empty boundary discretisation
-    bnd_discret_ 
+    bnd_discret_
       = Teuchos::rcp(new DRT::Discretization((std::string)"boundary discretisation",
                                     Teuchos::rcp(pdiscret_->Comm().Clone())));
 
@@ -79,7 +82,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     {
       // We use the same nodal ids and therefore we can just copy the
       // conditions.
-      bnd_discret_->SetCondition("SurfaceMixHybDirichlet", 
+      bnd_discret_->SetCondition("SurfaceMixHybDirichlet",
                                  Teuchos::rcp(new DRT::Condition(*MHDcnd[numcond])));
     }
 
@@ -198,7 +201,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     {
 
       std::vector<int> rownodes;
-      
+
       // all row nodes next to a MHD node are now contained in the bndydis
       for(std::set<int>::iterator id = adjacent_row.begin();
           id!=adjacent_row.end();
@@ -252,18 +255,18 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
       // make the pbc condition known to the boundary discretisation
       std::vector<DRT::Condition*> mysurfpbcs;
-      
+
       // get periodic surface boundary conditions
       pdiscret_->GetCondition("SurfacePeriodic",mysurfpbcs);
 
       for (unsigned numcond=0;numcond<mysurfpbcs.size();++numcond)
       {
-        // We use the same nodal ids --- nevertheless, we just use a subset 
-        // of the node ids and thus cannot copy the conditions completely. 
+        // We use the same nodal ids --- nevertheless, we just use a subset
+        // of the node ids and thus cannot copy the conditions completely.
         std::vector<int> reduced_ids;
 
         const std::vector<int>* candidates = (*mysurfpbcs[numcond]).Nodes();
-      
+
         std::vector<int> mytoggle(candidates->size(),0);
         std::vector<int> toggle(candidates->size(),0);
 
@@ -274,7 +277,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
             mytoggle[rr]=1;
           }
         }
-      
+
         bnd_discret_->Comm().SumAll(&mytoggle[0],&toggle[0],toggle.size());
 
         for(unsigned rr=0;rr<candidates->size();++rr)
@@ -290,10 +293,10 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
         bnd_discret_->SetCondition("SurfacePeriodic", Teuchos::rcp(new DRT::Condition(*mysurfpbcs[numcond])));
       }
-      
+
       PeriodicBoundaryConditions pbc(bnd_discret_,false);
       pbc.UpdateDofsForPeriodicBoundaryConditions();
-        
+
       if(bnd_discret_->Comm().MyPID()==0)
       {
         std::cout << "| ... done.\n";
@@ -331,7 +334,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
                                                    false,
                                                    true,
                                                    LINALG::SparseMatrix::FE_MATRIX));
-    
+
     if(bnd_discret_->Comm().MyPID()==0)
     {
       std::cout << "| ... done.\n";
@@ -360,15 +363,15 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
     //**********************************************************************
     // call PARMETIS (again with #ifdef to be on the safe side)
-#if defined(PARALLEL) && defined(PARMETIS)
-   
+#if defined(PARALLEL) && defined(HAVE_PARMETIS)
+
     Teuchos::RCP<Epetra_Map> bndrownodes;
     Teuchos::RCP<Epetra_Map> bndcolnodes;
 
     Teuchos::RCP<Epetra_Map> belemap = Teuchos::rcp( new Epetra_Map(*bnd_discret_->ElementRowMap()));
     Epetra_Time time(pdiscret_->Comm());
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_->Comm().Clone());
- 
+
     DRT::UTILS::PartUsingParMetis(bnd_discret_,
                                   belemap,
                                   bndrownodes,
@@ -388,7 +391,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     {
       std::cout << "| Redistributing .";
     }
-    bnd_discret_->Redistribute(*bndrownodes,*bndcolnodes,false,false);    
+    bnd_discret_->Redistribute(*bndrownodes,*bndcolnodes,false,false);
 
     if(bnd_discret_->Comm().MyPID()==0)
     {
@@ -416,9 +419,9 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
     // idea: use a transparent dofset and hand through the dof numbering
     bnd_discret_->ReplaceDofSet(Teuchos::rcp(new DRT::TransparentDofSet(pdiscret_,true)));
-      
+
     bnd_discret_->FillComplete();
-  
+
     if(bnd_discret_->Comm().MyPID()==0)
     {
       std::cout << "| ... done.\n";
@@ -426,7 +429,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
       printf("+----------------\n\n");
 
     }
-    
+
     {
       std::vector<int> my_n_nodes   (numproc,0);
       std::vector<int>    n_nodes   (numproc,0);
@@ -558,7 +561,7 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
     //bndmat_->Zero(); // please tell me why zero doesn't work in parallel
     bndmat_->Reset();
 
-    Teuchos::RCP<Epetra_Vector> bndres = LINALG::CreateVector(*bnd_discret_->DofRowMap(),true); 
+    Teuchos::RCP<Epetra_Vector> bndres = LINALG::CreateVector(*bnd_discret_->DofRowMap(),true);
 
     std::vector<DRT::Condition*> bndMHDcnd;
     const std::string condstring = "SurfaceMixHybDirichlet";
@@ -610,16 +613,16 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
         } // end loop geometry elements of this conditions
       }
     }
-    
+
     // complete system matrix --- do all communication internally
     bndmat_->Complete();
 
-    // loop all local entries of my boundary matrix and add them to sysmat in 
+    // loop all local entries of my boundary matrix and add them to sysmat in
     // the same position
     // should be OK since bndmat_ is constructed on a subset of dofs of sysmat
     // in this parallel layout
 
-    Epetra_CrsMatrix* Epetra_Crs_bndmat 
+    Epetra_CrsMatrix* Epetra_Crs_bndmat
       =
       dynamic_cast<Epetra_CrsMatrix*>(bndmat_->EpetraOperator().get());
 
@@ -636,11 +639,11 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
 
     {
       Teuchos::RCP<Epetra_Vector> tmp=LINALG::CreateVector(*pdiscret_->DofRowMap(),true);
-        
+
       Epetra_Export exporter(bndres->Map(),tmp->Map());
       int err = tmp->Export(*bndres,exporter,Add);
       if (err) dserror("Export using exporter returned err=%d",err);
-      
+
       residual_->Update(1.0,*tmp,1.0);
     }
     return;

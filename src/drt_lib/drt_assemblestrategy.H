@@ -2,11 +2,12 @@
 /*!
 \file drt_assemblestrategy.H
 
-\brief Setup of the list of valid conditions for input
+\brief Declaration Setup of the list of valid conditions for input
 
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>

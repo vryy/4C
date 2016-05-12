@@ -2,13 +2,14 @@
 /*!
 \file solver_muelupreconditioner.cpp
 
-\brief Interface class for MueLu preconditioner
+\brief Declaration Interface class for MueLu preconditioner
 
 <pre>
-Maintainer: Tobias Wiesner
-            wiesner@lnm.mw.tum.de
+\brief Declaration
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15235
 </pre>
 */
 
@@ -269,4 +270,3 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
 }
 
 #endif
-

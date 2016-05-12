@@ -2,8 +2,9 @@
 \file solver_muelucontactpreconditioner.cpp
 
 <pre>
-Maintainer: Dr.-Ing. Francesc Verdugo
-            verdugo@lnm.mw.tum.de
+\brief Declaration
+\level 1
+\maintainer Dr.-Ing. Francesc Verdugo
             http://www.lnm.mw.tum.de
             089 - 289-15262
 </pre>

@@ -2,11 +2,12 @@
 /*!
  \file drt_dofset_subproxy.cpp
 
- \brief
+ \brief Implementation
 
  <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
+\brief Implementation
+   \level 1
+   \maintainer Anh-Tu Vuong
                http://www.lnm.mw.tum.de
                089 - 289-15264
  </pre>

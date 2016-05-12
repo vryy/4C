@@ -2,8 +2,9 @@
 \file bgs2x2_operator.H
 
 <pre>
-Maintainer: Lena Wiechert
-            yoshihara@lnm.mw.tum.de
+\brief Declaration
+\level 1
+\maintainer Lena Wiechert
             http://www.lnm.mw.tum.de
             089 - 289-15303
 </pre>
@@ -33,7 +34,7 @@ class  BGS2x2_Operator : public Epetra_Operator
 public:
 
   /*!
-  \brief Standard Constructor
+  \brief Declaration Standard Constructor
   */
   explicit BGS2x2_Operator(Teuchos::RCP<Epetra_Operator> A,
                            const Teuchos::ParameterList& list1,
@@ -48,7 +49,7 @@ public:
                            FILE* outfile = NULL);
 
   /*!
-  \brief Destructor
+  \brief Declaration Destructor
   */
   virtual ~BGS2x2_Operator()
   {

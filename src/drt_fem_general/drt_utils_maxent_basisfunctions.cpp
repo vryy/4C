@@ -1,9 +1,11 @@
 /*!---------------------------------------------------------------------------
 \file drt_utils_maxent_basisfunctions.cpp
 
+\brief Implementation of maxent basis functions
+
 <pre>
+\level 2
 \maintainer Keijo Nissen
-            nissen@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15253
 </pre>

@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_combust_evaluate.cpp
 
-\brief a class to manage one discretization
+\brief Implementation a class to manage one discretization
 
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\brief Implementation
+\level 2
+\maintainer Ursula Rasthofer
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>

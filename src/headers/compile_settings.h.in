@@ -59,8 +59,8 @@
 #cmakedefine INVERSEDESIGNUSE
 #endif
 
-#ifndef PARMETIS
-#cmakedefine PARMETIS
+#ifndef HAVE_PARMETIS
+#cmakedefine HAVE_PARMETIS
 #endif
 
 #ifndef PERF

@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_transparent.cpp
 
-\brief A set of degrees of freedom special for contact
+\brief Implementation A set of degrees of freedom special for contact
 
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\brief Implementation
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>

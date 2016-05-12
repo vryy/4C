@@ -3,8 +3,9 @@
 \file solver_aztecsolver_projectedresidual.cpp
 
 <pre>
-Maintainer: Keijo Nissen
-            nissen@lnm.mw.tum.de
+\brief Declaration
+\level 1
+\maintainer Keijo Nissen
             http://www.lnm.mw.tum.de
             089 - 289-15253
 

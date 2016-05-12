@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_parallel.cpp
-\brief A collection of helper methods for namespace DRT
+\brief Implementation A collection of helper methods for namespace DRT
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\brief Implementation
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

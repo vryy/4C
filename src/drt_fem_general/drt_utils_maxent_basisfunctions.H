@@ -1,9 +1,11 @@
 /*!--------------------------------------------------------------------------
 \file drt_utils_maxent_basisfunctions.H
 
+\brief Specification of max entropy basis functions
+
 <pre>
-Maintainer: Keijo Nissen
-            nissen@lnm.mw.tum.de
+\level 2
+\maintainer Keijo Nissen
             http://www.lnm.mw.tum.de
             089 - 289-15253
 </pre>

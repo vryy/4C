@@ -1,14 +1,15 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_faces.H
 
-\brief a class to manage an enhanced discretization including the faces between elements
+\brief Declaration a class to manage an enhanced discretization including the faces between elements
 
 
 </pre>
 
 <pre>
-Maintainer: Benedikt Schott, Martin Kronbichler
-            {schott,kronbichler}@lnm.mw.tum.de
+\brief Declaration
+\level 1
+\maintainer Benedikt Schott, Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
@@ -34,7 +35,7 @@ namespace LINALG
 
 
 /*!
-\brief DRT: namespace of the baci discretization module
+\brief Declaration DRT: namespace of the baci discretization module
 
 */
 namespace DRT
@@ -45,7 +46,7 @@ class DiscretizationFaces : public Discretization
 public:
 
   /*!
-   * \brief internal class that holds the information used to create face elements
+   * \brief Declaration internal class that holds the information used to create face elements
    *
    * \author Benedikt Schott (schott@lnm.mw.tum.de)
    */
@@ -54,7 +55,7 @@ public:
   public:
 
     /*!
-    \brief Standard Constructor
+    \brief Declaration Standard Constructor
 
     \param master_peid (in): element id of master parent element
     \param slave_peid (in): element id of slave parent element
@@ -79,7 +80,7 @@ public:
     void SetLSurfaceSlave(int lsurface_slave){lsurface_slave_ = lsurface_slave;}
 
     /*!
-    \brief set the map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
+    \brief Declaration set the map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
            and the slave element's face's coordinate system
     */
     void SetLocalNumberingMap(std::vector<int> localtrafomap){localtrafomap_ = localtrafomap;}
@@ -117,7 +118,7 @@ public:
     std::vector<DRT::Node*> nodes_; //!< vector of surface nodes, order w.r.t master parent element
 
     /*!
-     \brief map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
+     \brief Declaration map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
             and the slave element's face's coordinate system
      */
     std::vector<int> localtrafomap_;
@@ -128,7 +129,7 @@ public:
 
 
   /*!
-  \brief Standard Constructor
+  \brief Declaration Standard Constructor
 
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
@@ -136,7 +137,7 @@ public:
   DiscretizationFaces(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
   /*!
-  \brief Destructor
+  \brief Declaration Destructor
 
   */
   virtual ~DiscretizationFaces()
@@ -147,7 +148,7 @@ public:
 
 
   /*!
-  \brief Compute the nullspace of the discretization
+  \brief Declaration Compute the nullspace of the discretization
 
   This method looks in the solver parameters whether algebraic multigrid (AMG)
   is used as preconditioner. AMG desires the nullspace of the
@@ -172,7 +173,7 @@ public:
   }
 
   /*!
-  \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
+  \brief Declaration Complete construction of a discretization  (Filled()==true NOT prerequisite)
 
   After adding or deleting nodes or elements or redistributing them in parallel,
   or adding/deleting boundary conditions, this method has to be called to (re)construct
@@ -219,12 +220,12 @@ public:
                         bool createinternalfaces    = false);
 
   /*!
-  \brief Get flag indicating whether CreateInternalFacesExtension() has been called
+  \brief Declaration Get flag indicating whether CreateInternalFacesExtension() has been called
   */
   virtual inline bool FilledExtension() const {return extension_filled_;}
 
   /*!
-  \brief Get map associated with the distribution of the ownership of faces
+  \brief Declaration Get map associated with the distribution of the ownership of faces
          (Filled()==true prerequisite)
 
   This map includes all faces stored on this proc and also owned by this proc.
@@ -235,7 +236,7 @@ public:
   virtual const Epetra_Map* FaceRowMap() const;
 
   /*!
-  \brief Get map associated with the distribution of elements including ghosted faces
+  \brief Declaration Get map associated with the distribution of elements including ghosted faces
          (Filled()==true prerequisite)
 
   This map includes all internal faces stored on this proc including any ghosted faces
@@ -246,7 +247,7 @@ public:
   virtual const Epetra_Map* FaceColMap() const;
 
   /*!
-  \brief Get global number of internal faces (true number of total elements)
+  \brief Declaration Get global number of internal faces (true number of total elements)
          (Filled()==true prerequisite)
 
   This is a collective call
@@ -254,19 +255,19 @@ public:
   virtual int NumGlobalFaces() const;
 
   /*!
-  \brief Get processor local number of internal faces owned by this processor
+  \brief Declaration Get processor local number of internal faces owned by this processor
          (Filled()==true prerequisite)
   */
   virtual int NumMyRowFaces() const;
 
   /*!
-  \brief Get processor local number of internal faces including ghost elements
+  \brief Declaration Get processor local number of internal faces including ghost elements
          (Filled()==true NOT prerequisite)
   */
   virtual int NumMyColFaces() const;
 
   /*!
-  \brief Get the internal face element with local row id lid (Filled()==true prerequisite)
+  \brief Declaration Get the internal face element with local row id lid (Filled()==true prerequisite)
 
   Returns the internal face element with local row index lid.
   Will not return any ghosted element.
@@ -283,7 +284,7 @@ public:
   }
 
   /*!
-  \brief Get the element with local column id lid (Filled()==true prerequisite)
+  \brief Declaration Get the element with local column id lid (Filled()==true prerequisite)
 
   Returns the internal face element with local column index lid.
   Will also return any ghosted element.
@@ -300,14 +301,14 @@ public:
   }
 
   /*!
-  \brief Query whether a Face with global id gid is stored on this proc
+  \brief Declaration Query whether a Face with global id gid is stored on this proc
          (Filled()==true NOT prerequisite)
 
   */
   virtual bool HaveGlobalFace(int gid) const;
 
   /*!
-  \brief Get the face with global row id gid (Filled()==true NOT prerequisite)
+  \brief Declaration Get the face with global row id gid (Filled()==true NOT prerequisite)
 
   Returns the face with global row id gid if node is on this proc.
   Will return row or column face, ghosted or not.
@@ -318,12 +319,12 @@ public:
   virtual DRT::FaceElement* gFace(int gid) const;
 
   /*!
-  \brief Build internal faces extension
+  \brief Declaration Build internal faces extension
   */
   void CreateInternalFacesExtension(const bool verbose = false);
 
   /*!
-  \brief Evaluate edge-based integrals
+  \brief Declaration Evaluate edge-based integrals
   */
   void EvaluateEdgeBased(
        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
@@ -332,12 +333,12 @@ public:
 
 
   /*!
-  \brief Complete construction of a face elements
+  \brief Declaration Complete construction of a face elements
   */
   void BuildFaces(const bool verbose = false);
 
   /*!
-  \brief Build intfacerowmap_ (Filled()==true NOT prerequisite)
+  \brief Declaration Build intfacerowmap_ (Filled()==true NOT prerequisite)
 
   Build the parallel layout of internal faces in this
   discretization and store it as an Epetra_Map in intfacerowmap_
@@ -350,7 +351,7 @@ public:
   virtual void BuildFaceRowMap();
 
   /*!
-  \brief Build intfacecolmap_ (Filled()==true NOT prerequisite)
+  \brief Declaration Build intfacecolmap_ (Filled()==true NOT prerequisite)
 
   Build the potentially overlapping parallel layout of internal faces in this
   discretization and store it as an Epetra_Map in intfacecolmap_
@@ -362,7 +363,7 @@ public:
   virtual void BuildFaceColMap();
 
   /*!
-  \brief Print Print internal faces discretization to os (Filled()==true NOT prerequisite)
+  \brief Declaration Print Print internal faces discretization to os (Filled()==true NOT prerequisite)
          (ostream << also supported)
 
   \note This is a collective call

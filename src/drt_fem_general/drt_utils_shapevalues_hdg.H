@@ -1,10 +1,10 @@
 /*!----------------------------------------------------------------------
-\file drt_utils_shapevalues_hdg.cpp
-\brief
+\file drt_utils_shapevalues_hdg.H
+\brief Declaration
 
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\level 2
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
@@ -26,7 +26,7 @@ namespace DRT
   {
 
     /*!
-    \brief helper data type to evaluate only nonzero element shape functions on face
+    \brief Declaration helper data type to evaluate only nonzero element shape functions on face
 
      Author: schoeder 10/14
     */
@@ -70,7 +70,7 @@ namespace DRT
     };
 
     /*!
-     \brief helper holding the parameters, which we need to construct a the ShapeValuesFace
+     \brief Declaration helper holding the parameters, which we need to construct a the ShapeValuesFace
     */
     struct ShapeValuesFaceParams
     {
@@ -128,7 +128,7 @@ namespace DRT
       static const unsigned int nfn_    = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
       /*!
-      \brief Initialize the data structure for shape functions, set element-independent data
+      \brief Declaration Initialize the data structure for shape functions, set element-independent data
 
       @param degree  Degree of the polynomial
       @param completepoly  Sets whether to use a polynomial of complete degree or tensor degree (on hex); on tet, only complete degree makes sense
@@ -139,7 +139,7 @@ namespace DRT
                    const unsigned int quadratureDegree);
 
       /*!
-      \brief Compute element-dependent data, like gradients in real cell, integration weights, for element dofs
+      \brief Declaration Compute element-dependent data, like gradients in real cell, integration weights, for element dofs
       */
       void Evaluate              (const DRT::Element &ele);
 
@@ -202,18 +202,18 @@ namespace DRT
       static const unsigned int nfaces_ = DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
 
       /*!
-      \briefConstructor which does the things which do not need to be redone for the same parameters
+      \brief DeclarationConstructor which does the things which do not need to be redone for the same parameters
       */
       ShapeValuesFace(ShapeValuesFaceParams params);
 
       /*!
-      \brief Compute element-dependent data on faces, like integration weights, normal vectors, correctly oriented trace variables
+      \brief Declaration Compute element-dependent data on faces, like integration weights, normal vectors, correctly oriented trace variables
       */
       void EvaluateFace(const DRT::Element &ele,
                         const unsigned int  face);
 
       /*!
-      \brief Consider the orientation of faces for face degrees of freedom
+      \brief Declaration Consider the orientation of faces for face degrees of freedom
        */
       void AdjustFaceOrientation (const DRT::Element &ele,
                                   const unsigned int  face);
@@ -261,7 +261,7 @@ namespace DRT
     };
 
     /*!
-    \brief Cache for the face-based shape values, so we do not need to calculate again
+    \brief Declaration Cache for the face-based shape values, so we do not need to calculate again
 
      Author: schoeder 08/14
     */
@@ -286,7 +286,7 @@ namespace DRT
     };
 
     /*!
-    \brief Cache for the interior values of shape velocities
+    \brief Declaration Cache for the interior values of shape velocities
 
      Author: kronbichler 09/14
     */

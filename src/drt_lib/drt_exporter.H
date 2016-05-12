@@ -2,10 +2,11 @@
 \file drt_exporter.H
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -30,7 +31,7 @@ namespace DRT
 
 
 /*!
-\brief A class to manage explicit mpi communications
+\brief Declaration A class to manage explicit mpi communications
 
 The discretization management module uses this class to do most of its
 communication. It is used to redistribute grids and to do point-to-point
@@ -50,7 +51,7 @@ public:
 
 
   /*!
-  \brief Standard Constructor
+  \brief Declaration Standard Constructor
 
   this ctor constructs an exporter with no maps. It can than be used to do
   point-to-point communication only, map based exportes are not possible!
@@ -60,7 +61,7 @@ public:
   Exporter(const Epetra_Comm& comm);
 
   /*!
-  \brief Standard Constructor
+  \brief Declaration Standard Constructor
 
   \param frommap (in): The source map data shall be exported from
   \param tomap   (in): The target map data shall be exported to
@@ -69,13 +70,13 @@ public:
   Exporter(const Epetra_Map& frommap, const Epetra_Map& tomap, const Epetra_Comm& comm);
 
   /*!
-  \brief Copy Constructor
+  \brief Declaration Copy Constructor
 
   */
   Exporter(const DRT::Exporter& old);
 
   /*!
-  \brief Destructor
+  \brief Declaration Destructor
 
   */
   virtual ~Exporter();
@@ -84,17 +85,17 @@ public:
   //! @name Acess methods
 
   /*!
-  \brief Get communicator
+  \brief Declaration Get communicator
   */
   inline const Epetra_Comm& Comm() const { return comm_; }
 
   /*!
-  \brief Get source map
+  \brief Declaration Get source map
   */
   inline const Epetra_Map& SourceMap() const { return frommap_; }
 
   /*!
-  \brief Get target map
+  \brief Declaration Get target map
   */
   inline const Epetra_Map& TargetMap() const { return tomap_; }
 
@@ -103,7 +104,7 @@ public:
   //! @name Communication methods
 
   /*!
-  \brief Communicate a map of objects that implement ParObject
+  \brief Declaration Communicate a map of objects that implement ParObject
 
   This method takes a map of objects and redistributes them according to
   the send and receive plans. It is implicitly assumed, that the key in
@@ -119,7 +120,7 @@ public:
   template<typename T> void Export(std::map<int,Teuchos::RCP<T> >& parobjects);
 
   /*!
-  \brief Communicate a map of vectors of some basic data type T
+  \brief Declaration Communicate a map of vectors of some basic data type T
 
   This method takes a map of vectors and redistributes them according to
   the send and receive plans. It is implicitly assumed, that the key in
@@ -136,7 +137,7 @@ public:
   template<typename T> void Export(std::map<int,std::vector<T> >& data);
 
   /*!
-  \brief Communicate a map of sets of some basic data type T (currently only int)
+  \brief Declaration Communicate a map of sets of some basic data type T (currently only int)
 
   This method takes a map of sets and redistributes them according to
   the send and receive plans. It is implicitly assumed, that the key in
@@ -154,7 +155,7 @@ public:
 
   //                                                             nagler 07/2012
   /*!
-  \brief Communicate a map of sets of some basic data type T and U
+  \brief Declaration Communicate a map of sets of some basic data type T and U
 
   This method takes a map of sets and redistributes them according to
   the send and receive plans. It is implicitly assumed, that the key in
@@ -170,7 +171,7 @@ public:
   template<typename T, typename U> void Export(std::map<int,std::map<T,U> >& data);
 
   /*!
-  \brief Communicate a map of int values
+  \brief Declaration Communicate a map of int values
 
   This method takes a map of ints and redistributes them according to
   the send and receive plans. It is implicitly assumed, that the key in
@@ -184,7 +185,7 @@ public:
   void Export(std::map<int,int>& data);
 
   /*!
-  \brief Communicate a map of double values
+  \brief Declaration Communicate a map of double values
 
   This method takes a map of doubles and redistributes them according to
   the send and receive plans. It is implicitly assumed, that the key in
@@ -198,7 +199,7 @@ public:
   void Export(std::map<int,double>& data);
 
   /*!
-  \brief Communicate a map of serial dense matrices
+  \brief Declaration Communicate a map of serial dense matrices
 
   This method takes a map of serial dense matrices and redistributes them
   according to the send and receive plans. It is implicitly assumed, that the
@@ -212,7 +213,7 @@ public:
   void Export(std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >& data);
 
   /*!
-  \brief Send data from one processor to another (nonblocking)
+  \brief Declaration Send data from one processor to another (nonblocking)
 
   The method will send an array of chars in a nonblocking way meaning that this method
   will return immediately on the calling processor - even if communcation has not
@@ -240,7 +241,7 @@ public:
             const int dsize, const int tag, MPI_Request& request);
 
   /*!
-  \brief Send data from one processor to another (nonblocking)
+  \brief Declaration Send data from one processor to another (nonblocking)
 
   The method will send an array of ints in a nonblocking way meaning that this method
   will return immediately on the calling processor - even if communcation has not
@@ -268,7 +269,7 @@ public:
             const int dsize, const int tag, MPI_Request& request);
 
   /*!
-  \brief Send data from one processor to another (nonblocking)
+  \brief Declaration Send data from one processor to another (nonblocking)
 
   The method will send an array of doubles in a nonblocking way meaning that this method
   will return immediately on the calling processor - even if communcation has not
@@ -296,7 +297,7 @@ public:
             const int dsize, const int tag, MPI_Request& request);
 
   /*!
-  \brief Receive anything joker (blocking)
+  \brief Declaration Receive anything joker (blocking)
 
   This method receives an MPI_CHAR string message from any source proc with
   any message tag of any length. It simply takes the first message that's
@@ -323,7 +324,7 @@ public:
   void Receive(const int source,const int tag, std::vector<char>& recvbuff,int& length);
 
   /*!
-  \brief Receive anything joker (blocking)
+  \brief Declaration Receive anything joker (blocking)
 
   This method receives an MPI_INT message from any source proc with
   any message tag of any length. It simply takes the first message that's
@@ -350,7 +351,7 @@ public:
   void Receive(const int source,const int tag, std::vector<int>& recvbuff, int& length);
 
   /*!
-  \brief Receive anything joker (blocking)
+  \brief Declaration Receive anything joker (blocking)
 
   This method receives an MPI_DOUBLE message from any source proc with
   any message tag of any length. It simply takes the first message that's
@@ -377,7 +378,7 @@ public:
   void Receive(const int source,const int tag, std::vector<double>& recvbuff, int& length);
 
   /*!
-  \brief wait for nonblocking send to finish
+  \brief Declaration wait for nonblocking send to finish
 
   The method is used together with Isend and ReceiveAny to guarantee finalization
   of a communication. It is an individual call done by the sending processor to guarantee
@@ -392,7 +393,7 @@ public:
 
 
   /*!
-  \brief performs an allreduce operation on all processors
+  \brief Declaration performs an allreduce operation on all processors
        and sends the result to all processors
 
   \param sendbuff (input): buffer containing data that has to be sent
@@ -406,33 +407,33 @@ public:
 private:
 
   /*!
-  \brief Do initialization of the exporter
+  \brief Declaration Do initialization of the exporter
   */
   void ConstructExporter();
 
   /*!
-  \brief Get PID
+  \brief Declaration Get PID
   */
   inline int MyPID() const { return myrank_; }
   /*!
-  \brief Get no. of processors
+  \brief Declaration Get no. of processors
   */
   inline int NumProc() const { return numproc_; }
 
   /*!
-  \brief Get sendplan_
+  \brief Declaration Get sendplan_
   */
   inline std::vector<std::set<int> > & SendPlan() { return sendplan_; }
 
 #if 0
   /*!
-  \brief Get recvplan_
+  \brief Declaration Get recvplan_
   */
   inline vector<std::set<int> > & RecvPlan() { return recvplan_; }
 #endif
 
   /*!
-  \brief generic export algorithm that delegates the specific pack/unpack to a helper
+  \brief Declaration generic export algorithm that delegates the specific pack/unpack to a helper
    */
   void GenericExport(ExporterHelper& helper);
 

@@ -2,9 +2,11 @@
 /*!
 \file solver_ifpackpreconditioner.cpp
 
-\maintainer Tobias Wiesner
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
 
-\brief LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
+\brief Declaration LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
 */
 /*----------------------------------------------------------------------------*/
 

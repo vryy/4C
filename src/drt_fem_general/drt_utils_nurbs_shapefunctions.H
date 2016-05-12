@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_nurbs_shapefunctions.H
 
+\brief Specification of nurbs basis functions
+
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\level 2
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
@@ -4059,4 +4061,3 @@ void nurbs_get_funct(
 }// namespace DRT
 
 #endif // DRT_UTILS_NURBS_SHAPEFUNCTION
-

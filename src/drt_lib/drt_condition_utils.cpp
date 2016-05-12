@@ -2,11 +2,12 @@
 /*!
 \file drt_condition_utils.cpp
 
-\brief
+\brief Implementation
 
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\brief Implementation
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>

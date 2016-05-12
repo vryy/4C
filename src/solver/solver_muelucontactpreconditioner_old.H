@@ -1,11 +1,13 @@
 /*!----------------------------------------------------------------------
-\file solver_mlpreconditioner.H
+\file solver_muelucontactpreconditioner_old.H
+
+\brief Interface class for MueLu contact preconditioner
 
 <pre>
-Maintainer: Tobias Wiesner
-            wiesner@lnm.mw.tum.de
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15235
 Created on: Jan 11, 2012
 </pre>
 *----------------------------------------------------------------------*/
@@ -55,7 +57,7 @@ namespace LINALG
     private:
 
       //void ExportAggregates(const Teuchos::RCP<Level>& level, const MueLu::FactoryBase* AFact, const MueLu::FactoryBase* aggFact,const Teuchos::RCP<const Teuchos::Comm<int> >& comm, int numDofsPerNode);
-      
+
       // private Setup routine for MueLu Multigrid hierarchy
       Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Operator> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
 

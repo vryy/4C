@@ -2,11 +2,12 @@
 /*!
 \file drt_dofset_proxy.cpp
 
-\brief Proxy to a set of degrees of freedom
+\brief Implementation Proxy to a set of degrees of freedom
 
 <pre>
+\brief Implementation
+\level 1
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>

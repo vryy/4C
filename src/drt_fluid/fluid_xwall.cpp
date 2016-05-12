@@ -631,7 +631,7 @@ void FLD::XWall::SetupXWallDis()
   if(parallel)
   {
   //redistribute
-#if defined(PARALLEL) && defined(PARMETIS)
+#if defined(PARALLEL) && defined(HAVE_PARMETIS)
 
     Teuchos::RCP<Epetra_Map> elemap=Teuchos::rcp( new Epetra_Map(*xwdiscret_->ElementRowMap()));
     Teuchos::RCP<Epetra_Map> rownodes;

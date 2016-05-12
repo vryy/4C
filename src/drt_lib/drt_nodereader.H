@@ -1,3 +1,16 @@
+/*!----------------------------------------------------------------------
+\file drt_nodereader.H
+\brief Declaration
+
+<pre>
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
 
 
 #ifndef DRT_NODEREADER_H
@@ -15,7 +28,7 @@ namespace INPUT
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief helper class to read all nodes shared by many discretizations
+  \brief Declaration helper class to read all nodes shared by many discretizations
 
   The interface class to the reading subsystem.
   \author u.kue
@@ -39,7 +52,7 @@ public:
   void AddElementReader(Teuchos::RCP<ElementReader> er) { ereader_.push_back(er); }
 
   /*!
-   * \brief Adds the selected element/domain/file reader to this nodereader
+   * \brief Declaration Adds the selected element/domain/file reader to this nodereader
    *
    * \param dis            [in] This discretization will be passed on
    * \param reader         [in] This reader will be passed on
@@ -56,7 +69,7 @@ public:
       const std::string*               geofilepath);
 
   /*!
-   * \brief Adds the selected element/domain/file reader to this nodereader
+   * \brief Declaration Adds the selected element/domain/file reader to this nodereader
    *
    * This is a version without specific elementtypes. It just calls the full
    * version with a dummy set.
@@ -74,7 +87,7 @@ public:
       const std::string*               geofilepath);
 
   /*!
-   * \brief Adds a particle reader to this nodereader
+   * \brief Declaration Adds a particle reader to this nodereader
    *
    * This is a version specific for particles
    *

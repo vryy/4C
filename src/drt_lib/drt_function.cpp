@@ -2,11 +2,12 @@
 /*!
 \file drt_function.cpp
 
-\brief Managing and evaluating of spatial functions
+\brief Implementation Managing and evaluating of spatial functions
 
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\brief Implementation
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
@@ -38,7 +39,7 @@ class ExprFunction : public Function
 public:
   /*!
 
-  \brief construct spatial function from expression with given origin
+  \brief Implementation construct spatial function from expression with given origin
 
   \note  Upon construction, the object defines a spatial function
          returning the same function value for every spatial dimension.
@@ -57,7 +58,7 @@ public:
 
   /*!
 
-  \brief Default constructor creating empty object. Expressions are
+  \brief Implementation Default constructor creating empty object. Expressions are
          added with add function
 
   */
@@ -65,7 +66,7 @@ public:
 
   /*!
 
-  \brief clean up parse tree
+  \brief Implementation clean up parse tree
 
   */
   ~ExprFunction();
@@ -73,7 +74,7 @@ public:
 
   /*!
 
-  \brief evaluate function at given position in space
+  \brief Implementation evaluate function at given position in space
 
   \param index (i) For vector-valued functions, index defines the
                    function-component which should be evaluated
@@ -86,7 +87,7 @@ public:
 
   /*!
 
-  \brief evaluate derivatives function at given position in space
+  \brief Implementation evaluate derivatives function at given position in space
 
   \param index (i) For vector-valued functions, index defines the
                    function-component which should be evaluated
@@ -102,7 +103,7 @@ public:
 
   /*!
 
-  \brief add expression to an existing ExprFunction in order to extend
+  \brief Implementation add expression to an existing ExprFunction in order to extend
          it to a vector-valued spatial function.
 
          Every call to AddExpr adds one more component to the
@@ -117,7 +118,7 @@ public:
   void AddExpr(std::string buf, double x, double y, double z);
   /*!
 
-  \brief Return the number of components of this spatial function
+  \brief Implementation Return the number of components of this spatial function
   (1 for scalar functions, dim for vector-valued functions)
 
   \return number of components
@@ -177,7 +178,7 @@ class BeltramiFunction : public Function
 public:
   /*!
 
-  \brief evaluate function at given position in space
+  \brief Implementation evaluate function at given position in space
 
   \param index (i) index defines the function-component which will
                    be evaluated
@@ -189,7 +190,7 @@ public:
 
   /*!
 
-  \brief Return the number of components of this spatial function
+  \brief Implementation Return the number of components of this spatial function
   (This is a vector-valued function)
 
   \return number of components (u,v,w,p)
@@ -209,7 +210,7 @@ class KimMoinFunction : public Function
 public:
   /*!
 
-  \brief evaluate function at given position in space
+  \brief Implementation evaluate function at given position in space
 
   \param index (i) index defines the function-component which will
                    be evaluated
@@ -221,7 +222,7 @@ public:
 
   /*!
 
-  \brief Return the number of components of this spatial function
+  \brief Implementation Return the number of components of this spatial function
   (this is a vector-valued functions)
 
   \return number of components (u,v,p)
@@ -241,7 +242,7 @@ class BochevUPFunction : public Function
 public:
   /*!
 
-  \brief evaluate function at given position in space
+  \brief Implementation evaluate function at given position in space
 
   \param index (i) index defines the function-component which will
                    be evaluated
@@ -253,7 +254,7 @@ public:
 
   /*!
 
-  \brief Return the number of components of this spatial function
+  \brief Implementation Return the number of components of this spatial function
   (This is a vector-valued function)
 
   \return number of components (u,v,p)
@@ -273,7 +274,7 @@ class BochevRHSFunction : public Function
 public:
   /*!
 
-  \brief evaluate function at given position in space
+  \brief Implementation evaluate function at given position in space
 
   \param index (i) index defines the function-component which will
                    be evaluated
@@ -285,7 +286,7 @@ public:
 
   /*!
 
-  \brief Return the number of components of this spatial function
+  \brief Implementation Return the number of components of this spatial function
   (This is a vector-valued function)
 
   \return number of components (f1,f2)
@@ -310,7 +311,7 @@ public:
 
   /*!
 
-  \brief evaluate function at given position in space
+  \brief Implementation evaluate function at given position in space
 
   \param index (i) index defines the function-component which will
                    be evaluated
@@ -322,7 +323,7 @@ public:
 
   /*!
 
-  \brief Return the number of components of this spatial function
+  \brief Implementation Return the number of components of this spatial function
   (This is a vector-valued function)
 
   \return number of components (u,v,w)
@@ -351,7 +352,7 @@ public:
 
   /*!
 
-  \brief evaluate function at given position in space
+  \brief Implementation evaluate function at given position in space
 
   \param index (i) index defines the function-component which will
                    be evaluated
@@ -363,7 +364,7 @@ public:
 
   /*!
 
-  \brief Return the number of components of this spatial function
+  \brief Implementation Return the number of components of this spatial function
   (This is a vector-valued function)
 
   \return number of components (u,v,w)
@@ -391,7 +392,7 @@ class TurbBouLayerFunction : public Function
 public:
   /*!
 
-  \brief evaluate function at given position in space
+  \brief Implementation evaluate function at given position in space
 
   \param index (i) index defines the function-component which will
                    be evaluated
@@ -403,7 +404,7 @@ public:
 
   /*!
 
-  \brief Return the number of components of this spatial function
+  \brief Implementation Return the number of components of this spatial function
   (This is a vector-valued function)
 
   \return number of components (u,v,w,p)
@@ -426,7 +427,7 @@ class TurbBouLayerFunctionBFS : public Function
 public:
   /*!
 
-  \brief evaluate function at given position in space
+  \brief Implementation evaluate function at given position in space
 
   \param index (i) index defines the function-component which will
                    be evaluated
@@ -438,7 +439,7 @@ public:
 
   /*!
 
-  \brief Return the number of components of this spatial function
+  \brief Implementation Return the number of components of this spatial function
   (This is a vector-valued function)
 
   \return number of components (u,v,w,p)
@@ -459,7 +460,7 @@ class TurbBouLayerFunctionORACLES : public Function
 public:
   /*!
 
-  \brief evaluate function at given position in space
+  \brief Implementation evaluate function at given position in space
 
   \param index (i) index defines the function-component which will
                    be evaluated
@@ -558,7 +559,7 @@ class JefferyHamelFlowFunction : public Function
 public:
   /*!
 
-  \brief evaluate function at given position in space
+  \brief Implementation evaluate function at given position in space
 
   \param index (i) index defines the function-component which will
                    be evaluated
@@ -570,7 +571,7 @@ public:
 
   /*!
 
-  \brief Return the number of components of this spatial function
+  \brief Implementation Return the number of components of this spatial function
   (This is a vector-valued function)
 
   \return number of components (u,v,w,p)

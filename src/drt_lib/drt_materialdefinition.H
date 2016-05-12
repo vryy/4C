@@ -3,10 +3,11 @@
 \file drt_materialdefinition.H
 
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15235
 </pre>
 */
 

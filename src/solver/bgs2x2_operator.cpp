@@ -2,8 +2,9 @@
 \file bgs2x2_operator.cpp
 
 <pre>
-Maintainer: Lena Wiechert
-            yoshihara@lnm.mw.tum.de
+\brief Declaration
+\level 1
+\maintainer Lena Wiechert
             http://www.lnm.mw.tum.de
             089 - 289-15303
 </pre>

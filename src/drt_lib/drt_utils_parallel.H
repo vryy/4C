@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_parallel.H
-\brief A collection of helper methods for namespace DRT
+\brief Declaration A collection of helper methods for namespace DRT
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\brief Declaration
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -36,7 +37,7 @@ namespace UTILS
   void PrintParallelDistribution(const DRT::Discretization& dis);
 
   /*!
-  \brief Get a column vector made of a row vector.
+  \brief Declaration Get a column vector made of a row vector.
 
   Using this method, a reference to a vector is returned.
   If the vector is supplied in dis.DofColMap() the vector itself will be returned.

@@ -5,10 +5,12 @@
 
 
 <pre>
-Maintainers: Benjamin Krank & Martin Kronbichler
-             {krank,kronbichler}@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289-15252/-235
+\maintainer Benjamin Krank & Martin Kronbichler
+            {krank,kronbichler}@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15252/-235
+
+\level 1
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -382,7 +384,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     // this is the actual redistribution
     // call PARMETIS (with #ifdef to be on the safe side)
-#if defined(PARALLEL) && defined(PARMETIS)
+#if defined(PARALLEL) && defined(HAVE_PARMETIS)
 
     Teuchos::RCP<Epetra_Map> sepcondrownodes;
     Teuchos::RCP<Epetra_Map> sepcondcolnodes;

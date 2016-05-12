@@ -1,11 +1,13 @@
 /*!----------------------------------------------------------------------
 \file linalg_sparsematrix.cpp
 
+\brief Implementation of general BACI sparse matrix class
+
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -302,7 +304,6 @@ void LINALG::SparseMatrix::Zero()
   }
   else
   {
-#if 0
     // Setting the matrix to zero is not the same as creating a new matrix
     // since -- if (explicitdirichlet_) -- the graph will be the full graph and the
     // matrix might contain some Dirichlet-rows. In this case we want to go
@@ -310,23 +311,25 @@ void LINALG::SparseMatrix::Zero()
 
     // Here is room for speed improvements, but things are already quite
     // complicated.
-
-    sysmat_->PutScalar(0.);
-#else
-    const Epetra_Map domainmap = sysmat_->DomainMap();
-    const Epetra_Map rangemap = sysmat_->RangeMap();
-    // Remove old matrix before creating a new one so we do not have old and
-    // new matrix in memory at the same time!
-    sysmat_ = Teuchos::null;
-    if(matrixtype_ == CRS_MATRIX)
-      sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy, *graph_));
-    else if(matrixtype_ == FE_MATRIX)
-      sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, *graph_));
+    //std::cout << graph_->NumGlobalNonzeros() << " " << sysmat_->NumGlobalNonzeros() << " " << Filled() << " " << (int)matrixtype_ << (graph_.get()) << " " << &(sysmat_->Graph()) << std::endl;
+    if (!explicitdirichlet_)
+      sysmat_->PutScalar(0.);
     else
-      dserror("matrix type is not correct");
+    {
+      const Epetra_Map domainmap = sysmat_->DomainMap();
+      const Epetra_Map rangemap = sysmat_->RangeMap();
+      // Remove old matrix before creating a new one so we do not have old and
+      // new matrix in memory at the same time!
+      sysmat_ = Teuchos::null;
+      if(matrixtype_ == CRS_MATRIX)
+        sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy, *graph_));
+      else if(matrixtype_ == FE_MATRIX)
+        sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, *graph_));
+      else
+        dserror("matrix type is not correct");
 
-    sysmat_->FillComplete(domainmap,rangemap);
-#endif
+      sysmat_->FillComplete(domainmap,rangemap);
+    }
   }
 }
 

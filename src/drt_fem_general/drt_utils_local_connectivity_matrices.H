@@ -16,10 +16,10 @@ in the Baci guide in the Convention chapter.
 !!!!
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15236
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

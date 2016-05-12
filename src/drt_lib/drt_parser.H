@@ -2,15 +2,16 @@
 /*!
 \file drt_parser.H
 
-\brief Parser for mathematical expressions, which contain literals
+\brief Declaration Parser for mathematical expressions, which contain literals
        ('1.0', 'pi', etc) operations ('+', '-', 'sin', etc.).
        The parsed expression is organised in a syntax tree whose nodes
        can either hold an operation or a literal.
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15235
 </pre>
 
 \author u.kue
@@ -42,7 +43,7 @@ namespace PARSER {
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Syntax tree node holding binary, unary operator or literals
+\brief Declaration Syntax tree node holding binary, unary operator or literals
 \author u.kue
 \date 10/07
 */
@@ -89,7 +90,7 @@ public:
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Class holds auxiliar variables for Lexan method which steps through
+\brief Declaration Class holds auxiliar variables for Lexan method which steps through
        the string destilling the function tokens
 \author u.kue
 \date 10/07
@@ -136,7 +137,7 @@ protected:
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Parser
+\brief Declaration Parser
 \author u.kue
 \date 10/07
 */
@@ -180,7 +181,7 @@ private:
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Constructor of parser object
+\brief Declaration Constructor of parser object
 \author u.kue
 \date 10/07
 */
@@ -196,7 +197,7 @@ Parser<T>::Parser(std::string funct)
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Destructor of parser object
+\brief Declaration Destructor of parser object
 \author u.kue
 \date 10/07
 */
@@ -208,7 +209,7 @@ Parser<T>::~Parser()
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief global interpreter call for time curves.
+\brief Declaration global interpreter call for time curves.
 \author u.kue
 \date 12/05
 */
@@ -227,7 +228,7 @@ T Parser<T>::EvaluateCurve(T t)
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Global interpreter call for space functions.
+\brief Declaration Global interpreter call for space functions.
 \author u.kue
 \date 12/05
 */
@@ -246,7 +247,7 @@ T Parser<T>::EvaluateFunct(T x, T y, T z, T t)
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Parse primary entities, i.e. literals and unary operators,
+\brief Declaration Parse primary entities, i.e. literals and unary operators,
        such as numbers, parentheses, independent variables, operator names
 \author u.kue
 \date 10/07
@@ -395,7 +396,7 @@ SyntaxTreeNode<T>* Parser<T>::ParsePrimary()
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Parse entities connected by power: a^b
+\brief Declaration Parse entities connected by power: a^b
 \author u.kue
 \date 10/07
 */
@@ -427,7 +428,7 @@ SyntaxTreeNode<T>* Parser<T>::ParsePow()
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Parse entities connected by multiplication or division: a*b, a/b
+\brief Declaration Parse entities connected by multiplication or division: a*b, a/b
 \author u.kue
 \date 10/07
 */
@@ -465,7 +466,7 @@ SyntaxTreeNode<T>* Parser<T>::ParseTerm()
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Parse entity
+\brief Declaration Parse entity
 \author u.kue
 \date 10/07
 */
@@ -485,7 +486,7 @@ SyntaxTreeNode<T>* Parser<T>::Parse()
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Parse entities connected by addition or subtraction: a+b, a-b
+\brief Declaration Parse entities connected by addition or subtraction: a+b, a-b
 \author u.kue
 \date 10/07
 */
@@ -524,7 +525,7 @@ SyntaxTreeNode<T>* Parser<T>::ParseExpr()
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Recursively extract corresponding number out of a syntax tree node
+\brief Declaration Recursively extract corresponding number out of a syntax tree node
 \author u.kue
 \date 10/07
 */

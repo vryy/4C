@@ -1,11 +1,13 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_boundary_integration.cpp
 
+\brief A set of integration routines for faces on elements
+
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089-289-15252
+            089-289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

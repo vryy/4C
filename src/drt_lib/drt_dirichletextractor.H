@@ -1,3 +1,16 @@
+/*!----------------------------------------------------------------------
+\file drt_dirichletextractor.H
+\brief Declaration
+
+<pre>
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifndef DRT_DIRICHLETEXTRACTOR_H
 #define DRT_DIRICHLETEXTRACTOR_H
 

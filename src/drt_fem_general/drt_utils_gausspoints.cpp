@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file drt_utils_gausspoints.cpp
+\brief Implementation
+
+<pre>
+\level 1
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
 
 #include <Intrepid_Cubature.hpp>
 #include <Intrepid_FieldContainer.hpp>

@@ -1,13 +1,13 @@
 /*!----------------------------------------------------------------------
 \file linalg_solver.cpp
 
-\brief
+\brief Implementation
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *-----------------------------------------------------------------------*/
@@ -779,7 +779,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   case INPAR::SOLVER::azprec_MLfluid: // unsymmetric, unsmoothed restriction
   case INPAR::SOLVER::azprec_MLfluid2: // full Pretrov-Galerkin unsymmetric smoothed
   {
-#if defined(PARALLEL) && defined(PARMETIS) // these are the hard-coded ML repartitioning settings
+#if defined(PARALLEL) && defined(HAVE_PARMETIS) // these are the hard-coded ML repartitioning settings
     mllist.set("repartition: enable",1);
     mllist.set("repartition: partitioner","ParMETIS");
     mllist.set("repartition: max min ratio",1.3);

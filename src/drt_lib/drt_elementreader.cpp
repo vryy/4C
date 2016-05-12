@@ -2,11 +2,12 @@
 /*!
 \file drt_elementreader.cpp
 
-\brief Read element sections of dat files.
+\brief Implementation Read element sections of dat files.
 
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\brief Implementation
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
@@ -228,7 +229,7 @@ void ElementReader::Partition()
     bsize = maxblocksize;
   }
 
-#if !defined(PARALLEL) || !defined(PARMETIS)
+#if !defined(PARALLEL) || !defined(HAVE_PARMETIS)
   // For simplicity we remember all node ids of all elements on
   // processor 0. This way we can create the graph on processor 0 and
   // use serial metis. If this turns out to be too memory consuming,
@@ -346,7 +347,7 @@ void ElementReader::Partition()
             // node ids --- it will be used later during reading of nodes
             // to add the node to one or more discretisations
             std::copy(nodeids, nodeids+numnode, std::inserter(nodes_, nodes_.begin()));
-#if !defined(PARALLEL) || !defined(PARMETIS)
+#if !defined(PARALLEL) || !defined(HAVE_PARMETIS)
             elementnodes.push_back(std::vector<int>(nodeids, nodeids+numnode));
 #endif
 
@@ -392,7 +393,7 @@ void ElementReader::Partition()
   // just skip the partitioning.
   if (numnodes)
   {
-#if defined(PARALLEL) && defined(PARMETIS)
+#if defined(PARALLEL) && defined(HAVE_PARMETIS)
 
     rownodes_ = Teuchos::null;
     colnodes_ = Teuchos::null;
@@ -571,4 +572,3 @@ void ParticleReader::Partition()
 
 }
 }
-

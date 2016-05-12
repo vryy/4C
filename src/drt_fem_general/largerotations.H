@@ -7,8 +7,8 @@
 </pre>
 
 <pre>
-Maintainer: Christian J. Cyron
-            cyron@lnm.mw.tum.de
+\level 2
+\maintainer Christian J. Cyron
             http://www.lnm.mw.tum.de
             089 - 289-15264
 </pre>

@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_parmetis.H
-\brief A collection of helper methods for namespace DRT
+\brief Declaration A collection of helper methods for namespace DRT
 <pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
+\brief Declaration
+\level 0
+\maintainer Georg Hammerl
             http://www.lnm.mw.tum.de
             089 - 289-15237
 </pre>

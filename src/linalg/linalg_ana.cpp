@@ -4,10 +4,10 @@
 \brief A family of abstract nice algebra operations (ANA)
 
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

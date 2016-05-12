@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_transparent_independent.cpp
 
-\brief transparent independent dofset
+\brief Implementation transparent independent dofset
 
 <pre>
-Maintainer: Shadan Shahmiri
-            shahmiri@lnm.mw.tum.de
+\brief Implementation
+\level 2
+\maintainer Shadan Shahmiri
             http://www.lnm.mw.tum.de
             089 - 289-15240
 </pre>

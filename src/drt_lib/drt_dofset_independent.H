@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_independent.H
 
-\brief This class is inherited from dofset and replaces the
+\brief Declaration This class is inherited from dofset and replaces the
        method AssignDegreesOfFreedom by a version that does not query
        the static_dofsets_ list for the max GID, but always starts from
        0. Also, it does not register with the static_dofsets_ list. This
@@ -9,8 +9,9 @@
        dofset without xfem dofs for output routines.
 
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\brief Declaration
+\level 2
+\maintainer Ursula Rasthofer
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
@@ -36,7 +37,7 @@ namespace DRT
 class Discretization;
 
 /*!
-\brief A set of degrees of freedom
+\brief Declaration A set of degrees of freedom
 
 \author
 */
@@ -45,7 +46,7 @@ class IndependentDofSet: virtual public DofSet
 public:
 
   /*!
-  \brief Standard Constructor
+  \brief Declaration Standard Constructor
 
 
   <pre>
@@ -60,13 +61,13 @@ public:
   IndependentDofSet(bool ignoreminnodegid = false);
 
   /*!
-  \brief Copy constructor
+  \brief Declaration Copy constructor
 
   */
   IndependentDofSet(const IndependentDofSet& old);
 
   /*!
-  \brief Destructor
+  \brief Declaration Destructor
 
   */
   virtual ~IndependentDofSet();

@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_metis.cpp
-\brief A collection of helper methods for namespace DRT
+\brief Implementation A collection of helper methods for namespace DRT
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\brief Implementation
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -248,7 +249,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
 }
 
 
-#if !defined(PARALLEL) || !defined(PARMETIS)
+#if !defined(PARALLEL) || !defined(HAVE_PARMETIS)
 
 #include "drt_inputreader.H"
 #include "drt_utils.H"
@@ -397,4 +398,3 @@ void DRT::UTILS::PartUsingMetis(Teuchos::RCP<Epetra_Map>& rownodes,
 
 #endif
 #endif
-

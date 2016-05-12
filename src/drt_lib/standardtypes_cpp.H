@@ -5,8 +5,9 @@
 *
 
  * <pre>
- * Maintainer: Martin Kronbichler
- *             kronbichler@lnm.mw.tum.de
+\brief Declaration
+\level 0
+ * \maintainer Martin Kronbichler
  *             http://www.lnm.mw.tum.de
  *             089 - 289-15235
  * </pre>

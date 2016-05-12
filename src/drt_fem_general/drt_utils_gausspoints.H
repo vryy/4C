@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file drt_utils_gausspoints.H
+\brief Declaration
+
+<pre>
+\level 1
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifndef DRT_UTILS_GAUSSPOINTS_H
 #define DRT_UTILS_GAUSSPOINTS_H
 

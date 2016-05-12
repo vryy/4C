@@ -2,12 +2,13 @@
 /*!
 \file drt_resulttest.cpp
 
-\brief general result test framework
+\brief Implementation general result test framework
 
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
+\brief Implementation
+\level 0
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
 */
@@ -50,7 +51,7 @@ void DRT::ResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, in
 
 /*----------------------------------------------------------------------*/
 /*!
- \brief Compare \a actresult with \a givenresult and return 0 if they are
+ \brief Implementation Compare \a actresult with \a givenresult and return 0 if they are
  considered to be equal.
 
  Compare \a actresult with \a givenresult and return 0 if they are

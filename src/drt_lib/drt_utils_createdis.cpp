@@ -2,12 +2,13 @@
 /*!
 \file drt_utils_createdis.cpp
 
-\brief utility functions for automatic creation of a discretization
+\brief Implementation utility functions for automatic creation of a discretization
        from an existing one (e.g. ALE from Fluid)
 
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\brief Implementation
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>

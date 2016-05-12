@@ -7,8 +7,8 @@ The corresponding graphics and a detailed description can be found in
 the Baci guide in the Convention chapter.
 
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>

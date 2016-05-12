@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_nodematchingoctree.cpp
-\brief Search closest node in given set of nodes using an octree search
+\brief Implementation Search closest node in given set of nodes using an octree search
 
 
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\brief Implementation
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
@@ -24,7 +25,7 @@ Maintainer: Martin Kronbichler
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
-\brief Constructor (public)
+\brief Implementation Constructor (public)
 
 <pre>
 

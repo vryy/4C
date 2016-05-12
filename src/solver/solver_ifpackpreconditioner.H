@@ -2,9 +2,11 @@
 /*!
 \file solver_ifpackpreconditioner.H
 
-\maintainer Tobias Wiesner
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
 
-\brief LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
+\brief Declaration LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
 */
 /*----------------------------------------------------------------------------*/
 #ifndef SOLVER_IFPACKPRECONDITIONER_H_
@@ -18,7 +20,7 @@ namespace LINALG
 {
 namespace SOLVER
 {
-  /*! \brief  IFPACK preconditioners
+  /*! \brief Declaration  IFPACK preconditioners
    *
    *  Set of standard single-matrix preconditioners.
    */

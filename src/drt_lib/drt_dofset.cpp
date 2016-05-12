@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset.cpp
-\brief A set of degrees of freedom
+\brief Implementation A set of degrees of freedom
 
 <pre>
+\brief Implementation
+\level 0
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>

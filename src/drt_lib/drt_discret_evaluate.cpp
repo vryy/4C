@@ -1,8 +1,10 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_evaluate.cpp
-\brief
+\brief Implementation
 
-\maintainer Michael Gee
+\brief Implementation
+\level 0
+\maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
 

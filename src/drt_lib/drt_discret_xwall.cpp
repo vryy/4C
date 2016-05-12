@@ -1,11 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file drt_discret_xwall.cpp
-\brief a class to manage an enhanced discretization including varying number of dofs per node on a fluid discretization for xwall
+\brief Implementation a class to manage an enhanced discretization including varying number of dofs per node on a fluid discretization for xwall
 
 <pre>
-Maintainer: Benjamin Krank
-            krank@lnm.mw.tum.de
+\brief Implementation
+\level 2
+\maintainer Benjamin Krank
             http://www.lnm.mw.tum.de
             089 - 289-15252
 </pre>

@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file linalg_multiply.cpp
+\brief Implementation
+
+<pre>
+\level 1
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
 
 // TODO replace me by EpetraExt routines
 // includes for MLMultiply...

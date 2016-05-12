@@ -2,11 +2,12 @@
 /*!
  \file drt_dofset_subproxy.H
 
- \brief
+ \brief Declaration
 
  <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
+\brief Declaration
+   \level 1
+   \maintainer Anh-Tu Vuong
                http://www.lnm.mw.tum.de
                089 - 289-15251
  </pre>
@@ -28,7 +29,7 @@ namespace DRT
   public:
 
     /*!
-    \brief Standard Constructor
+    \brief Declaration Standard Constructor
 
     */
     explicit DofSetSubProxy(DofSet* dofset,
@@ -36,7 +37,7 @@ namespace DRT
                             Teuchos::RCP<Epetra_Map>& subcolele);
 
     /*!
-    \brief Destructor
+    \brief Declaration Destructor
 
     */
      ~DofSetSubProxy(){};

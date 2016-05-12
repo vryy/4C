@@ -1,13 +1,14 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_fixed_size.H
 
-\brief A modified set of degrees of freedom that always pretends to be
+\brief Declaration A modified set of degrees of freedom that always pretends to be
        of a certain size in order to reserve space for fields that vary
        in size, i.e. XFEM fluid.
 
 <pre>
-Maintainer: Ursula Rasthofer
-            rasthofer@lnm.mw.tum.de
+\brief Declaration
+\level 1
+\maintainer Ursula Rasthofer
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
@@ -33,7 +34,7 @@ namespace DRT
 class Discretization;
 
 /*!
-\brief A set of degrees of freedom
+\brief Declaration A set of degrees of freedom
 
 \author
 */
@@ -42,7 +43,7 @@ class FixedSizeDofSet: virtual public DofSet
 public:
 
   /*!
-  \brief Standard Constructor
+  \brief Declaration Standard Constructor
 
 
   <pre>
@@ -64,7 +65,7 @@ public:
   }
 
   /*!
-  \brief Destructor
+  \brief Declaration Destructor
 
   */
   virtual ~FixedSizeDofSet()

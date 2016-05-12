@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_bspline.H
 
+\brief Specification of B-splines
+
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\level 2
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>

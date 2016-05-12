@@ -1,3 +1,16 @@
+/*!----------------------------------------------------------------------
+\file drt_pack_buffer.H
+\brief Declaration
+
+<pre>
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifndef DRT_PACK_BUFFER_H
 #define DRT_PACK_BUFFER_H
 

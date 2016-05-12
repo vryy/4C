@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_metis.H
-\brief A collection of helper methods for namespace DRT
+\brief Declaration A collection of helper methods for namespace DRT
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -23,7 +24,7 @@ namespace UTILS
 {
 
 /*!
-\brief Partition a graph with metis
+\brief Declaration Partition a graph with metis
 
 Take an input graph with any row map and a vector of point weights with the same row
 map and redistribute the graph using the partitioning library metis.

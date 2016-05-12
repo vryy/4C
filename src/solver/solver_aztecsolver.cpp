@@ -1,9 +1,16 @@
-/*
- * solver_aztecsolver.cpp
- *
- *  Created on: Jul 7, 2011
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file solver_aztecsolver.cpp
+\brief Declaration
+
+<pre>
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
 
 #ifdef HAVE_MueLu
 

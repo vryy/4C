@@ -1,4 +1,16 @@
+/*!----------------------------------------------------------------------
+\file drt_nodereader.cpp
+\brief Implementation
 
+<pre>
+\brief Implementation
+\level 0
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
 
 
 #include "drt_discret.H"
@@ -194,7 +206,7 @@ void NodeReader::Read()
       double t1 = time.ElapsedTime();
       if (0==myrank)
       {
-#if defined(PARMETIS)
+#if defined(HAVE_PARMETIS)
         if (!reader_.MyOutputFlag())
           printf("block %d ",block);
 #endif
@@ -433,4 +445,3 @@ void NodeReader::Read()
 
 }
 }
-

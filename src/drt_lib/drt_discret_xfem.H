@@ -1,11 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_xfem.H
 
-\brief a class to manage one discretization with changing dofs
+\brief Declaration a class to manage one discretization with changing dofs
 
 <pre>
-Maintainer: Christoph Ager
-            ager@lnm.mw.tum.de
+\brief Declaration
+\level 1
+\maintainer Christoph Ager
             http://www.lnm.mw.tum.de
             089 - 289 - 15249
 </pre>
@@ -18,14 +19,14 @@ Maintainer: Christoph Ager
 #include "drt_discret_faces.H"
 
 /*!
-\brief DRT: namespace of the baci discretization module
+\brief Declaration DRT: namespace of the baci discretization module
 
 */
 namespace DRT
 {
 
 /*!
-\brief A class to manage a discretization in parallel with changing dofs
+\brief Declaration A class to manage a discretization in parallel with changing dofs
 
 */
 class DiscretizationXFEM : public DiscretizationFaces
@@ -33,7 +34,7 @@ class DiscretizationXFEM : public DiscretizationFaces
 public:
 
   /*!
-  \brief Standard Constructor
+  \brief Declaration Standard Constructor
 
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
@@ -41,7 +42,7 @@ public:
   DiscretizationXFEM(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
   /*!
-  \brief Destructor
+  \brief Declaration Destructor
 
   */
   virtual ~DiscretizationXFEM()
@@ -50,7 +51,7 @@ public:
   };
 
   /*!
-  \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
+  \brief Declaration Complete construction of a discretization  (Filled()==true NOT prerequisite)
 
   This call is done at the initial state of the discretisation, therefore the initial dofset
   is stored!
@@ -98,7 +99,7 @@ public:
 
 
   /*!
-  \brief Get the gid of all initial dofs of a node.
+  \brief Declaration Get the gid of all initial dofs of a node.
 
   Ask the initial DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
@@ -115,7 +116,7 @@ public:
   }
 
   /*!
-  \brief Get the gid of all initial dofs of a node.
+  \brief Declaration Get the gid of all initial dofs of a node.
 
   Ask the initial DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
@@ -130,7 +131,7 @@ public:
   }
 
   /*!
-  \brief Get the gid of all initial dofs of a node.
+  \brief Declaration Get the gid of all initial dofs of a node.
 
   Ask the initial DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
@@ -147,7 +148,7 @@ public:
     initialdofsets_[nds]->Dof(node,lm); }
 
   /*!
-  \brief Get the gid of all initial dofs of a node.
+  \brief Declaration Get the gid of all initial dofs of a node.
 
   Ask the initial DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
@@ -169,7 +170,7 @@ public:
     return *initialdofsets_[nds];
   }
   /*!
-  \brief Get initial degree of freedom row map (Initialized()==true prerequisite)
+  \brief Declaration Get initial degree of freedom row map (Initialized()==true prerequisite)
 
   Return ptr to initial degree of freedom row distribution map of this discretization.
   If it does not exist yet, build it.
@@ -180,7 +181,7 @@ public:
   virtual const Epetra_Map* InitialDofRowMap(unsigned nds=0) const;
 
   /*!
-  \brief Get initial degree of freedom column map (Initialized()==true prerequisite)
+  \brief Declaration Get initial degree of freedom column map (Initialized()==true prerequisite)
 
   Return ptr to initial degree of freedom column distribution map of this discretization.
   If it does not exist yet, build it.
@@ -195,7 +196,7 @@ public:
 
 
   /*!
-  \brief Set a reference to a data vector
+  \brief Declaration Set a reference to a data vector
 
   Using this method, a reference to a vector can
   be supplied to the discretization. The elements can access

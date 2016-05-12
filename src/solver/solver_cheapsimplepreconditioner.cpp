@@ -2,8 +2,9 @@
 \file solver_cheapsimplepreconditioner.cpp
 
 <pre>
-Maintainer: Tobias Wiesner
-            wiesner@lnm.mw.tum.de
+\brief Declaration
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15239
 </pre>

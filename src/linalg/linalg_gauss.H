@@ -4,6 +4,7 @@
 
 \brief Gauss elimination for small nxn systems
 
+\level 1
 \maintainer Martin Kronbichler
 
 */

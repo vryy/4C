@@ -1,3 +1,15 @@
+/*!----------------------------------------------------------------------
+\file linalg_none_operator.H
+\brief Declaration
+
+<pre>
+\level 1
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*----------------------------------------------------------------------*/
 #ifndef LINALG_NONE_OPERATOR_H
 #define LINALG_NONE_OPERATOR_H
 

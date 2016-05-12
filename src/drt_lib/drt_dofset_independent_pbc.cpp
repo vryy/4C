@@ -1,6 +1,9 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_independent_pbc.cpp
 
+\brief Implementation
+\level 2
+\maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
 #include "drt_dofset_independent_pbc.H"

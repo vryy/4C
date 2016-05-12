@@ -1,14 +1,15 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_faces.cpp
 
-\brief a class to manage an enhanced discretization including the faces between elements
+\brief Implementation a class to manage an enhanced discretization including the faces between elements
 
 
 </pre>
 
 <pre>
-Maintainer: Benedikt Schott, Martin Kronbichler
-            {schott,kronbichler}@lnm.mw.tum.de
+\brief Implementation
+\level 1
+\maintainer Benedikt Schott, Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>

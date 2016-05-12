@@ -2,11 +2,12 @@
 /*!
 \file drt_inputreader.cpp
 
-\brief Internal classes to read elements and nodes
+\brief Implementation Internal classes to read elements and nodes
 
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\brief Implementation
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
 </pre>
@@ -47,7 +48,7 @@ Maintainer: Martin Kronbichler
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief remove all leading and trailing whitespaces from a string.
+  \brief Implementation remove all leading and trailing whitespaces from a string.
 
   Note: consecutive whitespaces inside the std::string will be reduced to a
   single space.

@@ -5,7 +5,7 @@
 ### General Setup
 
 cmake_minimum_required(VERSION 2.8)
-project(documentation CXX C Fortran)
+project(documentation CXX C)
 
 # generates documentation in build folder
 # Dependencies: html/index.html <- Doxyfile <- Doxyfile.defs <- gen_doxygen_defs.py

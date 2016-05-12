@@ -2,22 +2,16 @@
 /*!
 \file solver_mlpreconditioner.cpp
 
-\brief Interface class to ML preconditoner
+\brief Declaration Interface class to ML preconditoner
 
 <pre>
-Maintainer: Tobias Wiesner
-            wiesner@lnm.mw.tum.de
+\brief Declaration
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15235
 </pre>
 */
-
-/*
- * solver_mlpreconditioner.cpp
- *
- *  Created on: Jul 4, 2011
- *      Author: wiesner
- */
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -75,7 +69,7 @@ void LINALG::SOLVER::MLPreconditioner::Setup( bool create,
     os.open("bvector.out",std::fstream::trunc);
     os << "%%MatrixMarket matrix array real general" << std::endl;
     os << b->Map().NumGlobalElements() << " " << 1 << std::endl;
-    
+
         int NumMyElements1 = b->Map().NumMyElements();
         int MaxElementSize1 = b->Map().MaxElementSize();
         int* MyGlobalElements1 = b->Map().MyGlobalElements();
@@ -92,13 +86,13 @@ void LINALG::SOLVER::MLPreconditioner::Setup( bool create,
 
       // close file
       os.close();
-   
+
     // write out nullspace
     os.open("nspvector.out",std::fstream::trunc);
 
     Teuchos::RCP<std::vector<double> > nsp = mllist_.get<Teuchos::RCP<std::vector<double> > >("nullspace");
     int nsdim = mllist_.get<int>("null space: dimension");
-    
+
     os << "%%MatrixMarket matrix array real general" << std::endl;
     os << nsp->size()/nsdim << " " << nsdim << std::endl;
     for(int row = 0; row < nsp->size(); row++) {

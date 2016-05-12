@@ -1,11 +1,12 @@
 /*!
 \file drt_dofset_proxy.H
 
-\brief Proxy to a set of degrees of freedom
+\brief Declaration Proxy to a set of degrees of freedom
 
 <pre>
-Maintainer: Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
+\brief Declaration
+\level 1
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
 </pre>
 

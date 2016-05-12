@@ -1,11 +1,14 @@
 /*!----------------------------------------------------------------------
 \file linalg_sparseoperator.H
 
+\brief Base class for implementation of sparse operations (including sparse
+       matrices)
+
 <pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
+\level 0
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15239
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/

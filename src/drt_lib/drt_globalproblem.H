@@ -2,10 +2,11 @@
 /*!
 \file drt_globalproblem.H
 
-\brief internal representation of an input file
+\brief Declaration internal representation of an input file
 
+\brief Declaration
+\level 1
 \maintainer Martin Kronbichler
-            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15235
 
