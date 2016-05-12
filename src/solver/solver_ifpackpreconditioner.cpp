@@ -6,7 +6,7 @@
 \level 0
 \maintainer Martin Kronbichler
 
-\brief Declaration LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
+\brief LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
 */
 /*----------------------------------------------------------------------------*/
 

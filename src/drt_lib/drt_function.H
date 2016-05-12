@@ -2,10 +2,11 @@
 /*!
 \file drt_function.H
 
-\brief Declaration Managing and evaluating of spatial functions
+\brief Managing and evaluating of spatial functions
+
 <pre>
-\brief Declaration
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -51,7 +52,7 @@ namespace UTILS {
 
   /*!
 
-  \brief Declaration abstract interface for spatial functions.
+  \brief abstract interface for spatial functions.
 
   Spatial functions can be defined either scalar-valued or vector-valued.
 
@@ -68,7 +69,7 @@ namespace UTILS {
 
     /*!
 
-    \brief Declaration evaluate function at given position in space
+    \brief evaluate function at given position in space
 
     \param index (i) For vector-valued functions, index defines the
                      function-component which should be evaluated
@@ -81,7 +82,7 @@ namespace UTILS {
 
     /*!
 
-    \brief Declaration evaluate derivatives function at given position in space
+    \brief evaluate derivatives function at given position in space
 
     \param index (i) For vector-valued functions, index defines the
                      function-component which should be evaluated
@@ -100,7 +101,7 @@ namespace UTILS {
 
     /*!
 
-    \brief Declaration Return the number of components of this spatial function
+    \brief Return the number of components of this spatial function
     (1 for scalar functions, dim for vector-valued functions)
 
     \return number of components
@@ -154,7 +155,7 @@ namespace UTILS {
 
     /*!
 
-      \brief Declaration evaluate function at given position in space
+      \brief evaluate function at given position in space
 
       \param index (i) index defines the function-component which will
                        be evaluated
@@ -166,7 +167,7 @@ namespace UTILS {
 
     /*!
 
-      \brief Declaration Return the number of components of this spatial function
+      \brief Return the number of components of this spatial function
       (This is a vector-valued function)
 
       \return number of components (u,v,w,p)
@@ -196,7 +197,7 @@ namespace UTILS {
 
     /*!
 
-      \brief Declaration evaluate function at given position in space
+      \brief evaluate function at given position in space
 
       \param index (i) index defines the function-component which will
                        be evaluated
@@ -208,7 +209,7 @@ namespace UTILS {
 
     /*!
 
-      \brief Declaration Return the number of components of this spatial function
+      \brief Return the number of components of this spatial function
       (This is a vector-valued function)
 
       \return number of components (u,x , u,y , u,z , v,x , v,y , v,z , w,x , w,y , w,z )
@@ -237,7 +238,7 @@ namespace UTILS {
 
     /*!
 
-      \brief Declaration evaluate function at given position in space
+      \brief evaluate function at given position in space
 
       \param index (i) index defines the function-component which will
                        be evaluated
@@ -249,7 +250,7 @@ namespace UTILS {
 
     /*!
 
-      \brief Declaration Return the number of components of this spatial function
+      \brief Return the number of components of this spatial function
       (This is a vector-valued function)
 
       \return number of components (u,v,w,p)
@@ -280,7 +281,7 @@ namespace UTILS {
 
     /*!
 
-      \brief Declaration evaluate function at given position in space
+      \brief evaluate function at given position in space
 
       \param index (i) index defines the function-component which will
                        be evaluated
@@ -292,7 +293,7 @@ namespace UTILS {
 
     /*!
 
-      \brief Declaration Return the number of components of this spatial function
+      \brief Return the number of components of this spatial function
       (This is a vector-valued function)
 
       \return number of components (u,x , u,y , u,z , v,x , v,y , v,z , w,x , w,y , w,z )
@@ -318,4 +319,3 @@ void PrintFunctionDatHeader();
 
 
 #endif
-

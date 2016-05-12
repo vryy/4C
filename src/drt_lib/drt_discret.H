@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_discret.H
 
-\brief Declaration a class to manage one discretization
+\brief Main class to manage a discretization
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -39,7 +39,7 @@ namespace IO
 }
 
 /*!
-\brief Declaration DRT: namespace of the baci discretization module
+\brief DRT: namespace of the baci discretization module
 
 */
 namespace DRT
@@ -48,7 +48,7 @@ namespace DRT
   class DofSetProxy;
 
 /*!
-\brief Declaration A class to manage a discretization in parallel
+\brief A class to manage a discretization in parallel
 
 A discretization describes a discretized physical domain including any
 boundary conditions. This is a huge concept that includes four different parts:
@@ -122,7 +122,7 @@ class Discretization
 public:
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
@@ -130,7 +130,7 @@ public:
   Discretization(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~Discretization();
@@ -138,27 +138,27 @@ public:
   //! @name Query methods
 
   /*!
-  \brief Declaration Get communicator associated with this class
+  \brief Get communicator associated with this class
   */
   virtual inline const Epetra_Comm& Comm() const {return *comm_;}
 
   /*!
-  \brief Declaration Get communicator associated with this class
+  \brief Get communicator associated with this class
   */
   virtual inline Teuchos::RCP<IO::DiscretizationWriter> Writer() const {return writer_;}
 
   /*!
-  \brief Declaration Get flag indicating whether FillComplete() has been called
+  \brief Get flag indicating whether FillComplete() has been called
   */
   virtual inline bool Filled() const {return filled_;}
 
   /*!
-  \brief Declaration Get name of this discretization
+  \brief Get name of this discretization
   */
   virtual inline const std::string& Name() const {return name_;}
 
   /*!
-  \brief Declaration Get flag indicating whether degrees of freedom where assigned
+  \brief Get flag indicating whether degrees of freedom where assigned
 
   Degrees of freedom need to be assigned using AssignDegreesOfFreedom()
   before any calculations using this discretization can be made
@@ -169,7 +169,7 @@ public:
   /// @name Dof query methods for single dof set discretizations
 
   /*!
-  \brief Declaration Get number of dofs for given node.
+  \brief Get number of dofs for given node.
 
   Ask the current DofSet for the number of dofs of this node.
   There is a variable number of DofSets and one is currently selected.
@@ -180,7 +180,7 @@ public:
   { dsassert(dofsets_.size()==1,"expect just one dof set"); return NumDof(0,node); }
 
   /*!
-  \brief Declaration Get number of dofs for given element.
+  \brief Get number of dofs for given element.
 
   Ask the current DofSet for the number of dofs of this element.
   There is a variable number of DofSets and one is currently selected.
@@ -191,7 +191,7 @@ public:
   { dsassert(dofsets_.size()==1,"expect just one dof set"); return NumDof(0,element); }
 
   /*!
-  \brief Declaration Get the gid of a dof for given node.
+  \brief Get the gid of a dof for given node.
 
   Ask the current DofSet for the gid of the dof of this node.
   There is a variable number of DofSets and one is currently selected.
@@ -203,7 +203,7 @@ public:
   { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,node,dof); }
 
   /*!
-  \brief Declaration Get the gid of a dof for given element.
+  \brief Get the gid of a dof for given element.
 
   Ask the current DofSet for the gid of the dof of this element.
   There is a variable number of DofSets and one is currently selected.
@@ -215,7 +215,7 @@ public:
   { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,element,dof); }
 
   /*!
-  \brief Declaration Get the gid of all dofs of a node.
+  \brief Get the gid of all dofs of a node.
 
   Ask the current DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
@@ -227,7 +227,7 @@ public:
   { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,node); }
 
   /*!
-  \brief Declaration Get the gid of all dofs of a element.
+  \brief Get the gid of all dofs of a element.
 
   Ask the current DofSet for the gids of the dofs of this element. The
   required vector is created and filled on the fly. So better keep it
@@ -239,7 +239,7 @@ public:
   { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,element); }
 
   /*!
-  \brief Declaration Get the gid of all dofs of a node.
+  \brief Get the gid of all dofs of a node.
 
   Ask the current DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
@@ -252,7 +252,7 @@ public:
   { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof((unsigned)0,node,lm); }
 
   /*!
-  \brief Declaration Get the gid of all dofs of a node.
+  \brief Get the gid of all dofs of a node.
 
   Ask the current DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
@@ -266,7 +266,7 @@ public:
   { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof(0,element,node,lm); }
 
   /*!
-  \brief Declaration Get the gid of all dofs of a element.
+  \brief Get the gid of all dofs of a element.
 
   Ask the current DofSet for the gids of the dofs of this element. The
   required vector is created and filled on the fly. So better keep it
@@ -279,7 +279,7 @@ public:
   { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof(0,element,lm); }
 
   /*!
-  \brief Declaration Get the gid of all dofs of a node.
+  \brief Get the gid of all dofs of a node.
 
   Ask the current DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
@@ -293,18 +293,18 @@ public:
   { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof(0,node,startindex,lm); }
 
   /*!
-  \brief Declaration Replace the dofset associated with the discretisation by a new dofset.
+  \brief Replace the dofset associated with the discretisation by a new dofset.
                  Sets havedof_ to false.
   */
   virtual void ReplaceDofSet(Teuchos::RCP<DofSet> newdofset, bool replaceinstatdofsets = false);
 
   /*!
-  \brief Declaration Get master to slave coupling in case of periodic boundary conditions
+  \brief Get master to slave coupling in case of periodic boundary conditions
   */
   virtual Teuchos::RCP<std::map<int,std::vector<int> > > GetAllPBCCoupledColNodes();
 
   /*!
-  \brief Declaration Get slave to master connectivity in case of periodic boundary conditions
+  \brief Get slave to master connectivity in case of periodic boundary conditions
   */
   virtual Teuchos::RCP<std::map<int,int > > GetPBCSlaveToMasterNodeConnectivity();
 
@@ -313,7 +313,7 @@ public:
   /// @name Dof query methods for multi dof set discretizations
 
   /*!
-  \brief Declaration Get number of dofs for given node.
+  \brief Get number of dofs for given node.
 
   Ask the current DofSet for the number of dofs of this node.
   There is a variable number of DofSets and one is currently selected.
@@ -325,7 +325,7 @@ public:
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->NumDof(node); }
 
   /*!
-  \brief Declaration Get number of dofs for given element.
+  \brief Get number of dofs for given element.
 
   Ask the current DofSet for the number of dofs of this element.
   There is a variable number of DofSets and one is currently selected.
@@ -337,7 +337,7 @@ public:
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->NumDof(element); }
 
   /*!
-  \brief Declaration Get the gid of a dof for given node.
+  \brief Get the gid of a dof for given node.
 
   Ask the current DofSet for the gid of the dof of this node.
   There is a variable number of DofSets and one is currently selected.
@@ -350,7 +350,7 @@ public:
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->Dof(node,dof); }
 
   /*!
-  \brief Declaration Get the gid of a dof for given element.
+  \brief Get the gid of a dof for given element.
 
   Ask the current DofSet for the gid of the dof of this element.
   There is a variable number of DofSets and one is currently selected.
@@ -363,7 +363,7 @@ public:
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); return dofsets_[nds]->Dof(element,dof); }
 
   /*!
-  \brief Declaration Get the gid of all dofs of a node.
+  \brief Get the gid of all dofs of a node.
 
   Ask the current DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
@@ -380,7 +380,7 @@ public:
   }
 
   /*!
-  \brief Declaration Get the gid of all dofs of a node.
+  \brief Get the gid of all dofs of a node.
 
   Ask the current DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
@@ -404,7 +404,7 @@ public:
   }
 
   /*!
-  \brief Declaration Get the gid of all dofs of a element.
+  \brief Get the gid of all dofs of a element.
 
   Ask the current DofSet for the gids of the dofs of this element. The
   required vector is created and filled on the fly. So better keep it
@@ -421,7 +421,7 @@ public:
   }
 
   /*!
-  \brief Declaration Get the gid of all dofs of a node.
+  \brief Get the gid of all dofs of a node.
 
   Ask the current DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
@@ -435,7 +435,7 @@ public:
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(node,lm); }
 
   /*!
-  \brief Declaration Get the gid of all dofs of a node.
+  \brief Get the gid of all dofs of a node.
 
   Ask the current DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
@@ -450,7 +450,7 @@ public:
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(element,node,lm); }
 
   /*!
-  \brief Declaration Get the gid of all dofs of a element.
+  \brief Get the gid of all dofs of a element.
 
   Ask the current DofSet for the gids of the dofs of this element. The
   required vector is created and filled on the fly. So better keep it
@@ -464,7 +464,7 @@ public:
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(element,lm); }
 
   /*!
-  \brief Declaration Get the gid of all dofs of a node.
+  \brief Get the gid of all dofs of a node.
 
   Ask the current DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it
@@ -479,40 +479,40 @@ public:
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(node,startindex,lm); }
 
   /*!
-  \brief Declaration Replace the dofset associated with the discretisation by a new dofset.
+  \brief Replace the dofset associated with the discretisation by a new dofset.
                  Sets havedof_ to false.
   */
   virtual void ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSet> newdofset, bool replaceinstatdofsets = false);
 
   /*!
-  \brief Declaration Add a new dofset to the discretisation.
+  \brief Add a new dofset to the discretisation.
 
   Sets havedof_ to false only if the new dofset is not properly filled yet.
   */
   virtual int AddDofSet(Teuchos::RCP<DofSet> newdofset);
 
   /*!
-  \brief Declaration Get proxy to main dof set.
+  \brief Get proxy to main dof set.
   */
   virtual Teuchos::RCP<DofSet> GetDofSetProxy();
 
   /*!
-  \brief Declaration Builds an auxiliary dof set with the given number of dofs on the respective entities
+  \brief Builds an auxiliary dof set with the given number of dofs on the respective entities
    */
   virtual int BuildDofSetAuxProxy(int numdofpernode, int numdofperelement, int numdofperface, bool indenpendentdofnumbers);
 
   /*!
-  \brief Declaration Builds an auxiliary dof set with the given number of dofs on the respective entities
+  \brief Builds an auxiliary dof set with the given number of dofs on the respective entities
    */
   virtual int BuildDofSetAuxProxy(int numdofpernode, std::vector<int> numdofperelement, int numdofperface, bool indenpendentdofnumbers);
 
   /*!
-  \brief Declaration Get proxy to main dof set for special case of partial dof sets.
+  \brief Get proxy to main dof set for special case of partial dof sets.
   */
   virtual Teuchos::RCP<DofSet> GetDofSetSubProxy();
 
   /*!
-  \brief Declaration Get degree of freedom row map (Filled()==true prerequisite)
+  \brief Get degree of freedom row map (Filled()==true prerequisite)
 
   Return ptr to degree of freedom row distribution map of this discretization.
   If it does not exist yet, build it.
@@ -524,7 +524,7 @@ public:
   virtual const Epetra_Map* DofRowMap(unsigned nds=0) const;
 
   /*!
-  \brief Declaration Get degree of freedom column map (Filled()==true prerequisite)
+  \brief Get degree of freedom column map (Filled()==true prerequisite)
 
   Return ptr to degree of freedom column distribution map of this discretization.
   If it does not exist yet, build it.
@@ -538,7 +538,7 @@ public:
   //@}
 
   /*!
-  \brief Declaration Print this discretization to os (Filled()==true NOT prerequisite)
+  \brief Print this discretization to os (Filled()==true NOT prerequisite)
          (ostream << also supported)
 
   \note This is a collective call
@@ -547,7 +547,7 @@ public:
 
 
   /*!
-  \brief Declaration Get map associated with the distribution of the ownership of nodes
+  \brief Get map associated with the distribution of the ownership of nodes
          (Filled()==true prerequisite)
 
   This map includes all nodes stored on this proc and also owned by this proc.
@@ -558,7 +558,7 @@ public:
   virtual const Epetra_Map* NodeRowMap() const;
 
   /*!
-  \brief Declaration Get map associated with the distribution of nodes including ghosted nodes
+  \brief Get map associated with the distribution of nodes including ghosted nodes
          (Filled()==true prerequisite)
 
   This map includes all nodes stored on this proc including any ghosted nodes
@@ -568,7 +568,7 @@ public:
   */
   virtual const Epetra_Map* NodeColMap() const;
   /*!
-  \brief Declaration Get map associated with the distribution of the ownership of elements
+  \brief Get map associated with the distribution of the ownership of elements
          (Filled()==true prerequisite)
 
   This map includes all elements stored on this proc and also owned by this proc.
@@ -578,7 +578,7 @@ public:
   */
   virtual const Epetra_Map* ElementRowMap() const;
   /*!
-  \brief Declaration Get map associated with the distribution of elements including ghosted elements
+  \brief Get map associated with the distribution of elements including ghosted elements
          (Filled()==true prerequisite)
 
   This map includes all elements stored on this proc including any ghosted elements
@@ -589,7 +589,7 @@ public:
   virtual const Epetra_Map* ElementColMap() const;
 
   /*!
-  \brief Declaration Get global number of elements (true number of total elements)
+  \brief Get global number of elements (true number of total elements)
          (Filled()==true prerequisite)
 
   This is a collective call
@@ -597,43 +597,43 @@ public:
   virtual int NumGlobalElements() const;
 
   /*!
-  \brief Declaration Get processor local number of elements owned by this processor
+  \brief Get processor local number of elements owned by this processor
          (Filled()==true prerequisite)
   */
   virtual int NumMyRowElements() const;
 
   /*!
-  \brief Declaration Get processor local number of elements including ghost elements
+  \brief Get processor local number of elements including ghost elements
          (Filled()==true NOT prerequisite)
   */
   virtual int NumMyColElements() const;
 
   /*!
-  \brief Declaration Get global number of nodes (true number of total nodes without ghosting)
+  \brief Get global number of nodes (true number of total nodes without ghosting)
          (Filled()==true prerequisite)
   */
   virtual int NumGlobalNodes() const;
 
   /*!
-  \brief Declaration Get processor local number of nodes owned by this processor
+  \brief Get processor local number of nodes owned by this processor
          (Filled()==true prerequisite)
   */
   virtual int NumMyRowNodes() const;
 
   /*!
-  \brief Declaration Get processor local number of nodes including ghost nodes
+  \brief Get processor local number of nodes including ghost nodes
          (Filled()==true NOT prerequisite)
   */
   virtual int NumMyColNodes() const;
 
   /*!
-  \brief Declaration Query whether an Element with global id gid is stored on this proc
+  \brief Query whether an Element with global id gid is stored on this proc
 
   */
   virtual bool HaveGlobalElement(int gid) const;
 
   /*!
-  \brief Declaration Get the element with global id gid (Filled()==true NOT prerequisite)
+  \brief Get the element with global id gid (Filled()==true NOT prerequisite)
 
   Returns the element with global row id gid if element is on this proc.
   Will return row or column element, ghosted or not.
@@ -647,7 +647,7 @@ public:
   virtual DRT::Element* gElement(int gid) const;
 
   /*!
-  \brief Declaration Get the element with local row id lid (Filled()==true prerequisite)
+  \brief Get the element with local row id lid (Filled()==true prerequisite)
 
   Returns the element with local row index lid.
   Will not return any ghosted element.
@@ -664,7 +664,7 @@ public:
   }
 
   /*!
-  \brief Declaration Get the element with local column id lid (Filled()==true prerequisite)
+  \brief Get the element with local column id lid (Filled()==true prerequisite)
 
   Returns the element with local column index lid.
   Will also return any ghosted element.
@@ -681,14 +681,14 @@ public:
   }
 
   /*!
-  \brief Declaration Query whether a Node with global id gid is stored on this proc
+  \brief Query whether a Node with global id gid is stored on this proc
          (Filled()==true NOT prerequisite)
 
   */
   virtual bool HaveGlobalNode(int gid) const;
 
   /*!
-  \brief Declaration Get the node with global row id gid (Filled()==true NOT prerequisite)
+  \brief Get the node with global row id gid (Filled()==true NOT prerequisite)
 
   Returns the node with global row id gid if node is on this proc.
   Will return row or column node, ghosted or  not.
@@ -699,7 +699,7 @@ public:
   virtual DRT::Node* gNode(int gid) const;
 
   /*!
-  \brief Declaration Get the node with local row id lid (Filled()==true prerequisite)
+  \brief Get the node with local row id lid (Filled()==true prerequisite)
 
   Returns the node with local row index lid.
   Will not return any ghosted node.
@@ -717,7 +717,7 @@ public:
   }
 
   /*!
-  \brief Declaration Get the node with local column id lid (Filled()==true prerequisite)
+  \brief Get the node with local column id lid (Filled()==true prerequisite)
 
   Returns the node with local column index lid.
   Will return any node stored on this proc.
@@ -739,7 +739,7 @@ public:
   //! @name Construction methods
 
   /*!
-  \brief Declaration Set an Epetra_Comm object which can be either
+  \brief Set an Epetra_Comm object which can be either
          Epetra_SerialComm or Epetra_MpiComm (Filled()==true NOT prerequisite)
 
   \note Sets Filled()=false
@@ -748,13 +748,13 @@ public:
   { filled_=false; comm_ = comm; return; }
 
   /*!
-  \brief Declaration Set a DiscretizationWriter
+  \brief Set a DiscretizationWriter
   */
   virtual void SetWriter(Teuchos::RCP<IO::DiscretizationWriter> writer)
   { writer_ = writer; return; }
 
   /*!
-  \brief Declaration Add an element to the discretization (Filled()==true NOT prerequisite)
+  \brief Add an element to the discretization (Filled()==true NOT prerequisite)
 
   The discretization takes ownership of the added element.
   Note that if an element with the same Id() exists, it will be
@@ -769,7 +769,7 @@ public:
   virtual void AddElement(Teuchos::RCP<DRT::Element> ele);
 
   /*!
-  \brief Declaration Add a node to the discretization  (Filled()==true NOT prerequisite)
+  \brief Add a node to the discretization  (Filled()==true NOT prerequisite)
 
   The discretization takes ownership of the added node.
   Note that if a node with the same Id() exists, it will be
@@ -784,7 +784,7 @@ public:
   virtual void AddNode(Teuchos::RCP<DRT::Node> node);
 
   /*!
-  \brief Declaration Delete an node from the discretization (Filled()==true NOT prerequisite)
+  \brief Delete an node from the discretization (Filled()==true NOT prerequisite)
 
   Delete an node from the discretization. Node can either be ghosted or not.
   If node on calling processor is not found nothing is done and false is returned.
@@ -802,7 +802,7 @@ public:
   virtual bool DeleteNode(Teuchos::RCP<DRT::Node> node);
 
   /*!
-  \brief Declaration Delete an node with global id gid from the discretization
+  \brief Delete an node with global id gid from the discretization
          (Filled()==true NOT prerequisite)
 
   Delete an node from the discretization. Node can either be ghosted or not.
@@ -821,7 +821,7 @@ public:
   virtual bool DeleteNode(const int gid);
 
   /*!
-  \brief Declaration Removes all nodes from discretization (Filled()==true NOT prerequisite)
+  \brief Removes all nodes from discretization (Filled()==true NOT prerequisite)
 
   \return Returns true upon successful deletion of all nodes
 
@@ -830,7 +830,7 @@ public:
   virtual bool DeleteNodes();
 
   /*!
-  \brief Declaration Removes all elements from discretization (Filled()==true NOT prerequisite)
+  \brief Removes all elements from discretization (Filled()==true NOT prerequisite)
 
   \return Returns true upon successful deletion of all elements
 
@@ -839,7 +839,7 @@ public:
   virtual bool DeleteElements();
 
   /*!
-  \brief Declaration Delete an element from the discretization (Filled()==true NOT prerequisite)
+  \brief Delete an element from the discretization (Filled()==true NOT prerequisite)
 
   Delete an element from the discretization. Element can either be ghosted or not.
   If element on calling processor is not found nothing is done and false is returned.
@@ -857,7 +857,7 @@ public:
   virtual bool DeleteElement(Teuchos::RCP<DRT::Element> ele);
 
   /*!
-  \brief Declaration Delete an element with global id gid from the discretization
+  \brief Delete an element with global id gid from the discretization
          (Filled()==true NOT prerequisite)
 
   Delete an element from the discretization. Element can either be ghosted or not.
@@ -876,7 +876,7 @@ public:
   virtual bool DeleteElement(const int gid);
 
   /*!
-  \brief Declaration Removes all nodes and elements from discretization (Filled()==true NOT prerequisite)
+  \brief Removes all nodes and elements from discretization (Filled()==true NOT prerequisite)
 
   \return Returns true upon successful deletion of all nodes and elements
 
@@ -885,7 +885,7 @@ public:
   virtual bool ClearDiscret();
 
   /*!
-  \brief Declaration Complete construction of a discretization  (Filled()==true NOT prerequisite)
+  \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
 
   After adding or deleting nodes or elements or redistributing them in parallel,
   or adding/deleting boundary conditions, this method has to be called to (re)construct
@@ -923,7 +923,7 @@ public:
                            bool doboundaryconditions = true);
 
   /*!
-  \brief Declaration Synchronize filled_ flag on all processors
+  \brief Synchronize filled_ flag on all processors
 
   Modifying the discretization on some processors only (e.g. using AddElement, AddNode, DeleteElement)
   may amount to filled_ == false on some processors only, but not on each processor; as one may consider
@@ -939,7 +939,7 @@ public:
   //! @name Boundary condition construction methods
 
   /*!
-  \brief Declaration Set a condition with a certain name (Filled()==false on exit)
+  \brief Set a condition with a certain name (Filled()==false on exit)
 
   Store a condition with a certain name in the discretization. The name need not
   be unique, meaning multiple conditions with the same name can be stored.
@@ -964,7 +964,7 @@ public:
   virtual void SetCondition(const std::string& name,Teuchos::RCP<Condition> cond);
 
   /*!
-  \brief Declaration Get all conditions with a certain name
+  \brief Get all conditions with a certain name
 
   Get all conditions with a certain name. A vector of ptrs to all conditions
   with name name is returned in out. The number of conditions found with name
@@ -985,7 +985,7 @@ public:
   virtual void GetCondition(const std::string& name, std::vector<Teuchos::RCP<Condition> >& out) const;
 
   /*!
-  \brief Declaration Get a condition with a certain name
+  \brief Get a condition with a certain name
 
   Returns the first condition with name name found in the multimap.
   If multiple conditions with the same name exist, the first condition is
@@ -1017,7 +1017,7 @@ public:
   //! @name Parallel (re)distribution
 
   /*!
-  \brief Declaration Redistribute the discretization according to provided maps
+  \brief Redistribute the discretization according to provided maps
          (Filled()==NOT true prerequisite)
 
   Steps taken in this method are:<br>
@@ -1048,7 +1048,7 @@ public:
                             bool killcond              =true);
 
   /*!
-    \brief Declaration Ghost elements on processors according to provided element column map
+    \brief Ghost elements on processors according to provided element column map
 
     Steps taken in this method are:<br>
     - build element maps (row and column)
@@ -1114,7 +1114,7 @@ protected:
 public:
 //-----------------------------------------------------------------------------------
   /*!
-  \brief Declaration Build element row and column map from nodal row and column maps
+  \brief Build element row and column map from nodal row and column maps
          (Filled()==true NOT prerequisite)
 
   Create a unique element map elerowmap assigning each element an owner.
@@ -1144,7 +1144,7 @@ public:
                                      ) const;
 
   /*!
-  \brief Declaration Export the nodes to a different parallel layout
+  \brief Export the nodes to a different parallel layout
          (Filled()==true NOT prerequisite)
 
   The discretization has a parallel layout of nodes reflected in NodeRowMap().
@@ -1169,7 +1169,7 @@ public:
 
 
   /*!
-  \brief Declaration Export overlap of nodes
+  \brief Export overlap of nodes
         (Filled()==true NOT prerequisite)
 
   The discretization has a parallel layout of nodes reflected in NodeRowMap().
@@ -1196,7 +1196,7 @@ public:
   virtual void ExportColumnNodes(const Epetra_Map& newmap, bool killdofs = true, bool killcond = true);
 
   /*!
-  \brief Declaration Export the elements from proc 0 to a different parallel row layout
+  \brief Export the elements from proc 0 to a different parallel row layout
         (Filled()==true NOT prerequisite)
 
   This routine is mainly useful for input read on proc 0
@@ -1208,7 +1208,7 @@ public:
   void ProcZeroDistributeElementsToAll(Epetra_Map& target, std::vector<int>& gidlist);
 
   /*!
-  \brief Declaration Export the nodes from proc 0 to a different parallel row layout
+  \brief Export the nodes from proc 0 to a different parallel row layout
         (Filled()==true NOT prerequisite)
 
   This routine is mainly useful for input read on proc 0
@@ -1219,7 +1219,7 @@ public:
   void ProcZeroDistributeNodesToAll(Epetra_Map& target);
 
   /*!
-  \brief Declaration Export the elements to a different parallel row layout
+  \brief Export the elements to a different parallel row layout
         (Filled()==true NOT prerequisite)
 
   The discretization has a parallel layout of elements reflected in ElementRowMap().
@@ -1242,7 +1242,7 @@ public:
 
 
   /*!
-  \brief Declaration Export overlap of elements
+  \brief Export overlap of elements
         (Filled()==true NOT prerequisite)
 
   The discretization has a parallel layout of elements reflected in ElementRowMap().
@@ -1268,7 +1268,7 @@ public:
   virtual void ExportColumnElements(const Epetra_Map& newmap, bool killdofs = true, bool killcond = true);
 
   /*!
-  \brief Declaration Build nodal graph of discretization (Filled()==true prerequisite)
+  \brief Build nodal graph of discretization (Filled()==true prerequisite)
 
   Build a nodal graph of the discretization in parallel.<br>
   The graph has a row map of NodeRowMap().<br>
@@ -1292,7 +1292,7 @@ public:
   //! @name Evaluate methods
 
   /*!
-  \brief Declaration Set a reference to a data vector
+  \brief Set a reference to a data vector
 
   Using this method, a reference to a vector can
   be supplied to the discretization. The elements can access
@@ -1313,7 +1313,7 @@ public:
   virtual void SetState(unsigned nds,const std::string& name,Teuchos::RCP<const Epetra_Vector> state);
 
   /*!
-  \brief Declaration Get a reference to a data vector
+  \brief Get a reference to a data vector
 
   Providing a name of a solution state, get a reference to the solution vector.
   If a vector under the provided name does not exist, the method will throw
@@ -1336,7 +1336,7 @@ public:
   }
 
   /*!
-    \brief Declaration Tell whether a state vector has been set
+    \brief Tell whether a state vector has been set
     \param nds (in): number of dofset
     \param name (in): Name of solution states
    */
@@ -1350,7 +1350,7 @@ public:
   }
 
   /*!
-  \brief Declaration Clear solution state references
+  \brief Clear solution state references
 
   The method deletes references to any solution data
   */
@@ -1366,7 +1366,7 @@ public:
   }
 
   /*!
-  \brief Declaration Set a reference to a data vector
+  \brief Set a reference to a data vector
 
   Using this method, a reference to a vector can
   be supplied to the discretization. The elements can access
@@ -1386,7 +1386,7 @@ public:
   virtual void SetState(const std::string& name,Teuchos::RCP<const Epetra_Vector> state) { SetState(0,name,state); }
 
   /*!
-  \brief Declaration Get a reference to a data vector
+  \brief Get a reference to a data vector
 
   Providing a name of a solution state, get a reference to the solution vector.
   If a vector under the provided name does not exist, the method will throw
@@ -1399,14 +1399,14 @@ public:
   virtual Teuchos::RCP<const Epetra_Vector> GetState(const std::string& name) const { return GetState(0,name); }
 
   /*!
-    \brief Declaration Tell whether a state vector has been set
+    \brief Tell whether a state vector has been set
     \param name (in): Name of solution state
    */
   virtual bool HasState(const std::string& name) const { return HasState(0,name); }
 
 
   /*!
-  \brief Declaration Export a node based Epetra_MultiVector to column layout
+  \brief Export a node based Epetra_MultiVector to column layout
          and store it in the given ParameterList
 
   Using this method, the node based vector is exported to column
@@ -1424,7 +1424,7 @@ public:
                                              Teuchos::RCP<const Epetra_MultiVector> vec);
 
   /*!
-  \brief Declaration Call elements to evaluate
+  \brief Call elements to evaluate
 
   Call element routines to perform integration and return element contributions to
   system vectors and matrices. Type of action taken by the elements is
@@ -1523,7 +1523,7 @@ public:
       );
 
   /*!
-  \brief Declaration Evaluate Neumann boundary conditions
+  \brief Evaluate Neumann boundary conditions
 
   Loop all Neumann conditions attached to the discretization and evaluate them.
   This method considers all conditions in condition_ with the names
@@ -1546,7 +1546,7 @@ public:
                                LINALG::SparseOperator* systemmatrix = NULL);
 
   /*!
-  \brief Declaration Evaluate Neumann boundary conditions
+  \brief Evaluate Neumann boundary conditions
 
   Loop all Neumann conditions attached to the discretization and evaluate them.
   This method considers all conditions in condition_ with the names
@@ -1571,7 +1571,7 @@ public:
           Teuchos::RCP<LINALG::SparseOperator> systemmatrix = Teuchos::null);
 
   /*!
-  \brief Declaration Evaluate Dirichlet boundary conditions
+  \brief Evaluate Dirichlet boundary conditions
 
   Loop all Dirichlet conditions attached to the discretization and evaluate them.
   This method considers all conditions in condition_ with the names
@@ -1610,7 +1610,7 @@ public:
                                  Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
 
   /*!
-  \brief Declaration Evaluate a specified condition
+  \brief Evaluate a specified condition
 
   Loop all conditions attached to the discretization and evaluate them.
   This method considers all conditions in condition_ with the names
@@ -1627,7 +1627,7 @@ public:
   );
 
   /*!
-  \brief Declaration Evaluate a specified condition
+  \brief Evaluate a specified condition
 
   Loop all conditions attached to the discretization and evaluate them.
   This method considers all conditions in condition_ with the names
@@ -1652,7 +1652,7 @@ public:
    );
 
   /*!
-  \brief Declaration Evaluate a specific condition
+  \brief Evaluate a specific condition
 
   Loop all conditions attached to the discretization and evaluate them.
   This method considers all conditions in condition_ with the names
@@ -1693,7 +1693,7 @@ public:
   );
 
   /*!
-  \brief Declaration Compute the nullspace of the discretization
+  \brief Compute the nullspace of the discretization
 
   This method looks in the solver parameters whether algebraic multigrid (AMG)
   is used as preconditioner. AMG desires the nullspace of the
@@ -1707,7 +1707,7 @@ public:
                                            bool recompute = false);
 
   /*!
-  \brief Declaration Compute the nullspace of the discretization
+  \brief Compute the nullspace of the discretization
 
   A given ML parameter list is filled with the nullspace that is computed within
   ComputeNullSpace()
@@ -1724,7 +1724,7 @@ public:
       );
 
   /*!
-  \brief Declaration Compute the nullspace of the discretization
+  \brief Compute the nullspace of the discretization
 
   This method computes the nullspace regardless of solver settings etc. It is
   needed for the Krylov space projection, especially to compute the rotational
@@ -1741,7 +1741,7 @@ public:
     );
 
   /*!
-   * \brief Declaration Assemble scalar quantities across elements
+   * \brief Assemble scalar quantities across elements
    *
    * Every element is only called \b once by its owning processor. (We are
    * parsing the element row map.) At this call the element return its value(s),
@@ -1757,7 +1757,7 @@ public:
   );
 
   /*!
-   * \brief Declaration Assemble scalar quantities across conditioned elements
+   * \brief Assemble scalar quantities across conditioned elements
    *
    * Every element is only called \b once by its owning processor. (We are
    * checking this inside the function.) At this call the element return its value(s),
@@ -1776,7 +1776,7 @@ public:
   );
 
   /*!
-   * \brief Declaration Assemble scalar quantities for each element separately
+   * \brief Assemble scalar quantities for each element separately
    *
    * Every element is only called \b once by its owning processor. (We are
    * parsing the element row map.) At this call the element return its value,
@@ -1792,7 +1792,7 @@ public:
   );
 
   /*!
-  \brief Declaration Evaluate a specified initial field (scalar or vector field)
+  \brief Evaluate a specified initial field (scalar or vector field)
 
   Loop all intial field conditions attached to the discretization and
   evaluate them if their names match the user-provided string fieldstring.
@@ -1815,7 +1815,7 @@ public:
   //! @name IO methods
 
   /*!
-    \brief Declaration Pack local elements (row map) into buffer.
+    \brief Pack local elements (row map) into buffer.
 
     Call Pack on all local (row map) elements and put the results into
     a common vector. This is used to output the discretization.
@@ -1825,7 +1825,7 @@ public:
   Teuchos::RCP<std::vector<char> > PackMyElements() const;
 
   /*!
-    \brief Declaration Pack local nodes (row map) into buffer.
+    \brief Pack local nodes (row map) into buffer.
 
     Call Pack on all local (row map) nodes and put the results into
     a common vector. This is used to output the discretization.
@@ -1835,7 +1835,7 @@ public:
   Teuchos::RCP<std::vector<char> > PackMyNodes() const;
 
     /*!
-    \brief Declaration Pack condition (this is done by one processor, since data is redundant).
+    \brief Pack condition (this is done by one processor, since data is redundant).
 
     Call Pack on the condition with the given name and put the results into
     a common vector. This is used to output the allow working with conditions in the post filter.
@@ -1847,7 +1847,7 @@ public:
           ) const;
 
   /*!
-    \brief Declaration Unpack element buffer and create local elements.
+    \brief Unpack element buffer and create local elements.
 
     Interprets the argument as packed elements and unpacks them on the
     local processor. Takes the ownership of the unpacked elements.
@@ -1859,7 +1859,7 @@ public:
   void UnPackMyElements(Teuchos::RCP<std::vector<char> > e);
 
   /*!
-    \brief Declaration Unpack nodal buffer and create local nodes.
+    \brief Unpack nodal buffer and create local nodes.
 
     Interprets the argument as packed nodes and unpacks them on the
     local processor. Takes the ownership of the unpacked nodes.
@@ -1871,7 +1871,7 @@ public:
   void UnPackMyNodes(Teuchos::RCP<std::vector<char> > e);
 
   /*!
-    \brief Declaration Unpack one condition.
+    \brief Unpack one condition.
 
     Interprets the argument as packed condition and unpacks them on the
     local processor. At the moment, the conditions are redundant on all processors
@@ -1886,7 +1886,7 @@ public:
   //@}
 
   /*!
-  \brief Declaration Assign degrees of freedom to discretization (Filled()==true prerequisite)
+  \brief Assign degrees of freedom to discretization (Filled()==true prerequisite)
 
   Assign nodes and elements their no. of degrees of freedom as aquired
   by Element::NumDofPerNode and Element::NumDofPerElement.
@@ -1906,7 +1906,7 @@ private:
   Discretization(const DRT::Discretization& old);
 
   /*!
-  \brief Declaration Build noderowmap_ (Filled()==true NOT prerequisite)
+  \brief Build noderowmap_ (Filled()==true NOT prerequisite)
 
   Build the parallel layout of nodes in this
   discretization and store it as an Epetra_Map in noderowmap_
@@ -1918,7 +1918,7 @@ private:
   virtual void BuildNodeRowMap();
 
   /*!
-  \brief Declaration Build nodecolmap_ (Filled()==true NOT prerequisite)
+  \brief Build nodecolmap_ (Filled()==true NOT prerequisite)
 
   Build the parallel layout of nodes in this
   discretization and store it as an Epetra_Map in nodecolmap_
@@ -1930,7 +1930,7 @@ private:
   virtual void BuildNodeColMap();
 
   /*!
-  \brief Declaration Build elerowmap_ (Filled()==true NOT prerequisite)
+  \brief Build elerowmap_ (Filled()==true NOT prerequisite)
 
   Build the parallel layout of elements in this
   discretization and store it as an Epetra_Map in elerowmap_
@@ -1943,7 +1943,7 @@ private:
   virtual void BuildElementRowMap();
 
   /*!
-  \brief Declaration Build elecolmap_ (Filled()==true NOT prerequisite)
+  \brief Build elecolmap_ (Filled()==true NOT prerequisite)
 
   Build the potentially overlapping parallel layout of elements in this
   discretization and store it as an Epetra_Map in elecolmap_
@@ -1955,26 +1955,26 @@ private:
   virtual void BuildElementColMap();
 
   /*!
-  \brief Declaration Build pointers elements -> Nodes (Filled()==true NOT prerequisite)
+  \brief Build pointers elements -> Nodes (Filled()==true NOT prerequisite)
   */
   virtual void BuildElementToNodePointers();
 
   /*!
-  \brief Declaration Build pointers Node -> Element (Filled()==true NOT prerequisite)
+  \brief Build pointers Node -> Element (Filled()==true NOT prerequisite)
 
   \note This is a collective call
   */
   virtual void BuildNodeToElementPointers();
 
   /*!
-  \brief Declaration Build pointers Element -> Element (Filled()==true NOT prerequisite)
+  \brief Build pointers Element -> Element (Filled()==true NOT prerequisite)
 
   \note This is a collective call
   */
   virtual void BuildElementToElementPointers();
 
   /*!
-  \brief Declaration Build the geometry of surfaces belonging to the structure-fluid
+  \brief Build the geometry of surfaces belonging to the structure-fluid
   volume coupling condition -> this is special since an associated volume
   conditions also needs to be considered
   */
@@ -1983,25 +1983,25 @@ private:
 protected:
 
   /*!
-  \brief Declaration Build the geometry of lines for a certain line condition
+  \brief Build the geometry of lines for a certain line condition
 
   */
   virtual bool BuildLinesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
 
   /*!
-  \brief Declaration Build the geometry of surfaces for a certain surface condition
+  \brief Build the geometry of surfaces for a certain surface condition
 
   */
   virtual bool BuildSurfacesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
 
   /*!
-  \brief Declaration Build the geometry of volumes for a certain volume condition
+  \brief Build the geometry of volumes for a certain volume condition
 
   */
   virtual bool BuildVolumesinCondition(const std::string name,Teuchos::RCP<DRT::Condition> cond);
 
   /*!
-  \brief Declaration Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)
+  \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)
 
   Resets all maps and sets flags filled_ and havedof_ to false.
 
@@ -2014,7 +2014,7 @@ protected:
   virtual void Reset() { this->Reset(true, true); }
 
   /*!
-  \brief Declaration Initialize element routines
+  \brief Initialize element routines
 
   \note InitializeElements might be called more then once!
 
@@ -2022,13 +2022,13 @@ protected:
   virtual void InitializeElements();
 
   /*!
-  \brief Declaration Build the geometry for boundary conditions
+  \brief Build the geometry for boundary conditions
 
   */
   virtual void BoundaryConditionsGeometry();
 
   /*!
-  \brief Declaration Evaluate a specified initial field (scalar or vector field)
+  \brief Evaluate a specified initial field (scalar or vector field)
 
   This is the actual evaluation method.
 
@@ -2039,7 +2039,7 @@ protected:
   );
 
   /*!
-  \brief Declaration Determine Dirichlet condition at given time and apply its
+  \brief Determine Dirichlet condition at given time and apply its
          values to a system vector
 
   \param cond            The condition object

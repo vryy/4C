@@ -2,12 +2,12 @@
 /*!
 \file drt_utils_createdis.H
 
-\brief Declaration utility functions for automatic creation of a discretization
+\brief utility functions for automatic creation of a discretization
        from an existing one (e.g. ALE from Fluid)
 
 <pre>
-\brief Declaration
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_singletondestruction.H
-\brief Declaration
+
+\brief Base class for singletons that need explicit destruction
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

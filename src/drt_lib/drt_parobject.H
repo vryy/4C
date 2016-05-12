@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_parobject.H
 
+\brief functionality to pack, unpack and communicate classes with MPI
+
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -27,7 +29,7 @@ namespace DRT
 {
 
 /*!
- \brief Declaration A virtual class with functionality to pack, unpack and communicate
+ \brief A virtual class with functionality to pack, unpack and communicate
  classes in parallel
 
  This class is used to pack information usually stored in a class in a vector<char>.
@@ -134,13 +136,13 @@ class ParObject
 public:
 
   /*!
-   \brief Declaration Standard Constructor
+   \brief Standard Constructor
 
    */
   ParObject();
 
   /*!
-   \brief Declaration Copy Constructor
+   \brief Copy Constructor
 
    Makes a deep copy of a ParObject
 
@@ -148,7 +150,7 @@ public:
   ParObject(const DRT::ParObject& old);
 
   /*!
-   \brief Declaration Destructor
+   \brief Destructor
 
    */
   virtual ~ParObject();
@@ -156,7 +158,7 @@ public:
   //! @name pure virtual Packing and Unpacking
 
   /*!
-   \brief Declaration Return unique ParObject id
+   \brief Return unique ParObject id
 
    every class implementing ParObject needs a unique id defined at the
    top of drt_parobject.H (this file) and should return it in this method.
@@ -164,7 +166,7 @@ public:
   virtual int UniqueParObjectId() const = 0;
 
   /*!
-   \brief Declaration Pack this class so it can be communicated
+   \brief Pack this class so it can be communicated
 
    Resizes the vector data and stores all information of a class in it.
    The first information to be stored in data has to be the
@@ -177,7 +179,7 @@ public:
   virtual void Pack(DRT::PackBuffer& data) const = 0;
 
   /*!
-   \brief Declaration Unpack data from a char vector into this class
+   \brief Unpack data from a char vector into this class
 
    The vector data contains all information to rebuild the
    exact copy of an instance of a class on a different processor.
@@ -197,7 +199,7 @@ public:
   //! @name Routines to help pack stuff into a char vector
 
   /*!
-   \brief Declaration Add stuff to the end of a char vector data
+   \brief Add stuff to the end of a char vector data
 
    This method is templated for all basic types int char double enum bool etc.
    \param data (in/out) : char string stuff shall be added to
@@ -227,7 +229,7 @@ public:
   static void AddtoPack(PackBuffer& data, const ParObject* obj);
 
   /*!
-   \brief Declaration Add stuff to the end of a char vector data
+   \brief Add stuff to the end of a char vector data
 
    This method is templated for std::vector<T>
    \param data (in/out) : char string stuff shall be added to
@@ -244,7 +246,7 @@ public:
   }
 
   /*!
-   \brief Declaration Add stuff to the end of a char vector data
+   \brief Add stuff to the end of a char vector data
 
    This method is templated for std::map<T,U>
    \param data (in/out) : char string stuff shall be added to
@@ -276,7 +278,7 @@ public:
   }
 
   /*!
-   \brief Declaration Add stuff to the end of a char vector data
+   \brief Add stuff to the end of a char vector data
 
    This method is templated for pairedvector<T,U>
    \param data (in/out) : char string stuff shall be added to
@@ -307,7 +309,7 @@ public:
   }
 
   /*!
-   \brief Declaration Add stuff to the end of a char vector data
+   \brief Add stuff to the end of a char vector data
 
    This method is templated for std::set<T>
    \param data (in/out) : char string stuff shall be added to
@@ -338,7 +340,7 @@ public:
   }
 
   /*!
-   \brief Declaration Add stuff to the end of a char vector data
+   \brief Add stuff to the end of a char vector data
 
    This method is an overload of the above template for Epetra_SerialDenseMatrix
    \param data (in/out) : char string stuff shall be added to
@@ -349,7 +351,7 @@ public:
       const Epetra_SerialDenseMatrix& stuff);
 
   /*!
-   \brief Declaration Add stuff to the end of a char vector data
+   \brief Add stuff to the end of a char vector data
 
    This method is an overload of the above template for Epetra_SerialDenseMatrix
    \param data (in/out) : char string stuff shall be added to
@@ -360,7 +362,7 @@ public:
       const Epetra_SerialDenseVector& stuff);
 
   /*!
-   \brief Declaration Add stuff to the end of a char vector data
+   \brief Add stuff to the end of a char vector data
 
    This method is an overload of the above template for LINALG::SerialDenseMatrix
    \param data (in/out) : char string stuff shall be added to
@@ -371,7 +373,7 @@ public:
       const LINALG::SerialDenseMatrix& stuff);
 
   /*!
-   \brief Declaration Add stuff to the end of a char vector data
+   \brief Add stuff to the end of a char vector data
 
    This method is an overload of the above template for Matrix
    \param data (in/out) : char string stuff shall be added to
@@ -387,7 +389,7 @@ public:
   }
 
   /*!
-   \brief Declaration Add stuff to the end of a char vector data
+   \brief Add stuff to the end of a char vector data
 
    This method is an overload of the above template for an STL vector containing matrices
    \param data (in/out) : char string stuff shall be added to
@@ -413,7 +415,7 @@ public:
   }
 
   /*!
-   \brief Declaration Add stuff to the end of a char vector data
+   \brief Add stuff to the end of a char vector data
 
    This method is an overload of the above template for string
    \param data (in/out) : char string stuff shall be added to
@@ -423,7 +425,7 @@ public:
   static void AddtoPack(PackBuffer& data, const std::string& stuff);
 
   /*!
-   \brief Declaration Add stuff to a char vector data
+   \brief Add stuff to a char vector data
 
    This method adds an array to data
    \param data (in/out)  : char vector stuff shall be added to
@@ -437,7 +439,7 @@ public:
   }
 
   /*!
-   \brief Declaration Extract stuff from a char vector data and increment position
+   \brief Extract stuff from a char vector data and increment position
 
    This method is templated for all basic type like int char double enum.
    To be precise, it will work for all objects where sizeof(kind) is well defined.
@@ -496,7 +498,7 @@ public:
   }
 
   /*!
-   \brief Declaration Extract stuff from a char vector data and increment position
+   \brief Extract stuff from a char vector data and increment position
 
    This method is templated for stuff of type std::vector<T>
 
@@ -518,7 +520,7 @@ public:
   }
 
   /*!
-   \brief Declaration Extract stuff from a char vector data and increment position
+   \brief Extract stuff from a char vector data and increment position
 
    This method is templated for stuff of type std::map<T,U>
 
@@ -552,7 +554,7 @@ public:
   }
 
   /*!
-   \brief Declaration Extract stuff from a char vector data and increment position
+   \brief Extract stuff from a char vector data and increment position
 
    This method is templated for stuff of type pairedvector<T,U>
 
@@ -587,7 +589,7 @@ public:
   }
 
   /*!
-   \brief Declaration Extract stuff from a char vector data and increment position
+   \brief Extract stuff from a char vector data and increment position
 
    This method is templated for stuff of type std::set<T>
 
@@ -619,7 +621,7 @@ public:
   }
 
   /*!
-   \brief Declaration Extract stuff from a char vector data and increment position
+   \brief Extract stuff from a char vector data and increment position
 
    This method is an overload of the above template for stuff of type Epetra_SerialDenseMatrix
 
@@ -632,7 +634,7 @@ public:
       const std::vector<char>& data, Epetra_SerialDenseMatrix& stuff);
 
   /*!
-   \brief Declaration Extract stuff from a char vector data and increment position
+   \brief Extract stuff from a char vector data and increment position
 
    This method is an overload of the above template for stuff of type Epetra_SerialDenseVector
 
@@ -645,7 +647,7 @@ public:
       const std::vector<char>& data, Epetra_SerialDenseVector& stuff);
 
   /*!
-   \brief Declaration Extract stuff from a char vector data and increment position
+   \brief Extract stuff from a char vector data and increment position
 
    This method is an overload of the above template for stuff of type Matrix
 
@@ -655,7 +657,7 @@ public:
 
    */
   /*!
-   \brief Declaration Extract stuff from a char vector data and increment position
+   \brief Extract stuff from a char vector data and increment position
 
    This method is an overload of the above template for stuff of type LINALG::SerialDenseMatrix
 
@@ -684,7 +686,7 @@ public:
   }
 
   /*!
-   \brief Declaration Extract stuff from a char vector data and increment position
+   \brief Extract stuff from a char vector data and increment position
 
    This method is an overload of the above template for stuff of type STL vector of matrices
 
@@ -716,7 +718,7 @@ public:
   }
 
   /*!
-   \brief Declaration Extract stuff from a char vector data and increment position
+   \brief Extract stuff from a char vector data and increment position
 
    This method is an overload of the above template for stuff of type string
 
@@ -729,7 +731,7 @@ public:
       const std::vector<char>& data, std::string& stuff);
 
   /*!
-   \brief Declaration Extract stuff from a char vector data and increment position
+   \brief Extract stuff from a char vector data and increment position
 
    This method extracts an array from data
    \param position (in/out) : place in data where to extract stuff. Position will be incremented by stuffsize

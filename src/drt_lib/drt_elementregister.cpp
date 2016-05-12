@@ -1,8 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_elementregister.cpp
-\brief Implementation
+\brief Element registration functionality
 <pre>
-\brief Implementation
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
@@ -145,4 +144,3 @@ int DRT::ElementRegister::Initialize(DRT::Discretization& dis)
   // heavily used by elements that do not need an initialize call
   return 0;
 }
-

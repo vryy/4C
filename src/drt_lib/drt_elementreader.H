@@ -2,11 +2,11 @@
 /*!
 \file drt_elementreader.H
 
-\brief Declaration Read element sections of dat files.
+\brief Read element sections of dat files.
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -33,7 +33,7 @@ namespace INPUT
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief Declaration helper class to read the elements of a discretization
+  \brief helper class to read the elements of a discretization
 
   Together with NodeReader this class constitutes a (almost) parallel
   and efficient reading mechanism for discretizations from dat files.

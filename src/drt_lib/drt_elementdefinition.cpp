@@ -2,11 +2,11 @@
 /*!
 \file drt_elementdefinition.cpp
 
-\brief Implementation Central storage of element input line definitions
+\brief Central storage of element input line definitions
 
 <pre>
-\brief Implementation
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -211,5 +211,3 @@ DRT::INPUT::LineDefinition* DRT::INPUT::ElementDefinition::ElementLines(std::str
   }
   return NULL;
 }
-
-

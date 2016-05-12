@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_conditiondefinition.H
 
+\brief Base class for all conditions
+
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

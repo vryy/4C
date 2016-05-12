@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_dserror.cpp
-\brief Implementation
+
+\brief printing error messages
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -210,5 +211,3 @@ void cpp_dserror_func(const std::string text, ...)
 {
   cpp_dserror_func(text.c_str());
 } /* end of dserror_func */
-
-

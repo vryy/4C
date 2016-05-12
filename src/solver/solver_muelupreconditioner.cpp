@@ -2,7 +2,7 @@
 /*!
 \file solver_muelupreconditioner.cpp
 
-\brief Declaration Interface class for MueLu preconditioner
+\brief Interface class for MueLu preconditioner
 
 <pre>
 \brief Declaration

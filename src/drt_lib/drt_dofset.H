@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset.H
 
-\brief Declaration A set of degrees of freedom
+\brief A set of degrees of freedom
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
 </pre>
@@ -34,7 +34,7 @@ class Discretization;
 class DofSetProxy;
 
 /*!
-\brief Declaration A set of degrees of freedom
+\brief A set of degrees of freedom
 
 \note This is an internal class of the discretization module that one
 should not need to touch on an ordinary day. It is here to support the
@@ -106,13 +106,13 @@ class DofSet: public DofSetBase
 public:
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
   */
   DofSet();
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~DofSet();
@@ -285,7 +285,7 @@ public:
   }
 
   /*!
-  \brief Declaration Print this class
+  \brief Print this class
   */
   virtual void Print(std::ostream& os) const ;
 

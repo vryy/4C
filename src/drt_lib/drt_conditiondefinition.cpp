@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_conditiondefinition.cpp
 
+\brief Implementation of base class for all conditions
+
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -1075,6 +1077,3 @@ std::ostream& DRT::INPUT::ConditionDefinition::Print(std::ostream& stream,
 
   return stream;
 }
-
-
-

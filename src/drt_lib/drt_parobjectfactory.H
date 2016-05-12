@@ -2,11 +2,11 @@
 /*!
 \file drt_parobjectfactory.H
 
-\brief Declaration Central type object management.
+\brief Central type object management.
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

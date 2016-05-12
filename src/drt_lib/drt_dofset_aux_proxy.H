@@ -2,11 +2,11 @@
 /*!
  \file drt_dofset_aux_proxy.H
 
- \brief Declaration
+ \brief A dofset that owns auxiliary dofs
 
  <pre>
-\brief Declaration
    \level 1
+
    \maintainer Anh-Tu Vuong
                http://www.lnm.mw.tum.de
                089 - 289-15251

@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_hdg.cpp
 
-\brief Implementation a class to manage an enhanced discretization including all faces for HDG
-
-
-</pre>
+\brief a class to manage an enhanced discretization including all faces for HDG
 
 <pre>
-\brief Implementation
 \level 2
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -560,4 +557,3 @@ std::ostream& operator << (std::ostream& os, const DRT::DiscretizationHDG& dis)
 
   return os;
 }
-

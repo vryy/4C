@@ -1,10 +1,10 @@
 /*!----------------------------------------------------------------------
 \file drt_utils.cpp
 
-\brief Implementation A collection of helper methods for namespace DRT
+\brief A collection of helper methods for namespace DRT
 
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

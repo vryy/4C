@@ -1,8 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_node.cpp
-\brief Implementation A virtual class for a node
+\brief A virtual class for a node
 <pre>
-\brief Implementation
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
@@ -243,4 +242,3 @@ bool DRT::Node::VisData(const std::string& name, std::vector<double>& data)
   }
   return false;
 }
-

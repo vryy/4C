@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------*/
 /*!
 \file drt_parobjectregister.cpp
-\brief Implementation
+\brief Implementation of registration of parallel objects
 \level 1
 \maintainer Martin Kronbichler
 */

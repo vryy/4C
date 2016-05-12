@@ -2,11 +2,11 @@
 /*!
  \file drt_dofset_subproxy.cpp
 
- \brief Implementation
+ \brief Implementation of subproxy for dofset
 
  <pre>
-\brief Implementation
    \level 1
+
    \maintainer Anh-Tu Vuong
                http://www.lnm.mw.tum.de
                089 - 289-15264

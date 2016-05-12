@@ -2,11 +2,11 @@
 /*!
 \file drt_condition_utils.H
 
-\brief Declaration
+\brief utils functions for conditions
 
 <pre>
-\brief Declaration
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

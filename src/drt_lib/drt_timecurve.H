@@ -2,10 +2,11 @@
 /*!
 \file drt_timecurve.H
 
-\brief Declaration Managing and evaluating of time curves
+\brief Managing and evaluating of time curves
+
 <pre>
-\brief Declaration
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_dserror.H
-\brief Declaration
+
+\brief central error printing functionality
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

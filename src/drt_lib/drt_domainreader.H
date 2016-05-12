@@ -2,11 +2,11 @@
 /*!
 \file drt_domainreader.H
 
-\brief Declaration Read domain sections of dat files.
+\brief Read domain sections of dat files.
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Karl-Robert Wichmann
             http://www.lnm.mw.tum.de
             089 - 289-15237
@@ -34,7 +34,7 @@ namespace INPUT
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief Declaration helper class to read the elements of a discretization
+  \brief helper class to read the elements of a discretization
 
   Together with NodeReader this class constitutes a (almost) parallel
   and efficient reading mechanism for discretizations from dat files.
@@ -113,7 +113,7 @@ public:
 
 protected:
 
-  /*! \brief Declaration generate elements, partition node graph, create nodes
+  /*! \brief generate elements, partition node graph, create nodes
    *
    * This method processes DOMAIN SECTIONs. It
    * 1) generates elements

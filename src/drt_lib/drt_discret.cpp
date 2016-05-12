@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_discret.cpp
 
-\brief Implementation a class to manage one discretization
+\brief a class to manage one discretization
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -925,4 +925,3 @@ void DRT::Discretization::UnPackCondition(
   }
   Reset();
 }
-

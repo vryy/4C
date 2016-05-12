@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_condition.cpp
 
-\brief Implementation A condition of any kind
+\brief A condition of any kind
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -354,5 +354,3 @@ void DRT::Condition::AdjustId(const int shift)
 
   return;
 }
-
-

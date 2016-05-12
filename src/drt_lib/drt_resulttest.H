@@ -2,11 +2,11 @@
 /*!
 \file drt_resulttest.H
 
-\brief Declaration general result test framework
+\brief general result test framework
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de/Members/kuettler
             089 - 289-15235
@@ -34,7 +34,7 @@ namespace DRT
   }
 
   /*!
-    \brief Declaration Pure virtual base class of all field test classes
+    \brief Pure virtual base class of all field test classes
 
     The idea is to have a subclass of this for every algorithm class
     that needs result testing. The Match method needs to be defined to
@@ -85,7 +85,7 @@ namespace DRT
   };
 
   /*!
-    \brief Declaration Manager class of result test framework
+    \brief Manager class of result test framework
 
     You have to create one object of this class to test the results of
     your calculation. For each field involved you will want to add a

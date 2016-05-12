@@ -2,9 +2,11 @@
 /*!
 \file drt_materialdefinition.cpp
 
+\brief Implementation of material definitions
+
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -948,4 +950,3 @@ void DRT::INPUT::AppendMaterialDefinition(
   else
     dserror("Trouble in determining coincidences of material definitions");
 }
-

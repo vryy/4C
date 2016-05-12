@@ -1,6 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_shapevalues_hdg.H
-\brief Declaration
+
+\brief evaluation of arbitrary lagrange polynomials in HDG context
 
 <pre>
 \level 2
@@ -26,7 +27,7 @@ namespace DRT
   {
 
     /*!
-    \brief Declaration helper data type to evaluate only nonzero element shape functions on face
+    \brief helper data type to evaluate only nonzero element shape functions on face
 
      Author: schoeder 10/14
     */
@@ -70,7 +71,7 @@ namespace DRT
     };
 
     /*!
-     \brief Declaration helper holding the parameters, which we need to construct a the ShapeValuesFace
+     \brief helper holding the parameters, which we need to construct a the ShapeValuesFace
     */
     struct ShapeValuesFaceParams
     {
@@ -128,7 +129,7 @@ namespace DRT
       static const unsigned int nfn_    = DRT::UTILS::DisTypeToNumNodePerFace<distype>::numNodePerFace;
 
       /*!
-      \brief Declaration Initialize the data structure for shape functions, set element-independent data
+      \brief Initialize the data structure for shape functions, set element-independent data
 
       @param degree  Degree of the polynomial
       @param completepoly  Sets whether to use a polynomial of complete degree or tensor degree (on hex); on tet, only complete degree makes sense
@@ -139,7 +140,7 @@ namespace DRT
                    const unsigned int quadratureDegree);
 
       /*!
-      \brief Declaration Compute element-dependent data, like gradients in real cell, integration weights, for element dofs
+      \brief Compute element-dependent data, like gradients in real cell, integration weights, for element dofs
       */
       void Evaluate              (const DRT::Element &ele);
 
@@ -202,18 +203,18 @@ namespace DRT
       static const unsigned int nfaces_ = DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
 
       /*!
-      \brief DeclarationConstructor which does the things which do not need to be redone for the same parameters
+      \brief Constructor which does the things which do not need to be redone for the same parameters
       */
       ShapeValuesFace(ShapeValuesFaceParams params);
 
       /*!
-      \brief Declaration Compute element-dependent data on faces, like integration weights, normal vectors, correctly oriented trace variables
+      \brief Compute element-dependent data on faces, like integration weights, normal vectors, correctly oriented trace variables
       */
       void EvaluateFace(const DRT::Element &ele,
                         const unsigned int  face);
 
       /*!
-      \brief Declaration Consider the orientation of faces for face degrees of freedom
+      \brief Consider the orientation of faces for face degrees of freedom
        */
       void AdjustFaceOrientation (const DRT::Element &ele,
                                   const unsigned int  face);
@@ -261,7 +262,7 @@ namespace DRT
     };
 
     /*!
-    \brief Declaration Cache for the face-based shape values, so we do not need to calculate again
+    \brief Cache for the face-based shape values, so we do not need to calculate again
 
      Author: schoeder 08/14
     */
@@ -286,7 +287,7 @@ namespace DRT
     };
 
     /*!
-    \brief Declaration Cache for the interior values of shape velocities
+    \brief Cache for the interior values of shape velocities
 
      Author: kronbichler 09/14
     */
@@ -314,4 +315,3 @@ namespace DRT
 }
 
 #endif
-

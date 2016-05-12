@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_container.cpp
 
-\brief Implementation A data storage container
+\brief A data storage container
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -684,4 +684,3 @@ int DRT::Container::UniqueParObjectId() const
 {
   return ContainerType::Instance().UniqueParObjectId();
 }
-

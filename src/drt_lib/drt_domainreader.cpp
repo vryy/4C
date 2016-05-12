@@ -2,11 +2,11 @@
 /*!
 \file drt_domainreader.cpp
 
-\brief Implementation Read domain sections of dat files.
+\brief Read domain sections of dat files.
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Karl-Robert Wichmann
             http://www.lnm.mw.tum.de
             089 - 289-15237

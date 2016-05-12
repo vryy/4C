@@ -2,11 +2,11 @@
 /*!
 \file drt_condition_selector.H
 
-\brief Declaration Split conditions into map extrators
+\brief Split conditions into map extrators
 
 <pre>
-\brief Declaration
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

@@ -2,7 +2,7 @@
 /*!
 \file drt_parser.cpp
 
-\brief Implementation Parser for mathematical expressions, which contain literals
+\brief Parser for mathematical expressions, which contain literals
        ('1.0', 'pi', etc) and operations ('+', '-', 'sin', etc.)
        is a templated class. Thus its methods are defined in
        drt_parser.H (otherwise binding issues).
@@ -10,7 +10,6 @@
        are declared here.
 
 <pre>
-\brief Implementation
 \level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
@@ -29,7 +28,7 @@
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Implementation method used to step through std::string funct_
+\brief method used to step through std::string funct_
        delivers its character at position pos_++
 \author u.kue
 \date 10/07
@@ -48,7 +47,7 @@ int DRT::PARSER::Lexer::GetNext()
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief Implementation Identify current token
+\brief Identify current token
        type: tok_,
        value: integer_, real_,
        operator name: str_
@@ -203,6 +202,3 @@ void DRT::PARSER::Lexer::Lexan()
     }
   }
 }
-
-
-

@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_metis.H
-\brief Declaration A collection of helper methods for namespace DRT
+
+\brief A collection of helper methods for namespace DRT
+
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -24,7 +26,7 @@ namespace UTILS
 {
 
 /*!
-\brief Declaration Partition a graph with metis
+\brief Partition a graph with metis
 
 Take an input graph with any row map and a vector of point weights with the same row
 map and redistribute the graph using the partitioning library metis.
@@ -45,7 +47,3 @@ Teuchos::RCP<Epetra_CrsGraph> PartGraphUsingMetis(const Epetra_CrsGraph& graph,
 
 
 #endif  // #ifndef UTILS_PARMETIS_H
-
-
-
-

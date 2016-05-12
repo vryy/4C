@@ -1,12 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_independent_pbc.H
 
-\brief Declaration A modified set of degrees of freedom. This class inherits from
+\brief A modified set of degrees of freedom. This class inherits from
        both the independent dofset as well as the pbc dofset.
 
 <pre>
-\brief Declaration
 \level 2
+
 \maintainer Ursula Rasthofer
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -34,7 +34,7 @@ namespace DRT
 class Discretization;
 
 /*!
-\brief Declaration A set of degrees of freedom
+\brief A set of degrees of freedom
 
 \author
 */
@@ -43,7 +43,7 @@ class IndependentPBCDofSet: public IndependentDofSet, public PBCDofSet
 public:
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
 
   <pre>
@@ -58,7 +58,7 @@ public:
   IndependentPBCDofSet(Teuchos::RCP<std::map<int,std::vector<int> > >  couplednodes);
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~IndependentPBCDofSet();

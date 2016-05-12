@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_fillcomplete.cpp
-\brief Implementation
+
+\brief Setup of discretization including assignment of degrees of freedom
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -292,5 +293,3 @@ int DRT::Discretization::AssignDegreesOfFreedom(int start)
     start = dofsets_[i]->AssignDegreesOfFreedom(*this,i,start);
   return start;
 }
-
-

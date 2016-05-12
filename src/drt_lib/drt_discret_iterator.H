@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_iterator.H
-\brief Declaration
+
+\brief An iterator class over discretization objects
 
 <pre>
-\brief Declaration
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

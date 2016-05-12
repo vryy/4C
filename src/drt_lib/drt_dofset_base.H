@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_base.H
 
-\brief Declaration A set of degrees of freedom
+\brief A set of degrees of freedom
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
 </pre>
@@ -26,7 +26,7 @@ class Discretization;
 
 
 /*!
-\brief Declaration Base class set of degrees of freedom
+\brief Base class set of degrees of freedom
 
 \note This is a pure virtual class all classes managing sets of degrees of freedom
 should inherit from. This base class only manages the static list, all DofSets are
@@ -40,13 +40,13 @@ class DofSetBase
 public:
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
   */
   DofSetBase();
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~DofSetBase();

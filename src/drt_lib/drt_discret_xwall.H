@@ -1,11 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file drt_discret_xwall.H
-\brief Declaration a class to manage an enhanced discretization including varying number of dofs per node on a fluid discretization for xwall
+
+\brief a class to manage an enhanced discretization including varying number of dofs per node on a fluid discretization for xwall
 
 <pre>
-\brief Declaration
 \level 2
+
 \maintainer Benjamin Krank
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -26,7 +27,7 @@
 
 
 /*!
-\brief Declaration DRT: namespace of the baci discretization module
+\brief DRT: namespace of the baci discretization module
 
 */
 namespace DRT
@@ -37,7 +38,7 @@ class DiscretizationXWall : public DiscretizationFaces
 public:
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
@@ -45,7 +46,7 @@ public:
   DiscretizationXWall(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~DiscretizationXWall()
@@ -54,7 +55,7 @@ public:
   };
 
   /*!
-  \brief Declaration Get the gid of all dofs of a node.
+  \brief Get the gid of all dofs of a node.
 
   Ask the current DofSet for the gids of the dofs of this node. The
   required vector is created and filled on the fly. So better keep it

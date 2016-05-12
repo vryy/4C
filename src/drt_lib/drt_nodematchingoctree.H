@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_nodematchingoctree.H
-\brief Declaration connect nodes from two nodesets by their distance
 
+\brief connect nodes from two nodesets by their distance
 
 <pre>
-\brief Declaration
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -35,7 +35,7 @@ public:
 
   /*!
 
-  \brief Declaration Standard Constructor (public)
+  \brief Standard Constructor (public)
 
   <pre>
 
@@ -79,7 +79,7 @@ public:
     );
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~NodeMatchingOctree();
@@ -90,7 +90,7 @@ public:
 
   /*!
 
-  \brief Declaration Search for closest (slave) nodes on all procs
+  \brief Search for closest (slave) nodes on all procs
 
   <pre>
 
@@ -196,13 +196,13 @@ protected:
 
 private:
 
-  //! \brief Declaration all nodes in leafs are nodes of this discretization
+  //! \brief all nodes in leafs are nodes of this discretization
   const DRT::Discretization&       discret_;
-  //! \brief Declaration order of magnitude of smallest element size (used for tolerances)
+  //! \brief order of magnitude of smallest element size (used for tolerances)
   const double                     tol_;
-  //! \brief Declaration root of the local search tree
+  //! \brief root of the local search tree
   Teuchos::RCP<OctreeElement>      octreeroot_;
-  //! \brief Declaration coordinate of one point in the master plane
+  //! \brief coordinate of one point in the master plane
   std::vector <double>             masterplanecoords_;
 }; // class NodeMatchingOctree
 
@@ -216,7 +216,7 @@ public:
 
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
   <pre>
 
@@ -253,7 +253,7 @@ public:
     );
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~OctreeElement();
@@ -262,7 +262,7 @@ public:
   //! @name Octree element functions
 
   /*!
-  \brief Declaration Question if coordinate is in bounding box
+  \brief Question if coordinate is in bounding box
 
   <pre>
 
@@ -280,7 +280,7 @@ public:
     );
 
   /*!
-  \brief Declaration Question if octree element is leaf
+  \brief Question if octree element is leaf
 
   <pre>
 
@@ -295,7 +295,7 @@ public:
   bool IsLeaf();
 
   /*!
-  \brief Declaration Return child containing point
+  \brief Return child containing point
 
   <pre>
 
@@ -316,7 +316,7 @@ public:
     );
 
   /*!
-  \brief Declaration Find closest point in leaf
+  \brief Find closest point in leaf
 
   <pre>
 
@@ -368,17 +368,17 @@ protected:
 
 private:
 
-  //! \brief Declaration all nodes belong to this discretisation
+  //! \brief all nodes belong to this discretisation
   const DRT::Discretization&       discret_;
-  //! \brief Declaration the bounding box of the element
+  //! \brief the bounding box of the element
   Epetra_SerialDenseMatrix         boundingbox_;
-  //! \brief Declaration the nodeids
+  //! \brief the nodeids
   std::vector <int>                nodeids_;
-  //! \brief Declaration depth of the octree element in the tree
+  //! \brief depth of the octree element in the tree
   int                              layer_;
-  //! \brief Declaration  pointer to first child
+  //! \brief  pointer to first child
   Teuchos::RCP<OctreeElement>       octreechild1_;
-  //! \brief Declaration  pointer to second child
+  //! \brief  pointer to second child
   Teuchos::RCP<OctreeElement>       octreechild2_;
 
 }; // class OctreeElement
@@ -387,4 +387,3 @@ private:
 }
 
 #endif  // not NODEMATCHINGOCTREE_H
-

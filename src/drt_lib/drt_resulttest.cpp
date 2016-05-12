@@ -2,11 +2,11 @@
 /*!
 \file drt_resulttest.cpp
 
-\brief Implementation general result test framework
+\brief Implementation of general result test framework
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -51,7 +51,7 @@ void DRT::ResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, in
 
 /*----------------------------------------------------------------------*/
 /*!
- \brief Implementation Compare \a actresult with \a givenresult and return 0 if they are
+ \brief Compare \a actresult with \a givenresult and return 0 if they are
  considered to be equal.
 
  Compare \a actresult with \a givenresult and return 0 if they are

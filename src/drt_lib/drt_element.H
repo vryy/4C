@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_element.H
 
-\brief Declaration
+\brief Base class of all elements used in BACI
 \level 0
 \maintainer Martin Kronbichler
 
@@ -51,7 +51,7 @@ namespace ELEMENTS
   class FaceElement;
 
 /*!
-\brief Declaration A virtual class all elements that are used in DRT have to implement
+\brief A virtual class all elements that are used in DRT have to implement
 
 This is the pure virtual base class for all finite elements to be used with
 the DRT::Discretization. Every element (and boundary condition) to be used
@@ -76,7 +76,7 @@ public:
   template <typename> friend class MESHFREE::MeshfreeBin;
 
   /*!
-   \brief Declaration Element shape type
+   \brief Element shape type
   */
   enum DiscretizationType
   {
@@ -188,7 +188,7 @@ public:
   //! @name Constructors and destructors and related methods
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
   \param id    (in): A globally unique element id
   \param owner (in): owner processor of the element
@@ -196,7 +196,7 @@ public:
   Element(int id, int owner);
 
   /*!
-  \brief Declaration Copy Constructor
+  \brief Copy Constructor
 
   Makes a deep copy of a Element
 
@@ -204,13 +204,13 @@ public:
   Element(const DRT::Element& old);
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~Element();
 
   /*!
-  \brief Declaration Deep copy the derived class and return pointer to it
+  \brief Deep copy the derived class and return pointer to it
 
   This method is sort of a copy constructor for a class derived from Element.
   It allows to copy construct the derived class without knowing what it
@@ -221,7 +221,7 @@ public:
 
 
   /*!
-  \brief Declaration Return unique ParObject id
+  \brief Return unique ParObject id
 
   Every class implementing ParObject needs a unique id defined at the
   top of drt_parobject.H
@@ -229,7 +229,7 @@ public:
   virtual int UniqueParObjectId() const = 0;
 
   /*!
-  \brief Declaration Pack this class so it can be communicated
+  \brief Pack this class so it can be communicated
 
   \ref Pack and \ref Unpack are used to communicate this element
 
@@ -237,7 +237,7 @@ public:
   virtual void Pack(DRT::PackBuffer& data) const;
 
   /*!
-  \brief Declaration Unpack data from a char vector into this class
+  \brief Unpack data from a char vector into this class
 
   \ref Pack and \ref Unpack are used to communicate this element
 
@@ -252,32 +252,32 @@ public:
   //! @name Query methods
 
   /*!
-  \brief Declaration Return global id of this element
+  \brief Return global id of this element
   */
   int Id() const { return id_; }
 
   /*!
-  \brief Declaration Return processor local col map id
+  \brief Return processor local col map id
   */
   virtual int LID() const { return lid_; }
 
   /*!
-  \brief Declaration Return owner of this element
+  \brief Return owner of this element
   */
   virtual int Owner() const { return owner_; }
 
   /*!
-  \brief Declaration Get shape type of element
+  \brief Get shape type of element
   */
   virtual DiscretizationType Shape() const = 0;
 
   /*!
-  \brief Declaration Return number of nodes to this element
+  \brief Return number of nodes to this element
   */
   virtual int NumNode() const { return nodeid_.size(); }
 
   /*!
-   * \brief Declaration Return number of points forming the geometry of this element
+   * \brief Return number of points forming the geometry of this element
    *
    * For finite elements, this is equal to NumNodes(). Needed for meshfree
    * discretization where the integration cell (i.e. the "element") is not
@@ -286,22 +286,22 @@ public:
   virtual int NumPoint() const { return nodeid_.size(); }
 
   /*!
-  \brief Declaration Return number of lines to this element
+  \brief Return number of lines to this element
   */
   virtual int NumLine() const {return 0;}
 
   /*!
-  \brief Declaration Return number of surfaces to this element
+  \brief Return number of surfaces to this element
   */
   virtual int NumSurface() const {return 0;}
 
   /*!
-  \brief Declaration Return number of volumes to this element
+  \brief Return number of volumes to this element
   */
   virtual int NumVolume() const {return 0;}
 
   /*!
-   * \brief Declaration Return the number of faces to the element.
+   * \brief Return the number of faces to the element.
    *
    * As opposed to NumLine(), NumSurface(), etc which have fixed dimension,
    * this is always the object one dimension less than the element dimension.
@@ -309,13 +309,13 @@ public:
   virtual int NumFace() const;
 
   /*!
-  \brief Declaration Return id's of nodes adjacent to this element
+  \brief Return id's of nodes adjacent to this element
   */
   virtual const int* NodeIds() const
   { if (nodeid_.size()) return &nodeid_[0]; else                return NULL; }
 
   /*!
-  \brief Declaration Get vector of ptrs to nodes
+  \brief Get vector of ptrs to nodes
 
   \warning The pointers to the nodes are build in
            DRT::Discretization::FillComplete. A standalone
@@ -334,7 +334,7 @@ public:
   //{ return node_; }
 
   /*!
-  \brief Declaration Get const vector of ptrs to nodes
+  \brief Get const vector of ptrs to nodes
 
   \warning The pointers to the nodes are build in
            DRT::Discretization::FillComplete. A standalone
@@ -349,7 +349,7 @@ public:
   { if (node_.size()) return (const DRT::Node*const*)(&node_[0]); else return NULL; }
 
   /*!
-   * \brief Declaration Return id's of points forming the geometry of this element
+   * \brief Return id's of points forming the geometry of this element
    *
    * For finite elements, this is equal to NodeIds(). Needed for meshfree
    * discretization where the integration cell (i.e. the "element") is not
@@ -359,7 +359,7 @@ public:
   { return NodeIds();}
 
   /*!
-   * \brief Declaration Get vector of ptrs to points forming the geometry of this element
+   * \brief Get vector of ptrs to points forming the geometry of this element
    *
    * For finite elements, this is equal to Nodes(). Needed for meshfree
    * discretization where the integration cell (i.e. the "element") is not
@@ -369,7 +369,7 @@ public:
   { return Nodes();}
 
   /*!
-   * \brief Declaration Get const vector of ptrs to points forming the geometry of this element
+   * \brief Get const vector of ptrs to points forming the geometry of this element
    *
    * For finite elements, this is equal to Nodes() const. Needed for meshfree
    * discretization where the integration cell (i.e. the "element") is not
@@ -380,7 +380,7 @@ public:
 
 
   /*!
-  \brief Declaration Get vector of Teuchos::RCPs to the lines of this element
+  \brief Get vector of Teuchos::RCPs to the lines of this element
 
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
@@ -402,7 +402,7 @@ public:
   //virtual const Element*const* Lines() const { dserror("unexpected base method called."); return NULL; }
 
   /*!
-  \brief Declaration Get vector of Teuchos::RCPs to the surfaces of this element
+  \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
@@ -422,7 +422,7 @@ public:
   }
 
   /*!
-  \brief Declaration Get vector of Teuchos::RCPs to the volumes of this element
+  \brief Get vector of Teuchos::RCPs to the volumes of this element
 
   This is a base class dummy routine that always returns NULL.
   The derived element class is expected to allocate and store
@@ -442,20 +442,20 @@ public:
   }
 
   /*!
-  \brief Declaration Set whether the given element is a nurbs element
+  \brief Set whether the given element is a nurbs element
   */
   virtual bool& SetNurbsElement()
   { return isNurbs_; }
 
 
   /*!
-  \brief Declaration Get whether the given element is a nurbs element
+  \brief Get whether the given element is a nurbs element
   */
   virtual bool IsNurbsElement() const
   { return isNurbs_; }
 
   /*!
-  \brief Declaration Returns whether the given element actually is a face element with degrees of freedom living there
+  \brief Returns whether the given element actually is a face element with degrees of freedom living there
   */
   virtual bool IsFaceElement() const
   {
@@ -463,7 +463,7 @@ public:
   }
 
   /*!
-  \brief Declaration Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or Surfaces)
+  \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or Surfaces)
   */
   DRT::FaceElement** Faces()
   {
@@ -471,7 +471,7 @@ public:
   }
 
   /*!
-  \brief Declaration Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or Surfaces)
+  \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or Surfaces)
   */
   const DRT::FaceElement*const * Faces() const
   {
@@ -479,12 +479,12 @@ public:
   }
 
   /*!
-  \brief Declaration Get a pointer to the neighboring element behind the given face. Returns 0 if at boundary or faces are not created
+  \brief Get a pointer to the neighboring element behind the given face. Returns 0 if at boundary or faces are not created
   */
   DRT::Element* Neighbor(const int face) const;
 
   /*!
-  \brief Declaration Construct a face element between this element and the given slave element
+  \brief Construct a face element between this element and the given slave element
 
   This is a base class routine that constructs a plain element without association to physics,
   containing only the geometry and topology information. A surface/line element is created
@@ -513,7 +513,7 @@ public:
 
 
   /*!
-  \brief Declaration Get nodal connectivity and weights for nodes
+  \brief Get nodal connectivity and weights for nodes
 
   The method is used to build the connectivity between all the nodes adjacent
   to this element and how expensive its evaluation is
@@ -524,14 +524,14 @@ public:
   virtual void NodalConnectivity(Epetra_SerialDenseMatrix& edgeweights, Epetra_SerialDenseVector& nodeweights);
 
   /*!
-  \brief Declaration Return value how expensive it is to evaluate this element
+  \brief Return value how expensive it is to evaluate this element
 
   \param double (out): cost to evaluate this element
   */
   virtual double EvaluationCost() { return 10.0; }
 
   /*!
-  \brief Declaration Get number of degrees of freedom of a certain node
+  \brief Get number of degrees of freedom of a certain node
 
   The element decides how many degrees of freedom its nodes must have.
   As this may vary along a simulation, the element can redecide the
@@ -550,7 +550,7 @@ public:
   }
 
   /*!
-  \brief Declaration Get number of degrees of freedom per face
+  \brief Get number of degrees of freedom per face
 
   The element decides how many element degrees of freedom it has.
   It can redecide along the way of a simulation.
@@ -571,7 +571,7 @@ public:
   }
 
   /*!
-  \brief Declaration Get number of degrees of freedom per component
+  \brief Get number of degrees of freedom per component
 
   This is especially important for face elements in HDG discretizations: Since
   the trace field can be in terms of a scalar quantity, e.g. the pressure, or in terms
@@ -587,7 +587,7 @@ public:
   }
 
   /*!
-  \brief Declaration Get the degree of an element
+  \brief Get the degree of an element
 
   The element can have variable degree, in case of HDG discretizations.
   HDG elements implement this functions, standard elements return the degree
@@ -597,7 +597,7 @@ public:
 
 
   /*!
-  \brief Declaration Get number of degrees of freedom per element
+  \brief Get number of degrees of freedom per element
 
   The element decides how many element degrees of freedom it has.
   It can redecide along the way of a simulation.<br>
@@ -618,7 +618,7 @@ public:
   }
 
   /*!
-  \brief Declaration Print this element
+  \brief Print this element
 
   Prints basic information about this element to ostream. This method would
   usually be called by the print method of a derived class.
@@ -626,7 +626,7 @@ public:
   virtual void Print(std::ostream& os) const;
 
   /*!
-  \brief Declaration Return the material of this element
+  \brief Return the material of this element
 
   Note: The input parameter nummat is not the material number from input file
         as in SetMaterial(int matnum), but the number of the material within
@@ -641,7 +641,7 @@ public:
   }
 
   /*!
-  \brief Declaration Check whether the element has only ghost nodes
+  \brief Check whether the element has only ghost nodes
 
   Note: If the element has only ghost nodes, the element will not be allowed
         to assemble in any global vectors or matrixes, and, hence, can be
@@ -654,7 +654,7 @@ public:
   virtual bool HasOnlyGhostNodes(const int mypid) const;
 
   /*!
-  \brief Declaration Query names of element data to be visualized using BINIO
+  \brief Query names of element data to be visualized using BINIO
 
   This method is to be overloaded by a derived class.
   The element is supposed to fill the provided map with key names of
@@ -677,7 +677,7 @@ public:
   { return; }
 
   /*!
-  \brief Declaration Visuzalize the owner of the element using BINIO
+  \brief Visuzalize the owner of the element using BINIO
 
   \param names (out): Owner is added to the key names
   */
@@ -688,7 +688,7 @@ public:
     return; }
 
   /*!
-  \brief Declaration Query data to be visualized using BINIO of a given name
+  \brief Query data to be visualized using BINIO of a given name
 
   This method is to be overloaded by a derived method.
   The derived method is supposed to call this base method to visualize the owner of
@@ -724,26 +724,26 @@ public:
   //! @name Construction
 
   /*!
-  \brief Declaration Set global id of this element
+  \brief Set global id of this element
   */
   void SetId(const int id) { id_ = id; }
 
   /*!
-  \brief Declaration Read input for this element
+  \brief Read input for this element
   */
   virtual bool ReadElement(const std::string& eletype,
                            const std::string& distype,
                            DRT::INPUT::LineDefinition* linedef);
 
   /*!
-    \brief Declaration Set processor local col id
+    \brief Set processor local col id
 
     \param lid: processor local col id
    */
   void SetLID(int lid) { lid_ = lid; }
 
   /*!
-  \brief Declaration Set ownership
+  \brief Set ownership
 
   This method is used by the DRT::Discretiztion to change the ownership of
   an element that got communicated from one processor to another.
@@ -758,7 +758,7 @@ public:
   void SetOwner(const int owner) { owner_ = owner; }
 
   /*!
-  \brief Declaration Set a list of node ids this element is connected to
+  \brief Set a list of node ids this element is connected to
 
   Sets the nodal ids of the nodes adjacent to this element and the number
   of nodes. This method is used in the construction phase of a discretization.
@@ -772,14 +772,14 @@ public:
   void SetNodeIds(const int nnode, const int* nodes);
 
   /*!
-  \brief Declaration Set a list of node ids this element is connected to
+  \brief Set a list of node ids this element is connected to
 
   Here the node ids are directly taken from an input line.
   */
   void SetNodeIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef);
 
   /*!
-  \brief Declaration Set a the face with index faceindex this element is connected to
+  \brief Set a the face with index faceindex this element is connected to
 
   Sets the face pointer of the face adjacent to this element, using NumFace() as
   number of faces. This method is used in the construction phase of a discretization.
@@ -830,7 +830,7 @@ public:
   //! @name Conditions
 
   /*!
-  \brief Declaration Set a condition with a certain name
+  \brief Set a condition with a certain name
 
   Store a condition with a certain name in the element. The name need not
   be unique, meaning multiple conditions with the same name can be stored.
@@ -847,7 +847,7 @@ public:
   { condition_.insert(std::pair<std::string,Teuchos::RCP<Condition> >(name,cond)); return; }
 
   /*!
-  \brief Declaration Get all conditions with a certain name
+  \brief Get all conditions with a certain name
 
   Get all conditions with a certain name. A vector of ptrs to all conditions
   with name name is returned in out. The number of conditions found with name
@@ -860,7 +860,7 @@ public:
   virtual void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
 
   /*!
-  \brief Declaration Get a condition with a certain name
+  \brief Get a condition with a certain name
 
   Returns the first condition with name name found in the multimap.
   If multiple conditions with the same name exist, the first condition with
@@ -875,7 +875,7 @@ public:
   virtual DRT::Condition* GetCondition(const std::string& name) const;
 
   /*!
-  \brief Declaration Delete all conditions set to this element
+  \brief Delete all conditions set to this element
   */
   virtual void ClearConditions() { condition_.clear(); return; }
 
@@ -884,7 +884,7 @@ public:
   //! @name Evaluation methods
 
   /*!
-  \brief Declaration Return the location vector of this element
+  \brief Return the location vector of this element
 
   Extended version that features a nodal dof set (nds) array. Each node might
   have multiple sets of (physical) dofs. That is the actual number of dofs at
@@ -913,7 +913,7 @@ public:
                                bool doDirichlet ) const;
 
   /*!
-  \brief Declaration Return the location vector of this element
+  \brief Return the location vector of this element
 
   The method computes degrees of freedom this element adresses.
   Degree of freedom ordering is as follows:<br>
@@ -940,7 +940,7 @@ public:
 
 
   /*!
-  \brief Declaration Return the location vector of this element
+  \brief Return the location vector of this element
 
   The method computes degrees of freedom this element adresses.
   Degree of freedom ordering is as follows:<br>
@@ -977,7 +977,7 @@ public:
                               Teuchos::ParameterList& params
                               ) const;
   /*!
-  \brief Declaration Return the location vector of this element
+  \brief Return the location vector of this element
 
   The method computes degrees of freedom this element adresses.
   Degree of freedom ordering is as follows:<br>
@@ -1009,7 +1009,7 @@ public:
                               std::vector<int>& lmowner, std::vector<int>& lmstride) const;
 
   /*!
-  \brief Declaration Return the location vector of this element
+  \brief Return the location vector of this element
 
   The method computes degrees of freedom this element adresses.
   Degree of freedom ordering is as follows:<br>
@@ -1038,7 +1038,7 @@ public:
       std::vector<int>& lmowner, std::vector<int>& lmstride) const;
 
   /*!
-  \brief Declaration Evaluate an element
+  \brief Evaluate an element
 
   An element derived from this class uses the Evaluate method to receive commands
   and parameters from some control routine in params and evaluates element matrices and
@@ -1073,7 +1073,7 @@ public:
                        Epetra_SerialDenseVector& elevec3);
 
   /*!
-  \brief Declaration Evaluate an element
+  \brief Evaluate an element
 
   An element derived from this class uses the Evaluate method to receive commands
   and parameters from some control routine in params and evaluates element matrices and
@@ -1108,7 +1108,7 @@ public:
                        Epetra_SerialDenseVector& elevec3);
 
   /*!
-  \brief Declaration Evaluate a Neumann boundary condition
+  \brief Evaluate a Neumann boundary condition
 
   An element derived from this class uses the EvaluateNeumann method to receive commands
   and parameters from some control routine in params and evaluates a Neumann boundary condition
@@ -1140,7 +1140,7 @@ public:
   //! @name Public methods to be used by DRT::Discretization only
 
   /*!
-  \brief Declaration Build pointer vector from map of nodes
+  \brief Build pointer vector from map of nodes
 
   \warning (public, but to be used by DRT::Discretization ONLY!)
 
@@ -1153,7 +1153,7 @@ public:
   virtual bool BuildNodalPointers(std::map<int,Teuchos::RCP<DRT::Node> >& nodes);
 
   /*!
-  \brief Declaration Build pointer vector from vector of nodal pointers
+  \brief Build pointer vector from vector of nodal pointers
 
   \warning (public, but to be used by DRT::Discretization ONLY!)
 
@@ -1167,7 +1167,7 @@ public:
   virtual bool BuildNodalPointers(DRT::Node** nodes);
 
   /*!
-  \brief Declaration Build pointer vector from map of elements
+  \brief Build pointer vector from map of elements
 
   \warning (public, but to be used by DRT::Discretization ONLY!)
 
@@ -1185,7 +1185,7 @@ public:
 
   /// @name Parameter interface access and management functions
   /// @{
-  /** \brief Declaration set the interface ptr for the elements
+  /** \brief set the interface ptr for the elements
    *
    *  \param p (in): Parameter list coming from the time integrator.
    *
@@ -1194,14 +1194,14 @@ public:
   virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p)
   { /* This is a dummy function. Please implement the function in the derived classes, if necessary. */ };
 
-  /** \brief Declaration returns true if the interface is defined and initialized, otherwise false
+  /** \brief returns true if the interface is defined and initialized, otherwise false
    *
    *  \author hiermeier
    *  \date 04/16 */
   virtual inline bool IsParamsInterface() const
   { /* dummy implementation */ return false; }
 
-  /** \brief Declaration get access to the interface pointer
+  /** \brief get access to the interface pointer
    *
    *  \author hiermeier
    *  \date 04/16 */
@@ -1213,31 +1213,31 @@ public:
 private:
 
   /*!
-  \brief Declaration Default Constructor must not be called
+  \brief Default Constructor must not be called
 
   */
   Element(){ dserror("Default constructor of DRT::Element must not be called. Due to virtual"
       "inheritance from DRT::Element it can be necessary to call the non-default constructor explicitly."); }
 
-  //! \brief Declaration A unique global element id
+  //! \brief A unique global element id
   int id_;
 
   //! local col map id
   int lid_;
 
-  //! \brief Declaration owner processor of this element
+  //! \brief owner processor of this element
   int owner_;
 
-  //! \brief Declaration List of my nodal ids, length NumNode()
+  //! \brief List of my nodal ids, length NumNode()
   std::vector<int> nodeid_;
 
-  //! \brief Declaration Pointers to adjacent nodes in element local ordering
+  //! \brief Pointers to adjacent nodes in element local ordering
   std::vector<DRT::Node*> node_;
 
-  //! \brief Declaration List of my faces, length NumFace(). Only filled if face elements are created, when using DiscretizationFaces
+  //! \brief List of my faces, length NumFace(). Only filled if face elements are created, when using DiscretizationFaces
   std::vector<DRT::FaceElement*> face_;
 
-  //! \brief Declaration Some conditions e.g. BCs
+  //! \brief Some conditions e.g. BCs
   std::multimap<std::string,Teuchos::RCP<Condition> > condition_;
 
   //! vector of material objects of element
@@ -1250,7 +1250,7 @@ private:
 
 
 /*!
-\brief Declaration A virtual class all face elements that are used in DRT have to implement
+\brief A virtual class all face elements that are used in DRT have to implement
 
 This is the base class for all face elements. Every element that is attached to another
 (parent) element needs to implement this class, in particular boundary elements used for
@@ -1271,7 +1271,7 @@ class FaceElement : public Element
 {
 public:
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
   \param id    (in): A globally unique element id
   \param owner (in): owner processor of the element
@@ -1279,12 +1279,12 @@ public:
   FaceElement(int id, int owner);
 
   /*!
-  \brief Declaration Copy Constructor
+  \brief Copy Constructor
   */
   FaceElement(const FaceElement &old);
 
   /*!
-  \brief Declaration Pack this class so it can be communicated
+  \brief Pack this class so it can be communicated
 
   \ref Pack and \ref Unpack are used to communicate this face element
 
@@ -1292,7 +1292,7 @@ public:
   virtual void Pack(DRT::PackBuffer& data) const;
 
   /*!
-  \brief Declaration Unpack data from a char vector into this class
+  \brief Unpack data from a char vector into this class
 
   \ref Pack and \ref Unpack are used to communicate this face element
 
@@ -1300,7 +1300,7 @@ public:
   virtual void Unpack(const std::vector<char>& data);
 
   /*!
-  \brief Declaration Returns whether the given element actually is a face element with degrees of freedom living there
+  \brief Returns whether the given element actually is a face element with degrees of freedom living there
   */
   virtual bool IsFaceElement() const
   {
@@ -1308,7 +1308,7 @@ public:
   }
 
   /*!
-  \brief Declaration Return the parent element id the face element is connected to (for interior faces, the parent master element).
+  \brief Return the parent element id the face element is connected to (for interior faces, the parent master element).
 
   If no parent master has been assigned, -1 is returned (e.g. on non-face discretizations)
 
@@ -1320,7 +1320,7 @@ public:
   }
 
   /*!
-  \brief Declaration Return the parent element the face element is connected to (for interior faces, the parent master element).
+  \brief Return the parent element the face element is connected to (for interior faces, the parent master element).
 
   If no parent master has been assigned, NULL is returned (e.g. on non-face discretizations)
   */
@@ -1330,7 +1330,7 @@ public:
   }
 
   /*!
-  \brief Declaration Return the master element the face element is connected to
+  \brief Return the master element the face element is connected to
 
   If no parent master has been assigned, NULL is returned (e.g. on non-face discretizations)
   */
@@ -1340,7 +1340,7 @@ public:
   }
 
   /*!
-  \brief Declaration Return the slave element the face element is connected to
+  \brief Return the slave element the face element is connected to
 
   If no parent slave has been assigned, NULL is returned (non-face discretizations, boundary faces)
   */
@@ -1350,7 +1350,7 @@ public:
   }
 
   /*!
-   \brief Declaration Get the index of a face element within the parent element
+   \brief Get the index of a face element within the parent element
    */
   int FaceParentNumber () const
   {
@@ -1359,7 +1359,7 @@ public:
   }
 
   /*!
-   \brief Declaration Get the index of a face element within the parent master element
+   \brief Get the index of a face element within the parent master element
    */
   int FaceMasterNumber () const
   {
@@ -1368,7 +1368,7 @@ public:
   }
 
   /*!
-   \brief Declaration Get the index of a face element within the parent slave element
+   \brief Get the index of a face element within the parent slave element
    */
   int FaceSlaveNumber() const
   {
@@ -1377,7 +1377,7 @@ public:
   }
 
   /*!
-  \brief Declaration return a tranformation for the face's nodes between the local coordinate systems of the
+  \brief return a tranformation for the face's nodes between the local coordinate systems of the
          face w.r.t the master parent element's face's coordinate system and the slave element's
          face's coordinate system
 
@@ -1389,7 +1389,7 @@ public:
   }
 
   /*!
-  \brief Declaration Set the master element this face element is connected to
+  \brief Set the master element this face element is connected to
 
   Sets the pointers of the main parent element adjacent to the current face.
   This method is used in the construction phase of a discretization.
@@ -1411,7 +1411,7 @@ public:
 protected:
 
   /*!
-  \brief Declaration Set the slave element this face element is connected to
+  \brief Set the slave element this face element is connected to
 
   Sets the pointers of the second parent element adjacent to the current face.
   This method is used in the construction phase of a discretization.
@@ -1428,7 +1428,7 @@ protected:
   }
 
   /*!
-  \brief Declaration Set the slave element this face element is connected to
+  \brief Set the slave element this face element is connected to
 
   Sets the pointers of the second parent element adjacent to the current face.
   This method is used in the construction phase of a discretization.
@@ -1440,10 +1440,10 @@ protected:
   void SetLocalTrafoMap(const std::vector<int> &trafo);
 
 private:
-  //! \brief Declaration The master parent element of face element. NULL for usual elements
+  //! \brief The master parent element of face element. NULL for usual elements
   DRT::Element* parent_master_;
 
-  //! \brief Declaration The master parent element of face element. NULL for usual elements
+  //! \brief The master parent element of face element. NULL for usual elements
   DRT::Element* parent_slave_;
 
   //! The local surface number of this surface w.r.t to the parent_master_ element
@@ -1453,7 +1453,7 @@ private:
   int lface_slave_;
 
   /*!
-   \brief Declaration map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
+   \brief map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
           and the slave element's face's coordinate system
    */
   std::vector<int> localtrafomap_;
@@ -1467,7 +1467,7 @@ private:
 
 
 /*!
- * \brief Declaration translate to string for screen output
+ * \brief translate to string for screen output
  */
 inline std::string DistypeToString(const DRT::Element::DiscretizationType distype)
 {

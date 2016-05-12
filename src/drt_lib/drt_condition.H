@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_condition.H
 
+\brief A condition of any kind
+
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -51,7 +53,7 @@ namespace MESHFREE
 }
 
 /*!
-\brief Declaration A condition of any kind
+\brief A condition of any kind
 
 A condition is mainly used to realize boundary conditions. As the Condition
 class implements DRT::Container it is capable of storing almost any data
@@ -73,7 +75,7 @@ public:
   //! @name Enums and Friends
 
   /*!
-  \brief Declaration Discretization is a friend of the condition to have access
+  \brief Discretization is a friend of the condition to have access
          to the protected methods that would otherwise have to be public.
 
   */
@@ -81,7 +83,7 @@ public:
   friend class DRT::MESHFREE::MeshfreeDiscretization;
 
   /*!
-  \brief Declaration Type of condition
+  \brief Type of condition
 
   */
   enum ConditionType
@@ -282,7 +284,7 @@ public:
   };
 
   /*!
-  \brief Declaration Type of geometry this conditions lives on
+  \brief Type of geometry this conditions lives on
 
   \warning The order is crucial for and must not be changed!!!
            (used in BoundaryConditionsGeometry())
@@ -302,7 +304,7 @@ public:
   //! @name Constructors and destructors and related methods
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
   The way a condition is treated later on depends on the type of the
   condition. E.g. Dirichlet conditions are treated differently from
@@ -323,13 +325,13 @@ public:
             const GeometryType gtype);
 
   /*!
-  \brief Declaration Empty Constructor with type condition_none
+  \brief Empty Constructor with type condition_none
 
   */
   Condition();
 
   /*!
-  \brief Declaration Copy Constructor
+  \brief Copy Constructor
 
   Makes a deep copy of a condition
 
@@ -337,13 +339,13 @@ public:
   Condition(const DRT::Condition& old);
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~Condition();
 
   /*!
-  \brief Declaration Return unique ParObject id
+  \brief Return unique ParObject id
 
   every class implementing ParObject needs a unique id defined at the
   top of this file.
@@ -351,7 +353,7 @@ public:
   virtual int UniqueParObjectId() const { return ConditionObjectType::Instance().UniqueParObjectId(); }
 
   /*!
-  \brief Declaration Pack this class so it can be communicated
+  \brief Pack this class so it can be communicated
 
   \ref Pack and \ref Unpack are used to communicate this class
 
@@ -359,7 +361,7 @@ public:
   virtual void Pack(DRT::PackBuffer& data) const;
 
   /*!
-  \brief Declaration Unpack data from a char vector into this class
+  \brief Unpack data from a char vector into this class
 
   \ref Pack and \ref Unpack are used to communicate this class
 
@@ -371,17 +373,17 @@ public:
   //! @name Query methods
 
   /*!
-  \brief Declaration Return condition id
+  \brief Return condition id
   */
   inline virtual int Id() const { return id_; }
 
   /*!
-  \brief Declaration Return vector of my global node ids
+  \brief Return vector of my global node ids
   */
   const std::vector<int>* Nodes() const { return Get<std::vector<int> >("Node Ids"); }
 
   /*!
-    \brief Declaration Return if a node gid is contained in this condition
+    \brief Return if a node gid is contained in this condition
    */
   bool ContainsNode(int ngid) const
   {
@@ -392,7 +394,7 @@ public:
   }
 
   /*!
-  \brief Declaration Return flag indicating whether this condition needs to build a geometry
+  \brief Return flag indicating whether this condition needs to build a geometry
          description
 
   Some boundary conditions such as e.g. Neumann BCs need a geometry description
@@ -406,7 +408,7 @@ public:
   inline virtual bool GeometryDescription() const { return buildgeometry_; }
 
   /*!
-  \brief Declaration Return type of geometry this condition lives on
+  \brief Return type of geometry this condition lives on
 
   The type of geometry this condition lives on determines what type of
   geometry description is build for this condition iff GeometryDescription()==true
@@ -415,28 +417,28 @@ public:
   inline virtual DRT::Condition::GeometryType GType() const { return gtype_; }
 
   /*!
-  \brief Declaration Print this Condition (ostream << is also implemented for DRT::Condition)
+  \brief Print this Condition (ostream << is also implemented for DRT::Condition)
   */
   virtual void Print(std::ostream& os) const ;
 
   /*!
-  \brief Declaration Return type of condition
+  \brief Return type of condition
   */
   inline virtual ConditionType Type() const { return type_; }
 
   /*!
-  \brief Declaration Return communicator
+  \brief Return communicator
   */
   inline const Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
 
   /*!
-  \brief Declaration Get a reference to the geometry description of the condition
+  \brief Get a reference to the geometry description of the condition
 
   */
   virtual std::map<int,Teuchos::RCP<DRT::Element> >& Geometry() { return *geometry_; }
 
   /*!
-  \brief Declaration Adjust IDs of associated elements in order to obtain global
+  \brief Adjust IDs of associated elements in order to obtain global
   unique IDs within one condition type
 
   */
@@ -449,13 +451,13 @@ protected:
   //! @name Construction methods
 
   /*!
-  \brief Declaration Set a communicator
+  \brief Set a communicator
   */
   inline void SetComm(Teuchos::RCP<Epetra_Comm> comm)
   { comm_ = comm; return; }
 
   /*!
-  \brief Declaration Add a geometry description to the condition
+  \brief Add a geometry description to the condition
 
   A geometry description can be added to the condition.
   In case the condition refers to lines, surfaces or volumes, a
@@ -481,7 +483,7 @@ protected:
   { geometry_ = geom; return; }
 
   /*!
-  \brief Declaration Delete a geometry description of the condition
+  \brief Delete a geometry description of the condition
 
   This method is used by the Discretization only
   */

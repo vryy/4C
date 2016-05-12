@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_combust.H
 
-\brief Declaration a class to manage an XFEM discretization
+\brief A class to manage specialized discretizations for combustion problems
 
 <pre>
-\brief Declaration
 \level 2
+
 \maintainer Ursula Rasthofer
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -39,14 +39,14 @@ namespace ELEMENTS
 }
 
 /*!
-\brief Declaration DRT: namespace of the baci discretization module
+\brief DRT: namespace of the baci discretization module
 
 */
 namespace DRT
 {
 
 /*!
-\brief Declaration A class to manage a discretization in parallel
+\brief A class to manage a discretization in parallel
 
 \author henke (henke@lnm.mw.tum.de)
 */
@@ -55,7 +55,7 @@ class DiscretizationCombust : public DiscretizationFaces
 public:
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
@@ -64,7 +64,7 @@ public:
   :DiscretizationFaces(name, comm) { extension_filled_ = false; }; // use base class constructor
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~DiscretizationCombust()
@@ -73,7 +73,7 @@ public:
   };
 
   /*!
-  \brief Declaration Evaluate Dirichlet boundary conditions for COMBUST problems
+  \brief Evaluate Dirichlet boundary conditions for COMBUST problems
 
   this method is used instead of the base class method for XFEM discretizations
 
@@ -89,7 +89,7 @@ public:
 
 
   /*!
-  \brief Declaration Compute the nullspace of the discretization
+  \brief Compute the nullspace of the discretization
 
   This method looks in the solver parameters whether algebraic multigrid (AMG)
   is used as preconditioner. AMG desires the nullspace of the
@@ -114,7 +114,7 @@ public:
   }
 
   /*!
-  \brief Declaration Evaluate edge-based integrals
+  \brief Evaluate edge-based integrals
   */
   void EvaluateEdgeBasedCombust(
        Teuchos::ParameterList&              params,

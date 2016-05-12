@@ -2,11 +2,11 @@
 /*!
 \file drt_parobjectfactory.cpp
 
-\brief Implementation Central type object management.
+\brief Central type object management.
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

@@ -2,11 +2,11 @@
 /*!
 \file drt_condition_utils.cpp
 
-\brief Implementation
+\brief Implementation of utils on conditions
 
 <pre>
-\brief Implementation
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -724,4 +724,3 @@ void DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(
     std::cout << " No 'boundarysurfaces.log' written as number of procs = "<< numproc <<" is bigger than 1." << std::endl;
   }
 }
-

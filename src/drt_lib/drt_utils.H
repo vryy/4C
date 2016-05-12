@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_utils.H
-\brief Declaration A collection of helper methods for namespace DRT
+
+\brief A collection of helper methods for namespace DRT
+
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -30,7 +32,7 @@ namespace DRT
 namespace UTILS
 {
   /*!
-  \brief Declaration Locally extract a subset of values from an Epetra_Vector
+  \brief Locally extract a subset of values from an Epetra_Vector
 
   Extracts lm.size() values from a distributed epetra vector and stores them into local.
   this is NOT a parallel method, meaning that all values to be extracted on a processor
@@ -177,7 +179,7 @@ namespace UTILS
   }
 
   /*!
-  \brief Declaration extract local values from global node-based (multi) vector
+  \brief extract local values from global node-based (multi) vector
 
   This function returns a column vector!
 
@@ -213,7 +215,7 @@ namespace UTILS
 
 
   /*!
-  \brief Declaration extract location vector of the element dofs based on the numdof of the discretization
+  \brief extract location vector of the element dofs based on the numdof of the discretization
 
   Instead of the element function "location vector" here the discretization is
   used to identify the number of degrees of freedom of each node
@@ -227,7 +229,7 @@ namespace UTILS
       const int num);
 
   /*!
-    \brief Declaration compute L2 projection of a dof based field onto a node based field in a least
+    \brief compute L2 projection of a dof based field onto a node based field in a least
     squares sense.
     WARNING: Make sure to pass down a dofrowmap appropriate for your discretization.
 
@@ -246,7 +248,7 @@ namespace UTILS
     );
 
   /*!
-    \brief Declaration reconstruct nodal values via superconvergent patch recovery
+    \brief reconstruct nodal values via superconvergent patch recovery
 
     \return an Epetra_MultiVector based on the discret's node row map containing numvec vectors
             with the reconstruced state
@@ -265,12 +267,12 @@ namespace UTILS
 
 
   /*!
-    \brief Declaration Return Element center coordinates
+    \brief Return Element center coordinates
   */
   std::vector<double> ElementCenterRefeCoords(const DRT::Element* const ele);
 
 /*!
-\brief Declaration handles random numbers through boost
+\brief handles random numbers through boost
 
 \author wichmann
 */
@@ -341,7 +343,3 @@ protected:
 
 
 #endif  // #ifndef UTILS_H
-
-
-
-

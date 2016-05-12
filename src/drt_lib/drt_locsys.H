@@ -2,8 +2,9 @@
 /*!
 \file drt_locsys.H
 
+\brief Local coordinate systems and transformations for all types of objects
+
 <pre>
-\brief Declaration
 \level 1
 \maintainer Christoph Meier
             http://www.lnm.mw.tum.de
@@ -36,7 +37,7 @@ class Ale3;
 namespace UTILS {
 
 /*!
-\brief Declaration Class controlling local coordinate systems on points, lines and surfaces
+\brief Class controlling local coordinate systems on points, lines and surfaces
        and supplying all necessary transformation methods for parallel vectors
        and matrices.
 
@@ -77,7 +78,7 @@ public:
 
 
   /*!
-   * \brief Declaration Standard Constructor
+   * \brief Standard Constructor
    *
    * \param discret (in): A discretization containing locsys boundary conditions
    * \param transformleftonly (in): Only a tranformation from the left is going
@@ -87,24 +88,24 @@ public:
   explicit LocsysManager(DRT::Discretization& discret);
 
   /*!
-   * \brief Declaration Set-up stuff common to all constructors
+   * \brief Set-up stuff common to all constructors
    */
   void Setup(const double time);
 
   /*!
-   *\brief Declaration Destructor
+   *\brief Destructor
    *
    */
   virtual ~LocsysManager() {};
 
   /*!
-   *\brief Declaration Print this Manager
+   *\brief Print this Manager
    *
    */
   virtual void Print() const;
 
   /*!
-   * \brief Declaration Get Epetra communicator
+   * \brief Get Epetra communicator
    *
    */
   inline const Epetra_Comm& Comm() const { return discret_.Comm();};
@@ -112,25 +113,25 @@ public:
   //! @name Access methods
 
   /*!
-   * \brief Declaration Get discretization
+   * \brief Get discretization
    *
    */
   inline DRT::Discretization& Discret() const { return discret_;};
 
   /*!
-   * \brief Declaration Get problem dimension
+   * \brief Get problem dimension
    *
    */
   inline const int& Dim() {return dim_;};
 
   /*!
-   * \brief Declaration Get local system conditions
+   * \brief Get local system conditions
    *
    */
   inline std::vector<DRT::Condition*> Conditions() const { return locsysconds_;};
 
   /*!
-   * \brief Declaration Get a specific local system condition
+   * \brief Get a specific local system condition
    *
    */
   inline DRT::Condition* Conditions(int k) const
@@ -147,19 +148,19 @@ public:
   };
 
   /*!
-   * \brief Declaration Get number of local system conditions
+   * \brief Get number of local system conditions
    *
    */
   inline int NumLocsys() const { return numlocsys_;};
 
   /*!
-   * \brief Declaration Get types of local system conditions
+   * \brief Get types of local system conditions
    *
    */
   inline std::vector<DRT::Condition::ConditionType> TypeLocsys() const { return typelocsys_;};
 
   /*!
-   * \brief Declaration Get type of a specific local system condition
+   * \brief Get type of a specific local system condition
    *
    */
   inline DRT::Condition::ConditionType TypeLocsys(int k) const
@@ -167,7 +168,7 @@ public:
     return typelocsys_[k];};
 
   /*!
-   * \brief Declaration Retrieve the global transformation matrix
+   * \brief Retrieve the global transformation matrix
    *
    */
   Teuchos::RCP<const LINALG::SparseMatrix> Trafo() const { return trafo_; }
@@ -177,7 +178,7 @@ public:
   //! @name Evaluation methods
 
   /*!
-   * \brief Declaration Apply forward transformation of linear system of equations.
+   * \brief Apply forward transformation of linear system of equations.
    *
    * This method transform the matrix #sysmat from global co-ordinate
    * into local co-ordinate systems, i.e.
@@ -193,43 +194,43 @@ public:
     ) const;
 
   /*!
-   * \brief Declaration Apply forward transformation of a single matrix
+   * \brief Apply forward transformation of a single matrix
    *
    */
   void RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseMatrix> sysmat) const;
 
   /*!
-   * \brief Declaration Apply forward transformation of a single vector
+   * \brief Apply forward transformation of a single vector
    *
    */
   void RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> vec, bool offset=false) const;
 
   /*!
-   * \brief Declaration Apply backward transformation of result and linear system of equations
+   * \brief Apply backward transformation of result and linear system of equations
    *
    */
   void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> result, Teuchos::RCP<LINALG::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs) const;
 
   /*!
-   * \brief Declaration Apply backward transformation of a single vector
+   * \brief Apply backward transformation of a single vector
    *
    */
   void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> vec, bool offset=false) const;
 
   /*!
-   * \brief Declaration Apply backward transformation of a matrix
+   * \brief Apply backward transformation of a matrix
    *
    */
   void RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseMatrix> sysmat) const;
 
   /*!
-   * \brief Declaration Add displacement offset value in order to apply Dirichlet conditions on local systems
+   * \brief Add displacement offset value in order to apply Dirichlet conditions on local systems
    *
    */
   void AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool inverse) const;
 
   /*!
-   * \brief Declaration Calculate rotation vector for (mass-consistent) normal system
+   * \brief Calculate rotation vector for (mass-consistent) normal system
    *
    */
   void CalcRotationVectorForNormalSystem(int numLocsysCond, double time);

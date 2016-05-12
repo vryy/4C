@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_transparent.H
 
-\brief Declaration A set of degrees of freedom special for contact
+\brief A set of degrees of freedom special for contact
 
 <pre>
-\brief Declaration
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -38,12 +38,12 @@ namespace DRT
   public:
 
     /*!
-    \brief Declaration Standard Constructor
+    \brief Standard Constructor
     */
     explicit TransparentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis,bool parallel=false);
 
     /*!
-    \brief Declaration Destructor
+    \brief Destructor
     */
     virtual ~TransparentDofSet() { return; }
 

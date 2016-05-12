@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_pbc.H
 
-\brief Declaration A modified set of degrees of freedom for periodic boundary
+\brief A modified set of degrees of freedom for periodic boundary
        conditions. This class is inherited from dofset and replaces the
        method AssignDegreesOfFreedom by a version which uses a map
        of coupled nodes provided by the periodic boundary conditions to
@@ -10,8 +10,8 @@
        on this proc the master is (ghosted) on this proc, too!
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -40,7 +40,7 @@ class Discretization;
 
 
 /*!
-\brief Declaration A set of degrees of freedom
+\brief A set of degrees of freedom
 
 \author gammi
 */
@@ -51,7 +51,7 @@ public:
 
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
 
   <pre>
@@ -70,7 +70,7 @@ public:
   PBCDofSet(Teuchos::RCP<std::map<int,std::vector<int> > >  couplednodes);
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~PBCDofSet();
@@ -108,13 +108,13 @@ protected:
     return 0;
   }
 
-  //!\brief Declaration master and slave node connectivity for periodic boundary conditions
+  //!\brief master and slave node connectivity for periodic boundary conditions
   Teuchos::RCP<std::map<int,std::vector<int> > >           perbndcouples_;
 
-  //!\brief Declaration the largest original GID, to stop the dofset from 'shrinking'
+  //!\brief the largest original GID, to stop the dofset from 'shrinking'
   int myMaxGID_;
 
-  //!\brief Declaration the smallest original GID, to stop the dofset from 'shrinking'
+  //!\brief the smallest original GID, to stop the dofset from 'shrinking'
   int myMinGID_;
 
 private:
@@ -124,7 +124,7 @@ private:
 
   Teuchos::RCP<std::set<int> > slavenodeids_;
 
-  //!\brief Declaration slave node to master node connectivity for periodic boundary conditions (key=slave nid, value=master nid)
+  //!\brief slave node to master node connectivity for periodic boundary conditions (key=slave nid, value=master nid)
   Teuchos::RCP<std::map<int,int> >  perbnd_slavetomaster_;
 
 }; // class PBCDofSet

@@ -2,11 +2,11 @@
 /*!
 \file drt_colors.H
 
-\brief Declaration Color escape sequences for those that prefer colorful output.
+\brief Color escape sequences for those that prefer colorful output.
 
 <pre>
-\brief Declaration
 \level 2
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

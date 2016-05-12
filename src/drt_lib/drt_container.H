@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_container.H
 
+\brief A data storage container
+
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -47,7 +49,7 @@ private:
 // forward declarations
 
 /*!
-\brief Declaration A data storage container
+\brief A data storage container
 
 You can store arrays of integer, double, and strings in this container
 and access the data by keys. As the Container implements ParObject
@@ -68,13 +70,13 @@ public:
   //! @name Constructors and destructors and related methods
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
   */
   Container();
 
   /*!
-  \brief Declaration Copy Constructor
+  \brief Copy Constructor
 
   Makes a deep copy of a Node
 
@@ -82,13 +84,13 @@ public:
   Container(const DRT::Container& old);
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~Container();
 
   /*!
-  \brief Declaration Return unique ParObject id
+  \brief Return unique ParObject id
 
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
@@ -97,7 +99,7 @@ public:
   virtual int UniqueParObjectId() const;
 
   /*!
-  \brief Declaration Pack this class so it can be communicated
+  \brief Pack this class so it can be communicated
 
   \ref Pack and \ref Unpack are used to communicate this class
 
@@ -105,7 +107,7 @@ public:
   virtual void Pack(DRT::PackBuffer& data) const;
 
   /*!
-  \brief Declaration Unpack data from a char vector into this class
+  \brief Unpack data from a char vector into this class
 
   \ref Pack and \ref Unpack are used to communicate this class
 
@@ -117,7 +119,7 @@ public:
   //! @name Query methods
 
   /*!
-  \brief Declaration Print this element
+  \brief Print this element
   */
   virtual void Print(std::ostream& os) const ;
 
@@ -126,7 +128,7 @@ public:
   //! @name Construction methods
 
   /*!
-  \brief Declaration Add an integer to the container
+  \brief Add an integer to the container
 
   \param name : Name of data to store data with
   \param data : the integer to add
@@ -137,7 +139,7 @@ public:
   { Add(name,&data,1); return; }
 
   /*!
-  \brief Declaration Add vector of int to the container
+  \brief Add vector of int to the container
 
   \param name : Name of data to store data with
   \param data : ptr to beginning of data
@@ -148,7 +150,7 @@ public:
   void Add(const std::string& name, const int* data, const int num);
 
   /*!
-  \brief Declaration Add vector of int to the container
+  \brief Add vector of int to the container
 
   \param name : Name of data to store data with
   \param data : vector of integers to be added
@@ -159,7 +161,7 @@ public:
   { Add(name,&data[0],data.size()); return;}
 
   /*!
-  \brief Declaration Add Teuchos::rcp to vector of int to the container
+  \brief Add Teuchos::rcp to vector of int to the container
 
   \param name : Name of data to store data with
   \param data : Teuchos::rcp to vector of integers to be added
@@ -169,7 +171,7 @@ public:
   void Add(const std::string& name, Teuchos::RCP<std::vector<int> > data);
 
   /*!
-  \brief Declaration Add a double to the container
+  \brief Add a double to the container
 
   \param name : Name of data to store data with
   \param data : one double to be added to the container
@@ -180,7 +182,7 @@ public:
   { Add(name,&data,1); return; }
 
   /*!
-  \brief Declaration Add vector of double to the container
+  \brief Add vector of double to the container
 
   \param name : Name of data to store data with
   \param data : ptr to beginning of data
@@ -191,7 +193,7 @@ public:
   void Add(const std::string& name, const double* data, const int num);
 
   /*!
-  \brief Declaration Add vector of double to the container
+  \brief Add vector of double to the container
 
   \param name : Name of data to store data with
   \param data : vector of doubles to be added
@@ -202,7 +204,7 @@ public:
   { Add(name,&data[0],data.size()); return;}
 
    /*!
-  \brief Declaration Add Teuchos::rcp to vector of double to the container
+  \brief Add Teuchos::rcp to vector of double to the container
 
   \param name : Name of data to store data with
   \param data : Teuchos::rcp to vector of doubles to be added
@@ -212,7 +214,7 @@ public:
   void Add(const std::string& name, Teuchos::RCP<std::vector<double> > data);
 
   /*!
-  \brief Declaration Add a map of vectors of doubles to the container
+  \brief Add a map of vectors of doubles to the container
 
   \param name : Name of data to store data with
   \param data : map of vector of doubles to be added
@@ -222,7 +224,7 @@ public:
   void Add(const std::string& name, const std::map<int,std::vector<double> >& data);
 
    /*!
-  \brief Declaration Add Teuchos::rcp to map of vector of doubles to the container
+  \brief Add Teuchos::rcp to map of vector of doubles to the container
 
   \param name : Name of data to store data with
   \param data : Teuchos::rcp to map of vector of doubles to be added
@@ -232,7 +234,7 @@ public:
   void Add(const std::string& name, Teuchos::RCP<std::map<int, std::vector<double> > > data);
 
   /*!
-  \brief Declaration Add a string to the container
+  \brief Add a string to the container
 
   \param name : Name of data to store data with
   \param data : string to store
@@ -242,7 +244,7 @@ public:
   void Add(const std::string& name, const std::string& data);
 
   /*!
-  \brief Declaration Add a string to the container
+  \brief Add a string to the container
 
   \param name : Name of data to store data with
   \param data : string to store
@@ -253,7 +255,7 @@ public:
   { Add(name,(std::string)data); return; }
 
   /*!
-  \brief Declaration Add a Epetra_SerialDenseMatrix to the container
+  \brief Add a Epetra_SerialDenseMatrix to the container
 
   \param name : Name of data to store data with
   \param data : matrix to store
@@ -263,7 +265,7 @@ public:
   void Add(const std::string& name, const Epetra_SerialDenseMatrix& matrix);
 
    /*!
-  \brief Declaration Add Teuchos::rcp to Epetra_SerialDenseMatrix to the container
+  \brief Add Teuchos::rcp to Epetra_SerialDenseMatrix to the container
 
   \param name : Name of data to store data with
   \param data : Teuchos::rcp to Epetra_SerialDenseMatrix to be added
@@ -273,7 +275,7 @@ public:
   void Add(const std::string& name, Teuchos::RCP<Epetra_SerialDenseMatrix> data);
 
    /*!
-  \brief Declaration Add Teuchos::rcp to Epetra_MultiVector to the container
+  \brief Add Teuchos::rcp to Epetra_MultiVector to the container
 
   \param name : Name of data to store data with
   \param data : Teuchos::rcp to Epetra_MultiVector to be added
@@ -287,7 +289,7 @@ public:
   void Add(const std::string& name, Epetra_MultiVector& data);
 
    /*!
-  \brief Declaration Add Teuchos::rcp to Epetra_Vector to the container
+  \brief Add Teuchos::rcp to Epetra_Vector to the container
 
   \param name : Name of data to store data with
   \param data : Teuchos::rcp to Epetra_Vector to be added
@@ -301,7 +303,7 @@ public:
   void Add(const std::string& name, Epetra_Vector& data);
 
   /*!
-  \brief Declaration Add a LINALG::Matrix to the container, templated on the dimension
+  \brief Add a LINALG::Matrix to the container, templated on the dimension
          of the LINALG::Matrix
 
   \param name : Name of data to store data with
@@ -340,7 +342,7 @@ public:
   //! @name Access methods
 
   /*!
-  \brief Declaration Get data of type int, double, string or Epetra_SerialDenseMatrix, read only
+  \brief Get data of type int, double, string or Epetra_SerialDenseMatrix, read only
 
   Receive <int>, <double>, <string>, <Epetra_SerialDenseMatrix> data of a given name.
 
@@ -379,7 +381,7 @@ public:
 
 
   /*!
-  \brief Declaration Get a single integer back without all that hassle
+  \brief Get a single integer back without all that hassle
 
   Receive <int>
 
@@ -393,7 +395,7 @@ public:
   int GetInt(const std::string& name) const;
 
   /*!
-  \brief Declaration Get a single double back without all that hassle
+  \brief Get a single double back without all that hassle
 
   Receive <int>
 
@@ -407,7 +409,7 @@ public:
   double GetDouble(const std::string& name) const;
 
   /*!
-  \brief Declaration Get data of type int, double, string or Epetra_SerialDenseMatrix
+  \brief Get data of type int, double, string or Epetra_SerialDenseMatrix
 
   Receive <int>, <double>, <string>, <Epetra_SerialDenseMatrix> data of a given name.
 
@@ -449,7 +451,7 @@ public:
   //! @name Erase methods
 
   /*!
-  \brief Declaration Delete a record from the container
+  \brief Delete a record from the container
 
   \param name : Name of data to be deleted from container
 
@@ -457,7 +459,7 @@ public:
   void Delete(const std::string& name);
 
   /*!
-  \brief Declaration Delete everything in this container
+  \brief Delete everything in this container
   */
   void Clear()
   {

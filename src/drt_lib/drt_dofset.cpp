@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset.cpp
-\brief Implementation A set of degrees of freedom
+
+\brief A set of degrees of freedom
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -859,5 +860,3 @@ void DRT::DofSet::NotifyReset()
   for (std::list<DofSetProxy*>::iterator i=proxies_.begin(); i!=proxies_.end(); ++i)
     (*i)->NotifyReset();
 }
-
-

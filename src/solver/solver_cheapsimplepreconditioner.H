@@ -35,7 +35,7 @@ namespace SOLVER
 {
 
 /*!
-\brief Declaration A Semi-implicit Method for Pressure Linked Equations (SIMPLE)
+\brief A Semi-implicit Method for Pressure Linked Equations (SIMPLE)
        preconditioner
 
 This Operator implements the family of SIMPLE methods such as
@@ -60,7 +60,7 @@ class  CheapSIMPLE_BlockPreconditioner : public virtual Epetra_Operator
 public:
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
    */
   explicit CheapSIMPLE_BlockPreconditioner(Teuchos::RCP<Epetra_Operator> A,
       const Teuchos::ParameterList& velocitylist,
@@ -68,7 +68,7 @@ public:
       FILE* outfile = NULL);
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
    */
   virtual ~CheapSIMPLE_BlockPreconditioner()
   {
@@ -79,7 +79,7 @@ public:
   }
 
   /*!
-  \brief Declaration Setup the label of this class.
+  \brief Setup the label of this class.
    */
   const std::string SetupLabel() {
     std::stringstream strLabel;
@@ -126,14 +126,14 @@ public:
 
   }
   /*
-   *  \brief Declaration Returns the label of this class.
+   *  \brief Returns the label of this class.
    */
   const char* Label() const {
     return &label_[0];
   }
 
   /*!
-  \brief Declaration get Comm of this class
+  \brief get Comm of this class
 
   Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class
 
@@ -142,7 +142,7 @@ public:
 
 
   /*!
-  \brief Declaration Get fine level OperatorDomainMap
+  \brief Get fine level OperatorDomainMap
 
   Derived from Epetra_Operator, get fine level OperatorDomainMap
 
@@ -150,7 +150,7 @@ public:
   const Epetra_Map& OperatorDomainMap() const {return A_->FullDomainMap();}
 
   /*!
-  \brief Declaration Get fine level OperatorRangeMap
+  \brief Get fine level OperatorRangeMap
 
   Derived from Epetra_Operator, get fine level OperatorRangeMap
 
@@ -158,7 +158,7 @@ public:
   const Epetra_Map& OperatorRangeMap() const {return A_->FullRangeMap();}
 
   /*!
-  \brief Declaration ApplyInverse the preconditioner
+  \brief ApplyInverse the preconditioner
 
    ApplyInverse the preconditioner. Method is derived from Epetra_Operator.
 
@@ -170,7 +170,7 @@ public:
   int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const ;
 
   /*!
-  \brief Declaration not implemented
+  \brief not implemented
    */
   int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
   {
@@ -179,7 +179,7 @@ public:
   }
 
   /*!
-  \brief Declaration not implemented
+  \brief not implemented
    */
   int SetUseTranspose(bool UseTranspose)
   {
@@ -188,7 +188,7 @@ public:
   }
 
   /*!
-  \brief Declaration not implemented
+  \brief not implemented
    */
   double NormInf() const
   {
@@ -198,7 +198,7 @@ public:
 
 
   /*!
-  \brief Declaration not implemented
+  \brief not implemented
    */
   bool UseTranspose() const
   {
@@ -208,7 +208,7 @@ public:
   }
 
   /*!
-  \brief Declaration not implemented
+  \brief not implemented
    */
   bool HasNormInf() const
   {
@@ -223,27 +223,27 @@ private:
   CheapSIMPLE_BlockPreconditioner operator = (const CheapSIMPLE_BlockPreconditioner& old);
 
   /*!
-  \brief Declaration setup phase of preconditioner
+  \brief setup phase of preconditioner
    */
   void Setup(Teuchos::RCP<Epetra_Operator> A,
       const Teuchos::ParameterList& origvlist,
       const Teuchos::ParameterList& origplist);
 
   /*!
-  \brief Declaration do one sweep of simple or simplec preconditioning
+  \brief do one sweep of simple or simplec preconditioning
    */
   void Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
       LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const;
 
   /*!
-  \brief Declaration do one sweep of simpler preconditioning
+  \brief do one sweep of simpler preconditioning
    */
   void Simpler(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
       LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const;
 
 
   /*!
-  \brief Declaration do one sweep of simple or simplec preconditioning without subsolves
+  \brief do one sweep of simple or simplec preconditioning without subsolves
    */
   void CheapSimple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
       LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const;

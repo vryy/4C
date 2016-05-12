@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_evaluate.cpp
-\brief Implementation
 
-\brief Implementation
+\brief Implementation of evaluate calls on discretization
+
 \level 0
+
 \maintainer Martin Kronbichler
 
 *----------------------------------------------------------------------*/
@@ -1143,4 +1144,3 @@ void  DRT::Discretization::DoInitialField(DRT::Condition& cond,
 
   return;
 }
-

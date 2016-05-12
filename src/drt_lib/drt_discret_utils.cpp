@@ -1,9 +1,10 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_utils.cpp
-\brief Implementation
 
-\brief Implementation
+\brief Auxiliary functions of the main discretization class
+
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -276,4 +277,3 @@ void DRT::Discretization::AddMultiVectorToParameterList(Teuchos::ParameterList& 
 
   return;
 }
-

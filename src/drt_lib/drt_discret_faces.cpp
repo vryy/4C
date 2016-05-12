@@ -1,14 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_faces.cpp
 
-\brief Implementation a class to manage an enhanced discretization including the faces between elements
-
-
-</pre>
+\brief a class to manage an enhanced discretization including the faces between elements
 
 <pre>
-\brief Implementation
 \level 1
+
 \maintainer Benedikt Schott, Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -1306,4 +1303,3 @@ void DRT::DiscretizationFaces::PrintFaces(std::ostream& os) const
 
   return;
 }
-

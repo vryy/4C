@@ -29,7 +29,7 @@ namespace LINALG
 
   /*! @name
 
-  \brief Declaration A slightly modified Epetra_Operator class allowing the
+  \brief A slightly modified Epetra_Operator class allowing the
          application of a 'rank 1' projector P^T after applying the
          underlying operator
 
@@ -88,7 +88,7 @@ class LinalgProjectedOperator : public Epetra_Operator
 public:
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
   */
   LinalgProjectedOperator(
@@ -98,7 +98,7 @@ public:
       );
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   ~LinalgProjectedOperator();
@@ -114,7 +114,7 @@ public:
 
   //! @name Mathematical functions required to support the Epetra_Operator interface (modified)
   /*!
-    \brief Declaration (Modified) Apply call
+    \brief (Modified) Apply call
 
     Given the underlying Epetra_Operator A, we apply P^T*A using
 
@@ -214,4 +214,3 @@ private:
 } // namespace LINALG
 
 #endif // LINALG_PROJECTED_OPERATOR_H_
-

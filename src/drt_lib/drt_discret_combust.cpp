@@ -1,11 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_combust.cpp
 
-\brief Implementation a class to manage one discretization
+\brief A class to manage specialized discretizations for combustion problems
 
 <pre>
-\brief Implementation
 \level 2
+
 \maintainer Ursula Rasthofer
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -1088,4 +1088,3 @@ void DRT::DiscretizationCombust::EvaluateDirichletCombust(Teuchos::ParameterList
 
   return;
 }
-

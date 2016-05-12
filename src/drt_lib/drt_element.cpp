@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_element.cpp
-\brief Implementation
+
+\brief Implementation of base element class in BACI with basic operations
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

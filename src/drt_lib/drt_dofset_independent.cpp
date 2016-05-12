@@ -1,8 +1,10 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_independent.cpp
 
-\brief Implementation
+\brief Implementation of independent dofset
+
 \level 2
+
 \maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
@@ -233,4 +235,3 @@ int DRT::IndependentDofSet::AssignDegreesOfFreedom(const DRT::Discretization& di
 
   return count;
 }
-

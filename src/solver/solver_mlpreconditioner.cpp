@@ -2,7 +2,7 @@
 /*!
 \file solver_mlpreconditioner.cpp
 
-\brief Declaration Interface class to ML preconditoner
+\brief Interface class to ML preconditoner
 
 <pre>
 \brief Declaration

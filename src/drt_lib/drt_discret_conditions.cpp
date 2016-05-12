@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_conditions.cpp
-\brief Implementation
+
+\brief Implementation of all sorts of conditions on discretization
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -747,4 +748,3 @@ void DRT::Discretization::ModifyCondition(const std::string& condname, std::vect
   cond->Add("Node Ids", nodegid);
   if (buildgeom) BoundaryConditionsGeometry();
 }
-

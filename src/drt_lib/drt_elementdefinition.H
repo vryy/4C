@@ -2,11 +2,11 @@
 /*!
 \file drt_elementdefinition.H
 
-\brief Declaration Central storage of element input line definitions
+\brief Central storage of element input line definitions
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

@@ -1,8 +1,9 @@
 /*!
 \file drt_element_integration_select.H
 
+\brief templated version for selecting integration points from element type
+
 <pre>
-\brief Declaration
 \level 1
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
@@ -234,4 +235,3 @@ namespace ELEMENTS
 } // namespace DRT
 
 #endif
-

@@ -1,13 +1,13 @@
 /*!----------------------------------------------------------------------
 \file drt_locsys.cpp
 
-\brief Implementation Class controlling local coordinate systems on points, lines and
+\brief Class controlling local coordinate systems on points, lines and
 surfaces and supplying all necessary transformation methods for parallel
 vectors and matrices.
 
 <pre>
-\brief Implementation
 \level 1
+
 \maintainer Christoph Meier
             http://www.lnm.mw.tum.de
             089 - 289-15262

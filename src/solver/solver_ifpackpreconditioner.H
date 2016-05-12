@@ -6,7 +6,7 @@
 \level 0
 \maintainer Martin Kronbichler
 
-\brief Declaration LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
+\brief LINALG::SOLVER wrapper around Trilinos' IFPACK preconditioner
 */
 /*----------------------------------------------------------------------------*/
 #ifndef SOLVER_IFPACKPRECONDITIONER_H_
@@ -20,7 +20,7 @@ namespace LINALG
 {
 namespace SOLVER
 {
-  /*! \brief Declaration  IFPACK preconditioners
+  /*! \brief  IFPACK preconditioners
    *
    *  Set of standard single-matrix preconditioners.
    */

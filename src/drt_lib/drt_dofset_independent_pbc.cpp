@@ -1,8 +1,10 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_independent_pbc.cpp
 
-\brief Implementation
+\brief Independent dof set for periodic boundary conditions
+
 \level 2
+
 \maintainer Martin Kronbichler
 *----------------------------------------------------------------------*/
 
@@ -83,4 +85,3 @@ int DRT::IndependentPBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization&
 
   return count;
 }
-

@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_singletondestruction.cpp
-\brief Implementation
+
+\brief Registration class for all singletons used within baci
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

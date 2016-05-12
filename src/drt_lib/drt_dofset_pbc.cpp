@@ -1,12 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_dofset_pbc.cpp
 
-\brief Implementation A modified set of degrees of freedom for periodic boundary
+\brief A modified set of degrees of freedom for periodic boundary
        conditions
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -166,4 +166,3 @@ void DRT::PBCDofSet::BuildSlaveToMasterNodeConnectivity()
     }
   }
 }
-

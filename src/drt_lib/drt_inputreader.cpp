@@ -2,11 +2,11 @@
 /*!
 \file drt_inputreader.cpp
 
-\brief Implementation Internal classes to read elements and nodes
+\brief Internal classes to read elements and nodes
 
 <pre>
-\brief Implementation
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -48,7 +48,7 @@
 
 /*----------------------------------------------------------------------*/
 /*!
-  \brief Implementation remove all leading and trailing whitespaces from a string.
+  \brief remove all leading and trailing whitespaces from a string.
 
   Note: consecutive whitespaces inside the std::string will be reduced to a
   single space.
@@ -1274,4 +1274,3 @@ bool DatFileReader::PrintUnknownSections()
 
 }
 }
-

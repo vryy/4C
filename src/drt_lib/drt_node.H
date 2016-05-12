@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_node.H
 
+\brief Base node class
+
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -48,7 +50,7 @@ private:
 };
 
 /*!
-\brief Declaration A virtual class all nodes that are used in DRT have to implement
+\brief A virtual class all nodes that are used in DRT have to implement
 
 \author gee (gee@lnm.mw.tum.de)
 */
@@ -59,7 +61,7 @@ public:
   //! @name Enums and Friends
 
   /*!
-  \brief Declaration The Discretization is a friend of Node
+  \brief The Discretization is a friend of Node
   */
   friend class Discretization;
   friend class MESHFREE::MeshfreeDiscretization;
@@ -69,7 +71,7 @@ public:
   //! @name Constructors and destructors and related methods
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
   \param id     (in): A globally unique node id
   \param coords (in): vector of nodal coordinates, length 3
@@ -78,7 +80,7 @@ public:
   Node(int id, const double* coords, const int owner, const bool iscosserat=false);
 
   /*!
-  \brief Declaration Copy Constructor
+  \brief Copy Constructor
 
   Makes a deep copy of a Node
 
@@ -86,19 +88,19 @@ public:
   Node(const DRT::Node& old);
 
   /*!
-  \brief Declaration Deep copy the derived class and return pointer to it
+  \brief Deep copy the derived class and return pointer to it
 
   */
   virtual DRT::Node* Clone() const;
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~Node();
 
   /*!
-  \brief Declaration Return unique ParObject id
+  \brief Return unique ParObject id
 
   every class imploementing ParObject needs a unique id defined at the
   top of this file.
@@ -106,7 +108,7 @@ public:
   virtual int UniqueParObjectId() const { return NodeType::Instance().UniqueParObjectId(); }
 
   /*!
-  \brief Declaration Pack this class so it can be communicated
+  \brief Pack this class so it can be communicated
 
   \ref Pack and \ref Unpack are used to communicate this node
 
@@ -114,7 +116,7 @@ public:
   virtual void Pack(DRT::PackBuffer& data) const;
 
   /*!
-  \brief Declaration Unpack data from a char vector into this class
+  \brief Unpack data from a char vector into this class
 
   \ref Pack and \ref Unpack are used to communicate this node
 
@@ -126,50 +128,50 @@ public:
   //! @name Access methods
 
   /*!
-  \brief Declaration Return global id
+  \brief Return global id
   */
   virtual inline int Id() const { return id_; }
 
   /*!
-  \brief Declaration Return processor local col map id
+  \brief Return processor local col map id
   */
   virtual inline int LID() const { return lid_; }
 
   /*!
-  \brief Declaration Return owner of this node
+  \brief Return owner of this node
   */
   virtual inline int Owner() const { return owner_; }
 
   /*!
-  \brief Declaration Return coordinates (length 3 or 6 for a Cosserat node)
+  \brief Return coordinates (length 3 or 6 for a Cosserat node)
   */
   virtual inline const double* X() const { return &x_[0]; }
 
   /*!
-  \brief Declaration Return bool whether node is a cosserat node and therefore has 6 coordinates
+  \brief Return bool whether node is a cosserat node and therefore has 6 coordinates
   */
   virtual inline bool IsCosserat() const { return (x_.size()==(unsigned)6); }
 
   /*!
-  \brief Declaration Return processor-local number of elements adjacent to this node
+  \brief Return processor-local number of elements adjacent to this node
   */
   virtual inline int NumElement() const { return element_.size(); }
 
   /*!
-  \brief Declaration Return ptr to vector of element ptrs
+  \brief Return ptr to vector of element ptrs
   */
   virtual inline DRT::Element** Elements()
   { if (NumElement()) return &element_[0]; else return NULL; }
 
   /*!
-  \brief Declaration Return const ptr to vector of const element ptrs
+  \brief Return const ptr to vector of const element ptrs
   */
   virtual inline const DRT::Element*const* Elements() const
   { if (NumElement()) return (const DRT::Element*const*)(&element_[0]); else return NULL; }
 
 
   /*!
-  \brief Declaration Print this node
+  \brief Print this node
   */
   virtual void Print(std::ostream& os) const ;
 
@@ -178,20 +180,20 @@ public:
   //! @name Construction
 
   /*!
-    \brief Declaration Set processor local col id
+    \brief Set processor local col id
     \param lid: processor local col id
    */
   virtual inline void SetLID(int lid) { lid_ = lid; }
 
   /*!
-  \brief Declaration Set ownership
+  \brief Set ownership
 
   \param owner: Proc owning this node
   */
   virtual inline void SetOwner(const int owner) { owner_ = owner; return; }
 
   /*!
-  \brief Declaration Set a condition with a certain name
+  \brief Set a condition with a certain name
 
   Store a condition with a certain name in the node. The name need not
   be unique, meaning multiple conditions with the same name can be stored.
@@ -215,7 +217,7 @@ public:
   { condition_.insert(std::pair<std::string,Teuchos::RCP<Condition> >(name,cond)); return; }
 
   /*!
-  \brief Declaration Get all conditions with a certain name
+  \brief Get all conditions with a certain name
 
   Get all conditions with a certain name. A vector of ptrs to all conditions
   with name name is returned in out. The number of conditions found with name
@@ -228,7 +230,7 @@ public:
   virtual void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
 
   /*!
-  \brief Declaration Get a condition with a certain name
+  \brief Get a condition with a certain name
 
   Returns the first condition with name name found in the multimap.
   If multiple conditions with the same name exist, the first condition is
@@ -242,23 +244,23 @@ public:
   virtual DRT::Condition* GetCondition(const std::string& name) const;
 
   /*!
-  \brief Declaration Delete all conditions set to this node
+  \brief Delete all conditions set to this node
   */
   virtual void ClearConditions() { condition_.clear(); return; }
 
   /*!
-  \brief Declaration Change reference position by adding input vector to position
+  \brief Change reference position by adding input vector to position
   */
   virtual void ChangePos(std::vector<double> nvector);
 
   /*!
-  \brief Declaration Change reference position by setting input vector to position
+  \brief Change reference position by setting input vector to position
   */
   virtual void SetPos(std::vector<double> nvector);
 
   //@}
 
-  /*! \brief Declaration Query names of node data to be visualized using BINIO
+  /*! \brief Query names of node data to be visualized using BINIO
    *
    *  This method is to be overloaded by a derived class.
    *  The node is supposed to fill the provided map with key names of
@@ -269,7 +271,7 @@ public:
    */
   virtual void VisNames(std::map<std::string,int>& names) { return; }
 
-  /*! \brief Declaration Visualize the owner of the node using BINIO
+  /*! \brief Visualize the owner of the node using BINIO
    *
    *  \param names (out): Owner is added to the key names
    */
@@ -279,7 +281,7 @@ public:
     //names.insert(std::pair<string,int>("EleGId",1));
     return; }
 
-  /*! \brief Declaration Query data to be visualized using BINIO of a given name
+  /*! \brief Query data to be visualized using BINIO of a given name
    *
    *  This method is to be overloaded by a derived class.
    *  The derived method is supposed to call this base method to visualize the
@@ -298,13 +300,13 @@ public:
 protected:
 
   /*!
-  \brief Declaration Clear vector of pointers to my elements
+  \brief Clear vector of pointers to my elements
 
   */
   virtual inline void ClearMyElementTopology() { element_.clear(); return;}
 
   /*!
-  \brief Declaration Add an element to my vector of pointers to elements
+  \brief Add an element to my vector of pointers to elements
 
   Resizes the element ptr vector and adds ptr at the end of vector
   */

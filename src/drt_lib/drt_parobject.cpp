@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_parobject.cpp
-\brief Implementation
+
+\brief Base class for handling of parallel data exchange
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -166,6 +167,3 @@ void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, con
   ExtractfromPack(position,data,&stuff[0],size);
   return;
 }
-
-
-

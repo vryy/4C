@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_pack_buffer.H
-\brief Declaration
+
+\brief Data packing for sending over MPI
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

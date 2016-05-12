@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_exporter.cpp
-\brief Implementation
+
+\brief Implementation of exporter class
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -524,4 +525,3 @@ void DRT::Exporter::Export(std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> >
   AnyObjectExporterHelper<Epetra_SerialDenseMatrix> helper(data);
   GenericExport(helper);
 }
-

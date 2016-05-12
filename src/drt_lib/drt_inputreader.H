@@ -2,11 +2,11 @@
 /*!
 \file drt_inputreader.H
 
-\brief Declaration Internal classes to read elements and nodes
+\brief Internal classes to read elements and nodes
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -117,7 +117,7 @@ public:
   void ReadDesign(const std::string& name, std::vector<std::vector<int> >& dobj_fenode);
 
   /*!
-    \brief Declaration read the knotvector section (for isogeometric analysis)
+    \brief read the knotvector section (for isogeometric analysis)
 
     \param  dim            (in ): dimension, i.e. number of knotvectors in one patch
     \param  name           (in ): Name/type of discretisation

@@ -2,11 +2,11 @@
 /*!
 \file drt_dofset_proxy.cpp
 
-\brief Implementation Proxy to a set of degrees of freedom
+\brief Proxy to a set of degrees of freedom
 
 <pre>
-\brief Implementation
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -115,4 +115,3 @@ bool DRT::DofSetProxy::Filled() const
   }
   return false;
 }
-

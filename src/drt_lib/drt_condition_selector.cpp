@@ -2,11 +2,11 @@
 /*!
 \file drt_condition_selector.cpp
 
-\brief Implementation Split conditions into map extractors
+\brief Split conditions into map extractors
 
 <pre>
-\brief Implementation
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -193,4 +193,3 @@ void DRT::UTILS::MultiConditionSelector::SetupCondDofSets(const DRT::Discretizat
     }
   }
 }
-

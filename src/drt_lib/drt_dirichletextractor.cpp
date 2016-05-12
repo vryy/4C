@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_dirichletextractor.cpp
-\brief Implementation
+
+\brief A map extractor for Dirichlet conditions
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

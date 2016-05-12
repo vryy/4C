@@ -1,9 +1,10 @@
 /*!---------------------------------------------------------------------
 \file drt_globalproblem_enums.H
-\brief Declaration Some important enums used in conjunction with DRT::Problem
 
-\brief Declaration
+\brief Some important enums used in conjunction with DRT::Problem
+
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

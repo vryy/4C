@@ -2,11 +2,11 @@
 /*!
 \file drt_linedefinition.cpp
 
-\brief Implementation Definition of one line of an input file.
+\brief Definition of one line of an input file.
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -772,5 +772,3 @@ DRT::INPUT::Lines::Read(const char* line)
   }
   return Teuchos::null;
 }
-
-

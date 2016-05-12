@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_parallel.cpp
-\brief Implementation A collection of helper methods for namespace DRT
+
+\brief A collection of helper methods for namespace DRT
+
 <pre>
-\brief Implementation
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -154,5 +156,3 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ComputeNodeColMap(
                                      sourcedis->Comm()));
   return newcolnodemap;
 }
-
-

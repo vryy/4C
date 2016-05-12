@@ -34,7 +34,7 @@ class  BGS2x2_Operator : public Epetra_Operator
 public:
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
   */
   explicit BGS2x2_Operator(Teuchos::RCP<Epetra_Operator> A,
                            const Teuchos::ParameterList& list1,
@@ -49,7 +49,7 @@ public:
                            FILE* outfile = NULL);
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
   */
   virtual ~BGS2x2_Operator()
   {

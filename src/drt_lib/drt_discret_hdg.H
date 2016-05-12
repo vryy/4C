@@ -1,15 +1,12 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_hdg.H
 
-\brief Declaration a class to manage an enhanced discretization for hybridizable
+\brief A class to manage an enhanced discretization for hybridizable
      discontinuous Galerkin methods (HDG)
 
-
-</pre>
-
 <pre>
-\brief Declaration
 \level 2
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -35,7 +32,7 @@ namespace LINALG
 
 
 /*!
-\brief Declaration DRT: namespace of the baci discretization module
+\brief DRT: namespace of the baci discretization module
 
 */
 namespace DRT
@@ -47,7 +44,7 @@ public:
 
 
   /*!
-  \brief Declaration Standard Constructor
+  \brief Standard Constructor
 
   \param name (in): name of this discretization
   \param comm (in): An epetra comm object associated with this discretization
@@ -55,7 +52,7 @@ public:
   DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
   /*!
-  \brief Declaration Destructor
+  \brief Destructor
 
   */
   virtual ~DiscretizationHDG()
@@ -65,7 +62,7 @@ public:
 
 
   /*!
-  \brief Declaration Complete construction of a discretization  (Filled()==true NOT prerequisite)
+  \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
 
   After adding or deleting nodes or elements or redistributing them in parallel,
   or adding/deleting boundary conditions, this method has to be called to (re)construct
@@ -108,7 +105,7 @@ public:
                    bool doboundaryconditions = true);
 
   /*!
-  \brief Declaration Determine Dirichlet condition at given time and apply its
+  \brief Determine Dirichlet condition at given time and apply its
          values to a system vector
 
   \param cond            The condition object

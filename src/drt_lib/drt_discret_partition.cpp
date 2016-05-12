@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_discret_partition.cpp
-\brief Implementation
+
+\brief Partition part of the setup of a discretization
 
 <pre>
-\brief Implementation
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

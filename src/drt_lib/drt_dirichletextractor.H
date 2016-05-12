@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_dirichletextractor.H
-\brief Declaration
+
+\brief A map extractor for Dirichlet conditions
 
 <pre>
-\brief Declaration
 \level 0
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235

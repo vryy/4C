@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file drt_utils_gausspoints.cpp
-\brief Implementation
+
+\brief Implementation of gauss points access functions
 
 <pre>
 \level 1
+
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
