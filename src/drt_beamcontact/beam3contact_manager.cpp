@@ -1,16 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file beam3contact_manager.cpp
+
 \brief Main class to control beam contact
 
-<pre>
+\level 2
+
 \maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
 */
-
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/
@@ -1486,8 +1486,9 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(const std::vector<std::vect
 
   if(pdiscret_.Comm().MyPID()==0)
   {
-    std::cout << "      Total number of BTB contact pairs: " << pairs_.size() << std::endl;
+    std::cout << "\t Total number of BTB contact pairs:   " << pairs_.size() << std::endl;
     if (btsph_) std::cout << "\t Total number of BTSPH contact pairs: " << btsphpairs_.size() << std::endl;
+    if (btsol_) std::cout << "\t Total number of BTSOL contact pairs: " << btsolpairs_.size() << std::endl;
   }
 }
 
@@ -2367,7 +2368,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
         // write output in specific function
         const DRT::ElementType & eot = element->ElementType();
 
-        //No output for solid elements so far!
+        // no output for solid elements here
         if (eot != DRT::ELEMENTS::Beam3ebType::Instance() and
             eot != DRT::ELEMENTS::Beam3ebtorType::Instance() and
             eot != DRT::ELEMENTS::Beam3Type::Instance() and
@@ -2376,62 +2377,141 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
             eot != DRT::ELEMENTS::RigidsphereType::Instance())
           continue;
 
+        //**********
+        // BEAM3R
+        //**********
         // standard procedure for Reissner beams or rigid spheres
-        if ( eot == DRT::ELEMENTS::Beam3Type::Instance() or eot == DRT::ELEMENTS::Beam3rType::Instance() or eot == DRT::ELEMENTS::RigidsphereType::Instance())
-
+        if ( eot == DRT::ELEMENTS::Beam3Type::Instance() or
+             eot == DRT::ELEMENTS::Beam3rType::Instance() or
+             eot == DRT::ELEMENTS::RigidsphereType::Instance())
         {
-
-          // prepare storage for nodal coordinates
-          int nnodes = element->NumNode();
-          LINALG::SerialDenseMatrix coord(3,nnodes);
-
-          // compute current nodal positions
-          for (int id=0;id<3;++id)
+          //*******************************************************************
+          // special output for BEAM3r with Hermite center line interpolation
+          //*******************************************************************
+          bool done = false;
+          if (eot == DRT::ELEMENTS::Beam3rType::Instance())
           {
-            for (int jd=0;jd<element->NumNode();++jd)
+            // this cast is necessary in order to use the method ->Tref() and others
+            const DRT::ELEMENTS::Beam3r* ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(element);
+
+            if (ele->HermiteCenterlineInterpolation())
             {
-              double referenceposition = ((element->Nodes())[jd])->X()[id];
-              std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[jd]);
-              double displacement = disccol[BTSolDiscret().DofColMap()->LID(dofnode[id])];
-              coord(id,jd) =  referenceposition + displacement;
+              // mark as already done
+              done = true;
+
+              // this cast is necessary in order to use the method ->Tref()
+              const DRT::ELEMENTS::Beam3r* ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(element);
+
+              int nnodescl = 2;
+              LINALG::SerialDenseMatrix nodalcoords(3,nnodescl);
+              LINALG::SerialDenseMatrix nodaltangents(3,nnodescl);
+              LINALG::SerialDenseMatrix coord(3,n_axial);
+
+              // compute current nodal positions (center line only)
+              for (int i=0;i<3;++i)
+              {
+                for (int j=0;j<nnodescl;++j)
+                {
+                  double referenceposition = ((element->Nodes())[j])->X()[i];
+                  std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
+                  double displacement = disccol[BTSolDiscret().DofColMap()->LID(dofnode[i])];
+                  nodalcoords(i,j) =  referenceposition + displacement;
+                  nodaltangents(i,j) =  ((ele->Tref())[j])(i) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3+i])];
+                }
+              }
+
+              if (nnodescl==2)
+              {
+                LINALG::Matrix<12,1> disp_totlag(true);
+                for (int i=0;i<3;i++)
+                {
+                  disp_totlag(i)=nodalcoords(i,0);
+                  disp_totlag(i+6)=nodalcoords(i,1);
+                  disp_totlag(i+3)=nodaltangents(i,0);
+                  disp_totlag(i+9)=nodaltangents(i,1);
+                }
+                //Calculate axial positions within the element by using the Hermite interpolation
+                for (int i=0;i<n_axial;i++)
+                {
+                  double xi=-1.0 + i*2.0/(n_axial -1); // parameter coordinate of position vector on beam centerline
+                  LINALG::Matrix<3,1> r = ele->GetPos(xi, disp_totlag); //position vector on beam centerline
+
+                  for (int j=0;j<3;j++)
+                    coord(j,i)=r(j);
+                }
+              }
+              else
+              {
+                dserror("Only 2-noded center line interpolations (Hermite) possible so far!");
+              }
+              if(N_CIRCUMFERENTIAL!=0)
+                GMSH_N_noded(n,n_axial,coord,element,gmshfilecontent);
+              else
+                GMSH_N_nodedLine(n,n_axial,coord,element,gmshfilecontent);
             }
           }
+          //*******************************************************************
+          //*******************************************************************
 
-          switch (element->NumNode())
+          // standard case (no Hermite center line interpolation)
+          if (!done)
           {
-            // rigid sphere element (1 node)
-            case 1:
+            // prepare storage for nodal coordinates
+            int nnodes = element->NumNode();
+            LINALG::SerialDenseMatrix coord(3,nnodes);
+
+            // compute current nodal positions
+            for (int id=0;id<3;++id)
             {
-              GMSH_sphere(coord,element,gmshfilecontent);
-              break;
+              for (int jd=0;jd<element->NumNode();++jd)
+              {
+                double referenceposition = ((element->Nodes())[jd])->X()[id];
+                std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[jd]);
+                double displacement = disccol[BTSolDiscret().DofColMap()->LID(dofnode[id])];
+                coord(id,jd) =  referenceposition + displacement;
+              }
             }
-            // 2-noded beam element (linear interpolation)
-            case 2:
+
+            switch (element->NumNode())
             {
-              GMSH_2_noded(n,coord,element,gmshfilecontent);
-              break;
-            }
-            // 3-noded beam element (quadratic nterpolation)
-            case 3:
-            {
-              GMSH_3_noded(n,coord,element,gmshfilecontent);
-              break;
-            }
-            // 4-noded beam element (quadratic interpolation)
-            case 4:
-            {
-              GMSH_4_noded(n,coord,element,gmshfilecontent);
-              break;
-            }
-            // 4- or 5-noded beam element (higher-order interpolation)
-            default:
-            {
-              dserror("Gmsh output for %i noded element not yet implemented!", element->NumNode());
-              break;
+              // rigid sphere element (1 node)
+              case 1:
+              {
+                GMSH_sphere(coord,element,gmshfilecontent);
+                break;
+              }
+              // 2-noded beam element (linear interpolation)
+              case 2:
+              {
+                GMSH_2_noded(n,coord,element,gmshfilecontent);
+                break;
+              }
+              // 3-noded beam element (quadratic nterpolation)
+              case 3:
+              {
+                GMSH_3_noded(n,coord,element,gmshfilecontent);
+                break;
+              }
+              // 4-noded beam element (quadratic interpolation)
+              case 4:
+              {
+                GMSH_4_noded(n,coord,element,gmshfilecontent);
+                break;
+              }
+              // 4- or 5-noded beam element (higher-order interpolation)
+              default:
+              {
+                dserror("Gmsh output for %i noded element not yet implemented!", element->NumNode());
+                break;
+              }
             }
           }
         }
-        // Kirchhoff beams need a special treatment
+
+        //**********
+        // BEAM3EB
+        //**********
+        // initially straight torsion-free Kirchhoff beams need a special treatment
         else if (eot == DRT::ELEMENTS::Beam3ebType::Instance())
         {
           // this cast is necessary in order to use the method ->Tref()
@@ -2484,7 +2564,11 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
           else
             GMSH_N_nodedLine(n,n_axial,coord,element,gmshfilecontent);
         }
-        // weak Kirchhoff beams need a special treatment
+
+        //**********
+        // BEAM3K
+        //**********
+        // full strong/weak Kirchhoff beams need a special treatment
         else if (eot == DRT::ELEMENTS::Beam3kType::Instance())
         {
           // this cast is necessary in order to use the method ->Tref()
@@ -2560,6 +2644,11 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
           else
             GMSH_N_nodedLine(n,n_axial,coord,element,gmshfilecontent);
         }
+
+        //************
+        // BEAM3EBTOR
+        //************
+        // initially straight Kirchhoff beams with torsion need a special treatment
         else if (eot == DRT::ELEMENTS::Beam3ebtorType::Instance())
         {
           // this cast is necessary in order to use the method ->Tref()
@@ -2670,8 +2759,9 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
       }//loop over pairs
       #endif
 
-      // Draw solid surface elements with different colors for contact status
-
+      //**********
+      // SOLIDS
+      //**********
       //****************************begin: solid visualization
       #ifdef BTSOLGMSH
       // Loop over all column elements on this processor
@@ -3185,9 +3275,9 @@ void CONTACT::Beam3cmanager::UpdateConstrNormUzawa()
     std::cout << "      Maximal current rel. Gap  = " << maxallrelgap << std::endl;
     if ((int)btsolpairs_.size())
     {
-      std::cout << std::endl << "     ************************BTS*************************"<<std::endl;
-      std::cout << "      BTS-Penalty parameter = " << btspp_ << std::endl;
-      std::cout << "      Current Constraint Norm = " << btsolconstrnorm_ << std::endl;
+      std::cout << std::endl << "      ************************BTS*************************"<<std::endl;
+      std::cout << "      BTS-Penalty parameter     = " << btspp_ << std::endl;
+      std::cout << "      Current Constraint Norm   = " << btsolconstrnorm_ << std::endl;
     }
     std::cout<<"      ****************************************************"<<std::endl;
   }
@@ -3328,9 +3418,9 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
     std::cout << "      Maximal total rel. Gap    = " << maxtotalsimrelgap_ << std::endl;
     if ((int)btsolpairs_.size())
     {
-      std::cout << std::endl << "     ***********************************BTS************************************"<<std::endl;
-      std::cout << "      BTS-Penalty parameter = " << btspp_ << std::endl;
-      std::cout << "      Current Constraint Norm = " << btsolconstrnorm_ << std::endl;
+      std::cout << std::endl << "      ***********************************BTS************************************"<<std::endl;
+      std::cout << "      BTS-Penalty parameter     = " << btspp_ << std::endl;
+      std::cout << "      Current Constraint Norm   = " << btsolconstrnorm_ << std::endl;
     }
     std::cout<<"      **************************************************************************"<<std::endl;
   }
