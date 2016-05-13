@@ -426,6 +426,8 @@ step_(0)
       if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::PenaltyLaw>(sbeamcontact_,"BEAMS_PENALTYLAW")!=INPAR::BEAMCONTACT::pl_lp)
         dserror("Augmented Lagrange strategy only implemented for Linear penalty law (LinPen) so far!");
     }
+    else if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_,"BEAMS_STRATEGY") == INPAR::BEAMCONTACT::bstr_gmshonly )
+         std::cout << "Strategy                 Gmsh Only" << std::endl;
     else
       dserror("Unknown strategy for beam contact!");
 
@@ -633,6 +635,9 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
                                       bool newsti,
                                       double time)
 {
+  // get out of here if only interested in gmsh output
+  if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Strategy>(sbeamcontact_,"BEAMS_STRATEGY") == INPAR::BEAMCONTACT::bstr_gmshonly )
+    return;
 
   //set time
   timen_=time;
@@ -662,7 +667,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   //**********************************************************************
   // Contact: Octree search
   //**********************************************************************
-  if(tree_ != Teuchos::null)
+  if (tree_ != Teuchos::null)
   {
      t_start = Teuchos::Time::wallTime();
      elementpairs = tree_->OctTreeSearch(currentpositions);
@@ -687,28 +692,6 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   }
 
   t_start = Teuchos::Time::wallTime();
-
-  //**********************************************************************
-  //*********************************HACK*********************************
-  //**********************************************************************
-  // for beam elements where contact has not yet been implemented, just erase
-  // all potential contact pairs and continue (this is a temporary hack to allow
-  // for using the GMSH output for beam structures, even if not beam contact is
-  // present in the considered sytem)
- if ((int)(elementpairs.size())>0)
- {
-    const DRT::ElementType & ele1_type = elementpairs[0][0]->ElementType();
-    if (ele1_type != DRT::ELEMENTS::Beam3Type::Instance() and
-        ele1_type != DRT::ELEMENTS::Beam3rType::Instance() and
-        ele1_type != DRT::ELEMENTS::Beam3ebType::Instance() and
-        ele1_type != DRT::ELEMENTS::Beam3ebtorType::Instance())
-    {
-      elementpairs.resize(0);
-    }
- }
- //**********************************************************************
- //*********************************HACK*********************************
- //**********************************************************************
 
   // process the found element pairs and fill the BTB, BTSOL, BTSPH interaction pair vectors
   FillContactPairsVectors(elementpairs);

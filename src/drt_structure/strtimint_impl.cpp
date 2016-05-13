@@ -3,6 +3,8 @@
 \file strtimint_impl.cpp
 \brief Implicit time integration for structural dynamics
 
+\level 1
+
 <pre>
 \maintainer Alexander Popp
             popp@lnm.mw.tum.de
@@ -3585,6 +3587,18 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
     beamcman_->ResetAlllmuzawa();
     beamcman_->UpdateConstrNorm();
   }
+
+  //**********************************************************************
+  // misuse of beam contact module for GMSH output
+  // (nonlinear solution approach: ordinary NEWTON)
+  //**********************************************************************
+  if (strategy == INPAR::BEAMCONTACT::bstr_gmshonly)
+  {
+     // nonlinear iteration (Newton)
+    int error = NewtonFull();
+    if(error) return error;
+  }
+  //**********************************************************************
 
   //**********************************************************************
   // unknown solving strategy

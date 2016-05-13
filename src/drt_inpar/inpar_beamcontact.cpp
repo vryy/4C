@@ -2,11 +2,13 @@
 /*!
 \file inpar_beamcontact.cpp
 
-<pre>
-Maintainer: Christoph Meier
+\brief input parameter defintions for beam contact
+
+\level 2
+
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-</pre>
 */
 
 /*----------------------------------------------------------------------*/
@@ -32,11 +34,13 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   setStringToIntegralParameter<int>("BEAMS_STRATEGY","None","Type of employed solving strategy",
         tuple<std::string>("None","none",
                            "Penalty", "penalty",
-                           "Uzawa","uzawa"),
+                           "Uzawa","uzawa",
+                           "Gmshonly","gmshonly"),
         tuple<int>(
                 bstr_none, bstr_none,
                 bstr_penalty, bstr_penalty,
-                bstr_uzawa, bstr_uzawa),
+                bstr_uzawa, bstr_uzawa,
+                bstr_gmshonly,bstr_gmshonly),
         &beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_NEWGAP","No","choose between original or enhanced gapfunction",
