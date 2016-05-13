@@ -304,6 +304,7 @@ void LINALG::SparseMatrix::Zero()
   }
   else
   {
+#if 0
     // Setting the matrix to zero is not the same as creating a new matrix
     // since -- if (explicitdirichlet_) -- the graph will be the full graph and the
     // matrix might contain some Dirichlet-rows. In this case we want to go
@@ -311,25 +312,23 @@ void LINALG::SparseMatrix::Zero()
 
     // Here is room for speed improvements, but things are already quite
     // complicated.
-    //std::cout << graph_->NumGlobalNonzeros() << " " << sysmat_->NumGlobalNonzeros() << " " << Filled() << " " << (int)matrixtype_ << (graph_.get()) << " " << &(sysmat_->Graph()) << std::endl;
-    if (!explicitdirichlet_)
-      sysmat_->PutScalar(0.);
-    else
-    {
-      const Epetra_Map domainmap = sysmat_->DomainMap();
-      const Epetra_Map rangemap = sysmat_->RangeMap();
-      // Remove old matrix before creating a new one so we do not have old and
-      // new matrix in memory at the same time!
-      sysmat_ = Teuchos::null;
-      if(matrixtype_ == CRS_MATRIX)
-        sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy, *graph_));
-      else if(matrixtype_ == FE_MATRIX)
-        sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, *graph_));
-      else
-        dserror("matrix type is not correct");
 
-      sysmat_->FillComplete(domainmap,rangemap);
-    }
+    sysmat_->PutScalar(0.);
+#else
+    const Epetra_Map domainmap = sysmat_->DomainMap();
+    const Epetra_Map rangemap = sysmat_->RangeMap();
+    // Remove old matrix before creating a new one so we do not have old and
+    // new matrix in memory at the same time!
+    sysmat_ = Teuchos::null;
+    if(matrixtype_ == CRS_MATRIX)
+      sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(::Copy, *graph_));
+    else if(matrixtype_ == FE_MATRIX)
+      sysmat_ = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, *graph_));
+    else
+      dserror("matrix type is not correct");
+
+    sysmat_->FillComplete(domainmap,rangemap);
+#endif
   }
 }
 
@@ -1985,7 +1984,3 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Eye(const Epetra_Map& map)
   eye->Complete();
   return eye;
 }
-
-
-
-
