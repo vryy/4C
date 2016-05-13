@@ -229,6 +229,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==NeumannIntegration)            os << "fpsi neumann integration condition: ";
   else if (Type()==DomainIntegral)                os << "condition for domain integral computation";
   else if (Type()==BoundaryIntegral)              os << "condition for boundary integral computation";
+  else if (Type()==ScaTraFluxCalc)                os << "Scalar transport flux calculation boundary condition";
   else if (Type()==ScaTraCoupling)                os << "scatra coupling condition";
   else if (Type()==RedAirwayPrescribedScatraCond) os << "Reduced d airway prescribed scatra boundary condition";
   else if (Type()==ArtPrescribedScatraCond)       os << "one-D Arterial prescribed scatra boundary condition";

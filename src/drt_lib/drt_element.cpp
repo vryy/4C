@@ -811,6 +811,24 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
   unsigned aft = lm.size();
   if (aft-bef) lmstride.push_back((int)(aft-bef));
   lmowner.resize(lm.size(),Owner());
+
+  // fill the vector with face dofs
+  if(NumDofPerFace(0) > 0)
+  {
+    for (int i=0; i<NumFace(); ++i)
+    {
+      const int owner = face_[i]->Owner();
+      std::vector<int> dof = dis.Dof(0,face_[i]);
+      if (dof.size())
+        lmstride.push_back(dof.size());
+      for (unsigned j=0; j<dof.size(); ++j)
+      {
+        lmowner.push_back(owner);
+        lm.push_back(dof[j]);
+      }
+    }
+  }
+
   return;
 }
 
