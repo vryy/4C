@@ -3598,7 +3598,7 @@ int STR::TimIntImpl::BeamContactNonlinearSolve()
   // misuse of beam contact module for GMSH output
   // (nonlinear solution approach: ordinary NEWTON)
   //**********************************************************************
-  if (strategy == INPAR::BEAMCONTACT::bstr_gmshonly)
+  else if (strategy == INPAR::BEAMCONTACT::bstr_gmshonly)
   {
      // nonlinear iteration (Newton)
     int error = NewtonFull();
