@@ -4,10 +4,12 @@
 \brief Implicit time integration for structural dynamics
 
 <pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\level 1
+
+\maintainer Alexander Popp
+popp@lnm.mw.tum.de
+http://www.lnm.mw.tum.de
+089 - 289-15238
 </pre>
 */
 
@@ -684,6 +686,9 @@ namespace STR
 
     //! Update step for Windkessel
     void UpdateStepWindkessel();
+
+    //! Update step for SpringDashpot
+    void UpdateStepSpringDashpot();
 
     //@}
 

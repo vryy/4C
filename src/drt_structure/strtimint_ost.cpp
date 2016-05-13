@@ -4,10 +4,12 @@
 \brief Structural time integration with one-step-theta
 
 <pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\level 1
+
+\maintainer Alexander Popp
+popp@lnm.mw.tum.de
+http://www.lnm.mw.tum.de
+089 - 289-15238
 </pre>
 */
 
@@ -640,6 +642,9 @@ void STR::TimIntOneStepTheta::UpdateStepState()
 
   // update constraints
   UpdateStepWindkessel();
+
+  // update constraints
+  UpdateStepSpringDashpot();
 
   // update contact / meshtying
   UpdateStepContactMeshtying();

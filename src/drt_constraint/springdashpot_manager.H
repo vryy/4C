@@ -4,10 +4,9 @@
 \brief Methods for spring and dashpot constraints / boundary conditions:
 
 <pre>
-Maintainer: Martin Pfaller
-            pfaller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
+\level 2
+
+\maintainer Martin Pfaller
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -68,6 +67,9 @@ namespace UTILS
                                     Teuchos::RCP<Epetra_Vector> disn,
                                     Teuchos::RCP<Epetra_Vector> veln,
                                     Teuchos::ParameterList parlist);
+
+    //! update for each new time step
+    void Update();
 
     //! output of gap, normal, and nodal stiffness
     void Output(Teuchos::RCP<IO::DiscretizationWriter> output,

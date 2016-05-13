@@ -1,83 +1,68 @@
 // Maintainer: Martin Pfaller, pfaller@lnm.mw.tum.de
 -----------------------------------------------------------------------TITLE
 spring_dashpot_current_normal
-// is testing:
-// - spring dashpot BC with direction current surface normal
+// setup
+// - 6 cubes with quasi-solid material
+// - spring dashpot BC with direction "current surface normal"
 // - spring stiffness is calculated from a projection of the BC onto a BELE reference surface
-----------------------------------------------------------------PROBLEM SIZE
-ELEMENTS                        92
-NODES                           228
---------------------------------------------------------------DISCRETISATION
-NUMAIRWAYSDIS                   0
-NUMALEDIS                       0
-NUMARTNETDIS                    0
-NUMFLUIDDIS                     0
-NUMTHERMDIS                     0
+// is testing:
+// - different element types
+// - analytical solution for spring and dashpot
 --------------------------------------------------------------------------IO
-OUTPUT_BIN                      Yes
-STRUCT_STRAIN                   gl
-STRUCT_STRESS                   Cauchy
+// OUTPUT_EVERY_ITER               Yes
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Statics
 LINEAR_SOLVER                   1
+RESTARTEVRY                     11
 MAXTIME                         1.0
-NUMSTEP                         10
-PRESTRESS                       None
-RESTARTEVRY                     10
-TIMESTEP                        0.1
-TOLRES                          1e-06
-TOLDISP                         1e-11
+NUMSTEP                         2
+TIMESTEP                        0.5
+TOLRES                          1e-08
+TOLDISP                         1e-13
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100000.0 NUE 0.3 DENS 1.0e-6
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000.0 NUE 0.3 DENS 1.0e-6
-MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 100000.0 NUE 0.3 DENS 1.0e-6
-MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 100000.0 NUE 0.3 DENS 1.0e-6
-MAT 5 MAT_Struct_StVenantKirchhoff YOUNG 100000.0 NUE 0.3 DENS 1.0e-6
-MAT 6 MAT_Struct_StVenantKirchhoff YOUNG 100000.0 NUE 0.3 DENS 1.0e-6
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0e06 NUE 0.0 DENS 1.0e-16
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0e06 NUE 0.0 DENS 1.0e-16
+MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0e06 NUE 0.0 DENS 1.0e-16
+MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 1.0e06 NUE 0.0 DENS 1.0e-16
+MAT 5 MAT_Struct_StVenantKirchhoff YOUNG 1.0e06 NUE 0.0 DENS 1.0e-16
+MAT 6 MAT_Struct_StVenantKirchhoff YOUNG 1.0e06 NUE 0.0 DENS 1.0e-16
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 3.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 6.0e-1 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 12 QUANTITY dispx VALUE 6.0e-1 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 39 QUANTITY dispx VALUE 6.0e-1 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 61 QUANTITY dispx VALUE 6.0e-1 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 84 QUANTITY dispx VALUE 6.0e-1 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 120 QUANTITY dispx VALUE 3.81300723440306799e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE   1 QUANTITY dispx VALUE  1.5e0  TOLERANCE 1e-13
+STRUCTURE DIS structure NODE  12 QUANTITY dispx VALUE -5.0e-2 TOLERANCE 1e-13
+STRUCTURE DIS structure NODE  39 QUANTITY dispx VALUE  6.0e-1 TOLERANCE 1e-13
+STRUCTURE DIS structure NODE  61 QUANTITY dispx VALUE  6.0e-1 TOLERANCE 1e-13
+STRUCTURE DIS structure NODE  84 QUANTITY dispx VALUE  6.0e-1 TOLERANCE 1e-13
+STRUCTURE DIS structure NODE 120 QUANTITY dispx VALUE -6.0e-2 TOLERANCE 1e-13
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDSURF                          30
+NDSURF 30
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF                           6
-E 7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 8 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 9 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 10 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 11 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
-E 12 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+DSURF 6
+E  7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL  3.0 0.0 0.0 0.0 0.0 0.0 CURVE none 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E  8 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -0.1 0.0 0.0 0.0 0.0 0.0 CURVE none 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E  9 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL  1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 10 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL  1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 11 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL  1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
+E 12 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -0.1 0.0 0.0 0.0 0.0 0.0 CURVE 1 1 1 1 1 1 FUNCT 0 0 0 0 0 0 Live Mid
 ---------------------------------------DESIGN SURF SPRING DASHPOT CONDITIONS
-DSURF                           12
-E 1 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION cursurfnormal COUPLING 1
-E 2 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION cursurfnormal COUPLING 1
-E 3 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION cursurfnormal COUPLING 1
-E 4 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION cursurfnormal COUPLING 1
-E 5 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION cursurfnormal COUPLING 1
-E 6 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION cursurfnormal COUPLING 1
-E 13 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION refsurfnormal COUPLING none
-E 14 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION refsurfnormal COUPLING none
-E 15 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION refsurfnormal COUPLING none
-E 16 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION refsurfnormal COUPLING none
-E 17 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.1 DIRECTION refsurfnormal COUPLING none
-E 18 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.05 DIRECTION all COUPLING none
+DSURF 6
+E 1 - SPRING_STIFF_TENS 0.0 SPRING_STIFF_COMP 0.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 2.0 DIRECTION cursurfnormal COUPLING 1
+E 2 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 0.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 2.0 DIRECTION cursurfnormal COUPLING 1
+E 3 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 3.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION cursurfnormal COUPLING 1
+E 4 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 3.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION cursurfnormal COUPLING 1
+E 5 - SPRING_STIFF_TENS 5.0 SPRING_STIFF_COMP 3.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION cursurfnormal COUPLING 1
+E 6 - SPRING_STIFF_TENS 3.0 SPRING_STIFF_COMP 5.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.0 DIRECTION cursurfnormal COUPLING 1
 ------------------------------DESIGN SURF SPRING DASHPOT COUPLING CONDITIONS
-DSURF                           1
+DSURF 1
 E 19 - 1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           2
+DSURF 2
 E 19 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
-E 20 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+E 20 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
@@ -260,10 +245,6 @@ NODE 225 DSURFACE 19
 NODE 226 DSURFACE 19
 NODE 227 DSURFACE 19
 NODE 228 DSURFACE 19
-NODE 229 DSURFACE 19
-NODE 230 DSURFACE 19
-NODE 231 DSURFACE 19
-NODE 232 DSURFACE 19
 NODE 2 DSURFACE 20
 NODE 3 DSURFACE 20
 NODE 6 DSURFACE 20
@@ -298,6 +279,31 @@ NODE 93 DSURFACE 20
 NODE 94 DSURFACE 20
 NODE 95 DSURFACE 20
 NODE 99 DSURFACE 20
+NODE 148 DSURFACE 20
+NODE 149 DSURFACE 20
+NODE 174 DSURFACE 20
+NODE 199 DSURFACE 20
+NODE 224 DSURFACE 20
+NODE 138 DSURFACE 20
+NODE 139 DSURFACE 20
+NODE 169 DSURFACE 20
+NODE 194 DSURFACE 20
+NODE 219 DSURFACE 20
+NODE 128 DSURFACE 20
+NODE 129 DSURFACE 20
+NODE 164 DSURFACE 20
+NODE 189 DSURFACE 20
+NODE 214 DSURFACE 20
+NODE 117 DSURFACE 20
+NODE 119 DSURFACE 20
+NODE 159 DSURFACE 20
+NODE 184 DSURFACE 20
+NODE 209 DSURFACE 20
+NODE 116 DSURFACE 20
+NODE 118 DSURFACE 20
+NODE 158 DSURFACE 20
+NODE 183 DSURFACE 20
+NODE 208 DSURFACE 20
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD -1.0 -1.0 1.0
 NODE 2 COORD -1.0 -1.0 -1.0
@@ -523,14 +529,10 @@ NODE 221 COORD 1.0 1.0 1.60e+01
 NODE 222 COORD 1.0 1.0 1.50e+01
 NODE 223 COORD 1.0 1.0 1.45e+01
 NODE 224 COORD 1.0 1.0 1.40e+01
-NODE 225 COORD -1.5 -2.0 17.0
-NODE 226 COORD -1.5 -2.0 -2.0
-NODE 227 COORD -1.5  2.0 -2.0
-NODE 228 COORD -1.5  2.0 17.0
-NODE 229 COORD -1.1 -2.0 17.0
-NODE 230 COORD -1.1 -2.0 -2.0
-NODE 231 COORD -1.1  2.0 -2.0
-NODE 232 COORD -1.1  2.0 17.0
+NODE 225 COORD -1.1 -2.0 17.0
+NODE 226 COORD -1.1 -2.0 -2.0
+NODE 227 COORD -1.1  2.0 -2.0
+NODE 228 COORD -1.1  2.0 17.0
 ----------------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
 2 SOLIDH20 HEX20 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 MAT 2 KINEM nonlinear
@@ -623,6 +625,6 @@ NODE 232 COORD -1.1  2.0 17.0
 89 SOLIDH8 HEX8 190 192 197 195 215 217 222 220 MAT 6 KINEM nonlinear EAS none
 90 SOLIDH8 HEX8 192 193 198 197 217 218 223 222 MAT 6 KINEM nonlinear EAS none
 91 SOLIDH8 HEX8 193 194 199 198 218 219 224 223 MAT 6 KINEM nonlinear EAS none
-92 SOLIDH8 HEX8 225 226 227 228 229 230 231 232 MAT 6 KINEM nonlinear EAS none
+92 BELE3_3 QUAD4 225 226 227 228 MAT 6 KINEM nonlinear EAS none
 -------------------------------------------------------------------------END
 //                              END

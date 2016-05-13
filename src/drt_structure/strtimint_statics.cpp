@@ -2,7 +2,7 @@
 /*!
 \file strtimint_statics.cpp
 \brief Statics analysis
-
+\level 1
 \maintainer Alexander Popp
 */
 
@@ -396,6 +396,9 @@ void STR::TimIntStatics::UpdateStepState()
 
   // update Windkessel
   UpdateStepWindkessel();
+
+  // update constraints
+  UpdateStepSpringDashpot();
 
   // update contact / meshtying
   UpdateStepContactMeshtying();

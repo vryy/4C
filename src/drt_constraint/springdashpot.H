@@ -4,10 +4,9 @@
 \brief Methods for spring and dashpot constraints / boundary conditions
 
 <pre>
-Maintainer: Martin Pfaller
-            pfaller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
+\level 3
+
+\maintainer Martin Pfaller
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -113,6 +112,9 @@ namespace UTILS
       void OutputPrestrOffset(
           Teuchos::RCP<Epetra_MultiVector> &springprestroffset);
 
+      //! udpate condition for new time step
+      void Update();
+
       //! return type of spring
       SpringType GetSpringType()
       {
@@ -134,7 +136,8 @@ namespace UTILS
       void GetRefNormals(const std::map<int,Teuchos::RCP<DRT::Element> >& geom);
 
       //! get current normal
-      void GetCurNormals(Teuchos::RCP<Epetra_Vector> disp);
+      void GetCurNormals(Teuchos::RCP<Epetra_Vector> disp,
+                         Teuchos::ParameterList parlist);
 
       //! initialize prestr offset
       void InitializePrestrOffset();
@@ -156,7 +159,8 @@ namespace UTILS
 
       // spring dashpot evaluation
       std::map<int, double> gap0_; //< nodal gap in reference configuration
-      std::map<int, double> gap_; //< nodal gap in current configuration
+      std::map<int, double> gapnp_; //< nodal gap in current configuration (current time step)
+      std::map<int, double> gapn_; //< nodal gap in current configuration (last time step)
       std::map<int, double> gapdt_; //< nodal gap velocity in current configuration
       std::map<int, std::map<int,double> > dgap_; //< linearization of nodal gap
       std::map<int, std::vector<double> > normals_; //< nodal normal

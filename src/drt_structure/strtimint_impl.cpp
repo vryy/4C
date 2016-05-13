@@ -1246,9 +1246,7 @@ void STR::TimIntImpl::ApplyForceStiffSpringDashpot
 )
 {
   if (springman_->HaveSpringDashpot())
-  {
     springman_->StiffnessAndInternalForces(stiff,fint,disn,veln,psprdash);
-  }
 
   return;
 }
@@ -2769,6 +2767,14 @@ void STR::TimIntImpl::UpdateStepWindkessel()
 {
   if (windkman_ -> HaveWindkessel())
     windkman_->UpdateTimeStep();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void STR::TimIntImpl::UpdateStepSpringDashpot()
+{
+  if (springman_->HaveSpringDashpot())
+    springman_->Update();
 }
 
 /*----------------------------------------------------------------------*/

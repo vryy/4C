@@ -4,10 +4,9 @@
 \brief Methods for spring and dashpot constraints / boundary conditions:
 
 <pre>
-Maintainer: Martin Pfaller
-            pfaller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
+\level 3
+
+\maintainer Martin Pfaller
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -42,7 +41,8 @@ UTILS::SpringDashpot::SpringDashpot(
     nodes_(spring_->Nodes()),
     area_(),
     gap0_(),
-    gap_(),
+    gapnp_(),
+    gapn_(),
     gapdt_(),
     dgap_(),
     normals_(),
@@ -57,9 +57,6 @@ UTILS::SpringDashpot::SpringDashpot(
 
   if (springtype_ == cursurfnormal && coupling_==-1)
     dserror("Coupling id necessary for DIRECTION cursurfnormal.");
-
-  if (springtype_ == cursurfnormal && viscosity_ != 0)
-    dserror("Viscous damping not yet implemented for DIRECTION cursurfnormal.");
 
   // get geometry
   std::map<int,Teuchos::RCP<DRT::Element> >& geom = spring_->Geometry();
@@ -92,19 +89,19 @@ void UTILS::SpringDashpot::Evaluate(
   if (disp==Teuchos::null) dserror("Cannot find displacement state in discretization");
 
   // reset last Newton step (common for all spring types)
-  gap_.clear();
+  gapnp_.clear();
   gapdt_.clear();
   springstress_.clear();
 
   // get time integrator properties
   const double gamma = parlist.get("scale_gamma",0.0);
   const double beta = parlist.get("scale_beta",1.0);
-  const double ts_size = parlist.get("time_step_size",1.0);
-  const double time_scale = gamma/(beta*ts_size);
+  const double dt = parlist.get("time_step_size",1.0);
+  const double time_scale = gamma/(beta*dt);
 
   if (springtype_ == cursurfnormal)
   {
-    GetCurNormals(disp);
+    GetCurNormals(disp, parlist);
     stiff->UnComplete(); // sparsity pattern might change
   }
 
@@ -150,7 +147,7 @@ void UTILS::SpringDashpot::Evaluate(
           const double v = (*velo)[velo->Map().LID(dofs[k])]; // velocity
 
           const double val  = nodalarea*(stiff_tens_*(u-offset_-offsetprestr[k]) + viscosity_*v);
-          const double dval = nodalarea*(stiff_tens_ + viscosity_*gamma/(beta*ts_size));
+          const double dval = nodalarea*(stiff_tens_ + viscosity_*time_scale);
 
           const int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
           if (err) dserror("SumIntoGlobalValues failed!");
@@ -192,7 +189,7 @@ void UTILS::SpringDashpot::Evaluate(
 
       case cursurfnormal: // spring dashpot acts in curnormal direction
         // spring displacement
-        gap = gap_[gid];
+        gap = gapnp_[gid];
         gapdt = gapdt_[gid];
 
         // select spring stiffnes
@@ -203,7 +200,7 @@ void UTILS::SpringDashpot::Evaluate(
         for (int k=0; k<numdof; ++k)
         {
           // force
-          const double val = - nodalarea*(springstiff*(gap-offset_) + viscosity_*gapdt)*normal[k];
+          const double val = - nodalarea*(springstiff*(gap-offsetprestr[k]-offset_) + viscosity_*gapdt)*normal[k];
           const int err = fint->SumIntoGlobalValues(1,&val,&dofs[k]);
           if (err) dserror("SumIntoGlobalValues failed!");
 
@@ -217,17 +214,20 @@ void UTILS::SpringDashpot::Evaluate(
             // linearize gap
             for(std::map<int, double>::iterator i = dgap.begin(); i != dgap.end(); ++i)
             {
-              const double dval = -nodalarea*springstiff*(i->second)*normal[k];
+              const double dval = -nodalarea*(springstiff*(i->second) + viscosity_*(i->second)/dt)*normal[k];
               stiff->Assemble(dval,dofs[k],i->first);
             }
 
             // linearize normal
             for(GEN::pairedvector<int,double>::iterator i = dnormal[k].begin(); i != dnormal[k].end(); ++i)
             {
-              const double dval = -nodalarea*springstiff*(gap-offset_)*(i->second);
+              const double dval = -nodalarea*(springstiff*(gap-offset_) + viscosity_*gapdt)*(i->second);
               stiff->Assemble(dval,dofs[k],i->first);
             }
           }
+          else
+//            dserror("Projection does not exist for node %d.", gid+1);
+
           // store negative value of internal force for output (=reaction force)
           out_vec[k] = - val;
         }
@@ -351,7 +351,7 @@ void UTILS::SpringDashpot::OutputGapNormal(
     Teuchos::RCP<Epetra_MultiVector> &stress)
 {
   // export gap function
-  for(std::map<int, double>::iterator i = gap_.begin(); i != gap_.end(); ++i)
+  for(std::map<int, double>::iterator i = gapnp_.begin(); i != gapnp_.end(); ++i)
   {
     // global id -> local id
     const int lid = gap->Map().LID(i->first);
@@ -416,6 +416,15 @@ void UTILS::SpringDashpot::OutputPrestrOffset(
   }
 
   return;
+}
+
+/*-----------------------------------------------------------------------*
+|                                                           pfaller May16|
+ *-----------------------------------------------------------------------*/
+void UTILS::SpringDashpot::Update()
+{
+  // store current time step
+  gapn_ = gapnp_;
 }
 
 /*-----------------------------------------------------------------------*
@@ -690,8 +699,12 @@ void UTILS::SpringDashpot::InitializePrestrOffset()
 /*-----------------------------------------------------------------------*
 |(private)                                                  pfaller Apr15|
  *-----------------------------------------------------------------------*/
-void UTILS::SpringDashpot::GetCurNormals(Teuchos::RCP<Epetra_Vector> disp)
+void UTILS::SpringDashpot::GetCurNormals(Teuchos::RCP<Epetra_Vector> disp,
+                                         Teuchos::ParameterList parlist)
 {
+  // get current time step size
+  const double dt = parlist.get("time_step_size",1.0);
+
   // reset last newton step (only for curnormal)
   dgap_.clear();
   normals_.clear();
@@ -703,15 +716,18 @@ void UTILS::SpringDashpot::GetCurNormals(Teuchos::RCP<Epetra_Vector> disp)
   // calculate normals and gap using CONTACT elements
   mortar_->Interface()->EvaluateDistances(disp,normals_,dnormals_,tmpgap,dgap_);
 
-  // subtract reference gap from current gap (gap in reference configuration is zero everywhere)
   for(std::map<int, double>::iterator i = tmpgap.begin(); i != tmpgap.end(); ++i)
   {
+    // subtract reference gap from current gap (gap in reference configuration is zero everywhere)
     std::map<int, double>::iterator j = gap0_.find(i->first);
     if(j == gap0_.end())
-      gap_[i->first] = i->second;
+      gapnp_[i->first] = i->second;
 //      dserror("The maps of reference gap and current gap are inconsistent.");
     else
-      gap_[i->first] = i->second - j->second;
+      gapnp_[i->first] = i->second - j->second;
+
+    // calculate gap velocity via local finite difference (not the best way but also not the worst)
+    gapdt_[i->first] = (gapnp_[i->first] - gapn_[i->first])/dt;
   }
 
   return;

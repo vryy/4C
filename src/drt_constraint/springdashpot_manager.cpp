@@ -4,10 +4,9 @@
 \brief Methods for spring and dashpot constraints / boundary conditions:
 
 <pre>
-Maintainer: Martin Pfaller
-            pfaller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
+\level 2
+
+\maintainer Martin Pfaller
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -38,12 +37,9 @@ havespringdashpot_(false)
     // yes! we have spring dashpot conditions!
     havespringdashpot_ = true;
 
-    // loop over all spring dashpot conditions
+    // new instance of spring dashpot BC with current condition for every spring dashpot condition
     for (int i=0; i<n_conds_; ++i)
-    {
-      // new instance of spring dashpot BC with current condition
       springs_.push_back(Teuchos::rcp(new SpringDashpot(actdisc_, springdashpots[i])));
-    }
   }
 
   return;
@@ -56,11 +52,18 @@ void UTILS::SpringDashpotManager::StiffnessAndInternalForces(
     Teuchos::RCP<Epetra_Vector> veln,
     Teuchos::ParameterList parlist)
 {
-  // loop over all spring dashpot conditions and evaluate them
+  // evaluate all spring dashpot conditions
   for (int i=0; i<n_conds_; ++i)
-  {
     springs_[i]->Evaluate(stiff, fint, disn, veln, parlist);
-  }
+
+  return;
+}
+
+void UTILS::SpringDashpotManager::Update()
+{
+  // update all spring dashpot conditions for each new time step
+  for (int i=0; i<n_conds_; ++i)
+    springs_[i]->Update();
 
   return;
 }
