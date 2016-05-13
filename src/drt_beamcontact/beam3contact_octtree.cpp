@@ -1,7 +1,9 @@
 /*!----------------------------------------------------------------------
 \file beam3contact_octtree.cpp
-\brief Octtree for beam contact search
 
+\brief Octree for beam contact search
+
+\level 2
 
 \maintainer Kei Müller
             mueller@lnm.mw.tum.de
@@ -159,7 +161,7 @@ basisnodes_(discret.NumGlobalNodes())
       boundingbox_ = Beam3ContactOctTree::cyloriented;
 
       if (btsol_)
-        dserror("Only axis aligned bounding boxes possible for beam to solid contact!");
+        dserror("Only axis aligned or spherical bounding boxes possible for beam-to-solid contact!");
       else if (btsph_)
         dserror("Only axis-aligned or spherical bounding boxes possible for beam-to-sphere contact!");
     }
@@ -169,9 +171,6 @@ basisnodes_(discret.NumGlobalNodes())
       if(!discret_.Comm().MyPID())
         std::cout<<"Search routine:\nOctree + Spherical BBs"<<std::endl;
       boundingbox_ = Beam3ContactOctTree::spherical;
-
-      if (btsol_)
-        dserror("Only axis aligned bounding boxes possible for beam to solid contact!");
     }
       break;
     default: dserror("No octree (i.e. none) declared in your input file!");
@@ -602,10 +601,10 @@ void Beam3ContactOctTree::CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> 
             CalcCornerPos(element, currentpositions, coord);
           break;
           case Beam3ContactOctTree::cyloriented:
-            dserror("Only axis aligned bounding boxes possible for beam to solid contact!");
+            dserror("Only axis aligned or spherical bounding boxes possible for beam-to-solid contact!");
           break;
           case Beam3ContactOctTree::spherical:
-            dserror("Only axis aligned bounding boxes possible for beam to solid contact!");
+            CalcCornerPos(element, currentpositions, coord);
           break;
           default: dserror("No or an invalid Octree type was chosen. Check your input file!");
           break;
@@ -909,7 +908,20 @@ void Beam3ContactOctTree::CreateSPBB(Epetra_SerialDenseMatrix&              coor
       dserror("coord matrix of nodal positions has wrong dimensions here!");
   }
   else if (BEAMCONTACT::RigidsphereElement(*element))
+  {
     diameter = (*diameter_)[elecolid];
+  }
+  else
+  {
+    if (coord.M()==3 and coord.N()==2)
+    {
+      diameter = sqrt((coord(0,0)-coord(0,1))*(coord(0,0)-coord(0,1))+
+                      (coord(1,0)-coord(1,1))*(coord(1,0)-coord(1,1))+
+                      (coord(2,0)-coord(2,1))*(coord(2,0)-coord(2,1)));
+    }
+    else
+      dserror("coord matrix of nodal positions has wrong dimensions here!");
+  }
 
   // we want an additive extrusion of the radius, hence "2.0"
   if(additiveextrusion_)
@@ -1887,6 +1899,11 @@ void Beam3ContactOctTree::CalcCornerPos(DRT::Element* element,
 
   LINALG::Matrix<3,1> coord_max(true);
   LINALG::Matrix<3,1> coord_min(true);
+  for (int k=0;k<3;++k)
+  {
+    coord_max(k) = -1.0e12;
+    coord_min(k) =  1.0e12;
+  }
 
   for(int i=0; i<element->NumNode(); i++)
   {
@@ -1901,6 +1918,11 @@ void Beam3ContactOctTree::CalcCornerPos(DRT::Element* element,
     }
   }
 
+  for (int k=0;k<3;++k)
+  {
+    if (coord_max(k) ==-1.0e12 || coord_min(k) == 1.0e12)
+      dserror("ERROR: CalcCornerPos was not successful");
+  }
   /*  We don't fill real node coordinates in the matrix coord, but only the min/max x-,y-,z- values over
       all nodes of the considered elements. These coordinates coord_max and coord_min can thus be interpreted
       as fictitious nodes which are sufficient in order to create a correct bounding box. */
