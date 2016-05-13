@@ -3,6 +3,7 @@
 
 \brief evaluation methods for 3D nonlinear Reissner beam element
 
+\level 2
 
 \maintainer Christoph Meier
             meier@lnm.mw.tum.de
@@ -2487,3 +2488,27 @@ inline void DRT::ELEMENTS::Beam3r::NodeShift(Teuchos::ParameterList& params,  //
 
 return;
 }//DRT::ELEMENTS::Beam3r::NodeShift
+
+/*----------------------------------------------------------------------------------------------------------*
+ | Get position vector at xi for given nodal displacements                                        popp 02/16|
+ *----------------------------------------------------------------------------------------------------------*/
+LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3r::GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const
+{
+  LINALG::Matrix<3,1> r(true);
+  LINALG::Matrix<4,1> N_i(true);
+
+  if (!centerline_hermite_)
+    dserror("ERROR: GetPos() method only for Hermite center lines");
+
+  DRT::UTILS::shape_function_hermite_1D(N_i,xi,reflength_,line2);
+
+  for (int n=0;n<4;n++)
+  {
+    for (int i=0;i<3;i++)
+    {
+      r(i)+=N_i(n)*disp_totlag(3*n+i);
+    }
+  }
+
+  return (r);
+}

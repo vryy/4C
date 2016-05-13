@@ -1,9 +1,9 @@
 /*!----------------------------------------------------------------------
 \file beam3r.cpp
 
-
 \brief 3D nonlinear Reissner beam element
 
+\level 2
 
 \maintainer Christoph Meier
             meier@lnm.mw.tum.de
@@ -1371,11 +1371,11 @@ LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3r::Tcurr(const int NodeID)
 /*----------------------------------------------------------------------------------*
  |  return reference tangent at first node                            mukherjee 04/15|
  *----------------------------------------------------------------------------------*/
-LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3r::Tref() const
+LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3r::Treffirst() const
 {
   // TODO
-  if (NumNode()>2) dserror("Beam3r::Tref() is not intended for nnode>2 since tangent vector varies along centerline!");
-  if (centerline_hermite_) dserror("Beam3r::Tref() is not intended for Hermite interpolation of centerline since tangent vector varies along centerline!");
+  if (NumNode()>2) dserror("Beam3r::Treffirst() is not intended for nnode>2 since tangent vector varies along centerline!");
+  if (centerline_hermite_) dserror("Beam3r::Treffirst() is not intended for Hermite interpolation of centerline since tangent vector varies along centerline!");
 
   LINALG::Matrix<3,1> Tref;
   double norm = Trefnode_[0].Norm2();

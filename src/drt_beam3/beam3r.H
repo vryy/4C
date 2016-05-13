@@ -3,6 +3,7 @@
 
 \brief 3D nonlinear Reissner beam element
 
+\level 2
 
 \maintainer Christoph Meier
             meier@lnm.mw.tum.de
@@ -238,6 +239,11 @@ public:
   bool HermiteCenterlineInterpolation() const { return centerline_hermite_;}
 
   /*!
+   \brief Get centerline position at given parameter coordinate xi
+  */
+  LINALG::Matrix<3,1> GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const;
+
+  /*!
   \brief compute and get current tangent at specified node i.e. Tcurrnode_
   Attention: strictly speaking, this returns the first vector of the nodal triad which is NOT identical to the tangent of the centerline
              see also corresponding notes in implementation
@@ -247,8 +253,15 @@ public:
   /*!
   \brief get tangent of centerline at first node in reference configuration (constant over element length for linear Lagrange interpolation)
   */
-  LINALG::Matrix<3,1> Tref() const;
+  LINALG::Matrix<3,1> Treffirst() const;
 
+  /*!
+  \brief get tangent of centerline at all nodes in reference configuration
+  */
+  std::vector<LINALG::Matrix<3,1> > Tref() const
+  {
+    return Trefnode_;
+  }
   /*!
   \brief Get jacobiGP_ factor of first Gauss point for under-integration (constant over element length for linear Lagrange interpolation)
   */

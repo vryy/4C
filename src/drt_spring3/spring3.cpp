@@ -2,6 +2,7 @@
 \file spring3.cpp
 \brief three dimensional spring element
 
+\level 2
 
 \maintainer Dhrubajyoti Mukherjee
             mukherjee@lnm.mw.tum.de
@@ -264,7 +265,7 @@ void DRT::ELEMENTS::Spring3::TrefBeam3r(LINALG::Matrix<3,1>& Tref1, LINALG::Matr
     DRT::ELEMENTS::Beam3r* fil1 = dynamic_cast<DRT::ELEMENTS::Beam3r*> (Element1);
     if(fil1==NULL)
       return;
-    Tref1=fil1->Tref();
+    Tref1=fil1->Treffirst();
   }
   DRT::Node* node2 = this->Nodes()[1];
   DRT::Element* Element2=node2->Elements()[0];
@@ -273,7 +274,7 @@ void DRT::ELEMENTS::Spring3::TrefBeam3r(LINALG::Matrix<3,1>& Tref1, LINALG::Matr
     DRT::ELEMENTS::Beam3r* fil2 = dynamic_cast<DRT::ELEMENTS::Beam3r*> (Element2);
     if (fil2==NULL)
       return;
-    Tref2=fil2->Tref();
+    Tref2=fil2->Treffirst();
   }
  return;
 }
