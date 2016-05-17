@@ -14,6 +14,8 @@
      and stationary solver.
 
 <pre>
+\level 1
+
 \maintainer Anh-Tu Vuong
             vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
@@ -2731,6 +2733,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
     //-------- update values at intermediate time steps (only for gen.-alpha)
     ComputeIntermediateValues();
+
+    // compute values at the interior of the elements (required for hdg)
+    ComputeInteriorValues();
 
   } // nonlinear iteration
 

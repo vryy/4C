@@ -1,10 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file scatra_ele_input.cpp
-\brief
+\brief Read scalar transport element
 
 <pre>
-Maintainer: Andreas Ehrl
+\level 1
+
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -71,6 +73,10 @@ bool DRT::ELEMENTS::Transport::ReadElement(
     impltype_ = INPAR::SCATRA::impltype_pororeac;
   else if(impltype == "PoroReacECM")
     impltype_ = INPAR::SCATRA::impltype_pororeacECM;
+  else if(impltype == "Hdg")
+    impltype_ = INPAR::SCATRA::impltype_std_hdg;
+  else if(impltype == "HdgCardMono")
+    impltype_ = INPAR::SCATRA::impltype_cardiac_monodomain_hdg;
   else
     dserror("Transport element received invalid implementation type!");
 

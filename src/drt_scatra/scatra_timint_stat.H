@@ -1,8 +1,10 @@
 /*!----------------------------------------------------------------------
 \file scatra_timint_stat.H
-\brief
+\brief solution algorithm for stationary problems
 
 <pre>
+\level 1
+
 \maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -40,6 +42,9 @@ public:
 
   /// compute values at intermediate time steps (required for generalized-alpha)
   void ComputeIntermediateValues(){return;};
+
+  /// compute values at the interior of the elements (required for hdg)
+  virtual void ComputeInteriorValues(){return;};
 
   ///  compute scalar time derivative
   void ComputeTimeDerivative(){return;};

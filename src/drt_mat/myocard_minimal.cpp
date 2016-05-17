@@ -1,9 +1,13 @@
 /*!----------------------------------------------------------------------
-\file myocard.cpp
+\file myocard_minimal.cpp
+
+\brief minimal modoel for myocard material
 
 <pre>
-Maintainer: Cristobal Bertogloi
-            bertoglio@lnm.mw.tum.de
+\level 3
+
+\maintainer Julia Hoermann
+            hoermann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15264
 </pre>
@@ -31,20 +35,34 @@ Myocard_Minimal::Myocard_Minimal()
 /*----------------------------------------------------------------------*
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
-Myocard_Minimal::Myocard_Minimal(const double eps_deriv_myocard,const std::string tissue)
+Myocard_Minimal::Myocard_Minimal(const double eps_deriv_myocard,const std::string tissue, int num_gp)
 :
-  tools_()
+  tools_(),
+  v0_(num_gp),
+  w0_(num_gp),
+  s0_(num_gp),
+  v_(num_gp),
+  w_(num_gp),
+  s_(num_gp),
+  Jfi_(num_gp),
+  Jso_(num_gp),
+  Jsi_(num_gp)
+
 {
-  // Initial condition
-  v0_ = 1.0;
-  w0_ = 1.0;
-  s0_ = 0.0;
-  v_ = v0_;
-  w_ = w0_;
-  s_ = s0_;
-  Jfi_ = 0.0; /// fast inward current
-  Jso_ = 0.0; /// slow outward current
-  Jsi_ = 0.0; /// slow inward current
+
+  for (int i=0; i<num_gp; ++i)
+  {
+    // Initial condition
+    v0_[i] = 1.0;
+    w0_[i] = 1.0;
+    s0_[i] = 0.0;
+    v_[i] = v0_[i];
+    w_[i] = w0_[i];
+    s_[i] = s0_[i];
+    Jfi_[i] = 0.0; /// fast inward current
+    Jso_[i] = 0.0; /// slow outward current
+    Jsi_[i] = 0.0; /// slow inward current
+  }
 
 
   eps_deriv_ = eps_deriv_myocard;
@@ -182,7 +200,11 @@ Myocard_Minimal::Myocard_Minimal(const double eps_deriv_myocard,const std::strin
 
 double Myocard_Minimal::ReaCoeff(const double phi, const double dt)
 {
+  return Myocard_Minimal::ReaCoeff(phi, dt, 0);
+}
 
+double Myocard_Minimal::ReaCoeff(const double phi, const double dt, int gp)
+{
   double reacoeff = 0.0;
   const double p = 1000.0;
 
@@ -200,21 +222,22 @@ double Myocard_Minimal::ReaCoeff(const double phi, const double dt)
     // calculate gating variables according to [8]
     double Tau_v    = tools_.GatingFunction(Tau_vm, Tau_vp_, p, phi, Theta_v_);
     double v_inf_GF = tools_.GatingFunction(v_inf , 0.0   , p, phi, Theta_v_);
-    v_ = tools_.GatingVarCalc(dt, v0_, v_inf_GF, Tau_v);
+    v_[gp] = tools_.GatingVarCalc(dt, v0_[gp], v_inf_GF, Tau_v);
 
     double Tau_w    = tools_.GatingFunction(Tau_wm, Tau_wp_, p, phi, Theta_w_);
     double w_inf_GF = tools_.GatingFunction(w_inf , 0.0   , p, phi, Theta_w_);
-    w_ = tools_.GatingVarCalc(dt, w0_, w_inf_GF, Tau_w);
+    w_[gp] = tools_.GatingVarCalc(dt, w0_[gp], w_inf_GF, Tau_w);
 
     const double s_inf = tools_.GatingFunction(0.0, 1.0, k_s_, phi, u_s_);
-    s_ = tools_.GatingVarCalc(dt, s0_, s_inf, Tau_s);
+    s_[gp] = tools_.GatingVarCalc(dt, s0_[gp], s_inf, Tau_s);
 
     // calculate currents J_fi, J_so and J_si ([7] page 545)
-    Jfi_ = -tools_.GatingFunction(0.0, v_*(phi - Theta_v_)*(u_u_ - phi)/Tau_fi_, p, phi, Theta_v_); // fast inward current
-    Jso_ =  tools_.GatingFunction((phi - u_o_)/Tau_o, 1.0/Tau_so, p, phi, Theta_w_);// slow outward current
-    Jsi_ = -tools_.GatingFunction(0.0, w_*s_/Tau_si_, p, phi, Theta_w_); // slow inward current
+    Jfi_[gp] = -tools_.GatingFunction(0.0, v_[gp]*(phi - Theta_v_)*(u_u_ - phi)/Tau_fi_, p, phi, Theta_v_); // fast inward current
+    Jso_[gp] =  tools_.GatingFunction((phi - u_o_)/Tau_o, 1.0/Tau_so, p, phi, Theta_w_);// slow outward current
+    Jsi_[gp] = -tools_.GatingFunction(0.0, w_[gp]*s_[gp]/Tau_si_, p, phi, Theta_w_); // slow inward current
 
-    reacoeff = (Jfi_ + Jso_ + Jsi_);
+    reacoeff = (Jfi_[gp] + Jso_[gp] + Jsi_[gp]);
+
 
     // Store necessary variables for mechanical activation and electromechanical coupling
     mechanical_activation_ = phi;
@@ -235,12 +258,21 @@ int Myocard_Minimal::GetNumberOfInternalStateVariables() const
  *----------------------------------------------------------------------*/
 double Myocard_Minimal::GetInternalState(const int k) const
 {
+  return GetInternalState(k, 0);
+}
+
+/*----------------------------------------------------------------------*
+ |  returns current internal state of the material       hoermann 09/15 |
+ |  for multiple points per element                                     |
+ *----------------------------------------------------------------------*/
+double Myocard_Minimal::GetInternalState(const int k, int gp) const
+{
   double val=0.0;
   switch(k){
     case -1: {val =mechanical_activation_; break;}
-    case 0: {val=v_; break;}
-    case 1: {val=w_; break;}
-    case 2: {val=s_; break;}
+    case 0: {val=v_[gp]; break;}
+    case 1: {val=w_[gp]; break;}
+    case 2: {val=s_[gp]; break;}
   }
   return val;
 }
@@ -250,15 +282,23 @@ double Myocard_Minimal::GetInternalState(const int k) const
  *----------------------------------------------------------------------*/
 void Myocard_Minimal::SetInternalState(const int k, const double val)
 {
+  SetInternalState(k, val, 0);
+}
+
+/*----------------------------------------------------------------------*
+ |  set  internal state of the material                  hoermann 09/15 |
+ |  for multiple points per element                                     |
+ *----------------------------------------------------------------------*/
+void Myocard_Minimal::SetInternalState(const int k, const double val, int gp)
+{
   switch(k){
     case -1: {mechanical_activation_ = val; break;}
-    case 0: {v0_ = val; v_ = val; break;}
-    case 1: {w0_ = val; w_ = val; break;}
-    case 2: {s0_ = val; s_ = val; break;}
+    case 0: {v0_[gp] = val; v_[gp] = val; break;}
+    case 1: {w0_[gp] = val; w_[gp] = val; break;}
+    case 2: {s0_[gp] = val; s_[gp] = val; break;}
     default: {dserror("There are only 3 internal variables in this myocard material!"); break;}
   }
 }
-
 
 /*----------------------------------------------------------------------*
  |  returns number of internal state variables of the material  cbert 08/13 |
@@ -273,11 +313,20 @@ int Myocard_Minimal::GetNumberOfIonicCurrents() const
  *----------------------------------------------------------------------*/
 double Myocard_Minimal::GetIonicCurrents(const int k) const
 {
+  return GetIonicCurrents(k, 0);
+}
+
+/*----------------------------------------------------------------------*
+ |  returns current internal currents                    hoermann 09/15 |
+ |  for multiple points per element                                     |
+ *----------------------------------------------------------------------*/
+double Myocard_Minimal::GetIonicCurrents(const int k, int gp) const
+{
   double val=0.0;
   switch(k){
-    case 0: {val=Jfi_; break;}
-    case 1: {val=Jso_; break;}
-    case 2: {val=Jsi_; break;}
+    case 0: {val=Jfi_[gp]; break;}
+    case 1: {val=Jso_[gp]; break;}
+    case 2: {val=Jsi_[gp]; break;}
   }
   return val;
 }

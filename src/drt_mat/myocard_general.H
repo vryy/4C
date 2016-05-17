@@ -1,11 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file myocard_general.H
-\brief
+\brief general myocard material model
 
 <pre>
-Maintainer: Cristobal Bertoglio
-            bertoglio@lnm.mw.tum.de
+\level 3
+
+\maintainer Julia Hoermann
+            hoermann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15264
 </pre>
@@ -45,6 +47,13 @@ public:
   /// destructor
   virtual ~Myocard_General() { ; }
 
+  /// compute reaction coefficient for multiple Gauss points
+  virtual double ReaCoeff(const double phi, const double dt, int gp)
+  {
+    dserror("Multiple Gauss points only implemented for MV model");
+    return 0.;
+  };
+
   /// compute reaction coefficient
   virtual double ReaCoeff(const double phi, const double dt) = 0;
 
@@ -54,14 +63,35 @@ public:
   ///  returns current internal state of the material
   virtual double GetInternalState(const int k) const = 0;
 
+  ///  returns current internal state of the material
+  virtual double GetInternalState(const int k, int gp) const
+  {
+    dserror("Multiple Gauss points only implemented for MV model");
+    return 0.;
+  };
+
   ///  set internal state of the material
   virtual void SetInternalState(const int k, const double val) = 0;
+
+  ///  set internal state of the material for multiple Gauss points
+  virtual void SetInternalState(const int k, const double val, int gp)
+  {
+    dserror("Multiple Gauss points only implemented for MV model");
+    return;
+  };
 
   ///  return number of ionic currents
   virtual int GetNumberOfIonicCurrents() const = 0;
 
   ///  return ionic currents
   virtual double GetIonicCurrents(const int k) const = 0;
+
+  ///  return ionic currents
+  virtual double GetIonicCurrents(const int k, int gp) const
+  {
+    dserror("Multiple Gauss Points only implemented for MV model");
+    return 0.;
+  };
 
   /// time update for this material
   virtual void Update(const double phi, const double dt) = 0;

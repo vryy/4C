@@ -1,0 +1,98 @@
+//
+// Maintainer: Julia Hörmann
+// hoermann@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15264
+//
+==================================================================
+General Data File BACI
+==================================================================
+-----------------------------------------------------------------------TITLE
+Minimal Ventricular Model Myocard material test for HDG elements
+----------------------------------------------------------------PROBLEM SIZE
+DIM                             2
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Cardiac_Monodomain
+SHAPEFCT                        HDG
+RESTART                         0
+--------------------------------------------------------------------------IO
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     No
+STRUCT_STRESS                   No
+STRUCT_STRAIN                   No
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+THERM_TEMPERATURE               No
+THERM_HEATFLUX                  No
+FILESTEPS                       1000
+----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+LINEAR_SOLVER                   1
+SOLVERTYPE                      nonlinear
+TIMEINTEGR                      One_Step_Theta
+RESULTSEVRY                     1
+RESTARTEVRY                     10000
+NUMSTEP                         500
+MAXTIME                         50.0
+TIMESTEP                        0.1
+THETA                           1.0
+VELOCITYFIELD                   zero
+VELFUNCNO                       -2
+INITIALFIELD                    field_by_function
+INITFUNCNO                      1
+FSSUGRDIFF                      No
+WRITEFLUX                       No
+WRITEMAXINTSTATE                3
+--------------------------------------------------------------------SOLVER 1
+NAME                            Sca_Tra_Solver
+SOLVER                          UMFPACK
+--------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+STABTYPE                        centered
+DEFINITION_TAU                  Numerical_Value
+TAU_VALUE                       2.0
+------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+ITEMAX                          40
+ABSTOLRES                       1e-12
+CONVTOL                         1e-10
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_myocard DIFF1 1.0e-1 DIFF2 1.0e-2 DIFF3 0.0 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0 GP 16
+----------------------------------------------------------------------CURVE1
+----------------------------------------------------------------------CURVE2
+----------------------------------------------------------------------CURVE3
+----------------------------------------------------------------------CURVE4
+----------------------------------------------------------------------CURVE5
+----------------------------------------------------------------------FUNCT1
+FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 5.0*x
+FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 5.0
+FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+FUNCT1 COMPONENT 3 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+FUNCT1 COMPONENT 4 EXPR 0.0 0.0 0.0 FUNCTION 5.0*x
+----------------------------------------------------------------------FUNCT2
+----------------------------------------------------------------------FUNCT3
+----------------------------------------------------------------------FUNCT4
+----------------------------------------------------------------------FUNCT5
+----------------------------------------------------------------------FUNCT6
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         0
+NDLINE                          0
+NDSURF                          5
+NDVOL                           0
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE        1 COORD  0.0e-01  0.0e-01  0.0e-01
+NODE        2 COORD  1.0e-01  0.0e-01  0.0e-01
+NODE        3 COORD  2.0e-01  0.0e-01  0.0e-01
+NODE        4 COORD  0.0e-01  1.0e-01  0.0e-01
+NODE        5 COORD  1.0e-01  1.0e-01  0.0e-01
+NODE        6 COORD  2.0e-01  1.0e-01  0.0e-01
+------------------------------------------------TRANSPORT ELEMENTS
+1 TRANSPHDG TRI3  1 4 5      MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+2 TRANSPHDG TRI3  2 3 6      MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+3 TRANSPHDG TRI3  1 2 5      MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+4 TRANSPHDG TRI3  2 6 5     MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+----------------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 6 QUANTITY phi VALUE 1.33927357343218922e+00 TOLERANCE 1E-7
+-------------------------------------------------------------------------END
+// END

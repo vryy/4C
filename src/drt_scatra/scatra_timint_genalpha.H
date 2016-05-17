@@ -1,8 +1,10 @@
 /*!----------------------------------------------------------------------
 \file scatra_timint_genalpha.H
-\brief
+\brief Generalized-alpha time-integration scheme
 
 <pre>
+\level 1
+
 \maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -49,6 +51,9 @@ public:
 
   /// compute values at intermediate time steps
   void ComputeIntermediateValues();
+
+  /// compute values at the interior of the elements (required for hdg)
+  virtual void ComputeInteriorValues(){return;};
 
   ///  compute scalar time derivative
   void ComputeTimeDerivative();

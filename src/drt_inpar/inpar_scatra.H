@@ -2,7 +2,11 @@
 /*!
 \file inpar_scatra.H
 
+\brief Input parameters for scatra
+
 <pre>
+\level 1
+
 \maintainer Anh-Tu Vuong
             vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -93,7 +97,9 @@ namespace INPAR
       stabtype_no_stabilization,
       stabtype_SUPG,
       stabtype_GLS,
-      stabtype_USFEM
+      stabtype_USFEM,
+      stabtype_hdg_centered,
+      stabtype_hdg_upwind
     };
 
     /// possible options for the stabilization parameter
@@ -110,7 +116,8 @@ namespace INPAR
       tau_franca_madureira_valentin,
       tau_franca_madureira_valentin_wo_dt,
       tau_exact_1d,
-      tau_zero
+      tau_zero,
+      tau_numerical_value
     };
 
     /// possible options for characteristic element length
@@ -193,7 +200,9 @@ namespace INPAR
       impltype_std_meshfree,
       impltype_cardiac_monodomain,
       impltype_chemo,
-      impltype_chemoreac
+      impltype_chemoreac,
+      impltype_std_hdg,
+      impltype_cardiac_monodomain_hdg
     };
 
     /// type of method for improving consistency of stabilized methods

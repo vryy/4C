@@ -3,6 +3,8 @@
 \brief A finite element for simulation transport phenomena
 
 <pre>
+\level 1
+
 \maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -261,9 +263,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportBoundaryType::Create( const i
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Transport::Transport(int id, int owner) :
 DRT::Element(id,owner),
+distype_(dis_none),
 data_(),
 numdofpernode_(-1),
-distype_(dis_none),
 impltype_(INPAR::SCATRA::impltype_undefined)
 {
   return;
@@ -274,9 +276,9 @@ impltype_(INPAR::SCATRA::impltype_undefined)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Transport::Transport(const DRT::ELEMENTS::Transport& old) :
 DRT::Element(old),
+distype_(old.distype_),
 data_(old.data_),
 numdofpernode_(old.numdofpernode_),
-distype_(old.distype_),
 impltype_(old.impltype_)
 {
     return;

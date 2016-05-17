@@ -16,6 +16,8 @@
      and stationary solver.
 
 <pre>
+\level 1
+
 \maintainer Anh-Tu Vuong
             vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
@@ -247,7 +249,7 @@ public:
         const Teuchos::RCP<const Epetra_Vector> phi);
 
   //! finite difference check for scalar transport system matrix
-  void FDCheck();
+  virtual void FDCheck();
 
   /*--- query and output ---------------------------------------------------*/
 
@@ -384,7 +386,7 @@ public:
   /*--- set, prepare, and predict ------------------------------------------*/
 
   //! set the initial scalar field phi
-  void SetInitialField(
+  virtual void SetInitialField(
     const INPAR::SCATRA::InitialField  init,       //!< type of initial field
     const int                          startfuncno //!< number of spatial function
   );
@@ -399,6 +401,9 @@ public:
 
   //! compute values at intermediate time steps (required for generalized-alpha) ? rename?
   virtual void ComputeIntermediateValues() = 0;
+
+  //! compute values at the interior of the elements (required for hdg)
+  virtual void ComputeInteriorValues() = 0;
 
   //! compute nodal density values from nodal concentration values (natural convection)
   void ComputeDensity();

@@ -1354,6 +1354,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
         fluiddis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
         scatradis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization("scatra",reader.Comm()));
       }
+      else if(distype == "HDG")
+      {
+        fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));
+        scatradis = Teuchos::rcp(new DRT::DiscretizationHDG("scatra",reader.Comm()));
+      }
       else
       {
         fluiddis = Teuchos::rcp(new DRT::DiscretizationFaces("fluid",reader.Comm()));

@@ -7,7 +7,9 @@ This file contains the element specific service routines like
 Pack, Unpack, NumDofPerNode etc.
 
 <pre>
-Maintainer: Andreas Ehrl
+\level 1
+
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -413,6 +415,12 @@ public:
 
   //@}
 
+protected:
+
+  //! the element discretization type (shape)
+  DRT::Element::DiscretizationType distype_;
+
+
 private:
 
   //! container containing all kind of element thisandthat
@@ -424,8 +432,6 @@ private:
    */
   int                       numdofpernode_;
 
-  //! the element discretization type (shape)
-  DRT::Element::DiscretizationType distype_;
 
   //! implementation type (physics)
   INPAR::SCATRA::ImplType impltype_;

@@ -5,6 +5,8 @@
 \brief testing of scalar transport calculation results
 
 <pre>
+\level 1
+
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
@@ -60,7 +62,7 @@ public:
 protected:
 
   //! get nodal result to be tested
-  double ResultNode(
+  virtual double ResultNode(
       const std::string   quantity,   //! name of quantity to be tested
       DRT::Node*          node        //! node carrying the result to be tested
       ) const;

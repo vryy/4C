@@ -1,11 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file myocard.H
-\brief
+\brief myocard material
 
 <pre>
-Maintainer:Cristobal Bertoglio
-            bertoglio@lnm.mw.tum.de
+\level 3
+
+\maintainer Julia Hoermann
+            hoermann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15264
 </pre>
@@ -66,6 +68,8 @@ namespace MAT
       /// Time factor to correct for different Model specific time units
       const double time_scale;
 
+      /// Number of Gauss Points for evaluating the material, i.e. the nonlinear reaction term
+      const int num_gp;
       //@}
 
       /// create material instance of matching type with my parameters
@@ -158,8 +162,14 @@ public:
   /// compute reaction coefficient
   double ReaCoeff(const double phi, const double dt) const;
 
+  /// compute reaction coefficient for multiple points per element
+  double ReaCoeff(const double phi, const double dt, int gp) const;
+
   /// compute reaction coefficient derivative
   double ReaCoeffDeriv(const double csnp, const double dt) const;
+
+  /// compute reaction coefficient derivative for multiple points per element
+  double ReaCoeffDeriv(const double csnp, const double dt, int gp) const;
 
   /// compute Heaviside step function
   double GatingFunction(const double Gate1, const double Gate2, const double p, const double var, const double thresh) const;
@@ -173,14 +183,23 @@ public:
   ///  returns current internal state of the material
   double GetInternalState(const int k) const;
 
+  ///  returns current internal state of the material for multiple points per element
+  double GetInternalState(const int k, int gp) const;
+
   ///  set internal state of the material
   void SetInternalState(const int k, const double val);
+
+  ///  set internal state of the material for multiple points per element
+  void SetInternalState(const int k, const double val, int gp);
 
   ///  return number of ionic currents
   int GetNumberOfIonicCurrents() const;
 
   ///  return ionic currents
   double GetIonicCurrents(const int k) const;
+
+  ///  return ionic currents for multiple points per element
+  double GetIonicCurrents(const int k, int gp) const;
 
   /// initialize internal variables (called by constructors)
   void Initialize();
@@ -194,7 +213,7 @@ public:
   //@}
 
   /// Return quick accessible material parameter data
-  virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+  virtual MAT::PAR::Myocard* Parameter() const { return params_; }
 
 private:
 

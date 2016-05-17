@@ -1071,6 +1071,7 @@ set(OBJS_DRT_SCATRA
   src/drt_levelset/levelset_dyn.cpp
   src/drt_scatra/scatra_resulttest.cpp
   src/drt_scatra/scatra_resulttest_elch.cpp
+  src/drt_scatra/scatra_resulttest_hdg.cpp
   src/drt_scatra/scatra_timint_bdf2.cpp
   src/drt_scatra/scatra_timint_cardiac_monodomain_scheme.cpp
   src/drt_scatra/scatra_timint_cardiac_monodomain.cpp
@@ -1098,6 +1099,8 @@ set(OBJS_DRT_SCATRA
   src/drt_levelset/levelset_intersection_utils.cpp
   src/drt_levelset/levelset_timint_ost.cpp
   src/drt_levelset/levelset_timint_stat.cpp
+  src/drt_scatra/scatra_timint_hdg.cpp
+  src/drt_scatra/scatra_timint_cardiac_monodomain_scheme_hdg.cpp
 )
 set(OBJS_DRT_TSI
   src/drt_tsi/tsi_algorithm.cpp
@@ -1286,6 +1289,11 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_utils_elch.cpp
   src/drt_scatra_ele/scatra_ele_utils_elch_diffcond.cpp
   src/drt_scatra_ele/scatra_ele_utils_elch_electrode.cpp
+  src/drt_scatra_ele/scatra_ele_hdg.cpp
+  src/drt_scatra_ele/scatra_ele_calc_hdg.cpp
+  src/drt_scatra_ele/scatra_ele_hdg_intfaces_calc.cpp
+  src/drt_scatra_ele/scatra_ele_hdg_boundary_calc.cpp
+  src/drt_scatra_ele/scatra_ele_calc_cardiac_monodomain_hdg.cpp
 )
 set(OBJS_DRT_MESHFREE_SCATRA_LIB
   src/drt_meshfree_discret/meshfree_scatra_cell.cpp

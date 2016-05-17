@@ -6,6 +6,8 @@
 \brief Setup of the list of valid materials for input
 
 <pre>
+\level 1
+
 Maintainer: Martin Kronbichler
             kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -335,6 +337,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedString(m,"MODEL","Model type: MV, FHN, TNNP, SAN or INADA", "MV");
     AddNamedString(m,"TISSUE","Tissue type: M, ENDO, EPI, AN, N or NH", "M");
     AddNamedReal(m, "TIME_SCALE","Scale factor for time units of Model");
+    AddNamedInt(m, "GP","Number of Gauss Points for the evaluation of the material", 1, true);
 
     AppendMaterialDefinition(matlist,m);
   }

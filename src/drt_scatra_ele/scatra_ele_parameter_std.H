@@ -12,6 +12,8 @@ additional, problem specific singleton classes holding additional static paramet
 additional singleton classes are not meant to be derived from, but rather to coexist with this general class.
 
 <pre>
+\level 1
+
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
@@ -76,6 +78,7 @@ namespace DRT
         INPAR::SCATRA::AssgdType ASSGDType() const {return whichassgd_;};
         bool TauGP() const {return tau_gp_;};
         bool MatGP() const {return mat_gp_;};
+        double TauValue() const {return tau_value_;};
         //! @}
 
       private:
@@ -143,6 +146,9 @@ namespace DRT
 
         //! flag for evaluation of material at Gauss point
         bool mat_gp_;
+
+        //! numerical value for stabilization parameter
+        double tau_value_;
 
         //! problem number
         int probnum_;

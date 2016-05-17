@@ -19,6 +19,7 @@
 #include "drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_scatra_ele/scatra_ele_action.H"
 #include "../drt_acou/acou_ele.H"
 #include "../drt_acou/acou_ele_action.H"
 
@@ -183,10 +184,12 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
   {
     Epetra_SerialDenseVector elevec1, elevec2, elevec3;
     Epetra_SerialDenseMatrix elemat1, elemat2;
-    std::vector<int> dummy;
+    DRT::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
     if(DRT::Problem::Instance(0)->ProblemType()==prb_acou)
       initParams.set<int>("action", ACOU::project_dirich_field);
+    else if (DRT::Problem::Instance(0)->ProblemType()==prb_scatra)
+      initParams.set<int>("action", SCATRA::project_dirich_field);
     else
       initParams.set<int>("action", FLD::project_fluid_field); // TODO: Introduce a general action type that is valid for all problems
     if (funct != NULL) {

@@ -1,11 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file myocard.H
-\brief
+\file myocard_minimal.H
+\brief minimal modoel for myocard material
 
 <pre>
-Maintainer: Cristobal Bertoglio
-            bertoglio@lnm.mw.tum.de
+\level 3
+
+\maintainer Julia Hoermann
+            hoermann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15264
 </pre>
@@ -53,7 +55,7 @@ public:
   Myocard_Minimal();
 
   /// construct empty material object
-  explicit Myocard_Minimal(const double eps_deriv_myocard, const std::string tissue);
+  explicit Myocard_Minimal(const double eps_deriv_myocard, const std::string tissue, int num_gp);
 
   /// destructor
   virtual ~Myocard_Minimal() { ; }
@@ -61,20 +63,32 @@ public:
   /// compute reaction coefficient
   double ReaCoeff(const double phi, const double dt);
 
+  /// compute reaction coefficient for multiple points per element
+  double ReaCoeff(const double phi, const double dt, int gp);
+
   ///  returns number of internal state variables of the material
   int GetNumberOfInternalStateVariables() const;
 
   ///  returns current internal state of the material
   double GetInternalState(const int k) const;
 
+  ///  returns current internal state of the material for multiple points per element
+  double GetInternalState(const int k, int gp) const;
+
   ///  set internal state of the material
   void SetInternalState(const int k, const double val);
+
+  ///  set internal state of the material for multiple points per element
+  void SetInternalState(const int k, const double val, int gp);
 
   ///  return number of ionic currents
   int GetNumberOfIonicCurrents() const;
 
   ///  return ionic currents
   double GetIonicCurrents(const int k) const;
+
+  ///  return ionic currents for multiple points per element
+  double GetIonicCurrents(const int k, int gp) const;
 
   /// time update for this material
   void Update(const double phi, const double dt);
@@ -87,19 +101,19 @@ private:
   double eps_deriv_;
 
    /// last gating variables MV
-  double v0_; /// fast inward current
-  double w0_; /// slow outward current
-  double s0_; /// slow inward current
+  std::vector<double> v0_; /// fast inward current
+  std::vector<double> w0_; /// slow outward current
+  std::vector<double> s0_; /// slow inward current
 
   /// current gating variables MV
-  double v_; /// fast inward current
-  double w_; /// slow outward current
-  double s_; /// slow inward current
+  std::vector<double> v_; /// fast inward current
+  std::vector<double> w_; /// slow outward current
+  std::vector<double> s_; /// slow inward current
 
   /// ionic currents MV
-  double Jfi_; /// fast inward current
-  double Jso_; /// slow outward current
-  double Jsi_; /// slow inward current
+  std::vector<double> Jfi_; /// fast inward current
+  std::vector<double> Jso_; /// slow outward current
+  std::vector<double> Jsi_; /// slow inward current
 
   /// model parameters
   double u_o_;// = 0.0;

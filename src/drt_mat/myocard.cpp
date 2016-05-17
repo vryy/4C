@@ -1,11 +1,15 @@
 /*!----------------------------------------------------------------------
 \file myocard.cpp
 
+\brief myocard material
+
 <pre>
-Maintainer: Cristobal Bertoglio
-      bertoglio@lnm.mw.tum.de
-      http://www.lnm.mw.tum.de
-      089 - 289-15264
+\level 3
+
+\maintainer Julia Hoermann
+            hoermann@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15264
 </pre>
 */
 
@@ -39,7 +43,8 @@ MAT::PAR::Myocard::Myocard( Teuchos::RCP<MAT::PAR::Material> matdata )
   dt_deriv(matdata->GetDouble("PERTUBATION_DERIV")),
   model(matdata->Get<std::string>("MODEL")),
   tissue(matdata->Get<std::string>("TISSUE")),
-  time_scale(matdata->GetDouble("TIME_SCALE"))
+  time_scale(matdata->GetDouble("TIME_SCALE")),
+  num_gp(matdata->GetInt("GP"))
   {
   }
 
@@ -294,12 +299,24 @@ void MAT::Myocard::Diffusivity(LINALG::Matrix<3,3>& diffus3) const
   return;
 }
 
-
-
+/*----------------------------------------------------------------------*
+ |                                                           cbert 09/13 |
+ *----------------------------------------------------------------------*/
 double MAT::Myocard::ReaCoeff(const double phi, const double dt) const
 {
   double reacoeff = params_->time_scale;
   reacoeff *= myocard_mat_->ReaCoeff(phi,dt*params_->time_scale);
+
+  return reacoeff;
+}
+
+/*----------------------------------------------------------------------*
+ |                                                       hoermann 09/15 |
+ *----------------------------------------------------------------------*/
+double MAT::Myocard::ReaCoeff(const double phi, const double dt, int gp) const
+{
+  double reacoeff = params_->time_scale;
+  reacoeff *= myocard_mat_->ReaCoeff(phi,dt*params_->time_scale, gp);
 
   return reacoeff;
 }
@@ -315,6 +332,22 @@ double MAT::Myocard::ReaCoeffDeriv(const double phi, const double dt) const
   {
     double ReaCoeff_t2 = ReaCoeff((phi+params_->dt_deriv), dt);
     double ReaCoeff_t1 = ReaCoeff(phi, dt);
+    ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1)/(params_->dt_deriv);
+  }
+  return ReaCoeffDeriv;
+}
+
+
+/*----------------------------------------------------------------------*
+ |                                                       hoermann 09/15 |
+ *----------------------------------------------------------------------*/
+double MAT::Myocard::ReaCoeffDeriv(const double phi, const double dt, int gp) const
+{
+  double ReaCoeffDeriv=0.0;
+  if(params_->dt_deriv != 0.0)
+  {
+    double ReaCoeff_t2 = ReaCoeff((phi+params_->dt_deriv), dt, gp);
+    double ReaCoeff_t1 = ReaCoeff(phi, dt, gp);
     ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1)/(params_->dt_deriv);
   }
   return ReaCoeffDeriv;
@@ -342,11 +375,31 @@ double MAT::Myocard::GetInternalState(const int k) const
 }
 
 /*----------------------------------------------------------------------*
+ |  returns current internal state of the material       hoermann 09/15 |
+ |  for multiple points per element                                     |
+ *----------------------------------------------------------------------*/
+double MAT::Myocard::GetInternalState(const int k, int gp) const
+{
+  double val=0.0;
+  val = myocard_mat_->GetInternalState(k, gp);
+  return val;
+}
+
+/*----------------------------------------------------------------------*
  |  returns current internal state of the material          cbert 08/13 |
  *----------------------------------------------------------------------*/
 void MAT::Myocard::SetInternalState(const int k, const double val)
 {
   myocard_mat_->SetInternalState(k,val);
+}
+
+/*----------------------------------------------------------------------*
+ |  returns current internal state of the material       hoermann 09/15 |
+ |  for multiple points per element                                     |
+ *----------------------------------------------------------------------*/
+void MAT::Myocard::SetInternalState(const int k, const double val, int gp)
+{
+  myocard_mat_->SetInternalState(k,val,gp);
 }
 
 /*----------------------------------------------------------------------*
@@ -360,7 +413,18 @@ int MAT::Myocard::GetNumberOfIonicCurrents() const
 }
 
 /*----------------------------------------------------------------------*
- |  returns current internal currents          cbert 08/13 |
+ |  returns current internal currents                    hoermann 09/15 |
+ |  for multiple points per element                                     |
+ *----------------------------------------------------------------------*/
+double MAT::Myocard::GetIonicCurrents(const int k, int gp) const
+{
+  double val=0.0;
+  val = myocard_mat_->GetIonicCurrents(k, gp);
+  return val;
+}
+
+/*----------------------------------------------------------------------*
+ |  returns current internal currents                       cbert 08/13 |
  *----------------------------------------------------------------------*/
 double MAT::Myocard::GetIonicCurrents(const int k) const
 {
@@ -375,7 +439,7 @@ double MAT::Myocard::GetIonicCurrents(const int k) const
  *----------------------------------------------------------------------*/
 void MAT::Myocard::Initialize()
 {
-  if (*(params_->model) == "MV") myocard_mat_ = Teuchos::rcp(new Myocard_Minimal(params_->dt_deriv,*(params_->tissue)));
+  if (*(params_->model) == "MV") myocard_mat_ = Teuchos::rcp(new Myocard_Minimal(params_->dt_deriv,*(params_->tissue),params_->num_gp));
   else if (*(params_->model) == "FHN") myocard_mat_ = Teuchos::rcp(new Myocard_Fitzhugh_Nagumo(params_->dt_deriv,*(params_->tissue)));
   else if (*(params_->model) == "INADA") myocard_mat_ = Teuchos::rcp(new Myocard_Inada(params_->dt_deriv,*(params_->tissue)));
   else if (*(params_->model) == "TNNP") myocard_mat_ = Teuchos::rcp(new Myocard_TenTusscher(params_->dt_deriv,*(params_->tissue)));

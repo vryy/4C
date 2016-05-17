@@ -3,6 +3,8 @@
 
   \brief main routine of the Ensight filter
 
+  \level 1
+
   \maintainer Martin Kronbichler
 */
 
@@ -337,6 +339,16 @@ void ScaTraFilter::WriteAllResults(PostField* field)
   writer_->WriteResult("k_9","k_9",elementbased,1);
   writer_->WriteResult("k_10","k_10",elementbased,1);
   writer_->WriteResult("concentrationsum","concentrationsum",elementbased,1);
+
+  // additional output for scatra HDG
+  writer_->WriteResult("phi_hdg", "phi", nodebased, 1);
+  writer_->WriteResult("tracephi_hdg", "trace_phi", nodebased, 1);
+  writer_->WriteResult("gradphi_hdg", "grad_phi", nodebased, 3);
+  writer_->WriteResult("activation_time_np_hdg","act_time",nodebased,1);
+  writer_->WriteResult("ionic_currents_hdg","ionic_currents", elementbased,3);
+  writer_->WriteResult("ionic_current_hdg_1","ionic_current_1", elementbased,1);
+  writer_->WriteResult("ionic_current_hdg_2","ionic_current_2", elementbased,1);
+  writer_->WriteResult("ionic_current_hdg_3","ionic_current_3", elementbased,1);
 
   // write element results (e.g. element owner)
   WriteElementResults(field);

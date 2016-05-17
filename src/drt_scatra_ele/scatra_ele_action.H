@@ -5,6 +5,8 @@
 comparison instead of a cumbersome std::string compare.
 
 <pre>
+\level 1
+
 \maintainer Anh-Tu Vuong
             vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
@@ -46,6 +48,7 @@ namespace SCATRA
     calc_mass_center_smoothingfunct,             // calculate mass center of minus domain, using the smoothing function. (Interface thickness required)
     calc_mat_and_rhs,                            // calc_condif_systemmat_and_residual,
     calc_mat_and_rhs_lsreinit_correction_step,   // level-set action: setup of system for correction step
+    calc_mat_initial,                            // calc initial mat for hdg
     calc_mean_Cai,                               // calc_mean_Cai (multifractal subgrid-scales)
     calc_total_and_mean_scalars,                 // calculate total and mean values of transported scalars
     calc_node_based_reinit_velocity,             // level-set action: compute node-based velocity field for reinitialization equation
@@ -63,23 +66,27 @@ namespace SCATRA
     get_material_ionic_currents,                 // get material ionic currents (for postprocessing for example),
     get_material_parameters,                     // get_material_parameters,
     integrate_shape_functions,                   // integrate_shape_functions,
+    interpolate_hdg_to_node,                     // interpolate hdg to node,
     micro_scale_initialize,                      // initialize micro scale in multi-scale simulations
     micro_scale_output,                          // output micro-scale quantities in multi-scale simulations
     micro_scale_prepare_time_step,               // prepare time step on micro scale in multi-scale simulations
     micro_scale_read_restart,                    // read restart on micro scale in multi-scale simulations
     micro_scale_update,                          // update micro scale in multi-scale simulations
+    project_dirich_field,                        // project dirichlet field for hdg
     recon_curvature_at_nodes,                    // reconstruct curvature at node points through L2-projection
     recon_gradients_at_nodes,                    // reconstruct gradients at node points through L2-projection
     reinitialize_levelset,                       // reinitialize_levelset,
     set_diffcond_scatra_parameter,               // set diffusion-conduction parameters for element evaluation
     set_elch_scatra_parameter,                   // set elch parameters for element evaluation
     set_general_scatra_parameter,                // set general parameters for element evaluation
+    set_initial_field,                           // set initial field for hdg
     set_lsreinit_scatra_parameter,               // set reinitialization parameters for element evaluation
     set_material_internal_state,                 // set material internal state (for restart for example),
     set_mean_Cai,                                // special action for mfs
     set_time_parameter,                          // set time-integration parameters for element evaluation
     set_turbulence_scatra_parameter,             // set turbulence parameters for element evaluation
-    time_update_material                         // time update for materials
+    time_update_material,                        // time update for materials
+    update_interior_variables                    // update interior variables for hdg
   }; // enum Action
 
 

@@ -1,0 +1,79 @@
+/*!----------------------------------------------------------------------
+\file scatra_timint_cardiac_monodomain_scheme_hdg.H
+
+\brief  Connecting time-integration schemes for HDG with
+        cardiac-monodomain-specific implementation
+
+<pre>
+\level 3
+\maintainer Julia Hoermann
+            hoermann@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15264
+</pre>
+
+*----------------------------------------------------------------------*/
+
+#ifndef SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_HDG_H
+#define SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_HDG_H
+
+#include "scatra_timint_cardiac_monodomain.H"
+#include "scatra_timint_hdg.H"
+
+
+namespace SCATRA
+{
+
+class TimIntCardiacMonodomainHDG : public virtual TimIntCardiacMonodomain, public virtual TimIntHDG
+{
+  public:
+
+  //! Standard Constructor
+  TimIntCardiacMonodomainHDG(
+    Teuchos::RCP<DRT::Discretization>       dis,
+    Teuchos::RCP<LINALG::Solver>            solver,
+    Teuchos::RCP<Teuchos::ParameterList>    params,
+    Teuchos::RCP<Teuchos::ParameterList>    sctratimintparams,
+    Teuchos::RCP<Teuchos::ParameterList>    extraparams,
+    Teuchos::RCP<IO::DiscretizationWriter>  output);
+
+  //! Destructor
+  virtual ~TimIntCardiacMonodomainHDG();
+
+  //! initialize time integration scheme
+  virtual void Init();
+
+  //! Update the solution after convergence of the nonlinear iteration.
+  //! Current solution becomes old solution of next timestep.
+  void Update(const int num=0);
+
+  //! read restart data
+  void ReadRestart(const int step);
+
+  //! write current state to BINIO
+  void OutputState();
+
+protected:
+
+  //! write additional data required for restart
+  void OutputRestart();
+
+  //! update gating variables
+  virtual void ElementMaterialTimeUpdate();
+
+  //! write problem specific output
+  virtual void WriteProblemSpecificOutput(
+      Teuchos::RCP<Epetra_Vector>    interpolatedPhi
+       );
+
+private:
+
+  //! activation time
+  Teuchos::RCP<Epetra_Vector> activation_time_interpol_;
+
+
+}; // class TimIntCardiacMonodomainHDG
+
+} // namespace SCATRA
+
+#endif /* SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_HDG_H */

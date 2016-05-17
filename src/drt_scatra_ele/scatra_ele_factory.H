@@ -5,7 +5,9 @@
 \brief Factory of scatra elements
 
 <pre>
-Maintainer: Andreas Ehrl
+\level 1
+
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089-289-15252
@@ -46,6 +48,14 @@ public:
     const int numscal,
     const std::string& disname);
 
+  //! ProvideImplHDG
+  static ScaTraEleInterface* ProvideImplHDG(
+    DRT::Element::DiscretizationType distype,
+    INPAR::SCATRA::ImplType problem,
+    const int numdofpernode,
+    const int numscal,
+    const std::string& disname);
+
   //! ProvideMeshfreeImpl
   static MeshfreeScaTraCellInterface* ProvideMeshfreeImpl(
     DRT::Element::DiscretizationType distype,
@@ -58,6 +68,14 @@ private:
   //! define ScatraEle instances dependent on problem
   template<DRT::Element::DiscretizationType distype,int probdim>
   static ScaTraEleInterface* DefineProblemType(
+    INPAR::SCATRA::ImplType problem,
+    const int numdofpernode,
+    const int numscal,
+    const std::string& disname);
+
+  //! define ScatraEle instances dependent on problem
+  template<DRT::Element::DiscretizationType distype,int probdim>
+  static ScaTraEleInterface* DefineProblemTypeHDG(
     INPAR::SCATRA::ImplType problem,
     const int numdofpernode,
     const int numscal,

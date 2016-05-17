@@ -1,0 +1,119 @@
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    12
+//NODES       12
+DIM           3
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Cardiac_Monodomain
+SHAPEFCT                        HDG
+RESTART                         0
+--------------------------------------------------------------------------IO
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     No
+STRUCT_STRESS                   No
+STRUCT_STRAIN                   No
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+THERM_TEMPERATURE               No
+THERM_HEATFLUX                  No
+FILESTEPS                       1000
+----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+LINEAR_SOLVER                   1
+SOLVERTYPE                      nonlinear
+TIMEINTEGR                      One_Step_Theta
+RESULTSEVRY                     1
+RESTARTEVRY                     1000
+NUMSTEP                         500
+MAXTIME                         50.0
+TIMESTEP                        0.1
+THETA                           1.0
+VELOCITYFIELD                   zero
+VELFUNCNO                       -1
+INITIALFIELD                    field_by_function
+INITFUNCNO                      1
+FSSUGRDIFF                      No
+WRITEFLUX                       No
+WRITEMAXINTSTATE                3
+--------------------------------------------------------------------SOLVER 1
+NAME                            Sca_Tra_Solver
+SOLVER                          UMFPACK
+--------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+STABTYPE                        centered
+DEFINITION_TAU                  Numerical_Value
+TAU_VALUE                       10.0   // Main Diffusion / element length
+--------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+ITEMAX                          20
+ABSTOLRES                       1e-12
+CONVTOL                         1e-10
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_myocard DIFF1 1.0e-1 DIFF2 1.0e-2 DIFF3 0.0 PERTUBATION_DERIV 1e-6 MODEL MV TISSUE M TIME_SCALE 1.0 GP 24
+----------------------------------------------------------------------CURVE1
+----------------------------------------------------------------------CURVE2
+----------------------------------------------------------------------CURVE3
+----------------------------------------------------------------------CURVE4
+----------------------------------------------------------------------CURVE5
+----------------------------------------------------------------------FUNCT1
+FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION 5.0*x
+FUNCT1 COMPONENT 1 EXPR 0.0 0.0 0.0 FUNCTION 5.0
+FUNCT1 COMPONENT 2 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+FUNCT1 COMPONENT 3 EXPR 0.0 0.0 0.0 FUNCTION 0.0
+FUNCT1 COMPONENT 4 EXPR 0.0 0.0 0.0 FUNCTION 5.0*x
+----------------------------------------------------------------------FUNCT2
+----------------------------------------------------------------------FUNCT3
+----------------------------------------------------------------------FUNCT4
+----------------------------------------------------------------------FUNCT5
+----------------------------------------------------------------------FUNCT6
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 0
+NDLINE  0
+NDSURF  0
+NDVOL   0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+-----------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE         1 COORD  0.0000000000000000e+00  1.0000000000000001e-01  0.0000000000000000e+00
+NODE         2 COORD  0.0000000000000000e+00  0.0000000000000000e+00  1.0000000000000001e-01
+NODE         3 COORD  0.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE         4 COORD  1.0000000000000001e-01  0.0000000000000000e+00  0.0000000000000000e+00
+NODE         5 COORD  1.0000000000000001e-01  0.0000000000000000e+00  1.0000000000000001e-01
+NODE         6 COORD  0.0000000000000000e+00  1.0000000000000001e-01  1.0000000000000001e-01
+NODE         7 COORD  1.0000000000000001e-01  1.0000000000000001e-01  1.0000000000000001e-01
+NODE         8 COORD  1.0000000000000001e-01  1.0000000000000001e-01  0.0000000000000000e+00
+NODE         9 COORD  2.0000000000000001e-01  1.0000000000000001e-01  0.0000000000000000e+00
+NODE        10 COORD  2.0000000000000001e-01  0.0000000000000000e+00  1.0000000000000001e-01
+NODE        11 COORD  2.0000000000000001e-01  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        12 COORD  2.0000000000000001e-01  1.0000000000000001e-01  1.0000000000000001e-01
+------------------------------------------------STRUCTURE ELEMENTS
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------LUBRICATION ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+   1 TRANSPHDG TET4  1 2 3 4    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+   2 TRANSPHDG TET4  1 2 4 5    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+   3 TRANSPHDG TET4  1 6 2 5    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+   4 TRANSPHDG TET4  1 6 5 7    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+   5 TRANSPHDG TET4  1 8 7 5    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+   6 TRANSPHDG TET4  1 8 5 4    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+   7 TRANSPHDG TET4  9 10 5 4    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+   8 TRANSPHDG TET4  9 10 4 11    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+   9 TRANSPHDG TET4  9 12 7 5    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+   10 TRANSPHDG TET4  9 12 5 10    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+   11 TRANSPHDG TET4  9 8 4 5    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+   12 TRANSPHDG TET4  9 8 5 7    MAT 1 TYPE HdgCardMono DEG 1 SPC 0 FIBER1 1.0 0.0 0.0
+---------------------------------------------------THERMO ELEMENTS
+---------------------------------------------------ACOUSTIC ELEMENTS
+---------------------------------------------------CELL ELEMENTS
+---------------------------------------------------CELLSCATRA ELEMENTS
+----------------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 12 QUANTITY phi VALUE 1.33941973373923240e+00 TOLERANCE 1E-7
+---------------------------------------------------------------END
+// END

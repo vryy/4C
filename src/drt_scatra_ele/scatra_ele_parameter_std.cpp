@@ -12,6 +12,8 @@ additional, problem specific singleton classes holding additional static paramet
 additional singleton classes are not meant to be derived from, but rather to coexist with this general class.
 
 <pre>
+\level 1
+
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
@@ -94,6 +96,7 @@ DRT::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
     whichassgd_(INPAR::SCATRA::assgd_artificial),
     tau_gp_(false),
     mat_gp_(false),
+    tau_value_(0.),
     probnum_(-1),
     // we have to know the time parameters here to check for illegal combinations
     scatraparatimint_(DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(disname))
@@ -153,6 +156,9 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(
       dserror("exact stabilization parameter only available for stationary case");
   }
 
+  if (whichtau_ == INPAR::SCATRA::tau_numerical_value)
+    tau_value_ = parameters.sublist("stabilization").get<double>("TAU_VALUE");
+
   // get characteristic element length for stabilization parameter definition
   charelelength_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::CharEleLength>(stablist,"CHARELELENGTH");
 
@@ -173,6 +179,11 @@ void DRT::ELEMENTS::ScaTraEleParameterStd::SetParameters(
     break;
   case INPAR::SCATRA::stabtype_USFEM:
     diffreastafac_ = -1.0;
+    break;
+  case INPAR::SCATRA::stabtype_hdg_centered:
+  case INPAR::SCATRA::stabtype_hdg_upwind:
+    if(whichtau_ != INPAR::SCATRA::tau_numerical_value or tau_value_ <= 0.0)
+      dserror("Wrong definition for tau for hdg stabilization, only tau_numerical_value is allowed with tau>0");
     break;
   default:
     dserror("unknown definition for stabilization parameter");

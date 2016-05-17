@@ -5,7 +5,9 @@
 \brief scalar transport field base algorithm
 
 <pre>
-Maintainer: Georg Bauer
+\level 1
+
+\maintainer Georg Bauer
             bauer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -32,6 +34,10 @@ Maintainer: Georg Bauer
 #include "../drt_scatra/scatra_timint_ost.H"
 #include "../drt_scatra/scatra_timint_bdf2.H"
 #include "../drt_scatra/scatra_timint_genalpha.H"
+
+// HDG time integration schemes
+#include "../drt_scatra/scatra_timint_cardiac_monodomain_scheme_hdg.H"
+#include "../drt_scatra/scatra_resulttest_hdg.H"
 
 // loma specific files
 #include "../drt_scatra/scatra_timint_loma_genalpha.H"
@@ -340,65 +346,77 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   else if (probtype == prb_cardiac_monodomain or (probtype == prb_ssi and DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(DRT::Problem::Instance()->SSIControlParams(),"SCATRATYPE") == INPAR::SCATRA::impltype_cardiac_monodomain))
   {
     Teuchos::RCP<Teuchos::ParameterList> cmonoparams = Teuchos::null;
-    switch(timintscheme)
+    // HDG implements all time stepping schemes within gen-alpha
+    if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
+      scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainHDG(actdis, solver, cmonoparams, scatratimeparams, extraparams, output));
+    else
     {
-      case INPAR::SCATRA::timeint_gen_alpha:
+      switch(timintscheme)
       {
-        // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainGenAlpha(actdis, solver, cmonoparams, scatratimeparams,extraparams, output));
-        break;
-      }
-      case INPAR::SCATRA::timeint_one_step_theta:
+        case INPAR::SCATRA::timeint_gen_alpha:
+        {
+          // create instance of time integration class (call the constructor)
+          scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainGenAlpha(actdis, solver, cmonoparams, scatratimeparams,extraparams, output));
+          break;
+        }
+        case INPAR::SCATRA::timeint_one_step_theta:
+        {
+          // create instance of time integration class (call the constructor)
+          scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainOST(actdis, solver, cmonoparams, scatratimeparams,extraparams, output));
+          break;
+        }
+        case INPAR::SCATRA::timeint_bdf2:
       {
-        // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainOST(actdis, solver, cmonoparams, scatratimeparams,extraparams, output));
-        break;
-      }
-      case INPAR::SCATRA::timeint_bdf2:
-    {
-        // create instance of time integration class (call the constructor)
-        scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainBDF2(actdis, solver, cmonoparams, scatratimeparams,extraparams, output));
-        break;
-      }
-      default:
-        dserror("Unknown time integration scheme for cardiac monodomain problem!");
-        break;
-    }// switch(timintscheme)
+          // create instance of time integration class (call the constructor)
+          scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainBDF2(actdis, solver, cmonoparams, scatratimeparams,extraparams, output));
+          break;
+        }
+        default:
+          dserror("Unknown time integration scheme for cardiac monodomain problem!");
+          break;
+      }// switch(timintscheme)
+    }
   }
 
   // everything else
   else
   {
-    switch(timintscheme)
+    // HDG implements all time stepping schemes within gen-alpha
+    if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
+      scatra_ = Teuchos::rcp(new SCATRA::TimIntHDG(actdis, solver, scatratimeparams, extraparams, output));
+    else
     {
-    case INPAR::SCATRA::timeint_stationary:
-    {
-      // create instance of time integration class (call the constructor)
-      scatra_ = Teuchos::rcp(new SCATRA::TimIntStationary(actdis, solver, scatratimeparams, extraparams, output));
-      break;
+      switch(timintscheme)
+      {
+      case INPAR::SCATRA::timeint_stationary:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::TimIntStationary(actdis, solver, scatratimeparams, extraparams, output));
+        break;
+      }
+      case INPAR::SCATRA::timeint_one_step_theta:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
+        break;
+      }
+      case INPAR::SCATRA::timeint_bdf2:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::TimIntBDF2(actdis, solver, scatratimeparams,extraparams, output));
+        break;
+      }
+      case INPAR::SCATRA::timeint_gen_alpha:
+      {
+        // create instance of time integration class (call the constructor)
+        scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
+        break;
+      }
+      default:
+        dserror("Unknown time-integration scheme for scalar transport problem");
+        break;
+      } // switch(timintscheme)
     }
-    case INPAR::SCATRA::timeint_one_step_theta:
-    {
-      // create instance of time integration class (call the constructor)
-      scatra_ = Teuchos::rcp(new SCATRA::TimIntOneStepTheta(actdis, solver, scatratimeparams, extraparams,output));
-      break;
-    }
-    case INPAR::SCATRA::timeint_bdf2:
-    {
-      // create instance of time integration class (call the constructor)
-      scatra_ = Teuchos::rcp(new SCATRA::TimIntBDF2(actdis, solver, scatratimeparams,extraparams, output));
-      break;
-    }
-    case INPAR::SCATRA::timeint_gen_alpha:
-    {
-      // create instance of time integration class (call the constructor)
-      scatra_ = Teuchos::rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
-      break;
-    }
-    default:
-      dserror("Unknown time-integration scheme for scalar transport problem");
-      break;
-    }// switch(timintscheme)
   }
 
   // initialize algorithm for specific time-integration scheme
@@ -411,7 +429,10 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTest()
 {
-  return Teuchos::rcp(new SCATRA::ScaTraResultTest(scatra_));
+  if (DRT::Problem::Instance()->SpatialApproximation() == "HDG")
+    return Teuchos::rcp(new SCATRA::HDGResultTest(scatra_));
+  else
+    return Teuchos::rcp(new SCATRA::ScaTraResultTest(scatra_));
 }
 
 

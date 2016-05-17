@@ -5,6 +5,8 @@
 \brief Input parameters for scatra
 
 <pre>
+\level 1
+
 \maintainer Anh-Tu Vuong
             vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
@@ -307,17 +309,23 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                  "no_stabilization",
                                  "SUPG",
                                  "GLS",
-                                 "USFEM"),
+                                 "USFEM",
+                                 "centered",
+                                 "upwind"),
                                tuple<std::string>(
                                  "Do not use any stabilization -> only reasonable for low-Peclet-number flows",
                                  "Use SUPG",
                                  "Use GLS",
-                                 "Use USFEM")  ,
+                                 "Use USFEM",
+                                 "Use centered scheme",
+                                 "Use upwinded scheme")  ,
                                tuple<int>(
                                    stabtype_no_stabilization,
                                    stabtype_SUPG,
                                    stabtype_GLS,
-                                   stabtype_USFEM),
+                                   stabtype_USFEM,
+                                   stabtype_hdg_centered,
+                                   stabtype_hdg_upwind),
                                &scatradyn_stab);
 
   // this parameter governs whether subgrid-scale velocity is included
@@ -343,7 +351,8 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                  "Franca_Madureira_Valentin",
                                  "Franca_Madureira_Valentin_wo_dt",
                                  "Exact_1D",
-                                 "Zero"),
+                                 "Zero",
+                                 "Numerical_Value"),
                                 tuple<int>(
                                     tau_taylor_hughes_zarins,
                                     tau_taylor_hughes_zarins_wo_dt,
@@ -356,7 +365,8 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                     tau_franca_madureira_valentin,
                                     tau_franca_madureira_valentin_wo_dt,
                                     tau_exact_1d,
-                                    tau_zero),
+                                    tau_zero,
+                                    tau_numerical_value),
                                &scatradyn_stab);
 
   // this parameter selects the characteristic element length for tau for all
@@ -455,6 +465,9 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                   consistency_no,
                                   consistency_l2_projection_lumped),
                                &scatradyn_stab);
+
+   // this parameter defines the numerical value, if stabilization with numerical values is used
+   DoubleParameter("TAU_VALUE",0.0,"Numerical value for tau for stabilization",&scatradyn_stab);
 
   /*-------------------------------------------------------------------------*/
 
