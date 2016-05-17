@@ -2399,7 +2399,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
                   std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
                   double displacement = disccol[BTSolDiscret().DofColMap()->LID(dofnode[i])];
                   nodalcoords(i,j) =  referenceposition + displacement;
-                  nodaltangents(i,j) =  ((ele->Tref())[j])(i) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3+i])];
+                  nodaltangents(i,j) =  ((ele->Tref())[j])(i) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[6+i])];
                 }
               }
 
