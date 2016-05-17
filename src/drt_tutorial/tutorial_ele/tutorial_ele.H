@@ -3,6 +3,8 @@
 
 \brief student's c++/baci tutorial element
 
+\level 3
+
 \maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
@@ -53,23 +55,23 @@ public:
   explicit TutorialElement(int id, double E, double X0, double X1);
 
   /// this method just returns the element id
-  const int Id(){return id_;};
+  int Id() const {return id_;};
 
   /// this method just returns the number of nodes of this element
-  const int NumNode(){return numnode_;};
+  int NumNode() const {return numnode_;};
 
   /// this method just returns the number of dofs of this element
-  const int NumDof(){return numdof_;};
+  int NumDof() const {return numdof_;};
 
 
   /// this method just returns the initial position of node='node' ('node' = 0 or 1)
-  const double X(int node){return X_[node];};
+  double X(int node) const {return X_[node];};
 
   /// this method just returns the one dof (degree of freedom) per node='node' ('node' = 0 or 1)
-  const double Dof(int node){return dofs_[node];};
+  double Dof(int node) const {return dofs_[node];};
 
   /// return the material of this element
-  const Teuchos::RCP<TUTORIAL::MATERIAL::TutorialMat> Material(){return material_;};
+  const Teuchos::RCP<TUTORIAL::MATERIAL::TutorialMat> Material() const {return material_;};
 
   /// enter the evaluation of this element
   void Evaluate(LINALG::Matrix<7,1>* state, LINALG::Matrix<2,2>* elematrix, LINALG::Matrix<2,1>* elevector, bool eval_mat, bool eval_vec);

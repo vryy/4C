@@ -4,6 +4,8 @@
 
 \brief material for macro-scale elements in multi-scale simulations of scalar transport problems
 
+\level 3
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -44,16 +46,16 @@ namespace MAT
         const std::string MicroInputFileName() const { return microfile_; };
 
         //! return number of micro-scale discretization
-        const int MicroDisNum() const { return microdisnum_; };
+        int MicroDisNum() const { return microdisnum_; };
 
         //! return porosity
-        const double Porosity() const { return porosity_; };
+        double Porosity() const { return porosity_; };
 
         //! return tortuosity
-        const double Tortuosity() const { return tortuosity_; };
+        double Tortuosity() const { return tortuosity_; };
 
         //! return specific micro-scale surface area
-        const double A_s() const { return A_s_; };
+        double A_s() const { return A_s_; };
 
       private:
 
@@ -187,16 +189,16 @@ namespace MAT
       const std::string MicroInputFileName() const { return params_->MicroInputFileName(); };
 
       //! return number of micro-scale discretization
-      const int MicroDisNum() const { return params_->MicroDisNum(); };
+      int MicroDisNum() const { return params_->MicroDisNum(); };
 
       //! return porosity
-      const double Porosity() const { return params_->Porosity(); };
+      double Porosity() const { return params_->Porosity(); };
 
       //! return tortuosity
-      const double Tortuosity() const { return params_->Tortuosity(); };
+      double Tortuosity() const { return params_->Tortuosity(); };
 
       //! return specific micro-scale surface area
-      const double A_s() const { return params_->A_s(); };
+      double A_s() const { return params_->A_s(); };
 
     private:
 
