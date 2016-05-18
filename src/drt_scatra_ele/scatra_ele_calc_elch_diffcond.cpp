@@ -4,6 +4,8 @@
 
 \brief evaluation of scatra elements for isothermal diffusion-conduction ion-transport equations
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -208,27 +210,26 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   // add RHS and history contribution
   my::CalcRHSHistAndSource(erhs,k,fac,rhsint);
 
-  // 3a) element rhs: convective term
+  // convective term
   my::CalcRHSConv(erhs,k,rhsfac*DiffManager()->GetPhasePoro(0));
 
-  // 3b) element rhs: diffusion term
+  // diffusion term
   my::CalcRHSDiff(erhs,k,rhsfac*DiffManager()->GetPhasePoroTort(0));
 
-  // 3c) element rhs: electrical conduction term (transport equation)
-  //     equation for current is inserted in the mass transport equation
+  // electrical conduction term (transport equation)
+  // equation for current is inserted in the mass transport equation
   //
-  //     mass transport equation:
+  // mass transport equation:
   //
   //               |     diffusion term      | |     conduction term    |
   //               |                         | |                        |
   //      dc_k/dt - nabla dot (D_k nabla c_k) + nabla dot (t_k i/(z_k F)
   //
-  //    equation for current:
+  // equation for current:
   //
   //          | ohmic overpot.   |         concentration overpotential           |
   //          |                  |                                               |
   //      i = - kappa nabla phi  + RT/F kappa (thermfactor) f(t_k) nabla ln c_k
-
   if(not diffcondparams_->CurSolVar())
   {
     CalcRhsCondOhm(erhs,k,rhsfac,DiffManager()->InvFVal(k),VarManager()->GradPot());
@@ -237,6 +238,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
     if(diffcondmat_==INPAR::ELCH::diffcondmat_newman)
       CalcRhsCondConc(erhs,k,rhsfac,VarManager()->RTFFC()/DiffManager()->GetValence(k),diffcondparams_->NewmanConstA(),diffcondparams_->NewmanConstB(),VarManager()->GradPhi(k),VarManager()->ConIntInv());
   }
+
   // equation for current is solved independently
   else
   {
