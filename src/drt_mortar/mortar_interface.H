@@ -3,12 +3,12 @@
 
 \brief One mortar coupling interface
 
-<pre>
-Maintainer: Alexander Popp
+\level 1
+
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef MORTAR_INTERFACE_H
@@ -696,7 +696,7 @@ protected:
   \brief do scaling and other operations after real coupling
 
   */
-  virtual void PostEvaluate();
+  virtual void PostEvaluate(const int step=0, const int iter=0);
 
   /*!
   \brief find meles for one snode

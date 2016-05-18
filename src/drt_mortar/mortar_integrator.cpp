@@ -4,12 +4,12 @@
 \brief A class to perform integrations of Mortar matrices on the overlap
 of two MortarElements in 1D and 2D
 
-<pre>
-Maintainer: Alexander Popp
+\level 1
+
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
-</pre>
 
 *-----------------------------------------------------------------------*/
 
@@ -1813,6 +1813,10 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
   DRT::Element::DiscretizationType sdt = sintele.Shape();
   DRT::Element::DiscretizationType mdt = mintele.Shape();
 
+  // discretization type of slave and master Element
+  DRT::Element::DiscretizationType psdt = sele.Shape();
+  DRT::Element::DiscretizationType pmdt = mele.Shape();
+
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
     dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called on a wrong type of MortarElement pair!");
@@ -1899,7 +1903,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
         std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
-        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1]       << std::endl;
+        std::cout << "Slave GP (IntElement) projection: " << sxi[0] << " " << sxi[1]       << std::endl;
       }
     }
     else
@@ -1910,7 +1914,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
         std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
-        std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1]       << std::endl;
+        std::cout << "Slave GP (IntElement) projection: " << sxi[0] << " " << sxi[1]       << std::endl;
       }
     }
 
@@ -1924,7 +1928,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
         std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
-        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1]      << std::endl;
+        std::cout << "Master GP (IntElement) projection: " << mxi[0] << " " << mxi[1]      << std::endl;
       }
     }
     else
@@ -1935,16 +1939,72 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
         std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
         std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
         std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
-        std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1]      << std::endl;
+        std::cout << "Master GP (IntElement) projection: " << mxi[0] << " " << mxi[1]      << std::endl;
       }
     }
 
-    // map Gauss point back to slave element (affine map)
-    // map Gauss point back to master element (affine map)
+    // project Gauss point back to slave (parent) element
+    // project Gauss point back to master (parent) element
     double psxi[2] = { 0.0, 0.0 };
     double pmxi[2] = { 0.0, 0.0 };
-    sintele.MapToParent(sxi, psxi);
-    mintele.MapToParent(mxi, pmxi);
+    double psprojalpha = 0.0;
+    double pmprojalpha = 0.0;
+    MORTAR::MortarProjector::Impl(sele)->ProjectGaussPointAuxn3D(globgp,
+        auxn,sele,psxi,psprojalpha);
+    MORTAR::MortarProjector::Impl(mele)->ProjectGaussPointAuxn3D(globgp,
+        auxn,mele,pmxi,pmprojalpha);
+    //sintele.MapToParent(sxi, psxi); // old way of doing it via affine map... wrong (popp 05/2016)
+    //mintele.MapToParent(mxi, pmxi); // old way of doing it via affine map... wrong (popp 05/2016)
+
+    // check GP projection (SLAVE)
+    if (psdt == DRT::Element::quad4 || psdt == DRT::Element::quad8
+        || psdt == DRT::Element::quad9)
+    {
+      if (psxi[0] < -1.0 - tol || psxi[1] < -1.0 - tol || psxi[0] > 1.0 + tol
+          || psxi[1] > 1.0 + tol)
+      {
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
+        std::cout << "Slave GP projection: " << psxi[0] << " " << psxi[1]       << std::endl;
+      }
+    }
+    else
+    {
+      if (psxi[0] < -tol || psxi[1] < -tol || psxi[0] > 1.0 + tol
+          || psxi[1] > 1.0 + tol || psxi[0] + psxi[1] > 1.0 + 2 * tol)
+      {
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Slave Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
+        std::cout << "Slave GP projection: " << psxi[0] << " " << psxi[1]       << std::endl;
+      }
+    }
+
+    // check GP projection (MASTER)
+    if (pmdt == DRT::Element::quad4 || pmdt == DRT::Element::quad8
+        || pmdt == DRT::Element::quad9)
+    {
+      if (pmxi[0] < -1.0 - tol || pmxi[1] < -1.0 - tol || pmxi[0] > 1.0 + tol
+          || pmxi[1] > 1.0 + tol)
+      {
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
+        std::cout << "Master GP projection: " << pmxi[0] << " " << pmxi[1]      << std::endl;
+      }
+    }
+    else
+    {
+      if (pmxi[0] < -tol || pmxi[1] < -tol || pmxi[0] > 1.0 + tol
+          || pmxi[1] > 1.0 + tol || pmxi[0] + pmxi[1] > 1.0 + 2 * tol)
+      {
+        std::cout << "\n***Warning: IntegrateDerivCell3DAuxPlane: Master Gauss point projection outside!";
+        std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+        std::cout << "GP local: " << eta[0] << " " << eta[1]                  << std::endl;
+        std::cout << "Master GP projection: " << pmxi[0] << " " << pmxi[1]      << std::endl;
+      }
+    }
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     if (bound)

@@ -3,12 +3,12 @@
 
 \brief One mortar coupling interface
 
-<pre>
-Maintainer: Alexander Popp
+\level 1
+
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
-</pre>
 
 *-----------------------------------------------------------------------*/
 
@@ -2047,7 +2047,7 @@ void MORTAR::MortarInterface::Evaluate(
   EvaluateCoupling();
 
   // do some post operations. nothing happens for standard cases...
-  PostEvaluate();
+  PostEvaluate(step,iter);
 
   // end time barrier
   Comm().Barrier();
@@ -2291,13 +2291,16 @@ void MORTAR::MortarInterface::PreEvaluate()
 /*----------------------------------------------------------------------*
  |  post evaluate                                           farah 02/16 |
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::PostEvaluate()
+void MORTAR::MortarInterface::PostEvaluate(const int step, const int iter)
 {
   // nothing to do...
 
 #ifdef MORTARGMSHCELLS
   // finish integration cell GMSH files
-  fp = fopen(filename.str().c_str(), "a");
+  int proc = Comm().MyPID();
+  std::ostringstream filename;
+  filename << "o/gmsh_output/cells_" << proc << ".pos";
+  FILE* fp = fopen(filename.str().c_str(), "a");
   std::stringstream gmshfilecontent2;
   gmshfilecontent2 << "};" << std::endl;
   fprintf(fp,gmshfilecontent2.str().c_str());

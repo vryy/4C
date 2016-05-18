@@ -1,12 +1,14 @@
 /*!----------------------------------------------------------------------
 \file contact_interface.H
 
-<pre>
-Maintainer: Alexander Popp
+\brief One contact interface
+
+\level 1
+
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
-</pre>
 
 *-----------------------------------------------------------------------*/
 #ifndef CONTACT_INTERFACE_H
@@ -672,7 +674,7 @@ protected:
       std::vector<GEN::pairedvector<int,double> >& normallin);
 
   virtual void PreEvaluate();
-  virtual void PostEvaluate();
+  virtual void PostEvaluate(const int step, const int iter);
 
   virtual void EvaluateCPPNormals();
   virtual void PrepareNonSmoothContact();
