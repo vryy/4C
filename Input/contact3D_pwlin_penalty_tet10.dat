@@ -3064,8 +3064,8 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.5 0.8 FACTOR 1.0 1.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 370 QUANTITY dispx VALUE 6.34467275392444738e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 370 QUANTITY dispy VALUE -8.30808656977744821e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 370 QUANTITY dispz VALUE -3.69975651856544796e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 370 QUANTITY dispx VALUE 6.57520761141599489e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 370 QUANTITY dispy VALUE -8.07212818992329218e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 370 QUANTITY dispz VALUE -3.69946416229880781e-01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

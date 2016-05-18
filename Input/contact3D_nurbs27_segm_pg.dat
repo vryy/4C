@@ -36,8 +36,8 @@ DYNAMICTYP           Statics
 RESULTSEVRY          3
 RESTARTEVRY          3
 NLNSOL               fullnewton
-TIMESTEP             0.5
-NUMSTEP              3
+TIMESTEP             0.3
+NUMSTEP              5
 MAXTIME              1.5
 TOLRES               1.0E-6
 TOLDISP              1.0E-8
@@ -1273,7 +1273,7 @@ CP      91  COORD  +5.000000000000e+00  +5.000000000000e+00  -1.050000000000e+01
      8 SONURBS27 NURBS27    22    23    24    26    27    28    30    31    32    38    39    40    42    43    44    46    47    48    54    55    56    58    59    60    62    63    64  MAT 1 GP 3 3 3
      9 SONURBS27 NURBS27    65    66    67    68    69    70    71    72    73    74    75    76    77    78    79    80    81    82    83    84    85    86    87    88    89    90    91  MAT 2 GP 3 3 3
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE 3.53837742350203976e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -7.67095865964819379e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE -5.05694220258986515e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE 3.53855790186152808e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -7.73625032360888087e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE -5.08783232173090116e+00 TOLERANCE 1e-8
 -----------------------------------------------------------------------END
