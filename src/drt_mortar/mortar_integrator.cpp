@@ -1958,7 +1958,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
 
     // check GP projection (SLAVE)
     if (psdt == DRT::Element::quad4 || psdt == DRT::Element::quad8
-        || psdt == DRT::Element::quad9)
+        || psdt == DRT::Element::quad9 || psdt == DRT::Element::nurbs9)
     {
       if (psxi[0] < -1.0 - tol || psxi[1] < -1.0 - tol || psxi[0] > 1.0 + tol
           || psxi[1] > 1.0 + tol)
@@ -1983,7 +1983,7 @@ void MORTAR::MortarIntegratorCalc<distypeS, distypeM>::IntegrateCell3DAuxPlaneQu
 
     // check GP projection (MASTER)
     if (pmdt == DRT::Element::quad4 || pmdt == DRT::Element::quad8
-        || pmdt == DRT::Element::quad9)
+        || pmdt == DRT::Element::quad9 || pmdt == DRT::Element::nurbs9)
     {
       if (pmxi[0] < -1.0 - tol || pmxi[1] < -1.0 - tol || pmxi[0] > 1.0 + tol
           || pmxi[1] > 1.0 + tol)
