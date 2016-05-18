@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file contact_coupling3d.cpp
 
-\maintainer Philipp Farah, Alexander Seitz
-
 \brief Classes for mortar contact coupling in 3D.
+
+\level 1
+
+\maintainer Philipp Farah, Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 
@@ -1782,13 +1784,16 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         MORTAR::MortarProjector::Impl(Coupling()[m]->SlaveIntElement())->
             ProjectGaussPointAuxn3D(globgp, Coupling()[m]->Auxn(), Coupling()[m]->SlaveIntElement(), sxi, sprojalpha);
 
-        // map back to parent element
+        // project Gauss point onto slave (parent) element
         double psxi[2] = {0.,0.};
+        double psprojalpha = 0.0;
         if (Quad())
         {
           MORTAR::IntElement* ie = dynamic_cast<MORTAR::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
           if (ie==NULL) dserror("NULL pointer");
-          ie->MapToParent(sxi,psxi);
+          MORTAR::MortarProjector::Impl(SlaveElement())->
+              ProjectGaussPointAuxn3D(globgp,Coupling()[m]->Auxn(),SlaveElement(),psxi,psprojalpha);
+          //ie->MapToParent(sxi,psxi); // old way of doing it via affine map... wrong (popp 05/2016)
         }
         else
           for (int i=0; i<2; ++i)
@@ -1822,12 +1827,13 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         // compute GP slave coordinate derivatives
         integrator.DerivXiGP3DAuxPlane(Coupling()[m]->SlaveIntElement(),sxi,currcell->Auxn(),dsxigp,sprojalpha,currcell->GetDerivAuxn(),lingp);
 
+        // compute GP slave coordinate derivatives (parent element)
         if (Quad())
         {
           MORTAR::IntElement* ie = dynamic_cast<MORTAR::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
-          if (ie==NULL)
-            dserror("wtf");
-          ie->MapToParent(dsxigp,dpsxigp);
+          if (ie==NULL) dserror("wtf");
+          integrator.DerivXiGP3DAuxPlane(SlaveElement(),psxi,currcell->Auxn(),dpsxigp,psprojalpha,currcell->GetDerivAuxn(),lingp);
+          //ie->MapToParent(dsxigp,dpsxigp); // old way of doing it via affine map... wrong (popp 05/2016)
         }
         else
           dpsxigp=dsxigp;

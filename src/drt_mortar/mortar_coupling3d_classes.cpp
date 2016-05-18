@@ -4,12 +4,12 @@
 \brief A class for mortar coupling of ONE slave element and ONE master
        element of a mortar interface in 3D (definition of sub-classes).
 
-<pre>
-Maintainer: Alexander Popp
+\level 1
+
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
-</pre>
 
 *----------------------------------------------------------------------*/
 
@@ -75,6 +75,11 @@ parele_(parele)
  *----------------------------------------------------------------------*/
 bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
 {
+  // outdated (popp 05/2016)
+  // - affine mapping is only correct for undistorted planar elements
+  // - in general we need nonlinear projection procedure
+  dserror("ERROR: MapToParent() function is outdated");
+
   // *********************************************************************
   // do mapping for given IntElement and Element
   // *********************************************************** quad9 ***
@@ -270,6 +275,11 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
 bool MORTAR::IntElement::MapToParent(const std::vector<GEN::pairedvector<int,double> >& dxi,
                                      std::vector<GEN::pairedvector<int,double> >& dparxi)
 {
+  // outdated (popp 05/2016)
+  // - affine mapping is only correct for undistorted planar elements
+  // - in general we need nonlinear projection procedure
+  dserror("ERROR: MapToParent() function is outdated");
+
   // map iterator
   typedef GEN::pairedvector<int,double>::const_iterator CI;
 
