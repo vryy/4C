@@ -448,8 +448,7 @@ ParticleFilter::ParticleFilter(
           std::string name) :
       PostFilterBase (field, name)
 {
-  // overwrite writer to have *.vtp output for particles,
-  // comment this line for getting back to ensight output
+  // vtp output is enforced for particles independent of the choice for other fields
   writer_ = Teuchos::rcp(new VtpWriter(field, name));
 }
 
@@ -458,13 +457,11 @@ ParticleFilter::ParticleFilter(
 /*----------------------------------------------------------------------*/
 void ParticleFilter::WriteAllResults(PostField* field)
 {
-  bool fillzeros = true;
-  writer_->WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim(), 0, fillzeros);
-  writer_->WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim(), 0, fillzeros);
+  writer_->WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim(), 0);
+  writer_->WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim(), 0);
   writer_->WriteResult("radius", "radius", nodebased, 1);
   writer_->WriteResult("sign", "sign", nodebased, 1);
-  writer_->WriteResult("orientation", "orientation", dofbased, field->problem()->num_dim(), 0, fillzeros);
-
+  writer_->WriteResult("orientation", "orientation", dofbased, field->problem()->num_dim(), 0);
 }
 
 /*----------------------------------------------------------------------*/

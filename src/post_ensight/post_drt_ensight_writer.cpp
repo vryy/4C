@@ -3,13 +3,9 @@
 
   \brief Ensight filter basis class
 
-  <pre>
-  Maintainer: Martin Kronbichler
-  kronbichler@lnm.mw.tum.de
-  http://www.lnm.mw.tum.de
-  089 - 289-15235
-  </pre>
+  \level 1
 
+  \maintainer Martin Kronbichler
 */
 
 
@@ -1748,8 +1744,6 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
   if (epetradatamap->NumMyElements()<1)
     dserror("Proc %d is empty. Do not use more procs for postprocessing than for calculation.",myrank_);
   int offset = epetradatamap->MinAllGID() - dis->DofRowMap()->MinAllGID();
-  if(fillzeros)
-    offset=0;
 
   //switch between nurbs an others
   if(field_->problem()->SpatialApproximation()=="Nurbs" && !writecp_)
