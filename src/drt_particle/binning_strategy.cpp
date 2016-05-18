@@ -4,6 +4,8 @@
 
 \brief Binning strategy for neighborhood search
 
+\level 2
+
 \maintainer Georg Hammerl
 *----------------------------------------------------------------------*/
 

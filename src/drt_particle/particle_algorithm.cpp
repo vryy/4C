@@ -4,6 +4,8 @@
 
 \brief Algorithm to control particle simulations
 
+\level 2
+
 \maintainer Georg Hammerl
 *----------------------------------------------------------------------*/
 

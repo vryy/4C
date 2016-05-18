@@ -4,6 +4,8 @@
 
 \brief Particle collision handling
 
+\level 3
+
 \maintainer Georg Hammerl
 */
 

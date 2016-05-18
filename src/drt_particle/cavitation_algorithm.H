@@ -4,6 +4,8 @@
 
 \brief Algorithm to control cavitation simulations
 
+\level 3
+
 \maintainer Georg Hammerl
 *----------------------------------------------------------------------*/
 
@@ -18,12 +20,15 @@
  *----------------------------------------------------------------------*/
 #include "particle_algorithm.H"
 #include "../drt_inpar/inpar_cavitation.H"
+#include "../drt_lib/drt_element.H"
 
 #include "Epetra_MpiComm.h"
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 #include <Epetra_FEVector.h>
+
+#define INLINED_ELE_EVAL
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     ghamm 11/12 |
@@ -124,7 +129,19 @@ namespace CAVITATION
     /// compute pressure at bubble position
     virtual bool ComputePressureAtBubblePosition(
       DRT::Node* currparticle,
-      LINALG::Matrix<3,1>& particleposition,
+      const LINALG::Matrix<3,1>& particleposition,
+      Epetra_SerialDenseMatrix& elemat1,
+      Epetra_SerialDenseMatrix& elemat2,
+      Epetra_SerialDenseVector& elevec1,
+      Epetra_SerialDenseVector& elevec2,
+      Epetra_SerialDenseVector& elevec3
+      );
+
+    /// compute pressure at bubble position
+    template <DRT::Element::DiscretizationType distype>
+    void ComputePressureAtBubblePositionT(
+      const DRT::Element* targetfluidele,
+      const LINALG::Matrix<3,1>& elecoord,
       Epetra_SerialDenseMatrix& elemat1,
       Epetra_SerialDenseMatrix& elemat2,
       Epetra_SerialDenseVector& elevec1,
@@ -160,6 +177,33 @@ namespace CAVITATION
 
     /// force on particles is calculated and applied
     virtual void CalculateAndApplyForcesToParticles(bool init = false);
+
+    /// get data from underlying fluid element
+    DRT::Element* GetUnderlyingFluidEleData(
+      DRT::Node* currparticle,
+      LINALG::Matrix<3,1>& particleposition,
+      LINALG::Matrix<3,1>& elecoord,
+      const Teuchos::ParameterList& p,
+      Epetra_SerialDenseVector& elevector1,
+      Epetra_SerialDenseVector& elevector2,
+      Epetra_SerialDenseVector& elevector3,
+      Epetra_SerialDenseVector& elevector4,
+      Epetra_SerialDenseVector& elevector5
+      );
+
+    /// get data from underlying fluid element
+    template <DRT::Element::DiscretizationType distype>
+    void GetUnderlyingFluidEleDataT(
+      const LINALG::Matrix<3,1>& particleposition,
+      const DRT::Element* targetfluidele,
+      LINALG::Matrix<3,1>& elecoord,
+      const Teuchos::ParameterList& p,
+      Epetra_SerialDenseVector& elevector1,
+      Epetra_SerialDenseVector& elevector2,
+      Epetra_SerialDenseVector& elevector3,
+      Epetra_SerialDenseVector& elevector4,
+      Epetra_SerialDenseVector& elevector5
+      );
 
     /// calculate radius based on RP equation
     //! For details see Semesterarbeit Christoph Schmidt
@@ -344,7 +388,8 @@ namespace CAVITATION
 
     /// get underlying element as well as position in element space
     virtual DRT::Element* GetEleCoordinatesFromPosition(
-      LINALG::Matrix<3,1>& myposition,
+      const DRT::Node* currparticle,
+      const LINALG::Matrix<3,1>& myposition,
       DRT::MESHFREE::MeshfreeMultiBin* currbin,
       LINALG::Matrix<3,1>& elecoord,
       const bool approxelecoordsinit
@@ -425,9 +470,13 @@ namespace CAVITATION
 
     Teuchos::RCP<Epetra_Vector> acccolnp_;   ///< acceleration in col layout at t_n+1
 
+    Teuchos::RCP<Epetra_Vector> velcol_interpol_;   ///< velocity in col layout at t_{n+theta}
+
     Teuchos::RCP<Epetra_MultiVector> velgradcoln_;   ///< velocity gradient in col layout at t_n
 
     Teuchos::RCP<Epetra_MultiVector> velgradcolnp_;   ///< velocity gradient in col layout at t_n+1
+
+    Teuchos::RCP<Epetra_MultiVector> velgradcol_interpol_;   ///< velocity gradient in col layout at t_{n+theta}
 
     //@}
 
@@ -452,7 +501,12 @@ namespace CAVITATION
       LINALG::Matrix<3,1> elecoord;
     };
 
-    std::vector<UnderlyingEle> underlyingelecache_;   ///< temporary storage for underlying fluid element
+    std::vector<UnderlyingEle> underlyingelecache_;   ///< cache for underlying fluid element
+
+    std::vector<LINALG::SerialDenseMatrix> xyze_cache_;   ///< prefetched coordinates of fluid element
+    std::vector<std::vector<int> > lm_cache_;   ///< prefetched lm vectors of fluid elements
+    std::map<int, Epetra_SerialDenseVector> evelgrad_cache_;   ///< cached evel grad of fluid elements
+    std::map<int, std::vector<std::vector<double> > > evelacc_cache_;   ///< cached evel and eacc of fluid elements
 
     //@}
 

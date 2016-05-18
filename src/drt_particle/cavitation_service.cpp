@@ -4,6 +4,8 @@
 
 \brief Helper methods for cavitation simulations
 
+\level 3
+
 \maintainer Georg Hammerl
 *----------------------------------------------------------------------*/
 
@@ -37,6 +39,7 @@ void CAVITATION::Algorithm::CalculateFluidFraction(
   Teuchos::RCP<const Epetra_Vector> particleradius
   )
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateFluidFraction");
   Teuchos::RCP<Epetra_FEVector> fluid_fraction = Teuchos::rcp(new Epetra_FEVector(*fluiddis_->ElementRowMap()));
   // export element volume to col layout
   Teuchos::RCP<Epetra_Vector> ele_volume_col = LINALG::CreateVector(*fluiddis_->ElementColMap(), false);
@@ -1126,11 +1129,10 @@ void CAVITATION::Algorithm::AssignSmallBubbles(
       dserror("summing into Epetra_FEVector failed");
 #ifdef DEBUG
     DRT::Element* fluidele = fluiddis_->gElement(insideeles[0]);
-    const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
 
     static LINALG::Matrix<3,1> dummy(false);
     // get coordinates of the particle position in parameter space of the element
-    bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, particleposition, dummy);
+    bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze_cache_[fluidele->LID()], particleposition, dummy);
 
     if(insideele == false)
       dserror("bubble is expected to lie inside this fluid element");
@@ -1142,11 +1144,10 @@ void CAVITATION::Algorithm::AssignSmallBubbles(
     for(size_t i=0; i<insideeles.size(); ++i)
     {
       DRT::Element* fluidele = fluiddis_->gElement(insideeles[i]);
-      const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
 
       static LINALG::Matrix<3,1> dummy(false);
       // get coordinates of the particle position in parameter space of the element
-      insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, particleposition, dummy);
+      insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze_cache_[fluidele->LID()], particleposition, dummy);
 
       if(insideele == true)
       {
@@ -1170,15 +1171,16 @@ void CAVITATION::Algorithm::AssignSmallBubbles(
  |                                                          ghamm 06/15 |
  *----------------------------------------------------------------------*/
 DRT::Element* CAVITATION::Algorithm::GetEleCoordinatesFromPosition(
-  LINALG::Matrix<3,1>& myposition,          ///< position
+  const DRT::Node* currparticle,            ///< particle
+  const LINALG::Matrix<3,1>& myposition,    ///< position
   DRT::MESHFREE::MeshfreeMultiBin* currbin, ///< corresponding bin
   LINALG::Matrix<3,1>& elecoord,            ///< matrix to be filled with particle coordinates in element space
   const bool approxelecoordsinit            ///< bool whether an inital approx. of the ele coords is used
   )
 {
   // variables to store information about element in which the particle is located
-  DRT::Element* targetfluidele = NULL;
   elecoord.Clear();
+  bool insideele = false;
 
   DRT::Element** fluidelesinbin = currbin->AssociatedFluidEles();
   int numfluidelesinbin = currbin->NumAssociatedFluidEle();
@@ -1188,40 +1190,78 @@ DRT::Element* CAVITATION::Algorithm::GetEleCoordinatesFromPosition(
   for(int ele=0; ele<numfluidelesinbin; ++ele)
   {
     DRT::Element* fluidele = fluidelesinbin[ele];
-    const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
 
     //get coordinates of the particle position in parameter space of the element
-    bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, myposition, elecoord, approxelecoordsinit);
+    insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze_cache_[fluidele->LID()], myposition, elecoord, approxelecoordsinit);
 
     if(insideele == true)
     {
-      targetfluidele = fluidele;
       // leave loop over all fluid eles in bin
-      break;
+      return fluidele;
     }
   }
 
   // repeat search for underlying fluid element with standard search in case nothing was found
-  if(targetfluidele == NULL and approxelecoordsinit == true)
+  if(approxelecoordsinit == true)
   {
     for(int ele=0; ele<numfluidelesinbin; ++ele)
     {
       DRT::Element* fluidele = fluidelesinbin[ele];
-      const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
 
       //get coordinates of the particle position in parameter space of the element
-      bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, myposition, elecoord, false);
+      insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze_cache_[fluidele->LID()], myposition, elecoord, false);
 
       if(insideele == true)
       {
-        targetfluidele = fluidele;
         // leave loop over all fluid eles in bin
-        break;
+        return fluidele;
       }
     }
   }
 
-  return targetfluidele;
+  // repeat search for the underlying fluid element in neighborhood of current bin
+  // this should only be necessary on very rare cases
+
+  // gather neighboring bins
+  int ijk[3];
+  ConvertGidToijk(currbin->Id(),ijk);
+
+  // ijk_range contains: i_min   i_max     j_min     j_max    k_min     k_max
+  const int ijk_range[] = {ijk[0]-1, ijk[0]+1, ijk[1]-1, ijk[1]+1, ijk[2]-1, ijk[2]+1};
+  std::vector<int> binIds;
+  binIds.reserve(27);
+
+  // check on existence here
+  GidsInijkRange(ijk_range,binIds,true);
+
+  for(size_t b=0; b<binIds.size(); ++b)
+  {
+    currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(particledis_->gElement(binIds[b]));
+
+    fluidelesinbin = currbin->AssociatedFluidEles();
+    numfluidelesinbin = currbin->NumAssociatedFluidEle();
+
+    for(int ele=0; ele<numfluidelesinbin; ++ele)
+    {
+      DRT::Element* fluidele = fluidelesinbin[ele];
+
+      // get coordinates of the particle position in parameter space of the element
+      insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze_cache_[fluidele->LID()], myposition, elecoord, false);
+
+      if(insideele == true)
+      {
+        std::cout << "INFO: underlying fluid element (id: " << fluidele->Id() << ") for currparticle with Id: "
+            << currparticle->Id() << " and position: " << myposition(0) << " " << myposition(1) << " " << myposition(2)
+            << " was found in a neighboring bin: " << currbin->Id() << " on proc " << myrank_ << std::endl;
+
+        // leave loop over all fluid eles in bin
+        return fluidele;
+      }
+    }
+  }
+
+  // no underlying fluid element was found
+  return NULL;
 }
 
 
@@ -1244,7 +1284,7 @@ bool CAVITATION::Algorithm::ComputeVelocityAtBubblePosition(
   DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
 
   static LINALG::Matrix<3,1> elecoord(false);
-  DRT::Element* targetfluidele = GetEleCoordinatesFromPosition(particleposition, currbin, elecoord, approxelecoordsinit_);
+  DRT::Element* targetfluidele = GetEleCoordinatesFromPosition(currparticle, particleposition, currbin, elecoord, approxelecoordsinit_);
 
   if(targetfluidele == NULL)
   {
@@ -1276,7 +1316,7 @@ bool CAVITATION::Algorithm::ComputeVelocityAtBubblePosition(
  *----------------------------------------------------------------------*/
 bool CAVITATION::Algorithm::ComputePressureAtBubblePosition(
   DRT::Node* currparticle,
-  LINALG::Matrix<3,1>& particleposition,
+  const LINALG::Matrix<3,1>& particleposition,
   Epetra_SerialDenseMatrix& elemat1,
   Epetra_SerialDenseMatrix& elemat2,
   Epetra_SerialDenseVector& elevec1,
@@ -1290,7 +1330,7 @@ bool CAVITATION::Algorithm::ComputePressureAtBubblePosition(
   DRT::MESHFREE::MeshfreeMultiBin* currbin = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
 
   static LINALG::Matrix<3,1> elecoord(false);
-  DRT::Element* targetfluidele = GetEleCoordinatesFromPosition(particleposition, currbin, elecoord, approxelecoordsinit_);
+  DRT::Element* targetfluidele = GetEleCoordinatesFromPosition(currparticle, particleposition, currbin, elecoord, approxelecoordsinit_);
 
   // fill cache for force computation
   const size_t i   = currparticle->LID();
@@ -1308,21 +1348,111 @@ bool CAVITATION::Algorithm::ComputePressureAtBubblePosition(
     return false;
   }
 
-  // get element location vector and ownerships
-  std::vector<int> lm_f;
-  std::vector<int> lmowner_f;
-  std::vector<int> lmstride;
-  targetfluidele->LocationVector(*fluiddis_,lm_f,lmowner_f,lmstride);
-
-  // set action in order to compute pressure -> state with name "veln" (and "velnp") expected inside
-  Teuchos::ParameterList params;
-  params.set<int>("action",FLD::interpolate_pressure_to_given_point);
-  params.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
-
-  // call the element specific evaluate method (elevec1 = fluid press)
-  targetfluidele->Evaluate(params,*fluiddis_,lm_f,elemat1,elemat2,elevec1,elevec2,elevec3);
+  switch(targetfluidele->Shape())
+  {
+  case DRT::Element::hex8:
+    ComputePressureAtBubblePositionT<DRT::Element::hex8>(targetfluidele, elecoord,
+        elemat1, elemat2, elevec1, elevec2, elevec3);
+  break;
+  case DRT::Element::tet4:
+    ComputePressureAtBubblePositionT<DRT::Element::tet4>(targetfluidele, elecoord,
+        elemat1, elemat2, elevec1, elevec2, elevec3);
+  break;
+  default:
+    dserror("add desired 3D element type here");
+  break;
+  }
 
   return true;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute pressure at bubble position                     ghamm 06/15  |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void CAVITATION::Algorithm::ComputePressureAtBubblePositionT(
+  const DRT::Element* targetfluidele,
+  const LINALG::Matrix<3,1>& elecoord,
+  Epetra_SerialDenseMatrix& elemat1,
+  Epetra_SerialDenseMatrix& elemat2,
+  Epetra_SerialDenseVector& elevec1,
+  Epetra_SerialDenseVector& elevec2,
+  Epetra_SerialDenseVector& elevec3)
+{
+#ifdef INLINED_ELE_EVAL
+  {
+    const int nsd_ = 3;
+    static const int numdofpernode_ = nsd_+1;
+    static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    //! coordinates of current integration point in reference coordinates
+    static LINALG::Matrix<nsd_,1> xsi_;
+    //! node coordinates
+    static LINALG::Matrix<nen_,1> funct_;
+    //! pressure at given point
+    static LINALG::Matrix<nen_,1> epre;
+
+    // coordinates of the current point
+    xsi_.Update(elecoord);
+
+    // shape functions
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+
+    //----------------------------------------------------------------------------
+    //   Extract pressure from global vectors and compute pressure at point
+    //----------------------------------------------------------------------------
+
+
+    // extract local values of the global vectors
+    const std::vector<int>& lm_f = lm_cache_[targetfluidele->LID()];
+    std::vector<double> myvel(lm_f.size());
+
+    if(fluiddis_->HasState("vel"))
+    {
+      // fill the local element vector with the global values
+      DRT::UTILS::ExtractMyValues(*fluiddis_->GetState("vel"),myvel,lm_f);
+
+      for (int inode=0; inode<nen_; ++inode)  // number of nodes
+      {
+        // fill a scalar field via a pointer
+        epre(inode,0) = myvel[nsd_+(inode*numdofpernode_)];
+      }
+
+      elevec1[0] = funct_.Dot(epre);
+    }
+
+    if(fluiddis_->HasState("velnp"))
+    {
+      // fill the local element vector with the global values
+      // fill the local element vector with the global values
+      DRT::UTILS::ExtractMyValues(*fluiddis_->GetState("velnp"),myvel,lm_f);
+
+      for (int inode=0; inode<nen_; ++inode)  // number of nodes
+      {
+        // fill a scalar field via a pointer
+        epre(inode,0) = myvel[nsd_+(inode*numdofpernode_)];
+      }
+
+      if (elevec1.Length() != 2)
+        dserror("velnp is set, there must be a vel as well");
+
+      elevec1[1] = funct_.Dot(epre);
+    }
+  }
+#else
+  {
+    // set action in order to compute pressure -> state with name "veln" (and "velnp") expected inside
+    Teuchos::ParameterList params;
+    params.set<int>("action",FLD::interpolate_pressure_to_given_point);
+    params.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
+
+    // call the element specific evaluate method (elevec1 = fluid press)
+    targetfluidele->Evaluate(params,*fluiddis_,lm_cache_[targetfluidele->LID()],elemat1,elemat2,elevec1,elevec2,elevec3);
+  }
+#endif
+
+  return;
 }
 
 

@@ -4,6 +4,8 @@
 
 \brief Algorithm to control cavitation simulations
 
+\level 3
+
 \maintainer Georg Hammerl
 *----------------------------------------------------------------------*/
 
@@ -28,6 +30,8 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_parallel.H"
+#include "../drt_lib/drt_element_integration_select.H"
+#include "../drt_fem_general/drt_utils_gder2.H"
 
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/element_volume.H"
@@ -791,21 +795,35 @@ void CAVITATION::Algorithm::InitCavitation()
   particles_->SetParticleAlgorithm(Teuchos::rcp(this,false));
   particles_->Init();
 
-  if(initbubblevelfromfluid_)
-    InitBubbleVelFromFluidVel();
-
   // fill pressure into vector for convergence check
   pressnp_ = Teuchos::rcp(new Epetra_Vector(*fluid_->ExtractPressurePart(fluid_->Veln())));
 
   // compute volume of each fluid element and store it
   ele_volume_ = LINALG::CreateVector(*fluiddis_->ElementRowMap(), false);
-  int numfluidele = fluiddis_->NumMyRowElements();
+  const int numfluidele = fluiddis_->NumMyColElements();
+  xyze_cache_.resize(numfluidele);
+  lm_cache_.resize(numfluidele);
   for(int i=0; i<numfluidele; ++i)
   {
-    DRT::Element* fluidele = fluiddis_->lRowElement(i);
+    DRT::Element* fluidele = fluiddis_->lColElement(i);
+    // prefetch nodal coordinates for each element
     const LINALG::SerialDenseMatrix xyze(GEO::InitialPositionArray(fluidele));
-    double ev = GEO::ElementVolume( fluidele->Shape(), xyze );
-    (*ele_volume_)[i] = ev;
+    xyze_cache_[fluidele->LID()] = xyze;
+
+    // compute volume for each row element
+    if(fluidele->Owner() == myrank_)
+    {
+      double ev = GEO::ElementVolume( fluidele->Shape(), xyze );
+      const int lid = fluiddis_->ElementRowMap()->LID(fluidele->Id());
+      (*ele_volume_)[lid] = ev;
+    }
+
+    // pre fetch lm vector for elements
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
+    fluidele->LocationVector(*fluiddis_,lm,lmowner,lmstride);
+    lm_cache_[fluidele->LID()] = lm;
   }
 
   // compute initial fluid fraction
@@ -819,6 +837,10 @@ void CAVITATION::Algorithm::InitCavitation()
     // set fluid fraction in fluid for computation
     SetFluidFraction();
   }
+
+  // initialize bubble velocities if necessary
+  if(initbubblevelfromfluid_)
+    InitBubbleVelFromFluidVel();
 
   // determine consistent initial acceleration for the particles
   CalculateAndApplyForcesToParticles(true);
@@ -860,7 +882,7 @@ void CAVITATION::Algorithm::InitBubblePressure()
   fluiddis_->SetState("vel",veln);
 
   // get cavitation material
-  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_cavitation);
+  const int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_cavitation);
   if (id == -1)
     dserror("no cavitation fluid material specified");
   const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
@@ -883,7 +905,7 @@ void CAVITATION::Algorithm::InitBubblePressure()
   for(int i=0; i<particledis_->NodeRowMap()->NumMyElements(); ++i)
   {
     // set values here and overwrite in case of restart later
-    double r0_bub = (*bubbleradiusn)[i];
+    const double r0_bub = (*bubbleradiusn)[i];
     (*bubbleradius0)[i] = r0_bub;
     (*bubbleradiusdot)[i] = 0.0;
 
@@ -964,6 +986,7 @@ void CAVITATION::Algorithm::InitBubbleVelFromFluidVel()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::PrepareTimeStep()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::PrepareTimeStep");
   if((particles_->StepOld()-restartparticles_) % timestepsizeratio_ == 0)
   {
     IncrementTimeAndStep();
@@ -992,18 +1015,26 @@ void CAVITATION::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::SetCouplingStates(Teuchos::ParameterList& p, bool init)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::SetCouplingStates");
   // find theta for linear interpolation in fluid time step
   double theta = 1.0;
   if((particles_->Step()-restartparticles_) % timestepsizeratio_ != 0)
     theta = (double)((particles_->Step()-restartparticles_) % timestepsizeratio_) / (double)timestepsizeratio_;
 
-  if(!simplebubbleforce_)
+  if(not simplebubbleforce_)
   {
     // no interpolation necessary in case no subcycling is applied
     if(timestepsizeratio_ == 1 || init)
     {
-      // project velocity gradient of fluid to nodal level and store it in a ParameterList
-      FLD::UTILS::ProjectGradientAndSetParam(fluiddis_,p,fluid_->Velnp(),"velgradient",false);
+      // project gradient
+      Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
+          FLD::UTILS::ProjectGradient(fluiddis_, fluid_->Velnp(), false);
+
+#ifdef INLINED_ELE_EVAL
+      velgradcol_interpol_ = projected_velgrad;
+#else
+      fluiddis_->AddMultiVectorToParameterList(p,"velgradient",projected_velgrad);
+#endif
     }
     else
     {
@@ -1023,7 +1054,11 @@ void CAVITATION::Algorithm::SetCouplingStates(Teuchos::ParameterList& p, bool in
       Teuchos::RCP<Epetra_MultiVector> velgradcol = Teuchos::rcp(new Epetra_MultiVector(*velgradcolnp_));
       velgradcol->Update(1.0-theta, *velgradcoln_, theta);
 
+#ifdef INLINED_ELE_EVAL
+      velgradcol_interpol_ = velgradcol;
+#else
       fluiddis_->AddMultiVectorToParameterList(p,"velgradient",velgradcol);
+#endif
 
       // clear the stored gradients after last subcycling step
       if((particles_->Step()-restartparticles_) % timestepsizeratio_ == 0)
@@ -1037,8 +1072,15 @@ void CAVITATION::Algorithm::SetCouplingStates(Teuchos::ParameterList& p, bool in
   // no interpolation necessary in case no subcycling is applied
   if(timestepsizeratio_ == 1 || init)
   {
+#ifdef INLINED_ELE_EVAL
+    velcol_interpol_ = LINALG::CreateVector(*fluiddis_->DofColMap(),false);
+    LINALG::Export(*fluid_->Velnp(), *velcol_interpol_);
+    acccolnp_ = LINALG::CreateVector(*fluiddis_->DofColMap(),false);
+    LINALG::Export(*fluid_->Accnp(), *acccolnp_);
+#else
     fluiddis_->SetState("vel",fluid_->Velnp());
     fluiddis_->SetState("acc",fluid_->Accnp());
+#endif
   }
   else
   {
@@ -1054,20 +1096,24 @@ void CAVITATION::Algorithm::SetCouplingStates(Teuchos::ParameterList& p, bool in
     }
 
     // fluid velocity linearly interpolated between n and n+1 in case of subcycling
-    Teuchos::RCP<Epetra_Vector> vel = Teuchos::rcp(new Epetra_Vector(*velcolnp_));
+    Teuchos::RCP<Epetra_Vector> vel_interpol = Teuchos::rcp(new Epetra_Vector(*velcolnp_));
     if(theta != 1.0)
-      vel->Update(1.0-theta, *velcoln_, theta);
+      vel_interpol->Update(1.0-theta, *velcoln_, theta);
 
+#ifdef INLINED_ELE_EVAL
+    velcol_interpol_ = vel_interpol;
+    // no interpolation for acceleration
+#else
     // set fluid states here because states may have been cleared in gradient computation
-    fluiddis_->SetState("vel",vel);
+    fluiddis_->SetState("vel",vel_interpol);
     fluiddis_->SetState("acc",acccolnp_);
+#endif
 
-    // clear the stored gradients after last subcycling step
+    // clear the stored velocities used for interpolation
     if((particles_->Step()-restartparticles_) % timestepsizeratio_ == 0)
     {
       velcoln_ = Teuchos::null;
       velcolnp_ = Teuchos::null;
-      acccolnp_ = Teuchos::null;
     }
   }
 
@@ -1094,7 +1140,6 @@ void CAVITATION::Algorithm::Integrate(bool& particlereset)
     case INPAR::CAVITATION::TwoWayFull_strong:
     {
       // coupling radius has already been set in Prepare Relaxation
-      TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::CalculateFluidFraction");
       CalculateFluidFraction(couplingradius_);
       SetFluidFraction();
       break;
@@ -1229,13 +1274,18 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
   const bool haveparticledbc = dbcmap->NumGlobalElements();
 
   // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
-  Epetra_SerialDenseVector elevector4;
-  Epetra_SerialDenseVector elevector5;
+  Epetra_SerialDenseVector elevector1(3);
+  Epetra_SerialDenseVector elevector2(3);
+  Epetra_SerialDenseVector elevector3(3);
+  Epetra_SerialDenseVector elevector4(3);
+  Epetra_SerialDenseVector elevector5(3);
+
+  // add fluid force contributions during loop over all particles and add to global vec afterwards
+  std::map<int, double> fluidforce_contribution;
+
+  // clear cache of element data
+  evelgrad_cache_.clear();
+  evelacc_cache_.clear();
 
   // only row particles are evaluated
   for(int i=0; i<particledis_->NodeRowMap()->NumMyElements(); ++i)
@@ -1253,85 +1303,17 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
     // 1st step: element coordinates of particle position in fluid element
     //--------------------------------------------------------------------
 
-    // find out in which fluid element the current particle is located
-    if(currparticle->NumElement() != 1)
-      dserror("ERROR: A particle is assigned to more than one bin!");
-    DRT::Element** currele = currparticle->Elements();
-#ifdef DEBUG
-    DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
-    if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
-#endif
-    DRT::MESHFREE::MeshfreeMultiBin* currbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+    static LINALG::Matrix<3,1> elecoord;
+    const DRT::Element* targetfluidele = GetUnderlyingFluidEleData(currparticle, particleposition, elecoord, p,
+        elevector1, elevector2, elevector3, elevector4, elevector5);
 
-    static LINALG::Matrix<3,1> elecoord(false);
-    DRT::Element* targetfluidele = NULL;
-
-    // use cache for underlying fluid element and elecoords if possible
-    if(underlyingelecache_.empty())
-    {
-      targetfluidele = GetEleCoordinatesFromPosition(particleposition, currbin, elecoord, approxelecoordsinit_);
-    }
-    else
-    {
-      UnderlyingEle& e = underlyingelecache_[currparticle->LID()];
-      targetfluidele = e.ele;
-      elecoord = e.elecoord;
-    }
+    // if no underlying fluid element could be found do not assemble forces for this bubble and continue with next bubble
+    if(targetfluidele == NULL)
+      continue;
 
     //--------------------------------------------------------------------
     // 2nd step: forces on this bubble are calculated
     //--------------------------------------------------------------------
-
-    if(targetfluidele == NULL)
-    {
-      std::cout << "INFO: currparticle with Id: " << currparticle->Id() << " and position: " << particleposition(0) << " "
-          << particleposition(1) << " " << particleposition(2) << " " << " does not have an underlying fluid element -> no forces calculated" << std::endl;
-
-      std::vector<double> tmpposition(dim_);
-      for(int d=0; d<dim_; ++d)
-        tmpposition[d] = particleposition(d);
-      int bubbleBinId = ConvertPosToGid(tmpposition);
-
-      std::cout << "particle is in binId: " << bubbleBinId << " while currbin->Id() is " << currbin->Id() <<
-          " . The following number of fluid eles is in this bin:" << currbin->NumAssociatedFluidEle() << std::endl;
-
-      // do not assemble forces for this bubble and continue with next bubble
-      continue;
-    }
-
-    // get element location vector and ownerships
-    std::vector<int> lm_f;
-    std::vector<int> lmowner_f;
-    std::vector<int> lmstride;
-    targetfluidele->LocationVector(*fluiddis_,lm_f,lmowner_f,lmstride);
-
-    // Reshape element matrices and vectors and initialize to zero
-    elevector1.Size(dim_);
-    elevector2.Size(dim_);
-    elevector3.Size(dim_);
-
-    // set action in order to calculate the velocity and material derivative of the velocity
-    Teuchos::ParameterList params;
-    params.set<int>("action",FLD::calc_mat_deriv_u_and_rot_u);
-    params.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
-
-    // call the element specific evaluate method (elevec1 = fluid vel u; elevec2 = mat deriv of fluid vel, elevec3 = rot of fluid vel)
-    targetfluidele->Evaluate(params,*fluiddis_,lm_f,elematrix1,elematrix2,elevector1,elevector2,elevector3);
-
-    if(!simplebubbleforce_)
-    {
-      // Reshape element matrices and vectors and initialize to zero
-      elevector4.Size(dim_);
-      elevector5.Size(dim_);
-
-      // set action in order to calculate the pressure gradient and divergence of the stress tensor
-      Teuchos::ParameterList params_surfintegrals(p);
-      params_surfintegrals.set<int>("action",FLD::calc_press_grad_and_div_eps);
-      params_surfintegrals.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
-
-      // call the element specific evaluate method (elevec4 = pressure gradient; elevec5 = viscous stress term)
-      targetfluidele->Evaluate(params_surfintegrals,*fluiddis_,lm_f,elematrix1,elematrix2,elevector4,elevector5,elevector3);
-    }
 
     // get bubble velocity and acceleration
     static LINALG::Matrix<3,1> v_bub;
@@ -1564,23 +1546,20 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
       Epetra_SerialDenseVector funct(numnode);
       // get shape functions of the element; evaluated at the bubble position --> distribution
       DRT::UTILS::shape_function_3D(funct,elecoord(0),elecoord(1),elecoord(2),targetfluidele->Shape());
-      // prepare assembly for fluid forces (pressure degrees do not have to be filled)
 
-      const int numdofperfluidele = numnode*(dim_+1);
-      double val[numdofperfluidele];
+      // gather all contributions to fluid forces here and add them at the end
+      const std::vector<int>& lm_f = lm_cache_[targetfluidele->LID()];
+      const int numdofpernode = dim_+1;
       for(int iter=0; iter<numnode; ++iter)
       {
+        const double nodalfunc = funct[iter];
+        // no contribution to pressure dof
         for(int d=0; d<dim_; ++d)
         {
-          val[iter*(dim_+1) + d] = funct[iter] * couplingforce(d);
+          fluidforce_contribution[lm_f[iter*numdofpernode+d]] += nodalfunc * couplingforce(d);
         }
-        // no contribution on pressure dof
-        val[iter*(dim_+1) + 3] = 0.0;
       }
-      // do assembly of bubble forces on fluid
-      int err = fluidforces->SumIntoGlobalValues(numdofperfluidele, &lm_f[0], &val[0]);
-      if (err<0)
-        dserror("summing into Epetra_FEVector failed");
+
       break;
     }
     case INPAR::CAVITATION::OneWay:
@@ -1654,9 +1633,30 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
 
   } // end iparticle
 
+  // clear cache of element data
+  evelgrad_cache_.clear();
+  evelacc_cache_.clear();
+
   //--------------------------------------------------------------------
   // 5th step: apply forces to bubbles and fluid field
   //--------------------------------------------------------------------
+
+  // add fluid force contributions to the global vector
+  {
+    std::vector<int> gids;
+    gids.reserve(fluidforce_contribution.size());
+    std::vector<double> vals;
+    vals.reserve(fluidforce_contribution.size());
+    for(std::map<int, double>::const_iterator it = fluidforce_contribution.begin(); it != fluidforce_contribution.end(); ++it)
+    {
+      gids.push_back(it->first);
+      vals.push_back(it->second);
+    }
+
+    const int err = fluidforces->SumIntoGlobalValues(fluidforce_contribution.size(), &gids[0], &vals[0]);
+    if (err<0)
+      dserror("summing into Epetra_FEVector failed");
+  }
 
   // enforce 2D bubble forces for pseudo-2D problem
   if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
@@ -1728,10 +1728,414 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
 
 
 /*----------------------------------------------------------------------*
+ | get data from underlying fluid element                  ghamm 04/16  |
+ *----------------------------------------------------------------------*/
+DRT::Element* CAVITATION::Algorithm::GetUnderlyingFluidEleData(
+  DRT::Node* currparticle,
+  LINALG::Matrix<3,1>& particleposition,
+  LINALG::Matrix<3,1>& elecoord,
+  const Teuchos::ParameterList& p,
+  Epetra_SerialDenseVector& elevector1,
+  Epetra_SerialDenseVector& elevector2,
+  Epetra_SerialDenseVector& elevector3,
+  Epetra_SerialDenseVector& elevector4,
+  Epetra_SerialDenseVector& elevector5
+  )
+{
+  DRT::Element* targetfluidele = NULL;
+
+  // find out in which fluid element the current particle is located
+  if(currparticle->NumElement() != 1)
+    dserror("ERROR: A particle is assigned to more than one bin!");
+  DRT::Element** currele = currparticle->Elements();
+#ifdef DEBUG
+  DRT::MESHFREE::MeshfreeMultiBin* test = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+  if(test == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
+#endif
+  DRT::MESHFREE::MeshfreeMultiBin* currbin = static_cast<DRT::MESHFREE::MeshfreeMultiBin*>(currele[0]);
+
+  // use cache for underlying fluid element and elecoords if possible
+  if(underlyingelecache_.empty())
+  {
+    targetfluidele = GetEleCoordinatesFromPosition(currparticle, particleposition, currbin, elecoord, approxelecoordsinit_);
+  }
+  else
+  {
+    UnderlyingEle& e = underlyingelecache_[currparticle->LID()];
+    targetfluidele = e.ele;
+    elecoord = e.elecoord;
+  }
+
+  if(targetfluidele == NULL)
+  {
+    std::cout << "INFO: currparticle with Id: " << currparticle->Id() << " and position: " << particleposition(0) << " "
+        << particleposition(1) << " " << particleposition(2) << " " << " does not have an underlying fluid element -> no forces calculated" << std::endl;
+
+    std::vector<double> tmpposition(dim_);
+    for(int d=0; d<dim_; ++d)
+      tmpposition[d] = particleposition(d);
+    int bubbleBinId = ConvertPosToGid(tmpposition);
+
+    std::cout << "particle is in binId: " << bubbleBinId << " while currbin->Id() is " << currbin->Id() <<
+        " . The following number of fluid eles is in this bin:" << currbin->NumAssociatedFluidEle() << std::endl;
+
+    // leave here because no underlying element found
+    return targetfluidele;
+  }
+
+  switch(targetfluidele->Shape())
+  {
+  case DRT::Element::hex8:
+    GetUnderlyingFluidEleDataT<DRT::Element::hex8>(particleposition, targetfluidele, elecoord, p,
+      elevector1, elevector2, elevector3, elevector4, elevector5);
+  break;
+  case DRT::Element::tet4:
+    GetUnderlyingFluidEleDataT<DRT::Element::tet4>(particleposition, targetfluidele, elecoord, p,
+      elevector1, elevector2, elevector3, elevector4, elevector5);
+  break;
+  default:
+    dserror("add desired 3D element type here");
+  break;
+  }
+
+  return targetfluidele;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | get data from underlying fluid element                  ghamm 04/16  |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void CAVITATION::Algorithm::GetUnderlyingFluidEleDataT(
+  const LINALG::Matrix<3,1>& particleposition,
+  const DRT::Element* targetfluidele,
+  LINALG::Matrix<3,1>& elecoord,
+  const Teuchos::ParameterList& p,
+  Epetra_SerialDenseVector& elevector1,
+  Epetra_SerialDenseVector& elevector2,
+  Epetra_SerialDenseVector& elevector3,
+  Epetra_SerialDenseVector& elevector4,
+  Epetra_SerialDenseVector& elevector5
+  )
+{
+  // get fluid element lm vector from cache
+  const std::vector<int>& lm_f = lm_cache_[targetfluidele->LID()];
+
+#ifdef INLINED_ELE_EVAL
+  {
+    const int nsd_ = 3;
+    static const int numdofpernode_ = nsd_+1;
+    static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+
+    //! coordinates of current integration point in reference coordinates
+    static LINALG::Matrix<nsd_,1> xsi_;
+    //! node coordinates
+    static LINALG::Matrix<nen_,1> funct_;
+    //! array for shape function derivatives w.r.t r,s,t
+    static LINALG::Matrix<nsd_,nen_> deriv_;
+
+    //! velocity vector in gausspoint
+    static LINALG::Matrix<nsd_,1> velint_;
+    //! (u_old*nabla)u_old
+    static LINALG::Matrix<nsd_,1> conv_old_;
+    //! global velocity derivatives in gausspoint w.r.t x,y,z
+    static LINALG::Matrix<nsd_,nsd_> vderxy_;
+
+
+    // fill the local element vector/matrix with the global values
+    static LINALG::Matrix<nsd_,nen_> evel;
+    static LINALG::Matrix<nsd_,nen_> eacc;
+    static LINALG::Matrix<nen_,1>    epre;
+
+    // extract local values of the global vectors
+    std::vector<double>* myvel;
+    std::vector<double>* myacc;
+
+    std::map<int, std::vector<std::vector<double> > >::iterator it = evelacc_cache_.find(targetfluidele->Id());
+    if(it != evelacc_cache_.end())
+    {
+      myvel = &(it->second[0]);
+      myacc = &(it->second[1]);
+    }
+    else
+    {
+      std::vector<double> myvel_extracted(lm_f.size());
+      std::vector<double> myacc_extracted(lm_f.size());
+      DRT::UTILS::ExtractMyValues(*velcol_interpol_,myvel_extracted,lm_f);
+      DRT::UTILS::ExtractMyValues(*acccolnp_,myacc_extracted,lm_f);
+      evelacc_cache_[targetfluidele->Id()].push_back(myvel_extracted);
+      evelacc_cache_[targetfluidele->Id()].push_back(myacc_extracted);
+      myvel = &(evelacc_cache_[targetfluidele->Id()][0]);
+      myacc = &(evelacc_cache_[targetfluidele->Id()][1]);
+    }
+
+    for (int inode=0; inode<nen_; ++inode)  // number of nodes
+    {
+      // fill a vector field via a pointer
+      {
+        for(int idim=0; idim<nsd_; ++idim) // number of dimensions
+        {
+          evel(idim,inode) = (*myvel)[idim+(inode*numdofpernode_)];
+          eacc(idim,inode) = (*myacc)[idim+(inode*numdofpernode_)];
+        }  // end for(idim)
+      }
+      // fill a scalar field via a pointer
+      epre(inode,0) = (*myvel)[nsd_+(inode*numdofpernode_)];
+    }
+
+    // coordinates of the current integration point
+    xsi_.Update(elecoord);
+
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function<distype>(xsi_,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+
+    // get velocities u_n and u_nm at integration point
+    velint_.Multiply(evel,funct_);
+    LINALG::Matrix<nsd_,1> accint;
+    accint.Multiply(eacc,funct_);
+
+    for (int isd=0;isd<nsd_;++isd)
+    {
+      elevector1[isd] = velint_(isd);
+    }
+
+    // get gradient of velocity at integration point
+    vderxy_.MultiplyNT(evel,deriv_);
+
+    // calculate (u_n * nabla) u_n
+    conv_old_.Multiply(vderxy_,velint_);
+
+    // calculate (u_n - u_nm)/dt + (u_n * nabla) u_n
+    conv_old_.Update(1.0, accint, 1.0);
+
+    for (int isd=0;isd<nsd_;++isd)
+    {
+      elevector2[isd] = conv_old_(isd);
+    }
+
+    // velocity gradient stored in vderxy_
+    /*
+       +-            -+
+       | du   du   du |
+       | --   --   -- |
+       | dx   dy   dz |
+       |              |
+       | dv   dv   dv |
+       | --   --   -- |
+       | dx   dy   dz |
+       |              |
+       | dw   dw   dw |
+       | --   --   -- |
+       | dx   dy   dz |
+       +-            -+
+    */
+
+    // rotation of fluid
+    elevector3[0] = vderxy_(2,1) - vderxy_(1,2);
+    elevector3[1] = vderxy_(0,2) - vderxy_(2,0);
+    elevector3[2] = vderxy_(1,0) - vderxy_(0,1);
+
+    if(!simplebubbleforce_)
+    {
+      static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
+      const bool is_higher_order_ele_ = DRT::ELEMENTS::IsHigherOrder<distype>::ishigherorder;
+      const bool is_ale = false;
+
+      //! node coordinates
+      LINALG::Matrix<nsd_,nen_> xyze_(xyze_cache_[targetfluidele->LID()], View);
+      //! viscous term including 2nd derivatives
+      //! (This array once had three dimensions, now the first two are combined to one.)
+      static LINALG::Matrix<nsd_*nsd_,nen_> viscs2_;
+      //! pressure gradient in gausspoint
+      static LINALG::Matrix<nsd_,1> gradp_;
+      //! global derivatives of shape functions w.r.t x,y,z
+      static LINALG::Matrix<nsd_,nen_> derxy_;
+      //! array for second derivatives of shape function w.r.t r,s,t
+      static LINALG::Matrix<numderiv2_,nen_> deriv2_;
+      //! transposed jacobian "dx/ds"
+      static LINALG::Matrix<nsd_,nsd_> xjm_;
+      //! inverse of transposed jacobian "ds/dx"
+      static LINALG::Matrix<nsd_,nsd_> xji_;
+      //! global second derivatives of shape functions w.r.t x,y,z
+      static LINALG::Matrix<numderiv2_,nen_> derxy2_;
+
+
+
+      //--------------------------------------------------------------------------------
+      // extract element based or nodal values
+      //--------------------------------------------------------------------------------
+
+      const int nsdsquare = nsd_*nsd_;
+
+      // get velocity gradient at the nodes from cache if possible
+      Epetra_SerialDenseVector* evelgrad;
+      std::map<int, Epetra_SerialDenseVector>::iterator it = evelgrad_cache_.find(targetfluidele->Id());
+      if(it != evelgrad_cache_.end())
+      {
+        evelgrad = &(it->second);
+      }
+      else
+      {
+        Epetra_SerialDenseVector evelgrad_extracted(nen_*nsdsquare);
+        DRT::UTILS::ExtractMyNodeBasedValues(targetfluidele,evelgrad_extracted,velgradcol_interpol_,nsdsquare);
+        evelgrad_cache_.insert(std::pair<int, Epetra_SerialDenseVector>(targetfluidele->Id(), evelgrad_extracted));
+        evelgrad = &(evelgrad_cache_[targetfluidele->Id()]);
+      }
+
+      // insert into element arrays
+      for (int i=0;i<nen_;++i)
+      {
+        // insert velocity gradient field into element array
+        for (int idim=0 ; idim < nsdsquare; ++idim)
+        {
+          viscs2_(idim,i) = (*evelgrad)[idim + i*nsdsquare];
+        }
+      }
+
+
+      //----------------------------------------------------------------------------
+      //                         ELEMENT GEOMETRY
+      //----------------------------------------------------------------------------
+
+      if (is_ale)
+      {
+        dserror("no ale cavitation implementation so far");
+        LINALG::Matrix<nsd_,nen_>       edispnp(true);
+        // ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"disp");
+
+        // get new node positions for isale
+         xyze_ += edispnp;
+      }
+
+      // shape functions and their first derivatives
+      derxy2_.Clear();
+      if (is_higher_order_ele_)
+      {
+        // get the second derivatives of standard element at current GP
+        DRT::UTILS::shape_function_deriv2<distype>(xsi_,deriv2_);
+      }
+
+      xjm_.MultiplyNT(deriv_,xyze_);
+      xji_.Invert(xjm_);
+
+      // compute global first derivates
+      derxy_.Multiply(xji_,deriv_);
+
+      //--------------------------------------------------------------
+      //             compute global second derivatives
+      //--------------------------------------------------------------
+      if (is_higher_order_ele_)
+      {
+        DRT::UTILS::gder2<distype,nen_>(xjm_,derxy_,deriv2_,xyze_,derxy2_);
+      }
+      else
+      {
+        derxy2_.Clear();
+      }
+
+      // elevec4 contains the pressure gradient
+      gradp_.Multiply(derxy_,epre);
+      for (int isd=0; isd<nsd_; ++isd)
+      {
+        elevector4[isd] = gradp_(isd);
+      }
+
+      /*--- viscous term: div(epsilon(u)) --------------------------------*/
+      /*   /                                                \
+           |  2 N_x,xx + N_x,yy + N_y,xy + N_x,zz + N_z,xz  |
+         1 |                                                |
+         - |  N_y,xx + N_x,yx + 2 N_y,yy + N_z,yz + N_y,zz  |
+         2 |                                                |
+           |  N_z,xx + N_x,zx + N_y,zy + N_z,yy + 2 N_z,zz  |
+           \                                                /
+
+           with N_x .. x-line of N
+           N_y .. y-line of N                                             */
+
+      /*--- subtraction for low-Mach-number flow: div((1/3)*(div u)*I) */
+      /*   /                            \
+           |  N_x,xx + N_y,yx + N_z,zx  |
+         1 |                            |
+      -  - |  N_x,xy + N_y,yy + N_z,zy  |
+         3 |                            |
+           |  N_x,xz + N_y,yz + N_z,zz  |
+           \                            /
+
+             with N_x .. x-line of N
+             N_y .. y-line of N                                             */
+
+      // get second derivatives w.r.t. xyz of velocity at given point
+      LINALG::Matrix<nsd_*nsd_,nsd_> evelgrad2(true);
+      evelgrad2.MultiplyNT(viscs2_,derxy_);
+
+      /*--- evelgrad2 --------------------------------*/
+      /*
+         /                        \
+         |   u,xx   u,xy   u,xz   |
+         |   u,yx   u,yy   u,yz   |
+         |   u,zx   u,zy   u,zz   |
+         |                        |
+         |   v,xx   v,xy   v,xz   |
+         |   v,yx   v,yy   v,yz   |
+         |   v,zx   v,zy   v,zz   |
+         |                        |
+         |   w,xx   w,xy   w,xz   |
+         |   w,yx   w,yy   w,yz   |
+         |   w,zx   w,zy   w,zz   |
+         \                        /
+                                                      */
+
+      // elevec2 contains div(eps(u))
+      elevector5[0] = 2.0 * evelgrad2(0,0) + evelgrad2(1,1) + evelgrad2(3,1) + evelgrad2(2,2) + evelgrad2(6,2);
+      elevector5[1] = evelgrad2(3,0) + evelgrad2(1,0) + 2.0 * evelgrad2(4,1) + evelgrad2(5,2) + evelgrad2(7,2);
+      elevector5[2] = evelgrad2(6,0) + evelgrad2(2,0) + evelgrad2(7,1) + evelgrad2(5,1) + 2.0 * evelgrad2(8,2);
+      elevector5.Scale(0.5);
+
+      // subtraction of div((1/3)*(div u)*I)
+      const double onethird = 1.0/3.0;
+      elevector5[0] -= onethird * (evelgrad2(0,0) + evelgrad2(4,0) + evelgrad2(8,0));
+      elevector5[1] -= onethird * (evelgrad2(0,1) + evelgrad2(4,1) + evelgrad2(8,1));
+      elevector5[2] -= onethird * (evelgrad2(0,2) + evelgrad2(4,2) + evelgrad2(8,2));
+    }
+  }
+#else
+  {
+    static Epetra_SerialDenseMatrix elematrix1;
+    static Epetra_SerialDenseMatrix elematrix2;
+    // set action in order to calculate the velocity and material derivative of the velocity
+    Teuchos::ParameterList params;
+    params.set<int>("action",FLD::calc_mat_deriv_u_and_rot_u);
+    params.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
+
+    // call the element specific evaluate method (elevec1 = fluid vel u; elevec2 = mat deriv of fluid vel, elevec3 = rot of fluid vel)
+    targetfluidele->Evaluate(params,*fluiddis_,*lm_f,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+
+    if(!simplebubbleforce_)
+    {
+      // set action in order to calculate the pressure gradient and divergence of the stress tensor
+      Teuchos::ParameterList params(p);
+      params.set<int>("action",FLD::calc_press_grad_and_div_eps);
+      params.set<LINALG::Matrix<3,1> >("elecoords", elecoord);
+
+      // call the element specific evaluate method (elevec4 = pressure gradient; elevec5 = viscous stress term)
+      targetfluidele->Evaluate(params,*fluiddis_,*lm_f,elematrix1,elematrix2,elevector4,elevector5,elevector3);
+    }
+  }
+#endif
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | calculate radius based on RP equation                   ghamm 06/15  |
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::ComputeRadius()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CAVITATION::Algorithm::ComputeRadius");
   // setup cache for underlying fluid elements and elecoords for later force computation
   // note: lid corresponding to nodal col map is used for addressing entries!
   underlyingelecache_.resize(particledis_->NodeColMap()->NumMyElements());
@@ -2551,11 +2955,11 @@ void CAVITATION::Algorithm::SetupGhosting(
     {
       DRT::Element* fluidele = fluiddis_->lColElement(i);
 
-      LINALG::Matrix<3,1> elecoord(true);
+      LINALG::Matrix<3,1> dummy(true);
       const LINALG::SerialDenseMatrix xyze(GEO::getCurrentNodalPositions(Teuchos::rcp(fluidele,false), currentpositions));
 
       //get coordinates of the particle position in parameter space of the element
-      foundele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, projpoint, elecoord);
+      foundele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, projpoint, dummy);
 
       if(foundele == true)
         break;
