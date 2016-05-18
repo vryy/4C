@@ -2,13 +2,15 @@
 /*!
  \file structporo_reaction_ecm.cpp
 
- \brief
+ \brief porous material for dissolution reaction in ECM model
 
  <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
+ \level 3
+
+ \maintainer Anh-Tu Vuong
+              vuong@lnm.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-15251
  </pre>
  *----------------------------------------------------------------------*/
 
@@ -247,12 +249,14 @@ void MAT::StructPoroReactionECM::ChemPotential(
   dsassert(gp<(int)chempot_.size(),"invalid gauss point number for calculation of chemical potential!");
   dsassert(gp<(int)chempot_init_.size(),"invalid gauss point number for calculation of chemical potential!");
 
+  // dummy parameter list
   Teuchos::ParameterList params;
 
   double psi = 0.0;
-  //evaluate strain energy
+  // evaluate strain energy
   mat_->StrainEnergy(glstrain,psi,EleID);
 
+  // derivative of
   double dpsidphiref = 0.0;
 
   params_->porolaw_->ConstitutiveDerivatives(
@@ -267,10 +271,7 @@ void MAT::StructPoroReactionECM::ChemPotential(
       &dpsidphiref,
       NULL);
 
-  const double initphi = params_->initporosity_;
-  const double deltaphi = refporosity_ - initphi;
-
-  pot=1.0/Density()*psi-(1.0-deltaphi/(1.0-initphi))/mat_->Density()*dpsidphiref-chempot_init_[gp];
+  pot=1.0/Density()*psi-1.0/mat_->Density()*dpsidphiref-chempot_init_[gp];
   chempot_[gp]=pot;
 
   return;

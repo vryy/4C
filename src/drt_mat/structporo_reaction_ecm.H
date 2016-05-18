@@ -2,13 +2,15 @@
 /*!
  \file structporo_reaction_ecm.H
 
- \brief
+ \brief porous material for dissolution reaction in ECM model
 
  <pre>
- Maintainer: Anh-Tu Vuong
- vuong@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15251
+ \level 3
+
+ \maintainer Anh-Tu Vuong
+              vuong@lnm.mw.tum.de
+              http://www.lnm.mw.tum.de
+              089 - 289-15251
  </pre>
  *----------------------------------------------------------------------*/
 
@@ -153,7 +155,7 @@ public:
     return params_;
   }
 
-  /// evaulate chemical potential
+  /// evaluate chemical potential
   virtual void ChemPotential(
       const LINALG::Matrix<6, 1>& glstrain, ///< (i) green lagrange strain
       const double porosity, ///< (i) porosity
