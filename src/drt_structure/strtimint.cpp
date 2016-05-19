@@ -1,16 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimint.cpp
+
 \brief Time integration for structural dynamics
 
-<pre>
+\level 1
+
 \maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
-</pre>
 */
-
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*/
@@ -534,11 +534,12 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   if ((int)mortarconditions.size()==0 and (int)contactconditions.size()==0)
     return;
 
-  // check if only beam-to-solid contact conditions (and leave if so)
+  // check if only beam-to-solid contact / meshtying conditions (and leave if so)
   bool realcontactconditions = false;
   for (int i=0; i<(int)contactconditions.size(); ++i)
   {
-    if(*(contactconditions[i]->Get<std::string>("Application"))!="Beamtosolidcontact")
+    if(*(contactconditions[i]->Get<std::string>("Application"))!="Beamtosolidcontact" &&
+       *(contactconditions[i]->Get<std::string>("Application"))!="Beamtosolidmeshtying")
       realcontactconditions=true;
   }
   if ((int)mortarconditions.size()==0 and !realcontactconditions)

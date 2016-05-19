@@ -83,7 +83,7 @@ step_(0)
   // NEVER use the underlying problem discretization but always
   // the copied beam contact discretization.
 
-  // Initialize vectors of contact forces
+  // initialize vectors of contact forces
   fc_ = LINALG::CreateVector(*discret.DofRowMap(), false);
   fcold_ = LINALG::CreateVector(*discret.DofRowMap(), false);
   fc_->PutScalar(0.0);
@@ -94,16 +94,18 @@ step_(0)
   btsolpairmap_.clear();
   oldbtsolpairmap_.clear();
   btsphpairmap_.clear();
-  btsolpairmap_.clear();
+  btsolmtpairmap_.clear();
+
   // read parameter lists from DRT::Problem
   sbeamcontact_   = DRT::Problem::Instance()->BeamContactParams();
   sbeampotential_ = DRT::Problem::Instance()->BeamPotentialParams();
   scontact_       = DRT::Problem::Instance()->ContactDynamicParams();
   sstructdynamic_ = DRT::Problem::Instance()->StructuralDynamicParams();
 
-  //Parameters to indicate, if beam-to-solid or beam-to-sphere contact is applied
-  btsol_ = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_BTSOL");
-  btsph_ = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_BTSPH");
+  // indicate if beam-to-solid meshtying, beam-to-solid contact or beam-to-sphere contact is applied
+  btsolmt_ = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_BTSOLMT");
+  btsol_   = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_BTSOL");
+  btsph_   = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_BTSPH");
 
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_.Comm().Clone());
   btsoldiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"beam to solid contact",comm));
@@ -129,8 +131,8 @@ step_(0)
     }
     else
     {
-      if (btsol_==false)
-        dserror("Only beam elements are allowed in the input file as long as the flags btsol_ and btsph_ are set to false!");
+      if (btsol_==false && btsolmt_==false)
+        dserror("Only beam elements are allowed as long as the flags btsol_ and btsolmt_ are set to false!");
     }
   }
 
@@ -147,22 +149,28 @@ step_(0)
     }
   }
 
-  //begin: determine surface elements and their nodes
+  // begin: determine surface elements and their nodes
 
-  //Vector that contains solid-to-solid and beam-to-solid contact pairs
+  // vector that contains solid-to-solid and beam-to-solid contact pairs
   std::vector<DRT::Condition*> beamandsolidcontactconditions(0);
   discret.GetCondition("Contact", beamandsolidcontactconditions);
 
-  //Vector that solely contains beam-to-solid contact pairs
+  // vector that solely contains beam-to-solid contact pairs
   std::vector<DRT::Condition*> btscontactconditions(0);
 
-  //Sort out solid-to-solid contact pairs, since these are treated in the drt_contact framework
+  // vector that solely contains beam-to-solid meshtying pairs
+  std::vector<DRT::Condition*> btsmeshtyingconditions(0);
+
+  // sort out solid-to-solid contact pairs, since these are treated in the drt_contact framework
   for (int i = 0; i < (int) beamandsolidcontactconditions.size(); ++i)
   {
     if(*(beamandsolidcontactconditions[i]->Get<std::string>("Application"))=="Beamtosolidcontact")
       btscontactconditions.push_back(beamandsolidcontactconditions[i]);
+    if(*(beamandsolidcontactconditions[i]->Get<std::string>("Application"))=="Beamtosolidmeshtying")
+      btsmeshtyingconditions.push_back(beamandsolidcontactconditions[i]);
   }
 
+  //******************************* BEAM-TO-SOLID CONTACT *******************************
   solcontacteles_.resize(0);
   solcontactnodes_.resize(0);
   int ggsize = 0;
@@ -200,7 +208,7 @@ step_(0)
      }
    }
 
-  //process surface elements
+  //----------------------------------------------- process surface elements
   for (int j=0;j<(int)btscontactconditions.size();++j)
   {
     // get elements from condition j of current group
@@ -238,6 +246,85 @@ step_(0)
 
       solcontacteles_.push_back(cele);
       BTSolDiscret().AddElement(cele);
+    } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
+    ggsize += gsize; // update global element counter
+  }
+  //end: determine surface elements and their nodes
+
+  //****************************** BEAM-TO-SOLID MESHTYING ******************************
+  solmeshtyingeles_.resize(0);
+  solmeshtyingnodes_.resize(0);
+
+   //-------------------------------------------------- process surface nodes
+   for (int j=0;j<(int)btsmeshtyingconditions.size();++j)
+   {
+     // get all nodes and add them
+     const std::vector<int>* nodeids = btsmeshtyingconditions[j]->Nodes();
+     if (!nodeids) dserror("Condition does not have Node Ids");
+     for (int k=0; k<(int)(*nodeids).size(); ++k)
+     {
+       int gid = (*nodeids)[k];
+       // do only nodes that I have in my discretization
+       if (!ProblemDiscret().NodeColMap()->MyGID(gid)) continue;
+       DRT::Node* node = ProblemDiscret().gNode(gid);
+
+       if (!node) dserror("Cannot find node with gid %",gid);
+
+       Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),node->X(),
+                                                        node->Owner(),
+                                                        ProblemDiscret().NumDof(0,node),
+                                                        ProblemDiscret().Dof(0,node),
+                                                        false));    //all solid elements are master elements
+
+       // note that we do not have to worry about double entries
+       // as the AddNode function can deal with this case!
+       // the only problem would have occured for the initial active nodes,
+       // as their status could have been overwritten, but is prevented
+       // by the "foundinitialactive" block above!
+       solmeshtyingnodes_.push_back(mtnode);
+       BTSolDiscret().AddNode(mtnode);
+       nodedofs[node->Id()]=ProblemDiscret().Dof(0,node);
+     }
+   }
+
+  //----------------------------------------------- process surface elements
+  for (int j=0;j<(int)btsmeshtyingconditions.size();++j)
+  {
+    // get elements from condition j of current group
+    std::map<int,Teuchos::RCP<DRT::Element> >& currele = btsmeshtyingconditions[j]->Geometry();
+
+    // elements in a boundary condition have a unique id
+    // but ids are not unique among 2 distinct conditions
+    // due to the way elements in conditions are build.
+    // We therefore have to give the second, third,... set of elements
+    // different ids. ids do not have to be continous, we just add a large
+    // enough number ggsize to all elements of cond2, cond3,... so they are
+    // different from those in cond1!!!
+    // note that elements in ele1/ele2 already are in column (overlapping) map
+    int lsize = (int)currele.size();
+    int gsize = 0;
+    Comm().SumAll(&lsize,&gsize,1);
+
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator fool;
+    for (fool=currele.begin(); fool != currele.end(); ++fool)
+    {
+      //The IDs of the surface elements of each conditions begin with zero. Therefore we have to add ggsize in order to
+      //get unique element IDs in the end. Furthermore, only the solid elements are added to the contact discretization btsoldiscret_
+      //via the btscontactconditions, whereas all beam elements with their original ID are simply cloned from the problem discretization
+      //into the contact discretization. In order to avoid solid element IDs being identical to these beam element IDs within the contact
+      //discretization we have to add the additional offset maxproblemid, which is identical to the maximal element ID in the problem
+      //discretization.
+      Teuchos::RCP<DRT::Element> ele = fool->second;
+      Teuchos::RCP<MORTAR::MortarElement> mtele = Teuchos::rcp(new MORTAR::MortarElement(ele->Id()+ggsize+maxproblemid+1,
+                                                              ele->Owner(),
+                                                              ele->Shape(),
+                                                              ele->NumNode(),
+                                                              ele->NodeIds(),
+                                                              false,    //all solid elements are master elements
+                                                              false));  //no nurbs allowed up to now
+
+      solmeshtyingeles_.push_back(mtele);
+      BTSolDiscret().AddElement(mtele);
     } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
     ggsize += gsize; // update global element counter
   }
@@ -341,18 +428,26 @@ step_(0)
   }
 
   // check input parameters
-  if (sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM") < 0.0
-      or sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM") < 0.0
-      or sbeamcontact_.get<double>("BEAMS_BTSPH_PENALTYPARAM") < 0.0)
+  if (sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM") < 0.0 ||
+      sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM") < 0.0 ||
+      sbeamcontact_.get<double>("BEAMS_BTSPH_PENALTYPARAM") < 0.0 ||
+      sbeamcontact_.get<double>("BEAMS_BTSMTPENALTYPARAM") < 0.0)
   {
     dserror("ERROR: The penalty parameter has to be positive.");
   }
 
-  // initialize contact element pairs
+  // initialize beam-to-beam contact element pairs
   pairs_.resize(0);
   oldpairs_.resize(0);
+
+  // initialize beam-to-solid contact element pairs
   btsolpairs_.resize(0);
   oldbtsolpairs_.resize(0);
+
+  // initialize beam-to-solid meyhtying element pairs
+  btsolmtpairs_.resize(0);
+
+  // initialize beam-to-sphere contact element pairs
   btsphpairs_.resize(0);
 
   // initialize potential-based interaction pairs
@@ -361,8 +456,8 @@ step_(0)
 
   // initialize input parameters
   currentpp_ = sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM");
-
-  btspp_ = sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM");
+  btspp_     = sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM");
+  btsmtpp_   = sbeamcontact_.get<double>("BEAMS_BTSMTPENALTYPARAM");
 
   if (btsph_)
   {
@@ -397,19 +492,22 @@ step_(0)
   if (DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OctreeType>(sbeamcontact_,"BEAMS_OCTREE") != INPAR::BEAMCONTACT::boct_none)
   {
     if (!pdiscret_.Comm().MyPID())
-      std::cout << "Penalty parameter      = " << currentpp_ << std::endl;
+      std::cout << "BTB-CO penalty         = " << currentpp_ << std::endl;
 
     if (!pdiscret_.Comm().MyPID())
-      std::cout << "BTS-Penalty parameter  = " << btspp_ << std::endl;
+      std::cout << "BTS-CO penalty         = " << btspp_ << std::endl;
+
+    if (!pdiscret_.Comm().MyPID())
+      std::cout << "BTS-MT penalty         = " << btsmtpp_ << std::endl;
 
     tree_ = Teuchos::rcp(new Beam3ContactOctTree(sbeamcontact_,pdiscret_,*btsoldiscret_));
   }
   else
   {
-    if(btsol_)
-      dserror("Beam to solid contact is only implemented for the octree contact search!");
+    if(btsol_ || btsolmt_)
+      dserror("Beam to solid contact/meshtying are only implemented for the octree contact search!");
 
-    // Compute the search radius for searching possible contact pairs
+    // compute the search radius for searching possible contact pairs
     ComputeSearchRadius();
     tree_ = Teuchos::null;
     if(!pdiscret_.Comm().MyPID())
@@ -873,304 +971,304 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
 {
 
   // map to store the nodal tangent vectors (necessary for Kirchhoff type beams) and adress it with the node ID
-    std::map<int,LINALG::Matrix<3,1> > currenttangents;
-    currenttangents.clear();
+  std::map<int,LINALG::Matrix<3,1> > currenttangents;
+  currenttangents.clear();
 
-    // Update of nodal tangents for Kirchhoff elements; nodal positions have already been set in SetCurrentPositions
-    // loop over all beam contact nodes
-    for (int i=0;i<FullNodes()->NumMyElements();++i)
+  // Update of nodal tangents for Kirchhoff elements; nodal positions have already been set in SetCurrentPositions
+  // loop over all beam contact nodes
+  for (int i=0;i<FullNodes()->NumMyElements();++i)
+  {
+    // get node pointer
+    DRT::Node* node = BTSolDiscret().lColNode(i);
+
+    //get nodal tangents for Kirchhoff elements
+    if (numnodalvalues_==2 and BEAMCONTACT::BeamNode(*node))
     {
-      // get node pointer
-      DRT::Node* node = BTSolDiscret().lColNode(i);
+      // get GIDs of this node's degrees of freedom
+      std::vector<int> dofnode = BTSolDiscret().Dof(node);
 
-      //get nodal tangents for Kirchhoff elements
-      if (numnodalvalues_==2 and BEAMCONTACT::BeamNode(*node))
+      LINALG::Matrix<3,1> currtan(true);
+      for (int i=0; i<node->Elements()[0]->NumNode();i++)
       {
-        // get GIDs of this node's degrees of freedom
-        std::vector<int> dofnode = BTSolDiscret().Dof(node);
-
-        LINALG::Matrix<3,1> currtan(true);
-        for (int i=0; i<node->Elements()[0]->NumNode();i++)
+        if (node->Elements()[0]->Nodes()[i]->Id()==node->Id() and  node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3ebType::Instance() )
         {
-          if (node->Elements()[0]->Nodes()[i]->Id()==node->Id() and  node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3ebType::Instance() )
-          {
-            const DRT::ELEMENTS::Beam3eb* ele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node->Elements()[0]);
-            currtan(0)=((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3])];
-            currtan(1)=((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[4])];
-            currtan(2)=((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[5])];
-          }
-          else if (node->Elements()[0]->Nodes()[i]->Id()==node->Id() and node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3ebtorType::Instance() )
-          {
-            const DRT::ELEMENTS::Beam3ebtor* ele = dynamic_cast<const DRT::ELEMENTS::Beam3ebtor*>(node->Elements()[0]);
-            currtan(0)=((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3])];
-            currtan(1)=((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[4])];
-            currtan(2)=((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[5])];
-          }
+          const DRT::ELEMENTS::Beam3eb* ele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(node->Elements()[0]);
+          currtan(0)=((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3])];
+          currtan(1)=((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[4])];
+          currtan(2)=((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[5])];
         }
-        // store into currenttangents
-        currenttangents[node->Id()] = currtan;
+        else if (node->Elements()[0]->Nodes()[i]->Id()==node->Id() and node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3ebtorType::Instance() )
+        {
+          const DRT::ELEMENTS::Beam3ebtor* ele = dynamic_cast<const DRT::ELEMENTS::Beam3ebtor*>(node->Elements()[0]);
+          currtan(0)=((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3])];
+          currtan(1)=((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[4])];
+          currtan(2)=((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[5])];
+        }
       }
-      //set currenttangents to zero for Reissner elements
-      else
-      {
-        for (int i=0;i<3;i++)
-          currenttangents[node->Id()](i) = 0.0;
-      }
+      // store into currenttangents
+      currenttangents[node->Id()] = currtan;
     }
-
-    //**********************************************************************
-    // update nodal coordinates also in existing contact pairs objects
-    //**********************************************************************
-    // loop over all pairs
-
-    for(int i=0;i<(int)pairs_.size();++i)
+    //set currenttangents to zero for Reissner elements
+    else
     {
-      // temporary matrices to store nodal coordinates of each element
-      Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
-      Epetra_SerialDenseMatrix ele2pos(3*numnodalvalues_,numnodes_);
-      // Positions: Loop over all nodes of element 1
+      for (int i=0;i<3;i++)
+        currenttangents[node->Id()](i) = 0.0;
+    }
+  }
+
+  //**********************************************************************
+  // update nodal coordinates also in existing contact pairs objects
+  //**********************************************************************
+  // loop over all pairs
+
+  for(int i=0;i<(int)pairs_.size();++i)
+  {
+    // temporary matrices to store nodal coordinates of each element
+    Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
+    Epetra_SerialDenseMatrix ele2pos(3*numnodalvalues_,numnodes_);
+    // Positions: Loop over all nodes of element 1
+    for(int m=0;m<(pairs_[i]->Element1())->NumNode();m++)
+    {
+      int tempGID = ((pairs_[i]->Element1())->NodeIds())[m];
+      LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+
+      // store updated nodal coordinates
+      for(int n=0;n<3;n++)
+        ele1pos(n,m) = temppos(n);
+      // store updated nodal tangents
+    }
+    if (numnodalvalues_==2)
+    {
+      // Tangents: Loop over all nodes of element 1
       for(int m=0;m<(pairs_[i]->Element1())->NumNode();m++)
       {
         int tempGID = ((pairs_[i]->Element1())->NodeIds())[m];
-        LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+        LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
 
-        // store updated nodal coordinates
-        for(int n=0;n<3;n++)
-          ele1pos(n,m) = temppos(n);
         // store updated nodal tangents
+        for(int n=0;n<3;n++)
+          ele1pos(n+3,m) = temptan(n);
       }
-      if (numnodalvalues_==2)
-      {
-        // Tangents: Loop over all nodes of element 1
-        for(int m=0;m<(pairs_[i]->Element1())->NumNode();m++)
-        {
-          int tempGID = ((pairs_[i]->Element1())->NodeIds())[m];
-          LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
-
-          // store updated nodal tangents
-          for(int n=0;n<3;n++)
-            ele1pos(n+3,m) = temptan(n);
-        }
-      }
-      // Positions: Loop over all nodes of element 2
+    }
+    // Positions: Loop over all nodes of element 2
+    for(int m=0;m<(pairs_[i]->Element2())->NumNode();m++)
+    {
+      int tempGID = ((pairs_[i]->Element2())->NodeIds())[m];
+        LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+      // store updated nodal coordinates
+      for(int n=0;n<3;n++)
+        ele2pos(n,m) = temppos(n);
+    }
+    if (numnodalvalues_==2)
+    {
+      // Tangents: Loop over all nodes of element 2
       for(int m=0;m<(pairs_[i]->Element2())->NumNode();m++)
       {
         int tempGID = ((pairs_[i]->Element2())->NodeIds())[m];
-          LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
-        // store updated nodal coordinates
-        for(int n=0;n<3;n++)
-          ele2pos(n,m) = temppos(n);
-      }
-      if (numnodalvalues_==2)
-      {
-        // Tangents: Loop over all nodes of element 2
-        for(int m=0;m<(pairs_[i]->Element2())->NumNode();m++)
-        {
-          int tempGID = ((pairs_[i]->Element2())->NodeIds())[m];
-            LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
+          LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
 
-          // store updated nodal tangents
-            for(int n=0;n<3;n++)
-              ele2pos(n+3,m) = temptan(n);
-        }
-      }
-      // finally update nodal positions in contact pair objects
-      pairs_[i]->UpdateElePos(ele1pos,ele2pos);
-    }
-    // Update also the interpolated tangents if the tangentsmoothing is activated for Reissner beams
-    int smoothing = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Smoothing>(sbeamcontact_,"BEAMS_SMOOTHING");
-    if (smoothing != INPAR::BEAMCONTACT::bsm_none)
-    {
-      for(int i=0;i<(int)pairs_.size();++i)
-      {
-        pairs_[i]->UpdateEleSmoothTangents(currentpositions);
+        // store updated nodal tangents
+          for(int n=0;n<3;n++)
+            ele2pos(n+3,m) = temptan(n);
       }
     }
-
-    // Do the same for the beam-to-solid contact pairs
-    for(int i=0;i<(int)btsolpairs_.size();++i)
+    // finally update nodal positions in contact pair objects
+    pairs_[i]->UpdateElePos(ele1pos,ele2pos);
+  }
+  // Update also the interpolated tangents if the tangentsmoothing is activated for Reissner beams
+  int smoothing = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::Smoothing>(sbeamcontact_,"BEAMS_SMOOTHING");
+  if (smoothing != INPAR::BEAMCONTACT::bsm_none)
+  {
+    for(int i=0;i<(int)pairs_.size();++i)
     {
-      int numnodessol = ((btsolpairs_[i])->Element2())->NumNode();
-      // temporary matrices to store nodal coordinates of each element
-      Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
-      Epetra_SerialDenseMatrix ele2pos(3,numnodessol);
-      // Positions: Loop over all nodes of element 1 (beam element)
+      pairs_[i]->UpdateEleSmoothTangents(currentpositions);
+    }
+  }
+
+  // Do the same for the beam-to-solid contact pairs
+  for(int i=0;i<(int)btsolpairs_.size();++i)
+  {
+    int numnodessol = ((btsolpairs_[i])->Element2())->NumNode();
+    // temporary matrices to store nodal coordinates of each element
+    Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
+    Epetra_SerialDenseMatrix ele2pos(3,numnodessol);
+    // Positions: Loop over all nodes of element 1 (beam element)
+    for(int m=0;m<(btsolpairs_[i]->Element1())->NumNode();m++)
+    {
+      int tempGID = ((btsolpairs_[i]->Element1())->NodeIds())[m];
+      LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+
+      // store updated nodal coordinates
+      for(int n=0;n<3;n++)
+        ele1pos(n,m) = temppos(n);
+      // store updated nodal tangents
+    }
+    if (numnodalvalues_==2)
+    {
+      // Tangents: Loop over all nodes of element 1
       for(int m=0;m<(btsolpairs_[i]->Element1())->NumNode();m++)
       {
         int tempGID = ((btsolpairs_[i]->Element1())->NodeIds())[m];
-        LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+        LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
 
-        // store updated nodal coordinates
-        for(int n=0;n<3;n++)
-          ele1pos(n,m) = temppos(n);
         // store updated nodal tangents
-      }
-      if (numnodalvalues_==2)
-      {
-        // Tangents: Loop over all nodes of element 1
-        for(int m=0;m<(btsolpairs_[i]->Element1())->NumNode();m++)
-        {
-          int tempGID = ((btsolpairs_[i]->Element1())->NodeIds())[m];
-          LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
-
-          // store updated nodal tangents
-          for(int n=0;n<3;n++)
-            ele1pos(n+3,m) = temptan(n);
-        }
-      }
-      // Positions: Loop over all nodes of element 2 (solid element)
-      for(int m=0;m<(btsolpairs_[i]->Element2())->NumNode();m++)
-      {
-        int tempGID = ((btsolpairs_[i]->Element2())->NodeIds())[m];
-          LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
-        // store updated nodal coordinates
         for(int n=0;n<3;n++)
-          ele2pos(n,m) = temppos(n);
+          ele1pos(n+3,m) = temptan(n);
       }
-
-      // finally update nodal positions in contact pair objects
-      btsolpairs_[i]->UpdateElePos(ele1pos,ele2pos);
+    }
+    // Positions: Loop over all nodes of element 2 (solid element)
+    for(int m=0;m<(btsolpairs_[i]->Element2())->NumNode();m++)
+    {
+      int tempGID = ((btsolpairs_[i]->Element2())->NodeIds())[m];
+        LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+      // store updated nodal coordinates
+      for(int n=0;n<3;n++)
+        ele2pos(n,m) = temppos(n);
     }
 
+    // finally update nodal positions in contact pair objects
+    btsolpairs_[i]->UpdateElePos(ele1pos,ele2pos);
+  }
 
-    // Do the same for the beam-to-sphere contact pairs
-    for(int i=0;i<(int)btsphpairs_.size();++i)
+
+  // Do the same for the beam-to-sphere contact pairs
+  for(int i=0;i<(int)btsphpairs_.size();++i)
+  {
+    // temporary matrices to store nodal coordinates of each element
+    Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
+    Epetra_SerialDenseMatrix ele2pos(3,1);
+    // Positions: Loop over all nodes of element 1 (beam element)
+    for(int m=0;m<(btsphpairs_[i]->Element1())->NumNode();m++)
     {
-      // temporary matrices to store nodal coordinates of each element
-      Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
-      Epetra_SerialDenseMatrix ele2pos(3,1);
-      // Positions: Loop over all nodes of element 1 (beam element)
+      int tempGID = ((btsphpairs_[i]->Element1())->NodeIds())[m];
+      LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+
+      // store updated nodal coordinates
+      for(int n=0;n<3;n++)
+        ele1pos(n,m) = temppos(n);
+      // store updated nodal tangents
+    }
+    if (numnodalvalues_==2)
+    {
+      // Tangents: Loop over all nodes of element 1
       for(int m=0;m<(btsphpairs_[i]->Element1())->NumNode();m++)
       {
         int tempGID = ((btsphpairs_[i]->Element1())->NodeIds())[m];
-        LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+        LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
 
-        // store updated nodal coordinates
-        for(int n=0;n<3;n++)
-          ele1pos(n,m) = temppos(n);
         // store updated nodal tangents
+        for(int n=0;n<3;n++)
+          ele1pos(n+3,m) = temptan(n);
       }
-      if (numnodalvalues_==2)
-      {
-        // Tangents: Loop over all nodes of element 1
-        for(int m=0;m<(btsphpairs_[i]->Element1())->NumNode();m++)
-        {
-          int tempGID = ((btsphpairs_[i]->Element1())->NodeIds())[m];
-          LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
+    }
+    // Positions: (rigid sphere element)
+    int tempGID = ((btsphpairs_[i]->Element2())->NodeIds())[0];
+      LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+    // store updated nodal coordinates
+    for(int n=0;n<3;n++)
+      ele2pos(n,0) = temppos(n);
 
-          // store updated nodal tangents
-          for(int n=0;n<3;n++)
-            ele1pos(n+3,m) = temptan(n);
-        }
-      }
-      // Positions: (rigid sphere element)
-      int tempGID = ((btsphpairs_[i]->Element2())->NodeIds())[0];
-        LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+    // finally update nodal positions in contact pair objects
+    btsphpairs_[i]->UpdateElePos(ele1pos,ele2pos);
+  }
+
+  // loop over all btbpotpairs
+  for(int i=0;i<(int)btbpotpairs_.size();++i)
+  {
+    // temporary matrices to store nodal coordinates of each element
+    Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
+    Epetra_SerialDenseMatrix ele2pos(3*numnodalvalues_,numnodes_);
+    // Positions: Loop over all nodes of element 1
+    for(int m=0;m<(btbpotpairs_[i]->Element1())->NumNode();m++)
+    {
+      int tempGID = ((btbpotpairs_[i]->Element1())->NodeIds())[m];
+      LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+
       // store updated nodal coordinates
       for(int n=0;n<3;n++)
-        ele2pos(n,0) = temppos(n);
-
-      // finally update nodal positions in contact pair objects
-      btsphpairs_[i]->UpdateElePos(ele1pos,ele2pos);
+        ele1pos(n,m) = temppos(n);
+      // store updated nodal tangents
     }
-
-    // loop over all btbpotpairs
-    for(int i=0;i<(int)btbpotpairs_.size();++i)
+    if (numnodalvalues_==2)
     {
-      // temporary matrices to store nodal coordinates of each element
-      Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
-      Epetra_SerialDenseMatrix ele2pos(3*numnodalvalues_,numnodes_);
-      // Positions: Loop over all nodes of element 1
+      // Tangents: Loop over all nodes of element 1
       for(int m=0;m<(btbpotpairs_[i]->Element1())->NumNode();m++)
       {
         int tempGID = ((btbpotpairs_[i]->Element1())->NodeIds())[m];
-        LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+        LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
 
-        // store updated nodal coordinates
-        for(int n=0;n<3;n++)
-          ele1pos(n,m) = temppos(n);
         // store updated nodal tangents
-      }
-      if (numnodalvalues_==2)
-      {
-        // Tangents: Loop over all nodes of element 1
-        for(int m=0;m<(btbpotpairs_[i]->Element1())->NumNode();m++)
-        {
-          int tempGID = ((btbpotpairs_[i]->Element1())->NodeIds())[m];
-          LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
-
-          // store updated nodal tangents
-          for(int n=0;n<3;n++)
-            ele1pos(n+3,m) = temptan(n);
-        }
-      }
-      // Positions: Loop over all nodes of element 2
-      for(int m=0;m<(btbpotpairs_[i]->Element2())->NumNode();m++)
-      {
-        int tempGID = ((btbpotpairs_[i]->Element2())->NodeIds())[m];
-          LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
-        // store updated nodal coordinates
         for(int n=0;n<3;n++)
-          ele2pos(n,m) = temppos(n);
+          ele1pos(n+3,m) = temptan(n);
       }
-      if (numnodalvalues_==2)
-      {
-        // Tangents: Loop over all nodes of element 2
-        for(int m=0;m<(btbpotpairs_[i]->Element2())->NumNode();m++)
-        {
-          int tempGID = ((btbpotpairs_[i]->Element2())->NodeIds())[m];
-            LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
-
-          // store updated nodal tangents
-            for(int n=0;n<3;n++)
-              ele2pos(n+3,m) = temptan(n);
-        }
-      }
-      // finally update nodal positions in contact pair objects
-      btbpotpairs_[i]->UpdateElePos(ele1pos,ele2pos);
     }
-
-
-    // Do the same for the beam-to-sphere potential pairs
-    for(int i=0;i<(int)btsphpotpairs_.size();++i)
+    // Positions: Loop over all nodes of element 2
+    for(int m=0;m<(btbpotpairs_[i]->Element2())->NumNode();m++)
     {
-      // temporary matrices to store nodal coordinates of each element
-      Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
-      Epetra_SerialDenseMatrix ele2pos(3,1);
-      // Positions: Loop over all nodes of element 1 (beam element)
-      for(int m=0;m<(btsphpotpairs_[i]->Element1())->NumNode();m++)
-      {
-        int tempGID = ((btsphpotpairs_[i]->Element1())->NodeIds())[m];
-        LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
-
-        // store updated nodal coordinates
-        for(int n=0;n<3;n++)
-          ele1pos(n,m) = temppos(n);
-        // store updated nodal tangents
-      }
-      if (numnodalvalues_==2)
-      {
-        // Tangents: Loop over all nodes of element 1
-        for(int m=0;m<(btsphpotpairs_[i]->Element1())->NumNode();m++)
-        {
-          int tempGID = ((btsphpotpairs_[i]->Element1())->NodeIds())[m];
-          LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
-
-          // store updated nodal tangents
-          for(int n=0;n<3;n++)
-            ele1pos(n+3,m) = temptan(n);
-        }
-      }
-      // Positions: (rigid sphere element)
-      int tempGID = ((btsphpotpairs_[i]->Element2())->NodeIds())[0];
+      int tempGID = ((btbpotpairs_[i]->Element2())->NodeIds())[m];
         LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
       // store updated nodal coordinates
       for(int n=0;n<3;n++)
-        ele2pos(n,0) = temppos(n);
-
-      // finally update nodal positions in contact pair objects
-      btsphpotpairs_[i]->UpdateElePos(ele1pos,ele2pos);
+        ele2pos(n,m) = temppos(n);
     }
+    if (numnodalvalues_==2)
+    {
+      // Tangents: Loop over all nodes of element 2
+      for(int m=0;m<(btbpotpairs_[i]->Element2())->NumNode();m++)
+      {
+        int tempGID = ((btbpotpairs_[i]->Element2())->NodeIds())[m];
+          LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
+
+        // store updated nodal tangents
+          for(int n=0;n<3;n++)
+            ele2pos(n+3,m) = temptan(n);
+      }
+    }
+    // finally update nodal positions in contact pair objects
+    btbpotpairs_[i]->UpdateElePos(ele1pos,ele2pos);
+  }
+
+
+  // Do the same for the beam-to-sphere potential pairs
+  for(int i=0;i<(int)btsphpotpairs_.size();++i)
+  {
+    // temporary matrices to store nodal coordinates of each element
+    Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
+    Epetra_SerialDenseMatrix ele2pos(3,1);
+    // Positions: Loop over all nodes of element 1 (beam element)
+    for(int m=0;m<(btsphpotpairs_[i]->Element1())->NumNode();m++)
+    {
+      int tempGID = ((btsphpotpairs_[i]->Element1())->NodeIds())[m];
+      LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+
+      // store updated nodal coordinates
+      for(int n=0;n<3;n++)
+        ele1pos(n,m) = temppos(n);
+      // store updated nodal tangents
+    }
+    if (numnodalvalues_==2)
+    {
+      // Tangents: Loop over all nodes of element 1
+      for(int m=0;m<(btsphpotpairs_[i]->Element1())->NumNode();m++)
+      {
+        int tempGID = ((btsphpotpairs_[i]->Element1())->NodeIds())[m];
+        LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
+
+        // store updated nodal tangents
+        for(int n=0;n<3;n++)
+          ele1pos(n+3,m) = temptan(n);
+      }
+    }
+    // Positions: (rigid sphere element)
+    int tempGID = ((btsphpotpairs_[i]->Element2())->NodeIds())[0];
+      LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+    // store updated nodal coordinates
+    for(int n=0;n<3;n++)
+      ele2pos(n,0) = temppos(n);
+
+    // finally update nodal positions in contact pair objects
+    btsphpotpairs_[i]->UpdateElePos(ele1pos,ele2pos);
+  }
 
   return;
 }
@@ -1255,7 +1353,23 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
     // evaluate additional contact forces and stiffness
     if (firstisincolmap || secondisincolmap)
     {
-      btsolpairs_[i]->Evaluate(*stiffc_,*fc_,currentpp_);
+      btsolpairs_[i]->Evaluate(*stiffc_,*fc_,btspp_);
+    }
+  }
+
+  // Loop over all BTSOL meshtying pairs
+  for (int i=0;i<(int)btsolmtpairs_.size();++i)
+  {
+    // only evaluate pair for those procs owning or ghosting at
+    // least one node of one of the two elements of the pair
+    int firsteleid = (btsolmtpairs_[i]->Element1())->Id();
+    int secondeleid = (btsolmtpairs_[i]->Element2())->Id();
+    bool firstisincolmap = ColElements()->MyGID(firsteleid);
+    bool secondisincolmap = ColElements()->MyGID(secondeleid);
+    // evaluate additional contact forces and stiffness
+    if (firstisincolmap || secondisincolmap)
+    {
+      btsolmtpairs_[i]->Evaluate(*stiffc_,*fc_,btsmtpp_);
     }
   }
 
@@ -1431,8 +1545,8 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(const std::vector<std::vect
         btsphpairmap_[std::make_pair(currid1,currid2)] = btsphpairs_[btsphpairs_.size()-1];
       }
     }
-    // beam-to-solid pair
-    else
+    // beam-to-solid contact pair
+    else if(BEAMCONTACT::SolidContactElement(*(formattedelementpairs[k])[1]))
     {
       bool foundlasttimestep = false;
       bool isalreadyinpairs = false;
@@ -1465,13 +1579,37 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(const std::vector<std::vect
           dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
       }
     }
+    // beam-to-solid meyhtying pair
+    else if(BEAMCONTACT::SolidMeshtyingElement(*(formattedelementpairs[k])[1]))
+    {
+     bool isalreadyinpairs = false;
+
+     if(btsolmtpairmap_.find(std::make_pair(currid1,currid2))!=btsolmtpairmap_.end())
+       isalreadyinpairs = true;
+
+     if(!isalreadyinpairs)
+     {
+       //Add new meshtying pair object: The auxiliary_instance of the abstract class Beam3meshtyinginterface is only
+       // needed here in order to call the function Impl() which creates an instance of the templated class Beam3meshtying
+       btsolmtpairs_.push_back(CONTACT::Beam3tosolidmeshtyinginterface::Impl((formattedelementpairs[k])[1]->NumNode(),numnodes_,numnodalvalues_,ProblemDiscret(),BTSolDiscret(),dofoffsetmap_,ele1,ele2, sbeamcontact_));
+       if (currid1<=currid2)
+         btsolmtpairmap_[std::make_pair(currid1,currid2)] = btsolmtpairs_[btsolmtpairs_.size()-1];
+       else
+         dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
+     }
+    }
+    else
+    {
+      dserror("ERROR: Unknown element type in beam contact pairs (none of BTB, BTSco, BTSmt, BTSPH)");
+    }
   }
 
   if(pdiscret_.Comm().MyPID()==0)
   {
-    std::cout << "\t Total number of BTB contact pairs:   " << pairs_.size() << std::endl;
-    if (btsph_) std::cout << "\t Total number of BTSPH contact pairs: " << btsphpairs_.size() << std::endl;
-    if (btsol_) std::cout << "\t Total number of BTSOL contact pairs: " << btsolpairs_.size() << std::endl;
+    std::cout << "\t Total number of BTB contact pairs:     " << pairs_.size() << std::endl;
+    if (btsph_)   std::cout << "\t Total number of BTSPH contact pairs:   " << btsphpairs_.size() << std::endl;
+    if (btsol_)   std::cout << "\t Total number of BTSOL contact pairs:   " << btsolpairs_.size() << std::endl;
+    if (btsolmt_) std::cout << "\t Total number of BTSOL meshtying pairs: " << btsolmtpairs_.size() << std::endl;
   }
 }
 
@@ -2079,12 +2217,16 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   contactpairmap_.clear();
   btsphpairmap_.clear();
   btsolpairmap_.clear();
+  btsolmtpairmap_.clear();
 
   pairs_.clear();
   pairs_.resize(0);
 
   btsolpairs_.clear();
   btsolpairs_.resize(0);
+
+  btsolmtpairs_.clear();
+  btsolmtpairs_.resize(0);
 
   btsphpairs_.clear();
   btsphpairs_.resize(0);
@@ -4455,6 +4597,13 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
     const DRT::ELEMENTS::Beam3k* thisbeam = static_cast<const DRT::ELEMENTS::Beam3k*>(thisele);
     eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
   }
+  else if ( eot == DRT::ELEMENTS::Beam3rType::Instance() )
+  {
+    const DRT::ELEMENTS::Beam3r* thisbeam = static_cast<const DRT::ELEMENTS::Beam3r*>(thisele);
+    eleradius = MANIPULATERADIUSVIS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
+  }
+  else
+    dserror("ERROR: GSMH_N_noded output not yet implemented for this beam element type");
 
 
   // declaring variable for color of elements
@@ -4996,7 +5145,10 @@ void CONTACT::Beam3cmanager::GMSH_Solid(
       break;
     }
     default:
+    {
       dserror("Gsmh-output: element shape not implemented");
+      break;
+    }
   }
 }
 
@@ -5143,6 +5295,14 @@ void CONTACT::Beam3cmanager::SetElementTypeAndDistype(DRT::Element* ele1)
   if (ele1_type ==DRT::ELEMENTS::Beam3Type::Instance() or ele1_type ==DRT::ELEMENTS::Beam3rType::Instance())
   {
     numnodalvalues_ = 1;
+
+    // special case: beam3r element with Hermite center line interpolation
+    if (ele1_type == DRT::ELEMENTS::Beam3rType::Instance())
+    {
+      const DRT::ELEMENTS::Beam3r* ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(ele1);
+      if (ele->HermiteCenterlineInterpolation())
+        numnodalvalues_ = 2;
+    }
   }
   else if (ele1_type ==DRT::ELEMENTS::Beam3ebType::Instance() or ele1_type ==DRT::ELEMENTS::Beam3ebtorType::Instance())
   {

@@ -877,6 +877,7 @@ set(OBJS_DRT_BEAMCONTACT_LIB
   src/drt_beamcontact/beam3contact_tangentsmoothing.cpp
   src/drt_beamcontact/beam3tospherecontact.cpp
   src/drt_beamcontact/beam3tosolidcontact.cpp
+  src/drt_beamcontact/beam3tosolidmeshtying.cpp
   src/drt_beamcontact/beam3tobeampotential.cpp
   src/drt_beamcontact/beam3tospherepotential.cpp
 )

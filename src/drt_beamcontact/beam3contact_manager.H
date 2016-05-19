@@ -1,12 +1,15 @@
 /*!----------------------------------------------------------------------
 \file beam3contact_manager.H
 
-<pre>
-Maintainer: Christoph Meier
+\brief contact manager for contact in a beam3 discretization
+
+\level 2
+
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
+
 *----------------------------------------------------------------------*/
 #ifndef BEAM3C_MANAGER_H
 #define BEAM3C_MANAGER_H
@@ -23,6 +26,7 @@ Maintainer: Christoph Meier
 #include "beam3contactnew.H"
 #include "beam3contact.H"
 #include "beam3tosolidcontact.H"
+#include "beam3tosolidmeshtying.H"
 #include "beam3tospherecontact.H"
 #include "beam3tobeampotential.H"
 #include "beam3tospherepotential.H"
@@ -45,13 +49,6 @@ class Beam3ContactOctTree;
 
 namespace CONTACT
 {
-/*!
- \brief contact manager for contact in a beam3 discretization
-
- Refer also to the Semesterarbeit of Matthias Mayr, 2010
-
- \author popp (popp@lnm.mw.tum.de), cyron (cyron@lnm.mw.tum.de)
- */
 
 class Beam3cmanager
 {
@@ -320,6 +317,9 @@ private:
 
   //! @name member variables
 
+  //! Flag from input file indicating if beam-to-solid mehstying is applied or not (default: false)
+  bool btsolmt_;
+
   //! Flag from input file indicating if beam-to-solid contact is applied or not (default: false)
   bool btsol_;
 
@@ -369,6 +369,7 @@ private:
   //! vector of contact pairs of last time step. After Update() oldpairs_ is identical with pairs_ until a new time
   // step starts. Therefore oldpairs_ can be used for output at the end of a time step after Upadte() is called.
   std::vector<Teuchos::RCP<Beam3contactinterface > > oldpairs_;
+
   //! vector of close beam to solid contact pairs (pairs of elements, which might get in contact)
   std::vector<Teuchos::RCP<Beam3tosolidcontactinterface > > btsolpairs_;
   //! vector of beam to solid contact pairs of last time step. After Update() oldpairs_ is identical with btsolpairs_ until a
@@ -376,11 +377,18 @@ private:
   std::vector<Teuchos::RCP<Beam3tosolidcontactinterface > > oldbtsolpairs_;
   //! total vector of solid contact elements
   std::vector<Teuchos::RCP<CONTACT::CoElement> > solcontacteles_;
-  //! total vector of solid contact elements
+  //! total vector of solid contact nodes
   std::vector<Teuchos::RCP<CONTACT::CoNode> > solcontactnodes_;
+
+  //! vector of close beam to solid meshtying pairs (pairs of elements, which might be in meshtying)
+  std::vector<Teuchos::RCP<Beam3tosolidmeshtyinginterface > > btsolmtpairs_;
+  //! total vector of solid meshtying elements
+  std::vector<Teuchos::RCP<MORTAR::MortarElement> > solmeshtyingeles_;
+  //! total vector of solid meyhtying nodes
+  std::vector<Teuchos::RCP<MORTAR::MortarNode> > solmeshtyingnodes_;
+
   //! vector of close beam to sphere contact pairs (pairs of elements, which might get in contact)
   std::vector<Teuchos::RCP<Beam3tospherecontactinterface > > btsphpairs_;
-
   //! vector of potential-based interaction (beam,beam) pairs
   std::vector<Teuchos::RCP<Beam3tobeampotentialinterface > > btbpotpairs_;
   //! vector of potential-based interaction (beam,sphere) pairs
@@ -397,11 +405,14 @@ private:
   //beam-to-sphere pair map
   std::map<std::pair<int,int>, Teuchos::RCP<Beam3tospherecontactinterface > > btsphpairmap_;
 
-  //beam-to-solid pair map
+  //beam-to-solid contact pair map
   std::map<std::pair<int,int>, Teuchos::RCP<Beam3tosolidcontactinterface > > btsolpairmap_;
 
   //beam-to-solid pair map of last time step
   std::map<std::pair<int,int>, Teuchos::RCP<Beam3tosolidcontactinterface > > oldbtsolpairmap_;
+
+  //beam-to-solid meshtying pair map
+  std::map<std::pair<int,int>, Teuchos::RCP<Beam3tosolidmeshtyinginterface > > btsolmtpairmap_;
 
   //! parameter list for beam contact options
   Teuchos::ParameterList sbeamcontact_;
@@ -457,8 +468,11 @@ private:
   //! BTSPH penalty parameter
   double btsphpp_;
 
-  //! beam-tp-solid penalty parameter
+  //! beam-to-solid contact penalty parameter
   double btspp_;
+
+  //! beam-to-solid meshtying penalty parameter
+  double btsmtpp_;
 
   //! current Uzawa iteration index (for augmented Lagrange strategy)
   int uzawaiter_;

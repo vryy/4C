@@ -10,7 +10,6 @@
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 */
-
 /*----------------------------------------------------------------------*/
 
 
@@ -55,6 +54,9 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   setStringToIntegralParameter<int>("BEAMS_INACTIVESTIFF","No","Always apply contact stiffness in first Newton step for pairs which have active in last time step",
                                yesnotuple,yesnovalue,&beamcontact);
 
+  setStringToIntegralParameter<int>("BEAMS_BTSOLMT","No","decide, if also meshtying between beams and solids is possible",
+                               yesnotuple,yesnovalue,&beamcontact);
+
   setStringToIntegralParameter<int>("BEAMS_BTSOL","No","decide, if also the contact between beams and solids is possible",
                                yesnotuple,yesnovalue,&beamcontact);
 
@@ -82,6 +84,7 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
   DoubleParameter("BEAMS_BTBPENALTYPARAM",0.0,"Penalty parameter for beam-to-beam point contact",&beamcontact);
   DoubleParameter("BEAMS_BTBLINEPENALTYPARAM",-1.0,"Penalty parameter per unit length for beam-to-beam line contact",&beamcontact);
+  DoubleParameter("BEAMS_BTSMTPENALTYPARAM",0.0,"Penalty parameter for beam-to-solid meshtying",&beamcontact);
   DoubleParameter("BEAMS_BTSPENALTYPARAM",0.0,"Penalty parameter for beam-to-solid contact",&beamcontact);
   DoubleParameter("BEAMS_BTSPH_PENALTYPARAM",0.0,"Penalty parameter for beam-to-rigidsphere penalty / Uzawa augmented solution strategy",&beamcontact);
   IntParameter("BEAMS_BTBUZAWAMAXSTEPS",10,"Maximum no. of Uzawa steps for Uzawa solution strategy",&beamcontact);

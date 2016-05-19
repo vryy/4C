@@ -2,12 +2,12 @@
 /*!
 \file inpar_mortar.cpp
 
-\maintainer Philipp Farah, Alexander Seitz
-
 \brief Input parameters for mortar coupling
 
-*/
+\level 1
 
+\maintainer Philipp Farah, Alexander Seitz
+*/
 /*----------------------------------------------------------------------*/
 
 
@@ -196,8 +196,8 @@ void INPAR::MORTAR::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
     Teuchos::rcp(
       new StringConditionComponent(
         "Application","Solidcontact",
-        Teuchos::tuple<std::string>("Solidcontact","Beamtosolidcontact"),
-        Teuchos::tuple<std::string>("Solidcontact","Beamtosolidcontact"),true)));
+        Teuchos::tuple<std::string>("Solidcontact","Beamtosolidcontact","Beamtosolidmeshtying"),
+        Teuchos::tuple<std::string>("Solidcontact","Beamtosolidcontact","Beamtosolidmeshtying"),true)));
 
   Teuchos::RCP<ConditionDefinition> linecontact =
     Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR CONTACT CONDITIONS 2D",

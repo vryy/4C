@@ -3,12 +3,14 @@
 
 \brief A set of utility functions for beam contact
 
+\level 2
+
 \maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
 
- *-----------------------------------------------------------------------------------------------------------*/
+*----------------------------------------------------------------------*/
 
 #include "beam3contact_utils.H"
 #include "../drt_beam3/beam3.H"
@@ -90,6 +92,32 @@ bool BEAMCONTACT::RigidsphereElement(DRT::Element& element)
   const DRT::ElementType& ele_type = element.ElementType();
 
   if (ele_type == DRT::ELEMENTS::RigidsphereType::Instance())
+    return true;
+  else
+    return false;
+}
+
+/*----------------------------------------------------------------------*
+ |  Check, if current element is a solid contact element      popp 05/16|
+ *----------------------------------------------------------------------*/
+bool BEAMCONTACT::SolidContactElement(DRT::Element& element)
+{
+  const DRT::ElementType& ele_type = element.ElementType();
+
+  if (ele_type == CONTACT::CoElementType::Instance())
+    return true;
+  else
+    return false;
+}
+
+/*----------------------------------------------------------------------*
+ |  Check, if current element is a solid meshtying element    popp 05/16|
+ *----------------------------------------------------------------------*/
+bool BEAMCONTACT::SolidMeshtyingElement(DRT::Element& element)
+{
+  const DRT::ElementType& ele_type = element.ElementType();
+
+  if (ele_type == MORTAR::MortarElementType::Instance())
     return true;
   else
     return false;

@@ -232,11 +232,14 @@ class Beam3ContactOctTree
     //!\brief flag indicating
     bool additiveextrusion_;
 
-    //!\brief flag indicating whether search shall include (beam,sphere) element pairs
+    //!\brief flag indicating whether search shall include (beam,sphere) contact element pairs
     bool btsph_;
 
-    //!\brief flag indicating whether search shall include (beam,solid) element pairs
+    //!\brief flag indicating whether search shall include (beam,solid) contact element pairs
     bool btsol_;
+
+    //!\brief flag indicating whether search shall include (beam,solid) meshtying element pairs
+    bool btsolmt_;
 
     //!\brief vector holding the edge lengths of the cuboid periodic volume
     Teuchos::RCP<std::vector<double> > periodlength_;

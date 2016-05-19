@@ -3,12 +3,12 @@
 
 \brief A set of utility functions for beam contact
 
-<pre>
-Maintainer: Christoph Meier
+\level 2
+
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
 
 *----------------------------------------------------------------------*/
 #ifndef BEAM3CONTACT_UTILS_H
@@ -128,9 +128,19 @@ namespace BEAMCONTACT
   bool BeamElement(DRT::Element& element);
 
   /*!
-  \brief Check, if current node is a beam element
+  \brief Check, if current node is a rigid sphere element
   */
   bool RigidsphereElement(DRT::Element& element);
+
+  /*!
+  \brief Check, if current node is a solid contact element
+  */
+  bool SolidContactElement(DRT::Element& element);
+
+  /*!
+  \brief Check, if current node is a solid meshtying element
+  */
+  bool SolidMeshtyingElement(DRT::Element& element);
 
   /*
   \brief Check, if two elements share a node -> neighbor elements
