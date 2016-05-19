@@ -290,8 +290,17 @@ void LubricationFilter::WriteAllResults(PostField* field)
 \*----------------------------------------------------------------------*/
 void ScaTraFilter::WriteAllResults(PostField* field)
 {
-  //compute number of dofs per node (ask the first node)
-  int numdofpernode = field->discretization()->NumDof(field->discretization()->lRowNode(0));
+  // compute maximum number of dofs per node on scatra discretization
+  const DRT::Discretization& discret = *field->discretization();
+  int mynumdofpernode(-1);
+  for(int inode=0; inode<discret.NumMyRowNodes(); ++inode)
+  {
+    const int numdof = discret.NumDof(discret.lRowNode(inode));
+    if(numdof > mynumdofpernode);
+      mynumdofpernode = numdof;
+  }
+  int numdofpernode(-1);
+  discret.Comm().MaxAll(&mynumdofpernode,&numdofpernode,1);
 
   // write results for each transported scalar
   for(int k = 1; k <= numdofpernode; k++)
@@ -299,7 +308,7 @@ void ScaTraFilter::WriteAllResults(PostField* field)
     std::ostringstream temp;
     temp << k;
     std::string name = "phi_"+temp.str();
-    writer_->WriteResult("phinp", name, dofbased, 1,k-1);
+    writer_->WriteResult("phinp", name, dofbased, 1,k-1,true);
     writer_->WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1,k-1);
     // additional fields for meshfree problems
     writer_->WriteResult("phiatmeshfreenodes", name+"_atnodes", dofbased, 1,k-1);

@@ -4,8 +4,10 @@
 
 \brief evaluation of scalar transport elements for standard scalar transport problems
 
+\level 1
+
 <pre>
-Maintainer: Rui Fang
+\maintainer Rui Fang
             fang@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
             089-289-15251
@@ -26,12 +28,14 @@ DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>* DRT::ELEMENTS::ScaTraEleCalcSt
     const ScaTraEleCalcStd* delete_me
     )
 {
-  static std::map<std::string,ScaTraEleCalcStd<distype,probdim>* >  instances;
+  static std::map<std::pair<std::string,int>,ScaTraEleCalcStd<distype,probdim>* > instances;
+
+  std::pair<std::string,int> key(disname,numdofpernode);
 
   if(delete_me == NULL)
   {
-    if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcStd<distype,probdim>(numdofpernode,numscal,disname);
+    if(instances.find(key) == instances.end())
+      instances[key] = new ScaTraEleCalcStd<distype,probdim>(numdofpernode,numscal,disname);
   }
 
   else
@@ -40,7 +44,7 @@ DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>* DRT::ELEMENTS::ScaTraEleCalcSt
     // find which of the instances to delete with this call. This is done by
     // letting the object to be deleted hand over the 'this' pointer, which is
     // located in the map and deleted
-    for( typename std::map<std::string,ScaTraEleCalcStd<distype,probdim>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+    for( typename std::map<std::pair<std::string,int>,ScaTraEleCalcStd<distype,probdim>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
       if ( i->second == delete_me )
       {
         delete i->second;
@@ -50,7 +54,7 @@ DRT::ELEMENTS::ScaTraEleCalcStd<distype,probdim>* DRT::ELEMENTS::ScaTraEleCalcSt
     dserror("Could not locate the desired instance. Internal error.");
   }
 
-  return instances[disname];
+  return instances[key];
 }
 
 
