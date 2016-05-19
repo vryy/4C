@@ -4,6 +4,8 @@
 
 \brief Time integration for particle dynamics
 
+\level 1
+
 \maintainer Georg Hammerl
 */
 /*----------------------------------------------------------------------*/
@@ -252,31 +254,25 @@ void PARTICLE::TimInt::SetInitialFields()
     for(int n=0; n<discret_->NumMyRowNodes(); ++n)
     {
       // get local ID of current particle
-      int lid = discret_->NodeRowMap()->LID(discret_->lRowNode(n)->Id());
+      const int lid = discret_->NodeRowMap()->LID(discret_->lRowNode(n)->Id());
 
-      if(lid != -1)
-      {
-        // provide random number generator with local ID of current particle as deterministic seed to ensure reproducibility of simulation
-        DRT::Problem::Instance()->Random()->SetRandSeed(lid);
+      // initialize random number generator with current particle radius as mean and input parameter value as standard deviation
+      DRT::Problem::Instance()->Random()->SetMeanVariance((*radius_)[lid],DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
 
-        // initialize random number generator with current particle radius as mean and input parameter value as standard deviation
-        DRT::Problem::Instance()->Random()->SetMeanVariance((*radius_)[lid],DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
+      // generate normally distributed random value for particle radius
+      double random_radius = DRT::Problem::Instance()->Random()->Normal();
 
-        // generate normally distributed random value for particle radius
-        double random_radius = DRT::Problem::Instance()->Random()->Normal();
+      // check whether random value lies within allowed bounds, and adjust otherwise
+      if(random_radius > max_radius)
+        random_radius = max_radius;
+      else if(random_radius < min_radius)
+        random_radius = min_radius;
 
-        // check whether random value lies within allowed bounds, and adjust otherwise
-        if(random_radius > max_radius)
-          random_radius = max_radius;
-        else if(random_radius < min_radius)
-          random_radius = min_radius;
+      // set particle radius to random value
+      (*radius_)[lid] = random_radius;
 
-        // set particle radius to random value
-        (*radius_)[lid] = random_radius;
-
-        // recompute particle mass
-        (*mass_)[lid] = density_*4./3.*M_PI*random_radius*random_radius*random_radius;
-      }
+      // recompute particle mass
+      (*mass_)[lid] = density_*4.0/3.0*M_PI*random_radius*random_radius*random_radius;
     }
   }
 

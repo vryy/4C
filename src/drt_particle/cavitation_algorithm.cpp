@@ -2725,6 +2725,9 @@ void CAVITATION::Algorithm::ParticleInflow()
   }
 
   const bool radiusdistribution = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RADIUS_DISTRIBUTION");
+  // get minimum and maximum radius for particles in case random radius option is chosen
+  const double min_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MIN_RADIUS");
+  const double max_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MAX_RADIUS");
 
   for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
   {
@@ -2783,14 +2786,7 @@ void CAVITATION::Algorithm::ParticleInflow()
       // evaluate random normal distribution for particle radii if applicable
       if(radiusdistribution)
       {
-        // get minimum and maximum radius for particles
-        const double min_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MIN_RADIUS");
-        const double max_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MAX_RADIUS");
-
-        // provide random number generator with local ID of current particle as deterministic seed to ensure reproducibility of simulation
-        DRT::Problem::Instance()->Random()->SetRandSeed(lid);
-
-        // initialize random number generator with current particle radius as mean and input parameter value as standard deviation
+        // initialize random number generator with current inflow radius as mean and input parameter value as standard deviation
         DRT::Problem::Instance()->Random()->SetMeanVariance(inflow_radius,DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
 
         // generate normally distributed random value for particle radius
