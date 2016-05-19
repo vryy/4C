@@ -2724,6 +2724,8 @@ void CAVITATION::Algorithm::ParticleInflow()
     fluiddis_->SetState("vel",fluid_->Velnp());
   }
 
+  const bool radiusdistribution = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"RADIUS_DISTRIBUTION");
+
   for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
   {
     std::list<Teuchos::RCP<BubbleSource> >::const_iterator particleiter;
@@ -2777,6 +2779,33 @@ void CAVITATION::Algorithm::ParticleInflow()
       // get node lid
       lid = noderowmap->LID(newbubbleid);
       double inflow_radius = (*particleiter)->inflow_radius_;
+
+      // evaluate random normal distribution for particle radii if applicable
+      if(radiusdistribution)
+      {
+        // get minimum and maximum radius for particles
+        const double min_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MIN_RADIUS");
+        const double max_radius = DRT::Problem::Instance()->ParticleParams().get<double>("MAX_RADIUS");
+
+        // provide random number generator with local ID of current particle as deterministic seed to ensure reproducibility of simulation
+        DRT::Problem::Instance()->Random()->SetRandSeed(lid);
+
+        // initialize random number generator with current particle radius as mean and input parameter value as standard deviation
+        DRT::Problem::Instance()->Random()->SetMeanVariance(inflow_radius,DRT::Problem::Instance()->ParticleParams().get<double>("RADIUS_DISTRIBUTION_SIGMA"));
+
+        // generate normally distributed random value for particle radius
+        double random_radius = DRT::Problem::Instance()->Random()->Normal();
+
+        // check whether random value lies within allowed bounds, and adjust otherwise
+        if(random_radius > max_radius)
+          random_radius = max_radius;
+        else if(random_radius < min_radius)
+          random_radius = min_radius;
+
+        // set inflow radius to random value
+        inflow_radius = random_radius;
+      }
+
       // assumption of constant mass (-> no mass transfer)
       const double mass = density * 4.0/3.0 * M_PI * inflow_radius * inflow_radius * inflow_radius;
       (*massn)[lid] = mass;

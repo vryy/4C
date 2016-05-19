@@ -1127,16 +1127,19 @@ void CAVITATION::Algorithm::AssignSmallBubbles(
     int err = void_volumes->SumIntoGlobalValues(1, &insideeles[0], &bubblevol);
     if (err<0)
       dserror("summing into Epetra_FEVector failed");
-#ifdef DEBUG
-    DRT::Element* fluidele = fluiddis_->gElement(insideeles[0]);
 
-    static LINALG::Matrix<3,1> dummy(false);
-    // get coordinates of the particle position in parameter space of the element
-    bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze_cache_[fluidele->LID()], particleposition, dummy);
+    // safety check, may be moved to debug version only
+    {
+      DRT::Element* fluidele = fluiddis_->gElement(insideeles[0]);
 
-    if(insideele == false)
-      dserror("bubble is expected to lie inside this fluid element");
-#endif
+      static LINALG::Matrix<3,1> dummy(false);
+      // get coordinates of the particle position in parameter space of the element
+      bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze_cache_[fluidele->LID()], particleposition, dummy);
+
+      if(insideele == false)
+        dserror("bubble at position x: %f y: %f z: %f is expected to lie inside fluid "
+            "element with id: %d", particleposition(0), particleposition(1), particleposition(2), fluidele->Id());
+    }
   }
   else
   {
@@ -1159,7 +1162,8 @@ void CAVITATION::Algorithm::AssignSmallBubbles(
       }
     }
     if(insideele == false)
-      dserror("void fraction could not be assigned to an underlying fluid element.");
+      dserror("void fraction for particle (position x: %d y: %d z: %d) could not be assigned "
+          "to an underlying fluid element.", particleposition(0), particleposition(1), particleposition(2));
   }
 
   return;
