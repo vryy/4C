@@ -4,8 +4,10 @@
 
 \brief evaluation of scatra boundary terms at integration points
 
+\level 1
+
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -1167,9 +1169,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
   if(s2icondition == Teuchos::null)
     dserror("Cannot access scatra-scatra interface coupling condition!");
 
-  // access kinetic model associated with current condition
-  const int kineticmodel = s2icondition->GetInt("kinetic model");
-
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -1185,54 +1184,129 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
     if (timefacfac < 0. or timefacrhsfac < 0.)
       dserror("Integration factor is negative!");
 
-    // loop over scalars
-    for(int k=0; k<numscal_; ++k)
-    {
-      // evaluate dof values at current integration point on present and opposite side of scatra-scatra interface
-      const double slavephiint = funct_.Dot(eslavephinp[k]);
-      const double masterphiint = funct_.Dot(emasterphinp[k]);
-
-      // compute matrix and vector contributions according to kinetic model for current scatra-scatra interface coupling condition
-      switch(kineticmodel)
-      {
-        // constant permeability model
-        case INPAR::S2I::kinetics_constperm:
-        {
-          // access real vector of constant permeabilities
-          const std::vector<double>* permeabilities = s2icondition->GetMutable<std::vector<double> >("permeabilities");
-          if(permeabilities == NULL)
-            dserror("Cannot access vector of permeabilities for scatra-scatra interface coupling!");
-          if(permeabilities->size() != (unsigned) numscal_)
-            dserror("Number of permeabilities does not match number of scalars!");
-
-          for (int vi=0; vi<nen_; ++vi)
-          {
-            const int fvi = vi*numscal_+k;
-
-            for (int ui=0; ui<nen_; ++ui)
-            {
-              const int fui = ui*numscal_+k;
-
-              const double linearization = funct_(vi)*(*permeabilities)[k]*funct_(ui)*timefacfac;
-
-              eslavematrix(fvi,fui) += linearization;
-              emastermatrix(fvi,fui) -= linearization;
-            }
-
-            eslaveresidual[fvi] -= funct_(vi)*(*permeabilities)[k]*(slavephiint-masterphiint)*timefacrhsfac;
-          }
-
-          break;
-        }
-
-        default:
-        {
-          dserror("Kinetic model for scatra-scatra interface coupling not yet implemented!");
-          break;
-        }
-      }
-    } // end of loop over scalars
+    EvaluateS2ICouplingAtIntegrationPoint<distype>(
+        *s2icondition,
+        eslavephinp,
+        emasterphinp,
+        funct_,
+        funct_,
+        funct_,
+        funct_,
+        numscal_,
+        timefacfac,
+        timefacrhsfac,
+        &eslavematrix,
+        &emastermatrix,
+        NULL,
+        NULL,
+        &eslaveresidual,
+        NULL
+        );
   } // end of loop over integration points
+
+  return;
+}
+
+
+/*---------------------------------------------------------------------------------------*
+ | evaluate scatra-scatra interface coupling condition at integration point   fang 05/16 |
+ *---------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+template <DRT::Element::DiscretizationType distype_master>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingAtIntegrationPoint(
+    DRT::Condition&                               s2icondition,
+    const std::vector<LINALG::Matrix<nen_,1> >&   eslavephinp,
+    const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1> >&   emasterphinp,
+    const LINALG::Matrix<nen_,1>&                 funct_slave,
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1>&   funct_master,
+    const LINALG::Matrix<nen_,1>&                 test_slave,
+    const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1>&   test_master,
+    const int                                     numscal,
+    const double                                  timefacfac,
+    const double                                  timefacrhsfac,
+    Epetra_SerialDenseMatrix*                     k_ss,     ///< element matrix for slave side
+    Epetra_SerialDenseMatrix*                     k_sm,    ///< element matrix for master side
+    Epetra_SerialDenseMatrix*                     k_ms,     ///< element matrix for slave side
+    Epetra_SerialDenseMatrix*                     k_mm,    ///< element matrix for master side
+    Epetra_SerialDenseVector*                     r_s,    ///< element residual for slave side
+    Epetra_SerialDenseVector*                     r_m    ///< element residual for slave side
+    )
+{
+  const int nen_master = DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement;
+
+  // loop over scalars
+  for(int k=0; k<numscal; ++k)
+  {
+    // evaluate dof values at current integration point on slave and master sides of scatra-scatra interface
+    const double slavephiint = funct_slave.Dot(eslavephinp[k]);
+    const double masterphiint = funct_master.Dot(emasterphinp[k]);
+
+    // compute matrix and vector contributions according to kinetic model for current scatra-scatra interface coupling condition
+    switch(s2icondition.GetInt("kinetic model"))
+    {
+      // constant permeability model
+      case INPAR::S2I::kinetics_constperm:
+      {
+        // access real vector of constant permeabilities associated with current condition
+        const std::vector<double>* permeabilities = s2icondition.GetMutable<std::vector<double> >("permeabilities");
+        if(permeabilities == NULL)
+          dserror("Cannot access vector of permeabilities for scatra-scatra interface coupling!");
+        if(permeabilities->size() != (unsigned) numscal)
+          dserror("Number of permeabilities does not match number of scalars!");
+
+        // core residual
+        const double N = timefacrhsfac*(*permeabilities)[k]*(slavephiint-masterphiint);
+
+        // core linearizations
+        const double dN_dc_slave = timefacfac*(*permeabilities)[k];
+        const double dN_dc_master = -dN_dc_slave;
+
+        if(k_ss and k_sm and r_s)
+        {
+          for(int vi=0; vi<nen_; ++vi)
+          {
+            const int fvi = vi*numscal+k;
+
+            for(int ui=0; ui<nen_; ++ui)
+              (*k_ss)(fvi,ui*numscal+k) += test_slave(vi)*dN_dc_slave*funct_slave(ui);
+
+            for(int ui=0; ui<nen_master; ++ui)
+              (*k_sm)(fvi,ui*numscal+k) += test_slave(vi)*dN_dc_master*funct_master(ui);
+
+            (*r_s)[fvi] -= test_slave(vi)*N;
+          }
+        }
+        else if(k_ss or k_sm or r_s)
+          dserror("Must provide both slave-side matrices and slave-side vector or none of them!");
+
+        if(k_ms and k_mm and r_m)
+        {
+          for(int vi=0; vi<nen_master; ++vi)
+          {
+            const int fvi = vi*numscal+k;
+
+            for(int ui=0; ui<nen_; ++ui)
+              (*k_ms)(fvi,ui*numscal+k) -= test_master(vi)*dN_dc_slave*funct_slave(ui);
+
+            for(int ui=0; ui<nen_master; ++ui)
+              (*k_mm)(fvi,ui*numscal+k) -= test_master(vi)*dN_dc_master*funct_master(ui);
+
+            (*r_m)[fvi] += test_master(vi)*N;
+          }
+        }
+        else if(k_ms or k_mm or r_m)
+          dserror("Must provide both master-side matrices and master-side vector or none of them!");
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Kinetic model for scatra-scatra interface coupling not yet implemented!");
+        break;
+      }
+    }
+  } // end of loop over scalars
 
   return;
 }
@@ -2892,6 +2966,9 @@ template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad9>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>;
+// explicit instantiation of template methods
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::tri3>(DRT::Condition&,const std::vector<LINALG::Matrix<nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1> >&,const LINALG::Matrix<nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1>&,const LINALG::Matrix<nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement,1>&,const int,const double,const double,Epetra_SerialDenseMatrix*,Epetra_SerialDenseMatrix*k_sm,Epetra_SerialDenseMatrix*k_ms,Epetra_SerialDenseMatrix*k_mm,Epetra_SerialDenseVector*,Epetra_SerialDenseVector*);
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::quad4>(DRT::Condition&,const std::vector<LINALG::Matrix<nen_,1> >&,const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1> >&,const LINALG::Matrix<nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1>&,const LINALG::Matrix<nen_,1>&,const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement,1>&,const int,const double,const double,Epetra_SerialDenseMatrix*,Epetra_SerialDenseMatrix*k_sm,Epetra_SerialDenseMatrix*k_ms,Epetra_SerialDenseMatrix*k_mm,Epetra_SerialDenseVector*,Epetra_SerialDenseVector*);
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line2>;
 template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line3>;

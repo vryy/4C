@@ -3,6 +3,8 @@
 
 \brief Scatra-scatra interface coupling strategy for standard scalar transport problems
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -31,6 +33,7 @@
 #include "../drt_mortar/mortar_utils.H"
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_scatra_ele/scatra_ele_boundary_calc.H"
 #include "../drt_scatra_ele/scatra_ele_calc_utils.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
 
@@ -2320,17 +2323,28 @@ void SCATRA::MortarCellCalc<distypeS,distypeM>::EvaluateCondition(
 {
   // safety check
   if(numdofpernode_slave_ != 1 or numdofpernode_master_ != 1)
-    dserror("Invalid number of degrees of freedom per node!");
+    dserror("Invalid number of degrees of freedom per node! Code should theoretically work for more than one degree of freedom per node, but not yet tested!");
 
-  // access input parameters associated with current condition
-  const int kineticmodel = condition.GetInt("kinetic model");
-  if(kineticmodel != INPAR::S2I::kinetics_constperm)
-    dserror("Invalid kinetic model for scatra-scatra interface coupling!");
-  const std::vector<double>* permeabilities = condition.GetMutable<std::vector<double> >("permeabilities");
-  if(permeabilities == NULL)
-    dserror("Cannot access vector of permeabilities for scatra-scatra interface coupling!");
-  if(permeabilities->size() != 1)
-    dserror("Number of permeabilities does not match number of scalars!");
+  // initialize cell matrices and vectors
+  Epetra_SerialDenseMatrix *k_ss(NULL), *k_sm(NULL), *k_ms(NULL), *k_mm(NULL);
+  Epetra_SerialDenseVector *r_s(NULL), *r_m(NULL);
+  const unsigned numdofpercell_slave(la_slave[0].lm_.size()), numdofpercell_master(la_master[0].lm_.size());
+  if(islavematrix != Teuchos::null and islaveresidual != Teuchos::null)
+  {
+    k_ss = new Epetra_SerialDenseMatrix(numdofpercell_slave,numdofpercell_slave);
+    k_sm = new Epetra_SerialDenseMatrix(numdofpercell_slave,numdofpercell_master);
+    r_s = new Epetra_SerialDenseVector(numdofpercell_slave);
+  }
+  else if(islavematrix != Teuchos::null or islaveresidual != Teuchos::null)
+    dserror("Must provide both slave-side matrix and slave-side vector or none of them!");
+  if(imastermatrix != Teuchos::null and imasterresidual != Teuchos::null)
+  {
+    k_ms = new Epetra_SerialDenseMatrix(numdofpercell_master,numdofpercell_slave);
+    k_mm = new Epetra_SerialDenseMatrix(numdofpercell_master,numdofpercell_master);
+    r_m = new Epetra_SerialDenseVector(numdofpercell_master);
+  }
+  else if(imastermatrix != Teuchos::null or imasterresidual != Teuchos::null)
+    dserror("Must provide both master-side matrix and master-side vector or none of them!");
 
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
@@ -2347,77 +2361,40 @@ void SCATRA::MortarCellCalc<distypeS,distypeM>::EvaluateCondition(
     if(timefacfac < 0. or timefacrhsfac < 0.)
       dserror("Integration factor is negative!");
 
-    // evaluate state variables at current integration point
-    const double eslavephiint = funct_slave_.Dot(ephinp_slave[0]);
-    const double emasterphiint = funct_master_.Dot(ephinp_master[0]);
+    DRT::ELEMENTS::ScaTraEleBoundaryCalc<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(
+        condition,
+        ephinp_slave,
+        ephinp_master,
+        funct_slave_,
+        funct_master_,
+        test_lm_slave_,
+        test_lm_master_,
+        numdofpernode_slave_,
+        timefacfac,
+        timefacrhsfac,
+        k_ss,
+        k_sm,
+        k_ms,
+        k_mm,
+        r_s,
+        r_m
+        );
+  }
 
-    // core residual
-    const double N = timefacrhsfac*(*permeabilities)[0]*(eslavephiint-emasterphiint);
+  if(islavematrix != Teuchos::null and islaveresidual != Teuchos::null)
+  {
+    islavematrix->Assemble(-1,la_slave[0].stride_,*k_ss,la_slave[0].lm_,la_slave[0].lmowner_,la_slave[0].lm_);
+    islavematrix->Assemble(-1,la_master[0].stride_,*k_sm,la_slave[0].lm_,la_slave[0].lmowner_,la_master[0].lm_);
+    LINALG::Assemble(*islaveresidual,*r_s,la_slave[0].lm_,la_slave[0].lmowner_);
+  }
 
-    // core linearizations
-    const double dN_dc_slave = timefacfac*(*permeabilities)[0];
-    const double dN_dc_master = -dN_dc_slave;
-
-    if(islavematrix != Teuchos::null and islaveresidual != Teuchos::null)
-    {
-      for (int vi=0; vi<nen_slave_; ++vi)
-      {
-        if(la_slave[0].lmowner_[vi] == idiscret.Comm().MyPID())
-        {
-          const int row_slave = la_slave[0].lm_[vi];
-
-          for (int ui=0; ui<nen_slave_; ++ui)
-          {
-            const int col_slave = la_slave[0].lm_[ui];
-
-            islavematrix->Assemble(test_lm_slave_(vi)*dN_dc_slave*funct_slave_(ui),row_slave,col_slave);
-          }
-
-          for(int ui=0; ui<nen_master_; ++ui)
-          {
-            const int col_master = la_master[0].lm_[ui];
-
-            islavematrix->Assemble(test_lm_slave_(vi)*dN_dc_master*funct_master_(ui),row_slave,col_master);
-          }
-
-          if(islaveresidual->SumIntoGlobalValue(row_slave,0,-test_lm_slave_(vi)*N))
-            dserror("Assembly into slave-side residual vector not successful!");
-        }
-      }
-    }
-    else if(islavematrix != Teuchos::null or islaveresidual != Teuchos::null)
-      dserror("Must provide both slave-side matrix and slave-side vector or none of them!");
-
-    if(imastermatrix != Teuchos::null and imasterresidual != Teuchos::null)
-    {
-      if(slaveelement.Owner() == idiscret.Comm().MyPID())
-      {
-        for(int vi=0; vi<nen_master_; ++vi)
-        {
-          const int row_master = la_master[0].lm_[vi];
-
-          for (int ui=0; ui<nen_slave_; ++ui)
-          {
-            const int col_slave = la_slave[0].lm_[ui];
-
-            imastermatrix->FEAssemble(-test_lm_master_(vi)*dN_dc_slave*funct_slave_(ui),row_master,col_slave);
-          }
-
-          for(int ui=0; ui<nen_master_; ++ui)
-          {
-            const int col_master = la_master[0].lm_[ui];
-
-            imastermatrix->FEAssemble(-test_lm_master_(vi)*dN_dc_master*funct_master_(ui),row_master,col_master);
-          }
-
-          const double residual_master = test_lm_master_(vi)*N;
-          if(imasterresidual->SumIntoGlobalValues(1,&row_master,&residual_master))
-            dserror("Assembly into master-side residual vector not successful!");
-        }
-      }
-    }
-    else if(imastermatrix != Teuchos::null or imasterresidual != Teuchos::null)
-      dserror("Must provide both master-side matrix and master-side vector or none of them!");
+  if(imastermatrix != Teuchos::null and imasterresidual != Teuchos::null)
+  {
+    imastermatrix->FEAssemble(-1,*k_ms,la_master[0].lm_,std::vector<int>(la_master[0].lmowner_.size(),slaveelement.Owner()),la_slave[0].lm_);
+    imastermatrix->FEAssemble(-1,*k_mm,la_master[0].lm_,std::vector<int>(la_master[0].lmowner_.size(),slaveelement.Owner()),la_master[0].lm_);
+    if(slaveelement.Owner() == idiscret.Comm().MyPID())
+      if(imasterresidual->SumIntoGlobalValues(la_master[0].lm_.size(),&la_master[0].lm_[0],r_m->A()))
+        dserror("Assembly into master-side residual vector not successful!");
   }
 
   return;

@@ -4,8 +4,10 @@
 
 \brief evaluation of scatra boundary terms at integration points
 
+\level 1
+
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -180,6 +182,27 @@ public:
       DRT::Element::LocationArray&        la,
       Epetra_SerialDenseVector&           elevec1,
       const double                        scalar
+      );
+
+  //! evaluate scatra-scatra interface coupling condition at integration point
+  template<DRT::Element::DiscretizationType distype_master>
+  static void EvaluateS2ICouplingAtIntegrationPoint(
+      DRT::Condition&                               s2icondition,
+      const std::vector<LINALG::Matrix<nen_,1> >&   eslavephinp,
+      const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1> >&   emasterphinp,
+      const LINALG::Matrix<nen_,1>&                 funct_slave,
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1>&   funct_master,
+      const LINALG::Matrix<nen_,1>&                 test_slave,
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1>&   test_master,
+      const int                                     numscal,
+      const double                                  timefacfac,
+      const double                                  timefacrhsfac,
+      Epetra_SerialDenseMatrix*                     k_ss,     ///< element matrix for slave side
+      Epetra_SerialDenseMatrix*                     k_sm,    ///< element matrix for master side
+      Epetra_SerialDenseMatrix*                     k_ms,     ///< element matrix for slave side
+      Epetra_SerialDenseMatrix*                     k_mm,    ///< element matrix for master side
+      Epetra_SerialDenseVector*                     r_s,    ///< element residual for slave side
+      Epetra_SerialDenseVector*                     r_m    ///< element residual for slave side
       );
 
   //! computes mechanoresponsive scalar transport
