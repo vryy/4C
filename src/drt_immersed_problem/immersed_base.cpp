@@ -3,11 +3,11 @@
 
 \brief base class for all immersed algorithms
 
-<pre>
-Maintainers: Andreas Rauch
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
-</pre>
+\level 2
+
+\maintainer Andreas Rauch
+            http://www.lnm.mw.tum.de
+            089 - 289 -15240
 *----------------------------------------------------------------------*/
 #include "immersed_base.H"
 #include "../drt_lib/drt_parobject.H"
@@ -976,7 +976,7 @@ void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(Teuchos::RC
       params.set<int>("Physical Type",INPAR::FLUID::poro_p1);
 
       DRT::Element::LocationArray la(dis->NumDofSets());
-      immersedelebase->LocationVector(*dis,la,false);
+      ele->LocationVector(*dis,la,false);
       strategy->ClearElementStorage( la[row].Size(), la[col].Size() );
 
       if(!evaluateonlyboundary)

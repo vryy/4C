@@ -1,13 +1,14 @@
 /*!-----------------------------------------------------------------------------------------------------------
- \file Truss3cl_evaluate.cpp
+ \file truss3cl_evaluate.cpp
  \brief three dimensional interpolated total Lagrange hybrid beam-truss element
  (can be connected to beam3 elements)
 
-<pre>
-Maintainer: Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
+ \level 3
+
+ \maintainer Dhrubajyoti Mukherjee
+             mukherjee@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15270
 
  *-----------------------------------------------------------------------------------------------------------*/
 
@@ -533,6 +534,9 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList&   params,
    * any ordinary problem of structural mechanics it may be ignored*/
     CalcBrownian<2,3,3,3>(params,fvel,disp,fdisp,fstiffmatrix,fforce);
 
+    // TODO: Check why all 24x24 entries in the stiffness matrix and all 24x1 entries in the force vector are non-zero
+    // Shouldn't only the original 12x12 matrix entries and 12x1 vector entries be there?
+    // On that note, also check whether the NumDofPerNode function of the truss3cl element should return 3 or 6...
    if(stiffmatrix != NULL)
    {
      //Transform 12x12 stiffness matrix for fictitious nodal beam back to 24x24 stiffness matrix of 4-noded beam

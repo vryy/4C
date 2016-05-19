@@ -569,7 +569,16 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
         const int owner = node->Owner();
         std::vector<int> dof;
         dis.Dof(dof,node,dofset,0,this);
-        const int size = dof.size();
+
+        // if there are more dofs on the node than the element can handle, this cannot work
+        dsassert(
+            NumDofPerNode(*node) <= (int) dof.size() or dofset != 0,
+            "More dofs on node than element can handle! Internal error!"
+            );
+
+        // assume that the first dofs are the relevant ones
+        const int size = dofset == 0 ? NumDofPerNode(*node) : dof.size();
+
         if (size) lmstride.push_back(size);
         for (int j=0; j< size; ++j)
         {
@@ -590,7 +599,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
               dserror("condition with name Dirichlet is not of type Dirichlet");
             flag = dirich->Get<std::vector<int> >("onoff");
           }
-          for (unsigned j=0; j<dof.size(); ++j)
+          for (int j=0; j<size; ++j)
           {
             if (flag && (*flag)[j])
               lmdirich.push_back(1);

@@ -3,12 +3,12 @@
 
  \brief three dimensional total Lagrange truss element
 
- <pre>
-Maintainer: Dhrubajyoti Mukherjee
-            mukherjee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15270
- </pre>
+ \level 3
+
+ \maintainer Dhrubajyoti Mukherjee
+             mukherjee@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15270
  *----------------------------------------------------------------------*/
 // administrative line in order to make a difference between BACI and Ccarat files
 //header file only included if not yet included!
@@ -193,7 +193,9 @@ public:
     /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
      *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
      *number of DOF to this node requested by any element connected to this node*/
-    return 3;
+    /* Normally truss elements have three degrees of freedom per node. However, we need three additional degrees of
+     * freedom per node to impose rotational constraints between truss and beam elements. */
+    return 6;
   }
 
   /*!

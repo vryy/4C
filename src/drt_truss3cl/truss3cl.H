@@ -1,15 +1,15 @@
 /*!----------------------------------------------------------------------
-\file truss3CL.H
+\file truss3cl.H
 
-  \brief three dimensional interpolated total Lagrange hybrid beam-truss element
+\brief three dimensional interpolated total Lagrange hybrid beam-truss element
  (can be connected to beam3 elements)
 
-<pre>
-Maintainer: Dhrubajyoti Mukherjee
+\level 3
+
+\maintainer Dhrubajyoti Mukherjee
             mukherjee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15270
-</pre>
 *----------------------------------------------------------------------*/
 // administrative line in order to make a difference between BACI and Ccarat files
 
@@ -183,7 +183,7 @@ public:
     /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
      *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
      *number of DOF to this node requested by any element connected to this node*/
-    return 3;
+    return 6;
   }
 
 
