@@ -32,8 +32,10 @@ Res = [(p_v - p_ar)/R_arv - q_vout                     ] = [ 0 ]
       [L_ven/R_ven + (p_at_other - p_ven)/R_ven + q_ven]   [ 0 ]
 ************************************************************************************************************************************
 
+\level 2
+
 <pre>
-Maintainer: Marc Hirschvogel
+\maintainer Marc Hirschvogel
             hirschvogel@mhpc.mw.tum.de
             http://www.mhpc.mw.tum.de
             089 - 289-10363

@@ -3,8 +3,10 @@
 
 \brief Monolithic coupling of 3D structure 0D Windkessel models
 
+\level 2
+
 <pre>
-Maintainer: Marc Hirschvogel
+\maintainer Marc Hirschvogel
             hirschvogel@mhpc.mw.tum.de
             http://www.mhpc.mw.tum.de
             089 - 289-10363
