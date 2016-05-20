@@ -4888,9 +4888,11 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
   //**********************************************************************
   {
     // feed Aztec based solvers with contact information
-    if (contactsolver_->Params().isSublist("Aztec Parameters"))
+    //if (contactsolver_->Params().isSublist("Aztec Parameters"))
+    if (windkman_->GetSolver()->Params().isSublist("Aztec Parameters"))
     {
-      Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Aztec Parameters");
+      //Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Aztec Parameters");
+      Teuchos::ParameterList& mueluParams = windkman_->GetSolver()->Params().sublist("Aztec Parameters");
       Teuchos::RCP<Epetra_Map> masterDofMap;
       Teuchos::RCP<Epetra_Map> slaveDofMap;
       Teuchos::RCP<Epetra_Map> innerDofMap;
@@ -4909,9 +4911,11 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
       linSystemProps.set<int>("iter",iter_);
     }
     // feed Belos based solvers with contact information
-    if (contactsolver_->Params().isSublist("Belos Parameters"))
+    //if (contactsolver_->Params().isSublist("Belos Parameters"))
+    if (windkman_->GetSolver()->Params().isSublist("Belos Parameters"))
     {
-      Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Belos Parameters");
+      //Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Belos Parameters");
+      Teuchos::ParameterList& mueluParams = windkman_->GetSolver()->Params().sublist("Belos Parameters");
       Teuchos::RCP<Epetra_Map> masterDofMap;
       Teuchos::RCP<Epetra_Map> slaveDofMap;
       Teuchos::RCP<Epetra_Map> innerDofMap;
