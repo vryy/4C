@@ -122,6 +122,12 @@ public:
   virtual DRT::Element* Clone() const;
 
   /*!
+  \brief Return the location vector of this element
+  */
+  // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can inherently handle (3)...
+  virtual void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet) const;
+
+  /*!
    \brief Get shape type of element
    */
   virtual DiscretizationType Shape() const;
@@ -193,9 +199,7 @@ public:
     /*note: this is not necessarily the number of DOF assigned to this node by the discretization finally, but only
      *the number of DOF requested for this node by this element; the discretization will finally assign the maximal
      *number of DOF to this node requested by any element connected to this node*/
-    /* Normally truss elements have three degrees of freedom per node. However, we need three additional degrees of
-     * freedom per node to impose rotational constraints between truss and beam elements. */
-    return 6;
+    return 3;
   }
 
   /*!

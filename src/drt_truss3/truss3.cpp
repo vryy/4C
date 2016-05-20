@@ -2,6 +2,7 @@
 \file truss3.cpp
 \brief three dimensional total Lagrange truss element
 
+\level 3
 
 \maintainer Dhrubajyoti Mukherjee
             mukherjee@lnm.mw.tum.de
@@ -519,6 +520,106 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const std::vector<double>& xr
     }
 
   }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | Get degrees of freedom used by this element               fang 05/16 |
+ *----------------------------------------------------------------------*/
+// TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can inherently handle (3)...
+void DRT::ELEMENTS::Truss3::LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet) const
+{
+  const int numnode = NumNode();
+  const DRT::Node*const* nodes = Nodes();
+
+  la.Clear();
+
+  // we need to look at all DofSets of our Discretization
+  for (int dofset=0; dofset<la.Size(); ++dofset)
+  {
+    std::vector<int>& lm  = la[dofset].lm_;
+    std::vector<int>& lmdirich = la[dofset].lmdirich_;
+    std::vector<int>& lmowner  = la[dofset].lmowner_;
+    std::vector<int>& lmstride = la[dofset].stride_;
+
+    // fill the vector with nodal dofs
+    if (nodes)
+    {
+      for (int i=0; i<numnode; ++i)
+      {
+        const DRT::Node* node = nodes[i];
+
+        const int owner = node->Owner();
+        std::vector<int> dof;
+        dis.Dof(dof,node,dofset,0,this);
+        const unsigned size = dof.size();
+
+        if (size) lmstride.push_back(size);
+        for (unsigned j=0; j< size; ++j)
+        {
+          lmowner.push_back(owner);
+          lm.push_back(dof[j]);
+        }
+
+        if (doDirichlet)
+        {
+          const std::vector<int>* flag = NULL;
+          DRT::Condition* dirich = node->GetCondition("Dirichlet");
+          if (dirich)
+          {
+            if (dirich->Type()!=DRT::Condition::PointDirichlet &&
+                dirich->Type()!=DRT::Condition::LineDirichlet &&
+                dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
+                dirich->Type()!=DRT::Condition::VolumeDirichlet)
+              dserror("condition with name Dirichlet is not of type Dirichlet");
+            flag = dirich->Get<std::vector<int> >("onoff");
+          }
+          for (unsigned j=0; j<size; ++j)
+          {
+            if (flag && (*flag)[j])
+              lmdirich.push_back(1);
+            else
+              lmdirich.push_back(0);
+          }
+        }
+      }
+    }
+
+    // fill the vector with element dofs
+    const int owner = Owner();
+    std::vector<int> dof = dis.Dof(dofset,this);
+    if (dof.size()) lmstride.push_back(dof.size());
+    for (unsigned j=0; j<dof.size(); ++j)
+    {
+      lmowner.push_back(owner);
+      lm.push_back(dof[j]);
+    }
+
+    if (doDirichlet)
+    {
+      const std::vector<int>* flag = NULL;
+      DRT::Condition* dirich = GetCondition("Dirichlet");
+      if (dirich)
+      {
+        if (dirich->Type()!=DRT::Condition::PointDirichlet &&
+            dirich->Type()!=DRT::Condition::LineDirichlet &&
+            dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
+            dirich->Type()!=DRT::Condition::VolumeDirichlet)
+          dserror("condition with name Dirichlet is not of type Dirichlet");
+        flag = dirich->Get<std::vector<int> >("onoff");
+      }
+      for (unsigned j=0; j<dof.size(); ++j)
+      {
+        if (flag && (*flag)[j])
+          lmdirich.push_back(1);
+        else
+          lmdirich.push_back(0);
+      }
+    }
+
+  } // for (int dofset=0; dofset<la.Size(); ++dofset)
 
   return;
 }
