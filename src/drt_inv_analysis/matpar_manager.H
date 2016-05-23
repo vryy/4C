@@ -89,7 +89,7 @@ public:
   //! Constructor
   MetaParametrization()
   {
-    metatype_= INPAR::INVANA::StatInvMetaParamsType::stat_inv_meta_none;
+    metatype_= INPAR::INVANA::stat_inv_meta_none;
   }
 
   //! Destructor
