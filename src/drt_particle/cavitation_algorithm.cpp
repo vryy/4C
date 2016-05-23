@@ -285,7 +285,7 @@ void CAVITATION::Algorithm::TimeloopSequStaggered()
     // transfer particles into their correct bins at least every 10th of the fluid time step size;
     // underlying assumptions: CFL number will be not too far from one, bubbles have appr. the same
     // velocity as the fluid
-    if(particles_->Time() > Time()-Dt()+0.1*count_*Dt())
+    if(particles_->Time() > Time()-Dt()+0.1*count_*Dt() || havepbc_ == true)
     {
       ++count_;
       TransferParticles(true);
@@ -350,7 +350,7 @@ void CAVITATION::Algorithm::TimeloopIterStaggered()
       // transfer particles into their correct bins at least every 10th of the fluid time step size;
       // underlying assumptions: CFL number will be not too far from one, bubbles have appr. the same
       // velocity as the fluid
-      if(particles_->Time() > Time()-Dt()+0.1*count_*Dt())
+      if(particles_->Time() > Time()-Dt()+0.1*count_*Dt() || havepbc_ == true)
       {
         ++count_;
         TransferParticles(true);
@@ -1133,12 +1133,20 @@ void CAVITATION::Algorithm::Integrate(bool& particlereset)
     case INPAR::CAVITATION::TwoWayFull_weak:
     case INPAR::CAVITATION::VoidFracOnly:
     {
+      // make sure particles reside in their correct bin in order to
+      // distribute the void fraction properly to the underlying fluid elements
+      if(timestepsizeratio_ > 10)
+        TransferParticles(true);
       CalculateFluidFraction(particles_->Radius());
       SetFluidFraction();
       break;
     }
     case INPAR::CAVITATION::TwoWayFull_strong:
     {
+      // make sure particles reside in their correct bin in order to
+      // distribute the void fraction properly to the underlying fluid elements
+      if(timestepsizeratio_ > 10)
+        TransferParticles(true);
       // coupling radius has already been set in Prepare Relaxation
       CalculateFluidFraction(couplingradius_);
       SetFluidFraction();
@@ -1679,7 +1687,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles(bool init)
   // enforce 2D fluid forces for pseudo-2D problem
   if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
   {
-    const int numnodes = fluidforces->MyLength()/4;
+    const int numnodes = fluidforces->MyLength()/(dim_+1);
     for(int i=0; i<numnodes; ++i)
       (*(*fluidforces)(0))[i*(dim_+1)+2] = 0.0;
   }

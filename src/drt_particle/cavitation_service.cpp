@@ -1311,6 +1311,10 @@ bool CAVITATION::Algorithm::ComputeVelocityAtBubblePosition(
   // call the element specific evaluate method (elevec1 = fluid vel)
   targetfluidele->Evaluate(params,*fluiddis_,lm_f,elemat1,elemat2,elevec1,elevec2,elevec3);
 
+  // enforce 2D bubble movement for pseudo-2D problem
+  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
+    elevec1(2) = 0.0;
+
   return true;
 }
 
