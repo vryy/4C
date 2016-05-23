@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file beam3k_evaluate.cpp
 
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
 
+\level 2
+
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
 
-
-*-----------------------------------------------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------------------------------------------*/
 
 
 #include "../drt_lib/drt_discret.H"
@@ -136,137 +136,24 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
           CalculateInternalForcesSK(params,mydisp,NULL,NULL,&elevec1,NULL,false);
       }
 
-//      //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
-//      //correctly or not by means of a numerically approximated stiffness matrix
-//      //The code block will work for all higher order elements.
-//      if(Id() == 0) //limiting the following tests to certain element numbers
-//      {
-//
-//        //variable to store numerically approximated stiffness matrix
-//        Epetra_SerialDenseMatrix stiff_approx;
-//        stiff_approx.Shape(6*2+COLLOCATION_POINTS,6*2+COLLOCATION_POINTS);
-//
-//
-//        //relative error of numerically approximated stiffness matrix
-//        Epetra_SerialDenseMatrix stiff_relerr;
-//        stiff_relerr.Shape(6*2+COLLOCATION_POINTS,6*2+COLLOCATION_POINTS);
-//
-//        //characteristic length for numerical approximation of stiffness
-//        double h_rel = 1e-7;
-//
-//        //flag indicating whether approximation leads to significant relative error
-//        int outputflag = 0;
-//
-//        //calculating strains in new configuration
-//        for(int i=0; i<6*2+COLLOCATION_POINTS; i++) //for all dof
-//        {
-//          Epetra_SerialDenseVector force_aux;
-//          force_aux.Size(6*2+COLLOCATION_POINTS);
-//
-//          //create new displacement and velocity vectors in order to store artificially modified displacements
-//          std::vector<double> vel_aux(myvel);
-//          std::vector<double> disp_aux(mydisp);
-//
-//          //modifying displacement artificially (for numerical derivative of internal forces):
-//          disp_aux[i] += h_rel;
-//          vel_aux[i] += h_rel / params.get<double>("delta time",0.01);
-//
-//          if(weakkirchhoff_)
-//            CalculateInternalForcesWK(params,disp_aux,NULL,NULL,&force_aux,NULL,false);
-//          else
-//            CalculateInternalForcesSK(params,disp_aux,NULL,NULL,&force_aux,NULL,false);
-//
-//          //computing derivative d(fint)/du numerically by finite difference
-//          for(int u = 0 ; u < 6*2+COLLOCATION_POINTS ; u++ )
-//          {
-//            stiff_approx(u,i)= ( force_aux[u] - elevec1(u) )/ h_rel ;
-//          }
-//        } //for(int i=0; i<3; i++) //for all dof
-//
-//
-//        for(int line=0; line<6*2+COLLOCATION_POINTS; line++)
-//        {
-//          for(int col=0; col<6*2+COLLOCATION_POINTS; col++)
-//          {
-//            if (fabs(elemat1(line,col)) > 1.0e-10)
-//              stiff_relerr(line,col)= fabs( ( elemat1(line,col) - stiff_approx(line,col) )/ elemat1(line,col) );
-//            else if (fabs(stiff_approx(line,col)) < 1.0e-5)
-//              stiff_relerr(line,col)=0.0;
-//            else
-//              stiff_relerr(line,col)=1000.0;
-//
-//            //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
-//            if ( fabs( stiff_relerr(line,col) ) < h_rel*500 || isnan( stiff_relerr(line,col))) //isnan = is not a number
-//              stiff_relerr(line,col) = 0;
-//
-//            //if ( stiff_relerr(line,col) > 0)
-//              outputflag = 1;
-//          } //for(int col=0; col<3*nnode; col++)
-//
-//        } //for(int line=0; line<3*nnode; line++)
-//
-//        if(outputflag ==1)
-//        {
-//
-//          std::cout<<"\n\n acutally calculated stiffness matrix\n";
-//          for(int line=0; line<6*2+COLLOCATION_POINTS; line++)
-//          {
-//            for(int col=0; col<6*2+COLLOCATION_POINTS; col++)
-//            {
-//              if(isnan(elemat1(line,col)))
-//                std::cout<<"     nan   ";
-//              else if(elemat1(line,col) == 0)
-//                std::cout<<"     0     ";
-//              else if(elemat1(line,col) >= 0)
-//                std::cout<<"  "<< std::scientific << std::setprecision(3)<<elemat1(line,col);
-//              else
-//                std::cout<<" "<< std::scientific << std::setprecision(3)<<elemat1(line,col);
-//            }
-//            std::cout<<"\n";
-//          }
-//
-//          std::cout<<"\n\n approximated stiffness matrix\n";
-//          for(int line=0; line<6*2+COLLOCATION_POINTS; line++)
-//          {
-//            for(int col=0; col<6*2+COLLOCATION_POINTS; col++)
-//            {
-//              if(isnan(stiff_approx(line,col)))
-//                std::cout<<"     nan   ";
-//              else if(stiff_approx(line,col) == 0)
-//                std::cout<<"     0     ";
-//              else if(stiff_approx(line,col) >= 0)
-//                std::cout<<"  "<< std::scientific << std::setprecision(3)<<stiff_approx(line,col);
-//              else
-//                std::cout<<" "<< std::scientific << std::setprecision(3)<<stiff_approx(line,col);
-//            }
-//            std::cout<<"\n";
-//          }
-//
-//          std::cout<<"\n\n rel error stiffness matrix\n";
-//          for(int line=0; line<6*2+COLLOCATION_POINTS; line++)
-//          {
-//            for(int col=0; col<6*2+COLLOCATION_POINTS; col++)
-//            {
-//              if(isnan(stiff_relerr(line,col)))
-//                std::cout<<"     nan   ";
-//              else if(stiff_relerr(line,col) == 0)
-//                std::cout<<"     0     ";
-//              else if(stiff_relerr(line,col) >= 0)
-//                std::cout<<"  "<< std::scientific << std::setprecision(3)<<stiff_relerr(line,col);
-//              else
-//                std::cout<<" "<< std::scientific << std::setprecision(3)<<stiff_relerr(line,col);
-//            }
-//            std::cout<<"\n";
-//          }
-//        }
-//
-//      } //end of section in which numerical approximation for stiffness matrix is computed
+      /*at the end of an iteration step the geometric configuration has to be updated: the starting point for the
+       * next iteration step is the configuration at the end of the current step */
+      Qold_ = Qnew_;
+      dispthetaold_= dispthetanew_;
+
+      //ATTENTION: In order to perform a brief finite difference check of the nonlinear stiffness matrix the code block
+      //"FD-CHECK" from the end of this file has to be copied to this place:
+      //***************************************************************************************************************
+                                                 //Insert code block here!
+      //***************************************************************************************************************
+
     }
     break;
 
     case ELEMENTS::struct_calc_energy:
     {
       elevec1(0)=Eint_;
+      //elevec1(1)=Ekin_;
     }
     break;
 
@@ -281,7 +168,6 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       /*the action calc_struct_update_istep is called in the very end of a time step when the new dynamic
        * equilibrium has finally been found; this is the point where the variable representing the geometric
        * status of the beam at the end of the time step has to be stored*/
-
       Qconvmass_ = Qnewmass_;
       wconvmass_ = wnewmass_;
       aconvmass_ = anewmass_;
@@ -291,32 +177,9 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       rtconvmass_ = rtnewmass_;
       rconvmass_ = rnewmass_;
 
-      // need current global displacement and residual forces and get them from discretization
-      // making use of the local-to-global map lm one can extract current displacement and residual values for each degree of freedom
-      // get element displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-      std::vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-
-      // get element velocities
-      std::vector<double> myvel(lm.size());
-      std::vector<double> myacc(lm.size());
-
-      const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
-      if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP")!=INPAR::STR::dyna_statics)
-      {
-        Teuchos::RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
-        if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-        DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-
-        Teuchos::RCP<const Epetra_Vector> acc  = discretization.GetState("acceleration");
-        if (acc==Teuchos::null) dserror("Cannot get state vectors 'acceleration'");
-        DRT::UTILS::ExtractMyValues(*acc,myacc,lm);
-      }
-      UpdateTriads(params,myvel,mydisp);
-
+      Qconv_ = Qnew_;
+      dispthetaconv_ = dispthetanew_;
+      Qrefconv_ = Qrefnew_;
     }
     break;
 
@@ -337,6 +200,13 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       rttmodnewmass_=rttmodconvmass_;
       rtnewmass_=rtconvmass_;
       rnewmass_=rconvmass_;
+
+      Qold_ = Qconv_;
+      Qnew_ = Qconv_;
+      dispthetaold_ = dispthetaconv_;
+      dispthetanew_ = dispthetaconv_;
+      Qrefnew_ = Qrefconv_;
+
     }
     break;
 
@@ -370,51 +240,51 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
                                                         bool update)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Beam3k::CalculateInternalForcesWK");
-  if(COLLOCATION_POINTS!=2 and COLLOCATION_POINTS!=3 and COLLOCATION_POINTS!=4)
-    dserror("Only the values 2,3 and 4 are valid for COLLOCATION_POINTS!!!");
+  if(BEAM3K_COLLOCATION_POINTS!=2 and BEAM3K_COLLOCATION_POINTS!=3 and BEAM3K_COLLOCATION_POINTS!=4)
+    dserror("Only the values 2,3 and 4 are valid for BEAM3K_COLLOCATION_POINTS!!!");
 
   //number of nodes fixed for these element
   const int nnode = 2;
 
-  if(disp.size()!=(6*nnode+COLLOCATION_POINTS))
-    dserror("Number of COLLOCATION_POINTS does not match number of nodes defined in the input file!!!");
+  if(disp.size()!=(6*nnode+BEAM3K_COLLOCATION_POINTS))
+    dserror("Number of BEAM3K_COLLOCATION_POINTS does not match number of nodes defined in the input file!!!");
 
   //internal force vector
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_int(true);
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_int_aux(true);
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> f_int(true);
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> f_int_aux(true);
 
   //vector for current nodal DoFs in total Lagrangian style, i.e. displacement + initial values:
   //rotvec_==true:  disp_totlag=[\v{d}_1, \v{theta}_1, t_1, \v{d}_2, \v{theta}_2, t_2, \alpha_3]
   //rotvec_==false: disp_totlag=[\v{d}_1, \v{t}_1, \alpha_1, \v{d}_2, \v{t}_2, \alpha_2, \alpha_3]
   //! The Number of collocation points can take on the values 2, 3 and 4. 3 and 4 are interior nodes.
   //This leads e.g. in the case rotvec_==true to the following ordering:
-  //if COLLOCATION_POINTS = 2: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2]
-  //if COLLOCATION_POINTS = 3: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2 \alpha_3]
-  //if COLLOCATION_POINTS = 4: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2 \alpha_3 \alpha_4]
-  std::vector<FAD> disp_totlag(6*nnode+COLLOCATION_POINTS, 0.0);
+  //if BEAM3K_COLLOCATION_POINTS = 2: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2]
+  //if BEAM3K_COLLOCATION_POINTS = 3: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2 \alpha_3]
+  //if BEAM3K_COLLOCATION_POINTS = 4: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2 \alpha_3 \alpha_4]
+  std::vector<FAD> disp_totlag(6*nnode+BEAM3K_COLLOCATION_POINTS, 0.0);
 
   //vector containing locally assembled nodal positions and tangents required for centerline:
   //r(s)=N(s)*disp_totlag_centerline, with disp_totlag_centerline=[\v{d}_1, \v{t}_1, 0, \v{d}_2, \v{t}_2, 0, 0]
-  std::vector<FAD> disp_totlag_centerline(6*nnode+COLLOCATION_POINTS, 0.0);
+  std::vector<FAD> disp_totlag_centerline(6*nnode+BEAM3K_COLLOCATION_POINTS, 0.0);
 
   //CP values of strains and their variations needed for interpolation
-  std::vector<FAD> epsilon_cp(COLLOCATION_POINTS); // axial tension epsilon=|r_s|-1 at collocation points
-  std::vector<LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> > v_epsilon_cp(COLLOCATION_POINTS);
-  std::vector<LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> > v_thetaperp_cp(COLLOCATION_POINTS);
-  std::vector<LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> > v_thetapar_cp(COLLOCATION_POINTS);
+  std::vector<FAD> epsilon_cp(BEAM3K_COLLOCATION_POINTS); // axial tension epsilon=|r_s|-1 at collocation points
+  std::vector<LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> > v_epsilon_cp(BEAM3K_COLLOCATION_POINTS);
+  std::vector<LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,3> > v_thetaperp_cp(BEAM3K_COLLOCATION_POINTS);
+  std::vector<LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,3> > v_thetapar_cp(BEAM3K_COLLOCATION_POINTS);
 
   //Get integration points for exact integration
   DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
 
   //interpolated values of strains and their variations evaluated at Gauss points
   FAD epsilon;
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> v_epsilon(true);
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetaperp_s(true);
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetapar_s(true);
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_theta_s(true); //=v_thetaperp_s+v_thetapar_s
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> v_epsilon(true);
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,3> v_thetaperp_s(true);
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,3> v_thetapar_s(true);
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,3> v_theta_s(true); //=v_thetaperp_s+v_thetapar_s
 
   //interpolated spin vector variation required for inertia forces: v_theta=v_thetaperp+v_thetapar
-  std::vector<LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,3> > v_theta(gausspoints.nquad,LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,3>(true));
+  std::vector<LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,3> > v_theta(gausspoints.nquad,LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,3>(true));
 
   //Further material and spatial strains and forces to be evaluated at the Gauss points
   LINALG::TMatrix<FAD,3,1> K; //material curvature
@@ -424,9 +294,9 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
   FAD f_par; //material=spatial axial force component
 
   //Triads at collocation points
-  std::vector<LINALG::TMatrix<FAD,3,3> > triad_ref_cp(COLLOCATION_POINTS);  //reference triads (SR-system) at collocation points
-  std::vector<LINALG::TMatrix<FAD,3,3> > triad_mat_cp(COLLOCATION_POINTS);  //material triads at collocation points
-  std::vector<LINALG::TMatrix<FAD,3,1> > theta_cp(COLLOCATION_POINTS);  //angle at collocation points
+  std::vector<LINALG::TMatrix<FAD,3,3> > triad_ref_cp(BEAM3K_COLLOCATION_POINTS);  //reference triads (SR-system) at collocation points
+  std::vector<LINALG::TMatrix<FAD,3,3> > triad_mat_cp(BEAM3K_COLLOCATION_POINTS);  //material triads at collocation points
+  std::vector<LINALG::TMatrix<FAD,3,1> > theta_cp(BEAM3K_COLLOCATION_POINTS);  //relative angle at collocation points
 
   //Interpolated material triad and angles evaluated at Gauss point
   std::vector<LINALG::TMatrix<FAD,3,3> > triad_mat(gausspoints.nquad,LINALG::TMatrix<FAD,3,3>(true)); //vector of material triads at gps
@@ -434,18 +304,18 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
   LINALG::TMatrix<FAD,3,1> theta_s;  //derivative of theta with respect to arc-length s
 
   //matrices holding the assembled shape functions and s-derivatives
-  LINALG::TMatrix<FAD,3,6*nnode+COLLOCATION_POINTS> N_s;
-  LINALG::TMatrix<FAD,1,6*nnode+COLLOCATION_POINTS> L;
-  LINALG::TMatrix<FAD,1,6*nnode+COLLOCATION_POINTS> L_s;
+  LINALG::TMatrix<FAD,3,6*nnode+BEAM3K_COLLOCATION_POINTS> N_s;
+  LINALG::TMatrix<FAD,1,6*nnode+BEAM3K_COLLOCATION_POINTS> L;
+  LINALG::TMatrix<FAD,1,6*nnode+BEAM3K_COLLOCATION_POINTS> L_s;
 
   //Matrices for individual shape functions and xi-derivatives
   LINALG::TMatrix<FAD,1,2*nnode> N_i_xi;
-  LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> L_i;
-  LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> L_i_xi;
+  LINALG::TMatrix<FAD,1,BEAM3K_COLLOCATION_POINTS> L_i;
+  LINALG::TMatrix<FAD,1,BEAM3K_COLLOCATION_POINTS> L_i_xi;
 
   //Matrices for individual s-derivatives
   LINALG::TMatrix<FAD,1,2*nnode> N_i_s;
-  LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> L_i_s;
+  LINALG::TMatrix<FAD,1,BEAM3K_COLLOCATION_POINTS> L_i_s;
 
   //Additional kinematic quantities
   LINALG::TMatrix<FAD,3,1> r_s; //Matrix to store r'
@@ -459,12 +329,19 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
   UpdateDispTotlag(disp, disp_totlag);
   SetNodalVariables(disp_totlag,disp_totlag_centerline,triad_mat_cp);
 
+  //Store nodal tangents in class variable
+  for(int i=0;i<3;i++)
+  {
+    T_[0](i)=disp_totlag_centerline[3+i].val();
+    T_[1](i)=disp_totlag_centerline[10+i].val();
+  }
+
   //********begin: evaluate quantities at collocation points********************************
-  for(int node=0; node<COLLOCATION_POINTS; node++)
+  for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
   {
     //calculate xi of cp
     //node=0->xi=-1  node=1->xi=0  node=2->xi=1
-    xi=(double)node/(COLLOCATION_POINTS-1)*2-1.0;
+    xi=(double)node/(BEAM3K_COLLOCATION_POINTS-1)*2-1.0;
 
     //get value of interpolating function of theta (lagrange polynomials) at xi
     L_i.Clear();
@@ -473,7 +350,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
     DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
 
     //Determine storage position for the node node
-    ind=LARGEROTATIONS::NumberingTrafo(node+1, COLLOCATION_POINTS);
+    ind=LARGEROTATIONS::NumberingTrafo(node+1, BEAM3K_COLLOCATION_POINTS);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi,jacobi_cp_[ind],N_s);
@@ -481,7 +358,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
     //Calculation of r' at xi
     for (int i=0; i<3; i++)
     {
-      for (int j=0; j<6*nnode+COLLOCATION_POINTS; j++)
+      for (int j=0; j<6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
       {
         r_s(i)+=N_s(i,j)*disp_totlag_centerline[j];
       }
@@ -503,13 +380,13 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
     v_thetaperp_cp[ind].Scale(-1.0/(abs_r_s*abs_r_s));
 
     v_thetapar_cp[ind].Clear();
-    for (int i=0;i<6*nnode+COLLOCATION_POINTS;i++)
+    for (int i=0;i<6*nnode+BEAM3K_COLLOCATION_POINTS;i++)
       for (int j=0;j<3;j++)
         (v_thetapar_cp[ind])(i,j)=L(i)*r_s(j)/abs_r_s;
-  } //for (int node=0; node<COLLOCATION_POINTS; node++)
+  } //for (int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
 
   //calculate angle at cp (this has to be done in a SEPARATE loop as follows)
-  for(int node=0; node<COLLOCATION_POINTS; node++)
+  for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
   {
     theta_cp[node].Clear();
     triadtoangleright(theta_cp[node],triad_mat_cp[REFERENCE_NODE],triad_mat_cp[node]);
@@ -543,7 +420,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
     epsilon=0.0;
     theta.Clear();
     theta_s.Clear();
-    for(int node=0; node<COLLOCATION_POINTS; node++)
+    for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
     {
       v_epsilon.Update(L_i(node),v_epsilon_cp[node],1.0);
       v_thetaperp_s.Update(L_i_s(node),v_thetaperp_cp[node],1.0);
@@ -558,7 +435,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
     if (massmatrix != NULL and inertia_force != NULL)
     {
       v_theta[numgp].Clear();
-      for(int node=0; node<COLLOCATION_POINTS; node++)
+      for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
       {
         v_theta[numgp].Update(L_i(node),v_thetaperp_cp[node],1.0);
         v_theta[numgp].Update(L_i(node),v_thetapar_cp[node],1.0);
@@ -618,28 +495,27 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
   if(stiffmatrix!=NULL)
   {
     //Calculating stiffness matrix with FAD
-    for(int i = 0; i < 6*nnode+COLLOCATION_POINTS; i++)
+    for(int i = 0; i < 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
     {
-      for(int j = 0; j < 6*nnode+COLLOCATION_POINTS; j++)
+      for(int j = 0; j < 6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
       {
         (*stiffmatrix)(i,j)=f_int(i).dx(j);
       }
     }
+    if(rotvec_==true)
+    {
+      #ifdef BEAM3K_MULTIPLICATIVEUPDATES
+        TransformStiffMatrixMultipl(stiffmatrix,disp_totlag);
+      #endif
+    }
   }
   if(force!=NULL)
   {
-    for (int i=0; i< 6*nnode+COLLOCATION_POINTS; i++)
+    for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
     {
       (*force)(i)=f_int(i).val();
     }
   }
-
-  //****************Update of the old reference triads at the nodes***********************************************
-  if (update and rotvec_==false)
-  {
-      UpdateRefTriads(disp_totlag_centerline);
-  }
-  //****************end: Update of the old reference triads at the nodes********************************************
 
   //calculation of mass matrix: According to the paper of Jelenic and Crisfield "Geometrically exact 3D beam theory: implementation of a strain-invariant
   //finite element for statics and dynamics", 1999, page 146, a time integration scheme that delivers angular velocities and angular accelerations as
@@ -657,7 +533,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
     if(beta < 999)
     {
 
-      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_inert(true);
+      LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> f_inert(true);
       CalculateInteriaForces(params,triad_mat,disp_totlag_centerline,v_theta,f_inert);
 
 
@@ -670,15 +546,21 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesWK( Teuchos::ParameterList& p
       if(massmatrix!=NULL)
       {
         //Calculating stiffness matrix with FAD
-        for(int i = 0; i < 6*nnode+COLLOCATION_POINTS; i++)
+        for(int i = 0; i < 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
         {
-          for(int j = 0; j < 6*nnode+COLLOCATION_POINTS; j++)
+          for(int j = 0; j < 6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
           {
             (*massmatrix)(i,j)=f_inert(i).dx(j);
           }
         }
+        if(rotvec_==true)
+        {
+          #ifdef BEAM3K_MULTIPLICATIVEUPDATES
+            TransformStiffMatrixMultipl(massmatrix,disp_totlag);
+          #endif
+        }
       }
-      for (int i=0; i< 6*nnode+COLLOCATION_POINTS; i++)
+      for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
       {
         (*inertia_force)(i)=f_inert(i).val();
       }
@@ -706,48 +588,48 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
                                                       bool update)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Beam3k::CalculateInternalForcesSK");
-  if(COLLOCATION_POINTS!=2 and COLLOCATION_POINTS!=3 and COLLOCATION_POINTS!=4)
+  if(BEAM3K_COLLOCATION_POINTS!=2 and BEAM3K_COLLOCATION_POINTS!=3 and BEAM3K_COLLOCATION_POINTS!=4)
   {
-    dserror("Only the values 2,3 and 4 are valid for COLLOCATION_POINTS!!!");
+    dserror("Only the values 2,3 and 4 are valid for BEAM3K_COLLOCATION_POINTS!!!");
   }
 
   //number of nodes fixed for these element
   const int nnode = 2;
 
   //internal force vector
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_int(true);
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_int_aux(true);
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> f_int(true);
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> f_int_aux(true);
 
   //vector for current nodal DoFs in total Lagrangian style, i.e. displacement + initial values:
   //rotvec_==true:  disp_totlag=[\v{d}_1, \v{theta}_1, t_1, \v{d}_2, \v{theta}_2, t_2, \alpha_3]
   //rotvec_==false: disp_totlag=[\v{d}_1, \v{t}_1, \alpha_1, \v{d}_2, \v{t}_2, \alpha_2, \alpha_3]
   //! The Number of collocation points can take on the values 2, 3 and 4. 3 and 4 are interior nodes.
   //This leads e.g. in the case rotvec_==true to the following ordering:
-  //if COLLOCATION_POINTS = 2: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2]
-  //if COLLOCATION_POINTS = 3: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2 \alpha_3]
-  //if COLLOCATION_POINTS = 4: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2 \alpha_3 \alpha_4]
-  std::vector<FAD> disp_totlag(6*nnode+COLLOCATION_POINTS, 0.0);
+  //if BEAM3K_COLLOCATION_POINTS = 2: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2]
+  //if BEAM3K_COLLOCATION_POINTS = 3: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2 \alpha_3]
+  //if BEAM3K_COLLOCATION_POINTS = 4: [ \v{d}_1 \v{theta}_1 t_1 \v{d}_2 \v{theta}_1 t_2 \alpha_3 \alpha_4]
+  std::vector<FAD> disp_totlag(6*nnode+BEAM3K_COLLOCATION_POINTS, 0.0);
 
   //vector containing locally assembled nodal positions and tangents required for centerline:
   //r(s)=N(s)*disp_totlag_centerline, with disp_totlag_centerline=[\v{d}_1, \v{t}_1, 0, \v{d}_2, \v{t}_2, 0, 0]
-  std::vector<FAD> disp_totlag_centerline(6*nnode+COLLOCATION_POINTS, 0.0);
+  std::vector<FAD> disp_totlag_centerline(6*nnode+BEAM3K_COLLOCATION_POINTS, 0.0);
 
   //CP values of strains and their variations needed for interpolation
-  std::vector<FAD> epsilon_cp(COLLOCATION_POINTS); // axial tension epsilon=|r_s|-1 at collocation points
-  std::vector<LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> > v_epsilon_cp(COLLOCATION_POINTS);
+  std::vector<FAD> epsilon_cp(BEAM3K_COLLOCATION_POINTS); // axial tension epsilon=|r_s|-1 at collocation points
+  std::vector<LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> > v_epsilon_cp(BEAM3K_COLLOCATION_POINTS);
 
   //Get integration points for exact integration
   DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
 
   //interpolated values of strains and their variations evaluated at Gauss points
   FAD epsilon;
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> v_epsilon(true);
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetaperp_s(true);
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetapartheta_s(true);
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_theta_s(true); //=v_thetaperp_s+v_thetapartheta_s(+v_thetapard_s)
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> v_epsilon(true);
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,3> v_thetaperp_s(true);
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,3> v_thetapartheta_s(true);
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,3> v_theta_s(true); //=v_thetaperp_s+v_thetapartheta_s(+v_thetapard_s)
 
   //interpolated spin vector variation required for inertia forces: v_theta=v_thetaperp+v_thetapartheta(+v_thetapard)
-  std::vector<LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,3> > v_theta(gausspoints.nquad,LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,3>(true));
+  std::vector<LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,3> > v_theta(gausspoints.nquad,LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,3>(true));
 
   //Further material and spatial strains and forces to be evaluated at the Gauss points
   LINALG::TMatrix<FAD,3,1> K(true); //material curvature
@@ -757,9 +639,9 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
   FAD f_par=0.0; //material=spatial axial force component
 
   //Triads at collocation points
-  std::vector<LINALG::TMatrix<FAD,3,3> > triad_ref_cp(COLLOCATION_POINTS,LINALG::TMatrix<FAD,3,3>(true));  //reference triads (SR-system) at collocation points
-  std::vector<LINALG::TMatrix<FAD,3,3> > triad_mat_cp(COLLOCATION_POINTS,LINALG::TMatrix<FAD,3,3>(true));  //material triads at collocation points
-  std::vector<FAD > phi_cp(COLLOCATION_POINTS,0.0);  //relative angle at collocation points
+  std::vector<LINALG::TMatrix<FAD,3,3> > triad_ref_cp(BEAM3K_COLLOCATION_POINTS,LINALG::TMatrix<FAD,3,3>(true));  //reference triads (SR-system) at collocation points
+  std::vector<LINALG::TMatrix<FAD,3,3> > triad_mat_cp(BEAM3K_COLLOCATION_POINTS,LINALG::TMatrix<FAD,3,3>(true));  //material triads at collocation points
+  std::vector<FAD > phi_cp(BEAM3K_COLLOCATION_POINTS,0.0);  //relative angle at collocation points
 
   //Interpolated material triad and angles evaluated at Gauss point
   std::vector<LINALG::TMatrix<FAD,3,3> > triad_mat(gausspoints.nquad,LINALG::TMatrix<FAD,3,3>(true)); //vector of material triads at gps
@@ -767,19 +649,19 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
   FAD phi_s=0.0;  //derivative of interpolated relative angle phi with respect to arc-length s
 
   //matrices holding the assembled shape functions and s-derivatives
-  LINALG::TMatrix<FAD,3,6*nnode+COLLOCATION_POINTS> N_s(true);
-  LINALG::TMatrix<FAD,3,6*nnode+COLLOCATION_POINTS> N_ss(true);
-  LINALG::TMatrix<FAD,1,6*nnode+COLLOCATION_POINTS> L(true);
-  LINALG::TMatrix<FAD,1,6*nnode+COLLOCATION_POINTS> L_s(true);
+  LINALG::TMatrix<FAD,3,6*nnode+BEAM3K_COLLOCATION_POINTS> N_s(true);
+  LINALG::TMatrix<FAD,3,6*nnode+BEAM3K_COLLOCATION_POINTS> N_ss(true);
+  LINALG::TMatrix<FAD,1,6*nnode+BEAM3K_COLLOCATION_POINTS> L(true);
+  LINALG::TMatrix<FAD,1,6*nnode+BEAM3K_COLLOCATION_POINTS> L_s(true);
 
   //Matrices for individual shape functions and xi-derivatives
   LINALG::TMatrix<FAD,1,2*nnode> N_i_xi(true);
   LINALG::TMatrix<FAD,1,2*nnode> N_i_xixi(true);
-  LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> L_i(true);
-  LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> L_i_xi(true);
+  LINALG::TMatrix<FAD,1,BEAM3K_COLLOCATION_POINTS> L_i(true);
+  LINALG::TMatrix<FAD,1,BEAM3K_COLLOCATION_POINTS> L_i_xi(true);
 
   //Matrices for individual s-derivatives
-  LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> L_i_s(true);
+  LINALG::TMatrix<FAD,1,BEAM3K_COLLOCATION_POINTS> L_i_s(true);
 
   //Additional kinematic quantities
   LINALG::TMatrix<FAD,3,1> r_s(true); //Matrix to store r'
@@ -792,16 +674,16 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
   FAD abs_r_s=0.0; // ||r'||
   FAD rsTrss=0.0; // r'^Tr''
   LINALG::TMatrix<FAD,3,3> auxmatrix1(true); //auxilliary matrix
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> auxmatrix2(true); //auxilliary matrix
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,3> auxmatrix2(true); //auxilliary matrix
 
   #ifdef CONSISTENTSPINSK
-    LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetapard_s(true);
-    std::vector<LINALG::TMatrix<FAD,3,1> > g1_cp(COLLOCATION_POINTS, LINALG::TMatrix<FAD,3,1>(true));
-    std::vector<LINALG::TMatrix<FAD,3,1> > ttilde_cp(COLLOCATION_POINTS, LINALG::TMatrix<FAD,3,1>(true));
-    std::vector<LINALG::TMatrix<FAD,3,6*nnode+COLLOCATION_POINTS> > N_s_cp(COLLOCATION_POINTS, LINALG::TMatrix<FAD,3,6*nnode+COLLOCATION_POINTS>(true));
-    std::vector<LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> > v1_cp(COLLOCATION_POINTS, LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1>(true));
-    LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> v1(true);
-    LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> v1_s(true);
+    LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,3> v_thetapard_s(true);
+    std::vector<LINALG::TMatrix<FAD,3,1> > g1_cp(BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<FAD,3,1>(true));
+    std::vector<LINALG::TMatrix<FAD,3,1> > ttilde_cp(BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<FAD,3,1>(true));
+    std::vector<LINALG::TMatrix<FAD,3,6*nnode+BEAM3K_COLLOCATION_POINTS> > N_s_cp(BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<FAD,3,6*nnode+BEAM3K_COLLOCATION_POINTS>(true));
+    std::vector<LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> > v1_cp(BEAM3K_COLLOCATION_POINTS, LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1>(true));
+    LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> v1(true);
+    LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> v1_s(true);
   #endif
 
   //MISC
@@ -810,49 +692,29 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
 
   //Set current positions and orientations at all nodes:
   UpdateDispTotlag(disp, disp_totlag);
-
   SetNodalVariables(disp_totlag,disp_totlag_centerline,triad_mat_cp);
 
-  #ifdef CONSISTENTSPINSK
-    //*******************************test CONSISTENTSPINSK********************************************
-    LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1>disp_totlag_rigidrotation(true);
-    LINALG::TMatrix<FAD,3,1> w0(true);
-    LINALG::TMatrix<FAD,3,3> Sw0(true);
+  //Store nodal tangents in class variable
+  for(int i=0;i<3;i++)
+  {
+    T_[0](i)=disp_totlag_centerline[3+i].val();
+    T_[1](i)=disp_totlag_centerline[10+i].val();
+  }
 
-    w0(0)=1.0;
-    w0(1)=2.0;
-    w0(2)=3.0;
-
-    LARGEROTATIONS::computespin(Sw0,w0);
-    for(int i=0;i<3;i++)
-    {
-      for(int j=0;j<3;j++)
-      {
-        disp_totlag_rigidrotation(i)+=Sw0(i,j)*disp_totlag[j];
-        disp_totlag_rigidrotation(3+i)+=Sw0(i,j)*disp_totlag[3+j];
-        disp_totlag_rigidrotation(7+i)+=Sw0(i,j)*disp_totlag[7+j];
-        disp_totlag_rigidrotation(10+i)+=Sw0(i,j)*disp_totlag[10+j];
-      }
-    }
-
-    LINALG::TMatrix<FAD,1,1> auxscalar(true);
-    LINALG::TMatrix<FAD,3,1> delta_theta_s(true);
-    //***********************************test CONSISTENTSPINSK****************************************
-  #endif
 
   //********begin: evaluate quantities at collocation points********************************
-  for(int node=0; node<COLLOCATION_POINTS; node++)
+  for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
   {
     //calculate xi of cp
     //node=0->xi=-1  node=1->xi=0  node=2->xi=1
-    xi=(double)node/(COLLOCATION_POINTS-1)*2-1.0;
+    xi=(double)node/(BEAM3K_COLLOCATION_POINTS-1)*2-1.0;
 
     //get value of interpolating function of theta (lagrange polynomials) at xi
     N_i_xi.Clear();
     DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
 
     //Determine storage position for the node node
-    ind=LARGEROTATIONS::NumberingTrafo(node+1, COLLOCATION_POINTS);
+    ind=LARGEROTATIONS::NumberingTrafo(node+1, BEAM3K_COLLOCATION_POINTS);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi,jacobi_cp_[ind],N_s);
@@ -860,7 +722,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
     //Calculation of r' at xi
     for (int i=0; i<3; i++)
     {
-      for (int j=0; j<6*nnode+COLLOCATION_POINTS; j++)
+      for (int j=0; j<6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
       {
         r_s(i)+=N_s(i,j)*disp_totlag_centerline[j];
       }
@@ -877,21 +739,12 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
       N_s_cp[ind].Update(1.0,N_s,0.0);
       g1_cp[ind].Update(1.0/abs_r_s,r_s,0.0);
       ttilde_cp[ind].Update(1.0/(abs_r_s*abs_r_s),r_s,0.0);
-      //*******************************test CONSISTENTSPINSK********************************************
-      auxscalar.MultiplyTN(w0,g1_cp[ind]);
-      if(node==0)
-        disp_totlag_rigidrotation(6)=auxscalar(0,0);
-      else if (node==1)
-        disp_totlag_rigidrotation(14)=auxscalar(0,0);
-      else
-        disp_totlag_rigidrotation(13)=auxscalar(0,0);
-      //*******************************test CONSISTENTSPINSK********************************************
     #endif
 
-  } //for (int node=0; node<COLLOCATION_POINTS; node++)
+  } //for (int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
 
   //calculate angle at cp (this has to be done in a SEPARATE loop as follows)
-  for(int node=0; node<COLLOCATION_POINTS; node++)
+  for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
   {
     LINALG::TMatrix<FAD,3,3> Lambdabarref(true);
     LINALG::TMatrix<FAD,3,1> tangentref(true);
@@ -909,11 +762,11 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
     }
 
     #ifdef CONSISTENTSPINSK
-      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> auxmatrix3(true);
-      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_s_cp[node], g1_cp[REFERENCE_NODE], ttilde_cp[node], auxmatrix3);
+      LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> auxmatrix3(true);
+      ComputeTripleProduct<6*nnode+BEAM3K_COLLOCATION_POINTS>(N_s_cp[node], g1_cp[REFERENCE_NODE], ttilde_cp[node], auxmatrix3);
       v1_cp[node].Update(1.0,auxmatrix3,0.0);
       auxmatrix3.Clear();
-      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_s_cp[REFERENCE_NODE], g1_cp[node], ttilde_cp[REFERENCE_NODE], auxmatrix3);
+      ComputeTripleProduct<6*nnode+BEAM3K_COLLOCATION_POINTS>(N_s_cp[REFERENCE_NODE], g1_cp[node], ttilde_cp[REFERENCE_NODE], auxmatrix3);
       v1_cp[node].Update(-1.0,auxmatrix3,1.0);
       LINALG::TMatrix<FAD,1,1> auxscalar(true);
       auxscalar.MultiplyTN(g1_cp[node],g1_cp[REFERENCE_NODE]);
@@ -958,7 +811,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
     epsilon=0.0;
     phi=0.0;
     phi_s=0.0;
-    for(int node=0; node<COLLOCATION_POINTS; node++)
+    for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
     {
       //calculate interpolated axial tension and variation
       v_epsilon.Update(L_i(node),v_epsilon_cp[node],1.0);
@@ -973,7 +826,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
     r_ss.Clear();
     for (int i=0; i<3; i++)
     {
-      for (int j=0; j<6*nnode+COLLOCATION_POINTS; j++)
+      for (int j=0; j<6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
       {
         r_s(i)+=N_s(i,j)*disp_totlag_centerline[j];
         r_ss(i)+=N_ss(i,j)*disp_totlag_centerline[j];
@@ -1005,7 +858,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
     //************** I) Compute v_theta_s=v_thetaperp_s+v_thetapartheta_s(+v_thetapard_s) *****************************************
     // I a) Compute v_thetapartheta_s
     v_thetapartheta_s.Clear();
-    for (int row=0;row<6*nnode+COLLOCATION_POINTS;row++)
+    for (int row=0;row<6*nnode+BEAM3K_COLLOCATION_POINTS;row++)
     {
       for (int column=0;column<3;column++)
       {
@@ -1036,7 +889,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
     {
       // II a) v_thetapartheta contribution
       v_theta[numgp].Clear();
-      for (int row=0;row<6*nnode+COLLOCATION_POINTS;row++)
+      for (int row=0;row<6*nnode+BEAM3K_COLLOCATION_POINTS;row++)
       {
         for (int column=0;column<3;column++)
         {
@@ -1055,16 +908,16 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
     // Compute contributions stemming from CONSISTENTSPINSK
     #ifdef CONSISTENTSPINSK
       //************** to I) Compute v_thetapard_s of v_theta_s=v_thetaperp_s+v_thetapartheta_s(+v_thetapard_s) *******************
-      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> auxmatrix3(true);
+      LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> auxmatrix3(true);
       LINALG::TMatrix<FAD,1,1> auxscalar1(true);
 
       //Calculate v1:
       v1.Clear();
       auxmatrix3.Clear();
-      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_s, g1_cp[REFERENCE_NODE], ttilde, auxmatrix3);
+      ComputeTripleProduct<6*nnode+BEAM3K_COLLOCATION_POINTS>(N_s, g1_cp[REFERENCE_NODE], ttilde, auxmatrix3);
       v1.Update(1.0,auxmatrix3,0.0);
       auxmatrix3.Clear();
-      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_s_cp[REFERENCE_NODE], g1, ttilde_cp[REFERENCE_NODE], auxmatrix3);
+      ComputeTripleProduct<6*nnode+BEAM3K_COLLOCATION_POINTS>(N_s_cp[REFERENCE_NODE], g1, ttilde_cp[REFERENCE_NODE], auxmatrix3);
       v1.Update(-1.0,auxmatrix3,1.0);
       auxscalar1.Clear();
       auxscalar1.MultiplyTN(g1,g1_cp[REFERENCE_NODE]);
@@ -1073,13 +926,13 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
       //Calculate v1_s:
       v1_s.Clear();
       auxmatrix3.Clear();
-      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_s, g1_cp[REFERENCE_NODE], ttilde_s, auxmatrix3);
+      ComputeTripleProduct<6*nnode+BEAM3K_COLLOCATION_POINTS>(N_s, g1_cp[REFERENCE_NODE], ttilde_s, auxmatrix3);
       v1_s.Update(1.0,auxmatrix3,0.0);
       auxmatrix3.Clear();
-      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_ss, g1_cp[REFERENCE_NODE], ttilde, auxmatrix3);
+      ComputeTripleProduct<6*nnode+BEAM3K_COLLOCATION_POINTS>(N_ss, g1_cp[REFERENCE_NODE], ttilde, auxmatrix3);
       v1_s.Update(1.0,auxmatrix3,1.0);
       auxmatrix3.Clear();
-      ComputeTripleProduct<6*nnode+COLLOCATION_POINTS>(N_s_cp[REFERENCE_NODE], g1_s, ttilde_cp[REFERENCE_NODE], auxmatrix3);
+      ComputeTripleProduct<6*nnode+BEAM3K_COLLOCATION_POINTS>(N_s_cp[REFERENCE_NODE], g1_s, ttilde_cp[REFERENCE_NODE], auxmatrix3);
       v1_s.Update(-1.0,auxmatrix3,1.0);
       auxscalar1.Clear();
       auxscalar1.MultiplyTN(g1_s,g1_cp[REFERENCE_NODE]);
@@ -1089,9 +942,9 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
       v1_s.Scale(1.0/(1.0+auxscalar1(0,0)));
 
       //Calculate vec1 and vec2
-      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> vec1(true);
-      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> vec2(true);
-      for(int node=0; node<COLLOCATION_POINTS; node++)
+      LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> vec1(true);
+      LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> vec2(true);
+      for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
       {
         vec1.Update(L_i_s(node),v1_cp[node],1.0);
         vec2.Update(L_i(node),v1_cp[node],1.0);
@@ -1101,7 +954,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
 
       //Compute v_thetapard_s
       v_thetapard_s.Clear();
-      for (int i=0; i<6*nnode+COLLOCATION_POINTS; i++)
+      for (int i=0; i<6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
       {
         for (int j=0; j<3; j++)
         {
@@ -1116,13 +969,13 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
       if (massmatrix != NULL and inertia_force != NULL)
       {
 
-        LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> vec3(true);
-        for(int node=0; node<COLLOCATION_POINTS; node++)
+        LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> vec3(true);
+        for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
         {
           vec3.Update(L_i(node),v1_cp[node],1.0);
         }
         vec3.Update(-1.0,v1,1.0);
-        for (int i=0; i<6*nnode+COLLOCATION_POINTS; i++)
+        for (int i=0; i<6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
         {
           for (int j=0; j<3; j++)
           {
@@ -1130,17 +983,6 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
           }
         }
       }
-
-      //*******************************test CONSISTENTSPINSK********************************************
-      delta_theta_s.Clear();
-
-      delta_theta_s.MultiplyTN(v_theta_s,disp_totlag_rigidrotation);
-
-      std::cout << "delta_theta_s: " << std::endl;
-      for(int i=0;i<3;i++)
-        std::cout << delta_theta_s(i).val() << std::endl;
-
-      //*******************************test CONSISTENTSPINSK********************************************
     #endif
     //***************************************************************************************************************************
     //************************End: Determine "v"-vectors representing the discrete strain variations*****************************
@@ -1200,28 +1042,28 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
   if(stiffmatrix!=NULL)
   {
     //Calculating stiffness matrix with FAD
-    for(int i = 0; i < 6*nnode+COLLOCATION_POINTS; i++)
+    for(int i = 0; i < 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
     {
-      for(int j = 0; j < 6*nnode+COLLOCATION_POINTS; j++)
+      for(int j = 0; j < 6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
       {
         (*stiffmatrix)(i,j)=f_int(i).dx(j);
       }
     }
+    if(rotvec_==true)
+    {
+      #ifdef BEAM3K_MULTIPLICATIVEUPDATES
+        TransformStiffMatrixMultipl(stiffmatrix,disp_totlag);
+      #endif
+    }
+
   }
   if(force!=NULL)
   {
-    for (int i=0; i< 6*nnode+COLLOCATION_POINTS; i++)
+    for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
     {
       (*force)(i)=f_int(i).val();
     }
   }
-
-  //****************Update of the old reference triads at the nodes***********************************************
-  if (update and rotvec_==false)
-  {
-      UpdateRefTriads(disp_totlag_centerline);
-  }
-  //****************end: Update of the old reference triads at the nodes********************************************
 
   //calculation of mass matrix: According to the paper of Jelenic and Crisfield "Geometrically exact 3D beam theory: implementation of a strain-invariant
   //finite element for statics and dynamics", 1999, page 146, a time integration scheme that delivers angular velocities and angular accelerations as
@@ -1239,7 +1081,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
     if(beta < 999)
     {
 
-      LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_inert(true);
+      LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> f_inert(true);
       CalculateInteriaForces(params,triad_mat,disp_totlag_centerline,v_theta,f_inert);
 
       if(rotvec_==true)
@@ -1251,15 +1093,21 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
       if(massmatrix!=NULL)
       {
         //Calculating stiffness matrix with FAD
-        for(int i = 0; i < 6*nnode+COLLOCATION_POINTS; i++)
+        for(int i = 0; i < 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
         {
-          for(int j = 0; j < 6*nnode+COLLOCATION_POINTS; j++)
+          for(int j = 0; j < 6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
           {
             (*massmatrix)(i,j)=f_inert(i).dx(j);
           }
         }
+        if(rotvec_==true)
+        {
+          #ifdef BEAM3K_MULTIPLICATIVEUPDATES
+            TransformStiffMatrixMultipl(massmatrix,disp_totlag);
+          #endif
+        }
       }
-      for (int i=0; i< 6*nnode+COLLOCATION_POINTS; i++)
+      for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
       {
         (*inertia_force)(i)=f_inert(i).val();
       }
@@ -1281,8 +1129,8 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesSK( Teuchos::ParameterList& p
 void DRT::ELEMENTS::Beam3k::CalculateInteriaForces(Teuchos::ParameterList& params,
                                                     std::vector<LINALG::TMatrix<FAD,3,3> >& triad_mat,
                                                     std::vector<FAD>& disp_totlag_centerline,
-                                                    std::vector<LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,3> >& v_theta,
-                                                    LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,1>& f_inert)
+                                                    std::vector<LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,3> >& v_theta,
+                                                    LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,1>& f_inert)
 {
   double gamma = params.get<double>("rot_gamma",1000);
   double alpha_f = params.get<double>("rot_alphaf",1000);
@@ -1320,18 +1168,20 @@ void DRT::ELEMENTS::Beam3k::CalculateInteriaForces(Teuchos::ParameterList& param
 
   double scaledcrosssec=inertscaletrans_*crosssec_;
 
-  LINALG::TMatrix<FAD,3,6*nnode+COLLOCATION_POINTS> N(true);
+  LINALG::TMatrix<FAD,3,6*nnode+BEAM3K_COLLOCATION_POINTS> N(true);
   LINALG::TMatrix<FAD,1,2*nnode> N_i(true);
   LINALG::TMatrix<FAD,3,1> rnewmass(true); //Matrix to store r
   LINALG::TMatrix<FAD,3,3> triad_mat_old(true);
 
   //internal force vector
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_inert_aux(true);
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetaperp(true);
-  LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,3> v_thetapar(true);
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> f_inert_aux(true);
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,3> v_thetaperp(true);
+  LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,3> v_thetapar(true);
 
   //Get integration points for exact integration
   DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
+
+  Ekin_=0.0;
 
   for (int numgp=0; numgp<gausspoints.nquad; numgp++)//loop through Gauss points
   {
@@ -1351,7 +1201,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInteriaForces(Teuchos::ParameterList& param
     //Calculation of r at xi
     for (int i=0; i<3; i++)
     {
-      for (int j=0; j<6*nnode+COLLOCATION_POINTS; j++)
+      for (int j=0; j<6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
       {
         rnewmass(i)+=N(i,j)*disp_totlag_centerline[j];
       }
@@ -1458,6 +1308,13 @@ void DRT::ELEMENTS::Beam3k::CalculateInteriaForces(Teuchos::ParameterList& param
     f_inert_aux.Scale(wgt*jacobi_[numgp]);
     f_inert.Update(1.0,f_inert_aux,1.0);
 
+    //Calculation of kinetic energy
+    LINALG::TMatrix<FAD,1,1> ekinrot(true);
+    LINALG::TMatrix<FAD,1,1> ekintrans(true);
+    ekinrot.MultiplyTN(Wnewmass,Jp_Wnewmass);
+    ekintrans.MultiplyTN(rtnewmass,rtnewmass);
+    Ekin_+=0.5*(ekinrot(0,0).val() + rho*scaledcrosssec*ekintrans(0,0).val())*wgt*jacobi_[numgp];
+
     //**********begin: update class variables needed for storage**************
     LINALG::TMatrix<FAD,3,1> wnewmass(true);
     LINALG::TMatrix<FAD,3,1> anewmass(true);
@@ -1497,10 +1354,13 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
                                                Epetra_SerialDenseMatrix* elemat1)
 {
 
-  const int twistdofs = COLLOCATION_POINTS;
+  //As long as only endpoint forces and moments as well as distributed forces (i.e. no distributed moments)
+  //are considered, the method EvaluateNeumann is identical for the WK and the SK case.
+
+  const int twistdofs = BEAM3K_COLLOCATION_POINTS;
   if(twistdofs!=2 and twistdofs!=3 and twistdofs!=4)
   {
-    dserror("Only the values 2,3 and 4 are valid for COLLOCATION_POINTS!!!");
+    dserror("Only the values 2,3 and 4 are valid for BEAM3K_COLLOCATION_POINTS!!!");
   }
   //dimensions of freedom per node
   const int nnode=2;
@@ -1511,9 +1371,9 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
   std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-  std::vector<FAD> disp_totlag(6*nnode+COLLOCATION_POINTS, 0.0);
-  std::vector<FAD> disp_totlag_centerline(6*nnode+COLLOCATION_POINTS, 0.0);
-  std::vector<LINALG::TMatrix<FAD,3,3> > triad_mat_cp(COLLOCATION_POINTS);
+  std::vector<FAD> disp_totlag(6*nnode+BEAM3K_COLLOCATION_POINTS, 0.0);
+  std::vector<FAD> disp_totlag_centerline(6*nnode+BEAM3K_COLLOCATION_POINTS, 0.0);
+  std::vector<LINALG::TMatrix<FAD,3,3> > triad_mat_cp(BEAM3K_COLLOCATION_POINTS);
 
   UpdateDispTotlag(mydisp, disp_totlag);
   SetNodalVariables(disp_totlag,disp_totlag_centerline,triad_mat_cp);
@@ -1620,7 +1480,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
         f_ext(node*7+3+i)+=(*onoff)[i+3]*(*val)[i+3]*curvefac[i+3];
       }
     }
-
+    //elemat1 is zero for rotvec_==true -> It does not have to be transformed in the case BEAM3K_MULTIPLICATIVEUPDATES
     //IMPORTANT: in contrast to f_ext, elemat1 it is directly added to the stiffness matrix, therefore there has to be a sign change!
     if(elemat1!=NULL)
     {
@@ -1641,8 +1501,8 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
   else if(condition.Type() == DRT::Condition::LineNeumann)//if a line neumann condition needs to be linearized
   {
     //external force vector
-    LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_ext(true);
-    LINALG::TMatrix<FAD,6*nnode+COLLOCATION_POINTS,1> f_ext_aux(true);
+    LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> f_ext(true);
+    LINALG::TMatrix<FAD,6*nnode+BEAM3K_COLLOCATION_POINTS,1> f_ext_aux(true);
     std::vector< LINALG::Matrix<3,3> > Gref(2);
     for (int node=0;node<2;node++)
     {
@@ -1653,7 +1513,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
     // gaussian points
     DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::mygaussrulebeam3k);
     LINALG::TMatrix<FAD,1,4> N_i;
-    LINALG::TMatrix<FAD,3,6*nnode + COLLOCATION_POINTS> N;
+    LINALG::TMatrix<FAD,3,6*nnode + BEAM3K_COLLOCATION_POINTS> N;
 
     //funct is related to the 6 "funct" fields after the val field of the Neumann condition
     //in the input file; funct gives the number of the function defined in the section FUNCT
@@ -1732,15 +1592,21 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
     if(elemat1!=NULL)
     {
       //Calculating stiffness matrix with FAD
-      for(int i = 0; i < 6*nnode+COLLOCATION_POINTS; i++)
+      for(int i = 0; i < 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
       {
-        for(int j = 0; j < 6*nnode+COLLOCATION_POINTS; j++)
+        for(int j = 0; j < 6*nnode+BEAM3K_COLLOCATION_POINTS; j++)
         {
           (*elemat1)(i,j)=-f_ext(i).dx(j);
         }
       }
+      if(rotvec_==true)
+      {
+        #ifdef BEAM3K_MULTIPLICATIVEUPDATES
+          TransformStiffMatrixMultipl(elemat1,disp_totlag);
+        #endif
+      }
     }
-    for (int i=0; i< 6*nnode+COLLOCATION_POINTS; i++)
+    for (int i=0; i< 6*nnode+BEAM3K_COLLOCATION_POINTS; i++)
     {
       elevec1(i)=f_ext(i).val();
     }
@@ -1752,28 +1618,28 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
 /*-----------------------------------------------------------------------------------------------------------*
  |  Assemble C shape function                                                                     meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsL(LINALG::TMatrix<FAD,1,COLLOCATION_POINTS>& L_i,
-                                                    LINALG::TMatrix<FAD,1,2*6+COLLOCATION_POINTS>& L)
+void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsL(LINALG::TMatrix<FAD,1,BEAM3K_COLLOCATION_POINTS>& L_i,
+                                                    LINALG::TMatrix<FAD,1,2*6+BEAM3K_COLLOCATION_POINTS>& L)
 {
 
-  #if defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==2)
+  #if defined(BEAM3K_COLLOCATION_POINTS) && (BEAM3K_COLLOCATION_POINTS==2)
 
-  int assembly_L[2*6+COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2};
+  int assembly_L[2*6+BEAM3K_COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2};
 
-  #elif defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==3)
+  #elif defined(BEAM3K_COLLOCATION_POINTS) && (BEAM3K_COLLOCATION_POINTS==3)
 
-  int assembly_L[2*6+COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3};
+  int assembly_L[2*6+BEAM3K_COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3};
 
-  #elif defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==4)
+  #elif defined(BEAM3K_COLLOCATION_POINTS) && (BEAM3K_COLLOCATION_POINTS==4)
 
-  int assembly_L[2*6+COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3,4};
+  int assembly_L[2*6+BEAM3K_COLLOCATION_POINTS]=      {0,0,0,0,0,0,1,0,0,0,0,0,0,2,3,4};
 
   #else
-  dserror("COLLOCATION_POINTS has to be defined. Only the values 2,3 and 4 are valid for COLLOCATION_POINTS!!!");
+  dserror("BEAM3K_COLLOCATION_POINTS has to be defined. Only the values 2,3 and 4 are valid for BEAM3K_COLLOCATION_POINTS!!!");
   #endif
 
   //Assemble the matrices of the shape functions
-  for (int i=0; i<2*6+COLLOCATION_POINTS; i++)
+  for (int i=0; i<2*6+BEAM3K_COLLOCATION_POINTS; i++)
   {
     if(assembly_L[i]==0)
     {
@@ -1795,7 +1661,7 @@ void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsNss( LINALG::TMatrix<FAD,1,4>&
                                                         LINALG::TMatrix<FAD,1,4>& N_i_xixi,
                                                         FAD jacobi,
                                                         FAD jacobi2,
-                                                        LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N_ss)
+                                                        LINALG::TMatrix<FAD,3,2*6+BEAM3K_COLLOCATION_POINTS>& N_ss)
 {
   LINALG::TMatrix<FAD,1,4> N_i_ss(true);
   N_i_ss.Update(1.0/(jacobi*jacobi),N_i_xixi,1.0);
@@ -1811,7 +1677,7 @@ void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsNss( LINALG::TMatrix<FAD,1,4>&
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsNs( LINALG::TMatrix<FAD,1,4>& N_i_xi,
                                                        FAD jacobi,
-                                                       LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N_s)
+                                                       LINALG::TMatrix<FAD,3,2*6+BEAM3K_COLLOCATION_POINTS>& N_s)
 {
 
   LINALG::TMatrix<FAD,1,4> N_i_s(true);
@@ -1829,33 +1695,33 @@ void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsNs( LINALG::TMatrix<FAD,1,4>& 
  |  Assemble the N shape functions                                                                meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3k::AssembleShapefunctionsN( LINALG::TMatrix<FAD,1,4>& N_i,
-                                                     LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N)
+                                                     LINALG::TMatrix<FAD,3,2*6+BEAM3K_COLLOCATION_POINTS>& N)
 {
 
-#if defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==2)
+#if defined(BEAM3K_COLLOCATION_POINTS) && (BEAM3K_COLLOCATION_POINTS==2)
 
-int assembly_N[3][2*6+COLLOCATION_POINTS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
+int assembly_N[3][2*6+BEAM3K_COLLOCATION_POINTS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0},
                                     {0,1,0,0,2,0,0,0,3,0,0,4,0,0},
                                     {0,0,1,0,0,2,0,0,0,3,0,0,4,0}};
 
-#elif defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==3)
+#elif defined(BEAM3K_COLLOCATION_POINTS) && (BEAM3K_COLLOCATION_POINTS==3)
 
-int assembly_N[3][2*6+COLLOCATION_POINTS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
+int assembly_N[3][2*6+BEAM3K_COLLOCATION_POINTS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
                                     {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0},
                                     {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0}};
 
-#elif defined(COLLOCATION_POINTS) && (COLLOCATION_POINTS==4)
+#elif defined(BEAM3K_COLLOCATION_POINTS) && (BEAM3K_COLLOCATION_POINTS==4)
 
-int assembly_N[3][2*6+COLLOCATION_POINTS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
+int assembly_N[3][2*6+BEAM3K_COLLOCATION_POINTS]=  {{1,0,0,2,0,0,0,3,0,0,4,0,0,0,0,0},
                                        {0,1,0,0,2,0,0,0,3,0,0,4,0,0,0,0},
                                        {0,0,1,0,0,2,0,0,0,3,0,0,4,0,0,0}};
 
 #else
-dserror("COLLOCATION_POINTS has to be defined. Only the values 2,3 and 4 are valid for COLLOCATION_POINTS!!!");
+dserror("BEAM3K_COLLOCATION_POINTS has to be defined. Only the values 2,3 and 4 are valid for BEAM3K_COLLOCATION_POINTS!!!");
 #endif
 
   //Assemble the matrices of the shape functions
-  for (int i=0; i<2*6+COLLOCATION_POINTS; i++)
+  for (int i=0; i<2*6+BEAM3K_COLLOCATION_POINTS; i++)
   {
     for (int j=0; j<3; j++)
     {
@@ -1878,7 +1744,7 @@ dserror("COLLOCATION_POINTS has to be defined. Only the values 2,3 and 4 are val
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3k::UpdateDispTotlag(std::vector<double>& disp, std::vector<FAD>& disp_totlag)
 {
-  for (int dof=0;dof<2*6+COLLOCATION_POINTS;dof++)
+  for (int dof=0;dof<2*6+BEAM3K_COLLOCATION_POINTS;dof++)
     disp_totlag[dof]=disp[dof];
 
   //For the boundary nodes we have to add the initial values. For the interior nodes we are already
@@ -1910,6 +1776,7 @@ void DRT::ELEMENTS::Beam3k::UpdateDispTotlag(std::vector<double>& disp, std::vec
     //Calculate total displacements = positions vectors, tangents and relative angles
     for (int node=0;node<2;node++)//loop over boundary nodes
     {
+      LINALG::Matrix<3,1> nodalangle(true);
       for (int ndof=0;ndof<7;ndof++)//loop over dofs per node
       {
         if(ndof<3)
@@ -1918,20 +1785,89 @@ void DRT::ELEMENTS::Beam3k::UpdateDispTotlag(std::vector<double>& disp, std::vec
         }
         else if (ndof<6)
         {
-          disp_totlag[7*node+ndof]+=(theta0_[node])(ndof-3);
+          //Nothing to do here, rotations are treated below
         }
         else
         {
           //here we have to add the initial length of the tangents at the boundary nodes, i.e. ||r'_i(t=0)||=1:
           disp_totlag[7*node+ndof]+=1;
         }
-      }
-    }
+      }//for (int ndof=0;ndof<7;ndof++)//loop over dofs per node
+      //additive updates of rotation vectors at boundary nodes
+      #ifndef BEAM3K_MULTIPLICATIVEUPDATES
+        LINALG::Matrix<3,1> deltatheta(true);
+        LINALG::Matrix<3,1> thetanew(true);
+        for(int i=0; i<3; i++)
+        {
+          dispthetanew_[node](i) = disp[7*node+3+i];
+        }
+        deltatheta  = dispthetanew_[node];
+        deltatheta -= dispthetaold_[node];
+
+        //Calculate the new nodal angle thetanew \in ]-PI,PI] -> Here, thetanew \in ]-PI,PI] by quaterniontoangle()
+        LARGEROTATIONS::quaterniontoangle(Qold_[node],thetanew);
+        thetanew.Update(1.0,deltatheta,1.0);
+
+        //compute quaternion from rotation angle relative to last configuration
+        LARGEROTATIONS::angletoquaternion(thetanew,Qnew_[node]);
+
+        //This step is necessary in order to get an angle thetanew in [-PI,PI]
+        if(thetanew.Norm2()>M_PI)
+        {
+          LARGEROTATIONS::quaterniontoangle(Qnew_[node],thetanew);
+        }
+
+        //Finally set rotation values in disp_totlag
+        for(int i=0; i<3; i++)
+        {
+          disp_totlag[7*node+3+i]=thetanew(i);
+        }
+        //multiplicative updates of rotation vectors at boundary nodes
+      #else //ifndef BEAM3K_MULTIPLICATIVEUPDATES
+        /*rotation increment relative to configuration in last iteration step is difference between current rotation
+         *entry in displacement vector minus rotation entry in displacement vector in last iteration step*/
+
+        //This shift is necessary, since our beam formulation and the corresponding linearization is based on multiplicative
+        //increments, while in BACI (Newtonfull()) the displacement of the last iteration and the rotation increment
+        //of the current iteration are added in an additive manner. This step is reversed in the next two lines in order
+        //to recover the multiplicative rotation increment between the last and the current Newton step. This also
+        //means that dispthetanew_ has no physical meaning since it is the additive sum of non-additive rotation increments(meier, 03.2014)
+        LINALG::Matrix<3,1> deltatheta(true);
+        LINALG::Matrix<3,1> thetanew(true);
+        LINALG::Matrix<4,1> deltaQ(true);
+        for(int i=0; i<3; i++)
+        {
+          dispthetanew_[node](i) = disp[7*node+3+i];
+        }
+        deltatheta  = dispthetanew_[node];
+        deltatheta -= dispthetaold_[node];
+
+        //compute quaternion from rotation angle relative to last configuration
+        LARGEROTATIONS::angletoquaternion(deltatheta,deltaQ);
+
+        //multiply relative rotation with rotation in last configuration to get rotation in new configuration
+        LARGEROTATIONS::quaternionproduct(Qold_[node],deltaQ,Qnew_[node]);
+
+        //renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
+        Qnew_[node].Scale(1.0/Qnew_[node].Norm2());
+
+        //Calculate the new nodal angle thetanew \in ]-PI,PI] -> Here, thetanew \in ]-PI,PI] by quaterniontoangle()
+        LARGEROTATIONS::quaterniontoangle(Qnew_[node],thetanew);
+
+        //Finally set rotation values in disp_totlag
+        for(int i=0; i<3; i++)
+        {
+          disp_totlag[7*node+3+i]=thetanew(i);
+        }
+      #endif
+    }//for (int node=0;node<2;node++)//loop over boundary nodes
   }
 
   //Next, we have to set variables for FAD
-  for (int dof=0;dof<2*6+COLLOCATION_POINTS;dof++)
-    disp_totlag[dof].diff(dof,2*6+COLLOCATION_POINTS);
+  for (int dof=0;dof<2*6+BEAM3K_COLLOCATION_POINTS;dof++)
+  {
+    disp_totlag[dof].diff(dof,2*6+BEAM3K_COLLOCATION_POINTS);
+  }
 
   return;
 }
@@ -1975,12 +1911,18 @@ void DRT::ELEMENTS::Beam3k::SetNodalVariables( std::vector<FAD>& disp_totlag,
       triad_ref.Clear();
       triad_aux.Clear();
       triad_aux2.Clear();
-      LARGEROTATIONS::quaterniontotriad(qrefconv_[node],triad_aux);
+      LARGEROTATIONS::quaterniontotriad(Qrefconv_[node],triad_aux);
       for(int i=0;i<3;i++)
         for(int j=0;j<3;j++)
           triad_aux2(i,j)=triad_aux(i,j);
 
       CalculateSRTriads<FAD>(tangent,triad_aux2,triad_ref);
+
+      //Store nodal reference triad
+      LINALG::TMatrix<FAD,4,1> Qref(true);
+      LARGEROTATIONS::triadtoquaternion(triad_ref,Qref);
+      for(int i=0;i<4;i++)
+        Qrefnew_[node](i)=Qref(i).val();
 
       //calculate material triad
       triad_mat_cp[node].Clear();
@@ -2007,23 +1949,23 @@ void DRT::ELEMENTS::Beam3k::SetNodalVariables( std::vector<FAD>& disp_totlag,
   }
 
   LINALG::TMatrix<FAD,1,4> N_i_xi(true);
-  LINALG::TMatrix<FAD,3,6*2+COLLOCATION_POINTS> N_s(true);
-  LINALG::TMatrix<FAD,1,COLLOCATION_POINTS> L_i;
+  LINALG::TMatrix<FAD,3,6*2+BEAM3K_COLLOCATION_POINTS> N_s(true);
+  LINALG::TMatrix<FAD,1,BEAM3K_COLLOCATION_POINTS> L_i;
   double xi=0.0;
   int ind=0;
   //********begin: evaluate quantities at collocation points********************************
-  for(int node=1; node<COLLOCATION_POINTS-1; node++)
+  for(int node=1; node<BEAM3K_COLLOCATION_POINTS-1; node++)
   {
     //calculate xi of cp
     //node=0->xi=-1  node=1->xi=0 node=2->xi=1
-    xi=(double)node/(COLLOCATION_POINTS-1)*2-1.0;
+    xi=(double)node/(BEAM3K_COLLOCATION_POINTS-1)*2-1.0;
     N_i_xi.Clear();
     DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
     L_i.Clear();
     DRT::UTILS::shape_function_1D(L_i,xi,Shape());
 
     //Determine storage position for the node node
-    ind=LARGEROTATIONS::NumberingTrafo(node+1, COLLOCATION_POINTS);
+    ind=LARGEROTATIONS::NumberingTrafo(node+1, BEAM3K_COLLOCATION_POINTS);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi,jacobi_cp_[ind],N_s);
@@ -2031,7 +1973,7 @@ void DRT::ELEMENTS::Beam3k::SetNodalVariables( std::vector<FAD>& disp_totlag,
     //Calculation of r' at xi
     for (int i=0; i<3; i++)
     {
-      for (int j=0; j<6*2+COLLOCATION_POINTS; j++)
+      for (int j=0; j<6*2+BEAM3K_COLLOCATION_POINTS; j++)
       {
         tangent(i)+=N_s(i,j)*disp_totlag_centerline[j];
       }
@@ -2043,18 +1985,36 @@ void DRT::ELEMENTS::Beam3k::SetNodalVariables( std::vector<FAD>& disp_totlag,
     triad_ref.Clear();
     triad_aux.Clear();
     triad_aux2.Clear();
-    LARGEROTATIONS::quaterniontotriad(qrefconv_[ind],triad_aux);
+    LARGEROTATIONS::quaterniontotriad(Qrefconv_[ind],triad_aux);
     for(int i=0;i<3;i++)
       for(int j=0;j<3;j++)
         triad_aux2(i,j)=triad_aux(i,j);
 
     CalculateSRTriads<FAD>(tangent,triad_aux2,triad_ref);
 
+    //Store nodal reference triad
+    LINALG::TMatrix<FAD,4,1> Qref(true);
+    LARGEROTATIONS::triadtoquaternion(triad_ref,Qref);
+    for(int i=0;i<4;i++)
+      Qrefnew_[ind](i)=Qref(i).val();
+
     //calculate material triad
     triad_mat_cp[ind].Clear();
     RotateTriad(triad_ref,alpha,triad_mat_cp[ind]);
 
-  } //for (int node=0; node<COLLOCATION_POINTS; node++)
+  }//for (int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
+
+  //Store the triads as quaternions also in the case rotvec_==false
+  if(rotvec_==false)
+  {
+    for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
+    {
+      LINALG::TMatrix<FAD,4,1> Q(true);
+      LARGEROTATIONS::triadtoquaternion(triad_mat_cp[node],Q);
+      for(int i=0;i<4;i++)
+       Qnew_[node](i)=Q(i).val();
+    }
+  }
 
   return;
 }
@@ -2063,7 +2023,7 @@ void DRT::ELEMENTS::Beam3k::SetNodalVariables( std::vector<FAD>& disp_totlag,
  |  Pre-multiply trafo matrix if rotvec_==true: \tilde{\vec{f}_int}=\mat{T}^T*\vec{f}_int         meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Beam3k::ApplyRotVecTrafo( std::vector<FAD>& disp_totlag_centerline,
-                                               LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,1>& f_int)
+                                               LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,1>& f_int)
 {
   //Trafo matrices:
   LINALG::TMatrix<FAD,4,4> T(true);
@@ -2118,53 +2078,50 @@ void DRT::ELEMENTS::Beam3k::ApplyRotVecTrafo( std::vector<FAD>& disp_totlag_cent
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
- |  Update the reference triad at the element nodes at the end of time step                       meier 01/16|
+ |  Transform stiffness matrix in order to solve for multiplicative rotation vector increments    meier 01/16|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3k::UpdateRefTriads(std::vector<FAD>& disp_totlag_centerline)
+void DRT::ELEMENTS::Beam3k::TransformStiffMatrixMultipl(Epetra_SerialDenseMatrix* stiffmatrix,
+                                                        std::vector<FAD>& disp_totlag)
 {
-  double xi=0.0;
-  int ind=0;
-  LINALG::Matrix<3,1> r_xi(true);
-  LINALG::Matrix<3,1> t(true);
-  LINALG::Matrix<3,3> triad(true);
-  LINALG::Matrix<3,3> triad_aux(true);
+  // we need to transform the stiffmatrix because its entries are derivatives with respect to additive rotational increments
+  // we want a stiffmatrix containing derivatives with respect to multiplicative rotational increments
+  // therefore apply a trafo matrix to all those 3x3 blocks in stiffmatrix which correspond to derivation with respect to rotational DOFs
+  // the trafo matrix is simply the T-Matrix (see Jelenic1999, (2.4)): \Delta_{mult} \vec \theta_{inode} = \mat T(\vec \theta_{inode} * \Delta_{addit} \vec \theta_{inode}
+  LINALG::Matrix<2*6+BEAM3K_COLLOCATION_POINTS,3> tempmat(true);
+  LINALG::Matrix<2*6+BEAM3K_COLLOCATION_POINTS,3> newstiffmat(true);
+  LINALG::Matrix<3,3> Tmat(true);
+  std::vector<LINALG::Matrix<3,1> > theta(2,LINALG::Matrix<3,1>(true));
 
-  LINALG::Matrix<1,COLLOCATION_POINTS> L_i(true);
-  LINALG::Matrix<1,4> N_i_xi(true);
-
-  for(int node=0; node<COLLOCATION_POINTS; node++)
+  //Loop over the two boundary nodes
+  for(int node=0;node<2;node++)
   {
-      //calculate xi of cp
-      xi=(double)node/(COLLOCATION_POINTS-1)*2-1;
+    for(int i=0;i<3;i++)
+      theta[node](i)=disp_totlag[7*node+3+i].val();
+  }
 
-      //get value of interpolating function of theta (lagrange polynomials) at xi
-      L_i.Clear();
-      DRT::UTILS::shape_function_1D(L_i,xi,Shape());
+  //Loop over the two boundary nodes
+  for(int node=0;node<2;node++)
+  {
+    Tmat.Clear();
+    Tmat = LARGEROTATIONS::Tmatrix(theta[node]);
 
-      //Determine storage position for the node node
-      ind=LARGEROTATIONS::NumberingTrafo(node+1, COLLOCATION_POINTS);
+//    LINALG::Matrix<3,3> Tinvmat(true);                       // TODO unused?
+//    LINALG::Matrix<3,3> Unity(true);
+//
+//    Tinvmat = LARGEROTATIONS::Tinvmatrix(theta[node]);
+//    Unity.Multiply(Tmat,Tinvmat);
 
-      N_i_xi.Clear();
-      DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
+    tempmat.Clear();
+    for (int i=0; i<2*6+BEAM3K_COLLOCATION_POINTS; ++i)
+      for (int j=0; j<3; ++j)
+        tempmat(i,j) = (*stiffmatrix)(i,7*node+3+j);
 
-      //initialize
-      r_xi.Clear();
-      t.Clear();
-      for (int i=0; i<3; i++)
-      {
-        r_xi(i)+=disp_totlag_centerline[i].val()*N_i_xi(0)+disp_totlag_centerline[7+i].val()*N_i_xi(2)+disp_totlag_centerline[3+i].val()*N_i_xi(1)+disp_totlag_centerline[10+i].val()*N_i_xi(3);
-      }
-      t=r_xi;
-      t.Scale(1.0/r_xi.Norm2());
+    newstiffmat.Clear();
+    newstiffmat.MultiplyNN(tempmat,Tmat);
 
-      //calculate new sr triads
-      triad.Clear();
-      triad_aux.Clear();
-      LARGEROTATIONS::quaterniontotriad(qrefconv_[ind],triad_aux);
-      CalculateSRTriads<double>(t,triad_aux,triad);
-
-      //extract quaternion
-      LARGEROTATIONS::triadtoquaternion(triad,qrefconv_[ind]);
+    for (int i=0; i<2*6+BEAM3K_COLLOCATION_POINTS; ++i)
+      for (int j=0; j<3; ++j)
+        (*stiffmatrix)(i,7*node+3+j)=newstiffmat(i,j);
   }
 
   return;
@@ -2201,20 +2158,6 @@ void DRT::ELEMENTS::Beam3k::straintostress(LINALG::TMatrix<FAD,3,1>& Omega, FAD 
   M(2)=ym*Izz_*Omega(2);
 
 }
-/*-----------------------------------------------------------------------------------------------------------*
- |  Update of the nodal triads at the end of time step (public)                                   meier 01/16|
- *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3k::UpdateTriads( Teuchos::ParameterList& params,
-                                              std::vector<double>& vel,
-                                              std::vector<double>& disp)
-{
-  if(weakkirchhoff_)
-    CalculateInternalForcesWK(params,disp,NULL,NULL,NULL,NULL,true);
-  else
-    CalculateInternalForcesSK(params,disp,NULL,NULL,NULL,NULL,true);
-
-  return;
-}
 
 /*----------------------------------------------------------------------------------------------------------*
  | Get position vector at xi for given nodal displacements                                        popp 02/16|
@@ -2236,3 +2179,196 @@ LINALG::Matrix<3,1> DRT::ELEMENTS::Beam3k::GetPos(double& xi, LINALG::Matrix<12,
 
   return (r);
 }
+
+/*----------------------------------------------------------------------------------------------------------*
+ | \brief Get base vectors describing the cross-section orientation and size at a given xi       meier 03/16|
+ *----------------------------------------------------------------------------------------------------------*/
+std::vector<LINALG::Matrix<3,1> > DRT::ELEMENTS::Beam3k::GetBaseVectors(double& xi) const
+{
+  std::vector<LINALG::Matrix<3,1> > basevectors(2,LINALG::Matrix<3,1>(true));
+
+  if(weakkirchhoff_)
+  {
+    //Triads at collocation points
+    std::vector<LINALG::Matrix<3,3> > triad_mat_cp(BEAM3K_COLLOCATION_POINTS);  //material triads at collocation points
+    std::vector<LINALG::Matrix<3,1> > theta_cp(BEAM3K_COLLOCATION_POINTS);  //relative angle at collocation points
+
+    //Interpolated material triad at xi
+    LINALG::Matrix<3,3> triad_mat(true); //vector of material triads at xi
+    LINALG::Matrix<3,1> theta(true); //vector of material triads at xi
+
+    //Matrices for individual shape functions and xi-derivatives
+    LINALG::Matrix<1,BEAM3K_COLLOCATION_POINTS> L_i;
+
+    //calculate angle at cp (this has to be done in a SEPARATE loop as follows)
+    for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
+    {
+      triad_mat_cp[node].Clear();
+      LARGEROTATIONS::quaterniontotriad(Qnew_[node],triad_mat_cp[node]);
+    }
+
+    //calculate angle at cp (this has to be done in a SEPARATE loop as follows)
+    for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
+    {
+      theta_cp[node].Clear();
+      triadtoangleright(theta_cp[node],triad_mat_cp[REFERENCE_NODE],triad_mat_cp[node]);
+    }
+
+    //Evaluate shape functions
+    DRT::UTILS::shape_function_1D(L_i,xi,Shape());
+    for(int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
+    {
+      theta.Update(L_i(node),theta_cp[node],1.0);
+    }
+
+    //compute material triad at gp
+    triad_mat.Clear();
+    angletotriad(theta,triad_mat_cp[REFERENCE_NODE],triad_mat);
+
+    for(int i=0;i<3;i++)
+    {
+      basevectors[0](i)=triad_mat(i,1);
+      basevectors[1](i)=triad_mat(i,2);
+    }
+
+    double Ly=pow(pow(12.0*Izz_,3)/(12.0*Iyy_),1.0/8.0);
+    double Lz=12.0*Izz_/pow(Ly,3);
+
+    basevectors[0].Scale(0.5*Ly);
+    basevectors[1].Scale(0.5*Lz);
+  }
+  else
+  {
+    dserror("Method GetBaseVectors() only implemented for the case WK==1 (weak Kirchhoff constraint) so far!");
+  }
+
+  return basevectors;
+}
+
+//      //*******************************Begin: FD-CHECK************************************************************
+//      //the following code block can be used to check quickly whether the nonlinear stiffness matrix is calculated
+//      //correctly or not by means of a numerically approximated stiffness matrix. Uncomment this code block and copy
+//      //it to the marked place in the method DRT::ELEMENTS::Beam3k::Evaluate() on the top of this file!
+//      if(Id() == 0) //limiting the following tests to certain element numbers
+//      {
+//
+//        //variable to store numerically approximated stiffness matrix
+//        Epetra_SerialDenseMatrix stiff_approx;
+//        stiff_approx.Shape(6*2+BEAM3K_COLLOCATION_POINTS,6*2+BEAM3K_COLLOCATION_POINTS);
+//
+//
+//        //relative error of numerically approximated stiffness matrix
+//        Epetra_SerialDenseMatrix stiff_relerr;
+//        stiff_relerr.Shape(6*2+BEAM3K_COLLOCATION_POINTS,6*2+BEAM3K_COLLOCATION_POINTS);
+//
+//        //characteristic length for numerical approximation of stiffness
+//        double h_rel = 1e-7;
+//
+//        //flag indicating whether approximation leads to significant relative error
+//        int outputflag = 0;
+//
+//        //calculating strains in new configuration
+//        for(int i=0; i<6*2+BEAM3K_COLLOCATION_POINTS; i++) //for all dof
+//        {
+//          Epetra_SerialDenseVector force_aux;
+//          force_aux.Size(6*2+BEAM3K_COLLOCATION_POINTS);
+//
+//          //create new displacement and velocity vectors in order to store artificially modified displacements
+//          std::vector<double> vel_aux(myvel);
+//          std::vector<double> disp_aux(mydisp);
+//
+//          //modifying displacement artificially (for numerical derivative of internal forces):
+//          disp_aux[i] += h_rel;
+//          vel_aux[i] += h_rel / params.get<double>("delta time",0.01);
+//
+//          if(weakkirchhoff_)
+//            CalculateInternalForcesWK(params,disp_aux,NULL,NULL,&force_aux,NULL,false);
+//          else
+//            CalculateInternalForcesSK(params,disp_aux,NULL,NULL,&force_aux,NULL,false);
+//
+//          //computing derivative d(fint)/du numerically by finite difference
+//          for(int u = 0 ; u < 6*2+BEAM3K_COLLOCATION_POINTS ; u++ )
+//          {
+//            stiff_approx(u,i)= ( force_aux[u] - elevec1(u) )/ h_rel ;
+//          }
+//        } //for(int i=0; i<3; i++) //for all dof
+//
+//
+//        for(int line=0; line<6*2+BEAM3K_COLLOCATION_POINTS; line++)
+//        {
+//          for(int col=0; col<6*2+BEAM3K_COLLOCATION_POINTS; col++)
+//          {
+//            if (fabs(elemat1(line,col)) > 1.0e-10)
+//              stiff_relerr(line,col)= fabs( ( elemat1(line,col) - stiff_approx(line,col) )/ elemat1(line,col) );
+//            else if (fabs(stiff_approx(line,col)) < 1.0e-5)
+//              stiff_relerr(line,col)=0.0;
+//            else
+//              stiff_relerr(line,col)=1000.0;
+//
+//            //suppressing small entries whose effect is only confusing and NaN entires (which arise due to zero entries)
+//            if ( fabs( stiff_relerr(line,col) ) < h_rel*500 || isnan( stiff_relerr(line,col))) //isnan = is not a number
+//              stiff_relerr(line,col) = 0;
+//
+//            //if ( stiff_relerr(line,col) > 0)
+//              outputflag = 1;
+//          } //for(int col=0; col<3*nnode; col++)
+//
+//        } //for(int line=0; line<3*nnode; line++)
+//
+//        if(outputflag ==1)
+//        {
+//
+//          std::cout<<"\n\n acutally calculated stiffness matrix\n";
+//          for(int line=0; line<6*2+BEAM3K_COLLOCATION_POINTS; line++)
+//          {
+//            for(int col=0; col<6*2+BEAM3K_COLLOCATION_POINTS; col++)
+//            {
+//              if(isnan(elemat1(line,col)))
+//                std::cout<<"     nan   ";
+//              else if(elemat1(line,col) == 0)
+//                std::cout<<"     0     ";
+//              else if(elemat1(line,col) >= 0)
+//                std::cout<<"  "<< std::scientific << std::setprecision(3)<<elemat1(line,col);
+//              else
+//                std::cout<<" "<< std::scientific << std::setprecision(3)<<elemat1(line,col);
+//            }
+//            std::cout<<"\n";
+//          }
+//
+//          std::cout<<"\n\n approximated stiffness matrix\n";
+//          for(int line=0; line<6*2+BEAM3K_COLLOCATION_POINTS; line++)
+//          {
+//            for(int col=0; col<6*2+BEAM3K_COLLOCATION_POINTS; col++)
+//            {
+//              if(isnan(stiff_approx(line,col)))
+//                std::cout<<"     nan   ";
+//              else if(stiff_approx(line,col) == 0)
+//                std::cout<<"     0     ";
+//              else if(stiff_approx(line,col) >= 0)
+//                std::cout<<"  "<< std::scientific << std::setprecision(3)<<stiff_approx(line,col);
+//              else
+//                std::cout<<" "<< std::scientific << std::setprecision(3)<<stiff_approx(line,col);
+//            }
+//            std::cout<<"\n";
+//          }
+//
+//          std::cout<<"\n\n rel error stiffness matrix\n";
+//          for(int line=0; line<6*2+BEAM3K_COLLOCATION_POINTS; line++)
+//          {
+//            for(int col=0; col<6*2+BEAM3K_COLLOCATION_POINTS; col++)
+//            {
+//              if(isnan(stiff_relerr(line,col)))
+//                std::cout<<"     nan   ";
+//              else if(stiff_relerr(line,col) == 0)
+//                std::cout<<"     0     ";
+//              else if(stiff_relerr(line,col) >= 0)
+//                std::cout<<"  "<< std::scientific << std::setprecision(3)<<stiff_relerr(line,col);
+//              else
+//                std::cout<<" "<< std::scientific << std::setprecision(3)<<stiff_relerr(line,col);
+//            }
+//            std::cout<<"\n";
+//          }
+//        }
+//
+//      } //end of section in which numerical approximation for stiffness matrix is computed
+//      //*******************************End: FD-CHECK************************************************************

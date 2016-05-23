@@ -1,13 +1,12 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file beam3k.H
 
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
 
-\maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
+\level 2
 
+\maintainer Christoph Meier
 
 3D nonlinear Kirchhoff-like beam element. It can be switched between a variant with weak enforcement of the Kirchhoff
 constraint and variant with strong enforcement of the Kirchhoff constraint. This variant with weak constraint enforcement is based
@@ -22,7 +21,7 @@ interior node. In contrary, the second variant (rotvec_==false) of this element 
 [\v{d}_1, \v{t}_1, \alpha_1, \v{d}_2, \v{t}_2, \alpha_2, \alpha_3], where \v{t}_i is the nodal tangent vector
 (orientation and length) at the boundary nodes, and alpha_i are the scalar relative rotation angles between
 reference and matrial triad at the boundary nodes and the interior node. Besides these two boundary nodes
-the element has COLLOCATION_POINTS-2 interior nodes which one scalar DoF alpha_i, respectively.
+the element has BEAM3K_COLLOCATION_POINTS-2 interior nodes which one scalar DoF alpha_i, respectively.
 
 
 Attention: Since so far linearizations are calculated with FAD, the rotation increments in the case (rotvec_==true)
@@ -32,12 +31,19 @@ can be interpreted as additive increments added to the initial values (i.e. if t
 Dirichlet values in the input file are the total nodal rotation angles). This is not true for beam3r,
 where prescribed 3D rotation values have no direct physical interpretation. For 2D rotations both variants are identical.
 */
+/*----------------------------------------------------------------------*/
+
 
 //header file only included if not yet included!
 #ifndef BEAM3K_H
 #define BEAM3K_H
 
-
+#include "Teuchos_RCP.hpp"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "Epetra_SerialDenseMatrix.h"
+#include "Epetra_SerialDenseVector.h"
+#include "Epetra_Vector.h"
+#include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_node.H"
 #include "../drt_fem_general/largerotations.H"
 #include <Sacado.hpp>
@@ -51,7 +57,7 @@ where prescribed 3D rotation values have no direct physical interpretation. For 
 typedef Sacado::Fad::DFad<double> FAD;
 
 #define REFERENCE_NODE 2      //number of reference-node for the calculation of the rotation of the other triads (local numbering: 0 2 3 4 1)
-//DEFAULT: REFERENCE_NODE 2   //REFERENCE_NODE=2 represents the midpoint node in the case of 3 COLLOCATION_POINTS -> standard choice!
+//DEFAULT: REFERENCE_NODE 2   //REFERENCE_NODE=2 represents the midpoint node in the case of 3 BEAM3K_COLLOCATION_POINTS -> standard choice!
 
 #define mygaussrulebeam3k intrule_line_4point //define gauss rule; intrule_line_1point - intrule_line_10point is implemented.
 //DEFAULT: intrule_line_4point
@@ -59,11 +65,17 @@ typedef Sacado::Fad::DFad<double> FAD;
 #define LENGTHCALCNEWTONTOL 10e-12 //Tolerance for iterative determination of element length.
 //DEFAULT: 10e-12
 
-#define COLLOCATION_POINTS 3      //!defines type of element. 2,3,4 are supported. A value of 3 or 4 means that further inner nodes are introduced
-//DEFAULT: COLLOCATION_POINTS 3   //to interpolate the torsional degree of freedom alpha_. Furthermore, it specifies the number of collocation
-                                  //points defining the number of material triads used to interpolate the triad field.
+#define BEAM3K_COLLOCATION_POINTS 3      //!defines type of element. 2,3,4 are supported. A value of 3 or 4 means that further inner nodes are introduced
+//DEFAULT: BEAM3K_COLLOCATION_POINTS 3   //to interpolate the torsional degree of freedom alpha_. Furthermore, it specifies the number of collocation
+                                         //points defining the number of material triads used to interpolate the triad field.
 
-//#define CONSISTENTSPINSK          //Apply variationally consistent variant of first spin vector component as test function for strong Kirchhoff
+//#define BEAM3K_MULTIPLICATIVEUPDATES //In the case rotvec_==true, the nodal rotation increments are calculated in a multiplicative manner!!!
+                                       //In case of additive updates, the nodal rotation vectors have to satisfy theta_node in [-PI;PI].
+                                       //The T-matrix becomes singular for ||theta_node||=k*2*PI. In order to avoid such situations, we require  ||theta_node||<= PI.
+                                       //This restriction still enables the representation of all possible orientations.
+                                       //-->see also A. Cardona and M. Geradin, "A beam finite element non-linear theory with finite rotations", 1988.
+
+//#define CONSISTENTSPINSK        //Apply variationally consistent variant of first spin vector component as test function for strong Kirchhoff
                                   //-> this interpolation enables exact energy and angular momentum balances
 
 //! \brief DRT: namespace of the ccarat discretization module
@@ -211,6 +223,19 @@ public:
   LINALG::Matrix<3,1> GetPos(double& xi, LINALG::Matrix<12,1>& disp_totlag) const;
 
   /*!
+   \brief Get (non-unit) tangent vectors at the two boundary nodes
+  */
+  std::vector<LINALG::Matrix<3,1> > GetNodalTangents() const
+  {
+    return T_;
+  }
+
+  /*!
+   \brief Get base vectors describing the cross-section orientation and size at given parameter coordinate xi
+  */
+  std::vector<LINALG::Matrix<3,1> > GetBaseVectors(double& xi) const;
+
+  /*!
   \brief Return number of lines to this element
   */
   virtual int NumLine() const {return 1;}
@@ -349,11 +374,11 @@ public:
   void SetUpReferenceGeometry(const std::vector<LINALG::Matrix<3,1> >& xrefe,const bool secondinit = false);
 
   /*!
-  \brief get nodal tangents in reference configuration
+  \brief get (non-unit) tangent vectors at the two boundary nodes in the initial configuration
   */
   std::vector<LINALG::Matrix<3,1> > Tref() const
   {
-    return Tref_;
+    return T0_;
   }
   //@}
 
@@ -363,26 +388,38 @@ private:
 
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-
   //! cross section area
   double crosssec_;
-
   //!moment of inertia of area around y-axis(orthognoal to rod axis in yz-plane)
   double Iyy_;
-
   //!moment of inertia of area around z-axis(forming cartesian system with rod- and y-axis)
   double Izz_;
-
   //!polar moment of inertia of area
   double Irr_;
 
-  //!quaternion describing the nodal reference triads (for the case BEAM3EK_ROT ==false) of the last time step
-  std::vector<LINALG::Matrix<4,1> > qrefconv_;
-  //!tangent vectors at the two boundary nodes in the reference configuration
-  std::vector<LINALG::Matrix<3,1> > Tref_;
+  //!tangent vectors at the two boundary nodes in the initial configuration
+  std::vector<LINALG::Matrix<3,1> > T0_;
+  //!current (non-unit) tangent vectors at the two boundary nodes
+  std::vector<LINALG::Matrix<3,1> > T_;
   //Variables needed by all local triads
-  //! Matrix holding pseudo rotation vectors describing the material triads in the reference configuration at each collocation point (CP)
+  //! Matrix holding pseudo rotation vectors describing the material triads in the initial configuration at each node
   std::vector<LINALG::Matrix<3,1> > theta0_;
+  //!rotation angle displacement at the two boundary nodes (required for BEAM3K_MULTIPLICATIVEUPDATES); relates to the end of the preceeding time step
+  std::vector<LINALG::Matrix<3,1> > dispthetaconv_;
+  //!rotation angle displacement at the two boundary nodes (required for BEAM3K_MULTIPLICATIVEUPDATES); relates to the end of the preceeding iteration step
+  std::vector<LINALG::Matrix<3,1> > dispthetaold_;
+  //!rotation angle displacement at the two boundary nodes (required for BEAM3K_MULTIPLICATIVEUPDATES); relates to current configuration
+  std::vector<LINALG::Matrix<3,1> > dispthetanew_;
+  //! nodal triads in quaternion form at the converged configuration at the end of the preceeding time step (required for BEAM3K_MULTIPLICATIVEUPDATES)
+  std::vector<LINALG::Matrix<4,1> > Qconv_;
+  //! nodal triads in quaternion form at the end of the preceeding iteration step (required for BEAM3K_MULTIPLICATIVEUPDATES)
+  std::vector<LINALG::Matrix<4,1> > Qold_;
+  //! nodal triads in quaternion during the current iteration step (required for BEAM3K_MULTIPLICATIVEUPDATES)
+  std::vector<LINALG::Matrix<4,1> > Qnew_;
+  //!quaternion describing the nodal reference triads (for the case BEAM3EK_ROT ==false) of the converged configuration of the last time step
+  std::vector<LINALG::Matrix<4,1> > Qrefconv_;
+  //!quaternion describing the nodal reference triads (for the case BEAM3EK_ROT ==false) of the current configuration
+  std::vector<LINALG::Matrix<4,1> > Qrefnew_;
   //! Matrix with the material curvature in the initial configuration at each gp
   std::vector<LINALG::Matrix<3,1> > K0_;
 
@@ -392,21 +429,16 @@ private:
   std::vector<double> jacobi_;
   //! Additional jacobi factor appearing in the second derivatives (required in cae of strong Kirchhoff constraint)
   std::vector<double> jacobi2_;
-
   //! Jacobi determinant at collocation points
   std::vector<double> jacobi_cp_;
-
   //! bool indicating, if the DoFs at the element boundary are described by rotation vectors or tangent vectors plus relative angle
   bool rotvec_;
-
   //! bool indicating, if Kirchhoff constraint is enforced in a strong (weakkirchhoff_==false) or weak manner (weakkirchhoff_==true)
   bool weakkirchhoff_;
-
-  //! bool recognizing first element call
-  bool firstcall_;
-
   //! internal energy
   double Eint_;
+  //! kinetic energy
+  double Ekin_;
 
   //******************************Begin: Class variables required for time integration**************************************************//
   //! triads at Gauss points for exact integration in quaternion at the end of the preceeding time step (required for computation of angular velocity)
@@ -490,12 +522,12 @@ private:
   void CalculateInteriaForces(Teuchos::ParameterList& params,
                               std::vector<LINALG::TMatrix<FAD,3,3> >& triad_mat,
                               std::vector<FAD>& disp_totlag_centerline,
-                              std::vector<LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,3> >& v_theta,
-                              LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,1>& f_inert);
+                              std::vector<LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,3> >& v_theta,
+                              LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,1>& f_inert);
 
    //!compute the relative angle theta between triad_ref and triad so that exp(theta) = triad_ref^T*triad -> inversion of the right translation triad=triad_ref*exp(theta)
   template<typename T>
-  void triadtoangleright(LINALG::TMatrix<T,3,1>& theta,LINALG::TMatrix<T,3,3>& triad_ref,LINALG::TMatrix<T,3,3>& triad)
+  void triadtoangleright(LINALG::TMatrix<T,3,1>& theta,LINALG::TMatrix<T,3,3>& triad_ref,LINALG::TMatrix<T,3,3>& triad) const
    {
      LINALG::TMatrix<T,3,3> rotation_matrix;
      LINALG::TMatrix<T,4,1> quaternion;
@@ -510,7 +542,7 @@ private:
 
   //!compute the relative angle theta between triad_ref and triad so that exp(theta) = triad*triad_ref^T -> inversion of the right translation triad=exp(theta)*triad_ref
   template<typename T>
-  void triadtoangleleft(LINALG::TMatrix<T,3,1>& theta,LINALG::TMatrix<T,3,3>& triad_ref,LINALG::TMatrix<T,3,3>& triad)
+  void triadtoangleleft(LINALG::TMatrix<T,3,1>& theta,LINALG::TMatrix<T,3,3>& triad_ref,LINALG::TMatrix<T,3,3>& triad) const
   {
     LINALG::TMatrix<T,3,3> rotation_matrix;
     LINALG::TMatrix<T,4,1> quaternion;
@@ -525,7 +557,7 @@ private:
 
    //!compute a triad with an (interpolated) relative angle between triad_ref and triad
    template<typename T>
-   void angletotriad(LINALG::TMatrix<T,3,1>& theta,LINALG::TMatrix<T,3,3>& triad_ref,LINALG::TMatrix<T,3,3>& triad)
+   void angletotriad(LINALG::TMatrix<T,3,1>& theta,LINALG::TMatrix<T,3,3>& triad_ref,LINALG::TMatrix<T,3,3>& triad) const
    {
      LINALG::TMatrix<T,3,3> rotation_matrix;
      LINALG::TMatrix<T,4,1> quaternion;
@@ -590,6 +622,15 @@ private:
       temp_scalar3+=triad_ref(i,0)*r_s(i);
     }
 
+    // This line is necessary in order to avoid a floating point exception and subsequent abortion of the simulation
+    // in case the denominator equals zero. In such a case, convergence is still unlikely. However, since
+    // the simulation can continue, functionalities such as DIVERCONT==adapt_step will still work!
+    if(fabs(abs_r_s+temp_scalar3)<1.0e-10)
+    {
+      std::cout << "Warning: SR-Denominator scaled!" << std::endl;
+      temp_scalar3=0.99*temp_scalar3;
+    }
+
     fac_n0=temp_scalar1/(abs_r_s+temp_scalar3);
     fac_b0=temp_scalar2/(abs_r_s+temp_scalar3);
 
@@ -618,17 +659,17 @@ private:
                                   LINALG::TMatrix<FAD,1,4>& N_i_xixi,
                                   FAD jacobi,
                                   FAD jacobi2,
-                                  LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N_ss);
+                                  LINALG::TMatrix<FAD,3,2*6+BEAM3K_COLLOCATION_POINTS>& N_ss);
 
   void AssembleShapefunctionsNs(LINALG::TMatrix<FAD,1,4>& N_i_xi,
                                 FAD jacobi,
-                                LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N_s);
+                                LINALG::TMatrix<FAD,3,2*6+BEAM3K_COLLOCATION_POINTS>& N_s);
 
-  void AssembleShapefunctionsL(LINALG::TMatrix<FAD,1,COLLOCATION_POINTS>& L_i,
-                               LINALG::TMatrix<FAD,1,2*6+COLLOCATION_POINTS>& L);
+  void AssembleShapefunctionsL(LINALG::TMatrix<FAD,1,BEAM3K_COLLOCATION_POINTS>& L_i,
+                               LINALG::TMatrix<FAD,1,2*6+BEAM3K_COLLOCATION_POINTS>& L);
 
   void AssembleShapefunctionsN( LINALG::TMatrix<FAD,1,4>& N_i,
-                                LINALG::TMatrix<FAD,3,2*6+COLLOCATION_POINTS>& N);
+                                LINALG::TMatrix<FAD,3,2*6+BEAM3K_COLLOCATION_POINTS>& N);
 
   //! Delivers the tangent vector of the reference configuration at the boundary node "node=1,2" (necessary to calculate the centerline of the reference geometry)
   LINALG::Matrix<3,1> GetNodalRefTangent(const int& node)
@@ -656,15 +697,11 @@ private:
 
   //!Pre-multiply trafo matrix if rotvec_==true: \tilde{\vec{f}_int}=\mat{T}^T*\vec{f}_int
   void ApplyRotVecTrafo( std::vector<FAD>& disp_totlag_centerline,
-                         LINALG::TMatrix<FAD,6*2+COLLOCATION_POINTS,1>& f_int);
+                         LINALG::TMatrix<FAD,6*2+BEAM3K_COLLOCATION_POINTS,1>& f_int);
 
-  //!Update the reference triads qrefconv_
-  void UpdateRefTriads(std::vector<FAD>& disp_totlag_centerline);
-
-  //!Update the triads at the end of the time-step
-  void UpdateTriads( Teuchos::ParameterList& params,
-                     std::vector<double>& vel,
-                     std::vector<double>& disp);
+  //!Transform stiffness matrix in order to solve for multiplicative rotation vector increments
+  void TransformStiffMatrixMultipl( Epetra_SerialDenseMatrix* stiffmatrix,
+                                    std::vector<FAD>& disp_totlag);
 
   //! lump mass matrix
   void Lumpmass(Epetra_SerialDenseMatrix* emass);
@@ -733,11 +770,18 @@ private:
 
   void ResizeClassVariables(const int& n)
   {
-    qrefconv_.resize(COLLOCATION_POINTS);
+    dispthetaconv_.resize(2);
+    dispthetaold_.resize(2);
+    dispthetanew_.resize(2);
+    Qconv_.resize(BEAM3K_COLLOCATION_POINTS);
+    Qold_.resize(BEAM3K_COLLOCATION_POINTS);
+    Qnew_.resize(BEAM3K_COLLOCATION_POINTS);
+    Qrefconv_.resize(BEAM3K_COLLOCATION_POINTS);
+    Qrefnew_.resize(BEAM3K_COLLOCATION_POINTS);
     K0_.resize(n);
     jacobi_.resize(n);
     jacobi2_.resize(n);
-    jacobi_cp_.resize(COLLOCATION_POINTS);
+    jacobi_cp_.resize(BEAM3K_COLLOCATION_POINTS);
     Qconvmass_.resize(n);
     Qnewmass_.resize(n);
     wconvmass_.resize(n);
@@ -754,6 +798,13 @@ private:
     rtnewmass_.resize(n);
     rconvmass_.resize(n);
     rnewmass_.resize(n);
+
+    for(unsigned int i=0; i<2; i++)
+    {
+      dispthetaconv_[i].Clear();
+      dispthetaold_[i].Clear();
+      dispthetanew_[i].Clear();
+    }
 
     return;
   }

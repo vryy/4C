@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file beam3k_input.cpp
 
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
 
+\level 2
+
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
 
-
-*-----------------------------------------------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 
 #include "beam3k.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -75,11 +75,20 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(const std::string& eletype,
   //extract triads at element nodes in reference configuration as rotation vectors and save them as quaternions at each node, respectively
   std::vector<double> nodal_thetas;
   linedef->ExtractDoubleVector("TRIADS",nodal_thetas);
-  theta0_.resize(COLLOCATION_POINTS);
-  for(int i=0; i<COLLOCATION_POINTS; i++)
+  theta0_.resize(BEAM3K_COLLOCATION_POINTS);
+  for(int i=0; i<BEAM3K_COLLOCATION_POINTS; i++)
   {
     for(int j=0; j<3; j++)
       (theta0_[i])(j) = nodal_thetas[3*i+j];
+
+    //Shift angles by 2PI in case these angles are not in the interval [-PI,PI].
+    if(theta0_[i].Norm2()>M_PI)
+    {
+      LINALG::Matrix<4,1> Q(true);
+      LARGEROTATIONS::angletoquaternion(theta0_[i],Q);
+      LARGEROTATIONS::quaterniontoangle(Q,theta0_[i]);
+    }
+
   }
 
   return true;

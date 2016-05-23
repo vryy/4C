@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
+/*-----------------------------------------------------------------------*/
+/*!
 \file beam3k.cpp
 
 \brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
 
+\level 2
+
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
 
-
-*-----------------------------------------------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------*/
 
 #include "beam3k.H"
 
@@ -174,9 +174,17 @@ crosssec_(0),
 Iyy_(0),
 Izz_(0),
 Irr_(0),
-qrefconv_(0),
-Tref_(0),
+T0_(0),
+T_(0),
 theta0_(0),
+dispthetaconv_(0),
+dispthetaold_(0),
+dispthetanew_(0),
+Qconv_(0),
+Qold_(0),
+Qnew_(0),
+Qrefconv_(0),
+Qrefnew_(0),
 K0_(0),
 length_(0),
 jacobi_(0),
@@ -184,8 +192,8 @@ jacobi2_(0),
 jacobi_cp_(0),
 rotvec_(false),
 weakkirchhoff_(false),
-firstcall_(true),
 Eint_(0.0),
+Ekin_(0.0),
 Qconvmass_(0),
 Qnewmass_(0),
 wconvmass_(0),
@@ -218,9 +226,17 @@ DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old) :
  Iyy_(old.Iyy_),
  Izz_(old.Izz_),
  Irr_(old.Irr_),
- qrefconv_(old.qrefconv_),
- Tref_(old.Tref_),
+ T0_(old.T0_),
+ T_(old.T_),
  theta0_(old.theta0_),
+ dispthetaconv_(old.dispthetaconv_),
+ dispthetaold_(old.dispthetaold_),
+ dispthetanew_(old.dispthetanew_),
+ Qconv_(old.Qconv_),
+ Qold_(old.Qold_),
+ Qnew_(old.Qnew_),
+ Qrefconv_(old.Qrefconv_),
+ Qrefnew_(old.Qrefnew_),
  K0_(old.K0_),
  length_(old.length_),
  jacobi_(old.jacobi_),
@@ -228,8 +244,8 @@ DRT::ELEMENTS::Beam3k::Beam3k(const DRT::ELEMENTS::Beam3k& old) :
  jacobi_cp_(old.jacobi_cp_),
  rotvec_(old.rotvec_),
  weakkirchhoff_(old.weakkirchhoff_),
- firstcall_(old.firstcall_),
  Eint_(old.Eint_),
+ Ekin_(old.Ekin_),
  Qconvmass_(old.Qconvmass_),
  Qnewmass_(old.Qnewmass_),
  wconvmass_(old.wconvmass_),
@@ -326,9 +342,17 @@ void DRT::ELEMENTS::Beam3k::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
   AddtoPack(data,Irr_);
-  AddtoPack<4,1>(data,qrefconv_);
-  AddtoPack<3,1>(data,Tref_);
+  AddtoPack<3,1>(data,T0_);
+  AddtoPack<3,1>(data,T_);
   AddtoPack<3,1>(data,theta0_);
+  AddtoPack<3,1>(data,dispthetaconv_);
+  AddtoPack<3,1>(data,dispthetaold_);
+  AddtoPack<3,1>(data,dispthetanew_);
+  AddtoPack<4,1>(data,Qconv_);
+  AddtoPack<4,1>(data,Qold_);
+  AddtoPack<4,1>(data,Qnew_);
+  AddtoPack<4,1>(data,Qrefconv_);
+  AddtoPack<4,1>(data,Qrefnew_);
   AddtoPack<3,1>(data,K0_);
   AddtoPack(data,length_);
   AddtoPack(data,jacobi_);
@@ -336,8 +360,8 @@ void DRT::ELEMENTS::Beam3k::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,jacobi_cp_);
   AddtoPack(data,rotvec_);
   AddtoPack(data,weakkirchhoff_);
-  AddtoPack(data,firstcall_);
   AddtoPack(data,Eint_);
+  AddtoPack(data,Ekin_);
   AddtoPack<4,1>(data,Qconvmass_);
   AddtoPack<4,1>(data,Qnewmass_);
   AddtoPack<3,1>(data,wconvmass_);
@@ -382,9 +406,17 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);
   ExtractfromPack(position,data,Irr_);
-  ExtractfromPack<4,1>(position,data,qrefconv_);
-  ExtractfromPack<3,1>(position,data,Tref_);
+  ExtractfromPack<3,1>(position,data,T0_);
+  ExtractfromPack<3,1>(position,data,T_);
   ExtractfromPack<3,1>(position,data,theta0_);
+  ExtractfromPack<3,1>(position,data,dispthetaconv_);
+  ExtractfromPack<3,1>(position,data,dispthetaold_);
+  ExtractfromPack<3,1>(position,data,dispthetanew_);
+  ExtractfromPack<4,1>(position,data,Qconv_);
+  ExtractfromPack<4,1>(position,data,Qold_);
+  ExtractfromPack<4,1>(position,data,Qnew_);
+  ExtractfromPack<4,1>(position,data,Qrefconv_);
+  ExtractfromPack<4,1>(position,data,Qrefnew_);
   ExtractfromPack<3,1>(position,data,K0_);
   ExtractfromPack(position,data,length_);
   ExtractfromPack(position,data,jacobi_);
@@ -392,8 +424,8 @@ void DRT::ELEMENTS::Beam3k::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,jacobi_cp_);
   rotvec_ = ExtractInt(position,data);
   weakkirchhoff_ = ExtractInt(position,data);
-  firstcall_ = ExtractInt(position,data);
   ExtractfromPack(position,data,Eint_);
+  ExtractfromPack(position,data,Ekin_);
   ExtractfromPack<4,1>(position,data,Qconvmass_);
   ExtractfromPack<4,1>(position,data,Qnewmass_);
   ExtractfromPack<3,1>(position,data,wconvmass_);
@@ -473,19 +505,22 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
     //Calculate the (initial reference triads) = (initial material triads) at the CPs out of the angles theta0_.
     //So far the initial value for the relative angle is set to zero, i.e.
     //material coordinate system and reference system in the reference configuration coincidence.
-    std::vector< LINALG::Matrix<3,3> > Gref(COLLOCATION_POINTS);
-    for (int node=0;node<COLLOCATION_POINTS;node++)
+    std::vector< LINALG::Matrix<3,3> > Gref(BEAM3K_COLLOCATION_POINTS);
+    for (int node=0;node<BEAM3K_COLLOCATION_POINTS;node++)
     {
       Gref[node].Clear();
       LARGEROTATIONS::angletotriad(theta0_[node],Gref[node]);
     }
 
-    Tref_.resize(2);
+    T0_.resize(2);
+    T_.resize(2);
     //write initial nodal tangents in extra vector
     for (int i=0;i<3;i++)
     {
-      (Tref_[0])(i)=(Gref[0])(i,0);
-      (Tref_[1])(i)=(Gref[1])(i,0);
+      (T0_[0])(i)=(Gref[0])(i,0);
+      (T0_[1])(i)=(Gref[1])(i,0);
+      (T_[0])(i)=(Gref[0])(i,0);
+      (T_[1])(i)=(Gref[1])(i,0);
     }
 
     //Get integration points for exact integration
@@ -493,7 +528,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
 
     //Vector holding angle theta of triads
     std::vector<LINALG::Matrix<3,1> > theta_cp;
-    theta_cp.resize(COLLOCATION_POINTS);
+    theta_cp.resize(BEAM3K_COLLOCATION_POINTS);
     LINALG::Matrix<3,1> theta(true);
     LINALG::Matrix<3,1> theta_s(true);
     LINALG::Matrix<3,3> triad_mat(true); //material triad at gp
@@ -502,11 +537,11 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
     ResizeClassVariables(gausspoints.nquad);
 
     //calculate the length of the element via Newton iteration
-    Calculate_length(xrefe,Tref_,LENGTHCALCNEWTONTOL);
+    Calculate_length(xrefe,T0_,LENGTHCALCNEWTONTOL);
 
     //Matrices to store the function values of the Lagrange shape functions used to interpolate theta
-    LINALG::Matrix<1,COLLOCATION_POINTS> L_i;
-    LINALG::Matrix<1,COLLOCATION_POINTS> L_i_xi;
+    LINALG::Matrix<1,BEAM3K_COLLOCATION_POINTS> L_i;
+    LINALG::Matrix<1,BEAM3K_COLLOCATION_POINTS> L_i_xi;
 
     //Matrices to store the (derivative of) the Hermite shape functions
     LINALG::Matrix<1,2*nnode> N_i;
@@ -520,10 +555,10 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
     int ind=0;
 
     //Calculate initial material triads at the collocation points
-    for (int node=0;node<COLLOCATION_POINTS;node++)
+    for (int node=0;node<BEAM3K_COLLOCATION_POINTS;node++)
     {
       //colpt=0->xi=-1  colpt=1->xi=0 colpt=2->xi=1
-      const double xi=(double)node/(COLLOCATION_POINTS-1)*2-1.0;
+      const double xi=(double)node/(BEAM3K_COLLOCATION_POINTS-1)*2-1.0;
 
       //Get values of shape functions
       L_i.Clear();
@@ -532,14 +567,14 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
       DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
 
       //Determine storage position for the node colpt
-      ind=LARGEROTATIONS::NumberingTrafo(node+1, COLLOCATION_POINTS);
+      ind=LARGEROTATIONS::NumberingTrafo(node+1, BEAM3K_COLLOCATION_POINTS);
 
       //current value of derivatives at GP (derivatives in xi!)
       r_xi.Clear();
 
       for (int i=0; i<3; i++)
       {
-        r_xi(i)+=xrefe[0](i)*N_i_xi(0)+xrefe[1](i)*N_i_xi(2)+Tref_[0](i)*N_i_xi(1)+Tref_[1](i)*N_i_xi(3);
+        r_xi(i)+=xrefe[0](i)*N_i_xi(0)+xrefe[1](i)*N_i_xi(2)+T0_[0](i)*N_i_xi(1)+T0_[1](i)*N_i_xi(3);
       }
 
       jacobi_cp_[ind]=r_xi.Norm2();
@@ -554,17 +589,22 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
         CalculateSRTriads<double>(r_xi,Gref[ind],G_aux);
         //rotate also Gref and theta0_ via smallest rotation to get a consistent initial state
         Gref[ind]=G_aux;
-        LARGEROTATIONS::triadtoquaternion(G_aux,qrefconv_[ind]);
-        LARGEROTATIONS::quaterniontoangle(qrefconv_[ind],theta0_[ind]);
+        LARGEROTATIONS::triadtoquaternion(G_aux,Qrefconv_[ind]);
+        LARGEROTATIONS::quaterniontoangle(Qrefconv_[ind],theta0_[ind]);
       }
       else
       {
-        LARGEROTATIONS::triadtoquaternion(Gref[ind],qrefconv_[ind]);
+        LARGEROTATIONS::triadtoquaternion(Gref[ind],Qrefconv_[ind]);
       }
-    }//(int node=0;node<COLLOCATION_POINTS;node++)
+      //Set initial values for the quaternions describing the orientation of the current and last Newton iteration
+      Qconv_[ind]=Qrefconv_[ind];
+      Qold_[ind]=Qrefconv_[ind];
+      Qnew_[ind]=Qrefconv_[ind];
+      Qrefnew_[ind]=Qrefconv_[ind];
+    }//(int node=0;node<BEAM3K_COLLOCATION_POINTS;node++)
 
     //SETUP INTERPOLATION via calculation of difference angle
-    for (int colpt=0; colpt<COLLOCATION_POINTS; colpt++)
+    for (int colpt=0; colpt<BEAM3K_COLLOCATION_POINTS; colpt++)
     {
       theta_cp[colpt].Clear();
       triadtoangleright(theta_cp[colpt],Gref[REFERENCE_NODE],Gref[colpt]);
@@ -594,15 +634,15 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(const std::vector<LINALG::M
 
       for (int i=0; i<3; i++)
       {
-        r(i)+=xrefe[0](i)*N_i(0)+xrefe[1](i)*N_i(2)+Tref_[0](i)*N_i(1)+Tref_[1](i)*N_i(3);
-        r_xi(i)+=xrefe[0](i)*N_i_xi(0)+xrefe[1](i)*N_i_xi(2)+Tref_[0](i)*N_i_xi(1)+Tref_[1](i)*N_i_xi(3);
+        r(i)+=xrefe[0](i)*N_i(0)+xrefe[1](i)*N_i(2)+T0_[0](i)*N_i(1)+T0_[1](i)*N_i(3);
+        r_xi(i)+=xrefe[0](i)*N_i_xi(0)+xrefe[1](i)*N_i_xi(2)+T0_[0](i)*N_i_xi(1)+T0_[1](i)*N_i_xi(3);
       }
 
       //calculate jacobi jacobi_=|r'_0|
       jacobi_[numgp]=r_xi.Norm2();
 
       //calculate interpolated angle
-      for (int i=0; i<COLLOCATION_POINTS; i++)
+      for (int i=0; i<BEAM3K_COLLOCATION_POINTS; i++)
       {
         for(int j=0; j<3; j++)
         {
@@ -651,19 +691,22 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
     //Calculate the (initial reference triads) = (initial material triads) at the CPs out of the angles theta0_.
     //So far the initial value for the relative angle is set to zero, i.e.
     //material coordinate system and reference system in the reference configuration coincidence.
-    std::vector< LINALG::Matrix<3,3> > Gref(COLLOCATION_POINTS);
-    for (int node=0;node<COLLOCATION_POINTS;node++)
+    std::vector< LINALG::Matrix<3,3> > Gref(BEAM3K_COLLOCATION_POINTS);
+    for (int node=0;node<BEAM3K_COLLOCATION_POINTS;node++)
     {
       Gref[node].Clear();
       LARGEROTATIONS::angletotriad(theta0_[node],Gref[node]);
     }
 
-    Tref_.resize(2);
+    T0_.resize(2);
+    T_.resize(2);
     //write initial nodal tangents in extra vector
     for (int i=0;i<3;i++)
     {
-      (Tref_[0])(i)=(Gref[0])(i,0);
-      (Tref_[1])(i)=(Gref[1])(i,0);
+      (T0_[0])(i)=(Gref[0])(i,0);
+      (T0_[1])(i)=(Gref[1])(i,0);
+      (T_[0])(i)=(Gref[0])(i,0);
+      (T_[1])(i)=(Gref[1])(i,0);
     }
 
     //Get integration points for exact integration
@@ -671,7 +714,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
 
     //Vector holding angle theta of triads
     std::vector<double > phi_cp;
-    phi_cp.resize(COLLOCATION_POINTS);
+    phi_cp.resize(BEAM3K_COLLOCATION_POINTS);
     double phi(true);
     double phi_s(true);
     LINALG::Matrix<3,3> triad_mat(true); //material triad at gp
@@ -679,11 +722,11 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
     ResizeClassVariables(gausspoints.nquad);
 
     //calculate the length of the element via Newton iteration
-    Calculate_length(xrefe,Tref_,LENGTHCALCNEWTONTOL);
+    Calculate_length(xrefe,T0_,LENGTHCALCNEWTONTOL);
 
     //Matrices to store the function values of the Lagrange shape functions used to interpolate theta
-    LINALG::Matrix<1,COLLOCATION_POINTS> L_i;
-    LINALG::Matrix<1,COLLOCATION_POINTS> L_i_xi;
+    LINALG::Matrix<1,BEAM3K_COLLOCATION_POINTS> L_i;
+    LINALG::Matrix<1,BEAM3K_COLLOCATION_POINTS> L_i_xi;
 
     //Matrices to store the (derivative of) the Hermite shape functions
     LINALG::Matrix<1,2*nnode> N_i;
@@ -703,10 +746,10 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
     int ind=0;
 
     //Calculate initial material triads at the collocation points
-    for (int node=0;node<COLLOCATION_POINTS;node++)
+    for (int node=0;node<BEAM3K_COLLOCATION_POINTS;node++)
     {
       //colpt=0->xi=-1  colpt=1->xi=0 colpt=2->xi=1
-      const double xi=(double)node/(COLLOCATION_POINTS-1)*2-1.0;
+      const double xi=(double)node/(BEAM3K_COLLOCATION_POINTS-1)*2-1.0;
 
       //Get values of shape functions
       L_i.Clear();
@@ -715,14 +758,14 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
       DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi,xi,length_,line2);
 
       //Determine storage position for the node colpt
-      ind=LARGEROTATIONS::NumberingTrafo(node+1, COLLOCATION_POINTS);
+      ind=LARGEROTATIONS::NumberingTrafo(node+1, BEAM3K_COLLOCATION_POINTS);
 
       //current value of derivatives at GP (derivatives in xi!)
       r_xi.Clear();
 
       for (int i=0; i<3; i++)
       {
-        r_xi(i)+=xrefe[0](i)*N_i_xi(0)+xrefe[1](i)*N_i_xi(2)+Tref_[0](i)*N_i_xi(1)+Tref_[1](i)*N_i_xi(3);
+        r_xi(i)+=xrefe[0](i)*N_i_xi(0)+xrefe[1](i)*N_i_xi(2)+T0_[0](i)*N_i_xi(1)+T0_[1](i)*N_i_xi(3);
       }
 
       jacobi_cp_[ind]=r_xi.Norm2();
@@ -737,17 +780,22 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
         CalculateSRTriads<double>(r_xi,Gref[ind],G_aux);
         //rotate also Gref and theta0_ via smallest rotation to get a consistent initial state
         Gref[ind]=G_aux;
-        LARGEROTATIONS::triadtoquaternion(G_aux,qrefconv_[ind]);
-        LARGEROTATIONS::quaterniontoangle(qrefconv_[ind],theta0_[ind]);
+        LARGEROTATIONS::triadtoquaternion(G_aux,Qrefconv_[ind]);
+        LARGEROTATIONS::quaterniontoangle(Qrefconv_[ind],theta0_[ind]);
       }
       else
       {
-        LARGEROTATIONS::triadtoquaternion(Gref[ind],qrefconv_[ind]);
+        LARGEROTATIONS::triadtoquaternion(Gref[ind],Qrefconv_[ind]);
       }
-    }//(int node=0;node<COLLOCATION_POINTS;node++)
+      //Set initial values for the quaternions describing the orientation of the current and last Newton iteration
+      Qconv_[ind]=Qrefconv_[ind];
+      Qold_[ind]=Qrefconv_[ind];
+      Qnew_[ind]=Qrefconv_[ind];
+      Qrefnew_[ind]=Qrefconv_[ind];
+    }//(int node=0;node<BEAM3K_COLLOCATION_POINTS;node++)
 
     //SETUP INTERPOLATION via calculation of difference angle
-    for (int colpt=0; colpt<COLLOCATION_POINTS; colpt++)
+    for (int colpt=0; colpt<BEAM3K_COLLOCATION_POINTS; colpt++)
     {
       LINALG::Matrix<3,3> Lambdabarref(true);
       LINALG::Matrix<3,1> tangentref(true);
@@ -796,9 +844,9 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
 
       for (int i=0; i<3; i++)
       {
-        r(i)+=xrefe[0](i)*N_i(0)+xrefe[1](i)*N_i(2)+Tref_[0](i)*N_i(1)+Tref_[1](i)*N_i(3);
-        r_xi(i)+=xrefe[0](i)*N_i_xi(0)+xrefe[1](i)*N_i_xi(2)+Tref_[0](i)*N_i_xi(1)+Tref_[1](i)*N_i_xi(3);
-        r_xixi(i)+=xrefe[0](i)*N_i_xixi(0)+xrefe[1](i)*N_i_xixi(2)+Tref_[0](i)*N_i_xixi(1)+Tref_[1](i)*N_i_xixi(3);
+        r(i)+=xrefe[0](i)*N_i(0)+xrefe[1](i)*N_i(2)+T0_[0](i)*N_i(1)+T0_[1](i)*N_i(3);
+        r_xi(i)+=xrefe[0](i)*N_i_xi(0)+xrefe[1](i)*N_i_xi(2)+T0_[0](i)*N_i_xi(1)+T0_[1](i)*N_i_xi(3);
+        r_xixi(i)+=xrefe[0](i)*N_i_xixi(0)+xrefe[1](i)*N_i_xixi(2)+T0_[0](i)*N_i_xixi(1)+T0_[1](i)*N_i_xixi(3);
       }
 
       //calculate jacobi_=||r'_0|| and jacobi2_=r'_0^T r''_0
@@ -807,7 +855,7 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(const std::vector<LINALG::M
         jacobi2_[numgp]+=r_xi(i)*r_xixi(i);
 
       //calculate interpolated angle
-      for (int i=0; i<COLLOCATION_POINTS; i++)
+      for (int i=0; i<BEAM3K_COLLOCATION_POINTS; i++)
       {
         phi+=L_i(i)*phi_cp[i];
         phi_s+=L_i_xi(i)*phi_cp[i]/jacobi_[numgp];
