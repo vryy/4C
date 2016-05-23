@@ -5,7 +5,8 @@
 \brief Multi-step functionalities for time integration
 
 <pre>
-Maintainer: Matthias Mayr
+\level 0
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
 </pre>
@@ -84,6 +85,16 @@ namespace TIMINT
       return Teuchos::rcp<STATE>(&(state_[IndexByStep(step)]),false);
     }
 
+    //@}
+
+    //! @name Query functions
+    //@{
+
+    //! step index of most past and future steps
+    std::pair<int,int> GetSteps() { return std::make_pair(steppast_,stepfuture_); }
+
+    //! Number of steps
+    int NumSteps() { return steps_;}
     //@}
 
   protected:
