@@ -2,13 +2,15 @@
 /*!
  \file poro_law.cpp
 
- \brief
+ \brief calculation classes for evaluation of constitutive relation for porosity
 
  <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
+ \level 2
+
+ \maintainer Anh-Tu Vuong
+             vuong@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15251
  </pre>
  *----------------------------------------------------------------------*/
 
@@ -326,9 +328,9 @@ void MAT::PAR::PoroLawIncompSkeleton::ComputePorosity(
   porosity = 1.0 - (1.0-refporosity)/J;
 
   if(dphi_dp)      *dphi_dp      = 0.0;
-  if(dphi_dJ)      *dphi_dJ      = 1.0-(1.0-refporosity)/(J*J);
+  if(dphi_dJ)      *dphi_dJ      = (1.0-refporosity)/(J*J);
   if(dphi_dJdp)    *dphi_dJdp    = 0.0;
-  if(dphi_dJJ)     *dphi_dJJ     = 1.0-2.0*(1.0-refporosity)/(J*J*J);
+  if(dphi_dJJ)     *dphi_dJJ     = -2.0*(1.0-refporosity)/(J*J*J);
   if(dphi_dpp)     *dphi_dpp     = 0.0;
   if(dphi_dphiref) *dphi_dphiref = 1.0/J;
 
