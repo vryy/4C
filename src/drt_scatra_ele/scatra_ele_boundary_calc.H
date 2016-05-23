@@ -187,22 +187,22 @@ public:
   //! evaluate scatra-scatra interface coupling condition at integration point
   template<DRT::Element::DiscretizationType distype_master>
   static void EvaluateS2ICouplingAtIntegrationPoint(
-      DRT::Condition&                               s2icondition,
-      const std::vector<LINALG::Matrix<nen_,1> >&   eslavephinp,
-      const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1> >&   emasterphinp,
-      const LINALG::Matrix<nen_,1>&                 funct_slave,
-      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1>&   funct_master,
-      const LINALG::Matrix<nen_,1>&                 test_slave,
-      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1>&   test_master,
-      const int                                     numscal,
-      const double                                  timefacfac,
-      const double                                  timefacrhsfac,
-      Epetra_SerialDenseMatrix*                     k_ss,     ///< element matrix for slave side
-      Epetra_SerialDenseMatrix*                     k_sm,    ///< element matrix for master side
-      Epetra_SerialDenseMatrix*                     k_ms,     ///< element matrix for slave side
-      Epetra_SerialDenseMatrix*                     k_mm,    ///< element matrix for master side
-      Epetra_SerialDenseVector*                     r_s,    ///< element residual for slave side
-      Epetra_SerialDenseVector*                     r_m    ///< element residual for slave side
+      DRT::Condition&                                                                                                s2icondition,    //!< scatra-scatra interface coupling condition
+      const std::vector<LINALG::Matrix<nen_,1> >&                                                                    eslavephinp,     //!< state variables at slave-side nodes
+      const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1> >&   emasterphinp,    //!< state variables at master-side nodes
+      const LINALG::Matrix<nen_,1>&                                                                                  funct_slave,     //!< slave-side shape function values
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1>&                 funct_master,    //!< master-side shape function values
+      const LINALG::Matrix<nen_,1>&                                                                                  test_slave,      //!< slave-side test function values
+      const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement,1>&                 test_master,     //!< master-side test function values
+      const int                                                                                                      numscal,         //!< number of transported scalars
+      const double                                                                                                   timefacfac,      //!< time-integration factor times domain-integration factor
+      const double                                                                                                   timefacrhsfac,   //!< time-integration factor for right-hand side times domain-integration factor
+      Epetra_SerialDenseMatrix&                                                                                      k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
+      Epetra_SerialDenseMatrix&                                                                                      k_sm,            //!< linearizations of slave-side residuals w.r.t. master-side dofs
+      Epetra_SerialDenseMatrix&                                                                                      k_ms,            //!< linearizations of master-side residuals w.r.t. slave-side dofs
+      Epetra_SerialDenseMatrix&                                                                                      k_mm,            //!< linearizations of master-side residuals w.r.t. master-side dofs
+      Epetra_SerialDenseVector&                                                                                      r_s,             //!< slave-side residual vector
+      Epetra_SerialDenseVector&                                                                                      r_m              //!< master-side residual vector
       );
 
   //! computes mechanoresponsive scalar transport

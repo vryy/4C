@@ -3,6 +3,8 @@
 
 \brief Scatra-scatra interface coupling strategy for electrochemistry problems
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -109,19 +111,18 @@ class MortarCellCalcElch : public MortarCellCalc<distypeS,distypeM>
 
     //! evaluate and assemble interface linearizations and residuals
     void EvaluateCondition(
-        Teuchos::RCP<LINALG::SparseMatrix>                 islavematrix,      //!< linearizations of slave-side residuals
-        Teuchos::RCP<LINALG::SparseMatrix>                 imastermatrix,     //!< linearizations of master-side residuals
-        Teuchos::RCP<Epetra_Vector>                        islaveresidual,    //!< slave-side residual vector
-        Teuchos::RCP<Epetra_FEVector>                      imasterresidual,   //!< master-side residual vector
-        const DRT::Discretization&                         idiscret,          //!< interface discretization
-        DRT::Condition&                                    condition,         //!< scatra-scatra interface coupling condition
-        MORTAR::MortarElement&                             slaveelement,      //!< slave-side mortar element
-        MORTAR::MortarElement&                             masterelement,     //!< master-side mortar element
-        MORTAR::IntCell&                                   cell,              //!< mortar integration cell
-        std::vector<LINALG::Matrix<my::nen_slave_,1> >&    ephinp_slave,      //!< state variables at slave-side nodes
-        std::vector<LINALG::Matrix<my::nen_master_,1> >&   ephinp_master,     //!< state variables at master-side nodes
-        DRT::Element::LocationArray&                       la_slave,          //!< slave-side location array
-        DRT::Element::LocationArray&                       la_master          //!< master-side location array
+        DRT::Condition&                                          condition,       //!< scatra-scatra interface coupling condition
+        MORTAR::IntCell&                                         cell,            //!< mortar integration cell
+        MORTAR::MortarElement&                                   slaveelement,    //!< slave-side mortar element
+        MORTAR::MortarElement&                                   masterelement,   //!< master-side mortar element
+        const std::vector<LINALG::Matrix<my::nen_slave_,1> >&    ephinp_slave,    //!< state variables at slave-side nodes
+        const std::vector<LINALG::Matrix<my::nen_master_,1> >&   ephinp_master,   //!< state variables at master-side nodes
+        Epetra_SerialDenseMatrix&                                k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
+        Epetra_SerialDenseMatrix&                                k_sm,            //!< linearizations of slave-side residuals w.r.t. master-side dofs
+        Epetra_SerialDenseMatrix&                                k_ms,            //!< linearizations of master-side residuals w.r.t. slave-side dofs
+        Epetra_SerialDenseMatrix&                                k_mm,            //!< linearizations of master-side residuals w.r.t. master-side dofs
+        Epetra_SerialDenseVector&                                r_s,             //!< slave-side residual vector
+        Epetra_SerialDenseVector&                                r_m              //!< master-side residual vector
         );
 }; // class MortarCellCalcElch
 } // namespace SCATRA

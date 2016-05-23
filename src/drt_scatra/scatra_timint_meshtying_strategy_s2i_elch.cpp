@@ -3,6 +3,8 @@
 
 \brief Scatra-scatra interface coupling strategy for electrochemistry problems
 
+\level 2
+
 <pre>
 \maintainer Rui Fang
             fang@lnm.mw.tum.de
@@ -19,6 +21,7 @@
 
 #include "../drt_mortar/mortar_element.H"
 
+#include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode.H"
 #include "../drt_scatra_ele/scatra_ele_calc_utils.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_elch.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
@@ -254,61 +257,30 @@ SCATRA::MortarCellCalcElch<distypeS,distypeM>::MortarCellCalcElch(
  *---------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
 void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
-    Teuchos::RCP<LINALG::SparseMatrix>                 islavematrix,      //!< linearizations of slave-side residuals
-    Teuchos::RCP<LINALG::SparseMatrix>                 imastermatrix,     //!< linearizations of master-side residuals
-    Teuchos::RCP<Epetra_Vector>                        islaveresidual,    //!< slave-side residual vector
-    Teuchos::RCP<Epetra_FEVector>                      imasterresidual,   //!< master-side residual vector
-    const DRT::Discretization&                         idiscret,          //!< interface discretization
-    DRT::Condition&                                    condition,         //!< scatra-scatra interface coupling condition
-    MORTAR::MortarElement&                             slaveelement,      //!< slave-side mortar element
-    MORTAR::MortarElement&                             masterelement,     //!< master-side mortar element
-    MORTAR::IntCell&                                   cell,              //!< mortar integration cell
-    std::vector<LINALG::Matrix<my::nen_slave_,1> >&    ephinp_slave,      //!< state variables at slave-side nodes
-    std::vector<LINALG::Matrix<my::nen_master_,1> >&   ephinp_master,     //!< state variables at master-side nodes
-    DRT::Element::LocationArray&                       la_slave,          //!< slave-side location array
-    DRT::Element::LocationArray&                       la_master          //!< master-side location array
+    DRT::Condition&                                          condition,       //!< scatra-scatra interface coupling condition
+    MORTAR::IntCell&                                         cell,            //!< mortar integration cell
+    MORTAR::MortarElement&                                   slaveelement,    //!< slave-side mortar element
+    MORTAR::MortarElement&                                   masterelement,   //!< master-side mortar element
+    const std::vector<LINALG::Matrix<my::nen_slave_,1> >&    ephinp_slave,    //!< state variables at slave-side nodes
+    const std::vector<LINALG::Matrix<my::nen_master_,1> >&   ephinp_master,   //!< state variables at master-side nodes
+    Epetra_SerialDenseMatrix&                                k_ss,            //!< linearizations of slave-side residuals w.r.t. slave-side dofs
+    Epetra_SerialDenseMatrix&                                k_sm,            //!< linearizations of slave-side residuals w.r.t. master-side dofs
+    Epetra_SerialDenseMatrix&                                k_ms,            //!< linearizations of master-side residuals w.r.t. slave-side dofs
+    Epetra_SerialDenseMatrix&                                k_mm,            //!< linearizations of master-side residuals w.r.t. master-side dofs
+    Epetra_SerialDenseVector&                                r_s,             //!< slave-side residual vector
+    Epetra_SerialDenseVector&                                r_m              //!< master-side residual vector
     )
 {
-  // safety check
+  // safety checks
   if(my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
     dserror("Invalid number of degrees of freedom per node!");
-
-  // access input parameters associated with current condition
-  const int kineticmodel = condition.GetInt("kinetic model");
-  if(kineticmodel != INPAR::S2I::kinetics_butlervolmer)
-    dserror("Invalid kinetic model for scatra-scatra interface coupling!");
-  const int nume = condition.GetInt("e-");
-  if(not (nume > 0))
-    dserror("Charge transfer at electrode-electrolyte interface must involve a positive number of electrons!");
-  const std::vector<int>* stoichiometries = condition.GetMutable<std::vector<int> >("stoichiometries");
-  if(stoichiometries == NULL)
-    dserror("Cannot access vector of stoichiometric coefficients for scatra-scatra interface coupling!");
-  if(stoichiometries->size() != 1)
-    dserror("Invalid number of stoichiometric coefficients!");
-  if((*stoichiometries)[0] != -1)
-    dserror("Invalid stoichiometric coefficient!");
-  int reactivespecies(abs((*stoichiometries)[0]));
-  if(reactivespecies > 1)
-    dserror("Charge transfer at electrode-electrolyte interface must not involve more than one reactive species!");
-  const double faraday = INPAR::ELCH::faraday_const;
-  const double alphaa = condition.GetDouble("alpha_a");
-  const double alphac = condition.GetDouble("alpha_c");
-  const double kr = condition.GetDouble("k_r");
-  if(kr < 0.)
-    dserror("Charge transfer constant k_r is negative!");
-  const double fns = -1./faraday/nume*(*stoichiometries)[0];
+  if(DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->EquPot() != INPAR::ELCH::equpot_divi)
+    dserror("Invalid closing equation for electric potential!");
 
   // access material of slave element
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(condition.Geometry()[slaveelement.Id()])->ParentElement()->Material());
-
-  // safety check
   if(matelectrode == Teuchos::null)
     dserror("Invalid electrode material for scatra-scatra interface coupling!");
-
-  // extract saturation value of intercalated lithium concentration from electrode material
-  const double cmax = matelectrode->CMax();
-  if(cmax < 1.e-12)
-    dserror("Saturation value c_max of intercalated lithium concentration is too small!");
 
   // determine quadrature rule
   const DRT::UTILS::IntPointsAndWeights<2> intpoints(DRT::UTILS::intrule_tri_7point);
@@ -325,123 +297,25 @@ void SCATRA::MortarCellCalcElch<distypeS,distypeM>::EvaluateCondition(
     if(timefacfac < 0. or timefacrhsfac < 0.)
       dserror("Integration factor is negative!");
 
-    // evaluate state variables at current integration point
-    const double eslavephiint = my::funct_slave_.Dot(ephinp_slave[0]);
-    const double eslavepotint = my::funct_slave_.Dot(ephinp_slave[1]);
-    const double emasterphiint = my::funct_master_.Dot(ephinp_master[0]);
-    const double emasterpotint = my::funct_master_.Dot(ephinp_master[1]);
-
-    // extract factor F/RT
-    const double frt = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT();
-
-    // equilibrium electric potential difference and its derivative w.r.t. concentration at electrode surface
-    const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint,faraday,frt);
-    const double epdderiv = matelectrode->ComputeFirstDerivOpenCircuitPotential(eslavephiint,faraday,frt);
-
-    // electrode-electrolyte overpotential at integration point
-    const double eta = eslavepotint-emasterpotint-epd;
-
-    const double i0 = kr*faraday*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac);
-    const double expterm1 = exp(alphaa*frt*eta);
-    const double expterm2 = exp(-alphac*frt*eta);
-    const double expterm = expterm1-expterm2;
-
-    // safety check
-    if(abs(expterm)>1.e5)
-      dserror("Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf",expterm);
-
-    // core residual
-    const double i = fns*i0*expterm*timefacrhsfac;
-
-    // core linearizations
-    const double di_dc_slave = fns*timefacfac*(kr*faraday*pow(emasterphiint,alphaa)*pow(cmax-eslavephiint,alphaa-1.)*pow(eslavephiint,alphac-1.)*(-alphaa*eslavephiint+alphac*(cmax-eslavephiint))*expterm+i0*(-alphaa*frt*epdderiv*expterm1-alphac*frt*epdderiv*expterm2));
-    const double di_dc_master = fns*timefacfac*kr*faraday*alphaa*pow(emasterphiint,alphaa-1.)*pow(cmax-eslavephiint,alphaa)*pow(eslavephiint,alphac)*expterm;
-    const double di_dpot_slave = fns*timefacfac*i0*(alphaa*frt*expterm1+alphac*frt*expterm2);
-    const double di_dpot_master = -di_dpot_slave;
-
-    if(islavematrix != Teuchos::null and islaveresidual != Teuchos::null)
-    {
-      for (int vi=0; vi<my::nen_slave_; ++vi)
-      {
-        if(la_slave[0].lmowner_[vi*2] == idiscret.Comm().MyPID())
-        {
-          const int row_conc_slave = la_slave[0].lm_[vi*2];
-          const int row_pot_slave = row_conc_slave+1;
-
-          for (int ui=0; ui<my::nen_slave_; ++ui)
-          {
-            const int col_conc_slave = la_slave[0].lm_[ui*2];
-            const int col_pot_slave = col_conc_slave+1;
-
-            islavematrix->Assemble(my::test_lm_slave_(vi)*di_dc_slave*my::funct_slave_(ui),row_conc_slave,col_conc_slave);
-            islavematrix->Assemble(my::test_lm_slave_(vi)*nume*di_dc_slave*my::funct_slave_(ui),row_pot_slave,col_conc_slave);
-            islavematrix->Assemble(my::test_lm_slave_(vi)*di_dpot_slave*my::funct_slave_(ui),row_conc_slave,col_pot_slave);
-            islavematrix->Assemble(my::test_lm_slave_(vi)*nume*di_dpot_slave*my::funct_slave_(ui),row_pot_slave,col_pot_slave);
-          }
-
-          for(int ui=0; ui<my::nen_master_; ++ui)
-          {
-            const int col_conc_master = la_master[0].lm_[ui*2];
-            const int col_pot_master = col_conc_master+1;
-
-            islavematrix->Assemble(my::test_lm_slave_(vi)*di_dc_master*my::funct_master_(ui),row_conc_slave,col_conc_master);
-            islavematrix->Assemble(my::test_lm_slave_(vi)*nume*di_dc_master*my::funct_master_(ui),row_pot_slave,col_conc_master);
-            islavematrix->Assemble(my::test_lm_slave_(vi)*di_dpot_master*my::funct_master_(ui),row_conc_slave,col_pot_master);
-            islavematrix->Assemble(my::test_lm_slave_(vi)*nume*di_dpot_master*my::funct_master_(ui),row_pot_slave,col_pot_master);
-          }
-
-          if(islaveresidual->SumIntoGlobalValue(row_conc_slave,0,-my::test_lm_slave_(vi)*i))
-            dserror("Assembly into slave-side residual vector not successful!");
-          if(islaveresidual->SumIntoGlobalValue(row_pot_slave,0,-my::test_lm_slave_(vi)*nume*i))
-            dserror("Assembly into slave-side residual vector not successful!");
-        }
-      }
-    }
-    else if(islavematrix != Teuchos::null or islaveresidual != Teuchos::null)
-      dserror("Must provide both slave-side matrix and slave-side vector or none of them!");
-
-    if(imastermatrix != Teuchos::null and imasterresidual != Teuchos::null)
-    {
-      for(int vi=0; vi<my::nen_master_; ++vi)
-      {
-        if(slaveelement.Owner() == idiscret.Comm().MyPID())
-        {
-          const int row_conc_master = la_master[0].lm_[vi*2];
-          const int row_pot_master = row_conc_master+1;
-
-          for (int ui=0; ui<my::nen_slave_; ++ui)
-          {
-            const int col_conc_slave = la_slave[0].lm_[ui*2];
-            const int col_pot_slave = col_conc_slave+1;
-
-            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*di_dc_slave*my::funct_slave_(ui),row_conc_master,col_conc_slave);
-            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*nume*di_dc_slave*my::funct_slave_(ui),row_pot_master,col_conc_slave);
-            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*di_dpot_slave*my::funct_slave_(ui),row_conc_master,col_pot_slave);
-            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*nume*di_dpot_slave*my::funct_slave_(ui),row_pot_master,col_pot_slave);
-          }
-
-          for(int ui=0; ui<my::nen_master_; ++ui)
-          {
-            const int col_conc_master = la_master[0].lm_[ui*2];
-            const int col_pot_master = col_conc_master+1;
-
-            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*di_dc_master*my::funct_master_(ui),row_conc_master,col_conc_master);
-            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*nume*di_dc_master*my::funct_master_(ui),row_pot_master,col_conc_master);
-            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*di_dpot_master*my::funct_master_(ui),row_conc_master,col_pot_master);
-            imastermatrix->FEAssemble(-my::test_lm_master_(vi)*nume*di_dpot_master*my::funct_master_(ui),row_pot_master,col_pot_master);
-          }
-
-          const double residual_conc_master = my::test_lm_master_(vi)*i;
-          if(imasterresidual->SumIntoGlobalValues(1,&row_conc_master,&residual_conc_master))
-            dserror("Assembly into master-side residual vector not successful!");
-          const double residual_pot_master = nume*residual_conc_master;
-          if(imasterresidual->SumIntoGlobalValues(1,&row_pot_master,&residual_pot_master))
-            dserror("Assembly into master-side residual vector not successful!");
-        }
-      }
-    }
-    else if(imastermatrix != Teuchos::null or imasterresidual != Teuchos::null)
-      dserror("Must provide both master-side matrix and master-side vector or none of them!");
+    DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(
+        condition,
+        matelectrode,
+        ephinp_slave,
+        ephinp_master,
+        my::funct_slave_,
+        my::funct_master_,
+        my::test_lm_slave_,
+        my::test_lm_master_,
+        timefacfac,
+        timefacrhsfac,
+        DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(),
+        k_ss,
+        k_sm,
+        k_ms,
+        k_mm,
+        r_s,
+        r_m
+        );
   }
 
   return;
