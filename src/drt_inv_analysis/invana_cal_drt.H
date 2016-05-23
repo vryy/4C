@@ -5,7 +5,8 @@
 \brief Start routines for the inverse analysis
 
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             http://www.mhpc.mw.tum.de
             089 - 289-10361

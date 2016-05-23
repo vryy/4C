@@ -1,9 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file invana_auglagr.cpp
+
+\file invana_auglagr.cpp
+
+\brief Augmetend lagrangian functional control algorithm
 
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -46,6 +50,7 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 INVANA::InvanaAugLagr::InvanaAugLagr():
   InvanaBase(),
+inputfile_(Teuchos::null),
 dis_(Teuchos::null),
 elementdata_(Teuchos::null),
 disdual_(Teuchos::null),
@@ -122,12 +127,7 @@ void INVANA::InvanaAugLagr::Setup()
 
   // tweak new input control file for the forward problem. Due to how the restart
   // works in the field it must be set to the globalproblem
-  Teuchos::RCP<IO::InputControl> inputcontrolfile =
-      Teuchos::rcp(new IO::InputControl(filenameout,Discret()->Comm()));
-
-  DRT::Problem::Instance()->SetInputControlFile(inputcontrolfile);
-
-
+ inputfile_ = Teuchos::rcp(new IO::InputControl(filenameout,Discret()->Comm()));
 
   return;
 }
@@ -180,12 +180,13 @@ void INVANA::InvanaAugLagr::SolveForwardProblem()
 
       // do restart but the one which is explicitly given in the INVERSE ANALYSIS section
       // and only if we are not in parameter continuation mode
-      if (fprestart_ and Optimizer()->Runc()<=itertopc_)
+      if (fprestart_ and fpcounter_<=itertopc_)
       {
+        DRT::Problem::Instance()->SetInputControlFile(inputfile_);
         structadaptor->ReadRestart(fprestart_);
       }
 
-      if (Optimizer()->Runc()>itertopc_)
+      if (fpcounter_>itertopc_)
       {
         for (int i=0; i<(int)time_.size(); i++)
         {
@@ -287,7 +288,7 @@ void INVANA::InvanaAugLagr::Evaluate(const Epetra_MultiVector& sol, double* val,
   //if (Optimizer()->Runc()<=itertopc_)
   Matman()->ReplaceParams(sol);
 
-  if (Optimizer()->Runc()<=itertopc_)
+  if (fpcounter_<=itertopc_)
     ResetDiscretization();
 
   if ( gradient != Teuchos::null or val!=NULL )
@@ -345,7 +346,6 @@ void INVANA::InvanaAugLagr::EvaluateGradient(const Epetra_MultiVector& sol, Teuc
       Matman()->AddEvaluate(time_[stepps-1], gradient);
     }
   }
-  Matman()->Finalize(gradient);
 
   if (Regman() != Teuchos::null)
     Regman()->EvaluateGradient(sol,gradient);
@@ -403,6 +403,7 @@ void INVANA::InvanaAugLagr::ResetDiscretization()
 }
 
 
+/*----------------------------------------------------------------------*/
 void INVANA::InvanaAugLagr::SetTimeStepHistory(int timestep)
 {
   Teuchos::ParameterList p;

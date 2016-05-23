@@ -4,7 +4,8 @@
 \brief manage material parameters during optimization
 
 <pre>
-Maintainer: Svenja Schoeder
+\level 3
+\maintainer Svenja Schoeder
             schoeder@lnm.mw.tum.de
             089 - 289-15271
 </pre>
@@ -95,26 +96,8 @@ void ACOU::OptMatParManagerUniform::AddEvaluate(double time, Teuchos::RCP<Epetra
       actele->LocationVector(*Discret(),la,false);
       actele->Evaluate(p,*Discret(),la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
 
-      double val1 = 1.0;
-      switch(metaparams_)
-      {
-      case INPAR::INVANA::stat_inv_meta_quad:
-      {
-        val1 = (*(*GetMatParamsVec())( ParaPos().at(elematid).at(it-actparams.begin()) ))[actele->LID()];
-        break;
-      }
-      case INPAR::INVANA::stat_inv_meta_arctan:
-      {
-        val1 = (*(*GetMatParamsVec())( ParaPos().at(elematid).at(it-actparams.begin()) ))[actele->LID()];
-        val1 = 1./M_PI/(val1*val1+1.);
-        break;
-      }
-      case INPAR::INVANA::stat_inv_meta_none:
-        break;
-      default:
-        dserror("metaparams only implemented for none/quad/arctan");
-        break;
-      }
+      double metaval = (*(*GetMatParamsVec())( ParaPos().at(elematid).at(it-actparams.begin()) ))[actele->LID()];
+      double val1 = metaparams_.DMaterialDMeta(metaval);
       elevector1.Scale(val1);
 
       //reuse elevector2
@@ -224,26 +207,8 @@ void ACOU::OptMatParManagerPerElement::AddEvaluate(double time, Teuchos::RCP<Epe
       actele->LocationVector(*Discret(),la,false);
       actele->Evaluate(p,*Discret(),la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
 
-      double val1 = 1.0;
-      switch(metaparams_)
-      {
-      case INPAR::INVANA::stat_inv_meta_quad:
-      {
-        val1 = (*(*GetMatParamsVec())( ParaPos().at(elematid).at(it-actparams.begin()) ))[actele->LID()];
-        break;
-      }
-      case INPAR::INVANA::stat_inv_meta_arctan:
-      {
-        val1 = (*(*GetMatParamsVec())( ParaPos().at(elematid).at(it-actparams.begin()) ))[actele->LID()];
-        val1 = 1./M_PI/(val1*val1+1.);
-        break;
-      }
-      case INPAR::INVANA::stat_inv_meta_none:
-        break;
-      default:
-        dserror("metaparams only implemented for none/quad/arctan");
-        break;
-      }
+      double metaval = (*(*GetMatParamsVec())( ParaPos().at(elematid).at(it-actparams.begin()) ))[actele->LID()];
+      double val1 = metaparams_.DMaterialDMeta(metaval);
       elevector1.Scale(val1);
 
       //reuse elevector2
@@ -293,26 +258,8 @@ void ACOU::AcouMatParManagerPerElement::AddEvaluate(double time, Teuchos::RCP<Ep
       else if((*it) == 1)
         val = hdgele->GetSoSGradient();
 
-      double val1 = 1.0;
-      switch(metaparams_)
-      {
-      case INPAR::INVANA::stat_inv_meta_quad:
-      {
-        val1 = (*(*GetMatParamsVec())( ParaPos().at(elematid).at(it-actparams.begin()) ))[actele->LID()];
-        break;
-      }
-      case INPAR::INVANA::stat_inv_meta_arctan:
-      {
-        val1 = (*(*GetMatParamsVec())( ParaPos().at(elematid).at(it-actparams.begin()) ))[actele->LID()];
-        val1 = 1./M_PI/(val1*val1+1.);
-        break;
-      }
-      case INPAR::INVANA::stat_inv_meta_none:
-        break;
-      default:
-        dserror("metaparams only implemented for none/quad/arctan");
-        break;
-      }
+      double metaval = (*(*GetMatParamsVec())( ParaPos().at(elematid).at(it-actparams.begin()) ))[actele->LID()];
+      double val1 = metaparams_.DMaterialDMeta(metaval);
       val *= val1;
 
       // write it to the gradient

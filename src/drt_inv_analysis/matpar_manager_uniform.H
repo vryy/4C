@@ -1,12 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file matpar_manager_uniform.H
-\brief Class to handle calls to material parameters from an optimization routine
+
+\brief Patch-wise uniform distribution of material parameters
 
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
             089 - 289-10361
 </pre>
 */
@@ -29,29 +30,47 @@ namespace DRT
 namespace INVANA
 
 {
-
+/*! \class MatParManagerUniform
+ *  \brief Class to have blockwise constant material parameters
+ *
+ *  This class handles optimization parameters which represent blockwise
+ *  patches of material. The patches must be given by different input file
+ *  materials. The final unique vector of parameters is kept on proc 0.
+ *
+ *  For the parallel computation of derivatives, a completely redundant version
+ *  of the parameters is used which is then later 'contracted' by INVANA::Finalize.
+ *
+ *  \author kehl \date somewhen2013
+ */
 class MatParManagerUniform  : public MatParManager
 {
 public:
 
-  //! constructor
+  //! Constructor
   MatParManagerUniform(Teuchos::RCP<DRT::Discretization> discret);
 
-  //! destructor
+  //! Destructor
   virtual ~MatParManagerUniform(){}
 
   //! Setup specific parametrization layout
   virtual void Setup();
 
-  virtual void Finalize(Teuchos::RCP<Epetra_MultiVector> dfint);
+  //! Account for distributed chain-rule application
+  virtual void Finalize(Teuchos::RCP<Epetra_MultiVector> source,
+      Teuchos::RCP<Epetra_MultiVector> target
+      );
 
 protected:
 
+  //! Get current material parameters
   virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params);
 
+  //! Initialize optimization parameters
   virtual void InitParameters(int parapos, double val);
 
-  virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos, int paraposglobal, int paraposlocal);
+  //! Chain rule application
+  virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
+      double val, int elepos, int paraposglobal, int paraposlocal);
 
 };
 }  // namespace INVANA

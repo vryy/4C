@@ -4,7 +4,8 @@
  \brief optimization algorithm base class
 
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -15,6 +16,8 @@ Maintainer: Sebastian Kehl
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_MultiVector.h"
+
+#include "invana_writer.H"
 
 // forward declarations
 namespace Teuchos
@@ -59,6 +62,9 @@ class OptimizerBase {
 
 public:
 
+  //! @name Construction/destruction
+  //@{
+
   //! standard constructor
   OptimizerBase(const Teuchos::ParameterList& invp);
 
@@ -66,20 +72,14 @@ public:
   virtual ~OptimizerBase() {}
 
   //! Set member variables after construction.
-  /*!
-    \param In
-    layoutrowmap - the unique layout of the optimization parameters.
-    \param In
-    layoutcolmap - the possibly non-unique layout of the optimization parameters
-    \param In
-    numvecs - number of vectors of the optimization parameters layout
-    \param In
-    optprob - a reference to the optimization problem for call to evaluate value and gradient of some objective function
-  */
-  void Init(Teuchos::RCP<Epetra_Map> layoutrowmap, Teuchos::RCP<Epetra_Map> layoutcolmap, int numvecs, Teuchos::RCP<InvanaBase> optprob);
+  void Init(Teuchos::RCP<InvanaBase> optprob // [in] a reference to an optimization problem
+      );
 
-  /*----------------------------------------------------------------------*/
-  //! functions to be provided by derived classes
+  //@}
+
+
+  //! @name Initialize the execution of the algorithm
+  //@{
 
   //! setup up algorithm specific stuff
   virtual void Setup() = 0;
@@ -93,107 +93,108 @@ public:
   //! write restart information
   virtual void WriteRestart() = 0;
 
-  /*----------------------------------------------------------------------*/
-  //! write access functions
+  //@}
 
-  //! get reference to soution vector for write access
-  Teuchos::RCP<Epetra_MultiVector> GetSolution() const {return sol_;}
 
-  Teuchos::RCP<Epetra_MultiVector> GetGradient() const {return objgrad_;}
+  //! @name Write access
+  //@{
 
-  //! get write access to objective function value
+  //! Access to solution
+  Teuchos::RCP<Epetra_MultiVector> GetSolution() {return sol_;}
+
+  //! Access to gradient
+  Teuchos::RCP<Epetra_MultiVector> GetGradient() {return objgrad_;}
+
+  //! Access to objective function value
   double* GetObjFunctVal() {return &objval_;}
 
-  /*----------------------------------------------------------------------*/
-  //! read only access functions
+  //@}
+
+
+  //! @name Read only access
+  //@{
 
   //! get reference to solution vector
-  const Epetra_MultiVector& GetSolutionView() const {return *sol_;}
+  const Epetra_MultiVector& GetSolutionView() {return *sol_;}
 
   //! get reference to the old solution vector
-  const Epetra_MultiVector& GetSolutionOldView() const {return *sol_o_;}
+  const Epetra_MultiVector& GetSolutionOldView() {return *sol_o_;}
 
   //! get reference to the gradient vector
-  const Epetra_MultiVector& GetGradientView() const {return *objgrad_;}
+  const Epetra_MultiVector& GetGradientView() {return *objgrad_;}
 
   //! get reference to the old gradient vector
-  const Epetra_MultiVector& GetGradientOldView() const {return *objgrad_o_;}
+  const Epetra_MultiVector& GetGradientOldView() {return *objgrad_o_;}
 
   //! get "reference" to objective function value
-  double GetObjFunctValView() const {return objval_;}
+  const double GetObjFunctValView() {return objval_;}
 
   //! get "reference" to old objective function value
-  double GetObjFunctValOldView() const {return objval_o_;}
-
-  //! return the map of the vector layout
-  const Epetra_Map& SolLayoutMap() const {return *solcolmap_;}
+  const double GetObjFunctValOldView() {return objval_o_;}
 
   //! return the unique map of the vector layout
-  const Epetra_Map& SolLayoutMapUnique() const {return *solrowmap_;}
+  const Epetra_Map& SolLayoutMap(){return *solrowmap_;}
 
   //! current run counter
-  int Runc() const {return runc_;}
+  int Runc(){return runc_;}
 
-  /*----------------------------------------------------------------------*/
-  //! general access functions
+  //@}
 
-  //! a reference to the underlying optimization problem
-  Teuchos::RCP<InvanaBase> OptProb() const {return optprob_;}
 
 protected:
 
-  /*----------------------------------------------------------------------*/
-  //! perform some sort of optimization using these functions
+  //! @name General purpose functions for nonlinear solution
+  //@{
 
-  //! get inital guess from underlying optimization problem
+  //! get inital guess using the optimization problem
   void SetInitialGuess();
 
-  /*! \brieff Evaluate the objective function
-   *
-   * \param Out
-   * val - to be filled with the value of the objective function.
-   * \param Out
-   * gradient - to be filled with the gradient of the objective function
-   */
-  void Evaluate(double* val, Teuchos::RCP<Epetra_MultiVector> gradient);
+  //! evaluate the objective function
+  void Evaluate(double* val, /// [out] value of the objective function
+      Teuchos::RCP<Epetra_MultiVector> gradient /// [out] gradient of the objective function
+      );
 
-  //! upate Gradient: push current to old
-  void UpdateGradient(){objgrad_o_->Update(1.0, *objgrad_, 0.0);}
+  //! upate gradient: push current to old
+  void UpdateGradient(){ objgrad_o_->Update(1.0, *objgrad_, 0.0); }
 
   //! upate objective function value: push current to old
-  void UpdateObjFunctValue(){objval_o_=objval_;}
+  void UpdateObjFunctValue(){ objval_o_=objval_; }
 
-  /*! \brief update the solution (and push current to old)
-   *
-   * \param In
-   * toadd - (properly scaled) step to be added to the solution vector
-   */
-  void UpdateSolution(const Epetra_MultiVector& toadd);
+  //! update the solution (and push current to old)
+  void UpdateSolution(const Epetra_MultiVector& toadd /// [in] (properly scaled) step to be added to the solution vector
+      );
 
   //! undo the last UpdateSolution()-call
   void UndoUpdateSolution();
 
+  //@}
+
+  //! @name General query
+  //@{
+
   //! question if base class is initialized
   bool IsInit(){return isinit_;}
 
+  //! a reference to the underlying optimization problem
+  Teuchos::RCP<InvanaBase> OptProb(){return optprob_;}
 
-  //! @name access to input and output
+  //@}
+
+
+  //! @name Access to input and output
   //@{
 
   //! a reference to the file to restart from
   const Teuchos::RCP<IO::InputControl> RestartFromFile(){return inputfile_;}
 
   //! a reference to the discretization writer
-  const Teuchos::RCP<IO::DiscretizationWriter> Writer(){return output_;}
+  const Teuchos::RCP<InvanaWriter> Writer(){return writer_;}
 
   //@}
 
 
-  //! @name members directly accessible from derived classes
+  //! @name interesting members running an iterative optimization algorithm
   //@{
-
-  //! number of vectors in the multivector
-  int numvecs_;
 
   //! increment of the objective function
   double error_incr_;
@@ -220,8 +221,8 @@ protected:
 
 private:
 
-  /*----------------------------------------------------------------------*/
-  //! members accessible via access functions
+  //! @name current and old state of the algorithm iterations
+  //@{
 
   //! current value of the objective function
   double objval_;
@@ -241,20 +242,31 @@ private:
   //! solution of the previous step
   Teuchos::RCP<Epetra_MultiVector> sol_o_;
 
+  //@}
+
+  //! @name Problem to be solved
+  //@{
   //! a reference to the underlying optimization problem to be solved
   Teuchos::RCP<InvanaBase> optprob_;
 
   //! unique vector layout map
   Teuchos::RCP<Epetra_Map> solrowmap_;
 
-  //! possibly non-unique vector layout map
-  Teuchos::RCP<Epetra_Map> solcolmap_;
+  //@}
 
-  //! outputer for the inverse analysis
+  //! @name Input and output
+  //@{
+
+  //! output control
   Teuchos::RCP<IO::DiscretizationWriter> output_;
+
+  //! An inverse analysis specific wrapper for the output
+  Teuchos::RCP<InvanaWriter> writer_;
 
   //! the file to start from in case of restarts
   Teuchos::RCP<IO::InputControl> inputfile_;
+
+  //@}
 
   //! initialization bool
   bool isinit_;

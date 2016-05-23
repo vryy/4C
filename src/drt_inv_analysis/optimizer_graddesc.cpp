@@ -1,9 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file stat_inv_ana_graddesc.cpp
+\file optimizer_graddesc.cpp
+
+\brief Gradient descent with linesearch
 
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -32,8 +35,8 @@ step_(Teuchos::null)
 /* setup algorithm specific stuff */
 void INVANA::OptimizerGradDesc::Setup()
 {
-  p_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), numvecs_, true));
-  step_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), numvecs_, true));
+  p_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), 1, true));
+  step_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), 1, true));
 }
 
 
@@ -42,7 +45,7 @@ void INVANA::OptimizerGradDesc::Setup()
 /*----------------------------------------------------------------------*/
 void INVANA::OptimizerGradDesc::Integrate()
 {
-  if (!IsInit()) dserror("OpimizerBase is not inititialzed. Call Init() first");
+  if (!IsInit()) dserror("OptimizerBase is not inititialzed. Call Init() first");
 
   int success=0;
 
@@ -64,7 +67,7 @@ void INVANA::OptimizerGradDesc::Integrate()
 
   UpdateObjFunctValue();
 
-  MVNorm(GetGradientView(),SolLayoutMapUnique(),2,&convcritc_);
+  MVNorm(GetGradientView(),SolLayoutMap(),2,&convcritc_);
 
   PrintOptStep(0,0);
 
@@ -83,7 +86,7 @@ void INVANA::OptimizerGradDesc::Integrate()
     }
 
     //get the L2-norm:
-    MVNorm(GetGradientView(),SolLayoutMapUnique(),2,&convcritc_);
+    MVNorm(GetGradientView(),SolLayoutMap(),2,&convcritc_);
 
     //compute new direction only for runs
     p_->Update(-1.0, GetGradientView(), 0.0);
@@ -128,7 +131,7 @@ int INVANA::OptimizerGradDesc::EvaluateArmijoRule(double* tauopt, int* numsteps)
   double blow=0.1;
   double bhigh=0.5;
 
-  MVNorm(GetGradientOldView(),SolLayoutMapUnique(),2,&gnorm);
+  MVNorm(GetGradientOldView(),SolLayoutMap(),2,&gnorm);
 
   double tau_n=std::min(1.0, 100/(1+gnorm));
   //std::cout << "trial step size: " << tau_n << std::endl;
@@ -145,7 +148,7 @@ int INVANA::OptimizerGradDesc::EvaluateArmijoRule(double* tauopt, int* numsteps)
 
     // check sufficient decrease:
     double dfp_o=0.0;
-    MVDotProduct(GetGradientOldView(),*p_,SolLayoutMapUnique(),&dfp_o);
+    MVDotProduct(GetGradientOldView(),*p_,SolLayoutMap(),&dfp_o);
 
     if ( (GetObjFunctValView()-GetObjFunctValOldView()) < c1*tau_n*dfp_o )
     {
@@ -294,13 +297,9 @@ void INVANA::OptimizerGradDesc::ReadRestart(int run)
   if (not OptProb()->Comm().MyPID())
     std::cout << "Reading invana restart from step " << run << " from file: " << RestartFromFile()->FileName() << std::endl;
 
-  //IO::DiscretizationReader reader(discret_, RestartFromFile(),run);
-  if (run != reader.ReadInt("run"))
-    dserror("Optimization step on file not equal to given step");
-
   runc_ = run;
 
-  reader.ReadMultiVector(GetSolution(),"optimization_parameters");
+  reader.ReadMultiVector(GetSolution(),"solution");
 
   return;
 }
@@ -314,14 +313,9 @@ void INVANA::OptimizerGradDesc::WriteRestart()
   if (not OptProb()->Comm().MyPID())
     std::cout << "Writing invana restart for step " << runc_ <<  std::endl;
 
-  Writer()->NewStep(runc_, double(runc_));
-  Writer()->WriteInt("run", runc_);
+  Writer()->WriteNewStep(runc_);
 
-  // write vectors with unique gids only
-  Teuchos::RCP<Epetra_MultiVector> uniqueparams = Teuchos::rcp(new Epetra_MultiVector(SolLayoutMapUnique(), numvecs_,false));
-  LINALG::Export(GetSolutionView(), *uniqueparams);
-
-  Writer()->WriteVector("optimization_parameters", uniqueparams);
+  Writer()->WriteNamedVector("solution", GetSolution());
 
   return;
 }

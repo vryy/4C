@@ -1,8 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*!
+\file matpar_manager_elementwise.cpp
+\brief Class to handle calls to material parameters from an optimization routine
 
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -101,8 +104,8 @@ void INVANA::MatParManagerPerElement::Setup()
   // finally build the MapExtractor
   paramapextractor_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*paramlayoutmap_,partials));
 
-  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumVectors(),true));
-  optparams_initial_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumVectors(),true));
+  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,1,true));
+  optparams_initial_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,1,true));
 
   //initialize parameter vector from material parameters given in the input file
   InitParams();
@@ -147,6 +150,16 @@ void INVANA::MatParManagerPerElement::ContractGradient(Teuchos::RCP<Epetra_Multi
   int plid = eleGIDtoparamsLID_[elepos].at(paraposlocal);
   int success = dfint->SumIntoMyValue(plid,0,val);
   if (success!=0) dserror("gid %d is not on this processor", plid);
+}
+
+void INVANA::MatParManagerPerElement::Finalize(Teuchos::RCP<Epetra_MultiVector> source,
+    Teuchos::RCP<Epetra_MultiVector> target)
+{
+  // nothing to be summed across processors. since both maps are
+  // the same by construction they can be just added up
+  target->Update(1.0,*source,1.0);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*/

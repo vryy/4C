@@ -4,7 +4,8 @@
  * \brief augmented lagrange functional specialization of Invana base class
  *
  <pre>
- Maintainer: Sebastian Kehl
+ \level 3
+ \maintainer Sebastian Kehl
              kehl@mhpc.mw.tum.de
              089 - 289-10361
  </pre>
@@ -23,6 +24,11 @@
 namespace TIMINT
 {
   template <typename> class TimIntMStep;
+}
+
+namespace IO
+{
+  class InputControl;
 }
 
 
@@ -63,7 +69,7 @@ public:
 
   virtual void Setup();
 
-  //! Evaluate the objective function (see base class for description of input and output)
+  //! Evaluate the objective function
   virtual void Evaluate(const Epetra_MultiVector& sol, double* val, Teuchos::RCP<Epetra_MultiVector> gradient);
 
 protected:
@@ -98,6 +104,9 @@ private:
   //! Mstep double to std::vector<double>
   void MStepDToStdVecD(Teuchos::RCP<std::map<int, double> > mstepvec,
                        std::vector<double>*  stdvec);
+
+  //! input control file to be reused upon every forward problem call
+  Teuchos::RCP<IO::InputControl> inputfile_;
 
   //! primal variables (displacements)
   Teuchos::RCP<Epetra_MultiVector> dis_;

@@ -1,9 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file optimizer_base.cpp
+\file optimizer_base.cpp
+
+\brief Optimization algorithm base class
 
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -22,7 +25,7 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* constructor */
 INVANA::OptimizerBase::OptimizerBase(const Teuchos::ParameterList& invp):
-numvecs_(0),
+error_incr_(1.0e6),
 restartevry_(invp.get<int>("RESTARTEVRY")),
 maxiter_(invp.get<int>("MAXITER")),
 stepsize_(invp.get<double>("STEPSIZE")),
@@ -37,8 +40,8 @@ sol_(Teuchos::null),
 sol_o_(Teuchos::null),
 optprob_(Teuchos::null),
 solrowmap_(Teuchos::null),
-solcolmap_(Teuchos::null),
 output_(Teuchos::null),
+writer_(Teuchos::null),
 inputfile_(Teuchos::null),
 isinit_(false)
 {
@@ -46,17 +49,15 @@ isinit_(false)
 }
 
 /*----------------------------------------------------------------------*/
-void INVANA::OptimizerBase::Init(Teuchos::RCP<Epetra_Map> layoutrowmap, Teuchos::RCP<Epetra_Map> layoutcolmap, int numvecs, Teuchos::RCP<InvanaBase> optprob)
+void INVANA::OptimizerBase::Init(Teuchos::RCP<InvanaBase> optprob)
 {
-  numvecs_=numvecs;
-  solrowmap_=layoutrowmap;
-  solcolmap_=layoutcolmap;
+  solrowmap_=optprob->VectorRowLayout();
 
-  sol_ = Teuchos::rcp(new Epetra_MultiVector(*solcolmap_, numvecs_));
-  sol_o_ = Teuchos::rcp(new Epetra_MultiVector(*solcolmap_, numvecs_));
+  sol_ = Teuchos::rcp(new Epetra_MultiVector(*solrowmap_, 1));
+  sol_o_ = Teuchos::rcp(new Epetra_MultiVector(*solrowmap_, 1));
 
-  objgrad_ = Teuchos::rcp(new Epetra_MultiVector(*solcolmap_, numvecs_));
-  objgrad_o_ = Teuchos::rcp(new Epetra_MultiVector(*solcolmap_, numvecs_));
+  objgrad_ = Teuchos::rcp(new Epetra_MultiVector(*solrowmap_, 1));
+  objgrad_o_ = Teuchos::rcp(new Epetra_MultiVector(*solrowmap_, 1));
 
   optprob_=optprob;
 
@@ -65,8 +66,13 @@ void INVANA::OptimizerBase::Init(Teuchos::RCP<Epetra_Map> layoutrowmap, Teuchos:
   if (DRT::Problem::Instance()->Restart())
     inputfile_ = Teuchos::rcp(new IO::InputControl(DRT::Problem::Instance()->InputControlFile()->FileName(), optprob_->Comm()));
 
+  // setup output
   output_ = Teuchos::rcp(new IO::DiscretizationWriter(optprob_->Discret()));
   output_->SetOutput(DRT::Problem::Instance()->OutputControlFile());
+
+  // wrap output
+  writer_ = Teuchos::rcp(new InvanaWriter());
+  writer_->Init(output_);
 
   SetInitialGuess();
 

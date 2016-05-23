@@ -2,8 +2,10 @@
 /*!
  * \file optimizer_lbfgs.H
  * \brief LBFGS optimization algorithm
+ *
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -22,18 +24,17 @@ namespace TIMINT
 namespace INVANA
 {
 
-/*!
-  \brief Limited memory bfgs algorithm with armijo rule line search
-
-  Implementation of the Limited Memory BFGS algorithm as e.g. given in:\n
-  Nocedal, Jorge. "Updating quasi-Newton matrices with limited storage." Mathematics of computation 35.151 (1980): 773-782.
-
-  With a linesearch implemented from:\n
-  Kelley, Carl T. Iterative methods for optimization. Vol. 18. Siam, 1999.
-
-  \author kehl
-  */
-
+/*! \class OptimizerLBFGS
+ * \brief Limited memory bfgs algorithm with armijo rule line search
+ *
+ * Implementation of the Limited Memory BFGS algorithm as e.g. given in:\n
+ * Nocedal, Jorge. "Updating quasi-Newton matrices with limited storage." Mathematics of computation 35.151 (1980): 773-782.
+ *
+ * With a linesearch implemented from:\n
+ * Kelley, Carl T. Iterative methods for optimization. Vol. 18. Siam, 1999.
+ *
+ * \author kehl
+ */
 class OptimizerLBFGS : public OptimizerBase
 {
 public:

@@ -4,7 +4,8 @@
 
 \brief tesing of inverse analysis results
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -29,7 +30,7 @@ class Discretization;
 namespace INVANA
 {
 // forward declarations
-class InvanaBase;
+class InvanaControl;
 class MatParManager;
 
 
@@ -45,7 +46,7 @@ public:
     /*!
     \brief not documented yet
     */
-    InvanaResultTest(InvanaBase& ia);
+    InvanaResultTest(InvanaControl& ia);
 
     virtual ~InvanaResultTest(){};
 
@@ -70,7 +71,7 @@ private:
     Teuchos::RCP<MatParManager> matman_;
 
     //! the inverse analysis algorithm object
-    InvanaBase& ia_;
+    InvanaControl& ia_;
 
 
 

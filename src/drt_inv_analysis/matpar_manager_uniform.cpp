@@ -1,8 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
+\file matpar_manager_uniform.cpp
+
+\brief Patch-wise uniform distribution of material parameters
 
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -12,6 +16,8 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "matpar_manager_uniform.H"
+
+#include "Epetra_Import.h"
 
 #include "invana_utils.H"
 #include "../linalg/linalg_utils.H"
@@ -32,8 +38,6 @@ INVANA::MatParManagerUniform::MatParManagerUniform(Teuchos::RCP<DRT::Discretizat
 {}
 
 /*----------------------------------------------------------------------*/
-/* Setup                                                    keh 10/14   */
-/*----------------------------------------------------------------------*/
 void INVANA::MatParManagerUniform::Setup()
 {
   paramlayoutmap_ = Teuchos::rcp(new Epetra_Map(NumParams(),NumParams(),0,*(DRT::Problem::Instance()->GetNPGroup()->LocalComm())));
@@ -47,44 +51,61 @@ void INVANA::MatParManagerUniform::Setup()
   partials.push_back(paramlayoutmapunique_);
   paramapextractor_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*paramlayoutmapunique_,partials));
 
-  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumVectors(),true));
-  optparams_initial_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,NumVectors(),true));
+  optparams_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmapunique_,1,true));
+  optparams_initial_ = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmapunique_,1,true));
 
   //initialize parameter vector from material parameters given in the input file
   InitParams();
 }
 
+/*----------------------------------------------------------------------*/
 void INVANA::MatParManagerUniform::FillParameters(Teuchos::RCP<Epetra_MultiVector> params)
 {
+  // make optparams redundant on every proc
+  Teuchos::RCP<Epetra_MultiVector> optparams = Teuchos::rcp(new Epetra_MultiVector(*paramlayoutmap_,1,false));
+  Epetra_Import importer(optparams->Map(), optparams_->Map());
+  int err = optparams->Import(*optparams_, importer, Insert);
+  if (err)
+    dserror("Export using exporter returned err=%d", err);
+
+  // now every proc can fill in the material parameters
   for (int i=0; i<NumParams(); i++)
-    (*params)(i)->PutScalar((*(*optparams_)(0))[i]);
+    (*params)(i)->PutScalar((*(*optparams)(0))[i]);
 }
 
+/*----------------------------------------------------------------------*/
 void INVANA::MatParManagerUniform::InitParameters(int parapos, double val)
 {
+  // only proc 0 is filled here from the input file material
   optparams_->ReplaceGlobalValue(parapos,0,val);
+
+  return;
 }
 
+/*----------------------------------------------------------------------*/
 void INVANA::MatParManagerUniform::ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
-                                                         double val,
-                                                         int elepos,
-                                                         int paraposglobal,
-                                                         int paraposlocal)
+    double val, int elepos, int paraposglobal,int paraposlocal)
 {
-  // only this proc's row elements contribute
-  if (not Discret()->ElementRowMap()->MyGID(elepos)) return;
+  // every proc can do the 'product rule' on his own
+  // summation can be done after the assembly is complete
+  dfint->SumIntoGlobalValue(paraposglobal,0,val);
 
-  // every proc can do the 'product rule' on his own since the uniformly distributed optparams are kept redundantly
-  int success = dfint->SumIntoGlobalValue(paraposglobal,0,val);
-  if (success!=0) dserror("error code %d", success);
+  return;
+
 }
 
-void INVANA::MatParManagerUniform::Finalize(Teuchos::RCP<Epetra_MultiVector> dfint)
+/*----------------------------------------------------------------------*/
+void INVANA::MatParManagerUniform::Finalize(Teuchos::RCP<Epetra_MultiVector> source,
+    Teuchos::RCP<Epetra_MultiVector> target)
 {
-  std::vector<double> val(dfint->MyLength(),0.0);
-  Discret()->Comm().SumAll((*dfint)(0)->Values(),&val[0],dfint->MyLength());
+  // some across processor
+  std::vector<double> val(source->MyLength(),0.0);
+  Discret()->Comm().SumAll((*source)(0)->Values(),&val[0],source->MyLength());
 
+  // put into the global gradient; procs who dont own
+  // the gid dont get contributions
   for (int i=0; i<NumParams(); i++)
-    dfint->ReplaceGlobalValue(i,0,val[i]);
+    target->SumIntoGlobalValue(i,0,val[i]);
 
+  return;
 }

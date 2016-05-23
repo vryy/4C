@@ -1,9 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file invana_factory.H
- * \brief factory for the inverse analysis
+\file invana_factory.H
+
+\brief Factory for the inverse analysis
+
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -12,7 +15,7 @@ Maintainer: Sebastian Kehl
 #ifndef INVANA_FACTORY_H
 #define INVANA_FACTORY_H
 
-#include "Teuchos_RCP.hpp"
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace Teuchos
@@ -45,9 +48,9 @@ public:
   virtual ~InvanaFactory() {;};
 
   //! Return a reference to the optimization problem
-  Teuchos::RCP<INVANA::InvanaBase> Create(Teuchos::RCP<DRT::Discretization> discret, const Teuchos::ParameterList& invp);
-
-
+  Teuchos::RCP<INVANA::InvanaBase> Create(
+      const Teuchos::ParameterList& invp
+      );
 };
 }  // namespace INVANA
 

@@ -1,9 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file optimizer_lbfgs.cpp
+
+\file optimizer_lbfgs.cpp
+
+\brief LBFGS optimization algorithm
 
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -39,14 +43,13 @@ step_(Teuchos::null)
 /* setup algorithm specific stuff */
 void INVANA::OptimizerLBFGS::Setup()
 {
-  ssize_=ssize_*numvecs_;
   actsize_=0;
 
   sstore_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, &SolLayoutMap(), true));
   ystore_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, &SolLayoutMap(), true));
 
-  p_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), numvecs_, true));
-  step_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), numvecs_, true));
+  p_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), 1, true));
+  step_= Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(), 1, true));
 }
 
 /*----------------------------------------------------------------------*/
@@ -81,7 +84,8 @@ void INVANA::OptimizerLBFGS::Integrate()
   UpdateObjFunctValue();
   error_incr_ = GetObjFunctValView();
 
-  MVNorm(GetGradientOldView(),SolLayoutMapUnique(),2,&convcritc_);
+  //MVNorm(GetGradientOldView(),SolLayoutMapUnique(),2,&convcritc_);
+  GetGradientOldView().Norm2(&convcritc_);
 
   PrintOptStep(0,0);
 
@@ -92,6 +96,8 @@ void INVANA::OptimizerLBFGS::Integrate()
 
     // do the line search
     success = EvaluateArmijoRule(&tauopt, &numsteps);
+    // -> UpdateSolution() was already called
+
 
     if (success == 1)
     {
@@ -100,18 +106,11 @@ void INVANA::OptimizerLBFGS::Integrate()
     }
 
     //get the L2-norm:
-    MVNorm(GetGradientView(),SolLayoutMapUnique(),2,&convcritc_);
+    MVNorm(GetGradientView(),SolLayoutMap(),2,&convcritc_);
 
-    //compute new direction only for runs>0
-    if (runc_<1)
-    {
-      p_->Update(-1.0, GetGradientView(), 0.0);
-    }
-    else
-    {
-      StoreVectors();
-      ComputeDirection();
-    }
+    //compute new direction
+    StoreVectors();
+    ComputeDirection();
 
     // bring quantities to the next run
     UpdateGradient();
@@ -155,10 +154,9 @@ int INVANA::OptimizerLBFGS::EvaluateArmijoRule(double* tauopt, int* numsteps)
   double blow=0.1;
   double bhigh=0.5;
 
-  MVNorm(GetGradientOldView(),SolLayoutMapUnique(),2,&gnorm);
+  MVNorm(GetGradientOldView(),SolLayoutMap(),2,&gnorm);
 
   double tau_n=std::min(stepsize_, 100.0/(1+gnorm));
-  //std::cout << "trial step size: " << tau_n << std::endl;
 
   // step based on current stepsize
   step_->Update(tau_n, *p_, 0.0);
@@ -172,12 +170,12 @@ int INVANA::OptimizerLBFGS::EvaluateArmijoRule(double* tauopt, int* numsteps)
 
     // check sufficient decrease:
     double dfp_o=0.0;
-    MVDotProduct(GetGradientOldView(),*p_,SolLayoutMapUnique(),&dfp_o);
+    MVDotProduct(GetGradientOldView(),*p_,SolLayoutMap(),&dfp_o);
 
     if ( (GetObjFunctValView()-GetObjFunctValOldView()) < c1*tau_n*dfp_o )
     {
       double dfp_n=0.0;
-      MVDotProduct(GetGradientView(),*p_,SolLayoutMapUnique(),&dfp_n);
+      MVDotProduct(GetGradientView(),*p_,SolLayoutMap(),&dfp_n);
       //check curvature condition:
       if (1) //(abs(dfp_n)<c2*abs(dfp_o))
       {
@@ -209,21 +207,6 @@ int INVANA::OptimizerLBFGS::EvaluateArmijoRule(double* tauopt, int* numsteps)
     UndoUpdateSolution();
     i++;
 
-#if 0
-    //brute force sampling:
-    if (runc_==-1)
-    {
-      for (int k=0; k<100; k++)
-      {
-        step_->Update(tau_n*k/100, *p_, 0.0);
-        Matman()->UpdateParams(step_);
-        SolveForwardProblem();
-        double ee = objfunct_->Evaluate(dis_,Matman());
-        std::cout << " run " << tau_n*k/100 << " " << ee << endl;
-        Matman()->ResetParams();
-      }
-    }
-#endif
   }
 
   return 1;
@@ -277,65 +260,57 @@ int INVANA::OptimizerLBFGS::polymod(double e_o, double dfp, double tau_n, double
 }
 
 /*----------------------------------------------------------------------*/
-/* store vectors*/
 void INVANA::OptimizerLBFGS::StoreVectors()
 {
-  if (runc_*numvecs_<=ssize_) // we have "<=" since we do not store the first run
+  // current storage size
+  int actsize=sstore_->NumSteps();
+  std::pair<int,int> steps=sstore_->GetSteps();
+  int past = steps.first;
+  int future = steps.second;
+
+  // increase storage volume if not maximal yet
+  if (actsize<ssize_ and runc_!=0) // in the first call to this we have already a storage from initialization
   {
-    actsize_+=numvecs_;
-    //resize storage
-    sstore_->Resize(-actsize_+1,0,&SolLayoutMap(),false);
-    ystore_->Resize(-actsize_+1,0,&SolLayoutMap(),false);
+    sstore_->Resize(past-1,future,&SolLayoutMap(),false);
+    ystore_->Resize(past-1,future,&SolLayoutMap(),false);
   }
 
-  Epetra_MultiVector s(SolLayoutMap(), (numvecs_),true);
+  Epetra_Vector s(SolLayoutMap(),true);
 
   //push back s
   s.Update(1.0,GetSolutionView(),-1.0,GetSolutionOldView(),0.0);
-  for (int i=0; i<s.NumVectors(); i++)
-    sstore_->UpdateSteps(*s(i));
+  sstore_->UpdateSteps(s);
 
   // push back y
   s.Update(1.0,GetGradientView(),-1.0,GetGradientOldView(),0.0);
-  for (int i=0; i<s.NumVectors(); i++)
-    ystore_->UpdateSteps(*s(i));
+  ystore_->UpdateSteps(s);
 
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
-/* compute new direction*/
 void INVANA::OptimizerLBFGS::ComputeDirection()
 {
   p_->Update(1.0,GetGradientView(),0.0);
+
   std::vector<double> alpha;
 
+  //current storage boundary indices
+  std::pair<int,int> steps = sstore_->GetSteps();
+  int past = steps.first;
+  int future = steps.second;
+
   // loop steps
-  for (int i=0; i>-actsize_; i-=numvecs_)
+  for (int i=future; i>=past; i--)
   {
     double a=0.0;
     double b=0.0;
-    double aa=0.0;
-    double bb=0.0;
+    (*sstore_)(i)->Dot((*ystore_)[i],&a);
+    p_->Dot((*sstore_)[i],&b);
+    alpha.push_back(1/a*b);
 
-    int ind=0;
-    for (int j=numvecs_; j>0; j--)
-    {
-      MVDotProduct(*(*ystore_)(i-j+1),*(*sstore_)(i-j+1),SolLayoutMapUnique(),&a);
-      MVDotProduct(*(*sstore_)(i-j+1),*(*p_)(ind),SolLayoutMapUnique(),&b);
-      ind++;
-      aa += a;
-      bb += b;
-    }
-    alpha.push_back(1/aa*bb);
-
-    ind=0;
-    for (int j=numvecs_; j>0; j--)
-    {
-      (*p_)(ind)->Update(-1.0*alpha.back(), *(*ystore_)(i-j+1),1.0 );
-      ind++;
-    }
+    p_->Update(-1.0*alpha.back(), (*ystore_)[i],1.0 );
   }
 
   // initial scaling: see Nocedal, "Numerical Optimization", 2006, p. 178, formula (7.20)
@@ -343,46 +318,29 @@ void INVANA::OptimizerLBFGS::ComputeDirection()
   {
     double nomi=0.0;
     double denomi=0.0;
-    double nom=0.0;
-    double denom=0.0;
-    for (int j=numvecs_; j>0; j--)
-    {
-      MVDotProduct(*(*ystore_)(-j+1),*(*sstore_)(-j+1),SolLayoutMapUnique(),&nomi);
-      MVDotProduct(*(*ystore_)(-j+1),*(*ystore_)(-j+1),SolLayoutMapUnique(),&denomi);
-      nom += nomi;
-      denom += denomi;
-    }
-    double gamma=nom/denom;
-    p_->Scale(gamma);
+    (*sstore_)(future)->Dot((*ystore_)[future],&nomi);
+    (*ystore_)(future)->Dot((*ystore_)[future],&denomi);
+    p_->Scale(nomi/denomi);
   }
 
-  for (int i=-actsize_+1; i<=0; i+=numvecs_)
+  for (int i=past; i<=future; i++)
   {
     double a=0.0;
     double b=0.0;
-    double aa=0.0;
-    double bb=0.0;
-    double beta=0.0;
+    (*sstore_)(i)->Dot((*ystore_)[i],&a);
+    p_->Dot((*ystore_)[i],&b);
 
-    for (int j=0; j<numvecs_; j++)
-    {
-      MVDotProduct(*(*ystore_)(i+j),*(*sstore_)(i+j),SolLayoutMapUnique(),&a);
-      MVDotProduct(*(*ystore_)(i+j),*(*p_)(j),SolLayoutMapUnique(),&b);
-      aa += a;
-      bb += b;
-    }
-    beta=1/aa*bb;
     double alphac=alpha.back();
     alpha.pop_back();
 
-    for (int j=0; j<numvecs_; j++)
-      (*p_)(j)->Update(alphac-beta, *(*sstore_)(i+j),1.0 );
+    p_->Update(alphac-1/a*b, (*sstore_)[i],1.0 );
   }
 
   // we do minimization not maximization
   p_->Scale(-1.0);
 
   return;
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -390,7 +348,7 @@ void INVANA::OptimizerLBFGS::ComputeDirection()
 void INVANA::OptimizerLBFGS::PrintOptStep(double tauopt, int numsteps)
 {
   double stepincr;
-  MVNorm(*step_,SolLayoutMapUnique(),0,&stepincr);
+  MVNorm(*step_,SolLayoutMap(),0,&stepincr);
 
   if (OptProb()->Comm().MyPID()==0)
   {
@@ -440,32 +398,27 @@ void INVANA::OptimizerLBFGS::ReadRestart(int run)
   if (not OptProb()->Comm().MyPID())
     std::cout << "Reading invana restart from step " << run << " from file: " << RestartFromFile()->FileName() << std::endl;
 
-  //IO::DiscretizationReader reader(discret_, RestartFromFile(),run);
-  if (run != reader.ReadInt("run"))
-    dserror("Optimization step on file not equal to given step");
-
   runc_ = run;
 
-  reader.ReadMultiVector(GetSolution(),"optimization_parameters");
+  reader.ReadMultiVector(GetSolution(),"solution");
 
-  actsize_ = reader.ReadInt("storage_size");
+  int actsize = reader.ReadInt("storage_size");
 
-  //resize storage
-  sstore_->Resize(-actsize_+1,0,&SolLayoutMap(),false);
-  ystore_->Resize(-actsize_+1,0,&SolLayoutMap(),false);
+  //initialize storage
+  sstore_->Resize(-actsize+1,0,&SolLayoutMap(),false);
+  ystore_->Resize(-actsize+1,0,&SolLayoutMap(),false);
 
-  if (actsize_>0)
-  {
-    Teuchos::RCP<Epetra_MultiVector> storage = Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(),actsize_,false));
-    reader.ReadMultiVector(storage,"sstore");
-    for (int i=actsize_-1; i>=0; i--)
-      sstore_->UpdateSteps(*(*storage)(i));
+  Teuchos::RCP<Epetra_MultiVector> storage = Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(),actsize,false));
 
-    storage->Scale(0.0);
-    reader.ReadMultiVector(storage,"ystore");
-    for (int i=actsize_-1; i>=0; i--)
-      ystore_->UpdateSteps(*(*storage)(i));
-  }
+  reader.ReadMultiVector(storage,"sstore");
+  for (int i=0; i<actsize; i++)
+    sstore_->UpdateSteps(*(*storage)(i));
+
+  storage->Scale(0.0);
+  reader.ReadMultiVector(storage,"ystore");
+  for (int i=0; i<actsize; i++)
+    ystore_->UpdateSteps(*(*storage)(i));
+
   return;
 }
 
@@ -478,33 +431,33 @@ void INVANA::OptimizerLBFGS::WriteRestart()
   if (not OptProb()->Comm().MyPID())
     std::cout << "Writing invana restart for step " << runc_ <<  std::endl;
 
-  Writer()->NewStep(runc_, double(runc_));
-  Writer()->WriteInt("run", runc_);
+  // initialize a new step
+  Writer()->WriteNewStep(runc_);
 
-  // write vectors with unique gids only
-  Teuchos::RCP<Epetra_MultiVector> uniqueparams = Teuchos::rcp(new Epetra_MultiVector(SolLayoutMapUnique(), numvecs_,false));
-  LINALG::Export(GetSolutionView(), *uniqueparams);
+  // write current solution
+  Writer()->WriteNamedVector("solution", GetSolution());
 
-  Writer()->WriteVector("optimization_parameters", uniqueparams);
+  // prepare for writing storage
+  int actsize=sstore_->NumSteps();
+  Writer()->WriteNamedInt("storage_size", actsize);
 
-  Writer()->WriteInt("storage_size", actsize_);
-  //only write vectors if something is there to be written
-  if (actsize_>0)
-  {
-    //write sstore
-    Teuchos::RCP<Epetra_MultiVector> uniquestorage = Teuchos::rcp(new Epetra_MultiVector(SolLayoutMapUnique(),actsize_,false));
-    for (int i=0; i<actsize_; i++)
-      LINALG::Export(*(*sstore_)(-i),*(*uniquestorage)(i));
+  Teuchos::RCP<Epetra_MultiVector> data =
+      Teuchos::rcp(new Epetra_MultiVector(SolLayoutMap(),actsize,false));
 
-    Writer()->WriteVector("sstore", uniquestorage);
+  std::pair<int,int> steps=sstore_->GetSteps();
+  int past=steps.first;
 
-    // write ystore
-    uniquestorage->Scale(0.0);
-    for (int i=0; i<actsize_; i++)
-      LINALG::Export(*(*ystore_)(-i),*(*uniquestorage)(i));
+  // process sstore_
+  for (int i=0; i<actsize; i++)
+    (*data)(i)->Scale(1.0,(*sstore_)[past+i]);
 
-    Writer()->WriteVector("ystore", uniquestorage);
-  }
+  Writer()->WriteNamedVector("sstore",data);
+
+  // process ystore_
+  for (int i=0; i<actsize; i++)
+    (*data)(i)->Scale(1.0,(*ystore_)[past+i]);
+
+  Writer()->WriteNamedVector("ystore",data);
 
   return;
 }

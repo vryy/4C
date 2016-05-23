@@ -1,13 +1,12 @@
 /*!----------------------------------------------------------------------
-
-\file invana_cal_drt.H
+\file invana_cal_drt.cpp
 
 \brief Start routines for the inverse analysis
 
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
-            http://www.mhpc.mw.tum.de
             089 - 289-10361
 </pre>
 
@@ -16,15 +15,15 @@ Maintainer: Sebastian Kehl
 #include "invana_cal_drt.H"
 #include "../drt_inpar/inpar_statinvanalysis.H"
 #include "../drt_inpar/inpar_invanalysis.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_inv_analysis/invana_factory.H"
-#include "../drt_inv_analysis/optimizer_factory.H"
-#include "../drt_inv_analysis/invana_base.H"
+
+// the hook to the old inverse analyses
 #include "../drt_structure/str_invanalysis.H"
 
+// the new inverse analysis
+#include "invana_control.H"
+#include "invana_base.H"
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void invana_cal()
 {
   // get input lists
@@ -41,25 +40,17 @@ void invana_cal()
    != INPAR::INVANA::stat_inv_none)
   {
 
-    // access the discretization
-    Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-    actdis = DRT::Problem::Instance()->GetDis("structure");
-
-    // set degrees of freedom in the discretization
-    if (!actdis->Filled()) actdis->FillComplete();
-    if (!actdis->HaveDofs()) actdis->FillComplete();
-
-    // create an instance of an optimization problem
-    INVANA::InvanaFactory invfac;
-    Teuchos::RCP<INVANA::InvanaBase> optprob = invfac.Create(actdis,invp);
+    // initialize inverse solution process
+    INVANA::InvanaControl inversesolution;
+    inversesolution.Init(invp);
 
     // solve
     int restart= DRT::Problem::Instance()->Restart();
-    optprob->Solve(restart);
+    inversesolution.Solve(restart);
 
     // test
-    DRT::Problem::Instance()->AddFieldTest(optprob->CreateFieldTest());
-    DRT::Problem::Instance()->TestAll(actdis->Comm());
+    DRT::Problem::Instance()->AddFieldTest(inversesolution.CreateFieldTest());
+    DRT::Problem::Instance()->TestAll(inversesolution.InverseProblem()->Comm());
   }
 
   return;

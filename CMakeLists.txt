@@ -1536,6 +1536,8 @@ set(OBJS_INV_ANALYSIS
 )
 set(OBJS_STATINV_ANALYSIS
   src/drt_inv_analysis/invana_cal_drt.cpp
+  src/drt_inv_analysis/invana_control.cpp
+  src/drt_inv_analysis/invana_writer.cpp
   src/drt_inv_analysis/timint_adjoint.cpp
   src/drt_inv_analysis/timint_adjoint_prestress.cpp
   src/drt_inv_analysis/objective_funct_disp.cpp

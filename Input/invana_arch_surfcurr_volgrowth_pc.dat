@@ -786,7 +786,7 @@ NODE 204      COORD    1.8500000000000000e+01    0.0000000000000000e+00    5.000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ------------------------------------------------RESULT DESCRIPTION
-INVANA SPECIAL QUANTITY gradient VALUE 1.3646790168e-03 TOLERANCE 1e-10
-INVANA SPECIAL QUANTITY error VALUE 5.8630468278e-04 TOLERANCE 1e-11
+INVANA SPECIAL QUANTITY gradient VALUE 5.42001856704740314e-04 TOLERANCE 1e-10
+INVANA SPECIAL QUANTITY error VALUE 5.68221776387469119e-04 TOLERANCE 1e-11
 ---------------------------------------------------------------END
 // END

@@ -5,7 +5,8 @@
 
 \brief tesing of inverse analysis results
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -19,6 +20,7 @@ Maintainer: Sebastian Kehl
 #include "invana_resulttest.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "invana_base.H"
+#include "invana_control.H"
 #include "matpar_manager.H"
 #include "optimizer_base.H"
 #include "invana_utils.H"
@@ -26,12 +28,12 @@ Maintainer: Sebastian Kehl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-INVANA::InvanaResultTest::InvanaResultTest(InvanaBase& ia)
+INVANA::InvanaResultTest::InvanaResultTest(InvanaControl& ia)
   : DRT::ResultTest("INVANA"),
     ia_(ia)
 {
-    discret_= ia_.Discret();
-    matman_ = ia_.Matman();
+    discret_= ia_.InverseProblem()->Discret();
+    matman_ = ia_.InverseProblem()->Matman();
     mysol_ = matman_->GetMatParams();
 }
 
@@ -91,9 +93,9 @@ void INVANA::InvanaResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int&
   double result=0.0;
 
   if (quantity == "gradient")
-    INVANA::MVNorm(ia_.Optimizer()->GetGradientView(),ia_.Optimizer()->SolLayoutMapUnique(),2,&result);
+    INVANA::MVNorm(ia_.GetGradient(),*(ia_.InverseProblem()->VectorRowLayout()),2,&result);
   else if (quantity == "error")
-    result=ia_.Optimizer()->GetObjFunctValView();
+    result=ia_.GetValue();
   else
     dserror("given quantity to test not to be found yet!");
 

@@ -4,9 +4,9 @@
 \brief Class to handle calls to material parameters from an optimization routine
 
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
-            http://www.lnm.mw.tum.de
             089 - 289-10361
 </pre>
 */
@@ -30,6 +30,17 @@ namespace DRT
 namespace INVANA
 {
 
+/*! \class MatParManagerPerElement
+ *  \brief Class to have elementwise constant parameters
+ *
+ *  This class handles elementwise constant material parameters.
+ *  The chainrule application in the gradient evaluation reduces
+ *  to a minimum.
+ *
+ *  The vector layout and the unique vector layout are identical.
+ *
+ *  \author kehl \date somewhen2013
+ */
 class MatParManagerPerElement  : public MatParManager
 {
 
@@ -44,18 +55,22 @@ public:
   //! Setup specific parametrization layout
   virtual void Setup();
 
-  //! nothing to be done in case of elementwise parameters
-  virtual void Finalize(Teuchos::RCP<Epetra_MultiVector> dfint){return;}
+  //! Account for distributed chain-rule application
+  virtual void Finalize(Teuchos::RCP<Epetra_MultiVector> source,
+      Teuchos::RCP<Epetra_MultiVector> target
+      );
 
 protected:
 
+  //! Get current material parameters
   virtual void FillParameters(Teuchos::RCP<Epetra_MultiVector> params);
 
+  //! Initialize optimization parameters
   virtual void InitParameters(int parapos, double val);
 
-  virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint, double val, int elepos, int paraposglobal, int paraposlocal);
-
-  const std::vector<int>& ParamsLIDtoeleGID() const {return paramsLIDtoeleGID_;}
+  //! Chain rule application
+  virtual void ContractGradient(Teuchos::RCP<Epetra_MultiVector> dfint,
+      double val, int elepos, int paraposglobal, int paraposlocal);
 
 private:
 
@@ -65,12 +80,24 @@ private:
   //! Set action for FillAdjacencyMatrix
   virtual void SetAction(Teuchos::ParameterList& p);
 
-  //! the two following 'maps' are processor specific: each proc has its own
-  //! map keeping correspondence between params in the parameter vector (parameter LID in optparams_) and
-  //! eleids (i.e gids of the discretizations ele layout)
+  //! @name Parameter access maps (processor specific)
+  //@{
+
+  /*! \brief Mapping between parameters and elements
+   *
+   * map keeping correspondence between params in the parameter
+   * vector (parameter LID in optparams_) and eleids (i.e gids of
+   * the discretizations element layout)
+   *
+   */
   std::vector<int> paramsLIDtoeleGID_;
 
-  //! map keeping correspondence between eleid (GID) + parameter block id and parameter LID
+  /*! \brief Mapping between elements and parameters
+   *
+   * map keeping correspondence between eleid (GID), parameter block id
+   * (i.e. material input file parameter) and parameter LID
+   *
+   */
   std::map< int, std::vector<int> > eleGIDtoparamsLID_;
 
 };
