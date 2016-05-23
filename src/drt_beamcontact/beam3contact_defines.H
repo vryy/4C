@@ -1,14 +1,15 @@
 /*!----------------------------------------------------------------------
 \file beam3contact_defines.H
 
-\brief A set of preprocessor defines for contact methods
+\brief A set of preprocessor defines for beam contact methods
 
-<pre>
-Maintainer: Christoph Meier
+\level 2
+
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
+
 *----------------------------------------------------------------------*/
 #ifndef BEAM3CONTACT_DEFINES_H
 #define BEAM3CONTACT_DEFINES_H
@@ -158,7 +159,7 @@ Maintainer: Christoph Meier
 #define N_CIRCUMFERENTIAL 10      /* number of gmsh visualization devisions of beam element in circumferential direction*/
 #define N_Axial 10               /* number of gmsh visualization devisions of beam element in axial direction*/
 
-//#define DISTINGUOSHCONTACTCOLOR
+//#define DISTINGUISHCONTACTCOLOR
 //#define CONTACTPAIRSPECIFICOUTPUT
 //#define OUTPUTALLPROCS
 //#define OUTPUTEVERY 0.000001        //Write gmsh output in time intervals of size OUTPUTEVERY

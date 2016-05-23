@@ -2302,7 +2302,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
   // create filename for ASCII-file for output
   //**********************************************************************
 
-  #if defined(CONTACTPAIRSPECIFICOUTPUT) or defined(DISTINGUOSHCONTACTCOLOR)
+  #if defined(CONTACTPAIRSPECIFICOUTPUT) or defined(DISTINGUISHCONTACTCOLOR)
     //Since all the gmsh-output is written by proc0 (this is necessary in order to keep the correct
     //order of the nodes and intermediate points when visualizing Bezier curves with Blender) the pairs_
     //vector would have to be communicated before writing the output
@@ -4070,7 +4070,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
 
   // declaring variable for color of elements
   double color = 1.0;
-#ifdef DISTINGUOSHCONTACTCOLOR
+#ifdef DISTINGUISHCONTACTCOLOR
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // abbreviations
@@ -4239,7 +4239,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
 
   // declaring variable for color of elements
   double color = 1.0;
-#ifdef DISTINGUOSHCONTACTCOLOR
+#ifdef DISTINGUISHCONTACTCOLOR
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // abbreviations
@@ -4438,7 +4438,7 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
 
   // declaring variable for color of elements
   double color = 1.0;
-#ifdef DISTINGUOSHCONTACTCOLOR
+#ifdef DISTINGUISHCONTACTCOLOR
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // abbreviations
@@ -4661,7 +4661,7 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
   // declaring variable for color of elements
   double color = 0.0;
 
-  #ifdef DISTINGUOSHCONTACTCOLOR
+  #ifdef DISTINGUISHCONTACTCOLOR
   for (int i=0;i<(int)pairs_.size();++i)
   {
     // abbreviations
@@ -4866,7 +4866,7 @@ void CONTACT::Beam3cmanager::GMSH_N_nodedLine(const int& n,
   // declaring variable for color of elements
   double color = 1.0;
 
-  #ifdef DISTINGUOSHCONTACTCOLOR
+  #ifdef DISTINGUISHCONTACTCOLOR
     for (int i=0;i<(int)pairs_.size();++i)
     {
       // abbreviations
