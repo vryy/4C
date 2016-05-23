@@ -23,7 +23,7 @@ namespace CONTACT
 {
 
 /*!
- \brief meshtying element for meshtying between a 3D beam end a 2D surface (belonging to a 3D solid) element
+ \brief meshtying element for meshtying between a 3D beam and several 2D surface (belonging to 3D solid) elements
 
  \author popp (popp@lnm.mw.tum.de)
  */
@@ -43,10 +43,8 @@ public:
   \param pdiscret (in): the problem discretization
   \param cdiscret (in): the beam contact discretization
   \param dofoffset (in): offset of dof between pdiscret and cdiscret
-  \param element1 (in): first element of meshtying pair
-  \param element2 (in): second element of meshtying pair
-  \param ele1pos (in): nodal coordinates of first element
-  \param ele2pos (in): nodal coordinates of second element
+  \param element1 (in): first element (beam) of meshtying group
+  \param element2 (in): list of second elements (solid surface) of meshtying group
   */
   Beam3tosolidmeshtyinginterface() {}
 
@@ -74,14 +72,14 @@ public:
   virtual const std::map<int,int>& DofOffset() const =0;
 
   /*!
-  \brief Get first element
+  \brief Get first element (beam)
   */
   virtual const DRT::Element* Element1()=0;
 
   /*!
-  \brief Get second element
+  \brief Get list of second elements (solid surface)
   */
-  virtual const DRT::Element* Element2()=0;
+  virtual const std::vector<DRT::Element*> Element2()=0;
 
   /*!
   \brief Get flag ndicating whether contact is active (true) or inactive (false)
@@ -106,7 +104,7 @@ public:
                                                            const DRT::Discretization& cdiscret,
                                                            const std::map<int,int>& dofoffsetmap,
                                                            DRT::Element* element1,
-                                                           DRT::Element* element2,
+                                                           std::vector<DRT::Element*> element2,
                                                            Teuchos::ParameterList beamcontactparams);
 
   //@}
@@ -131,16 +129,14 @@ public:
   \param pdiscret (in): the problem discretization
   \param cdiscret (in): the beam contact discretization
   \param dofoffset (in): offset of dof between pdiscret and cdiscret
-  \param element1 (in): first element of meshtying pair
-  \param element2 (in): second element of meshtying pair
-  \param ele1pos (in): nodal coordinates of first element
-  \param ele2pos (in): nodal coordinates of second element
+  \param element1 (in): first element (beam) of meshtying group
+  \param element2 (in): list of second elements (solid surface) of meshtying group
   */
   Beam3tosolidmeshtying(const DRT::Discretization& pdiscret,
                         const DRT::Discretization& cdiscret,
                         const std::map<int,int>& dofoffsetmap,
                         DRT::Element* element1,
-                        DRT::Element* element2,
+                        std::vector<DRT::Element*> element2,
                         Teuchos::ParameterList beamcontactparams);
 
   /*!
@@ -173,14 +169,14 @@ public:
   inline const std::map<int,int>& DofOffset() const { return dofoffsetmap_;};
 
   /*!
-  \brief Get first element
+  \brief Get first element (beam)
   */
   inline const DRT::Element* Element1() { return element1_;};
 
   /*!
-  \brief Get first element
+  \brief Get list of second elements (solid surface)
   */
-  inline const DRT::Element* Element2() { return element2_;};
+  inline const std::vector<DRT::Element*> Element2() { return element2_;};
 
   /*!
   \brief Get flag indicating whether contact is active (true) or inactive (false)
@@ -213,11 +209,11 @@ private:
   //! dof offset between pdiscret and cdiscret
   const std::map<int,int>& dofoffsetmap_;
 
-  //! first element of meshtying pair
+  //! first element (beam) of meshtying group
   DRT::Element* element1_;
 
-  //! second element of meshtying pair
-  DRT::Element* element2_;
+  //! list of second elements (solid surface) of meshtying group
+  std::vector<DRT::Element*> element2_;
 
   //! flag indicating contact (active/inactive)
   bool contactflag_;

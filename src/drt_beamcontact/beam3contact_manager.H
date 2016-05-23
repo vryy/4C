@@ -380,8 +380,8 @@ private:
   //! total vector of solid contact nodes
   std::vector<Teuchos::RCP<CONTACT::CoNode> > solcontactnodes_;
 
-  //! vector of close beam to solid meshtying pairs (pairs of elements, which might be in meshtying)
-  std::vector<Teuchos::RCP<Beam3tosolidmeshtyinginterface > > btsolmtpairs_;
+  //! vector of close beam to solid meshtying groups (groups of elements, which might be in meshtying)
+  std::vector<Teuchos::RCP<Beam3tosolidmeshtyinginterface > > btsolmtgroups_;
   //! total vector of solid meshtying elements
   std::vector<Teuchos::RCP<MORTAR::MortarElement> > solmeshtyingeles_;
   //! total vector of solid meyhtying nodes
@@ -410,9 +410,6 @@ private:
 
   //beam-to-solid pair map of last time step
   std::map<std::pair<int,int>, Teuchos::RCP<Beam3tosolidcontactinterface > > oldbtsolpairmap_;
-
-  //beam-to-solid meshtying pair map
-  std::map<std::pair<int,int>, Teuchos::RCP<Beam3tosolidmeshtyinginterface > > btsolmtpairmap_;
 
   //! parameter list for beam contact options
   Teuchos::ParameterList sbeamcontact_;

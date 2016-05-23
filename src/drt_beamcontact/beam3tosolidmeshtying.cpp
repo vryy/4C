@@ -26,7 +26,7 @@ CONTACT::Beam3tosolidmeshtying<numnodessol, numnodes, numnodalvalues>::Beam3toso
     const DRT::Discretization& cdiscret,
     const std::map<int,int>& dofoffsetmap,
     DRT::Element* element1,
-    DRT::Element* element2,
+    std::vector<DRT::Element*> element2,
     Teuchos::ParameterList beamcontactparams):
 pdiscret_(pdiscret),
 cdiscret_(cdiscret),
@@ -94,7 +94,7 @@ Teuchos::RCP<CONTACT::Beam3tosolidmeshtyinginterface> CONTACT::Beam3tosolidmesht
     const DRT::Discretization& cdiscret,
     const std::map<int,int>& dofoffsetmap,
     DRT::Element* element1,
-    DRT::Element* element2,
+    std::vector<DRT::Element*> element2,
     Teuchos::ParameterList beamcontactparams)
 {
 
