@@ -1,14 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file regularization_tikhonov.H
- \brief tikhonov type regularization
+\file regularization_tikhonov.H
+\brief Tikhonov type regularization
 
- <pre>
- Maintainer: Sebastian Kehl
- kehl@mhpc.mw.tum.de
- 089 - 289-10361
- </pre>
- */
+<pre>
+\level 3
+\maintainer Sebastian Kehl
+            kehl@mhpc.mw.tum.de
+            089 - 289-10361
+</pre>
+*/
+
 /*----------------------------------------------------------------------*/
 /* definitions */
 #ifndef REGULARIZATIONBASE_TIKHONOV_H
@@ -22,13 +24,17 @@ namespace INVANA
 
 {
 
-/*!
- \brief A class for regularization on a vector 'theta' of parameters based on Tikhonov
-
- Description
- \author kehl
+/*! \class RegularizationTikhonov
+ * \brief Tikhonov regularization
+ *
+ * Classical Tikhonov regularization, with an identity differential operator.
+ *
+ * This represents as prior belief on the parameters a multivariate normal
+ * distribution, with an identity covariance and some common mean shift. So
+ * the covariance is entirely represented by the weight of the regularization.
+ *
+ * \author kehl
  */
-
 class RegularizationTikhonov: public RegularizationBase
 {
 public:
@@ -42,28 +48,24 @@ public:
   //! setup of the class content (nothing to be done here)
   virtual void Setup(const Teuchos::ParameterList& invp);
 
-  //! evaluate value of the regularization functional
-  /*!
-    \param In
-    theta - vector to be regularized
-    \param Out
-    value - value of the regularization functional
-  */
-  virtual void Evaluate(const Epetra_MultiVector& theta, double* value);
+  //! @name Evaluation methods
+  //@{
 
-  //! evaluate gradient of the regularization functional
-  /*!
-    \param In
-    theta - vector to be regularized
-    \param Out
-    value - gradient of the regularization functional
-  */
-  virtual void EvaluateGradient(const Epetra_MultiVector& theta, Teuchos::RCP<Epetra_MultiVector> gradient);
+  //! Evaluate value of the regularization functional
+  virtual void Evaluate(const Epetra_MultiVector& theta, /// [in] vector to be regularized
+      double* value /// [out] functional value
+      );
 
+  //! Evaluate gradient of the regularization functional
+  virtual void EvaluateGradient(const Epetra_MultiVector& theta, /// [in] vector to be regularized
+      Teuchos::RCP<Epetra_MultiVector> gradient /// [out] directional derivative wrt. theta
+      );
+
+  //@}
 private:
 
-  //! mean value (shift from parabola about meanvalue along the parameter axis
-  double meanvalue_;
+  //! mean value
+  double mean_;
 };
 
 }

@@ -23,24 +23,6 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 WRITE_TO_SCREEN                 yes
 STDOUTEVRY                      1
--------------------------------------------------------STAT INVERSE ANALYSIS
-STAT_INV_ANALYSIS               LBFGS //GradientDescent
-ITERTOPC                        10
-LBFGSINITSCAL                   yes
-RESTARTEVRY                     0
-PARAMLIST 1 YOUNG
-MAXITER                         100
-STEPSIZE                        1.0
-CONVTOL                         1.0e-8
-PARAMETRIZATION                 elementwise
-REGULARIZATION                  totalvariation
-REG_WEIGHT_TVD                  0.0001
-TVD_EPS                         1.0e-2
-OBJECTIVEFUNCT                  surfcurr
-OBJECTIVEFUNCTSCAL              yes
-SIZESTORAGE                     100
-METAPARAMS                      quad
-KERNELSCALE                     1.0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics

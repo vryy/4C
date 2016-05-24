@@ -41,7 +41,7 @@ STEPSIZE                        1.0
 CONVTOL                         1.0e-10
 PARAMETRIZATION                 uniform
 REGULARIZATION                  tikhonov
-REG_WEIGHT_TIKH                 0.0
+REG_WEIGHT                      0.0
 SIZESTORAGE                     100
 METAPARAMS                      quad
 OBJECTIVEFUNCT                  displacements

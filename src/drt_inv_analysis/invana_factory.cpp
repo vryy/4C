@@ -25,7 +25,6 @@
 #include "regularization_base.H"
 #include "regularization_tikhonov.H"
 #include "regularization_totalvariation.H"
-#include "regularization_tvdtikh.H"
 
 // Input
 #include "../drt_inpar/inpar_statinvanalysis.H"
@@ -119,16 +118,10 @@ Teuchos::RCP<INVANA::InvanaBase> INVANA::InvanaFactory::Create(
       regman = Teuchos::rcp(new INVANA::RegularizationTotalVariation());
     }
     break;
-    case INPAR::INVANA::stat_inv_reg_tvdtikh:
-    {
-      regman = Teuchos::rcp(new
-          INVANA::RegularizationTotalVariationTikhonov());
-    }
-    break;
   }
   if (regman!=Teuchos::null)
   {
-    regman->Init(actdis,matman->GetConnectivityData());
+    regman->Init(matman->GetConnectivityData());
     regman->Setup(invp);
   }
 

@@ -2,13 +2,15 @@
 /*!
 \file regularization_base.cpp
 
+\brief Base class for regularization of optimization problems
+
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
-
-!*/
+*/
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -21,14 +23,12 @@ Maintainer: Sebastian Kehl
 /*----------------------------------------------------------------------*/
 /* constructor */
 INVANA::RegularizationBase::RegularizationBase() :
-discret_(Teuchos::null),
 connectivity_(Teuchos::null),
 weight_(0.0)
 {}
 
-void INVANA::RegularizationBase::Init(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<ConnectivityData> connectivity)
+void INVANA::RegularizationBase::Init(Teuchos::RCP<ConnectivityData> connectivity)
 {
-  discret_=discret;
   connectivity_=connectivity;
   return;
 }

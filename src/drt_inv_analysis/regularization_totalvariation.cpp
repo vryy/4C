@@ -2,8 +2,11 @@
 /*!
 \file regularization_totalvariation.cpp
 
+\brief Total variation type regularization
+
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -27,25 +30,20 @@ Maintainer: Sebastian Kehl
 
 
 /*----------------------------------------------------------------------*/
-/* standard constructor                                     keh 10/14   */
-/*----------------------------------------------------------------------*/
 INVANA::RegularizationTotalVariation::RegularizationTotalVariation() :
-  RegularizationBase()
+  RegularizationBase(),
+  eps_(0.0)
 {}
 
-/*----------------------------------------------------------------------*/
-/* Setup                                                    keh 10/14   */
 /*----------------------------------------------------------------------*/
 void INVANA::RegularizationTotalVariation::Setup(const Teuchos::ParameterList& invp)
 {
   adjacency_ = connectivity_->AdjacencyMatrix();
   eps_ = invp.get<double>("TVD_EPS");
-  weight_ = invp.get<double>("REG_WEIGHT_TVD");
+  weight_ = invp.get<double>("REG_WEIGHT");
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/* Evaluate                                                 keh 10/14   */
 /*----------------------------------------------------------------------*/
 void INVANA::RegularizationTotalVariation::Evaluate(const Epetra_MultiVector& theta, double* value)
 {
@@ -89,14 +87,16 @@ void INVANA::RegularizationTotalVariation::Evaluate(const Epetra_MultiVector& th
 
   // collect contributions from all procs
   double gfunctvalue=0.0;
-  discret_->Comm().SumAll(&functvalue,&gfunctvalue,1);
+  adjacency_->Comm().SumAll(&functvalue,&gfunctvalue,1);
 
   *value +=weight_*gfunctvalue;
 
   return;
 }
 
-void INVANA::RegularizationTotalVariation::EvaluateGradient(const Epetra_MultiVector& theta, Teuchos::RCP<Epetra_MultiVector> gradient)
+/*----------------------------------------------------------------------*/
+void INVANA::RegularizationTotalVariation::EvaluateGradient(const Epetra_MultiVector& theta,
+    Teuchos::RCP<Epetra_MultiVector> gradient)
 {
   // check if the map of theta is the row map of the adjacency matrix
   if (not theta.Map().SameAs(adjacency_->RowMap()))

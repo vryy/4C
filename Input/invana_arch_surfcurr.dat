@@ -37,7 +37,7 @@ STEPSIZE                        1.0
 CONVTOL                         1.0e-10
 PARAMETRIZATION                 elementwise
 REGULARIZATION                  tikhonov
-REG_WEIGHT_TIKH                 0.0
+REG_WEIGHT                      0.0
 OBJECTIVEFUNCT                  surfcurr
 TARGETDISCRETIZATION            invana_arch_surfcurr_target.dat
 SIZESTORAGE                     200

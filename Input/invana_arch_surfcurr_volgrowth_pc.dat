@@ -39,7 +39,7 @@ STEPSIZE                        1.0
 CONVTOL                         1.0e-8
 PARAMETRIZATION                 elementwise
 REGULARIZATION                  totalvariation
-REG_WEIGHT_TVD                  0.0001
+REG_WEIGHT                      0.0001
 TVD_EPS                         1.0e-3
 OBJECTIVEFUNCT                  surfcurr
 OBJECTIVEFUNCTSCAL              yes

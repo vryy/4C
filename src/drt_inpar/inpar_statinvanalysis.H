@@ -2,10 +2,13 @@
 /*!
 \file inpar_statinvanalysis.H
 
+\brief enums for the inverse analysis
+
 <pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+\level 3
+\maintainer Sebastian Kehl
+            kehl@lnm.mw.tum.de
+            089-289-10361
 </pre>
 */
 
@@ -26,8 +29,7 @@ namespace INPAR
     {
       stat_inv_reg_none,              // nothing defined
       stat_inv_reg_tikhonov,          // thikonov regularization
-      stat_inv_reg_totalvariation,    // total variation diminishing regularization
-      stat_inv_reg_tvdtikh            // tvd and tikhonov regularization
+      stat_inv_reg_totalvariation     // total variation diminishing regularization
     };
 
     // Parametrization of material parameters

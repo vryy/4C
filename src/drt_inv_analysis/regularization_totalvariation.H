@@ -1,18 +1,20 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file regularization_totalvariation.H
-\brief total variation type regularization
+
+\brief Total variation type regularization
 
 <pre>
-Maintainer: Sebastian Kehl
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
 */
 /*----------------------------------------------------------------------*/
 /* definitions */
-#ifndef REGULARIZATIONBASE_TOTALVARIATION_H
-#define REGULARIZATIONBASE_TOTALVARIATION_H
+#ifndef REGULARIZATION_TOTALVARIATION_H
+#define REGULARIZATION_TOTALVARIATION_H
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -23,7 +25,7 @@ namespace INVANA
 
 {
 
-  /*!
+  /*! \class RegularizationTotalVariation
   \brief A class for regularization on a vector 'theta' of parameters based on total variation
 
   Implementation of the Total Variation Functional
@@ -61,7 +63,7 @@ namespace INVANA
   procs and to exporting the gradient contributions from all procs
   according to the graph layout given via the adjacency matrix.
 
-  \author kehl
+  \author kehl \date 10/2014
  */
   class RegularizationTotalVariation : public RegularizationBase
   {
@@ -77,31 +79,33 @@ namespace INVANA
     //! setup of the class content
     virtual void Setup(const Teuchos::ParameterList& invp);
 
-    //! evaluate value of the regularization functional
-    /*!
-      \param In
-      theta - vector to be regularized
-      \param Out
-      value - value of the regularization functional
-    */
-    virtual void Evaluate(const Epetra_MultiVector& theta, double* value);
+    //! @name Evaluation methods
+    //@{
 
-    //! evaluate gradient of the regularization functional
-    /*!
-      \param In
-      theta - vector to be regularized
-      \param Out
-      value - gradient of the regularization functional
-    */
-    virtual void EvaluateGradient(const Epetra_MultiVector& theta, Teuchos::RCP<Epetra_MultiVector> gradient);
+    //! Evaluate value of the regularization functional
+    virtual void Evaluate(const Epetra_MultiVector& theta, /// [in] vector to be regularized
+        double* value /// [out] functional value
+        );
+
+    //! Evaluate gradient of the regularization functional
+    virtual void EvaluateGradient(const Epetra_MultiVector& theta, /// [in] vector to be regularized
+        Teuchos::RCP<Epetra_MultiVector> gradient /// [out] directional derivative wrt. theta
+        );
+
+    //@}
 
   private:
 
-    // differentiation epsilon
+    //! differentiation epsilon
     double eps_;
 
-    // the adjacency matrix defining the graph of the parameter vector
-    // and the weight of every row wrt its neighbour columns
+    /*! \brief adjacency matrix
+     *
+     * graph defining the connectivity of the parameter vector
+     * and the weight of every row wrt its neighbour columns.
+     * This is usually provided by INVANA::ConnectivityData
+     *
+     */
     Teuchos::RCP<Epetra_CrsMatrix> adjacency_;
 
   };

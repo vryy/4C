@@ -2,12 +2,13 @@
 /*!
 \file inpar_invanalysis.cpp
 
-\brief Input parameters for inverse analysis, including the statmech part
+\brief Input parameters for inverse analysis
 
 <pre>
-Maintainer: Jonas Biehler
-            biehler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
+\level 3
+\maintainer Sebastian Kehl
+            kehl@lnm.mw.tum.de
+            089-289-10361
 </pre>
 */
 
@@ -152,17 +153,15 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
 
   // want some regularization
   setStringToIntegralParameter<int>("REGULARIZATION","none",
-                                    "want regularization? ('tikhonov', 'totalvariation', 'tvdtikh', 'none')",
+                                    "want regularization? ('tikhonov', 'totalvariation', 'none')",
                                     tuple<std::string>(
                                       "none",
                                       "tikhonov",
-                                      "totalvariation",
-                                      "tvdtikh"),
+                                      "totalvariation"),
                                     tuple<int>(
                                       stat_inv_reg_none,
                                       stat_inv_reg_tikhonov,
-                                      stat_inv_reg_totalvariation,
-                                      stat_inv_reg_tvdtikh),
+                                      stat_inv_reg_totalvariation),
                                     &statinvp);
 
   // objective function
@@ -220,13 +219,10 @@ void INPAR::INVANA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   DoubleParameter("CONVTOL",1.0e-06,"stop optimizaiton iterations for convergence criterion below this value",&statinvp);
 
   // weight of the Tikhonov regularization
-  DoubleParameter("REG_WEIGHT_TIKH",0.1,"weight of the tikhonov regularization",&statinvp);
+  DoubleParameter("REG_WEIGHT",0.1,"weight of the regularization functional",&statinvp);
 
   // mean value of the Tikhonov regularization
-  DoubleParameter("MEAN_VAL_TIKH",0.0,"mean value for tikhonov regularization",&statinvp);
-
-  // weight of the total variation diminishing regularization
-  DoubleParameter("REG_WEIGHT_TVD",0.1,"weight of the total variation regularization",&statinvp);
+  DoubleParameter("REG_MEAN",0.0,"mean value for tikhonov regularization",&statinvp);
 
   // regularization of the totalvariation functional
   DoubleParameter("TVD_EPS",0.001,"differentiation epsilon for total variation",&statinvp);

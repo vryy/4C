@@ -38,7 +38,7 @@ STEPSIZE                        1.0
 CONVTOL                         1.0e-16
 PARAMETRIZATION                 uniform
 REGULARIZATION                  tikhonov
-REG_WEIGHT_TIKH                 0.0
+REG_WEIGHT                      0.0
 OBJECTIVEFUNCT                  displacements
 SIZESTORAGE                     100
 METAPARAMS                      none

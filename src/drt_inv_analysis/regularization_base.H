@@ -1,10 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
-  \file regularization_base.H
-  \brief base class for regularization of optimization problems
-<pre>
+\file regularization_base.H
 
-Maintainer: Sebastian Kehl
+\brief Base class for regularization of optimization problems
+
+<pre>
+\level 3
+\maintainer Sebastian Kehl
             kehl@mhpc.mw.tum.de
             089 - 289-10361
 </pre>
@@ -40,12 +42,15 @@ namespace INVANA
 
   class ConnectivityData;
 
-/*!
-  \brief A class for regularization on a vector 'theta' of parameters
-
-  Description
-
-  \author kehl
+/*! \class RegularizationBase
+ * \brief A class for regularization on a vector 'theta' of parameters
+ *
+ * Base class for the regularization functional in an optimization context.
+ * It simply provides the interface methods Evaluate and EvaluateGradient
+ * for the evaluation of the functional value and the functional derivative
+ * wrt to the parameter vector.
+ *
+ * \author kehl
  */
 class RegularizationBase
 {
@@ -56,40 +61,37 @@ public:
   RegularizationBase();
 
   //! destructor
-  virtual ~RegularizationBase() { ; };
+  virtual ~RegularizationBase() { ; }
+
+  //! @name Initialization
+  //@{
 
   //! Set member variables after construction.
-  /*!
-      \param In
-      mapxtractor - a mapextractor to extract possible blocks of parameters to be regularized independently
-   */
-  virtual void Init(Teuchos::RCP<DRT::Discretization> discret, Teuchos::RCP<ConnectivityData> connectivity);
+  virtual void Init(
+      Teuchos::RCP<ConnectivityData> connectivity /// [in] connectivity between the parameters
+      );
 
-  //! Setup of the derived classes
+  //! Setup
   virtual void Setup(const Teuchos::ParameterList& invp) = 0;
 
-  //! evaluate value of the regularization functional
-  /*!
-      \param In
-      theta - vector to be regularized
-      \param Out
-      value - value of the regularization functional
-   */
-  virtual void Evaluate(const Epetra_MultiVector& theta, double* value) = 0;
+  //@}
 
-  //! evaluate gradient of the regularization functional
-  /*!
-      \param In
-      theta - vector to be regularized
-      \param Out
-      value - gradient of the regularization functional
-   */
-  virtual void EvaluateGradient(const Epetra_MultiVector& theta, Teuchos::RCP<Epetra_MultiVector> gradient) = 0;
+  //! @name Evaluation methods
+  //@{
+
+  //! Evaluate value of the regularization functional
+  virtual void Evaluate(const Epetra_MultiVector& theta, /// [in] vector to be regularized
+      double* value /// [out] functional value
+      ) = 0;
+
+  //! Evaluate gradient of the regularization functional
+  virtual void EvaluateGradient(const Epetra_MultiVector& theta, /// [in] vector to be regularized
+      Teuchos::RCP<Epetra_MultiVector> gradient /// [out] directional derivative wrt. theta
+      ) = 0;
+
+  //@}
 
 protected:
-
-  //! a reference to the discretization
-  Teuchos::RCP<DRT::Discretization> discret_;
 
   //! layout of the parameters
   Teuchos::RCP<ConnectivityData> connectivity_;

@@ -1548,7 +1548,6 @@ set(OBJS_STATINV_ANALYSIS
   src/drt_inv_analysis/regularization_base.cpp
   src/drt_inv_analysis/regularization_totalvariation.cpp
   src/drt_inv_analysis/regularization_tikhonov.cpp
-  src/drt_inv_analysis/regularization_tvdtikh.cpp
   src/drt_inv_analysis/smc_particle_list.cpp
   src/drt_inv_analysis/invana_resulttest.cpp
   src/drt_inv_analysis/invana_utils.cpp
