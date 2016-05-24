@@ -755,6 +755,14 @@ private:
       std::stringstream& gmshfilecontent);
 
   /*!
+  \brief GMSH-Surface-Output for solid surfaces
+  */
+  void GMSH_SolidSurfaceElementNumbers(
+      const DRT::Element* element,
+      const Epetra_Vector& disrow,
+      std::stringstream& gmshfilecontent);
+
+  /*!
   \brief Get color of solid element surfaces for GMSH-Output
   */
   void GMSH_GetSurfColor(

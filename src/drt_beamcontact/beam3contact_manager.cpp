@@ -2952,6 +2952,17 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
           GMSH_Solid(element, disrow, gmshfilecontent);
         }
       }
+      // Loop over all column elements on this processor
+      for (int i = 0; i < BTSolDiscret().NumMyColElements(); ++i)
+      {
+        // Get pointer onto current beam element
+        DRT::Element* element = BTSolDiscret().lColElement(i);
+
+        if (!BEAMCONTACT::BeamElement(*element))
+        {
+          GMSH_SolidSurfaceElementNumbers(element, disrow, gmshfilecontent);
+        }
+      }
       #endif
 
       #if defined(GMSHDEBUG) || defined(SAVEFORCE)
@@ -4708,8 +4719,6 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
   // computation of coordinates starts here
   for (int i=0;i<n_axial-1;++i)
   {
-
-
     // prisms between node i and node i+1
     for (int j=0;j<3;++j)
     {
@@ -4717,25 +4726,16 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
       coord(j,1) = allcoord(j,i+1);
     }
 
-//    //Output of element IDs
-//    if (i==n_axial/2)
-//    {
-//      gmshfilecontent << "T3(" << std::scientific << coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," << 17 << ")";
-//      gmshfilecontent << "{\"" << thisele->Id() << "\"};" << std::endl;
-//    }
+    // separate elements by differently colored sub-segments
+    double loccolor = color;
+    if (i==0) loccolor = 0.25;
 
-//    //separate elements by black dots
-//    if(i==0)
-//    {
-//      gmshfilecontent <<"SP(" << coord(0,0) <<  "," << coord(1,0)+0.05 << "," << coord(2,0) << "){0.0,0.0};"<<std::endl;
-//      gmshfilecontent <<"SP(" << coord(0,0) <<  "," << coord(1,0)-0.05 << "," << coord(2,0)<< "){0.0,0.0};"<<std::endl;
-//    }
-//
-//    if(i==n_axial-2)
-//    {
-//      gmshfilecontent <<"SP(" << coord(0,1) <<  "," << coord(1,1) << "," << coord(2,1)+0.012 << "){0.0,0.0};"<<std::endl;
-//      gmshfilecontent <<"SP(" << coord(0,1) <<  "," << coord(1,1) << "," << coord(2,1)-0.012 << "){0.0,0.0};"<<std::endl;
-//    }
+    // output of element IDs
+    if (i==n_axial/2)
+    {
+      gmshfilecontent << "T3(" << std::scientific << coord(0,0) << "," << coord(1,0) << "," << coord(2,0) << "," << 17 << ")";
+      gmshfilecontent << "{\"" << thisele->Id() << "\"};" << std::endl;
+    }
 
     // compute three dimensional angle theta
     for (int j=0;j<3;++j)
@@ -4802,7 +4802,7 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
     gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
     gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
     gmshfilecontent << "){" << std::scientific;
-    gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl << std::endl;
+    gmshfilecontent << loccolor << "," << loccolor << "," << loccolor << "," << loccolor << "," << loccolor << "," << loccolor << "};" << std::endl << std::endl;
 
     // now the other prisms will be computed
     for (int sector=0;sector<n-1;++sector)
@@ -4846,7 +4846,7 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n,
       gmshfilecontent << prism(0,4) << "," << prism(1,4) << "," << prism(2,4) << ",";
       gmshfilecontent << prism(0,5) << "," << prism(1,5) << "," << prism(2,5);
       gmshfilecontent << "){" << std::scientific;
-      gmshfilecontent << color << "," << color << "," << color << "," << color << "," << color << "," << color << "};" << std::endl << std::endl;
+      gmshfilecontent << loccolor << "," << loccolor << "," << loccolor << "," << loccolor << "," << loccolor << "," << loccolor << "};" << std::endl << std::endl;
     }
   }
 
@@ -4891,12 +4891,16 @@ void CONTACT::Beam3cmanager::GMSH_N_nodedLine(const int& n,
 
   for (int i=0;i<n_axial-1;i++)
   {
-    //    //Output of element IDs
-//    if (i==n_axial/2)
-//    {
-//      gmshfilecontent << "T3(" << std::scientific << allcoord(0,i) << "," << allcoord(1,i) << "," << allcoord(2,i) << "," << 17 << ")";
-//      gmshfilecontent << "{\"" << thisele->Id() << "\"};" << std::endl;
-//    }
+    // separate elements by black dots
+    if (i==0)
+      gmshfilecontent <<"SP(" << allcoord(0,i) <<  "," << allcoord(1,i) << "," << allcoord(2,i) << "){0.0,0.0};"<<std::endl;
+
+    // output of element IDs
+    if (i==n_axial/2)
+    {
+      gmshfilecontent << "T3(" << std::scientific << allcoord(0,i) << "," << allcoord(1,i) << "," << allcoord(2,i) << "," << 17 << ")";
+      gmshfilecontent << "{\"" << thisele->Id() << "\"};" << std::endl;
+    }
 
     gmshfilecontent << "SL("<< std::scientific;
     gmshfilecontent << allcoord(0,i) << "," << allcoord(1,i) << "," << allcoord(2,i) << ",";
@@ -5202,6 +5206,52 @@ void CONTACT::Beam3cmanager::GMSH_Solid(
       break;
     }
   }
+}
+
+/*----------------------------------------------------------------------*
+ | Compute Gmsh output for solid surface element numbers                |
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::GMSH_SolidSurfaceElementNumbers(
+    const DRT::Element* element,
+    const Epetra_Vector& disrow,
+    std::stringstream& gmshfilecontent)
+{
+  // Prepare storage for nodal coordinates
+  int nnodes = element->NumNode();
+  LINALG::SerialDenseMatrix coord(3, nnodes);
+
+  // Compute current nodal positions
+  for (int i_dim = 0; i_dim < 3; i_dim++)
+  {
+    for (int i_node = 0; i_node < element->NumNode(); i_node++)
+    {
+      double referenceposition = ((element->Nodes())[i_node])->X()[i_dim];
+      std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[i_node]);
+      std::vector<int> problemdofnode;
+      for (int m=0;m<(int)dofnode.size();++m)
+        problemdofnode.push_back((dofoffsetmap_.find(dofnode[m]))->second);
+      double displacement = disrow[ProblemDiscret().DofColMap()->LID(problemdofnode[i_dim])];
+      coord(i_dim,i_node) = referenceposition + displacement;
+    }
+  }
+
+  // center point of element
+  double center[3] = {0.0, 0.0, 0.0};
+  for (int k=0;k<nnodes;++k)
+  {
+    center[0] += coord(0,k);
+    center[1] += coord(1,k);
+    center[2] += coord(2,k);
+  }
+  center[0] /= nnodes;
+  center[1] /= nnodes;
+  center[2] /= nnodes;
+
+  //Output of element IDs
+  gmshfilecontent << "T3(" << std::scientific << center[0] << "," << center[1] << "," << center[2] << "," << 17 << ")";
+  gmshfilecontent << "{\"" << element->Id() << "\"};" << std::endl;
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
