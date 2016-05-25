@@ -1115,14 +1115,22 @@ private:
 
   //! calculation of nonlinear stiffness and mass matrix
   template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-  void b3_nlnstiffmass( Teuchos::ParameterList&   params,
-                        std::vector<double>&      acc,
-                        std::vector<double>&      vel,
-                        std::vector<double>&      disp,
-                        Epetra_SerialDenseMatrix* stiffmatrix,
-                        Epetra_SerialDenseMatrix* massmatrix,
-                        Epetra_SerialDenseVector* force,
-                        Epetra_SerialDenseVector* inertia_force);
+  void CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList&   params,
+                                                 std::vector<double>&      acc,
+                                                 std::vector<double>&      vel,
+                                                 std::vector<double>&      disp,
+                                                 Epetra_SerialDenseMatrix* stiffmatrix,
+                                                 Epetra_SerialDenseMatrix* massmatrix,
+                                                 Epetra_SerialDenseVector* force,
+                                                 Epetra_SerialDenseVector* inertia_force);
+
+  //! calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics
+  template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+  void CalcBrownianForcesAndStiff(Teuchos::ParameterList&   params,
+                                  std::vector<double>&      vel,
+                                  std::vector<double>&      disp,
+                                  Epetra_SerialDenseMatrix* stiffmatrix,
+                                  Epetra_SerialDenseVector* force);
 
   //! update (total) displacement vector and set nodal triads (as quaternions)
   template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>

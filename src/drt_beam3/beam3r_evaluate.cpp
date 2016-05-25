@@ -148,33 +148,39 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
           case 2:
           {
             if (!centerline_hermite_)
-              b3_nlnstiffmass<2,2,1>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+            {
+              CalcInternalAndInertiaForcesAndStiff<2,2,1>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+              if (needstatmech_)
+                CalcBrownianForcesAndStiff<2,2,1>(params,myvel,mydisp,&elemat1,&elevec1);
+            }
             else
-              b3_nlnstiffmass<2,2,2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+            {
+              CalcInternalAndInertiaForcesAndStiff<2,2,2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+            }
             break;
           }
           case 3:
           {
             if (!centerline_hermite_)
-              b3_nlnstiffmass<3,3,1>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+              CalcInternalAndInertiaForcesAndStiff<3,3,1>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
             else
-              b3_nlnstiffmass<3,2,2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+              CalcInternalAndInertiaForcesAndStiff<3,2,2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
             break;
           }
           case 4:
           {
             if (!centerline_hermite_)
-              b3_nlnstiffmass<4,4,1>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+              CalcInternalAndInertiaForcesAndStiff<4,4,1>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
             else
-              b3_nlnstiffmass<4,2,2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+              CalcInternalAndInertiaForcesAndStiff<4,2,2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
             break;
           }
           case 5:
           {
             if (!centerline_hermite_)
-              b3_nlnstiffmass<5,5,1>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+              CalcInternalAndInertiaForcesAndStiff<5,5,1>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
             else
-              b3_nlnstiffmass<5,2,2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
+              CalcInternalAndInertiaForcesAndStiff<5,2,2>(params,myacc,myvel,mydisp,&elemat1,&elemat2,&elevec1,&elevec2);
             break;
           }
         }
@@ -193,33 +199,39 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
           case 2:
           {
             if (!centerline_hermite_)
-              b3_nlnstiffmass<2,2,1>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+            {
+              CalcInternalAndInertiaForcesAndStiff<2,2,1>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+              if (needstatmech_)
+                CalcBrownianForcesAndStiff<2,2,1>(params,myvel,mydisp,&elemat1,&elevec1);
+            }
             else
-              b3_nlnstiffmass<2,2,2>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+            {
+              CalcInternalAndInertiaForcesAndStiff<2,2,2>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+            }
             break;
           }
           case 3:
           {
             if (!centerline_hermite_)
-              b3_nlnstiffmass<3,3,1>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+              CalcInternalAndInertiaForcesAndStiff<3,3,1>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
             else
-              b3_nlnstiffmass<3,2,2>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+              CalcInternalAndInertiaForcesAndStiff<3,2,2>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
             break;
           }
           case 4:
           {
             if (!centerline_hermite_)
-              b3_nlnstiffmass<4,4,1>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+              CalcInternalAndInertiaForcesAndStiff<4,4,1>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
             else
-              b3_nlnstiffmass<4,2,2>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+              CalcInternalAndInertiaForcesAndStiff<4,2,2>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
             break;
           }
           case 5:
           {
             if (!centerline_hermite_)
-              b3_nlnstiffmass<5,5,1>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+              CalcInternalAndInertiaForcesAndStiff<5,5,1>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
             else
-              b3_nlnstiffmass<5,2,2>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
+              CalcInternalAndInertiaForcesAndStiff<5,2,2>(params,myacc,myvel,mydisp,&elemat1,NULL,&elevec1,NULL);
             break;
           }
           default:
@@ -234,33 +246,39 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
           case 2:
           {
             if (!centerline_hermite_)
-              b3_nlnstiffmass<2,2,1>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
+            {
+              CalcInternalAndInertiaForcesAndStiff<2,2,1>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
+              if (needstatmech_)
+                CalcBrownianForcesAndStiff<2,2,1>(params,myvel,mydisp,NULL,&elevec1);
+            }
             else
-              b3_nlnstiffmass<2,2,2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
+            {
+              CalcInternalAndInertiaForcesAndStiff<2,2,2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
+            }
             break;
           }
           case 3:
           {
             if (!centerline_hermite_)
-              b3_nlnstiffmass<3,3,1>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
+              CalcInternalAndInertiaForcesAndStiff<3,3,1>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
             else
-              b3_nlnstiffmass<3,2,2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
+              CalcInternalAndInertiaForcesAndStiff<3,2,2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
             break;
           }
           case 4:
           {
             if (!centerline_hermite_)
-              b3_nlnstiffmass<4,4,1>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
+              CalcInternalAndInertiaForcesAndStiff<4,4,1>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
             else
-              b3_nlnstiffmass<4,2,2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
+              CalcInternalAndInertiaForcesAndStiff<4,2,2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
             break;
           }
           case 5:
           {
             if (!centerline_hermite_)
-              b3_nlnstiffmass<5,5,1>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
+              CalcInternalAndInertiaForcesAndStiff<5,5,1>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
             else
-              b3_nlnstiffmass<5,2,2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
+              CalcInternalAndInertiaForcesAndStiff<5,2,2>(params,myacc,myvel,mydisp,NULL,NULL,&elevec1,NULL);
             break;
           }
           default:
@@ -551,17 +569,17 @@ inline void DRT::ELEMENTS::Beam3r::pushforward(const LINALG::TMatrix<T,3,3>& Lam
 }
 
 /*------------------------------------------------------------------------------------------------------------*
- | nonlinear stiffness and mass matrix (private)                                                   cyron 01/08|
+ | calculate internal and inertia forces and their contributions to stiffmatrix                    cyron 01/08|
  *-----------------------------------------------------------------------------------------------------------*/
 template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-void DRT::ELEMENTS::Beam3r::b3_nlnstiffmass(Teuchos::ParameterList&   params,
-                                            std::vector<double>&      acc,
-                                            std::vector<double>&      vel,
-                                            std::vector<double>&      disp,
-                                            Epetra_SerialDenseMatrix* stiffmatrix,
-                                            Epetra_SerialDenseMatrix* massmatrix,
-                                            Epetra_SerialDenseVector* force,
-                                            Epetra_SerialDenseVector* inertia_force)
+void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList&   params,
+                                                                      std::vector<double>&      acc,
+                                                                      std::vector<double>&      vel,
+                                                                      std::vector<double>&      disp,
+                                                                      Epetra_SerialDenseMatrix* stiffmatrix,
+                                                                      Epetra_SerialDenseMatrix* massmatrix,
+                                                                      Epetra_SerialDenseVector* force,
+                                                                      Epetra_SerialDenseVector* inertia_force)
 {
   // nnodetriad: number of nodes used for interpolation of triad field
   // nnodecl: number of nodes used for interpolation of centerline
@@ -1589,15 +1607,18 @@ void DRT::ELEMENTS::Beam3r::b3_nlnstiffmass(Teuchos::ParameterList&   params,
   }//if (massmatrix != NULL and inertia_force != NULL)
 
 
-  /**************** damping and stochastic forces: compute fint and stiffmatrix ************************
-   *****************************************************************************************************/
+  /*****************************************************************************************************/
 
   // do the following only for applications of statistical mechanics
   if(needstatmech_)
   {
-    // so far, centerline and triad field is interpolated with linear Lagrange polynomials, i.e. only use I_i and nnodetriad (=2) in the following
-    if(centerline_hermite_) dserror("Hermite interpolation of centerline not implemented yet for Statmech applications");
-    if(nnodetriad!=nnodecl) dserror("you should not be here, different interpolation of centerline and triad field is not implemented yet for Statmech applications");
+
+    //This is a dummy mass matrix which is necessary for statmech simulations
+    if(massmatrix != NULL)
+    {
+      for (unsigned int i=0; i<6*nnodetriad; i++)
+        (*massmatrix)(i,i) = 1;
+    }
 
     // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
     // TODO check: do we still need this in Statmech?
@@ -1608,14 +1629,101 @@ void DRT::ELEMENTS::Beam3r::b3_nlnstiffmass(Teuchos::ParameterList&   params,
       for (int i=0; i<3; ++i)
         Ngp_(i) = FADUTILS::CastToDouble(stressN(i));
     }
+  }
 
-    //This is a dummy mass matrix which is necessary for statmech simulations
-    if(massmatrix != NULL)
-    {
-      for (unsigned int i=0; i<6*nnodetriad; i++)
-        (*massmatrix)(i,i) = 1;
-    }
+  return;
+} // DRT::ELEMENTS::Beam3r::b3_nlnstiffmass
 
+/*------------------------------------------------------------------------------------------------------------*
+ | calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics      grill 06/16|
+ *------------------------------------------------------------------------------------------------------------*/
+template<unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
+void DRT::ELEMENTS::Beam3r::CalcBrownianForcesAndStiff(Teuchos::ParameterList&   params,
+                                                       std::vector<double>&      vel,
+                                                       std::vector<double>&      disp,
+                                                       Epetra_SerialDenseMatrix* stiffmatrix,
+                                                       Epetra_SerialDenseVector* force)
+{
+  // nnodetriad: number of nodes used for interpolation of triad field
+  // nnodecl: number of nodes used for interpolation of centerline
+  // assumptions: nnodecl<=nnodetriad; centerline nodes have local ID 0...nnodecl-1
+  // vpernode: number of interpolated values per centerline node (1: value (i.e. Lagrange), 2: value + derivative of value (i.e. Hermite))
+
+
+  // do the following only for applications of statistical mechanics
+  if(needstatmech_)
+  {
+    // so far, centerline and triad field is interpolated with linear Lagrange polynomials, i.e. only use I_i and nnodetriad (=2) in the following
+    if(centerline_hermite_) dserror("Hermite interpolation of centerline not implemented yet for Statmech applications");
+    if(nnodetriad!=nnodecl) dserror("you should not be here, different interpolation of centerline and triad field is not implemented yet for Statmech applications");
+
+    /********************************** Initialize/resize variables **************************************
+     *****************************************************************************************************/
+
+    //********************************** quantities valid for entire element *****************************
+    const int dofperclnode = 3*vpernode;
+    const int dofpertriadnode = 3;
+  //  const int dofpercombinode = dofperclnode+dofpertriadnode;
+
+    // internal force vector
+    LINALG::TMatrix<FADordouble, dofperclnode*nnodecl+dofpertriadnode*nnodetriad, 1> f_int(true);
+
+    // reference triad Lambda_r and corresponding quaternion Q_r
+    LINALG::TMatrix<FADordouble,3,3> Lambda_r(true);
+    LINALG::TMatrix<FADordouble,4,1> Q_r(true);
+
+    // angle of relative rotation between node I and J according to (3.10), Jelenic 1999
+    LINALG::TMatrix<FADordouble,3,1> Phi_IJ(true);
+
+    //**************************************** nodal quantities *******************************************
+
+    // current nodal DOFs relevant for centerline interpolation in total Lagrangian style, i.e. initial values + displacements
+    LINALG::TMatrix<FADordouble,3*vpernode*nnodecl,1> disp_totlag_centerline(true);
+
+    // quaternions of all nodal triads
+    std::vector<LINALG::TMatrix<FADordouble,4,1> > Q_i(nnodetriad);
+
+    // rotation angles between nodal triads and reference triad according to (3.8), Jelenic 1999
+    std::vector<LINALG::TMatrix<FADordouble,3,1> > Psi_li(nnodetriad);
+
+    //*************************** physical quantities evaluated at a certain GP ***************************
+
+    // derivation of beam centerline with respect to arc-length parameter: r'(x) from (2.12), Jelenic 1999
+    LINALG::TMatrix<FADordouble,3,1> r_s;
+    // spin matrix related to vector r_s
+    LINALG::TMatrix<FADordouble,3,3> r_s_hat;
+    // interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
+    LINALG::TMatrix<FADordouble,3,1> Psi_l;
+
+    //********************************** (generalized) shape functions ************************************
+    /* Note: index i refers to the i-th shape function (i = 0 ... nnode*vpernode-1)
+     * the vectors store individual shape functions, NOT an assembled matrix of shape functions)*/
+
+    /* vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial shape functions evaluated at the numgp-th Gauss point
+     * these shape functions are used for the interpolation of the triad field*/
+    std::vector<LINALG::Matrix<1,nnodetriad> > I_i;
+
+    // vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at a certain Gauss point according to (3.18), Jelenic 1999
+    std::vector<LINALG::TMatrix<double,3,3> > Itilde(nnodetriad);
+
+    /*************************** update/compute quantities valid for entire element **********************
+     *****************************************************************************************************/
+
+    // update disp_totlag
+    UpdateDispTotLagAndNodalTriads<nnodetriad,nnodecl,vpernode>(disp,disp_totlag_centerline,Q_i);
+
+    // compute reference triad Lambda_r according to (3.9), Jelenic 1999
+    CalcRefQuaternion<FADordouble>(Q_i[nodeI_],Q_i[nodeJ_],Q_r,Phi_IJ);
+    LARGEROTATIONS::quaterniontotriad(Q_r,Lambda_r);
+
+    /* compute nodal local rotations according to (3.8), Jelenic 1999
+     * this is done individually for each node in order to avoid function argument std::vector<LINALG::TMatrix<...> >
+     * a function with this argument type cannot be called with an argument of type std::vector<LINALG::Matrix<...> > (needed e.g. in SetUpReferenceGeometry) */
+    for (unsigned int node=0; node<nnodetriad; ++node)
+      CalcPsi_li<FADordouble>(Q_i[node],Q_r,Psi_li[node]);
+
+    /**************** damping and stochastic forces: compute fint and stiffmatrix ************************
+     *****************************************************************************************************/
 
     // check whether random numbers vector exists
     // TODO this check is a leftover from historic code; check: necessary? best location/ best way to do this?
@@ -1638,7 +1746,8 @@ void DRT::ELEMENTS::Beam3r::b3_nlnstiffmass(Teuchos::ParameterList&   params,
         //evaluate all shape functions at all specified Gauss points
         EvaluateShapeFunctionsAllGPs<nnodetriad,1>(gausspoints_damp_stoch,I_i,this->Shape());
 
-        dsassert(gaussrule_damp_stoch == MyGaussRule(res_inertia), "this implementation assumes the same integration scheme for mass and statmech terms because it reuses class variables dispnewGPmass_ and QnewGPmass_");
+        dsassert(gaussrule_damp_stoch == MyGaussRule(res_inertia), "this implementation assumes identical integration scheme for mass and statmech terms because"
+            " both calculation methods share the class variable QnewGPmass_! and dispnewGPmass_ (?)");
 
         for (int gp=0; gp<gausspoints_damp_stoch.nquad; gp++)//loop through Gauss points
         {
@@ -1664,7 +1773,7 @@ void DRT::ELEMENTS::Beam3r::b3_nlnstiffmass(Teuchos::ParameterList&   params,
   }
 
   return;
-} // DRT::ELEMENTS::Beam3r::b3_nlnstiffmass
+}
 
 /*------------------------------------------------------------------------------------------------------------*
  | update (total) displacement vector and set nodal triads (as quaternions)                        grill 03/16|
