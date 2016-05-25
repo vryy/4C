@@ -1180,15 +1180,6 @@ void CAVITATION::Algorithm::Integrate(bool& particlereset)
     ComputeRadius();
   }
 
-  // enforce 2D bubble movement for pseudo-2D problem
-  if(particle_dim_ == INPAR::PARTICLE::particle_2Dz)
-  {
-    Teuchos::RCP<Epetra_Vector> vel = particles_->WriteAccessVelnp();
-    const int numnodes = vel->MyLength()/dim_;
-    for(int i=0; i<numnodes; ++i)
-      (*vel)[i*dim_+2] = 0.0;
-  }
-
   // apply forces and solve particle time step
   PARTICLE::Algorithm::Integrate();
 

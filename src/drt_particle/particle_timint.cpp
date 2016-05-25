@@ -322,24 +322,43 @@ void PARTICLE::TimInt::ComputeAcc(
   Teuchos::RCP<Epetra_Vector> global_ang_acc)
 {
   int numrownodes = discret_->NodeRowMap()->NumMyElements();
+
   // in case of contact, consider corresponding forces and moments
   if(f_contact != Teuchos::null)
   {
     // sum all forces (contact and external)
     fifc_->Update(1.0, *f_contact, 1.0);
 
+    // zero out non-planar entries in case of 2D
+    if(particle_algorithm_->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
+    {
+      for(int i=0; i<numrownodes; ++i)
+      {
+        (*m_contact)[i*3+0] = 0.0;
+        (*m_contact)[i*3+1] = 0.0;
+      }
+    }
+
+    // compute angular acceleration
     for(int i=0; i<numrownodes; ++i)
     {
-      double invinertia = 1.0/(*inertia_)[i];
+      const double invinertia = 1.0/(*inertia_)[i];
       for(int dim=0; dim<3; ++dim)
         (*global_ang_acc)[i*3+dim] = invinertia * (*m_contact)[i*3+dim];
     }
   }
 
+  // zero out non-planar entries in case of 2D
+  if(particle_algorithm_->ParticleDim() == INPAR::PARTICLE::particle_2Dz)
+  {
+    for(int i=0; i<numrownodes; ++i)
+      (*fifc_)[i*3+2] = 0.0;
+  }
+
   // update of translational acceleration
   for(int i=0; i<numrownodes; ++i)
   {
-    double invmass = 1.0/(*mass_)[i];
+    const double invmass = 1.0/(*mass_)[i];
     for(int dim=0; dim<3; ++dim)
       (*global_acc)[i*3+dim] = invmass * (*fifc_)[i*3+dim];
   }

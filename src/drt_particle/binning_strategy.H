@@ -137,6 +137,9 @@ namespace BINSTRATEGY
     /// return delta for pbc in x, y, or z direction
     virtual double PBCDelta(const int dim) { return pbcdeltas_[dim]; };
 
+    /// return dimension of the problem
+    virtual INPAR::PARTICLE::ParticleDim ParticleDim() { return particle_dim_; };
+
     /// convert i,j,k into bin id
     virtual int ConvertijkToGid(
       int* ijk  ///< i,j,k to be converted into a bin id
