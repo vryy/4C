@@ -178,6 +178,15 @@ public:
   */
   virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
+  /** \brief Get number of nodes used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline int NumCenterlineNodes() const
+  {
+    return centerline_hermite_ ? 2 : this->NumNode();
+  }
+
   /*!
   \brief Get number of degrees of freedom of a single node
   */
@@ -236,7 +245,7 @@ public:
   /*!
   \brief return flag whether Hermite polynomials are applied for centerline interpolation
   */
-  bool HermiteCenterlineInterpolation() const { return centerline_hermite_;}
+  virtual inline bool HermiteCenterlineInterpolation() const { return centerline_hermite_;}
 
   /*!
    \brief Get centerline position at given parameter coordinate xi
@@ -262,6 +271,7 @@ public:
   {
     return Trefnode_;
   }
+
   /*!
   \brief Get jacobiGP_ factor of first Gauss point for under-integration (constant over element length for linear Lagrange interpolation)
   */
@@ -277,6 +287,12 @@ public:
   {
     return Kmax_;
   }
+
+  /** \brief get access to the reference length
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline double GetRefLength() const { return reflength_; }
 
   /*!
   \brief Get current nodal triads as quaternions

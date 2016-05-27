@@ -69,8 +69,8 @@ typedef Sacado::Fad::DFad<double> FAD;
 //DEFAULT: BEAM3K_COLLOCATION_POINTS 3   //to interpolate the torsional degree of freedom alpha_. Furthermore, it specifies the number of collocation
                                          //points defining the number of material triads used to interpolate the triad field.
 
-//#define BEAM3K_MULTIPLICATIVEUPDATES //In the case rotvec_==true, the nodal rotation increments are calculated in a multiplicative manner!!!
-                                       //In case of additive updates, the nodal rotation vectors have to satisfy theta_node in [-PI;PI].
+#define BEAM3K_MULTIPLICATIVEUPDATES //In the case rotvec_==true, the nodal rotation increments are calculated in a multiplicative manner!!!
+//DEFAULT: true                        //In case of additive updates, the nodal rotation vectors have to satisfy theta_node in [-PI;PI].
                                        //The T-matrix becomes singular for ||theta_node||=k*2*PI. In order to avoid such situations, we require  ||theta_node||<= PI.
                                        //This restriction still enables the representation of all possible orientations.
                                        //-->see also A. Cardona and M. Geradin, "A beam finite element non-linear theory with finite rotations", 1988.
@@ -210,7 +210,7 @@ public:
   }
 
   /*!
-  \brief get moment of inertia Iyy
+  \brief get moment of inertia Iyy    // TODO print at least warning in case of anisotropy, i.e. Iyy!=Izz; better: always return both in double array
   */
   const double& Iyy() const
   {
@@ -234,6 +234,26 @@ public:
    \brief Get base vectors describing the cross-section orientation and size at given parameter coordinate xi
   */
   std::vector<LINALG::Matrix<3,1> > GetBaseVectors(double& xi) const;
+
+  /** \brief get access to the reference length
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline double GetRefLength() const { return length_; }
+
+  /*!
+  \brief Get jacobi factor of first Gauss point
+  */
+  const double& GetJacobi() const
+  {
+    return jacobi_[0];
+  }
+
+  /** \brief get number of nodes used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline int NumCenterlineNodes() const { return 2; }
 
   /*!
   \brief Return number of lines to this element
@@ -275,6 +295,12 @@ public:
   \brief Get number of degrees of freedom per element not including nodal degrees of freedom
   */
   virtual int NumDofPerElement() const { return 0;}
+
+  /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline bool HermiteCenterlineInterpolation() const { return true; }
 
   /*!
   \brief Print this element
@@ -670,21 +696,6 @@ private:
 
   void AssembleShapefunctionsN( LINALG::TMatrix<FAD,1,4>& N_i,
                                 LINALG::TMatrix<FAD,3,2*6+BEAM3K_COLLOCATION_POINTS>& N);
-
-  //! Delivers the tangent vector of the reference configuration at the boundary node "node=1,2" (necessary to calculate the centerline of the reference geometry)
-  LINALG::Matrix<3,1> GetNodalRefTangent(const int& node)
-  {
-    if(node!=0 and node!=1)
-      dserror("Method can only deliver tangents for boundary nodes with IDs 0 or 1!!!");
-
-    LINALG::Matrix<3,1> nodal_tangent(true);
-    LINALG::Matrix<3,3> nodal_triad(true);
-    LARGEROTATIONS::angletotriad(theta0_[node],nodal_triad);
-    for(int i=0;i<3;i++)
-      nodal_tangent(i)=nodal_triad(i,0);
-
-    return nodal_tangent;
-  }
 
   //! Calculates nodal positions, tangents and relative twist angles out of the corresponding displacements
   void UpdateDispTotlag(std::vector<double>& disp, std::vector<FAD>& disp_totlag);

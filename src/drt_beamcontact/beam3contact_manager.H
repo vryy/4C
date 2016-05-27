@@ -648,6 +648,13 @@ private:
   */
   void ShiftDisMap(const Epetra_Vector& disrow, Epetra_Vector& disccol);
 
+
+  /** \brief set up the discretization btsoldiscret_ to be used within beam contact manager
+   *
+   *  \author grill
+   *  \date 05/16 */
+  void InitBeamContactDiscret();
+
   /*!
   \brief Store current displacment state in currentpositions
 

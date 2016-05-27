@@ -81,6 +81,8 @@
 //#define AUTOMATICDIFF           //Decide whether automatic differentiation via Sacado is used or not
 //default: Off
 #ifdef AUTOMATICDIFF
+  // TODO
+  dserror("check functionality of FAD based linearization in case of beam3k and beam3r with Hermite cl intpol");
   typedef Sacado::Fad::DFad<double> TYPE;
   //#define FADCHECKS //Decide whether FAD checks via Sacado are printed as output or not
 #else

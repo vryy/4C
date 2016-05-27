@@ -1,28 +1,28 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3eb_anisotrop.H
 
 \brief three dimensional nonlinear rod based on a C1 curve
 
+\level 2
+
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
+*/
+/*----------------------------------------------------------------------------*/
 
-3D nonlinear Kirchhoff-like beam element. In contrary to the beam3ebtor element this element can
-also display initially curved beams. To be able to use this element correctly structural dynamic
-parameters need to be set to:
-
-  LOADLIN       Yes
-  MASSLIN      Yes (only necessary for dynamics)
-
-since due to this beam formulation external point loads are being linearized and have an effect on the stiffness matrix. For this reason a special
-type of Neumann conditions, namely DESIGN POINT MOMENT EB CONDITIONS, are needed for this element.
-
-As the beam curve has to be C1 it is interpolated with hermitian polynomials of order 3. Therefore each node has 7 dofs: the position
-vector of the node (3 dofs), the tangent vector to the curve at the node (3 dofs) and a relative angle (1 dof) describing the rotation between
-the material and a reference triad.
-*----------------------------------------------------------------------*/
-
+/* 3D nonlinear Kirchhoff-like beam element. In contrary to the beam3ebtor element this element can
+ * also display initially curved beams. To be able to use this element correctly structural dynamic
+ * parameters need to be set to:
+ *
+ *   LOADLIN       Yes
+ *   MASSLIN      Yes (only necessary for dynamics)
+ *
+ * since due to this beam formulation external point loads are being linearized and have an effect on the stiffness matrix. For this reason a special
+ * type of Neumann conditions, namely DESIGN POINT MOMENT EB CONDITIONS, are needed for this element.
+ *
+ * As the beam curve has to be C1 it is interpolated with hermitian polynomials of order 3. Therefore each node has 7 dofs: the position
+ * vector of the node (3 dofs), the tangent vector to the curve at the node (3 dofs) and a relative angle (1 dof) describing the rotation between
+ * the material and a reference triad. */
 
 //header file only included if not yet included!
 #ifndef BEAM3EBANISOTROP_H
@@ -205,6 +205,11 @@ public:
   */
   virtual int NumLine() const {return 1;}
 
+  /** \brief get number of nodes used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline int NumCenterlineNodes() const { return 2; }
 
   /*!
   \brief Get vector of Teuchos::RCPs to the lines of this element
@@ -241,6 +246,12 @@ public:
   \brief Get number of detriadgrees of freedom per element not including nodal degrees of freedom
   */
   virtual int NumDofPerElement() const { return 0;}
+
+  /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline bool HermiteCenterlineInterpolation() const { return true; }
 
   /*!
   \brief Print this element
@@ -345,6 +356,11 @@ public:
     return Tref_;
   }
 
+  /** \brief get access to the reference length
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline double GetRefLength() const { return length_; }
 
   //@}
 

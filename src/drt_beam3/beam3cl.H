@@ -1,20 +1,14 @@
-/*!----------------------------------------------------------------------
- \file beam3cl.H
+/*----------------------------------------------------------------------------*/
+/*!
+\file beam3cl.H
 
- \brief 3D nonlinear Reissner beam element of type II with interpolated node positions.
+\brief 3D nonlinear Reissner beam element of type II with interpolated node positions
 
-The implementation follows: "The interpolation of rotations and its
-application to finite element models of geometrically exact rods", Romero 2004
-
+\level 3
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
- *------------------------------------------------------------------------*/
-
-// administrative line in order to make a difference between BACI and Ccarat files
+*/
+/*----------------------------------------------------------------------------*/
 
 //header file only included if not yet included!
 #ifndef BEAMCL_H
@@ -171,6 +165,12 @@ namespace DRT
           return 1;
         }
 
+        /** \brief get number of nodes used for centerline interpolation
+         *
+         *  \author grill
+         *  \date 05/16 */
+        virtual inline int NumCenterlineNodes() const { return 2; }
+
         /*!
          \brief Get vector of RefCountPtrs to the lines of this element
          */
@@ -223,6 +223,12 @@ namespace DRT
           return Irr_;
         }
 
+        /** \brief get access to the reference length
+         *
+         *  \author grill
+         *  \date 05/16 */
+        virtual inline double GetRefLength() const { return 2.0*jacobi_[0]; }
+
         /*!
          \brief Get crosssection crosssec_ of this element
          */
@@ -243,6 +249,12 @@ namespace DRT
         {
           return mybindingposition_;
         }
+
+        /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
+         *
+         *  \author grill
+         *  \date 05/16 */
+        virtual inline bool HermiteCenterlineInterpolation() const { return false; }
 
         //@}
 

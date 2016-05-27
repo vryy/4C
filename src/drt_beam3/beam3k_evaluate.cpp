@@ -1762,7 +1762,7 @@ void DRT::ELEMENTS::Beam3k::UpdateDispTotlag(std::vector<double>& disp, std::vec
         }
         else if (ndof<6)
         {
-          disp_totlag[7*node+ndof]+=(GetNodalRefTangent(node))(ndof-3);
+          disp_totlag[7*node+ndof]+=(Tref()[node])(ndof-3);
         }
         else
         {

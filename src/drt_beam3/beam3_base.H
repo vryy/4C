@@ -1,12 +1,14 @@
-/*!-----------------------------------------------------------------------------------------------------------
- \file beam3_base.H
+/*----------------------------------------------------------------------------*/
+/*!
+\file beam3_base.H
+
+\brief base class for all beam elements
+
+\level 3
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
- *-----------------------------------------------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------------*/
 
 #ifndef BEAM3_BASE_H_
 #define BEAM3_BASE_H_
@@ -59,46 +61,64 @@ public:
   virtual ~Beam3Base(){};
 
   /** \brief set the parameter interface ptr for the solid elements
-     *
-     *  \param p (in): Parameter list coming from the time integrator.
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
-    virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
+   *
+   *  \param p (in): Parameter list coming from the time integrator.
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
 
-    /** \brief returns true if the parameter interface is defined and initialized, otherwise false
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
-    virtual inline bool IsParamsInterface() const
-    { return (not interface_ptr_.is_null()); }
+  /** \brief returns true if the parameter interface is defined and initialized, otherwise false
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual inline bool IsParamsInterface() const
+  { return (not interface_ptr_.is_null()); }
 
-    /** \brief get access to the parameter interface pointer
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
-    virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
+  /** \brief get access to the parameter interface pointer
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
 
-  protected:
-    /** \brief get access to the interface
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
-    inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
-    { if (not IsParamsInterface())
-        dserror("The interface ptr is not set!");
-      return *interface_ptr_; }
+  /** \brief get access to the element reference length
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual double GetRefLength() const = 0;      // TODO maybe skip "Get" and rename to RefLength()
 
-  private:
-    /** \brief interface ptr
-     *
-     *  data exchange between the element and the time integrator. */
-    Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
+  /** \brief get number of nodes used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual int NumCenterlineNodes() const = 0;
 
-    /*!
-    \brief Default Constructor must not be called
-    */
-    Beam3Base();
+  /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual bool HermiteCenterlineInterpolation() const = 0;
+
+protected:
+  /** \brief get access to the interface
+   *
+   *  \author hiermeier
+   *  \date 04/16 */
+  inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
+  { if (not IsParamsInterface())
+      dserror("The interface ptr is not set!");
+    return *interface_ptr_; }
+
+private:
+  /** \brief interface ptr
+   *
+   *  data exchange between the element and the time integrator. */
+  Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
+
+  /*!
+  \brief Default Constructor must not be called
+  */
+  Beam3Base();
 
 };  // class Beam3Base
 

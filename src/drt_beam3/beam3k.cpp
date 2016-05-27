@@ -81,9 +81,9 @@ void DRT::ELEMENTS::Beam3kType::SetupElementDefinition( std::map<std::string,std
     .AddNamedDouble("MOMINY")
     .AddNamedDouble("MOMINZ")
     .AddNamedDouble("MOMINPOL")
-    .AddNamedDouble("IT")
-    .AddNamedDouble("IR1")
-    .AddNamedDouble("IR2")
+    .AddOptionalNamedDouble("IT")
+    .AddOptionalNamedDouble("IR1")
+    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",6)
     ;
 
@@ -96,9 +96,9 @@ void DRT::ELEMENTS::Beam3kType::SetupElementDefinition( std::map<std::string,std
     .AddNamedDouble("MOMINY")
     .AddNamedDouble("MOMINZ")
     .AddNamedDouble("MOMINPOL")
-    .AddNamedDouble("IT")
-    .AddNamedDouble("IR1")
-    .AddNamedDouble("IR2")
+    .AddOptionalNamedDouble("IT")
+    .AddOptionalNamedDouble("IR1")
+    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",6)
     ;
 
@@ -111,9 +111,9 @@ void DRT::ELEMENTS::Beam3kType::SetupElementDefinition( std::map<std::string,std
     .AddNamedDouble("MOMINY")
     .AddNamedDouble("MOMINZ")
     .AddNamedDouble("MOMINPOL")
-    .AddNamedDouble("IT")
-    .AddNamedDouble("IR1")
-    .AddNamedDouble("IR2")
+    .AddOptionalNamedDouble("IT")
+    .AddOptionalNamedDouble("IR1")
+    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",9)
     ;
 
@@ -126,9 +126,9 @@ void DRT::ELEMENTS::Beam3kType::SetupElementDefinition( std::map<std::string,std
     .AddNamedDouble("MOMINY")
     .AddNamedDouble("MOMINZ")
     .AddNamedDouble("MOMINPOL")
-    .AddNamedDouble("IT")
-    .AddNamedDouble("IR1")
-    .AddNamedDouble("IR2")
+    .AddOptionalNamedDouble("IT")
+    .AddOptionalNamedDouble("IR1")
+    .AddOptionalNamedDouble("IR2")
     .AddNamedDoubleVector("TRIADS",9)
     ;
 
@@ -141,9 +141,9 @@ void DRT::ELEMENTS::Beam3kType::SetupElementDefinition( std::map<std::string,std
       .AddNamedDouble("MOMINY")
       .AddNamedDouble("MOMINZ")
       .AddNamedDouble("MOMINPOL")
-      .AddNamedDouble("IT")
-      .AddNamedDouble("IR1")
-      .AddNamedDouble("IR2")
+      .AddOptionalNamedDouble("IT")
+      .AddOptionalNamedDouble("IR1")
+      .AddOptionalNamedDouble("IR2")
       .AddNamedDoubleVector("TRIADS",12)
       ;
 
@@ -156,9 +156,9 @@ void DRT::ELEMENTS::Beam3kType::SetupElementDefinition( std::map<std::string,std
       .AddNamedDouble("MOMINY")
       .AddNamedDouble("MOMINZ")
       .AddNamedDouble("MOMINPOL")
-      .AddNamedDouble("IT")
-      .AddNamedDouble("IR1")
-      .AddNamedDouble("IR2")
+      .AddOptionalNamedDouble("IT")
+      .AddOptionalNamedDouble("IR1")
+      .AddOptionalNamedDouble("IR2")
       .AddNamedDoubleVector("TRIADS",12)
       ;
 

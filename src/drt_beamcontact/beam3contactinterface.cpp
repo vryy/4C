@@ -1,15 +1,14 @@
-/*!-----------------------------------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3contactinterface.cpp
+
 \brief interface class for beam contact
 
-<pre>
-Maintainer: Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-</pre>
+\level 2
 
-*-----------------------------------------------------------------------------------------------------------*/
+\maintainer Christoph Meier
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "beam3contactinterface.H"
 #include "beam3contactnew.H"
@@ -28,6 +27,8 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
 {
   //Decide, if beam contact with subsegment creation (beam3contact) or pure element based beam contact (beam3contactnew) should be applied
   bool beamssegcon = DRT::INPUT::IntegralValue<int>(beamcontactparams,"BEAMS_SEGCON");
+
+  // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
 
   if(!beamssegcon)
   {
@@ -68,13 +69,16 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
             return Teuchos::rcp (new CONTACT::Beam3contactnew<2,2>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beamcontactparams));
           }
           default:
-            dserror("No valid template parameter for the number of nodes (only numnodes = 2 for Kirchhoff beams valid so far) available!");
+            dserror("No valid template parameter combination for the number of nodes and number of types of nodal DoFs"
+                    "(only numnodes = 2 in combination with numnodalvalues=2 possible so far, i.e. 3rd order Hermite interpolation)!");
             break;
         }
         break;
       }
       default:
-        dserror("No valid template parameter for the Number of nodal values (numnodalvalues = 1 for Reissner beams, numnodalvalues = 2 for Kirchhoff beams) available!");
+        dserror("No valid template parameter for the number of types of nodal DoFs used for centerline interpolation!\n"
+                "(numnodalvalues = 1, i.e. positions              for Lagrange interpolation,\n"
+                " numnodalvalues = 2, i.e. positions AND tangents for Hermite interpolation)");
         break;
     }
   }
@@ -117,13 +121,16 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Imp
             return Teuchos::rcp (new CONTACT::Beam3contact<2,2>(pdiscret,cdiscret,dofoffsetmap,element1,element2,beamcontactparams));
           }
           default:
-            dserror("No valid template parameter for the number of nodes (only numnodes = 2 for Kirchhoff beams valid so far) available!");
+            dserror("No valid template parameter combination for the number of nodes and number of types of nodal DoFs"
+                    "(only numnodes = 2 in combination with numnodalvalues=2 possible so far, i.e. 3rd order Hermite interpolation)!");
             break;
         }
         break;
       }
       default:
-        dserror("No valid template parameter for the Number of nodal values (numnodalvalues = 1 for Reissner beams, numnodalvalues = 2 for Kirchhoff beams) available!");
+        dserror("No valid template parameter for the number of types of nodal DoFs used for centerline interpolation!\n"
+                "(numnodalvalues = 1, i.e. positions              for Lagrange interpolation,\n"
+                " numnodalvalues = 2, i.e. positions AND tangents for Hermite interpolation)");
         break;
     }
   }

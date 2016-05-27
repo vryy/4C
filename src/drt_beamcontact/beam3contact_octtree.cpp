@@ -515,7 +515,7 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
         DRT::Element* element = searchdis_.lColElement(i);
         const DRT::ElementType & eot = element->ElementType();
 
-        (*diameter_)[i] = -1.0;
+        (*diameter_)[i] = -1.0;     // TODO get diameter from call of abstract Beam3Base::Radius();
 
         if (eot == DRT::ELEMENTS::Beam3Type::Instance())
           (*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(element))->Izz()) / M_PI));

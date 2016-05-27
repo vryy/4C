@@ -118,6 +118,11 @@ namespace BEAMCONTACT
   bool BeamNode(DRT::Node& node);
 
   /*!
+  \brief Check, if current node is used for centerline interpolation of a beam element
+  */
+  bool BeamCenterlineNode(DRT::Node& node);
+
+  /*!
   \brief Check, if current node belongs to a rigid sphere element
   */
   bool RigidsphereNode(DRT::Node& node);

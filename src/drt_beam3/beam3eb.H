@@ -1,56 +1,54 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3eb.H
 
 \brief three dimensional nonlinear torsionless rod based on a C1 curve
 
+\level 2
+
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
+*/
+/*----------------------------------------------------------------------------*/
 
-
-3D nonlinear Euler-Bernoulli-like beam element based on chapter 5 of the diploma thesis "Development of a finite element for
-nonlinear beams based on the formulas of Frenet-Serret" by Christoph Meier. The current formulation is only able to display axial
-tension and bending curvature based on the curve describing the centerline of an initially (i.e. stress free) straight beam.
-There is no shear deformation and no torsion. The expansion of the model to a full Euler Bernoulli beam (inclusive torsion) is
-possible and implemented in beam3ebtor.
-To be able to use this element correctly so far structural dynamic parameters need to be set to:
-
-LOADLIN     Yes
-
-since due to this beam formulation external point loads are being linearized and have an effect on the stiffness matrix. For this reason a special
-type of Neumann conditions, namely DESIGN POINT MOMENT EB CONDITIONS, are needed for this element.
-
-As the beam curve has to be C1 it is interpolated with hermitien polynomials of order 3. Therefore each node has 6 dofs: the position
-vector of the node (3 dofs) and the tangent vector to the curve at the node (3 dofs). If Dirichlet BC are applied one has to make sure that
-the last three flags refer to the tangent at the node (rotational defree of freedom). The flag of the tangent in beam centerline direction must
-be set to 0, otherwise the axial tension at the boundary would be prescribed.
-
-ARBITRARY PRECISSION: This element offers the method HighPrecissionCalc() which has to be uncommented in Beam3eb::Evaluate. With this method the whole
-FEM calculation can be done (for simple problems) in an element intern routine which calculates with a prescribed arbitrary precision. This can
-be used for debugging reasons to identify the sources of ill-conditioning and rounding errors. All intern methods with the ending ...prec belong to this
-high precission calculation. The following facts have to be considered when doing a high precision calculation:
-
-- for high precision calculations the cln libraries (cln/float.h, cln/io.h, cln/float_io.h, cln/real.h) have to be included which are standard linux
-  libraries for f16 machines (and higher). An instruction manual can be found at: "http://www.ginac.de/CLN/cln.html#SEC_Top". The libraries can be
-  found at "/usr/include/cln" at your f16 machine.
-
-- The cln libraries are not compatible with the Sacado library which offers the FAD (Forward Automatic Differentiation) data type. Therefore
-  automatic differentiation can not be done with arbitrary precision!
-
-- Please make sure that the line -D CMAKE_EXE_LINKER_FLAGS:STRING="-lhdf5_hl " is replaced by -D CMAKE_EXE_LINKER_FLAGS:STRING="-lhdf5_hl -lcln"
-  in your do-configure file.
-
-- There may be some standard methods which are not compatible with arbitrary precision. The only method for which this has been recognized so far
-  is the method std::fill. Therefore the following code block in linalg_fixedsizematrix.H has to be adapted:
-
-      //this line is needed for arbitrary precision (cln) data types
-      std::memset(mat,0,i*j*sizeof(value_type));
-      //this line is needed for FAD data type
-      //std::fill(mat,mat+i*j,0);
-
-*----------------------------------------------------------------------*/
-
+/* 3D nonlinear Euler-Bernoulli-like beam element based on chapter 5 of the diploma thesis "Development of a finite element for
+ * nonlinear beams based on the formulas of Frenet-Serret" by Christoph Meier. The current formulation is only able to display axial
+ * tension and bending curvature based on the curve describing the centerline of an initially (i.e. stress free) straight beam.
+ * There is no shear deformation and no torsion. The expansion of the model to a full Euler Bernoulli beam (inclusive torsion) is
+ * possible and implemented in beam3ebtor.
+ * To be able to use this element correctly so far structural dynamic parameters need to be set to:
+ *
+ * LOADLIN     Yes
+ *
+ * since due to this beam formulation external point loads are being linearized and have an effect on the stiffness matrix. For this reason a special
+ * type of Neumann conditions, namely DESIGN POINT MOMENT EB CONDITIONS, are needed for this element.
+ *
+ * As the beam curve has to be C1 it is interpolated with hermitien polynomials of order 3. Therefore each node has 6 dofs: the position
+ * vector of the node (3 dofs) and the tangent vector to the curve at the node (3 dofs). If Dirichlet BC are applied one has to make sure that
+ * the last three flags refer to the tangent at the node (rotational defree of freedom). The flag of the tangent in beam centerline direction must
+ * be set to 0, otherwise the axial tension at the boundary would be prescribed.
+ *
+ * ARBITRARY PRECISSION: This element offers the method HighPrecissionCalc() which has to be uncommented in Beam3eb::Evaluate. With this method the whole
+ * FEM calculation can be done (for simple problems) in an element intern routine which calculates with a prescribed arbitrary precision. This can
+ * be used for debugging reasons to identify the sources of ill-conditioning and rounding errors. All intern methods with the ending ...prec belong to this
+ * high precission calculation. The following facts have to be considered when doing a high precision calculation:
+ *
+ * - for high precision calculations the cln libraries (cln/float.h, cln/io.h, cln/float_io.h, cln/real.h) have to be included which are standard linux
+ *   libraries for f16 machines (and higher). An instruction manual can be found at: "http://www.ginac.de/CLN/cln.html#SEC_Top". The libraries can be
+ *   found at "/usr/include/cln" at your f16 machine.
+ *
+ * - The cln libraries are not compatible with the Sacado library which offers the FAD (Forward Automatic Differentiation) data type. Therefore
+ *   automatic differentiation can not be done with arbitrary precision!
+ *
+ * - Please make sure that the line -D CMAKE_EXE_LINKER_FLAGS:STRING="-lhdf5_hl " is replaced by -D CMAKE_EXE_LINKER_FLAGS:STRING="-lhdf5_hl -lcln"
+ *   in your do-configure file.
+ *
+ * - There may be some standard methods which are not compatible with arbitrary precision. The only method for which this has been recognized so far
+ *   is the method std::fill. Therefore the following code block in linalg_fixedsizematrix.H has to be adapted:
+ *
+ *       //this line is needed for arbitrary precision (cln) data types
+ *       std::memset(mat,0,i*j*sizeof(value_type));
+ *       //this line is needed for FAD data type
+ *       //std::fill(mat,mat+i*j,0); */
 
 
 //header file only included if not yet included!
@@ -248,6 +246,12 @@ public:
   */
   virtual int NumLine() const {return 1;}
 
+  /** \brief get number of nodes used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline int NumCenterlineNodes() const { return 2; }
+
   /*!
    \brief Get moment of inertia of area Izz_ of this element
    */
@@ -263,6 +267,12 @@ public:
   {
     return jacobi_;
   }
+
+  /** \brief get access to the reference length
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline double GetRefLength() const { return 2.0*jacobi_; }
 
   /*!
    \brief Get maximal bending curvature occuring in this element
@@ -317,6 +327,12 @@ public:
   \brief Get number of degrees of freedom per element not including nodal degrees of freedom
   */
   virtual int NumDofPerElement() const { return 0;}
+
+  /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline bool HermiteCenterlineInterpolation() const { return true; }
 
   /*!
   \brief Print this element

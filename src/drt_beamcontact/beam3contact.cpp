@@ -1,13 +1,14 @@
-/*!-----------------------------------------------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3contact.cpp
+
 \brief One beam contact pair (two beam elements) consisting of several contact segments
 
-\maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
+\level 2
 
- *-----------------------------------------------------------------------------------------------------------*/
+\maintainer Christoph Meier
+*/
+/*----------------------------------------------------------------------------*/
 
 #include "beam3contact.H"
 #include "beam3contact_defines.H"
@@ -24,6 +25,7 @@
 
 #include "../drt_structure/strtimint_impl.H"
 #include "../drt_beam3/beam3.H"
+#include "../drt_beam3/beam3k.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/beam3eb.H"
 #include "../drt_inpar/inpar_statmech.H"
@@ -123,18 +125,13 @@ boundarynode2_(std::make_pair(0,0))
     boundarynode2_=std::make_pair(leftboundarynode2,rightboundarynode2);
   }
 
-  //TODO: calculate the real length for initially curved elements (e.g. beam3eb_anisotrop)
-  //Calculate initial length of beam elements (approximation for initially curved elements!)
-  LINALG::TMatrix<double,3,1> lvec1(true);
-  LINALG::TMatrix<double,3,1> lvec2(true);
-  for(int i=0;i<3;i++)
-  {
-    lvec1(i)=(element1_->Nodes())[0]->X()[i]-(element1_->Nodes())[1]->X()[i];
-    lvec2(i)=(element2_->Nodes())[0]->X()[i]-(element2_->Nodes())[1]->X()[i];
-  }
 
-  double l1=lvec1.Norm2();
-  double l2=lvec2.Norm2();
+  // TODO maybe we can even cast the class variables element1_ and element2_ to Beam3Base here in Constructor?!
+  // Calculate initial length of beam elements
+  const DRT::ELEMENTS::Beam3Base* ele1ptr = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element1_);
+  double l1 = ele1ptr->GetRefLength();
+  const DRT::ELEMENTS::Beam3Base* ele2ptr = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element2_);
+  double l2 = ele2ptr->GetRefLength();
 
   if (element1->ElementType() != element2->ElementType())
     dserror("The class beam3contact only works for contact pairs of the same beam element type!");
@@ -4194,23 +4191,22 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetShapeFunctions( LINALG:
   }
   else if (numnodalvalues==2)
   {
+    // TODO maybe cast class variables to Beam3Base upon construction ?!
+    double length1 = (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(element1_))->GetRefLength();
+    double length2 = (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(element2_))->GetRefLength();
 
-    if ( element1_->ElementType() != DRT::ELEMENTS::Beam3ebType::Instance() )
-      dserror("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
-
-    if ( element2_->ElementType() != DRT::ELEMENTS::Beam3ebType::Instance() )
-      dserror("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
-
-    double length1 = 2*(static_cast<DRT::ELEMENTS::Beam3eb*>(element1_))->jacobi();
-    double length2 = 2*(static_cast<DRT::ELEMENTS::Beam3eb*>(element2_))->jacobi();
+    /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
+     *  only 3rd order Hermite interpolation is used (always 2 nodes) */
+    const DRT::Element::DiscretizationType distype1herm = DRT::Element::line2;
+    const DRT::Element::DiscretizationType distype2herm = DRT::Element::line2;
 
     // get values and derivatives of shape functions
-    DRT::UTILS::shape_function_hermite_1D(N1_i, eta1, length1, distype1);
-    DRT::UTILS::shape_function_hermite_1D(N2_i, eta2, length2, distype2);
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi, eta1, length1, distype1);
-    DRT::UTILS::shape_function_hermite_1D_deriv1(N2_i_xi, eta2, length2, distype2);
-    DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta1, length1, distype1);
-    DRT::UTILS::shape_function_hermite_1D_deriv2(N2_i_xixi, eta2, length2, distype2);
+    DRT::UTILS::shape_function_hermite_1D(N1_i, eta1, length1, distype1herm);
+    DRT::UTILS::shape_function_hermite_1D(N2_i, eta2, length2, distype2herm);
+    DRT::UTILS::shape_function_hermite_1D_deriv1(N1_i_xi, eta1, length1, distype1herm);
+    DRT::UTILS::shape_function_hermite_1D_deriv1(N2_i_xi, eta2, length2, distype2herm);
+    DRT::UTILS::shape_function_hermite_1D_deriv2(N1_i_xixi, eta1, length1, distype1herm);
+    DRT::UTILS::shape_function_hermite_1D_deriv2(N2_i_xixi, eta2, length2, distype2herm);
 
   }
   else
@@ -4264,27 +4260,28 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetShapeFunctions( LINALG:
   else if (numnodalvalues==2)
   {
 
-    if ( ele->ElementType() != DRT::ELEMENTS::Beam3ebType::Instance() )
-      dserror("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
+    double length = (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele))->GetRefLength();
 
-    double length = 2*(static_cast<DRT::ELEMENTS::Beam3eb*>(ele))->jacobi();
+    /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
+     *  only 3rd order Hermite interpolation is used (always 2 nodes) */
+    const DRT::Element::DiscretizationType distypeherm = DRT::Element::line2;
 
     // get values and derivatives of shape functions
     switch (deriv)
     {
       case 0:
       {
-        DRT::UTILS::shape_function_hermite_1D(N_i, eta, length, distype);
+        DRT::UTILS::shape_function_hermite_1D(N_i, eta, length, distypeherm);
         break;
       }
       case 1:
       {
-        DRT::UTILS::shape_function_hermite_1D_deriv1(N_i, eta, length, distype);
+        DRT::UTILS::shape_function_hermite_1D_deriv1(N_i, eta, length, distypeherm);
         break;
       }
       case 2:
       {
-        DRT::UTILS::shape_function_hermite_1D_deriv2(N_i, eta, length, distype);
+        DRT::UTILS::shape_function_hermite_1D_deriv2(N_i, eta, length, distypeherm);
         break;
       }
     }
@@ -4941,10 +4938,22 @@ std::vector<int> CONTACT::Beam3contact<numnodes, numnodalvalues>::GetGlobalDofs(
   std::vector<int> cdofs = ContactDiscret().Dof(node);
 
   // get dofs in problem discretization via offset
-  std::vector<int> pdofs((int)(cdofs.size()));
-  for (int k=0;k<(int)(cdofs.size());++k)
-  {
+  /* TODO check if this works in general
+   * note: we only extract centerline DoFs here, i.e. positions
+   * (and tangents in case of numnodalvalues=2) */
+  // positions = first three Dofs 1-3
+  std::vector<int> pdofs(3*numnodalvalues);
+  for (int k=0;k<3;++k)
     pdofs[k]=(dofoffsetmap_.find(cdofs[k]))->second;
+
+  // tangents = either Dof 4-6 (beam3eb, beam3k) or Dof 7-9 (beam3r_herm)
+  // this loop is not entered in case of numnodalvalues=1
+  for (int k=3;k<3*numnodalvalues;++k)
+  {
+    if ((node->Elements()[0])->ElementType() != DRT::ELEMENTS::Beam3rType::Instance())
+      pdofs[k]=(dofoffsetmap_.find(cdofs[k]))->second;
+    else
+      pdofs[k]=(dofoffsetmap_.find(cdofs[k+3]))->second;
   }
 
   return pdofs;
@@ -5083,6 +5092,10 @@ double CONTACT::Beam3contact<numnodes, numnodalvalues>::GetJacobi(DRT::Element* 
   else if (eot1 == DRT::ELEMENTS::Beam3rType::Instance())
   {
     jacobi = (static_cast<DRT::ELEMENTS::Beam3r*>(element1))->GetJacobi();
+  }
+  else if (eot1 == DRT::ELEMENTS::Beam3kType::Instance())
+  {
+    jacobi = (static_cast<DRT::ELEMENTS::Beam3k*>(element1))->GetJacobi();
   }
   else
   {

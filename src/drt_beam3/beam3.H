@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------------*/
+/*!
 \file beam3.H
 
 \brief three dimensional nonlinear Reissner beam element
 
+\level 2
 
 \maintainer Christoph Meier
-            meier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15262
-
- *------------------------------------------------------------------------*/
-// administrative line in order to make a difference between BACI and Ccarat files
+*/
+/*----------------------------------------------------------------------------*/
 
 //header file only included if not yet included!
 #ifndef BEAM3_H
@@ -170,6 +168,12 @@ public:
   */
   virtual int NumLine() const {return 1;}
 
+  /** \brief get number of nodes used for centerline interpolation
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline int NumCenterlineNodes() const { return this->NumNode(); }
+
   virtual double GetDeltaTheta() const
   {
    return deltatheta_;
@@ -223,8 +227,20 @@ public:
   */
   const double& GetJacobi() const { return jacobi_[0];}
 
+  /** \brief get access to the reference length
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline double GetRefLength() const{ return 2.0*jacobi_[0]; }
+
   //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
   const std::vector<LINALG::Matrix<4,1> >& Qnew() const {return Qnew_;}
+
+  /** \brief return flag whether Hermite polynomials are applied for centerline interpolation
+   *
+   *  \author grill
+   *  \date 05/16 */
+  virtual inline bool HermiteCenterlineInterpolation() const { return false; }
 
   /*!
   \brief Set moment of inertia of area Iyy_ of this element

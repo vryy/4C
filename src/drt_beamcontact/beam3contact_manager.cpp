@@ -72,17 +72,6 @@ contactevaluationtime_(0.0),
 global_kappa_max_(0.0),
 step_(0)
 {
-  // create new (basically copied) discretization for contact
-  // (to ease our search algorithms we afford the luxury of
-  // ghosting all nodes and all elements on all procs, i.e.
-  // we export the discretization to full overlap. However,
-  // we do not want to do this with the actual discretization
-  // and thus create a stripped copy here that only contains
-  // nodes and elements).
-  // Then, within all beam contact specific routines we will
-  // NEVER use the underlying problem discretization but always
-  // the copied beam contact discretization.
-
   // initialize vectors of contact forces
   fc_ = LINALG::CreateVector(*discret.DofRowMap(), false);
   fcold_ = LINALG::CreateVector(*discret.DofRowMap(), false);
@@ -106,325 +95,8 @@ step_(0)
   btsol_   = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_BTSOL");
   btsph_   = DRT::INPUT::IntegralValue<int>(BeamContactParameters(),"BEAMS_BTSPH");
 
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_.Comm().Clone());
-  btsoldiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"beam to solid contact",comm));
-  dofoffsetmap_.clear();
-  std::map<int,std::vector<int> > nodedofs;
-  nodedofs.clear();
 
-  // loop over all column nodes of underlying problem discret and add
-  for (int i=0;i<(ProblemDiscret().NodeColMap())->NumMyElements();++i)
-  {
-    DRT::Node* node = ProblemDiscret().lColNode(i);
-    if (!node) dserror("Cannot find node with lid %",i);
-    Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
-    if (BEAMCONTACT::BeamNode(*newnode))
-    {
-      BTSolDiscret().AddNode(newnode);
-      nodedofs[node->Id()]=ProblemDiscret().Dof(0,node);
-    }
-    else if (BEAMCONTACT::RigidsphereNode(*newnode) and btsph_)
-    {
-      BTSolDiscret().AddNode(newnode);
-      nodedofs[node->Id()]=ProblemDiscret().Dof(0,node);
-    }
-    else
-    {
-      if (btsol_==false && btsolmt_==false)
-        dserror("Only beam elements are allowed as long as the flags btsol_ and btsolmt_ are set to false!");
-    }
-  }
-
-  int maxproblemid=ProblemDiscret().ElementRowMap()->MaxAllGID();
-  // loop over all column elements of underlying problem discret and add
-  for (int i=0;i<(ProblemDiscret().ElementColMap())->NumMyElements();++i)
-  {
-    DRT::Element* ele = ProblemDiscret().lColElement(i);
-    if (!ele) dserror("Cannot find element with lid %",i);
-    Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
-    if (BEAMCONTACT::BeamElement(*newele) or BEAMCONTACT::RigidsphereElement(*newele))
-    {
-      BTSolDiscret().AddElement(newele);
-    }
-  }
-
-  // begin: determine surface elements and their nodes
-
-  // vector that contains solid-to-solid and beam-to-solid contact pairs
-  std::vector<DRT::Condition*> beamandsolidcontactconditions(0);
-  discret.GetCondition("Contact", beamandsolidcontactconditions);
-
-  // vector that solely contains beam-to-solid contact pairs
-  std::vector<DRT::Condition*> btscontactconditions(0);
-
-  // vector that solely contains beam-to-solid meshtying pairs
-  std::vector<DRT::Condition*> btsmeshtyingconditions(0);
-
-  // sort out solid-to-solid contact pairs, since these are treated in the drt_contact framework
-  for (int i = 0; i < (int) beamandsolidcontactconditions.size(); ++i)
-  {
-    if(*(beamandsolidcontactconditions[i]->Get<std::string>("Application"))=="Beamtosolidcontact")
-      btscontactconditions.push_back(beamandsolidcontactconditions[i]);
-    if(*(beamandsolidcontactconditions[i]->Get<std::string>("Application"))=="Beamtosolidmeshtying")
-      btsmeshtyingconditions.push_back(beamandsolidcontactconditions[i]);
-  }
-
-  //******************************* BEAM-TO-SOLID CONTACT *******************************
-  solcontacteles_.resize(0);
-  solcontactnodes_.resize(0);
-  int ggsize = 0;
-
-   //-------------------------------------------------- process surface nodes
-   for (int j=0;j<(int)btscontactconditions.size();++j)
-   {
-     // get all nodes and add them
-     const std::vector<int>* nodeids = btscontactconditions[j]->Nodes();
-     if (!nodeids) dserror("Condition does not have Node Ids");
-     for (int k=0; k<(int)(*nodeids).size(); ++k)
-     {
-       int gid = (*nodeids)[k];
-       // do only nodes that I have in my discretization
-       if (!ProblemDiscret().NodeColMap()->MyGID(gid)) continue;
-       DRT::Node* node = ProblemDiscret().gNode(gid);
-
-       if (!node) dserror("Cannot find node with gid %",gid);
-
-       Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::CoNode(node->Id(),node->X(),
-                                                        node->Owner(),
-                                                        ProblemDiscret().NumDof(0,node),
-                                                        ProblemDiscret().Dof(0,node),
-                                                        false,    //all solid elements are master elements
-                                                        false));  //no "initially active" decision necessary for beam to solid contact
-
-       // note that we do not have to worry about double entries
-       // as the AddNode function can deal with this case!
-       // the only problem would have occured for the initial active nodes,
-       // as their status could have been overwritten, but is prevented
-       // by the "foundinitialactive" block above!
-       solcontactnodes_.push_back(cnode);
-       BTSolDiscret().AddNode(cnode);
-       nodedofs[node->Id()]=ProblemDiscret().Dof(0,node);
-     }
-   }
-
-  //----------------------------------------------- process surface elements
-  for (int j=0;j<(int)btscontactconditions.size();++j)
-  {
-    // get elements from condition j of current group
-    std::map<int,Teuchos::RCP<DRT::Element> >& currele = btscontactconditions[j]->Geometry();
-
-    // elements in a boundary condition have a unique id
-    // but ids are not unique among 2 distinct conditions
-    // due to the way elements in conditions are build.
-    // We therefore have to give the second, third,... set of elements
-    // different ids. ids do not have to be continous, we just add a large
-    // enough number ggsize to all elements of cond2, cond3,... so they are
-    // different from those in cond1!!!
-    // note that elements in ele1/ele2 already are in column (overlapping) map
-    int lsize = (int)currele.size();
-    int gsize = 0;
-    Comm().SumAll(&lsize,&gsize,1);
-
-    std::map<int,Teuchos::RCP<DRT::Element> >::iterator fool;
-    for (fool=currele.begin(); fool != currele.end(); ++fool)
-    {
-      //The IDs of the surface elements of each conditions begin with zero. Therefore we have to add ggsize in order to
-      //get unique element IDs in the end. Furthermore, only the solid elements are added to the contact discretization btsoldiscret_
-      //via the btscontactconditions, whereas all beam elements with their original ID are simply cloned from the problem discretization
-      //into the contact discretization. In order to avoid solid element IDs being identical to these beam element IDs within the contact
-      //discretization we have to add the additional offset maxproblemid, which is identical to the maximal element ID in the problem
-      //discretization.
-      Teuchos::RCP<DRT::Element> ele = fool->second;
-      Teuchos::RCP<CONTACT::CoElement> cele = Teuchos::rcp(new CONTACT::CoElement(ele->Id()+ggsize+maxproblemid+1,
-                                                              ele->Owner(),
-                                                              ele->Shape(),
-                                                              ele->NumNode(),
-                                                              ele->NodeIds(),
-                                                              false,    //all solid elements are master elements
-                                                              false));  //no nurbs allowed up to now
-
-      solcontacteles_.push_back(cele);
-      BTSolDiscret().AddElement(cele);
-    } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
-    ggsize += gsize; // update global element counter
-  }
-  //end: determine surface elements and their nodes
-
-  //****************************** BEAM-TO-SOLID MESHTYING ******************************
-  solmeshtyingeles_.resize(0);
-  solmeshtyingnodes_.resize(0);
-
-   //-------------------------------------------------- process surface nodes
-   for (int j=0;j<(int)btsmeshtyingconditions.size();++j)
-   {
-     // get all nodes and add them
-     const std::vector<int>* nodeids = btsmeshtyingconditions[j]->Nodes();
-     if (!nodeids) dserror("Condition does not have Node Ids");
-     for (int k=0; k<(int)(*nodeids).size(); ++k)
-     {
-       int gid = (*nodeids)[k];
-       // do only nodes that I have in my discretization
-       if (!ProblemDiscret().NodeColMap()->MyGID(gid)) continue;
-       DRT::Node* node = ProblemDiscret().gNode(gid);
-
-       if (!node) dserror("Cannot find node with gid %",gid);
-
-       Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),node->X(),
-                                                        node->Owner(),
-                                                        ProblemDiscret().NumDof(0,node),
-                                                        ProblemDiscret().Dof(0,node),
-                                                        false));    //all solid elements are master elements
-
-       // note that we do not have to worry about double entries
-       // as the AddNode function can deal with this case!
-       // the only problem would have occured for the initial active nodes,
-       // as their status could have been overwritten, but is prevented
-       // by the "foundinitialactive" block above!
-       solmeshtyingnodes_.push_back(mtnode);
-       BTSolDiscret().AddNode(mtnode);
-       nodedofs[node->Id()]=ProblemDiscret().Dof(0,node);
-     }
-   }
-
-  //----------------------------------------------- process surface elements
-  for (int j=0;j<(int)btsmeshtyingconditions.size();++j)
-  {
-    // get elements from condition j of current group
-    std::map<int,Teuchos::RCP<DRT::Element> >& currele = btsmeshtyingconditions[j]->Geometry();
-
-    // elements in a boundary condition have a unique id
-    // but ids are not unique among 2 distinct conditions
-    // due to the way elements in conditions are build.
-    // We therefore have to give the second, third,... set of elements
-    // different ids. ids do not have to be continous, we just add a large
-    // enough number ggsize to all elements of cond2, cond3,... so they are
-    // different from those in cond1!!!
-    // note that elements in ele1/ele2 already are in column (overlapping) map
-    int lsize = (int)currele.size();
-    int gsize = 0;
-    Comm().SumAll(&lsize,&gsize,1);
-
-    std::map<int,Teuchos::RCP<DRT::Element> >::iterator fool;
-    for (fool=currele.begin(); fool != currele.end(); ++fool)
-    {
-      //The IDs of the surface elements of each conditions begin with zero. Therefore we have to add ggsize in order to
-      //get unique element IDs in the end. Furthermore, only the solid elements are added to the contact discretization btsoldiscret_
-      //via the btscontactconditions, whereas all beam elements with their original ID are simply cloned from the problem discretization
-      //into the contact discretization. In order to avoid solid element IDs being identical to these beam element IDs within the contact
-      //discretization we have to add the additional offset maxproblemid, which is identical to the maximal element ID in the problem
-      //discretization.
-      Teuchos::RCP<DRT::Element> ele = fool->second;
-      Teuchos::RCP<MORTAR::MortarElement> mtele = Teuchos::rcp(new MORTAR::MortarElement(ele->Id()+ggsize+maxproblemid+1,
-                                                              ele->Owner(),
-                                                              ele->Shape(),
-                                                              ele->NumNode(),
-                                                              ele->NodeIds(),
-                                                              false,    //all solid elements are master elements
-                                                              false));  //no nurbs allowed up to now
-
-      solmeshtyingeles_.push_back(mtele);
-      BTSolDiscret().AddElement(mtele);
-    } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
-    ggsize += gsize; // update global element counter
-  }
-  //end: determine surface elements and their nodes
-
-  // build maps but do not assign dofs yet, we'll do this below
-  // after shuffling around of nodes and elements (saves time)
-  BTSolDiscret().FillComplete(false,false,false);
-
-  // store the node and element row and column maps into this manager
-  noderowmap_ = Teuchos::rcp(new Epetra_Map(*(BTSolDiscret().NodeRowMap())));
-  elerowmap_  = Teuchos::rcp(new Epetra_Map(*(BTSolDiscret().ElementRowMap())));
-  nodecolmap_ = Teuchos::rcp(new Epetra_Map(*(BTSolDiscret().NodeColMap())));
-  elecolmap_  = Teuchos::rcp(new Epetra_Map(*(BTSolDiscret().ElementColMap())));
-
-  // build fully overlapping node and element maps
-  // fill my own row node ids into vector (e)sdata
-  std::vector<int> sdata(noderowmap_->NumMyElements());
-  std::vector<int> esdata(elerowmap_->NumMyElements());
-  for (int i=0; i<noderowmap_->NumMyElements(); ++i)
-    sdata[i] = noderowmap_->GID(i);
-  for (int i=0; i<elerowmap_->NumMyElements(); ++i)
-    esdata[i] = elerowmap_->GID(i);
-
-  // if current proc is participating it writes row IDs into (e)stproc
-  std::vector<int> stproc(0);
-  std::vector<int> estproc(0);
-  if (noderowmap_->NumMyElements())
-    stproc.push_back(BTSolDiscret().Comm().MyPID());
-  if (elerowmap_->NumMyElements())
-    estproc.push_back(BTSolDiscret().Comm().MyPID());
-
-  // information how many processors participate in total
-  std::vector<int> allproc(BTSolDiscret().Comm().NumProc());
-  for (int i=0;i<BTSolDiscret().Comm().NumProc();++i) allproc[i] = i;
-
-  // declaring new variables into which the info of (e)stproc on all processors is gathered
-  std::vector<int> rtproc(0);
-  std::vector<int> ertproc(0);
-
-  // gathers information of (e)stproc and writes it into (e)rtproc; in the end (e)rtproc
-  // is a vector which contains the numbers of all processors which own nodes/elements.
-  LINALG::Gather<int>(stproc,rtproc,BTSolDiscret().Comm().NumProc(),&allproc[0],BTSolDiscret().Comm());
-  LINALG::Gather<int>(estproc,ertproc,BTSolDiscret().Comm().NumProc(),&allproc[0],BTSolDiscret().Comm());
-
-  // in analogy to (e)stproc and (e)rtproc the variables (e)rdata gather all the row ID
-  // numbers which are  stored on different processors in their own variables (e)sdata; thus,
-  // each processor gets the information about all the row ID numbers existing in the problem
-  std::vector<int> rdata;
-  std::vector<int> erdata;
-
-  // gather all gids of nodes redundantly from (e)sdata into (e)rdata
-  LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],BTSolDiscret().Comm());
-  LINALG::Gather<int>(esdata,erdata,(int)ertproc.size(),&ertproc[0],BTSolDiscret().Comm());
-
-  // build completely overlapping node map (on participating processors)
-  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,BTSolDiscret().Comm()));
-  sdata.clear();
-  stproc.clear();
-  rdata.clear();
-  allproc.clear();
-
-  // build completely overlapping element map (on participating processors)
-  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)erdata.size(),&erdata[0],0,BTSolDiscret().Comm()));
-  esdata.clear();
-  estproc.clear();
-  erdata.clear();
-
-  // store the fully overlapping node and element maps
-  nodefullmap_ = Teuchos::rcp(new Epetra_Map(*newnodecolmap));
-  elefullmap_  = Teuchos::rcp(new Epetra_Map(*newelecolmap));
-
-  // pass new fully overlapping node and element maps to beam contact discretization
-  BTSolDiscret().ExportColumnNodes(*newnodecolmap);
-  BTSolDiscret().ExportColumnElements(*newelecolmap);
-
-  // complete beam contact discretization based on the new column maps
-  // (this also assign new degrees of freedom what we actually do not
-  // want, thus we have to introduce a dof mapping next)
-  BTSolDiscret().FillComplete(true,false,false);
-
-  // communicate the map nodedofs to all proccs
-  DRT::Exporter ex(*(ProblemDiscret().NodeColMap()),*(BTSolDiscret().NodeColMap()),Comm());
-  ex.Export(nodedofs);
-
-  //Determine offset between the IDs of problem discretization and BTSol discretization
-  for (int i=0;i<(BTSolDiscret().NodeColMap())->NumMyElements();++i)
-  {
-    DRT::Node* node = BTSolDiscret().lColNode(i);
-    int nodeid = node->Id();
-    std::vector<int> btsolnodedofids = BTSolDiscret().Dof(0,node);
-    std::vector<int> originalnodedofids = nodedofs[nodeid];
-
-    if (btsolnodedofids.size() != originalnodedofids.size())
-      dserror("Number of nodal DoFs does not match!");
-
-    for (int j=0;j<(int)btsolnodedofids.size();j++)
-    {
-      dofoffsetmap_[btsolnodedofids[j]]=originalnodedofids[j];
-    }
-  }
+  InitBeamContactDiscret();
 
   // check input parameters
   if (sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM") < 0.0 ||
@@ -595,6 +267,8 @@ step_(0)
 
   dis_ = LINALG::CreateVector(*ProblemDiscret().DofRowMap(), true);
   dis_old_ = LINALG::CreateVector(*ProblemDiscret().DofRowMap(), true);
+
+
 
   // read the DLINE conditions specifying charge density of beams
   linechargeconds_.clear();
@@ -930,6 +604,345 @@ void CONTACT::Beam3cmanager::ShiftDisMap(const Epetra_Vector& disrow, Epetra_Vec
 }
 
 /*----------------------------------------------------------------------*
+ | setup of contact discretization btsoldiscret_             grill 05/16|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::InitBeamContactDiscret()
+{
+  // create new (basically copied) discretization for contact
+  // (to ease our search algorithms we afford the luxury of
+  // ghosting all nodes and all elements on all procs, i.e.
+  // we export the discretization to full overlap. However,
+  // we do not want to do this with the actual discretization
+  // and thus create a stripped copy here that only contains
+  // nodes and elements).
+  // Then, within all beam contact specific routines we will
+  // NEVER use the underlying problem discretization but always
+  // the copied beam contact discretization.
+
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_.Comm().Clone());
+  btsoldiscret_ = Teuchos::rcp(new DRT::Discretization((std::string)"beam to solid contact",comm));
+  dofoffsetmap_.clear();
+  std::map<int,std::vector<int> > nodedofs;
+  nodedofs.clear();
+
+  // loop over all column nodes of underlying problem discret and add
+  for (int i=0;i<(ProblemDiscret().NodeColMap())->NumMyElements();++i)
+  {
+    DRT::Node* node = ProblemDiscret().lColNode(i);
+    if (!node) dserror("Cannot find node with lid %",i);
+    Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
+    if (BEAMCONTACT::BeamNode(*newnode))
+    {
+      BTSolDiscret().AddNode(newnode);
+      nodedofs[node->Id()]=ProblemDiscret().Dof(0,node);
+    }
+    else if (BEAMCONTACT::RigidsphereNode(*newnode) and btsph_)
+    {
+      BTSolDiscret().AddNode(newnode);
+      nodedofs[node->Id()]=ProblemDiscret().Dof(0,node);
+    }
+    else
+    {
+      if (btsol_==false && btsolmt_==false)
+        dserror("Only beam elements are allowed as long as the flags btsol_ and btsolmt_ are set to false!");
+    }
+  }
+
+  int maxproblemid=ProblemDiscret().ElementRowMap()->MaxAllGID();
+  // loop over all column elements of underlying problem discret and add
+  for (int i=0;i<(ProblemDiscret().ElementColMap())->NumMyElements();++i)
+  {
+    DRT::Element* ele = ProblemDiscret().lColElement(i);
+    if (!ele) dserror("Cannot find element with lid %",i);
+    Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
+    if (BEAMCONTACT::BeamElement(*newele) or BEAMCONTACT::RigidsphereElement(*newele))
+    {
+      BTSolDiscret().AddElement(newele);
+    }
+  }
+
+  // begin: determine surface elements and their nodes
+
+  // vector that contains solid-to-solid and beam-to-solid contact pairs
+  std::vector<DRT::Condition*> beamandsolidcontactconditions(0);
+  ProblemDiscret().GetCondition("Contact", beamandsolidcontactconditions);
+
+  // vector that solely contains beam-to-solid contact pairs
+  std::vector<DRT::Condition*> btscontactconditions(0);
+
+  // vector that solely contains beam-to-solid meshtying pairs
+  std::vector<DRT::Condition*> btsmeshtyingconditions(0);
+
+  // sort out solid-to-solid contact pairs, since these are treated in the drt_contact framework
+  for (int i = 0; i < (int) beamandsolidcontactconditions.size(); ++i)
+  {
+    if(*(beamandsolidcontactconditions[i]->Get<std::string>("Application"))=="Beamtosolidcontact")
+      btscontactconditions.push_back(beamandsolidcontactconditions[i]);
+    if(*(beamandsolidcontactconditions[i]->Get<std::string>("Application"))=="Beamtosolidmeshtying")
+      btsmeshtyingconditions.push_back(beamandsolidcontactconditions[i]);
+  }
+
+  //******************************* BEAM-TO-SOLID CONTACT *******************************
+  solcontacteles_.resize(0);
+  solcontactnodes_.resize(0);
+  int ggsize = 0;
+
+   //-------------------------------------------------- process surface nodes
+   for (int j=0;j<(int)btscontactconditions.size();++j)
+   {
+     // get all nodes and add them
+     const std::vector<int>* nodeids = btscontactconditions[j]->Nodes();
+     if (!nodeids) dserror("Condition does not have Node Ids");
+     for (int k=0; k<(int)(*nodeids).size(); ++k)
+     {
+       int gid = (*nodeids)[k];
+       // do only nodes that I have in my discretization
+       if (!ProblemDiscret().NodeColMap()->MyGID(gid)) continue;
+       DRT::Node* node = ProblemDiscret().gNode(gid);
+
+       if (!node) dserror("Cannot find node with gid %",gid);
+
+       Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::CoNode(node->Id(),node->X(),
+                                                        node->Owner(),
+                                                        ProblemDiscret().NumDof(0,node),
+                                                        ProblemDiscret().Dof(0,node),
+                                                        false,    //all solid elements are master elements
+                                                        false));  //no "initially active" decision necessary for beam to solid contact
+
+       // note that we do not have to worry about double entries
+       // as the AddNode function can deal with this case!
+       // the only problem would have occured for the initial active nodes,
+       // as their status could have been overwritten, but is prevented
+       // by the "foundinitialactive" block above!
+       solcontactnodes_.push_back(cnode);
+       BTSolDiscret().AddNode(cnode);
+       nodedofs[node->Id()]=ProblemDiscret().Dof(0,node);
+     }
+   }
+
+  //----------------------------------------------- process surface elements
+  for (int j=0;j<(int)btscontactconditions.size();++j)
+  {
+    // get elements from condition j of current group
+    std::map<int,Teuchos::RCP<DRT::Element> >& currele = btscontactconditions[j]->Geometry();
+
+    // elements in a boundary condition have a unique id
+    // but ids are not unique among 2 distinct conditions
+    // due to the way elements in conditions are build.
+    // We therefore have to give the second, third,... set of elements
+    // different ids. ids do not have to be continous, we just add a large
+    // enough number ggsize to all elements of cond2, cond3,... so they are
+    // different from those in cond1!!!
+    // note that elements in ele1/ele2 already are in column (overlapping) map
+    int lsize = (int)currele.size();
+    int gsize = 0;
+    Comm().SumAll(&lsize,&gsize,1);
+
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator fool;
+    for (fool=currele.begin(); fool != currele.end(); ++fool)
+    {
+      //The IDs of the surface elements of each conditions begin with zero. Therefore we have to add ggsize in order to
+      //get unique element IDs in the end. Furthermore, only the solid elements are added to the contact discretization btsoldiscret_
+      //via the btscontactconditions, whereas all beam elements with their original ID are simply cloned from the problem discretization
+      //into the contact discretization. In order to avoid solid element IDs being identical to these beam element IDs within the contact
+      //discretization we have to add the additional offset maxproblemid, which is identical to the maximal element ID in the problem
+      //discretization.
+      Teuchos::RCP<DRT::Element> ele = fool->second;
+      Teuchos::RCP<CONTACT::CoElement> cele = Teuchos::rcp(new CONTACT::CoElement(ele->Id()+ggsize+maxproblemid+1,
+                                                              ele->Owner(),
+                                                              ele->Shape(),
+                                                              ele->NumNode(),
+                                                              ele->NodeIds(),
+                                                              false,    //all solid elements are master elements
+                                                              false));  //no nurbs allowed up to now
+
+      solcontacteles_.push_back(cele);
+      BTSolDiscret().AddElement(cele);
+    } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
+    ggsize += gsize; // update global element counter
+  }
+  //end: determine surface elements and their nodes
+
+  //****************************** BEAM-TO-SOLID MESHTYING ******************************
+  solmeshtyingeles_.resize(0);
+  solmeshtyingnodes_.resize(0);
+
+   //-------------------------------------------------- process surface nodes
+   for (int j=0;j<(int)btsmeshtyingconditions.size();++j)
+   {
+     // get all nodes and add them
+     const std::vector<int>* nodeids = btsmeshtyingconditions[j]->Nodes();
+     if (!nodeids) dserror("Condition does not have Node Ids");
+     for (int k=0; k<(int)(*nodeids).size(); ++k)
+     {
+       int gid = (*nodeids)[k];
+       // do only nodes that I have in my discretization
+       if (!ProblemDiscret().NodeColMap()->MyGID(gid)) continue;
+       DRT::Node* node = ProblemDiscret().gNode(gid);
+
+       if (!node) dserror("Cannot find node with gid %",gid);
+
+       Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),node->X(),
+                                                        node->Owner(),
+                                                        ProblemDiscret().NumDof(0,node),
+                                                        ProblemDiscret().Dof(0,node),
+                                                        false));    //all solid elements are master elements
+
+       // note that we do not have to worry about double entries
+       // as the AddNode function can deal with this case!
+       // the only problem would have occured for the initial active nodes,
+       // as their status could have been overwritten, but is prevented
+       // by the "foundinitialactive" block above!
+       solmeshtyingnodes_.push_back(mtnode);
+       BTSolDiscret().AddNode(mtnode);
+       nodedofs[node->Id()]=ProblemDiscret().Dof(0,node);
+     }
+   }
+
+  //----------------------------------------------- process surface elements
+  for (int j=0;j<(int)btsmeshtyingconditions.size();++j)
+  {
+    // get elements from condition j of current group
+    std::map<int,Teuchos::RCP<DRT::Element> >& currele = btsmeshtyingconditions[j]->Geometry();
+
+    // elements in a boundary condition have a unique id
+    // but ids are not unique among 2 distinct conditions
+    // due to the way elements in conditions are build.
+    // We therefore have to give the second, third,... set of elements
+    // different ids. ids do not have to be continous, we just add a large
+    // enough number ggsize to all elements of cond2, cond3,... so they are
+    // different from those in cond1!!!
+    // note that elements in ele1/ele2 already are in column (overlapping) map
+    int lsize = (int)currele.size();
+    int gsize = 0;
+    Comm().SumAll(&lsize,&gsize,1);
+
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator fool;
+    for (fool=currele.begin(); fool != currele.end(); ++fool)
+    {
+      //The IDs of the surface elements of each conditions begin with zero. Therefore we have to add ggsize in order to
+      //get unique element IDs in the end. Furthermore, only the solid elements are added to the contact discretization btsoldiscret_
+      //via the btscontactconditions, whereas all beam elements with their original ID are simply cloned from the problem discretization
+      //into the contact discretization. In order to avoid solid element IDs being identical to these beam element IDs within the contact
+      //discretization we have to add the additional offset maxproblemid, which is identical to the maximal element ID in the problem
+      //discretization.
+      Teuchos::RCP<DRT::Element> ele = fool->second;
+      Teuchos::RCP<MORTAR::MortarElement> mtele = Teuchos::rcp(new MORTAR::MortarElement(ele->Id()+ggsize+maxproblemid+1,
+                                                              ele->Owner(),
+                                                              ele->Shape(),
+                                                              ele->NumNode(),
+                                                              ele->NodeIds(),
+                                                              false,    //all solid elements are master elements
+                                                              false));  //no nurbs allowed up to now
+
+      solmeshtyingeles_.push_back(mtele);
+      BTSolDiscret().AddElement(mtele);
+    } // for (fool=ele1.start(); fool != ele1.end(); ++fool)
+    ggsize += gsize; // update global element counter
+  }
+  //end: determine surface elements and their nodes
+
+  // build maps but do not assign dofs yet, we'll do this below
+  // after shuffling around of nodes and elements (saves time)
+  BTSolDiscret().FillComplete(false,false,false);
+
+  // store the node and element row and column maps into this manager
+  noderowmap_ = Teuchos::rcp(new Epetra_Map(*(BTSolDiscret().NodeRowMap())));
+  elerowmap_  = Teuchos::rcp(new Epetra_Map(*(BTSolDiscret().ElementRowMap())));
+  nodecolmap_ = Teuchos::rcp(new Epetra_Map(*(BTSolDiscret().NodeColMap())));
+  elecolmap_  = Teuchos::rcp(new Epetra_Map(*(BTSolDiscret().ElementColMap())));
+
+  // build fully overlapping node and element maps
+  // fill my own row node ids into vector (e)sdata
+  std::vector<int> sdata(noderowmap_->NumMyElements());
+  std::vector<int> esdata(elerowmap_->NumMyElements());
+  for (int i=0; i<noderowmap_->NumMyElements(); ++i)
+    sdata[i] = noderowmap_->GID(i);
+  for (int i=0; i<elerowmap_->NumMyElements(); ++i)
+    esdata[i] = elerowmap_->GID(i);
+
+  // if current proc is participating it writes row IDs into (e)stproc
+  std::vector<int> stproc(0);
+  std::vector<int> estproc(0);
+  if (noderowmap_->NumMyElements())
+    stproc.push_back(BTSolDiscret().Comm().MyPID());
+  if (elerowmap_->NumMyElements())
+    estproc.push_back(BTSolDiscret().Comm().MyPID());
+
+  // information how many processors participate in total
+  std::vector<int> allproc(BTSolDiscret().Comm().NumProc());
+  for (int i=0;i<BTSolDiscret().Comm().NumProc();++i) allproc[i] = i;
+
+  // declaring new variables into which the info of (e)stproc on all processors is gathered
+  std::vector<int> rtproc(0);
+  std::vector<int> ertproc(0);
+
+  // gathers information of (e)stproc and writes it into (e)rtproc; in the end (e)rtproc
+  // is a vector which contains the numbers of all processors which own nodes/elements.
+  LINALG::Gather<int>(stproc,rtproc,BTSolDiscret().Comm().NumProc(),&allproc[0],BTSolDiscret().Comm());
+  LINALG::Gather<int>(estproc,ertproc,BTSolDiscret().Comm().NumProc(),&allproc[0],BTSolDiscret().Comm());
+
+  // in analogy to (e)stproc and (e)rtproc the variables (e)rdata gather all the row ID
+  // numbers which are  stored on different processors in their own variables (e)sdata; thus,
+  // each processor gets the information about all the row ID numbers existing in the problem
+  std::vector<int> rdata;
+  std::vector<int> erdata;
+
+  // gather all gids of nodes redundantly from (e)sdata into (e)rdata
+  LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],BTSolDiscret().Comm());
+  LINALG::Gather<int>(esdata,erdata,(int)ertproc.size(),&ertproc[0],BTSolDiscret().Comm());
+
+  // build completely overlapping node map (on participating processors)
+  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,BTSolDiscret().Comm()));
+  sdata.clear();
+  stproc.clear();
+  rdata.clear();
+  allproc.clear();
+
+  // build completely overlapping element map (on participating processors)
+  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)erdata.size(),&erdata[0],0,BTSolDiscret().Comm()));
+  esdata.clear();
+  estproc.clear();
+  erdata.clear();
+
+  // store the fully overlapping node and element maps
+  nodefullmap_ = Teuchos::rcp(new Epetra_Map(*newnodecolmap));
+  elefullmap_  = Teuchos::rcp(new Epetra_Map(*newelecolmap));
+
+  // pass new fully overlapping node and element maps to beam contact discretization
+  BTSolDiscret().ExportColumnNodes(*newnodecolmap);
+  BTSolDiscret().ExportColumnElements(*newelecolmap);
+
+  // complete beam contact discretization based on the new column maps
+  // (this also assign new degrees of freedom what we actually do not
+  // want, thus we have to introduce a dof mapping next)
+  BTSolDiscret().FillComplete(true,false,false);
+
+  // communicate the map nodedofs to all proccs
+  DRT::Exporter ex(*(ProblemDiscret().NodeColMap()),*(BTSolDiscret().NodeColMap()),Comm());
+  ex.Export(nodedofs);
+
+  //Determine offset between the IDs of problem discretization and BTSol discretization
+  for (int i=0;i<(BTSolDiscret().NodeColMap())->NumMyElements();++i)
+  {
+    DRT::Node* node = BTSolDiscret().lColNode(i);
+    int nodeid = node->Id();
+    std::vector<int> btsolnodedofids = BTSolDiscret().Dof(0,node);
+    std::vector<int> originalnodedofids = nodedofs[nodeid];
+
+    if (btsolnodedofids.size() != originalnodedofids.size())
+      dserror("Number of nodal DoFs does not match!");
+
+    for (int j=0;j<(int)btsolnodedofids.size();j++)
+    {
+      dofoffsetmap_[btsolnodedofids[j]]=originalnodedofids[j];
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Set current displacement state                            popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::SetCurrentPositions(std::map<int,LINALG::Matrix<3,1> >& currentpositions,
@@ -944,7 +957,13 @@ void CONTACT::Beam3cmanager::SetCurrentPositions(std::map<int,LINALG::Matrix<3,1
   for (int i=0;i<FullNodes()->NumMyElements();++i)
   {
     // get node pointer
-    const DRT::Node* node = BTSolDiscret().lColNode(i);
+    DRT::Node* node = BTSolDiscret().lColNode(i);
+
+     // TODO maybe this can be done in a more elegant way in the future
+    /* check whether node is a beam node which is NOT used for centerline interpolation
+     * if so, we simply skip it because it does not have position (and tangent) DoFs */
+    if (BEAMCONTACT::BeamNode(*node) and !BEAMCONTACT::BeamCenterlineNode(*node))
+      continue;
 
     // get GIDs of this node's degrees of freedom
     std::vector<int> dofnode = BTSolDiscret().Dof(node);
@@ -980,6 +999,13 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     // get node pointer
     DRT::Node* node = BTSolDiscret().lColNode(i);
 
+    // TODO maybe this can be done in a more elegant way in the future
+   /* check whether node is a beam node which is NOT used for centerline interpolation
+    * if so, we simply skip it because it does not have position (and tangent) DoFs */
+   if (BEAMCONTACT::BeamNode(*node) and !BEAMCONTACT::BeamCenterlineNode(*node))
+     continue;
+
+
     //get nodal tangents for Kirchhoff elements
     if (numnodalvalues_==2 and BEAMCONTACT::BeamNode(*node))
     {
@@ -987,7 +1013,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
       std::vector<int> dofnode = BTSolDiscret().Dof(node);
 
       LINALG::Matrix<3,1> currtan(true);
-      for (int i=0; i<node->Elements()[0]->NumNode();i++)
+      for (int i=0; i<numnodes_;i++)    // TODO for now, use number of centerline nodes numnodes_ (=2) (no matter how many nodes the function call node->Elements()[0]->NumNode() would tell you)
       {
         if (node->Elements()[0]->Nodes()[i]->Id()==node->Id() and  node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3ebType::Instance() )
         {
@@ -1003,11 +1029,25 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
           currtan(1)=((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[4])];
           currtan(2)=((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[5])];
         }
+        else if (node->Elements()[0]->Nodes()[i]->Id()==node->Id() and node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3kType::Instance() )
+        {
+          const DRT::ELEMENTS::Beam3k* ele = dynamic_cast<const DRT::ELEMENTS::Beam3k*>(node->Elements()[0]);
+          currtan(0)=((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3])];
+          currtan(1)=((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[4])];
+          currtan(2)=((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[5])];
+        }
+        else if (node->Elements()[0]->Nodes()[i]->Id()==node->Id() and node->Elements()[0]->ElementType() == DRT::ELEMENTS::Beam3rType::Instance() )
+        {
+          const DRT::ELEMENTS::Beam3r* ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(node->Elements()[0]);
+          currtan(0)=((ele->Tref())[i])(0) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[6])];
+          currtan(1)=((ele->Tref())[i])(1) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[7])];
+          currtan(2)=((ele->Tref())[i])(2) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[8])];
+        }
       }
       // store into currenttangents
       currenttangents[node->Id()] = currtan;
     }
-    //set currenttangents to zero for Reissner elements
+    //set currenttangents to zero for Lagrange centerline interpolation
     else
     {
       for (int i=0;i<3;i++)
@@ -1026,7 +1066,12 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
     Epetra_SerialDenseMatrix ele2pos(3*numnodalvalues_,numnodes_);
     // Positions: Loop over all nodes of element 1
-    for(int m=0;m<(pairs_[i]->Element1())->NumNode();m++)
+    /* be careful here: beam eles (such as beam3k, beam3r) may have intermediate
+     * nodes which are not used for centerline interpolation and thus do not have
+     * position or tangent DoFs. we therefore use numnodes_ here rather than the query
+     * (btsphpotpairs_[i]->Element1())->NumNode() */
+    // TODO do the same for beam-to-solid contact pairs
+    for(int m=0;m<numnodes_;m++)
     {
       int tempGID = ((pairs_[i]->Element1())->NodeIds())[m];
       LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
@@ -1039,7 +1084,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     if (numnodalvalues_==2)
     {
       // Tangents: Loop over all nodes of element 1
-      for(int m=0;m<(pairs_[i]->Element1())->NumNode();m++)
+      for(int m=0;m<numnodes_;m++)
       {
         int tempGID = ((pairs_[i]->Element1())->NodeIds())[m];
         LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
@@ -1050,7 +1095,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
       }
     }
     // Positions: Loop over all nodes of element 2
-    for(int m=0;m<(pairs_[i]->Element2())->NumNode();m++)
+    for(int m=0;m<numnodes_;m++)
     {
       int tempGID = ((pairs_[i]->Element2())->NodeIds())[m];
         LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
@@ -1061,7 +1106,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     if (numnodalvalues_==2)
     {
       // Tangents: Loop over all nodes of element 2
-      for(int m=0;m<(pairs_[i]->Element2())->NumNode();m++)
+      for(int m=0;m<numnodes_;m++)
       {
         int tempGID = ((pairs_[i]->Element2())->NodeIds())[m];
           LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
@@ -1092,7 +1137,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
     Epetra_SerialDenseMatrix ele2pos(3,numnodessol);
     // Positions: Loop over all nodes of element 1 (beam element)
-    for(int m=0;m<(btsolpairs_[i]->Element1())->NumNode();m++)
+    for(int m=0;m<numnodes_;m++)
     {
       int tempGID = ((btsolpairs_[i]->Element1())->NodeIds())[m];
       LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
@@ -1105,7 +1150,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     if (numnodalvalues_==2)
     {
       // Tangents: Loop over all nodes of element 1
-      for(int m=0;m<(btsolpairs_[i]->Element1())->NumNode();m++)
+      for(int m=0;m<numnodes_;m++)
       {
         int tempGID = ((btsolpairs_[i]->Element1())->NodeIds())[m];
         LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
@@ -1187,7 +1232,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
     Epetra_SerialDenseMatrix ele2pos(3,1);
     // Positions: Loop over all nodes of element 1 (beam element)
-    for(int m=0;m<(btsphpairs_[i]->Element1())->NumNode();m++)
+    for(int m=0;m<numnodes_;m++)
     {
       int tempGID = ((btsphpairs_[i]->Element1())->NodeIds())[m];
       LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
@@ -1200,7 +1245,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     if (numnodalvalues_==2)
     {
       // Tangents: Loop over all nodes of element 1
-      for(int m=0;m<(btsphpairs_[i]->Element1())->NumNode();m++)
+      for(int m=0;m<numnodes_;m++)
       {
         int tempGID = ((btsphpairs_[i]->Element1())->NodeIds())[m];
         LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
@@ -1228,7 +1273,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
     Epetra_SerialDenseMatrix ele2pos(3*numnodalvalues_,numnodes_);
     // Positions: Loop over all nodes of element 1
-    for(int m=0;m<(btbpotpairs_[i]->Element1())->NumNode();m++)
+    for(int m=0;m<numnodes_;m++)
     {
       int tempGID = ((btbpotpairs_[i]->Element1())->NodeIds())[m];
       LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
@@ -1241,7 +1286,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     if (numnodalvalues_==2)
     {
       // Tangents: Loop over all nodes of element 1
-      for(int m=0;m<(btbpotpairs_[i]->Element1())->NumNode();m++)
+      for(int m=0;m<numnodes_;m++)
       {
         int tempGID = ((btbpotpairs_[i]->Element1())->NodeIds())[m];
         LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
@@ -1252,7 +1297,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
       }
     }
     // Positions: Loop over all nodes of element 2
-    for(int m=0;m<(btbpotpairs_[i]->Element2())->NumNode();m++)
+    for(int m=0;m<numnodes_;m++)
     {
       int tempGID = ((btbpotpairs_[i]->Element2())->NodeIds())[m];
         LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
@@ -1263,7 +1308,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     if (numnodalvalues_==2)
     {
       // Tangents: Loop over all nodes of element 2
-      for(int m=0;m<(btbpotpairs_[i]->Element2())->NumNode();m++)
+      for(int m=0;m<numnodes_;m++)
       {
         int tempGID = ((btbpotpairs_[i]->Element2())->NodeIds())[m];
           LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
@@ -1285,7 +1330,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
     Epetra_SerialDenseMatrix ele2pos(3,1);
     // Positions: Loop over all nodes of element 1 (beam element)
-    for(int m=0;m<(btsphpotpairs_[i]->Element1())->NumNode();m++)
+    for(int m=0;m<numnodes_;m++)
     {
       int tempGID = ((btsphpotpairs_[i]->Element1())->NodeIds())[m];
       LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
@@ -1298,7 +1343,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     if (numnodalvalues_==2)
     {
       // Tangents: Loop over all nodes of element 1
-      for(int m=0;m<(btsphpotpairs_[i]->Element1())->NumNode();m++)
+      for(int m=0;m<numnodes_;m++)
       {
         int tempGID = ((btsphpotpairs_[i]->Element1())->NodeIds())[m];
         LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
@@ -1544,7 +1589,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(const std::vector<std::vect
       //ele1 and ele2 (in case this is a beam element) have to be of the same type as ele1 of the first pair
       if ( ele1_type!=pair1_ele1_type or (BEAMCONTACT::BeamElement(*(formattedelementpairs[k])[1]) and ele2_type!=pair1_ele1_type))
       {
-        dserror("All contacting beam elements have to be of the same type (beam3eb, beam3 or beam3r). Change your input file!");
+        dserror("All contacting beam elements have to be of the same type (beam3k, beam3eb, beam3 or beam3r). Check your input file!");
       }
     }
   }
@@ -1855,9 +1900,9 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::BruteForceSearc
   //**********************************************************************
   // Steps of search for element pairs that MIGHT get into contact:
   //
-  // 1) Find non-neighbourng node pairs
+  // 1) Find non-neighboring node pairs
   // 2) Compute distance between node pairs and compare with search radius
-  // 3) Find non-neighbouring element pairs based on node pairs
+  // 3) Find non-neighboring element pairs based on node pairs
   // 4) Check if new pair already exists. If not we've found a new entry!
   //
   // NOTE: This is a brute force search! The time to search across n nodes
@@ -1875,6 +1920,23 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::BruteForceSearc
     // get global id, node itself and current position
     int firstgid = ColNodes()->GID(i);
     DRT::Node* firstnode = BTSolDiscret().gNode(firstgid);
+
+    // TODO see also LOOP 2 below
+   /* check whether node position has been stored in currentpositions previously;
+    * if not, it most likely is a beam node which is NOT used for centerline interpolation
+    * if so, we simply skip it because it does not have position (and tangent) DoFs */
+    if (currentpositions.find(firstgid) == currentpositions.end())
+    {
+      if (BEAMCONTACT::BeamNode(*firstnode) and !BEAMCONTACT::BeamCenterlineNode(*firstnode))
+      {
+        continue;
+      }
+      else
+      {
+        dserror("this should not happen!");
+      }
+    }
+
     LINALG::Matrix<3,1> firstpos = currentpositions[firstgid];
 
     // create storage for neighbouring nodes to be excluded.
@@ -1905,6 +1967,11 @@ std::vector<std::vector<DRT::Element*> > CONTACT::Beam3cmanager::BruteForceSearc
     {
       // get global node id and current position
       int secondgid = FullNodes()->GID(j);
+
+      // TODO see comment above
+      if (currentpositions.find(secondgid) == currentpositions.end())
+        continue;
+
       LINALG::Matrix<3,1> secondpos = currentpositions[secondgid];
 
       // nothing to do for identical pair
@@ -2348,6 +2415,7 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
 void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& timestep,
                                         const int& newtonstep, bool endoftimestep)
 {
+
   //**********************************************************************
   // create filename for ASCII-file for output
   //**********************************************************************
@@ -2815,28 +2883,38 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
               std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
               double displacement = disccol[BTSolDiscret().DofColMap()->LID(dofnode[i])];
               nodalcoords(i,j) =  referenceposition + displacement;
-              if (ele->RotVec())
-                nodaltangents(i,j) = ((ele->Theta0())[j])(i) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3+i])];
+              if(j<2)
+              {
+                if (ele->RotVec())
+                  nodaltangents(i,j) = ((ele->Theta0())[j])(i) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3+i])];
+                else
+                  nodaltangents(i,j) =  ((ele->Tref())[j])(i) + disccol[BTSolDiscret().DofColMap()->LID(dofnode[3+i])];
+              }
               else
-                dserror("ERROR: Gmsh output not yet implemented for beam3k with tangent vector DoFs");
+              {
+                nodaltangents(i,j) =0.0;
+              }
             }
           }
 
-          // compute tangents from rotation vectors
-          LINALG::Matrix<3,1> theta;
-          LINALG::Matrix<3,3> R;
-          for (int j=0;j<element->NumNode();++j)
+          if (ele->RotVec())
           {
-            theta(0) = nodaltangents(0,j);
-            theta(1) = nodaltangents(1,j);
-            theta(2) = nodaltangents(2,j);
-            R.Clear();
-            LARGEROTATIONS::angletotriad(theta,R);
-            std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
-            double lt = disccol[BTSolDiscret().DofColMap()->LID(dofnode[6])];
-            nodaltangents(0,j) = (1.0+lt) * R(0,0);
-            nodaltangents(1,j) = (1.0+lt) * R(1,0);
-            nodaltangents(2,j) = (1.0+lt) * R(2,0);
+            // compute tangents from rotation vectors
+            LINALG::Matrix<3,1> theta;
+            LINALG::Matrix<3,3> R;
+            for (int j=0;j<element->NumNode();++j)
+            {
+              theta(0) = nodaltangents(0,j);
+              theta(1) = nodaltangents(1,j);
+              theta(2) = nodaltangents(2,j);
+              R.Clear();
+              LARGEROTATIONS::angletotriad(theta,R);
+              std::vector<int> dofnode = BTSolDiscret().Dof((element->Nodes())[j]);
+              double lt = disccol[BTSolDiscret().DofColMap()->LID(dofnode[6])];
+              nodaltangents(0,j) = (1.0+lt) * R(0,0);
+              nodaltangents(1,j) = (1.0+lt) * R(1,0);
+              nodaltangents(2,j) = (1.0+lt) * R(2,0);
+            }
           }
 
           // remember that the beam3k is a 3-noded element only(!) due to the fact the
@@ -5441,29 +5519,10 @@ void CONTACT::Beam3cmanager::GMSH_ST(
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::SetElementTypeAndDistype(DRT::Element* ele1)
 {
-  numnodes_ = ele1->NumNode();
+  const DRT::ELEMENTS::Beam3Base* ele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele1);
 
-  const DRT::ElementType & ele1_type = ele1->ElementType();
-  if (ele1_type ==DRT::ELEMENTS::Beam3Type::Instance() or ele1_type ==DRT::ELEMENTS::Beam3rType::Instance())
-  {
-    numnodalvalues_ = 1;
-
-    // special case: beam3r element with Hermite center line interpolation
-    if (ele1_type == DRT::ELEMENTS::Beam3rType::Instance())
-    {
-      const DRT::ELEMENTS::Beam3r* ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(ele1);
-      if (ele->HermiteCenterlineInterpolation())
-        numnodalvalues_ = 2;
-    }
-  }
-  else if (ele1_type ==DRT::ELEMENTS::Beam3ebType::Instance() or ele1_type ==DRT::ELEMENTS::Beam3ebtorType::Instance())
-  {
-    numnodalvalues_ = 2;
-  }
-  else
-  {
-    dserror("Element type not valid: only beam3, beam3r, beam3eb and beam3ebtor is possible for beam contact!");
-  }
+  numnodes_ = ele->NumCenterlineNodes();
+  numnodalvalues_ = ele->HermiteCenterlineInterpolation() ? 2 : 1;
 
   return;
 }

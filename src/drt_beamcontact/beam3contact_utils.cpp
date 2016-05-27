@@ -33,16 +33,46 @@ bool BEAMCONTACT::BeamNode(DRT::Node& node)
   //TODO: actually we would have to check all elements of all processors!!! Gather?
   for (int i=0; i< (int)(node.NumElement()); i++)
   {
-    if(BeamElement(*(node.Elements())[i]))
-      beameles = true;
+    if(BeamElement(*(node.Elements())[i]) )
+    {
+        beameles = true;
+    }
     else
+    {
       othereles = true;
+    }
   }
 
   if (beameles and othereles)
     dserror("Beam elements and other (solid, rigid sphere) elements sharing the same node is currently not allowed in BACI!");
 
   return beameles;
+}
+
+/*----------------------------------------------------------------------*
+ | Check, if current node is used for centerline                        |
+ | interpolation of a beam element                           grill 05/16|
+ *----------------------------------------------------------------------*/
+bool BEAMCONTACT::BeamCenterlineNode(DRT::Node& node)
+{
+  bool beamclele = false;
+
+  //TODO: actually we would have to check all elements of all processors!!! Gather?
+  for (int i=0; i< (int)(node.NumElement()); i++)
+  {
+    if(BeamElement(*(node.Elements())[i]) )
+    {
+      /* TODO we not only check whether this node is a beam node but also if
+       * it is used for centerline interpolation, i.e. whether it is node 0 or 1 of the beam element*/
+      if( (node.Id() == ( (node.Elements())[i]->NodeIds() )[0]) or
+          (node.Id() == ( (node.Elements())[i]->NodeIds() )[1]) )
+      {
+        beamclele = true;
+      }
+    }
+  }
+
+  return beamclele;
 }
 
 /*----------------------------------------------------------------------*
@@ -149,6 +179,7 @@ bool BEAMCONTACT::ElementsShareNode(DRT::Element& element1,DRT::Element& element
  *----------------------------------------------------------------------*/
 double BEAMCONTACT::CalcEleRadius(const DRT::Element* ele)
 {
+  // TODO create and call access method for radius in abstract Beam3Base element
   double eleradius = 0.0;
 
   const DRT::ElementType & eot = ele->ElementType();
@@ -158,25 +189,34 @@ double BEAMCONTACT::CalcEleRadius(const DRT::Element* ele)
     const DRT::ELEMENTS::Beam3* thisbeam = static_cast<const DRT::ELEMENTS::Beam3*>(ele);
     eleradius =MANIPULATERADIUS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
   }
-  if ( eot == DRT::ELEMENTS::Beam3rType::Instance() )
+  else if ( eot == DRT::ELEMENTS::Beam3rType::Instance() )
   {
     const DRT::ELEMENTS::Beam3r* thisbeam = static_cast<const DRT::ELEMENTS::Beam3r*>(ele);
     eleradius = MANIPULATERADIUS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
   }
-  if ( eot == DRT::ELEMENTS::Beam3ebType::Instance() )
+  else if ( eot == DRT::ELEMENTS::Beam3ebType::Instance() )
   {
     const DRT::ELEMENTS::Beam3eb* thisbeam = static_cast<const DRT::ELEMENTS::Beam3eb*>(ele);
     eleradius = MANIPULATERADIUS*sqrt(sqrt(4 * (thisbeam->Izz()) / M_PI));
   }
-  if(eot == DRT::ELEMENTS::Beam3ebtorType::Instance())
+  else if(eot == DRT::ELEMENTS::Beam3ebtorType::Instance())
   {
     const DRT::ELEMENTS::Beam3ebtor* thisbeam = static_cast<const DRT::ELEMENTS::Beam3ebtor*>(ele);
     eleradius = MANIPULATERADIUS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
   }
-  if(eot == DRT::ELEMENTS::RigidsphereType::Instance())
+  else if(eot == DRT::ELEMENTS::Beam3kType::Instance())
+  {
+    const DRT::ELEMENTS::Beam3k* thisbeam = static_cast<const DRT::ELEMENTS::Beam3k*>(ele);
+    eleradius = MANIPULATERADIUS*sqrt(sqrt(4 * (thisbeam->Iyy()) / M_PI));
+  }
+  else if(eot == DRT::ELEMENTS::RigidsphereType::Instance())
   {
     const DRT::ELEMENTS::Rigidsphere* thissphere = static_cast<const DRT::ELEMENTS::Rigidsphere*>(ele);
     eleradius = thissphere->Radius();
+  }
+  else
+  {
+    dserror("BEAMCONTACT::CalcEleRadius: unknown element type; cannot determine cross-section radius");
   }
 
   return eleradius;

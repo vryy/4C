@@ -1,0 +1,125 @@
+//
+// Maintainer: Christoph Meier
+// meier@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15262
+//
+============================================================================
+General Data File CCARAT
+============================================================================
+-----------------------------------------------------------------------TITLE
+test case in order to test transition from large-angle to small-angle-contact
+----------------------------------------------------------------PROBLEM SIZE
+DIM                             3
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     0
+NUMSTRUCDIS                     1
+NUMALEDIS                       0
+NUMTHERMDIS                     0
+--------------------------------------------------------------------------IO
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     No
+STRUCT_STRESS                   No
+STRUCT_STRAIN                   No
+FLUID_SOL                       No
+FLUID_STRESS                    No
+FLUID_VIS                       No
+THERM_TEMPERATURE               No
+THERM_HEATFLUX                  No
+FILESTEPS                       1000
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+DYNAMICTYP                      Statics
+RESULTSEVRY                     1000
+RESTARTEVRY                     1000
+NLNSOL                          fullnewton
+TIMESTEP                        0.01
+NUMSTEP                         230
+MAXTIME                         2.3
+PREDICT                         TangDis
+TOLRES                          1.0e-7
+TOLDISP                         1.0e-7
+NORM_RESF                       Abs
+NORM_DISP                       Abs
+NORMCOMBI_RESFDISP              And
+MAXITER                         30
+LOADLIN                         Yes
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 2
+NAME                            Contact_Solver
+SOLVER                          Amesos_KLU_nonsym
+----------------------------------------------------------------BEAM CONTACT
+BEAMS_STRATEGY                  Penalty
+BEAMS_BTBPENALTYPARAM           1.0e5
+BEAMS_BTBLINEPENALTYPARAM       5.0e6
+BEAMS_NEWGAP                    No
+BEAMS_SEGCON                    Yes
+BEAMS_DEBUG                     Yes
+BEAMS_PERPSHIFTANGLE1           10
+BEAMS_PERPSHIFTANGLE2           30
+BEAMS_PARSHIFTANGLE1            10
+BEAMS_PARSHIFTANGLE2            30
+BEAMS_SEGANGLE                  1.0
+BEAMS_NUMINTEGRATIONINTERVAL    30
+BEAMS_PENALTYLAW                LinPosQuadPen
+BEAMS_PENREGPARAM_G0            0.005
+BEAMS_PENREGPARAM_F0            0.0
+BEAMS_PENREGPARAM_C0            0.0
+BEAMS_MAXDISISCALEFAC           0.3
+BEAMS_MAXDELTADISSCALEFAC       500.0
+BEAMS_ADDITEXT                  Yes
+BEAMS_EXTVAL                    2.0
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         5
+NDLINE                          0
+NDSURF                          0
+NDVOL                           0
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT                          5
+E 1 - NUMDOF 7 ONOFF 1 1 1 1 1 1 1 VAL  0.5707  0.0  0.0 -1.0  0.0  1.0  0.0 CURVE none none none none none none none FUNCT 0 0 0 0 0 0 0
+E 2 - NUMDOF 7 ONOFF 1 1 1 1 1 1 1 VAL -0.5707  0.0  0.0 -1.0  0.0 -1.0  0.0 CURVE none none none none none none none FUNCT 0 0 0 0 0 0 0
+E 3 - NUMDOF 7 ONOFF 1 1 1 0 0 0 1 VAL  1.0     1.0 -0.3  0.0  0.0  0.0  0.0 CURVE    3    2    1 none none none none FUNCT 0 0 0 0 0 0 0
+E 4 - NUMDOF 7 ONOFF 1 1 1 0 0 0 0 VAL -1.0    -1.0 -0.3  0.0  0.0  0.0  0.0 CURVE    3    2    1 none none none none FUNCT 0 0 0 0 0 0 0
+E 5 - NUMDOF 1 ONOFF 1 VAL 0.0 CURVE none FUNCT 0
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE  1 DNODE 1
+NODE  3 DNODE 2
+NODE  4 DNODE 3
+NODE 10 DNODE 4
+NODE  2 DNODE 5
+-----------------------------------------------------------------NODE COORDS
+NODE  1 COORD -1.5707                0.0                   0.0
+NODE  2 COORD  0.0                   0.0                   0.0
+NODE  3 COORD  1.5707                0.0                   0.0
+NODE  4 COORD  0.0                  -1.0                   0.85
+NODE  5 COORD  0.0                  -0.66666666666         0.85
+NODE  6 COORD  0.0                  -0.33333333333         0.85
+NODE  7 COORD  0.0                   0.0                   0.85
+NODE  8 COORD  0.0                   0.33333333333         0.85
+NODE  9 COORD  0.0                   0.66666666666         0.85
+NODE 10 COORD  0.0                   1.0                   0.85
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 BEAM3K LIN3  1  3  2 WK 1 ROTVEC 0 MAT 1 CROSS 3.1415926535897936e-06 MOMINY 7.8539816339744844e-09 MOMINZ 7.8539816339744844e-09 MOMINPOL 1.5707963267948969e-08 TRIADS 0.0 0.0 0.0  0.0 0.0 0.0  0.0 0.0 0.0
+2 BEAM3K LIN3  4  6  5 WK 1 ROTVEC 0 MAT 1 CROSS 3.1415926535897936e-06 MOMINY 7.8539816339744844e-09 MOMINZ 7.8539816339744844e-09 MOMINPOL 1.5707963267948969e-08 TRIADS 0.0 0.0 1.5707963267948966  0.0 0.0 1.5707963267948966  0.0 0.0 1.5707963267948966
+3 BEAM3K LIN3  6  8  7 WK 1 ROTVEC 0 MAT 1 CROSS 3.1415926535897936e-06 MOMINY 7.8539816339744844e-09 MOMINZ 7.8539816339744844e-09 MOMINPOL 1.5707963267948969e-08 TRIADS 0.0 0.0 1.5707963267948966  0.0 0.0 1.5707963267948966  0.0 0.0 1.5707963267948966
+4 BEAM3K LIN3  8 10  9 WK 1 ROTVEC 0 MAT 1 CROSS 3.1415926535897936e-06 MOMINY 7.8539816339744844e-09 MOMINZ 7.8539816339744844e-09 MOMINPOL 1.5707963267948969e-08 TRIADS 0.0 0.0 1.5707963267948966  0.0 0.0 1.5707963267948966  0.0 0.0 1.5707963267948966
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1e9 NUE 0.0 DENS 0 THEXPANS 0.0
+----------------------------------------------------------------------CURVE1
+CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
+----------------------------------------------------------------------CURVE2
+CURVE2 on EXPR FUNC 0.0 t1 0.0 t2 1.0
+CURVE2 on EXPR FUNC 1.0-cos(2*pi*(t-1.0)/4.0) t1 1.0 t2 5.0
+----------------------------------------------------------------------CURVE3
+CURVE3 on EXPR FUNC 0.0 t1 0.0 t2 1.0
+CURVE3 on EXPR FUNC sin(2*pi*(t-1.0)/4.0) t1 1.0 t2 5.0
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE  3.04339680386332578e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE  4.88418028758879907e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE -8.72150321633453213e-02 TOLERANCE 1e-8
+-------------------------------------------------------------------------END

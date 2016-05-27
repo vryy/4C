@@ -68,9 +68,21 @@ bool DRT::ELEMENTS::Beam3k::ReadElement(const std::string& eletype,
   //torsional moment of inertia
   linedef->ExtractDouble("MOMINPOL",Irr_);
 
-  linedef->ExtractDouble("IT",inertscaletrans_);
-  linedef->ExtractDouble("IR1",inertscalerot1_);
-  linedef->ExtractDouble("IR2",inertscalerot2_);
+  // optional: artificial scaling factors for translational/rotational inertia terms
+  if(linedef->HaveNamed("IT"))
+    linedef->ExtractDouble("IT",inertscaletrans_);
+  else
+    inertscaletrans_=1.0;
+
+  if(linedef->HaveNamed("IR1"))
+    linedef->ExtractDouble("IR1",inertscalerot1_);
+  else
+    inertscalerot1_=1.0;
+
+  if(linedef->HaveNamed("IR2"))
+    linedef->ExtractDouble("IR2",inertscalerot2_);
+  else
+    inertscalerot2_=1.0;
 
   //extract triads at element nodes in reference configuration as rotation vectors and save them as quaternions at each node, respectively
   std::vector<double> nodal_thetas;
