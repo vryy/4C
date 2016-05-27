@@ -1129,6 +1129,56 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     btsolpairs_[i]->UpdateElePos(ele1pos,ele2pos);
   }
 
+  // Do the same for the beam-to-solid meshtying groups
+  for(int i=0;i<(int)btsolmtgroups_.size();++i)
+  {
+    int numnodessol = ((btsolmtgroups_[i])->Element2()[0])->NumNode();
+    int numele2 = (int)(btsolmtgroups_[i]->Element2().size());
+    // temporary matrices to store nodal coordinates of each element
+    Epetra_SerialDenseMatrix ele1pos(3*numnodalvalues_,numnodes_);
+    std::vector<Epetra_SerialDenseMatrix> ele2pos(numele2);
+    for (int e=0;e<numele2;e++)
+      ele2pos[e].Shape(3,numnodessol);
+    // Positions: Loop over all nodes of element 1 (beam element)
+    for(int m=0;m<(btsolmtgroups_[i]->Element1())->NumNode();m++)
+    {
+      int tempGID = ((btsolmtgroups_[i]->Element1())->NodeIds())[m];
+      LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+
+      // store updated nodal coordinates
+      for(int n=0;n<3;n++)
+        ele1pos(n,m) = temppos(n);
+      // store updated nodal tangents
+    }
+    if (numnodalvalues_==2)
+    {
+      // Tangents: Loop over all nodes of element 1
+      for(int m=0;m<(btsolmtgroups_[i]->Element1())->NumNode();m++)
+      {
+        int tempGID = ((btsolmtgroups_[i]->Element1())->NodeIds())[m];
+        LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
+
+        // store updated nodal tangents
+        for(int n=0;n<3;n++)
+          ele1pos(n+3,m) = temptan(n);
+      }
+    }
+    // Positions: Loop over all nodes of all elements 2 (solid surface elements)
+    for (int e=0;e<numele2;e++)
+    {
+      for(int m=0;m<(btsolmtgroups_[i]->Element2()[e])->NumNode();m++)
+      {
+        int tempGID = ((btsolmtgroups_[i]->Element2()[e])->NodeIds())[m];
+        LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+        // store updated nodal coordinates
+        for(int n=0;n<3;n++)
+          (ele2pos[e])(n,m) = temppos(n);
+      }
+    }
+
+    // finally update nodal positions in meshtying group objects
+    btsolmtgroups_[i]->UpdateElePos(ele1pos,ele2pos);
+  }
 
   // Do the same for the beam-to-sphere contact pairs
   for(int i=0;i<(int)btsphpairs_.size();++i)

@@ -96,6 +96,12 @@ public:
                         Epetra_Vector& fint,
                         const double& pp)=0;
 
+  /*
+  \brief Update nodal coordinates (and tangents) of all elements
+  */
+  virtual void UpdateElePos(Epetra_SerialDenseMatrix& newele1pos,
+                            std::vector<Epetra_SerialDenseMatrix>& newele2pos)=0;
+
   //! return appropriate internal implementation class (acts as a simple factory)
   static Teuchos::RCP<Beam3tosolidmeshtyinginterface> Impl(const int numnodessol,
                                                            const int numnodes,
@@ -194,6 +200,11 @@ public:
                 Epetra_Vector& fint,
                 const double& pp);
 
+  /*
+  \brief Update nodal coordinates (and tangents) of all elements
+  */
+  void UpdateElePos(Epetra_SerialDenseMatrix& newele1pos,
+                    std::vector<Epetra_SerialDenseMatrix>& newele2pos);
   //@}
 
 private:
@@ -214,6 +225,14 @@ private:
 
   //! list of second elements (solid surface) of meshtying group
   std::vector<DRT::Element*> element2_;
+
+  //! current nodal positions (and tangents) of the two elements
+  LINALG::TMatrix<TYPEBTS,3*numnodes*numnodalvalues,1> ele1pos_;
+  std::vector<LINALG::TMatrix<TYPEBTS,3*numnodessol,1> > ele2pos_;
+
+  //! reference nodal positions (and tangents) of the two elements
+  LINALG::TMatrix<TYPEBTS,3*numnodes*numnodalvalues,1> ele1posref_;
+  std::vector<LINALG::TMatrix<TYPEBTS,3*numnodessol,1> > ele2posref_;
 
   //! flag indicating contact (active/inactive)
   bool contactflag_;
