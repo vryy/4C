@@ -4,8 +4,10 @@
 
 \brief A class providing coupling capabilities based on mortar methods
 
+\level 2
+
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -1242,18 +1244,17 @@ void ADAPTER::CouplingMortar::Evaluate(
 /*----------------------------------------------------------------------*
  *  Create integration cells for mortar interface           farah 01/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<MORTAR::IntCell> > ADAPTER::CouplingMortar::EvaluateGeometry()
+void ADAPTER::CouplingMortar::EvaluateGeometry(
+    std::vector<Teuchos::RCP<MORTAR::IntCell> >&   intcells   //!< vector of mortar integration cells
+    )
 {
   // safety check
   CheckSetup();
 
-  // init integration cell vector
-  std::vector<Teuchos::RCP<MORTAR::IntCell> > intcells(0);
-
   // evaluate geometry information
   interface_->EvaluateGeometry(intcells);
 
-  return intcells;
+  return;
 }
 
 

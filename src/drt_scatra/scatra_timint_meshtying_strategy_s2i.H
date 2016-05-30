@@ -21,6 +21,7 @@
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 #include "../drt_inpar/inpar_s2i.H"
+#include "../drt_inpar/inpar_scatra.H"
 
 #include <Epetra_FEVector.h>
 
@@ -172,7 +173,7 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
     std::map<int,Teuchos::RCP<ADAPTER::CouplingMortar> > icoupmortar_;
 
     //! mortar integration cells
-    std::map<int,std::vector<Teuchos::RCP<MORTAR::IntCell> > > imortarcells_;
+    std::map<int,std::vector<std::pair<Teuchos::RCP<MORTAR::IntCell>,INPAR::SCATRA::ImplType> > > imortarcells_;
 
     //! auxiliary system matrix for linearizations of slave fluxes w.r.t. slave dofs (non-mortar case)
     //! or for linearizations of slave fluxes w.r.t. slave and master dofs (mortar case)
@@ -255,42 +256,43 @@ class MeshtyingStrategyS2I : public MeshtyingStrategyBase
 
     //! evaluate single mortar integration cell
     void EvaluateMortarCell(
-        const DRT::Discretization&      idiscret,        //!< interface discretization
-        MORTAR::IntCell&                cell,            //!< mortar integration cell
-        MORTAR::MortarElement&          slaveelement,    //!< slave-side mortar element
-        MORTAR::MortarElement&          masterelement,   //!< master-side mortar element
-        DRT::Element::LocationArray&    la_slave,        //!< slave-side location array
-        DRT::Element::LocationArray&    la_master,       //!< master-side location array
-        const Teuchos::ParameterList&   params,          //!< parameter list
-        Epetra_SerialDenseMatrix&       cellmatrix1,     //!< cell matrix 1
-        Epetra_SerialDenseMatrix&       cellmatrix2,     //!< cell matrix 2
-        Epetra_SerialDenseMatrix&       cellmatrix3,     //!< cell matrix 3
-        Epetra_SerialDenseMatrix&       cellmatrix4,     //!< cell matrix 4
-        Epetra_SerialDenseVector&       cellvector1,     //!< cell vector 1
-        Epetra_SerialDenseVector&       cellvector2      //!< cell vector 2
+        const DRT::Discretization&       idiscret,        //!< interface discretization
+        MORTAR::IntCell&                 cell,            //!< mortar integration cell
+        const INPAR::SCATRA::ImplType&   impltype,        //!< physical implementation type of mortar integration cell
+        MORTAR::MortarElement&           slaveelement,    //!< slave-side mortar element
+        MORTAR::MortarElement&           masterelement,   //!< master-side mortar element
+        DRT::Element::LocationArray&     la_slave,        //!< slave-side location array
+        DRT::Element::LocationArray&     la_master,       //!< master-side location array
+        const Teuchos::ParameterList&    params,          //!< parameter list
+        Epetra_SerialDenseMatrix&        cellmatrix1,     //!< cell matrix 1
+        Epetra_SerialDenseMatrix&        cellmatrix2,     //!< cell matrix 2
+        Epetra_SerialDenseMatrix&        cellmatrix3,     //!< cell matrix 3
+        Epetra_SerialDenseMatrix&        cellmatrix4,     //!< cell matrix 4
+        Epetra_SerialDenseVector&        cellvector1,     //!< cell vector 1
+        Epetra_SerialDenseVector&        cellvector2      //!< cell vector 2
         ) const;
 
     //! evaluate mortar integration cells
     void EvaluateMortarCells(
-        const std::vector<Teuchos::RCP<MORTAR::IntCell> >&   cells,               //!< mortar integration cells
-        const DRT::Discretization&                           idiscret,            //!< interface discretization
-        const Teuchos::ParameterList&                        params,              //!< parameter list for evaluation of mortar integration cells
-        const Teuchos::RCP<LINALG::SparseOperator>&          systemmatrix1,       //!< system matrix 1
-        const INPAR::S2I::InterfaceSides                     matrix1_side_rows,   //!< interface side associated with rows of system matrix 1
-        const INPAR::S2I::InterfaceSides                     matrix1_side_cols,   //!< interface side associated with columns of system matrix 1
-        const Teuchos::RCP<LINALG::SparseOperator>&          systemmatrix2,       //!< system matrix 2
-        const INPAR::S2I::InterfaceSides                     matrix2_side_rows,   //!< interface side associated with rows of system matrix 2
-        const INPAR::S2I::InterfaceSides                     matrix2_side_cols,   //!< interface side associated with columns of system matrix 2
-        const Teuchos::RCP<LINALG::SparseOperator>&          systemmatrix3,       //!< system matrix 3
-        const INPAR::S2I::InterfaceSides                     matrix3_side_rows,   //!< interface side associated with rows of system matrix 3
-        const INPAR::S2I::InterfaceSides                     matrix3_side_cols,   //!< interface side associated with columns of system matrix 3
-        const Teuchos::RCP<LINALG::SparseOperator>&          systemmatrix4,       //!< system matrix 4
-        const INPAR::S2I::InterfaceSides                     matrix4_side_rows,   //!< interface side associated with rows of system matrix 4
-        const INPAR::S2I::InterfaceSides                     matrix4_side_cols,   //!< interface side associated with columns of system matrix 4
-        const Teuchos::RCP<Epetra_MultiVector>&              systemvector1,       //!< system vector 1
-        const INPAR::S2I::InterfaceSides                     vector1_side,        //!< interface side associated with system vector 1
-        const Teuchos::RCP<Epetra_MultiVector>&              systemvector2,       //!< system vector 2
-        const INPAR::S2I::InterfaceSides                     vector2_side         //!< interface side associated with system vector 2
+        const std::vector<std::pair<Teuchos::RCP<MORTAR::IntCell>,INPAR::SCATRA::ImplType> >&   cells,               //!< mortar integration cells
+        const DRT::Discretization&                                                              idiscret,            //!< interface discretization
+        const Teuchos::ParameterList&                                                           params,              //!< parameter list for evaluation of mortar integration cells
+        const Teuchos::RCP<LINALG::SparseOperator>&                                             systemmatrix1,       //!< system matrix 1
+        const INPAR::S2I::InterfaceSides                                                        matrix1_side_rows,   //!< interface side associated with rows of system matrix 1
+        const INPAR::S2I::InterfaceSides                                                        matrix1_side_cols,   //!< interface side associated with columns of system matrix 1
+        const Teuchos::RCP<LINALG::SparseOperator>&                                             systemmatrix2,       //!< system matrix 2
+        const INPAR::S2I::InterfaceSides                                                        matrix2_side_rows,   //!< interface side associated with rows of system matrix 2
+        const INPAR::S2I::InterfaceSides                                                        matrix2_side_cols,   //!< interface side associated with columns of system matrix 2
+        const Teuchos::RCP<LINALG::SparseOperator>&                                             systemmatrix3,       //!< system matrix 3
+        const INPAR::S2I::InterfaceSides                                                        matrix3_side_rows,   //!< interface side associated with rows of system matrix 3
+        const INPAR::S2I::InterfaceSides                                                        matrix3_side_cols,   //!< interface side associated with columns of system matrix 3
+        const Teuchos::RCP<LINALG::SparseOperator>&                                             systemmatrix4,       //!< system matrix 4
+        const INPAR::S2I::InterfaceSides                                                        matrix4_side_rows,   //!< interface side associated with rows of system matrix 4
+        const INPAR::S2I::InterfaceSides                                                        matrix4_side_cols,   //!< interface side associated with columns of system matrix 4
+        const Teuchos::RCP<Epetra_MultiVector>&                                                 systemvector1,       //!< system vector 1
+        const INPAR::S2I::InterfaceSides                                                        vector1_side,        //!< interface side associated with system vector 1
+        const Teuchos::RCP<Epetra_MultiVector>&                                                 systemvector2,       //!< system vector 2
+        const INPAR::S2I::InterfaceSides                                                        vector2_side         //!< interface side associated with system vector 2
         ) const;
 
     //! compute inverse sums of absolute values of matrix row entries
@@ -519,9 +521,9 @@ class MortarCellFactory
 
     //! provide instance of mortar cell evaluation class of particular slave-side discretization type
     static MortarCellInterface* MortarCellCalc(
+        const INPAR::SCATRA::ImplType&      impltype,        //!< physical implementation type of mortar integration cell
         const MORTAR::MortarElement&        slaveelement,    //!< slave-side mortar element
         const MORTAR::MortarElement&        masterelement,   //!< master-side mortar element
-        const MeshtyingStrategyS2I* const   strategy,        //!< scatra-scatra interface coupling strategy
         const INPAR::S2I::MortarType&       mortartype,      //!< flag for meshtying method
         const INPAR::S2I::InterfaceSides&   lmside           //!< flag for interface side underlying Lagrange multiplier definition
         );
@@ -531,8 +533,8 @@ class MortarCellFactory
     //! provide instance of mortar cell evaluation class of particular slave-side and master-side discretization types
     template<DRT::Element::DiscretizationType distypeS>
     static MortarCellInterface* MortarCellCalc(
+        const INPAR::SCATRA::ImplType&      impltype,             //!< physical implementation type of mortar integration cell
         const MORTAR::MortarElement&        masterelement,        //!< master-side mortar element
-        const MeshtyingStrategyS2I* const   strategy,             //!< scatra-scatra interface coupling strategy
         const INPAR::S2I::MortarType&       mortartype,           //!< flag for meshtying method
         const INPAR::S2I::InterfaceSides&   lmside,               //!< flag for interface side underlying Lagrange multiplier definition
         const int&                          numdofpernode_slave   //!< number of slave-side degrees of freedom per node
@@ -541,7 +543,7 @@ class MortarCellFactory
     //! provide specific instance of mortar cell evaluation class
     template<DRT::Element::DiscretizationType distypeS,DRT::Element::DiscretizationType distypeM>
     static MortarCellInterface* MortarCellCalc(
-        const MeshtyingStrategyS2I* const   strategy,              //!< scatra-scatra interface coupling strategy
+        const INPAR::SCATRA::ImplType&      impltype,              //!< physical implementation type of mortar integration cell
         const INPAR::S2I::MortarType&       mortartype,            //!< flag for meshtying method
         const INPAR::S2I::InterfaceSides&   lmside,                //!< flag for interface side underlying Lagrange multiplier definition
         const int&                          numdofpernode_slave,   //!< number of slave-side degrees of freedom per node

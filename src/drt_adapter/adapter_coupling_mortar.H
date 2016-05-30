@@ -4,8 +4,10 @@
 
 \brief A class providing coupling capabilities based on mortar methods
 
+\level 2
+
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -115,7 +117,9 @@ namespace ADAPTER
         );
 
     /// create integration cells
-    std::vector<Teuchos::RCP<MORTAR::IntCell> > EvaluateGeometry();
+    void EvaluateGeometry(
+        std::vector<Teuchos::RCP<MORTAR::IntCell> >&   intcells   //!< vector of mortar integration cells
+        );
 
     /// filling matrices
     void Evaluate(Teuchos::RCP<Epetra_Vector> idisp);
