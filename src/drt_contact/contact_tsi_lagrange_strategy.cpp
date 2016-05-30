@@ -1,13 +1,8 @@
 /*!----------------------------------------------------------------------
 \file contact_tsi_lagrange_strategy.cpp
 \maintainer Alexander Seitz
-
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
+\level 3
+\brief a derived strategy handling the Lagrange multiplier based TSI contact
 
 *----------------------------------------------------------------------*/
 
@@ -973,8 +968,18 @@ void CONTACT::CoTSILagrangeStrategy::DoWriteRestart(
 {
   CONTACT::CoAbstractStrategy::DoWriteRestart(restart_vectors,forcedrestart);
 
-  restart_vectors["last_contact_force"]=fscn_;
-  restart_vectors["last_thermo_force"]=coupST_->SlaveToMaster(ftcn_);
+  if (fscn_!=Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
+    LINALG::Export(*fscn_,*tmp);
+    restart_vectors["last_contact_force"]=tmp;
+  }
+  if (ftcn_!=Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->SlaveDofMap()));
+    LINALG::Export(*ftcn_,*tmp);
+  restart_vectors["last_thermo_force"]=coupST_->SlaveToMaster(tmp);
+  }
 }
 
 void CONTACT::CoTSILagrangeStrategy::DoReadRestart(IO::DiscretizationReader& reader,
@@ -982,10 +987,13 @@ void CONTACT::CoTSILagrangeStrategy::DoReadRestart(IO::DiscretizationReader& rea
 {
   CONTACT::CoAbstractStrategy::DoReadRestart(reader,dis);
 
-  fscn_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  fscn_ = Teuchos::rcp(new Epetra_Vector(*gsmdofrowmap_));
   reader.ReadVector(fscn_, "last_contact_force");
 
-  Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterDofMap()));
   reader.ReadVector(tmp,"last_thermo_force");
   ftcn_=coupST_->MasterToSlave(tmp);
+  tmp = Teuchos::rcp(new Epetra_Vector(*coupST_->MasterToSlaveMap(gsmdofrowmap_)));
+  LINALG::Export(*ftcn_,*tmp);
+  ftcn_=tmp;
 }
