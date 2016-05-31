@@ -1,13 +1,17 @@
 /*!----------------------------------------------------------------------
 \file beam3tosolidcontact.H
 
-<pre>
-Maintainer: Christoph Meier
+\brief One beam and solid contact pair (two elements)
+
+\level 3
+
+\maintainer Christoph Meier
             meier@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15262
-</pre>
-*----------------------------------------------------------------------*/
+
+ *---------------------------------------------------------------------*/
+
 #ifndef BEAM3TSC_H
 #define BEAM3TSC_H
 

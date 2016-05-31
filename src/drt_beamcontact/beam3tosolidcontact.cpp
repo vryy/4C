@@ -1,6 +1,9 @@
 /*!-----------------------------------------------------------------------------------------------------------
 \file beam3tosolidcontact.cpp
+
 \brief One beam and solid contact pair (two elements)
+
+\level 3
 
 \maintainer Christoph Meier
             meier@lnm.mw.tum.de
@@ -1498,17 +1501,17 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Assemb
     }
   }
 
-  // Now finally assemble  stiffc1 and stiffc2
+  // Now finally assemble stiffc1 and stiffc2
   for (int j = 0;j < dim1+dim2; j++)
   {
+    // Change sign of stiffc1 and stiffc2 due to time integration. According to analytical derivation there
+    // is no minus sign, but for our time integration methods the negative stiffness must be assembled.
     for (int i = 0; i < dim1; i++)
-    {
-      // Change sign of stiffc1 and stiffc2 due to time integration. According to analytical derivation there
-      // is no minus sign, but for our time integration methods the negative stiffness must be assembled.
       stiffcontact1(i,j) = -FADUTILS::CastToDouble(stiffc1(i,j));
+    for (int i = 0; i < dim2; i++)
       stiffcontact2(i,j) = -FADUTILS::CastToDouble(stiffc2(i,j));
-    }
   }
+
   stiffmatrix.Assemble(0, stiffcontact1, lmrow1, lmrowowner1, lmcol1);
   stiffmatrix.Assemble(0, stiffcontact2, lmrow2, lmrowowner2, lmcol2);
 
