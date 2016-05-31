@@ -1185,7 +1185,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     for (int e=0;e<numele2;e++)
       ele2pos[e].Shape(3,numnodessol);
     // Positions: Loop over all nodes of element 1 (beam element)
-    for(int m=0;m<(btsolmtgroups_[i]->Element1())->NumNode();m++)
+    for(int m=0;m<numnodes_;m++)
     {
       int tempGID = ((btsolmtgroups_[i]->Element1())->NodeIds())[m];
       LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
@@ -1198,7 +1198,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     if (numnodalvalues_==2)
     {
       // Tangents: Loop over all nodes of element 1
-      for(int m=0;m<(btsolmtgroups_[i]->Element1())->NumNode();m++)
+      for(int m=0;m<numnodes_;m++)
       {
         int tempGID = ((btsolmtgroups_[i]->Element1())->NodeIds())[m];
         LINALG::Matrix<3,1> temptan = currenttangents[tempGID];
