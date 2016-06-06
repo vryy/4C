@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_statustest_factory.cpp
 
+\brief Create the desired outer status test.
+
 \maintainer Michael Hiermeier
 
 \date Jul 31, 2015
@@ -12,6 +14,7 @@
 /*-----------------------------------------------------------*/
 
 #include "nox_nln_statustest_factory.H"   // class definition
+#include "nox_nln_enum_lists.H"
 
 #include <NOX_StatusTest_Factory.H>
 #include <NOX_Abstract_Vector.H>
@@ -28,17 +31,20 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::StatusTest::Factory::Factory() :
-noxfactory_(Teuchos::rcp(new const NOX::StatusTest::Factory()))
+NOX::NLN::StatusTest::Factory::Factory()
+    : noxfactory_(Teuchos::rcp(new const NOX::StatusTest::Factory()))
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildOuterStatusTests(
-    Teuchos::ParameterList& p, const NOX::Utils& u,
-    std::map<std::string, Teuchos::RCP<NOX::StatusTest::Generic> >* tagged_tests) const
+Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::
+    BuildOuterStatusTests(
+    Teuchos::ParameterList& p,
+    const NOX::Utils& u,
+    std::map<std::string,Teuchos::RCP<NOX::StatusTest::Generic> >* tagged_tests)
+    const
 {
   Teuchos::RCP<NOX::StatusTest::Generic> status_test;
 
@@ -76,16 +82,21 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildOuter
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormFTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u) const
+Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::
+    BuildNormFTest(
+    Teuchos::ParameterList& p,
+    const NOX::Utils& u) const
 {
   return BuildNormFTest(p,u,false);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormFTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u, const bool& relativeNormF) const
+Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::
+    BuildNormFTest(
+    Teuchos::ParameterList& p,
+    const NOX::Utils& u,
+    const bool& relativeNormF) const
 {
   // initialized to size zero
   std::vector<double> tolerances = std::vector<double>(0);
@@ -197,8 +208,10 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormF
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormUpdateTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u) const
+Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::
+    BuildNormUpdateTest(
+    Teuchos::ParameterList& p,
+    const NOX::Utils& u) const
 {
   // initialized to size zero
   std::vector<double> tolerances(0.0);
@@ -323,7 +336,8 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormU
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormWRMSTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u) const
+    Teuchos::ParameterList& p,
+    const NOX::Utils& u) const
 {
   // initialized to size zero
   std::vector<QuantityType> quantitytypes = std::vector<QuantityType>(0);
@@ -400,11 +414,13 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormW
     // ------------------------------------------
     // get Disable Implicit Weighting
     // ------------------------------------------
-    std::string diw_string = ql->get("Disable Implicit Weighting","Yes");
-    if (diw_string == "Yes" or diw_string == "yes")
-      disable_implicit_weighting.push_back(true);
-    else if (diw_string == "No" or diw_string == "no")
-      disable_implicit_weighting.push_back(false);
+    if ((ql->isParameter("Disable Implicit Weighting") and
+         ql->isType<bool>("Disable Implicit Weighting")) or
+         not ql->isParameter("Disable Implicit Weighting"))
+    {
+      const bool isdiw = ql->get<bool>("Disable Implicit Weighting",true);
+      disable_implicit_weighting.push_back(isdiw);
+    }
     else {
       std::string msg = "\"Disable Implicit Weighting\" must be either "
           "\"Yes\", \"yes\", \"No\" or \"no\"!";
@@ -436,7 +452,8 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildNormW
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildActiveSetTest(
-    Teuchos::ParameterList& p, const NOX::Utils& u) const
+    Teuchos::ParameterList& p,
+    const NOX::Utils& u) const
 {
   // ------------------------------------------
   // get the Quantity Type
@@ -451,8 +468,15 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildActiv
     throwError("BuildActiveSetTest()",msg.str());
   }
 
+  // ------------------------------------------
+  // get the maximal cycle size of the active
+  // set, which is tested
+  // ------------------------------------------
+  int max_cycle_size = p.get<int>("Max Cycle Size",0);
+
+
   Teuchos::RCP<NOX::NLN::StatusTest::ActiveSet> status_test =
-      Teuchos::rcp(new NOX::NLN::StatusTest::ActiveSet(qtype));
+      Teuchos::rcp(new NOX::NLN::StatusTest::ActiveSet(qtype,max_cycle_size));
 
   return status_test;
 }
@@ -460,9 +484,11 @@ Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::BuildActiv
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::Factory::
-BuildComboTest(Teuchos::ParameterList& p, const NOX::Utils& u,
-           std::map<std::string, Teuchos::RCP<NOX::StatusTest::Generic> >*
-           tagged_tests) const
+    BuildComboTest(
+    Teuchos::ParameterList& p,
+    const NOX::Utils& u,
+    std::map<std::string,Teuchos::RCP<NOX::StatusTest::Generic> >* tagged_tests)
+    const
 {
   std::string combo_type_string = Teuchos::get<std::string>(p, "Combo Type");
   NOX::StatusTest::Combo::ComboType combo_type = NOX::StatusTest::Combo::AND;
@@ -503,8 +529,8 @@ BuildComboTest(Teuchos::ParameterList& p, const NOX::Utils& u,
 bool NOX::NLN::StatusTest::Factory::CheckAndTagTest(
     const Teuchos::ParameterList& p,
     const Teuchos::RCP<NOX::StatusTest::Generic>& test,
-    std::map<std::string, Teuchos::RCP<NOX::StatusTest::Generic> >*
-    tagged_tests) const
+    std::map<std::string, Teuchos::RCP<NOX::StatusTest::Generic> >* tagged_tests)
+    const
 {
   if ( (Teuchos::isParameterType<std::string>(p, "Tag")) && (tagged_tests != NULL) ) {
     (*tagged_tests)[Teuchos::getParameter<std::string>(p, "Tag")] = test;
@@ -528,9 +554,10 @@ void NOX::NLN::StatusTest::Factory::throwError(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::BuildOuterStatusTests(
+Teuchos::RCP<NOX::StatusTest::Generic> NOX::NLN::StatusTest::
+    BuildOuterStatusTests(
     Teuchos::ParameterList& p, const NOX::Utils& u,
-    std::map<std::string, Teuchos::RCP<NOX::StatusTest::Generic> >* tagged_tests)
+    std::map<std::string,Teuchos::RCP<NOX::StatusTest::Generic> >* tagged_tests)
 {
   Factory factory;
   return factory.BuildOuterStatusTests(p,u,tagged_tests);

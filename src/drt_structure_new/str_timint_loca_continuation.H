@@ -2,6 +2,8 @@
 /*!
 \file str_timint_loca_continuation.H
 
+\brief Library of Continuation Algorithms (LOCA) implementation.
+
 \maintainer Michael Hiermeier
 
 \date Nov 18, 2015
@@ -19,7 +21,7 @@
 #include "str_timint_implicitbase.H"  // base class
 
 #include "../loca_continuation/loca_nln_stepper.H"  // enum
-#include "../solver_nonlin_nox/nox_nln_globaldata.H" // enum
+#include "../solver_nonlin_nox/nox_nln_enum_lists.H" // enum
 
 //forward declaration
 namespace LOCA {
@@ -38,9 +40,6 @@ namespace TIMINT {
    * \author Michael Hiermeier */
   class LOCAContinuation : public ImplicitBase
   {
-  //! Map type to nox nln constraint interfaces
-  typedef std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> > ConstraintMap;
-
   public:
     //! constructor
     LOCAContinuation();

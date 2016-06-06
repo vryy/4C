@@ -2,6 +2,8 @@
 /*!
 \file str_predict_generic.cpp
 
+\brief Generic class for all predictors.
+
 \maintainer Michael Hiermeier
 
 \date Sep 1, 2015
@@ -15,6 +17,7 @@
 #include "str_dbc.H"
 #include "str_timint_base.H"
 #include "str_impl_generic.H"
+#include "str_model_evaluator.H"
 
 #include "../solver_nonlin_nox/nox_nln_group.H"
 
@@ -72,6 +75,9 @@ void STR::PREDICT::Generic::PrePredict(NOX::Abstract::Group& grp)
 void STR::PREDICT::Generic::Predict(NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
+  bool& ispredict = gstate_ptr_->GetMutableIsPredict();
+  ispredict = true;
+
   // pre-process the prediction step
   PrePredict(grp);
 
@@ -80,6 +86,8 @@ void STR::PREDICT::Generic::Predict(NOX::Abstract::Group& grp)
 
   // post-process the prediction step
   PostPredict(grp);
+
+  ispredict = false;
 }
 
 /*----------------------------------------------------------------------------*
@@ -97,7 +105,8 @@ void STR::PREDICT::Generic::PostPredict(NOX::Abstract::Group& grp)
 
   // Create the new solution vector
   Teuchos::RCP<NOX::Epetra::Vector> x_vec =
-      GlobalState().CreateGlobalVector(vec_init_current_state);
+      GlobalState().CreateGlobalVector(vec_init_current_state,
+          ImplInt().ModelEvalPtr());
   // resets all isValid flags
   grp.setX(*x_vec);
 

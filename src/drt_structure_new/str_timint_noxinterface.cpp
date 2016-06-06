@@ -2,6 +2,9 @@
 /*!
 \file str_timint_noxinterface.cpp
 
+\brief Concrete implementation of the Jacobian, Required and
+       Preconditioner %NOX::NLN interfaces.
+
 \maintainer Michael Hiermeier
 
 \date Nov 27, 2015
@@ -270,7 +273,7 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(
     {
       // export the displacement solution if necessary
       Teuchos::RCP<Epetra_Vector> disincr_ptr =
-          Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->ExportDisplEntries(xold)));
+          gstate_ptr_->ExportDisplEntries(xold);
       Teuchos::RCP<const Epetra_Vector> disnew_ptr =
           gstate_ptr_->ExportDisplEntries(xnew);
 
@@ -410,4 +413,3 @@ double STR::TIMINT::NoxInterface::CalcRefNormForce()
       timint_ptr_->GetDataSDyn().GetNoxNormType();
   return implint_ptr_->CalcRefNormForce(nox_normtype);
 }
-

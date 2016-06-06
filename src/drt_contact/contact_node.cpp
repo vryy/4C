@@ -1,16 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file contact_node.cpp
 
 \brief A class for a contact node
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 2
 
-*----------------------------------------------------------------------*/
+\maintainer Philipp Farah, Alexander Seitz
+*/
+/*----------------------------------------------------------------------*/
 
 #include "contact_node.H"
 #include "contact_element.H"
@@ -216,7 +214,6 @@ CONTACT::CoNode::CoNode(int id, const double* coords, const int owner,
                         const bool initactive) :
 MORTAR::MortarNode(id,coords,owner,numdof,dofs,isslave),
 active_(false),
-augActive_(false),
 initactive_(initactive),
 involvedm_(false),
 linsize_(0)   // length of linearization

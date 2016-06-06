@@ -2,6 +2,9 @@
 /*!
 \file nox_nln_meritfunction_lagrangian.H
 
+\brief Implementation of the Lagrangian merit function for
+       constrained problems.
+
 \maintainer Michael Hiermeier
 
 \date Jun 9, 2015
@@ -19,7 +22,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "nox_nln_globaldata.H"
+#include "nox_nln_enum_lists.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -83,7 +86,7 @@ public:
   virtual const std::string& name() const;
 
   //! return the name of the merit function
-  virtual const NOX::NLN::GlobalData::MeritFctName& nameAsEnum() const;
+  virtual const MeritFctName& nameAsEnum() const;
 
 private:
   //! Throws NOX error
@@ -100,7 +103,7 @@ private:
   std::string meritFunctionName_;
 
   //! Enum of this function
-  NOX::NLN::GlobalData::MeritFctName meritFunctionEnum_;
+  NOX::NLN::MeritFunction::MeritFctName meritFunctionEnum_;
 };
 
 } // namespace MeritFunction

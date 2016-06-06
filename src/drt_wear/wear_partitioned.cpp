@@ -4,13 +4,15 @@
 
 \brief  Basis of all structure approaches with ale
         (Lagrangian step followed by Shape Evolution step )
-<pre>
-Maintainer: Philipp Farah
+
+\level 2
+
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
-</pre>
 */
+/*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  | headers                                                  farah 11/13 |
@@ -657,7 +659,7 @@ void WEAR::Partitioned::WearSpatialMasterMap(Teuchos::RCP<Epetra_Vector>& disint
     cstrategy.MMatrix()->Multiply(true,*disinterface_s,*wear_master);
 
     // 1. set state to material displacement state
-    winterface->SetState("displacement",StructureField()->WriteAccessDispnp());
+    winterface->SetState(MORTAR::state_new_displacement,*StructureField()->WriteAccessDispnp());
 
     // 2. initialize
     winterface->Initialize();
@@ -996,7 +998,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
 
     // call material interfaces and evaluate!
     // 1. set state to material displacement state
-    interfacesMat_[m]->SetState("displacement",StructureField()->DispMat());
+    interfacesMat_[m]->SetState(MORTAR::state_new_displacement,*StructureField()->DispMat());
 
     // 2. initialize
     interfacesMat_[m]->Initialize();
@@ -1169,7 +1171,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
 
     // call material interfaces and evaluate!
     // 1. set state to material displacement state
-    winterfaceMat->SetState("displacement",StructureField()->DispMat());
+    winterfaceMat->SetState(MORTAR::state_new_displacement,*StructureField()->DispMat());
 
     // 2. initialize
     winterfaceMat->Initialize();

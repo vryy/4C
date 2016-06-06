@@ -2,6 +2,8 @@
 /*!
 \file str_nln_solver_generic.cpp
 
+\brief Generic class of the non-linear structural solvers.
+
 \maintainer Michael Hiermeier
 
 \date Oct 9, 2015
@@ -36,9 +38,11 @@ STR::NLN::SOLVER::Generic::Generic()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::NLN::SOLVER::Generic::Init(
-    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate,
-    const Teuchos::RCP<STR::TIMINT::BaseDataSDyn> sdyn,
-    const Teuchos::RCP<STR::TIMINT::NoxInterface> noxinterface)
+    const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate,
+    const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& sdyn,
+    const Teuchos::RCP<STR::TIMINT::NoxInterface>& noxinterface,
+    const Teuchos::RCP<STR::Integrator>& integrator,
+    const Teuchos::RCP<const STR::TIMINT::Base>& timint)
 {
   // We have to call Setup() after Init()
   issetup_ = false;
@@ -47,6 +51,8 @@ void STR::NLN::SOLVER::Generic::Init(
   gstate_ptr_ = gstate;
   sdyn_ptr_ = sdyn;
   noxinterface_ptr_ = noxinterface;
+  int_ptr_ = integrator;
+  timint_ptr_ = timint;
 
   isinit_ = true;
 
@@ -76,11 +82,7 @@ NOX::Abstract::Group& STR::NLN::SOLVER::Generic::Group()
  *----------------------------------------------------------------------------*/
 NOX::Abstract::Group& STR::NLN::SOLVER::Generic::SolutionGroup()
 {
-  CheckInitSetup();
-  if (group_ptr_.is_null())
-    dserror("The group pointer should be initialized beforehand!");
-
-  return *group_ptr_;
+  return Group();
 }
 
 /*----------------------------------------------------------------------------*

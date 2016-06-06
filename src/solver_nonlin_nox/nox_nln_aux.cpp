@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_aux.cpp
 
+\brief Auxiliary methods.
+
 \maintainer Michael Hiermeier
 
 \date Jul 31, 2015
@@ -13,6 +15,7 @@
 
 #include "nox_nln_aux.H"
 #include "nox_nln_statustest_combo.H"
+#include "nox_nln_linearsystem.H"
 
 // templated status test
 #include "nox_nln_statustest_normf.H"
@@ -70,6 +73,30 @@ void NOX::NLN::AUX::SetPrintingParameters(Teuchos::ParameterList& p_nox,
   printParams.set("Output Information", outputinformationlevel);
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+NOX::NLN::LinSystem::LinearSystemType NOX::NLN::AUX::GetLinearSystemType(
+    const NOX::NLN::LinearSystem::SolverMap& linsolvers)
+{
+  const unsigned int num_ls = linsolvers.size();
+  const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >::const_iterator
+      ci_end = linsolvers.end();
+
+  // --- Pure structural case (+ spring dashpot)
+  if (num_ls == 1 and linsolvers.find(NOX::NLN::sol_structure)!=ci_end)
+    return NOX::NLN::LinSystem::linear_system_structure;
+  // --- Structure/Contact case (+ spring dashpot)
+  else if (num_ls == 2 and (linsolvers.find(NOX::NLN::sol_structure)!=ci_end
+      and linsolvers.find(NOX::NLN::sol_contact)!=ci_end))
+    return NOX::NLN::LinSystem::linear_system_structure_contact;
+  // --- ToDo has to be extended
+  else
+    dserror("There is no capable linear system type for the given linear "
+        "solver combination!");
+
+  return NOX::NLN::LinSystem::linear_system_undefined;
 }
 
 /*----------------------------------------------------------------------------*
@@ -378,7 +405,8 @@ enum NOX::NLN::SolutionType NOX::NLN::AUX::ConvertQuantityType2SolutionType(
     case NOX::NLN::StatusTest::quantity_lag_pen_constraint:
       soltype = NOX::NLN::sol_lag_pen_constraint;
       break;
-    case NOX::NLN::StatusTest::quantity_contact:
+    case NOX::NLN::StatusTest::quantity_contact_normal:
+    case NOX::NLN::StatusTest::quantity_contact_friction:
       soltype = NOX::NLN::sol_contact;
       break;
     case NOX::NLN::StatusTest::quantity_meshtying:

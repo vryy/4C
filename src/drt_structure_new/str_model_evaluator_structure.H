@@ -2,6 +2,8 @@
 /*!
 \file str_model_evaluator_structure.H
 
+\brief Evaluation and assembly of all structure terms
+
 \maintainer Michael Hiermeier
 
 \date Aug 11, 2015
@@ -58,6 +60,14 @@ namespace MODELEVALUATOR{
         LINALG::SparseOperator& jac);
 
     //! derived
+    virtual void WriteRestart(
+        IO::DiscretizationWriter& iowriter,
+        const bool& forced_writerestart) const;
+
+    //! derived
+    virtual void ReadRestart(IO::DiscretizationReader& ioreader);
+
+    //! derived
     virtual void RecoverState(
             const Epetra_Vector& xold,
             const Epetra_Vector& dir,
@@ -76,7 +86,16 @@ namespace MODELEVALUATOR{
     void DetermineEnergy();
 
     //! derived
-    virtual void OutputStepState();
+    virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+
+    //! derived
+    virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
+
+    //! derived
+    virtual Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const;
+
+    //! derived
+    virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
     //! @}
 
   protected:

@@ -1,14 +1,16 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_penalty_strategy.H
 
-<pre>
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Penalty contact solving strategy: The contact constrains are enforced
+       by a penalty formulation.
 
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*---------------------------------------------------------------------*/
 #ifndef CONTACT_PENALTY_STRATEGY_H
 #define CONTACT_PENALTY_STRATEGY_H
 
@@ -36,11 +38,20 @@ class CoPenaltyStrategy : public CoAbstractStrategy
 {
   public:
 
-  /*!
-  \brief Standard Constructor
-
-  */
+  //! Standard constructor
   CoPenaltyStrategy(
+      const Epetra_Map* DofRowMap,
+      const Epetra_Map* NodeRowMap,
+      Teuchos::ParameterList params,
+      std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+      int dim,
+      Teuchos::RCP<Epetra_Comm> comm,
+      double alphaf,
+      int maxdof);
+
+  //! Shared data constructor
+  CoPenaltyStrategy(
+      const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
       const Epetra_Map* DofRowMap,
       const Epetra_Map* NodeRowMap,
       Teuchos::ParameterList params,
@@ -62,7 +73,7 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   \brief Return L2-norm of active constraints
 
   */
-  double ConstraintNorm() { return constrnorm_;}
+  double ConstraintNorm() const { return constrnorm_;}
 
   /*!
   \brief Return L2-norm of slip constraints
@@ -98,7 +109,7 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   for a penalty strategy since the weighted gap determines the lagrangian multipliers.
 
   */
-  void SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis);
+  void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis);
 
   /*!
   \brief Evaluate relative movement of contact bodies in predictor
@@ -206,7 +217,12 @@ class CoPenaltyStrategy : public CoAbstractStrategy
   // All these functions only have functionality in Lagrange contact simulations,
   // thus they are defined empty here in the case of Penalty contact.
 
-  bool ActiveSetSemiSmoothConverged() {return true;}
+  //! Get the active node row map of the previous Newton step
+  virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const
+  { dserror("Currently unsupported for the penalty strategy!"); return Teuchos::null; };
+  virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
+  { dserror("Currently unsupported for the penalty strategy!"); return Teuchos::null; };
+  bool ActiveSetSemiSmoothConverged() const {return true;}
   bool ActiveSetConverged() {return true;}
   int ActiveSetSteps() {return 0;}
   void ResetActiveSet() {}

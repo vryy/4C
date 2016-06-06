@@ -1,20 +1,20 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_monocoupled_lagrange_strategy.H
 
-// This class provides the functionality to use contact with Lagrangian multipliers for monolithical coupled
-// multiflied problems!
-// Therefore ApplyForceStiffCmt() & Recover() are overlaoded by this class and do nothing, as they are called
-// directly in the structure. To use the contace the additional methods ApplyForceStiffCmtCoupled() & RecoverCoupled() have
-// to be called!
+\brief This class provides the functionality to use contact with Lagrangian
+multipliers for monolithical coupled multifield problems!
+Therefore ApplyForceStiffCmt() & Recover() are overloaded by this class and
+do nothing, as they are called directly in the structure. To use the contact
+the additional methods ApplyForceStiffCmtCoupled() & RecoverCoupled() have
+to be called!
 
-<pre>
-Maintainer: Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
-</pre>
+\level 3
 
-*----------------------------------------------------------------------*/
+\maintainer Christoph Ager
+
+*/
+/*---------------------------------------------------------------------*/
 #ifndef CONTACT_MONOCOUPLED_LAGRANGE_STRATEGY_H
 #define CONTACT_MONOCOUPLED_LAGRANGE_STRATEGY_H
 
@@ -46,14 +46,15 @@ class MonoCoupledLagrangeStrategy : public CoLagrangeStrategy
 
     */
   MonoCoupledLagrangeStrategy(
-        const Epetra_Map* DofRowMap,
-        const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
-        int dim,
-        Teuchos::RCP<Epetra_Comm> comm,
-        double alphaf,
-        int maxdof);
+      const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+      const Epetra_Map* DofRowMap,
+      const Epetra_Map* NodeRowMap,
+      Teuchos::ParameterList params,
+      std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+      int dim,
+      Teuchos::RCP<Epetra_Comm> comm,
+      double alphaf,
+      int maxdof);
 
     /*!
     \brief Destructor

@@ -2,6 +2,10 @@
 /*!
 \file nox_nln_globaldata.H
 
+\brief Kind of a data container class, which holds many variables
+       and objects, which are necessary to setup a NOX::NLN
+       solution strategy.
+
 \maintainer Michael Hiermeier
 
 \date Jul 17, 2015
@@ -17,6 +21,11 @@
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>
 
+#include "nox_nln_enum_lists.H"
+
+#include "nox_nln_constraint_interface_required.H"
+#include "nox_nln_constraint_interface_preconditioner.H"
+
 // forward declaration
 namespace Teuchos {
   class ParameterList;
@@ -30,17 +39,17 @@ namespace NOX {
   class Utils;
 namespace Abstract {
   class PrePostOperator;
-}
+} // namespace Abstract
 namespace Epetra {
 namespace Interface {
   class Required;
   class Jacobian;
   class Preconditioner;
-}
-}
+} // namespace Interface
+} // namespace Epetra
 namespace MeritFunction {
   class Generic;
-}
+} // namespace MeritFunction
 
 namespace NLN {
 namespace CONSTRAINT {
@@ -49,149 +58,35 @@ namespace Interface {
 } // namespace Interface
 } // namespace Constraint
 
-  //! Supported solution type names
-  enum SolutionType {
-    sol_unknown,
-    // structural quantities
-    sol_structure,
-    // contact quantities
-    sol_contact,
-    // meshtying quantities
-    sol_meshtying,
-    // windkessel quantities
-    sol_windkessel,
-    // spring dashpot quantities
-    sol_springdashpot,
-    // Lagrange or/and penalty enforced constraint quantities
-    sol_lag_pen_constraint
-  };
-
-  //! Map quantity enum to std::string
-  static inline const std::string SolutionType2String(const enum SolutionType& type)
-  {
-    switch (type)
-    {
-    case sol_structure :
-      return "structure";
-      break;
-    case sol_contact :
-      return "Contact";
-      break;
-    case sol_meshtying :
-      return "Meshtying";
-      break;
-    case sol_windkessel:
-      return "Windkessel";
-      break;
-    case sol_springdashpot:
-      return "Spring Dashpot";
-      break;
-    case sol_lag_pen_constraint:
-      return "Lagrange/Penalty Constraint";
-      break;
-    case sol_unknown:
-    default :
-      return "unknown solution type";
-      break;
-    }
-    return "";
-  };
-
-  //! Map quantity std::string to enum
-  inline enum SolutionType String2SolutionType(const std::string& name)
-  {
-    SolutionType type = sol_unknown;
-    if (name=="structure" or name=="Structure")
-      type = sol_structure;
-    else if (name=="contact" or name=="Contact")
-      type = sol_contact;
-    else if (name=="Meshtying" or name=="meshtying")
-      type = sol_meshtying;
-    else if (name=="Windkessel")
-      type = sol_windkessel;
-    else if (name=="SpringDashpot")
-      type = sol_springdashpot;
-    else if (name=="Constraint")
-      type = sol_lag_pen_constraint;
-
-    return type;
-  };
-
   class GlobalData {
-  public:
-    //! type of the optimization problem
-    enum OptimizationProblemType {
-      // unconstrained optimization problem
-      opt_unconstrained,
-      // pure equality constrained optimization problem
-      opt_equality_constrained,
-      // inequality or mixed optimization problem
-      opt_inequality_constrained
-    };
-
-    //! order of the linearization term
-    enum LinOrder
-    {
-      //! all orders
-      linorder_all,
-      //! first order linearization
-      linorder_first,
-      //! second order linearization terms
-      linorder_second
-    };
-
-    //! type of the linearization term, i.e. with respect to which quantity the linearization was performed
-    enum LinType
-    {
-      //! linearization with respect to primary and Lagrange multiplier degrees of freedom
-      lin_wrt_all_dofs,
-      //! linearization with repsect to primary degrees of freedom
-      lin_wrt_primary_dofs,
-      //! linearization with respect to Lagrange multiplier degrees of freedom
-      lin_wrt_lagrange_multiplier_dofs,
-      //! linearization with respect to mixed degrees of freedom
-      lin_wrt_mixed_dofs
-    };
-
-    //! merit function names
-    enum MeritFctName
-    {
-      //! sum of squares merit function
-      mrtfct_sum_of_squares,
-      //! lagrangian merit function
-      mrtfct_lagrangian
-    };
-
   public:
     /*! CONSTRAINED OPTIMIZATION (standard constructor / most general case)
      *  inclusive the constraint interfaces map
-     *  inclusive the pre-conditioner interface
-     */
+     *  inclusive the pre-conditioner interfaces */
     GlobalData(const Epetra_Comm& comm,
         Teuchos::ParameterList& noxParams,
         const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
         const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
         const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
         const OptimizationProblemType& type,
-        const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr,
-        const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec);
+        const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
+        const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+        const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec );
 
     /*! CONSTRAINED OPTIMIZATION
      * inclusive the constraint interfaces map
-     * without a pre-conditioner interface
-     */
+     * without any pre-conditioner interfaces */
     GlobalData(const Epetra_Comm& comm,
         Teuchos::ParameterList& noxParams,
         const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
         const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
         const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
         const OptimizationProblemType& type,
-        const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr);
+        const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr);
 
     /*! UNCONSTRAINED OPTIMIZATION
      *  constructor without the constraint interface map (pure unconstrained optimization)
-     *  inclusive the pre-conditioner interface
-     */
+     *  inclusive the pre-conditioner interface */
     GlobalData(const Epetra_Comm& comm,
             Teuchos::ParameterList& noxParams,
             const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
@@ -201,8 +96,7 @@ namespace Interface {
 
     /*! UNCONSTRAINED OPTIMIZATION
      *  constructor without the constraint interface map (pure unconstrained optimization)
-     *  without a pre-conditioner interface
-     */
+     *  without a pre-conditioner interface */
     GlobalData(const Epetra_Comm& comm,
             Teuchos::ParameterList& noxParams,
             const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
@@ -248,8 +142,11 @@ namespace Interface {
     //! return the user-defined preconditioner interface
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> GetPreconditionerInterface();
 
-    //! return the user-defined constraint interface
-    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& GetConstraintInterfaces() const;
+    //! return the user-defined constraint interface map
+    const NOX::NLN::CONSTRAINT::ReqInterfaceMap& GetConstraintInterfaces();
+
+    //! return the user-defined constraint preconditioner interface map
+    const NOX::NLN::CONSTRAINT::PrecInterfaceMap& GetConstraintPrecInterfaces();
 
   private:
     //! check the constructor input
@@ -281,7 +178,9 @@ namespace Interface {
 
     Teuchos::RCP<NOX::Epetra::Interface::Preconditioner> iPrecPtr_;
 
-    std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> > iConstr_;
+    NOX::NLN::CONSTRAINT::ReqInterfaceMap iConstr_;
+
+    NOX::NLN::CONSTRAINT::PrecInterfaceMap iConstrPrec_;
 
     Teuchos::RCP<NOX::MeritFunction::Generic> mrtFctPtr_;
 

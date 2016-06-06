@@ -1,21 +1,22 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_augmented_interface_tools.cpp
 
-<pre>
-Created on: Apr 11, 2014
+\brief Tools for the augmented contact interface evaluation.
 
-Maintainer: Michael Hiermeier
-            hiermeier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15268
-</pre>
+\level 2
 
-*----------------------------------------------------------------------*/
+\maintainer Michael Hiermeier
 
+\date Apr 11, 2014
+
+*/
+/*---------------------------------------------------------------------*/
 #include "contact_augmented_interface.H"
 #include "../drt_contact/contact_integrator.H"
 #include "../drt_contact/contact_defines.H"
 #include "../drt_contact/contact_node.H"
+#include "../drt_contact/contact_paramsinterface.H"
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_dofset.H"
 #include "../drt_mortar/mortar_integrator.H"
@@ -28,11 +29,13 @@ Maintainer: Michael Hiermeier
 /*----------------------------------------------------------------------*
  | Finite difference check for KappaLin                  hiermeier 05/14|
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::FDCheckKappaLin()
+void CONTACT::AugmentedInterface::FDCheckKappaLin(
+    CONTACT::ParamsInterface& cparams)
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
-
+  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
+      Teuchos::rcpFromRef(cparams);
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
@@ -101,7 +104,7 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    Evaluate();
+    Evaluate(cparams_ptr);
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
@@ -210,7 +213,7 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    Evaluate();
+    Evaluate(cparams_ptr);
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
@@ -290,11 +293,11 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin()
   // We have to do both evaluate steps here
   // *******************************************************************
   // evaluate averaged weighted gap
-  Evaluate();
+  Evaluate(cparams_ptr);
   WGap();
   AWGapLin();
   // evaluate remaining entities and linearization
-  RedEvaluate();
+  RedEvaluate(cparams_ptr);
 
   return;
 }
@@ -302,11 +305,13 @@ void CONTACT::AugmentedInterface::FDCheckKappaLin()
 /*----------------------------------------------------------------------*
  | Finite difference check for AWGapLin                  hiermeier 05/14|
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::FDCheckAWGapLin()
+void CONTACT::AugmentedInterface::FDCheckAWGapLin(
+    CONTACT::ParamsInterface& cparams)
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
-
+  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
+      Teuchos::rcpFromRef(cparams);
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
@@ -321,9 +326,9 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin()
 
   // print reference to screen (kappaLin-derivative-maps) and store them for later comparison
   // loop over proc's slave nodes
-  for (int i=0;i<augActiveSlaveNodes_->NumMyElements();++i)
+  for (int i=0;i<activenodes_->NumMyElements();++i)
   {
-    int gid = augActiveSlaveNodes_->GID(i);
+    int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
@@ -382,16 +387,16 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    Evaluate();
+    Evaluate(cparams_ptr);
     WGap();
     AWGapLin();
 
     // compute finite difference derivative
-    for (int k=0; k<augActiveSlaveNodes_->NumMyElements(); ++k)
+    for (int k=0; k<activenodes_->NumMyElements(); ++k)
     {
       // clear the calculated new r.h.s. map
       newAWGap = 0.0;
-      int kgid = augActiveSlaveNodes_->GID(k);
+      int kgid = activenodes_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
@@ -500,16 +505,16 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    Evaluate();
+    Evaluate(cparams_ptr);
     WGap();
     AWGapLin();
 
     // compute finite difference derivative
-    for (int k=0; k<augActiveSlaveNodes_->NumMyElements(); ++k)
+    for (int k=0; k<activenodes_->NumMyElements(); ++k)
     {
       // clear the calculated new r.h.s. map
       newAWGap = 0.0;
-      int kgid = augActiveSlaveNodes_->GID(k);
+      int kgid = activenodes_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
       if (!knode)
         dserror("ERROR: Cannot find node with gid %",kgid);
@@ -588,9 +593,9 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin()
   // *******************************************************************
   // We have to do both evaluate steps here
   // *******************************************************************
-  Evaluate();
+  Evaluate(cparams_ptr);
   // evaluate remaining entities and linearization
-  RedEvaluate();
+  RedEvaluate(cparams_ptr);
 
   return;
 }
@@ -598,11 +603,13 @@ void CONTACT::AugmentedInterface::FDCheckAWGapLin()
 /*----------------------------------------------------------------------*
  | Finite difference check for VarWGapLinSl              hiermeier 05/14|
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl()
+void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl(
+    CONTACT::ParamsInterface& cparams)
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
-
+  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
+      Teuchos::rcpFromRef(cparams);
   // first integration loop has to be activated again
   IParams().set<int>("AugLagStep",0);
 
@@ -676,7 +683,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    Evaluate();
+    Evaluate(cparams_ptr);
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
@@ -790,7 +797,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    Evaluate();
+    Evaluate(cparams_ptr);
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
@@ -876,11 +883,11 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl()
   // We have to do both evaluate steps here
   // *******************************************************************
   // evaluate averaged weighted gap
-  Evaluate();
+  Evaluate(cparams_ptr);
   WGap();
   AWGapLin();
   // evaluate remaining entities and linearization
-  RedEvaluate();
+  RedEvaluate(cparams_ptr);
 
   return;
 }
@@ -888,11 +895,13 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinSl()
 /*----------------------------------------------------------------------*
  | Finite difference check for VarWGapLinMa              hiermeier 05/14|
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa()
+void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa(
+    CONTACT::ParamsInterface& cparams)
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
-
+  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
+      Teuchos::rcpFromRef(cparams);
   // first integration loop has to be activated again
 
   // FD checks only for serial case
@@ -966,7 +975,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    Evaluate();
+    Evaluate(cparams_ptr);
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
@@ -1080,7 +1089,7 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    Evaluate();
+    Evaluate(cparams_ptr);
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
@@ -1166,11 +1175,11 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa()
   // We have to do both evaluate steps here
   // *******************************************************************
   // evaluate averaged weighted gap
-  Evaluate();
+  Evaluate(cparams_ptr);
   WGap();
   AWGapLin();
   // evaluate remaining entities and linearization
-  RedEvaluate();
+  RedEvaluate(cparams_ptr);
 
   return;
 }
@@ -1178,11 +1187,13 @@ void CONTACT::AugmentedInterface::FDCheckVarWGapLinMa()
 /*----------------------------------------------------------------------*
  | Finite difference check for AugALin                  hiermeier 05/14|
  *----------------------------------------------------------------------*/
-void CONTACT::AugmentedInterface::FDCheckAugALin()
+void CONTACT::AugmentedInterface::FDCheckAugALin(
+    CONTACT::ParamsInterface& cparams)
 {
   // get out of here if not participating in interface
   if (!lComm()) return;
-
+  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
+      Teuchos::rcpFromRef(cparams);
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
@@ -1251,7 +1262,7 @@ void CONTACT::AugmentedInterface::FDCheckAugALin()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    RedEvaluate();
+    RedEvaluate(cparams_ptr);
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
@@ -1360,7 +1371,7 @@ void CONTACT::AugmentedInterface::FDCheckAugALin()
     // *******************************************************************
     // contents of Evaluate()
     // *******************************************************************
-    RedEvaluate();
+    RedEvaluate(cparams_ptr);
 
     // compute finite difference derivative
     for (int k=0; k<snoderowmap_->NumMyElements(); ++k)
@@ -1440,11 +1451,11 @@ void CONTACT::AugmentedInterface::FDCheckAugALin()
   // We have to do both evaluate steps here
   // *******************************************************************
   // evaluate averaged weighted gap
-  Evaluate();
+  Evaluate(cparams_ptr);
   WGap();
   AWGapLin();
   // evaluate remaining entities and linearization
-  RedEvaluate();
+  RedEvaluate(cparams_ptr);
 
   return;
 }
@@ -1453,10 +1464,12 @@ void CONTACT::AugmentedInterface::FDCheckAugALin()
  | Update of interface related quantities                hiermeier 06/14|
  | during the global FD-check                                           |
  *----------------------------------------------------------------------*/
-bool CONTACT::AugmentedInterface::UpdateInterfaces(int gid,
-                                                   int dof,
-                                                   double delta,
-                                                   bool forward)
+bool CONTACT::AugmentedInterface::UpdateInterfaces(
+    int gid,
+    int dof,
+    double delta,
+    bool forward,
+    CONTACT::ParamsInterface& cparams)
 {
   DRT::Node* node = idiscret_->gNode(gid);
   if (!node) return (false);
@@ -1484,12 +1497,14 @@ bool CONTACT::AugmentedInterface::UpdateInterfaces(int gid,
   // *******************************************************************
   // We have to do both evaluate steps here
   // *******************************************************************
+  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
+      Teuchos::rcpFromRef(cparams);
   // evaluate averaged weighted gap
-  Evaluate();
+  Evaluate(cparams_ptr);
   WGap();
   AWGapLin();
   // evaluate remaining entities and linearization
-  RedEvaluate();
+  RedEvaluate(cparams_ptr);
 
   return (true);
 }

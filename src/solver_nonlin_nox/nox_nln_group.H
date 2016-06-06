@@ -2,6 +2,9 @@
 /*!
 \file nox_nln_group.H
 
+\brief %NOX::NLN implementation of a %NOX::Epetra::Group
+       to handle unconstrained problems.
+
 \maintainer Michael Hiermeier
 
 \date Jun 29, 2015
@@ -19,7 +22,6 @@
 #include <NOX_Epetra_Group.H>   // base class
 #include <NOX_StatusTest_NormF.H>
 
-#include "nox_nln_statustest_factory.H"
 #include "nox_nln_statustest_normupdate.H"
 
 // forward declarations

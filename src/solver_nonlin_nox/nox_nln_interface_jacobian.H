@@ -2,6 +2,9 @@
 /*!
 \file nox_nln_interface_jacobian.H
 
+\brief %NOX::NLN extension of the %NOX::Epetra jacobian
+       interface.
+
 \maintainer Michael Hiermeier
 
 \date Jun 29, 2015
@@ -17,8 +20,6 @@
 #include <NOX_Epetra_Interface_Jacobian.H>    // base class
 #include <NOX_Epetra_Interface_Required.H>
 
-#include "nox_nln_globaldata.H"
-
 namespace NOX {
 namespace NLN {
 namespace Interface{
@@ -33,12 +34,13 @@ public:
   //! Destructor.
   virtual ~Jacobian() {};
 
-  /*! Compute rhs and Jacobian given the specified input vector x.  Returns
-    true if computation was successful.
-   */
-  virtual bool computeFandJacobian(const Epetra_Vector& x,
-                                 Epetra_Vector& rhs,
-                                 Epetra_Operator& jac) = 0;
+  /*! \brief Compute RHS and Jacobian at once.
+   *
+   * Returns true if computation was successful. */
+  virtual bool computeFandJacobian(
+      const Epetra_Vector& x,
+      Epetra_Vector& rhs,
+      Epetra_Operator& jac) = 0;
 };
 } // end namespace Interface
 } // end namespace NLN

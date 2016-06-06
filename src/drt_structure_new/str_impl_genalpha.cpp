@@ -2,6 +2,8 @@
 /*!
 \file str_impl_genalpha.cpp
 
+\brief Generalized Alpha time integrator.
+
 \maintainer Michael Hiermeier
 
 \date Dec 14, 2015
@@ -19,6 +21,7 @@
 #include "str_timint_base.H"
 
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_io/io.H"
 #include "../linalg/linalg_sparsematrix.H"
 
 #include <Epetra_Vector.h>
@@ -152,8 +155,6 @@ void STR::IMPLICIT::GenAlpha::PostSetup()
 {
   CheckInitSetup();
   EquilibriateInitialState();
-  // Has to be called after the equilibriate state routine!
-  UpdateConstantStateContributions();
 }
 
 /*----------------------------------------------------------------------------*
@@ -340,6 +341,31 @@ void STR::IMPLICIT::GenAlpha::EvaluateMidStateJacobian(
   if (TimInt().GetDataSDyn().GetDampingType()==INPAR::STR::damp_rayleigh)
     stiff_ptr->Add(*GlobalState().GetDampMatrix(),false,(1.0-alphaf_)*gamma_/(beta_*dt),1.0);
 
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::GenAlpha::WriteRestart(
+    IO::DiscretizationWriter& iowriter,
+    const bool& forced_writerestart) const
+{
+  CheckInitSetup();
+  // write dynamic forces
+  iowriter.WriteVector("finert",finertian_ptr_);
+  iowriter.WriteVector("fvisco",fviscon_ptr_);
+
+  ModelEval().WriteRestart(iowriter,forced_writerestart);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::GenAlpha::ReadRestart(IO::DiscretizationReader& ioreader)
+{
+  CheckInitSetup();
+  ioreader.ReadVector(finertian_ptr_,"finert");
+  ioreader.ReadVector(fviscon_ptr_,"fvisco");
+
+  ModelEval().ReadRestart(ioreader);
 }
 
 /*----------------------------------------------------------------------------*

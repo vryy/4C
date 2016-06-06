@@ -2,6 +2,9 @@
 /*!
 \file str_nln_solver_utils.cpp
 
+\brief Utility routines for the structural non-linear solver
+       classes.
+
 \maintainer Michael Hiermeier
 
 \date Oct 9, 2015
@@ -15,6 +18,8 @@
 #include "str_timint_base.H"
 
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/inpar_contact.H"
 
 #include <Teuchos_XMLParameterListCoreHelpers.hpp>
 
@@ -58,22 +63,21 @@ void STR::NLN::SOLVER::CreateQuantityTypes(
   // ---------------------------------------------------------------------------
   const std::set<enum INPAR::STR::ModelType>& mtypes =
       datasdyn.GetModelTypes();
+  std::vector<enum NOX::NLN::StatusTest::QuantityType> qt_vec;
 
   std::set<enum INPAR::STR::ModelType>::const_iterator miter;
   for (miter=mtypes.begin();miter!=mtypes.end();++miter)
   {
-    const std::string name = INPAR::STR::ModelTypeString(*miter);
-    enum NOX::NLN::StatusTest::QuantityType qtype =
-            NOX::NLN::StatusTest::String2QuantityType(name);
+    ConvertModelType2QuantityType(*miter,qt_vec);
 
     // check if the corresponding enum could be found.
     // Note: We do not throw an error, since there are model types,
     //       which have no representation in the quantity list
     //       (e.g. spring dashpot).
-    if (qtype == NOX::NLN::StatusTest::quantity_unknown)
+    if (qt_vec.size() == 0)
       continue;
 
-    qtypes.insert(qtype);
+    qtypes.insert(qt_vec.begin(),qt_vec.end());
   }
   // ---------------------------------------------------------------------------
   // get the element technologies
@@ -84,23 +88,124 @@ void STR::NLN::SOLVER::CreateQuantityTypes(
   std::set<enum INPAR::STR::EleTech>::const_iterator etiter;
   for (etiter=eletechs.begin();etiter!=eletechs.end();++etiter)
   {
-    const std::string name = INPAR::STR::EleTechString(*etiter);
-    const enum NOX::NLN::StatusTest::QuantityType qtype =
-            NOX::NLN::StatusTest::String2QuantityType(name);
+    ConvertEleTech2QuantityType(*etiter,qt_vec);
 
     // check if the corresponding enum could be found.
     // Note: We do not throw an error, since there are element technologies,
     //       which have no representation in the quantity list
     //       (e.g. fbar).
-    if (qtype == NOX::NLN::StatusTest::quantity_unknown)
+    if (qt_vec.size() == 0)
       continue;
 
-    qtypes.insert(qtype);
+    qtypes.insert(qt_vec.begin(),qt_vec.end());
   }
 
   return;
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::NLN::SOLVER::ConvertModelType2QuantityType(
+    const enum INPAR::STR::ModelType& mt,
+    std::vector<enum NOX::NLN::StatusTest::QuantityType>& qt)
+{
+  // clear quantity type vector
+  qt.clear();
+
+  switch (mt)
+  {
+    // --- Structural case -----------------------------------------------------
+    case INPAR::STR::model_structure:
+    {
+      qt.push_back(NOX::NLN::StatusTest::quantity_structure);
+      break;
+    }
+    // --- Contact case --------------------------------------------------------
+    case INPAR::STR::model_contact:
+    {
+      // add the normal/frictionless case
+      qt.push_back(NOX::NLN::StatusTest::quantity_contact_normal);
+      // check for friction
+      const Teuchos::ParameterList& p_contact  =
+          DRT::Problem::Instance()->ContactDynamicParams();
+      enum INPAR::CONTACT::FrictionType frictiontype =
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(p_contact,
+              "FRICTION");
+      switch (frictiontype)
+      {
+        case INPAR::CONTACT::friction_none:
+        {
+          break;
+        }
+        default:
+        {
+          qt.push_back(NOX::NLN::StatusTest::quantity_contact_friction);
+          break;
+        }
+      }
+      // ToDo add wear etc.
+      break;
+    }
+    // --- MeshTying case ------------------------------------------------------
+    case INPAR::STR::model_meshtying:
+    {
+      qt.push_back(NOX::NLN::StatusTest::quantity_meshtying);
+      break;
+    }
+    // --- Windkessel case -----------------------------------------------------
+    case INPAR::STR::model_windkessel:
+    {
+      qt.push_back(NOX::NLN::StatusTest::quantity_windkessel);
+      break;
+    }
+    // --- Lagrangian/penalty case ---------------------------------------------
+    case INPAR::STR::model_lag_pen_constraint:
+    {
+      qt.push_back(NOX::NLN::StatusTest::quantity_lag_pen_constraint);
+      break;
+    }
+    default:
+      // no representation in the quantity type list
+      break;
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::NLN::SOLVER::ConvertEleTech2QuantityType(
+    const enum INPAR::STR::EleTech& et,
+    std::vector<enum NOX::NLN::StatusTest::QuantityType>& qt)
+{
+  // clear quantity type vector
+  qt.clear();
+
+  switch (et)
+  {
+    // --- EAS case ------------------------------------------------------------
+    case INPAR::STR::eletech_eas:
+    {
+      qt.push_back(NOX::NLN::StatusTest::quantity_eas);
+      break;
+    }
+    // --- Plasticity case -----------------------------------------------------
+    case INPAR::STR::eletech_plasticity:
+    {
+      qt.push_back(NOX::NLN::StatusTest::quantity_plasticity);
+      break;
+    }
+    // --- Pressure case -------------------------------------------------------
+    case INPAR::STR::eletech_pressure:
+    {
+      qt.push_back(NOX::NLN::StatusTest::quantity_pressure);
+      break;
+    }
+    default:
+    {
+      // no representation in the quantity type list
+      break;
+    }
+  }
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -166,16 +271,22 @@ void STR::NLN::SOLVER::SetStatusTestParams(
   // ---------------------------------------------------------------------------
   SetComboQuantityTestParams(pcombo_incr_fres,datasdyn,1,"NormF",qt);
 
+  // *** BEGIN: OPTIONAL STATUS TESTS ******************************************
+  int opt_count = 1;
   // ---------------------------------------------------------------------------
   // | lvl. 1: combo AND - Test 1:
   // | Enforces a minimal number of non-linear solution steps
   // ---------------------------------------------------------------------------
-  Teuchos::ParameterList& pnstep = pcombo_incr_fres_constr.sublist("Test 1");
-  pnstep.set("Test Type","NStep");
-  pnstep.set("Number of Nonlinear Iterations",datasdyn.GetIterMin());
-
-  int opt_count = 2;
-  // *** BEGIN: OPTIONAL STATUS TESTS ******************************************
+  if (datasdyn.GetIterMin()>0)
+  {
+    std::ostringstream test_string;
+    test_string << "Test " << opt_count;
+    Teuchos::ParameterList& pnstep =
+        pcombo_incr_fres_constr.sublist(test_string.str());
+    pnstep.set("Test Type","NStep");
+    pnstep.set("Number of Nonlinear Iterations",datasdyn.GetIterMin());
+    ++opt_count;
+  }
   // ---------------------------------------------------------------------------
   // | lvl. 1: combo AND - Test OPTIONAL:
   // | Tests the constraint NormF
@@ -210,10 +321,16 @@ void STR::NLN::SOLVER::SetStatusTestParams(
   // | lvl. 1: combo AND - Test OPTIONAL:
   // | Tests the semi-smooth contact active set
   // ---------------------------------------------------------------------------
-  if (qt.find(NOX::NLN::StatusTest::quantity_contact) != qt.end())
+  if (qt.find(NOX::NLN::StatusTest::quantity_contact_normal) != qt.end())
   {
     SetQuantityTestParams(pcombo_incr_fres_constr,datasdyn,
-        NOX::NLN::StatusTest::quantity_contact,opt_count,"ActiveSet");
+        NOX::NLN::StatusTest::quantity_contact_normal,opt_count,"ActiveSet");
+    ++opt_count;
+  }
+  if (qt.find(NOX::NLN::StatusTest::quantity_contact_friction) != qt.end())
+  {
+    SetQuantityTestParams(pcombo_incr_fres_constr,datasdyn,
+        NOX::NLN::StatusTest::quantity_contact_friction,opt_count,"ActiveSet");
     ++opt_count;
   }
 
@@ -294,6 +411,8 @@ void STR::NLN::SOLVER::SetComboQuantityTestParams(
       SetQuantityTestParams(ptest_and,datasdyn,*qtiter,count_and,testname);
       ++count_and;
     }
+    SetQuantityTestParams(ptest_and,datasdyn,
+        NOX::NLN::StatusTest::quantity_structure,count_and,testname);
   }
   // if there are neither AND nor OR combinations
   if (count_or == 0 and count_and == 0)
@@ -620,6 +739,7 @@ void STR::NLN::SOLVER::SetActiveSetParams(
   // set the quantity type
   qlist.set("Quantity Type",
       NOX::NLN::StatusTest::QuantityType2String(qtype).c_str());
+  qlist.set<int>("Max Cycle Size",3);
 
   return;
 }

@@ -1,14 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file contact_wear_interface.H
 
-<pre>
-Maintainer: Philipp Farah
-            farah@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\brief Wear interface implementation.
 
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah
+*/
+/*----------------------------------------------------------------------*/
 #ifndef CONTACT_WEAR_INTERFACE_H_
 #define CONTACT_WEAR_INTERFACE_H_
 
@@ -169,7 +169,7 @@ public:
    according to the contact initialization defined in the input file.
 
    */
-   virtual bool BuildActiveSet(bool init = false);
+   virtual bool BuildActiveSet(bool init=false);
 
    /*!
    \brief Build corresponding active set for master side

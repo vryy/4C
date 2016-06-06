@@ -2,6 +2,8 @@
 /*!
 \file str_impl_statics.cpp
 
+\brief Static (time) integrator.
+
 \maintainer Michael Hiermeier
 
 \date Nov 30, 2015
@@ -18,6 +20,7 @@
 #include "str_predict_generic.H"
 #include "str_dbc.H"
 
+#include "../drt_io/io.H"
 #include "../linalg/linalg_sparseoperator.H"
 
 #include <Epetra_Vector.h>
@@ -85,6 +88,24 @@ bool STR::IMPLICIT::Statics::ApplyForceStiff(const Epetra_Vector& x,
   bool ok = ModelEval().ApplyForceStiff(x,f,jac);
   jac.Complete();
   return ok;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Statics::WriteRestart(
+    IO::DiscretizationWriter& iowriter,
+    const bool& forced_writerestart) const
+{
+  CheckInitSetup();
+  ModelEval().WriteRestart(iowriter,forced_writerestart);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Statics::ReadRestart(IO::DiscretizationReader& ioreader)
+{
+  CheckInitSetup();
+  ModelEval().ReadRestart(ioreader);
 }
 
 /*----------------------------------------------------------------------------*

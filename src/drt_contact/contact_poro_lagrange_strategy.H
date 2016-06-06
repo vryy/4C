@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_poro_lagrange_strategy.H
 
-<pre>
-Maintainer: Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
-</pre>
+\brief ToDo Add meaningful comment.
 
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Christoph Ager
+
+*/
+/*---------------------------------------------------------------------*/
 #ifndef CONTACT_PORO_LAGRANGE_STRATEGY_H
 #define CONTACT_PORO_LAGRANGE_STRATEGY_H
 
@@ -41,6 +42,7 @@ namespace CONTACT
 
     */
     PoroLagrangeStrategy(
+        const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* DofRowMap,
         const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params,
@@ -158,18 +160,19 @@ namespace CONTACT
     ... + Overloaded Implementation in Poro Lagrange Strategy
     Set structure & fluid velocity and lagrangean multiplier to Contact nodes data container!!!
 
-    \param statename (in): std::string defining which quantity to set (either "displacement", "olddisplacement", "svelocity", "fvelocity", "lm")
-    \param vec (in): current global state of the quantity defined by statename
+    \param statetype (in): enumerator defining which quantity to set (see mortar_interface.H for an overview)
+    \param vec (in): current global state of the quantity defined by statetype
     */
-    void SetState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec);
+    virtual void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec);
 
     virtual void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<DRT::Discretization> dis);
 
     //Flag for Poro No Penetration Condition
-    bool HasPoroNoPenetration(){return no_penetration_;}
+    bool HasPoroNoPenetration() const {return no_penetration_;}
 
     //Return Lagrange Multiplier for No Penetration Condition!
     Teuchos::RCP<Epetra_Vector> LambdaNoPen(){return lambda_;}
+    Teuchos::RCP<const Epetra_Vector> LambdaNoPen() const {return lambda_;}
 
     //Return all active fluid slave dofs
     Teuchos::RCP<Epetra_Map> FluidActiveNDofMap(){return fgactiven_;};

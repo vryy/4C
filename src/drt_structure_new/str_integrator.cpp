@@ -2,6 +2,8 @@
 /*!
 \file str_integrator.cpp
 
+\brief Generic class for all explicit/implicit time integrators.
+
 \maintainer Michael Hiermeier
 
 \date Dec 7, 2015
@@ -35,7 +37,9 @@ STR::Integrator::Integrator()
       issetup_(false),
       modelevaluator_ptr_(Teuchos::null),
       eval_data_ptr_(Teuchos::null),
+      sdyn_ptr_(Teuchos::null),
       gstate_ptr_(Teuchos::null),
+      io_ptr_(Teuchos::null),
       dbc_ptr_(Teuchos::null),
       timint_ptr_(Teuchos::null),
       isequalibriate_initial_state_(false)
@@ -57,15 +61,24 @@ void STR::Integrator::Init(
 
   sdyn_ptr_ = sdyn_ptr;
   gstate_ptr_ = gstate_ptr;
+  io_ptr_ = io_ptr;
   dbc_ptr_ = dbc_ptr;
   timint_ptr_ = timint_ptr;
 
+  isinit_ = true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::Integrator::Setup()
+{
+  CheckInit();
   // ---------------------------------------------------------------------------
-  // build model evaluator
+  // build model evaluator data container
   // ---------------------------------------------------------------------------
   eval_data_ptr_ =
       Teuchos::rcp(new STR::MODELEVALUATOR::Data());
-  eval_data_ptr_->Init(sdyn_ptr,io_ptr,timint_ptr,gstate_ptr->GetCommPtr());
+  eval_data_ptr_->Init(timint_ptr_);
   eval_data_ptr_->Setup();
 
   // ---------------------------------------------------------------------------
@@ -73,11 +86,11 @@ void STR::Integrator::Init(
   // ---------------------------------------------------------------------------
   modelevaluator_ptr_ =
       Teuchos::rcp(new STR::ModelEvaluator());
-  modelevaluator_ptr_->Init(sdyn_ptr->GetModelTypes(),eval_data_ptr_,
-      gstate_ptr,io_ptr,Teuchos::rcp(this,false),timint_ptr);
+  modelevaluator_ptr_->Init(sdyn_ptr_->GetModelTypes(),eval_data_ptr_,
+      gstate_ptr_,io_ptr_,Teuchos::rcp(this,false),timint_ptr_);
   modelevaluator_ptr_->Setup();
 
-  isinit_ = true;
+  // the issetup_ flag is not set here!!!
 }
 
 /*----------------------------------------------------------------------------*
@@ -109,11 +122,10 @@ void STR::Integrator::EquilibriateInitialState()
   Teuchos::RCP<NOX::Epetra::Vector> nox_rhs_ptr =
       Teuchos::rcp(new NOX::Epetra::Vector(rhs_ptr,NOX::Epetra::Vector::CreateView));
 
-  // initialize the structural stiffness matrix
-  Teuchos::RCP<LINALG::SparseOperator> jac_ptr =
-      GlobalState().GetMutableJacobian();
+  // initialize a temporal structural stiffness matrix
   Teuchos::RCP<LINALG::SparseOperator> stiff_ptr =
-      GlobalState().ExtractDisplBlock(*jac_ptr);
+      Teuchos::rcp(new LINALG::SparseMatrix(*GlobalState().DofRowMapView(),
+          81, true, true));
 
   /* auxiliary vector in order to store accelerations of inhomogeneous
    * Dirichilet-DoFs
@@ -195,10 +207,10 @@ void STR::Integrator::EquilibriateInitialState()
           str_linsolver,Teuchos::null,Teuchos::null,stiff_ptr,*nox_soln_ptr));
 
   // (re)set the linear solver parameters
-  p_ls.set("Number of Nonlinear Iterations",0);
-  p_ls.set("Current Time Step",GlobalState().GetTimeNp());
+  p_ls.set<int>("Number of Nonlinear Iterations",0);
+  p_ls.set<int>("Current Time Step",GlobalState().GetStepNp());
   // ToDo Get the actual tolerance value
-  p_ls.set("Wanted Tolerance",1.0e-6);
+  p_ls.set<double>("Wanted Tolerance",1.0e-6);
   // ---------------------------------------------------------------------------
   /* Meier 2015: Due to the Dirichlet conditions applied to the mass matrix, we
    * solely solve for the accelerations at non-Dirichlet DoFs while the
@@ -215,11 +227,6 @@ void STR::Integrator::EquilibriateInitialState()
   accnp_ptr->Update(1.0,nox_soln_ptr->getEpetraVector(),0.0);
   //*) Add contributions of inhomogeneous DBCs
   accnp_ptr->Update(1.0,*acc_aux_ptr,1.0);
-
-  /* We need to reset the stiffness matrix because its graph (topology)
-   * is not finished yet in case of constraints and possibly other side
-   * effects (basically remaining model evaluators). */
-  stiff_ptr->Reset();
 
   // re-build the entire right-hand-side with correct accelerations
   ModelEval().ApplyForce(*disnp_ptr,*rhs_ptr);
@@ -252,10 +259,10 @@ void STR::Integrator::DetermineEnergy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::OutputStepState()
+void STR::Integrator::OutputStepState(IO::DiscretizationWriter& iowriter) const
 {
   CheckInitSetup();
-  ModelEval().OutputStepState();
+  ModelEval().OutputStepState(iowriter);
 }
 
 /*----------------------------------------------------------------------------*
@@ -367,6 +374,23 @@ const STR::ModelEvaluator& STR::Integrator::ModelEval() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<const STR::ModelEvaluator> STR::Integrator::ModelEvalPtr() const
+{
+  CheckInit();
+  return modelevaluator_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+STR::MODELEVALUATOR::Generic& STR::Integrator::Evaluator(
+    const INPAR::STR::ModelType& mt)
+{
+  CheckInitSetup();
+  return ModelEval().Evaluator(mt);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 const STR::MODELEVALUATOR::Data& STR::Integrator::EvalData() const
 {
   CheckInit();
@@ -423,7 +447,7 @@ STR::Dbc& STR::Integrator::Dbc()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::Dbc& STR::Integrator::Dbc() const
+const STR::Dbc& STR::Integrator::GetDbc() const
 {
   CheckInit();
   return *dbc_ptr_;

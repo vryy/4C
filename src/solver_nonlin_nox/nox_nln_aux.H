@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_aux.H
 
+\brief Auxiliary methods.
+
 \maintainer Michael Hiermeier
 
 \date Jul 31, 2015
@@ -16,13 +18,16 @@
 
 #include <Teuchos_RCP.hpp>
 #include "nox_nln_statustest_factory.H"
-#include "nox_nln_globaldata.H"
+#include "nox_nln_enum_lists.H"
 
 #include <NOX_Abstract_Vector.H>
 
 // forward declaration
 class Epetra_Vector;
-
+class Epetra_Comm;
+namespace LINALG {
+  class Solver;
+} // namespace LINALG
 namespace NOX {
 namespace StatusTest {
   class Generic;
@@ -35,6 +40,9 @@ namespace AUX {
    *  Note: The Yes/No tuples are translated to booleans! */
   void SetPrintingParameters(Teuchos::ParameterList& p_nox,
       const Epetra_Comm& comm);
+
+  NOX::NLN::LinSystem::LinearSystemType GetLinearSystemType(
+      const std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linsolvers);
 
   /*! \brief Calculate the root mean square for the NOX status test
    *  \f[

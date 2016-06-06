@@ -2,6 +2,10 @@
 /*!
 \file str_elements_paramsinterface.H
 
+\brief Collection of a bunch of possible element functions/methods
+       to pass information down to the structural elements and
+       vice versa
+
 \maintainer Michael Hiermeier
 
 \date Mar 24, 2016
@@ -16,7 +20,7 @@
 
 #include "../drt_inpar/inpar_structure.H"         // enums
 #include "../drt_lib/drt_elements_paramsinterface.H"    // base class
-#include "../solver_nonlin_nox/nox_nln_statustest_factory.H" // enums
+#include "../solver_nonlin_nox/nox_nln_enum_lists.H" // enums
 
 namespace STR {
 namespace ELEMENTS {
@@ -47,7 +51,7 @@ namespace ELEMENTS {
 
   /*! \brief Parameter interface for the structural elements and the STR::Integrator data exchange
    *
-   *  This class is a special case of the DRT::ELEMENTS::Interface class and gives you all the
+   *  This class is a special case of the DRT::ELEMENTS::ParamsInterface class and gives you all the
    *  basic function definitions which you can use to get access to the STR::Integrator and many
    *  more objects.
    *  Please consider to derive a special interface class, if you need special parameters inside
@@ -76,6 +80,7 @@ namespace ELEMENTS {
 
     //! @name Access control parameters for the handling of element internal variables (e.g. EAS)
     //! @{
+
     //! get the current step length
     virtual double GetStepLength() const = 0;
 
@@ -85,6 +90,7 @@ namespace ELEMENTS {
 
     //! @name Set functions
     //! @{
+
     /*! \brief set evaluation error flag
      *
      *  See the EvalErrorFlag enumerators for more information. */

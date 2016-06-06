@@ -2,6 +2,8 @@
 /*!
 \file str_model_evaluator_generic.H
 
+\brief Generic class for all model evaluators.
+
 \maintainer Michael Hiermeier
 
 \date Aug 11, 2015
@@ -19,12 +21,17 @@
 
 // forward declaration
 class Epetra_Vector;
+class Epetra_Map;
 namespace LINALG {
   class SparseOperator;
 } // namespace LINALG
 namespace Teuchos {
   class ParameterList;
 } // namespace Teuchos
+namespace IO {
+  class DiscretizationWriter;
+  class DiscretizationReader;
+} // namespace IO
 namespace DRT {
   class Discretization;
 } // namespace DRT
@@ -52,7 +59,8 @@ namespace MODELEVALUATOR {
         const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
         const Teuchos::RCP<STR::TIMINT::BaseDataIO>& gio_ptr,
         const Teuchos::RCP<STR::Integrator>& int_ptr,
-        const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
+        const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr,
+        const int& dof_offset);
 
     //! setup class variables
     virtual void Setup() = 0;
@@ -99,6 +107,12 @@ namespace MODELEVALUATOR {
         Epetra_Vector& f,
         LINALG::SparseOperator& jac) = 0;
 
+    virtual void WriteRestart(
+        IO::DiscretizationWriter& iowriter,
+        const bool& forced_writerestart) const = 0;
+
+    virtual void ReadRestart(IO::DiscretizationReader& ioreader) = 0;
+
     virtual void RecoverState(
         const Epetra_Vector& xold,
         const Epetra_Vector& dir,
@@ -113,30 +127,75 @@ namespace MODELEVALUATOR {
     virtual void DetermineEnergy() = 0;
 
     //! output routine for model evlaluator
-    virtual void OutputStepState() = 0;
+    virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const = 0;
 
+    //! @name Accessors to model specific things
+    //! @{
+
+    //! Returns a pointer to the model specific dof row map
+    virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const = 0;
+
+    //! Returns a pointer to the current model solution vector (usually the Lagrange multiplier vector)
+    virtual Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const = 0;
+
+    //! Returns a pointer to the model solution vector of the last time step (usually the Lagrange multiplier vector)
+    virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const = 0;
+    //! @}
   protected:
+    //! @name internal accessors
+    //! @{
+    //! Returns the model evaluator data container
     STR::MODELEVALUATOR::Data& EvalData();
+    Teuchos::RCP<STR::MODELEVALUATOR::Data>& EvalDataPtr();
 
+    //! Returns the global state data container
+    STR::TIMINT::BaseDataGlobalState& GState();
+    Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& GStatePtr();
+    const STR::TIMINT::BaseDataGlobalState& GState() const;
+
+    //! Returns the global input/output data container
+    STR::TIMINT::BaseDataIO& GInOutput();
+    const STR::TIMINT::BaseDataIO& GInOutput() const;
+
+    //! Returns the (structural) discretization
+    DRT::Discretization& Discret();
+    Teuchos::RCP<DRT::Discretization>& DiscretPtr();
+    const DRT::Discretization& Discret() const;
+
+    //! Returns the underlying STR::Integrator object
+    STR::Integrator& Int();
+
+    //! Returns the underlying STR::TIMINT object
+    const STR::TIMINT::Base& TimInt() const;
+
+    const int& DofOffset() const;
+    //! @}
   protected:
     //! init flag
     bool isinit_;
 
     //! setup flag
     bool issetup_;
-
+  private:
+    //! pointer to the model evaluator data container
     Teuchos::RCP<STR::MODELEVALUATOR::Data> eval_data_ptr_;
 
+    //! pointer to the global state data container
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
 
+    //! pointer to input/ouput data container
     Teuchos::RCP<STR::TIMINT::BaseDataIO> gio_ptr_;
 
     //! problem discretization
     Teuchos::RCP<DRT::Discretization> discret_ptr_;
 
+    //! pointer to the structural (time) integrator
     Teuchos::RCP<STR::Integrator> int_ptr_;
 
+    //! pointer to the time integrator strategy object
     Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
+
+    int dof_offset_;
   }; // class Generic
 
 } // namespace MODELEVALUATOR

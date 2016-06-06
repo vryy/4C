@@ -2,6 +2,8 @@
 /*!
 \file str_impl_gemm.cpp
 
+\brief Generalized Energy Momentum time integrator.
+
 \maintainer Philipp Farah
 
 \date Dec 14, 2015
@@ -72,6 +74,24 @@ bool STR::IMPLICIT::Gemm::ApplyForceStiff(
 {
   CheckInitSetup();
   return false;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Gemm::WriteRestart(
+    IO::DiscretizationWriter& iowriter,
+    const bool& forced_writerestart) const
+{
+  CheckInitSetup();
+  dserror("Not yet implemented! (see the Statics integration for an example)");
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Gemm::ReadRestart(IO::DiscretizationReader& ioreader)
+{
+  CheckInitSetup();
+  dserror("Not yet implemented! (see the Statics integration for an example)");
 }
 
 /*----------------------------------------------------------------------------*

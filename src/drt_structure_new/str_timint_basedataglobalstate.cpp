@@ -2,6 +2,9 @@
 /*!
 \file str_timint_basedataglobalstate.cpp
 
+\brief Global state data container for the structural (time)
+       integration
+
 \maintainer Michael Hiermeier
 
 \date Jan 12, 2016
@@ -13,6 +16,8 @@
 
 #include "str_timint_basedataglobalstate.H"
 #include "str_timint_basedatasdyn.H"
+#include "str_model_evaluator.H"
+#include "str_model_evaluator_generic.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -40,6 +45,7 @@ STR::TIMINT::BaseDataGlobalState::BaseDataGlobalState()
       dt_(Teuchos::null),
       stepn_(0),
       stepnp_(0),
+      ispredict_(false),
       dis_(Teuchos::null),
       vel_(Teuchos::null),
       acc_(Teuchos::null),
@@ -59,7 +65,9 @@ STR::TIMINT::BaseDataGlobalState::BaseDataGlobalState()
       damp_(Teuchos::null),
       timer_(Teuchos::null),
       dtsolve_(0.0),
-      dtele_(0.0)
+      dtele_(0.0),
+      max_block_num_(0),
+      gproblem_map_ptr_(Teuchos::null)
 {
   // empty constructor
 }
@@ -158,7 +166,6 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
   // --------------------------------------
   // sparse operators
   // --------------------------------------
-  jac_ = CreateJacobian();
   mass_  = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
   if (datasdyn_->GetDampingType() != INPAR::STR::damp_none)
   {
@@ -184,104 +191,160 @@ void STR::TIMINT::BaseDataGlobalState::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
-    CreateGlobalVector()
+    CreateGlobalVector() const
 {
-  return CreateGlobalVector(vec_init_zero);
+  return CreateGlobalVector(vec_init_zero,Teuchos::null);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
+    const STR::MODELEVALUATOR::Generic& me,
+    const INPAR::STR::ModelType& mt)
+{
+  CheckInit();
+
+  DRT::Problem* problem = DRT::Problem::Instance();
+  Teuchos::RCP<const Epetra_Map> me_map_ptr = me.GetBlockDofRowMapPtr();
+  model_maps_[mt] = me_map_ptr;
+  const int dof_off_set = me_map_ptr->MaxAllGID();
+
+  switch (mt)
+  {
+    case INPAR::STR::model_structure:
+    {
+      // always called first, so we can use it to reset things
+      gproblem_map_ptr_ = Teuchos::null;
+      model_block_id_[mt] = 0;
+      max_block_num_    = 1;
+      break;
+    }
+    case INPAR::STR::model_contact:
+    {
+      enum INPAR::CONTACT::SystemType systype =
+          DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
+              problem->ContactDynamicParams(),"SYSTEM");
+
+      // --- saddle-point system
+      if (systype == INPAR::CONTACT::system_saddlepoint)
+      {
+        model_block_id_[mt] = max_block_num_;
+        ++max_block_num_;
+      }
+      // --- condensed system
+      else
+        model_block_id_[mt] = 0;
+      break;
+    }
+    case INPAR::STR::model_springdashpot:
+    {
+      // structural block
+      model_block_id_[mt] = 0;
+      break;
+    }
+    default:
+    {
+      // FixMe please
+      dserror("Augment this function for your model type!");
+      break;
+    }
+  }
+  // create a global problem map
+  gproblem_map_ptr_ = LINALG::MergeMap(gproblem_map_ptr_,me_map_ptr);
+
+  return dof_off_set;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::BaseDataGlobalState::SetupMultiMapExtractor()
+{
+  CheckInit();
+  /* copy the std::map into a std::vector and keep the numbering of the model-id
+   * map */
+  std::vector<Teuchos::RCP<const Epetra_Map> > maps_vec(MaxBlockNumber(),
+      Teuchos::null);
+  // Make sure, that the block ids and the vector entry ids coincide!
+  std::map<INPAR::STR::ModelType,int>::const_iterator ci;
+  for (ci=model_block_id_.begin();ci!=model_block_id_.end();++ci)
+  {
+    enum INPAR::STR::ModelType mt = ci->first;
+    int bid = ci->second;
+    maps_vec[bid] = model_maps_.at(mt);
+  }
+  blockextractor_.Setup(*gproblem_map_ptr_,maps_vec);
+}
+
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const LINALG::MultiMapExtractor& STR::TIMINT::BaseDataGlobalState::
+    BlockExtractor() const
+{
+  // sanity check
+  blockextractor_.CheckForValidMapExtractor();
+  return blockextractor_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::
-    CreateGlobalVector(const enum VecInitType& vecinittype)
+    CreateGlobalVector(const enum VecInitType& vecinittype,
+    const Teuchos::RCP<const STR::ModelEvaluator>& modeleval_ptr) const
 {
   CheckInit();
-  Teuchos::RCP<Epetra_Vector> xvec = Teuchos::null;
-  DRT::Problem* problem = DRT::Problem::Instance();
+  Teuchos::RCP<Epetra_Vector> xvec_ptr =
+      Teuchos::rcp(new Epetra_Vector(GlobalProblemMap(),true));
 
-  // get modeltypes
-  const std::set<enum INPAR::STR::ModelType>& modeltypes =
-      datasdyn_->GetModelTypes();
-
-  // number of models
-  std::size_t nummodels = modeltypes.size();
-  int numblocks = 0;
-  // ---------------------------------------------------------------------------
-  // if there are more than one active model type
-  // ---------------------------------------------------------------------------
-  if(nummodels>1)
+  // switch between the different vector initialization options
+  switch (vecinittype)
   {
-    // count blocks
-    std::set<enum INPAR::STR::ModelType>::const_iterator miter;
-    for (miter=modeltypes.begin();miter!=modeltypes.end();++miter)
-    {
-      switch (*miter)
-      {
-      case INPAR::STR::model_structure:
-      {
-        ++numblocks;
-        break;
-      }
-      case INPAR::STR::model_contact:
-      {
-        enum INPAR::CONTACT::SystemType systype =
-            DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
-                problem->ContactDynamicParams(),"SYSTEM");
-
-        if (systype == INPAR::CONTACT::system_saddlepoint)
-          ++numblocks;
-        break;
-      }
-      case INPAR::STR::model_springdashpot:
-        break;
-      default:
-      {
-        // ToDo
-        dserror("Augment this function for your model type!");
-        break;
-      }
-      }
-    }
-    // ToDo
-    if(numblocks>1)
-      dserror("The corresponding mnodel evaluators are necessary to create "
-          "the global vector.");
-  } // end of the case of more than one model type
-
-  // ---------------------------------------------------------------------------
-  // pure structural case
-  // ---------------------------------------------------------------------------
-  {
-    // switch between the different vector initialization options
-    switch (vecinittype)
-    {
     /* use the last converged state to construct a new solution vector */
     case vec_init_last_time_step:
     {
-      xvec = Teuchos::rcp(new Epetra_Vector(*DofRowMapView(),false));
-      if (xvec->Scale(1.0,*GetDisN()))
-        dserror("Scale operation failed!");
+      if (modeleval_ptr.is_null())
+        dserror("We need access to the STR::ModelEvaluator object!");
+
+      std::map<INPAR::STR::ModelType,int>::const_iterator ci;
+      for (ci=model_block_id_.begin();ci!=model_block_id_.end();++ci)
+      {
+        // get the partial solution vector of the last time step
+        Teuchos::RCP<const Epetra_Vector> model_sol_ptr =
+            modeleval_ptr->Evaluator(ci->first).GetLastTimeStepSolutionPtr();
+        // if there is a partial solution, we insert it into the full vector
+        if (not model_sol_ptr.is_null())
+          BlockExtractor().InsertVector(model_sol_ptr,ci->second,xvec_ptr);
+      }
       break;
     }
     /* use the current global state to construct a new solution vector */
     case vec_init_current_state:
     {
-      xvec = Teuchos::rcp(new Epetra_Vector(*DofRowMapView(),false));
-      if (xvec->Scale(1.0,*GetDisNp()))
-        dserror("Scale operation failed!");
-      break;
+      if (modeleval_ptr.is_null())
+        dserror("We need access to the STR::ModelEvaluator object!");
+
+      std::map<INPAR::STR::ModelType,int>::const_iterator ci;
+      for (ci=model_block_id_.begin();ci!=model_block_id_.end();++ci)
+      {
+        // get the partial solution vector of the current state
+        Teuchos::RCP<const Epetra_Vector> model_sol_ptr =
+            modeleval_ptr->Evaluator(ci->first).GetCurrentSolutionPtr();
+        // if there is a partial solution, we insert it into the full vector
+        if (not model_sol_ptr.is_null())
+          BlockExtractor().InsertVector(model_sol_ptr,ci->second,xvec_ptr);
+      }
     }
     /* construct a new solution vector filled with zeros */
     case vec_init_zero:
     default:
     {
-      xvec = Teuchos::rcp(new Epetra_Vector(*DofRowMapView(),true));
+      // nothing to do.
       break;
     }
-    } // end of the switch-case statement
-  } // end of the pure structural problem case
+  } // end of the switch-case statement
 
   //wrap and return
-  return Teuchos::rcp(new NOX::Epetra::Vector(xvec));
+  return Teuchos::rcp(new NOX::Epetra::Vector(xvec_ptr));
 }
 
 /*----------------------------------------------------------------------------*
@@ -290,57 +353,22 @@ Teuchos::RCP<LINALG::SparseOperator> STR::TIMINT::BaseDataGlobalState::
     CreateJacobian()
 {
   CheckInit();
-  Teuchos::RCP<LINALG::SparseOperator> jac = Teuchos::null;
-  DRT::Problem* problem = DRT::Problem::Instance();
+  jac_ = Teuchos::null;
 
-  // get modeltypes
-  const std::set<enum INPAR::STR::ModelType>& modeltypes =
-      datasdyn_->GetModelTypes();
-
-  // number of models
-  std::size_t nummodels = modeltypes.size();
-  int numblocks = 0;
-  if(nummodels>1)
+  if (max_block_num_>1)
   {
-    std::set<enum INPAR::STR::ModelType>::const_iterator miter;
-    for (miter=modeltypes.begin();miter!=modeltypes.end();++miter)
-    {
-      switch (*miter)
-      {
-        case INPAR::STR::model_structure:
-        {
-          ++numblocks;
-          break;
-        }
-        case INPAR::STR::model_contact:
-        {
-          enum INPAR::CONTACT::SystemType systype =
-              DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(
-              problem->ContactDynamicParams(),"SYSTEM");
-
-          if (systype == INPAR::CONTACT::system_saddlepoint)
-            ++numblocks;
-          break;
-        }
-        case INPAR::STR::model_springdashpot:
-          break;
-        default:
-        {
-          // FixMe please.
-          dserror("Augment this function for your model type!");
-          break;
-        }
-      }
-    }
-    // FixMe please.
-    if(numblocks>1)
-      dserror("The corresponding managers/model-evaluators are necessary to create "
-          "the BlockMatrix.");
+    jac_ = Teuchos::rcp(new LINALG::BlockSparseMatrix
+         <LINALG::DefaultBlockMatrixStrategy>(BlockExtractor(),BlockExtractor(),
+             81,true,true));
   }
-  // pure structural case
-  jac =
-      Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(), 81, true, true));
-  return jac;
+  else
+  {
+    // pure structural case
+    jac_ = Teuchos::rcp(new LINALG::SparseMatrix(*DofRowMapView(),
+        81, true, true));
+  }
+
+  return jac_;
 }
 
 /*----------------------------------------------------------------------------*
@@ -394,29 +422,112 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExportDisplEntries
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
-    ExtractDisplBlock(LINALG::SparseOperator& jac) const
+void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(
+    LINALG::SparseOperator& jac,
+    const LINALG::SparseMatrix& matrix,
+    const INPAR::STR::ModelType& mt,
+    const MatBlockType& bt,
+    const LINALG::DataAccess& access) const
 {
-  Teuchos::RCP<LINALG::SparseMatrix> stiff = Teuchos::null;
-
-  const LINALG::SparseOperator* testop = 0;
-  testop = dynamic_cast<const LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* >(&jac);
-  if (testop != NULL)
+  if (MaxBlockNumber()>1)
   {
     LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* blockmat =
         dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* >(&jac);
-    // get block (0,0)
-    stiff = Teuchos::rcp(&(blockmat->Matrix(0,0)),false);
+    if (blockmat == NULL)
+      dserror("The jacobian has the wrong type! (no LINALG::BlockSparseMatrix)");
+
+    const int& b_id = model_block_id_.at(mt);
+    switch (bt)
+    {
+      case block_displ_displ:
+      {
+        blockmat->Matrix(0,0).Assign(access,matrix);
+        break;
+      }
+      case block_displ_lm:
+      {
+        blockmat->Matrix(0,b_id).Assign(access,matrix);
+        break;
+      }
+      case block_lm_displ:
+      {
+        blockmat->Matrix(b_id,0).Assign(access,matrix);
+        break;
+      }
+      case block_lm_lm:
+      {
+        blockmat->Matrix(b_id,b_id).Assign(access,matrix);
+        break;
+      }
+    }
   }
+  else
+  {
+    LINALG::SparseMatrix* stiff_ptr = dynamic_cast<LINALG::SparseMatrix*>(&jac);
+    if (stiff_ptr == NULL)
+      dserror("The jacobian has the wrong type! (no LINALG::SparseMatrix)");
+    stiff_ptr->Assign(access,matrix);
+  }
+  return;
+}
 
-  testop = dynamic_cast<const LINALG::SparseMatrix*>(&jac);
-  if (testop == NULL)
-    dserror("Structural stiffness matrix has to be a LINALG::BlockSparseMatrix or "
-        "a LINALG::SparseMatrix!");
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
+    ExtractModelBlock(
+    LINALG::SparseOperator& jac,
+    const INPAR::STR::ModelType& mt,
+    const MatBlockType& bt) const
+{
+  Teuchos::RCP<LINALG::SparseMatrix> block = Teuchos::null;
+  if (MaxBlockNumber()>1)
+  {
+    LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* blockmat =
+        dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* >(&jac);
+    if (blockmat == NULL)
+      dserror("The jacobian has the wrong type! (no LINALG::BlockSparseMatrix)");
 
-  stiff = Teuchos::rcp(dynamic_cast<LINALG::SparseMatrix*>(&jac),false);
+    const int& b_id = model_block_id_.at(mt);
+    switch (bt)
+    {
+      case block_displ_displ:
+      {
+        block = Teuchos::rcp(&(blockmat->Matrix(0,0)),false);
+        break;
+      }
+      case block_displ_lm:
+      {
+        block = Teuchos::rcp(&(blockmat->Matrix(0,b_id)),false);
+        break;
+      }
+      case block_lm_displ:
+      {
+        block = Teuchos::rcp(&(blockmat->Matrix(b_id,0)),false);
+        break;
+      }
+      case block_lm_lm:
+      {
+        block = Teuchos::rcp(&(blockmat->Matrix(b_id,b_id)),false);
+        break;
+      }
+    }
+  }
+  else
+  {
+    LINALG::SparseMatrix* stiff_ptr = dynamic_cast<LINALG::SparseMatrix*>(&jac);
+    if (stiff_ptr == NULL)
+      dserror("The jacobian has the wrong type! (no LINALG::SparseMatrix)");
+    block = Teuchos::rcp(stiff_ptr,false);
+  }
+  return block;
+}
 
-  return stiff;
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
+    ExtractDisplBlock(LINALG::SparseOperator& jac) const
+{
+  return ExtractModelBlock(jac,INPAR::STR::model_structure,block_displ_displ);
 }
 
 /*----------------------------------------------------------------------------*

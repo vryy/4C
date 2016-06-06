@@ -2,6 +2,9 @@
 /*!
 \file str_nln_solver_utils.H
 
+\brief Utility routines for the structural non-linear solver
+       classes.
+
 \maintainer Michael Hiermeier
 
 \date Oct 9, 2015
@@ -16,7 +19,7 @@
 
 #include "../drt_inpar/inpar_structure.H"
 #include "../solver_nonlin_nox/nox_nln_statustest_factory.H"
-#include "../solver_nonlin_nox/nox_nln_globaldata.H"
+#include "../solver_nonlin_nox/nox_nln_enum_lists.H"
 
 // forward declaration
 namespace Teuchos {
@@ -45,6 +48,14 @@ namespace SOLVER {
   void CreateQuantityTypes(
       std::set<enum NOX::NLN::StatusTest::QuantityType>& qtypes,
       const STR::TIMINT::BaseDataSDyn& datasdyn);
+
+  void ConvertModelType2QuantityType(
+      const enum INPAR::STR::ModelType& mt,
+      std::vector<enum NOX::NLN::StatusTest::QuantityType>& qt);
+
+  void ConvertEleTech2QuantityType(
+      const enum INPAR::STR::EleTech& et,
+      std::vector<enum NOX::NLN::StatusTest::QuantityType>& qt);
 
   /*! \brief Create a status test parameter list
    *

@@ -2,6 +2,10 @@
 /*!
 \file nox_nln_statustest_normwrms.cpp
 
+\brief %NOX::NLN Weighted root mean square test of the solution
+       increment. A detailed description can be found in the NOX
+       documentation.
+
 \maintainer Michael Hiermeier
 
 \date Aug 4, 2015
@@ -135,10 +139,10 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
   // ---------------------------------------------------------
   // Begin check for convergence criteria #3 (global check)
   // ---------------------------------------------------------
-  // First time through, make sure the output parameter list exists.
-  // Since the list is const, a sublist call to a non-existent sublist
-  // throws an error.  Therefore we have to check the existence of each
-  // sublist before we call it.
+  /* First time through, make sure the output parameter list exists.
+   * Since the list is const, a sublist call to a non-existent sublist
+   * throws an error.  Therefore we have to check the existence of each
+   * sublist before we call it. */
   const Teuchos::ParameterList& p = problem.getList();
   if (niters == 1)
     if (p.isSublist("Direction"))
@@ -232,19 +236,21 @@ std::ostream& NOX::NLN::StatusTest::NormWRMS::print(
     stream << QuantityType2String(checkList_[i]) << "-";
     stream << "WRMS-Norm = " << NOX::Utils::sciformat((*normWRMS_)[i], 3)
            << " < " << tol_[i];
+    stream << std::endl;
   }
   if (printCriteria2Info_) {
-    stream << std::endl << indent_string;
+    stream << indent_string;
     stream << std::setw(13) << " ";
     stream << "(Min Step Size:  " << NOX::Utils::sciformat(computedStepSize_, 3)
            << " >= " << alpha_ << ")";
+    stream << std::endl;
   }
   if (printCriteria3Info_) {
-    stream << std::endl << indent_string;
+    stream << indent_string;
     stream << std::setw(13) << " ";
     stream << "(Max Lin Solv Tol:  " << NOX::Utils::sciformat(achievedTol_, 3)
            << " < " << beta_ << ")";
+    stream << std::endl;
   }
-  stream << std::endl;
   return stream;
 }

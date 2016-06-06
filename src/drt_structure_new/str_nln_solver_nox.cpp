@@ -2,6 +2,8 @@
 /*!
 \file str_nln_solver_nox.cpp
 
+\brief Structural non-linear %NOX::NLN solver.
+
 \maintainer Michael Hiermeier
 
 \date Sep 15, 2015
@@ -19,6 +21,9 @@
 #include "../solver_nonlin_nox/nox_nln_problem.H"
 #include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
 #include "../solver_nonlin_nox/nox_nln_solver_factory.H"
+#include "../solver_nonlin_nox/nox_nln_globaldata.H"
+#include "../solver_nonlin_nox/nox_nln_linearsystem.H"
+
 #include "../linalg/linalg_solver.H"
 
 #include <NOX_Epetra_LinearSystem.H>
@@ -58,7 +63,7 @@ void STR::NLN::SOLVER::Nox::Setup()
    * This interface is necessary for the evaluation of the jacobian
    * and everything, which is directly related to the jacobian.
    * This interface is optional. You can think of Finite-Differences
-   * as one way to circumvent the usage of a evaluation of the jacobian.
+   * as one way to circumvent the evaluation of the jacobian.
    * Nevertheless, we always set this interface ptr in the structural
    * case. */
   const Teuchos::RCP<NOX::Epetra::Interface::Jacobian> ijac =
@@ -71,19 +76,25 @@ void STR::NLN::SOLVER::Nox::Setup()
   // vector of currently present solution types
   std::vector<enum NOX::NLN::SolutionType> soltypes(0);
   // map of linear solvers, the key is the solution type
-  std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> > linsolvers;
-  // convert the INPAR::STR::ModelType to a NOX::NLN::SolType
-  STR::NLN::ConvertModelType2SolType(soltypes,linsolvers,DataSDyn().GetModelTypes(),
-      DataSDyn().GetLinSolvers());
+  NOX::NLN::LinearSystem::SolverMap linsolvers;
+  /* convert the INPAR::STR::ModelType to a NOX::NLN::SolType
+   * and fill the linear solver map. */
+  STR::NLN::ConvertModelType2SolType(soltypes,linsolvers,
+      DataSDyn().GetModelTypes(),DataSDyn().GetLinSolvers());
 
   // define and initialize the optimization type
-  const NOX::NLN::GlobalData::OptimizationProblemType opttype =
+  const NOX::NLN::OptimizationProblemType opttype =
       STR::NLN::OptimizationType(soltypes);
 
   // map of constraint interfaces, the key is the solution type
-  std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> > iconstr;
+  NOX::NLN::CONSTRAINT::ReqInterfaceMap iconstr;
   // set constraint interfaces
-  STR::NLN::CreateConstraintInterfaces(iconstr,soltypes);
+  STR::NLN::CreateConstraintInterfaces(iconstr,Integrator(),soltypes);
+
+  // preconditioner map for constraint problems
+  NOX::NLN::CONSTRAINT::PrecInterfaceMap iconstr_prec;
+  STR::NLN::CreateConstraintPreconditioner(iconstr_prec,
+      Integrator(),soltypes);
 
   // build the global data container for the nox_nln_solver
   nlnglobaldata_ =
@@ -95,7 +106,8 @@ void STR::NLN::SOLVER::Nox::Setup()
           ijac,
           opttype,
           iconstr,
-          iprec));
+          iprec,
+          iconstr_prec));
 
   // -------------------------------------------------------------------------
   // Create NOX control class: NoxProblem()
@@ -103,7 +115,7 @@ void STR::NLN::SOLVER::Nox::Setup()
   Teuchos::RCP<NOX::Epetra::Vector> soln =
       DataGlobalState().CreateGlobalVector();
   Teuchos::RCP<LINALG::SparseOperator> jac =
-      DataGlobalState().GetMutableJacobian();
+      DataGlobalState().CreateJacobian();
   problem_ = Teuchos::rcp(new NOX::NLN::Problem(nlnglobaldata_,soln,jac));
 
   // -------------------------------------------------------------------------
@@ -231,4 +243,13 @@ enum INPAR::STR::ConvergenceStatus STR::NLN::SOLVER::Nox::ConvertFinalStatus(
   }
 
   return convstatus;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::NLN::SOLVER::Nox::GetNumNlnIterations() const
+{
+  if (not nlnsolver_.is_null())
+    return nlnsolver_->getNumIterations();
+  return 0;
 }

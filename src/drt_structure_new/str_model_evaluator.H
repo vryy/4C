@@ -2,6 +2,8 @@
 /*!
 \file str_model_evaluator.H
 
+\brief Manager of the model evaluator calls.
+
 \maintainer Michael Hiermeier
 
 \date Nov 30, 2015
@@ -24,6 +26,10 @@ class Epetra_Vector;
 namespace LINALG {
   class SparseOperator;
 } // namespace LINALG
+namespace IO {
+  class DiscretizationWriter;
+  class DiscretizationReader;
+} // namespace IO
 namespace STR {
   class Integrator;
 namespace TIMINT {
@@ -68,6 +74,13 @@ namespace MODELEVALUATOR {
     //! apply force and stiffness
     bool ApplyForceStiff(const Epetra_Vector& x, Epetra_Vector& f, LINALG::SparseOperator& jac) const;
 
+    //! Write current restart
+    void WriteRestart(IO::DiscretizationWriter& iowriter,
+        const bool& forced_writerestart) const;
+
+    //! Read restart information
+    void ReadRestart(IO::DiscretizationReader& ioreader);
+
     //! @name Accessors
     //! @{
     //! return global state (read-only)
@@ -79,7 +92,9 @@ namespace MODELEVALUATOR {
     //! return pointer to the underlying time integrator (read-only)
     const Teuchos::RCP<const STR::TIMINT::Base>& GetTimIntPtr() const;
 
+    //! access one specific model evaluator
     STR::MODELEVALUATOR::Generic& Evaluator(const enum INPAR::STR::ModelType& mt);
+    const STR::MODELEVALUATOR::Generic& Evaluator(const enum INPAR::STR::ModelType& mt) const;
     //! @}
 
     //! @name Monolithic update routines
@@ -97,7 +112,7 @@ namespace MODELEVALUATOR {
     void DetermineEnergy();
 
     //! Write the current step state
-    void OutputStepState();
+    void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
     /*! \brief Recover the current state
      *
@@ -125,7 +140,8 @@ namespace MODELEVALUATOR {
 
   private:
     Teuchos::RCP<STR::ModelEvaluator::Vector> Sort(
-        STR::ModelEvaluator::Map model_map
+        STR::ModelEvaluator::Map model_map,
+        std::vector<INPAR::STR::ModelType>& sorted_modeltypes
         ) const;
   protected:
     bool isinit_;

@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_linearsystem.H
 
+\brief %NOX::NLN extension of the %NOX::Epetra::LinearSystem.
+
 \maintainer Michael Hiermeier
 
 \date Jun 29, 2015
@@ -17,8 +19,7 @@
 #include <NOX_Epetra_LinearSystem.H>
 #include <NOX_Epetra_Interface_Required.H>
 #include <Epetra_Time.h>
-
-#include "nox_nln_globaldata.H"
+#include "nox_nln_enum_lists.H"
 
 // Forward declaration
 class Epetra_Vector;
@@ -51,6 +52,8 @@ namespace LinSystem {
   class LinearSystem : public NOX::Epetra::LinearSystem
   {
   public:
+    typedef std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> > SolverMap;
+
     //! List of types of epetra objects that can be used for the Jacobian and/or Preconditioner.
     enum OperatorType {
       //! A LINALG_SparseOperator object.
@@ -64,7 +67,7 @@ namespace LinSystem {
     };
 
     /// Map quantity name to std::string
-    static inline const std::string OperatorType2String(const enum OperatorType type)
+    static inline const std::string OperatorType2String(const enum OperatorType& type)
     {
       switch (type)
       {
@@ -109,7 +112,7 @@ namespace LinSystem {
     //! Standard constructor with full functionality.
     LinearSystem(Teuchos::ParameterList& printParams,
         Teuchos::ParameterList& linearSolverParams,
-        const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+        const SolverMap& solvers,
         const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
         const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
         const Teuchos::RCP<LINALG::SparseOperator>& J,
@@ -121,7 +124,7 @@ namespace LinSystem {
     //! Constructor without scaling object
     LinearSystem(Teuchos::ParameterList& printParams,
             Teuchos::ParameterList& linearSolverParams,
-            const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+            const SolverMap& solvers,
             const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
             const Teuchos::RCP<LINALG::SparseOperator>& J,
@@ -132,7 +135,7 @@ namespace LinSystem {
     //! Constructor without preconditioner
     LinearSystem(Teuchos::ParameterList& printParams,
             Teuchos::ParameterList& linearSolverParams,
-            const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+            const SolverMap& solvers,
             const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
             const Teuchos::RCP<LINALG::SparseOperator>& J,
@@ -142,7 +145,7 @@ namespace LinSystem {
     //! Constructor without preconditioner and scaling object
     LinearSystem(Teuchos::ParameterList& printParams,
             Teuchos::ParameterList& linearSolverParams,
-            const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+            const SolverMap& solvers,
             const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
             const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
             const Teuchos::RCP<LINALG::SparseOperator>& J,
@@ -266,7 +269,7 @@ namespace LinSystem {
         const NOX::NLN::SolutionType& solverType) = 0;
 
     //! Returns a pointer to linear solver, which has to be used
-    virtual NOX::NLN::SolutionType GetCurrentLinSolver(
+    virtual NOX::NLN::SolutionType GetActiveLinSolver(
         const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
         Teuchos::RCP<LINALG::Solver>& currSolver) = 0;
 

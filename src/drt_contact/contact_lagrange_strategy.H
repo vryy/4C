@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_lagrange_strategy.H
 
-<pre>
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
 
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*---------------------------------------------------------------------*/
 #ifndef CONTACT_LAGRANGE_STRATEGY_H
 #define CONTACT_LAGRANGE_STRATEGY_H
 
@@ -17,34 +18,38 @@
 
 namespace CONTACT
 {
-
-// forward declaration
-//class WearInterface;
-/*!
- \brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
+/*! \brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
 
  This is a specialization of the abstract contact algorithm as defined in CoAbstractStrategy.
  For a more general documentation of the involved functions refer to CoAbstract Strategy.
 
- \author popp (popp@lnm.mw.tum.de)
- */
+ \author popp (popp@lnm.mw.tum.de) */
 class CoLagrangeStrategy : public CoAbstractStrategy
 {
   public:
 
-    /*!
-    \brief Standard Constructor
+    //! Standard constructor
+  CoLagrangeStrategy(
+      const Epetra_Map* DofRowMap,
+      const Epetra_Map* NodeRowMap,
+      Teuchos::ParameterList params,
+      std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+      int dim,
+      Teuchos::RCP<const Epetra_Comm> comm,
+      double alphaf,
+      int maxdof);
 
-    */
-    CoLagrangeStrategy(
-        const Epetra_Map* DofRowMap,
-        const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
-        int dim,
-        Teuchos::RCP<Epetra_Comm> comm,
-        double alphaf,
-        int maxdof);
+  //! Shared data constructor
+  CoLagrangeStrategy(
+      const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+      const Epetra_Map* DofRowMap,
+      const Epetra_Map* NodeRowMap,
+      Teuchos::ParameterList params,
+      std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+      int dim,
+      Teuchos::RCP<const Epetra_Comm> comm,
+      double alphaf,
+      int maxdof);
 
     /*!
     \brief Destructor
@@ -64,7 +69,7 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     this case and activesetssconv_ is meaningless.
 
     */
-    bool ActiveSetSemiSmoothConverged()
+    bool ActiveSetSemiSmoothConverged() const
     {
       bool semismooth = DRT::INPUT::IntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
       if (semismooth) return activesetssconv_;
@@ -93,6 +98,14 @@ class CoLagrangeStrategy : public CoAbstractStrategy
 
     */
     int ActiveSetSteps() { return activesetsteps_; }
+
+    //! Get the active node row map of the previous Newton step
+    virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const
+    { dserror("Currently unsupported for the Lagrangian strategies!"); return Teuchos::null; };
+
+    //! Get the slip node row map of the previous Newton step
+    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
+    { dserror("Currently unsupported for the Lagrangian strategies!"); return Teuchos::null; };
 
     //@}
 
@@ -239,13 +252,13 @@ class CoLagrangeStrategy : public CoAbstractStrategy
     Call them whenever you like.
 
     */
-    double ConstraintNorm() {return 0.0;}
+    double ConstraintNorm() const {return 0.0;}
     void EvaluateRelMovPredict() {}
     double InitialPenalty() {return 0.0;}
     void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) {}
     void ResetPenalty() {}
     void ModifyPenalty() {}
-    void SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis) {}
+    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
 

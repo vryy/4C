@@ -2,11 +2,12 @@
 /*!
 \file inpar_contact.H
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\brief Input parameters for contact
+
+\level 2
+
+\maintainer Alexander Popp
+
 */
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_CONTACT_H
@@ -43,6 +44,7 @@ namespace INPAR
     /// (this enum represents the input file parameter STRATEGY)
     enum SolvingStrategy
     {
+      solution_vague,    ///< no solving strategy defined
       solution_lagmult,  ///< method of Lagrange multipliers
       solution_penalty,  ///< penalty approach
       solution_uzawa,    ///< Uzawa augmented Lagrange approach
@@ -54,6 +56,7 @@ namespace INPAR
     /// (this enum represents the input file parameter SYSTEM)
     enum SystemType
     {
+      system_none,        ///< no system defined
       system_condensed,   ///< condensed system
       system_condensed_lagmult,   ///< system with condensed lagrange multiplier (differs just in meshtying case)
       system_saddlepoint  ///< saddle point system
@@ -86,6 +89,7 @@ namespace INPAR
     /// (this enum represents the input file parameter CONSTRAINT_DIRECTIONS)
     enum ConstraintDirection
     {
+      constr_vague,          ///< no constraint directions defined
       constr_ntt,            ///< local normal and tangential coordinates
       constr_xyz             ///< global Cartesian coordinates
     };

@@ -2,6 +2,10 @@
 /*!
 \file nox_nln_globaldata.cpp
 
+\brief Kind of a data container class, which holds many variables
+       and objects, which are necessary to setup a NOX::NLN
+       solution strategy.
+
 \maintainer Michael Hiermeier
 
 \date Jul 17, 2015
@@ -12,9 +16,9 @@
 /*-----------------------------------------------------------*/
 
 #include "nox_nln_globaldata.H"   // class definition
-#include "nox_nln_constraint_interface_required.H"
 #include "nox_nln_meritfunction_factory.H"
 #include "nox_nln_solver_prepostop_generic.H"
+#include "nox_nln_linearsystem.H"
 #include "nox_nln_aux.H"
 
 #include <NOX_Utils.H>
@@ -36,12 +40,13 @@
  *----------------------------------------------------------------------------*/
 NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
     Teuchos::ParameterList& noxParams,
-    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
+    const NOX::NLN::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-    const NOX::NLN::GlobalData::OptimizationProblemType& type,
-    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr,
-    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec)
+    const NOX::NLN::OptimizationProblemType& type,
+    const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
+    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+    const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec)
     : comm_(Teuchos::rcp(&comm,false)),
       nlnparams_(Teuchos::rcp(&noxParams,false)),
       optType_(type),
@@ -50,6 +55,7 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
       iJacPtr_(iJac),
       iPrecPtr_(iPrec),
       iConstr_(iConstr),
+      iConstrPrec_(iConstrPrec),
       mrtFctPtr_(Teuchos::null),
       prePostOpPtr_(Teuchos::null),
       isConstrained_(type!=opt_unconstrained)
@@ -63,11 +69,11 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
  *----------------------------------------------------------------------------*/
 NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
     Teuchos::ParameterList& noxParams,
-    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
+    const NOX::NLN::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
     const OptimizationProblemType& type,
-    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr)
+    const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr)
     : comm_(Teuchos::rcp(&comm,false)),
       nlnparams_(Teuchos::rcp(&noxParams,false)),
       optType_(type),
@@ -89,7 +95,7 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
  *----------------------------------------------------------------------------*/
 NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
     Teuchos::ParameterList& noxParams,
-    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
+    const NOX::NLN::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec)
@@ -113,7 +119,7 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
  *----------------------------------------------------------------------------*/
 NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
     Teuchos::ParameterList& noxParams,
-    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
+    const NOX::NLN::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac)
     : comm_(Teuchos::rcp(&comm,false)),
@@ -122,7 +128,7 @@ NOX::NLN::GlobalData::GlobalData(const Epetra_Comm& comm,
       linSolvers_(linSolvers),
       iReqPtr_(iReq),
       iJacPtr_(iJac),
-      iPrecPtr_(Teuchos::null),
+      iPrecPtr_(Teuchos::null),     // no pre-conditioner
       mrtFctPtr_(Teuchos::null),
       prePostOpPtr_(Teuchos::null),
       isConstrained_(false)
@@ -194,20 +200,31 @@ void NOX::NLN::GlobalData::SetSolverOptionParameters()
    * and insert it into the parameter list. */
   Teuchos::ParameterList& solverOptionsList = nlnparams_->sublist("Solver Options");
 
-  // Pure reading access to the unfinished nox_nln_globaldata class
-  Teuchos::RCP<const NOX::NLN::GlobalData> nlnGlobalDataPtr = Teuchos::rcp(this,false);
-  mrtFctPtr_ =
-      NOX::NLN::MeritFunction::BuildMeritFunction(nlnGlobalDataPtr);
-
+  /* If we do a full newton method, we don't need a merit function and can
+   * skip the following */
+  const std::string& nlnsolver_name = nlnparams_->get<std::string>("Nonlinear Solver");
+  const std::string& ls_method_name = nlnparams_->sublist("Line Search").
+      get<std::string>("Method");
+  if (((nlnsolver_name == "Line Search Based") or
+       (nlnsolver_name == "Pseudo Transient")) and
+       (ls_method_name != "Full Step"))
+  {
+    // Pure reading access to the unfinished nox_nln_globaldata class
+    Teuchos::RCP<const NOX::NLN::GlobalData> nlnGlobalDataPtr = Teuchos::rcp(this,false);
+    mrtFctPtr_ =
+        NOX::NLN::MeritFunction::BuildMeritFunction(nlnGlobalDataPtr);
+  }
   // If the mrtFctPtr is Teuchos::null the default "Sum of Squares" NOX internal
   // merit function is used.
   if (not mrtFctPtr_.is_null())
-    solverOptionsList.set<Teuchos::RCP<NOX::MeritFunction::Generic> >("User Defined Merit Function",mrtFctPtr_);
+    solverOptionsList.set<Teuchos::RCP<NOX::MeritFunction::Generic> >
+      ("User Defined Merit Function",mrtFctPtr_);
 
   /* We use the parameter list to define a PrePostOperator class for the
    * non-linear iteration process. */
   prePostOpPtr_ = Teuchos::rcp(new NOX::NLN::Solver::PrePostOp::Generic());
-  solverOptionsList.set<Teuchos::RCP<NOX::Abstract::PrePostOperator> >("User Defined Pre/Post Operator",prePostOpPtr_);
+  solverOptionsList.set<Teuchos::RCP<NOX::Abstract::PrePostOperator> >
+    ("User Defined Pre/Post Operator",prePostOpPtr_);
 
   return;
 }
@@ -265,6 +282,9 @@ void NOX::NLN::GlobalData::SetStatusTestParameters()
     if (xmlParams.sublist("Inner Status Test").numParams())
       innerStatusTestParams = xmlParams.sublist("Inner Status Test");
   }
+
+  // make all Yes/No integral values to Boolean
+  DRT::INPUT::BoolifyValidInputParameters(statusTestParams);
 
   return;
 }
@@ -332,8 +352,7 @@ const Epetra_Comm& NOX::NLN::GlobalData::GetComm() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >&
-    NOX::NLN::GlobalData::GetLinSolvers()
+const NOX::NLN::LinearSystem::SolverMap& NOX::NLN::GlobalData::GetLinSolvers()
 {
   return linSolvers_;
 }
@@ -371,13 +390,24 @@ const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >&
-    NOX::NLN::GlobalData::GetConstraintInterfaces() const
+const NOX::NLN::CONSTRAINT::ReqInterfaceMap&
+    NOX::NLN::GlobalData::GetConstraintInterfaces()
 {
   if (iConstr_.size()==0)
     dserror("The constraint interface map is empty!");
 
   return iConstr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const NOX::NLN::CONSTRAINT::PrecInterfaceMap&
+    NOX::NLN::GlobalData::GetConstraintPrecInterfaces()
+{
+  if (iConstrPrec_.size()==0)
+    dserror("The constraint preconditioner interface map is empty!");
+
+  return iConstrPrec_;
 }
 
 /*----------------------------------------------------------------------------*

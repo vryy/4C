@@ -1,17 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_interface.cpp
 
 \brief One contact interface
 
-\level 1
+\level 2
 
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\maintainer Philipp Farah, Alexander Seitz
 
-*----------------------------------------------------------------------*/
-
+*/
+/*---------------------------------------------------------------------*/
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 #include <Epetra_Time.h>
@@ -42,13 +40,23 @@ CONTACT::CoInterface::CoInterface(const int id, const Epetra_Comm& comm,
                                   const int dim,
                                   const Teuchos::ParameterList& icontact,
                                   bool selfcontact,
-                                  INPAR::MORTAR::RedundantStorage redundant) :
-MORTAR::MortarInterface(id,comm,dim,icontact,redundant),
-selfcontact_(selfcontact),
-friction_(false),
-constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(icontact,"CONSTRAINT_DIRECTIONS")),
-nonsmoothnodes_(Teuchos::null),
-smoothnodes_(Teuchos::null)
+                                  INPAR::MORTAR::RedundantStorage redundant)
+    : MORTAR::MortarInterface(id,comm,dim,icontact,redundant),
+      selfcontact_(selfcontact),
+      friction_(false),
+      constr_direction_(DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(icontact,"CONSTRAINT_DIRECTIONS")),
+      activenodes_(Teuchos::null),
+      activedofs_(Teuchos::null),
+      activen_(Teuchos::null),
+      activet_(Teuchos::null),
+      nonsmoothnodes_(Teuchos::null),
+      smoothnodes_(Teuchos::null),
+      nextendedghosting_(Teuchos::null),
+      eextendedghosting_(Teuchos::null),
+      binarytreeself_(Teuchos::null),
+      smpairs_(0),
+      smintpairs_(0),
+      intcells_(0)
 {
   // set frictional contact status
   INPAR::CONTACT::FrictionType ftype =
@@ -1055,7 +1063,7 @@ void CONTACT::CoInterface::CreateSearchTree()
     {
       // set state in interface to intialize all kinds of quantities
       Teuchos::RCP<Epetra_Vector> zero =Teuchos::rcp(new Epetra_Vector(*idiscret_->DofRowMap()));
-      SetState("displacement",zero);
+      SetState(MORTAR::state_new_displacement,*zero);
 
       // create fully overlapping map of all contact elements
       Teuchos::RCP<Epetra_Map> elefullmap = LINALG::AllreduceEMap(*idiscret_->ElementRowMap());
@@ -2588,8 +2596,10 @@ void CONTACT::CoInterface::EvaluateNTS()
 /*----------------------------------------------------------------------*
  |  Integrate matrix M and gap g on slave/master overlaps     popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoInterface::MortarCoupling(MORTAR::MortarElement* sele,
-                                          std::vector<MORTAR::MortarElement*> mele)
+bool CONTACT::CoInterface::MortarCoupling(
+    MORTAR::MortarElement* sele,
+    std::vector<MORTAR::MortarElement*> mele,
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // increase counter of slave/master pairs
   smpairs_ += (int)mele.size();
@@ -2616,6 +2626,8 @@ bool CONTACT::CoInterface::MortarCoupling(MORTAR::MortarElement* sele,
 
     // create CoCoupling2dManager
     CONTACT::CoCoupling2dManager coup(Discret(),Dim(),quadratic,IParams(),sele,mele);
+    // evaluate
+    coup.EvaluateCoupling(mparams_ptr);
 
     // increase counter of slave/master integration pairs and intcells
     smintpairs_ += (int)mele.size();
@@ -2629,9 +2641,8 @@ bool CONTACT::CoInterface::MortarCoupling(MORTAR::MortarElement* sele,
     {
       // create CoCoupling3dManager
       CONTACT::CoCoupling3dManager coup(Discret(),Dim(),quadratic,IParams(),sele,mele);
-
       // evaluate
-      coup.EvaluateCoupling();
+      coup.EvaluateCoupling(mparams_ptr);
 
       // increase counter of slave/master integration pairs and intcells
       smintpairs_ += (int)mele.size();
@@ -2642,8 +2653,9 @@ bool CONTACT::CoInterface::MortarCoupling(MORTAR::MortarElement* sele,
     else
     {
       //create Coupling3dQuadManager
-      CONTACT::CoCoupling3dQuadManager(Discret(),Dim(),quadratic,IParams(),sele,mele)
-                                      .EvaluateCoupling();
+      CONTACT::CoCoupling3dQuadManager coup(Discret(),Dim(),quadratic,IParams(),sele,mele);
+      // evaluate
+      coup.EvaluateCoupling(mparams_ptr);
     } // quadratic
   } // 3D
   else
@@ -3120,10 +3132,7 @@ void CONTACT::CoInterface::EvaluateDistances(
     std::map<int,double>& mygap,
     std::map<int,std::map<int,double> >& dmygap)
 {
-  // ToDo Get rid of the const cast
-  Teuchos::RCP<Epetra_Vector> mutable_vec =
-      Teuchos::rcp_const_cast<Epetra_Vector>(vec);
-  SetState("displacement",mutable_vec);
+  SetState(MORTAR::state_new_displacement,*vec);
   Initialize();
 
   // interface needs to be complete
@@ -8688,9 +8697,11 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs,
   // get out of here if not participating in interface
   if (!lComm()) return;
 
-  double resMoSl[3] = {0.0,0.0,0.0};
-  double resMoMa[3] = {0.0,0.0,0.0};
-  double balMo[3]   = {0.0,0.0,0.0};
+  double lresMoSl[3] = {0.0,0.0,0.0};   // local slave moment
+  double gresMoSl[3] = {0.0,0.0,0.0};   // global slave moment
+  double lresMoMa[3] = {0.0,0.0,0.0};   // local master momemnt
+  double gresMoMa[3] = {0.0,0.0,0.0};   // global master moment
+  double gbalMo[3]   = {0.0,0.0,0.0};   // global moment balance
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -8700,14 +8711,15 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs,
     CoNode* snode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
 
     if (Dim()==2)
-      resMoSl[2] += snode->xspatial()[0] * fs[2*i+1] - snode->xspatial()[1]*fs[2*i];
+      lresMoSl[2] += snode->xspatial()[0] * fs[2*i+1] - snode->xspatial()[1]*fs[2*i];
     else
     {
-      resMoSl[0] += snode->xspatial()[1] * fs[3*i+2] - snode->xspatial()[2] * fs[3*i+1];
-      resMoSl[1] += snode->xspatial()[2] * fs[3*i]   - snode->xspatial()[0] * fs[3*i+2];
-      resMoSl[2] += snode->xspatial()[0] * fs[3*i+1] - snode->xspatial()[1] * fs[3*i];
+      lresMoSl[0] += snode->xspatial()[1] * fs[3*i+2] - snode->xspatial()[2] * fs[3*i+1];
+      lresMoSl[1] += snode->xspatial()[2] * fs[3*i]   - snode->xspatial()[0] * fs[3*i+2];
+      lresMoSl[2] += snode->xspatial()[0] * fs[3*i+1] - snode->xspatial()[1] * fs[3*i];
     }
   }
+  Comm().SumAll(&lresMoSl[0],&gresMoSl[0],3);
 
   // loop over proc's master nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -8717,36 +8729,39 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs,
     CoNode* mnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
 
     if (Dim()==2)
-      resMoMa[2] += mnode->xspatial()[0] * fm[2*i+1] - mnode->xspatial()[1]*fm[2*i];
+      lresMoMa[2] += mnode->xspatial()[0] * fm[2*i+1] - mnode->xspatial()[1]*fm[2*i];
     else
     {
-      resMoMa[0] += mnode->xspatial()[1] * fm[3*i+2] - mnode->xspatial()[2] * fm[3*i+1];
-      resMoMa[1] += mnode->xspatial()[2] * fm[3*i]   - mnode->xspatial()[0] * fm[3*i+2];
-      resMoMa[2] += mnode->xspatial()[0] * fm[3*i+1] - mnode->xspatial()[1] * fm[3*i];
+      lresMoMa[0] += mnode->xspatial()[1] * fm[3*i+2] - mnode->xspatial()[2] * fm[3*i+1];
+      lresMoMa[1] += mnode->xspatial()[2] * fm[3*i]   - mnode->xspatial()[0] * fm[3*i+2];
+      lresMoMa[2] += mnode->xspatial()[0] * fm[3*i+1] - mnode->xspatial()[1] * fm[3*i];
     }
   }
+  Comm().SumAll(&lresMoMa[0],&gresMoMa[0],3);
 
   for (int d=0;d<3;++d)
   {
-    balMo[d] = resMoSl[d] + resMoMa[d];
+    gbalMo[d] = gresMoSl[d] + gresMoMa[d];
 //    if (abs(balMo[d])>1.0e-11) dserror("Conservation of angular momentum is not fulfilled!");
   }
-
-  std::cout << "SLAVE:   " <<
-      " [" << std::setw(14) << std::setprecision(5) << std::scientific << resMoSl[0] <<
-      ", " << std::setw(14) << std::setprecision(5) << std::scientific << resMoSl[1] <<
-      ", " << std::setw(14) << std::setprecision(5) << std::scientific << resMoSl[2] <<
-      "]"  << std::endl;
-  std::cout << "Master:  " <<
-      " [" << std::setw(14) << std::setprecision(5) << std::scientific << resMoMa[0] <<
-      ", " << std::setw(14) << std::setprecision(5) << std::scientific << resMoMa[1] <<
-      ", " << std::setw(14) << std::setprecision(5) << std::scientific << resMoMa[2] <<
-      "]"  << std::endl;
-  std::cout << "Balance: " <<
-      " [" << std::setw(14) << std::setprecision(5) << std::scientific << balMo[0] <<
-      ", " << std::setw(14) << std::setprecision(5) << std::scientific << balMo[1] <<
-      ", " << std::setw(14) << std::setprecision(5) << std::scientific << balMo[2] <<
-      "]"  << std::endl;
+  if (Comm().MyPID()==0)
+  {
+    std::cout << "SLAVE:   " <<
+        " [" << std::setw(14) << std::setprecision(5) << std::scientific << gresMoSl[0] <<
+        ", " << std::setw(14) << std::setprecision(5) << std::scientific << gresMoSl[1] <<
+        ", " << std::setw(14) << std::setprecision(5) << std::scientific << gresMoSl[2] <<
+        "]"  << std::endl;
+    std::cout << "Master:  " <<
+        " [" << std::setw(14) << std::setprecision(5) << std::scientific << gresMoMa[0] <<
+        ", " << std::setw(14) << std::setprecision(5) << std::scientific << gresMoMa[1] <<
+        ", " << std::setw(14) << std::setprecision(5) << std::scientific << gresMoMa[2] <<
+        "]"  << std::endl;
+    std::cout << "Balance: " <<
+        " [" << std::setw(14) << std::setprecision(5) << std::scientific << gbalMo[0] <<
+        ", " << std::setw(14) << std::setprecision(5) << std::scientific << gbalMo[1] <<
+        ", " << std::setw(14) << std::setprecision(5) << std::scientific << gbalMo[2] <<
+        "]"  << std::endl;
+  }
   return;
 }
 

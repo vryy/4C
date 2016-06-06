@@ -2,6 +2,9 @@
 /*!
 \file str_timint_basedataglobalstate.H
 
+\brief Global state data container for the structural (time)
+       integration
+
 \maintainer Michael Hiermeier
 
 \date Jan 12, 2016
@@ -18,6 +21,10 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_structure.H"
 
+#include "str_enum_lists.H"
+
+#include "../linalg/linalg_sparseoperator.H"
+#include "../linalg/linalg_mapextractor.H"
 #include "../drt_timestepping/timintmstep.H"
 
 #include <Teuchos_RCP.hpp>
@@ -39,13 +46,10 @@ namespace DRT {
 } // namespace DRT
 
 namespace STR {
-  /// enum, which specifies the desired global vector initialization during creation
-  enum VecInitType
-  {
-    vec_init_zero,                ///< fill the vector with zeros
-    vec_init_last_time_step,      ///< use the last converged time step state
-    vec_init_current_state        ///< use the current state
-  };
+  class ModelEvaluator;
+namespace MODELEVALUATOR {
+  class Generic;
+} // namespace MODELEVALUATOR
 namespace TIMINT {
   class BaseDataSDyn;
 
@@ -75,22 +79,63 @@ namespace TIMINT {
     /// setup of the new class variables
     void Setup();
 
+    int SetupBlockInformation(
+        const STR::MODELEVALUATOR::Generic& me,
+        const INPAR::STR::ModelType& mt);
+
+    /// setup the multi map extractor for saddle point problems
+    void SetupMultiMapExtractor();
+
     /// Get the part of a vector which belongs to the displacement dofs. If
     /// it is a pure structural problem a pointer to a copy of the input vector is returned.
     Teuchos::RCP<Epetra_Vector> ExportDisplEntries(
         const Epetra_Vector& source) const;
 
+    Teuchos::RCP<LINALG::SparseMatrix> ExtractModelBlock(
+        LINALG::SparseOperator& jac,
+        const INPAR::STR::ModelType& mt) const;
+
     /// Get the block of the stiffness matrix which belongs to the displacement dofs.
     Teuchos::RCP<LINALG::SparseMatrix> ExtractDisplBlock(
         LINALG::SparseOperator& jac) const;
+
+    /// Get the block of the desired model which belongs to the given block type.
+    Teuchos::RCP<LINALG::SparseMatrix> ExtractModelBlock(
+        LINALG::SparseOperator& jac,
+        const INPAR::STR::ModelType& mt,
+        const MatBlockType& bt) const;
+
+    /** \brief Assign a LINALG::SparseMatrix to one of the blocks of the corresponding model
+     *
+     *  You can choose between one of the following blocks
+     *
+     *          ===       ===
+     *         | DD     DLm  |
+     *         |             |
+     *         | LmD    LmLm |
+     *          ===       ===     */
+    void AssignModelBlock(
+        LINALG::SparseOperator& jac,
+        const LINALG::SparseMatrix& matrix,
+        const INPAR::STR::ModelType& mt,
+        const MatBlockType& bt) const
+    { AssignModelBlock(jac,matrix,mt,bt,LINALG::View); };
+    void AssignModelBlock(
+        LINALG::SparseOperator& jac,
+        const LINALG::SparseMatrix& matrix,
+        const INPAR::STR::ModelType& mt,
+        const MatBlockType& bt,
+        const LINALG::DataAccess& access) const;
 
     /// Get the displacement block of the global jacobian matrix in the global
     /// state data container.
     Teuchos::RCP<const LINALG::SparseMatrix> GetJacobianDisplBlock() const;
 
     /// Create the global solution vector
-    Teuchos::RCP<NOX::Epetra::Vector> CreateGlobalVector();
-    Teuchos::RCP<NOX::Epetra::Vector> CreateGlobalVector(const enum VecInitType& vecinittype);
+    Teuchos::RCP<NOX::Epetra::Vector> CreateGlobalVector() const;
+    Teuchos::RCP<NOX::Epetra::Vector> CreateGlobalVector(
+        const enum VecInitType& vecinittype,
+        const Teuchos::RCP<const STR::ModelEvaluator>& modeleval) const;
 
     /// Create the jacobian matrix
     Teuchos::RCP<LINALG::SparseOperator> CreateJacobian();
@@ -127,7 +172,7 @@ namespace TIMINT {
     };
 
     /// communicator
-    Teuchos::RCP<const Epetra_Comm> GetCommPtr()
+    Teuchos::RCP<const Epetra_Comm> GetCommPtr() const
     {
       CheckInitSetup();
       return comm_;
@@ -228,6 +273,12 @@ namespace TIMINT {
       return timer_;
     };
 
+    /// returns the prediction indicator
+    const bool& IsPredict() const
+    {
+      CheckInitSetup();
+      return ispredict_;
+    };
     ///@}
 
     /// @name Get state variables (read only access)
@@ -382,6 +433,65 @@ namespace TIMINT {
 
     ///@}
 
+    /// @name Access saddle-point system information
+    /// @{
+
+    /** \brief Returns Epetra_Map pointer of the given model
+     *
+     *  If the given model is not found, Teuchos::null is returned. */
+    Teuchos::RCP<const Epetra_Map> BlockMapPtr(const INPAR::STR::ModelType& mt) const
+    {
+      if(model_maps_.find(mt)!=model_maps_.end())
+        return model_maps_.at(mt);
+
+      return Teuchos::null;
+    };
+
+    /// Returns Epetra_Map of the given model
+    const Epetra_Map BlockMap(const INPAR::STR::ModelType& mt) const
+    {
+      if(model_maps_.find(mt)==model_maps_.end())
+        dserror("There is no block map for the given "
+            "modeltype \"%s\".",INPAR::STR::ModelTypeString(mt).c_str());
+
+      return *(model_maps_.at(mt));
+    };
+
+    /** \brief Returns the Block id of the given model type.
+     *
+     *  If the block is not found, -1 is returned. */
+    int BlockId(const enum INPAR::STR::ModelType& mt) const
+    {
+      if (model_block_id_.find(mt)!=model_block_id_.end())
+        return model_block_id_.at(mt);
+
+      return -1;
+    };
+
+    /// Returns the maximal block number
+    int MaxBlockNumber() const
+    {
+      CheckInitSetup();
+      return max_block_num_;
+    };
+
+    /// Returns global problem map pointer
+    Teuchos::RCP<const Epetra_Map> GlobalProblemMapPtr() const
+    {
+      return gproblem_map_ptr_;
+    };
+
+    /// Returns global problem map
+    const Epetra_Map& GlobalProblemMap() const
+    {
+      if (gproblem_map_ptr_.is_null())
+        dserror("The global problem map is not defined!");
+      return *gproblem_map_ptr_;
+    };
+
+    const LINALG::MultiMapExtractor& BlockExtractor() const;
+    /// @}
+
     /// @name Get mutable general control parameters (read and write access)
     ///@{
 
@@ -448,6 +558,12 @@ namespace TIMINT {
       return timer_;
     };
 
+    /// Return the prediction indicator
+    bool& GetMutableIsPredict()
+    {
+      CheckInitSetup();
+      return ispredict_;
+    }
     ///@}
 
     /// @name Get mutable state variables (read and write access)
@@ -565,14 +681,14 @@ namespace TIMINT {
       return finertialnp_;
     }
 
-    /// Return viscous force \f$finertial_{n}\f$
+    /// Return viscous force \f$fviscous,n}\f$
     Teuchos::RCP<Epetra_Vector>& GetMutableFviscoN()
     {
       CheckInitSetup();
       return fviscon_;
     }
 
-    /// Return viscous force \f$finertial_{n+1}\f$
+    /// Return viscous force \f$fviscous_{n+1}\f$
     Teuchos::RCP<Epetra_Vector>& GetMutableFviscoNp()
     {
       CheckInitSetup();
@@ -656,6 +772,9 @@ namespace TIMINT {
 
     /// time step index \f$n+1\f$
     int stepnp_;
+
+    /// A new time step started and we predict the new solution
+    bool ispredict_;
     ///@}
 
     /// @name Global state vectors
@@ -728,6 +847,7 @@ namespace TIMINT {
 
     /// @name Time measurement
     ///@{
+
     /// timer for solution technique
     Teuchos::RCP<Epetra_Time> timer_;
 
@@ -737,6 +857,24 @@ namespace TIMINT {
     /// element evaluation time
     double dtele_;
     ///@}
+
+    /// @name variables to create a saddle-point system
+    /// @{
+
+    /// Epetra_Map s of the different models
+    std::map<INPAR::STR::ModelType,Teuchos::RCP<const Epetra_Map> > model_maps_;
+
+    /// block information for the different models
+    std::map<INPAR::STR::ModelType,int> model_block_id_;
+
+    int max_block_num_;
+
+    /// global problem map
+    Teuchos::RCP<Epetra_Map> gproblem_map_ptr_;
+
+    /// multi map extractor
+    LINALG::MultiMapExtractor blockextractor_;
+    /// @}
   };  // class BaseDataGlobalState
 } // namespace TIMINT
 } // namespace STR

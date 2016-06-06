@@ -2,6 +2,9 @@
 /*!
 \file nox_nln_meritfunction_lagrangian.cpp
 
+\brief Implementation of the Lagrangian merit function for
+       constrained problems.
+
 \maintainer Michael Hiermeier
 
 \date Jun 9, 2015
@@ -21,7 +24,7 @@
  *----------------------------------------------------------------------------*/
 NOX::NLN::MeritFunction::Lagrangian::Lagrangian(const Teuchos::RCP<NOX::Utils>& u) :
   meritFunctionName_("Lagrangian"),
-  meritFunctionEnum_(NOX::NLN::GlobalData::mrtfct_lagrangian)
+  meritFunctionEnum_(mrtfct_lagrangian)
 {
   utils_ = u;
 }
@@ -91,7 +94,7 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSlope(const NOX::Abstract::Ve
     // get the first order linearization terms of the Lagrangian objective model
     Teuchos::RCP<const std::vector<double> > firstOrderTerms =
         constr_iter->second->GetLinearizedObjectiveModelTerms(nameAsEnum(),
-            NOX::NLN::GlobalData::linorder_first);
+            linorder_first);
 
     for (std::size_t i=0;i<firstOrderTerms->size();++i)
       slope += firstOrderTerms->at(i);
@@ -133,8 +136,7 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(
     // --------------------------------------------
     Teuchos::RCP<const std::vector<double> > pFirstOrderTerms =
         constr_iter->second->GetLinearizedObjectiveModelTerms(nameAsEnum(),
-        NOX::NLN::GlobalData::linorder_first,
-        NOX::NLN::GlobalData::lin_wrt_primary_dofs);
+        linorder_first,lin_wrt_primary_dofs);
 
     for (std::size_t i=0;i<pFirstOrderTerms->size();++i)
       model += stepPV * pFirstOrderTerms->at(i);
@@ -145,8 +147,7 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(
     // --------------------------------------------
     Teuchos::RCP<const std::vector<double> > lmFirstOrderTerms =
         constr_iter->second->GetLinearizedObjectiveModelTerms(nameAsEnum(),
-        NOX::NLN::GlobalData::linorder_first,
-        NOX::NLN::GlobalData::lin_wrt_lagrange_multiplier_dofs);
+        linorder_first,lin_wrt_lagrange_multiplier_dofs);
 
     for (std::size_t i=0;i<lmFirstOrderTerms->size();++i)
       model += stepLM * lmFirstOrderTerms->at(i);
@@ -157,8 +158,7 @@ double NOX::NLN::MeritFunction::Lagrangian::computeSaddlePointModel(
     // --------------------------------------------
     Teuchos::RCP<const std::vector<double> > pLmSecondOrderTerms =
         constr_iter->second->GetLinearizedObjectiveModelTerms(nameAsEnum(),
-        NOX::NLN::GlobalData::linorder_second,
-        NOX::NLN::GlobalData::lin_wrt_mixed_dofs);
+        linorder_second,lin_wrt_mixed_dofs);
 
     for (std::size_t i=0;i< pLmSecondOrderTerms->size();++i)
       model += stepLM * stepPV * pLmSecondOrderTerms->at(i);
@@ -184,7 +184,8 @@ const std::string& NOX::NLN::MeritFunction::Lagrangian::name() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const NOX::NLN::GlobalData::MeritFctName& NOX::NLN::MeritFunction::Lagrangian::nameAsEnum() const
+const NOX::NLN::MeritFunction::MeritFctName&
+    NOX::NLN::MeritFunction::Lagrangian::nameAsEnum() const
 {
   return meritFunctionEnum_;
 }

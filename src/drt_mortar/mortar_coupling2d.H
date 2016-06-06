@@ -1,16 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file mortar_coupling2d.H
 
 \brief Classes for mortar coupling in 2D.
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 2
 
-*-----------------------------------------------------------------------*/
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*----------------------------------------------------------------------*/
 #ifndef MORTAR_COUPLING2D_H
 #define MORTAR_COUPLING2D_H
 
@@ -33,6 +32,7 @@ namespace MORTAR
 
 // forward declarations
 class MortarElement;
+class ParamsInterface;
 
 /*!
  \brief A class representing the framework for mortar coupling of ONE
@@ -212,7 +212,8 @@ public:
    integration always includes the Mortar matrices D/M and the gap g.
 
    */
-  virtual bool IntegrateOverlap();
+  virtual bool IntegrateOverlap(
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   //@}
 private:
@@ -345,7 +346,8 @@ public:
    \brief Evaluate coupling pairs
 
    */
-  virtual bool EvaluateCoupling();
+  virtual bool EvaluateCoupling(
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
    \brief Get coupling type
@@ -373,7 +375,8 @@ protected:
    \brief Evaluate mortar coupling pairs
 
    */
-  virtual void IntegrateCoupling();
+  virtual void IntegrateCoupling(
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
    \brief Calculate consistent dual shape functions in boundary elements

@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_tsi_lagrange_strategy.H
+
+\brief a derived strategy handling the Lagrange multiplier based TSI contact
+
+\level 3
+
 \maintainer Alexander Seitz
 
-<pre>
-Maintainer: Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15271
-</pre>
-
-*----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 #ifndef CONTACT_TSI_LAGRANGE_STRATEGY_H
 #define CONTACT_TSI_LAGRANGE_STRATEGY_H
 
@@ -57,6 +57,7 @@ public:
 
    */
   CoTSILagrangeStrategy(
+      const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
       const Epetra_Map* DofRowMap,
       const Epetra_Map* NodeRowMap,
       Teuchos::ParameterList params,
@@ -88,10 +89,11 @@ public:
     ... + Overloaded Implementation in Poro Lagrange Strategy
     Set structure & fluid velocity and lagrangean multiplier to Contact nodes data container!!!
 
-    \param statename (in): std::string defining which quantity to set (either "displacement", "olddisplacement", "svelocity", "fvelocity", "lm")
-    \param vec (in): current global state of the quantity defined by statename
+    \param statetype (in): enumerator defining which quantity to set (see mortar_interface.H for an overview)
+    \param vec (in): current global state of the quantity defined by statetype
    */
-  void SetState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec);
+  virtual void SetState(const enum MORTAR::StateType& statetype,
+      const Epetra_Vector& vec);
 
   //Overload CONTACT::CoAbstractStrategy::ApplyForceStiffCmt as this is called in the structure --> to early for monolithically coupled algorithms!
   virtual void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
@@ -156,7 +158,7 @@ public:
           don't do it in the standard call from structural time integration
 
    */
-  void Update(Teuchos::RCP<Epetra_Vector> dis){}
+  void Update(Teuchos::RCP<const Epetra_Vector> dis){}
 
   /*!
    \brief Set time integration parameter from Thermo time integration
@@ -173,8 +175,8 @@ public:
   performed on the level of the contact algorithm, for short: here's the right place.
 
   */
-  void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
-      bool forcedrestart = false);
+  virtual void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
+      bool forcedrestart = false) const;
 
   /*!
   \brief Perform a write restart
@@ -184,7 +186,8 @@ public:
   performed on the level of the contact algorithm, for short: here's the right place.
 
   */
-  void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis);
+  void DoReadRestart(IO::DiscretizationReader& reader,
+      Teuchos::RCP<const Epetra_Vector> dis);
 
   void SetCoupling(Teuchos::RCP<ADAPTER::Coupling> coupST){coupST_=coupST;};
 

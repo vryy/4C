@@ -2,6 +2,9 @@
 /*!
 \file str_timint_basedataio.H
 
+\brief Input/output data container for the structural (time)
+       integration
+
 \maintainer Michael Hiermeier
 
 \date Jan 11, 2016
@@ -82,7 +85,7 @@ namespace TIMINT {
     };
 
     /// get error file pointer
-    const FILE* GetErrorFilePtr() const
+    FILE* ErrorFilePtr()
     {
       CheckInitSetup();
       return errfile_;

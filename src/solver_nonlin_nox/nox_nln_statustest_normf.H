@@ -2,6 +2,10 @@
 /*!
 \file nox_nln_statustest_normf.H
 
+\brief %NOX::NLN implementation of a NormF status test. This
+       test can be used to check the residual (right-hand-side)
+       for convergence.
+
 \maintainer Michael Hiermeier
 
 \date Aug 3, 2015
@@ -16,7 +20,7 @@
 
 #include <NOX_StatusTest_NormF.H>   // (derived) base class
 
-#include "nox_nln_statustest_factory.H"
+#include "nox_nln_enum_lists.H"
 
 namespace NOX {
 namespace NLN {

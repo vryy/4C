@@ -1,17 +1,17 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_augmented_interface.H
 
-<pre>
-Created on: Apr 16, 2014
+\brief Augmented contact interface.
 
-Maintainer: Michael Hiermeier
-            hiermeier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15268
-</pre>
+\level 2
 
-*----------------------------------------------------------------------*/
+\maintainer Michael Hiermeier
 
+\date Apr 16, 2014
+
+*/
+/*---------------------------------------------------------------------*/
 #ifndef CONTACT_AUGMENTED_INTERFACE_H_
 #define CONTACT_AUGMENTED_INTERFACE_H_
 
@@ -19,295 +19,222 @@ Maintainer: Michael Hiermeier
 
 namespace CONTACT
 {
+// forward declaration
+class ParamsInterface;
+
 class AugmentedInterface : public CoInterface
 {
 public:
 
-  /*!
-  \brief Constructor
-
-  */
+  //! Constructor
   AugmentedInterface(const int id, const Epetra_Comm& comm, const int dim,
       const Teuchos::ParameterList& icontact,
       bool selfcontact, INPAR::MORTAR::RedundantStorage redundant);
 
-  /*!
-  \brief Destructor
-
-  */
+  //! Destructor
   virtual ~AugmentedInterface() {}
 
-  //! @name Access methods
-
-  /*!
-  \brief Get row map of augmented active slave nodes
-  */
-  const Teuchos::RCP<Epetra_Map> AugActiveSlaveNodes() const
+  //! @name Accessors
+  //! @{
+  //! Get row map of slave normal dofs
+  const Teuchos::RCP<Epetra_Map> SlaveRowNDofs() const
   {
-    if (Filled()) return augActiveSlaveNodes_;
+    if (Filled()) return sndofrowmap_;
     else dserror("CONTACT::AugmentedInterface::FillComplete was not called");
     exit(EXIT_FAILURE);
   }
 
-  /*!
-  \brief Get row map of augmented active slave dofs
-  */
-  const Teuchos::RCP<Epetra_Map> AugActiveSlaveDofs() const
+  //! Get row map of slave tangential dofs
+  const Teuchos::RCP<Epetra_Map> SlaveRowTDofs() const
   {
-    if (Filled()) return augActiveSlaveDofs_;
+    if (Filled()) return stdofrowmap_;
     else dserror("CONTACT::AugmentedInterface::FillComplete was not called");
     exit(EXIT_FAILURE);
   }
 
-  /*!
-  \brief Get row map of augmented active normal slave dofs
-  */
-  const Teuchos::RCP<Epetra_Map> AugActiveSlaveNDofs() const
-  {
-    if (Filled()) return augActiveSlaveNDofs_;
-    else dserror("CONTACT::AugmentedInterface::FillComplete was not called");
-    exit(EXIT_FAILURE);
-  }
-
-  /*!
-  \brief Get row map of augmented active tangential slave dofs
-  */
-  const Teuchos::RCP<Epetra_Map> AugActiveSlaveTDofs() const
-  {
-    if (Filled()) return augActiveSlaveTDofs_;
-    else dserror("CONTACT::AugmentedInterface::FillComplete was not called");
-    exit(EXIT_FAILURE);
-  }
-
-  /*!
-  \brief Get row map of augmented active master nodes
-  */
-  const Teuchos::RCP<Epetra_Map> AugActiveMasterNodes() const
-  {
-    if (Filled()) return augActiveMasterNodes_;
-    else dserror("CONTACT::AugmentedInterface::FillComplete was not called");
-    exit(EXIT_FAILURE);
-  }
-
-  /*!
-  \brief Get row map of augmented active master dofs
-  */
-  const Teuchos::RCP<Epetra_Map> AugActiveMasterDofs() const
-  {
-    if (Filled()) return augActiveMasterDofs_;
-    else dserror("CONTACT::AugmentedInterface::FillComplete was not called");
-    exit(EXIT_FAILURE);
-  }
-
-  //@}
+  //! Returns the penetration bound of the current interface.
+  const double& PenetrationBound() const { return penBound_; }
+  //! @}
 
   //! @name Initialize and evaluate interface element contributions
+  //! @{
+  /*! \brief Finalize the construction of an augmented contact interface
+   *
+   *  We look up the minimal edge length only once at the construction point
+   *  and call the standard mortar_interface FillComplete routine. */
+  virtual void FillComplete(int maxdof=0, bool newghosting=true);
 
-  /*!
-  \brief Initialization of all augmented contact related quantities
-
-  */
+  //! Initialization of all augmented contact related quantities
   void Initialize();
 
-  /*!
-  \brief Reduced evaluate of the contact interface. We don't need any
-  search algorithm and we don't have to build the nodal normals again.
-  */
-
-  void RedEvaluate();
+  /*! \brief Reduced evaluate of the contact interface. We don't need any
+   *  search algorithm and we don't have to build the nodal normals again. */
+  void RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   //@}
 
   //! @name Assemble partial global matrices
+  //! @{
+  //! @name Assemble auxiliary terms
+  //! @{
+  /*! \brief Assemble the area vector
+   *
+   *  We need it for scaling purposes. */
+  void AssembleAugAVector(Epetra_Vector& augAVec, Epetra_Vector& kappaVec);
 
-  /*----------------------------------------------------------------*
-   |  Assemble right hand side vectors, Dn and Mn                   |
-   *----------------------------------------------------------------*/
 
-  /*!
-  \brief Assemble Dn and Mn matrices (equivalent to D and M in the Lagrange formulation)
+  //! Assemble the directly calculated Uzawa update increment
+  void AssembleUzawaUpdateIncr(Epetra_Vector& znincrVec,
+                               const Epetra_Vector& cnVec);
+  //! @}
 
-  */
+  //! @name Assemble scalar quantities
+  //! @{
+
+  void AssembleAugContactPotential(double& conPot,
+                                   double& augConPot,
+                                   Epetra_Vector& cnVec);
+  //! @}
+
+  //! @name Assemble right hand side vectors, Dn and Mn
+  //! @{
+
+  //! Assemble Dn and Mn matrices (equivalent to D and M in the Lagrange formulation)
   void AssembleAugDnMnMatrix(LINALG::SparseMatrix& augDnMatrix,
                              LINALG::SparseMatrix& augMnMatrix);
 
-  /*!
-  \brief Assemble the augmented Lagrange multiplier vector
+  /*! Assemble the normal Lagrange multiplier vector,
+   *  the averaged weighted gap vector and the weighted gap
+   *  vector  */
+  void AssembleResidualVectors(Epetra_Vector& lmNVec,
+                               Epetra_Vector& aWGapVec,
+                               Epetra_Vector& wGapVec);
 
-  */
-  void AssembleAugLmVector(Epetra_Vector& augLmVec);
-
-  /*!
-  \brief Assemble averaged weighted gap vector
-  (necessary for the conservation check and the augmented force output)
-
-  */
-  void AssembleAWGapRhs(Epetra_Vector& aWGapRhs);
-
-  /*!
-  \brief Assemble the active normal constraint right hand side
-
-  */
-  void AssembleDLmNWGapRhs(Epetra_Vector& dLmNWGapRhs);
-
-  /*!
-  \brief Assemble tangential constraint equation for active nodes (dLmTLmTrhs, ACTIVE)
-
-  */
+  //! Assemble tangential constraint equation for active nodes (dLmTLmTrhs, ACTIVE)
   void AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs);
 
-  /*!
-  \brief Assemble inactive constraint rhs
-  Combination of tangential and normal parts
-  */
-  void AssembleAugInactiveRhs(Epetra_Vector& augInactiveRhs);
+  /*! \brief Assemble inactive constraint rhs
+   *
+   *  Combination of tangential and normal parts. */
+  void AssembleAugInactiveRhs(Epetra_Vector& augInactiveRhs,
+                              Epetra_Vector& cnVec);
+  //! @}
 
-  /*----------------------------------------------------------------*
-   |  Assemble linearization matrices                               |
-   *----------------------------------------------------------------*/
-
-  /*!
-  \brief Assemble DGLmLinMatrix
-  Linearization w.r.t. the displacements
-
-  */
+  //! @name Assemble linearization matrices                               |
+  //! @{
+  /*! \brief Assemble DGLmLinMatrix
+   *
+   *  Linearization w.r.t. the displacements */
   void AssembleDGLmLinMatrix(LINALG::SparseMatrix& dGLmSlLinMatrix,
                              LINALG::SparseMatrix& dGLmMaLinMatrix);
 
-  /*!
-  \brief Assemble DGGLinMatrix
-  Linearization w.r.t. the displacements
-
-  */
+  /*! \brief Assemble DGGLinMatrix
+   *
+   *  Linearization w.r.t. the displacements */
   void AssembleDGGLinMatrix(LINALG::SparseMatrix& dGGSlLinMatrix,
-                            LINALG::SparseMatrix& dGGMaLinMatrix);
+                            LINALG::SparseMatrix& dGGMaLinMatrix,
+                            const Epetra_Vector& cnVec)
+  { AssembleDGGLinMatrix(dGGSlLinMatrix,dGGMaLinMatrix,cnVec,true); };
+  void AssembleDGGLinMatrix(LINALG::SparseMatrix& dGGSlLinMatrix,
+                            LINALG::SparseMatrix& dGGMaLinMatrix,
+                            const Epetra_Vector& cnVec,
+                            const bool& completeLin);
 
-  /*!
-  \brief Assemble DLmNWGapLinMatrix
-  Linearization w.r.t. the displ.
-
-  */
+  /*! \brief Assemble DLmNWGapLinMatrix
+   *
+   *  Linearization w.r.t. the displ. */
   void AssembleDLmNWGapLinMatrix(LINALG::SparseMatrix& dLmNWGapLinMatrix);
 
-  /*!
-  \brief Assemble DLmTLmTMatrix
-  Linearization w.r.t. the LM
-
-  */
+  /*! \brief Assemble DLmTLmTMatrix
+   *
+   *  Linearization w.r.t. the LM */
   void AssembleDLmTLmTMatrix(LINALG::SparseMatrix& dLmTLmTMatrix);
 
-  /*!
-  \brief Assemble DLmTLmTLinMatrix
-  Linearization w.r.t. the displ.
-
-  */
+  /*! \brief Assemble DLmTLmTLinMatrix
+   *
+   *  Linearization w.r.t. the displ. */
   void AssembleDLmTLmTLinMatrix(LINALG::SparseMatrix& dLmTLmTLinMatrix);
 
-  /*!
-  \brief Assemble AugInactiveMatrix
-  Linearization w.r.t. the LM
+  /*! \brief Assemble AugInactiveMatrix
+   *
+   *  Linearization w.r.t. the LM */
+  void AssembleAugInactiveMatrix(
+      LINALG::SparseMatrix& augInactiveMatrix,
+      const Epetra_Vector& cnVec);
 
-  */
-  void AssembleAugInactiveMatrix(LINALG::SparseMatrix& augInactiveMatrix);
-
-  /*!
-  \brief Assemble AugInactiveLinMatrix
-  Linearization w.r.t. the displ.
-
-  */
-  void AssembleAugInactiveLinMatrix(LINALG::SparseMatrix& augInactiveLinMatrix);
-
-  //@}
+  /*! \brief Assemble AugInactiveLinMatrix
+   *
+   *  Linearization w.r.t. the displ. */
+  void AssembleAugInactiveLinMatrix(
+      LINALG::SparseMatrix& augInactiveLinMatrix,
+      const Epetra_Vector& cnVec);
+  //! @}
 
   //! @name Calculate nodal quantities
-  /*!
-  \brief Calculate the nodal weighted gap values
-
-  */
+  //! @{
+  //! Calculate the nodal weighted gap values
   void WGap();
 
-  /*!
-  \brief Calculate the linearization of the averaged weighted gap
+  //! Calculate the linearization of the averaged weighted gap
+  void AWGapLin(const bool completeLin = true);
 
-  */
-  void AWGapLin();
+  //! @}
 
-  //@}
+  //! @name Augmented active set decisions and large penetration functions
+  //! @{
 
-  //! @name Augmented active set decisions
+  //! Update augmented active set for each interface
+  virtual bool BuildActiveSet(bool init=false);
 
-  /*!
-  \brief Augmented active set decision
-  NOTE: Differs from the standard active set decision, because we make use
-  of the averaged weighted gap and we do the active set decision earlier.
-
-  */
-  bool UpdateAugActiveSetSemiSmooth();
-
-  /*!
-  \brief Update augmented active set for each interface
-  */
-  void BuildAugActiveSet(bool init = false);
-
-  /*!
-  \brief Split augmented active dof set for each interface
-  */
+  //! Split augmented active dof set for each interface
   void SplitAugActiveDofs();
+  //! @}
 
-  //@}
+  //! @name Basic setup (only necessary in the augmented lagrange case)
+  //! @{
+
+  //! Split the sdofrowmap_ into a normal and tangential part
+  void SplitSlaveDofs();
+  //! @}
 
   //! @name Debugging methods of the augmented Lagrange formulation
+  //! @{
+  //! Check linearization of kappa with finite differences
+  void FDCheckKappaLin(CONTACT::ParamsInterface& cparams);
 
-  /*!
-  \brief Check linearization of kappa with finite differences
+  //! Check linearization of augA with finite differences
+  void FDCheckAugALin(CONTACT::ParamsInterface& cparams);
 
-  */
-  void FDCheckKappaLin();
+  //! Check linearization of the averaged weighted gap with finite differences
+  void FDCheckAWGapLin(CONTACT::ParamsInterface& cparams);
 
-  /*!
-  \brief Check linearization of augA with finite differences
+  //! Check linearization of varWGapSl with finite differences
+  void FDCheckVarWGapLinSl(CONTACT::ParamsInterface& cparams);
 
-  */
-  void FDCheckAugALin();
+  //! Check linearization of varWGapMa with finite differences
+  void FDCheckVarWGapLinMa(CONTACT::ParamsInterface& cparams);
 
-  /*!
-  \brief Check linearization of the averaged weighted gap with finite differences
-
-  */
-  void FDCheckAWGapLin();
-
-  /*!
-  \brief Check linearization of varWGapSl with finite differences
-
-  */
-  void FDCheckVarWGapLinSl();
-
-  /*!
-  \brief Check linearization of varWGapMa with finite differences
-
-  */
-  void FDCheckVarWGapLinMa();
-
-  /*!
-  \brief Update Interfaces for global finite difference-check
-  */
-  bool UpdateInterfaces(int gid,int dof,double delta,bool forward);
-  //@}
+  //! Update Interfaces for global finite difference-check
+  bool UpdateInterfaces(
+      int gid,int dof,
+      double delta,bool forward,
+      CONTACT::ParamsInterface& cparams);
+  //! @}
+protected:
+  //! derived
+  virtual void UpdateMasterSlaveSets();
 
 protected:
   // don't want = operator and cctor
   AugmentedInterface operator = (const AugmentedInterface& old);
   AugmentedInterface(const AugmentedInterface& old);
 
-  Teuchos::RCP<Epetra_Map>    augActiveSlaveNodes_;
-  Teuchos::RCP<Epetra_Map>    augActiveSlaveDofs_;
-  Teuchos::RCP<Epetra_Map>    augActiveSlaveNDofs_;
-  Teuchos::RCP<Epetra_Map>    augActiveSlaveTDofs_;
-  Teuchos::RCP<Epetra_Map>    augActiveMasterNodes_;
-  Teuchos::RCP<Epetra_Map>    augActiveMasterDofs_;
-
-  Teuchos::RCP<Epetra_Map>    activeMasterNodes_;
-  Teuchos::RCP<Epetra_Map>    activeMasterDofs_;
+  //! interface penetration bound
+  double penBound_;
+  //! slave dofs in normal direction
+  Teuchos::RCP<Epetra_Map>    sndofrowmap_;
+  //! slave dofs in tangential direction
+  Teuchos::RCP<Epetra_Map>    stdofrowmap_;
 };
 }
 

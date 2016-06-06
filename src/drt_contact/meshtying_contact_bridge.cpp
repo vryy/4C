@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file meshtying_contact_bridge.cpp
 
-<pre>
-Maintainer: Philipp Farah
-            farah@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\brief Deprecated wrapper for the mesh-tying and contact managers.
 
-*-----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah
+
+*/
+/*---------------------------------------------------------------------*/
 
 #include "meshtying_contact_bridge.H"
 #include "../drt_contact/meshtying_manager.H"
@@ -104,14 +105,14 @@ void CONTACT::MeshtyingContactBridge::SetState(Teuchos::RCP<Epetra_Vector> zeros
 {
   if(HaveSmoothing())
   {
-    SManager()->GetStrategy().SetState("displacement",zeros);
+    SManager()->GetStrategy().SetState(MORTAR::state_new_displacement,*zeros);
   }
   else
   {
     if(HaveMeshtying())
-      MtManager()->GetStrategy().SetState("displacement",zeros);
+      MtManager()->GetStrategy().SetState(MORTAR::state_new_displacement,*zeros);
     if(HaveContact())
-      ContactManager()->GetStrategy().SetState("displacement",zeros);
+      ContactManager()->GetStrategy().SetState(MORTAR::state_new_displacement,*zeros);
   }
 
   return;

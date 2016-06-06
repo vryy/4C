@@ -2,6 +2,8 @@
 /*!
 \file str_impl_generic.H
 
+\brief Generic class for all implicit time integrators.
+
 \maintainer Michael Hiermeier
 
 \date Aug 17, 2015
@@ -62,6 +64,13 @@ namespace IMPLICIT {
         const Epetra_Vector& x,
         Epetra_Vector& f,
         LINALG::SparseOperator& jac) = 0;
+
+    //! derived
+    virtual void WriteRestart(IO::DiscretizationWriter& iowriter,
+        const bool& forced_writerestart) const = 0;
+
+    //! derived
+    virtual void ReadRestart(IO::DiscretizationReader& ioreader) = 0;
 
     /*! \brief Calculate characteristic/reference norms for forces
      *

@@ -1,6 +1,10 @@
 /*!----------------------------------------------------------------------
 \file contact_wear_lagrange_strategy.cpp
 
+\brief ToDo Add meaningful comment.
+
+\level 2
+
 \maintainer Philipp Farah
 
 *----------------------------------------------------------------------*/
@@ -35,6 +39,7 @@
  | ctor (public)                                             farah 09/13|
  *----------------------------------------------------------------------*/
 WEAR::WearLagrangeStrategy::WearLagrangeStrategy(
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap,
     Teuchos::ParameterList params,
@@ -42,23 +47,16 @@ WEAR::WearLagrangeStrategy::WearLagrangeStrategy(
     int dim,
     Teuchos::RCP<Epetra_Comm> comm,
     double alphaf,
-    int maxdof) :
-CoLagrangeStrategy(
-    DofRowMap,
-    NodeRowMap,
-    params,
-    interfaces,
-    dim,
-    comm,
-    alphaf,
-    maxdof),
-weightedwear_(false),
-wbothpv_(false),
-wearimpl_(false),
-wearprimvar_(false),
-wearbothpv_(false),
-weartimescales_(false),
-sswear_(DRT::INPUT::IntegralValue<int>(Params(),"SSWEAR"))
+    int maxdof)
+    : CoLagrangeStrategy(data_ptr, DofRowMap, NodeRowMap, params,
+        interfaces, dim, comm, alphaf, maxdof),
+      weightedwear_(false),
+      wbothpv_(false),
+      wearimpl_(false),
+      wearprimvar_(false),
+      wearbothpv_(false),
+      weartimescales_(false),
+      sswear_(DRT::INPUT::IntegralValue<int>(Params(),"SSWEAR"))
 {
   // cast to  wearinterfaces
   for (int z=0; z<(int)interfaces.size();++z)
@@ -4072,7 +4070,7 @@ void WEAR::WearLagrangeStrategy::OutputWear()
  *----------------------------------------------------------------------*/
 void WEAR::WearLagrangeStrategy::DoWriteRestart(
     std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
-    bool forcedrestart)
+    bool forcedrestart) const
 {
   //TODO: extend this function to forcedrestart -- write output for
   // last converged wear... see contact_lagrange_strategy.cpp!
@@ -4378,7 +4376,7 @@ void WEAR::WearLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 /*----------------------------------------------------------------------*
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
-void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<Epetra_Vector> dis)
+void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // get out of here if parallel redistribution is switched off
   // or if this is a single processor (serial) job
@@ -4488,8 +4486,8 @@ void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<Epetra_Vector>
 
   // set old and current displacement state
   // (needed for search within redistribution)
-  SetState("displacement",dis);
-  SetState("olddisplacement",dis);
+  SetState(MORTAR::state_new_displacement,*dis);
+  SetState(MORTAR::state_old_displacement,*dis);
 
   // global flag for redistribution
   bool anyinterfacedone = false;
@@ -4542,8 +4540,9 @@ void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<Epetra_Vector>
 /*----------------------------------------------------------------------*
  |  read restart information for contact                      popp 03/08|
  *----------------------------------------------------------------------*/
-void WEAR::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& reader,
-                                                Teuchos::RCP<Epetra_Vector> dis)
+void WEAR::WearLagrangeStrategy::DoReadRestart(
+    IO::DiscretizationReader& reader,
+    Teuchos::RCP<const Epetra_Vector> dis)
 {
   // check whether this is a restart with contact of a previously
   // non-contact simulation run (if yes, we have to be careful not
@@ -4553,8 +4552,8 @@ void WEAR::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& reader,
   bool restartwithcontact = DRT::INPUT::IntegralValue<int>(Params(),"RESTART_WITH_CONTACT");
 
   // set restart displacement state
-  SetState("displacement", dis);
-  SetState("olddisplacement", dis);
+  SetState(MORTAR::state_new_displacement, *dis);
+  SetState(MORTAR::state_old_displacement, *dis);
 
   // evaluate interface and restart mortar quantities
   // in the case of SELF CONTACT, also re-setup master/slave maps
@@ -4843,7 +4842,7 @@ void WEAR::WearLagrangeStrategy::UpdateWearDiscretAccumulation()
 /*----------------------------------------------------------------------*
  |  Update and output contact at end of time step            farah 02/16|
  *----------------------------------------------------------------------*/
-void WEAR::WearLagrangeStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
+void WEAR::WearLagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // call base routine
   CONTACT::CoAbstractStrategy::Update(dis);

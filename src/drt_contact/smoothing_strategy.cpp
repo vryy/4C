@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
- \file smoothing_strategy.cpp
+/*---------------------------------------------------------------------*/
+/*!
+\file smoothing_strategy.cpp
 
- <pre>
-     Maintainer: Philipp Farah
-     farah@lnm.mw.tum.de
-     http://www.lnm.mw.tum.de
-     089 - 289-15257
- </pre>
+\brief ToDo Add meaningful comment.
 
- *-----------------------------------------------------------------------*/
+\level 3
+
+\maintainer Philipp Farah
+
+*/
+/*---------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  | Header                                                    farah 01/15|
@@ -23,6 +24,7 @@
 #include "../linalg/linalg_multiply.H"
 #include "../linalg/linalg_utils.H"
 
+
 /*----------------------------------------------------------------------*
  | ctor (public)                                             farah 01/15|
  *----------------------------------------------------------------------*/
@@ -35,20 +37,46 @@ CONTACT::SmoothingStrategy::SmoothingStrategy(
     int dim,
     Teuchos::RCP<Epetra_Comm> comm,
     double alphaf,
-    int maxdof) :
-    CoAbstractStrategy(
-        DofRowMap,
-        NodeRowMap,
-        params,
-        cinterface,
-        dim,
-        comm,
-        alphaf,
-        maxdof),
-    activesetssconv_(false),
-    activesetconv_(false),
-    activesetsteps_(1),
-    minterface_(mtinterface)
+    int maxdof)
+    : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()),
+        DofRowMap, NodeRowMap, params,cinterface, dim, comm, alphaf, maxdof),
+      activesetssconv_(false),
+      activesetconv_(false),
+      activesetsteps_(1),
+      minterface_(mtinterface)
+{
+  // get number of contact lm dofs as offset
+  globaloffset_ = glmdofrowmap_->NumGlobalElements();
+
+  // setup maps
+  SetupMT(false);
+
+  // evaluate mortar coupling
+  MortarCoupling(Teuchos::null);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+CONTACT::SmoothingStrategy::SmoothingStrategy(
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > cinterface,
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > mtinterface,
+    int dim,
+    Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf,
+    int maxdof)
+    : CoAbstractStrategy(data_ptr, DofRowMap, NodeRowMap, params,
+        cinterface, dim, comm, alphaf, maxdof),
+      activesetssconv_(false),
+      activesetconv_(false),
+      activesetsteps_(1),
+      minterface_(mtinterface)
 {
   // get number of contact lm dofs as offset
   globaloffset_ = glmdofrowmap_->NumGlobalElements();
@@ -755,7 +783,7 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
     Teuchos::RCP<LINALG::SparseMatrix> stiffmt = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kdd);
 
     // initialize merged system (matrix, rhs, sol)
-    Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(),glmdofrowmap_,false);
+    Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(),LMDoFRowMapPtr(true),false);
     mergedmap = LINALG::MergeMap(mergedmap,MT_glmdofrowmap_,false);
     Teuchos::RCP<LINALG::SparseMatrix> mergedmt = Teuchos::null;
     Teuchos::RCP<Epetra_Vector> mergedrhs = LINALG::CreateVector(*mergedmap);
@@ -839,19 +867,19 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
     //TODO Parallel Redistribution (siehe contact_lagrange_str)
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkzd = MORTAR::MatrixRowTransformGIDs(kzd, glmdofrowmap_);
+    trkzd = MORTAR::MatrixRowTransformGIDs(kzd, LMDoFRowMapPtr(true));
 
     // transform constraint matrix kmd (MatrixRowTransform)
     trkmd = MORTAR::MatrixRowTransformGIDs(kmd, MT_glmdofrowmap_);
 
     // transform constraint matrix kdz (MatrixColTransform)
-    trkdz = MORTAR::MatrixColTransformGIDs(kdz, glmdofrowmap_);
+    trkdz = MORTAR::MatrixColTransformGIDs(kdz, LMDoFRowMapPtr(true));
 
     // transform constraint matrix kdm (MatrixColTransform)
     trkdm = MORTAR::MatrixColTransformGIDs(kdm, MT_glmdofrowmap_);
 
     // transform constraint matrix kzz (MatrixRowColTransform)
-    trkzz = MORTAR::MatrixRowColTransformGIDs(kzz, glmdofrowmap_, glmdofrowmap_);
+    trkzz = MORTAR::MatrixRowColTransformGIDs(kzz, LMDoFRowMapPtr(true), LMDoFRowMapPtr(true));
 
     //**********************************************************************
     // build and solve saddle point system
@@ -866,7 +894,7 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
       Teuchos::RCP<Epetra_Vector> lmDBC = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
       LINALG::Export(*dirichtoggle, *lmDBC);
 
-      lmDBC->ReplaceMap(*glmdofrowmap_);
+      lmDBC->ReplaceMap(LMDoFRowMap(true));
       Teuchos::RCP<Epetra_Vector> lmDBCexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
       LINALG::Export(*lmDBC, *lmDBCexp);
 
@@ -922,7 +950,7 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
       //      [ trdd | trdg ]  (displacement)
       //  k = [ trgd | trgg ]  (contact and meshtying)
 
-      Teuchos::RCP<Epetra_Map> MTco_mergedmap = LINALG::MergeMap(MT_glmdofrowmap_,glmdofrowmap_,false);
+      Teuchos::RCP<Epetra_Map> MTco_mergedmap = LINALG::MergeMap(MT_glmdofrowmap_,LMDoFRowMapPtr(true),false);
 
       Teuchos::RCP<LINALG::SparseMatrix> trkdg = Teuchos::rcp(new LINALG::SparseMatrix(*gdisprowmap_,100,false,true));
       Teuchos::RCP<LINALG::SparseMatrix> trkgd = Teuchos::rcp(new LINALG::SparseMatrix(*MTco_mergedmap,100,false,true));
@@ -988,22 +1016,34 @@ void CONTACT::SmoothingStrategy::BuildSaddlePointSystem(
 /*----------------------------------------------------------------------*
  | set current deformation state                            farah 01/15 |
  *----------------------------------------------------------------------*/
-void CONTACT::SmoothingStrategy::SetState(const std::string& statename,
-    const Teuchos::RCP<Epetra_Vector> vec)
+void CONTACT::SmoothingStrategy::SetState(
+    const enum MORTAR::StateType& statetype,
+    const Epetra_Vector& vec)
 {
-  if (statename == "displacement" || statename == "olddisplacement") {
-    // set state on contact interfaces
-    for (int i = 0; i < (int) interface_.size(); ++i)
-      interface_[i]->SetState(statename, vec);
+  switch(statetype)
+  {
+    case MORTAR::state_new_displacement:
+    case MORTAR::state_old_displacement:
+    {
+      // set state on contact interfaces
+      for (std::size_t i = 0; i < interface_.size(); ++i)
+        interface_[i]->SetState(statetype, vec);
 
-    // set state on meshtying interfaces
-    for (int i = 0; i < (int) minterface_.size(); ++i)
-      minterface_[i]->SetState(statename, vec);
+      // set state on meshtying interfaces
+      for (std::size_t i = 0; i < minterface_.size(); ++i)
+        minterface_[i]->SetState(statetype, vec);
+      break;
+    }
+    default:
+    {
+      dserror("Unsupported state type! (state type = %s)",
+          MORTAR::StateType2String(statetype).c_str());
+      break;
+    }
   }
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration            farah 01/15|
@@ -1644,12 +1684,12 @@ void CONTACT::SmoothingStrategy::UpdateDisplacementsAndLMincrements(
     // extract results for displacement and LM (from meshtying and contact) increments
     //**********************************************************************
 
-    Teuchos::RCP<Epetra_Map> MTco_mergedmap = LINALG::MergeMap(MT_glmdofrowmap_,glmdofrowmap_,false);
-    Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(),glmdofrowmap_,false);
+    Teuchos::RCP<Epetra_Map> MTco_mergedmap = LINALG::MergeMap(MT_glmdofrowmap_,LMDoFRowMapPtr(true),false);
+    Teuchos::RCP<Epetra_Map> mergedmap = LINALG::MergeMap(ProblemDofs(),LMDoFRowMapPtr(true),false);
     mergedmap = LINALG::MergeMap(mergedmap,MT_glmdofrowmap_,false);
 
     Teuchos::RCP<Epetra_Vector> MTco_sollm = Teuchos::rcp(new Epetra_Vector(*MTco_mergedmap));
-    Teuchos::RCP<Epetra_Vector> sollm = Teuchos::rcp(new Epetra_Vector(*glmdofrowmap_));
+    Teuchos::RCP<Epetra_Vector> sollm = Teuchos::rcp(new Epetra_Vector(*LMDoFRowMapPtr(true)));
     Teuchos::RCP<Epetra_Vector> MT_sollm = Teuchos::rcp(new Epetra_Vector(*MT_glmdofrowmap_));
 
     LINALG::MapExtractor mapext(*mergedmap,ProblemDofs(),MTco_mergedmap);
@@ -1660,7 +1700,7 @@ void CONTACT::SmoothingStrategy::UpdateDisplacementsAndLMincrements(
     // extract results for Contact_LM and Meshtying_lm increments
     //**********************************************************************
 
-    LINALG::MapExtractor MTco_mapext(*MTco_mergedmap,glmdofrowmap_,MT_glmdofrowmap_);
+    LINALG::MapExtractor MTco_mapext(*MTco_mergedmap,LMDoFRowMapPtr(true),MT_glmdofrowmap_);
     MTco_mapext.ExtractCondVector(MTco_sollm,sollm);
     MTco_mapext.ExtractOtherVector(MTco_sollm,MT_sollm);
 
@@ -1770,7 +1810,7 @@ void CONTACT::SmoothingStrategy::EvalConstrRHS()
     dserror("FRICTION!!!");
   }
 
-  constrrhs->ReplaceMap(*glmdofrowmap_);
+  constrrhs->ReplaceMap(LMDoFRowMap(true));
 
   constrrhs_ = constrrhs;                                 // set constraint rhs vector
   return;

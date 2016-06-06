@@ -1,20 +1,24 @@
-/*-----------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
 \file nox_nln_contact_linearsystem.H
+
+\brief Derived class which manages the special requirements to the linear
+       solver for contact problems.
+
+\level 3
 
 \maintainer Michael Hiermeier
 
 \date Jul 14, 2015
 
-\level 3
-
 */
-/*-----------------------------------------------------------*/
-
+/*----------------------------------------------------------------------*/
 #ifndef NOX_NLN_CONTACT_LINEARSYSTEM_H_
 #define NOX_NLN_CONTACT_LINEARSYSTEM_H_
 
 #include "../solver_nonlin_nox/nox_nln_linearsystem.H"
+#include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
+#include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
 
 // forward declaration
 namespace MORTAR {
@@ -30,63 +34,43 @@ namespace CONTACT {
     //! Standard constructor with full functionality.
     LinearSystem(Teuchos::ParameterList& printParams,
         Teuchos::ParameterList& linearSolverParams,
-        const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
+        const SolverMap& solvers,
         const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
         const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+        const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
         const Teuchos::RCP<LINALG::SparseOperator>& J,
         const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+        const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
         const Teuchos::RCP<LINALG::SparseOperator>& M,
         const NOX::Epetra::Vector& cloneVector,
         const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject);
 
     //! Constructor without scaling object
     LinearSystem(Teuchos::ParameterList& printParams,
-            Teuchos::ParameterList& linearSolverParams,
-            const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
-            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-            const Teuchos::RCP<LINALG::SparseOperator>& J,
-            const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
-            const Teuchos::RCP<LINALG::SparseOperator>& M,
-            const NOX::Epetra::Vector& cloneVector);
-
-    //! Constructor without preconditioner
-    LinearSystem(Teuchos::ParameterList& printParams,
-            Teuchos::ParameterList& linearSolverParams,
-            const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
-            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-            const Teuchos::RCP<LINALG::SparseOperator>& J,
-            const NOX::Epetra::Vector& cloneVector,
-            const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject);
-
-    //! Constructor without preconditioner and scaling object
-    LinearSystem(Teuchos::ParameterList& printParams,
-            Teuchos::ParameterList& linearSolverParams,
-            const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
-            const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-            const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-            const Teuchos::RCP<LINALG::SparseOperator>& J,
-            const NOX::Epetra::Vector& cloneVector);
+        Teuchos::ParameterList& linearSolverParams,
+        const SolverMap& solvers,
+        const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
+        const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
+        const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr,
+        const Teuchos::RCP<LINALG::SparseOperator>& J,
+        const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
+        const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
+        const Teuchos::RCP<LINALG::SparseOperator>& M,
+        const NOX::Epetra::Vector& cloneVector);
 
     //! Destructor.
-    virtual ~LinearSystem(){};
+    virtual ~LinearSystem() {};
 
-    //! sets the options of the underlying solver
+    //! Sets the options of the underlying solver
     virtual void SetSolverOptions(
         Teuchos::ParameterList& p,
         Teuchos::RCP<LINALG::Solver>& solverPtr,
         const NOX::NLN::SolutionType& solverType);
 
     //! Returns a pointer to linear solver, which has to be used
-    virtual NOX::NLN::SolutionType GetCurrentLinSolver(
+    virtual NOX::NLN::SolutionType GetActiveLinSolver(
         const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
         Teuchos::RCP<LINALG::Solver>& currSolver);
-
-    MORTAR::StrategyBase& GetStrategy();
-
-  protected:
-    virtual void Init();
 
   private:
     //! throws an error message
@@ -95,12 +79,12 @@ namespace CONTACT {
         const std::string& errorMsg) const;
 
   private:
-    Teuchos::RCP<MORTAR::StrategyBase> strat_;
+    //! map of NOX::NLN::CONSTRAINT::Interface::Required objects
+    NOX::NLN::CONSTRAINT::ReqInterfaceMap iConstr_;
 
-    bool isMeshtying_;
-
-    bool isContact_;
-  };
+    //! map of NOX::NLN::CONSTRAINT::Interface::Preconditioner objects
+    NOX::NLN::CONSTRAINT::PrecInterfaceMap iConstrPrec_;
+  };  // class LinearSystem
 } // namespace CONTACT
 } // namespace NLN
 } // namespace NOX

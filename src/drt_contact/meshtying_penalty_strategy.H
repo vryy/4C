@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file meshtying_penalty_strategy.H
 
-<pre>
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Penalty mesh-tying solving strategy.
 
-*-----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*---------------------------------------------------------------------*/
 #ifndef MESHTYING_PENALTY_STRATEGY_H
 #define MESHTYING_PENALTY_STRATEGY_H
 
@@ -58,7 +59,7 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   \brief Return L2-norm of active constraints
 
   */
-  double ConstraintNorm() { return constrnorm_;}
+  double ConstraintNorm() const { return constrnorm_;}
 
   /*!
   \brief Return initial penalty parameter

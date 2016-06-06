@@ -2,6 +2,9 @@
 /*!
 \file nox_nln_constraint_group.H
 
+\brief %NOX::NLN implementation of a %NOX::Epetra::Group
+       to handle constrained problems.
+
 \maintainer Michael Hiermeier
 
 \date Jun 29, 2015
@@ -16,7 +19,7 @@
 
 #include "nox_nln_group.H"
 #include "nox_nln_constraint_interface_required.H"
-#include "nox_nln_globaldata.H"
+#include "nox_nln_enum_lists.H"
 #include "../drt_lib/drt_dserror.H"
 
 // forward declaration
@@ -49,20 +52,8 @@ namespace CONSTRAINT {
     //! generate a clone of the given object concerning the given \c CopyType
     Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type) const;
 
-    //! derived
-    virtual void computeX(
-        const NOX::NLN::CONSTRAINT::Group& grp,
-        const NOX::Epetra::Vector& d,
-        double step);
-    virtual void computeX(
-        const NOX::Abstract::Group& grp,
-        const NOX::Abstract::Vector& d,
-        double step);
-
-
     //! Returns the interface map
-    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >&
-        GetConstrInterfaces() const;
+    const ReqInterfaceMap& GetConstrInterfaces() const;
 
     //! Returns a pointer to the given soltype. If the solution type is not found an error is thrown.
     Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> GetConstraintInterfacePtr(
@@ -88,11 +79,35 @@ namespace CONSTRAINT {
         const std::vector<NOX::NLN::StatusTest::QuantityType>& chQ,
         const std::vector<bool>& disable_implicit_weighting) const;
 
-    //! Returns the status of the active set (only needed for inequality constraint problems)
-    enum NOX::StatusTest::StatusType GetActiveSetStatus(
+    //! Returns the desired norm of the primary solution updates and Lagrange multiplier updates
+    virtual Teuchos::RCP<std::vector<double> > GetSolutionUpdateNorms(
+        const NOX::Abstract::Vector& xOld,
+        const std::vector<NOX::Abstract::Vector::NormType>& type,
+        const std::vector<StatusTest::QuantityType>& chQ,
+        Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const;
+
+    //! Returns the desired norm of the previous primary solution and Lagrange multiplier solution
+    virtual Teuchos::RCP<std::vector<double> > GetPreviousSolutionNorms(
+        const NOX::Abstract::Vector& xOld,
+        const std::vector<NOX::Abstract::Vector::NormType>& type,
+        const std::vector<StatusTest::QuantityType>& chQ,
+        Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const;
+    //! @}
+
+    //! @name Handle active set strategies
+    //! @{
+    //! Returns the current active set map (only needed for inequality constraint problems)
+    Teuchos::RCP<const Epetra_Map> GetCurrentActiveSetMap(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+
+    //! Returns the active set map of the previous Newton step (only needed for inequality constraint problems)
+    Teuchos::RCP<const Epetra_Map> GetOldActiveSetMap(
+        const enum NOX::NLN::StatusTest::QuantityType& qtype) const;
+
+    //! Returns basic information about the active set status (no Epetra_Maps needed!)
+    enum NOX::StatusTest::StatusType GetActiveSetInfo(
         const enum NOX::NLN::StatusTest::QuantityType& qtype,
-        int& activesetsize,
-        int& cyclesize) const;
+        int& activeset_size) const;
 
     //@}
 
@@ -103,7 +118,7 @@ namespace CONSTRAINT {
 
   private:
     // constraint interface map
-    std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> > userConstraintInterfaces_;
+    ReqInterfaceMap userConstraintInterfaces_;
   }; // class Group
 } // end namespace CONSTRAINT
 } // end namespace  STR

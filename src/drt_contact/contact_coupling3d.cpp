@@ -1,21 +1,23 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_coupling3d.cpp
 
 \brief Classes for mortar contact coupling in 3D.
 
-\level 1
+\level 2
 
 \maintainer Philipp Farah, Alexander Seitz
 
-*-----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 #include "contact_coupling3d.H"
 #include "contact_integrator.H"
 #include "contact_interpolator.H"
-#include "../drt_contact_aug/contact_augmented_integrator.H"
 #include "contact_node.H"
 #include "contact_element.H"
 #include "contact_defines.H"
+#include "contact_integrator_factory.H"
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_projector.H"
@@ -31,9 +33,9 @@
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::CoCoupling3d::CoCoupling3d(DRT::Discretization& idiscret, int dim, bool quad,
-             Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele) :
-MORTAR::Coupling3d(idiscret,dim,quad,params,sele,mele),
-stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY"))
+    Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele)
+    : MORTAR::Coupling3d(idiscret,dim,quad,params,sele,mele),
+      stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY"))
 {
   // empty constructor
 
@@ -86,7 +88,8 @@ bool CONTACT::CoCoupling3d::AuxiliaryPlane()
 /*----------------------------------------------------------------------*
  |  Integration of cells (3D)                                 popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling3d::IntegrateCells()
+bool CONTACT::CoCoupling3d::IntegrateCells(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -100,12 +103,8 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
 
   // create a CONTACT integrator instance with correct NumGP and Dim
   // it is sufficient to do this once as all IntCells are triangles
-  Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::null;
-  if (stype_ == INPAR::CONTACT::solution_augmented)
-    integrator = Teuchos::rcp(new CONTACT::AugmentedIntegrator(imortar_,Cells()[0]->Shape(),Comm(),Teuchos::null));
-  else
-    integrator = Teuchos::rcp(new CONTACT::CoIntegrator(imortar_,Cells()[0]->Shape(),Comm()));
-
+  Teuchos::RCP<CONTACT::CoIntegrator> integrator =
+      CONTACT::INTEGRATOR::BuildIntegrator(stype_,imortar_,Cells()[0]->Shape(),Comm());
   // loop over all integration cells
   for (int i = 0; i < (int) (Cells().size()); ++i)
   {
@@ -147,16 +146,16 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // *******************************************************************
     if (!Quad())
     {
-      if (stype_ == INPAR::CONTACT::solution_augmented)
-        Teuchos::rcp_dynamic_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
-      else
-        integrator->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),Cells()[i],Auxn(),Comm());
+      integrator->IntegrateDerivCell3DAuxPlane(SlaveElement(),MasterElement(),
+          Cells()[i],Auxn(),Comm(),mparams_ptr);
     }
-
     // *******************************************************************
     // cases (2) and (3)
     // *******************************************************************
-    else if (stype_ != INPAR::CONTACT::solution_augmented && Quad() && (lmtype==INPAR::MORTAR::lagmult_quad || lmtype==INPAR::MORTAR::lagmult_lin))
+    else if (stype_ != INPAR::CONTACT::solution_augmented and
+             Quad()                                       and
+             (lmtype==INPAR::MORTAR::lagmult_quad         or
+              lmtype==INPAR::MORTAR::lagmult_lin))
     {
       // check for dual shape functions and linear LM interpolation
       if ((ShapeFcn() == INPAR::MORTAR::shape_dual
@@ -1187,7 +1186,9 @@ CONTACT::CoCoupling3dQuadManager::CoCoupling3dQuadManager(
     Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
     std::vector<MORTAR::MortarElement*> mele) :
     MORTAR::Coupling3dQuadManager(idiscret, dim, quad, params, sele, mele),
-    CoCoupling3dManager(idiscret,dim,quad,params,sele,mele)
+    CoCoupling3dManager(idiscret,dim,quad,params,sele,mele),
+    smintpairs_(-1),
+    intcells_(-1)
 {
 
   return;
@@ -1197,10 +1198,12 @@ CONTACT::CoCoupling3dQuadManager::CoCoupling3dQuadManager(
 /*----------------------------------------------------------------------*
  |  Evaluate mortar coupling pairs                            popp 03/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoCoupling3dManager::IntegrateCoupling()
+void CONTACT::CoCoupling3dManager::IntegrateCoupling(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // get algorithm
-  INPAR::MORTAR::AlgorithmType algo = DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
+  INPAR::MORTAR::AlgorithmType algo = DRT::INPUT::IntegralValue
+      <INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM");
 
   // prepare linearizations
   if (algo==INPAR::MORTAR::algorithm_mortar)
@@ -1240,7 +1243,7 @@ void CONTACT::CoCoupling3dManager::IntegrateCoupling()
         dynamic_cast<CONTACT::CoElement&> (SlaveElement()).PrepareMderiv(MasterElements(),i);
 
       // integrate cells
-      Coupling()[i]->IntegrateCells();
+      Coupling()[i]->IntegrateCells(mparams_ptr);
 
       // assemble m-matrix for this slave/master pair
       if (algo==INPAR::MORTAR::algorithm_mortar)
@@ -1262,21 +1265,18 @@ void CONTACT::CoCoupling3dManager::IntegrateCoupling()
       bool boundary_ele = false;
       bool proj = false;
 
+      /* find all feasible master elements (this check is inherent in the
+       * segment based integration)                    hiermeier 04/16 */
+      std::vector<MORTAR::MortarElement*> feasible_ma_eles(MasterElements().size());
+      FindFeasibleMasterElements(feasible_ma_eles);
+
       // create an integrator instance with correct NumGP and Dim
-      Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::null;
-      if (stype_==INPAR::CONTACT::solution_augmented)
-      {
-        integrator = Teuchos::rcp(new CONTACT::AugmentedIntegrator(imortar_,SlaveElement().Shape(),Comm(),
-            Teuchos::null));
-        //Perform integration and linearization
-        Teuchos::rcp_dynamic_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivEle3D(SlaveElement(), MasterElements(),&boundary_ele, &proj, Comm());
-      }
-      else
-      {
-        integrator = Teuchos::rcp(new CONTACT::CoIntegrator(imortar_, SlaveElement().Shape(),Comm()));
-        //Perform integration and linearization
-        integrator->IntegrateDerivEle3D(SlaveElement(), MasterElements(),&boundary_ele, &proj, Comm());
-      }
+      Teuchos::RCP<CONTACT::CoIntegrator> integrator =
+          CONTACT::INTEGRATOR::BuildIntegrator(stype_,imortar_,SlaveElement().Shape(),Comm());
+
+      //Perform integration and linearization
+      integrator->IntegrateDerivEle3D(SlaveElement(), feasible_ma_eles,
+          &boundary_ele, &proj, Comm(),mparams_ptr);
 
 
       if (IntType() == INPAR::MORTAR::inttype_elements_BS)
@@ -1287,10 +1287,8 @@ void CONTACT::CoCoupling3dManager::IntegrateCoupling()
           for (int m = 0; m < (int) MasterElements().size(); ++m)
           {
             // create CoCoupling3d object and push back
-            Coupling().push_back(
-                Teuchos::rcp(
-                    new CoCoupling3d(idiscret_, dim_, false, imortar_,
-                        SlaveElement(), MasterElement(m))));
+            Coupling().push_back(Teuchos::rcp(new CoCoupling3d(idiscret_,
+                dim_, false, imortar_,SlaveElement(), MasterElement(m))));
 
             // do coupling
             Coupling()[m]->EvaluateCoupling();
@@ -1310,7 +1308,7 @@ void CONTACT::CoCoupling3dManager::IntegrateCoupling()
               dynamic_cast<CONTACT::CoElement&> (SlaveElement()).PrepareMderiv(MasterElements(),i);
 
             // integrate cells
-            Coupling()[i]->IntegrateCells();
+            Coupling()[i]->IntegrateCells(mparams_ptr);
 
             // assemble m-matrix for this slave/master pair
             if (algo==INPAR::MORTAR::algorithm_mortar)
@@ -1350,7 +1348,8 @@ void CONTACT::CoCoupling3dManager::IntegrateCoupling()
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                 farah 09/14 |
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
+bool CONTACT::CoCoupling3dManager::EvaluateCoupling(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
   INPAR::MORTAR::AlgorithmType algo =
@@ -1360,7 +1359,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
   // Mortar Contact
   //*********************************
   if(algo==INPAR::MORTAR::algorithm_mortar || algo==INPAR::MORTAR::algorithm_gpts)
-    IntegrateCoupling();
+    IntegrateCoupling(mparams_ptr);
 
   //*********************************
   // Error
@@ -1379,7 +1378,8 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
 /*----------------------------------------------------------------------*
  |  Evaluate mortar coupling pairs for Quad-coupling         farah 09/14|
  *----------------------------------------------------------------------*/
-void CONTACT::CoCoupling3dQuadManager::IntegrateCoupling()
+void CONTACT::CoCoupling3dQuadManager::IntegrateCoupling(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // check
   if (DRT::INPUT::IntegralValue<int>(MORTAR::Coupling3dQuadManager::imortar_, "LM_NODAL_SCALE"))
@@ -1439,7 +1439,7 @@ void CONTACT::CoCoupling3dQuadManager::IntegrateCoupling()
       if (algo==INPAR::MORTAR::algorithm_mortar)
         dynamic_cast<CONTACT::CoElement&> (SlaveElement()).PrepareMderiv(MasterElements(),i%mauxelements.size());
 
-      Coupling()[i]->IntegrateCells();
+      Coupling()[i]->IntegrateCells(mparams_ptr);
 
       if (algo==INPAR::MORTAR::algorithm_mortar)
         dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(Coupling()[i]->MasterElement());
@@ -1472,7 +1472,7 @@ void CONTACT::CoCoupling3dQuadManager::IntegrateCoupling()
 
     //Perform integration and linearization
     integrator.IntegrateDerivEle3D(SlaveElement(), MasterElements(),
-        &boundary_ele, &proj, Comm());
+        &boundary_ele, &proj, Comm(),mparams_ptr);
 
     if (IntType() == INPAR::MORTAR::inttype_elements_BS)
     {
@@ -1516,7 +1516,7 @@ void CONTACT::CoCoupling3dQuadManager::IntegrateCoupling()
         {
           if (algo==INPAR::MORTAR::algorithm_mortar)
             dynamic_cast<CONTACT::CoElement&> (SlaveElement()).PrepareMderiv(MasterElements(),i%mauxelements.size());
-          Coupling()[i]->IntegrateCells();
+          Coupling()[i]->IntegrateCells(mparams_ptr);
           if (algo==INPAR::MORTAR::algorithm_mortar)
             dynamic_cast<CONTACT::CoElement&> (SlaveElement()).AssembleMderivToNodes(Coupling()[i]->MasterElement());
         }
@@ -1546,7 +1546,8 @@ void CONTACT::CoCoupling3dQuadManager::IntegrateCoupling()
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs for Quad-coupling                farah 01/13|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
+bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
   INPAR::MORTAR::AlgorithmType algo =
@@ -1556,7 +1557,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
   // Mortar Contact
   //*********************************
   if(algo==INPAR::MORTAR::algorithm_mortar)
-    IntegrateCoupling();
+    IntegrateCoupling(mparams_ptr);
 
   //*********************************
   // Error
@@ -1631,7 +1632,9 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         for (int bs_test=0;bs_test<(int)Coupling().size();++bs_test)
         {
           double mxi_test[2] = { 0.0, 0.0};
-          MORTAR::MortarProjector::Impl(Coupling()[bs_test]->SlaveIntElement(),Coupling()[bs_test]->MasterIntElement())->ProjectGaussPoint3D(SlaveElement(),sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
+          MORTAR::MortarProjector::Impl(Coupling()[bs_test]->SlaveIntElement(),
+              Coupling()[bs_test]->MasterIntElement())->ProjectGaussPoint3D(SlaveElement(),
+                  sxi_test,Coupling()[bs_test]->MasterElement(),mxi_test,alpha_test);
 
           DRT::Element::DiscretizationType dt = Coupling()[bs_test]->MasterIntElement().Shape();
           if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
@@ -1922,3 +1925,28 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoCoupling3dManager::FindFeasibleMasterElements(
+    std::vector<MORTAR::MortarElement*>& feasible_ma_eles) const
+{
+  // feasibility counter
+  std::size_t fcount = 0;
+  for (std::size_t m=0; m < MasterElements().size(); ++m)
+  {
+    // Build a instance of the MORTAR::Coupling3d object (no linearization needed).
+    Teuchos::RCP<MORTAR::Coupling3d> coup =
+        Teuchos::rcp(new MORTAR::Coupling3d(idiscret_, dim_, false, imortar_,
+            SlaveElement(), MasterElement(m)));
+
+    // Building the master element normals and check the angles.
+    if (coup->RoughCheckOrient())
+    {
+      feasible_ma_eles[fcount] = &MasterElement(m);
+      ++fcount;
+    }
+  }
+  feasible_ma_eles.resize(fcount);
+
+  return;
+}

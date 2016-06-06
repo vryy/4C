@@ -2,6 +2,8 @@
 /*!
 \file str_impl_statics.H
 
+\brief Static (time) integrator.
+
 \maintainer Michael Hiermeier
 
 \date Aug 13, 2015
@@ -49,6 +51,13 @@ namespace IMPLICIT {
         const Epetra_Vector& x,
         Epetra_Vector& f,
         LINALG::SparseOperator& jac);
+
+    //! (derived)
+    virtual void WriteRestart(IO::DiscretizationWriter& iowriter,
+        const bool& forced_writerestart) const;
+
+    //! (derived)
+    virtual void ReadRestart(IO::DiscretizationReader& ioreader);
 
     //! (derived)
     virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type);

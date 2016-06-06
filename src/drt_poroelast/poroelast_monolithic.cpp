@@ -1,16 +1,18 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file poroelast_monolithic.cpp
+\file poroelast_monolithic.cpp
 
- \brief  Basis of all monolithic poroelasticity algorithms
+\brief  Basis of all monolithic poroelasticity algorithms
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
- </pre>
- *-----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15251
+
+*/
+/*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  | definitions                                                          |
@@ -1982,7 +1984,9 @@ void POROELAST::Monolithic::RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RC
 /*-----------------------------------------------------------------------/
 |  Set Contact States                                    ager 07/14      |
 /-----------------------------------------------------------------------*/
-void POROELAST::Monolithic::SetPoroContactStates(Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx)
+void POROELAST::Monolithic::SetPoroContactStates(
+    Teuchos::RCP<const Epetra_Vector> sx,
+    Teuchos::RCP<const Epetra_Vector> fx)
 {
   if (StructureField()->MeshtyingContactBridge()!= Teuchos::null)
    {
@@ -1991,7 +1995,7 @@ void POROELAST::Monolithic::SetPoroContactStates(Teuchos::RCP<const Epetra_Vecto
       CONTACT::PoroLagrangeStrategy& costrategy = static_cast<CONTACT::PoroLagrangeStrategy&>(StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
       Teuchos::RCP<Epetra_Vector> fvel = Teuchos::rcp(new Epetra_Vector(*FluidField()->ExtractVelocityPart(FluidField()->Velnp())));
       fvel = FluidStructureCoupling().SlaveToMaster(fvel);
-      costrategy.SetState("fvelocity",fvel);
+      costrategy.SetState(MORTAR::state_fvelocity,*fvel);
 
 
       //To get pressure dofs into first structural component!!! - any idea for nice implementation?
@@ -2008,8 +2012,7 @@ void POROELAST::Monolithic::SetPoroContactStates(Teuchos::RCP<const Epetra_Vecto
       }
 
       modfpres = FluidStructureCoupling().SlaveToMaster(modfpres);
-      costrategy.SetState("fpressure",modfpres);
-
+      costrategy.SetState(MORTAR::state_fpressure,*modfpres);
 
       Teuchos::RCP<Epetra_Vector> dis = Teuchos::rcp(new Epetra_Vector(*StructureField()->Dispnp()));
       costrategy.SetParentState("displacement",dis,StructureField()->Discretization()); // add displacements of the parent element!!!

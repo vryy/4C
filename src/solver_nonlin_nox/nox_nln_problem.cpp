@@ -2,6 +2,10 @@
 /*!
 \file nox_nln_problem.cpp
 
+\brief This class manages some of the necessary factory calls
+       if a %NOX::NLN solver is supposed to be used. Therefore a
+       lean function call becomes possible.
+
 \maintainer Michael Hiermeier
 
 \date Jun 30, 2015
@@ -22,6 +26,7 @@
 #include "nox_nln_linearsystem_factory.H"
 #include "nox_nln_constraint_group.H"
 #include "nox_nln_inner_statustest_factory.H"
+#include "nox_nln_aux.H"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -39,18 +44,24 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::NLN::Problem::Problem(Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData,
-    Teuchos::RCP<NOX::Epetra::Vector>& x,
-    Teuchos::RCP<LINALG::SparseOperator> A) :
-  noxNlnGlobalData_(noxNlnGlobalData)
+NOX::NLN::Problem::Problem(
+    const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData,
+    const Teuchos::RCP<NOX::Epetra::Vector>& x,
+    const Teuchos::RCP<LINALG::SparseOperator>& A) :
+  noxNlnGlobalData_(noxNlnGlobalData),
+  xVector_(Teuchos::null),
+  jac_(Teuchos::null),
+  precMat_(Teuchos::null),
+  scalingObject_(Teuchos::null)
 {
   Initialize(x,A);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::NLN::Problem::Initialize(Teuchos::RCP<NOX::Epetra::Vector>& x,
-                                      Teuchos::RCP<LINALG::SparseOperator> A)
+void NOX::NLN::Problem::Initialize(
+    const Teuchos::RCP<NOX::Epetra::Vector>& x,
+    const Teuchos::RCP<LINALG::SparseOperator>& A)
 {
   // in the standard case, we use the input rhs and matrix
   // ToDo Check if CreateView is sufficient
@@ -60,38 +71,14 @@ void NOX::NLN::Problem::Initialize(Teuchos::RCP<NOX::Epetra::Vector>& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::Problem::CreateLinearSystem() const
+Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::Problem::CreateLinearSystem()
+    const
 {
-  const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers =
-      noxNlnGlobalData_->GetLinSolvers();
-  const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq =
-      noxNlnGlobalData_->GetRequiredInterface();
-  const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac =
-      noxNlnGlobalData_->GetJacobianInterface();
-  const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec =
-      noxNlnGlobalData_->GetPreconditionerInterface();
-
-  Teuchos::ParameterList& params = noxNlnGlobalData_->GetNlnParameterList();
-  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys;
-  // printing parameters
-  Teuchos::ParameterList& printParams = params.sublist("Printing",true);
-  // linear solver parameters
-  Teuchos::ParameterList& lsParams    = params.sublist("Direction",true).
-      sublist("Newton",true).sublist("Linear Solver",true);
-
-  // preconditioner
-  // not used at the moment
-  Teuchos::RCP<LINALG::SparseOperator> preconditioner = Teuchos::null;
-
-  // scaling
-  // not used at the moment
-  Teuchos::RCP<NOX::Epetra::Scaling> s = Teuchos::null;
-
+  const NOX::NLN::LinSystem::LinearSystemType linsystype =
+      NOX::NLN::AUX::GetLinearSystemType(noxNlnGlobalData_->GetLinSolvers());
   // build the linear system --> factory call
-  linSys = NOX::NLN::LinSystem::BuildLinearSystem
-      (printParams,lsParams,linSolvers,iReq,iJac,jac_,iPrec,preconditioner,*xVector_,s);
-
-  return linSys;
+  return NOX::NLN::LinSystem::BuildLinearSystem(
+      linsystype,*noxNlnGlobalData_,jac_,xVector_,precMat_,scalingObject_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -107,7 +94,7 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
       noxNlnGlobalData_->GetRequiredInterface();
   if (noxNlnGlobalData_->GetIsConstrained())
   {
-    const ConstraintMap& iconstr =
+    const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iconstr =
           noxNlnGlobalData_->GetConstraintInterfaces();
     noxgrp = Teuchos::rcp(new NOX::NLN::CONSTRAINT::Group(params.sublist("Printing"),
         params.sublist("Group Options"),iReq,*xVector_,linSys,iconstr));

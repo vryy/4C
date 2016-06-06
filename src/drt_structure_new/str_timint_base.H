@@ -2,6 +2,8 @@
 /*!
 \file str_timint_base.H
 
+\brief Base class for all structural time integration strategies.
+
 \maintainer Michael Hiermeier
 
 \date Aug 12, 2015
@@ -138,6 +140,7 @@ namespace TIMINT {
 
     /// Return MapExtractor for Dirichlet boundary conditions
     virtual const Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
+    Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() const;
 
     //! Return locsys manager
     virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager();
@@ -462,10 +465,11 @@ namespace TIMINT {
         Teuchos::RCP<std::vector<char> > nodedata
       );
 
-    //! Read restart values
-    virtual void ReadRestart(
-      const int stepn //!< //!< restart step at \f${n}\f$
-    );
+    /** Read restart values
+     *
+     * \param stepn (in): restart step at \f${n}\f$
+     */
+    virtual void ReadRestart(const int stepn);
 
     /// Set restart values (deprecated)
     virtual void SetRestart(
@@ -598,6 +602,14 @@ namespace TIMINT {
       CheckInitSetup();
       return dbc_ptr_;
     }
+
+    /// return the integrator (read-only)
+    const STR::Integrator& Integrator() const
+    {
+      CheckInitSetup();
+      return *int_ptr_;
+    }
+
     ///@}
   protected:
     /// get the indicator state
@@ -710,6 +722,15 @@ namespace TIMINT {
 
     /// output of the current state
     void OutputState();
+
+    /// output stress and/or strain state
+    void OutputStressStrain();
+
+    /// write restart information
+    void OutputRestart(bool& datawritten);
+
+    /// add restart information to output state
+    void AddRestartToOutputState();
 
   protected:
     /// flag indicating if Init() has been called

@@ -3,12 +3,9 @@
 
 \brief Methods for spring and dashpot constraints / boundary conditions:
 
-<pre>
-Maintainer: Martin Pfaller
-            pfaller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
-</pre>
+\level 2
+
+\maintainer Martin Pfaller
 
 *----------------------------------------------------------------------*/
 
@@ -474,10 +471,10 @@ void UTILS::SpringDashpotNew::SetRestart(
 void UTILS::SpringDashpotNew::OutputGapNormal(
     Teuchos::RCP<Epetra_Vector> &gap,
     Teuchos::RCP<Epetra_MultiVector> &normals,
-    Teuchos::RCP<Epetra_MultiVector> &stress)
+    Teuchos::RCP<Epetra_MultiVector> &stress) const
 {
   // export gap function
-  for(std::map<int, double>::iterator i = gap_.begin(); i != gap_.end(); ++i)
+  for(std::map<int, double>::const_iterator i = gap_.begin(); i != gap_.end(); ++i)
   {
     // global id -> local id
     const int lid = gap->Map().LID(i->first);
@@ -487,7 +484,7 @@ void UTILS::SpringDashpotNew::OutputGapNormal(
   }
 
   // export normal
-  for(std::map<int, std::vector<double> >::iterator i = normals_.begin(); i != normals_.end(); ++i)
+  for(std::map<int, std::vector<double> >::const_iterator i = normals_.begin(); i != normals_.end(); ++i)
   {
     // global id -> local id
     const int lid = normals->Map().LID(i->first);
@@ -495,14 +492,14 @@ void UTILS::SpringDashpotNew::OutputGapNormal(
     if (lid>=0)
     {
       // copy all components of normal vector
-      (*(*normals)(0))[lid] += (i->second)[0];
-      (*(*normals)(1))[lid] += (i->second)[1];
-      (*(*normals)(2))[lid] += (i->second)[2];
+      (*(*normals)(0))[lid] += (i->second).at(0);
+      (*(*normals)(1))[lid] += (i->second).at(1);
+      (*(*normals)(2))[lid] += (i->second).at(2);
     }
   }
 
   // export spring stress
-  for(std::map<int, std::vector<double> >::iterator i = springstress_.begin(); i != springstress_.end(); ++i)
+  for(std::map<int, std::vector<double> >::const_iterator i = springstress_.begin(); i != springstress_.end(); ++i)
   {
     // global id -> local id
     const int lid = stress->Map().LID(i->first);
@@ -510,9 +507,9 @@ void UTILS::SpringDashpotNew::OutputGapNormal(
     if (lid>=0)
     {
       // copy all components of normal vector
-      (*(*stress)(0))[lid] += (i->second)[0];
-      (*(*stress)(1))[lid] += (i->second)[1];
-      (*(*stress)(2))[lid] += (i->second)[2];
+      (*(*stress)(0))[lid] += (i->second).at(0);
+      (*(*stress)(1))[lid] += (i->second).at(1);
+      (*(*stress)(2))[lid] += (i->second).at(2);
     }
   }
 
@@ -523,11 +520,12 @@ void UTILS::SpringDashpotNew::OutputGapNormal(
  |                                                             mhv Dec15|
  *----------------------------------------------------------------------*/
 void UTILS::SpringDashpotNew::OutputPrestrOffset(
-    Teuchos::RCP<Epetra_MultiVector> &springprestroffset)
+    Teuchos::RCP<Epetra_MultiVector> &springprestroffset) const
 {
 
   // export spring offset length
-  for(std::map<int, std::vector<double> >::iterator i = offset_prestr_.begin(); i != offset_prestr_.end(); ++i)
+  for(std::map<int, std::vector<double> >::const_iterator i =
+      offset_prestr_.begin(); i != offset_prestr_.end(); ++i)
   {
     // global id -> local id
     const int lid = springprestroffset->Map().LID(i->first);

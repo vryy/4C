@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_linearsystem.cpp
 
+\brief %NOX::NLN extension of the %NOX::Epetra::LinearSystem.
+
 \maintainer Michael Hiermeier
 
 \date Jul 2, 2015
@@ -280,7 +282,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
   /* Note: We switch from LINALG_objects to pure Epetra_objects.
    * This is necessary for the linear solver.
    *     LINALG::SparseMatrix ---> Epetra_CrsMatrix */
-  Epetra_LinearProblem linProblem(&(*jacPtr_->EpetraOperator()),
+  Epetra_LinearProblem linProblem(jacPtr_->EpetraOperator().get(),
       &(result.getEpetraVector()),
       &(nonConstInput.getEpetraVector()));
 
@@ -299,7 +301,7 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
 
   // get current linear solver from the std_map
   Teuchos::RCP<LINALG::Solver> currSolver;
-  NOX::NLN::SolutionType solType = GetCurrentLinSolver(solvers_,currSolver);
+  NOX::NLN::SolutionType solType = GetActiveLinSolver(solvers_,currSolver);
 
   // set solver options if necessary
   SetSolverOptions(linearSolverParams,currSolver,solType);
@@ -319,6 +321,13 @@ bool NOX::NLN::LinearSystem::applyJacobianInverse(
 
   double endTime = timer_.WallTime();
   timeApplyJacbianInverse_ += (endTime - startTime);
+
+//  std::cout << input.getEpetraVector() << std::endl;
+//  std::cout << result.getEpetraVector() << std::endl;
+//  LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* blockmat =
+//      dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* >(jacPtr_.get());
+//  std::cout << blockmat->Matrix(0,0) << std::endl;
+//  std::cout << blockmat->Matrix(1,1) << std::endl;
 
   prePostOperatorPtr_->runPostApplyJacobianInverse(nonConstInput,*jacPtr_,*this);
 

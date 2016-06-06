@@ -2,6 +2,8 @@
 /*!
 \file ad_str_structure_new.cpp
 
+\brief Adapter for the new structural time integration framework.
+
 \maintainer Michael Hiermeier
 
 \date Sep 2, 2015
@@ -275,7 +277,11 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   Teuchos::RCP<STR::TIMINT::Base> ti_strategy =
       STR::TIMINT::BuildStrategy(*sdyn_);
   ti_strategy->Init(dataio,datasdyn,dataglobalstate);
-  ti_strategy->Setup();
+  /* In the restart case, we Setup the structural time integration after the
+   * discretization has been redistributed. See STR::TIMINT::Base::ReadRestart()
+   * for more information.                                     hiermeier 05/16*/
+  if (not DRT::Problem::Instance()->Restart())
+    ti_strategy->Setup();
 
   // ---------------------------------------------------------------------------
   // Create wrapper for the time integration strategy

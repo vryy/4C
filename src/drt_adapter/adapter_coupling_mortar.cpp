@@ -6,12 +6,8 @@
 
 \level 2
 
-<pre>
 \maintainer Philipp Farah
-            farah@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+
 */
 /*----------------------------------------------------------------------*/
 #include "adapter_coupling_mortar.H"
@@ -141,7 +137,7 @@ void ADAPTER::CouplingMortar::Setup(
   Teuchos::RCP<Epetra_Vector> dispn  = LINALG::CreateVector(*dofrowmap, true);
 
   // set displacement state in mortar interface
-  interface_->SetState("displacement", dispn);
+  interface_->SetState(MORTAR::state_new_displacement, *dispn);
 
   // print message
   if(myrank== 0)
@@ -1199,7 +1195,7 @@ void ADAPTER::CouplingMortar::Evaluate(Teuchos::RCP<Epetra_Vector> idisp)
   CheckSetup();
 
   // set new displacement state in mortar interface
-  interface_->SetState("displacement", idisp);
+  interface_->SetState(MORTAR::state_new_displacement, *idisp);
   Evaluate();
   MatrixRowColTransform();
 
@@ -1229,7 +1225,7 @@ void ADAPTER::CouplingMortar::Evaluate(
   idispms -> Import(*idispsl,*slimpo,Add);
 
   // set new displacement state in mortar interface
-  interface_->SetState("displacement", idispms);
+  interface_->SetState(MORTAR::state_new_displacement, *idispms);
 
   Evaluate();
   MatrixRowColTransform();
@@ -1335,7 +1331,7 @@ void ADAPTER::CouplingMortar::EvaluateWithMeshRelocation(
   CheckSetup();
 
   // set new displacement state in mortar interface
-  interface_->SetState("displacement",idisp);
+  interface_->SetState(MORTAR::state_new_displacement,*idisp);
 
   // in the following two steps MORTAR does all the work for new interface displacements
   interface_->Initialize();

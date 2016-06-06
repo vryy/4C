@@ -1,9 +1,14 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file contact_wear_lagrange_strategy.H
 
-\maintainer Philipp Farah
+\brief ToDo Add meaningful comment.
 
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah
+*/
+/*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  | definitions                                              farah 09/13 |
@@ -33,6 +38,7 @@ public:
 
   */
   WearLagrangeStrategy(
+      const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
       const Epetra_Map* DofRowMap,
       const Epetra_Map* NodeRowMap,
       Teuchos::ParameterList params,
@@ -86,7 +92,7 @@ public:
   a contact search can be performed and set state called.
 
   */
-  void RedistributeContact(Teuchos::RCP<Epetra_Vector> dis);
+  void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis);
 
   /*!
   \brief Build 2x2 saddle point system
@@ -135,8 +141,8 @@ public:
   performed on the level of the contact algorithm, for short: here's the right place.
 
   */
-  void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
-      bool forcedrestart = false);
+  virtual void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
+      bool forcedrestart = false) const;
 
   /*!
   \brief Perform a write restart
@@ -146,7 +152,8 @@ public:
   performed on the level of the contact algorithm, for short: here's the right place.
 
   */
-  void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis);
+  void DoReadRestart(IO::DiscretizationReader& reader,
+      Teuchos::RCP<const Epetra_Vector> dis);
 
 
   /*!
@@ -182,7 +189,7 @@ public:
   \brief Update wear contact at end of time step
 
   */
-  void Update(Teuchos::RCP<Epetra_Vector> dis);
+  void Update(Teuchos::RCP<const Epetra_Vector> dis);
 
   /*!
   \brief Store wear data into wear data container
@@ -195,6 +202,7 @@ public:
 
   */
   Teuchos::RCP<Epetra_Vector> ContactWear()  { return wearoutput_; } // for slave side
+  Teuchos::RCP<const Epetra_Vector> ContactWear() const  { return wearoutput_; } // for slave side
   Teuchos::RCP<Epetra_Vector> ContactWear2() { return wearoutput2_;} // for master side
 
   /*!
@@ -207,13 +215,13 @@ public:
   \brief Return master map for both sided wear (slip), mapped from slave side
 
   */
-  const Teuchos::RCP<Epetra_Map> MasterSlipNodes() {return gmslipnodes_;};
+  Teuchos::RCP<const Epetra_Map> MasterSlipNodes() const {return gmslipnodes_;};
 
   /*!
   \brief Return master map for both sided wear (active), mapped from slave side
 
   */
-  const Teuchos::RCP<Epetra_Map> MasterActiveNodes() {return gmactivenodes_;};
+  Teuchos::RCP<const Epetra_Map> MasterActiveNodes() const {return gmactivenodes_;};
 
   /*!
    \brief Return discrete wear vector (t_n+1)
@@ -255,13 +263,13 @@ public:
    \brief Return global both sided wear status
 
    */
-  bool WearBothDiscrete() { return wbothpv_; }
+  bool WearBothDiscrete() const { return wbothpv_; }
 
   /*!
    \brief Return global wear status
 
    */
-  bool WeightedWear() { return weightedwear_; }
+  bool WeightedWear() const { return weightedwear_; }
 
 private:
   /*!

@@ -4,17 +4,12 @@
 
 \brief Input parameters for contact
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\level 2
+
+\maintainer Alexander Popp
+
 */
-
 /*----------------------------------------------------------------------*/
-
-
-
 #include "drt_validparameters.H"
 #include "inpar_contact.H"
 #include "inpar_structure.H"
@@ -206,6 +201,18 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
         reg_tanh),
       &scontact
       );
+
+  // sub-list "Augmented"
+  Teuchos::ParameterList& augcontact=scontact.sublist("AUGMENTED");
+
+  setStringToIntegralParameter<int>("PRINT_LINEAR_CONSERVATION","No",
+      "Do and print the linear momentum conservation check.",
+      yesnotuple,yesnovalue,&augcontact);
+
+  setStringToIntegralParameter<int>("PRINT_ANGULAR_CONSERVATION","No",
+      "Do and print the angular momentum conservation check.",
+      yesnotuple,yesnovalue,&augcontact);
+
 }
 
 

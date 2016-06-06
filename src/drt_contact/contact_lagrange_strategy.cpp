@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_lagrange_strategy.cpp
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
 
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*---------------------------------------------------------------------*/
 
 #include "Epetra_SerialComm.h"
 #include "contact_lagrange_strategy.H"
@@ -30,13 +31,35 @@ CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(
     Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
     int dim,
-    Teuchos::RCP<Epetra_Comm> comm,
+    Teuchos::RCP<const Epetra_Comm> comm,
     double alphaf,
-    int maxdof) :
-CoAbstractStrategy(DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
-activesetssconv_(false),
-activesetconv_(false),
-activesetsteps_(1)
+    int maxdof)
+    : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()),
+        DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+      activesetssconv_(false),
+      activesetconv_(false),
+      activesetsteps_(1)
+{
+  // empty constructor body
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+CONTACT::CoLagrangeStrategy::CoLagrangeStrategy(
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+    int dim,
+    Teuchos::RCP<const Epetra_Comm> comm,
+    double alphaf,
+    int maxdof)
+    : CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+      activesetssconv_(false),
+      activesetconv_(false),
+      activesetsteps_(1)
 {
   // empty constructor body
   return;
@@ -152,9 +175,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   // (this is a prerequisite for the Split2x2 methods to be called later)
   kteff->Complete();
 
-  // systemtype
-  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
-
   /**********************************************************************/
   /* export weighted gap vector to gactiveN-map                         */
   /**********************************************************************/
@@ -188,7 +208,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
     interface_[i]->AssembleLinStick(*linstickLM_,*linstickDIS_,*linstickRHS_);
     interface_[i]->AssembleLinSlip(*linslipLM_,*linslipDIS_,*linslipRHS_);
-    if (systype != INPAR::CONTACT::system_condensed)
+    if (SystemType() != INPAR::CONTACT::system_condensed)
       interface_[i]->AssembleInactiverhs(*inactiverhs_);
   }
   if (constr_direction_==INPAR::CONTACT::constr_xyz)
@@ -248,7 +268,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOp
   // CASE A: CONDENSED SYSTEM (DUAL)
   //**********************************************************************
   //**********************************************************************
-  if (systype == INPAR::CONTACT::system_condensed)
+  if (systype_ == INPAR::CONTACT::system_condensed)
   {
     // double-check if this is a dual LM system
     if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
@@ -1197,9 +1217,6 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   // (this is a prerequisite for the Split2x2 methods to be called later)
   kteff->Complete();
 
-  // system type
-  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
-
   /**********************************************************************/
   /* export weighted gap vector to gactiveN-map                         */
   /**********************************************************************/
@@ -1241,7 +1258,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
     interface_[i]->AssembleTNderiv(tderivmatrix_,nderivmatrix_);
     interface_[i]->AssembleLinDM(*lindmatrix_,*linmmatrix_);
 
-    if (systype != INPAR::CONTACT::system_condensed)
+    if (SystemType() != INPAR::CONTACT::system_condensed)
     {
       interface_[i]->AssembleInactiverhs(*inactiverhs_);
       interface_[i]->AssembleTangrhs(*tangrhs_);
@@ -1313,7 +1330,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(Teuchos::RCP<LINALG::SparseOpe
   // CASE A: CONDENSED SYSTEM (DUAL)
   //**********************************************************************
   //**********************************************************************
-  if (systype == INPAR::CONTACT::system_condensed)
+  if (systype_ == INPAR::CONTACT::system_condensed)
   {
     // double-check if this is a dual LM system
     if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
@@ -2043,9 +2060,6 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
   temp->PutScalar(1.0);
   LINALG::Export(*temp,*dirichtoggle);
 
-  // get system type
-  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
-
   //**********************************************************************
   // prepare saddle point system
   //**********************************************************************
@@ -2179,7 +2193,7 @@ void CONTACT::CoLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
   //**********************************************************************
   // build and solve saddle point system
   //**********************************************************************
-  if (systype==INPAR::CONTACT::system_saddlepoint)
+  if (SystemType()==INPAR::CONTACT::system_saddlepoint)
   {
     Teuchos::RCP<Epetra_Vector> dirichtoggleexp = Teuchos::rcp(new Epetra_Vector(*mergedmap));
     LINALG::Export(*dirichtoggle,*dirichtoggleexp);
@@ -2279,9 +2293,7 @@ void CONTACT::CoLagrangeStrategy::UpdateDisplacementsAndLMincrements(Teuchos::RC
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::EvalConstrRHS()
 {
-  // get system type
-  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
-  if (systype == INPAR::CONTACT::system_condensed) return;
+  if (SystemType()==INPAR::CONTACT::system_condensed) return;
 
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
   {
@@ -2372,14 +2384,13 @@ void CONTACT::CoLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
 
   // shape function and system types
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"LM_SHAPEFCN");
-  INPAR::CONTACT::SystemType systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM");
 
   //**********************************************************************
   //**********************************************************************
   // CASE A: CONDENSED SYSTEM (DUAL)
   //**********************************************************************
   //**********************************************************************
-  if (systype == INPAR::CONTACT::system_condensed)
+  if (SystemType() == INPAR::CONTACT::system_condensed)
   {
     // double-check if this is a dual LM system
     if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)

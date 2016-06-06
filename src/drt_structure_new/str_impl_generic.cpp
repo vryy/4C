@@ -2,6 +2,8 @@
 /*!
 \file str_impl_generic.cpp
 
+\brief Generic class for all implicit time integrators.
+
 \maintainer Michael Hiermeier
 
 \date Mar 11, 2016
@@ -31,6 +33,8 @@ STR::IMPLICIT::Generic::Generic()
 void STR::IMPLICIT::Generic::Setup()
 {
   CheckInit();
+  // call base class first
+  STR::Integrator::Setup();
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln group in the parameter list
   // ---------------------------------------------------------------------------

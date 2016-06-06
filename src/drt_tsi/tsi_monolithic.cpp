@@ -1,19 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file tsi_monolithic.cpp
-\maintainer Alexander Seitz
 
 \brief  Basis of all monolithic TSI algorithms that perform a coupling between
         the linear momentum equation and the heat conduction equation
 
-<pre>
-   Maintainer: Alexander Seitz
-               seitz@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15271
-</pre>
-*/
+\level 2
 
+\maintainer Alexander Seitz
+
+*/
+/*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/10 |
@@ -2997,7 +2994,7 @@ void TSI::Monolithic::ApplyThermoCouplingState(Teuchos::RCP<const Epetra_Vector>
   if (cmtman_!=Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> temp2 = coupST_()->SlaveToMaster(ThermoField()->Tempnp());
-    cmtman_->GetStrategy().SetState("temp",temp2);
+    cmtman_->GetStrategy().SetState(MORTAR::state_temperature,*temp2);
   }
 }  // ApplyThermoCouplingState()
 

@@ -1,20 +1,23 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_augmented_integrator.cpp
 
-<pre>
-Created on: Apr 28, 2014
+\brief A class to perform integrations of Mortar matrices on the overlap
+       of two MortarElements in 1D and 2D (derived version for
+       augmented contact)
 
-Maintainer: Michael Hiermeier
-            hiermeier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089-289-15268
-</pre>
+\level 2
 
-*----------------------------------------------------------------------*/
+\maintainer Michael Hiermeier
 
+\date Apr 28, 2014
+
+*/
+/*---------------------------------------------------------------------*/
 #include "contact_augmented_integrator.H"
 #include "../drt_contact/contact_node.H"
 #include "../drt_contact/contact_element.H"
+#include "../drt_contact/contact_paramsinterface.H"
 #include "../drt_mortar/mortar_projector.H"
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -22,29 +25,28 @@ Maintainer: Michael Hiermeier
 #include <Epetra_Map.h>
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                        hiermeier 04/14|
  *----------------------------------------------------------------------*/
 CONTACT::AugmentedIntegrator::AugmentedIntegrator(Teuchos::ParameterList& params,
-                                                  DRT::Element::DiscretizationType eletype,
-                                                  const Epetra_Comm& comm,
-                                                  const Teuchos::RCP<Epetra_Map> augActiveSlaveNodes) :
-CONTACT::CoIntegrator::CoIntegrator(params,eletype,comm),
-augActiveSlaveNodes_(augActiveSlaveNodes)
+    DRT::Element::DiscretizationType eletype,
+    const Epetra_Comm& comm)
+    : CONTACT::CoIntegrator::CoIntegrator(params,eletype,comm)
 {
   // empty constructor body
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate and linearize a 2D slave / master cell (3D)hiermeier 07/14|
  *----------------------------------------------------------------------*/
 void CONTACT::AugmentedIntegrator::IntegrateDerivCell3DAuxPlane(
-     MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-     Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-     const Epetra_Comm& comm)
+     MORTAR::MortarElement& sele,
+     MORTAR::MortarElement& mele,
+     Teuchos::RCP<MORTAR::IntCell> cell,
+     double* auxn,
+     const Epetra_Comm& comm,
+     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
-  if (SolType()!=INPAR::CONTACT::solution_augmented)
-    dserror("AugmentedIntegrator::IntegrateDerivCell3DAuxPlane: Method call for wrong SolType.");
+  if (cparams_ptr.is_null())
+    dserror("ERROR: The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
@@ -247,13 +249,14 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivCell3DAuxPlane(
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate and linearize augmented terms for lin eles hiermeier 08/14|
- |  element based integration                                           |
  *----------------------------------------------------------------------*/
 void CONTACT::AugmentedIntegrator::IntegrateDerivEle3D(
-     MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
-     bool *boundary_ele, bool *proj_,
-     const Epetra_Comm& comm)
+     MORTAR::MortarElement& sele,
+     std::vector<MORTAR::MortarElement*> meles,
+     bool *boundary_ele,
+     bool *proj_,
+     const Epetra_Comm& comm,
+     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   if (SolType()!=INPAR::CONTACT::solution_augmented)
     dserror("AugmentedIntegrator::IntegrateDerivEle3D: Method call for wrong SolType.");
@@ -368,35 +371,14 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle3D(
       //**********************************************************************
       // loop over all mele
       //**********************************************************************
+      bool isprojected = false;
+      int uniqueMaEle = -1;
+      double uniqueProjalpha = 0.0;
+      double uniqueMxi[2] = {0.0,0.0};
+      // --> find master elements with an unique projection
       for(int nummaster=0;nummaster<msize;++nummaster)
       {
         DRT::Element::DiscretizationType dt = meles[nummaster]->Shape();
-
-        int nmnode  = meles[nummaster]->NumNode();
-        LINALG::SerialDenseVector mval(nmnode);
-        LINALG::SerialDenseMatrix mderiv(nmnode,2,true);
-        LINALG::SerialDenseMatrix mcoord(3,meles[nummaster]->NumNode());
-        meles[nummaster]->GetNodalCoords(mcoord);
-
-        // get them in the case of tsi
-        if (wear or gpslip_)
-        {
-          scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-          mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,meles[nummaster]->NumNode()));
-          lagmult   = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
-          sele.GetNodalCoordsOld(*scoordold);
-          meles[nummaster]->GetNodalCoordsOld(*mcoordold);
-          sele.GetNodalLagMult(*lagmult);
-        }
-
-        // for both-sided wear
-        LINALG::SerialDenseVector lm2val(nmnode);
-        LINALG::SerialDenseMatrix lm2deriv(nmnode,2,true);
-
-        // evaluate Lagrange multiplier shape functions (on slave element)
-        if (WearSide() != INPAR::WEAR::wear_slave)
-          meles[nummaster]->EvaluateShapeLagMult(ShapeFcn(),mxi,lm2val,lm2deriv,nmnode);
-
         // project Gauss point onto master element
         MORTAR::MortarProjector::Impl(sele,*meles[nummaster])->ProjectGaussPoint3D(sele,sxi,*meles[nummaster],mxi,projalpha);
 
@@ -419,35 +401,85 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle3D(
           }
         }
 
-        // gp is valid
-        if (is_on_mele==true)
+        // gp is valid and the current master element is the first feasible one
+        if (is_on_mele==true and !isprojected)
         {
-          *proj_=true;
-          iter_proj+=1;
+          isprojected = true;
+          uniqueMaEle = nummaster;
+          uniqueProjalpha = projalpha;
+          uniqueMxi[0] = mxi[0];
+          uniqueMxi[1] = mxi[1];
+        }
+        // found a second master element with a feasible projection
+        else if (is_on_mele and isprojected)
+        {
+          if (projalpha<uniqueProjalpha)
+          {
+            uniqueMaEle = nummaster;
+            uniqueProjalpha = projalpha;
+            uniqueMxi[0] = mxi[0];
+            uniqueMxi[1] = mxi[1];
+          }
+        }
+      }//mele loop
 
-          // get mval
-          meles[nummaster]->EvaluateShape(mxi,mval,mderiv,nmnode);
+      // use the found master element
+      if (uniqueMaEle!=-1)
+      {
+        int nmnode  = meles[uniqueMaEle]->NumNode();
+        LINALG::SerialDenseVector mval(nmnode);
+        LINALG::SerialDenseMatrix mderiv(nmnode,2,true);
+        LINALG::SerialDenseMatrix mcoord(3,meles[uniqueMaEle]->NumNode());
+        meles[uniqueMaEle]->GetNodalCoords(mcoord);
 
-          // evaluate the GP slave coordinate derivatives
-          std::vector<GEN::pairedvector<int,double> > dsxigp(2,0);
-          std::vector<GEN::pairedvector<int,double> > dmxigp(2,linsize+nmnode*ndof);
-          DerivXiGP3D(sele,*meles[nummaster],sxi,mxi,dsxigp,dmxigp,projalpha);
+        // get them in the case of tsi
+        if (wear or gpslip_)
+        {
+          scoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
+          mcoordold = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,meles[uniqueMaEle]->NumNode()));
+          lagmult   = Teuchos::rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
+          sele.GetNodalCoordsOld(*scoordold);
+          meles[uniqueMaEle]->GetNodalCoordsOld(*mcoordold);
+          sele.GetNodalLagMult(*lagmult);
+        }
 
-          //**********************************************************************
-          // frequently reused quantities
-          //**********************************************************************
-          double gpn[3]      = {0.0,0.0,0.0};
-          std::vector<GEN::pairedvector<int,double> > dnmap_unit(3,((nmnode*ndof)+linsize)); // deriv of x,y and z comp. of gpn (unit)
-          //**********************************************************************
-          // evaluate at GP and lin char. quantities
-          //**********************************************************************
-          // calculate the averaged normal + derivative at gp level
-          GP_Normal_DerivNormal(sele,*meles[nummaster],sval,sderiv,dsxigp,&gpn[0],dnmap_unit,linsize);
-          // integrate scaling factor kappa
-          GP_kappa(sele,lmval,wgt,jacslave);
-          // integrate the inner integral for later usage (for all found slave nodes)
-          GP_VarWGap(sele,*meles[nummaster],sval,mval,lmval,&gpn[0],wgt,jacslave);
+        // for both-sided wear
+        LINALG::SerialDenseVector lm2val(nmnode);
+        LINALG::SerialDenseMatrix lm2deriv(nmnode,2,true);
 
+        // evaluate Lagrange multiplier shape functions (on slave element)
+        if (WearSide() != INPAR::WEAR::wear_slave)
+          meles[uniqueMaEle]->EvaluateShapeLagMult(ShapeFcn(),uniqueMxi,lm2val,lm2deriv,nmnode);
+
+        *proj_=true;
+        iter_proj+=1;
+
+        // get mval
+        meles[uniqueMaEle]->EvaluateShape(uniqueMxi,mval,mderiv,nmnode);
+
+        // evaluate the GP slave coordinate derivatives
+        std::vector<GEN::pairedvector<int,double> > dsxigp(2,0);
+        std::vector<GEN::pairedvector<int,double> > dmxigp(2,linsize+nmnode*ndof);
+        DerivXiGP3D(sele,*meles[uniqueMaEle],sxi,uniqueMxi,dsxigp,dmxigp,uniqueProjalpha);
+
+        //**********************************************************************
+        // frequently reused quantities
+        //**********************************************************************
+        double gpn[3]      = {0.0,0.0,0.0};
+        // deriv of x,y and z comp. of gpn (unit)
+        std::vector<GEN::pairedvector<int,double> > dnmap_unit(3,((nmnode*ndof)+linsize));
+        //**********************************************************************
+        // evaluate at GP and lin char. quantities
+        //**********************************************************************
+        // calculate the averaged normal + derivative at gp level
+        GP_Normal_DerivNormal(sele,*meles[uniqueMaEle],sval,sderiv,dsxigp,&gpn[0],dnmap_unit,linsize);
+        // integrate scaling factor kappa
+        GP_kappa(sele,lmval,wgt,jacslave);
+        // integrate the inner integral for later usage (for all found slave nodes)
+        GP_VarWGap(sele,*meles[uniqueMaEle],sval,mval,lmval,&gpn[0],wgt,jacslave);
+
+        if (cparams_ptr->GetActionType()==MORTAR::eval_force_stiff)
+        {
           //********************************************************************
           // compute ele linearization
           //********************************************************************
@@ -456,21 +488,15 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle3D(
           {
             GP_3D_kappa_Lin(iter,sele,lmval,lmderiv,wgt,jacslave,dsxigp,jacslavemap);
 
-            GP_3D_VarWGap_Lin(iter,sele,*meles[nummaster],sval,mval,lmval,&gpn[0],sderiv,mderiv,
+            GP_3D_VarWGap_Lin(iter,sele,*meles[uniqueMaEle],sval,mval,lmval,&gpn[0],sderiv,mderiv,
                 lmderiv,wgt,jacslave,dsxigp,dmxigp,jacslavemap,dnmap_unit);
           }
-        }//is_on_mele
-        if (is_on_mele==true) break;
-      }//mele loop
-
+        }
+      }
       // warning, if an element which is declared not to be on the boundary by the above test
       // has non-projectable Gauss points
-      if (is_on_mele == false && *boundary_ele==false)
+      else if (uniqueMaEle == -1 && *boundary_ele==false)
         std::cout << "*** warning *** Non-boundary element has non-projectable Gauss point \n" ;
-
-      //if one gp has counterparts on 2 elements --> non-uniqueness
-      if (iter_proj>1)
-        dserror("Multiple feasible projections of one integration point!");
     }//GP-loop
   }
 
@@ -478,14 +504,28 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle3D(
 }
 
 /*----------------------------------------------------------------------*
- |  Compute remaining contact integrals AFTER the        hiermeier 04/14|
- |  active set decision (3-D)                                           |
  *----------------------------------------------------------------------*/
 void CONTACT::AugmentedIntegrator::IntegrateDerivSlEle3D(
-     MORTAR::MortarElement& sele,const Epetra_Comm& comm)
+    MORTAR::MortarElement& sele,
+    const Epetra_Comm& comm,
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
-  if (SolType()!=INPAR::CONTACT::solution_augmented)
-    dserror("AugmentedIntegrator::IntegrateDerivSlEle3D: Method call for wrong SolType.");
+  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
+      Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr);
+  if (cparams_ptr.is_null())
+    dserror("Cast to CONTACT::ParamsInterface failed!");
+  IntegrateDerivSlEle3D(sele,comm,cparams_ptr);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AugmentedIntegrator::IntegrateDerivSlEle3D(
+     MORTAR::MortarElement& sele,
+     const Epetra_Comm& comm,
+     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+{
+  if (cparams_ptr.is_null())
+    dserror("ERROR: The contact parameter interface pointer is undefined!");
 
   if (Dim()!=3) dserror("ERROR: IntegrateDerivSlEle3D has been called for a 2-D problem!");
 
@@ -538,15 +578,20 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivSlEle3D(
  |  Integrate and linearize a 2D slave/master seg.   (2D)hiermeier 04/14|
  *----------------------------------------------------------------------*/
 void CONTACT::AugmentedIntegrator::IntegrateDerivSegment2D(
-     MORTAR::MortarElement& sele, double& sxia, double& sxib,
-     MORTAR::MortarElement& mele, double& mxia, double& mxib,
-     const Epetra_Comm& comm)
+     MORTAR::MortarElement& sele,
+     double& sxia,
+     double& sxib,
+     MORTAR::MortarElement& mele,
+     double& mxia,
+     double& mxib,
+     const Epetra_Comm& comm,
+     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // *********************************************************************
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
-  if (SolType()!=INPAR::CONTACT::solution_augmented)
-    dserror("AugmentedIntegrator::IntegrateDerivSegment2D: Method call for wrong SolType.");
+  if (cparams_ptr.is_null())
+    dserror("ERROR: The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
@@ -766,21 +811,20 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivSegment2D(
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate and linearize augmented terms              hiermeier 08/14|
- |  element based integration                                           |
  *----------------------------------------------------------------------*/
 void CONTACT::AugmentedIntegrator::IntegrateDerivEle2D(
     MORTAR::MortarElement& sele,
     std::vector<MORTAR::MortarElement*> meles,
-    bool *boundary_ele)
+    bool *boundary_ele,
+    const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // *********************************************************************
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
-  if (SolType()!=INPAR::CONTACT::solution_augmented)
-    dserror("AugmentedIntegrator::IntegrateDerivEle2D: Method call for wrong SolType.");
+  if (cparams_ptr.is_null())
+    dserror("ERROR: The contact parameter interface pointer is undefined!");
 
-  // explicitly defined shape function type needed
+// explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
     dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
 
@@ -975,14 +1019,28 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivEle2D(
 }
 
 /*----------------------------------------------------------------------*
- |  Compute remaining contact integrals AFTER the        hiermeier 04/14|
- |  active set decision (2-D)                                           |
  *----------------------------------------------------------------------*/
 void CONTACT::AugmentedIntegrator::IntegrateDerivSlEle2D(
-     MORTAR::MortarElement& sele,const Epetra_Comm& comm)
+     MORTAR::MortarElement& sele,
+     const Epetra_Comm& comm,
+     const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
-  if (SolType()!=INPAR::CONTACT::solution_augmented)
-    dserror("AugmentedIntegrator::IntegrateDerivSlEle2D: Method call for wrong SolType.");
+  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr =
+      Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr);
+  if (cparams_ptr.is_null())
+    dserror("Cast to CONTACT::ParamsInterface failed!");
+  IntegrateDerivSlEle2D(sele,comm,cparams_ptr);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::AugmentedIntegrator::IntegrateDerivSlEle2D(
+     MORTAR::MortarElement& sele,
+     const Epetra_Comm& comm,
+     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+{
+  if (cparams_ptr.is_null())
+    dserror("ERROR: The contact parameter interface pointer is undefined!");
 
   if (Dim()!=2) dserror("ERROR: IntegrateDerivSlEle2D has been called for a 3-D problem!");
 
@@ -1049,7 +1107,6 @@ void CONTACT::AugmentedIntegrator::IntegrateDerivSlEle2D(
 }
 
 /*----------------------------------------------------------------------*
- |  Compute scaling factor at GP                         hiermeier 04/14|
  *----------------------------------------------------------------------*/
 void inline CONTACT::AugmentedIntegrator::GP_kappa(
      MORTAR::MortarElement& sele,
@@ -1079,7 +1136,6 @@ void inline CONTACT::AugmentedIntegrator::GP_kappa(
 }
 
 /*----------------------------------------------------------------------*
- |  Compute linearization of the scaling factor at GP    hiermeier 04/14|
  *----------------------------------------------------------------------*/
 void inline CONTACT::AugmentedIntegrator::GP_2D_kappa_Lin(
     int& iter,
@@ -1130,8 +1186,6 @@ void inline CONTACT::AugmentedIntegrator::GP_2D_kappa_Lin(
 }
 
 /*----------------------------------------------------------------------*
- |  Compute linearization of the scaling factor at GP    hiermeier 08/14|
- |  (element based integration)
  *----------------------------------------------------------------------*/
 void inline CONTACT::AugmentedIntegrator::GP_2D_kappa_Ele_Lin(
     int& iter,
@@ -1163,7 +1217,6 @@ void inline CONTACT::AugmentedIntegrator::GP_2D_kappa_Ele_Lin(
 }
 
 /*----------------------------------------------------------------------*
- |  Compute lin. of the scaling factor at GP (3D)        hiermeier 07/14|
  *----------------------------------------------------------------------*/
 void inline CONTACT::AugmentedIntegrator::GP_3D_kappa_Lin(
     int& iter,
@@ -1204,7 +1257,6 @@ void inline CONTACT::AugmentedIntegrator::GP_3D_kappa_Lin(
 }
 
 /*----------------------------------------------------------------------*
- |  Compute entries of the normal and deriv normal       hiermeier 05/14|
  *----------------------------------------------------------------------*/
 void inline CONTACT::AugmentedIntegrator::GP_Normal_DerivNormal(
     MORTAR::MortarElement& sele,
@@ -1375,7 +1427,6 @@ void inline CONTACT::AugmentedIntegrator::GP_Normal_DerivNormal(
 }
 
 /*----------------------------------------------------------------------*
- |  Compute entries of the variation of the weighted gap hiermeier 05/14|
  *----------------------------------------------------------------------*/
 void inline CONTACT::AugmentedIntegrator::GP_VarWGap(
     MORTAR::MortarElement& sele,
@@ -1434,7 +1485,6 @@ void inline CONTACT::AugmentedIntegrator::GP_VarWGap(
 }
 
 /*----------------------------------------------------------------------*
- |  Linearization of the variation of the weighted gap   hiermeier 05/14|
  *----------------------------------------------------------------------*/
 void inline CONTACT::AugmentedIntegrator::GP_2D_VarWGap_Lin(
     int& iter,
@@ -1560,8 +1610,6 @@ void inline CONTACT::AugmentedIntegrator::GP_2D_VarWGap_Lin(
 }
 
 /*----------------------------------------------------------------------*
- |  Linearization of the variation of the weighted gap   hiermeier 08/14|
- |  element based integration                                           |
  *----------------------------------------------------------------------*/
 void inline CONTACT::AugmentedIntegrator::GP_2D_VarWGap_Ele_Lin(
     int& iter,
@@ -1665,7 +1713,6 @@ void inline CONTACT::AugmentedIntegrator::GP_2D_VarWGap_Ele_Lin(
 }
 
 /*----------------------------------------------------------------------*
- |  Linearization of the variation of the weighted gap   hiermeier 05/14|
  *----------------------------------------------------------------------*/
 void inline CONTACT::AugmentedIntegrator::GP_3D_VarWGap_Lin(
     int& iter,
@@ -1780,7 +1827,6 @@ void inline CONTACT::AugmentedIntegrator::GP_3D_VarWGap_Lin(
 }
 
 /*----------------------------------------------------------------------*
- |  Calculate the weighted element area                  hiermeier 06/14|
  *----------------------------------------------------------------------*/
 void inline CONTACT::AugmentedIntegrator::GP_AugA(
     int& it,
@@ -1803,7 +1849,6 @@ void inline CONTACT::AugmentedIntegrator::GP_AugA(
 }
 
 /*----------------------------------------------------------------------*
- |  Linearization of the weighted element area           hiermeier 06/14|
  *----------------------------------------------------------------------*/
 void inline CONTACT::AugmentedIntegrator::GP_AugA_Lin(
     int& it,

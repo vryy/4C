@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file mortar_coupling3d.H
 
-\maintainer Philipp Farah, Alexander Seitz
-
 \brief Classes for mortar coupling in 3D.
+
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 #ifndef MORTAR_COUPLING3D_H
@@ -30,6 +32,7 @@ namespace MORTAR
 
 // forward declarations
 class MortarElement;
+class ParamsInterface;
 
 /*!
  \brief A class representing the framework for mortar coupling of ONE
@@ -297,7 +300,8 @@ public:
    and assembled into the slave element nodes.
 
    */
-  virtual bool IntegrateCells();
+  virtual bool IntegrateCells(
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   //@}
 
@@ -724,7 +728,8 @@ public:
    \brief Evaluate coupling pairs
 
    */
-  virtual bool EvaluateCoupling();
+  virtual bool EvaluateCoupling(
+      Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr);
 
   /*!
    \brief Return the LM shape fcn type
@@ -741,7 +746,8 @@ protected:
    \brief Evaluate mortar-coupling pairs
 
    */
-  virtual void IntegrateCoupling();
+  virtual void IntegrateCoupling(
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
    \brief Calculate consistent dual shape functions in boundary elements
@@ -854,7 +860,8 @@ protected:
    \brief Evaluate mortar-coupling pairs
 
    */
-  virtual void IntegrateCoupling();
+  virtual void IntegrateCoupling(
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
    \brief Split MortarElements into IntElements for 3D quadratic coupling

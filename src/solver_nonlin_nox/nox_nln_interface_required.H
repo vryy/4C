@@ -2,6 +2,9 @@
 /*!
 \file nox_nln_interface_required.H
 
+\brief %NOX::NLN extension of the %NOX::Epetra required
+       interface.
+
 \maintainer Michael Hiermeier
 
 \date Jun 29, 2015
@@ -14,9 +17,11 @@
 #ifndef NOX_NLN_INTERFACE_REQUIRED_H_
 #define NOX_NLN_INTERFACE_REQUIRED_H_
 
+#include "nox_nln_enum_lists.H"
+#include "../drt_lib/drt_dserror.H"
+
 #include <NOX_Epetra_Interface_Required.H>    // base class
 #include <NOX_Epetra_Vector.H>
-#include "nox_nln_statustest_factory.H"
 
 namespace NOX {
 namespace NLN {

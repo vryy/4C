@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_linearsystem_factory.cpp
 
+\brief %NOX::NLN factory to create a %NOX::Epetra::LinearSystem.
+
 \maintainer Michael Hiermeier
 
 \date Jul 14, 2015
@@ -12,6 +14,7 @@
 /*-----------------------------------------------------------*/
 
 #include "nox_nln_linearsystem_factory.H"
+#include "nox_nln_globaldata.H"
 
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_solver.H"
@@ -38,37 +41,67 @@ NOX::NLN::LinSystem::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::BuildLinearSystem(
-    Teuchos::ParameterList& printParams,
-    Teuchos::ParameterList& linearSolverParams,
-    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-    const Teuchos::RCP<LINALG::SparseOperator>& J,
-    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
-    const Teuchos::RCP<LINALG::SparseOperator>& M,
-    const NOX::Epetra::Vector& cloneVector,
-    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
+Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::
+    BuildLinearSystem(
+    const NOX::NLN::LinSystem::LinearSystemType& linsystype,
+    NOX::NLN::GlobalData& noxNlnGlobalData,
+    const Teuchos::RCP<LINALG::SparseOperator>& jac,
+    const Teuchos::RCP<NOX::Epetra::Vector>& cloneVector,
+    const Teuchos::RCP<LINALG::SparseOperator>& precMat,
+    const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject) const
 {
   Teuchos::RCP<NOX::Epetra::LinearSystem> linSys = Teuchos::null;
 
+  // extract some stuff from the NOX::NLN::GlobalData object
+  const NOX::NLN::LinearSystem::SolverMap& linSolvers =
+      noxNlnGlobalData.GetLinSolvers();
+  const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq =
+      noxNlnGlobalData.GetRequiredInterface();
+  const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac =
+      noxNlnGlobalData.GetJacobianInterface();
+  const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec =
+      noxNlnGlobalData.GetPreconditionerInterface();
+
+  Teuchos::ParameterList& params = noxNlnGlobalData.GetNlnParameterList();
+  // printing parameters
+  Teuchos::ParameterList& printParams = params.sublist("Printing",true);
+  // linear solver parameters
+  Teuchos::ParameterList& lsParams    = params.sublist("Direction",true).
+      sublist("Newton",true).sublist("Linear Solver",true);
+
   // pure structural case
-  if (linSolvers.size()==1 and
-      linSolvers.find(NOX::NLN::sol_structure)!=linSolvers.end())
+  switch (linsystype)
   {
-    linSys = Teuchos::rcp(new NOX::NLN::STR::LinearSystem(printParams,linearSolverParams,linSolvers,iReq,iJac,J,iPrec,M,cloneVector,scalingObject));
-  }
-  // structural/contact case
-  else if (linSolvers.size()==2 and
-      linSolvers.find(NOX::NLN::sol_structure)!=linSolvers.end() and
-      linSolvers.find(NOX::NLN::sol_contact)!=linSolvers.end())
-  {
-    linSys = Teuchos::rcp(new NOX::NLN::CONTACT::LinearSystem(printParams,linearSolverParams,linSolvers,iReq,iJac,J,iPrec,M,cloneVector,scalingObject));
-  }
-  else
-  {
-    dserror("ERROR - NOX::NLN::LinSystem::Factory::BuildLinearSystem - No capable LinearSystem constructor was found!");
-  }
+    case NOX::NLN::LinSystem::linear_system_structure:
+    {
+      linSys = Teuchos::rcp(new NOX::NLN::STR::LinearSystem(
+          printParams,lsParams,linSolvers,iReq,iJac,jac,iPrec,precMat,
+          *cloneVector,scalingObject));
+      break;
+    }
+    // structural/contact case
+    case NOX::NLN::LinSystem::linear_system_structure_contact:
+    {
+      const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr =
+          noxNlnGlobalData.GetConstraintInterfaces();
+      const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec =
+          noxNlnGlobalData.GetConstraintPrecInterfaces();
+
+      linSys = Teuchos::rcp(new NOX::NLN::CONTACT::LinearSystem(
+          printParams,lsParams,linSolvers,iReq,iJac,iConstr,jac,iPrec,
+          iConstrPrec,precMat,*cloneVector,scalingObject));
+      break;
+    }
+    // default case
+    default:
+    {
+      dserror("ERROR - NOX::NLN::LinSystem::Factory::BuildLinearSystem - "
+          "No capable LinearSystem constructor was found (enum = %s|%i)!",
+          NOX::NLN::LinSystem::LinearSystemType2String(linsystype).c_str(),
+          linsystype);
+      break;
+    }
+  } // end switch
 
   // return the linear system
   return linSys;
@@ -77,19 +110,15 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::BuildLinea
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::BuildLinearSystem(
-    Teuchos::ParameterList& printParams,
-    Teuchos::ParameterList& linearSolverParams,
-    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& linSolvers,
-    const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq,
-    const Teuchos::RCP<NOX::Epetra::Interface::Jacobian>& iJac,
-    const Teuchos::RCP<LINALG::SparseOperator>& J,
-    const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>& iPrec,
-    const Teuchos::RCP<LINALG::SparseOperator>& M,
-    const NOX::Epetra::Vector& cloneVector,
-    const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject)
+    const NOX::NLN::LinSystem::LinearSystemType& linsystype,
+    NOX::NLN::GlobalData& noxNlnGlobalData,
+    const Teuchos::RCP<LINALG::SparseOperator>& jac,
+    const Teuchos::RCP<NOX::Epetra::Vector>& cloneVector,
+    const Teuchos::RCP<LINALG::SparseOperator>& precMat,
+    const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject
+    )
 {
   Factory factory;
-
-  return factory.BuildLinearSystem(printParams,linearSolverParams,
-      linSolvers,iReq,iJac,J,iPrec,M,cloneVector,scalingObject);
+  return factory.BuildLinearSystem(linsystype,noxNlnGlobalData,jac,cloneVector,
+      precMat,scalingObject);
 }

@@ -2,6 +2,8 @@
 /*!
 \file str_impl_genalpha.H
 
+\brief Generalized Alpha time integrator.
+
 \maintainer Michael Hiermeier
 
 \date Aug 13, 2015
@@ -49,6 +51,13 @@ namespace IMPLICIT {
         const Epetra_Vector& x,
         Epetra_Vector& f,
         LINALG::SparseOperator& jac);
+
+    //! [derived]
+    virtual void WriteRestart(IO::DiscretizationWriter& iowriter,
+        const bool& forced_writerestart) const;
+
+    //! [derived]
+    virtual void ReadRestart(IO::DiscretizationReader& ioreader);
 
     //! [derived]
     virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type);
@@ -178,10 +187,10 @@ namespace IMPLICIT {
      *  global state data container and just store a pointer to the global
      *  state variable. */
     //! @{
-    //! viscous mid-point force vector F_viscous F_{viscous;n+1}
+    //! viscous force vector F_viscous F_{viscous;n+1}
     Teuchos::RCP<Epetra_Vector> fvisconp_ptr_;
 
-    //! viscous mid-point force vector F_viscous F_{viscous;n+1}
+    //! viscous force vector F_viscous F_{viscous;n}
     Teuchos::RCP<Epetra_Vector> fviscon_ptr_;
 
     /*! \brief Holds the during a time step constant contributions to

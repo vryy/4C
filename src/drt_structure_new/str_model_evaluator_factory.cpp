@@ -2,6 +2,8 @@
 /*!
 \file str_model_evaluator_factory.cpp
 
+\brief Factory to create the desired model evaluators.
+
 \maintainer Michael Hiermeier
 
 \date Sep 10, 2015
@@ -18,6 +20,7 @@
 // supported model evaluators
 #include "str_model_evaluator_structure.H"
 #include "str_model_evaluator_springdashpot.H"
+#include "str_model_evaluator_contact.H"
 
 
 /*----------------------------------------------------------------------------*
@@ -50,6 +53,8 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::SpringDashpot());
         break;
       case INPAR::STR::model_contact:
+        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Contact());
+        break;
       case INPAR::STR::model_meshtying:
       case INPAR::STR::model_lag_pen_constraint:
       case INPAR::STR::model_windkessel:

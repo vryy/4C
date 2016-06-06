@@ -1,14 +1,16 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_integrator.H
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief A class to perform integrations of Mortar matrices on the overlap
+       of two MortarElements in 1D and 2D (derived version for contact)
 
-*-----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*---------------------------------------------------------------------*/
 #ifndef CONTACT_INTEGRATOR_H
 #define CONTACT_INTEGRATOR_H
 
@@ -21,12 +23,17 @@ namespace LINALG
 {
 class SerialDenseVector;
 }
+namespace MORTAR {
+class ParamsInterface;
+}
 /*!
  \brief CONTACT: namespace of the BACI contact and meshtying algorithms
 
  */
 namespace CONTACT
 {
+// forward declaration
+class ParamsInterface;
 /*!
  \brief A class to perform Gaussian integration and assembly of Mortar
  matrices on the overlap of two MortarElements (1 Slave, 1 Master)
@@ -91,7 +98,11 @@ public:
 
    */
   void IntegrateDerivEle2D(MORTAR::MortarElement& sele,
-      std::vector<MORTAR::MortarElement*> meles, bool *boundary_ele);
+      std::vector<MORTAR::MortarElement*> meles, bool *boundary_ele,
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+  virtual void IntegrateDerivEle2D(MORTAR::MortarElement& sele,
+      std::vector<MORTAR::MortarElement*> meles, bool *boundary_ele,
+      const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
 
   /*!
    \brief integrate D matrix without lin...
@@ -108,8 +119,11 @@ public:
 
    */
   void IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia,
+        double& sxib, MORTAR::MortarElement& mele, double& mxia, double& mxib,
+        const Epetra_Comm& comm,const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+  virtual void IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia,
       double& sxib, MORTAR::MortarElement& mele, double& mxia, double& mxib,
-      const Epetra_Comm& comm);
+      const Epetra_Comm& comm,const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
 
   /*!
    \brief Build all integrals and linearizations without segmentation -- 3D
@@ -119,7 +133,13 @@ public:
   void IntegrateDerivEle3D(
       MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
       bool *boundary_ele, bool *proj_,
-      const Epetra_Comm& comm);
+      const Epetra_Comm& comm,
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+  virtual void IntegrateDerivEle3D(
+      MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
+      bool *boundary_ele, bool *proj_,
+      const Epetra_Comm& comm,
+      const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
 
   /*!
    \brief Build all integrals and linearizations on a 2D slave /
@@ -129,8 +149,12 @@ public:
    */
   void IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
       MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell,
-      double* auxn,
-      const Epetra_Comm& comm);
+      double* auxn, const Epetra_Comm& comm,
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+  virtual void IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
+      MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell,
+      double* auxn, const Epetra_Comm& comm,
+      const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
 
   /*!
    \brief Build all integrals and linearizations on a 2D slave /

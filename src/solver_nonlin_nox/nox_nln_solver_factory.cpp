@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_solver_factory.cpp
 
+\brief Factory to create the desired non-linear solver object.
+
 \maintainer Michael Hiermeier
 
 \date Jun 11, 2015
@@ -12,6 +14,7 @@
 /*-----------------------------------------------------------*/
 
 #include "nox_nln_solver_factory.H"
+#include "nox_nln_globaldata.H"
 
 #include <NOX_Solver_Factory.H>
 #include <NOX_Solver_Generic.H>

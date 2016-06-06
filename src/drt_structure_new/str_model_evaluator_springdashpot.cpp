@@ -2,6 +2,8 @@
 /*!
 \file str_model_evaluator_springdashpot.cpp
 
+\brief Evaluation and assembly of all spring dashpot terms
+
 \maintainer Martin Pfaller
 
 \date Feb 29, 2016
@@ -45,17 +47,17 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
 
   // get all spring dashpot conditions
   std::vector<Teuchos::RCP<DRT::Condition> > springdashpots;
-  discret_ptr_->GetCondition("SpringDashpot",springdashpots);
+  Discret().GetCondition("SpringDashpot",springdashpots);
 
   // number of spring dashpot conditions
   n_conds_ = (int)springdashpots.size();;
 
   // new instance of spring dashpot BC for each condition
   for (int i=0; i<n_conds_; ++i)
-    springs_.push_back(Teuchos::rcp(new UTILS::SpringDashpotNew(discret_ptr_, springdashpots[i])));
+    springs_.push_back(Teuchos::rcp(new UTILS::SpringDashpotNew(DiscretPtr(), springdashpots[i])));
 
   // setup the displacement pointer
-  disnp_ptr_ = gstate_ptr_->GetMutableDisNp();
+  disnp_ptr_ = GState().GetMutableDisNp();
 
   // set flag
   issetup_ = true;
@@ -88,7 +90,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::ApplyStiff(
 
   // dummy vector
   Teuchos::RCP<Epetra_Vector> f_disp =
-        Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->DofRowMap(),true));
+        Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(),true));
 
   // loop over all spring dashpot conditions and evaluate them
   for (int i=0; i<n_conds_; ++i)
@@ -109,7 +111,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::ApplyForceStiff(
 
   // get displacement DOFs
   Teuchos::RCP<Epetra_Vector> f_disp =
-      Teuchos::rcp(new Epetra_Vector(*gstate_ptr_->DofRowMap(),true));
+      Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(),true));
 
   // loop over all spring dashpot conditions and evaluate them
   for (int i=0; i<n_conds_; ++i)
@@ -118,6 +120,42 @@ bool STR::MODELEVALUATOR::SpringDashpot::ApplyForceStiff(
   STR::AssembleVector(1.0,f,1.0,*f_disp);
 
   return true;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::SpringDashpot::WriteRestart(
+        IO::DiscretizationWriter& iowriter,
+        const bool& forced_writerestart) const
+{
+  // row maps for export
+  Teuchos::RCP<Epetra_MultiVector> springoffsetprestr =
+      Teuchos::rcp(new Epetra_MultiVector(*(Discret().NodeRowMap()),3,true));
+
+  // collect outputs from all spring dashpot conditions
+  for (int i=0; i<n_conds_; ++i)
+    springs_[i]->OutputPrestrOffset(springoffsetprestr);
+
+  // write vector to output for restart
+  iowriter.WriteVector("springoffsetprestr", springoffsetprestr);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::SpringDashpot::ReadRestart(
+    IO::DiscretizationReader& ioreader)
+{
+  Teuchos::RCP<Epetra_MultiVector> tempvec =
+      Teuchos::rcp(new Epetra_MultiVector(*(Discret().NodeRowMap()),3,true));
+
+  ioreader.ReadMultiVector(tempvec, "springoffsetprestr");
+  // loop over all spring dashpot conditions and reset them
+  for (int i=0; i<n_conds_; ++i)
+    springs_[i]->SetRestart(tempvec);
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -163,12 +201,16 @@ void STR::MODELEVALUATOR::SpringDashpot::DetermineEnergy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::OutputStepState()
+void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(
+    IO::DiscretizationWriter& iowriter) const
 {
   // row maps for export
-  Teuchos::RCP<Epetra_Vector> gap = Teuchos::rcp(new Epetra_Vector(*(discret_ptr_->NodeRowMap()),true));
-  Teuchos::RCP<Epetra_MultiVector> normals = Teuchos::rcp(new Epetra_MultiVector(*(discret_ptr_->NodeRowMap()),3,true));
-  Teuchos::RCP<Epetra_MultiVector> springstress = Teuchos::rcp(new Epetra_MultiVector(*(discret_ptr_->NodeRowMap()),3,true));
+  Teuchos::RCP<Epetra_Vector> gap =
+      Teuchos::rcp(new Epetra_Vector(*(Discret().NodeRowMap()),true));
+  Teuchos::RCP<Epetra_MultiVector> normals =
+      Teuchos::rcp(new Epetra_MultiVector(*(Discret().NodeRowMap()),3,true));
+  Teuchos::RCP<Epetra_MultiVector> springstress =
+      Teuchos::rcp(new Epetra_MultiVector(*(Discret().NodeRowMap()),3,true));
 
   // collect outputs from all spring dashpot conditions
   bool found_cursurfnormal = false;
@@ -186,9 +228,9 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState()
   // write vectors to output
   if (found_cursurfnormal)
   {
-    gio_ptr_->GetMutableOutputPtr()->WriteVector("gap", gap);
-    gio_ptr_->GetMutableOutputPtr()->WriteVector("curnormals", normals);
-    gio_ptr_->GetMutableOutputPtr()->WriteVector("springstress", springstress);
+    iowriter.WriteVector("gap", gap);
+    iowriter.WriteVector("curnormals", normals);
+    iowriter.WriteVector("springstress", springstress);
   }
 
   return;
@@ -200,7 +242,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Reset(
     const Epetra_Vector& x,
     LINALG::SparseOperator& jac)
 {
-  stiff_ptr_ = gstate_ptr_->ExtractDisplBlock(jac);
+  stiff_ptr_ = GState().ExtractDisplBlock(jac);
 
   CheckInitSetup();
 
@@ -218,5 +260,32 @@ void STR::MODELEVALUATOR::SpringDashpot::Reset(const Epetra_Vector& x)
     springs_[i]->ResetNewton();
 
   // update the structural displacement vector
-  disnp_ptr_ = gstate_ptr_->GetDisNp();
+  disnp_ptr_ = GState().GetDisNp();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::SpringDashpot::
+    GetBlockDofRowMapPtr() const
+{
+  CheckInitSetup();
+  return GState().DofRowMap();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::SpringDashpot::
+    GetCurrentSolutionPtr() const
+{
+  // there are no model specific solution entries
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::SpringDashpot::
+    GetLastTimeStepSolutionPtr() const
+{
+  // there are no model specific solution entries
+  return Teuchos::null;
 }

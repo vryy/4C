@@ -2,6 +2,8 @@
 /*!
 \file str_timint_implicit.cpp
 
+\brief Implicit structural time integration strategy.
+
 \maintainer Michael Hiermeier
 
 \date Aug 13, 2015
@@ -56,14 +58,6 @@ void STR::TIMINT::Implicit::Setup()
       implint_ptr_,DBCPtr(),Teuchos::rcp(this,false));
   noxinterface_ptr->Setup();
 
-  /* Set NOX::Epetra::Interface::Required
-   * This interface is necessary for the evaluation of basic things
-   * which are evaluated outside of the nox framework, but
-   * are strictly required. A simple example is the right-hand-side
-   * F. (see computeF) */
-  const Teuchos::RCP<NOX::Epetra::Interface::Required> ireq =
-      noxinterface_ptr;
-
   // ---------------------------------------------------------------------------
   // build predictor
   // ---------------------------------------------------------------------------
@@ -81,7 +75,7 @@ void STR::TIMINT::Implicit::Setup()
       DataSDyn().GetNlnSolverType();
   nlnsolver_ptr_ = STR::NLN::SOLVER::BuildNlnSolver(nlnSolverType);
   nlnsolver_ptr_->Init(DataGlobalStatePtr(),
-      DataSDynPtr(), noxinterface_ptr);
+      DataSDynPtr(), noxinterface_ptr,implint_ptr_,Teuchos::rcp(this,false));
   nlnsolver_ptr_->Setup();
 
   // set setup flag

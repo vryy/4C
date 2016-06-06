@@ -2,6 +2,8 @@
 /*!
 \file str_nln_solver_generic.H
 
+\brief Generic class of the non-linear structural solvers.
+
 \maintainer Michael Hiermeier
 
 \date Aug 13, 2015
@@ -25,10 +27,12 @@ namespace Abstract {
 } // namespace Abstract
 } // namespace NOX
 namespace STR {
+  class Integrator;
 namespace TIMINT {
   class Implicit;
   class BaseDataGlobalState;
   class BaseDataSDyn;
+  class Base;
   class NoxInterface;
 } // namespace TIMINT
 namespace NLN {
@@ -43,9 +47,12 @@ namespace SOLVER {
     virtual ~Generic() {};
 
     //! initialization
-    virtual void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate,
-        const Teuchos::RCP<STR::TIMINT::BaseDataSDyn> sdyn,
-        const Teuchos::RCP<STR::TIMINT::NoxInterface> noxinterface);
+    virtual void Init(
+        const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate,
+        const Teuchos::RCP<STR::TIMINT::BaseDataSDyn>& sdyn,
+        const Teuchos::RCP<STR::TIMINT::NoxInterface>& noxinterface,
+        const Teuchos::RCP<STR::Integrator>& integrator,
+        const Teuchos::RCP<const STR::TIMINT::Base>& timint);
 
     virtual void Setup() = 0;
 
@@ -60,6 +67,9 @@ namespace SOLVER {
      *  The nox group has to be initialized in one of the derived Setup() routines beforehand. */
     NOX::Abstract::Group& SolutionGroup();
     const NOX::Abstract::Group& GetSolutionGroup() const;
+
+    //! Get the number of nonlinear iterations
+    virtual int GetNumNlnIterations() const = 0;
 
   protected:
     //! Returns true if Init() has been called
@@ -76,73 +86,94 @@ namespace SOLVER {
       if (!IsInit() or !IsSetup())
         dserror("Call Init() and Setup() first!");
     }
+
+    //! Check if Init() has been called
     void CheckInit() const
     {
       if (!IsInit())
         dserror("You have to call Init() first!");
     }
 
-    // Returns the global state data container pointer
+    //! Returns the global state data container pointer
     const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> DataGlobalStatePtr()
     {
       CheckInit();
       return gstate_ptr_;
     }
 
-    // Returns the global state data container (read-only)
+    //! Returns the global state data container (read-only)
     const STR::TIMINT::BaseDataGlobalState& DataGlobalState() const
     {
       CheckInit();
       return *gstate_ptr_;
     }
 
-    // Returns the global state data container (read and write)
+    //! Returns the global state data container (read and write)
     STR::TIMINT::BaseDataGlobalState& DataGlobalState()
     {
       CheckInit();
       return *gstate_ptr_;
     }
 
-    // Returns the structural dynamics data container pointer
+    //! Returns the structural dynamics data container pointer
     const Teuchos::RCP<STR::TIMINT::BaseDataSDyn> DataSDynPtr()
     {
       CheckInit();
       return sdyn_ptr_;
     }
 
-    // Returns the structural dynamics data container (read-only)
+    //! Returns the structural dynamics data container (read-only)
     const STR::TIMINT::BaseDataSDyn& DataSDyn() const
     {
       CheckInit();
       return *sdyn_ptr_;
     }
 
-    // Returns the structural dynamics data container (read and write)
+    //! Returns the structural dynamics data container (read and write)
     STR::TIMINT::BaseDataSDyn& DataSDyn()
     {
       CheckInit();
       return *sdyn_ptr_;
     }
 
-    // Returns the non-linear solver implicit time integration interface pointer
+    //! Returns the non-linear solver implicit time integration interface pointer
     const Teuchos::RCP<STR::TIMINT::NoxInterface> NoxInterfacePtr()
     {
       CheckInit();
       return noxinterface_ptr_;
     }
 
-    // Returns the non-linear solver implicit time integration interface (read-only)
+    //! Returns the non-linear solver implicit time integration interface (read-only)
     const STR::TIMINT::NoxInterface& NoxInterface() const
     {
       CheckInit();
       return *noxinterface_ptr_;
     }
 
-    // Returns the non-linear solver implicit time integration interface (read and write)
+    //! Returns the non-linear solver implicit time integration interface (read and write)
     STR::TIMINT::NoxInterface& NoxInterface()
     {
       CheckInit();
       return *noxinterface_ptr_;
+    }
+
+    STR::Integrator& Integrator()
+    {
+      CheckInit();
+      return *int_ptr_;
+    }
+
+    const STR::Integrator& Integrator() const
+    {
+      CheckInit();
+      return *int_ptr_;
+    }
+
+    //! Returns the underlying time integration strategy
+    const STR::TIMINT::Base& TimInt() const
+    {
+      CheckInit();
+      return *timint_ptr_;
     }
 
     /*! returns the nox group (pointer) (only for internal use)
@@ -167,6 +198,12 @@ namespace SOLVER {
 
     //! required interface pointer to the implicit time integrator (call back)
     Teuchos::RCP<STR::TIMINT::NoxInterface> noxinterface_ptr_;
+
+    //! pointer to the current time integrator
+    Teuchos::RCP<STR::Integrator> int_ptr_;
+
+    //! pointer to the time integration strategy
+    Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
 
     //! nox group
     Teuchos::RCP<NOX::Abstract::Group> group_ptr_;

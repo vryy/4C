@@ -3,12 +3,9 @@
 
 \brief Methods for spring and dashpot constraints / boundary conditions
 
-<pre>
-Maintainer: Martin Pfaller
-            pfaller@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15264
-</pre>
+\level 2
+
+\maintainer Martin Pfaller
 
 *----------------------------------------------------------------------*/
 
@@ -104,7 +101,7 @@ namespace UTILS
       void OutputGapNormal(
           Teuchos::RCP<Epetra_Vector> &gap,
           Teuchos::RCP<Epetra_MultiVector> &normals,
-          Teuchos::RCP<Epetra_MultiVector> &stress);
+          Teuchos::RCP<Epetra_MultiVector> &stress) const;
 
       //! select spring stiffness for tensile or compressive spring
       double SelectStiffness(double gap)
@@ -117,7 +114,7 @@ namespace UTILS
 
       //! output of spring offset
       void OutputPrestrOffset(
-          Teuchos::RCP<Epetra_MultiVector> &springprestroffset);
+          Teuchos::RCP<Epetra_MultiVector> &springprestroffset) const;
 
       //! return type of spring
       SpringType GetSpringType()

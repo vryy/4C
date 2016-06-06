@@ -1,11 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file contact_manager.H
-
-\maintainer Philipp Farah, Alexander Seitz
 
 \brief BACI implementation of main class to control all contact
 
-*-----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*----------------------------------------------------------------------*/
 #ifndef CONTACT_MANAGER_H
 #define CONTACT_MANAGER_H
 

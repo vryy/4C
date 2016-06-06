@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_solver_factory.H
 
+\brief Factory to create the desired non-linear solver object.
+
 \maintainer Michael Hiermeier
 
 \date Jun 11, 2015
@@ -15,7 +17,6 @@
 #define NOX_NLN_SOLVER_FACTORY_H_
 
 #include <Teuchos_RCP.hpp>
-#include "nox_nln_globaldata.H"
 
 // forward declaration
 namespace NOX {
@@ -32,6 +33,7 @@ namespace Solver {
 } // namespace Solver
 
 namespace NLN {
+  class GlobalData;
 namespace INNER {
 namespace StatusTest {
   class Generic;

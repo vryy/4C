@@ -2,6 +2,9 @@
 /*!
 \file nox_nln_solver_ptc.cpp
 
+\brief %NOX::NLN implementation of a pseudo transient non-linear
+       solver.
+
 \maintainer Michael Hiermeier
 
 \date Oct 6, 2015
@@ -283,6 +286,12 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
     }
     printUpdate();
   }
+  else
+  {
+    /* Adjust the pseudo time step, such it fits to the chosen line search
+     * step length. */
+    adjustPseudoTimeStep();
+  }
 
   // First check status
   if (status != NOX::StatusTest::Unconverged)
@@ -338,15 +347,13 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
   usePseudoTransientResidual_ = true;
   // Do line search and compute new soln.
   ok = lineSearchPtr->compute(soln, stepSize, *dirPtr, *this);
-  // call the computeF routine again, to be sure that it has been evaluated!
+  /* call the computeF routine again, to be sure that it has been evaluated!
+   * (this becomes necessary for a Full Step method call!) */
   solnPtr->computeF();
   usePseudoTransientResidual_ = false;
   // evaluate the model reduction ratio if desired
   if (ok)
     evalModelReductionRatio();
-  /* Adjust the pseudo time step, such it fits to the chosen line search
-   * step length. */
-  adjustPseudoTimeStep();
 
   if (!ok)
   {
@@ -398,6 +405,11 @@ void NOX::NLN::Solver::PseudoTransient::evalModelReductionRatio()
   double modelnew = globalDataPtr->getMeritFunction()->computeQuadraticModel(*sdirPtr,*oldSolnPtr);
 
   modelReductionRatio_ = (fref-fnew)/(fref-modelnew);
+  if (utilsPtr->isPrintType(NOX::Utils::Details))
+  {
+    utilsPtr->out() << "(" << fref << " - " << fnew << ") / ("
+        << fref << " - " << modelnew << ")" << std::endl;
+  }
 
   return;
 }
@@ -448,7 +460,7 @@ void NOX::NLN::Solver::PseudoTransient::adjustPseudoTimeStep()
   /* Check the step-length. If the step-length is not equal 1.0,
    * we adjust the pseudo time step size by using a least squares
    * approximation. */
-  if (stepSize == 1.0)
+  if (stepSize == 1.0 or nIter >= maxPseudoTransientIterations_)
     return;
 
   if (utilsPtr->isPrintType(NOX::Utils::Details))
@@ -608,7 +620,7 @@ void NOX::NLN::Solver::PseudoTransient::updatePseudoTimeStep()
    * use a standard line search based solution procedure. */
   else
   {
-    delta_ = std::numeric_limits<double>::max();
+    delta_ =  std::numeric_limits<double>::infinity();
     invDelta_ = 0.0;
   }
 

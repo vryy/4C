@@ -2,6 +2,8 @@
 /*!
 \file str_model_evaluator_factory.H
 
+\brief Factory to create the desired model evaluators.
+
 \maintainer Michael Hiermeier
 
 \date Sep 10, 2015

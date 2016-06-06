@@ -2,6 +2,9 @@
 /*!
 \file str_timint_basedatasdyn.H
 
+\brief Structural dynamics data container for the structural (time)
+       integration
+
 \maintainer Michael Hiermeier
 
 \date Jan 12, 2016
@@ -18,8 +21,8 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_structure.H"
 
-// include of nox nln enumerators (ToDo: Can be moved to the nonlinear solver inpar section)
-#include "../solver_nonlin_nox/nox_nln_statustest_factory.H"
+// include of nox nln enumerators
+#include "../solver_nonlin_nox/nox_nln_enum_lists.H"
 // include of enumerators of the nox abstract vector class
 #include <NOX_Abstract_Vector.H>
 

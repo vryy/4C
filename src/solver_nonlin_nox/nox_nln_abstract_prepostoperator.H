@@ -2,11 +2,16 @@
 /*!
 \file nox_nln_abstract_prepostoperator.H
 
+\brief %NOX::NLN's pure virtual class to allow users to insert pre and post
+       operations into different NOX::NLN classes.
+
+\level 3
+
 \maintainer Michael Hiermeier
 
 \date Oct 19, 2015
 
-\level 3
+
 
 */
 /*-----------------------------------------------------------*/

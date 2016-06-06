@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file mortar_coupling2d.cpp
 
-\maintainer Philipp Farah, Alexander Seitz
-
 \brief Classes for mortar coupling in 2D.
+
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 
@@ -839,7 +841,8 @@ bool MORTAR::Coupling2d::DetectOverlap()
 /*----------------------------------------------------------------------*
  |  Integrate slave / master overlap (public)                 popp 04/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling2d::IntegrateOverlap()
+bool MORTAR::Coupling2d::IntegrateOverlap(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
@@ -972,13 +975,13 @@ MORTAR::Coupling2dManager::Coupling2dManager(
     bool quad,
     Teuchos::ParameterList& params,
     MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele) :
-  idiscret_(idiscret),
-  dim_(dim),
-  quad_(quad),
-  imortar_(params),
-  sele_(sele),
-  mele_(mele)
+    std::vector<MORTAR::MortarElement*> mele)
+    : idiscret_(idiscret),
+      dim_(dim),
+      quad_(quad),
+      imortar_(params),
+      sele_(sele),
+      mele_(mele)
 {
   return;
 }
@@ -987,7 +990,8 @@ MORTAR::Coupling2dManager::Coupling2dManager(
 /*----------------------------------------------------------------------*
  |  Evaluate mortar-coupling pairs                           popp 03/09 |
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling2dManager::IntegrateCoupling()
+void MORTAR::Coupling2dManager::IntegrateCoupling(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of numerical integration scheme
 
@@ -1018,7 +1022,7 @@ void MORTAR::Coupling2dManager::IntegrateCoupling()
 
       // do mortar integration
       for (int m = 0; m < (int) MasterElements().size(); ++m)
-        Coupling()[m]->IntegrateOverlap();
+        Coupling()[m]->IntegrateOverlap(mparams_ptr);
   }
 
   //**********************************************************************
@@ -1084,7 +1088,7 @@ void MORTAR::Coupling2dManager::IntegrateCoupling()
 
             // do mortar integration
             for (int m = 0; m < (int) MasterElements().size(); ++m)
-              Coupling()[m]->IntegrateOverlap();
+              Coupling()[m]->IntegrateOverlap(mparams_ptr);
           }
 
           else
@@ -1104,7 +1108,7 @@ void MORTAR::Coupling2dManager::IntegrateCoupling()
               Coupling()[m]->DetectOverlap();
 
               // integrate the element overlap
-              Coupling()[m]->IntegrateOverlap();
+              Coupling()[m]->IntegrateOverlap(mparams_ptr);
             }
           }
         }
@@ -1138,7 +1142,8 @@ void MORTAR::Coupling2dManager::IntegrateCoupling()
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                  farah 10/14|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling2dManager::EvaluateCoupling()
+bool MORTAR::Coupling2dManager::EvaluateCoupling(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   if(MasterElements().size() == 0)
     return false;
@@ -1152,7 +1157,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
   //*********************************
   if(algo == INPAR::MORTAR::algorithm_mortar or
      algo == INPAR::MORTAR::algorithm_gpts)
-    IntegrateCoupling();
+    IntegrateCoupling(mparams_ptr);
 
   //*********************************
   // Error

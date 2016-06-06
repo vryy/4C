@@ -1,17 +1,18 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file adapter_coupling_poro_mortar.cpp
 
- \brief coupling adapter for porous meshtying
+\brief coupling adapter for porous meshtying
 
-// Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Christoph Ager
-// Originates from ADAPTER::CouplingNonLinMortar
+Masterthesis of h.Willmann under supervision of Anh-Tu Vuong
+and Christoph Ager, Originates from ADAPTER::CouplingNonLinMortar
 
-<pre>
-Maintainer: Anh-Tu Vuong & Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
-</pre>-------------------------------------------------------------*/
+\level 3
+
+\maintainer Anh-Tu Vuong, Christoph Ager
+
+*/
+/*---------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  includes                                                  ager 10/15|
@@ -126,7 +127,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(
 
     Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
     if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
-    cele->PhysType() = MORTAR::MortarElement::other;
+    cele->PhysType() = MORTAR::MortarElement::PhysicalType::other;
 
     std::vector<Teuchos::RCP<DRT::Condition> > porocondvec;
     masterdis->GetCondition("PoroCoupling",porocondvec);
@@ -140,17 +141,17 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(
         {
           if (mastertype_==0)
             dserror("struct and poro master elements on the same processor - no mixed interface supported");
-          cele->PhysType() = MORTAR::MortarElement::poro;
+          cele->PhysType() = MORTAR::MortarElement::PhysicalType::poro;
           mastertype_=1;
           break;
         }
       }
     }
-    if(cele->PhysType()==MORTAR::MortarElement::other)
+    if(cele->PhysType()==MORTAR::MortarElement::PhysicalType::other)
     {
       if (mastertype_==1)
         dserror("struct and poro master elements on the same processor - no mixed interface supported");
-      cele->PhysType() = MORTAR::MortarElement::structure;
+      cele->PhysType() = MORTAR::MortarElement::PhysicalType::structure;
       mastertype_=0;
     }
 
@@ -195,7 +196,7 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(
 
         Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
         if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
-        cele->PhysType() = MORTAR::MortarElement::other;
+        cele->PhysType() = MORTAR::MortarElement::PhysicalType::other;
 
         std::vector<Teuchos::RCP<DRT::Condition> > porocondvec;
         masterdis->GetCondition("PoroCoupling",porocondvec);
@@ -210,17 +211,17 @@ void ADAPTER::CouplingPoroMortar::AddMortarElements(
             {
               if (slavetype_==0)
                 dserror("struct and poro slave elements on the same processor - no mixed interface supported");
-              cele->PhysType() = MORTAR::MortarElement::poro;
+              cele->PhysType() = MORTAR::MortarElement::PhysicalType::poro;
               slavetype_=1;
               break;
             }
           }
         }
-        if(cele->PhysType()==MORTAR::MortarElement::other)
+        if(cele->PhysType()==MORTAR::MortarElement::PhysicalType::other)
         {
           if (slavetype_==1)
             dserror("struct and poro slave elements on the same processor - no mixed interface supported");
-          cele->PhysType() = MORTAR::MortarElement::structure;
+          cele->PhysType() = MORTAR::MortarElement::PhysicalType::structure;
           slavetype_=0;
         }
         cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
@@ -343,8 +344,12 @@ void ADAPTER::CouplingPoroMortar::CreateStrategy(
   interfaces.push_back(interface_);
   double alphaf = 1.0 - theta;
 
+  // build the correct data container
+  Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr =
+      Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
   //create contact poro lagrange strategy for mesh tying
   porolagstrategy_ = Teuchos::rcp(new CONTACT::PoroLagrangeStrategy(
+      data_ptr,
       masterdis->DofRowMap(),
       masterdis->NodeRowMap(),
       input,
@@ -430,10 +435,10 @@ void ADAPTER::CouplingPoroMortar::EvaluatePoroMt(
   CheckSetup();
 
   //write interface values into poro contact interface data containers for integration in contact integrator
-  porolagstrategy_->SetState("fvelocity",fvel);
-  porolagstrategy_->SetState("svelocity",svel);
-  porolagstrategy_->SetState("fpressure",fpres);
-  porolagstrategy_->SetState("displacement",sdisp);
+  porolagstrategy_->SetState(MORTAR::state_fvelocity,*fvel);
+  porolagstrategy_->SetState(MORTAR::state_svelocity,*svel);
+  porolagstrategy_->SetState(MORTAR::state_fpressure,*fpres);
+  porolagstrategy_->SetState(MORTAR::state_new_displacement,*sdisp);
 
   //store displacements of parent elements for deformation gradient determinant and its linearization
   porolagstrategy_->SetParentState("displacement",sdisp,sdis);

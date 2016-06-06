@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_coupling3d.H
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Classes for mortar contact coupling in 3D.
 
-*-----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*---------------------------------------------------------------------*/
 #ifndef CONTACT_COUPLING3D_H
 #define CONTACT_COUPLING3D_H
 
@@ -16,15 +17,12 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_wear.H"
 
-/*!
- \brief CONTACT: namespace of the BACI contact and meshtying algorithms
-
- */
-
+//! CONTACT: namespace of the BACI contact and meshtying algorithms
 namespace CONTACT
 {
 
 // forward declarations
+class CoIntegrator;
 
 /*!
  \brief A class representing the framework for mortar coupling of ONE
@@ -95,7 +93,8 @@ public:
    and assembled into the slave element nodes.
 
    */
-  virtual bool IntegrateCells();
+  virtual bool IntegrateCells(
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   //@}
 
@@ -373,13 +372,14 @@ public:
    \brief Evaluate coupling pairs
 
    */
-  virtual bool EvaluateCoupling();
+  virtual bool EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
    \brief Evaluate mortar coupling pairs
 
    */
-  virtual void IntegrateCoupling();
+  virtual void IntegrateCoupling(
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
    \brief Return the LM shape fcn type
@@ -400,6 +400,16 @@ public:
   virtual void ConsistDualShape();
 
   //@}
+private:
+  /*! \brief Take the found master elements and select the feasible ones
+   *
+   * Orientation check of the considered master and slave element couplings
+   * This is inherent in the segment based integration but was ignored in the
+   * element based case.
+   *
+   * \date 04/16
+   * \author hiermeier */
+  void FindFeasibleMasterElements(std::vector<MORTAR::MortarElement*>& feasible_ma_eles) const;
 
 protected:
 
@@ -465,13 +475,15 @@ public:
    \brief Evaluate coupling pairs
 
    */
-  virtual bool EvaluateCoupling();
+  virtual bool EvaluateCoupling(
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
    \brief Evaluate mortar coupling pairs
 
    */
-  virtual void IntegrateCoupling();
+  virtual void IntegrateCoupling(
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
    \brief spatial dimension

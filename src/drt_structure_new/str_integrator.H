@@ -2,6 +2,8 @@
 /*!
 \file str_integrator.H
 
+\brief Generic class for all explicit/implicit time integrators.
+
 \maintainer Michael Hiermeier
 
 \date Dec 7, 2015
@@ -16,7 +18,7 @@
 
 #include <Teuchos_RCP.hpp>
 #include "../drt_inpar/inpar_structure.H" // enumerators
-#include "../solver_nonlin_nox/nox_nln_statustest_factory.H" // enumerators
+#include "../solver_nonlin_nox/nox_nln_enum_lists.H" // enumerators
 #include <NOX_Abstract_Vector.H> // enumerators
 
 // forward declaration
@@ -24,11 +26,16 @@ class Epetra_Vector;
 namespace Teuchos {
   class ParameterList;
 } // namespace Teuchos
+namespace IO {
+  class DiscretizationWriter;
+  class DiscretizationReader;
+} // namespace IO
 namespace STR {
   class ModelEvaluator;
   class Dbc;
 namespace MODELEVALUATOR {
   class Data;
+  class Generic;
 } // namespace MODELEVALUATOR
 namespace TIMINT {
   class Base;
@@ -55,7 +62,7 @@ namespace TIMINT {
         );
 
     //! Setup (has to be implemented by the derived classes)
-    virtual void Setup() = 0;
+    virtual void Setup();
 
     //! Set state variables
     virtual void SetState(const Epetra_Vector& x) = 0;
@@ -66,6 +73,21 @@ namespace TIMINT {
 
     //! return integration factor
     virtual double GetIntParam() const = 0;
+
+    //! @name Restart and output related functions
+    //! @{
+
+    /*! write restart information of the different time integration schemes
+     *  and model evaluators */
+    void WriteRestart(IO::DiscretizationWriter& iowriter) const
+    { WriteRestart(iowriter,false); };
+    virtual void WriteRestart(IO::DiscretizationWriter& iowriter,
+        const bool& forced_writerestart) const = 0;
+
+    /*! read restart information of the different time integration schemes
+     *  and model evaluators */
+    virtual void ReadRestart(IO::DiscretizationReader& ioreader) = 0;
+    //! @}
 
     //! @name Monolithic update routines
     //!@{
@@ -99,7 +121,7 @@ namespace TIMINT {
      *  upon object prior to writing stuff here.
      *
      *  \author mwgee (originally)                         \date 03/07 */
-    void OutputStepState();
+    void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
     /// things that should be done after updating
     virtual void PostUpdate() = 0;
@@ -128,9 +150,19 @@ namespace TIMINT {
 
     //! Return the model evaluator control object (read-only)
     const STR::ModelEvaluator& ModelEval() const;
+    Teuchos::RCP<const STR::ModelEvaluator> ModelEvalPtr() const;
+
+    //! Return the model evaluator object for the given model type
+    STR::MODELEVALUATOR::Generic& Evaluator(const INPAR::STR::ModelType& mt);
 
     //! Return the model evaluator data object (read-only)
     const STR::MODELEVALUATOR::Data& EvalData() const;
+
+    //! Return the model evaluator data object (read and write access)
+    STR::MODELEVALUATOR::Data& EvalData();
+
+    //! Return the Dirichlet boundary condition object (read-only)
+    const STR::Dbc& GetDbc() const;
     //! @}
 
   protected:
@@ -155,9 +187,6 @@ namespace TIMINT {
     //! Return the model evaluator control object
     STR::ModelEvaluator& ModelEval();
 
-    //! Return the model evaluator data object
-    STR::MODELEVALUATOR::Data& EvalData();
-
     //! Return the structural dynamic data container
     STR::TIMINT::BaseDataSDyn& SDyn();
 
@@ -172,9 +201,6 @@ namespace TIMINT {
 
     //! Return the Dirichlet boundary condition object
     STR::Dbc& Dbc();
-
-    //! Return the Dirichlet boundary condition object (read-only)
-    const STR::Dbc& Dbc() const;
 
     //! Return the time integration strategy object (read-only)
     const STR::TIMINT::Base& TimInt() const;
@@ -206,6 +232,9 @@ namespace TIMINT {
 
     //! pointer to the global state data container
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+
+    //! pointer to the input/output data container
+    Teuchos::RCP<STR::TIMINT::BaseDataIO> io_ptr_;
 
     //! pointer to the dirichlet boundary condition object
     Teuchos::RCP<STR::Dbc> dbc_ptr_;

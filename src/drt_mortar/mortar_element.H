@@ -1,16 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file mortar_element.H
 
 \brief A mortar coupling element
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 2
 
-*----------------------------------------------------------------------*/
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*----------------------------------------------------------------------*/
 #ifndef MORTAR_ELEMENT_H
 #define MORTAR_ELEMENT_H
 
@@ -262,12 +261,13 @@ public:
     biquad2D_hierarchical       // displacement modification for quad->lin dual LM biquadratic 2D
   };
 
-  //physical type of mortar element
-  enum PhysicalType
+  // physical type of mortar element
+  // (Scoped enumeration: allows static_cast since C++11)
+  enum struct PhysicalType : int
   {
-    poro = 0,       //poroelatic: (porofluid exists and must be considered in contact/meshtying)
+    poro = 0,       //poroelastic: (porofluid exists and must be considered in contact/meshtying)
     structure = 1,  //structure
-    other = 2       //this shouldnt happen
+    other = 2       //this should not happen
   };
 
   //@}

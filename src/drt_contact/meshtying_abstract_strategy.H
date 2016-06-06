@@ -1,9 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file meshtying_abstract_strategy.H
+
+\brief Main abstract class for meshtying solution strategies
+
+\level 2
 
 \maintainer Philipp Farah, Alexander Seitz
 
-*-----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 #ifndef MESHTYING_ABSTRACT_STRATEGY_H
 #define MESHTYING_ABSTRACT_STRATEGY_H
 
@@ -32,8 +38,7 @@ namespace LINALG
 namespace CONTACT
 {
 
-/*!
-\brief Main abstract class for meshtying solution strategies
+/*! \brief Main abstract class for meshtying solution strategies
 
 This is the templating abstract class for all meshtying solution algorithms.
 Every solution algorithm has to fit into the set of functions and calls defined herein
@@ -166,6 +171,30 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
                             const int step, const int iter,
                             bool predictor = false);
 
+    /*! \brief Reset call at the beginning of the ApplyForce(), ApplyStiff() and ApplyForceStiff() [derived]
+     *
+     *  \date 02/2016
+     *  \author hiermeier */
+    virtual void Reset(const Epetra_Vector& dis) { dserror("Not yet considered for msht!"); };
+
+    /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class [derived]
+     *
+     *  Evaluation of the right-hand-side only. Necessary and meaningful for line search strategies
+     *  for example.
+     *
+     *  \date 03/2016
+     *  \author hiermeier */
+    virtual bool ApplyForce() { dserror("Not yet considered for msht!"); return false; };
+
+    /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class [derived]
+     *
+     *  Evaluation of the mesh-tying right-hand-side and the mesh-tying jacobian. We call this method also,
+     *  when we are only interested in the jacobian, since the created overhead is negligible.
+     *
+     *  \date 03/2016
+     *  \author hiermeier */
+    virtual bool ApplyForceStiff() { dserror("Not yet considered for msht!"); return false; };
+
     /*!
     \brief Set current deformation state
 
@@ -175,7 +204,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \param vec (in): current global state of the quantity defined by statename
 
     */
-    void SetState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec);
+    void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec);
 
     /*!
     \brief Do mortar coupling in reference configuration
@@ -231,7 +260,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \param dbcmaps (in): MapExtractor carrying global dbc map
 
     */
-    void StoreDirichletStatus(Teuchos::RCP<LINALG::MapExtractor> dbcmaps);
+    void StoreDirichletStatus(Teuchos::RCP<const LINALG::MapExtractor> dbcmaps);
 
     /*!
     \brief Update meshtying at end of time step
@@ -239,7 +268,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     \param dis (in):  current displacements (-> old displacements)
 
     */
-    void Update(Teuchos::RCP<Epetra_Vector> dis);
+    void Update(Teuchos::RCP<const Epetra_Vector> dis);
 
     /*!
     \brief Perform a write restart
@@ -250,7 +279,8 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     for short: here's the right place.
 
     */
-    void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis);
+    void DoReadRestart(IO::DiscretizationReader& reader,
+        Teuchos::RCP<const Epetra_Vector> dis);
 
     //@}
 
@@ -293,6 +323,38 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
 
     //@}
 
+    //! @name Preconditioner methods
+    //! @{
+
+    /*! Derived method
+     *
+     * (see NOX::NLN::CONSTRAINT::Interface::Preconditioner for more information) */
+    virtual bool IsSaddlePointSystem() const;
+
+    /*! \brief Derived method
+     *
+     * (see NOX::NLN::CONSTRAINT::Interface::Preconditioner for more information) */
+    virtual bool IsCondensedSystem() const;
+
+    /* Fill the maps vector for the linear solver preconditioner
+     *
+     * The following order is defined:
+     * (0) masterDofMap
+     * (1) slaveDofMap
+     * (2) innerDofMap
+     * (3) activeDofMap
+     *
+     * \author hiermeier */
+    virtual void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map> >& maps) const;
+
+    //! compute the preconditioner operator
+    virtual bool computePreconditioner(
+        const Epetra_Vector& x,
+        Epetra_Operator& M,
+        Teuchos::ParameterList* precParams = 0);
+
+    //! @}
+
     //! @name Purely virtual functions
 
     // All these functions are defined in one or more specific derived classes,
@@ -300,7 +362,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     // As the base class MORTAR::StrategyBase is always called from the control routine
     // (time integrator), these functions need to be defined purely virtual here.
 
-    virtual double ConstraintNorm() = 0;
+    virtual double ConstraintNorm() const = 0;
     virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
     virtual void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;
@@ -321,33 +383,33 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     // control routine (time integrator), whenever you like.
 
     bool ActiveSetConverged() {return true;}
-    bool ActiveSetSemiSmoothConverged() {return true;}
-    bool Friction() {return false;}
-    bool WearBothDiscrete() {return false;}
-    bool IsInContact() { return true; }
-    bool WasInContact() { return true; }
-    bool WasInContactLastTimeStep() { return true; }
+    bool ActiveSetSemiSmoothConverged() const {return true;}
+    bool Friction() const {return false;}
+    bool WearBothDiscrete() const {return false;}
+    bool IsInContact() const { return true; }
+    bool WasInContact() const { return true; }
+    bool WasInContactLastTimeStep() const { return true; }
     Teuchos::RCP<Epetra_Vector> ContactNorStress() {return Teuchos::null;}
     Teuchos::RCP<Epetra_Vector> ContactTanStress() {return Teuchos::null;}
     void AssembleMortar() {}
-    void InitBinStrategyforTimestep(Teuchos::RCP<Epetra_Vector> vel) {}
-    void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors, bool forcedrestart = false) {}
+    void InitBinStrategyforTimestep(Teuchos::RCP<const Epetra_Vector> vel) {}
+    virtual void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors, bool forcedrestart = false) const {}
     void InitEvalInterface() {}
     void InitMortar() {}
     void Initialize() {}
     double Inttime() {return inttime_;};
     void Inttime_init(){inttime_=0.0;};
-    int NumberOfActiveNodes() {return 0;}
-    int NumberOfSlipNodes() {return 0;}
+    int NumberOfActiveNodes() const {return 0;}
+    int NumberOfSlipNodes() const {return 0;}
     void OutputStresses() {}
     void AugForces(Epetra_Vector& augfs_lm,Epetra_Vector& augfs_g,Epetra_Vector& augfm_lm,Epetra_Vector& augfm_g){};
-    void RedistributeContact(Teuchos::RCP<Epetra_Vector> dis) {}
+    void RedistributeContact(Teuchos::RCP<const Epetra_Vector> dis) {}
     void ResetActiveSet() {}
-    void SaveReferenceState(Teuchos::RCP<Epetra_Vector> dis) {}
+    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateActiveSet() {}
     void UpdateActiveSetSemiSmooth() {}
     Teuchos::RCP<LINALG::SparseMatrix> EvaluateNormals(Teuchos::RCP<Epetra_Vector> dis) {return Teuchos::null;}
-    void EvaluateReferenceState(const Teuchos::RCP<Epetra_Vector> vec){}
+    void EvaluateReferenceState(Teuchos::RCP<const Epetra_Vector> vec){}
     void EvaluateRelMov() {}
     void EvaluateRelMovPredict() {}
     const Teuchos::RCP<Epetra_Map> SlaveRowNodes() { return gsnoderowmap_; }

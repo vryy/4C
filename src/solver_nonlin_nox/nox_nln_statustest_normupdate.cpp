@@ -2,6 +2,10 @@
 /*!
 \file nox_nln_statustest_normupdate.cpp
 
+\brief %NOX::NLN implementation of a NormUpdate status test. This
+       test can be used to check the solution increment \f$\Delta x\f$
+       for convergence.
+
 \maintainer Michael Hiermeier
 
 \date Sep 17, 2015

@@ -1,20 +1,23 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_coupling2d.cpp
-
-\maintainer Philipp Farah, Alexander Seitz
 
 \brief Classes for mortar contact coupling in 2D.
 
-*-----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*---------------------------------------------------------------------*/
 
 #include "contact_coupling2d.H"
 #include "contact_integrator.H"
+#include "contact_integrator_factory.H"
 #include "contact_element.H"
 #include "contact_defines.H"
 #include "contact_node.H"
 #include "contact_interpolator.H"
-
-#include "../drt_contact_aug/contact_augmented_integrator.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
@@ -45,7 +48,8 @@ stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATE
 /*----------------------------------------------------------------------*
  |  Integrate slave / master overlap (public)                 popp 04/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling2d::IntegrateOverlap()
+bool CONTACT::CoCoupling2d::IntegrateOverlap(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
@@ -85,12 +89,9 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
   double mxib = xiproj_[3];
 
   // create a CONTACT integrator instance with correct NumGP and Dim
-  Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::null;
-  if (stype_==INPAR::CONTACT::solution_augmented)
-    integrator = Teuchos::rcp(new CONTACT::AugmentedIntegrator(imortar_,SlaveElement().Shape(),Comm(),Teuchos::null));
-  else
-    integrator=Teuchos::rcp(new CONTACT::CoIntegrator(imortar_,SlaveElement().Shape(),Comm()));
-
+  Teuchos::RCP<CONTACT::CoIntegrator> integrator =
+      CONTACT::INTEGRATOR::BuildIntegrator(stype_,imortar_,
+          SlaveElement().Shape(),Comm());
   // *******************************************************************
   // different options for mortar integration
   // *******************************************************************
@@ -110,10 +111,8 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
     // ***********************************************************
     //                   Integrate stuff !!!                    //
     // ***********************************************************
-    if (stype_==INPAR::CONTACT::solution_augmented)
-      Teuchos::rcp_dynamic_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,Comm());
-    else
-      integrator->IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,Comm());
+    integrator->IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,
+        MasterElement(),mxia,mxib,Comm(),mparams_ptr);
     // ***********************************************************
     //                   END INTEGRATION !!!                    //
     // ***********************************************************
@@ -163,9 +162,7 @@ CONTACT::CoCoupling2dManager::CoCoupling2dManager(DRT::Discretization& idiscret,
         mele),
     stype_(DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params,"STRATEGY"))
 {
-  // evaluate coupling
-  EvaluateCoupling();
-
+  // empty constructor
   return;
 }
 
@@ -181,7 +178,8 @@ const Epetra_Comm& CONTACT::CoCoupling2dManager::Comm() const
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                  farah 10/14|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
+bool CONTACT::CoCoupling2dManager::EvaluateCoupling(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   if(MasterElements().size() == 0)
     return false;
@@ -194,7 +192,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
   // Mortar Contact
   //*********************************
   if(algo==INPAR::MORTAR::algorithm_mortar || algo==INPAR::MORTAR::algorithm_gpts)
-    IntegrateCoupling();
+    IntegrateCoupling(mparams_ptr);
 
   //*********************************
   // Error
@@ -209,7 +207,8 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
 /*----------------------------------------------------------------------*
  |  Evaluate mortar coupling pairs                           Popp 03/09 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoCoupling2dManager::IntegrateCoupling()
+void CONTACT::CoCoupling2dManager::IntegrateCoupling(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   //**********************************************************************
   // STANDARD INTEGRATION (SEGMENTS)
@@ -237,7 +236,7 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling()
 
     // do mortar integration
     for (int m = 0; m < (int) MasterElements().size(); ++m)
-      Coupling()[m]->IntegrateOverlap();
+      Coupling()[m]->IntegrateOverlap(mparams_ptr);
 
     // free memory of consistent dual shape function coefficient matrix
     SlaveElement().MoData().ResetDualShape();
@@ -253,12 +252,9 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling()
       return;
 
     // create an integrator instance with correct NumGP and Dim
-    Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::null;
-    if (stype_==INPAR::CONTACT::solution_augmented)
-      integrator = Teuchos::rcp(new CONTACT::AugmentedIntegrator(imortar_,SlaveElement().Shape(),
-          Comm(),Teuchos::null));
-    else
-      integrator=Teuchos::rcp(new CONTACT::CoIntegrator(imortar_,SlaveElement().Shape(),Comm()));
+    Teuchos::RCP<CONTACT::CoIntegrator> integrator =
+        CONTACT::INTEGRATOR::BuildIntegrator(stype_,imortar_,
+            SlaveElement().Shape(),Comm());
 
     // *******************************************************************
     // different options for mortar integration
@@ -296,11 +292,8 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling()
       // ***********************************************************
       //                  START INTEGRATION !!!                   //
       // ***********************************************************
-      if (stype_==INPAR::CONTACT::solution_augmented)
-        Teuchos::rcp_dynamic_cast<CONTACT::AugmentedIntegrator>(integrator)->IntegrateDerivEle2D(SlaveElement(),
-            MasterElements(),&boundary_ele);
-      else
-        integrator->IntegrateDerivEle2D(SlaveElement(), MasterElements(),&boundary_ele);
+      integrator->IntegrateDerivEle2D(SlaveElement(),
+            MasterElements(),&boundary_ele,mparams_ptr);
       // ***********************************************************
       //                   END INTEGRATION !!!                    //
       // ***********************************************************
@@ -332,7 +325,7 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling()
 
           // do mortar integration
           for (int m = 0; m < (int) MasterElements().size(); ++m)
-            Coupling()[m]->IntegrateOverlap();
+            Coupling()[m]->IntegrateOverlap(mparams_ptr);
 
           // free memory of consistent dual shape function coefficient matrix
           SlaveElement().MoData().ResetDualShape();
@@ -358,7 +351,7 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling()
             Coupling()[m]->DetectOverlap();
 
             // integrate the element overlap
-            Coupling()[m]->IntegrateOverlap();
+            Coupling()[m]->IntegrateOverlap(mparams_ptr);
           }
         }
       }
@@ -381,7 +374,8 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling()
     else if (Quad() && lmtype == INPAR::MORTAR::lagmult_undefined)
     {
       dserror("Lagrange multiplier interpolation for quadratic elements undefined\n"
-              "If you are using 2nd order mortar elements, you need to specify LM_QUAD in MORTAR COUPLING section");
+              "If you are using 2nd order mortar elements, you need to specify LM_QUAD"
+              " in MORTAR COUPLING section");
     }
 
     // *******************************************************************

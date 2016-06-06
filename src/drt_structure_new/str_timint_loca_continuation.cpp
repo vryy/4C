@@ -2,6 +2,8 @@
 /*!
 \file str_timint_loca_continuation.cpp
 
+\brief Library of Continuation Algorithms (LOCA) implementation.
+
 \maintainer Michael Hiermeier
 
 \date Nov 18, 2015
@@ -18,6 +20,8 @@
 #include "str_utils.H"
 #include "str_impl_generic.H"
 
+#include "../solver_nonlin_nox/nox_nln_globaldata.H"
+
 #include "../loca_continuation/loca_nln_problem.H"
 
 #include <LOCA_MultiContinuation_AbstractGroup.H>
@@ -27,8 +31,6 @@
 
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Epetra_LinearSystem.H>
-
-#include <boost/algorithm/string/predicate.hpp>  // case insensitive string compare
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -108,11 +110,18 @@ void STR::TIMINT::LOCAContinuation::Setup()
   STR::NLN::ConvertModelType2SolType(soltypes,linsolvers,
       DataSDyn().GetModelTypes(),DataSDyn().GetLinSolvers());
   // define and initialize the optimization type
-  const NOX::NLN::GlobalData::OptimizationProblemType opttype =
+  const NOX::NLN::OptimizationProblemType opttype =
       STR::NLN::OptimizationType(soltypes);
-  ConstraintMap iconstr;
+
   // set constraint interfaces
-  STR::NLN::CreateConstraintInterfaces(iconstr,soltypes);
+  NOX::NLN::CONSTRAINT::ReqInterfaceMap iconstr;
+  STR::NLN::CreateConstraintInterfaces(iconstr,Integrator(),soltypes);
+
+  // preconditioner map for constraint problems
+  NOX::NLN::CONSTRAINT::PrecInterfaceMap iconstr_prec;
+  STR::NLN::CreateConstraintPreconditioner(iconstr_prec,
+      Integrator(),soltypes);
+
   Teuchos::RCP<NOX::NLN::GlobalData> nox_nln_global_data_ptr =
       Teuchos::rcp(new NOX::NLN::GlobalData(
           DataGlobalState().GetComm(),
@@ -122,7 +131,8 @@ void STR::TIMINT::LOCAContinuation::Setup()
           loca_interface_ptr,
           opttype,
           iconstr,
-          loca_interface_ptr));
+          loca_interface_ptr,
+          iconstr_prec));
 
   // ---------------------------------------------------------------------------
   // get initial solution vector and jacobian
@@ -257,7 +267,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::LOCAContinuation::Solve()
 Teuchos::RCP<Epetra_Vector> STR::TIMINT::LOCAContinuation::SolveRelaxationLinear()
 {
   CheckInitSetup();
-  dserror("SolveRelaxationLinear() is not avaible for LOCA!");
+  dserror("SolveRelaxationLinear() is not available for LOCA!");
   return Teuchos::null;
 }
 

@@ -1,10 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file meshtying_abstract_strategy.cpp
+
+\brief Main abstract class for meshtying solution strategies
+
+\level 2
 
 \maintainer Philipp Farah, Alexander Seitz
 
-*----------------------------------------------------------------------*/
-
+*/
+/*---------------------------------------------------------------------*/
 #include <Teuchos_Time.hpp>
 #include "Epetra_SerialComm.h"
 
@@ -35,6 +40,7 @@ CONTACT::MtAbstractStrategy::MtAbstractStrategy(
     double alphaf,
     int maxdof) :
   MORTAR::StrategyBase(
+    Teuchos::rcp(new MORTAR::StratDataContainer()), // no shared data!
     DofRowMap,
     NodeRowMap,
     params,
@@ -285,7 +291,7 @@ void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
      const int step, const int iter, bool predictor)
 {
   // set displacement state
-  SetState("displacement",dis);
+  SetState(MORTAR::state_new_displacement,*dis);
 
   // apply meshtying forces and stiffness
   Evaluate(kt,f,dis);
@@ -296,17 +302,29 @@ void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- | set current deformation state                             popp 06/09 |
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::SetState(const std::string& statename,
-                                           const Teuchos::RCP<Epetra_Vector> vec)
+void CONTACT::MtAbstractStrategy::SetState(
+    const enum MORTAR::StateType& statetype,
+    const Epetra_Vector& vec)
 {
-  if (statename=="displacement" || statename=="olddisplacement")
+  switch (statetype)
   {
-    // set state on interfaces
-    for (int i=0; i<(int)interface_.size(); ++i)
-      interface_[i]->SetState(statename, vec);
+    case MORTAR::state_new_displacement:
+    case MORTAR::state_old_displacement:
+    {
+      // set state on interfaces
+      for (int i = 0; i < (int) interface_.size(); ++i)
+        interface_[i]->SetState(statetype, vec);
+      break;
+    }
+    default:
+    {
+      dserror("Unsupported state type! (state type = %s)",
+          MORTAR::StateType2String(statetype).c_str());
+      break;
+    }
   }
 
   return;
@@ -723,7 +741,7 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 /*----------------------------------------------------------------------*
  |  Store dirichlet B.C. status into MortarNode               popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::StoreDirichletStatus(Teuchos::RCP<LINALG::MapExtractor> dbcmaps)
+void CONTACT::MtAbstractStrategy::StoreDirichletStatus(Teuchos::RCP<const LINALG::MapExtractor> dbcmaps)
 {
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
@@ -770,7 +788,7 @@ void CONTACT::MtAbstractStrategy::StoreDirichletStatus(Teuchos::RCP<LINALG::MapE
 /*----------------------------------------------------------------------*
  | Update meshtying at end of time step                       popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::MtAbstractStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // store Lagrange multipliers
   // (we need this for interpolation of the next generalized mid-point)
@@ -780,7 +798,7 @@ void CONTACT::MtAbstractStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
   // old displacements in nodes
   // (this is needed for calculating the auxiliary positions in
   // binarytree contact search)
-  SetState("olddisplacement",dis);
+  SetState(MORTAR::state_old_displacement,*dis);
 
   return;
 }
@@ -788,11 +806,12 @@ void CONTACT::MtAbstractStrategy::Update(Teuchos::RCP<Epetra_Vector> dis)
 /*----------------------------------------------------------------------*
  |  read restart information for meshtying                    popp 03/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
-                                                Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::MtAbstractStrategy::DoReadRestart(
+    IO::DiscretizationReader& reader,
+    Teuchos::RCP<const Epetra_Vector> dis)
 {
   // set displacement state
-  SetState("displacement",dis);
+  SetState(MORTAR::state_new_displacement,*dis);
 
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -1345,4 +1364,73 @@ Teuchos::RCP<Epetra_Vector> CONTACT::MtAbstractStrategy::LagrMultOldRescaled()
     }
   }
   return zoldrescaled;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool CONTACT::MtAbstractStrategy::IsSaddlePointSystem() const
+{
+  if (SystemType()==INPAR::CONTACT::system_saddlepoint)
+      return true;
+
+  return false;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool CONTACT::MtAbstractStrategy::IsCondensedSystem() const
+{
+  if (SystemType()!=INPAR::CONTACT::system_saddlepoint)
+    return true;
+
+  return false;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::MtAbstractStrategy::FillMapsForPreconditioner(
+    std::vector<Teuchos::RCP<Epetra_Map> >& maps) const
+{
+  /* FixMe This function replaces the deprecated CollectMapsForPreconditioner(),
+   * the old version can be deleted, as soon as the contact uses the new
+   * structure framework. */
+
+  if (maps.size()!=4)
+    dserror("The vector size has to be 4!");
+  /* check if parallel redistribution is used
+   * if parallel redistribution is activated, then use (original) maps
+   * before redistribution otherwise we use just the standard master/slave
+   * maps */
+  // (0) masterDofMap
+  if (pgmdofrowmap_ != Teuchos::null)
+    maps[0] = pgmdofrowmap_;
+  else
+    maps[0] = gmdofrowmap_;
+  // (1) slaveDofMap
+  // (3) activeDofMap (all slave nodes are active!)
+  if (pgsdofrowmap_ != Teuchos::null)
+  {
+    maps[1] = pgsdofrowmap_;
+    maps[3] = pgsdofrowmap_;
+  }
+  else
+  {
+    maps[1] = gsdofrowmap_;
+    maps[3] = gsdofrowmap_;
+  }
+  // (2) innerDofMap
+  maps[2] = gndofrowmap_;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool CONTACT::MtAbstractStrategy::computePreconditioner(
+    const Epetra_Vector& x,
+    Epetra_Operator& M,
+    Teuchos::ParameterList* precParams)
+{
+  dserror("Not implemented!");
+  return false;
 }

@@ -1,20 +1,22 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_integrator.cpp
 
 \brief A class to perform integrations of Mortar matrices on the overlap
        of two MortarElements in 1D and 2D (derived version for contact)
 
-\level 1
+\level 2
 
 \maintainer Philipp Farah, Alexander Seitz
 
-*----------------------------------------------------------------------*/
-
+*/
+/*---------------------------------------------------------------------*/
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "contact_integrator.H"
 #include "contact_node.H"
 #include "contact_element.H"
 #include "contact_defines.H"
+#include "contact_paramsinterface.H"
 #include "friction_node.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_projector.H"
@@ -550,6 +552,25 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
 }
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
+    MORTAR::MortarElement& sele, double& sxia, double& sxib,
+    MORTAR::MortarElement& mele, double& mxia, double& mxib,
+    const Epetra_Comm& comm,
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+{
+  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr = Teuchos::null;
+  if (not mparams_ptr.is_null())
+  {
+    cparams_ptr =
+        Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr);
+    if (cparams_ptr.is_null())
+      dserror("Cast to CONTACT::ParamsInterface failed!");
+  }
+  IntegrateDerivSegment2D(sele,sxia,sxib,mele,mxia,mxib,comm,cparams_ptr);
+}
+
+/*----------------------------------------------------------------------*
  |  Integrate and linearize a 1D slave / master overlap (2D)  popp 02/09|
  |  This method integrates the overlap M matrix and weighted gap g~     |
  |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
@@ -561,7 +582,8 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
 void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
      MORTAR::MortarElement& sele, double& sxia, double& sxib,
      MORTAR::MortarElement& mele, double& mxia, double& mxib,
-     const Epetra_Comm& comm)
+     const Epetra_Comm& comm,
+     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // skip this segment, if too small
   if (sxib-sxia<4.*MORTARINTLIM)
@@ -1193,12 +1215,32 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(MORTAR::MortarElement& sele,
 }
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoIntegrator::IntegrateDerivEle3D(
+    MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
+    bool *boundary_ele, bool *proj_,
+    const Epetra_Comm& comm,
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+{
+  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr = Teuchos::null;
+  if (not mparams_ptr.is_null())
+  {
+    cparams_ptr =
+        Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr);
+    if (cparams_ptr.is_null())
+      dserror("Cast to CONTACT::ParamsInterface failed!");
+  }
+  IntegrateDerivEle3D(sele,meles,boundary_ele,proj_,comm,cparams_ptr);
+}
+
+/*----------------------------------------------------------------------*
  |  Integrate and linearize for lin and quad elements        farah 01/13|
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::IntegrateDerivEle3D(
      MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
      bool *boundary_ele, bool *proj_,
-     const Epetra_Comm& comm)
+     const Epetra_Comm& comm,
+     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
@@ -1387,6 +1429,25 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
 }
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
+    MORTAR::MortarElement& sele,
+    MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell,
+    double* auxn, const Epetra_Comm& comm,
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+{
+  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr = Teuchos::null;
+  if (not mparams_ptr.is_null())
+  {
+    cparams_ptr =
+        Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr);
+    if (cparams_ptr.is_null())
+      dserror("Cast to CONTACT::ParamsInterface failed!");
+  }
+  IntegrateDerivCell3DAuxPlane(sele,mele,cell,auxn,comm,cparams_ptr);
+}
+
+/*----------------------------------------------------------------------*
  |  Integrate and linearize a 2D slave / master cell (3D)     popp 03/09|
  |  This method integrates the cell M matrix and weighted gap g~        |
  |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
@@ -1398,7 +1459,8 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(
 void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-     const Epetra_Comm& comm)
+     const Epetra_Comm& comm,
+     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
@@ -1995,12 +2057,31 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
 }
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoIntegrator::IntegrateDerivEle2D(
+    MORTAR::MortarElement& sele,
+    std::vector<MORTAR::MortarElement*> meles, bool *boundary_ele,
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
+{
+  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr = Teuchos::null;
+  if (not mparams_ptr.is_null())
+  {
+    cparams_ptr =
+        Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr);
+    if (cparams_ptr.is_null())
+      dserror("Cast to CONTACT::ParamsInterface failed!");
+  }
+  IntegrateDerivEle2D(sele,meles,boundary_ele,cparams_ptr);
+}
+
+/*----------------------------------------------------------------------*
  |  Integrate and linearize mortar terms                     farah 01/13|
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::IntegrateDerivEle2D(
      MORTAR::MortarElement& sele,
      std::vector<MORTAR::MortarElement*> meles,
-     bool *boundary_ele)
+     bool *boundary_ele,
+     const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -2215,27 +2296,9 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(
           Gap_2D(sele,*meles[nummaster],sval,mval,sderiv,mderiv,gap,gpn,dsxigp,dmxigp,dgapgp,dnmap_unit);
 
           // integrate and lin gp gap
-          IntegrateGP_2D(
-              sele,
-              *meles[nummaster],
-              sval,
-              lmval,
-              mval,
-              sderiv,
-              mderiv,
-              lmderiv,
-              dualmap,
-              wgt,
-              dxdsxi,
-              derivjac,
-              gpn,
-              dnmap_unit,
-              gap[0],
-              dgapgp,
-              sxi,
-              mxi,
-              dsxigp,
-              dmxigp);
+          IntegrateGP_2D(sele,*meles[nummaster],sval,lmval,mval,sderiv,
+              mderiv,lmderiv,dualmap,wgt,dxdsxi,derivjac,gpn,dnmap_unit,
+              gap[0],dgapgp,sxi,mxi,dsxigp,dmxigp);
         }
       }//End Loop over all Master Elements
     } // End Loop over all GP
@@ -9852,10 +9915,10 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(
 
   //bool to decide if fluid quantities and structural velocities
   //exist for slave side on CoNode level and contribute to porofluid meshtying
-  bool slaveporo = (sele.PhysType() == MORTAR::MortarElement::poro);
+  bool slaveporo = (sele.PhysType() == MORTAR::MortarElement::PhysicalType::poro);
   //bool to decide if fluid quantities and structural velocities
   //exist for master side on CoNode level and contribute to porofluid meshtying
-  bool masterporo = (mele.PhysType() == MORTAR::MortarElement::poro);
+  bool masterporo = (mele.PhysType() == MORTAR::MortarElement::PhysicalType::poro);
 
   if(!slaveporo and masterporo)
     dserror("poroelastic mesh tying method needs the slave side to be poroelastic (invert master/slave definition)");
@@ -10614,6 +10677,8 @@ void CONTACT::CoIntegrator::GPTS_forces(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType parentdistype, int dim>
 void inline CONTACT::CoIntegrator::SoEleGP(
     MORTAR::MortarElement& sele,

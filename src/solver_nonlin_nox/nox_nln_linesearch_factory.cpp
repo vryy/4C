@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_linesearch_factory.cpp
 
+\brief Factory to create the desired Line Search object.
+
 \maintainer Michael Hiermeier
 
 \date Jun 11, 2015
@@ -12,7 +14,6 @@
 /*-----------------------------------------------------------*/
 
 #include "nox_nln_linesearch_factory.H" // class definition
-#include "nox_nln_globaldata.H"
 
 #include "../drt_lib/drt_dserror.H"
 

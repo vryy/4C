@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file mortar_interface.H
 
 \brief One mortar coupling interface
@@ -9,8 +10,8 @@
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
-
-*----------------------------------------------------------------------*/
+*/
+/*----------------------------------------------------------------------*/
 #ifndef MORTAR_INTERFACE_H
 #define MORTAR_INTERFACE_H
 
@@ -23,6 +24,9 @@
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../headers/pairedvector.H"
+#include "mortar_paramsinterface.H"
+
+#include <boost/algorithm/string/predicate.hpp>  // case insensitive string compare
 
 
 // forward declarations
@@ -50,6 +54,89 @@ class MortarElement;
 class IntElement;
 class BinaryTree;
 class IntCell;
+class ParamsInterface;
+
+/*! \brief State type for the set state routine
+ *
+ * \author hiermeier */
+enum StateType {
+  state_old_displacement,           //!< old displacement state
+  state_new_displacement,           //!< new displacement state
+  state_lagrange_multiplier,        //!< lagrange multiplier (only necessary for poro)
+  state_fvelocity,                  //!< fvelocity (only necessary for poro)
+  state_svelocity,                  //!< svelocity (only necessary for poro)
+  state_fpressure,                  //!< fpressure (only necessary for poro)
+  state_temperature,                //!< temperature (only necessary for TSI)
+  state_thermo_lagrange_multiplier, //!< thermo lagrange multiplier (only necessary for TSI)
+  state_vague                       //!< undefined state type
+};
+
+/*! \brief Map state type enum to std::string
+ *
+ *  \author hiermeier */
+static inline std::string StateType2String(const enum StateType& type)
+{
+  switch (type)
+  {
+  case state_old_displacement:
+    return "displacement";
+    break;
+  case state_new_displacement :
+    return "displacement new";
+    break;
+  case state_lagrange_multiplier:
+    return "lm";
+    break;
+  case state_fvelocity:
+    return "fveclocity";
+    break;
+  case state_svelocity:
+    return "svelocity";
+    break;
+  case state_fpressure:
+    return "fpressure";
+    break;
+  case state_temperature:
+    return "temperature";
+    break;
+  case state_thermo_lagrange_multiplier:
+    return "thermo_lm";
+    break;
+  default :
+    return "unknown MORTAR::StateType";
+    break;
+  }
+  return "";
+};
+
+/*! \brief Map std::string to state type enum
+ *
+ *  \author hiermeier */
+static inline enum MORTAR::StateType String2StateType(const std::string& name)
+{
+  MORTAR::StateType type = state_vague;
+  if (boost::iequals(name,"displacement"))
+    type = state_new_displacement;
+  else if (boost::iequals(name,"olddisplacement"))
+    type = state_old_displacement;
+  else if (boost::iequals(name,"lm"))
+    type = state_lagrange_multiplier;
+  else if (boost::iequals(name,"fvelocity"))
+    type = state_fvelocity;
+  else if (boost::iequals(name,"svelocity"))
+    type = state_svelocity;
+  else if (boost::iequals(name,"fpressure"))
+    type = state_fpressure;
+  else if (boost::iequals(name,"temperature"))
+    type = state_temperature;
+  else if (boost::iequals(name,"thermo_lm"))
+    type = state_thermo_lagrange_multiplier;
+  else
+  {
+    dserror("Unknown state type name. (name = %s)",name.c_str());
+  }
+  return type;
+};
 
 /*!
 \brief One mortar coupling interface
@@ -505,8 +592,8 @@ public:
   \brief Set current deformation state
 
   */
-  virtual void SetState(const std::string& statename,
-                        const Teuchos::RCP<Epetra_Vector> vec);
+  void SetState(const enum StateType& statetype,
+      const Epetra_Vector& vec);
 
 
   /*!
@@ -525,8 +612,23 @@ public:
   including evaluation of the weighted gap g and linearizations of all mortar quantities.
 
   */
-  virtual void Evaluate(int rriter=0, const int step=0, const int iter=0);
-
+  void Evaluate()
+  { Evaluate(0,0,0,Teuchos::null); };
+  void Evaluate(int rriter)
+  { Evaluate(rriter,0,0,Teuchos::null); };
+  void Evaluate(int rriter, const int& step)
+  { Evaluate(rriter,step,0,Teuchos::null); };
+  void Evaluate(int rriter, const int& step, const int& iter)
+  { Evaluate(rriter,step,iter,Teuchos::null); };
+  void Evaluate(Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr)
+  { Evaluate(0,mparams_ptr->GetStepNp(),mparams_ptr->GetNlnIter(),mparams_ptr); };
+  void Evaluate(int rriter, Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr)
+  { Evaluate(rriter,mparams_ptr->GetStepNp(),mparams_ptr->GetNlnIter(),mparams_ptr); };
+  void Evaluate(
+      int rriter,
+      const int& step,
+      const int& iter,
+      Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr);
   /*!
   \brief Evaluate nodal normals
 
@@ -548,7 +650,8 @@ public:
 
   */
   virtual bool MortarCoupling(MORTAR::MortarElement* sele,
-                                 std::vector<MORTAR::MortarElement*> mele);
+      std::vector<MORTAR::MortarElement*> mele,
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
   \brief Assemble lagrange multipliers into global z vector (penalty strategy)
@@ -642,7 +745,8 @@ protected:
   \brief Evaluate segment-to-segment coupling (mortar...)
 
   */
-  virtual void EvaluateSTS();
+  virtual void EvaluateSTS(
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
   \brief Evaluate node-to-segment coupling
@@ -690,7 +794,8 @@ protected:
   Thus, it can be interpreted as switch between constraints discretizations
 
   */
-  virtual void EvaluateCoupling();
+  virtual void EvaluateCoupling(
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
   \brief do scaling and other operations after real coupling

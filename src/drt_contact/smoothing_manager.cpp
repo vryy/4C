@@ -1,9 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file smoothing_manager.cpp
+
+\brief Manager for the smoothing contact approach.
+
+\level 3
 
 \maintainer Philipp Farah
 
-*-----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  | Header                                                    farah 01/15|
@@ -846,24 +852,20 @@ CONTACT::SmoothingManager::SmoothingManager(
   for (int i = 0; i < (int) mtinterfaces.size(); ++i)
     mtinterfaces[i]->CreateSearchTree();
 
-//  if (stype == INPAR::CONTACT::solution_lagmult)
-  if(true)
-  {
-    strategy_ = Teuchos::rcp(new SmoothingStrategy(
-        Discret().DofRowMap(),
-        Discret().NodeRowMap(),
-        cparams,
-        cinterfaces,
-        mtinterfaces,
-        dim,
-        comm_,
-        alphaf,
-        maxdof));
-  }
-  else
-  {
-    dserror("ERROR: Unrecognized strategy");
-  }
+  // build the correct data container
+  Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr =
+      Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
+  strategy_ = Teuchos::rcp(new SmoothingStrategy(
+      data_ptr,
+      Discret().DofRowMap(),
+      Discret().NodeRowMap(),
+      cparams,
+      cinterfaces,
+      mtinterfaces,
+      dim,
+      comm_,
+      alphaf,
+      maxdof));
 
   if (Comm().MyPID() == 0)
     std::cout << "done!" << std::endl;

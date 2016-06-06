@@ -2,6 +2,9 @@
 /*!
 \file str_timint_basedatasdyn.cpp
 
+\brief Structural dynamics data container for the structural (time)
+       integration
+
 \maintainer Michael Hiermeier
 
 \date Jan 12, 2016
@@ -293,7 +296,8 @@ double STR::TIMINT::BaseDataSDyn::GetResTolerance(
     case NOX::NLN::StatusTest::quantity_structure:
       return tol_fres_;
       break;
-    case NOX::NLN::StatusTest::quantity_contact:
+    case NOX::NLN::StatusTest::quantity_contact_normal:
+    case NOX::NLN::StatusTest::quantity_contact_friction:
     case NOX::NLN::StatusTest::quantity_meshtying:
       return tol_contact_res_;
       break;
@@ -333,7 +337,8 @@ double STR::TIMINT::BaseDataSDyn::GetIncrTolerance(
     case NOX::NLN::StatusTest::quantity_structure:
       return tol_disp_incr_;
       break;
-    case NOX::NLN::StatusTest::quantity_contact:
+    case NOX::NLN::StatusTest::quantity_contact_normal:
+    case NOX::NLN::StatusTest::quantity_contact_friction:
     case NOX::NLN::StatusTest::quantity_meshtying:
       return tol_contact_lm_incr_;
       break;
@@ -370,7 +375,8 @@ enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetResToleranceType(
     case NOX::NLN::StatusTest::quantity_structure:
       return toltype_fres_;
       break;
-    case NOX::NLN::StatusTest::quantity_contact:
+    case NOX::NLN::StatusTest::quantity_contact_normal:
+    case NOX::NLN::StatusTest::quantity_contact_friction:
     case NOX::NLN::StatusTest::quantity_meshtying:
       return toltype_contact_res_;
       break;
@@ -410,7 +416,8 @@ enum INPAR::STR::ConvNorm STR::TIMINT::BaseDataSDyn::GetIncrToleranceType(
     case NOX::NLN::StatusTest::quantity_structure:
       return toltype_disp_incr_;
       break;
-    case NOX::NLN::StatusTest::quantity_contact:
+    case NOX::NLN::StatusTest::quantity_contact_normal:
+    case NOX::NLN::StatusTest::quantity_contact_friction:
     case NOX::NLN::StatusTest::quantity_meshtying:
       return toltype_contact_lm_incr_;
       break;
@@ -472,8 +479,8 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResComboType(
     return normcombo_fres_plast_res_;
   // combination: STRUCTURE <--> CONTACT
   else if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
-        qtype_2==NOX::NLN::StatusTest::quantity_contact) or
-       (qtype_1==NOX::NLN::StatusTest::quantity_contact and
+        qtype_2==NOX::NLN::StatusTest::quantity_contact_normal) or
+       (qtype_1==NOX::NLN::StatusTest::quantity_contact_normal and
         qtype_2==NOX::NLN::StatusTest::quantity_structure))
     return normcombo_fres_contact_res_;
   // no combination was found
@@ -523,8 +530,8 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetIncrComboType(
     return normcombo_disp_plast_incr_;
   // combination: STRUCTURE <--> CONTACT
   else if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
-        qtype_2==NOX::NLN::StatusTest::quantity_contact) or
-       (qtype_1==NOX::NLN::StatusTest::quantity_contact and
+        qtype_2==NOX::NLN::StatusTest::quantity_contact_normal) or
+       (qtype_1==NOX::NLN::StatusTest::quantity_contact_normal and
         qtype_2==NOX::NLN::StatusTest::quantity_structure))
     return normcombo_disp_contact_lm_incr_;
   // no combination was found

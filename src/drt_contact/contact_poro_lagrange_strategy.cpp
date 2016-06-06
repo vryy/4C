@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_poro_lagrange_strategy.cpp
 
-<pre>
-Maintainer: Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
-</pre>
+\brief ToDo Add meaningful comment.
 
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Christoph Ager
+
+*/
+/*---------------------------------------------------------------------*/
 
 #include "Epetra_SerialComm.h"
 #include "contact_poro_lagrange_strategy.H"
@@ -30,6 +31,7 @@ Maintainer: Christoph Ager
  | ctor (public)                                              ager 08/14|
  *----------------------------------------------------------------------*/
 CONTACT::PoroLagrangeStrategy::PoroLagrangeStrategy(
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap,
     Teuchos::ParameterList params,
@@ -40,7 +42,7 @@ CONTACT::PoroLagrangeStrategy::PoroLagrangeStrategy(
     int maxdof,
     bool poroslave,
     bool poromaster):
-    MonoCoupledLagrangeStrategy(DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+    MonoCoupledLagrangeStrategy(data_ptr,DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
     no_penetration_(false),
     nopenalpha_(0.0),
     poroslave_(poroslave),
@@ -1287,7 +1289,7 @@ void CONTACT::PoroLagrangeStrategy::RecoverPoroNoPen(Teuchos::RCP<Epetra_Vector>
     }
   }
    // store updated LM into nodes
-  SetState("lm",lambda_);
+  SetState(MORTAR::state_lagrange_multiplier,*lambda_);
 
   return;
 }
@@ -1308,115 +1310,133 @@ void CONTACT::PoroLagrangeStrategy::UpdatePoroContact()
 /*------------------------------------------------------------------------*
  | Assign generell poro contact state!                          ager 08/14|
  *------------------------------------------------------------------------*/
-void CONTACT::PoroLagrangeStrategy::SetState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec)
+void CONTACT::PoroLagrangeStrategy::SetState(
+    const enum MORTAR::StateType& statetype,
+    const Epetra_Vector& vec)
 {
-  if (statename=="displacement" || statename=="olddisplacement")
+  switch (statetype)
   {
-    CONTACT::CoAbstractStrategy::SetState(statename,vec);
-    return;
-  }
-
-  if (statename=="fvelocity" || statename=="svelocity" || statename=="lm" || statename=="fpressure")
-  {
-    //set state on interfaces
-    for (int i=0; i<(int)interface_.size(); ++i)
+    case MORTAR::state_fvelocity:
+    case MORTAR::state_svelocity:
+    case MORTAR::state_lagrange_multiplier:
+    case MORTAR::state_fpressure:
     {
+      //set state on interfaces
+      for (int i=0; i<(int)interface_.size(); ++i)
+      {
+        //interface_[i]->SetState(statename, vec);
+        DRT::Discretization& idiscret_ = interface_[i]->Discret();
 
-      //interface_[i]->SetState(statename, vec);
-      DRT::Discretization& idiscret_ = interface_[i]->Discret();
+        switch (statetype)
+        {
+          case MORTAR::state_fvelocity:
+          case MORTAR::state_svelocity:
+          {
+            // alternative method to get vec to full overlap
+            Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*idiscret_.DofColMap(),true));
 
-      if (statename=="fvelocity" or statename=="svelocity")
-       {
-         bool isfvel = (statename=="fvelocity");
-         // alternative method to get vec to full overlap
-         Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*idiscret_.DofColMap(),true));
+            LINALG::Export(vec,*global);
 
-         LINALG::Export(*vec,*global);
+            // loop over all nodes to set current velocity
+            // (use fully overlapping column map)
+            for (int i=0;i<idiscret_.NumMyColNodes();++i)
+            {
+             CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
+             const int numdof = node->NumDof();
+             std::vector<double> myvel(numdof);
+             std::vector<int> lm(numdof);
 
-         // loop over all nodes to set current velocity
-         // (use fully overlapping column map)
-         for (int i=0;i<idiscret_.NumMyColNodes();++i)
-         {
-           CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
-           const int numdof = node->NumDof();
-           std::vector<double> myvel(numdof);
-           std::vector<int> lm(numdof);
+             for (int j=0;j<numdof;++j)
+               lm[j]=node->Dofs()[j];
+             DRT::UTILS::ExtractMyValues(*global,myvel,lm);
 
-           for (int j=0;j<numdof;++j)
-             lm[j]=node->Dofs()[j];
-           DRT::UTILS::ExtractMyValues(*global,myvel,lm);
-
-           // add myvel[2]=0 for 2D problems
-           if (myvel.size()<3)
-             myvel.resize(3);
-           // set current configuration
-           for (int j=0;j<3;++j)
-           {
-             if (isfvel)
-               node->CoPoroData().fvel()[j] = myvel[j];
-             else
-               node->CoPoroData().svel()[j] = myvel[j];
-           }
-         }
-       }
-       if (statename=="lm")
-       {
-         // alternative method to get vec to full overlap
-         Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*idiscret_.DofColMap(),true));
-         LINALG::Export(*vec,*global);
-
-         // loop over all nodes to set current velocity
-         // (use fully overlapping column map)
-         for (int i=0;i<idiscret_.NumMyColNodes();++i)
-         {
-           CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
-
-           const int numdof = node->NumDof();
-           std::vector<double> mylm(numdof);
-           std::vector<int> lm(numdof);
-
-           for (int j=0;j<numdof;++j)
-             lm[j]=node->Dofs()[j];
-
-           DRT::UTILS::ExtractMyValues(*global,mylm,lm);
-
-           // add myvel[2]=0 for 2D problems
-           if (mylm.size()<3)
-             mylm.resize(3);
-           // set current configuration
-           if(node->IsSlave())
-           {
+             // add myvel[2]=0 for 2D problems
+             if (myvel.size()<3)
+               myvel.resize(3);
+             // set current configuration
              for (int j=0;j<3;++j)
              {
-               node->CoPoroData().poroLM()[j] = mylm[j];
+               if (statetype==MORTAR::state_fvelocity)
+                 node->CoPoroData().fvel()[j] = myvel[j];
+               else
+                 node->CoPoroData().svel()[j] = myvel[j];
              }
-           }
-         }
-       }
-       if (statename=="fpressure")
-       {
-         // alternative method to get vec to full overlap
-         Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*idiscret_.DofColMap(),true));
-         LINALG::Export(*vec,*global);
+            }
+            break;
+          }
+          case MORTAR::state_lagrange_multiplier:
+          {
+            // alternative method to get vec to full overlap
+            Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*idiscret_.DofColMap(),true));
+            LINALG::Export(vec,*global);
 
-         // loop over all nodes to set current pressure
-         // (use fully overlapping column map)
-         for (int i=0;i<idiscret_.NumMyColNodes();++i)
-         {
-           CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
+            // loop over all nodes to set current velocity
+            // (use fully overlapping column map)
+            for (int i=0;i<idiscret_.NumMyColNodes();++i)
+            {
+              CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
 
-           double myfpres;
-           int fpres;
+              const int numdof = node->NumDof();
+              std::vector<double> mylm(numdof);
+              std::vector<int> lm(numdof);
 
-           fpres=node->Dofs()[0]; //here get ids of first component of node
+              for (int j=0;j<numdof;++j)
+                lm[j]=node->Dofs()[j];
 
-           myfpres = global->Values()[global->Map().LID(fpres)];
+              DRT::UTILS::ExtractMyValues(*global,mylm,lm);
 
-           *node->CoPoroData().fpres() = myfpres;
-         }
-       }
+              // add myvel[2]=0 for 2D problems
+              if (mylm.size()<3)
+                mylm.resize(3);
+              // set current configuration
+              if(node->IsSlave())
+              {
+                for (int j=0;j<3;++j)
+                {
+                  node->CoPoroData().poroLM()[j] = mylm[j];
+                }
+              }
+            }
+            break;
+          }
+          case MORTAR::state_fpressure:
+          {
+            // alternative method to get vec to full overlap
+            Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*idiscret_.DofColMap(),true));
+            LINALG::Export(vec,*global);
+
+            // loop over all nodes to set current pressure
+            // (use fully overlapping column map)
+            for (int i=0;i<idiscret_.NumMyColNodes();++i)
+            {
+              CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscret_.lColNode(i));
+
+              double myfpres;
+              int fpres;
+
+              fpres=node->Dofs()[0]; //here get ids of first component of node
+
+              myfpres = global->Values()[global->Map().LID(fpres)];
+
+              *node->CoPoroData().fpres() = myfpres;
+            }
+            break;
+          }
+          default:
+          {
+            dserror("Shouldn't happen!");
+            break;
+          }
+        } // end inner switch statement
+      } // end loop over all interfaces
+      break;
     }
-  }
+    default:
+    {
+      CONTACT::CoAbstractStrategy::SetState(statetype,vec);
+      break;
+    }
+  } // end outer switch statement
   return;
 }
 

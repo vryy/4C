@@ -2,6 +2,10 @@
 /*!
 \file nox_nln_problem.H
 
+\brief This class manages some of the necessary factory calls
+       if a %NOX::NLN solver is supposed to be used. Therefore a
+       lean function call becomes possible.
+
 \maintainer Michael Hiermeier
 
 \date Jun 30, 2015
@@ -16,7 +20,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "nox_nln_globaldata.H"
+#include "nox_nln_enum_lists.H"
 
 #include <NOX_StatusTest_Generic.H>
 
@@ -38,6 +42,7 @@ namespace Abstract {
 namespace Epetra {
   class LinearSystem;
   class Vector;
+  class Scaling;
 namespace Interface {
     class Required;
     class Jacobian;
@@ -48,6 +53,7 @@ namespace StatusTest {
   class Generic;
 } // namespace  StatusTest
 namespace NLN {
+  class GlobalData;
 namespace INNER {
 namespace StatusTest {
   class Generic;
@@ -56,19 +62,18 @@ namespace StatusTest {
 
   class Problem
   {
-    typedef std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> > ConstraintMap;
-
   public:
     //! constructor
-    Problem(Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData,
-        Teuchos::RCP<NOX::Epetra::Vector>& x,
-        Teuchos::RCP<LINALG::SparseOperator> A);
+    Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGlobalData,
+        const Teuchos::RCP<NOX::Epetra::Vector>& x,
+        const Teuchos::RCP<LINALG::SparseOperator>& A);
 
     //! destructor
     virtual ~Problem(){};
 
     //! initialize stuff (can be overloaded in derived classes)
-    virtual void Initialize(Teuchos::RCP<NOX::Epetra::Vector>& x, Teuchos::RCP<LINALG::SparseOperator> A);
+    virtual void Initialize(const Teuchos::RCP<NOX::Epetra::Vector>& x,
+        const Teuchos::RCP<LINALG::SparseOperator>& A);
 
     //! create the linear system for the NOX framework
     virtual Teuchos::RCP<NOX::Epetra::LinearSystem> CreateLinearSystem() const;
@@ -97,6 +102,11 @@ namespace StatusTest {
     Teuchos::RCP<NOX::Epetra::Vector> xVector_;
 
     Teuchos::RCP<LINALG::SparseOperator> jac_;
+
+    Teuchos::RCP<LINALG::SparseOperator> precMat_;
+
+    Teuchos::RCP<NOX::Epetra::Scaling> scalingObject_;
+
   };
 } // namespace NLN
 } // namespace NOX

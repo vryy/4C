@@ -2,6 +2,9 @@
 /*!
 \file nox_nln_str_linearsystem.cpp
 
+\brief Derived class which manages the special requirements to the linear
+       solver for structural problems.
+
 \maintainer Michael Hiermeier
 
 \date Aug 7, 2015
@@ -117,7 +120,7 @@ void NOX::NLN::STR::LinearSystem::SetSolverOptions(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::NLN::SolutionType NOX::NLN::STR::LinearSystem::GetCurrentLinSolver(
+NOX::NLN::SolutionType NOX::NLN::STR::LinearSystem::GetActiveLinSolver(
     const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
     Teuchos::RCP<LINALG::Solver>& currSolver)
 {

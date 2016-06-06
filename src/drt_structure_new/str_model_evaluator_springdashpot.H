@@ -2,6 +2,8 @@
 /*!
 \file str_model_evaluator_springdashpot.H
 
+\brief Evaluation and assembly of all spring dashpot terms
+
 \maintainer Martin Pfaller
 
 \date Feb 29, 2016
@@ -55,6 +57,15 @@ namespace MODELEVALUATOR{
         LINALG::SparseOperator& jac);
 
     //! derived
+    virtual void WriteRestart(
+        IO::DiscretizationWriter& iowriter,
+        const bool& forced_writerestart) const;
+
+    //! derived
+    virtual void ReadRestart(
+        IO::DiscretizationReader& ioreader);
+
+    //! derived
     virtual void RecoverState(
         const Epetra_Vector& xold,
         const Epetra_Vector& dir,
@@ -73,13 +84,16 @@ namespace MODELEVALUATOR{
     virtual void DetermineEnergy();
 
     //! derived
-    virtual void OutputStepState();
+    virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
-    void OutputRestart();
+    //! derived
+    virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
 
-//    void ReadRestart(
-//        IO::DiscretizationReader& reader,
-//        const double& time);
+    //! derived
+    virtual Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const;
+
+    //! derived
+    virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
 
   protected:
     //! derived

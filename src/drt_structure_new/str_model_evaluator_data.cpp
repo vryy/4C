@@ -2,6 +2,9 @@
 /*!
 \file str_model_evaluator_data.cpp
 
+\brief Concrete implementation of the structural and all related
+       parameter interfaces.
+
 \maintainer Michael Hiermeier
 
 \date Mar 24, 2016
@@ -43,6 +46,7 @@ STR::MODELEVALUATOR::Data::Data()
       plastic_straindata_ptr_(Teuchos::null),
       sdyn_ptr_(Teuchos::null),
       io_ptr_(Teuchos::null),
+      gstate_ptr_(Teuchos::null),
       timint_ptr_(Teuchos::null),
       comm_ptr_(Teuchos::null)
 {
@@ -52,15 +56,13 @@ STR::MODELEVALUATOR::Data::Data()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Data::Init(
-    const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& sdyn_ptr,
-    const Teuchos::RCP<const STR::TIMINT::BaseDataIO>& io_ptr,
-    const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr,
-    const Teuchos::RCP<const Epetra_Comm>& comm_ptr)
+    const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr)
 {
-  sdyn_ptr_ = sdyn_ptr;
-  io_ptr_ = io_ptr;
+  sdyn_ptr_ = timint_ptr->GetDataSDynPtr();
+  io_ptr_ = timint_ptr->GetDataIOPtr();
+  gstate_ptr_ = timint_ptr->GetDataGlobalStatePtr();
   timint_ptr_ = timint_ptr;
-  comm_ptr_ = comm_ptr;
+  comm_ptr_ = timint_ptr->GetDataGlobalState().GetCommPtr();
   isinit_ = true;
 }
 
@@ -69,6 +71,28 @@ void STR::MODELEVALUATOR::Data::Init(
 void STR::MODELEVALUATOR::Data::Setup()
 {
   CheckInit();
+
+  const std::set<enum INPAR::STR::ModelType>& mt = sdyn_ptr_->GetModelTypes();
+  std::set<enum INPAR::STR::ModelType>::const_iterator it;
+  // setup model type specific data containers
+  for (it=mt.begin();it!=mt.end();++it)
+  {
+    switch (*it)
+    {
+      case INPAR::STR::model_contact:
+      {
+        contact_data_ptr_ = Teuchos::rcp(new ContactData());
+        contact_data_ptr_->Init(Teuchos::rcp(this,false));
+        contact_data_ptr_->Setup();
+        break;
+      }
+      default:
+      {
+        // nothing to do
+        break;
+      }
+    }
+  }
 
   issetup_ = true;
 }
@@ -201,7 +225,8 @@ void STR::MODELEVALUATOR::Data::SumIntoMyUpdateNorm(
   enum NOX::Abstract::Vector::NormType normtype =
       NOX::Abstract::Vector::TwoNorm;
   if (GetUpdateNormType(qtype,normtype))
-    SumIntoMyNorm(numentries,my_update_values,normtype,my_update_norm_[qtype]);
+    SumIntoMyNorm(numentries,my_update_values,normtype,
+        step_length,my_update_norm_[qtype]);
 
   // --- weighted root mean square norms
   double atol = 0.0;
@@ -229,7 +254,7 @@ void STR::MODELEVALUATOR::Data::SumIntoMyPreviousSolNorm(
   if (not GetUpdateNormType(qtype,normtype))
     return;
 
-  SumIntoMyNorm(numentries,my_old_sol_values,normtype,my_prev_sol_norm_[qtype]);
+  SumIntoMyNorm(numentries,my_old_sol_values,normtype,1.0,my_prev_sol_norm_[qtype]);
   // update the dof counter
   my_dof_number_[qtype] += numentries;
 }
@@ -263,6 +288,7 @@ void STR::MODELEVALUATOR::Data::SumIntoMyNorm(
     const int& numentries,
     const double* my_values,
     const enum NOX::Abstract::Vector::NormType& normtype,
+    const double& step_length,
     double& my_norm) const
 {
   switch (normtype)
@@ -270,19 +296,19 @@ void STR::MODELEVALUATOR::Data::SumIntoMyNorm(
     case NOX::Abstract::Vector::OneNorm:
     {
       for (int i=0;i<numentries;++i)
-        my_norm +=std::abs(my_values[i]);
+        my_norm +=std::abs(my_values[i]*step_length);
       break;
     }
     case NOX::Abstract::Vector::TwoNorm:
     {
       for (int i=0;i<numentries;++i)
-        my_norm +=my_values[i]*my_values[i];
+        my_norm +=(my_values[i]*my_values[i])*(step_length*step_length);
       break;
     }
     case NOX::Abstract::Vector::MaxNorm:
     {
       for (int i=0;i<numentries;++i)
-        my_norm = std::max(my_norm,std::abs(my_values[i]));
+        my_norm = std::max(my_norm,std::abs(my_values[i]*step_length));
       break;
     }
   }
@@ -341,6 +367,15 @@ Teuchos::RCP<std::vector<char> >& STR::MODELEVALUATOR::Data::MutableStressDataPt
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+const std::vector<char>& STR::MODELEVALUATOR::Data::StressData() const
+{
+  if (stressdata_ptr_.is_null())
+    dserror("Undefined reference to the stress data!");
+  return *stressdata_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<char> >& STR::MODELEVALUATOR::Data::MutableStrainDataPtr()
 {
   CheckInitSetup();
@@ -349,10 +384,28 @@ Teuchos::RCP<std::vector<char> >& STR::MODELEVALUATOR::Data::MutableStrainDataPt
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+const std::vector<char>& STR::MODELEVALUATOR::Data::StrainData() const
+{
+  if (straindata_ptr_.is_null())
+    dserror("Undefined reference to the strain data!");
+  return *straindata_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<char> >& STR::MODELEVALUATOR::Data::MutablePlasticStrainDataPtr()
 {
   CheckInitSetup();
   return plastic_straindata_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const std::vector<char>& STR::MODELEVALUATOR::Data::PlasticStrainData() const
+{
+  if (plastic_straindata_ptr_.is_null())
+    dserror("Undefined reference to the plastic strain data!");
+  return *plastic_straindata_ptr_;
 }
 
 /*----------------------------------------------------------------------------*

@@ -2,6 +2,10 @@
 /*!
 \file nox_nln_statustest_normwrms.H
 
+\brief %NOX::NLN Weighted root mean square test of the solution
+       increment. A detailed description can be found in the NOX
+       documentation.
+
 \maintainer Michael Hiermeier
 
 \date Aug 4, 2015
@@ -18,7 +22,7 @@
 
 #include <Teuchos_RCP.hpp>
 
-#include "nox_nln_statustest_factory.H"
+#include "nox_nln_enum_lists.H"
 
 namespace NOX {
 namespace NLN {

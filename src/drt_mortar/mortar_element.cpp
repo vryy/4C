@@ -1,16 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file mortar_element.cpp
 
 \brief A mortar coupling element
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\level 2
 
-*----------------------------------------------------------------------*/
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include "mortar_element.H"
 #include "mortar_node.H"
@@ -226,7 +225,7 @@ void MORTAR::MortarElement::Pack(DRT::PackBuffer& data) const
   if (hasdata) modata_->Pack(data);
 
   // add physicaltype
-  AddtoPack(data,physicaltype_);
+  AddtoPack(data,static_cast<int>(physicaltype_));
 
   return;
 }

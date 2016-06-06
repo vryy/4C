@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file contact_node.H
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief A class for a contact node
 
-*-----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*----------------------------------------------------------------------*/
 #ifndef CONTACT_NODE_H
 #define CONTACT_NODE_H
 
@@ -783,12 +784,6 @@ public:
     return active_;
   }
 
-  /*!
-  \brief Return augmented contact status of this node (augActive=true)
-
-  */
-  virtual bool& AugActive() { return augActive_; }
-
   virtual bool& InvolvedM() { return involvedm_; }
 
   /*!
@@ -972,7 +967,6 @@ private:
 protected:
 
   bool active_;         // true if cnode is in contact (active set strategy)
-  bool augActive_;      // true if cnode is in contact (augmented active set strategy)
   bool initactive_;     // true if node is initialized as active node
   bool involvedm_;      // cnode is an master node for which the mortar integration is performed (both-sided wear)
   int  linsize_;     // number of lin entries per direction vector

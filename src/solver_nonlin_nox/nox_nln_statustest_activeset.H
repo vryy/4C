@@ -2,6 +2,9 @@
 /*!
 \file nox_nln_statustest_activeset.H
 
+\brief Check the active set for convergence. Only meaningful for
+       inequality constrained problems.
+
 \maintainer Michael Hiermeier
 
 \date Oct 30, 2015
@@ -15,7 +18,12 @@
 #define SRC_SOLVER_NONLIN_NOX_NOX_NLN_STATUSTEST_ACTIVESET_H_
 
 #include <NOX_StatusTest_Generic.H> // base class
-#include "nox_nln_statustest_factory.H"
+
+#include <Teuchos_RCP.hpp>
+#include "nox_nln_enum_lists.H"
+
+// forward declarations
+class Epetra_Map;
 
 namespace NOX {
 namespace NLN {
@@ -24,7 +32,8 @@ namespace StatusTest {
   {
   public:
     //! constructor
-    ActiveSet(const NOX::NLN::StatusTest::QuantityType& qtype);
+    ActiveSet(const NOX::NLN::StatusTest::QuantityType& qtype,
+        const int& max_cycle_size);
 
     //! destructor
     virtual ~ActiveSet() {};
@@ -48,11 +57,16 @@ namespace StatusTest {
     //! status of the active set test
     NOX::StatusTest::StatusType status_;
 
+    //! maximal cycle size, which is checked
+    int max_cycle_size_;
+
     //! cycle size if zigzagging is checked
-    int cyclesize_;
+    int cycle_size_;
 
     //! size of the active set
     int activesetsize_;
+
+    std::deque<Teuchos::RCP<const Epetra_Map> > cycling_maps_;
   };  // class ActiveSet
 } // namespace StatusTest
 } // namespace NLN

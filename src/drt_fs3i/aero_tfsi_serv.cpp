@@ -4,14 +4,11 @@
 
 \brief Helper class for coupled simulations (INCA - BACI)
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
-*/
+\level 2
 
+\maintainer Georg Hammerl
+*/
+/*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 12/11 |
@@ -610,7 +607,7 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
   }
 
   // set displacement state in mortar interface
-  mortarinterface_[interf]->SetState("displacement", mergeddispn);
+  mortarinterface_[interf]->SetState(MORTAR::state_new_displacement, *mergeddispn);
 
   // create binary search tree
   mortarinterface_[interf]->CreateSearchTree();

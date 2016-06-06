@@ -2,6 +2,8 @@
 /*!
 \file str_impl_ost.cpp
 
+\brief One step theta time integrator.
+
 \maintainer Philipp Farah
 
 \date Dec 14, 2015
@@ -20,6 +22,7 @@
 #include "str_utils.H"
 
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_io/io.H"
 #include "../linalg/linalg_sparsematrix.H"
 
 #include <Epetra_Vector.h>
@@ -291,6 +294,31 @@ void STR::IMPLICIT::OneStepTheta::EvaluateMidStateJacobian(
   if (TimInt().GetDataSDyn().GetDampingType()==INPAR::STR::damp_rayleigh)
     stiff_ptr->Add(*GlobalState().GetDampMatrix(),false,1.0/dt,1.0);
 
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::OneStepTheta::WriteRestart(
+    IO::DiscretizationWriter& iowriter,
+    const bool& forced_writerestart) const
+{
+  CheckInitSetup();
+  // write dynamic forces
+  iowriter.WriteVector("finert",finertian_ptr_);
+  iowriter.WriteVector("fvisco",fviscon_ptr_);
+
+  ModelEval().WriteRestart(iowriter,forced_writerestart);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::OneStepTheta::ReadRestart(IO::DiscretizationReader& ioreader)
+{
+  CheckInitSetup();
+  ioreader.ReadVector(finertian_ptr_,"finert");
+  ioreader.ReadVector(fviscon_ptr_,"fvisco");
+
+  ModelEval().ReadRestart(ioreader);
 }
 
 /*----------------------------------------------------------------------------*

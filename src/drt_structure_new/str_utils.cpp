@@ -2,6 +2,8 @@
 /*!
 \file str_utils.cpp
 
+\brief Utility methods for the structural time integration.
+
 \maintainer Michael Hiermeier
 
 \date Dec 2, 2015
@@ -13,6 +15,14 @@
 
 
 #include "str_utils.H"
+#include "str_integrator.H"
+#include "str_model_evaluator_contact.H"
+
+#include "../drt_contact/contact_abstract_strategy.H"
+#include "../drt_contact/contact_noxinterface.H"
+
+#include "../solver_nonlin_nox/nox_nln_constraint_interface_required.H"
+#include "../solver_nonlin_nox/nox_nln_constraint_interface_preconditioner.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -92,12 +102,11 @@ void STR::NLN::ConvertModelType2SolType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::NLN::GlobalData::OptimizationProblemType
-    STR::NLN::OptimizationType(
+enum NOX::NLN::OptimizationProblemType STR::NLN::OptimizationType(
     const std::vector<enum NOX::NLN::SolutionType>& soltypes)
 {
-  enum NOX::NLN::GlobalData::OptimizationProblemType opttype =
-      NOX::NLN::GlobalData::opt_unconstrained;
+  enum NOX::NLN::OptimizationProblemType opttype =
+      NOX::NLN::opt_unconstrained;
   std::vector<enum NOX::NLN::SolutionType>::const_iterator st_iter;
 
   for (st_iter=soltypes.begin();st_iter!=soltypes.end();++st_iter)
@@ -110,7 +119,7 @@ enum NOX::NLN::GlobalData::OptimizationProblemType
       // saddle point structure or condensed
       // -----------------------------------
       case NOX::NLN::sol_contact:
-        return NOX::NLN::GlobalData::opt_inequality_constrained;
+        return NOX::NLN::opt_inequality_constrained;
         break;
       // -----------------------------------
       // Equality constraint
@@ -120,7 +129,7 @@ enum NOX::NLN::GlobalData::OptimizationProblemType
       case NOX::NLN::sol_meshtying:
       case NOX::NLN::sol_lag_pen_constraint:
       case NOX::NLN::sol_windkessel:
-        opttype = NOX::NLN::GlobalData::opt_equality_constrained;
+        opttype = NOX::NLN::opt_equality_constrained;
         break;
       // -----------------------------------
       // Unconstrained problem
@@ -140,7 +149,8 @@ enum NOX::NLN::GlobalData::OptimizationProblemType
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::NLN::CreateConstraintInterfaces(
-    std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iconstr,
+    NOX::NLN::CONSTRAINT::ReqInterfaceMap& iconstr,
+    STR::Integrator& integrator,
     const std::vector<enum NOX::NLN::SolutionType>& soltypes)
 {
   if (iconstr.size()>0)
@@ -152,13 +162,20 @@ void STR::NLN::CreateConstraintInterfaces(
     switch (*st_iter)
     {
       case NOX::NLN::sol_contact:
-//        iconstr_[NOX::NLN::sol_contact] = itimint.GetContactManager();
-//        break;
+      {
+        STR::MODELEVALUATOR::Generic& model =
+            integrator.Evaluator(INPAR::STR::model_contact);
+        STR::MODELEVALUATOR::Contact& contact_model =
+            dynamic_cast<STR::MODELEVALUATOR::Contact&>(model);
+        iconstr[NOX::NLN::sol_contact] =
+            contact_model.StrategyPtr()->NoxInterfacePtr();
+        break;
+      }
       case NOX::NLN::sol_windkessel:
-//        iconstr_[NOX::NLN::sol_windkessel] = itimint.GetWindkesselManager();
+//        iconstr[NOX::NLN::sol_windkessel] = itimint.GetWindkesselManager();
 //        break;
       case NOX::NLN::sol_lag_pen_constraint:
-//        iconstr_[NOX::NLN::sol_windkessel] = itimint.GetLagPenConstrManager();
+//        iconstr[NOX::NLN::sol_windkessel] = itimint.GetLagPenConstrManager();
 //        break;
       default:
         break;
@@ -166,6 +183,50 @@ void STR::NLN::CreateConstraintInterfaces(
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::NLN::CreateConstraintPreconditioner(
+    NOX::NLN::CONSTRAINT::PrecInterfaceMap& iconstr_prec,
+    STR::Integrator& integrator,
+    const std::vector<enum NOX::NLN::SolutionType>& soltypes)
+{
+  if (iconstr_prec.size()>0)
+    iconstr_prec.clear();
+
+  std::vector<enum NOX::NLN::SolutionType>::const_iterator st_iter;
+  for (st_iter=soltypes.begin();st_iter!=soltypes.end();++st_iter)
+  {
+    switch (*st_iter)
+    {
+      case NOX::NLN::sol_contact:
+      {
+        STR::MODELEVALUATOR::Generic& model =
+            integrator.Evaluator(INPAR::STR::model_contact);
+        STR::MODELEVALUATOR::Contact& contact_model =
+            dynamic_cast<STR::MODELEVALUATOR::Contact&>(model);
+        /* Actually we use the underlying MORTAR::StrategyBase as
+         * Preconditioner interface. The implementations can be nevertheless
+         * different for the contact/meshtying cases. */
+        iconstr_prec[NOX::NLN::sol_contact] = contact_model.StrategyPtr();
+        break;
+      }
+      case NOX::NLN::sol_windkessel:
+      {
+        // FixMe add something, if necessary
+        break;
+      }
+      case NOX::NLN::sol_lag_pen_constraint:
+      {
+        // FixMe add something, if necessary
+        break;
+      }
+      default:
+        // do nothing
+        break;
+    } // switch (*st_iter)
+  }
 }
 
 /*----------------------------------------------------------------------------*

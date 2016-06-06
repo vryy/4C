@@ -1,14 +1,16 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
+
 \file contact_coupling2d.H
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Classes for mortar contact coupling in 2D.
 
-*-----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*---------------------------------------------------------------------*/
 #ifndef CONTACT_COUPLING2D_H
 #define CONTACT_COUPLING2D_H
 
@@ -68,7 +70,7 @@ public:
   integration includes the Mortar matrices D/M and the gap g.
 
   */
-  bool IntegrateOverlap();
+  bool IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
   \brief Return type of wear surface definition
@@ -151,9 +153,9 @@ public:
   \brief Evaluate mortar coupling
 
   */
-  virtual void IntegrateCoupling();
+  virtual void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
-  virtual bool EvaluateCoupling();
+  virtual bool EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
   //@}
 private:
   /*!

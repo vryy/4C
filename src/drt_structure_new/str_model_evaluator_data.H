@@ -2,6 +2,9 @@
 /*!
 \file str_model_evaluator_data.H
 
+\brief Concrete implementation of the structural and all related
+       parameter interfaces.
+
 \maintainer Michael Hiermeier
 
 \date Mar 24, 2016
@@ -15,17 +18,21 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include <NOX_Abstract_Vector.H>
-#include "str_elements_paramsinterface.H"   // base class
+#include "str_elements_paramsinterface.H"   // base class of the Data class
+#include "../drt_contact/contact_paramsinterface.H" // base class of the ContactData class
 
 // forward declaration ...
 class Epetra_Comm;
 namespace STR {
 namespace TIMINT {
+  class BaseDataGlobalState;
   class BaseDataSDyn;
   class BaseDataIO;
   class Base;
 } // namespace TIMINT
 namespace MODELEVALUATOR {
+  class ContactData;
+
   /*! \brief Discrete implementation of the STR::ELEMENTS::ParamsInterface
    *
    *  This class represents an actual implementation of the STR::ELEMENTS::ParamsInterface class
@@ -47,11 +54,7 @@ namespace MODELEVALUATOR {
     virtual ~Data() {};
 
     //! initialize the stuff coming from outside
-    void Init(
-        const Teuchos::RCP<const STR::TIMINT::BaseDataSDyn>& sdyn_ptr,
-        const Teuchos::RCP<const STR::TIMINT::BaseDataIO>& io_ptr,
-        const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr,
-        const Teuchos::RCP<const Epetra_Comm>& comm_ptr);
+    void Init(const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
 
     //! setup member variables
     void Setup();
@@ -304,6 +307,66 @@ namespace MODELEVALUATOR {
     void ResetMyNorms(const bool& isdefaultstep);
     //! @}
 
+    //! @name accessors to the remaining data containers
+    //! @{
+
+    //! access the contact data container, if the contact model is active
+    inline ContactData& Contact()
+    {
+      if (contact_data_ptr_.is_null())
+        dserror("The contact model is not active!");
+      return *contact_data_ptr_;
+    }
+    inline const Teuchos::RCP<ContactData>& ContactPtr()
+    {
+      if (contact_data_ptr_.is_null())
+        dserror("The contact model is not active!");
+      return contact_data_ptr_;
+    }
+    //! @}
+
+    /*! @name Accessors to some important member variables
+     *  (necessary for possible other model evaluator containers, etc.) */
+    //! @{
+
+    //! Time integration strategy
+    inline const STR::TIMINT::Base& GetTimInt() const
+    {
+      CheckInit();
+      return *timint_ptr_;
+    }
+
+    //! Structural dynamic data
+    inline const STR::TIMINT::BaseDataSDyn& GetSDyn() const
+    {
+      CheckInit();
+      return *sdyn_ptr_;
+    }
+
+    //! input/ouput parameters
+    inline const STR::TIMINT::BaseDataIO& GetInOutput() const
+    {
+      CheckInit();
+      return *io_ptr_;
+    }
+
+    //! global state variables
+    inline const STR::TIMINT::BaseDataGlobalState& GetGState() const
+    {
+      CheckInit();
+      return *gstate_ptr_;
+    }
+
+    //! return the stress data (read-only)
+    const std::vector<char>& StressData() const;
+
+    //! return the strain data (read-only)
+    const std::vector<char>& StrainData() const;
+
+    //! return the plastic strain data (read-only)
+    const std::vector<char>& PlasticStrainData() const;
+
+    //! @}
   protected:
     //! returns the isinit_ flag
     inline const bool& IsInit() const
@@ -352,6 +415,7 @@ namespace MODELEVALUATOR {
         const int& numentries,
         const double* my_values,
         const enum NOX::Abstract::Vector::NormType& normtype,
+        const double& step_length,
         double& my_norm) const;
 
     /*! \brief Calculate a local relative mean square sum for the global WRMS status test
@@ -460,12 +524,142 @@ namespace MODELEVALUATOR {
     //! read-only access to the input/output parameters
     Teuchos::RCP<const STR::TIMINT::BaseDataIO> io_ptr_;
 
+    //! read-only access to the global state data container
+    Teuchos::RCP<const STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
+
     //! read-only access to the timint object
     Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
 
     //! read-only access to the epetra communicator
     Teuchos::RCP<const Epetra_Comm> comm_ptr_;
+
+    //! remaining possible action types
+    Teuchos::RCP<ContactData> contact_data_ptr_;
   };  // class Data
+
+  /*! Contact data container for the contact model evaluation procedure.
+   *
+   * \author Michael Hiermeier
+   * \date 04/16 */
+  class ContactData : public CONTACT::ParamsInterface
+  {
+  public:
+    //! constructor
+    ContactData();
+
+    //! destructor
+    virtual ~ContactData() {};
+
+    //! initialize the stuff coming from outside
+    void Init(const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr);
+
+    //! setup member variables
+    void Setup();
+
+    //! returns the mortar/contact action type
+    virtual inline enum MORTAR::ActionType GetActionType() const
+    {
+      CheckInitSetup();
+      return mortar_action_;
+    };
+
+    //! get the nonlinear iteration number
+    int GetNlnIter() const;
+
+    //! get the current step counter \f$(n+1)\f$
+    int GetStepNp() const;
+
+    const bool& IsPredictor() const;
+
+    //! get the current step length [derived]
+    virtual inline double GetStepLength() const
+    {
+      CheckInitSetup();
+      return str_data_ptr_->GetStepLength();
+    };
+
+    //! get the is_default_step indicator [derived]
+    virtual inline bool IsDefaultStep() const
+    {
+      CheckInitSetup();
+      return str_data_ptr_->IsDefaultStep();
+    };
+
+    /*! @name set routines which are used to set the parameters of the data container
+     *
+     *  These functions are not allowed to be called by the elements! */
+    //! @{
+
+    //! set the action type
+    inline void SetActionType(const enum MORTAR::ActionType& actiontype)
+    {
+      mortar_action_ = actiontype;
+    }
+
+    //! @}
+
+  protected:
+    //! returns the isinit_ flag
+    inline const bool& IsInit() const
+    { return isinit_; };
+
+    //! returns the issetup_ flag
+    inline const bool& IsSetup() const
+    { return issetup_; };
+
+    //! Checks the init and setup status
+    inline void CheckInitSetup() const
+    {
+      if (!IsInit() or !IsSetup())
+        dserror("Call Init() and Setup() first!");
+    }
+
+    //! Checks the init status
+    inline void CheckInit() const
+    {
+      if (!IsInit())
+        dserror("Init() has not been called, yet!");
+    }
+
+    //! Time integration strategy
+    inline const STR::TIMINT::Base& GetTimInt() const
+    {
+      CheckInit();
+      return str_data_ptr_->GetTimInt();
+    }
+
+    //! Structural dynamic data
+    inline const STR::TIMINT::BaseDataSDyn& GetSDyn() const
+    {
+      CheckInit();
+      return str_data_ptr_->GetSDyn();
+    }
+
+    //! input/ouput parameters
+    inline const STR::TIMINT::BaseDataIO& GetInOutput() const
+    {
+      CheckInit();
+      return str_data_ptr_->GetInOutput();
+    }
+
+    //! global state variables
+    inline const STR::TIMINT::BaseDataGlobalState& GetGState() const
+    {
+      CheckInit();
+      return str_data_ptr_->GetGState();
+    }
+
+  private:
+    bool isinit_;
+
+    bool issetup_;
+
+    enum MORTAR::ActionType mortar_action_;
+
+    Teuchos::RCP<const STR::MODELEVALUATOR::Data> str_data_ptr_;
+
+
+  }; // class ContactData
 } // namespace MODELEVALUATOR
 } // namespace STR
 

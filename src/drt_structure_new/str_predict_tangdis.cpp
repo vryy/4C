@@ -2,6 +2,8 @@
 /*!
 \file str_predict_tangdis.cpp
 
+\brief Tangential displacemnt predictor.
+
 \maintainer Michael Hiermeier
 
 \date Sep 1, 2015
@@ -19,6 +21,7 @@
 #include "str_impl_generic.H"
 
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_dserror.H"
 
 #include "../solver_nonlin_nox/nox_nln_group.H"
@@ -79,7 +82,8 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
   // with the values of the last converged time step.
   // ---------------------------------------------------------------------------
   Teuchos::RCP<NOX::Epetra::Vector> x_ptr =
-      GlobalState().CreateGlobalVector(STR::vec_init_last_time_step);
+      GlobalState().CreateGlobalVector(STR::vec_init_last_time_step,
+          ImplInt().ModelEvalPtr());
   // Set the solution vector in the nox group. This will reset all isValid
   // flags.
   grp.setX(*x_ptr);
@@ -107,16 +111,19 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
   // ---------------------------------------------------------------------------
   Teuchos::ParameterList& p =
       NoxParams().sublist("Direction").sublist("Newton").sublist("Linear Solver");
-  p.set("Number of Nonlinear Iterations",0);
-  p.set("Current Time Step",GlobalState().GetTimeNp());
+  p.set<int>("Number of Nonlinear Iterations",0);
+  p.set<int>("Current Time Step",GlobalState().GetStepNp());
   // ToDo Get the actual tolerance value
-  p.set("Wanted Tolerance",1.0e-6);
+  p.set<double>("Wanted Tolerance",1.0e-6);
   // compute the Newton direction
   grp_ptr->computeNewton(p);
   // reset isValid flags
   grp_ptr->computeX(*grp_ptr,grp_ptr->getNewton(),1.0);
   // add the DBC values to the current state vector
-  grp_ptr->computeX(*grp_ptr,*dbc_incr_ptr_,1.0);
+  Teuchos::RCP<Epetra_Vector> dbc_incr_exp_ptr =
+      Teuchos::rcp(new Epetra_Vector(GlobalState().GlobalProblemMap(),true));
+  LINALG::Export(*dbc_incr_ptr_,*dbc_incr_exp_ptr);
+  grp_ptr->computeX(*grp_ptr,*dbc_incr_exp_ptr,1.0);
   // Reset the state variables
   const NOX::Epetra::Vector& x_eptra =
       dynamic_cast<const NOX::Epetra::Vector&>(grp_ptr->getX());
@@ -174,8 +181,8 @@ void NOX::NLN::GROUP::PrePostOp::TangDis::runPostComputeF(
   if (dbc_incr_nrm2 == 0.0)
     return;
 
-  // Alternatively, it's also possible to get a const pointer on the jacobian
-  // by calling grp.getLinearSystem()->getJacobianOperator()...
+  /* Alternatively, it's also possible to get a const pointer on the jacobian
+   * by calling grp.getLinearSystem()->getJacobianOperator()... */
   Teuchos::RCP<const LINALG::SparseMatrix> stiff_ptr =
       tang_predict_ptr_->GlobalState().GetJacobianDisplBlock();
 

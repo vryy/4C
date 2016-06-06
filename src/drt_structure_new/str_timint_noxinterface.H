@@ -2,6 +2,9 @@
 /*!
 \file str_timint_noxinterface.H
 
+\brief Concrete implementation of the Jacobian, Required and
+       Preconditioner %NOX::NLN interfaces.
+
 \maintainer Michael Hiermeier
 
 \date Nov 27, 2015
@@ -139,6 +142,7 @@ namespace TIMINT {
     //! setup flagg
     bool issetup_;
 
+  private:
     //! global state data container
     Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> gstate_ptr_;
 

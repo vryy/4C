@@ -2,6 +2,8 @@
 /*!
 \file str_nln_solver_nox.H
 
+\brief Structural non-linear %NOX::NLN solver.
+
 \maintainer Michael Hiermeier
 
 \date Aug 13, 2015
@@ -15,7 +17,6 @@
 #define STR_NLN_SOLVER_NOX_H_
 
 #include "str_nln_solver_generic.H" // base class
-#include "../solver_nonlin_nox/nox_nln_globaldata.H"
 #include "NOX_StatusTest_Generic.H"
 
 namespace NOX {
@@ -26,6 +27,7 @@ namespace Epetra {
   class LinearSystem;
 } // class LinearSystem;
 namespace NLN {
+  class GlobalData;
   class Problem;
 namespace INNER {
 namespace StatusTest {
@@ -75,6 +77,9 @@ namespace SOLVER {
       CheckInitSetup();
       return istatus_;
     }
+
+    //! get number of nonlinear iterations (derived)
+    virtual int GetNumNlnIterations() const;
 
   protected:
     //! Reset the non-linear solver parameters and variables

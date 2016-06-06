@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_meritfunction_factory.cpp
 
+\brief Factory to create a merit function evaluation object.
+
 \maintainer Michael Hiermeier
 
 \date Jun 12, 2015
@@ -63,9 +65,11 @@ Teuchos::RCP<NOX::MeritFunction::Generic> NOX::NLN::MeritFunction::Factory::
   else
   {
     std::ostringstream msg;
-    msg << "Error - NOX::NLN::MeritFunction::buildUnconstraintedMeritFunction() - The \"Solver Options > Merit Function\" parameter \""
-        << mftype << "\" is not a valid UNCONSTRAINTED merit function name.  Please fix your parameter list!";
-    TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, msg.str());
+    msg << "Error - NOX::NLN::MeritFunction::buildUnconstraintedMeritFunction() - \n"
+        "The \"Solver Options > Merit Function\" parameter \""
+        << mftype << "\" is not a valid UNCONSTRAINTED merit function name.  Please "
+            "fix your parameter list!";
+    dserror(msg.str().c_str());
   }
 
   return mrtFctPtr;
@@ -89,9 +93,11 @@ Teuchos::RCP<NOX::MeritFunction::Generic> NOX::NLN::MeritFunction::Factory::
   else
   {
     std::ostringstream msg;
-    msg << "Error - NOX::NLN::MeritFunction::buildUnconstrainedMeritFunction() - The \"Solver Options > Merit Function\" parameter \""
-        << mftype << "\" is not a valid CONSTRAINT merit function name.  Please fix your parameter list!";
-    TEUCHOS_TEST_FOR_EXCEPTION(true, std::logic_error, msg.str());
+    msg << "Error - NOX::NLN::MeritFunction::buildConstrainedMeritFunction() - \n"
+        "The \"Solver Options > Merit Function\" parameter \""
+        << mftype << "\" is not a valid CONSTRAINT merit function name.  Please "
+            "fix your parameter list!";
+    dserror(msg.str().c_str());
   }
 
   return mrtFctPtr;

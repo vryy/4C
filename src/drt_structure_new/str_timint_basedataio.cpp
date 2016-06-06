@@ -2,6 +2,9 @@
 /*!
 \file str_timint_basedataio.cpp
 
+\brief Input/output data container for the structural (time)
+       integration
+
 \maintainer Michael Hiermeier
 
 \date Jan 11, 2016

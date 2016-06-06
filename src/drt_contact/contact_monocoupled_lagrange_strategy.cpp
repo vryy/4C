@@ -1,14 +1,20 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_monocoupled_lagrange_strategy.cpp
 
-<pre>
-Maintainer: Christoph Ager
-            ager@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15249
-</pre>
+\brief This class provides the functionality to use contact with Lagrangian
+multipliers for monolithical coupled multifield problems!
+Therefore ApplyForceStiffCmt() & Recover() are overloaded by this class and
+do nothing, as they are called directly in the structure. To use the contact
+the additional methods ApplyForceStiffCmtCoupled() & RecoverCoupled() have
+to be called!
 
-*----------------------------------------------------------------------*/
+\maintainer Christoph Ager
+
+\level 3
+
+*/
+/*---------------------------------------------------------------------*/
 
 #include "Epetra_SerialComm.h"
 #include "contact_monocoupled_lagrange_strategy.H"
@@ -19,6 +25,7 @@ Maintainer: Christoph Ager
  | ctor (public)                                              ager 02/15|
  *----------------------------------------------------------------------*/
 CONTACT::MonoCoupledLagrangeStrategy::MonoCoupledLagrangeStrategy(
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap,
     Teuchos::ParameterList params,
@@ -26,10 +33,10 @@ CONTACT::MonoCoupledLagrangeStrategy::MonoCoupledLagrangeStrategy(
     int dim,
     Teuchos::RCP<Epetra_Comm> comm,
     double alphaf,
-    int maxdof):
-CoLagrangeStrategy(DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
-has_to_evaluate_(false),
-has_to_recover_(false)
+    int maxdof)
+    : CoLagrangeStrategy(data_ptr,DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+      has_to_evaluate_(false),
+      has_to_recover_(false)
 {
   //do some security checks ...
   return;

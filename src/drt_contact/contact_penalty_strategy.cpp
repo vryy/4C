@@ -1,14 +1,16 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_penalty_strategy.cpp
 
-<pre>
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Penalty contact solving strategy: The contact constrains are enforced
+       by a penalty formulation.
 
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*---------------------------------------------------------------------*/
 
 #include "contact_penalty_strategy.H"
 #include "contact_interface.H"
@@ -38,23 +40,46 @@ CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(
     int dim,
     Teuchos::RCP<Epetra_Comm> comm,
     double alphaf,
-    int maxdof) :
-CoAbstractStrategy(DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof)
+    int maxdof)
+    : CoAbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()),
+        DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+      constrnorm_(0.0),
+      constrnormtan_(0.0),
+      initialpenalty_(Params().get<double>("PENALTYPARAM")),
+      initialpenaltytan_(Params().get<double>("PENALTYPARAMTAN"))
 {
-  // initialize constraint norm and initial penalty
-  constrnorm_ = 0.0;
-  constrnormtan_ = 0.0;
-  initialpenalty_ = Params().get<double>("PENALTYPARAM");
-  initialpenaltytan_ = Params().get<double>("PENALTYPARAMTAN");
+  // empty constructor
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+CONTACT::CoPenaltyStrategy::CoPenaltyStrategy(
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+    int dim,
+    Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf,
+    int maxdof)
+    : CoAbstractStrategy(data_ptr,DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+      constrnorm_(0.0),
+      constrnormtan_(0.0),
+      initialpenalty_(Params().get<double>("PENALTYPARAM")),
+      initialpenaltytan_(Params().get<double>("PENALTYPARAMTAN"))
+{
+  // empty constructor
+}
+
 
 /*----------------------------------------------------------------------*
  |  save the gap-scaling kappa from reference config          popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::CoPenaltyStrategy::SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::CoPenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis)
 {
   // initialize the displacement field
-  SetState("displacement", dis);
+  SetState(MORTAR::state_new_displacement, *dis);
 
   // kappa will be the shape function integral on the slave sides
   // (1) build the nodal information

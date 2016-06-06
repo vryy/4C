@@ -2,6 +2,8 @@
 /*!
 \file str_timint_implicit.H
 
+\brief Implicit structural time integration strategy.
+
 \maintainer Michael Hiermeier
 
 \date Aug 13, 2015

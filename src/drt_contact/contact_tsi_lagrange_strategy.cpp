@@ -1,10 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_tsi_lagrange_strategy.cpp
-\maintainer Alexander Seitz
-\level 3
+
 \brief a derived strategy handling the Lagrange multiplier based TSI contact
 
-*----------------------------------------------------------------------*/
+\level 3
+
+\maintainer Alexander Seitz
+
+*/
+/*---------------------------------------------------------------------*/
 
 #include "Epetra_SerialComm.h"
 #include "contact_tsi_lagrange_strategy.H"
@@ -29,6 +34,7 @@
  | ctor (public)                                             seitz 08/15|
  *----------------------------------------------------------------------*/
 CONTACT::CoTSILagrangeStrategy::CoTSILagrangeStrategy(
+    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* DofRowMap,
     const Epetra_Map* NodeRowMap,
     Teuchos::ParameterList params,
@@ -36,9 +42,9 @@ CONTACT::CoTSILagrangeStrategy::CoTSILagrangeStrategy(
     int dim,
     Teuchos::RCP<Epetra_Comm> comm,
     double alphaf,
-    int maxdof):
-    CoLagrangeStrategy(DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
-    tsi_alpha_(1.)
+    int maxdof)
+    : CoLagrangeStrategy(data_ptr,DofRowMap,NodeRowMap,params,interface,dim,comm,alphaf,maxdof),
+      tsi_alpha_(1.)
 {
 
   return;
@@ -47,53 +53,60 @@ CONTACT::CoTSILagrangeStrategy::CoTSILagrangeStrategy(
 /*------------------------------------------------------------------------*
  | Assign general thermo contact state                         seitz 08/15|
  *------------------------------------------------------------------------*/
-void CONTACT::CoTSILagrangeStrategy::SetState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec)
+void CONTACT::CoTSILagrangeStrategy::SetState(
+    const enum MORTAR::StateType& statetype,
+    const Epetra_Vector& vec)
 {
-
-  if (statename=="temp")
+  switch (statetype)
   {
-    for (int j=0;j<(int)interface_.size(); ++j)
+    case MORTAR::state_temperature:
     {
-      DRT::Discretization& idiscr = interface_[j]->Discret();
-
-      Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*idiscr.DofColMap(),false));
-      LINALG::Export(*vec,*global);
-
-      for (int i=0;i<idiscr.NumMyColNodes();++i)
+      for (int j=0;j<(int)interface_.size(); ++j)
       {
-        CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscr.lColNode(i));
-        if (node==NULL) dserror("cast failed");
-        std::vector<double> mytemp(1);
-        std::vector<int> lm(1,node->Dofs()[0]);
-
-        DRT::UTILS::ExtractMyValues(*global,mytemp,lm);
-        if (node->HasCoTSIData()) // in case the interface has not been initialized yet
-          node->CoTSIData().Temp() = mytemp[0];
-      }
-    }
-  }
-  if (statename=="thermo_lm")
-  {
-    for (int j=0;j<(int)interface_.size(); ++j)
-    {
-      DRT::Discretization& idiscr = interface_[j]->Discret();
-      for (int i=0;i<idiscr.NumMyColNodes();++i)
-      {
-        CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscr.lColNode(i));
-        std::vector<int> lm(1,node->Dofs()[0]);
-
+        DRT::Discretization& idiscr = interface_[j]->Discret();
         Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*idiscr.DofColMap(),false));
+        LINALG::Export(vec,*global);
 
-        LINALG::Export(*vec,*global);
-        std::vector<double> myThermoLM(1,0.);
-        DRT::UTILS::ExtractMyValues(*global,myThermoLM,lm);
-        node->CoTSIData().ThermoLM() = myThermoLM[0];
+        for (int i=0;i<idiscr.NumMyColNodes();++i)
+        {
+          CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscr.lColNode(i));
+          if (node==NULL) dserror("cast failed");
+          std::vector<double> mytemp(1);
+          std::vector<int> lm(1,node->Dofs()[0]);
+
+          DRT::UTILS::ExtractMyValues(*global,mytemp,lm);
+          if (node->HasCoTSIData()) // in case the interface has not been initialized yet
+            node->CoTSIData().Temp() = mytemp[0];
+        }
       }
+      break;
+    }
+    case MORTAR::state_thermo_lagrange_multiplier:
+    {
+      for (int j=0;j<(int)interface_.size(); ++j)
+      {
+        DRT::Discretization& idiscr = interface_[j]->Discret();
+        for (int i=0;i<idiscr.NumMyColNodes();++i)
+        {
+          CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscr.lColNode(i));
+          std::vector<int> lm(1,node->Dofs()[0]);
+
+          Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*idiscr.DofColMap(),false));
+
+          LINALG::Export(vec,*global);
+          std::vector<double> myThermoLM(1,0.);
+          DRT::UTILS::ExtractMyValues(*global,myThermoLM,lm);
+          node->CoTSIData().ThermoLM() = myThermoLM[0];
+        }
+      }
+      break;
+    }
+    default:
+    {
+      CONTACT::CoAbstractStrategy::SetState(statetype,vec);
+      break;
     }
   }
-
-  else
-    CONTACT::CoAbstractStrategy::SetState(statename,vec);
 
   return;
 }
@@ -113,14 +126,14 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
     thr_s_dofs_  = coupST->MasterToSlaveMap(gsdofrowmap_);
 
   // set the new displacements
-  SetState("displacement", dis);
+  SetState(MORTAR::state_new_displacement, *dis);
 
   for (unsigned i=0;i<interface_.size();++i)
     interface_[i]->Initialize();
 
   // set new temperatures
   Teuchos::RCP<Epetra_Vector> temp2 = coupST()->SlaveToMaster(temp);
-  SetState("temp",temp2);
+  SetState(MORTAR::state_temperature,*temp2);
 
   // error checks
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(Params(),"SYSTEM")
@@ -964,7 +977,7 @@ void CONTACT::CoTSILagrangeStrategy::SetAlphafThermo(const Teuchos::ParameterLis
  *----------------------------------------------------------------------*/
 void CONTACT::CoTSILagrangeStrategy::DoWriteRestart(
     std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
-    bool forcedrestart)
+    bool forcedrestart) const
 {
   CONTACT::CoAbstractStrategy::DoWriteRestart(restart_vectors,forcedrestart);
 
@@ -982,8 +995,11 @@ void CONTACT::CoTSILagrangeStrategy::DoWriteRestart(
   }
 }
 
-void CONTACT::CoTSILagrangeStrategy::DoReadRestart(IO::DiscretizationReader& reader,
-                                                Teuchos::RCP<Epetra_Vector> dis)
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void CONTACT::CoTSILagrangeStrategy::DoReadRestart(
+    IO::DiscretizationReader& reader,
+    Teuchos::RCP<const Epetra_Vector> dis)
 {
   CONTACT::CoAbstractStrategy::DoReadRestart(reader,dis);
 

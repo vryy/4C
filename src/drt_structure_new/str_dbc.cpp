@@ -2,6 +2,8 @@
 /*!
 \file str_dbc.cpp
 
+\brief Wrapper for all Dirichlet boundary condition tasks.
+
 \maintainer Michael Hiermeier
 
 \date Nov 30, 2015
@@ -147,10 +149,9 @@ void STR::Dbc::UpdateLocSysManager()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> STR::Dbc::GetDirichletIncrement()
 {
-  Teuchos::RCP<Epetra_Vector> dbcincr =
-      Teuchos::rcp(new Epetra_Vector(*timint_ptr_->GetDataGlobalState().DofRowMapView()));
-  Teuchos::RCP<const Epetra_Vector> disn =
-      timint_ptr_->GetDataGlobalState().GetDisN();
+Teuchos::RCP<const Epetra_Vector> disn =
+    timint_ptr_->GetDataGlobalState().GetDisN();
+  Teuchos::RCP<Epetra_Vector> dbcincr = Teuchos::rcp(new Epetra_Vector(*disn));
   const double& timenp = timint_ptr_->GetDataGlobalState().GetTimeNp();
 
   // get the new value for the Dirichlet DOFs
@@ -395,6 +396,22 @@ Teuchos::RCP<DRT::UTILS::LocsysManager> STR::Dbc::LocSysManagerPtr()
 {
   CheckInitSetup();
   return locsysman_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const Epetra_Vector& STR::Dbc::GetZeros() const
+{
+  CheckInitSetup();
+  return *zeros_ptr_;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> STR::Dbc::GetZerosPtr() const
+{
+  CheckInitSetup();
+  return zeros_ptr_;
 }
 
 /*----------------------------------------------------------------------------*

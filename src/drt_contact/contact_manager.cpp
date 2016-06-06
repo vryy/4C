@@ -1,11 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file contact_manager.cpp
-
-\maintainer Philipp Farah, Alexander Seitz
 
 \brief BACI implementation of main class to control all contact
 
-*-----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "contact_manager.H"
@@ -599,6 +603,9 @@ CONTACT::CoManager::CoManager(
     fflush(stdout);
   }
 
+  // build the correct data container
+  Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr =
+      Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
   // create WearLagrangeStrategy for wear as non-distinct quantity
   if ( stype == INPAR::CONTACT::solution_lagmult &&
        wlaw  != INPAR::WEAR::wear_none &&
@@ -606,6 +613,7 @@ CONTACT::CoManager::CoManager(
        wtype == INPAR::WEAR::wear_primvar))
   {
     strategy_ = Teuchos::rcp(new WEAR::WearLagrangeStrategy(
+        data_ptr,
         Discret().DofRowMap(),
         Discret().NodeRowMap(),
         cparams,
@@ -620,6 +628,7 @@ CONTACT::CoManager::CoManager(
     if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro)
     {
       strategy_ = Teuchos::rcp(new PoroLagrangeStrategy(
+          data_ptr,
           Discret().DofRowMap(),
           Discret().NodeRowMap(),
           cparams,
@@ -634,6 +643,7 @@ CONTACT::CoManager::CoManager(
     else if (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::tsi)
     {
       strategy_ = Teuchos::rcp(new CoTSILagrangeStrategy(
+          data_ptr,
           Discret().DofRowMap(),
           Discret().NodeRowMap(),
           cparams,
@@ -646,6 +656,7 @@ CONTACT::CoManager::CoManager(
     else
     {
       strategy_ = Teuchos::rcp(new CoLagrangeStrategy(
+          data_ptr,
           Discret().DofRowMap(),
           Discret().NodeRowMap(),
           cparams,
@@ -656,9 +667,12 @@ CONTACT::CoManager::CoManager(
           maxdof));
     }
   }
-  else if (stype == INPAR::CONTACT::solution_penalty || stype == INPAR::CONTACT::solution_nitsche)
+  else if (stype == INPAR::CONTACT::solution_penalty ||
+           stype == INPAR::CONTACT::solution_nitsche ||
+           stype == INPAR::CONTACT::solution_uzawa)
   {
     strategy_ = Teuchos::rcp(new CoPenaltyStrategy(
+        data_ptr,
         Discret().DofRowMap(),
         Discret().NodeRowMap(),
         cparams,
@@ -667,29 +681,10 @@ CONTACT::CoManager::CoManager(
         alphaf,
         maxdof));
   }
-  else if (stype == INPAR::CONTACT::solution_uzawa)
-  {
-    strategy_ = Teuchos::rcp(new CoPenaltyStrategy(
-        Discret().DofRowMap(),
-        Discret().NodeRowMap(),
-        cparams,
-        interfaces,
-        dim,
-        comm_,
-        alphaf,
-        maxdof));
-  }
   else if (stype == INPAR::CONTACT::solution_augmented)
   {
-    strategy_ = Teuchos::rcp(new AugmentedLagrangeStrategy(
-        Discret().DofRowMap(),
-        Discret().NodeRowMap(),
-        cparams,
-        interfaces,
-        dim,
-        comm_,
-        alphaf,
-        maxdof));
+    dserror("The augmented contact formulation is no longer supported in the"
+        " old structural time integrator!");
   }
   else
   {
@@ -921,10 +916,6 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         && DRT::INPUT::IntegralValue<int>(contact, "SEMI_SMOOTH_NEWTON") != 1)
       dserror("ERROR: Mesh adaptive cn and ct only for semi-smooth Newton strategy");
 
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") == INPAR::CONTACT::solution_augmented &&
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"LM_SHAPEFCN") == INPAR::MORTAR::shape_dual)
-      dserror("ERROR: The augmented Lagrange formulation does not support dual shape functions.");
-
     if (problemtype == prb_tsi
         && DRT::INPUT::IntegralValue<int>(mortar, "LM_NODAL_SCALE") == true)
       dserror("ERROR: Nodal scaling not yet implemented for TSI problems");
@@ -981,6 +972,15 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
         || DRT::INPUT::IntegralValue<int>(contact, "MESH_ADAPTIVE_CT") == true)
         && DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW")!= INPAR::WEAR::wear_none)
       dserror("ERROR: Mesh adaptive cn and ct not yet implemented for wear");
+
+    // *********************************************************************
+    // Augmented Lagrangian strategy
+    // *********************************************************************
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact,"STRATEGY") ==
+        INPAR::CONTACT::solution_augmented)
+    {
+      dserror("No longer supported!");
+    }
 
     // *********************************************************************
     // thermal-structure-interaction contact
@@ -1463,25 +1463,6 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
 #endif //CONTACTEXPORT
 #endif //CONTACTFORCEOUTPUT
 
-  // Evaluate the interface forces for the augmented Lagrange formulation
-  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(DRT::Problem::Instance()->ContactDynamicParams(),"STRATEGY")
-      ==INPAR::CONTACT::solution_augmented)
-  {
-    Teuchos::RCP<Epetra_Vector> augfs_lm = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    Teuchos::RCP<Epetra_Vector> augfs_g  = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    Teuchos::RCP<Epetra_Vector> augfm_lm = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    Teuchos::RCP<Epetra_Vector> augfm_g  = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-
-    // evaluate augmented contact forces
-    GetStrategy().AugForces(*augfs_lm,*augfs_g,*augfm_lm,*augfm_g);
-
-    // contact forces on slave and master side
-    output.WriteVector("norslaveforcelm",augfs_lm);
-    output.WriteVector("norslaveforceg" ,augfs_g);
-    output.WriteVector("normasterforcelm",augfm_lm);
-    output.WriteVector("normasterforceg" ,augfm_g);
-  }
-
   // *********************************************************************
   // wear with internal state variable approach
   // *********************************************************************
@@ -1570,7 +1551,7 @@ void CONTACT::CoManager::SetPoroParentElement(int& slavetype,int& mastertype,
   // mastertype ... 1 poro, 0 struct, -1 default
   Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
   if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
-  cele->PhysType() = MORTAR::MortarElement::other;
+  cele->PhysType() = MORTAR::MortarElement::PhysicalType::other;
   std::vector<Teuchos::RCP<DRT::Condition> > porocondvec;
   discret_.GetCondition("PoroCoupling",porocondvec);
   if (!cele->IsSlave())//treat an element as a master element if it is no slave element
@@ -1585,17 +1566,17 @@ void CONTACT::CoManager::SetPoroParentElement(int& slavetype,int& mastertype,
         {
           if (mastertype==0)
             dserror("struct and poro master elements on the same processor - no mixed interface supported");
-          cele->PhysType() = MORTAR::MortarElement::poro;
+          cele->PhysType() = MORTAR::MortarElement::PhysicalType::poro;
           mastertype=1;
           break;
         }
       }
     }
-    if(cele->PhysType()==MORTAR::MortarElement::other)
+    if(cele->PhysType()==MORTAR::MortarElement::PhysicalType::other)
     {
       if (mastertype==1)
         dserror("struct and poro master elements on the same processor - no mixed interface supported");
-      cele->PhysType() = MORTAR::MortarElement::structure;
+      cele->PhysType() = MORTAR::MortarElement::PhysicalType::structure;
       mastertype=0;
     }
   }
@@ -1611,17 +1592,17 @@ void CONTACT::CoManager::SetPoroParentElement(int& slavetype,int& mastertype,
         {
           if (slavetype==0)
             dserror("struct and poro master elements on the same processor - no mixed interface supported");
-          cele->PhysType() = MORTAR::MortarElement::poro;
+          cele->PhysType() = MORTAR::MortarElement::PhysicalType::poro;
           slavetype=1;
           break;
         }
       }
     }
-    if(cele->PhysType()==MORTAR::MortarElement::other)
+    if(cele->PhysType()==MORTAR::MortarElement::PhysicalType::other)
     {
       if (slavetype==1)
         dserror("struct and poro master elements on the same processor - no mixed interface supported");
-      cele->PhysType() = MORTAR::MortarElement::structure;
+      cele->PhysType() = MORTAR::MortarElement::PhysicalType::structure;
       slavetype=0;
     }
   }

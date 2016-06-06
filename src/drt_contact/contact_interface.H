@@ -1,16 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file contact_interface.H
 
 \brief One contact interface
 
-\level 1
+\level 2
 
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+\maintainer Philipp Farah, Alexander Seitz
 
-*-----------------------------------------------------------------------*/
+*/
+/*---------------------------------------------------------------------*/
 #ifndef CONTACT_INTERFACE_H
 #define CONTACT_INTERFACE_H
 
@@ -318,8 +317,9 @@ public:
   Derived verision!
 
   */
-  bool MortarCoupling(MORTAR::MortarElement* sele,
-                         std::vector<MORTAR::MortarElement*> mele);
+  virtual bool MortarCoupling(MORTAR::MortarElement* sele,
+      std::vector<MORTAR::MortarElement*> mele,
+      const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
 
   /*!
   \brief evaluate coupling terms for nts coupling + lin
@@ -537,7 +537,7 @@ public:
   according to the contact initialization defined in the input file.
 
   */
-  virtual bool BuildActiveSet(bool init = false);
+  virtual bool BuildActiveSet(bool init=false);
 
   /*!
   \brief Split active dofs into N- and T-part

@@ -2,6 +2,9 @@
 /*!
 \file nox_nln_group.cpp
 
+\brief %NOX::NLN implementation of a %NOX::Epetra::Group
+       to handle unconstrained problems.
+
 \maintainer Michael Hiermeier
 
 \date Jun 29, 2015
@@ -125,12 +128,11 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeF()
 
   bool status = false;
 
-  status = userInterfacePtr->computeF(xVector.getEpetraVector(), RHSVector.getEpetraVector(), NOX::Epetra::Interface::Required::Residual);
+  status = userInterfacePtr->computeF(xVector.getEpetraVector(),
+      RHSVector.getEpetraVector(),NOX::Epetra::Interface::Required::Residual);
 
   if (status == false)
-  {
     throw "NOX::NLN::Group::computeF() - fill failed";
-  }
 
   isValidRHS = true;
 

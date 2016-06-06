@@ -1,4 +1,5 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file mortar_interface.cpp
 
 \brief One mortar coupling interface
@@ -9,8 +10,8 @@
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
-
-*-----------------------------------------------------------------------*/
+*/
+/*-----------------------------------------------------------------------*/
 
 // Epetra_SerialComm needed in non-parallel implementation only
 //#include "Epetra_SerialComm.h"
@@ -1756,118 +1757,130 @@ void MORTAR::MortarInterface::Initialize()
   return;
 }
 
+
 /*----------------------------------------------------------------------*
  |  set current and old deformation state                      popp 12/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::SetState(const std::string& statename,
-    const Teuchos::RCP<Epetra_Vector> vec)
+void MORTAR::MortarInterface::SetState(const enum StateType& statetype,
+    const Epetra_Vector& vec)
 {
   // ***WARNING:*** This is commented out here, as idiscret_->SetState()
   // needs all the procs around, not only the interface local ones!
   // if (!lComm()) return;
 
-  if (statename == "displacement")
+  switch (statetype)
   {
-    // alternative method to get vec to full overlap
-    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(
-        new Epetra_Vector(*idiscret_->DofColMap(), false));
-    LINALG::Export(*vec, *global);
-
-    // set displacements in interface discretization
-    idiscret_->SetState(statename, global);
-
-    // loop over all nodes to set current displacement
-    // (use fully overlapping column map)
-    for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
+    case state_new_displacement:
     {
-      MORTAR::MortarNode* node =
-          dynamic_cast<MORTAR::MortarNode*>(idiscret_->lColNode(i));
-      const int numdof = node->NumDof();
-      std::vector<double> mydisp(numdof);
-      std::vector<int> lm(numdof);
+      // alternative method to get vec to full overlap
+      Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(
+          new Epetra_Vector(*idiscret_->DofColMap(), false));
+      LINALG::Export(vec, *global);
 
-      for (int j = 0; j < numdof; ++j)
-        lm[j] = node->Dofs()[j];
+      // set displacements in interface discretization
+      idiscret_->SetState(StateType2String(statetype), global);
 
-      DRT::UTILS::ExtractMyValues(*global, mydisp, lm);
+      // loop over all nodes to set current displacement
+      // (use fully overlapping column map)
+      for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
+      {
+        MORTAR::MortarNode* node =
+            dynamic_cast<MORTAR::MortarNode*>(idiscret_->lColNode(i));
+        const int numdof = node->NumDof();
+        std::vector<double> mydisp(numdof);
+        std::vector<int> lm(numdof);
 
-      // add mydisp[2]=0 for 2D problems
-      if (mydisp.size() < 3)
-        mydisp.resize(3);
+        for (int j = 0; j < numdof; ++j)
+          lm[j] = node->Dofs()[j];
 
-      // set current configuration
-      for (int j = 0; j < 3; ++j)
-        node->xspatial()[j] = node->X()[j] + mydisp[j];
+        DRT::UTILS::ExtractMyValues(*global, mydisp, lm);
+
+        // add mydisp[2]=0 for 2D problems
+        if (mydisp.size() < 3)
+          mydisp.resize(3);
+
+        // set current configuration
+        for (int j = 0; j < 3; ++j)
+          node->xspatial()[j] = node->X()[j] + mydisp[j];
+      }
+
+      // compute element areas
+      SetElementAreas();
+      break;
     }
-
-    // compute element areas
-    SetElementAreas();
-  }
-
-  if (statename == "lm")
-  {
-    // alternative method to get vec to full overlap
-    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(
-        new Epetra_Vector(*idiscret_->DofColMap(), false));
-    LINALG::Export(*vec, *global);
-
-    // loop over all nodes to set current displacement
-    // (use fully overlapping column map)
-    for (int i = 0; i < SlaveColNodes()->NumMyElements(); ++i)
+    case state_lagrange_multiplier:
     {
-      MORTAR::MortarNode* node =
-          dynamic_cast<MORTAR::MortarNode*>(idiscret_->gNode(SlaveColNodes()->GID(i)));
-      const int numdof = node->NumDof();
-      std::vector<double> mydisp(numdof);
-      std::vector<int> lm(numdof);
+      // alternative method to get vec to full overlap
+      Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(
+          new Epetra_Vector(*idiscret_->DofColMap(), false));
+      LINALG::Export(vec, *global);
 
-      for (int j = 0; j < numdof; ++j)
-        lm[j] = node->Dofs()[j];
+      // loop over all nodes to set current displacement
+      // (use fully overlapping column map)
+      for (int i = 0; i < SlaveColNodes()->NumMyElements(); ++i)
+      {
+        MORTAR::MortarNode* node =
+            dynamic_cast<MORTAR::MortarNode*>(idiscret_->gNode(SlaveColNodes()->GID(i)));
+        const int numdof = node->NumDof();
+        std::vector<double> mydisp(numdof);
+        std::vector<int> lm(numdof);
 
-      DRT::UTILS::ExtractMyValues(*global, mydisp, lm);
+        for (int j = 0; j < numdof; ++j)
+          lm[j] = node->Dofs()[j];
 
-      // add mydisp[2]=0 for 2D problems
-      if (mydisp.size() < 3)
-        mydisp.resize(3);
+        DRT::UTILS::ExtractMyValues(*global, mydisp, lm);
 
-      // set current configuration
-      for (int j = 0; j < 3; ++j)
-        node->MoData().lm()[j] = mydisp[j];
+        // add mydisp[2]=0 for 2D problems
+        if (mydisp.size() < 3)
+          mydisp.resize(3);
+
+        // set current configuration
+        for (int j = 0; j < 3; ++j)
+          node->MoData().lm()[j] = mydisp[j];
+      }
+      break;
     }
-  }
-
-  if (statename == "olddisplacement")
-  {
-    // alternative method to get vec to full overlap
-    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(
-        new Epetra_Vector(*idiscret_->DofColMap(), false));
-    LINALG::Export(*vec, *global);
-
-    // set displacements in interface discretization
-    idiscret_->SetState(statename, global);
-
-    // loop over all nodes to set current displacement
-    // (use fully overlapping column map)
-    for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
+    case state_old_displacement:
     {
-      MORTAR::MortarNode* node =
-          dynamic_cast<MORTAR::MortarNode*>(idiscret_->lColNode(i));
-      const int numdof = node->NumDof();
-      std::vector<double> myolddisp(numdof);
-      std::vector<int> lm(numdof);
+      // alternative method to get vec to full overlap
+      Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(
+          new Epetra_Vector(*idiscret_->DofColMap(), false));
+      LINALG::Export(vec, *global);
 
-      for (int j = 0; j < numdof; ++j)
-        lm[j] = node->Dofs()[j];
+      // set displacements in interface discretization
+      idiscret_->SetState(StateType2String(statetype), global);
 
-      DRT::UTILS::ExtractMyValues(*global, myolddisp, lm);
+      // loop over all nodes to set current displacement
+      // (use fully overlapping column map)
+      for (int i = 0; i < idiscret_->NumMyColNodes(); ++i)
+      {
+        MORTAR::MortarNode* node =
+            dynamic_cast<MORTAR::MortarNode*>(idiscret_->lColNode(i));
+        const int numdof = node->NumDof();
+        std::vector<double> myolddisp(numdof);
+        std::vector<int> lm(numdof);
 
-      // add mydisp[2]=0 for 2D problems
-      if (myolddisp.size() < 3)
-        myolddisp.resize(3);
+        for (int j = 0; j < numdof; ++j)
+          lm[j] = node->Dofs()[j];
 
-      // set old displacement
-      for (int j = 0; j < 3; ++j)
-        node->uold()[j] = myolddisp[j];
+        DRT::UTILS::ExtractMyValues(*global, myolddisp, lm);
+
+        // add mydisp[2]=0 for 2D problems
+        if (myolddisp.size() < 3)
+          myolddisp.resize(3);
+
+        // set old displacement
+        for (int j = 0; j < 3; ++j)
+          node->uold()[j] = myolddisp[j];
+      }
+
+      break;
+    }
+    default:
+    {
+      dserror("The given state type is unsupported! (type = %s)",
+          StateType2String(statetype).c_str());
+      break;
     }
   }
 
@@ -2021,8 +2034,9 @@ void MORTAR::MortarInterface::EvaluateGeometry(std::vector<Teuchos::RCP<MORTAR::
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::Evaluate(
     int rriter,
-    const int step,
-    const int iter)
+    const int& step,
+    const int& iter,
+    Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr)
 {
   // interface needs to be complete
   if (!Filled() && Comm().MyPID() == 0)
@@ -2044,7 +2058,7 @@ void MORTAR::MortarInterface::Evaluate(
   PreEvaluate();
 
   // evaluation routine for coupling
-  EvaluateCoupling();
+  EvaluateCoupling(mparams_ptr);
 
   // do some post operations. nothing happens for standard cases...
   PostEvaluate(step,iter);
@@ -2067,7 +2081,8 @@ void MORTAR::MortarInterface::Evaluate(
 /*----------------------------------------------------------------------*
  |  private evaluate routine                                 farah 02/16|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::EvaluateCoupling()
+void MORTAR::MortarInterface::EvaluateCoupling(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
   INPAR::MORTAR::AlgorithmType algo =
@@ -2088,7 +2103,7 @@ void MORTAR::MortarInterface::EvaluateCoupling()
     // 3) compute directional derivative of M and g and store into nodes
     //    (only for contact setting)
     //********************************************************************
-    EvaluateSTS();
+    EvaluateSTS(mparams_ptr);
     break;
   }
   //*********************************
@@ -2145,7 +2160,8 @@ void MORTAR::MortarInterface::EvaluateCoupling()
 /*----------------------------------------------------------------------*
  |  evaluate coupling type segment-to-segment coupl          farah 02/16|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarInterface::EvaluateSTS()
+void MORTAR::MortarInterface::EvaluateSTS(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // loop over all slave col elements
   for (int i = 0; i < selecolmap_->NumMyElements(); ++i)
@@ -2181,7 +2197,7 @@ void MORTAR::MortarInterface::EvaluateSTS()
     }
 
     // concrete coupling evaluation routine
-    MortarCoupling(selement,melements);
+    MortarCoupling(selement,melements,mparams_ptr);
   }
 
   return;
@@ -2879,7 +2895,8 @@ bool MORTAR::MortarInterface::EvaluateSearchBinarytree()
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarInterface::MortarCoupling(
     MORTAR::MortarElement* sele,
-    std::vector<MORTAR::MortarElement*> mele)
+    std::vector<MORTAR::MortarElement*> mele,
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // check if quadratic interpolation is involved
   bool quadratic = false;
@@ -2903,7 +2920,7 @@ bool MORTAR::MortarInterface::MortarCoupling(
 
     // create Coupling2dManager and evaluate
     MORTAR::Coupling2dManager(Discret(), Dim(), quadratic, IParams(), sele,mele)
-                             .EvaluateCoupling();
+                             .EvaluateCoupling(mparams_ptr);
   }
   // ************************************************************** 3D ***
   else if (Dim() == 3)
@@ -2913,7 +2930,7 @@ bool MORTAR::MortarInterface::MortarCoupling(
     {
       // create Coupling3dManager and evaluate
       MORTAR::Coupling3dManager(Discret(), Dim(), false, IParams(), sele,mele)
-                               .EvaluateCoupling();
+                               .EvaluateCoupling(mparams_ptr);
     }
 
     // ************************************************** quadratic 3D ***
@@ -2921,7 +2938,7 @@ bool MORTAR::MortarInterface::MortarCoupling(
     {
       //create Coupling3dQuadManager and evaluate
       MORTAR::Coupling3dQuadManager(Discret(), Dim(), false, IParams(),sele, mele)
-                                   .EvaluateCoupling();
+                                   .EvaluateCoupling(mparams_ptr);
     } // quadratic
   } // 3D
   else

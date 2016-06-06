@@ -2,6 +2,8 @@
 /*!
 \file str_predict_tangdis.H
 
+\brief Tangential displacemnt predictor.
+
 \maintainer Michael Hiermeier
 
 \date Aug 13, 2015

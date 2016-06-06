@@ -1,10 +1,11 @@
 /*!----------------------------------------------------------------------
 \file mortar_coupling3d.cpp
 
-\maintainer Philipp Farah, Alexander Seitz
-
 \brief Classes for mortar coupling in 3D.
 
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
 
 *-----------------------------------------------------------------------*/
 #include "mortar_coupling3d.H"
@@ -68,9 +69,6 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
   // map to store projection parameter alpha for each master node
   // (currently only necessary for non-AUXPLANE case)
   std::map<int, double> projpar;
-
-  // compute auxiliary plane for 3D coupling
-  AuxiliaryPlane();
 
   // rough check of orientation of element centers
   // if slave and master element center normals form an
@@ -208,6 +206,9 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling3d::RoughCheckOrient()
 {
+  // compute auxiliary plane for 3D coupling
+  AuxiliaryPlane();
+
   // we first need the master element center:
   // for quad4, quad8, quad9 elements: xi = eta = 0.0
   // for tri3, tri6 elements: xi = eta = 1/3
@@ -3629,7 +3630,8 @@ bool MORTAR::Coupling3d::CenterTriangulation(
 /*----------------------------------------------------------------------*
  |  Integration of cells (3D)                                 popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::IntegrateCells()
+bool MORTAR::Coupling3d::IntegrateCells(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -4247,7 +4249,8 @@ MORTAR::Coupling3dQuadManager::Coupling3dQuadManager(
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                  farah 10/14|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3dManager::EvaluateCoupling()
+bool MORTAR::Coupling3dManager::EvaluateCoupling(
+    Teuchos::RCP<MORTAR::ParamsInterface> mparams_ptr)
 {
   // check of we need to start the real coupling
   if(MasterElements().size() == 0)
@@ -4262,7 +4265,7 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
   //*********************************
   if(algo == INPAR::MORTAR::algorithm_mortar or
      algo == INPAR::MORTAR::algorithm_gpts)
-    IntegrateCoupling();
+    IntegrateCoupling(mparams_ptr);
 
   //*********************************
   // Error
@@ -4277,7 +4280,8 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling()
 /*----------------------------------------------------------------------*
  |  Evaluate mortar-coupling pairs                            popp 03/09|
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling3dManager::IntegrateCoupling()
+void MORTAR::Coupling3dManager::IntegrateCoupling(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of numerical integration scheme
 
@@ -4304,7 +4308,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling()
 
       // integrate cells
       for (int m = 0; m < (int) MasterElements().size(); ++m)
-        Coupling()[m]->IntegrateCells();
+        Coupling()[m]->IntegrateCells(mparams_ptr);
   }
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
@@ -4341,7 +4345,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling()
               Coupling()[m]->EvaluateCoupling();
 
               // integrate cells
-              Coupling()[m]->IntegrateCells();
+              Coupling()[m]->IntegrateCells(mparams_ptr);
             }
           }
 
@@ -4365,7 +4369,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling()
 
             // integrate cells
             for (int m = 0; m < (int) MasterElements().size(); ++m)
-              Coupling()[m]->IntegrateCells();
+              Coupling()[m]->IntegrateCells(mparams_ptr);
           }
         }
         else
@@ -4402,7 +4406,8 @@ void MORTAR::Coupling3dManager::IntegrateCoupling()
 /*----------------------------------------------------------------------*
  |  Evaluate coupling pairs for Quad-coupling                farah 01/13|
  *----------------------------------------------------------------------*/
-void MORTAR::Coupling3dQuadManager::IntegrateCoupling()
+void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
+    const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr)
 {
   // decide which type of numerical integration scheme
 
@@ -4445,7 +4450,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling()
 
     // do integration
     for (int i=0; i<(int)Coupling().size(); ++i)
-      Coupling()[i]->IntegrateCells();
+      Coupling()[i]->IntegrateCells(mparams_ptr);
   }
   //**********************************************************************
   // FAST INTEGRATION (ELEMENTS)
@@ -4488,7 +4493,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling()
               coup.EvaluateCoupling();
 
               // Integrate Cells
-              coup.IntegrateCells();
+              coup.IntegrateCells(mparams_ptr);
             } // for maux
           } // for saux
         } // for m

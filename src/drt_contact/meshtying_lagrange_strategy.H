@@ -1,14 +1,16 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file meshtying_lagrange_strategy.H
 
-<pre>
-\maintainer Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Mesh-tying solving strategy with (standard/dual) Lagrangian
+       multipliers.
 
-*-----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*---------------------------------------------------------------------*/
 #ifndef MESHTYING_LAGRANGE_STRATEGY_H
 #define MESHTYING_LAGRANGE_STRATEGY_H
 
@@ -128,12 +130,12 @@ class MtLagrangeStrategy : public MtAbstractStrategy
     // All these functions only have functionality in Penalty meshtying simulations,
     // thus they are defined as dserror here in the case of Lagrange meshtying..
 
-    double ConstraintNorm() {return 0.0;}
+    double ConstraintNorm() const {return 0.0;}
     void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) {}
     double InitialPenalty() {return 0.0;}
     void ResetPenalty() {}
     void ModifyPenalty() {}
-    void SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis) {}
+    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
 

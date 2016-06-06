@@ -2,6 +2,9 @@
 /*!
 \file nox_nln_constraint_group.cpp
 
+\brief %NOX::NLN implementation of a %NOX::Epetra::Group
+       to handle constrained problems.
+
 \maintainer Michael Hiermeier
 
 \date Jun 29, 2015
@@ -28,7 +31,7 @@ NOX::NLN::CONSTRAINT::Group::Group(Teuchos::ParameterList& printParams,
     const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
     const NOX::Epetra::Vector& x,
     const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys,
-    const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iConstr)
+    const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr)
     : NOX::Epetra::Group(printParams,i,x,linSys),
       NOX::NLN::Group(printParams,grpOptionParams,i,x,linSys),
       userConstraintInterfaces_(iConstr)
@@ -58,7 +61,7 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::CONSTRAINT::Group::clone(CopyType t
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >&
+const NOX::NLN::CONSTRAINT::ReqInterfaceMap&
     NOX::NLN::CONSTRAINT::Group::GetConstrInterfaces() const
 {
   return userConstraintInterfaces_;
@@ -97,51 +100,6 @@ Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required>
     constrptr = it->second;
 
   return constrptr;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::NLN::CONSTRAINT::Group::computeX(
-    const NOX::Abstract::Group& grp,
-    const NOX::Abstract::Vector& d,
-    double step)
-{
-  // Cast to appropriate type, then call the "native" computeX
-  const NOX::NLN::CONSTRAINT::Group* constrNlnGrp =
-      dynamic_cast<const NOX::NLN::CONSTRAINT::Group*> (&grp);
-  if (constrNlnGrp==NULL)
-    throwError("computeX","dyn_cast to nox_nln_constraint_group failed!");
-
-  const NOX::Epetra::Vector& epetrad =
-    dynamic_cast<const NOX::Epetra::Vector&> (d);
-  computeX(*constrNlnGrp, epetrad, step);
-  return;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::NLN::CONSTRAINT::Group::computeX(
-    const NOX::NLN::CONSTRAINT::Group& grp,
-    const NOX::Epetra::Vector& d,
-    double step)
-{
-  // -------------------------------------
-  // Update the external variables
-  // -------------------------------------
-  // We have to remove the const state, because we want to change class variables
-  // of the constraint interface class.
-  std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >::iterator it;
-  for (it=userConstraintInterfaces_.begin();it!=userConstraintInterfaces_.end();++it)
-  {
-    it->second->SetLagrangeMultiplier(grp.xVector,d,step);
-  }
-  // -------------------------------------
-  // Update the nox internal variables
-  // and the primary variables
-  // -------------------------------------
-  NOX::NLN::Group::computeX(grp,d,step);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -194,6 +152,108 @@ Teuchos::RCP<const std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetRHSNorm
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+Teuchos::RCP<std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetSolutionUpdateNorms(
+    const NOX::Abstract::Vector& xOld,
+    const std::vector<NOX::Abstract::Vector::NormType>& type,
+    const std::vector<StatusTest::QuantityType>& chQ,
+    Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const
+{
+  const NOX::Epetra::Vector& xOldEpetra =
+      dynamic_cast<const NOX::Epetra::Vector&>(xOld);
+  if (scale.is_null())
+    scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(chQ.size(),
+        StatusTest::NormUpdate::Unscaled));
+
+  Teuchos::RCP<std::vector<double> > norms = Teuchos::rcp(new std::vector<double>(0));
+
+  double rval = -1.0;
+  for (std::size_t i=0;i<chQ.size();++i)
+  {
+    rval = GetNlnReqInterfacePtr()->GetPrimarySolutionUpdateNorms(
+        xVector.getEpetraVector(),xOldEpetra.getEpetraVector(),chQ[i],type[i],
+        (*scale)[i]==StatusTest::NormUpdate::Scaled);
+    if (rval>=0.0)
+    {
+      norms->push_back(rval);
+      continue;
+    }
+    enum NOX::NLN::SolutionType soltype =
+        NOX::NLN::AUX::ConvertQuantityType2SolutionType(chQ[i]);
+    Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> constrptr =
+        GetConstraintInterfacePtr(soltype);
+    rval = constrptr->GetLagrangeMultiplierUpdateNorms(
+        xVector.getEpetraVector(),xOldEpetra.getEpetraVector(),
+        chQ[i],type[i],(*scale)[i]==StatusTest::NormUpdate::Scaled);
+
+    if (rval>=0.0)
+      norms->push_back(rval);
+    else
+    {
+      std::ostringstream msg;
+      msg << "The desired quantity"
+          " for the \"NormIncr\" Status Test could not be found! (enum="
+          << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i])
+          << ")" << std::endl;
+      throwError("GetSolutionUpdateNorms",msg.str());
+    }
+  }
+
+  return norms;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetPreviousSolutionNorms(
+    const NOX::Abstract::Vector& xOld,
+    const std::vector<NOX::Abstract::Vector::NormType>& type,
+    const std::vector<StatusTest::QuantityType>& chQ,
+    Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType> > scale) const
+{
+  const NOX::Epetra::Vector& xOldEpetra =
+      dynamic_cast<const NOX::Epetra::Vector&>(xOld);
+  if (scale.is_null())
+    scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(chQ.size(),
+        StatusTest::NormUpdate::Unscaled));
+
+  Teuchos::RCP<std::vector<double> > norms = Teuchos::rcp(new std::vector<double>(0));
+
+  double rval = -1.0;
+  for (std::size_t i=0;i<chQ.size();++i)
+  {
+    rval = GetNlnReqInterfacePtr()->GetPreviousPrimarySolutionNorms(
+        xOldEpetra.getEpetraVector(),chQ[i],type[i],
+        (*scale)[i]==StatusTest::NormUpdate::Scaled);
+    if (rval>=0.0)
+    {
+      norms->push_back(rval);
+      continue;
+    }
+    enum NOX::NLN::SolutionType soltype =
+        NOX::NLN::AUX::ConvertQuantityType2SolutionType(chQ[i]);
+    Teuchos::RCP<const NOX::NLN::CONSTRAINT::Interface::Required> constrptr =
+        GetConstraintInterfacePtr(soltype);
+    rval = constrptr->GetPreviousLagrangeMultiplierNorms(
+        xOldEpetra.getEpetraVector(),chQ[i],type[i],
+        (*scale)[i]==StatusTest::NormUpdate::Scaled);
+
+    if (rval>=0.0)
+      norms->push_back(rval);
+    else
+    {
+      std::ostringstream msg;
+      msg << "The desired quantity"
+          " for the \"NormUpdate\" Status Test could not be found! (enum="
+          << chQ[i] << " | " << NOX::NLN::StatusTest::QuantityType2String(chQ[i])
+          << ")" << std::endl;
+      throwError("GetPreviousSolutionNorms",msg.str());
+    }
+  }
+
+  return norms;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetSolutionUpdateRMS(
     const NOX::Abstract::Vector& xOld,
     const std::vector<double>& aTol, const std::vector<double>& rTol,
@@ -222,6 +282,7 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetSolutionUpdat
         GetConstraintInterfacePtr(soltype);
 
     rval = constrptr->GetLagrangeMultiplierUpdateRMS(
+        xVector.getEpetraVector(),xOldEpetra.getEpetraVector(),
         aTol[i],rTol[i],chQ[i],disable_implicit_weighting[i]);
     if (rval>=0)
       rms->push_back(rval);
@@ -241,17 +302,37 @@ Teuchos::RCP<std::vector<double> > NOX::NLN::CONSTRAINT::Group::GetSolutionUpdat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-enum NOX::StatusTest::StatusType
-    NOX::NLN::CONSTRAINT::Group::GetActiveSetStatus(
-    const enum NOX::NLN::StatusTest::QuantityType& qtype,
-    int& activesetsize,
-    int& cyclesize) const
+Teuchos::RCP<const Epetra_Map> NOX::NLN::CONSTRAINT::Group::GetCurrentActiveSetMap(
+    const enum NOX::NLN::StatusTest::QuantityType& qt) const
 {
   enum NOX::NLN::SolutionType soltype =
-      NOX::NLN::AUX::ConvertQuantityType2SolutionType(qtype);
+      NOX::NLN::AUX::ConvertQuantityType2SolutionType(qt);
 
-  return GetConstraintInterfacePtr(soltype)->GetActiveSetStatus(
-      activesetsize,cyclesize);
+  return GetConstraintInterfacePtr(soltype)->GetCurrentActiveSetMap(qt);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> NOX::NLN::CONSTRAINT::Group::GetOldActiveSetMap(
+    const enum NOX::NLN::StatusTest::QuantityType& qt) const
+{
+  enum NOX::NLN::SolutionType soltype =
+      NOX::NLN::AUX::ConvertQuantityType2SolutionType(qt);
+
+  return GetConstraintInterfacePtr(soltype)->GetOldActiveSetMap(qt);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+enum NOX::StatusTest::StatusType NOX::NLN::CONSTRAINT::Group::GetActiveSetInfo(
+    const enum NOX::NLN::StatusTest::QuantityType& qt,
+    int& activeset_size) const
+{
+  enum NOX::NLN::SolutionType soltype =
+      NOX::NLN::AUX::ConvertQuantityType2SolutionType(qt);
+
+  return GetConstraintInterfacePtr(soltype)->GetActiveSetInfo(qt,
+      activeset_size);
 }
 
 /*----------------------------------------------------------------------*

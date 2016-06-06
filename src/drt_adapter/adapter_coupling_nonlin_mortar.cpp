@@ -1,12 +1,13 @@
 /*!----------------------------------------------------------------------
 \file adapter_coupling_nonlin_mortar.cpp
 
-<pre>
+\brief A class providing coupling capabilities based on non-linear
+       mortar methods
+
+\level 2
+
 \maintainer Philipp Farah
-            farah@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+
 *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -792,7 +793,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(
   Teuchos::RCP<Epetra_Vector> dispn = LINALG::CreateVector(*dofrowmap, true);
 
   // set displacement state in mortar interface
-  interface_->SetState("displacement", dispn);
+  interface_->SetState(MORTAR::state_new_displacement, *dispn);
 
   // in the following two steps MORTAR does all the work
   interface_->Initialize();
@@ -827,8 +828,8 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   InitMatrices();
 
   // set lagrange multiplier and displacement state
-  interface_->SetState(statename,vec);
-  interface_->SetState("lm",veclm);
+  interface_->SetState(MORTAR::String2StateType(statename),*vec);
+  interface_->SetState(MORTAR::state_lagrange_multiplier,*veclm);
 
   // general interface init: data container etc...
   interface_->Initialize();
@@ -892,8 +893,8 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinDM(const std::string& statename,
   InitMatrices();
 
   // set current lm and displ state
-  interface_->SetState(statename,vec);
-  interface_->SetState("lm",veclm);
+  interface_->SetState(MORTAR::String2StateType(statename),*vec);
+  interface_->SetState(MORTAR::state_lagrange_multiplier,*veclm);
 
   // init internal data
   interface_->Initialize();
@@ -993,8 +994,8 @@ void ADAPTER::CouplingNonLinMortar::IntegrateAll(const std::string& statename,
   InitMatrices();
 
   // set current lm and displ state
-  interface_->SetState(statename,vec);
-  interface_->SetState("lm",veclm);
+  interface_->SetState(MORTAR::String2StateType(statename),*vec);
+  interface_->SetState(MORTAR::state_lagrange_multiplier,*veclm);
 
   // init internal data
   interface_->Initialize();
@@ -1038,8 +1039,8 @@ void ADAPTER::CouplingNonLinMortar::EvaluateSliding(const std::string& statename
   InitMatrices();
 
   // set current lm and displ state
-  interface_->SetState(statename,vec);
-  interface_->SetState("lm",veclm);
+  interface_->SetState(MORTAR::String2StateType(statename),*vec);
+  interface_->SetState(MORTAR::state_lagrange_multiplier,*veclm);
 
   // init internal data
   interface_->Initialize();

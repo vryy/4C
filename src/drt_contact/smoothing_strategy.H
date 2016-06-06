@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
+/*---------------------------------------------------------------------*/
+/*!
 \file smoothing_strategy.H
 
-<pre>
+\brief Add meaningful comment.
+
+\level 3
+
 \maintainer Philipp Farah
-            farah@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
 
-*-----------------------------------------------------------------------*/
-
+*/
+/*---------------------------------------------------------------------*/
 #ifndef SMOOTHING_STRATEGY_H_
 #define SMOOTHING_STRATEGY_H_
 
@@ -30,20 +30,30 @@ class SmoothingStrategy : public CoAbstractStrategy
 {
   public:
 
-    /*!
-    \brief Standard Constructor
-
-    */
+  //! Standard constructor
   SmoothingStrategy(
-        const Epetra_Map* DofRowMap,
-        const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::CoInterface> > cinterface,
-        std::vector<Teuchos::RCP<MORTAR::MortarInterface> > mtinterface,
-        int dim,
-        Teuchos::RCP<Epetra_Comm> comm,
-        double alphaf,
-        int maxdof);
+    const Epetra_Map* DofRowMap,
+    const Epetra_Map* NodeRowMap,
+    Teuchos::ParameterList params,
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > cinterface,
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > mtinterface,
+    int dim,
+    Teuchos::RCP<Epetra_Comm> comm,
+    double alphaf,
+    int maxdof);
+
+    //! Shared data constructor
+  SmoothingStrategy(
+      const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+      const Epetra_Map* DofRowMap,
+      const Epetra_Map* NodeRowMap,
+      Teuchos::ParameterList params,
+      std::vector<Teuchos::RCP<CONTACT::CoInterface> > cinterface,
+      std::vector<Teuchos::RCP<MORTAR::MortarInterface> > mtinterface,
+      int dim,
+      Teuchos::RCP<Epetra_Comm> comm,
+      double alphaf,
+      int maxdof);
 
     /*!
     \brief Destructor
@@ -63,7 +73,7 @@ class SmoothingStrategy : public CoAbstractStrategy
     this case and activesetssconv_ is meaningless.
 
     */
-    bool ActiveSetSemiSmoothConverged()
+    bool ActiveSetSemiSmoothConverged() const
     {
       bool semismooth = DRT::INPUT::IntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
       if (semismooth) return activesetssconv_;
@@ -92,6 +102,14 @@ class SmoothingStrategy : public CoAbstractStrategy
 
     */
     int ActiveSetSteps() { return activesetsteps_; }
+
+    //! Get the active node row map of the previous Newton step
+    virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const
+    { dserror("Currently unsupported for the smoothing strategy!"); return Teuchos::null; };
+
+    //! Get the slip node row map of the previous Newton step
+    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const
+    { dserror("Currently unsupported for the smoothing strategy!"); return Teuchos::null; };
 
     //@}
 
@@ -223,11 +241,11 @@ class SmoothingStrategy : public CoAbstractStrategy
     }
 
     /*!
-    \brief Set current displ state
+    \brief Set current displ state [derived]
 
     */
-    void SetState(const std::string& statename,
-                  const Teuchos::RCP<Epetra_Vector> vec);
+    virtual void SetState(const enum MORTAR::StateType& statetype,
+        const Epetra_Vector& vec);
 
     /*!
     \brief Return matrix T
@@ -257,13 +275,13 @@ class SmoothingStrategy : public CoAbstractStrategy
     Call them whenever you like.
 
     */
-    double ConstraintNorm() {return 0.0;}
+    double ConstraintNorm() const {return 0.0;}
     void EvaluateRelMovPredict() {}
     double InitialPenalty() {return 0.0;}
     void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) {}
     void ResetPenalty() {}
     void ModifyPenalty() {}
-    void SaveReferenceState(const Teuchos::RCP<Epetra_Vector> dis) {}
+    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
     void UpdateUzawaAugmentedLagrange() {}
     void UpdateConstraintNorm(int uzawaiter = 0) {}
 

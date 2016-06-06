@@ -2,6 +2,8 @@
 /*!
 \file nox_nln_statustest_factory.H
 
+\brief Create the desired outer status test.
+
 \maintainer Michael Hiermeier
 
 \date Jul 31, 2015
@@ -31,89 +33,6 @@ namespace StatusTest {
 }
 namespace NLN {
 namespace StatusTest {
-  //! Supported quantity names for distinguished status tests
-  enum QuantityType {
-    quantity_unknown,
-    // check structural quantities
-    quantity_structure,
-    // check (semi-smooth) contact quantities
-    quantity_contact,
-    // check meshtying quantities
-    quantity_meshtying,
-    // check windkessel quantities
-    quantity_windkessel,
-    // check Lagrange/penalty enforced constraint quantites
-    quantity_lag_pen_constraint,
-    // check semi-smooth contact
-    quantity_plasticity,
-    // check pressure dofs
-    quantity_pressure,
-    // check eas dofs
-    quantity_eas
-  };
-
-  /// Map quantity name to std::string
-  static inline const std::string QuantityType2String(const enum QuantityType type)
-  {
-    switch (type)
-    {
-    case quantity_structure:
-      return "STRUCTURE";
-      break;
-    case quantity_contact:
-      return "CONTACT";
-      break;
-    case quantity_meshtying:
-      return "MESHTYING";
-      break;
-    case quantity_windkessel:
-      return "WINDKESSEL";
-      break;
-    case quantity_lag_pen_constraint:
-      return "CONSTRAINT";
-      break;
-    case quantity_plasticity:
-      return "PLASTICITY";
-      break;
-    case quantity_pressure:
-      return "PRESSURE";
-      break;
-    case quantity_eas:
-      return "EAS";
-      break;
-    case quantity_unknown:
-    default :
-      return "unknown quantity type";
-      break;
-    }
-    return "";
-  };
-
-  inline QuantityType String2QuantityType(const std::string& name)
-  {
-    QuantityType type = quantity_unknown;
-
-    // -- case insensitive comparison --
-    if (boost::iequals(name,"structure"))
-      type = quantity_structure;
-    else if (boost::iequals(name,"contact"))
-      type = quantity_contact;
-    else if (boost::iequals(name,"meshtying"))
-      type = quantity_meshtying;
-    else if (boost::iequals(name,"windkessel"))
-      type = quantity_windkessel;
-    else if (boost::iequals(name,"constraint"))
-      type = quantity_lag_pen_constraint;
-    else if (boost::iequals(name,"plasticity"))
-      type = quantity_plasticity;
-    else if (boost::iequals(name,"pressure"))
-      type = quantity_pressure;
-    else if (boost::iequals(name,"eas"))
-      type = quantity_eas;
-
-    return type;
-  };
-
   class Factory
   {
   public:

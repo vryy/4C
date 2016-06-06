@@ -2,6 +2,8 @@
 /*!
 \file str_model_evaluator.cpp
 
+\brief Manager of the model evaluator calls.
+
 \maintainer Michael Hiermeier
 
 \date Nov 30, 2015
@@ -20,6 +22,7 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_sparseoperator.H"
+#include "../linalg/linalg_blocksparsematrix.H" // debugging
 
 #include <Epetra_Vector.h>
 
@@ -86,15 +89,23 @@ void STR::ModelEvaluator::Setup()
 
   me_map_ptr_ =
       STR::MODELEVALUATOR::BuildModelEvaluators(*modeltypes_ptr_);
+  std::vector<enum INPAR::STR::ModelType> sorted_modeltypes(0);
 
-  Map::iterator me_iter;
-  for (me_iter=me_map_ptr_->begin();me_iter!=me_map_ptr_->end();++me_iter)
+  me_vec_ptr_ = Sort(*me_map_ptr_,sorted_modeltypes);
+  Vector::iterator me_iter;
+  int dof_offset = 0;
+  unsigned int i = 0;
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
   {
-    me_iter->second->Init(eval_data_ptr_,gstate_ptr_,gio_ptr_,int_ptr_,timint_ptr_);
-    me_iter->second->Setup();
+    (*me_iter)->Init(eval_data_ptr_,gstate_ptr_,gio_ptr_,int_ptr_,
+        timint_ptr_,dof_offset);
+    (*me_iter)->Setup();
+    // setup the block information for saddle point problems
+    dof_offset = gstate_ptr_->SetupBlockInformation(**me_iter,
+        sorted_modeltypes[i]);
+    ++i;
   }
-
-  me_vec_ptr_ = Sort(*me_map_ptr_);
+  gstate_ptr_->SetupMultiMapExtractor();
 
   issetup_ = true;
 }
@@ -153,6 +164,28 @@ bool STR::ModelEvaluator::ApplyForceStiff(const Epetra_Vector& x,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::WriteRestart(
+    IO::DiscretizationWriter& iowriter,
+    const bool& forced_writerestart) const
+{
+  CheckInitSetup();
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->WriteRestart(iowriter,forced_writerestart);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::ModelEvaluator::ReadRestart(IO::DiscretizationReader& ioreader)
+{
+  CheckInitSetup();
+  Vector::iterator me_iter;
+  for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
+    (*me_iter)->ReadRestart(ioreader);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::RecoverState(
     const Epetra_Vector& xold,
     const Epetra_Vector& dir,
@@ -203,7 +236,28 @@ STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(
     const enum INPAR::STR::ModelType& mt)
 {
   CheckInitSetup();
-  return *(me_map_ptr_->at(mt));
+  // sanity check, if there is a model evaluator for the given model type
+  STR::ModelEvaluator::Map::const_iterator me_iter = me_map_ptr_->find(mt);
+  if (me_iter == me_map_ptr_->end())
+    dserror("There is no model evaluator for the model type %s",
+        INPAR::STR::ModelTypeString(mt).c_str());
+
+  return *(me_iter->second);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+const STR::MODELEVALUATOR::Generic& STR::ModelEvaluator::Evaluator(
+    const enum INPAR::STR::ModelType& mt) const
+{
+  CheckInitSetup();
+  // sanity check, if there is a model evaluator for the given model type
+  STR::ModelEvaluator::Map::const_iterator me_iter = me_map_ptr_->find(mt);
+  if (me_iter == me_map_ptr_->end())
+    dserror("There is no model evaluator for the model type %s",
+        INPAR::STR::ModelTypeString(mt).c_str());
+
+  return *(me_iter->second);
 }
 
 /*----------------------------------------------------------------------------*
@@ -248,35 +302,35 @@ void STR::ModelEvaluator::DetermineEnergy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::OutputStepState()
+void STR::ModelEvaluator::OutputStepState(IO::DiscretizationWriter& iowriter)
+    const
 {
   CheckInitSetup();
-  Vector::iterator me_iter;
+  Vector::const_iterator me_iter;
   for (me_iter=me_vec_ptr_->begin();me_iter!=me_vec_ptr_->end();++me_iter)
-    (*me_iter)->OutputStepState();
+    (*me_iter)->OutputStepState(iowriter);
 }
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::ModelEvaluator::Vector> STR::ModelEvaluator::Sort(
-    STR::ModelEvaluator::Map model_map
+    STR::ModelEvaluator::Map model_map,
+    std::vector<INPAR::STR::ModelType>& sorted_model_types
     ) const
 {
   Teuchos::RCP<STR::ModelEvaluator::Vector> me_vec_ptr =
-      Teuchos::rcp(new STR::ModelEvaluator::Vector(model_map.size(),
-      Teuchos::null));
+      Teuchos::rcp(new STR::ModelEvaluator::Vector(0));
 
   STR::ModelEvaluator::Map::iterator miter;
-  int i=0;
   // --------------------------------------------------------------------------
   // There has to be a structural model evaluator and we put it at first place
   // --------------------------------------------------------------------------
   miter = model_map.find(INPAR::STR::model_structure);
   if (miter==model_map.end())
     dserror("The structural model evaluator could not be found!");
-  (*me_vec_ptr)[i] = miter->second;
-  ++i;
+  me_vec_ptr->push_back(miter->second);
+  sorted_model_types.push_back(miter->first);
+
   // erase the structural model evaluator
   model_map.erase(miter);
 
@@ -285,8 +339,8 @@ Teuchos::RCP<STR::ModelEvaluator::Vector> STR::ModelEvaluator::Sort(
   // --------------------------------------------------------------------------
   for (miter=model_map.begin();miter!=model_map.end();++miter)
   {
-    (*me_vec_ptr)[i] = miter->second;
-    ++i;
+    me_vec_ptr->push_back(miter->second);
+    sorted_model_types.push_back(miter->first);
   }
 
   return me_vec_ptr;

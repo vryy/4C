@@ -2,6 +2,8 @@
 /*!
 \file str_predict_generic.H
 
+\brief Generic class for all predictors.
+
 \maintainer Michael Hiermeier
 
 \date Aug 13, 2015

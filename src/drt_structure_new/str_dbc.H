@@ -2,6 +2,8 @@
 /*!
 \file str_dbc.H
 
+\brief Wrapper for all Dirichlet boundary condition tasks.
+
 \maintainer Michael Hiermeier
 
 \date Nov 30, 2015
@@ -95,6 +97,9 @@ namespace TIMINT {
     //! Get a pointer to the local system manager
     Teuchos::RCP<DRT::UTILS::LocsysManager> LocSysManagerPtr();
 
+    //! Get the zeros vector
+    const Epetra_Vector& GetZeros() const;
+    Teuchos::RCP<const Epetra_Vector> GetZerosPtr() const;
     //!@}
 
   protected:

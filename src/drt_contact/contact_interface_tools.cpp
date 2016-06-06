@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file contact_interface_tools.cpp
 
-<pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
-</pre>
+\brief Contains support methods for the contact interface evaluation.
 
-*-----------------------------------------------------------------------*/
+\level 2
 
+\maintainer Philipp Farah, Alexander Seitz
+
+*/
+/*----------------------------------------------------------------------*/
 #include "contact_interface.H"
 #include "contact_integrator.H"
 #include "contact_defines.H"
@@ -3202,7 +3202,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       // 2) integrate Mortar matrix M and weighted gap g
       // 3) compute directional derivative of M and g and store into nodes
       //********************************************************************
-      MortarCoupling(selement,melements);
+      MortarCoupling(selement,melements,Teuchos::null);
     }
     // *******************************************************************
 
@@ -3402,7 +3402,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       // 2) integrate Mortar matrix M and weighted gap g
       // 3) compute directional derivative of M and g and store into nodes
       //********************************************************************
-      MortarCoupling(selement,melements);
+      MortarCoupling(selement,melements,Teuchos::null);
     }
     // *******************************************************************
 
@@ -3573,7 +3573,7 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     // 2) integrate Mortar matrix M and weighted gap g
     // 3) compute directional derivative of M and g and store into nodes
     //********************************************************************
-    MortarCoupling(selement,melements);
+    MortarCoupling(selement,melements,Teuchos::null);
   }
   // *******************************************************************
 

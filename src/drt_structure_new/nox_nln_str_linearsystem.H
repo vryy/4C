@@ -2,6 +2,9 @@
 /*!
 \file nox_nln_str_linearsystem.H
 
+\brief Derived class which manages the special requirements to the linear
+       solver for structural problems.
+
 \maintainer Michael Hiermeier
 
 \date Aug 7, 2015
@@ -74,7 +77,7 @@ namespace STR {
         const NOX::NLN::SolutionType& solverType);
 
     //! Returns a pointer to the linear solver, which has to be used
-    virtual NOX::NLN::SolutionType GetCurrentLinSolver(
+    virtual NOX::NLN::SolutionType GetActiveLinSolver(
         const std::map<NOX::NLN::SolutionType,Teuchos::RCP<LINALG::Solver> >& solvers,
         Teuchos::RCP<LINALG::Solver>& currSolver);
 

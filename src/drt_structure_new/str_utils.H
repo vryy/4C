@@ -2,6 +2,8 @@
 /*!
 \file str_utils.H
 
+\brief Utility methods for the structural time integration.
+
 \maintainer Michael Hiermeier
 
 \date Dec 2, 2015
@@ -16,13 +18,28 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_UTILS_H_
 
 #include <NOX_Abstract_Vector.H>
-#include "../solver_nonlin_nox/nox_nln_globaldata.H"
+#include "../solver_nonlin_nox/nox_nln_enum_lists.H"
 #include "../drt_inpar/inpar_structure.H"
 
 // forward declaration
 class Epetra_Vector;
+namespace LINALG {
+class Solver;
+} // namespace LINALG
+namespace NOX {
+namespace NLN {
+namespace CONSTRAINT {
+namespace Interface {
+  class Required;
+  class Preconditioner;
+} // namespace Interface
+} // namespace CONSTRAINT
+} // namespace NLN
+} // namespace NOX
 
 namespace STR {
+  class Integrator;
+
   /*! \brief Assemble a source Epetra_Vector into a target Epetra_Vector
    *
    *  The map of the source vector has to be a sub-map of the target vector.
@@ -53,12 +70,19 @@ namespace NLN {
       const std::map<enum INPAR::STR::ModelType,Teuchos::RCP<LINALG::Solver> >& mlinsolvers);
 
   //! Returns the optimization type of the underlying structural problem
-  enum NOX::NLN::GlobalData::OptimizationProblemType
+  enum NOX::NLN::OptimizationProblemType
       OptimizationType(const std::vector<enum NOX::NLN::SolutionType>& soltypes);
 
   //! Set the constraint interfaces
   void CreateConstraintInterfaces(
       std::map<enum NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Required> >& iconstr,
+      STR::Integrator& integrator,
+      const std::vector<enum NOX::NLN::SolutionType>& soltypes);
+
+  //! Set the constraint preconditioner interfaces
+  void CreateConstraintPreconditioner(
+      std::map<NOX::NLN::SolutionType,Teuchos::RCP<NOX::NLN::CONSTRAINT::Interface::Preconditioner> >& iconstr_prec,
+      STR::Integrator& integrator,
       const std::vector<enum NOX::NLN::SolutionType>& soltypes);
 } // namespace NLN
 } // namespace STR
