@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file wall1_input.cpp
-\brief
 
-<pre>
-Maintainer: Markus Gitterle
-            gitterle@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15251
-</pre>
+\brief ToDo Add meaningful comment.
 
-*----------------------------------------------------------------------*/
+\level 1
+
+\maintainer Markus Gitterle
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include "wall1.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -94,6 +94,8 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
       Epetra_SerialDenseMatrix Kda(2*NumNode(),Wall1::neas_);
       // EAS matrix K_{alpha d} // ONLY NEEDED FOR GENERALISED ENERGY-MOMENTUM METHOD
       Epetra_SerialDenseMatrix Kad(Wall1::neas_,2*NumNode());
+      // EAS increment over last Newton step
+      Epetra_SerialDenseMatrix eas_inc(Wall1::neas_,1);
 
       // save EAS data into element container easdata_
       data_.Add("alpha",alpha);
@@ -102,6 +104,7 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
       data_.Add("invKaa",invKaa);
       data_.Add("Kda",Kda);
       data_.Add("Kad",Kad); // ONLY NEEDED FOR GENERALISED ENERGY-MOMENTUM METHOD
+      data_.Add("eas_inc",eas_inc);
     }
   }
   else

@@ -1,6 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_hex8_evaluate.cpp
 
+\brief ToDo Add meaningful comment.
+
+\level 1
+
 \maintainer Moritz Frenzel
 
 *----------------------------------------------------------------------*/
@@ -1522,9 +1526,9 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping(std::vector<double>& dispmat)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_recover(
-    std::vector<int>&         lm,
-    std::vector<double>&      disp,
-    std::vector<double>&      residual)
+    const std::vector<int>&         lm,
+    const std::vector<double>&      disp,
+    const std::vector<double>&      residual)
 {
   // for eas
   Epetra_SerialDenseMatrix* alpha      = NULL;
@@ -1606,7 +1610,7 @@ void DRT::ELEMENTS::So_hex8::soh8_recover(
   // save the old step length
   old_step_length_ = step_length;
 
-  // Check if the eas incr is tested and if yes, calculated the element
+  // Check if the eas incr is tested and if yes, calculate the element
   // contribution to the norm
   if (iseas)
     ParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,

@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file wall1.cpp
-\brief
 
-<pre>
-Maintainer: Markus Gitterle
-            gitterle@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15251
-</pre>
+\brief ToDo Add meaningful comment.
 
-*----------------------------------------------------------------------*/
+\level 1
+
+\maintainer Markus Gitterle
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include "wall1.H"
 #include "../drt_lib/drt_discret.H"
@@ -160,6 +160,7 @@ So_base(id,owner),
 data_(),
 material_(0),
 thickness_(0.0),
+old_step_length_(0.0),
 gaussrule_(DRT::UTILS::intrule2D_undefined),
 wtype_(plane_none),
 stresstype_(w1_none),
@@ -181,6 +182,7 @@ So_base(old),
 data_(old.data_),
 material_(old.material_),
 thickness_(old.thickness_),
+old_step_length_(old.old_step_length_),
 gaussrule_(old.gaussrule_),
 wtype_(old.wtype_),
 stresstype_(old.stresstype_),
@@ -248,6 +250,8 @@ void DRT::ELEMENTS::Wall1::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,distype_);
   //data
   AddtoPack(data,data_);
+  // line search
+  AddtoPack(data,old_step_length_);
 
   return;
 }
@@ -292,7 +296,8 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
-
+  // line search
+  ExtractfromPack(position,data,old_step_length_);
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;

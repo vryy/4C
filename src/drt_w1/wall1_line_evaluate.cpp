@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
- \file wall1_line_evaluate.cpp
- \brief
+/*----------------------------------------------------------------------*/
+/*!
+\file wall1_line_evaluate.cpp
 
- <pre>
- Maintainer: Markus Gitterle
- gitterle@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15252
- </pre>
+\brief ToDo Add meaningful comment.
 
- *----------------------------------------------------------------------*/
+\level 1
+
+\maintainer Markus Gitterle
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include "wall1.H"
 #include "../linalg/linalg_utils.H"
@@ -22,6 +22,7 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_potential/drt_potential_manager.H"
+#include "../drt_lib/drt_elements_paramsinterface.H"
 
 #include "../drt_mat/structporo.H"
 
@@ -37,6 +38,8 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
+  // set the interface pointer in the parent element
+  ParentElement()->SetParamsInterfacePtr(params);
   // IMPORTANT: The 'neum_orthopressure' case represents a truly nonlinear follower-load
   // acting on the spatial configuration. Therefore, it needs to be linearized. On the
   // contrary, the simplified 'neum_pseudo_orthopressure' option allows for an approximative
@@ -73,8 +76,12 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // check total time
   bool usetime = true;
-  const double time = params.get("total time", -1.0);
-  if (time < 0.0) usetime = false;
+  double time = -1.0;
+  if (ParentElement()->IsParamsInterface())
+    time = ParentElement()->ParamsInterfacePtr()->GetTotalTime();
+  else
+    time = params.get("total time",-1.0);
+  if (time<0.0) usetime = false;
 
   // set number of dofs per node
   const int noddof = NumDofPerNode(*Nodes()[0]);

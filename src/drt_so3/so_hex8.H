@@ -2,6 +2,10 @@
 /*!
 \file so_hex8.H
 
+\brief ToDo Add meaningful comment.
+
+\level 1
+
 \maintainer Michael Gee
 
 */
@@ -661,13 +665,14 @@ protected:
       );
 
 private:
-  /* recover elementwise stored stuff
+  /** recover elementwise stored stuff
    *
    * \author hiermeier
    * \date 04/16 */
-  void soh8_recover(std::vector<int>&         lm,
-                    std::vector<double>&      disp,
-                    std::vector<double>&      residual);
+  void soh8_recover(
+      const std::vector<int>&         lm,
+      const std::vector<double>&      disp,
+      const std::vector<double>&      residual);
 
 }; // class So_hex8
 

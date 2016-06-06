@@ -10,12 +10,10 @@
        ParObject is implemented to be able to write the knotvector
        to disc for io
 
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
+\level 1
+
+\maintainer Anh-Tu Vuong
+
 
 *----------------------------------------------------------------------*/
 #ifndef KNOTVECTOR_H
@@ -72,7 +70,7 @@ public:
 
    */
   Knotvector(int                  dim       ,
-	     int                  npatches  );
+             int                  npatches  );
 
 
   /*!
@@ -102,8 +100,8 @@ public:
 
       \param gid (i)
              given a global element id, this
-	     method will return the base indices
-	     of the elements 'local' knotspans
+       method will return the base indices
+       of the elements 'local' knotspans
 
       \param npatch (o)
              The number of the patch this element
@@ -116,17 +114,17 @@ public:
       \note This method heavily relies on the
             cartesian structure of the knotspan.
             We assume a element/control point numbering
-	    as follows:
+      as follows:
 
       \verbatim
 
             patch local cartesian element index:
 
-	             (num_u,num_v,num_w)
+               (num_u,num_v,num_w)
 
-	    gid = patchoffset+num_u+num_v*nele                 (2d)
+      gid = patchoffset+num_u+num_v*nele                 (2d)
 
-	    gid = patchoffset+num_u+num_v*nele+num_w*nele*mele (3d)
+      gid = patchoffset+num_u+num_v*nele+num_w*nele*mele (3d)
 
       \endverbatim
 
@@ -134,12 +132,12 @@ public:
             numbered consecutively and patchoffset is the nuber
             of all elements from previous patches.
 
-	    Example: Element gid=7, linear element, 2D, npatch 1
+      Example: Element gid=7, linear element, 2D, npatch 1
 
                      domain size: nele=6,mele=2
 
                      The numbers in the picture are control
-		     point gids
+         point gids
 
       \verbatim
 
@@ -165,7 +163,7 @@ public:
   void ConvertEleGidToKnotIds(
     const int      gid        ,
     int         &  npatch     ,
-    std::vector<int> &  loc_cart_id);
+    std::vector<int> &  loc_cart_id) const;
 
 
 /*!
@@ -188,17 +186,17 @@ public:
       \note This method heavily relies on the
             cartesian structure of the knotspan.
             We assume a element/control point numbering
-	    as follows:
+      as follows:
 
       \verbatim
 
             patch local cartesian element index:
 
-	             (num_u,num_v,num_w)
+               (num_u,num_v,num_w)
 
-	    gid = patchoffset+num_u+num_v*nele                 (2d)
+      gid = patchoffset+num_u+num_v*nele                 (2d)
 
-	    gid = patchoffset+num_u+num_v*nele+num_w*nele*mele (3d)
+      gid = patchoffset+num_u+num_v*nele+num_w*nele*mele (3d)
 
       \endverbatim
 
@@ -219,7 +217,7 @@ public:
 
     \param eleknots (o)
            the element local knotvector to the
-	   given a global element id
+     given a global element id
 
     \param gid (i)
            given a global element id
@@ -229,9 +227,9 @@ public:
            and the consecutive order of elements/control
            points in the patches.
 
-	   Example: Element gid=7, linear element, 2D
+     Example: Element gid=7, linear element, 2D
                     The numbers in the picture are control
-		    point gids (see above)
+        point gids (see above)
 
    \return bool zero_size
            If the integration elements size in the knotspace
@@ -269,7 +267,7 @@ public:
   bool GetEleKnots(
     std::vector<Epetra_SerialDenseVector> & eleknots,
     int                                gid
-    );
+    ) const;
 
 
 
@@ -299,7 +297,7 @@ public:
     double                                & normalfac,
     int                                     pgid     ,
     const int                               surfaceid
-    );
+    ) const;
 
 
   //@}
@@ -311,18 +309,18 @@ public:
 
     \param direction (i)
            the direction to which the knotvector
-	   corresponds
+     corresponds
     \param npatch (i)
            the number of the patch this knotvector
-	   belongs to
+     belongs to
     \param degree (i)
            the degree of the bspline polynomial
-	   belonging to this knot vector
+     belonging to this knot vector
     \param numknots (i)
            the number knots that will be added here
     \param knotvectortype (i)
            specifies whether we add a periodic or
-	   interpolating knot vector
+     interpolating knot vector
     \param directions_knots (i)
            the knotvector to be inserted
 
@@ -400,7 +398,7 @@ public:
     {
       if(!filled_)
       {
-	dserror("can't access data. knotvector not completed\n");
+  dserror("can't access data. knotvector not completed\n");
       }
       return(degree_[npatch]);
     };
@@ -416,7 +414,7 @@ public:
     {
       if(!filled_)
       {
-	dserror("can't access data. knotvector not completed\n");
+  dserror("can't access data. knotvector not completed\n");
       }
       return(n_x_m_x_l_[npatch]);
     };
@@ -457,7 +455,7 @@ public:
     {
       if(!filled_)
       {
-	dserror("can't access data. knotvector not completed\n");
+  dserror("can't access data. knotvector not completed\n");
       }
       return(nele_x_mele_x_lele_[npatch]);
     };
@@ -473,7 +471,7 @@ public:
     {
       if(!filled_)
       {
-	dserror("can't access data. knotvector not completed\n");
+  dserror("can't access data. knotvector not completed\n");
       }
       return(offsets_);
     };
@@ -487,7 +485,7 @@ public:
     \return npatch  --- The number of the patch
 
   */
-  int ReturnPatchId(const int gid)
+  int ReturnPatchId(const int gid) const
   {
     // gid is at least in patch 0 (or higher)
     int npatch=0;
@@ -517,7 +515,7 @@ public:
     {
       if(!filled_)
       {
-	dserror("can't access data. knotvector not completed\n");
+  dserror("can't access data. knotvector not completed\n");
       }
       return(npatches_);
     };

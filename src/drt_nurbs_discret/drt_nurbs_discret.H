@@ -1,17 +1,16 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file drt_nurbs_discret.H
 
 \brief discretisation with additional knot vectors for nurbs problems
        (isogeometric analysis)
 
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
+\level 1
 
-*----------------------------------------------------------------------*/
+\maintainer Anh-Tu Vuong
+
+*/
+/*----------------------------------------------------------------------*/
 #ifndef NURBS_DISCRET_H
 #define NURBS_DISCRET_H
 
@@ -98,6 +97,7 @@ public:
 
   */
   Teuchos::RCP<DRT::NURBS::Knotvector> GetKnotVector();
+  Teuchos::RCP<const DRT::NURBS::Knotvector> GetKnotVector() const;
 
   /*!
   \brief return number of knots in each direction

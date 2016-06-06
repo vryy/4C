@@ -2,14 +2,13 @@
 /*!
 \file wall1.H
 
-<pre>
-Maintainer: Markus Gitterle
-            gitterle@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15251
-</pre>
-*/
+\brief ToDo Add meaningful comment.
 
+\level 1
+
+\maintainer Markus Gitterle
+
+*/
 /*----------------------------------------------------------------------*/
 /* macros */
 #ifndef WALL1_H
@@ -120,8 +119,8 @@ public:
   static const int numdim_ = 2;  ///< 2-dimensional/planar element
   static const int noddof_ = 2;  ///< number of nodal DOFs
   static const int numstr_ = 4;  ///< number of (symmetric) strain/stress components --- THIS SHOULD BE 3
-  static const int numnstr_ = 4;  ///< number of non-symmetric strain/stress components
-  static const int neas_ = 4;  ///< number of EAS parameters
+  static const int numnstr_ = 4; ///< number of non-symmetric strain/stress components
+  static const int neas_ = 4;    ///< number of EAS parameters
   //@}
 
   /// @name Constructors and destructors and related methods
@@ -354,6 +353,8 @@ protected:
   int material_;
   /// element thickness
   double thickness_;
+  // line search parameter (old step length)
+  double old_step_length_;
   /// gaussian points
   DRT::UTILS::GaussRule2D gaussrule_;
   /// problem type
@@ -372,6 +373,14 @@ protected:
 
   /// @name Internal calculation methods
   //@{
+  /** recover elementwise stored stuff
+   *
+   * \author hiermeier
+   * \date 05/16 */
+  void w1_recover(
+    const std::vector<int>&    lm,
+    const std::vector<double>& disp,
+    const std::vector<double>& residual);
 
   /// evaluate the element forces and stiffness and mass
   /// \author mgit \date 03/07
@@ -529,6 +538,9 @@ protected:
 
   /// @name EAS tools
   //@{
+  /// return the number of eas dofs
+  int w1_neas() const
+  { return neas_; };
 
   /// setup of constant EAS data
   void w1_eassetup(
@@ -792,8 +804,6 @@ protected:
   (
     int* ngp  ///< number of Gauss points
   );
-
-
 }; // class Wall1
 
 

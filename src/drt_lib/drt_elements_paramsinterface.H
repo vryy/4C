@@ -59,7 +59,8 @@ namespace ELEMENTS {
     struct_calc_ptcstiff,                   //!< calculate artificial stiffness due to PTC solution strategy
     struct_calc_stifftemp,                  //!< TSI specific: mechanical-thermal stiffness
     struct_calc_global_gpstresses_map,      //!< basically calc_struct_stress but with assembly of global gpstresses map
-    struct_interpolate_velocity_to_point    //!< interpolate the structural velocity to a given point
+    struct_interpolate_velocity_to_point,   //!< interpolate the structural velocity to a given point
+    struct_calc_mass_volume                 //!< calculate volume and mass
   };  // enum ActionType
 
   //! Map action type enum to std::string

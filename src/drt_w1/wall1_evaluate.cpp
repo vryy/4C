@@ -1,16 +1,14 @@
-/*======================================================================*/
+/*----------------------------------------------------------------------*/
 /*!
 \file wall1_evaluate.cpp
-\brief
 
-<pre>
-Maintainer: Markus Gitterle
-            gitterle@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15251
-</pre>
+\brief ToDo Add meaningful comment.
+
+\level 1
+
+\maintainer Markus Gitterle
+
 */
-
 /*----------------------------------------------------------------------*/
 // macros
 
@@ -35,6 +33,8 @@ Maintainer: Markus Gitterle
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_potential/drt_potential_manager.H"
 
+#include "../drt_structure_new/str_elements_paramsinterface.H"
+
 /*----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
@@ -49,29 +49,37 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
                                    Epetra_SerialDenseVector& elevec2,
                                    Epetra_SerialDenseVector& elevec3)
 {
-  DRT::ELEMENTS::Wall1::ActionType act = Wall1::calc_none;
-  // get the action required
-  std::string action = params.get<std::string>("action","calc_none");
-  if (action == "calc_none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff")      act = Wall1::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff")      act = Wall1::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce") act = Wall1::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass")  act = Wall1::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass")  act = Wall1::calc_struct_nlnstiffmass;
-  else if (action=="calc_struct_nlnstifflmass") act = Wall1::calc_struct_nlnstifflmass;
-  else if (action=="calc_struct_nlnstiff_gemm") act = Wall1::calc_struct_nlnstiff_gemm;
-  else if (action=="calc_struct_stress")        act = Wall1::calc_struct_stress;
-  else if (action=="postprocess_stress")        act = Wall1::postprocess_stress;
-  else if (action=="calc_struct_eleload")       act = Wall1::calc_struct_eleload;
-  else if (action=="calc_struct_fsiload")       act = Wall1::calc_struct_fsiload;
-  else if (action=="calc_struct_update_istep")  act = Wall1::calc_struct_update_istep;
-  else if (action=="calc_struct_reset_istep")   act = Wall1::calc_struct_reset_istep;
-  else if (action=="calc_struct_energy")        act = Wall1::calc_struct_energy;
-  else if (action=="calc_struct_errornorms")    act = Wall1::calc_struct_errornorms;
-  else if (action=="calc_potential_stiff")      act = Wall1::calc_potential_stiff;
-  else if (action=="calc_struct_mass_volume")   act = Wall1::calc_struct_mass_volume;
-  else dserror("Unknown type of action %s for Wall1", action.c_str());
+  SetParamsInterfacePtr(params);
+  ELEMENTS::ActionType act = ELEMENTS::none;
 
+  if (IsParamsInterface())
+  {
+    act = ParamsInterface().GetActionType();
+  }
+  else
+  {
+    // get the action required
+    std::string action = params.get<std::string>("action","calc_none");
+    if (action == "calc_none") dserror("No action supplied");
+    else if (action=="calc_struct_linstiff")      act = ELEMENTS::struct_calc_linstiff;
+    else if (action=="calc_struct_nlnstiff")      act = ELEMENTS::struct_calc_nlnstiff;
+    else if (action=="calc_struct_internalforce") act = ELEMENTS::struct_calc_internalforce;
+    else if (action=="calc_struct_linstiffmass")  act = ELEMENTS::struct_calc_linstiffmass;
+    else if (action=="calc_struct_nlnstiffmass")  act = ELEMENTS::struct_calc_nlnstiffmass;
+    else if (action=="calc_struct_nlnstifflmass") act = ELEMENTS::struct_calc_nlnstifflmass;
+    else if (action=="calc_struct_nlnstiff_gemm") act = ELEMENTS::struct_calc_nlnstiff_gemm;
+    else if (action=="calc_struct_stress")        act = ELEMENTS::struct_calc_stress;
+    else if (action=="postprocess_stress")        act = ELEMENTS::struct_postprocess_stress;
+    else if (action=="calc_struct_eleload")       act = ELEMENTS::struct_calc_eleload;
+    else if (action=="calc_struct_fsiload")       act = ELEMENTS::struct_calc_fsiload;
+    else if (action=="calc_struct_update_istep")  act = ELEMENTS::struct_calc_update_istep;
+    else if (action=="calc_struct_reset_istep")   act = ELEMENTS::struct_calc_reset_istep;
+    else if (action=="calc_struct_energy")        act = ELEMENTS::struct_calc_energy;
+    else if (action=="calc_struct_errornorms")    act = ELEMENTS::struct_calc_errornorms;
+    else if (action=="calc_potential_stiff")      act = ELEMENTS::calc_potential_stiff;
+    else if (action=="calc_struct_mass_volume")   act = ELEMENTS::struct_calc_mass_volume;
+    else dserror("Unknown type of action %s for Wall1", action.c_str());
+  }
   // get the material law
   Teuchos::RCP<const MAT::Material> actmat = Material();
 
@@ -79,44 +87,41 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
   // Now do the nurbs specific stuff
   std::vector<Epetra_SerialDenseVector> myknots(2);
 
-  if(Shape()==DRT::Element::nurbs4
-     ||
+  if(Shape()==DRT::Element::nurbs4 or
      Shape()==DRT::Element::nurbs9)
   {
     switch(act)
     {
-    case Wall1::calc_struct_linstiff:
-    case Wall1::calc_struct_nlnstiffmass:
-    case Wall1::calc_struct_nlnstifflmass:
-    case Wall1::calc_struct_nlnstiff:
-    case Wall1::calc_struct_internalforce:
-    case Wall1::calc_struct_stress:
-    case Wall1::calc_struct_errornorms:
-    case Wall1::calc_struct_mass_volume:
-    {
-      DRT::NURBS::NurbsDiscretization* nurbsdis
-  =
-  dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-
-      bool zero_sized=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
-
-      // skip zero sized elements in knot span --- they correspond to interpolated nodes
-      if(zero_sized)
+      case ELEMENTS::struct_calc_linstiff:
+      case ELEMENTS::struct_calc_nlnstiffmass:
+      case ELEMENTS::struct_calc_nlnstifflmass:
+      case ELEMENTS::struct_calc_nlnstiff:
+      case ELEMENTS::struct_calc_internalforce:
+      case ELEMENTS::struct_calc_stress:
+      case ELEMENTS::struct_calc_errornorms:
+      case ELEMENTS::struct_calc_mass_volume:
       {
-        return(0);
-      }
+        DRT::NURBS::NurbsDiscretization* nurbsdis =
+            dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-      break;
-    }
-    default :
-      myknots.clear();
-      break;
+        bool zero_sized=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+
+        // skip zero sized elements in knot span --- they correspond to interpolated nodes
+        if(zero_sized)
+          return(0);
+
+        break;
+      }
+      default :
+        myknots.clear();
+        break;
     }
   }
 
   switch(act)
   {
-    case Wall1::calc_struct_linstiff:
+    //==================================================================================
+    case ELEMENTS::struct_calc_linstiff:
     {
       // need current displacement and residual forces
       std::vector<double> mydisp(lm.size());
@@ -138,10 +143,11 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
         w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
+      break;
     }
-    break;
-    case Wall1::calc_struct_nlnstiffmass:
-    case Wall1::calc_struct_nlnstifflmass:
+    //==================================================================================
+    case ELEMENTS::struct_calc_nlnstiffmass:
+    case ELEMENTS::struct_calc_nlnstifflmass:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -171,11 +177,12 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
 
-      if (act==calc_struct_nlnstifflmass) w1_lumpmass(&elemat2);
+      if (act==ELEMENTS::struct_calc_nlnstifflmass) w1_lumpmass(&elemat2);
+      break;
     }
-    break;
+    //==================================================================================
     // NULL-pointer for mass matrix in case of calculating only stiff matrix
-    case Wall1::calc_struct_nlnstiff:
+    case ELEMENTS::struct_calc_nlnstiff:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -204,9 +211,10 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
         w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,NULL,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
+      break;
     }
-    break;
-    case Wall1::calc_struct_internalforce:
+    //==================================================================================
+    case ELEMENTS::struct_calc_internalforce:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -239,9 +247,10 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
         w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&myemat,NULL,&elevec1,NULL,NULL,actmat,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
       }
+      break;
     }
-    break;
-    case Wall1::calc_struct_nlnstiff_gemm:
+    //==================================================================================
+    case ELEMENTS::struct_calc_nlnstiff_gemm:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> dispo = discretization.GetState("old displacement");
@@ -257,9 +266,30 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       FintStiffMassGEMM(params,lm,mydispo,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
+      break;
     }
-    break;
-    case calc_struct_update_istep:
+    //==================================================================================
+    case ELEMENTS::struct_calc_recover:
+    {
+      // need current displacement and residual forces
+      Teuchos::RCP<const Epetra_Vector> disp =
+          discretization.GetState("displacement");
+      Teuchos::RCP<const Epetra_Vector> res  =
+          discretization.GetState("residual displacement");
+      if (disp==Teuchos::null || res==Teuchos::null)
+        dserror("Cannot get state vectors \"displacement\" "
+          "and/or \"residual displacement\"");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      std::vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      w1_recover(lm,mydisp,myres);
+      /* ToDo Probably we have to recover the history information of some special
+       * materials as well.                                 hiermeier 04/2016  */
+      break;
+    }
+    //==================================================================================
+    case ELEMENTS::struct_calc_update_istep:
     {
       // do something with internal EAS, etc parameters
       if (iseas_)
@@ -270,9 +300,10 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
         blas.COPY((*alphao).M()*(*alphao).N(), (*alpha).A(), (*alphao).A());  // alphao := alpha
       }
       SolidMaterial()->Update();
+      break;
     }
-    break;
-    case calc_struct_reset_istep:
+    //==================================================================================
+    case ELEMENTS::struct_calc_reset_istep:
     {
       // do something with internal EAS, etc parameters
       if (iseas_)
@@ -282,17 +313,35 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
         Epetra_BLAS blas;
         blas.COPY((*alphao).M()*(*alphao).N(), (*alphao).A(), (*alpha).A());  // alpha := alphao
       }
+      break;
     }
-    break;
-    case calc_struct_stress:
+    //==================================================================================
+    case ELEMENTS::struct_calc_stress:
     {
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
       {
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        Teuchos::RCP<std::vector<char> > stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress",Teuchos::null);
-        Teuchos::RCP<std::vector<char> > straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos::null);
+        Teuchos::RCP<std::vector<char> > stressdata = Teuchos::null;
+        Teuchos::RCP<std::vector<char> > straindata = Teuchos::null;
+        INPAR::STR::StressType iostress = INPAR::STR::stress_none;
+        INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
+        if (IsParamsInterface())
+        {
+          stressdata   = ParamsInterface().MutableStressDataPtr();
+          straindata   = ParamsInterface().MutableStrainDataPtr();
+
+          iostress   = ParamsInterface().GetStressOutputType();
+          iostrain   = ParamsInterface().GetStrainOutputType();
+        }
+        else
+        {
+          stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress",Teuchos::null);
+          straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos::null);
+          iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+          iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+        }
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==Teuchos::null) dserror("Cannot get stress 'data'");
         if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");
@@ -309,8 +358,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
         const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
         Epetra_SerialDenseMatrix stress(intpoints.nquad,Wall1::numstr_);
         Epetra_SerialDenseMatrix strain(intpoints.nquad,Wall1::numstr_);
-        INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         // special case: geometrically linear
         if (kintype_ == INPAR::STR::kinem_linear)
@@ -339,14 +386,14 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
           std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
         }
       }
+      break;
     }
-    break;
+    //==================================================================================
     // postprocess stresses/strains at gauss points
-
-    // note that in the following, quantities are always referred to as
-    // "stresses" etc. although they might also apply to strains
-    // (depending on what this routine is called for from the post filter)
-    case postprocess_stress:
+    /* note that in the following, quantities are always referred to as
+     * "stresses" etc. although they might also apply to strains
+     * (depending on what this routine is called for from the post filter) */
+    case ELEMENTS::struct_postprocess_stress:
     {
       std::string groupname = params.get<std::string>("groupname","gauss_2PK_stresses_xyz");
 
@@ -392,9 +439,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
           dserror("unknown type of stress/strain output on element level");
         }
       }
+      break;
     }
-    break;
-    case Wall1::calc_struct_energy:
+    case ELEMENTS::struct_calc_energy:
     {
       // need current displacement and residual forces
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -405,10 +452,10 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       if (elevec1.Length() < 1) dserror("Result vector too short");
       // determine energies
       Energy(params,lm,mydisp,&elevec1,actmat);
+      break;
     }
-    break;
     //==================================================================================
-    case calc_struct_errornorms:
+    case ELEMENTS::struct_calc_errornorms:
     {
       // IMPORTANT NOTES (popp 10/2010):
       // - error norms are based on a small deformation assumption (linear elasticity)
@@ -639,10 +686,10 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       }
       else
         dserror("ERROR: Error norms only implemented for SVK material");
+      break;
     }
-    break;
     //==================================================================================
-    case calc_struct_mass_volume:
+    case ELEMENTS::struct_calc_mass_volume:
     {
       // check length of elevec1
       if (elevec1.Length() < 6)
@@ -826,9 +873,10 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       elevec1[3] = mass_ref;
       elevec1[4] = mass_mat;
       elevec1[5] = mass_cur;
+      break;
     }
-    break;
-    case Wall1::calc_potential_stiff:
+    //==================================================================================
+    case ELEMENTS::calc_potential_stiff:
     {
       Teuchos::RCP<POTENTIAL::PotentialManager> potentialmanager =
         params.get<Teuchos::RCP<POTENTIAL::PotentialManager> >("pot_man",Teuchos::null);
@@ -845,16 +893,20 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       }
       else
         dserror("Unknown condition type %d",cond->Type());
+      break;
     }
-    break;
-    case Wall1::calc_struct_eleload:
+    //==================================================================================
+    case ELEMENTS::struct_calc_eleload:
     {
       dserror("this method is not supposed to evaluate a load, use EvaluateNeumann(...)");
+      break;
     }
-    break;
+    //==================================================================================
     default:
+    {
       dserror("Unknown type of action for Wall1 %d", act);
       break;
+    }
   }
   return 0;
 
@@ -871,6 +923,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
                                           Epetra_SerialDenseVector& elevec1,
                                           Epetra_SerialDenseMatrix* elemat1)
 {
+  SetParamsInterfacePtr(params);
   // get values and switches from the condition
   const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
@@ -879,7 +932,11 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
 
   // check total time
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  double time = -1.0;
+  if (IsParamsInterface())
+    time = ParamsInterface().GetTotalTime();
+  else
+    time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
   // ensure that at least as many curves/functs as dofs are available
@@ -1036,6 +1093,98 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
 }
 
 /*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Wall1::w1_recover(
+    const std::vector<int>&         lm,
+    const std::vector<double>&      disp,
+    const std::vector<double>&      residual)
+{
+  // for eas
+  Epetra_SerialDenseMatrix* alpha      = NULL;
+  Epetra_SerialDenseMatrix* eas_inc    = NULL;
+  // get access to the interface parameters
+  const double step_length   = ParamsInterface().GetStepLength();
+
+  // have eas?
+  if (iseas_)
+  {
+    // access general eas history stuff stored in element
+    // get alpha of previous iteration
+    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");
+    // get the old eas increment
+    eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+    if (!alpha || !eas_inc)
+      dserror("Missing EAS history data (eas_inc and/or alpha)");
+  }
+
+  /* if it is a default step, we have to recover the condensed
+   * solution vectors */
+  if (ParamsInterface().IsDefaultStep())
+  {
+    /* recovery of the enhanced assumed strain increment and
+     * update of the eas dofs. */
+    if (iseas_)
+    {
+      // first, store the eas state of the previous accepted Newton step
+      ParamsInterface().SumIntoMyPreviousSolNorm(NOX::NLN::StatusTest::quantity_eas,
+          w1_neas(),(*alpha)[0],Owner());
+
+      // get stored EAS history
+      Epetra_SerialDenseMatrix* oldfeas =
+          data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+      Epetra_SerialDenseMatrix* oldKaainv =
+          data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+      Epetra_SerialDenseMatrix* oldKda =
+          data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
+      if (!oldKaainv or !oldKda or !oldfeas)
+        dserror("Missing EAS history-data");
+
+      // we need the (residual) displacement at the previous step
+      const int numnode = NumNode();
+      Epetra_SerialDenseVector res_d(2*numnode);
+      for (int i = 0; i < (2*numnode); ++i) {
+        res_d(i) = residual[i];
+      }
+
+      // add Kda . res_d to feas
+      (*oldfeas).Multiply('T','N',1.0,(*oldKda),res_d,1.0);
+      // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+      (*alpha).Multiply('N','N',-1.0,(*oldKaainv),(*oldfeas),1.0);
+    } // if (iseas)
+  } // if (*isdefault_step_ptr_)
+  /* if it is no default step, we can correct the update and the current eas
+   * state without the need for any matrix-vector products. */
+  else
+  {
+    // The first step has to be a default step!
+    if (old_step_length_<0.0)
+      dserror("The old step length was not defined!");
+    /* if this is no full step, we have to adjust the length of the
+     * enhanced assumed strain incremental step. */
+    if (iseas_)
+    {
+      /* undo the previous step:
+       *            alpha_new = alpha_old - old_step * alpha_inc
+       * and update the solution variable with the new step length:
+       *            alpha_new = alpha_new + new_step * alpha_inc */
+      for (int i=0;i<Wall1::neas_;++i)
+        (*alpha)(i,0) += (step_length-old_step_length_)*(*eas_inc)(i,0);
+    } // if (nhyb_)
+  } // else
+  // save the old step length
+  old_step_length_ = step_length;
+
+  // Check if the eas incr is tested and if yes, calculate the element
+  // contribution to the norm
+  if (iseas_)
+    ParamsInterface().SumIntoMyUpdateNorm(NOX::NLN::StatusTest::quantity_eas,
+        w1_neas(),(*eas_inc)[0],(*alpha)[0],step_length,Owner());
+
+  // the element internal stuff should be up-to-date for now...
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  evaluate the element (private)                            mgit 03/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
@@ -1159,7 +1308,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
     }
   }
 
-  if (iseas_ == true)
+  if (iseas_)
   {
     // allocate EAS quantities
     F_enh.Shape(4,1);
@@ -1190,17 +1339,20 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
     oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
     oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
+    // FixMe deprecated implementation
+    if (not IsParamsInterface())
+    {
+      // we need the (residual) displacement at the previous step
+      Epetra_SerialDenseVector res_d(2*numnode);
+      for (int i = 0; i < (2*numnode); ++i) {
+        res_d(i) = residual[i];
+      }
 
-    // we need the (residual) displacement at the previous step
-    Epetra_SerialDenseVector res_d(2*numnode);
-    for (int i = 0; i < (2*numnode); ++i) {
-      res_d(i) = residual[i];
-    }
-
-    // add Kda . res_d to feas
-    (*oldfeas).Multiply('T','N',1.0,(*oldKda),res_d,1.0);
-    // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-    (*alpha).Multiply('N','N',-1.0,(*oldKaainv),(*oldfeas),1.0);
+      // add Kda . res_d to feas
+      (*oldfeas).Multiply('T','N',1.0,(*oldKda),res_d,1.0);
+      // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
+      (*alpha).Multiply('N','N',-1.0,(*oldKaainv),(*oldfeas),1.0);
+    }// if (not IsInterface())
     /* end of EAS Update ******************/
 
     /* evaluation of EAS variables (which are constant for the following):

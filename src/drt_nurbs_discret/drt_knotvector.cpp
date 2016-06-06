@@ -1,12 +1,18 @@
 /*!----------------------------------------------------------------------
 \file drt_knotvector.cpp
 
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
+\brief knot vectors for nurbs problems (isogeometric analysis)
+
+       the class is containing the data structures + some
+       service functions (do we have interpolation, is it an
+       open knot vector or periodic, access methods etc)
+
+       ParObject is implemented to be able to write the knotvector
+       to disc for io
+
+\level 1
+
+\maintainer Anh-Tu Vuong
 
 *----------------------------------------------------------------------*/
 
@@ -147,7 +153,7 @@ DRT::NURBS::Knotvector::Knotvector(const DRT::NURBS::Knotvector & old)
 void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
   const int      gid        ,
   int         &  npatch     ,
-  std::vector<int> &  loc_cart_id)
+  std::vector<int> &  loc_cart_id) const
 {
 
   if((int)loc_cart_id.size()!= dim_)
@@ -210,7 +216,7 @@ void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
 bool DRT::NURBS::Knotvector::GetEleKnots(
   std::vector<Epetra_SerialDenseVector> & eleknots,
   int                                     gid
-  )
+  ) const
 {
   //------------------------------------------------
   // determine the segments knot values
@@ -286,7 +292,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
     double                                & normalfac,
     int                                     pgid     ,
     const int                               surfaceid
-    )
+    ) const
 {
   // get parent element local knotspan to extract the surface's knotspan
   // from
@@ -317,7 +323,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                  s|                    s|
                   |                     |
               +---+---+             +---+---+
-	     6|  7|  8|      r     6|  7|  8|      r
+             6|  7|  8|      r     6|  7|  8|      r
               +   +-- +  -----      +   +-- +  -----
              3|  4   5|            3|  4   5|
               +---+---+             +---+---+
@@ -340,7 +346,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                  s|                    s|
                   |                     |
               +---+---+             +---+---+
-	    24| 25| 26|      r     6|  7|  8|      r
+            24| 25| 26|      r     6|  7|  8|      r
               +   +-- +  -----      +   +-- +  -----
             21| 22  23|            3|  4   5|
               +---+---+             +---+---+
@@ -363,7 +369,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                  t|                    s|
                   |                     |
               +---+---+             +---+---+
-	    18| 19| 20|      r     6|  7|  8|      r
+            18| 19| 20|      r     6|  7|  8|      r
               +   +-- +  -----      +   +-- +  -----
              9| 10  11|            3|  4   5|
               +---+---+             +---+---+
@@ -386,7 +392,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                  t|                    s|
                   |                     |
               +---+---+             +---+---+
- 	    24| 25| 26|    r       6|  7|  8|      r
+            24| 25| 26|    r       6|  7|  8|      r
               +   +-- + ----        +   +-- +  -----
             15| 16  17|            3|  4   5|
               +---+---+             +---+---+
@@ -409,7 +415,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                  t|                    s|
                   |                     |
               +---+---+             +---+---+
-	    20| 23| 26|      s     6|  7|  8|      r
+            20| 23| 26|      s     6|  7|  8|      r
               +   +-- +  -----      +   +-- +  -----
             11| 14  17|            3|  4   5|
               +---+---+             +---+---+
@@ -432,7 +438,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                  t|                    s|
                   |                     |
               +---+---+             +---+---+
-	    18| 21| 24|      s     6|  7|  8|      r
+            18| 21| 24|      s     6|  7|  8|      r
               +   +-- +  -----      +   +-- +  -----
              9| 12  15|            3|  4   5|
               +---+---+             +---+---+
@@ -490,12 +496,12 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
 
                  s|                        r|
                   |                         |
-                      +                     +
-	             8|                    2|
-                      +                     +
-                     5|                    1|
-                      +                     +
-                     2                     0
+                  +                         +
+                 8|                        2|
+                  +                         +
+                 5|                        1|
+                  +                         +
+                  2                         0
         */
         surfknots[0].Size(eleknots[1].Length());
         surfknots[0]=eleknots[1];
@@ -529,12 +535,12 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
 
                  s|                        r|
                   |                         |
-               +                            +
-	      6|                           2|
-               +                            +
-              3|                           1|
-               +                            +
-              0                            0
+                  +                         +
+                 6|                        2|
+                  +                         +
+                 3|                        1|
+                  +                         +
+                  0                         0
         */
 
         surfknots[0].Size(eleknots[1].Length());
@@ -644,7 +650,7 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
     {
       if((int)(degree_[rr]).size()!=dim_)
       {
-	dserror("size mismatch: degree\n");
+        dserror("size mismatch: degree\n");
       }
     }
   }
@@ -661,7 +667,7 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
     {
       if((int)(n_x_m_x_l_[rr]).size()!=dim_)
       {
-	dserror("size mismatch: n_x_m_x_l\n");
+        dserror("size mismatch: n_x_m_x_l\n");
       }
     }
   }
@@ -686,64 +692,62 @@ void DRT::NURBS::Knotvector::FinishKnots(const int smallest_gid_in_dis)
       // is the knotvector of this dimension nonempty?
       if((knot_values_[np])[rr]==Teuchos::null)
       {
-	dserror("no knotvector available in this direction\n");
+        dserror("no knotvector available in this direction\n");
       }
 
       // has it the correct size?
-      if((int)(*((knot_values_[np])[rr])).size()
-	 !=
-	 (n_x_m_x_l_[np])[rr])
+      if((int)(*((knot_values_[np])[rr])).size()!=
+          (n_x_m_x_l_[np])[rr])
       {
-	dserror("knotvector size mismatch to n_x_m_x_l_ %d!=%d\n",
-		(*((knot_values_[np])[rr])).size(),
-		(n_x_m_x_l_[np])[rr]);
+        dserror("knotvector size mismatch to n_x_m_x_l_ %d!=%d\n",
+            (*((knot_values_[np])[rr])).size(),
+            (n_x_m_x_l_[np])[rr]);
       }
 
       // is interpolation/periodicity assigned correctly?
       if((interpolation_[np])[rr]==knotvector_is_not_defined)
       {
-	dserror("undefined knotvector type\n");
+        dserror("undefined knotvector type\n");
       }
       else if((interpolation_[np])[rr]==knotvector_is_interpolating)
       {
-	// for interpolating knot vectors, the first and last
-	// knots have to be repeated degree+1 times
-	double firstval = (*((knot_values_[np])[rr]))[                     0];
-	double lastval  = (*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]-1];
+        // for interpolating knot vectors, the first and last
+        // knots have to be repeated degree+1 times
+        double firstval = (*((knot_values_[np])[rr]))[                     0];
+        double lastval  = (*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]-1];
 
-	for(int mm=1;mm<(degree_[np])[rr]+1;++mm)
-	{
-	  double db =
-	    abs((*((knot_values_[np])[rr]))[                       mm]-firstval);
-	  double de =
-	    abs((*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]-1-mm]-lastval );
+        for(int mm=1;mm<(degree_[np])[rr]+1;++mm)
+        {
+          double db =
+            abs((*((knot_values_[np])[rr]))[                       mm]-firstval);
+          double de =
+            abs((*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]-1-mm]-lastval );
 
-	  if(de>1e-9||db>1e-9)
-	  {
-	    dserror("need multiple knots at the beginning and end of an interpolated knotvector\n");
-	  }
-	}
+          if(de>1e-9||db>1e-9)
+          {
+            dserror("need multiple knots at the beginning and end of an interpolated knotvector\n");
+          }
+        }
       }
       else if((interpolation_[np])[rr]==knotvector_is_periodic)
       {
-	// for periodic knot vectors, distances between the
-	// degree+1 first and last nodes have to be equal
-	for(int mm=1;mm<(degree_[np])[rr]+1;++mm)
-	{
-	  double db =
-	    (*((knot_values_[np])[rr]))[mm  ]
-	    -
-	    (*((knot_values_[np])[rr]))[mm-1];
-	  double de =
-	    (*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]  -mm]
-	    -
-	    (*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]-1-mm];
-
-	  if(abs(de-db)>1e-9)
-	  {
-	    dserror("periodic knotvector doesn't obey periodicity\n");
-	  }
-	}
+        // for periodic knot vectors, distances between the
+        // degree+1 first and last nodes have to be equal
+        for(int mm=1;mm<(degree_[np])[rr]+1;++mm)
+        {
+          double db =
+            (*((knot_values_[np])[rr]))[mm  ]
+            -
+            (*((knot_values_[np])[rr]))[mm-1];
+          double de =
+            (*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]  -mm]
+            -
+            (*((knot_values_[np])[rr]))[(n_x_m_x_l_[np])[rr]-1-mm];
+          if(abs(de-db)>1e-9)
+          {
+            dserror("periodic knotvector doesn't obey periodicity\n");
+          }
+        }
       }
     } // loop dimensions
   } // end loop patches
@@ -916,9 +920,8 @@ void DRT::NURBS::Knotvector::Unpack(const std::vector<char>& data)
   {
     for(int rr=0;rr<dim_;++rr)
     {
-      (knot_values_[np])[rr]
-	=
-	Teuchos::rcp(new  std::vector<double>((n_x_m_x_l_[np])[rr]));
+      (knot_values_[np])[rr] =
+          Teuchos::rcp(new  std::vector<double>((n_x_m_x_l_[np])[rr]));
 
       ExtractfromPack(position,data,(*((knot_values_[np])[rr])));
     }

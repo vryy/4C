@@ -1,16 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file drt_nurbs_discret.cpp
 
 \brief a class to manage one nurbs discretization
 
-<pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15251
-</pre>
+\maintainer Anh-Tu Vuong
 
-*----------------------------------------------------------------------*/
+\level 1
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include <Epetra_Vector.h>
 #include <Epetra_Time.h>
@@ -83,6 +82,21 @@ DRT::NURBS::NurbsDiscretization::SetKnotVector
 Teuchos::RCP<DRT::NURBS::Knotvector>
 DRT::NURBS::NurbsDiscretization::GetKnotVector
 ()
+{
+  if(knots_==Teuchos::null)
+  {
+    dserror("knotvector invalid (%s)\n",(this->Name()).c_str());
+  }
+  return knots_;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  get a pointer to knotvector from the discretization         (public)|
+ |  (const version, read-only)                               gammi 05/08|
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const DRT::NURBS::Knotvector>
+DRT::NURBS::NurbsDiscretization::GetKnotVector() const
 {
   if(knots_==Teuchos::null)
   {
