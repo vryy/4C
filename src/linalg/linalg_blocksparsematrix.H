@@ -87,7 +87,7 @@ class BlockSparseMatrixBase : public SparseOperator
   /*!
     \note The maps of the block have to match the maps of the given matrix.
    */
-  void Assign(int r, int c, DataAccess access, SparseMatrix& mat);
+  void Assign(int r, int c, DataAccess access, const SparseMatrix& mat);
 
   //@}
 

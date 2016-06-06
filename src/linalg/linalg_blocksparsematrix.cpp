@@ -71,7 +71,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::BlockSparseMatrixBase::Merge(bool exp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BlockSparseMatrixBase::Assign(int r, int c, DataAccess access, SparseMatrix& mat)
+void LINALG::BlockSparseMatrixBase::Assign(int r, int c, DataAccess access, const SparseMatrix& mat)
 {
 #ifdef DEBUG
   if (not Matrix(r,c).RowMap().SameAs(mat.RowMap()))
