@@ -654,8 +654,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(
   bool isporo = (cparams.get<int>("PROBTYPE")==INPAR::CONTACT::poro);
   bool structmaster = false;
   bool structslave = false;
-  enum MORTAR::MortarElement::PhysicalType slavetype = MORTAR::MortarElement::PhysicalType::other;
-  enum MORTAR::MortarElement::PhysicalType mastertype = MORTAR::MortarElement::PhysicalType::other;
+  enum MORTAR::MortarElement::PhysicalType slavetype = MORTAR::MortarElement::other;
+  enum MORTAR::MortarElement::PhysicalType mastertype = MORTAR::MortarElement::other;
 
   for (int i = 0; i < (int) contactconditions.size(); ++i)
   {
@@ -1114,7 +1114,7 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(
   // safety check - because there may not be mixed interfaces and structural slave elements
   Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele,true);
   if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
-  cele->PhysType() = MORTAR::MortarElement::PhysicalType::other;
+  cele->PhysType() = MORTAR::MortarElement::other;
   std::vector<Teuchos::RCP<DRT::Condition> > porocondvec;
   Discret().GetCondition("PoroCoupling",porocondvec);
   if (!cele->IsSlave())//treat an element as a master element if it is no slave element
@@ -1127,20 +1127,20 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(
       {
         if(faceele->ParentElement()->Id() == eleitergeometry->second->Id())
         {
-          if (mastertype==MORTAR::MortarElement::PhysicalType::poro)
+          if (mastertype==MORTAR::MortarElement::poro)
             dserror("struct and poro master elements on the same processor - no mixed interface supported");
-          cele->PhysType() = MORTAR::MortarElement::PhysicalType::poro;
-          mastertype = MORTAR::MortarElement::PhysicalType::poro;
+          cele->PhysType() = MORTAR::MortarElement::poro;
+          mastertype = MORTAR::MortarElement::poro;
           break;
         }
       }
     }
-    if(cele->PhysType()==MORTAR::MortarElement::PhysicalType::other)
+    if(cele->PhysType()==MORTAR::MortarElement::other)
     {
-      if (mastertype==MORTAR::MortarElement::PhysicalType::structure)
+      if (mastertype==MORTAR::MortarElement::structure)
         dserror("struct and poro master elements on the same processor - no mixed interface supported");
-      cele->PhysType() = MORTAR::MortarElement::PhysicalType::structure;
-      mastertype=MORTAR::MortarElement::PhysicalType::structure;
+      cele->PhysType() = MORTAR::MortarElement::structure;
+      mastertype=MORTAR::MortarElement::structure;
     }
   }
   else if (cele->IsSlave()) // treat an element as slave element if it is one
@@ -1153,20 +1153,20 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(
       {
         if(faceele->ParentElement()->Id() == eleitergeometry->second->Id())
         {
-          if (slavetype==MORTAR::MortarElement::PhysicalType::structure)
+          if (slavetype==MORTAR::MortarElement::structure)
             dserror("struct and poro master elements on the same processor - no mixed interface supported");
-          cele->PhysType() = MORTAR::MortarElement::PhysicalType::poro;
-          slavetype=MORTAR::MortarElement::PhysicalType::poro;
+          cele->PhysType() = MORTAR::MortarElement::poro;
+          slavetype=MORTAR::MortarElement::poro;
           break;
         }
       }
     }
-    if(cele->PhysType()==MORTAR::MortarElement::PhysicalType::other)
+    if(cele->PhysType()==MORTAR::MortarElement::other)
     {
-      if (slavetype==MORTAR::MortarElement::PhysicalType::poro)
+      if (slavetype==MORTAR::MortarElement::poro)
         dserror("struct and poro master elements on the same processor - no mixed interface supported");
-      cele->PhysType() = MORTAR::MortarElement::PhysicalType::structure;
-      slavetype=MORTAR::MortarElement::PhysicalType::structure;
+      cele->PhysType() = MORTAR::MortarElement::structure;
+      slavetype=MORTAR::MortarElement::structure;
     }
   }
   //store information about parent for porous contact (required for calculation of deformation gradient!)
@@ -1211,16 +1211,16 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(
   {
     switch (slaveTypeList[i])
     {
-      case static_cast<int>(MORTAR::MortarElement::PhysicalType::other):
+      case static_cast<int>(MORTAR::MortarElement::other):
         break;
-      case static_cast<int>(MORTAR::MortarElement::PhysicalType::poro):
+      case static_cast<int>(MORTAR::MortarElement::poro):
       {
         if(structslave) dserror("struct and poro slave elements in the same problem - no mixed interface constellations supported");
         //adjust dserror text, when more than one interface is supported
         poroslave=true;
         break;
       }
-      case static_cast<int>(MORTAR::MortarElement::PhysicalType::structure):
+      case static_cast<int>(MORTAR::MortarElement::structure):
       {
         if(poroslave) dserror("struct and poro slave elements in the same problem - no mixed interface constellations supported");
         structslave=true;
@@ -1238,16 +1238,16 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(
   {
     switch (masterTypeList[i])
     {
-      case static_cast<int>(MORTAR::MortarElement::PhysicalType::other):
+      case static_cast<int>(MORTAR::MortarElement::other):
         break;
-      case static_cast<int>(MORTAR::MortarElement::PhysicalType::poro):
+      case static_cast<int>(MORTAR::MortarElement::poro):
       {
         if(structmaster) dserror("struct and poro master elements in the same problem - no mixed interface constellations supported");
         //adjust dserror text, when more than one interface is supported
         poromaster=true;
         break;
       }
-      case static_cast<int>(MORTAR::MortarElement::PhysicalType::structure):
+      case static_cast<int>(MORTAR::MortarElement::structure):
       {
         if(poromaster) dserror("struct and poro master elements in the same problem - no mixed interface constellations supported");
         structmaster=true;

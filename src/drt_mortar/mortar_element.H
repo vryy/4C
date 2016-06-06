@@ -263,7 +263,8 @@ public:
 
   // physical type of mortar element
   // (Scoped enumeration: allows static_cast since C++11)
-  enum struct PhysicalType : int
+//  enum struct PhysicalType : int
+  enum PhysicalType
   {
     poro = 0,       //poroelastic: (porofluid exists and must be considered in contact/meshtying)
     structure = 1,  //structure

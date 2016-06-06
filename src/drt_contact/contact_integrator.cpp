@@ -9915,10 +9915,10 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(
 
   //bool to decide if fluid quantities and structural velocities
   //exist for slave side on CoNode level and contribute to porofluid meshtying
-  bool slaveporo = (sele.PhysType() == MORTAR::MortarElement::PhysicalType::poro);
+  bool slaveporo = (sele.PhysType() == MORTAR::MortarElement::poro);
   //bool to decide if fluid quantities and structural velocities
   //exist for master side on CoNode level and contribute to porofluid meshtying
-  bool masterporo = (mele.PhysType() == MORTAR::MortarElement::PhysicalType::poro);
+  bool masterporo = (mele.PhysType() == MORTAR::MortarElement::poro);
 
   if(!slaveporo and masterporo)
     dserror("poroelastic mesh tying method needs the slave side to be poroelastic (invert master/slave definition)");
