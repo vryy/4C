@@ -22,6 +22,9 @@
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 
+// forward declaration
+class Epetra_Vector;
+
 namespace LINALG
 {
   // forward declarations
