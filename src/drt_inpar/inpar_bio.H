@@ -2,13 +2,13 @@
 /*!
 \file inpar_bio.H
 
-Maintainer: Mahmoud Ismail
-            ismail@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15268
-</pre>
-*/
+\brief Input parameters for biomedical simulations
 
+\level 3
+
+\maintainer Christian Roth
+
+*/
 /*----------------------------------------------------------------------*/
 #ifndef INPAR_ARTNET_H
 #define INPAR_ARTNET_H

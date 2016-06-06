@@ -1,16 +1,16 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file airwayimplicitintegration.H
+
 \brief Associated with control routine for reduced dimensional airways
-  solvers,
+  solvers
 
-<pre>
-Maintainer: Christian Roth
-            roth@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-</pre>
+\level 2
 
-*----------------------------------------------------------------------*/
+\maintainer Christian Roth
+
+*/
+/*----------------------------------------------------------------------*/
 
 #ifndef AIRWAYIMPLICITINTEGRATION_H
 #define AIRWAYIMPLICITINTEGRATION_H
@@ -365,6 +365,13 @@ protected:
   Teuchos::RCP<Epetra_Vector>          qi_nl_np_;
   //@}
 
+  //! @trajectory vector x at time n+1 and n
+  Teuchos::RCP<Epetra_Vector>          x_np_;
+  Teuchos::RCP<Epetra_Vector>          x_n_;
+
+  //! @state of airway open or closed
+  Teuchos::RCP<Epetra_Vector>          open_;
+
   //! @name outlet volumetric flow rates at time n+1, n and n-1
   Teuchos::RCP<Epetra_Vector>          qout_np_;
   Teuchos::RCP<Epetra_Vector>          qout_n_;
@@ -454,6 +461,10 @@ protected:
   Teuchos::RCP<Epetra_Vector> saved_qin_nm_;
   Teuchos::RCP<Epetra_Vector> saved_qin_n_;
   Teuchos::RCP<Epetra_Vector> saved_qin_np_;
+
+  // saving vector for trajectory
+  Teuchos::RCP<Epetra_Vector> saved_x_n_;
+  Teuchos::RCP<Epetra_Vector> saved_x_np_;
 
   // saving vector for outflow rates
   Teuchos::RCP<Epetra_Vector> saved_qout_nm_;

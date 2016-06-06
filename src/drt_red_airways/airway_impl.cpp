@@ -4,12 +4,10 @@
 
 \brief Internal implementation of RedAirway element
 
-<pre>
-Maintainer: Christian Roth
-            roth@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-</pre>
+\level 2
+
+\maintainer Christian Roth
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -114,6 +112,10 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   Teuchos::RCP<Epetra_Vector> qin_n   = params.get<Teuchos::RCP<Epetra_Vector> >("qin_n");
   Teuchos::RCP<Epetra_Vector> qin_np  = params.get<Teuchos::RCP<Epetra_Vector> >("qin_np");
 
+  Teuchos::RCP<Epetra_Vector> x_n  = params.get<Teuchos::RCP<Epetra_Vector> >("x_n");
+  Teuchos::RCP<Epetra_Vector> x_np = params.get<Teuchos::RCP<Epetra_Vector> >("x_np");
+  Teuchos::RCP<Epetra_Vector> open = params.get<Teuchos::RCP<Epetra_Vector> >("open");
+
   Teuchos::RCP<Epetra_Vector> qout_np = params.get<Teuchos::RCP<Epetra_Vector> >("qout_np");
   Teuchos::RCP<Epetra_Vector> qout_n  = params.get<Teuchos::RCP<Epetra_Vector> >("qout_n");
   Teuchos::RCP<Epetra_Vector> qout_nm = params.get<Teuchos::RCP<Epetra_Vector> >("qout_nm");
@@ -175,6 +177,15 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   elem_params.set<double>("lungVolume_np",params.get<double>("lungVolume_np"));
   elem_params.set<double>("lungVolume_n",params.get<double>("lungVolume_n"));
   elem_params.set<double>("lungVolume_nm",params.get<double>("lungVolume_nm"));
+
+  //Routine for open/collapsed decision
+  double airwayColl=0.0;
+  ele->getParams("AirwayColl",airwayColl);
+  if (airwayColl == 1)
+  {
+    EvaluateCollapse(ele,epnp,params,dt);
+    elem_params.set<double>("open"  ,(*open)[ele->LID()]);
+  }
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -391,6 +402,69 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
 
 
 /*----------------------------------------------------------------------*
+ |  Evaluate open/collapsed state of an airway element following        |
+ |  Bates and Irvin (2002), J. Appl. Physiol., 93:705-713.              |
+ |                                                         roth 12/2015 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateCollapse(
+                 RedAirway*                               ele,
+                 Epetra_SerialDenseVector&                epn,
+                 Teuchos::ParameterList&                  params,
+                 double                                   dt)
+{
+    Teuchos::RCP<Epetra_Vector> x_n  = params.get<Teuchos::RCP<Epetra_Vector> >("x_n");
+    Teuchos::RCP<Epetra_Vector> x_np = params.get<Teuchos::RCP<Epetra_Vector> >("x_np");
+    Teuchos::RCP<Epetra_Vector> open = params.get<Teuchos::RCP<Epetra_Vector> >("open");
+
+    double s_c, s_o,Pcrit_o,Pcrit_c ;
+    ele->getParams("S_Close",s_c);
+    ele->getParams("S_Open",s_o);
+    ele->getParams("Pcrit_Close",Pcrit_c);
+    ele->getParams("Pcrit_Open",Pcrit_o);
+
+    double xnp     = (*x_np )[ele->LID()];
+    double xn      = (*x_n)[ele->LID()];
+    double opennp  = (*open)[ele->LID()];
+
+    double tmp = (epn(0)+epn(1))/2;
+
+    /*if (epn(0)-Pcrit_o > 0)
+    {
+      xnp=xn + s_o*dt*(epn(0)-Pcrit_o);
+    }
+    else if (epn(0)-Pcrit_c < 0)
+    {
+      xnp=xn + s_c*dt*(epn(0)-Pcrit_c);
+    }*/
+
+    if (tmp > Pcrit_o)
+    {
+      xnp=xn + s_o*dt*(tmp-Pcrit_o);
+    }
+    else if (tmp < Pcrit_c)
+    {
+      xnp=xn + s_c*dt*(tmp-Pcrit_c);
+    }
+
+    if ( xnp > 1.0)
+    {
+      xnp = 1.0;
+      opennp=1;
+    }
+    else if (xnp < 0.0)
+    {
+      xnp = 0.0;
+      opennp = 0;
+    }
+
+    int gid = ele->Id();
+    x_np->ReplaceGlobalValues(1,&xnp,&gid);
+    open->ReplaceGlobalValues(1,&opennp,&gid);
+}
+
+
+/*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  |                                                                      |
  *----------------------------------------------------------------------*/
@@ -403,7 +477,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   Epetra_SerialDenseMatrix&                sysmat,
   Epetra_SerialDenseVector&                rhs,
   Teuchos::RCP<const MAT::Material>        material,
-  Teuchos::ParameterList &                          params,
+  Teuchos::ParameterList &                 params,
   double                                   time,
   double                                   dt)
 {
@@ -650,6 +724,23 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   {
     dserror("[%s] is not a defined resistance model",ele->Resistance().c_str());
   }
+
+  //------------------------------------------------------------
+  // Set high resistance for collapsed airway
+  //------------------------------------------------------------
+  double airwayColl=0;
+  ele->getParams("AirwayColl",airwayColl);
+
+  if (airwayColl == 1)
+  {
+    double opennp   = params.get<double>("open");
+    if (opennp == 0)
+    {
+      //R = 10000000000;
+      R = 10000000; //000 before: 10^10, Bates: 10^8
+    }
+  }
+
   //------------------------------------------------------------
   // get airway compliance
   //------------------------------------------------------------
@@ -721,6 +812,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
                             time);
     pextnp+= pextVal/double(ele->NumNode());
   }
+
   if(ele->Type() == "Resistive")
   {
     C = 0.0; I = 0.0; Rconv = 0.0; Rvis = 0.0;
@@ -761,6 +853,21 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 
   rhs(0) = 0.5*(P1*Ainv-P2/B);
   rhs(1) = 0.5*(P1*Ainv+P2/B);
+
+  //If airway is collapsed, set pressure equal in the downstream airway to
+  //force zero flow downstream of the collapse
+  if (airwayColl == 1)
+  {
+    double opennp   = params.get<double>("open");
+
+    if (opennp == 0)
+    {
+      sysmat(1,0) = 0; sysmat(1,1) = 0;
+      //rhs(0) = 0;
+      rhs(1) = 0;
+    }
+  }
+
 }
 
 /*----------------------------------------------------------------------*
@@ -975,6 +1082,20 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           BCin = (*vals)[phase_number]*curvefac;
 
           // -----------------------------------------------------------------
+          // Compute flow value in case a volume is prescribed in the RedAirwayVentilatorCond
+          // -----------------------------------------------------------------
+          if (Bc == "volume")
+          {
+            if (fmod(time,period) < period1)
+            {
+              double Vnp = BCin;
+              double Vn = (*vals)[phase_number]*DRT::Problem::Instance()->Curve(curvenum).f(time-dt);
+              BCin = (Vnp-Vn)/dt;
+              Bc = "flow";
+            }
+          }
+
+          // -----------------------------------------------------------------
           // treat smoothness of the solution
           // -----------------------------------------------------------------
           // if phase 1
@@ -1172,6 +1293,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   Teuchos::RCP<Epetra_Vector> acinar_vnp         = params.get<Teuchos::RCP<Epetra_Vector> >("acinar_vnp");
   Teuchos::RCP<Epetra_Vector> a_volume_strain_np = params.get<Teuchos::RCP<Epetra_Vector> >("acinar_vnp_strain");
 
+  Teuchos::RCP<Epetra_Vector> x_n  = params.get<Teuchos::RCP<Epetra_Vector> >("x_n");
+  Teuchos::RCP<Epetra_Vector> x_np = params.get<Teuchos::RCP<Epetra_Vector> >("x_np");
+  Teuchos::RCP<Epetra_Vector> open = params.get<Teuchos::RCP<Epetra_Vector> >("open");
 
   if (pnp==Teuchos::null || pn==Teuchos::null || pnm==Teuchos::null )
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
@@ -1228,6 +1352,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   elem_params.set<double>("lungVolume_np",0.0);
   elem_params.set<double>("lungVolume_n",0.0);
   elem_params.set<double>("lungVolume_nm",0.0);
+
+  elem_params.set<double>("x_np" ,(*x_np )[ele->LID()]);
+  elem_params.set<double>("x_n"  ,(*x_n  )[ele->LID()]);
+  elem_params.set<double>("open" ,(*open )[ele->LID()]);
 
   Epetra_SerialDenseMatrix sysmat (elemVecdim, elemVecdim,true);
   Epetra_SerialDenseVector  rhs (elemVecdim);

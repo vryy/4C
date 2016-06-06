@@ -69,6 +69,7 @@ void StructureFilter::WriteAllResults(PostField* field)
 
   // reduced dimensional airway
   writer_->WriteResult("pnp", "pressure", dofbased, 1);
+  writer_->WriteResult("p_nonlin", "pressure_error", dofbased, 1);
   writer_->WriteResult("NodeIDs", "NodeIDs", dofbased, 1);
   writer_->WriteResult("radii", "radii", dofbased, 1);
 //  writer_->WriteResult("juncVolMix", "juncVolMix", dofbased, 1);
@@ -89,6 +90,8 @@ void StructureFilter::WriteAllResults(PostField* field)
 
   writer_->WriteResult("qin_np", "flow_in", elementbased, 1);
   writer_->WriteResult("qout_np", "flow_out", elementbased, 1);
+  writer_->WriteResult("x_np", "x_np", elementbased, 1);
+  writer_->WriteResult("open", "open", elementbased, 1);
   writer_->WriteResult("generations", "generations", elementbased, 1);
   writer_->WriteResult("elemVolumenp", "airway_volume", elementbased, 1);
   writer_->WriteResult("elemVolume0", "airway_volume0", elementbased, 1);

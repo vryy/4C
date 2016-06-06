@@ -1,14 +1,13 @@
 /*----------------------------------------------------------------------*/
-/*! airway_impl.H
+/*!
+\file airway_impl.H
 
 \brief Internal implementation of airway_impl element
 
-<pre>
-Maintainer: Christian Roth
-            roth@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-</pre>
+\level 2
+
+\maintainer Christian Roth
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -195,6 +194,18 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector& elevec2_epetra,
                          Epetra_SerialDenseVector& elevec3_epetra,
                          Teuchos::RCP<MAT::Material> mat);
+
+    /*!
+      \brief Calculate virtual trajectory xnp and state of airway (open/closed)
+
+      \param ele              (i) the element those matrix is calculated
+      \param epn              (i) nodal pressure at n
+      \param dt               (i) timestep
+      */
+    void EvaluateCollapse(RedAirway*                   ele,
+                          Epetra_SerialDenseVector&    epn,
+                          Teuchos::ParameterList &     params,
+                          double                       dt);
 
     /*!
       \brief calculate element matrix and rhs

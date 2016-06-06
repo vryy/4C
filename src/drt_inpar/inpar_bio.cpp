@@ -2,15 +2,13 @@
 /*!
 \file inpar_bio.cpp
 
-\brief Input parameters for combustion
+\brief Input parameters for biomedical simulations
 
-<pre>
-Maintainer: Christian Roth
-            roth@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+\level 3
+
+\maintainer Christian Roth
+
 */
-
 /*----------------------------------------------------------------------*/
 
 
@@ -804,8 +802,8 @@ void INPAR::REDAIRWAYS::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::
                                          DRT::Condition::Point));
 
   raw_vent_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("phase1", "flow",
-                                                                      Teuchos::tuple<std::string>("flow","pressure"),
-                                                                      Teuchos::tuple<std::string>("flow","pressure"),
+                                                                      Teuchos::tuple<std::string>("flow","volume","pressure"),
+                                                                      Teuchos::tuple<std::string>("flow","volume","pressure"),
                                                                       true)));
 
   raw_vent_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("Phase1Smoothness", "smooth",
@@ -814,8 +812,8 @@ void INPAR::REDAIRWAYS::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::
                                                                       true)));
 
   raw_vent_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("phase2", "pressure",
-                                                                      Teuchos::tuple<std::string>("pressure","flow"),
-                                                                      Teuchos::tuple<std::string>("pressure","flow"),
+                                                                      Teuchos::tuple<std::string>("pressure","flow","volume"),
+                                                                      Teuchos::tuple<std::string>("pressure","flow","volume"),
                                                                       true)));
 
   raw_vent_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("Phase2Smoothness", "smooth",

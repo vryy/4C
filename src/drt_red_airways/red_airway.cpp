@@ -1,16 +1,15 @@
-
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file red_airway.cpp
-\brief
 
-<pre>
-Maintainer: Christian Roth
-            roth@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-</pre>
+\brief Implements an airway element
 
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Christian Roth
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include "red_airway.H"
 #include "../drt_lib/drt_discret.H"
@@ -81,6 +80,12 @@ void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition( std::map<std::string,
     .AddNamedDouble("WallThickness")
     .AddNamedDouble("Area")
     .AddNamedInt("Generation")
+    .AddOptionalNamedDouble("AirwayColl")
+    .AddOptionalNamedDouble("S_Close")
+    .AddOptionalNamedDouble("S_Open")
+    .AddOptionalNamedDouble("Pcrit_Open")
+    .AddOptionalNamedDouble("Pcrit_Close")
+    .AddOptionalNamedDouble("Open_Init")
     .AddOptionalNamedDouble("BranchLength")
     ;
 }

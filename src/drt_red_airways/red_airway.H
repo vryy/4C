@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file red_airway.H
 
-<pre>
-Maintainer: Christian Roth
-            roth@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-</pre>
+\brief Implements an airway element
 
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Christian Roth
+
+*/
+/*----------------------------------------------------------------------*/
 #ifndef RED_AIRWAY_H_
 #define RED_AIRWAY_H_
 

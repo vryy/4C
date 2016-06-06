@@ -1,15 +1,15 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file red_airway_input.cpp
-\brief
 
-<pre>
-Maintainer: Christian Roth
-            roth@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15255
-</pre>
+\brief Input of RedAirway element
 
-*----------------------------------------------------------------------*/
+\level 2
+
+\maintainer Christian Roth
+
+*/
+/*----------------------------------------------------------------------*/
 
 #include "red_airway.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -53,6 +53,33 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
     linedef->ExtractDouble("WallThickness",tw);
     linedef->ExtractDouble("Area",A);
     linedef->ExtractInt("Generation",generation);
+
+    if (linedef->HaveNamed("AirwayColl"))
+    {
+      double airwayColl;
+      linedef->ExtractDouble("AirwayColl",airwayColl);
+      double sc, so, Pcrit_c, Pcrit_o, open_init;
+      linedef->ExtractDouble("S_Close",sc);
+      linedef->ExtractDouble("S_Open",so);
+      linedef->ExtractDouble("Pcrit_Open",Pcrit_o);
+      linedef->ExtractDouble("Pcrit_Close",Pcrit_c);
+      linedef->ExtractDouble("Open_Init",open_init);
+      elemParams_["AirwayColl"]= airwayColl;
+      elemParams_["S_Close"]= sc;
+      elemParams_["S_Open"] = so;
+      elemParams_["Pcrit_Open"]= Pcrit_o;
+      elemParams_["Pcrit_Close"]= Pcrit_c;
+      elemParams_["Open_Init"]=open_init;
+    }
+    else
+    {
+      elemParams_["AirwayColl"] = 0.0;
+      elemParams_["S_Close"]= 0.0;
+      elemParams_["S_Open"] = 0.0;
+      elemParams_["Pcrit_Open"]= 0.0;
+      elemParams_["Pcrit_Close"]= 0.0;
+      elemParams_["Open_Init"]= 1.0;
+    }
 
     // Correct the velocity profile power
     // this is because the 2.0 is the minimum energy consumtive laminar profile
