@@ -82,7 +82,7 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::ActiveSet::checkStatus(
         // add a new map a the beginning of the deque
         cycling_maps_.push_front(cnlngrp->GetOldActiveSetMap(qtype_));
         // remove the last entry of the deque, if the max_cycle_size_ is exceeded
-        if (cycling_maps_.size()>max_cycle_size_)
+        if (cycling_maps_.size()>static_cast<std::size_t>(max_cycle_size_))
           cycling_maps_.pop_back();
 
         // check for cycling, if the set is not converged
