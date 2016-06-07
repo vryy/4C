@@ -1,0 +1,174 @@
+diff --git src/drt_mortar/mortar_interface.H src/drt_mortar/mortar_interface.H
+index 52605cf..5e63189 100644
+--- src/drt_mortar/mortar_interface.H
++++ src/drt_mortar/mortar_interface.H
+@@ -727,11 +727,6 @@ public:
+   //! @name Visualization and Debugging methods
+ 
+   /*!
+-  \brief Visualize mortar stuff with gmsh (may be overloaded)
+-  */
+-  virtual void VisualizeGmsh(const int step, const int iter);
+-
+-  /*!
+   \brief Print shape function type (enum)
+   */
+   void PrintShapeFcn() { std::cout << shapefcn_ << std::endl; };
+diff --git src/drt_mortar/mortar_interface.cpp src/drt_mortar/mortar_interface.cpp
+index 3e358f5..f97180c 100644
+--- src/drt_mortar/mortar_interface.cpp
++++ src/drt_mortar/mortar_interface.cpp
+@@ -33,21 +33,13 @@
+ #include "../linalg/linalg_serialdensevector.H"
+ #include "../linalg/linalg_serialdensematrix.H"
+ 
+-#include "../drt_io/io_control.H"
+-#include "../drt_meshfree_discret/drt_meshfree_discret.H"
+-
+ #include "../drt_lib/drt_utils_parmetis.H"
+ #include "../drt_lib/drt_utils.H"
+-#include "../drt_lib/drt_globalproblem.H"
+ 
+ #include <Teuchos_Time.hpp>
+ #include <Epetra_Time.h>
+ #include <Epetra_SerialComm.h>
+ 
+-#include "../drt_particle/binning_strategy.H"
+-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+-#include "../drt_poroelast/poroelast_utils.H"
+-
+ #include "../drt_contact/contact_interpolator.H"
+ 
+ /*----------------------------------------------------------------------*
+@@ -78,32 +70,9 @@ MORTAR::MortarInterface::MortarInterface(
+     dserror("ERROR: Mortar problem must be 2D or 3D");
+   procmap_.clear();
+ 
+-  // build interface disretization
+-  if (!nurbs_)
+-  {
+-    if (!imortar_.get("GEO_DECOUPLED", false))
+-    {
+-      // standard case
+-      idiscret_ = Teuchos::rcp(
+-          new DRT::Discretization((std::string) "mortar interface", com));
+-    }
+-    else
+-    {
+-      // adapt flags in meshfree params
+-      Teuchos::RCP<Teuchos::ParameterList> meshfreeparams
+-        = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->MeshfreeParams()));
+-      meshfreeparams->set("TYPE", "GeoDecoupled");
+-
+-      idiscret_ = Teuchos::rcp(
+-          new DRT::MESHFREE::MeshfreeDiscretization((std::string) "mortar interface", com, *meshfreeparams));
+-    }
+-  }
+-  else
+-  {
+-    idiscret_ = Teuchos::rcp(
+-        new DRT::NURBS::NurbsDiscretization((std::string) "mortar interface",
+-            com));
+-  }
++  // standard case
++  idiscret_ = Teuchos::rcp(
++      new DRT::Discretization((std::string) "mortar interface", com));
+ 
+   // overwrite shape function type
+   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<
+@@ -282,7 +251,7 @@ void MORTAR::MortarInterface::AddMortarNode(
+ void MORTAR::MortarInterface::AddMortarPoint(
+     Teuchos::RCP<MORTAR::MortarNode> mrtrnode)
+ {
+-  Teuchos::rcp_dynamic_cast<DRT::MESHFREE::MeshfreeDiscretization>(idiscret_, true)->AddPoint(mrtrnode);
++  dserror("Needed for MeshfreeDiscretization. Blame on us!");
+   return;
+ }
+ 
+@@ -316,6 +285,9 @@ void MORTAR::MortarInterface::AddMortarElement(
+  *----------------------------------------------------------------------*/
+ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
+ {
++#if 1
++  dserror("MortarInterface::RemoveSingleInterfaceSide not included in contact module");
++#else
+   Teuchos::RCP<Epetra_Map> elecolmap;
+   Teuchos::RCP<Epetra_Map> nodecolmap;
+   Teuchos::RCP<Epetra_Map> pointcolmap;
+@@ -403,7 +375,7 @@ void MORTAR::MortarInterface::RemoveSingleInterfaceSide(bool slaveside)
+         idiscret_->DeleteNode(gid);
+     }
+   }
+-
++#endif
+   return;
+ }
+ 
+@@ -544,10 +516,6 @@ void MORTAR::MortarInterface::FillComplete(int maxdof, bool newghosting)
+   // make sure discretization is complete
+   Discret().FillComplete(true, false, false);
+ 
+-  //ghost also parent elements according to the ghosting strategy of the interface (atm just for poro)
+-  if (newghosting && poro_)
+-    POROELAST::UTILS::CreateVolumeGhosting(Discret());
+-
+   // need row and column maps of slave and master nodes / elements / dofs
+   // separately so we can easily address them
+   UpdateMasterSlaveSets();
+@@ -852,6 +820,9 @@ void MORTAR::MortarInterface::InitializeDataContainer()
+  *----------------------------------------------------------------------*/
+ void MORTAR::MortarInterface::BinningStrategy(Teuchos::RCP<Epetra_Map> initial_elecolmap, double vel)
+ {
++#if 1
++  dserror("Support for binning strategy in contact module only upon request. Please contact AdCo Engineering GW GmbH.");
++#else
+   // init XAABB
+   LINALG::Matrix<3,2> XAABB(false);
+   for(int dim=0; dim<3; ++dim)
+@@ -956,7 +927,7 @@ void MORTAR::MortarInterface::BinningStrategy(Teuchos::RCP<Epetra_Map> initial_e
+ 
+   // fillcomplete interface
+   FillComplete();
+-
++#endif
+   return;
+ }
+ 
+@@ -4291,6 +4262,9 @@ void MORTAR::MortarInterface::DetectTiedSlaveNodes(int& founduntied)
+  *----------------------------------------------------------------------*/
+ void MORTAR::MortarInterface::CreateVolumeGhosting(DRT::Discretization& idiscret,bool onlyslave)
+ {
++#if 1
++  dserror("Not supported for contact module!");
++#else
+   //**********************************************************************
+   // Prerequisites of this funtion:
+   // All Contact Elements need a set parent_id_ (member of faceelement!) before
+@@ -4380,5 +4354,7 @@ void MORTAR::MortarInterface::CreateVolumeGhosting(DRT::Discretization& idiscret
+       faceele->SetParentMasterElement(vele,faceele->FaceParentNumber());
+     }
+   }
++#endif
++  return;
+ }
+ 
+diff --git src/drt_mortar/mortar_strategy_base.H src/drt_mortar/mortar_strategy_base.H
+index 6f2ee71..17cb7b2 100644
+--- src/drt_mortar/mortar_strategy_base.H
++++ src/drt_mortar/mortar_strategy_base.H
+@@ -241,7 +241,6 @@ class StrategyBase : public NOX::NLN::CONSTRAINT::Interface::Preconditioner
+     virtual Teuchos::RCP<Epetra_Vector> ContactNorStress() = 0;
+     virtual Teuchos::RCP<Epetra_Vector> ContactTanStress() = 0;
+     virtual Teuchos::RCP<LINALG::SparseMatrix> DMatrix() = 0;
+-    virtual void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) = 0;
+     virtual void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors, bool forcedrestart = false) const = 0;
+     virtual void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
+     virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
+@@ -291,7 +290,6 @@ class StrategyBase : public NOX::NLN::CONSTRAINT::Interface::Preconditioner
+     virtual void UpdateActiveSetSemiSmooth() = 0;
+     virtual void UpdateUzawaAugmentedLagrange() = 0;
+     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
+-    virtual void VisualizeGmsh(const int step, const int iter) = 0;
+     virtual bool WasInContact() const = 0;
+     virtual bool WasInContactLastTimeStep() const = 0;
+ 

@@ -1,3 +1,15 @@
+/*---------------------------------------------------------------------------*/
+/*!
+\file main.cpp
+
+\brief contact module main testing program
+
+\level 2
+
+\maintainer Philipp Farah
+
+*/
+/*---------------------------------------------------------------------------*/
 //*****************************************************************************
 // TEST PROGRAM
 //*****************************************************************************
@@ -110,7 +122,6 @@ int main(int argc, char *argv[]) {
   myParams.set<std::string>("FRICTION","Coulomb");
   myParams.set<std::string>("ALGORITHM","Mortar");
   myParams.set<double>("FRCOEFF",0.3);
-  //myParams.set<std::string>("LAGMULT_QUAD","quad_quad");
   myParams.set<double>("PENALTYPARAM",1.0e3);
   myParams.set<double>("PENALTYPARAMTAN",1.0e3);
   myParams.set<std::string>("LM_SHAPEFCN","standard");
@@ -201,7 +212,7 @@ int main(int argc, char *argv[]) {
   Teuchos::RCP<Epetra_Vector> dis = Teuchos::rcp(new Epetra_Vector(*myDofMap));
 
   // evaluate contact strategy
-  penStrat.SetState("displacement",dis);
+  penStrat.SetState(MORTAR::state_new_displacement,*dis);
   penStrat.InitEvalInterface();
   //penStrat.InitEvalMortar();
 

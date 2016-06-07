@@ -1,8 +1,8 @@
-Index: ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.H
-===================================================================
---- ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.H	(revision 21907)
-+++ ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.H	(working copy)
-@@ -239,6 +239,7 @@
+diff --git src/drt_lib/drt_condition_utils.H src/drt_lib/drt_condition_utils.H
+index 8e71d45..5cf00db 100644
+--- src/drt_lib/drt_condition_utils.H
++++ src/drt_lib/drt_condition_utils.H
+@@ -240,6 +240,7 @@ namespace DRT
          const std::string&                        name                   ///< name of the condition
          );
  
@@ -10,7 +10,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.H
      /// Writes debug output for volumetric coupling
      void WriteBoundarySurfacesVolumeCoupling(
          std::map< std::vector<int>, Teuchos::RCP<DRT::Element> > surfmap, //map containing the surfaces of the boundary condition
-@@ -246,6 +247,7 @@
+@@ -247,6 +248,7 @@ namespace DRT
          int numproc,                                                      //number of procs
          int mypid                                                         //current proc
          );
@@ -18,11 +18,11 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.H
  
    }
  }
-Index: ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.cpp
-===================================================================
---- ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.cpp	(revision 21907)
-+++ ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.cpp	(working copy)
-@@ -22,11 +22,9 @@
+diff --git src/drt_lib/drt_condition_utils.cpp src/drt_lib/drt_condition_utils.cpp
+index fe4ab83..2323c12 100644
+--- src/drt_lib/drt_condition_utils.cpp
++++ src/drt_lib/drt_condition_utils.cpp
+@@ -23,11 +23,9 @@
  #include "drt_condition_utils.H"
  #include "drt_condition_selector.H"
  #include "drt_discret_iterator.H"
@@ -34,25 +34,25 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_condition_utils.cpp
  
  /*----------------------------------------------------------------------*
   *----------------------------------------------------------------------*/
-@@ -683,6 +681,7 @@
+@@ -683,7 +681,7 @@ void DRT::UTILS::CollectElementsByConditionLabel(
+   if(discret.NumMyColElements() != numOfCollectedIds)
      dserror("not all elements collected.");
  }
- 
+-
 +#if 0
  /*-----------------------------------------------------------------------*
   * Writes boundary surfaces of a volumetrically coupled problem to file  *
   * 'boundarysurfaces.log' storing the condition-Id as surface-Id. For    *
-@@ -723,4 +722,5 @@
+@@ -724,3 +722,4 @@ void DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(
      std::cout << " No 'boundarysurfaces.log' written as number of procs = "<< numproc <<" is bigger than 1." << std::endl;
    }
  }
 +#endif
- 
-Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_conditions.cpp
-===================================================================
---- ccarat_RR_03_16_mod/src/drt_lib/drt_discret_conditions.cpp	(revision 21907)
-+++ ccarat_RR_03_16_mod/src/drt_lib/drt_discret_conditions.cpp	(working copy)
-@@ -16,7 +16,6 @@
+diff --git src/drt_lib/drt_discret_conditions.cpp src/drt_lib/drt_discret_conditions.cpp
+index 3a1b812..2a60ff3 100644
+--- src/drt_lib/drt_discret_conditions.cpp
++++ src/drt_lib/drt_discret_conditions.cpp
+@@ -18,7 +18,6 @@
  #include "drt_dserror.H"
  #include "drt_parobject.H"
  
@@ -60,7 +60,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_conditions.cpp
  #include "drt_condition_utils.H"
  #include "../linalg/linalg_utils.H"
  
-@@ -82,11 +81,11 @@
+@@ -84,11 +83,11 @@ void DRT::Discretization::BoundaryConditionsGeometry()
      //  - line conditions in 1D
      //  - surface conditions in 2D
      //  - volume conditions in 3D
@@ -77,27 +77,28 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_conditions.cpp
      // build a line element geometry description
      else if (fool->second->GType()==DRT::Condition::Line)
        havenewelements = BuildLinesinCondition(fool->first,fool->second);
-@@ -597,6 +596,7 @@
+@@ -598,14 +597,14 @@ bool DRT::Discretization::BuildSurfacesinCondition(
+       //std::cout << " Warning: special surface condition: missing associated volume element" << std::endl;
      }
    }
- 
+-
 +#if 0
    //Write output for Gmsh format for debugging of StructFluidSurfCoupling surface correction,
    //note that this can only be done on one proc
    if ((cond->Type() == DRT::Condition::StructFluidSurfCoupling) or (cond->Type() == DRT::Condition::RedAirwayTissue))
-@@ -603,6 +603,7 @@
    {
      DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(surfmap,cond->Id(),cond->comm_->NumProc(),cond->comm_->MyPID());
    }
+-
 +#endif
- 
    // Surfaces be added to the condition: (line_id) -> (surface).
    Teuchos::RCP<std::map< int, Teuchos::RCP<DRT::Element> > > finalsurfs = Teuchos::rcp(new std::map<int,Teuchos::RCP<DRT::Element> >() );
-Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_evaluate.cpp
-===================================================================
---- ccarat_RR_03_16_mod/src/drt_lib/drt_discret_evaluate.cpp	(revision 21907)
-+++ ccarat_RR_03_16_mod/src/drt_lib/drt_discret_evaluate.cpp	(working copy)
-@@ -11,11 +11,8 @@
+ 
+diff --git src/drt_lib/drt_discret_evaluate.cpp src/drt_lib/drt_discret_evaluate.cpp
+index f057bb2..8a97e4a 100644
+--- src/drt_lib/drt_discret_evaluate.cpp
++++ src/drt_lib/drt_discret_evaluate.cpp
+@@ -9,11 +9,8 @@
  
  *----------------------------------------------------------------------*/
  
@@ -107,9 +108,9 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_evaluate.cpp
 -#include "drt_timecurve.H"
 -#include "drt_function.H"
  #include "drt_parobjectfactory.H"
+ #include "drt_elements_paramsinterface.H"
  #include "../linalg/linalg_utils.H"
- #include "../linalg/linalg_sparsematrix.H"
-@@ -241,7 +238,7 @@
+@@ -249,7 +246,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
          double curvefac = 1.0;
          if (curve) curvenum = (*curve)[j];
          if (curvenum >= 0 && usetime)
@@ -118,17 +119,16 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_evaluate.cpp
  
          value *= curvefac;
          const int lid = systemvector.Map().LID(gid);
-@@ -549,7 +546,8 @@
+@@ -557,7 +554,7 @@ void DRT::Discretization::DoDirichletCondition(
        int curvenum = -1;
        if (curve) curvenum = (*curve)[onesetj];
        if (curvenum>=0 && usetime)
 -        curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
 +        dserror("No support for curves in contact module.");
-+//        curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
        else
          for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
  
-@@ -560,11 +558,12 @@
+@@ -568,11 +565,12 @@ void DRT::Discretization::DoDirichletCondition(
        {
          funct_num = (*funct)[onesetj];
          if (funct_num>0)
@@ -146,7 +146,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_evaluate.cpp
        }
  
        // apply factors to Dirichlet value
-@@ -698,7 +697,8 @@
+@@ -706,7 +704,8 @@ void DRT::Discretization::EvaluateCondition
          if (curve) curvenum = (*curve)[0];
          double curvefac = 1.0;
          if (curvenum>=0 && usetime)
@@ -156,16 +156,15 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_evaluate.cpp
  
          // Get ConditionID of current condition if defined and write value in parameter list
          const std::vector<int>*    CondIDVec  = cond.Get<std::vector<int> >("ConditionID");
-@@ -1115,7 +1115,7 @@
+@@ -1122,14 +1121,15 @@ void  DRT::Discretization::DoInitialField(DRT::Condition& cond,
        // evaluate function
        if (dosomething)
        {
 -        double time = 0.0; // dummy time here
-+        //double time = 0.0; // dummy time here
++//        double time = 0.0; // dummy time here
          double functfac = 0.0;
          int funct_num = -1;
          if (funct)
-@@ -1122,7 +1122,8 @@
          {
            funct_num = (*funct)[0];
            if (funct_num > 0)
@@ -175,11 +174,11 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_evaluate.cpp
          }
  
          // assign value
-Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_partition.cpp
-===================================================================
---- ccarat_RR_03_16_mod/src/drt_lib/drt_discret_partition.cpp	(revision 21907)
-+++ ccarat_RR_03_16_mod/src/drt_lib/drt_discret_partition.cpp	(working copy)
-@@ -17,7 +17,6 @@
+diff --git src/drt_lib/drt_discret_partition.cpp src/drt_lib/drt_discret_partition.cpp
+index 8585e49..6936efc 100644
+--- src/drt_lib/drt_discret_partition.cpp
++++ src/drt_lib/drt_discret_partition.cpp
+@@ -19,7 +19,6 @@
  #include "drt_discret.H"
  #include "drt_exporter.H"
  #include "drt_dserror.H"
@@ -187,7 +186,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_partition.cpp
  #include "drt_dofset_pbc.H"
  #include "../linalg/linalg_utils.H"
  
-@@ -860,6 +859,9 @@
+@@ -862,6 +861,9 @@ void DRT::Discretization::SetupGhostingWrongNameDoNotUse(
                                          bool initelements           ,
                                          bool doboundaryconditions   )
  {
@@ -197,7 +196,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_partition.cpp
    if (Filled())
      dserror("there is really no need to setup ghosting if the discretization is already filled");
  
-@@ -963,7 +965,7 @@
+@@ -965,7 +967,7 @@ void DRT::Discretization::SetupGhostingWrongNameDoNotUse(
                 assigndegreesoffreedom,
                 initelements,
                 doboundaryconditions);
@@ -206,11 +205,11 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_discret_partition.cpp
  }
  
  void DRT::Discretization::SetupGhosting(
-Index: ccarat_RR_03_16_mod/src/drt_lib/drt_dofset.cpp
-===================================================================
---- ccarat_RR_03_16_mod/src/drt_lib/drt_dofset.cpp	(revision 21907)
-+++ ccarat_RR_03_16_mod/src/drt_lib/drt_dofset.cpp	(working copy)
-@@ -18,7 +18,6 @@
+diff --git src/drt_lib/drt_dofset.cpp src/drt_lib/drt_dofset.cpp
+index 8d03431..914b4b7 100644
+--- src/drt_lib/drt_dofset.cpp
++++ src/drt_lib/drt_dofset.cpp
+@@ -20,7 +20,6 @@
  #include "drt_dofset.H"
  #include "drt_dofset_proxy.H"
  #include "drt_discret.H"
@@ -218,7 +217,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_dofset.cpp
  #include "drt_utils.H"
  
  #include "../linalg/linalg_utils.H"
-@@ -170,10 +169,6 @@
+@@ -172,10 +171,6 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
    // Get highest GID used so far and add one
    int count = MaxGIDinList(dis.Comm()) + 1;
  
@@ -229,7 +228,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_dofset.cpp
    // Now this is tricky. We have to care for nodes, faces, and elements, both
    // row and column maps. In general both nodes, faces, and elements can have
    // dofs. In all cases these dofs might be shared with other nodes, faces,
-@@ -193,14 +188,10 @@
+@@ -195,14 +190,10 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
    // numdf for all nodes and elements
    numdfcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
    numdfcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
@@ -244,7 +243,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_dofset.cpp
  
    //////////////////////////////////////////////////////////////////
    //////////////////////////////////////////////////////////////////
-@@ -577,69 +568,6 @@
+@@ -583,69 +574,6 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
  
      count = maxnodenumdf>0 ? idxrownodes.MaxValue() + maxnodenumdf : 0;
  
@@ -314,7 +313,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_dofset.cpp
      // Now do it again for the elements
      Epetra_IntVector numdfrowelements(*dis.ElementRowMap());
      Epetra_IntVector idxrowelements(*dis.ElementRowMap());
-@@ -736,12 +664,6 @@
+@@ -742,12 +670,6 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
    Exporter elementexporter( *dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm() );
    elementexporter.Export( elementdofset );
  
@@ -327,11 +326,11 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_dofset.cpp
    for ( std::map<int,std::vector<int> >::iterator i=nodedofset.begin();
          i!=nodedofset.end();
          ++i )
-Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.H
-===================================================================
---- ccarat_RR_03_16_mod/src/drt_lib/drt_element.H	(revision 21907)
-+++ ccarat_RR_03_16_mod/src/drt_lib/drt_element.H	(working copy)
-@@ -21,11 +21,6 @@
+diff --git src/drt_lib/drt_element.H src/drt_lib/drt_element.H
+index 0c33877..9cd4523 100644
+--- src/drt_lib/drt_element.H
++++ src/drt_lib/drt_element.H
+@@ -19,11 +19,6 @@
  #include "drt_condition.H"
  
  // forward declarations
@@ -343,7 +342,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.H
  namespace DRT
  {
  
-@@ -624,21 +619,6 @@
+@@ -626,21 +621,6 @@ public:
    virtual void Print(std::ostream& os) const;
  
    /*!
@@ -365,7 +364,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.H
    \brief Check whether the element has only ghost nodes
  
    Note: If the element has only ghost nodes, the element will not be allowed
-@@ -727,13 +707,6 @@
+@@ -729,13 +709,6 @@ public:
    void SetId(const int id) { id_ = id; }
  
    /*!
@@ -379,7 +378,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.H
      \brief Set processor local col id
  
      \param lid: processor local col id
-@@ -770,13 +743,6 @@
+@@ -772,13 +745,6 @@ public:
    void SetNodeIds(const int nnode, const int* nodes);
  
    /*!
@@ -393,7 +392,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.H
    \brief Set a the face with index faceindex this element is connected to
  
    Sets the face pointer of the face adjacent to this element, using NumFace() as
-@@ -790,39 +756,6 @@
+@@ -792,39 +758,6 @@ public:
    void SetFace(const int         faceindex,
                 DRT::FaceElement* faceelement);
  
@@ -433,7 +432,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.H
    //@}
  
    //! @name Conditions
-@@ -1211,9 +1144,6 @@
+@@ -1240,9 +1173,6 @@ private:
    //! \brief Some conditions e.g. BCs
    std::multimap<std::string,Teuchos::RCP<Condition> > condition_;
  
@@ -443,23 +442,22 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.H
    //! is this a nurbs element?
    bool isNurbs_;
  
-Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp
-===================================================================
---- ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp	(revision 21907)
-+++ ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp	(working copy)
-@@ -17,11 +17,7 @@
+diff --git src/drt_lib/drt_element.cpp src/drt_lib/drt_element.cpp
+index cb986e3..8e93472 100644
+--- src/drt_lib/drt_element.cpp
++++ src/drt_lib/drt_element.cpp
+@@ -19,10 +19,6 @@
  #include "drt_dserror.H"
  #include "drt_condition.H"
  #include "../drt_lib/drt_utils_factory.H"
 -#include "drt_linedefinition.H"
- 
+-
 -#include "../drt_mat/material.H"
 -
--
+ 
  /*----------------------------------------------------------------------*/
  /*----------------------------------------------------------------------*/
- DRT::Element::DiscretizationType DRT::StringToDistype(std::string name)
-@@ -70,9 +66,7 @@
+@@ -72,9 +68,7 @@ DRT::Element::Element(int id, int owner) :
  ParObject(),
  id_(id),
  lid_(-1),
@@ -470,7 +468,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp
  {}
  
  /*----------------------------------------------------------------------*
-@@ -85,9 +79,7 @@
+@@ -87,9 +81,7 @@ lid_(old.lid_),
  owner_(old.owner_),
  nodeid_(old.nodeid_),
  node_(old.node_),
@@ -481,7 +479,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp
  {
    // we do NOT want a deep copy of the condition_ as the condition
    // is only a reference in the elements anyway
-@@ -95,16 +87,6 @@
+@@ -97,16 +89,6 @@ isNurbs_(old.isNurbs_)
    for (fool=old.condition_.begin(); fool!=old.condition_.end(); ++fool)
      SetCondition(fool->first,fool->second);
  
@@ -498,7 +496,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp
    return;
  }
  
-@@ -157,17 +139,7 @@
+@@ -159,16 +141,6 @@ void DRT::Element::Print(std::ostream& os) const
    return;
  }
  
@@ -511,12 +509,11 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp
 -  dserror("subclass implementations missing");
 -  return false;
 -}
- 
 -
+ 
  /*----------------------------------------------------------------------*
   |  set node numbers to element (public)                     mwgee 11/06|
-  *----------------------------------------------------------------------*/
-@@ -180,43 +152,7 @@
+@@ -182,42 +154,6 @@ void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
  }
  
  
@@ -531,7 +528,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp
 -}
 -
 -
- /*----------------------------------------------------------------------*
+-/*----------------------------------------------------------------------*
 - |  create material class (public)                                 05/07|
 - *----------------------------------------------------------------------*/
 -void DRT::Element::SetMaterial(int matnum)
@@ -556,11 +553,10 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp
 -}
 -
 -
--/*----------------------------------------------------------------------*
+ /*----------------------------------------------------------------------*
   |  Pack data                                                  (public) |
   |                                                            gee 02/07 |
-  *----------------------------------------------------------------------*/
-@@ -234,17 +170,9 @@
+@@ -236,17 +172,9 @@ void DRT::Element::Pack(DRT::PackBuffer& data) const
    AddtoPack(data,owner_);
    // add vector nodeid_
    AddtoPack(data,nodeid_);
@@ -581,7 +577,7 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp
  
    return;
  }
-@@ -270,19 +198,6 @@
+@@ -272,19 +200,6 @@ void DRT::Element::Unpack(const std::vector<char>& data)
    // mat_
    std::vector<char> tmp;
    ExtractfromPack(position,data,tmp);
@@ -601,11 +597,11 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_element.cpp
  
    // node_, face_, parent_master_, parent_slave_ are NOT communicated
    node_.resize(0);
-Index: ccarat_RR_03_16_mod/src/drt_lib/drt_parobjectfactory.H
-===================================================================
---- ccarat_RR_03_16_mod/src/drt_lib/drt_parobjectfactory.H	(revision 21907)
-+++ ccarat_RR_03_16_mod/src/drt_lib/drt_parobjectfactory.H	(working copy)
-@@ -99,11 +99,13 @@
+diff --git src/drt_lib/drt_parobjectfactory.H src/drt_lib/drt_parobjectfactory.H
+index 0141f1a..58cd23b 100644
+--- src/drt_lib/drt_parobjectfactory.H
++++ src/drt_lib/drt_parobjectfactory.H
+@@ -100,11 +100,13 @@ private:
    \author u.kue
    \date 06/10
   */
@@ -620,11 +616,11 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_parobjectfactory.H
    static ParObjectFactory& Instance();
  
    /// create a parobject from its data stream
-Index: ccarat_RR_03_16_mod/src/drt_lib/drt_utils.H
-===================================================================
---- ccarat_RR_03_16_mod/src/drt_lib/drt_utils.H	(revision 21907)
-+++ ccarat_RR_03_16_mod/src/drt_lib/drt_utils.H	(working copy)
-@@ -226,44 +226,6 @@
+diff --git src/drt_lib/drt_utils.H src/drt_lib/drt_utils.H
+index c1de907..771e72d 100644
+--- src/drt_lib/drt_utils.H
++++ src/drt_lib/drt_utils.H
+@@ -229,44 +229,6 @@ namespace UTILS
        const int num);
  
    /*!
@@ -669,11 +665,11 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_utils.H
      \brief Return Element center coordinates
    */
    std::vector<double> ElementCenterRefeCoords(const DRT::Element* const ele);
-Index: ccarat_RR_03_16_mod/src/drt_lib/drt_utils.cpp
-===================================================================
---- ccarat_RR_03_16_mod/src/drt_lib/drt_utils.cpp	(revision 21907)
-+++ ccarat_RR_03_16_mod/src/drt_lib/drt_utils.cpp	(working copy)
-@@ -21,14 +21,7 @@
+diff --git src/drt_lib/drt_utils.cpp src/drt_lib/drt_utils.cpp
+index 7d6d67e..b23baac 100644
+--- src/drt_lib/drt_utils.cpp
++++ src/drt_lib/drt_utils.cpp
+@@ -22,13 +22,6 @@
  #include "drt_utils.H"
  #include "drt_discret.H"
  #include "../linalg/linalg_utils.H"
@@ -682,13 +678,12 @@ Index: ccarat_RR_03_16_mod/src/drt_lib/drt_utils.cpp
 -#include "../drt_io/io_control.H"
 -#include <Epetra_FEVector.h>
 -#include "../linalg/linalg_gauss.H"
+-
+-
  
--
--
  /*----------------------------------------------------------------------*
   |  locally extract a subset of values  (public)            mwgee 12/06|
-  *----------------------------------------------------------------------*/
-@@ -221,856 +214,6 @@
+@@ -222,856 +215,6 @@ void DRT::UTILS::EquateValuesAtTheseNodes( Epetra_Vector& vec,
  }
  
  

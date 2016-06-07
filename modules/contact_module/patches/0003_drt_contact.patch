@@ -1,47 +1,39 @@
-Index: ccarat_strategies/src/drt_contact/contact_abstract_strategy.H
-===================================================================
---- ccarat_strategies/src/drt_contact/contact_abstract_strategy.H	(revision 21910)
-+++ ccarat_strategies/src/drt_contact/contact_abstract_strategy.H	(working copy)
-@@ -442,17 +442,6 @@
-       Teuchos::RCP<Epetra_Vector>& weightedwear,
-       Teuchos::RCP<Epetra_Vector>& realwear, bool forcedrestart = false);
+diff --git src/drt_contact/contact_abstract_strategy.H src/drt_contact/contact_abstract_strategy.H
+index 7c00011..2c04818 100644
+--- src/drt_contact/contact_abstract_strategy.H
++++ src/drt_contact/contact_abstract_strategy.H
+@@ -39,7 +39,6 @@ namespace CONTACT
+ // forward declarations
+ class CoInterface;
+ class ParamsInterface;
+-class NoxInterface;
+ //class WearInterface;
  
--  /*!
--   \brief Perform a write restart
--
--   A write restart is initiated by the contact manager. However, the manager has no
--   direct access to the nodal quantities. Hence, all the restart action has to be
--   performed on the level of the contact algorithm, for short: here's the right place.
--
--   */
--  void DoReadRestart(IO::DiscretizationReader& reader,
--      Teuchos::RCP<Epetra_Vector> dis);
--
-     //@}
+ /*! \brief Data container object for the abstract strategy
+@@ -572,9 +571,6 @@ public:
  
-     //! @name Empty functions if no augmented Lagrange formulation is used
-@@ -492,14 +481,35 @@
-   virtual void PrintActiveSet();
+   //! @name Access methods
+   //! @{
+-  //! Return the NOX::NLN::CONSTRAINT::Interface::Required member object
+-  const Teuchos::RCP<CONTACT::NoxInterface>& NoxInterfacePtr()
+-  { return noxinterface_ptr_; };
  
-   /*!
--   \brief Visualize contact stuff with gmsh
-+   \brief Evaluate relative movement of contact bodies
+   /*! \brief Return the Lagrange multiplier dof row map
+    *
+@@ -916,6 +912,31 @@ public:
+   //! @name Evaluation methods
+   //! @{
  
--   \param step (in): current time step index
--   \param iter (in): current iteration index
++  /*! \brief Evaluate relative movement of contact bodies
++
 +   This is for evaluating the relative movement of contact bodies. This
 +   can either be done with regarding the different movement of material points
 +   or regarding the change of mortar projection. The second possibility
 +   is definitely objective wheras the first possibility is objective
-+   only when the gap is zero.
- 
-    */
--  void VisualizeGmsh(const int step, const int iter);
- 
++   only when the gap is zero. */
 +  void EvaluateRelMov();
 +
-+  /*!
-+   \brief Initialize and evaluate interface for the next Newton step
++  /*! \brief Initialize and evaluate interface for the next Newton step
 +
 +   This method calls Initialize() on all contact interfaces, which
 +   resets all kind of nodal quantities like normal vector, weighted
@@ -52,39 +44,69 @@ Index: ccarat_strategies/src/drt_contact/contact_abstract_strategy.H
 +   It includes the nodal normal calculations, contact search, projection
 +   and overlap detection, integration of the  Mortar terms D, M and of the
 +   weighted gap. Additionally, the linearizations of geometrical quantities
-+   (delta_n, delta_t, delta_D, delta_M) are calculated.
++   (delta_n, delta_t, delta_D, delta_M) are calculated. */
++  void InitEvalInterface()
++  { InitEvalInterface(Teuchos::null); };
++  virtual void InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
 +
-+   */
-+  void InitEvalInterface();
-+
-   //@}
+   /*! \brief Redistribute all contact interfaces in parallel
+ 
+    We hand in the current global displacement state so that
+@@ -1056,19 +1077,6 @@ public:
+   virtual void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors,
+       bool forcedrestart = false) const;
+ 
+-  /*! \brief Perform a write restart
+-
+-   A write restart is initiated by the contact manager. However, the manager has no
+-   direct access to the nodal quantities. Hence, all the restart action has to be
+-   performed on the level of the contact algorithm, for short: here's the right place.
+-   */
+-  void DoReadRestart(IO::DiscretizationReader& reader,
+-      Teuchos::RCP<const Epetra_Vector> dis)
+-  { DoReadRestart(reader,dis,Teuchos::null); };
+-  void DoReadRestart(IO::DiscretizationReader& reader,
+-        Teuchos::RCP<const Epetra_Vector> dis,
+-        Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
+-
+   //! @}
+ 
+   //! @name Debugging methods
+@@ -1090,13 +1098,6 @@ public:
+   //! Print current active set to screen for debugging purposes
+   virtual void PrintActiveSet();
+ 
+-  /*! \brief Visualize contact stuff with gmsh
+-
+-   \param step (in): current time step index
+-   \param iter (in): current iteration index
+-   */
+-  void VisualizeGmsh(const int step, const int iter);
+-
+   //! @}
  
    //! @name Purely virtual functions
-@@ -567,19 +577,6 @@
+@@ -1233,15 +1234,6 @@ protected:
+   void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff,
        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
  
-   /*!
--   \brief Evaluate relative movement of contact bodies
+-  /*! \brief Evaluate relative movement of contact bodies
 -
 -   This is for evaluating the relative movement of contact bodies. This
 -   can either be done with regarding the different movement of material points
 -   or regarding the change of mortar projection. The second possibility
 -   is definitely objective wheras the first possibility is objective
--   only when the gap is zero.
--
--   */
--
+-   only when the gap is zero. */
 -  void EvaluateRelMov();
 -
--  /*!
-    \brief Initialize and evaluate Mortar stuff for the next Newton step
+   /*! \brief Initialize and evaluate Mortar stuff for the next Newton step
  
     This method first checks if we are dealing with self contact and updates
-@@ -596,23 +593,6 @@
-   void AssembleMortar();
+@@ -1255,22 +1247,6 @@ protected:
+   virtual void InitMortar();
+   virtual void AssembleMortar();
  
-   /*!
--   \brief Initialize and evaluate interface for the next Newton step
+-  /*! \brief Initialize and evaluate interface for the next Newton step
 -
 -   This method calls Initialize() on all contact interfaces, which
 -   resets all kind of nodal quantities like normal vector, weighted
@@ -95,20 +117,37 @@ Index: ccarat_strategies/src/drt_contact/contact_abstract_strategy.H
 -   It includes the nodal normal calculations, contact search, projection
 -   and overlap detection, integration of the  Mortar terms D, M and of the
 -   weighted gap. Additionally, the linearizations of geometrical quantities
--   (delta_n, delta_t, delta_D, delta_M) are calculated.
+-   (delta_n, delta_t, delta_D, delta_M) are calculated. */
+-  void InitEvalInterface()
+-  { InitEvalInterface(Teuchos::null); };
+-  virtual void InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
 -
--   */
--  void InitEvalInterface();
--
--  /*!
-    \brief Setup this strategy object (maps, vectors, etc.)
+   /*! check the parallel distribution and initialize a possible
+    *  redistribution */
+   void CheckParallelDistribution(const double& t_start);
+@@ -1437,9 +1413,6 @@ private:
+     //! pointer to the data container object
+     Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr_;
  
-    All global maps and vectors are initialized by collecting
-Index: ccarat_strategies/src/drt_contact/contact_abstract_strategy.cpp
-===================================================================
---- ccarat_strategies/src/drt_contact/contact_abstract_strategy.cpp	(revision 21910)
-+++ ccarat_strategies/src/drt_contact/contact_abstract_strategy.cpp	(working copy)
-@@ -24,9 +24,6 @@
+-    //! pointer to the NOX::NLN::CONSTRAINT::Interface::Required object
+-    Teuchos::RCP<CONTACT::NoxInterface> noxinterface_ptr_;
+-
+ }; // class CoAbstractStrategy
+ } // namespace CONTACT
+ 
+diff --git src/drt_contact/contact_abstract_strategy.cpp src/drt_contact/contact_abstract_strategy.cpp
+index 9a713ea..5424cf1 100644
+--- src/drt_contact/contact_abstract_strategy.cpp
++++ src/drt_contact/contact_abstract_strategy.cpp
+@@ -16,7 +16,6 @@
+ #include "contact_interface.H"
+ #include "friction_node.H"
+ #include "contact_paramsinterface.H"
+-#include "contact_noxinterface.H"
+ 
+ #include "../drt_mortar/mortar_defines.H"
+ #include "../drt_mortar/mortar_utils.H"
+@@ -26,9 +25,6 @@
  #include "../drt_lib/drt_discret.H"
  #include "../drt_lib/drt_colors.H"
  
@@ -118,14 +157,38 @@ Index: ccarat_strategies/src/drt_contact/contact_abstract_strategy.cpp
  #include "../linalg/linalg_utils.H"
  #include "../linalg/linalg_multiply.H"
  #include "../linalg/linalg_sparsematrix.H"
-@@ -1813,179 +1810,6 @@
+@@ -169,8 +165,7 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
+       ivel_(data_ptr->MeanInterfaceVels()),
+       stype_(data_ptr->SolType()),
+       constr_direction_(data_ptr->ConstrDirection()),
+-      data_ptr_(data_ptr),
+-      noxinterface_ptr_(Teuchos::null)
++      data_ptr_(data_ptr)
+ {
+   // set data container pointer (only PRIVATE direct access!)
+   data_ptr_->SolType() =
+@@ -219,11 +214,6 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
+   tunbalance_.clear();
+   eunbalance_.clear();
+ 
+-  // build the NOX::NLN::CONSTRAINT::Interface::Required object
+-  noxinterface_ptr_ = Teuchos::rcp(new CONTACT::NoxInterface());
+-  noxinterface_ptr_->Init(Teuchos::rcp(this,false));
+-  noxinterface_ptr_->Setup();
+-
+   return;
+ }
+ 
+@@ -1951,180 +1941,6 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(
  }
  
  /*----------------------------------------------------------------------*
 - |  read restart information for contact                      popp 03/08|
 - *----------------------------------------------------------------------*/
 -void CONTACT::CoAbstractStrategy::DoReadRestart(
--    IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis)
+-    IO::DiscretizationReader& reader,
+-    Teuchos::RCP<const Epetra_Vector> dis,
+-    Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 -{
 -  // check whether this is a restart with contact of a previously
 -  // non-contact simulation run (if yes, we have to be careful not
@@ -136,13 +199,13 @@ Index: ccarat_strategies/src/drt_contact/contact_abstract_strategy.cpp
 -      "RESTART_WITH_CONTACT");
 -
 -  // set restart displacement state
--  SetState("displacement", dis);
--  SetState("olddisplacement", dis);
+-  SetState(MORTAR::state_new_displacement, *dis);
+-  SetState(MORTAR::state_old_displacement, *dis);
 -
 -  // evaluate interface and restart mortar quantities
 -  // in the case of SELF CONTACT, also re-setup master/slave maps
 -  InitMortar();
--  InitEvalInterface();
+-  InitEvalInterface(cparams_ptr);
 -  AssembleMortar();
 -
 -  //----------------------------------------------------------------------
@@ -162,7 +225,7 @@ Index: ccarat_strategies/src/drt_contact/contact_abstract_strategy.cpp
 -  // read restart information on actice set and slip set (leave sets empty
 -  // if this is a restart with contact of a non-contact simulation run)
 -  Teuchos::RCP<Epetra_Vector> activetoggle = Teuchos::rcp(
--      new Epetra_Vector(*gsnoderowmap_));
+-      new Epetra_Vector(SlRowNodes()));
 -  if (!restartwithcontact)
 -    reader.ReadVector(activetoggle, "activetoggle");
 -
@@ -172,7 +235,7 @@ Index: ccarat_strategies/src/drt_contact/contact_abstract_strategy.cpp
 -
 -  if (friction_)
 -  {
--    sliptoggle = Teuchos::rcp(new Epetra_Vector(*gsnoderowmap_));
+-    sliptoggle = Teuchos::rcp(new Epetra_Vector(SlRowNodes()));
 -    if (!restartwithcontact)
 -      reader.ReadVector(sliptoggle, "sliptoggle");
 -  }
@@ -208,16 +271,15 @@ Index: ccarat_strategies/src/drt_contact/contact_abstract_strategy.cpp
 -  }
 -
 -  // read restart information on Lagrange multipliers
--  z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
--  zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-  z_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
+-  zold_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
 -  if (!restartwithcontact)
 -    reader.ReadVector(LagrMult(), "lagrmultold");
 -  if (!restartwithcontact)
 -    reader.ReadVector(LagrMultOld(), "lagrmultold");
 -
 -  // Lagrange multiplier increment is always zero (no restart value to be read)
--  zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
--
+-  zincr_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
 -  // store restart information on Lagrange multipliers into nodes
 -  StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
 -  StoreNodalQuantities(MORTAR::StrategyBase::lmold);
@@ -226,7 +288,7 @@ Index: ccarat_strategies/src/drt_contact/contact_abstract_strategy.cpp
 -  // TODO: this should be moved to contact_penalty_strategy
 -  if (stype_ == INPAR::CONTACT::solution_uzawa)
 -  {
--    zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+-    zuzawa_ = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
 -    if (!restartwithcontact)
 -      reader.ReadVector(LagrMultUzawa(), "lagrmultold");
 -    StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
@@ -298,11 +360,10 @@ Index: ccarat_strategies/src/drt_contact/contact_abstract_strategy.cpp
   |  Compute interface forces (for debugging only)             popp 02/08|
   *----------------------------------------------------------------------*/
  void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
-@@ -2679,15 +2503,6 @@
-   return;
+@@ -2819,16 +2635,6 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
  }
  
--/*----------------------------------------------------------------------*
+ /*----------------------------------------------------------------------*
 - | Visualization of contact segments with gmsh                popp 08/08|
 - *----------------------------------------------------------------------*/
 -void CONTACT::CoAbstractStrategy::VisualizeGmsh(const int step, const int iter)
@@ -311,14 +372,264 @@ Index: ccarat_strategies/src/drt_contact/contact_abstract_strategy.cpp
 -  for (int i = 0; i < (int) interface_.size(); ++i)
 -    interface_[i]->VisualizeGmsh(step, iter);
 -}
+-
+-/*----------------------------------------------------------------------*
+  | collect maps for preconditioner (AMG)                   wiesner 01/12|
+  *----------------------------------------------------------------------*/
+ void CONTACT::CoAbstractStrategy::CollectMapsForPreconditioner(
+diff --git src/drt_contact/contact_integrator_factory.cpp src/drt_contact/contact_integrator_factory.cpp
+index c2e9213..4a6d437 100644
+--- src/drt_contact/contact_integrator_factory.cpp
++++ src/drt_contact/contact_integrator_factory.cpp
+@@ -17,7 +17,6 @@
+ 
+ // supported contact integrators
+ #include "contact_integrator.H"
+-#include "../drt_contact_aug/contact_augmented_integrator.H"
  
  /*----------------------------------------------------------------------*
-  | collect maps for preconditioner (AMG)                   wiesner 01/12|
-Index: ccarat_strategies/src/drt_contact/contact_lagrange_strategy.cpp
-===================================================================
---- ccarat_strategies/src/drt_contact/contact_lagrange_strategy.cpp	(revision 21910)
-+++ ccarat_strategies/src/drt_contact/contact_lagrange_strategy.cpp	(working copy)
-@@ -17,7 +17,6 @@
+  *----------------------------------------------------------------------*/
+@@ -35,21 +34,8 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
+     const Epetra_Comm& comm) const
+ {
+   Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::null;
+-  switch (stype)
+-  {
+-    case INPAR::CONTACT::solution_augmented:
+-    {
+-      integrator = Teuchos::rcp(new CONTACT::AugmentedIntegrator(
+-          p_mortar,eletype,comm));
+-      break;
+-    }
+-    default:
+-    {
+-      integrator = Teuchos::rcp(new CONTACT::CoIntegrator(
+-          p_mortar,eletype,comm));
+-      break;
+-    }
+-  } // end switch
++  integrator = Teuchos::rcp(new CONTACT::CoIntegrator(
++      p_mortar,eletype,comm));
+ 
+   return integrator;
+ }
+diff --git src/drt_contact/contact_interface.H src/drt_contact/contact_interface.H
+index 87c736a..a047165 100644
+--- src/drt_contact/contact_interface.H
++++ src/drt_contact/contact_interface.H
+@@ -545,21 +545,6 @@ public:
+   */
+   virtual bool SplitActiveDofs();
+ 
+-  /*!
+-  \brief Assemble normal coupling weighted condition for poro contact
+-
+-  */
+-  virtual void AssembleNCoup(Epetra_Vector& gglobal);
+-
+-  /*!
+-  \brief Assemble linearisation of normal coupling weighted condition for poro contact
+-
+-  */
+-  virtual void AssembleNCoupLin(LINALG::SparseMatrix& sglobal,
+-      ADAPTER::Coupling& coupfs,
+-      bool AssembleVelocityLin = false //if true velocity linearisation will be assembled into sglobal, otherwise lin. w.r.t. displacements!
+-      );
+-
+   //@}
+ 
+   //! @name Visualization and Debugging methods
+@@ -573,12 +558,6 @@ public:
+                            const Epetra_Vector& fm);
+ 
+   /*!
+-  \brief Visualize contact stuff with gmsh
+-
+-  */
+-  void VisualizeGmsh(const int step, const int iter);
+-
+-  /*!
+   \brief Check normal/tangent derivatives with finite differences
+ 
+   */
+@@ -622,31 +601,11 @@ public:
+   void FDCheckTangLMDeriv();
+ 
+   /*!
+-  \brief Check stick condition derivatives with finite differences
+-
+-  */
+-  virtual void FDCheckStickDeriv(LINALG::SparseMatrix& linstickLMglobal,
+-                                 LINALG::SparseMatrix& linstickDISglobal);
+-
+-  /*!
+-  \brief Check slip condition derivatives with finite differences
+-
+-  */
+-  virtual void FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal,
+-                                LINALG::SparseMatrix& linslipDISglobal);
+-
+-  /*!
+   \brief Check penalty approach with finite differences
+ 
+   */
+   void FDCheckPenaltyTracNor();
+ 
+-  /*!
+-  \brief Check frictional penalty traction with finite differences
+-
+-  */
+-  virtual void FDCheckPenaltyTracFric();
+-
+   void AddGPTSforces(Teuchos::RCP<Epetra_FEVector> feff);
+   void AddGPTSstiffness(Teuchos::RCP<LINALG::SparseMatrix> kteff);
+ 
+diff --git src/drt_contact/contact_interface.cpp src/drt_contact/contact_interface.cpp
+index 2c5a11b..8dc49ac 100644
+--- src/drt_contact/contact_interface.cpp
++++ src/drt_contact/contact_interface.cpp
+@@ -31,7 +31,6 @@
+ #include "../drt_lib/drt_utils_parmetis.H"
+ #include "../linalg/linalg_utils.H"
+ #include "../linalg/linalg_serialdensevector.H"
+-#include "../drt_adapter/adapter_coupling.H"
+ 
+ /*----------------------------------------------------------------------*
+  |  ctor (public)                                            mwgee 10/07|
+@@ -8766,128 +8765,6 @@ void CONTACT::CoInterface::EvalResultantMoment(const Epetra_Vector& fs,
+ }
+ 
+ 
+-/*---------------------------------------------------------------------------*
+- |  Assemble normal coupling weighted condition for poro contact   ager 07/14|
+- *--------------------------------------------------------------------------*/
+-void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
+-{
+-  // get out of here if not participating in interface
+-  if (!lComm()) return;
+-
+-  // loop over proc's slave nodes of the interface for assembly
+-  // use standard row map to assemble each node only once
+-  for (int i=0;i<activenodes_->NumMyElements();++i)
+-  {
+-    int gid = activenodes_->GID(i);
+-    DRT::Node* node = idiscret_->gNode(gid);
+-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+-    CoNode* mrtnode = dynamic_cast<CoNode*>(node);
+-
+-    if (mrtnode->Owner() != Comm().MyPID())
+-      dserror("ERROR: AssembleDMG: Node ownership inconsistency!");
+-
+-    /**************************************************** nCoup-vector ******/
+-    if (mrtnode->CoPoroData().GetnCoup()!=0.0)
+-    {
+-      double nCoup = mrtnode->CoPoroData().GetnCoup();
+-      if (DRT::INPUT::IntegralValue<int>(imortar_,"LM_NODAL_SCALE")==true &&
+-          mrtnode->MoData().GetScale() != 0.0)
+-        nCoup /= mrtnode->MoData().GetScale();
+-
+-      Epetra_SerialDenseVector gnode(1);
+-      std::vector<int> lm(1);
+-      std::vector<int> lmowner(1);
+-
+-      gnode(0) = nCoup;
+-      lm[0] =  activen_->GID(i);
+-
+-      lmowner[0] = mrtnode->Owner();
+-
+-      LINALG::Assemble(gglobal,gnode,lm,lmowner);
+-    }
+-  }
+-
+-  return;
+-}
+-
+-/*---------------------------------------------------------------------*
+- |  Assemble linearisation of normal coupling                          |
+- |          weighted condition for poro contact              ager 07/14|
+- *--------------------------------------------------------------------*/
+-void CONTACT::CoInterface::AssembleNCoupLin(LINALG::SparseMatrix& sglobal, ADAPTER::Coupling& coupfs,
+-    bool AssembleVelocityLin)
+-{
+-  // get out of here if not participating in interface
+-  if (!lComm())
+-    return;
+-
+-  // nothing to do if no active nodes
+-  if (activenodes_==Teuchos::null)
+-    return;
+-
+-  Teuchos::RCP<const Epetra_Map> MasterDofMap_full;
+-  Teuchos::RCP<const Epetra_Map> PermSlaveDofMap_full;
+-
+-  if (AssembleVelocityLin)
+-  {
+-    //store map on all processors, simple but expensive
+-    MasterDofMap_full = LINALG::AllreduceEMap(*coupfs.MasterDofMap());
+-    PermSlaveDofMap_full = LINALG::AllreduceEMap(*coupfs.PermSlaveDofMap());
+-  }
+-
+-  for (int i=0;i<activenodes_->NumMyElements();++i)
+-  {
+-    int gid = activenodes_->GID(i);
+-    DRT::Node* node = idiscret_->gNode(gid);
+-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+-    CoNode* cnode = dynamic_cast<CoNode*>(node);
+-
+-    if (cnode->Owner() != Comm().MyPID())
+-      dserror("ERROR: AssembleS: Node ownership inconsistency!");
+-
+-    std::map<int,double>::iterator colcurr;
+-    int row = activen_->GID(i);
+-
+-    std::map<int,double>& dgmap = cnode->CoPoroData().GetDerivnCoup();
+-    if (AssembleVelocityLin)
+-    {//Assign fluid velocity linearization to matrix
+-
+-      dgmap = cnode->CoPoroData().GetVelDerivnCoup();
+-        for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
+-        {
+-          int col = PermSlaveDofMap_full->GID(MasterDofMap_full->LID(colcurr->first));
+-          double val = colcurr->second;
+-
+-          // do not assemble zeros into s matrix
+-          if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+-        }
+-      //Assign pressure linearization to matrix
+-      dgmap = cnode->CoPoroData().GetPresDerivnCoup();
+-        for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
+-        {
+-          int col = PermSlaveDofMap_full->GID(MasterDofMap_full->LID(colcurr->first))+Dim();
+-          double val = colcurr->second;
+-
+-          // do not assemble zeros into s matrix
+-          if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+-        }
+-    }
+-    else
+-    {//Assign skeleton displacement linearization to matrix
+-      for (colcurr=dgmap.begin();colcurr!=dgmap.end();++colcurr)
+-      {
+-        int col = colcurr->first;
+-        double val = colcurr->second;
+-
+-        // do not assemble zeros into s matrix
+-        if (abs(val)>1.0e-12) sglobal.Assemble(val,row,col);
+-      }
+-    }
+-  }
+-  return;
+-}
+-
+-
+ /*---------------------------------------------------------------------*
+  *--------------------------------------------------------------------*/
+ void CONTACT::CoInterface::AddGPTSforces(Teuchos::RCP<Epetra_FEVector> feff)
+diff --git src/drt_contact/contact_lagrange_strategy.cpp src/drt_contact/contact_lagrange_strategy.cpp
+index 2198b48..bc4bbe7 100644
+--- src/drt_contact/contact_lagrange_strategy.cpp
++++ src/drt_contact/contact_lagrange_strategy.cpp
+@@ -18,7 +18,6 @@
  #include "friction_node.H"
  #include "../drt_mortar/mortar_utils.H"
  #include "../drt_inpar/inpar_contact.H"
@@ -326,45 +637,142 @@ Index: ccarat_strategies/src/drt_contact/contact_lagrange_strategy.cpp
  #include "../linalg/linalg_multiply.H"
  #include "../linalg/linalg_utils.H"
  
-Index: ccarat_strategies/src/drt_contact/contact_wear_lagrange_strategy.H
-===================================================================
---- ccarat_strategies/src/drt_contact/contact_wear_lagrange_strategy.H	(revision 21910)
-+++ ccarat_strategies/src/drt_contact/contact_wear_lagrange_strategy.H	(working copy)
-@@ -146,17 +146,7 @@
-                       Teuchos::RCP<Epetra_Vector>& realwear,
-                       bool forcedrestart = false);
+diff --git src/drt_contact/contact_wear_interface.H src/drt_contact/contact_wear_interface.H
+index db659d0..6b75c38 100644
+--- src/drt_contact/contact_wear_interface.H
++++ src/drt_contact/contact_wear_interface.H
+@@ -178,91 +178,6 @@ public:
+    virtual bool BuildActiveSetMaster();
  
--  /*!
+    /*!
+-   \brief Check mortar wear T derivatives with finite differences
+-
+-   */
+-   void FDCheckMortarTDeriv();
+-
+-   /*!
+-   \brief Check mortar wear T derivatives with finite differences (Master)
+-
+-   */
+-   void FDCheckMortarT_Master_Deriv();
+-
+-   /*!
+-   \brief Check mortar wear E derivatives with finite differences
+-
+-   */
+-   void FDCheckMortarEDeriv();
+-
+-   /*!
+-   \brief Check mortar wear E derivatives with finite differences (for master)
+-
+-   */
+-   void FDCheckMortarE_Master_Deriv();
+-
+-   /*!
+-   \brief Check mortar wear T derivatives with finite differences
+-     --> for wear condition
+-
+-   */
+-   void FDCheckDerivT_D(LINALG::SparseMatrix& lintdis);
+-
+-   /*!
+-   \brief Check mortar wear T derivatives with finite differences
+-     --> for wear condition (Master)
+-
+-   */
+-   void FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis);
+-
+-   /*!
+-   \brief Check mortar wear E derivatives with finite differences
+-     --> for wear condition
+-
+-   */
+-   void FDCheckDerivE_D(LINALG::SparseMatrix& linedis);
+-
+-   /*!
+-   \brief Check mortar wear E derivatives with finite differences
+-     --> for wear condition (Master)
+-
+-   */
+-   void FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis);
+-   /*!
+-   \brief Check weighted gap g derivatives with finite differences
+-
+-   */
+-   void FDCheckGapDeriv();
+-
+-   /*!
+-   \brief Check weighted gap g derivatives with finite differences
+-
+-   */
+-   void FDCheckGapDeriv_W();
+-
+-   /*!
+-   \brief Check weighted wear ~w derivatives with finite differences
+-          derivation w.r.t. displ.
+-
+-   */
+-   void FDCheckWearDeriv();
+-
+-   /*!
+-   \brief Check weighted wear ~w derivatives with finite differences
+-          derivation w.r.t. lagr.-mult.
+-
+-   */
+-   void FDCheckWearDerivLm();
+-
+-   /*!
+-   \brief Check slip condition derivatives with finite differences
+-
+-   */
+-   virtual void FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal,
+-                                 LINALG::SparseMatrix& linslipDISglobal,
+-                                 LINALG::SparseMatrix& linslipWglobal);
+-
+-   /*!
+    \brief Assemble inactive rhs (incremental delta_w_)
+    */
+    virtual void AssembleInactiveWearRhs(Epetra_Vector& inactiverhs);
+diff --git src/drt_contact/contact_wear_lagrange_strategy.H src/drt_contact/contact_wear_lagrange_strategy.H
+index 44298d5..eb708c3 100644
+--- src/drt_contact/contact_wear_lagrange_strategy.H
++++ src/drt_contact/contact_wear_lagrange_strategy.H
+@@ -145,18 +145,6 @@ public:
+       bool forcedrestart = false) const;
+ 
+   /*!
 -  \brief Perform a write restart
- 
+-
 -  A write restart is initiated by the contact manager. However, the manager has no
 -  direct access to the nodal quantities. Hence, all the restart action has to be
 -  performed on the level of the contact algorithm, for short: here's the right place.
 -
 -  */
--  void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis);
+-  void DoReadRestart(IO::DiscretizationReader& reader,
+-      Teuchos::RCP<const Epetra_Vector> dis);
 -
 -
-   /*!
+-  /*!
    \brief Update active set and check for convergence
  
-Index: ccarat_strategies/src/drt_contact/contact_wear_lagrange_strategy.cpp
-===================================================================
---- ccarat_strategies/src/drt_contact/contact_wear_lagrange_strategy.cpp	(revision 21910)
-+++ ccarat_strategies/src/drt_contact/contact_wear_lagrange_strategy.cpp	(working copy)
-@@ -30,10 +30,9 @@
+   In this function we loop over all interfaces and then over all
+diff --git src/drt_contact/contact_wear_lagrange_strategy.cpp src/drt_contact/contact_wear_lagrange_strategy.cpp
+index 3215153..e6c1eb5 100644
+--- src/drt_contact/contact_wear_lagrange_strategy.cpp
++++ src/drt_contact/contact_wear_lagrange_strategy.cpp
+@@ -29,10 +29,9 @@
  #include "../drt_mortar/mortar_utils.H"
  #include "../drt_inpar/inpar_contact.H"
  #include "../drt_inpar/inpar_wear.H"
 -#include "../drt_io/io.H"
  
-+#include "../linalg/linalg_multiply.H"
  #include "../linalg/linalg_utils.H"
 -#include "../linalg/linalg_solver.H"
++#include "../linalg/linalg_multiply.H"
  #include <Epetra_FEVector.h>
  
  /*----------------------------------------------------------------------*
-@@ -2753,187 +2752,6 @@
+@@ -2746,186 +2745,6 @@ void WEAR::WearLagrangeStrategy::EvaluateFriction(Teuchos::RCP<LINALG::SparseOpe
    {
      PrepareSaddlePointSystem(kteff,feff);
    }
@@ -548,21 +956,22 @@ Index: ccarat_strategies/src/drt_contact/contact_wear_lagrange_strategy.cpp
 -    //ematrix_->UnComplete();
 -    std::cout << " -- CONTACTFDMORTART_MASTER -----------------------------------" << std::endl;
 -#endif // #ifdef CONTACTFDMORTARD
--
+ 
    return;
  }
- 
-@@ -3899,6 +3717,9 @@
+@@ -3892,6 +3711,11 @@ void WEAR::WearLagrangeStrategy::UpdateDisplacementsAndLMincrements(Teuchos::RCP
  *-----------------------------------------------------------------------*/
  void WEAR::WearLagrangeStrategy::OutputWear()
  {
-+#if 1
-+  dserror("Linear solvers not included in contact module. Please contact AdCo Engineering GW GmbH for more details");
++#define AdCo
++#ifdef AdCo
++  dserror("Linear solvers not included in contact module. "
++      "Please contact AdCo Engineering GW GmbH for more details");
 +#else
    //***********************************************
    //                 primvar wear
    //***********************************************
-@@ -4069,6 +3890,7 @@
+@@ -4062,6 +3886,7 @@ void WEAR::WearLagrangeStrategy::OutputWear()
        }
      }
    }
@@ -570,14 +979,15 @@ Index: ccarat_strategies/src/drt_contact/contact_wear_lagrange_strategy.cpp
    return;
  }
  
-@@ -4537,187 +4359,6 @@
+@@ -4538,188 +4363,6 @@ void WEAR::WearLagrangeStrategy::RedistributeContact(Teuchos::RCP<const Epetra_V
  }
  
  /*----------------------------------------------------------------------*
 - |  read restart information for contact                      popp 03/08|
 - *----------------------------------------------------------------------*/
--void WEAR::WearLagrangeStrategy::DoReadRestart(IO::DiscretizationReader& reader,
--                                                Teuchos::RCP<Epetra_Vector> dis)
+-void WEAR::WearLagrangeStrategy::DoReadRestart(
+-    IO::DiscretizationReader& reader,
+-    Teuchos::RCP<const Epetra_Vector> dis)
 -{
 -  // check whether this is a restart with contact of a previously
 -  // non-contact simulation run (if yes, we have to be careful not
@@ -587,8 +997,8 @@ Index: ccarat_strategies/src/drt_contact/contact_wear_lagrange_strategy.cpp
 -  bool restartwithcontact = DRT::INPUT::IntegralValue<int>(Params(),"RESTART_WITH_CONTACT");
 -
 -  // set restart displacement state
--  SetState("displacement", dis);
--  SetState("olddisplacement", dis);
+-  SetState(MORTAR::state_new_displacement, *dis);
+-  SetState(MORTAR::state_old_displacement, *dis);
 -
 -  // evaluate interface and restart mortar quantities
 -  // in the case of SELF CONTACT, also re-setup master/slave maps
@@ -758,13 +1168,13 @@ Index: ccarat_strategies/src/drt_contact/contact_wear_lagrange_strategy.cpp
   |  Update active set and check for convergence (public)     farah 02/16|
   *----------------------------------------------------------------------*/
  void WEAR::WearLagrangeStrategy::UpdateActiveSetSemiSmooth()
-Index: ccarat_strategies/src/drt_contact/meshtying_abstract_strategy.H
-===================================================================
---- ccarat_strategies/src/drt_contact/meshtying_abstract_strategy.H	(revision 21910)
-+++ ccarat_strategies/src/drt_contact/meshtying_abstract_strategy.H	(working copy)
-@@ -246,17 +246,6 @@
+diff --git src/drt_contact/meshtying_abstract_strategy.H src/drt_contact/meshtying_abstract_strategy.H
+index 003d9b7..8076d35 100644
+--- src/drt_contact/meshtying_abstract_strategy.H
++++ src/drt_contact/meshtying_abstract_strategy.H
+@@ -270,18 +270,6 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
      */
-     void Update(Teuchos::RCP<Epetra_Vector> dis);
+     void Update(Teuchos::RCP<const Epetra_Vector> dis);
  
 -    /*!
 -    \brief Perform a write restart
@@ -775,12 +1185,13 @@ Index: ccarat_strategies/src/drt_contact/meshtying_abstract_strategy.H
 -    for short: here's the right place.
 -
 -    */
--    void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis);
+-    void DoReadRestart(IO::DiscretizationReader& reader,
+-        Teuchos::RCP<const Epetra_Vector> dis);
 -
      //@}
  
      //! @name Debugging methods
-@@ -287,15 +276,6 @@
+@@ -312,15 +300,6 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
      */
      void PrintActiveSet();
  
@@ -795,11 +1206,11 @@ Index: ccarat_strategies/src/drt_contact/meshtying_abstract_strategy.H
 -
      //@}
  
-     //! @name Purely virtual functions
-Index: ccarat_strategies/src/drt_contact/meshtying_abstract_strategy.cpp
-===================================================================
---- ccarat_strategies/src/drt_contact/meshtying_abstract_strategy.cpp	(revision 21910)
-+++ ccarat_strategies/src/drt_contact/meshtying_abstract_strategy.cpp	(working copy)
+     //! @name Preconditioner methods
+diff --git src/drt_contact/meshtying_abstract_strategy.cpp src/drt_contact/meshtying_abstract_strategy.cpp
+index b0033a0..1a2928b 100644
+--- src/drt_contact/meshtying_abstract_strategy.cpp
++++ src/drt_contact/meshtying_abstract_strategy.cpp
 @@ -21,8 +21,6 @@
  #include "../drt_inpar/inpar_contact.H"
  #include "../drt_lib/drt_discret.H"
@@ -809,19 +1220,19 @@ Index: ccarat_strategies/src/drt_contact/meshtying_abstract_strategy.cpp
  #include "../linalg/linalg_utils.H"
  #include "../linalg/linalg_sparsematrix.H"
  
-@@ -790,36 +788,7 @@
-   return;
+@@ -804,37 +802,6 @@ void CONTACT::MtAbstractStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
  }
  
--/*----------------------------------------------------------------------*
+ /*----------------------------------------------------------------------*
 - |  read restart information for meshtying                    popp 03/08|
 - *----------------------------------------------------------------------*/
--void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader,
--                                                Teuchos::RCP<Epetra_Vector> dis)
+-void CONTACT::MtAbstractStrategy::DoReadRestart(
+-    IO::DiscretizationReader& reader,
+-    Teuchos::RCP<const Epetra_Vector> dis)
 -{
 -  // set displacement state
--  SetState("displacement",dis);
- 
+-  SetState(MORTAR::state_new_displacement,*dis);
+-
 -  // read restart information on Lagrange multipliers
 -  z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
 -  zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -843,10 +1254,11 @@ Index: ccarat_strategies/src/drt_contact/meshtying_abstract_strategy.cpp
 -  return;
 -}
 -
- /*----------------------------------------------------------------------*
+-/*----------------------------------------------------------------------*
   |  Compute interface forces (for debugging only)             popp 02/08|
   *----------------------------------------------------------------------*/
-@@ -1224,16 +1193,6 @@
+ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
+@@ -1238,16 +1205,6 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
  /*----------------------------------------------------------------------*
   | Visualization of meshtying segments with gmsh              popp 08/08|
   *----------------------------------------------------------------------*/
@@ -863,11 +1275,11 @@ Index: ccarat_strategies/src/drt_contact/meshtying_abstract_strategy.cpp
  void CONTACT::MtAbstractStrategy::AssembleCoords(const std::string& sidename, bool ref,
                                                   Teuchos::RCP<Epetra_Vector> vec)
  {
-Index: ccarat_strategies/src/drt_contact/meshtying_lagrange_strategy.cpp
-===================================================================
---- ccarat_strategies/src/drt_contact/meshtying_lagrange_strategy.cpp	(revision 21910)
-+++ ccarat_strategies/src/drt_contact/meshtying_lagrange_strategy.cpp	(working copy)
-@@ -20,9 +20,7 @@
+diff --git src/drt_contact/meshtying_lagrange_strategy.cpp src/drt_contact/meshtying_lagrange_strategy.cpp
+index 92a013a..0e12db9 100644
+--- src/drt_contact/meshtying_lagrange_strategy.cpp
++++ src/drt_contact/meshtying_lagrange_strategy.cpp
+@@ -20,9 +20,7 @@ Maintainer: Alexander Popp
  #include "../drt_mortar/mortar_utils.H"
  #include "../drt_inpar/inpar_mortar.H"
  #include "../drt_inpar/inpar_contact.H"
@@ -877,7 +1289,7 @@ Index: ccarat_strategies/src/drt_contact/meshtying_lagrange_strategy.cpp
  #include "../linalg/linalg_utils.H"
  /*----------------------------------------------------------------------*
   | ctor (public)                                              popp 05/09|
-@@ -285,8 +283,9 @@
+@@ -285,8 +283,9 @@ Teuchos::RCP<Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitialization()
      mmatrix_->Multiply(false,*xm,*rhs);
  
      // solve with default solver
@@ -889,7 +1301,7 @@ Index: ccarat_strategies/src/drt_contact/meshtying_lagrange_strategy.cpp
  #else
      // this is trivial for dual Lagrange multipliers
      mhatmatrix_->Multiply(false, *Xmaster, *Xslavemod);
-@@ -311,8 +310,10 @@
+@@ -311,8 +310,10 @@ Teuchos::RCP<Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitialization()
        mmatrix_->Multiply(false, *Xmaster, *rhs);
  
        // solve with default solver
@@ -902,10 +1314,10 @@ Index: ccarat_strategies/src/drt_contact/meshtying_lagrange_strategy.cpp
      }
    }
  
-Index: ccarat_strategies/src/drt_contact/meshtying_penalty_strategy.cpp
-===================================================================
---- ccarat_strategies/src/drt_contact/meshtying_penalty_strategy.cpp	(revision 21910)
-+++ ccarat_strategies/src/drt_contact/meshtying_penalty_strategy.cpp	(working copy)
+diff --git src/drt_contact/meshtying_penalty_strategy.cpp src/drt_contact/meshtying_penalty_strategy.cpp
+index 0844bf4..a5da0d0 100644
+--- src/drt_contact/meshtying_penalty_strategy.cpp
++++ src/drt_contact/meshtying_penalty_strategy.cpp
 @@ -19,7 +19,6 @@
  #include "../drt_mortar/mortar_utils.H"
  #include "../drt_inpar/inpar_contact.H"
@@ -914,7 +1326,7 @@ Index: ccarat_strategies/src/drt_contact/meshtying_penalty_strategy.cpp
  #include "../linalg/linalg_utils.H"
  
  
-@@ -141,8 +140,9 @@
+@@ -141,8 +140,9 @@ Teuchos::RCP<Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization()
    mmatrix_->Multiply(false,*Xmaster,*rhs);
  
    // solve with default solver
@@ -926,23 +1338,3 @@ Index: ccarat_strategies/src/drt_contact/meshtying_penalty_strategy.cpp
  
    //**********************************************************************
    // (3) perform mesh initialization node by node
-Index: ccarat_strategies/src/drt_mortar/mortar_strategy_base.H
-===================================================================
---- ccarat_strategies/src/drt_mortar/mortar_strategy_base.H	(revision 21910)
-+++ ccarat_strategies/src/drt_mortar/mortar_strategy_base.H	(working copy)
-@@ -162,7 +162,6 @@
-     virtual Teuchos::RCP<Epetra_Vector> ContactNorStress() = 0;
-     virtual Teuchos::RCP<Epetra_Vector> ContactTanStress() = 0;
-     virtual Teuchos::RCP<LINALG::SparseMatrix> DMatrix() = 0;
--    virtual void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<Epetra_Vector> dis) = 0;
-     virtual void DoWriteRestart(std::map<std::string,Teuchos::RCP<Epetra_Vector> >& restart_vectors, bool forcedrestart = false) = 0;
-     virtual void Evaluate(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
-     virtual void EvaluateMeshtying(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) = 0;
-@@ -212,7 +211,6 @@
-     virtual void UpdateActiveSetSemiSmooth() = 0;
-     virtual void UpdateUzawaAugmentedLagrange() = 0;
-     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
--    virtual void VisualizeGmsh(const int step, const int iter) = 0;
-     virtual bool WasInContact() = 0;
-     virtual bool WasInContactLastTimeStep() = 0;
- 
