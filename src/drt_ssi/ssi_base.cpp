@@ -3,12 +3,13 @@
 
  \brief base class for all scalar structure algorithms
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
- </pre>
+ \level 1
+
+ \maintainer Anh-Tu Vuong
+             vuong@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15264
+
  *------------------------------------------------------------------------------------------------*/
 
 #include "ssi_base.H"
@@ -53,8 +54,9 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
     structure_(Teuchos::null),
     scatra_(Teuchos::null),
     zeros_(Teuchos::null),
-    adaptermeshtying_(Teuchos::null),
-    extractor_(Teuchos::null),
+    adapter_meshtying_(Teuchos::null),
+    extractor_meshtying_(Teuchos::null),
+    volcoupl_structurescatra_(Teuchos::null),
     fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SSI::FieldCoupling>(DRT::Problem::Instance()->SSIControlParams(),"FIELDCOUPLING"))
 {
   DRT::Problem* problem = DRT::Problem::Instance();
@@ -96,6 +98,12 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(*scatratimeparams,scatraparams,problem->SolverParams(linsolvernumber),scatra_disname,isale));
   zeros_ = LINALG::CreateVector(*structure_->DofRowMap(), true);
 
+  //some safety checks
+  if (volcoupl_structurescatra_==Teuchos::null and fieldcoupling_==INPAR::SSI::coupling_volmortar )
+    dserror("Something went terrible wrong. Sorry about this!");
+
+  if (adapter_meshtying_==Teuchos::null and fieldcoupling_==INPAR::SSI::coupling_meshtying )
+    dserror("Something went terrible wrong. Sorry about this!");
 }
 
 
@@ -246,9 +254,11 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm, const std::str
         element->SetImplType(DRT::INPUT::IntegralValue<INPAR::SCATRA::ImplType>(problem->SSIControlParams(),"SCATRATYPE"));
     }
   }
-
   else
   {
+    if (fieldcoupling_==INPAR::SSI::coupling_match)
+      dserror("If you have different structure and scatra meshes use volmortar! If you have matching grids clone your structure mesh!");
+
     std::map<std::string,std::string> conditions_to_copy;
     SCATRA::ScatraFluidCloneStrategy clonestrategy;
     conditions_to_copy = clonestrategy.ConditionsToCopy();
@@ -331,89 +341,33 @@ void SSI::SSI_Base::SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
                                        Teuchos::RCP<const Epetra_Vector> vel )
 {
   SetMeshDisp(disp);
-  SetVelocityFields(vel);
+  SetVelocityField(vel);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Base::SetScatraSolution( Teuchos::RCP<const Epetra_Vector> phi )
 {
-  switch(fieldcoupling_)
-  {
-  case INPAR::SSI::coupling_match:
-    structure_->Discretization()->SetState(1,"temperature",phi);
-    break;
-  case INPAR::SSI::coupling_volmortar:
-    structure_->Discretization()->SetState(1,"temperature",volcoupl_structurescatra_->ApplyVectorMapping12(phi));
-    break;
-  case INPAR::SSI::coupling_meshtying:
-    dserror("transfering scalar state to structure discretization not implemented for "
-        "transport on structural boundary. Only SolidToScatra coupling available.");
-    break;
-  default:
-    dserror("unknown field coupling type in SetScatraSolution()");
-    break;
-  }
+  structure_->Discretization()->SetState(1,"temperature",ScatraToStructure(phi));
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSI_Base::SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel)
+void SSI::SSI_Base::SetVelocityField( Teuchos::RCP<const Epetra_Vector> vel)
 {
-  switch(fieldcoupling_)
-  {
-  case INPAR::SSI::coupling_match:
-      scatra_->ScaTraField()->SetVelocityField(
-          zeros_, //convective vel.
-          Teuchos::null, //acceleration
-          vel, //velocity
-          Teuchos::null, //fsvel
-          1);
-      break;
-  case INPAR::SSI::coupling_volmortar:
-      scatra_->ScaTraField()->SetVelocityField(
-          volcoupl_structurescatra_->ApplyVectorMapping21(zeros_), //convective vel.
-          Teuchos::null, //acceleration
-          volcoupl_structurescatra_->ApplyVectorMapping21(vel), //velocity
-          Teuchos::null, //fsvel
-          1);
-      break;
-  case INPAR::SSI::coupling_meshtying:
-    scatra_->ScaTraField()->SetVelocityField(
-        adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(zeros_)), //convective vel.
-        Teuchos::null, //acceleration
-        adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(vel)), //velocity
-        Teuchos::null, //fsvel
-        1);
-    break;
-  default:
-    dserror("unknown field coupling type in SetVelocityFields()");
-    break;
-  }
+  scatra_->ScaTraField()->SetVelocityField(
+      StructureToScatra(zeros_), //convective vel.
+      Teuchos::null, //acceleration
+      StructureToScatra(vel), //velocity
+      Teuchos::null, //fsvel
+      1);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSI_Base::SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp )
 {
-  switch(fieldcoupling_)
-  {
-  case INPAR::SSI::coupling_match:
-      scatra_->ScaTraField()->ApplyMeshMovement(
-          disp,
-          1);
-      break;
-  case INPAR::SSI::coupling_volmortar:
-      scatra_->ScaTraField()->ApplyMeshMovement(
-          volcoupl_structurescatra_->ApplyVectorMapping21(disp),
-          1);
-      break;
-  case INPAR::SSI::coupling_meshtying:
-    scatra_->ScaTraField()->ApplyMeshMovement(
-        adaptermeshtying_->MasterToSlave(extractor_->ExtractCondVector(disp)),
-        1);
-    break;
-  }
+  scatra_->ScaTraField()->ApplyMeshMovement(StructureToScatra(disp),1);
 }
 
 /*----------------------------------------------------------------------*/
@@ -448,11 +402,11 @@ void SSI::SSI_Base::SetupFieldCoupling(const std::string struct_disname, const s
 
   if(fieldcoupling_==INPAR::SSI::coupling_meshtying)
   {
-    adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
+    adapter_meshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
     std::vector<int> coupleddof(problem->NDim(), 1);
     // Setup of meshtying adapter
-    adaptermeshtying_->Setup(structdis,
+    adapter_meshtying_->Setup(structdis,
                             scatradis,
                             Teuchos::null,
                             coupleddof,
@@ -464,7 +418,7 @@ void SSI::SSI_Base::SetupFieldCoupling(const std::string struct_disname, const s
                             1
                             );
 
-    extractor_= Teuchos::rcp(new LINALG::MapExtractor(*structdis->DofRowMap(0),adaptermeshtying_->MasterDofMap(),true));
+    extractor_meshtying_= Teuchos::rcp(new LINALG::MapExtractor(*structdis->DofRowMap(0),adapter_meshtying_->MasterDofMap(),true));
   }
   else if(fieldcoupling_==INPAR::SSI::coupling_volmortar)
   {
@@ -474,5 +428,65 @@ void SSI::SSI_Base::SetupFieldCoupling(const std::string struct_disname, const s
     //setup projection matrices (use default material strategy)
     volcoupl_structurescatra_->Setup( structdis,
                                       scatradis);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> SSI::SSI_Base::StructureToScatra(const Teuchos::RCP<const Epetra_Vector> structurevector) const
+{
+  switch(fieldcoupling_)
+  {
+  case INPAR::SSI::coupling_match:
+  {
+    return structurevector;
+    break;
+  }
+  case INPAR::SSI::coupling_volmortar:
+  {
+    return volcoupl_structurescatra_->ApplyVectorMapping21(structurevector);
+    break;
+  }
+  case INPAR::SSI::coupling_meshtying:
+  {
+    return adapter_meshtying_->MasterToSlave(extractor_meshtying_->ExtractCondVector(structurevector));
+    break;
+  }
+  default:
+  {
+    dserror("unknown field coupling type");
+    return Teuchos::null;
+    break;
+  }
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> SSI::SSI_Base::ScatraToStructure(const Teuchos::RCP<const Epetra_Vector> scatravector) const
+{
+  switch(fieldcoupling_)
+  {
+  case INPAR::SSI::coupling_match:
+  {
+    return scatravector;
+    break;
+  }
+  case INPAR::SSI::coupling_volmortar:
+  {
+    return volcoupl_structurescatra_->ApplyVectorMapping12(scatravector);
+    break;
+  }
+  case INPAR::SSI::coupling_meshtying:
+  {
+    return adapter_meshtying_->SlaveToMaster(extractor_meshtying_->ExtractCondVector(scatravector));
+    break;
+  }
+  default:
+  {
+    dserror("unknown field coupling type");
+    return Teuchos::null;
+    break;
+  }
   }
 }

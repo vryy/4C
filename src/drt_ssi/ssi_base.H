@@ -3,12 +3,13 @@
 
  \brief base class for all scalar structure algorithms
 
- <pre>
-   Maintainer: Anh-Tu Vuong
-               vuong@lnm.mw.tum.de
-               http://www.lnm.mw.tum.de
-               089 - 289-15264
- </pre>
+ \level 1
+
+ \maintainer Anh-Tu Vuong
+             vuong@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15264
+
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SSI_BASE_H_
@@ -70,7 +71,10 @@ namespace SSI
     void ReadRestartfromTime( double restarttime );
 
     //! access to structural field
-    const Teuchos::RCP<ADAPTER::Structure>& StructureField(){return structure_;}
+    const Teuchos::RCP<ADAPTER::Structure>& StructureField() const {return structure_;};
+
+    //! access to scatra field
+    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>&  ScaTraField() const {return scatra_;};
 
     //! access to scatra field
     //const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>&  ScaTraField(){return scatra_;}
@@ -82,6 +86,12 @@ namespace SSI
     /// set scatra solution on structure field
     void SetScatraSolution( Teuchos::RCP<const Epetra_Vector> phi ) ;
 
+    /// interpolate structure quantity to a scatra one (e.g. via volmortar or meshtying)
+    const Teuchos::RCP<const Epetra_Vector> StructureToScatra(const Teuchos::RCP<const Epetra_Vector> structurevector) const;
+
+    /// interpolate scatra quantity to a structure one (e.g. via volmortar or meshtying)
+    const Teuchos::RCP<const Epetra_Vector> ScatraToStructure(const Teuchos::RCP<const Epetra_Vector> scatravector) const;
+
   protected:
 
     /// underlying structure of the SSI problem
@@ -90,13 +100,24 @@ namespace SSI
     /// underlying scatra problem of the SSI problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
 
+  private:
+
+    /// setup adapters for transport on boundary if necessary
+    void SetupFieldCoupling(const std::string struct_disname, const std::string scatra_disname);
+
+    /// setup discretizations and dofsets
+    void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname);
+
+    ///Set material pointers for matching structure and scatra grids
+    void SetMaterialPointersMatchingGrid( Teuchos::RCP<const DRT::Discretization> sourcedis, Teuchos::RCP<const DRT::Discretization> targetdis);
+
     /// a zero vector of full length
     Teuchos::RCP<Epetra_Vector> zeros_;
 
     //! adapter to mortar framework
-    Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;
+    Teuchos::RCP<ADAPTER::CouplingMortar> adapter_meshtying_;
 
-    Teuchos::RCP<LINALG::MapExtractor> extractor_;
+    Teuchos::RCP<LINALG::MapExtractor> extractor_meshtying_;
 
     //! volume coupling (using mortar) adapter
     Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
@@ -104,22 +125,12 @@ namespace SSI
     //! Type of coupling strategy between the two fields of the SSI problems
     const INPAR::SSI::FieldCoupling fieldcoupling_;
 
-    /// setup adapters for transport on boundary if necessary
-    void SetupFieldCoupling(const std::string struct_disname, const std::string scatra_disname);
-
-    /// setup discretizations and dofsets
-    virtual void SetupDiscretizations(const Epetra_Comm& comm, const std::string struct_disname, const std::string scatra_disname);
-
-    ///Set material pointers for matching structure and scatra grids
-    void SetMaterialPointersMatchingGrid( Teuchos::RCP<const DRT::Discretization> sourcedis, Teuchos::RCP<const DRT::Discretization> targetdis);
-
-  private:
 
     /// set structure mesh displacement on scatra field
     void SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp ) ;
 
     /// set structure velocity fields on scatra field
-    void SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel ) ;
+    void SetVelocityField( Teuchos::RCP<const Epetra_Vector> vel ) ;
 
     /// Function for checking that the different time steps are a
     /// multiplicative of each other

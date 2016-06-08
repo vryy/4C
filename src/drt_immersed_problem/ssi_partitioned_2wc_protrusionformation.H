@@ -3,12 +3,13 @@
 
 \brief specialization of ssi2wc, which includes "structale"-surface growth
 
-<pre>
+\level 3
+
 \maintainer Andreas Rauch
             rauch@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 -15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #ifndef SSI_PARTITIONED2_WC_PROTRUSIONFORMATION_H_
 #define SSI_PARTITIONED2_WC_PROTRUSIONFORMATION_H_
@@ -49,9 +50,6 @@ namespace SSI
 
     //! access to ale field
     const Teuchos::RCP<ADAPTER::AleFluidWrapper> AleField(){return ale_;};
-
-    //! access to scatra field
-    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>&  ScaTraField(){return scatra_;};
 
   protected:
 
