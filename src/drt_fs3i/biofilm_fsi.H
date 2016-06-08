@@ -1,12 +1,20 @@
 /*!----------------------------------------------------------------------
 \file biofilm_fsi.H
 
-<pre>
-Maintainer: Mirella Coroneo
-            coroneo@lnm.mw.tum.de
+\brief Algorithm for the calculation of biofilm growth.
+       It consists of:
+       - an inner timeloop (resolving fsi and scatra (in both fluid and structure)
+       at fluid-dynamic time-scale
+       - an outer timeloop (resolving only the biofilm growth)
+       at biological time-scale
+
+\level 3
+
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15236
-</pre>
+            089 - 289 -15249
+
 *----------------------------------------------------------------------*/
 
 #ifndef FSI_BIOFILM_GROWTH_H

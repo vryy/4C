@@ -1,19 +1,20 @@
 /*!----------------------------------------------------------------------
 \file biofilm_fsi.cpp
+
 \brief Algorithm for the calculation of biofilm growth.
        It consists of:
        - an inner timeloop (resolving fsi and scatra (in both fluid and structure)
        at fluid-dynamic time-scale
        - an outer timeloop (resolving only the biofilm growth)
        at biological time-scale
-<pre>
 
-Maintainer: Christoph Ager
-ager@lnm.mw.tum.de
-http://www.lnm.mw.tum.de
-089 - 289 -15249
+\level 3
 
-</pre>
+\maintainer Christoph Ager
+            ager@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 -15249
+
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*

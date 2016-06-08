@@ -4,11 +4,13 @@
        fluid-structure-scalar-scalar interaction (FS3I) specifically
        related to one-way-coupled problem configurations
 
-<pre>
-Maintainers: Lena Yoshihara & Volker Gravemeier
-             {yoshihara,vgravem}@lnm.mw.tum.de
-             089/289-15303,-15245
-</pre>
+\level 2
+
+\maintainer Moritz Thon
+            thon@mhpc.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-10364
+
 
 *----------------------------------------------------------------------*/
 

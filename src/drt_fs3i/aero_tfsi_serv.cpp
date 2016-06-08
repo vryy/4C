@@ -4,7 +4,7 @@
 
 \brief Helper class for coupled simulations (INCA - BACI)
 
-\level 2
+\level 3
 
 \maintainer Georg Hammerl
 */

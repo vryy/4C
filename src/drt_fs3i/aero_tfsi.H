@@ -10,12 +10,10 @@
        TSI system is solved. The time step is concluded by sending the resulting
        interface displacements and temperatures to INCA.
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\level 3
+
+\maintainer Georg Hammerl
+
 */
 
 

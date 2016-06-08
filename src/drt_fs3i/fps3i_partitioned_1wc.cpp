@@ -5,12 +5,12 @@
        (FPS3I) specifically related to one-way-coupled problem
        configurations
 
- <pre>
-   Maintainer: Moritz Thon & Andre Hemmler
-               thon@mhpc.mw.tum.de
-               http://www.mhpc.mw.tum.de
-               089 - 289-10364
- </pre>
+\level 3
+
+\maintainer Moritz Thon
+            thon@mhpc.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-10364
 
 *----------------------------------------------------------------------*/
 #include <Teuchos_TimeMonitor.hpp>

@@ -6,9 +6,13 @@
        solution approaches to one -or two-way-coupled problem
        configurations, respectively
 
-\maintainer Lena Yoshihara & Volker Gravemeier
-             {yoshihara,vgravem}@lnm.mw.tum.de
-             089/289-15303,-15245
+\level 2
+
+\maintainer Moritz Thon
+            thon@mhpc.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-10364
+
 
 *----------------------------------------------------------------------*/
 
@@ -228,10 +232,6 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   // add proxy of structure degrees of freedom to scatra discretization
   if(scatravec_[1]->ScaTraField()->Discretization()->AddDofSet(fsi_->StructureField()->Discretization()->GetDofSetProxy()) != 1)
     dserror("Structure scatra discretization has illegal number of dofsets!");
-
-  // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<DRT::DofSet> scatradofset
-    = scatravec_[1]->ScaTraField()->Discretization()->GetDofSetProxy();
 
   //Note: in the scatra fields we have now the following dof-sets:
   // fluidscatra dofset 0: fluidscatra dofset

@@ -5,11 +5,13 @@
        interaction (FS3I) and fluid-porous-structure-scalar-scalar
        interaction (FPS3I).
 
-<pre>
-Maintainers: Lena Yoshihara & Volker Gravemeier
-             {yoshihara,vgravem}@lnm.mw.tum.de
-             089/289-15303,-15245
-</pre>
+\level 2
+
+\maintainer Moritz Thon
+            thon@mhpc.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-10364
+
 
 *----------------------------------------------------------------------*/
 

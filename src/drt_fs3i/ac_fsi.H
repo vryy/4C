@@ -5,13 +5,13 @@
        solution approaches to fluid-structure-scalar-scalar interaction
        (FS3I). Specifically related version for multiscale approches
 
-\date 2015-07-29
+\level 3
 
 \maintainer Moritz Thon
             thon@mhpc.mw.tum.de
-            089/289-10364
+            http://www.mhpc.mw.tum.de
+            089 - 289-10364
 
-\level 3
 ----------------------------------------------------------------------*/
 
 

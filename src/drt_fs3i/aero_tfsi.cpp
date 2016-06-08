@@ -5,12 +5,10 @@
 \brief The aero code INCA is coupled with the monolithic TSI system
        based on communication with MPI
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\level 3
+
+\maintainer Georg Hammerl
+
 */
 
 

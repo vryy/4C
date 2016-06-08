@@ -3,11 +3,12 @@
 \brief H-file associated with main control routine for
        fluid-structure-scalar-scalar interaction (FS3I)
 
-<pre>
-Maintainers: Lena Yoshihara & Volker Gravemeier
-             {yoshihara,vgravem}@lnm.mw.tum.de
-             089/289-15303,-15245
-</pre>
+\level 1
+
+\maintainer Moritz Thon
+            thon@mhpc.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-10364
 
 *----------------------------------------------------------------------*/
 

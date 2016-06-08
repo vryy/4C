@@ -6,13 +6,13 @@
        (FS3I). Specifically related version for multiscale approches. This file thereby holds
        all functions related with the small time scales simulation and all the basic control structures.
 
-\date 2015-07-29
+\level 3
 
 \maintainer Moritz Thon
             thon@mhpc.mw.tum.de
-            089/289-10364
+            http://www.mhpc.mw.tum.de
+            089 - 289-10364
 
-\level 3
 *----------------------------------------------------------------------*/
 
 
