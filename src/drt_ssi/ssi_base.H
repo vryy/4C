@@ -86,13 +86,13 @@ namespace SSI
     /// set scatra solution on structure field
     void SetScatraSolution( Teuchos::RCP<const Epetra_Vector> phi ) ;
 
+  protected:
+
     /// interpolate structure quantity to a scatra one (e.g. via volmortar or meshtying)
     const Teuchos::RCP<const Epetra_Vector> StructureToScatra(const Teuchos::RCP<const Epetra_Vector> structurevector) const;
 
     /// interpolate scatra quantity to a structure one (e.g. via volmortar or meshtying)
     const Teuchos::RCP<const Epetra_Vector> ScatraToStructure(const Teuchos::RCP<const Epetra_Vector> scatravector) const;
-
-  protected:
 
     /// underlying structure of the SSI problem
     Teuchos::RCP< ::ADAPTER::Structure>    structure_;
