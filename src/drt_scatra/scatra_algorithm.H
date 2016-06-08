@@ -4,11 +4,13 @@
 
 \brief Transport of passive scalars in Navier-Stokes velocity field
 
+\level 1
+
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -35,7 +37,7 @@ namespace SCATRA{
         const Epetra_Comm& comm,                     ///< communicator
         const Teuchos::ParameterList& scatradyn,     ///< scatra parameter list
         const Teuchos::ParameterList& fdyn,          ///< fluid parameter list
-        const std::string disname,                   ///< scatra discretization name
+        const std::string scatra_disname,                   ///< scatra discretization name
         const Teuchos::ParameterList& solverparams   ///< solver parameter list
         );
 
@@ -76,6 +78,9 @@ namespace SCATRA{
 
     /// solve transport (convection-diffusion) equations for current time step
     void DoTransportStep();
+
+    /// set fluid velocites in scatra field
+    void SetVelocityField();
 
     /// Outer iteration loop for natural convection
     void OuterIterationConvection();

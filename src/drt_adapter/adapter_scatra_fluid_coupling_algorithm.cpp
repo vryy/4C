@@ -5,8 +5,10 @@
 \brief Basis of all algorithms that perform a coupling between Navier-Stokes
        and (active or passive) scalar transport equations
 
+\level 1
+
 <pre>
-Maintainer: Andreas Ehrl
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -16,6 +18,8 @@ Maintainer: Andreas Ehrl
 
 
 #include "adapter_scatra_fluid_coupling_algorithm.H"
+#include "adapter_coupling_volmortar.H"
+
 #include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -33,12 +37,14 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     const Epetra_Comm& comm,
     const Teuchos::ParameterList& prbdyn,
     bool isale,
-    const std::string disname,
+    const std::string scatra_disname,
     const Teuchos::ParameterList& solverparams
     )
 :  AlgorithmBase(comm,prbdyn),
    FluidBaseAlgorithm(prbdyn,DRT::Problem::Instance()->FluidDynamicParams(),"fluid",isale,false), // false -> no immediate initialization of fluid time integration
-   ScaTraBaseAlgorithm(prbdyn,DRT::Problem::Instance()->ScalarTransportDynamicParams(),solverparams,disname,isale), // false -> no ALE in scatra algorithm
+   ScaTraBaseAlgorithm(prbdyn,DRT::Problem::Instance()->ScalarTransportDynamicParams(),solverparams,scatra_disname,isale), // false -> no ALE in scatra algorithm
+   fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FieldCoupling>(DRT::Problem::Instance()->ScalarTransportDynamicParams(),"FIELDCOUPLING")),
+   volcoupl_fluidscatra_(Teuchos::null),
    params_(prbdyn)
 {
   // check whether fluid and scatra discret still have the same maps
@@ -68,8 +74,11 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     }
   }
 
+  // do potential volmortar business
+  SetupFieldCoupling("fluid", scatra_disname);
+
   // initialize fluid time integration scheme
-   FluidField()->Init();
+  FluidField()->Init();
 
   // set also initial field
   if (DRT::Problem::Instance()->ProblemType() != prb_combust)
@@ -145,10 +154,69 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   if (FluidField()->Vreman() != Teuchos::null)
     ScaTraField()->AccessVreman(FluidField()->Vreman());
 
+  //safety check:
+  if (volcoupl_fluidscatra_==Teuchos::null and fieldcoupling_==INPAR::SCATRA::coupling_volmortar )
+    dserror("Something went terrible wrong. Sorry about this!");
+
   return;
 
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::ScaTraFluidCouplingAlgorithm::SetupFieldCoupling(const std::string fluid_disname, const std::string scatra_disname)
+{
+  DRT::Problem* problem = DRT::Problem::Instance();
+  Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis(fluid_disname);
+  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
+
+  if(fieldcoupling_==INPAR::SCATRA::coupling_volmortar)
+  {
+    // Scheme: non matching meshes --> volumetric mortar coupling...
+    volcoupl_fluidscatra_=Teuchos::rcp(new ADAPTER::MortarVolCoupl() );
+
+    //setup projection matrices (use default material strategy)
+    volcoupl_fluidscatra_->Setup( fluiddis, scatradis, NULL, NULL, NULL, NULL, Teuchos::null, false, true);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> ADAPTER::ScaTraFluidCouplingAlgorithm::FluidToScatra(const Teuchos::RCP<const Epetra_Vector> fluidvector) const
+{
+  switch(fieldcoupling_)
+  {
+  case INPAR::SCATRA::coupling_match:
+    return fluidvector;
+    break;
+  case INPAR::SCATRA::coupling_volmortar:
+    return volcoupl_fluidscatra_->ApplyVectorMapping21(fluidvector);
+    break;
+  default:
+    dserror("unknown field coupling type");
+    return Teuchos::null;
+    break;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const Teuchos::RCP<const Epetra_Vector> ADAPTER::ScaTraFluidCouplingAlgorithm::ScatraToFluid(const Teuchos::RCP<const Epetra_Vector> scatravector) const
+{
+  switch(fieldcoupling_)
+  {
+  case INPAR::SCATRA::coupling_match:
+    return scatravector;
+    break;
+  case INPAR::SCATRA::coupling_volmortar:
+    return volcoupl_fluidscatra_->ApplyVectorMapping12(scatravector);
+    break;
+  default:
+    dserror("unknown field coupling type");
+    return Teuchos::null;
+    break;
+  }
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

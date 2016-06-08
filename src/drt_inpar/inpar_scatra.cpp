@@ -242,6 +242,20 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
                                         INPAR::FLUID::condensed_bmat_merged),   //use the condensed_bmat_merged strategy
                                     &scatradyn);
 
+  // Type of coupling strategy between the two fields
+  setStringToIntegralParameter<int>(
+                              "FIELDCOUPLING","matching",
+                              "Type of coupling strategy between fields",
+                              tuple<std::string>(
+                                "matching",
+                                "volmortar"
+                                ),
+                              tuple<int>(
+                                  coupling_match,
+                                  coupling_volmortar
+                                ),
+                              &scatradyn);
+
   // linear solver id used for scalar transport/elch problems
   IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for scalar transport/elch...",&scatradyn);
   //IntParameter("SIMPLER_SOLVER",-1,"number of linear solver used for ELCH (solved with SIMPLER)...",&scatradyn);

@@ -4,6 +4,8 @@
 
 \brief Transport of passive scalars in Navier-Stokes velocity field
 
+\level 1
+
 <pre>
 \maintainer Anh-Tu Vuong
             vuong@lnm.mw.tum.de
@@ -16,6 +18,7 @@
 #include "../drt_fluid_turbulence/turbulence_statistic_manager.H"
 #include "scatra_timint_implicit.H"
 #include "scatra_algorithm.H"
+#include "../drt_adapter/adapter_coupling_volmortar.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -23,10 +26,10 @@ SCATRA::ScaTraAlgorithm::ScaTraAlgorithm(
   const Epetra_Comm& comm,                     ///< communicator
   const Teuchos::ParameterList& scatradyn,     ///< scatra parameter list
   const Teuchos::ParameterList& fdyn,          ///< fluid parameter list
-  const std::string disname,                   ///< scatra discretization name
+  const std::string scatra_disname,                   ///< scatra discretization name
   const Teuchos::ParameterList& solverparams   ///< solver parameter list
 )
-  :  ScaTraFluidCouplingAlgorithm(comm,scatradyn,false,disname,solverparams),
+  :  ScaTraFluidCouplingAlgorithm(comm,scatradyn,false,scatra_disname,solverparams),
      natconv_(DRT::INPUT::IntegralValue<int>(scatradyn,"NATURAL_CONVECTION")),
      natconvitmax_(scatradyn.get<int>("NATCONVITEMAX")),
      natconvittol_(scatradyn.get<double>("NATCONVCONVTOL")),
@@ -70,6 +73,11 @@ void SCATRA::ScaTraAlgorithm::TimeLoop()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraAlgorithm::TimeLoopOneWay()
 {
+  // write velocities since they may be needed in PrepareFirstTimeStep() of the scatra field
+  SetVelocityField();
+  // write output to screen and files
+  // Output();
+
   // time loop (no-subcycling at the moment)
   while(NotFinished())
   {
@@ -267,20 +275,41 @@ void SCATRA::ScaTraAlgorithm::DoTransportStep()
   PrintScaTraSolver();
 
   // transfer velocities to scalar transport field solver
+  SetVelocityField();
+
+  // solve the transport equation(s)
+  ScaTraField()->Solve();
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SCATRA::ScaTraAlgorithm::SetVelocityField()
+{
+  // transfer velocities to scalar transport field solver
   // NOTE: so far, the convective velocity is chosen to equal the fluid velocity
   //       since it is not yet clear how the grid velocity should be interpolated
   //       properly -> hence, ScaTraAlgorithm does not support moving
   //       meshes yet
+
+  //this is ugly, but FsVel() may give a Null pointer which we canNOT give to the volmortart framework
+  //TODO (thon): make this somehow prettier..
+  Teuchos::RCP<const Epetra_Vector> fsvel = FluidField()->FsVel();
+  if (fsvel!=Teuchos::null)
+    fsvel=FluidToScatra(fsvel);
+
   switch(FluidField()->TimIntScheme())
   {
   case INPAR::FLUID::timeint_npgenalpha:
   case INPAR::FLUID::timeint_afgenalpha:
   {
     ScaTraField()->SetVelocityField(
-        FluidField()->Velaf(),
-        FluidField()->Accam(),
-        FluidField()->Velaf(),
-        FluidField()->FsVel(),
+        FluidToScatra( FluidField()->Velaf() ),
+        FluidToScatra( FluidField()->Accam() ),
+        FluidToScatra( FluidField()->Velaf() ),
+        fsvel,
         1);
     break;
   }
@@ -289,10 +318,10 @@ void SCATRA::ScaTraAlgorithm::DoTransportStep()
   case INPAR::FLUID::timeint_stationary:
   {
     ScaTraField()->SetVelocityField(
-        FluidField()->Velnp(),
-        FluidField()->Hist(),
-        FluidField()->Velnp(),
-        FluidField()->FsVel(),
+        FluidToScatra( FluidField()->Velnp() ),
+        FluidToScatra( FluidField()->Hist() ),
+        FluidToScatra( FluidField()->Velnp() ),
+        fsvel,
         1);
     break;
   }
@@ -302,11 +331,6 @@ void SCATRA::ScaTraAlgorithm::DoTransportStep()
     break;
   }
   }
-
-  // solve the transport equation(s)
-  ScaTraField()->Solve();
-
-  return;
 }
 
 

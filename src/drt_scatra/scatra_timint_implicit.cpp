@@ -332,19 +332,20 @@ void SCATRA::ScaTraTimIntImpl::Init()
     zeros_->PutScalar(0.0); // just in case of change
   }
 
+  //TODO (thon): do we really need these warnings??
   // -------------------------------------------------------------------
   // ensure that the Transport std::string was removed from conditions
   // -------------------------------------------------------------------
   {
     DRT::Condition* cond = discret_->GetCondition("TransportDirichlet");
-    if (cond) dserror("Found a Transport Dirichlet condition. Remove Transport std::string!");
+    if (cond and myrank_) std::cout<<"Found a TRANSPORT DIRICHLET condition. Remove the TRANSPORT or it may be neglected!"<<std::endl;
 
     cond = discret_->GetCondition("TransportPointNeumann");
-    if (cond) dserror("Found a Transport Point Neumann condition. Remove Transport std::string!");
+    if (cond and myrank_) std::cout<<"Found a TRANSPORT POINT NEUMANN condition. Remove the TRANSPORT or it may be neglected!"<<std::endl;
     cond = discret_->GetCondition("TransportLineNeumann");
-    if (cond) dserror("Found a Transport Line Neumann condition. Remove Transport std::string!");
+    if (cond and myrank_) std::cout<<"Found a TRANSPORT LINE NEUMANN condition. Remove the TRANSPORT or it may be neglected!"<<std::endl;
     cond = discret_->GetCondition("TransportSurfaceNeumann");
-    if (cond) dserror("Found a Transport Surface Neumann condition. Remove Transport std::string!");
+    if (cond and myrank_) std::cout<<"Found a TRANSPORT SURF NEUMANN condition. Remove the TRANSPORT or it may be neglected!"<<std::endl;
   }
 
   // -------------------------------------------------------------------

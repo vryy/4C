@@ -1,10 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file scatra_dyn.cpp
+
 \brief entry point for scalar transport problems
 
+\level 1
 <pre>
-Maintainer: Volker Gravemeier
+\maintainer Volker Gravemeier
             vgravem@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15245
@@ -15,6 +17,8 @@ Maintainer: Volker Gravemeier
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
+
+#include "../drt_particle/binning_strategy.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 
@@ -118,9 +122,17 @@ void scatra_dyn(int restart)
       // we use the fluid discretization as layout for the scalar transport discretization
       if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
 
+      const INPAR::SCATRA::FieldCoupling fieldcoupling = DRT::INPUT::IntegralValue<INPAR::SCATRA::FieldCoupling>(DRT::Problem::Instance()->ScalarTransportDynamicParams(),"FIELDCOUPLING");
+
       // create scatra elements if the scatra discretization is empty
       if (scatradis->NumGlobalNodes()==0)
       {
+        if (fieldcoupling != INPAR::SCATRA::coupling_match)
+          dserror("If you want matching fluid and scatra meshes, do clone you fluid mesh and use FIELDCOUPLING match!");
+
+        fluiddis->FillComplete();
+        scatradis->FillComplete();
+
         // fill scatra discretization by cloning fluid discretization
         DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(fluiddis,scatradis);
 
@@ -133,14 +145,73 @@ void scatra_dyn(int restart)
           else
             element->SetImplType(INPAR::SCATRA::impltype_std);
         }
+
+        // add proxy of fluid transport degrees of freedom to scatra discretization
+        if(scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
+          dserror("Scatra discretization has illegal number of dofsets!");
+      }
+      else
+      {
+        if (fieldcoupling != INPAR::SCATRA::coupling_volmortar)
+          dserror("If you want non-matching fluid and scatra meshes, you need to use FIELDCOUPLING volmortar!");
+
+        // allow TRANSPORT conditions, too
+        std::map<std::string,std::string> conditions_to_copy;
+        SCATRA::ScatraFluidCloneStrategy clonestrategy;
+        conditions_to_copy = clonestrategy.ConditionsToCopy();
+        DRT::UTILS::DiscretizationCreatorBase creator;
+        creator.CopyConditions(scatradis,scatradis,conditions_to_copy);
+
+        //first call FillComplete for single discretizations.
+        //This way the physical dofs are numbered successively
+        fluiddis->FillComplete();
+        scatradis->FillComplete();
+
+        //build auxiliary dofsets, i.e. pseudo dofs on each discretization
+        const int ndofpernode_scatra = scatradis->NumDof(0,scatradis->lRowNode(0));
+        const int ndofperelement_scatra  = 0;
+        const int ndofpernode_fluid = fluiddis->NumDof(0,fluiddis->lRowNode(0));
+        const int ndofperelement_fluid = 0;
+        if (fluiddis->BuildDofSetAuxProxy(ndofpernode_scatra, ndofperelement_scatra, 0, true ) != 1)
+          dserror("unexpected dof sets in fluid field");
+        if (scatradis->BuildDofSetAuxProxy(ndofpernode_fluid, ndofperelement_fluid, 0, true) != 1)
+          dserror("unexpected dof sets in scatra field");
+
+        //call AssignDegreesOfFreedom also for auxiliary dofsets
+        //note: the order of FillComplete() calls determines the gid numbering!
+        // 1. fluid dofs
+        // 2. scatra dofs
+        // 3. fluid auxiliary dofs
+        // 4. scatra auxiliary dofs
+        fluiddis->FillComplete(true, false,false);
+        scatradis->FillComplete(true, false,false);
       }
 
-      else
-        dserror("Fluid AND ScaTra discretization present. This is not supported.");
 
-      // add proxy of fluid transport degrees of freedom to scatra discretization
-      if(scatradis->AddDofSet(fluiddis->GetDofSetProxy()) != 1)
-        dserror("Scatra discretization has illegal number of dofsets!");
+      //NOTE: we have do use the binningstrategy here since we build our fluid and scatra problems by inheritance,
+      //i.e. by calling the constructor of the corresponding class. But since we have to use the binning-strategy before
+      //creating the single field we have to do it here :-( We would prefer to to it like the SSI since than we could
+      //extended ghosting
+      //TODO (thon): make this if-case obsolete and allow for redistribution within volmortar->Setup() by removing inheitance-building of fields
+      {
+        // redistribute discr. with help of binning strategy
+        if(fluiddis->Comm().NumProc()>1)
+        {
+          // create vector of discr.
+          std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+          dis.push_back(fluiddis);
+          dis.push_back(scatradis);
+
+          //binning strategy for parallel redistribution
+          Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = Teuchos::null;
+
+          std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
+          std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
+
+          /// binning strategy is created and parallel redistribution is performed
+          binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
+        }
+      }
 
       // support for turbulent flow statistics
       const Teuchos::ParameterList& fdyn = (DRT::Problem::Instance()->FluidDynamicParams());

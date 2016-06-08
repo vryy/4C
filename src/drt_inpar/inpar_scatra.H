@@ -237,6 +237,12 @@ namespace INPAR
       computeintegrals_repeated
     };
 
+    /// Type of coupling strategy between the two fields of the SSI problems
+    enum FieldCoupling
+    {
+      coupling_match,
+      coupling_volmortar
+    };
 
     /// set the scatra parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
