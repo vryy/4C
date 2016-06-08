@@ -1,6 +1,10 @@
 /*!----------------------------------------------------------------------
 \file adapter_coupling_volmortar.cpp
 
+\brief adapter for the volmortar framework
+
+\level 2
+
 <pre>
 \maintainer Philipp Farah
             farah@lnm.mw.tum.de
@@ -274,9 +278,9 @@ void ADAPTER::MortarVolCoupl::MasterToSlave(
     Teuchos::RCP<Epetra_MultiVector> sv) const
 {
 #ifdef DEBUG
-  if (not mv->Map().PointSameAs(P21_->ColMap()))
+  if (not mv->Map().PointSameAs(P21_->RowMap()))
     dserror("master dof map vector expected");
-  if (not sv->Map().PointSameAs(P12_->ColMap()))
+  if (not sv->Map().PointSameAs(P21_->RowMap()))
     dserror("slave dof map vector expected");
   if (sv->NumVectors()!=mv->NumVectors())
     dserror("column number mismatch %d!=%d",sv->NumVectors(),mv->NumVectors());
@@ -363,7 +367,7 @@ void ADAPTER::MortarVolCoupl::SlaveToMaster(
 #ifdef DEBUG
   if (not mv->Map().PointSameAs(P12_->RowMap()))
     dserror("master dof map vector expected");
-  if (not sv->Map().PointSameAs(P21_->RowMap()))
+  if (not sv->Map().PointSameAs(P12_->RowMap()))
     dserror("slave dof map vector expected");
   if (sv->NumVectors()!=mv->NumVectors())
     dserror("column number mismatch %d!=%d",sv->NumVectors(),mv->NumVectors());
