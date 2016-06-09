@@ -102,8 +102,6 @@ void STR::IMPLICIT::OneStepTheta::PostSetup()
 {
   CheckInitSetup();
   EquilibriateInitialState();
-  // Has to be called after the equilibriate state routine!
-  UpdateConstantStateContributions();
 }
 
 /*----------------------------------------------------------------------------*
@@ -319,6 +317,7 @@ void STR::IMPLICIT::OneStepTheta::ReadRestart(IO::DiscretizationReader& ioreader
   ioreader.ReadVector(fviscon_ptr_,"fvisco");
 
   ModelEval().ReadRestart(ioreader);
+  UpdateConstantStateContributions();
 }
 
 /*----------------------------------------------------------------------------*

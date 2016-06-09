@@ -550,6 +550,10 @@ namespace TIMINT {
   public:
     /// @name External accessors for the class variables
     ///@{
+    /// Get the indicator if we are currently restarting the simulation
+    inline const bool& IsRestarting() const
+    { return isrestarting_; };
+
     /// Get TimIntBase data for global state quantities (read access)
     Teuchos::RCP<const BaseDataGlobalState> GetDataGlobalStatePtr() const
     {
@@ -633,7 +637,6 @@ namespace TIMINT {
       if (not IsInit())
         dserror("Call Init() first!");
     }
-
 
     BaseDataGlobalState& DataGlobalState()
     {
@@ -738,6 +741,9 @@ namespace TIMINT {
 
     /// flag indicating if Setup() has been called
     bool issetup_;
+
+    /// flag indicating that the simulation is currently restarting
+    bool isrestarting_;
 
   private:
     /// pointer to the different data containers

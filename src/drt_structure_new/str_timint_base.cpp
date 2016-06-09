@@ -42,6 +42,7 @@ STR::TIMINT::Base::Base()
     : StructureNew(),
       isinit_(false),
       issetup_(false),
+      isrestarting_(false),
       dataio_(Teuchos::null),
       datasdyn_(Teuchos::null),
       dataglobalstate_(Teuchos::null),
@@ -720,6 +721,8 @@ void STR::TIMINT::Base::writeGmshStrucOutputStep()
 void STR::TIMINT::Base::ReadRestart(const int stepn)
 {
   CheckInit();
+  // that restarting flag
+  isrestarting_ = true;
 
   // create an input/output reader
   IO::DiscretizationReader ioreader(dataglobalstate_->GetMutableDiscret(),
@@ -734,27 +737,37 @@ void STR::TIMINT::Base::ReadRestart(const int stepn)
   dataglobalstate_->GetMutableTimeNp() = timen+dt;
 
   // ---------------------------------------------------------------------------
-  // read general state
+  // The order is important at this point!
+  // (0) read element and node data --> new discretization
+  // (1) Setup() the model evaluator and time integrator
+  // (2) read and possibly overwrite the general dynamic state
+  // (3) read specific time integrator and model evaluator data
   // ---------------------------------------------------------------------------
+  // (0) read element and node data
+  ioreader.ReadHistoryData(stepn);
+
+  // (1) Setup() the model evaluator and time integrator
+  /* Since we call a redistribution on the structural discretization, we have to
+   * setup the structural time integration strategy at this point and not as
+   * usually during the adapter call.                         hiermeier 05/16 */
+  Setup();
+
+  // (2) read (or overwrite) the general dynamic state
   Teuchos::RCP<Epetra_Vector>& velnp = dataglobalstate_->GetMutableVelNp();
   ioreader.ReadVector(velnp, "velocity");
   dataglobalstate_->GetMutableMultiVel()->UpdateSteps(*velnp);
   Teuchos::RCP<Epetra_Vector>& accnp = dataglobalstate_->GetMutableAccNp();
   ioreader.ReadVector(accnp, "acceleration");
   dataglobalstate_->GetMutableMultiAcc()->UpdateSteps(*accnp);
-  ioreader.ReadHistoryData(stepn);
-  /* Since we call a redistribution on the structural discretization, we have to
-   * setup the structural time integration strategy at this point and not as
-   * usually during the adapter call.                         hiermeier 05/16 */
-  Setup();
 
-  // ---------------------------------------------------------------------------
-  // read model evaluator data
-  // ---------------------------------------------------------------------------
+  // (3) read specific time integrator (forces, etc.) and model evaluator data
   int_ptr_->ReadRestart(ioreader);
 
   // short screen output
   if (dataglobalstate_->GetMyRank() == 0)
     IO::cout << "====== Restart of the structural simulation from step "
         << stepn << IO::endl;
+
+  // end of restarting
+  isrestarting_ = false;
 }

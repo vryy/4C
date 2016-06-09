@@ -280,7 +280,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   /* In the restart case, we Setup the structural time integration after the
    * discretization has been redistributed. See STR::TIMINT::Base::ReadRestart()
    * for more information.                                     hiermeier 05/16*/
-  if (not DRT::Problem::Instance()->Restart())
+  if (not restart)
     ti_strategy->Setup();
 
   // ---------------------------------------------------------------------------

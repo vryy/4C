@@ -1,7 +1,11 @@
 /*!----------------------------------------------------------------------
 \file shell8_evaluate.cpp
 
+\brief Evaluation of the shell8 element
+
 \maintainer Michael Gee
+
+\level 1
 
 *----------------------------------------------------------------------*/
 #ifdef D_SHELL8
@@ -618,7 +622,14 @@ void DRT::ELEMENTS::Shell8::s8stress(struct _MATERIAL* material,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Shell8::VisNames(std::map<std::string,int>& names)
 {
-
+  INPAR::STR::StressType iostress = INPAR::STR::stress_none;
+  if (IsParamsInterface())
+    iostress = ParamsInterface().GetStressOutputType();
+  if (iostress==INPAR::STR::stress_none)
+    return;
+  else
+    dserror("The tensor like output structure can not be interpreted by ParaView. \n"
+        "If you need it, fix it!");
   // see whether we have Forces and Moments
   const Epetra_SerialDenseMatrix* gp_stress = data_.Get<Epetra_SerialDenseMatrix>("Forces");
   if (!gp_stress) return; // no stresses present

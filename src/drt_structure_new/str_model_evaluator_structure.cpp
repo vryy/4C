@@ -687,7 +687,7 @@ void STR::MODELEVALUATOR::Structure::RecoverState(
   CheckInitSetup();
   Reset(xnew);
   /* set the class internal displacement increment vector. Check if it is
-   * meaningful in some cases, like incremental strains etc. */
+   * meaningful/necessary in some cases, like incremental strains etc. */
   dis_incr_ptr_ = GState().ExportDisplEntries(dir);
   // set vector values needed by elements
   Discret().ClearState();

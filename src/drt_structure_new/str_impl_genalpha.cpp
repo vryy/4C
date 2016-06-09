@@ -366,6 +366,7 @@ void STR::IMPLICIT::GenAlpha::ReadRestart(IO::DiscretizationReader& ioreader)
   ioreader.ReadVector(fviscon_ptr_,"fvisco");
 
   ModelEval().ReadRestart(ioreader);
+  UpdateConstantStateContributions();
 }
 
 /*----------------------------------------------------------------------------*

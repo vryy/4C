@@ -322,6 +322,11 @@ NOX::StatusTest::StatusType NOX::NLN::Solver::PseudoTransient::step()
    * more information. */
   bool ok = directionPtr->compute(*dirPtr,soln,*this);
 
+  // Show the linear solver residual || Ax-b ||_2
+//  double lin_residual = 0.0;
+//  soln.getNormLastLinearSolveResidual(lin_residual);
+//  utilsPtr->out() << "Linear Solver Residual (L2-norm): " << lin_residual << std::endl;
+
   if (not ok)
   {
     utilsPtr->out() << "NOX::NLN::Solver::PseudoTransient::step - unable to calculate direction"
