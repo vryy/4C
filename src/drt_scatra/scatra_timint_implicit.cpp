@@ -1426,7 +1426,7 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     {
       // for flux output of initial field (before first solve) do:
       // flux_ vector is initialized when CalcFlux() is called
-      if (step_==0)
+      if (step_==0 or flux_==Teuchos::null)
         flux_=CalcFlux(true, num);
 
       OutputFlux(flux_);
@@ -2785,8 +2785,8 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
   // solution
   output_->WriteVector("phinp", phinp_);
 
-  // convective velocity (not written in case of coupled simulations)
-  if ( cdvel_ == INPAR::SCATRA::velocity_function or cdvel_ == INPAR::SCATRA::velocity_function_and_curve )
+  // convective velocity (written in case of coupled simulations since volmortar is now possible)
+  if ( cdvel_ == INPAR::SCATRA::velocity_function or cdvel_ == INPAR::SCATRA::velocity_function_and_curve or cdvel_ == INPAR::SCATRA::velocity_Navier_Stokes)
   {
     Teuchos::RCP<const Epetra_Vector> convel = discret_->GetState(nds_vel_, "convective velocity field");
     if(convel == Teuchos::null)

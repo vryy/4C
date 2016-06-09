@@ -1,14 +1,17 @@
 /*!
+\file turbulence_statistic_manager.cpp
 
-Manage the computation of averages for several
+\brief Manage the computation of averages for several
 canonical flows like channel flow, flow around a square
 cylinder, flow in a lid driven cavity, flow over a backward-facing step etc.
 
 The manager is intended to remove as much of the averaging
 overhead as possible from the time integration method.
 
+\level 3
+
 <pre>
-Maintainer: Benjamin Krank
+\maintainer Benjamin Krank
             krank@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -651,7 +654,12 @@ namespace FLD
       else if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
            ==
            "Dynamic_Vreman")
+      {
         turbmodel_ = INPAR::FLUID::dynamic_vreman;
+        //some dummy values into the parameter list
+        params_->set<double>("C_vreman", 0.0 );
+        params_->set<double>("C_vreman_theoretical",0.0);
+      }
     }
     else
       turbmodel_ = INPAR::FLUID::no_model;
@@ -1691,7 +1699,8 @@ namespace FLD
       double Cv;
       double Cv_theo;
       double Dt=0.0;
-      Cv = params_->get<double>("C_vreman");
+      std::cout<<__LINE__<<std::endl;
+      Cv = params_->get<double>("C_vreman",0.0);
       Cv_theo=params_->get<double>("C_vreman_theoretical");
       if (withscatra_)
         Dt=params_->get<double>("Dt_vreman");
