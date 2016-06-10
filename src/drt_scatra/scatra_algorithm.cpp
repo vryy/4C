@@ -75,8 +75,9 @@ void SCATRA::ScaTraAlgorithm::TimeLoopOneWay()
 {
   // write velocities since they may be needed in PrepareFirstTimeStep() of the scatra field
   SetVelocityField();
-  // write output to screen and files
-  Output();
+  // write initial output to file
+  if (Step()==0)
+    Output();
 
   // time loop (no-subcycling at the moment)
   while(NotFinished())

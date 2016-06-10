@@ -659,6 +659,7 @@ namespace FLD
         //some dummy values into the parameter list
         params_->set<double>("C_vreman", 0.0 );
         params_->set<double>("C_vreman_theoretical",0.0);
+        params_->set<double>("Dt_vreman",0.0);
       }
     }
     else

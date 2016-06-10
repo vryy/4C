@@ -185,31 +185,30 @@ void scatra_dyn(int restart)
         // 4. scatra auxiliary dofs
         fluiddis->FillComplete(true, false,false);
         scatradis->FillComplete(true, false,false);
-      }
 
-
-      //NOTE: we have do use the binningstrategy here since we build our fluid and scatra problems by inheritance,
-      //i.e. by calling the constructor of the corresponding class. But since we have to use the binning-strategy before
-      //creating the single field we have to do it here :-( We would prefer to to it like the SSI since than we could
-      //extended ghosting
-      //TODO (thon): make this if-case obsolete and allow for redistribution within volmortar->Setup() by removing inheitance-building of fields
-      {
-        // redistribute discr. with help of binning strategy
-        if(fluiddis->Comm().NumProc()>1)
+        //NOTE: we have do use the binningstrategy here since we build our fluid and scatra problems by inheritance,
+        //i.e. by calling the constructor of the corresponding class. But since we have to use the binning-strategy before
+        //creating the single field we have to do it here :-( We would prefer to to it like the SSI since than we could
+        //extended ghosting
+        //TODO (thon): make this if-case obsolete and allow for redistribution within volmortar->Setup() by removing inheitance-building of fields
         {
-          // create vector of discr.
-          std::vector<Teuchos::RCP<DRT::Discretization> > dis;
-          dis.push_back(fluiddis);
-          dis.push_back(scatradis);
+          // redistribute discr. with help of binning strategy
+          if(fluiddis->Comm().NumProc()>1)
+          {
+            // create vector of discr.
+            std::vector<Teuchos::RCP<DRT::Discretization> > dis;
+            dis.push_back(fluiddis);
+            dis.push_back(scatradis);
 
-          //binning strategy for parallel redistribution
-          Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = Teuchos::null;
+            //binning strategy for parallel redistribution
+            Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy = Teuchos::null;
 
-          std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
-          std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
+            std::vector<Teuchos::RCP<Epetra_Map> > stdelecolmap;
+            std::vector<Teuchos::RCP<Epetra_Map> > stdnodecolmap;
 
-          /// binning strategy is created and parallel redistribution is performed
-          binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
+            /// binning strategy is created and parallel redistribution is performed
+            binningstrategy = Teuchos::rcp(new BINSTRATEGY::BinningStrategy(dis,stdelecolmap,stdnodecolmap));
+          }
         }
       }
 
