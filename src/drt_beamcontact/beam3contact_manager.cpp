@@ -5258,7 +5258,7 @@ void CONTACT::Beam3cmanager::GMSH_Solid(
 
   // BACI surface pattern of hexahedral elements hex8, hex20, hex27
   const int surfNodes[6][9] = {{0,3,2,1,11,10,9,8,20}, {0,1,5,4,8,13,16,12,21},
-      {1,2,6,5,9,14,17,13,22}, {2,3,7,6,10,15,18,14,23}, {0,4,7,3,12,19,15,11,24}, {4,5,6,7,16,17,18,19,15}};
+      {1,2,6,5,9,14,17,13,22}, {2,3,7,6,10,15,18,14,23}, {0,4,7,3,12,19,15,11,24}, {4,5,6,7,16,17,18,19,25}};
   double surfColor[6] = {color, color, color, color, color, color};
 
   switch (element->Shape())
