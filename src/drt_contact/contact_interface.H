@@ -726,6 +726,11 @@ protected:
   int                           smintpairs_;     // proc local number of slave/master integration pairs
   int                           intcells_;       // proc local number of integration cells
 
+private:
+  static bool abs_compare(int a, int b)
+  {
+      return (std::abs(a) < std::abs(b));
+  }
 }; // class CoInterface
 } // namespace CONTACT
 

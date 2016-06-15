@@ -3259,6 +3259,11 @@ void CONTACT::CoInterface::EvaluateDistances(
       //**************************************************************
       //                loop over all Master Elements
       //**************************************************************
+      // create vectors to store projection information for several master elements in case projection is not unique
+      std::vector<double> gap_vec;
+      std::vector<std::map<int,double> > dgap_vec;
+      std::vector<std::vector<GEN::pairedvector<int,double> > > dnormal_vec;
+
       for (int nummaster=0;nummaster<(int)melements.size();++nummaster)
       {
         // project Gauss point onto master element
@@ -3293,9 +3298,6 @@ void CONTACT::CoInterface::EvaluateDistances(
           // store information of projection so that this node is not considered again
           mynode->HasProj() = true;
 
-          // store gap information at GID
-          mygap.insert(std::pair<int, double>(gid, projalpha));
-
           int ndof = 3;
           int ncol = melements[nummaster]->NumNode();
           LINALG::SerialDenseVector mval(ncol);
@@ -3322,13 +3324,21 @@ void CONTACT::CoInterface::EvaluateDistances(
           std::map<int,double> dgap = mynode->CoData().GetDerivG(); // (dof,value)
           std::vector<GEN::pairedvector<int,double> > dnormal = mynode->CoData().GetDerivN(); // (direction,dof,value)
 
-          // save to map
-          dmygap.insert(std::pair<int, std::map<int,double> >(gid, dgap));
-          dmynormals.insert(std::pair<int, std::vector<GEN::pairedvector<int,double> > >(gid, dnormal));
-
-          break;
+          // store gap information
+          gap_vec.push_back(projalpha);
+          dgap_vec.push_back(dgap);
+          dnormal_vec.push_back(dnormal);
         }//End hit ele
       }//End Loop over all Master Elements
+
+      // find projection with smallest absoluate value of gap
+      std::vector<double>::iterator iter_min = std::min_element(gap_vec.begin(), gap_vec.end(), abs_compare);
+      const int i_min = std::distance(gap_vec.begin(), iter_min);
+
+      // save to map at GID
+      mygap.insert(std::pair<int, double>(gid, gap_vec[i_min]));
+      dmygap.insert(std::pair<int, std::map<int,double> >(gid, dgap_vec[i_min]));
+      dmynormals.insert(std::pair<int, std::vector<GEN::pairedvector<int,double> > >(gid, dnormal_vec[i_min]));
     }
   }
 

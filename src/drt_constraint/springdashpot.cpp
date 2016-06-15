@@ -130,6 +130,9 @@ void UTILS::SpringDashpot::Evaluate(
       double gapdt = 0.; // velocity
       double springstiff = 0.; // spring stiffness
 
+      // assemble into residual vector and stiffness matrix
+      std::vector<double> out_vec(numdof, 0.);
+
       // calculation of normals and displacements differs for each spring variant
       switch (springtype_)
       {
@@ -165,6 +168,9 @@ void UTILS::SpringDashpot::Evaluate(
           // projection of displacement/velocity onto nodal reference normal
           gap -= (u-offsetprestr[k])*normal[k]; // gap = (u \cdot N)
           gapdt -= v*normal[k]; // gapdt = (v \cdot N)
+
+          // save for output
+          gapnp_[gid] = gap;
         }
 
         // select spring stiffness
@@ -184,7 +190,12 @@ void UTILS::SpringDashpot::Evaluate(
             const double dval = nodalarea*(springstiff + viscosity_*time_scale)*normal[k]*normal[m];
             stiff->Assemble(dval,dofs[k],dofs[m]);
           }
+
+          // store negative value of internal force for output (=reaction force)
+          out_vec[k] = - val;
         }
+        // add to output
+        springstress_.insert(std::pair<int, std::vector<double> >(gid, out_vec));
         break;
 
       case cursurfnormal: // spring dashpot acts in curnormal direction
@@ -196,7 +207,6 @@ void UTILS::SpringDashpot::Evaluate(
         springstiff = SelectStiffness(gap);
 
         // assemble into residual vector and stiffness matrix
-        std::vector<double> out_vec(numdof, 0.);
         for (int k=0; k<numdof; ++k)
         {
           // force
@@ -226,8 +236,9 @@ void UTILS::SpringDashpot::Evaluate(
             }
           }
           else
+          {
 //            dserror("Projection does not exist for node %d.", gid+1);
-
+          }
           // store negative value of internal force for output (=reaction force)
           out_vec[k] = - val;
         }

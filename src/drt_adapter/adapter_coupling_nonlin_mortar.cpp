@@ -687,6 +687,7 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(
   input.setParameters(DRT::Problem::Instance()->ContactDynamicParams());
   input.setParameters(DRT::Problem::Instance()->WearParams());
   input.set<int>("PROBTYPE", INPAR::CONTACT::other);
+  input.set<double>("SEARCH_PARAM", 10.0);
 
   // is this a nurbs problem?
   std::string distype = DRT::Problem::Instance()->SpatialApproximation();
