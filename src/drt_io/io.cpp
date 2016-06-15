@@ -4,10 +4,11 @@
 \brief output context of one discretization
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kuettler
-            089 - 289-15238
+\level 1
+
+\maintainer Martin Kronbichler
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -105,6 +106,8 @@ void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> 
     columns = 1;
   }
   Teuchos::RCP<Epetra_MultiVector> nv = reader_->ReadResultData(id_path, value_path, columns, dis_->Comm());
+  if(nv->GlobalLength() != vec->GlobalLength())
+    dserror("Length of source and target (Multi-) Vector does (globally) not match! Data loss !?!");
   LINALG::Export(*nv, *vec);
 }
 
