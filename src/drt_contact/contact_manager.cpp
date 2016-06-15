@@ -1234,26 +1234,21 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output,
     bool forcedrestart)
 {
+  // clear cache of maps due to varying vector size
+  output.ClearMapCache();
+
   // quantities to be written for restart
   std::map<std::string,Teuchos::RCP<Epetra_Vector> > restart_vectors;
 
   // quantities to be written for restart
   GetStrategy().DoWriteRestart(restart_vectors, forcedrestart);
 
-  // export restart information for contact to problem dof row map
-  Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
-  Teuchos::RCP<Epetra_Vector> lagrmultoldexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  LINALG::Export(*(GetStrategy().LagrMultOld()), *lagrmultoldexp);
-  output.WriteVector("lagrmultold", lagrmultoldexp);
+  output.WriteVector("lagrmultold", GetStrategy().LagrMultOld());
 
   // write all vectors specified by used strategy
   for (std::map<std::string,Teuchos::RCP<Epetra_Vector> >::const_iterator p=restart_vectors.begin();
       p!=restart_vectors.end();++p)
-  {
-    Teuchos::RCP<Epetra_Vector> expVec = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    LINALG::Export(*p->second,*expVec);
-    output.WriteVector(p->first,expVec);
-  }
+    output.WriteVector(p->first,p->second);
 
   return;
 }
