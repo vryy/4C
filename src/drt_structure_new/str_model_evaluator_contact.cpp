@@ -478,25 +478,20 @@ void STR::MODELEVALUATOR::Contact::WriteRestart(
     IO::DiscretizationWriter& iowriter,
     const bool& forced_writerestart) const
 {
+  // clear cache of maps due to varying vector size
+  iowriter.ClearMapCache();
+
   // quantities to be written for restart
   std::map<std::string,Teuchos::RCP<Epetra_Vector> > restart_vectors;
 
   Strategy().DoWriteRestart(restart_vectors,forced_writerestart);
 
-  // export restart information for contact to problem dof row map
-  Teuchos::RCP<const Epetra_Map> problemdofs = Strategy().ProblemDofs();
-  Teuchos::RCP<Epetra_Vector> lagrmultoldexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  LINALG::Export(*(Strategy().GetLagrMultN(true)), *lagrmultoldexp);
-  iowriter.WriteVector("lagrmultold", lagrmultoldexp);
+  iowriter.WriteVector("lagrmultold", Strategy().GetLagrMultN(true));
 
   // write all vectors specified by used strategy
   for (std::map<std::string,Teuchos::RCP<Epetra_Vector> >::const_iterator p=restart_vectors.begin();
       p!=restart_vectors.end();++p)
-  {
-    Teuchos::RCP<Epetra_Vector> expVec = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-    LINALG::Export(*p->second,*expVec);
-    iowriter.WriteVector(p->first,expVec);
-  }
+    iowriter.WriteVector(p->first,p->second);
 
   // since the global OutputStepState() routine is not called, if the
   // restart is written, we have to do it here manually.

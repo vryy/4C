@@ -1,6 +1,8 @@
 /*!----------------------------------------------------------------------
 \file meshtying_manager.cpp
 
+\level 2
+
 \maintainer Philipp Farah, Alexander Seitz
 
 \brief BACI implementation of main class to control all meshtying
@@ -640,10 +642,10 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 void CONTACT::MtManager::WriteRestart(IO::DiscretizationWriter& output, bool forcedrestart)
 {
   // write restart information for meshtying
-  Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
-  Teuchos::RCP<Epetra_Vector> lagrmultoldexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
-  LINALG::Export(*(GetStrategy().LagrMultOld()),*lagrmultoldexp);
-  output.WriteVector("mt_lagrmultold",lagrmultoldexp);
+//  Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
+//  Teuchos::RCP<Epetra_Vector> lagrmultoldexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+//  LINALG::Export(*(GetStrategy().LagrMultOld()),*lagrmultoldexp);
+  output.WriteVector("mt_lagrmultold",GetStrategy().LagrMultOld());
 
   return;
 }
