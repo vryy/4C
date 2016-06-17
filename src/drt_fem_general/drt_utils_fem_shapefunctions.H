@@ -7,7 +7,7 @@ The corresponding graphics and a detailed description can be found in
 the Baci guide in the Convention chapter.
 
 <pre>
-\level 1
+\level 0
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
             089 - 289-15235
@@ -303,25 +303,32 @@ void shape_function_3D(
   }
   case DRT::Element::pyramid5:
   {
+    // NOTE: the shape functions for pyramids are a bit unintuitive
+    // but since the more natural choice of
+    // funct(0)=Q14*(1.0-r)*(1.0-s)*(1.0-z);
+    // funct(1)=Q14*(1.0+r)*(1.0-s)*(1.0-z);
+    // funct(2)=Q14*(1.0+r)*(1.0+s)*(1.0-z);
+    // funct(3)=Q14*(1.0-r)*(1.0+s)*(1.0-z);
+    // funct(4)=t;
+    // does NOT produce a homogeneous stress state for a homogeneous
+    // loaded beam, we do not use them (Thon, 17.06.16)
+
+    T ration;
 
     if(fabs(t-1.0) > PY5TOL)
     {
-      const T ration=(r*s*t)/(1-t);
-      funct(0)=Q14*((1.0-r)*(1.0-s)-t+ration);
-      funct(1)=Q14*((1.0+r)*(1.0-s)-t-ration);
-      funct(2)=Q14*((1.0+r)*(1.0+s)-t+ration);
-      funct(3)=Q14*((1.0-r)*(1.0+s)-t-ration);
-      funct(4)=t;
+      ration=(r*s*t)/(1-t);
     }
     else
     {
-      dserror("pyramid shape function not defined for t=1.0");
-      // We thought the value at the node shall be inserted here,
-      // but we could not find any theoretical foundation
-      // due to the nonlinear character of the shape functions
-      // such that we leave it open here --> testing necessary
-      // funct(0...3) = 0 and funct(4)=1.0
+      ration=0.0;
     }
+
+    funct(0)=Q14*((1.0-r)*(1.0-s)-t+ration);
+    funct(1)=Q14*((1.0+r)*(1.0-s)-t-ration);
+    funct(2)=Q14*((1.0+r)*(1.0+s)-t+ration);
+    funct(3)=Q14*((1.0-r)*(1.0+s)-t-ration);
+    funct(4)=t;
 
     break;
   }
@@ -925,39 +932,45 @@ void shape_function_3D_deriv1(
   }
   case DRT::Element::pyramid5:
   {
+    T rationdr;
+    T rationds;
+    T rationdt;
 
     if(fabs(t-1.0) > PY5TOL)
     {
-      const T rationdr = s * t / (1.0 - t);
-      const T rationds = r * t / (1.0 - t);
-      const T rationdt = r * s * (1.0 - 2.0 * t) / ((1.0 - t) * (1.0 - t));
-
-      deriv1(0, 0) = Q14 * (-1.0 + rationdr);
-      deriv1(0, 1) = Q14 * (1.0 - rationdr);
-      deriv1(0, 2) = Q14 * (1.0 + rationdr);
-      deriv1(0, 3) = Q14 * (-1.0 - rationdr);
-      deriv1(0, 4) = 0;
-
-      deriv1(1, 0) = Q14 * (-1.0 + rationds);
-      deriv1(1, 1) = Q14 * (-1.0 - rationds);
-      deriv1(1, 2) = Q14 * (1.0 + rationds);
-      deriv1(1, 3) = Q14 * (1.0 - rationds);
-      deriv1(1, 4) = 0;
-
-      deriv1(2, 0) = Q14 * (rationdt - 1.0);
-      deriv1(2, 1) = Q14 * (-1.0 * rationdt - 1.0);
-      deriv1(2, 2) = Q14 * (rationdt - 1.0);
-      deriv1(2, 3) = Q14 * (-1.0 * rationdt - 1.0);
-      deriv1(2, 4) = 1.0;
+      rationdr = s * t / (1.0 - t);
+      rationds = r * t / (1.0 - t);
+      rationdt = r * s / ((1.0 - t) * (1.0 - t));
     }
     else
     {
-      dserror("pyramid shape function not defined for t=1.0");
-      // We thought the value at the node shall be inserted here,
-      // but we could not find any theoretical foundation
-      // due to the nonlinear character of the shape functions
-      // such that we leave it open here --> testing necessary
+      rationdr = 1.0;
+      rationds = 1.0;
+      rationdt = 1.0;
     }
+
+    // NOTE: shape functions used to be linearized wrong,
+    // but since they were obivously wrong and their source
+    // is unknown it's unclear, if there was maybe reason behind.
+    // So: keep your eyes open (Thon, 17.06.16)
+    deriv1(0, 0) = Q14 * (-1.0 * (1.0-s) + rationdr);
+    deriv1(0, 1) = Q14 * (1.0 * (1.0-s) - rationdr);
+    deriv1(0, 2) = Q14 * (1.0 * (1.0+s) + rationdr);
+    deriv1(0, 3) = Q14 * (-1.0 * (1.0+s) - rationdr);
+    deriv1(0, 4) = 0.0;
+
+    deriv1(1, 0) = Q14 * (-1.0 * (1.0-r) + rationds);
+    deriv1(1, 1) = Q14 * (-1.0 * (1.0+r) - rationds);
+    deriv1(1, 2) = Q14 * (1.0 * (1.0+r) + rationds);
+    deriv1(1, 3) = Q14 * (1.0 * (1.0-r) - rationds);
+    deriv1(1, 4) = 0.0;
+
+    deriv1(2, 0) = Q14 * (rationdt - 1.0);
+    deriv1(2, 1) = Q14 * (-1.0 * rationdt - 1.0);
+    deriv1(2, 2) = Q14 * (rationdt - 1.0);
+    deriv1(2, 3) = Q14 * (-1.0 * rationdt - 1.0);
+    deriv1(2, 4) = 1.0;
+
     break;
   }
   default:
