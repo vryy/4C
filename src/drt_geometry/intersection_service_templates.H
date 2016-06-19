@@ -3,11 +3,12 @@
 
 \brief collection of templated service methods for intersection computations
 
+\level 1
+
 <pre>
-Maintainer: Ursula Mayer
-            mayer@lnm.mw.tum.de
+\maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15235
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -277,6 +278,7 @@ namespace GEO
       case DRT::Element::tri6:  return computeFastXAABBT<3, DRT::Element::tri6> (xyze, eleGeoType);
       case DRT::Element::quad8: return computeFastXAABBT<3, DRT::Element::quad8>(xyze, eleGeoType);
       case DRT::Element::quad9: return computeFastXAABBT<3, DRT::Element::quad9>(xyze, eleGeoType);
+      case DRT::Element::pyramid5:return computeFastXAABBT<3, DRT::Element::pyramid5>(xyze, eleGeoType);
       default:
           std::cout << DistypeToString(distype) << std::endl;
           dserror("add your distype to this switch!");

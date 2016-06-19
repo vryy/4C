@@ -944,6 +944,7 @@ namespace UTILS
   template<> struct DisTypeToEdgeOrder<DRT::Element::hex27>    {static const int order = 2;};
   template<> struct DisTypeToEdgeOrder<DRT::Element::tet4>     {static const int order = 1;};
   template<> struct DisTypeToEdgeOrder<DRT::Element::tet10>    {static const int order = 2;};
+  template<> struct DisTypeToEdgeOrder<DRT::Element::pyramid5> {static const int order = 1;};
 
 
   /*!

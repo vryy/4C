@@ -1991,6 +1991,7 @@ int DRT::UTILS::getOrder(const DRT::Element::DiscretizationType distype)
         case DRT::Element::hex27 :  order = DisTypeToEdgeOrder<DRT::Element::hex27>::order; break;
         case DRT::Element::tet4 :   order = DisTypeToEdgeOrder<DRT::Element::tet4>::order; break;
         case DRT::Element::tet10 :  order = DisTypeToEdgeOrder<DRT::Element::tet10>::order; break;
+        case DRT::Element::pyramid5:order = DisTypeToEdgeOrder<DRT::Element::pyramid5>::order; break;
         default:
             dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
