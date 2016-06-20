@@ -1,6 +1,10 @@
 /*!----------------------------------------------------------------------
  \file volmortar_coupling.cpp
 
+\brief main routines for the volmortar framework
+
+\level 1
+
  <pre>
 \maintainer Philipp Farah
              farah@lnm.mw.tum.de
@@ -1109,12 +1113,15 @@ void VOLMORTAR::VolMortarCoupl::ReadAndCheckInput()
   if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::IntType>(volmortar, "INTTYPE")
       == INPAR::VOLMORTAR::inttype_segments)
   {
-    std::cout
-        << "WARNING: The chosen integration type for volmortar coupling requires cut procedure !"
-        << std::endl;
-    std::cout
-        << "WARNING: The cut is up to now not able to exactly calculate the required segments!"
-        << std::endl;
+    if (myrank_ == 0)
+    {
+      std::cout
+          << "WARNING: The chosen integration type for volmortar coupling requires cut procedure !"
+          << std::endl;
+      std::cout
+          << "WARNING: The cut is up to now not able to exactly calculate the required segments!"
+          << std::endl;
+    }
   }
 
   if (DRT::INPUT::IntegralValue<int>(volmortar, "MESH_INIT")
@@ -1847,6 +1854,9 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(
     else if (mele.Shape() == DRT::Element::tet10)
       MORTAR::UTILS::GlobalToLocal<DRT::Element::tet10>(mele, xgl, xi,
           converged);
+    else if (mele.Shape() == DRT::Element::pyramid5)
+      MORTAR::UTILS::GlobalToLocal<DRT::Element::pyramid5>(mele, xgl, xi,
+          converged);
     else
       dserror("ERROR: Shape function not supported!");
 
@@ -1863,9 +1873,8 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(
         else
           return false;
       }
-
-      if (mele.Shape() == DRT::Element::tet4 or
-          mele.Shape() == DRT::Element::tet10)
+      else if (mele.Shape() == DRT::Element::tet4 or
+               mele.Shape() == DRT::Element::tet10)
       {
         if (    xi[0] > 0.0 - VOLMORTARELETOL and xi[0] < 1.0 + VOLMORTARELETOL
             and xi[1] > 0.0 - VOLMORTARELETOL and xi[1] < 1.0 + VOLMORTARELETOL
@@ -1875,6 +1884,8 @@ bool VOLMORTAR::VolMortarCoupl::CheckEleIntegration(
         else
           return false;
       }
+      else
+        dserror("ERROR: Element type not supported!");
     }
     else
     {
@@ -1931,6 +1942,9 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       else if (sele.Shape() == DRT::Element::tet10)
         MORTAR::UTILS::GlobalToLocal<DRT::Element::tet10>(sele, xgl, xi,
             converged);
+      else if (sele.Shape() == DRT::Element::pyramid5)
+        MORTAR::UTILS::GlobalToLocal<DRT::Element::pyramid5>(sele, xgl, xi,
+            converged);
       else
         dserror("ERROR: Shape function not supported!");
 
@@ -1966,6 +1980,8 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
           if ((xi[0] + xi[1] + xi[2]) < 1.0 - 3.0 * VOLMORTARCUTTOL)
             all = true;
         }
+        else
+          dserror("ERROR: Element not supported!");
       }
     } //end node loop
 
@@ -1975,13 +1991,15 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       if (!xi0 or !xi1 or !xi2 or !all)
         return false;
     }
-    if (sele.Shape() == DRT::Element::hex8 or
+    else if (sele.Shape() == DRT::Element::hex8 or
         sele.Shape() == DRT::Element::hex20 or
         sele.Shape() == DRT::Element::hex27)
     {
       if (!xi0 or !xi1 or !xi2 or !xi0n or !xi1n or !xi2n)
         return false;
     }
+    else
+      dserror("ERROR: Element not supported!");
   }
 
   {
@@ -2019,6 +2037,9 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       else if (mele.Shape() == DRT::Element::tet10)
         MORTAR::UTILS::GlobalToLocal<DRT::Element::tet10>(mele, xgl, xi,
             converged);
+      else if (mele.Shape() == DRT::Element::pyramid5)
+        MORTAR::UTILS::GlobalToLocal<DRT::Element::pyramid5>(mele, xgl, xi,
+            converged);
       else
         dserror("ERROR: Shape function not supported!");
 
@@ -2055,6 +2076,8 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
           if ((xi[0] + xi[1] + xi[2]) < 1.0 - 3.0 * VOLMORTARCUTTOL)
             all = true;
         }
+        else
+          dserror("ERROR: Element not supported!");
       }
     }
 
@@ -2064,13 +2087,15 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       if (!xi0 or !xi1 or !xi2 or !all)
         return false;
     }
-    if (mele.Shape() == DRT::Element::hex8 or
+    else if (mele.Shape() == DRT::Element::hex8 or
         mele.Shape() == DRT::Element::hex20 or
         mele.Shape() == DRT::Element::hex27)
     {
       if (!xi0 or !xi1 or !xi2 or !xi0n or !xi1n or !xi2n)
         return false;
     }
+    else
+      dserror("ERROR: Element not supported!");
   }
 
   //--------------------------------------------------------
@@ -2092,6 +2117,8 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       MORTAR::UTILS::GlobalToLocal<DRT::Element::tet4>(sele, xgl, xi, converged);
     else if (sele.Shape() == DRT::Element::tet10)
       MORTAR::UTILS::GlobalToLocal<DRT::Element::tet10>(sele, xgl, xi, converged);
+    else if (sele.Shape() == DRT::Element::pyramid5)
+          MORTAR::UTILS::GlobalToLocal<DRT::Element::pyramid5>(sele, xgl, xi, converged);
     else
       dserror("ERROR: Shape function not supported!");
 
@@ -2100,13 +2127,15 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       if (sele.Shape() == DRT::Element::hex8  or
           sele.Shape() == DRT::Element::hex20 or
           sele.Shape() == DRT::Element::hex27)
+      {
         if (    abs(xi[0]) < 1.0 - VOLMORTARCUT2TOL
             and abs(xi[1]) < 1.0 - VOLMORTARCUT2TOL
             and abs(xi[2]) < 1.0 - VOLMORTARCUT2TOL)
           return true;
-
-      if (sele.Shape() == DRT::Element::tet4 or
-          sele.Shape() == DRT::Element::tet10)
+      }
+      else if (sele.Shape() == DRT::Element::tet4 or
+               sele.Shape() == DRT::Element::tet10)
+      {
         if (    xi[0] > 0.0 + VOLMORTARCUT2TOL
             and xi[0] < 1.0 - VOLMORTARCUT2TOL
             and xi[1] > 0.0 + VOLMORTARCUT2TOL
@@ -2115,6 +2144,9 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
             and xi[2] < 1.0 - VOLMORTARCUT2TOL
             and (xi[0] + xi[1] + xi[2]) < 1.0 - 3.0 * VOLMORTARCUT2TOL)
           return true;
+      }
+      else
+        dserror("ERROR: Element not supported!");
     }
   }
 
@@ -2142,6 +2174,9 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
     else if (mele.Shape() == DRT::Element::tet10)
       MORTAR::UTILS::GlobalToLocal<DRT::Element::tet10>(mele, xgl, xi,
           converged);
+    else if (mele.Shape() == DRT::Element::pyramid5)
+          MORTAR::UTILS::GlobalToLocal<DRT::Element::pyramid5>(mele, xgl, xi,
+              converged);
     else
       dserror("ERROR: Shape function not supported!");
 
@@ -2150,13 +2185,15 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
       if (mele.Shape() == DRT::Element::hex8  or
           mele.Shape() == DRT::Element::hex20 or
           mele.Shape() == DRT::Element::hex27)
+      {
         if (    abs(xi[0]) < 1.0 - VOLMORTARCUT2TOL
             and abs(xi[1]) < 1.0 - VOLMORTARCUT2TOL
             and abs(xi[2]) < 1.0 - VOLMORTARCUT2TOL)
           return true;
-
-      if (mele.Shape() == DRT::Element::tet4 or
-          mele.Shape() == DRT::Element::tet10)
+      }
+      else if (mele.Shape() == DRT::Element::tet4 or
+               mele.Shape() == DRT::Element::tet10)
+      {
         if (    xi[0] > 0.0 + VOLMORTARCUT2TOL
             and xi[0] < 1.0 - VOLMORTARCUT2TOL
             and xi[1] > 0.0 + VOLMORTARCUT2TOL
@@ -2165,6 +2202,9 @@ bool VOLMORTAR::VolMortarCoupl::CheckCut(DRT::Element& sele, DRT::Element& mele)
             and xi[2] < 1.0 - VOLMORTARCUT2TOL
             and (xi[0] + xi[1] + xi[2]) < 1.0 - 3.0 * VOLMORTARCUT2TOL)
           return true;
+      }
+      else
+        dserror("ERROR: Element not supported!");
     }
   }
 
@@ -2451,6 +2491,27 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
             dofset21_.second);
         break;
       }
+      case DRT::Element::pyramid5:
+      {
+        static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::pyramid5> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
       default:
       {
         dserror("ERROR: unknown shape!");
@@ -2552,6 +2613,27 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
       case DRT::Element::tet10:
       {
         static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet10> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
+      case DRT::Element::pyramid5:
+      {
+        static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::pyramid5> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
         integrator.IntegrateCells3D(
@@ -2689,6 +2771,27 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
             dofset21_.second);
         break;
       }
+      case DRT::Element::pyramid5:
+      {
+        static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::pyramid5> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
       default:
       {
         dserror("ERROR: unknown shape!");
@@ -2790,6 +2893,27 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
       case DRT::Element::tet10:
       {
         static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet10> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
+      case DRT::Element::pyramid5:
+      {
+        static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::pyramid5> integrator(
             Params());
         integrator.InitializeGP(false, 0, cells[q]->Shape());
         integrator.IntegrateCells3D(
@@ -2927,6 +3051,167 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell(
             dofset21_.second);
         break;
       }
+      case DRT::Element::pyramid5:
+      {
+        static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::pyramid5> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
+      default:
+      {
+        dserror("ERROR: unknown shape!");
+        break;
+      }
+      }
+      break;
+    }
+    //#######################################################
+    case DRT::Element::pyramid5:
+    {
+      switch (mele.Shape())
+      {
+      // 2D surface elements
+      case DRT::Element::hex8:
+      {
+        static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::hex8> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
+      case DRT::Element::hex20:
+      {
+        static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::hex20> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
+      case DRT::Element::hex27:
+      {
+        static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::hex27> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
+      case DRT::Element::tet4:
+      {
+        static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::tet4> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
+      case DRT::Element::tet10:
+      {
+        static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::tet10> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
+      case DRT::Element::pyramid5:
+      {
+        static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::pyramid5> integrator(
+            Params());
+        integrator.InitializeGP(false, 0, cells[q]->Shape());
+        integrator.IntegrateCells3D(
+            sele,
+            mele,
+            cells[q],
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
       default:
       {
         dserror("ERROR: unknown shape!");
@@ -3046,6 +3331,15 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P12(
         *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second,P12_dofrowmap_,P12_dofcolmap_);
     break;
   }
+  case DRT::Element::pyramid5:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::pyramid5> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *D1_,
+        *M12_, dis1_, dis2_,dofset12_.first,dofset12_.second,P12_dofrowmap_,P12_dofcolmap_);
+    break;
+  }
   default:
   {
     dserror("ERROR: unknown shape!");
@@ -3157,6 +3451,15 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_P21(
         *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second,P21_dofrowmap_,P21_dofcolmap_);
     break;
   }
+  case DRT::Element::pyramid5:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::pyramid5> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *D2_,
+        *M21_, dis2_, dis1_,dofset21_.first,dofset21_.second,P21_dofrowmap_,P21_dofcolmap_);
+    break;
+  }
   default:
   {
     dserror("ERROR: unknown shape!");
@@ -3217,6 +3520,15 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_ADis_MeshInit(
   case DRT::Element::tet10:
   {
     static VolMortarIntegratorEleBased<DRT::Element::tet10> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixXA_,
+        *mmatrixXA_, dis1_, dis2_,dofseta,dofsetb,P12_dofrowmap_,P12_dofcolmap_);
+    break;
+  }
+  case DRT::Element::pyramid5:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::pyramid5> integrator(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Aele, foundeles, *dmatrixXA_,
@@ -3284,6 +3596,15 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DEleBased_BDis_MeshInit(
   case DRT::Element::tet10:
   {
     static VolMortarIntegratorEleBased<DRT::Element::tet10> integrator(
+        Params());
+    integrator.InitializeGP();
+    integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixXB_,
+        *mmatrixXB_, dis2_, dis1_,dofseta,dofsetb,P21_dofrowmap_,P21_dofcolmap_);
+    break;
+  }
+  case DRT::Element::pyramid5:
+  {
+    static VolMortarIntegratorEleBased<DRT::Element::pyramid5> integrator(
         Params());
     integrator.InitializeGP();
     integrator.IntegrateEleBased3D(Bele, foundeles, *dmatrixXB_,
@@ -3406,6 +3727,28 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
             dofset21_.second);
         break;
       }
+      case DRT::Element::pyramid5:
+      {
+        static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::pyramid5> integrator(
+            Params());
+        integrator.IntegrateCells3D_DirectDiveregence(
+            sele,
+            mele,
+            *vc,
+            intpoints,
+            switched_conf,
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
       default:
       {
         dserror("ERROR: unknown shape!");
@@ -3444,6 +3787,107 @@ void VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
       case DRT::Element::tet4:
       {
         static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::tet4> integrator(
+            Params());
+        integrator.IntegrateCells3D_DirectDiveregence(
+            sele,
+            mele,
+            *vc,
+            intpoints,
+            switched_conf,
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
+      case DRT::Element::pyramid5:
+      {
+        static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::pyramid5> integrator(
+            Params());
+        integrator.IntegrateCells3D_DirectDiveregence(
+            sele,
+            mele,
+            *vc,
+            intpoints,
+            switched_conf,
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
+      default:
+      {
+        dserror("ERROR: unknown shape!");
+        break;
+      }
+      }
+      break;
+    }
+    case DRT::Element::pyramid5:
+    {
+      switch (mele.Shape())
+      {
+      // 2D surface elements
+      case DRT::Element::hex8:
+      {
+        static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::hex8> integrator(
+            Params());
+        integrator.IntegrateCells3D_DirectDiveregence(
+            sele,
+            mele,
+            *vc,
+            intpoints,
+            switched_conf,
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
+      case DRT::Element::tet4:
+      {
+        static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::tet4> integrator(
+            Params());
+        integrator.IntegrateCells3D_DirectDiveregence(
+            sele,
+            mele,
+            *vc,
+            intpoints,
+            switched_conf,
+            *D1_,
+            *M12_,
+            *D2_,
+            *M21_,
+            dis1_,
+            dis2_,
+            dofset12_.first,
+            dofset12_.second,
+            dofset21_.first,
+            dofset21_.second);
+        break;
+      }
+      case DRT::Element::pyramid5:
+      {
+        static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::pyramid5> integrator(
             Params());
         integrator.IntegrateCells3D_DirectDiveregence(
             sele,
@@ -3605,6 +4049,27 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
           dofset21_.second);
       break;
     }
+    case DRT::Element::pyramid5:
+    {
+      static VolMortarIntegrator<DRT::Element::hex8, DRT::Element::pyramid5> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
+      break;
+    }
     default:
     {
       dserror("ERROR: unknown shape!");
@@ -3706,6 +4171,27 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
     case DRT::Element::tet10:
     {
       static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::tet10> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
+      break;
+    }
+    case DRT::Element::pyramid5:
+    {
+      static VolMortarIntegrator<DRT::Element::hex20, DRT::Element::pyramid5> integrator(
           Params());
       integrator.InitializeGP(true, domain);
       integrator.IntegrateEle3D(
@@ -3843,6 +4329,27 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
           dofset21_.second);
       break;
     }
+    case DRT::Element::pyramid5:
+    {
+      static VolMortarIntegrator<DRT::Element::hex27, DRT::Element::pyramid5> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
+      break;
+    }
     default:
     {
       dserror("ERROR: unknown shape!");
@@ -3962,6 +4469,27 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
           dofset21_.second);
       break;
     }
+    case DRT::Element::pyramid5:
+    {
+      static VolMortarIntegrator<DRT::Element::tet4, DRT::Element::pyramid5> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
+      break;
+    }
     default:
     {
       dserror("ERROR: unknown shape!");
@@ -4063,6 +4591,167 @@ void VOLMORTAR::VolMortarCoupl::Integrate3D(
     case DRT::Element::tet10:
     {
       static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::tet10> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
+      break;
+    }
+    case DRT::Element::pyramid5:
+    {
+      static VolMortarIntegrator<DRT::Element::tet10, DRT::Element::pyramid5> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
+      break;
+    }
+    default:
+    {
+      dserror("ERROR: unknown shape!");
+      break;
+    }
+    }
+    break;
+  }
+  //########################################################
+  case DRT::Element::pyramid5:
+  {
+    switch (mele.Shape())
+    {
+    // 2D surface elements
+    case DRT::Element::hex8:
+    {
+      static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::hex8> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
+      break;
+    }
+    case DRT::Element::hex20:
+    {
+      static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::hex20> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
+      break;
+    }
+    case DRT::Element::hex27:
+    {
+      static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::hex27> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::tet4> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
+      break;
+    }
+    case DRT::Element::tet10:
+    {
+      static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::tet10> integrator(
+          Params());
+      integrator.InitializeGP(true, domain);
+      integrator.IntegrateEle3D(
+          domain,
+          sele,
+          mele,
+          *D1_,
+          *M12_,
+          *D2_,
+          *M21_,
+          dis1_,
+          dis2_,
+          dofset12_.first,
+          dofset12_.second,
+          dofset21_.first,
+          dofset21_.second);
+      break;
+    }
+    case DRT::Element::pyramid5:
+    {
+      static VolMortarIntegrator<DRT::Element::pyramid5, DRT::Element::pyramid5> integrator(
           Params());
       integrator.InitializeGP(true, domain);
       integrator.IntegrateEle3D(

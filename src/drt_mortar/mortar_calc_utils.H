@@ -1,8 +1,12 @@
 /*!----------------------------------------------------------------------
 \file mortar_calc_utils.H
 
+\brief utils for mortar buisiness
+
+\level 1
+
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -360,6 +364,13 @@ void GlobalToLocal(
      {
        xi[p] = 1.0/3.0;
      }
+     else if(distype == DRT::Element::pyramid5)
+     {
+       if(p<2)
+         xi[p] = 0.0;
+       else
+         xi[p] = 1.0/3.0;
+     }
      else
      {
        dserror("ERROR: Element type not supported for parameter space mapping!");
@@ -500,6 +511,13 @@ void GlobalToLocal(
              distype == DRT::Element::tet10)
      {
        xi[p] = 1.0/3.0;
+     }
+     else if(distype == DRT::Element::pyramid5)
+     {
+       if(p<2)
+         xi[p] = 0.0;
+       else
+         xi[p] = 1.0/3.0;
      }
      else
      {

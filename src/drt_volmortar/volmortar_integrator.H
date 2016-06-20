@@ -1,6 +1,10 @@
 /*!----------------------------------------------------------------------
 \file volmortar_integrator.H
 
+\brief integration routines for the volmortar framework
+
+\level 1
+
 <pre>
 \maintainer Philipp Farah
             farah@lnm.mw.tum.de
@@ -273,6 +277,13 @@ bool CheckMapping(DRT::Element& sele,
       return false;
     }
   }
+  else if (distypeS==DRT::Element::pyramid5)
+  {
+    if (sxi[2]<0.0-tol || -sxi[0]+sxi[2]>1.0+tol || sxi[0]+sxi[2]>1.0+tol || -sxi[1]+sxi[2]>1.0+tol || sxi[1]+sxi[2]>1.0+tol)
+    {
+      return false;
+    }
+  }
   else if(distypeS==DRT::Element::tet4 || distypeS==DRT::Element::tet10)
   {
     if(sxi[0]<0.0-tol || sxi[1]<0.0-tol || sxi[2]<0.0-tol || (sxi[0]+sxi[1]+sxi[2])>1.0+tol)
@@ -301,6 +312,13 @@ bool CheckMapping(DRT::Element& sele,
   if (distypeM==DRT::Element::hex8 || distypeM==DRT::Element::hex20 || distypeM==DRT::Element::hex27)
   {
     if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[2]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[2]>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else if (distypeM==DRT::Element::pyramid5)
+  {
+    if (mxi[2]<0.0-tol || -mxi[0]+mxi[2]>1.0+tol || mxi[0]+mxi[2]>1.0+tol || -mxi[1]+mxi[2]>1.0+tol || mxi[1]+mxi[2]>1.0+tol)
     {
       return false;
     }
@@ -344,6 +362,13 @@ bool CheckMapping(DRT::Element& ele,
   if (distype==DRT::Element::hex8 || distype==DRT::Element::hex20 || distype==DRT::Element::hex27)
   {
     if (xi[0]<-1.0-tol || xi[1]<-1.0-tol || xi[2]<-1.0-tol || xi[0]>1.0+tol || xi[1]>1.0+tol || xi[2]>1.0+tol)
+    {
+      return false;
+    }
+  }
+  else if (distype==DRT::Element::pyramid5)
+  {
+    if (xi[2]<0.0-tol || -xi[0]+xi[2]>1.0+tol || xi[0]+xi[2]>1.0+tol || -xi[1]+xi[2]>1.0+tol || xi[1]+xi[2]>1.0+tol)
     {
       return false;
     }

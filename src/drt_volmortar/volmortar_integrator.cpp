@@ -1,6 +1,10 @@
 /*!----------------------------------------------------------------------
 \file volmortar_integrator.cpp
 
+\brief integration routines for the volmortar framework
+
+\level 1
+
 <pre>
 \maintainer Philipp Farah
             farah@lnm.mw.tum.de
@@ -212,6 +216,23 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::InitializeGP()
   case DRT::Element::hex27:
   {
     DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_hex_125point;
+
+    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,3);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      coords_(i,2)=intpoints.qxg[i][2];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  case DRT::Element::pyramid5:
+  {
+    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_pyramid_8point;
 
     const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
     ngp_ = intpoints.nquad;
@@ -561,6 +582,32 @@ void VOLMORTAR::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
 
         break;
       }
+      case DRT::Element::pyramid5:
+      {
+        proj=VolMortarEleBasedGP<distypeS,DRT::Element::pyramid5>(
+            sele,
+            Bele,
+            foundeles,
+            found,
+            gpid,
+            jac,
+            wgt,
+            gpdist,
+            Axi,
+            AuxXi,
+            globgp,
+            dualquad_,
+            D,
+            M,
+            Adis,
+            Bdis,
+            dofseta,
+            dofsetb,
+            PAB_dofrowmap,
+            PAB_dofcolmap);
+
+        break;
+      }
       default:
       {
         dserror("ERROR: unknown shape!");
@@ -595,6 +642,8 @@ template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::hex27>;
 
 template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tet4>;
 template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::tet10>;
+
+template class VOLMORTAR::VolMortarIntegratorEleBased<DRT::Element::pyramid5>;
 
 
 /*----------------------------------------------------------------------*
@@ -957,6 +1006,23 @@ void VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::InitializeGP(bool integr
   case DRT::Element::hex27:
   {
     DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_hex_125point;
+
+    const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
+    ngp_ = intpoints.nquad;
+    coords_.Reshape(ngp_,3);
+    weights_.resize(ngp_);
+    for (int i=0;i<ngp_;++i)
+    {
+      coords_(i,0)=intpoints.qxg[i][0];
+      coords_(i,1)=intpoints.qxg[i][1];
+      coords_(i,2)=intpoints.qxg[i][2];
+      weights_[i]=intpoints.qwgt[i];
+    }
+    break;
+  }
+  case DRT::Element::pyramid5:
+  {
+    DRT::UTILS::GaussRule3D mygaussrule=DRT::UTILS::intrule_pyramid_8point;
 
     const DRT::UTILS::IntegrationPoints3D intpoints(mygaussrule);
     ngp_ = intpoints.nquad;
@@ -1868,7 +1934,7 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping2D(DRT::Elem
                                                                      double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
-  double tol = 0.01;
+  const double tol = 1e-10;
   if (distypeS==DRT::Element::quad4 || distypeS==DRT::Element::quad8 || distypeS==DRT::Element::quad9)
   {
     if (sxi[0]<-1.0-tol || sxi[1]<-1.0-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol)
@@ -1879,7 +1945,7 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping2D(DRT::Elem
       return false;
     }
   }
-  else
+  else if (distypeS==DRT::Element::tri3 || distypeS==DRT::Element::tri6)
   {
     if (sxi[0]<-tol || sxi[1]<-tol || sxi[0]>1.0+tol || sxi[1]>1.0+tol || sxi[0]+sxi[1]>1.0+2*tol)
     {
@@ -1889,6 +1955,8 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping2D(DRT::Elem
       return false;
     }
   }
+  else
+    dserror("Wrong element type!");
 
   // check GP projection (MASTER)
   if (distypeM==DRT::Element::quad4 || distypeM==DRT::Element::quad8 || distypeM==DRT::Element::quad9)
@@ -1901,7 +1969,7 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping2D(DRT::Elem
       return false;
     }
   }
-  else
+  else if (distypeS==DRT::Element::tri3 || distypeS==DRT::Element::tri6)
   {
     if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
     {
@@ -1911,6 +1979,8 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping2D(DRT::Elem
       return false;
     }
   }
+  else
+    dserror("Wrong element type!");
 
   return true;
 }
@@ -1950,6 +2020,25 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping3D(DRT::Elem
   else if(distypeS==DRT::Element::tet4 || distypeS==DRT::Element::tet10)
   {
     if(sxi[0]<0.0-tol || sxi[1]<0.0-tol || sxi[2]<0.0-tol || (sxi[0]+sxi[1]+sxi[2])>1.0+tol)
+    {
+//      std::cout << "\n***Warning: Gauss point projection outside!";
+//      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+//      std::cout << "Slave GP projection: " << sxi[0] << " " << sxi[1] << " " << sxi[2] << std::endl;
+//      for(int i=0;i<sele.NumNode();++i)
+//      {
+//        std::cout << "create vertex " << sele.Nodes()[i]->X()[0] <<"  "<< sele.Nodes()[i]->X()[1] <<"  "<< sele.Nodes()[i]->X()[2] <<std::endl;
+//      }
+//      std::cout << "------------" << std::endl;
+//      for(int i=0;i<mele.NumNode();++i)
+//      {
+//        std::cout << "create vertex " << mele.Nodes()[i]->X()[0] <<"  "<< mele.Nodes()[i]->X()[1] <<"  "<< mele.Nodes()[i]->X()[2] <<std::endl;
+//      }
+      return false;
+    }
+  }
+  else if(distypeS==DRT::Element::pyramid5)
+  {
+    if (sxi[2]<0.0-tol || -sxi[0]+sxi[2]>1.0+tol || sxi[0]+sxi[2]>1.0+tol || -sxi[1]+sxi[2]>1.0+tol || sxi[1]+sxi[2]>1.0+tol)
     {
 //      std::cout << "\n***Warning: Gauss point projection outside!";
 //      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
@@ -2008,6 +2097,25 @@ bool VOLMORTAR::VolMortarIntegrator<distypeS,distypeM>::CheckMapping3D(DRT::Elem
       return false;
     }
   }
+  else if(distypeM==DRT::Element::pyramid5)
+  {
+    if (mxi[2]<0.0-tol || -mxi[0]+mxi[2]>1.0+tol || mxi[0]+mxi[2]>1.0+tol || -mxi[1]+mxi[2]>1.0+tol || mxi[1]+mxi[2]>1.0+tol)
+    {
+//      std::cout << "\n***Warning: Gauss point projection outside!";
+//      std::cout << "Slave ID: " << sele.Id() << " Master ID: " << mele.Id() << std::endl;
+//      std::cout << "Master GP projection: " << mxi[0] << " " << mxi[1] << " " << mxi[2] << std::endl;
+//      for(int i=0;i<sele.NumNode();++i)
+//      {
+//        std::cout << "create vertex " << sele.Nodes()[i]->X()[0] <<"  "<< sele.Nodes()[i]->X()[1] <<"  "<< sele.Nodes()[i]->X()[2] <<std::endl;
+//      }
+//      std::cout << "------------" << std::endl;
+//      for(int i=0;i<mele.NumNode();++i)
+//      {
+//        std::cout << "create vertex " << mele.Nodes()[i]->X()[0] <<"  "<< mele.Nodes()[i]->X()[1] <<"  "<< mele.Nodes()[i]->X()[2] <<std::endl;
+//      }
+      return false;
+    }
+  }
   else
     dserror("Wrong element type!");
 
@@ -2032,6 +2140,7 @@ template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::t
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex27>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::hex20>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex8,DRT::Element::pyramid5>;
 
 //slave hex20
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20,DRT::Element::tet4>;
@@ -2039,6 +2148,7 @@ template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20,DRT::Element::
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20,DRT::Element::hex27>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20,DRT::Element::hex20>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex20,DRT::Element::pyramid5>;
 
 //slave hex27
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::tet4>;
@@ -2046,6 +2156,7 @@ template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::hex27>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::hex20>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::hex27,DRT::Element::pyramid5>;
 
 //slave tet4
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::tet4>;
@@ -2053,6 +2164,7 @@ template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::t
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex27>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::hex20>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet4,DRT::Element::pyramid5>;
 
 //slave tet10
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::tet4>;
@@ -2060,7 +2172,15 @@ template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::hex8>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::hex27>;
 template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::hex20>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::tet10,DRT::Element::pyramid5>;
 
+//slave pyramid 5
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5,DRT::Element::tet4>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5,DRT::Element::tet10>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5,DRT::Element::hex8>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5,DRT::Element::hex27>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5,DRT::Element::hex20>;
+template class VOLMORTAR::VolMortarIntegrator<DRT::Element::pyramid5,DRT::Element::pyramid5>;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 06/14|
@@ -2281,6 +2401,25 @@ void VOLMORTAR::ConsInterpolator::Interpolate(
     case DRT::Element::tet10:
     {
       proj = ConsInterpolatorEval<DRT::Element::tet10>(
+          node,
+          ele,
+          pmatrix,
+          nodediscret,
+          elediscret,
+          foundeles,
+          found,
+          eleid,
+          dist,
+          AuxXi,
+          nodepos,
+          dofset,
+          P_dofrowmap,
+          P_dofcolmap);
+      break;
+    }
+    case DRT::Element::pyramid5:
+    {
+      proj = ConsInterpolatorEval<DRT::Element::pyramid5>(
           node,
           ele,
           pmatrix,

@@ -1,10 +1,12 @@
 /*!----------------------------------------------------------------------
 \file volmortar_shape.H
 
-</pre>
+\brief shape functions for the volmortar framework
+
+\level 1
 
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -385,6 +387,7 @@ double Jacobian(const double* xi, DRT::Element& ele)
   case DRT::Element::hex20:
   case DRT::Element::hex27:
   case DRT::Element::tet10:
+  case DRT::Element::pyramid5:
   {
     LINALG::Matrix<ndim,nn> derivs;
     const double r = xi[0];
@@ -812,19 +815,25 @@ void volmortar_shape_function_3D(
   }
   case DRT::Element::tet10:
   {
-      const double u=1.0-r-s-t;
+    const double u=1.0-r-s-t;
 
-      funct(0) =u*(2*u -1.0);
-      funct(1) =r*(2*r -1.0);
-      funct(2) =s*(2*s -1.0);
-      funct(3) =t*(2*t -1.0);
-      funct(4) =4*r*u;
-      funct(5) =4*r*s;
-      funct(6) =4*s*u;
-      funct(7) =4*t*u;
-      funct(8) =4*r*t;
-      funct(9) =4*s*t;
-      break;
+    funct(0) =u*(2*u -1.0);
+    funct(1) =r*(2*r -1.0);
+    funct(2) =s*(2*s -1.0);
+    funct(3) =t*(2*t -1.0);
+    funct(4) =4*r*u;
+    funct(5) =4*r*s;
+    funct(6) =4*s*u;
+    funct(7) =4*t*u;
+    funct(8) =4*r*t;
+    funct(9) =4*s*t;
+    break;
+  }
+  case DRT::Element::pyramid5:
+  {
+    DRT::UTILS::shape_function_3D(funct,r,s,t,shape);
+
+    break;
   }
   default:
       dserror("shape unknown\n");
@@ -1363,6 +1372,7 @@ void volmortar_dualshape_function_3D(
   case DRT::Element::hex20:
   case DRT::Element::hex27:
   case DRT::Element::tet10:
+  case DRT::Element::pyramid5:
   {
     //! number of space dimensions
     static const int ndim = DRT::UTILS::DisTypeToDim<distype>::dim;
