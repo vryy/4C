@@ -121,6 +121,106 @@ int DRT::DiscretizationHDG::FillComplete(bool assigndegreesoffreedom,
 }
 
 
+void DRT::DiscretizationHDG::ReadDirichletCondition(DRT::Condition&                     cond,
+                                                    const Teuchos::RCP<Epetra_Vector>&  toggle,
+                                                    Teuchos::RCP<std::set<int> >        dbcgids)
+{
+  // call to corresponding method in base class; safety checks inside
+  Discretization::ReadDirichletCondition(cond,toggle,dbcgids);
+
+  // say good bye if there are no face elements
+  if (FaceRowMap() == NULL)
+    return;
+
+  // get onoff toggles
+  const std::vector<int>* onoff  = cond.Get<std::vector<int> >("onoff");
+
+  if (NumMyRowFaces() > 0)
+  {
+    // initialize with true on each proc except proc 0
+    bool pressureDone = this->Comm().MyPID() != 0;
+
+    // loop over all faces
+    for (int i=0; i<NumMyRowFaces(); ++i)
+    {
+      const DRT::FaceElement* faceele = dynamic_cast<const DRT::FaceElement*>(lRowFace(i));
+      const unsigned int dofperface = faceele->ParentMasterElement()->NumDofPerFace(faceele->FaceMasterNumber());
+      const unsigned int dofpercomponent = faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
+      const unsigned int component = dofperface / dofpercomponent;
+
+      if (onoff->size() <= component || (*onoff)[component] == 0)
+        pressureDone = true;
+      if (!pressureDone) {
+        if (this->NumMyRowElements() > 0 && this->Comm().MyPID()==0) {
+          std::vector<int> predof = this->Dof(0, lRowElement(0));
+          const int gid = predof[0];
+          const int lid = this->DofRowMap(0)->LID(gid);
+
+          // set toggle vector
+          if (toggle != Teuchos::null)
+            (*toggle)[lid] = 1.0;
+          // amend vector of DOF-IDs which are Dirichlet BCs
+          if (dbcgids != Teuchos::null)
+            (*dbcgids).insert(gid);
+          pressureDone = true;
+        }
+      }
+
+      // do only faces where all nodes are present in the node list
+      bool faceRelevant = true;
+      int nummynodes = lRowFace(i)->NumNode();
+      const int * mynodes = lRowFace(i)->NodeIds();
+      for (int j=0; j<nummynodes; ++j)
+        if (!cond.ContainsNode(mynodes[j]))
+        {
+          faceRelevant = false;
+          break;
+        }
+      if (!faceRelevant) continue;
+
+      // get dofs of current face element
+      std::vector<int> dofs = this->Dof(0,lRowFace(i));
+
+      // loop over dofs
+      for (unsigned int j=0; j<dofperface; ++j)
+      {
+        // get global id
+        const int gid = dofs[j];
+        // get corresponding local id
+        const int lid = (*toggle).Map().LID(gid);
+        if (lid<0)
+          dserror("Global id %d not on this proc %d in system vector", dofs[j],
+              comm_->MyPID());
+        // get position of label for this dof in condition line
+        int onesetj = j / dofpercomponent;
+
+        if ((*onoff)[onesetj]==0)
+        {
+          // no DBC on this dof, set toggle zero
+          if (toggle!=Teuchos::null)
+            (*toggle)[lid] = 0.0;
+          // get rid of entry in DBC map - if it exists
+          if (dbcgids != Teuchos::null)
+            (*dbcgids).erase(gid);
+          continue;
+        }
+        else // if ((*onoff)[onesetj]==1)
+        {
+          // dof has DBC, set toggle vector one
+          if (toggle != Teuchos::null)
+            (*toggle)[lid] = 1.0;
+          // amend vector of DOF-IDs which are dirichlet BCs
+          if (dbcgids != Teuchos::null)
+            (*dbcgids).insert(gid);
+        }
+
+      } // loop over DOFs of face
+    } // loop over all faces
+  } // if there are faces
+
+  return;
+}
+
 
 void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             cond,
                                                   const bool                  usetime,
@@ -128,19 +228,24 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
                                                   Teuchos::RCP<Epetra_Vector> systemvector,
                                                   Teuchos::RCP<Epetra_Vector> systemvectord,
                                                   Teuchos::RCP<Epetra_Vector> systemvectordd,
-                                                  Teuchos::RCP<Epetra_Vector> toggle,
-                                                  Teuchos::RCP<std::set<int> > dbcgids)
+                                                  const Teuchos::RCP<const Epetra_Vector>& toggle)
 {
-  Discretization::DoDirichletCondition(cond, usetime,time,systemvector,systemvectord,systemvectordd,toggle,dbcgids);
+  // call corresponding method from base class; safety checks inside
+  Discretization::DoDirichletCondition(cond, usetime,time,systemvector,systemvectord,systemvectordd,toggle);
+
+  // say good bye if there are no face elements
   if (FaceRowMap() == NULL)
     return;
 
+  // get ids of conditioned nodes
   const std::vector<int>* nodeids = cond.Nodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
+
+  // get curves, functs, vals, and onoff toggles from the condition
   const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
   const std::vector<int>*    funct  = cond.Get<std::vector<int> >("funct");
-  const std::vector<int>*    onoff  = cond.Get<std::vector<int> >("onoff");
   const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
+  const std::vector<int>*    onoff  = cond.Get<std::vector<int> >("onoff");
 
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to
@@ -163,7 +268,6 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
     if (systemvectoraux == Teuchos::null)
       systemvectoraux = systemvectordd;
   }
-  dsassert(systemvectoraux!=Teuchos::null, "At least one vector must be unequal to null");
 
   // factor given by time curve
   std::vector<std::vector<double> > curvefacs(onoff->size());
@@ -180,6 +284,7 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
     }
   }
 
+  // do we have faces?
   if (NumMyRowFaces() > 0)
   {
     Epetra_SerialDenseVector elevec1, elevec2, elevec3;
@@ -200,13 +305,14 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
     initParams.set("onoff",onoffarray);
     initParams.set("time",time);
 
+    // initialize with true if proc is not proc 0
     bool pressureDone = this->Comm().MyPID() != 0;
 
+    // loop over all faces
     for (int i=0; i<NumMyRowFaces(); ++i)
     {
       const DRT::FaceElement* faceele = dynamic_cast<const DRT::FaceElement*>(lRowFace(i));
       const unsigned int dofperface = faceele->ParentMasterElement()->NumDofPerFace(faceele->FaceMasterNumber());
-      // const unsigned int dimension = DRT::UTILS::getDimension(lRowFace(i)->ParentMasterElement()->Shape());
       const unsigned int dofpercomponent = faceele->ParentMasterElement()->NumDofPerComponent(faceele->FaceMasterNumber());
       const unsigned int component = dofperface / dofpercomponent;
 
@@ -219,17 +325,12 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
           const int lid = this->DofRowMap(0)->LID(gid);
           // amend vector of DOF-IDs which are Dirichlet BCs
           if (systemvector != Teuchos::null)
-            (*systemvector)[lid] = 0;
+            (*systemvector)[lid] = 0.0;
           if (systemvectord != Teuchos::null)
-            (*systemvectord)[lid] = 0;
+            (*systemvectord)[lid] = 0.0;
           if (systemvectordd != Teuchos::null)
-            (*systemvectordd)[lid] = 0;
-          // set toggle vector
-          if (toggle != Teuchos::null)
-            (*toggle)[lid] = 1.0;
-          // amend vector of DOF-IDs which are Dirichlet BCs
-          if (dbcgids != Teuchos::null)
-            (*dbcgids).insert(gid);
+            (*systemvectordd)[lid] = 0.0;
+
           pressureDone = true;
         }
       }
@@ -265,42 +366,44 @@ void DRT::DiscretizationHDG::DoDirichletCondition(DRT::Condition&             co
         for (unsigned int i=0; i<dofperface; ++i)
           elevec1(i) = 1.;
 
+      // loop over face dofs
+      for (unsigned int j=0; j<dofperface; ++j)
+      {
+        // get global id
+        const int gid = dofs[j];
+        // get corresponding local id
+        const int lid = (*toggle).Map().LID(gid);
+        if (lid<0)
+          dserror("Global id %d not on this proc %d in system vector", dofs[j],
+              comm_->MyPID());
+        // get position of label for this dof in condition line
+        int onesetj = j / dofpercomponent;
 
-      for (unsigned int i=0; i<dofperface; ++i) {
-        int onesetj = i / dofpercomponent;
-        if ((*onoff)[onesetj]==0)
+        // check whether dof gid is a dbc gid
+        if (abs((*toggle)[lid]-1.0)>1e-13) continue;
+
+        std::vector<double> value(deg+1,(*val)[onesetj]);
+
+        // apply factors to Dirichlet value
+        for (unsigned k=0; k<deg+1; ++k)
         {
-          const int lid = (*systemvectoraux).Map().LID(dofs[i]);
-          if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[i]);
-          if (toggle!=Teuchos::null)
-            (*toggle)[lid] = 0.0;
-          // get rid of entry in DBC map - if it exists
-          if (dbcgids != Teuchos::null)
-            (*dbcgids).erase(dofs[i]);
-          continue;
+          value[k] *= curvefacs[onesetj][k];
         }
 
-        // get global id
-        const int gid = dofs[i];
-
         // assign value
-        const int lid = (*systemvectoraux).Map().LID(gid);
-        if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
         if (systemvector != Teuchos::null)
-          (*systemvector)[lid] = (*val)[onesetj] * elevec1(i) * curvefacs[onesetj][0];
+          (*systemvector)[lid] = value[0] * elevec1(j);
         if (systemvectord != Teuchos::null)
-          (*systemvectord)[lid] = (*val)[onesetj] * elevec1(i) * curvefacs[onesetj][1];
+          (*systemvectord)[lid] = value[1] * elevec1(j);
         if (systemvectordd != Teuchos::null)
-          (*systemvectordd)[lid] = (*val)[onesetj] * elevec1(i) * curvefacs[onesetj][2];
-        // set toggle vector
-        if (toggle != Teuchos::null)
-          (*toggle)[lid] = 1.0;
-        // amend vector of DOF-IDs which are Dirichlet BCs
-        if (dbcgids != Teuchos::null)
-          (*dbcgids).insert(gid);
-      }
-    } // loop over faces
-  }
+          (*systemvectordd)[lid] = value[2] * elevec1(j);
+
+      } // loop over all DOFs
+    } // loop over all faces
+
+  } // if there are faces
+
+  return;
 }
 
 /*----------------------------------------------------------------------*

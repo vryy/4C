@@ -2039,30 +2039,72 @@ protected:
   );
 
   /*!
-  \brief Determine Dirichlet condition at given time and apply its
-         values to a system vector
+  \brief Determine dofs subject to Dirichlet condition from input file
 
-  \param cond            The condition object
-  \param usetime
-  \param time            Evaluation time
-  \param systemvector    Vector to apply DBCs to (eg displ. in structure, vel. in fluids)
-  \param systemvectord   First time derivative of DBCs
-  \param systemvectordd  Second time derivative of DBCs
-  \param toggle          Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
-  \param dbcgids         Map containing DOFs subjected to Dirichlet boundary
-  conditions
+  \param cond     (in)  :  The condition object
+  \param toggle   (out) :  Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
+  \param dbcgids  (out) :  Map containing DOFs subjected to Dirichlet boundary conditions
 
-  \date 02/08
+  \remark If you want to be sure which Dirichlet values are set, look at the highest entity for a certain node in
+          your input file.
+          The corresponding condition, e.g.:
+             ---------DESIGN LINE DIRICH CONDITIONS
+             DSURF  1
+             // example_line
+             E 1 - NUMDOF 6 ONOFF 0 1 1 VAL 0.0 1.0 1.0 CURVE none none none FUNCT 1 0 0
+
+          tells you which dofs are actually conditioned. In the example given above, the highest entity which contains
+          a certain node is a LINE. The first dof has an ONOFF-toggle of ZERO. This means, that the nodes in LINE 'E 1'
+          definitely DO NOT HAVE a dirichlet BC on their first dof. No matter what is defined in a condition line of lower
+          priority. The corresponding entries in the systemvectors remain untouched.
+
+  \date 06/16
+
+  */
+  virtual void ReadDirichletCondition(
+    DRT::Condition&              cond,
+    const Teuchos::RCP<Epetra_Vector>&  toggle,
+    Teuchos::RCP<std::set<int> > dbcgids);
+
+  /*!
+  \brief Apply the Dirichlet values to the system vectors
+
+  \param cond            (in)  : The condition object
+  \param usetime         (in)  :
+  \param time            (in)  :  Evaluation time
+  \param systemvector    (out) :  Vector to apply DBCs to (eg displ. in structure, vel. in fluids)
+  \param systemvectord   (out) :  First time derivative of DBCs
+  \param systemvectordd  (out) :  Second time derivative of DBCs
+  \param toggle          (in)  :  Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
+
+  \remark If you want to be sure which Dirichlet values are set, look at the highest entity for a certain node in
+          your input file.
+          The corresponding condition, e.g.:
+             ---------DESIGN LINE DIRICH CONDITIONS
+             DSURF  1
+             // example_line
+             E 1 - NUMDOF 6 ONOFF 0 1 1 VAL 0.0 1.0 1.0 CURVE none none none FUNCT 1 0 0
+
+          tells you which dofs are actually conditioned. In the example given above, the highest entity which contains
+          a certain node is a LINE. The first dof has an ONOFF-toggle of ZERO. This means, that the nodes in LINE 'E 1'
+          definitely DO NOT HAVE a dirichlet BC on their first dof. No matter what is defined in a condition line of lower
+          priority. The corresponding entries in the systemvectors remain untouched.
+
+  \date original mwgee 02/08
+
+  \version rauch 06/2016
+           Shifted and rearranged parts of the former implementation to ReadDirichletCondition(...).
+           This fixes inconsistency in hierarchy handling. Now, the Dirichlet conditions are first read by
+           ReadDirichletCondition(...). Then, they are applied by DoDirichletCondition(...).
   */
   virtual void DoDirichletCondition(
-    DRT::Condition&             cond,
-    const bool                  usetime,
-    const double                time,
-    Teuchos::RCP<Epetra_Vector> systemvector,
-    Teuchos::RCP<Epetra_Vector> systemvectord,
-    Teuchos::RCP<Epetra_Vector> systemvectordd,
-    Teuchos::RCP<Epetra_Vector> toggle,
-    Teuchos::RCP<std::set<int> > dbcgids);
+    DRT::Condition&              cond,
+    const bool                   usetime,
+    const double                 time,
+    Teuchos::RCP<Epetra_Vector>  systemvector,
+    Teuchos::RCP<Epetra_Vector>  systemvectord,
+    Teuchos::RCP<Epetra_Vector>  systemvectordd,
+    const Teuchos::RCP<const Epetra_Vector>& toggle);
 
   /*!
    *  A helper function for BuildSurfacesinCondition,

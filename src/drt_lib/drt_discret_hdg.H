@@ -105,6 +105,20 @@ public:
                    bool doboundaryconditions = true);
 
   /*!
+  \brief Determine Dirichlet condition
+
+  \param cond    (in)  :  The condition object
+  \param toggle  (out) :  Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
+  \param dbcgids (out) :  Map containing DOFs subjected to Dirichlet boundary conditions
+
+  \date 06/16
+  */
+  virtual void ReadDirichletCondition(
+    DRT::Condition&              cond,
+    const Teuchos::RCP<Epetra_Vector>& toggle,
+    Teuchos::RCP<std::set<int> > dbcgids);
+
+  /*!
   \brief Determine Dirichlet condition at given time and apply its
          values to a system vector
 
@@ -115,8 +129,7 @@ public:
   \param systemvectord   First time derivative of DBCs
   \param systemvectordd  Second time derivative of DBCs
   \param toggle          Its i-th compononent is set 1 if it has a DBC, otherwise this component remains untouched
-  \param dbcgids         Map containing DOFs subjected to Dirichlet boundary
-  conditions
+  \param dbcgids         Map containing DOFs subjected to Dirichlet boundary conditions
 
   \date 02/08
   */
@@ -127,8 +140,7 @@ public:
     Teuchos::RCP<Epetra_Vector> systemvector,
     Teuchos::RCP<Epetra_Vector> systemvectord,
     Teuchos::RCP<Epetra_Vector> systemvectordd,
-    Teuchos::RCP<Epetra_Vector> toggle,
-    Teuchos::RCP<std::set<int> > dbcgids);
+    const Teuchos::RCP<const Epetra_Vector>& toggle);
 
 
   /*!

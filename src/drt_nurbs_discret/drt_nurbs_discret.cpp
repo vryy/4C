@@ -116,10 +116,8 @@ void DRT::NURBS::NurbsDiscretization::EvaluateDirichlet(Teuchos::ParameterList& 
                                             Teuchos::RCP<Epetra_Vector> toggle,
                                             Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
 {
-
-
-  // call base class EvaluateDirichlet
-  //Discretization::EvaluateDirichlet(params,systemvector,systemvectord,systemvectordd,toggle,dbcmapextractor);
+  // todo : find a better solution, which does not require duplication of
+  // so much code from the base class! (rauch 06/16)
 
   // vector of DOF-IDs which are Dirichlet BCs
   Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
@@ -130,26 +128,102 @@ void DRT::NURBS::NurbsDiscretization::EvaluateDirichlet(Teuchos::ParameterList& 
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
+  // If no toggle vector is provided we have to create a temporary one,
+  // i.e. we create a temporary toggle if Teuchos::null.
+  // We need this to assess the entity hierarchy and to determine which
+  // dof has a Dirichlet BC in the end. The highest entity defined for
+  // a certain dof in the input file overwrites the corresponding entry
+  // in the toggle vector. The entity hierarchy is:
+  // point>line>surface>volume
+  Teuchos::RCP<Epetra_Vector> toggleaux = Teuchos::null;
+  if(toggle!=Teuchos::null)
+    toggleaux = toggle;
+  else
+  {
+    if(systemvector!=Teuchos::null) {
+      toggleaux=Teuchos::rcp(new Epetra_Vector(systemvector->Map()));}
+    else if(systemvectord!=Teuchos::null){
+      if(toggleaux==Teuchos::null)
+        toggleaux=Teuchos::rcp(new Epetra_Vector(systemvectord->Map()));}
+    else if(systemvectordd!=Teuchos::null){
+      if(toggleaux==Teuchos::null)
+        toggleaux=Teuchos::rcp(new Epetra_Vector(systemvectordd->Map()));}
+    else if (systemvector==Teuchos::null and systemvectord==Teuchos::null and systemvectordd==Teuchos::null)
+      dserror("At least one systemvector must be provided. Otherwise, calling this method makes no sense.");
+  }
+
   std::multimap<std::string,Teuchos::RCP<Condition> >::iterator fool;
   //--------------------------------------------------------
-  // loop through Dirichlet conditions and evaluate them
-  //--------------------------------------------------------
-  // Note that this method does not sum up but 'sets' values in systemvector.
-  // For this reason, Dirichlet BCs are evaluated hierarchical meaning
-  // in this order:
-  //                VolumeDirichlet
-  //                SurfaceDirichlet
-  //                LineDirichlet
-  //                PointDirichlet
-  // This way, lower entities override higher ones which is
-  // equivalent to inheritance of dirichlet BCs as done in the old
-  // ccarat discretization with design          (mgee 1/07)
+   // loop through Dirichlet conditions and evaluate them
+   //--------------------------------------------------------
+   // Note that this method does not sum up but 'sets' values in systemvector.
+   // For this reason, Dirichlet BCs are evaluated hierarchical meaning
+   // in this order:
+   //                VolumeDirichlet
+   //                SurfaceDirichlet
+   //                LineDirichlet
+   //                PointDirichlet
+   // This way, lower entities override higher ones which is
+   // equivalent to inheritance of dirichlet BCs as done in the old
+   // ccarat discretization with design          (mgee 1/07)
+   //
+   // Lower entities MUST NOT set dof values in systemvector before
+   // we know if higher entities also prescribe/release Dirichlet BCs
+   // for the same dofs!
+   //
+   // Therefore, we first have to assess the full hierarchy and
+   // set the toggle vector for a dof to 1 if an entity prescribes a
+   // dirichlet BC and we have to set it to 0 again if a higher entity
+   // does NOT prescribe a dirichlet BC for the same dof. This is done
+   // in ReadDirichletCondition(...). We do this for each type of entity,
+   // starting with volume DBCs.
+   //
+   // Only then we call DoDirichletCondition(...) for each type of entity,
+   // starting with volume DBCs.
+   //
+   // This way, it is guaranteed, that the highest entity defined in
+   // the input file determines if the systemvector for the corresponding
+   // dofs is actually touched, or not, irrespective of the dirichlet BC
+   // definition of a lower entity.              (rauch 06/16)
+   //
 
-  // Do VolumeDirichlet first
+   // Gather VolumeDirichlet dbcgids first
+   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+   {
+     if (fool->first != "Dirichlet") continue;
+     if (fool->second->Type() != DRT::Condition::VolumeDirichlet) continue;
+     ReadDirichletCondition(*(fool->second),toggleaux,dbcgids);
+   }
+   // Gather SurfaceDirichlet dbcgids
+   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+   {
+     if (fool->first != "Dirichlet") continue;
+     if (fool->second->Type() != DRT::Condition::SurfaceDirichlet) continue;
+     ReadDirichletCondition(*(fool->second),toggleaux,dbcgids);
+   }
+   // Gather LineDirichlet dbcgids
+   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+   {
+     if (fool->first != "Dirichlet") continue;
+     if (fool->second->Type() != DRT::Condition::LineDirichlet) continue;
+     ReadDirichletCondition(*(fool->second),toggleaux,dbcgids);
+   }
+   // Gather PointDirichlet dbcgids
+   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
+   {
+     if (fool->first != "Dirichlet") continue;
+     if (fool->second->Type() != DRT::Condition::PointDirichlet) continue;
+     ReadDirichletCondition(*(fool->second),toggleaux,dbcgids);
+   }
+
+   // Now, as we know from the toggle vector which dofs actually have
+   // dirichlet BCs, we can assign the values to the system vectors.
+   // Assign VolumeDirichlet dbcgids first
   for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   {
     if (fool->second->Type() != DRT::Condition::VolumeDirichlet) continue;
     if (fool->first == "Dirichlet")
+    {
       Discretization::DoDirichletCondition(
                            *(fool->second),
                            usetime,
@@ -157,9 +231,8 @@ void DRT::NURBS::NurbsDiscretization::EvaluateDirichlet(Teuchos::ParameterList& 
                            systemvector,
                            systemvectord,
                            systemvectordd,
-                           toggle,
-                           dbcgids);
-
+                           toggleaux);
+    }
     else if (fool->first == "NurbsLSDirichlet")
     {
       FindDBCgidAndToggle(
@@ -167,7 +240,7 @@ void DRT::NURBS::NurbsDiscretization::EvaluateDirichlet(Teuchos::ParameterList& 
           systemvector,
           systemvectord,
           systemvectordd,
-          toggle,
+          toggleaux,
           dbcgids);
 
       DoNurbsLSDirichletCondition(
@@ -184,6 +257,7 @@ void DRT::NURBS::NurbsDiscretization::EvaluateDirichlet(Teuchos::ParameterList& 
   {
     if (fool->second->Type() != DRT::Condition::SurfaceDirichlet) continue;
     if (fool->first == "Dirichlet")
+    {
       Discretization::DoDirichletCondition(
                            *(fool->second),
                            usetime,
@@ -191,9 +265,8 @@ void DRT::NURBS::NurbsDiscretization::EvaluateDirichlet(Teuchos::ParameterList& 
                            systemvector,
                            systemvectord,
                            systemvectordd,
-                           toggle,
-                           dbcgids);
-
+                           toggleaux);
+    }
     else if (fool->first == "NurbsLSDirichlet")
     {
       FindDBCgidAndToggle(
@@ -201,7 +274,7 @@ void DRT::NURBS::NurbsDiscretization::EvaluateDirichlet(Teuchos::ParameterList& 
           systemvector,
           systemvectord,
           systemvectordd,
-          toggle,
+          toggleaux,
           dbcgids);
 
       DoNurbsLSDirichletCondition(
@@ -218,6 +291,7 @@ void DRT::NURBS::NurbsDiscretization::EvaluateDirichlet(Teuchos::ParameterList& 
   {
     if (fool->second->Type() != DRT::Condition::LineDirichlet) continue;
     if (fool->first == "Dirichlet")
+    {
       Discretization::DoDirichletCondition(
                            *(fool->second),
                            usetime,
@@ -225,9 +299,8 @@ void DRT::NURBS::NurbsDiscretization::EvaluateDirichlet(Teuchos::ParameterList& 
                            systemvector,
                            systemvectord,
                            systemvectordd,
-                           toggle,
-                           dbcgids);
-
+                           toggleaux);
+    }
     else if (fool->first == "NurbsLSDirichlet")
     {
       FindDBCgidAndToggle(
@@ -235,7 +308,7 @@ void DRT::NURBS::NurbsDiscretization::EvaluateDirichlet(Teuchos::ParameterList& 
           systemvector,
           systemvectord,
           systemvectordd,
-          toggle,
+          toggleaux,
           dbcgids);
 
       DoNurbsLSDirichletCondition(
@@ -252,6 +325,7 @@ void DRT::NURBS::NurbsDiscretization::EvaluateDirichlet(Teuchos::ParameterList& 
   {
     if (fool->second->Type() != DRT::Condition::PointDirichlet) continue;
     if (fool->first == "Dirichlet")
+    {
       Discretization::DoDirichletCondition(
                            *(fool->second),
                            usetime,
@@ -259,9 +333,8 @@ void DRT::NURBS::NurbsDiscretization::EvaluateDirichlet(Teuchos::ParameterList& 
                            systemvector,
                            systemvectord,
                            systemvectordd,
-                           toggle,
-                           dbcgids);
-
+                           toggleaux);
+    }
     else if (fool->first == "NurbsLSDirichlet")
     {
       FindDBCgidAndToggle(
@@ -269,7 +342,7 @@ void DRT::NURBS::NurbsDiscretization::EvaluateDirichlet(Teuchos::ParameterList& 
           systemvector,
           systemvectord,
           systemvectordd,
-          toggle,
+          toggleaux,
           dbcgids);
 
       DoNurbsLSDirichletCondition(
@@ -678,7 +751,7 @@ void DRT::NURBS::NurbsDiscretization::DoNurbsLSDirichletCondition(
  |  evaluate Dirichlet conditions (public)                   vuong 08/14|
  *----------------------------------------------------------------------*/
 void DRT::NURBS::NurbsDiscretization::FindDBCgidAndToggle(
-    DRT::Condition&              cond,
+    DRT::Condition&                    cond,
     const Teuchos::RCP<Epetra_Vector>  systemvector,
     const Teuchos::RCP<Epetra_Vector>  systemvectord,
     const Teuchos::RCP<Epetra_Vector>  systemvectordd,
