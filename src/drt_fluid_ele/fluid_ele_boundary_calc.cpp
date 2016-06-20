@@ -3,9 +3,11 @@
 
 \brief evaluation of fluid terms at integration points
 
+\level 1
+
 <pre>
-Maintainers: Ursula Rasthofer & Volker Gravemeier
-             {rasthofer,vgravem}@lnm.mw.tum.de
+\maintainer Martin Kronbichler & Volker Gravemeier
+             {kronbichler,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15236/-245
 </pre>
@@ -1503,6 +1505,17 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(
     densaf_ = actmat->Density();
     visc_   = actmat->SetViscosity();
   }
+  else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
+  {
+    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
+    densaf_ = actmat->Density();
+
+    const double nu_inf = actmat->NuInf();  // parameter for infinite-shear viscosity
+
+    // dynamic viscosity = kinematic viscosity * density
+    visc_ = nu_inf *densaf_;
+  }
+
   params.set<double>("density",   densaf_);
   params.set<double>("viscosity", visc_);
   //------------------------------------------------------------------
