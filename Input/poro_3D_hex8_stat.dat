@@ -102,7 +102,7 @@ CURVE3 on EXPR FUNC 5.0*t t1 0.0 t2 8.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS porofluid NODE 1 QUANTITY velx VALUE -4.81316228337278773e-02 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 1 QUANTITY velx VALUE -4.81319652783599172e-02 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 2 QUANTITY pressure VALUE -2.31802853520968639e-02 TOLERANCE 1e-5
 FLUID DIS porofluid NODE 3 QUANTITY velx VALUE -5.04386475041393653e-02 TOLERANCE 1e-5
 FLUID DIS porofluid NODE 4 QUANTITY velx VALUE -5.01200485366229478e-02 TOLERANCE 1e-5

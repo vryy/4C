@@ -76,7 +76,6 @@ TIMESTEP                        0.1
 COUPALGO                        ssi_IterStagg // ssi_OneWay_SolidToScatra ssi_IterStagg
 ITEMAX                          5
 SCATRA_FROM_RESTART_FILE        No
-SCATRATYPE                      ConvectionDiffusion
 FIELDCOUPLING                   volmortar
 -----------------------------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1.000e-02
@@ -136,7 +135,7 @@ FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 10.0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 69 QUANTITY phi2 VALUE 1.24959940844046824e+00 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 3173 QUANTITY phi VALUE 9.99756021859767197e-01 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 3173 QUANTITY phi VALUE 1.62644799437391652e+00 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  0
