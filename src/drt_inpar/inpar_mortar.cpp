@@ -160,6 +160,9 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
         triangulation_delaunay, triangulation_delaunay,
         triangulation_center, triangulation_center),
     &mortar);
+
+  setStringToIntegralParameter<int>("RESTART_WITH_MESHTYING","No","Must be chosen if a non-meshtying simulation is to be restarted with meshtying",
+                               yesnotuple,yesnovalue,&mortar);
 }
 
 

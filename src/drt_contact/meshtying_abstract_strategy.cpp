@@ -810,16 +810,23 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(
     IO::DiscretizationReader& reader,
     Teuchos::RCP<const Epetra_Vector> dis)
 {
+  // check whether this is a restart with meshtying of a previously
+  // non-meshtying simulation run
+  bool restartwithmeshtying = DRT::INPUT::IntegralValue<int>(Params(),
+      "RESTART_WITH_MESHTYING");
+
   // set displacement state
   SetState(MORTAR::state_new_displacement,*dis);
 
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  reader.ReadVector(LagrMult(),"mt_lagrmultold");
+  if (!restartwithmeshtying)
+    reader.ReadVector(LagrMult(),"mt_lagrmultold");
   StoreNodalQuantities(MORTAR::StrategyBase::lmcurrent);
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  reader.ReadVector(LagrMultOld(),"mt_lagrmultold");
+  if (!restartwithmeshtying)
+    reader.ReadVector(LagrMultOld(),"mt_lagrmultold");
   StoreNodalQuantities(MORTAR::StrategyBase::lmold);
 
   // only for Uzawa strategy
@@ -827,7 +834,8 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(
   if (st == INPAR::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    reader.ReadVector(LagrMultUzawa(),"mt_lagrmultold");
+    if (!restartwithmeshtying)
+      reader.ReadVector(LagrMultUzawa(),"mt_lagrmultold");
     StoreNodalQuantities(MORTAR::StrategyBase::lmuzawa);
   }
 
