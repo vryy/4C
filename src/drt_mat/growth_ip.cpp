@@ -1,14 +1,18 @@
-/*!---------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
-\file growth_ip.cpp
+ \file growth_ip.cpp
 
-<pre>
-   Maintainer: Moritz Thon
+ \brief This file contains routines for an integration point based isotropic volumetric growth law.
+
+\level 3
+
+ <pre>
+   \maintainer Moritz Thon
                thon@lnm.mw.tum.de
                http://www.mhpc.mw.tum.de
                089 - 289-10364
-</pre>
-*----------------------------------------------------------------------*/
+ </pre>
+ *----------------------------------------------------------------------*/
 
 
 #include "growth_ip.H"
@@ -634,18 +638,6 @@ void MAT::GrowthMandel::ResetAll(const int numgp)
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthMandel::ResetStep()
-{
-  MAT::Growth::ResetStep();
-}
-
-/*----------------------------------------------------------------------------*/
-void MAT::GrowthMandel::Update()
-{
-  MAT::Growth::Update();
-}
-
-/*----------------------------------------------------------------------------*/
 void MAT::GrowthMandel::EvaluateNonLinMass( const LINALG::Matrix<3, 3>* defgrd,
                             const LINALG::Matrix<6, 1>* glstrain,
                             Teuchos::ParameterList& params,
@@ -669,7 +661,10 @@ void MAT::GrowthMandel::EvaluateNonLinMass( const LINALG::Matrix<3, 3>* defgrd,
     double thetaold = ThetaOld()->at(gp);
 
     MAT::Growth* matgrowth = this;
-    Parameter()->growthlaw_->EvaluateNonLinMass(&theta,thetaold,linmass_disp,*matgrowth,defgrd, glstrain,params,eleGID);
+
+    Parameter()->growthlaw_->Evaluate(&theta,thetaold,linmass_disp,*matgrowth,defgrd,glstrain,params,eleGID);
+    linmass_disp->Scale(3.0*theta*theta*Matelastic()->Density());
+
     linmass_vel->Clear();
   }
   else

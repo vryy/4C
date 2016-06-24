@@ -2,12 +2,12 @@
 /*!
  \file growth_scd.H
 
- \brief
-This file contains routines for an integration point based and scalar dependend volumetric growth law.
+ \brief This file contains routines for an integration point based isotropic and unisotropic, scalar dependend volumetric growth law.
 It is derived from the growth laws implemented in growth_ip.cpp and additional adds the scalar dependency, e.g. nutrients.
 
+\level 3
  <pre>
-   Maintainer: Moritz Thon
+   \maintainer Moritz Thon
                thon@lnm.mw.tum.de
                http://www.mhpc.mw.tum.de
                089 - 289-10364
@@ -162,9 +162,6 @@ namespace MAT
         const LINALG::Matrix<6,1>* glstrain,
         Teuchos::ParameterList& params,
         const int eleGID );
-
-    /// Return density
-    //virtual double Density() const {return params_->density_;}
 
     /// Return theta
     Teuchos::RCP<std::vector<double> > Gettheta() const {return theta_;}
@@ -368,6 +365,13 @@ namespace MAT
     */
     virtual void Unpack(const std::vector<char>& data);
 
+    virtual double Density(int gp) const
+    {
+      const double density = Matelastic()->Density();
+      const double theta_gp = (*theta_)[gp];
+      return density * theta_gp;
+    };
+
     /// material type
     INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growth_volumetric_scd; }
 
@@ -392,6 +396,14 @@ namespace MAT
         LINALG::Matrix<6,6>* cmat,
         const int eleGID
      );
+
+    /// Evaluate mass change
+    void EvaluateNonLinMass(const LINALG::Matrix<3,3>* defgrd,
+                          const LINALG::Matrix<6,1>* glstrain,
+                          Teuchos::ParameterList& params,
+                          LINALG::Matrix<6,1>* linmass_disp,
+                          LINALG::Matrix<6,1>* linmass_vel,
+                          const int eleGID);
 
   protected:
 

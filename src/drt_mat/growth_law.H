@@ -2,17 +2,15 @@
 /*!
 \file growth_law.H
 
-\brief growth law for the volumetric growth materials
-
-This file contains routines needed for the calculation of the volumetric growth
+\brief growth law for the volumetric growth materials. This file contains routines needed for the calculation of the volumetric growth
 parameter theta. These so called growthlaws are to be used for the isovolumetric
-split growth materials MAT::Growth.
-
-Upon request a growthlaw delivers a growth factor \f$\vartheta\f$ and its derivative
+split growth materials MAT::Growth. Upon request a growthlaw delivers a growth factor \f$\vartheta\f$ and its derivative
 wrt. \f$\frac{\partial \vartheta}{\partial C}\f$.
 
+\level 3
+
  <pre>
-   Maintainer: Moritz Thon
+   \maintainer Moritz Thon
                thon@lnm.mw.tum.de
                http://www.mhpc.mw.tum.de
                089 - 289-10364
@@ -91,35 +89,6 @@ namespace MAT
     virtual void Evaluate(double* theta,
         const double& thetaold,
         LINALG::Matrix<6,1>* dthetadC,
-        MAT::Growth& matgrowth,
-        const LINALG::Matrix<3,3>* defgrd,
-        const LINALG::Matrix<6,1>* glstrain,
-        Teuchos::ParameterList& params,
-        const int eleGID ) = 0;
-
-    /*! evaluate eventual contribution to dynamic mass change
-     *
-     * \param In
-     * theta - the volumetric growth factor
-     * \param Out
-     * linmass_disp - the mass linearization
-     * \param In
-     * matgrowth - a reference to a growth material
-     * \param In
-     * defgrad - the deformation gradient
-     * \param In
-     * glstrain - the green lagrange strains
-     * \param In
-     * params - a parameter list as handed in from the element
-     * \param In
-     * eleGID - the callings element GID
-     *
-     *  \author kehl
-     * \date 06/2015
-     */
-    virtual void EvaluateNonLinMass(double* theta,
-        const double& thetaold,
-        LINALG::Matrix<6,1>* linmass_disp,
         MAT::Growth& matgrowth,
         const LINALG::Matrix<3,3>* defgrd,
         const LINALG::Matrix<6,1>* glstrain,
@@ -290,35 +259,6 @@ namespace MAT
         Teuchos::ParameterList& params,
         const int eleGID);
 
-    /*! evaluate eventual contribution to dynamic mass change
-     *
-     * \param In
-     * theta - the volumetric growth factor
-     * \param Out
-     * linmass_disp - the mass linearization
-     * \param In
-     * matgrowth - a reference to a growth material
-     * \param In
-     * defgrad - the deformation gradient
-     * \param In
-     * glstrain - the green lagrange strains
-     * \param In
-     * params - a parameter list as handed in from the element
-     * \param In
-     * eleGID - the callings element GID
-     *
-     *  \author kehl
-     * \date 06/2015
-     */
-    virtual void EvaluateNonLinMass(double* theta,
-        const double& thetaold,
-        LINALG::Matrix<6,1>* linmass_disp,
-        MAT::Growth& matgrowth,
-        const LINALG::Matrix<3,3>* defgrd,
-        const LINALG::Matrix<6,1>* glstrain,
-        Teuchos::ParameterList& params,
-        const int eleGID );
-
     /*! \brief derivative of theta wrt parameters
      *
      * \param Out
@@ -475,35 +415,6 @@ namespace MAT
         const LINALG::Matrix<6,1>* glstrain,
         Teuchos::ParameterList& params,
         const int eleGID ) = 0;
-
-    /*! evaluate eventual contribution to dynamic mass change
-     *
-     * \param In
-     * theta - the volumetric growth factor
-     * \param Out
-     * linmass_disp - the mass linearization
-     * \param In
-     * matgrowth - a reference to a growth material
-     * \param In
-     * defgrad - the deformation gradient
-     * \param In
-     * glstrain - the green lagrange strains
-     * \param In
-     * params - a parameter list as handed in from the element
-     * \param In
-     * eleGID - the callings element GID
-     *
-     *  \author kehl
-     * \date 06/2015
-     */
-    virtual void EvaluateNonLinMass(double* theta,
-        const double& thetaold,
-        LINALG::Matrix<6,1>* linmass_disp,
-        MAT::Growth& matgrowth,
-        const LINALG::Matrix<3,3>* defgrd,
-        const LINALG::Matrix<6,1>* glstrain,
-        Teuchos::ParameterList& params,
-        const int eleGID );
 
     /*! \brief derivative of theta wrt parameters
      *

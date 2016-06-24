@@ -2,13 +2,13 @@
 /*!
  \file growth_scd.cpp
 
- \brief
-
-This file contains routines for an integration point based and scalar dependend volumetric growth law.
+ \brief This file contains routines for an integration point based isotropic and unisotropic, scalar dependend volumetric growth law.
 It is derived from the growth laws implemented in growth_ip.cpp and additional adds the scalar dependency, e.g. nutrients.
 
+\level 3
+
  <pre>
-   Maintainer: Moritz Thon
+   \maintainer Moritz Thon
                thon@lnm.mw.tum.de
                http://www.mhpc.mw.tum.de
                089 - 289-10364
@@ -851,6 +851,43 @@ void MAT::GrowthScdACRadial::Evaluate
     Matelastic()->Evaluate(defgrd, glstrain, params, stress, cmat, eleGID); //evaluate the standard material
   }
 
+}
+
+/*----------------------------------------------------------------------------*/
+void MAT::GrowthScdACRadial::EvaluateNonLinMass( const LINALG::Matrix<3, 3>* defgrd,
+                            const LINALG::Matrix<6, 1>* glstrain,
+                            Teuchos::ParameterList& params,
+                            LINALG::Matrix<NUM_STRESS_3D,1>* linmass_disp,
+                            LINALG::Matrix<NUM_STRESS_3D,1>* linmass_vel,
+                            const int eleGID)
+{
+  const double eps = 1.0e-14;
+  const double starttime = Parameter()->starttime_;
+  const double endtime = Parameter()->endtime_;
+  const double time = params.get<double>("total time", -1.0);
+
+  if (time > starttime + eps and time <= endtime + eps)
+  {
+    // get gauss point number
+    const int gp = params.get<int>("gp", -1);
+    if (gp == -1)
+      dserror("no Gauss point number provided in material");
+
+    double theta = theta_->at(gp);
+    double thetaold = ThetaOld()->at(gp);
+
+    MAT::Growth* matgrowth = this;
+    Parameter()->growthlaw_->Evaluate(&theta,thetaold,linmass_disp,*matgrowth,defgrd,glstrain,params,eleGID);
+    linmass_disp->Scale(Matelastic()->Density());
+
+    linmass_vel->Clear();
+  }
+  else
+  {
+    //no growth. set to zero
+    linmass_disp->Clear();
+    linmass_vel->Clear();
+  }
 }
 
 ///*----------------------------------------------------------------------*

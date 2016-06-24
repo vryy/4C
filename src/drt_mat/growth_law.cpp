@@ -1,14 +1,23 @@
 /*----------------------------------------------------------------------*/
 /*!
- * \file growth_law.cpp
- *
- * <pre>
- * Maintainer: Moritz Thon
- *             thon@lnm.mw.tum.de
- *             http://www.mhpc.mw.tum.de
- *             089 - 289-10364
- * </pre>
- *----------------------------------------------------------------------*/
+\file growth_law.cpp
+
+\brief growth law for the volumetric growth materials. This file contains routines needed for the calculation of the volumetric growth
+parameter theta. These so called growthlaws are to be used for the isovolumetric
+split growth materials MAT::Growth. Upon request a growthlaw delivers a growth factor \f$\vartheta\f$ and its derivative
+wrt. \f$\frac{\partial \vartheta}{\partial C}\f$.
+
+\level 3
+
+ <pre>
+   \maintainer Moritz Thon
+               thon@lnm.mw.tum.de
+               http://www.mhpc.mw.tum.de
+               089 - 289-10364
+ </pre>
+*/
+
+/*----------------------------------------------------------------------*/
 
 
 #include "growth_law.H"
@@ -217,20 +226,6 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit,
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::GrowthLawDyn::EvaluateNonLinMass(double* theta,
-                                           const double& thetaold,
-                                           LINALG::Matrix<6,1>* linmass_disp,
-                                           MAT::Growth& matgrowth,
-                                           const LINALG::Matrix<3,3>* defgrd,
-                                           const LINALG::Matrix<6,1>* glstrain,
-                                           Teuchos::ParameterList& params,
-                                           const int eleGID )
-{
-  Evaluate(theta,thetaold,linmass_disp,matgrowth,defgrd,glstrain,params,eleGID);
-  linmass_disp->Scale(3.0*(*theta)*(*theta)*matgrowth.Matelastic()->Density());
-}
-
-/*----------------------------------------------------------------------------*/
 void MAT::GrowthLawDyn::EvaluatePDeriv(double* thetainit,
                                        const double& thetaold,
                                        Teuchos::RCP<MAT::So3Material> matelastic,
@@ -252,20 +247,6 @@ MAT::GrowthLawStatic::GrowthLawStatic()
 MAT::GrowthLawStatic::GrowthLawStatic(MAT::PAR::Parameter* params)
   : GrowthLaw(params)
 {
-}
-
-/*----------------------------------------------------------------------------*/
-void MAT::GrowthLawStatic::EvaluateNonLinMass(double* theta,
-                                              const double& thetaold,
-                                              LINALG::Matrix<6,1>* linmass_disp,
-                                              MAT::Growth& matgrowth,
-                                              const LINALG::Matrix<3,3>* defgrd,
-                                              const LINALG::Matrix<6,1>* glstrain,
-                                              Teuchos::ParameterList& params,
-                                              const int eleGID )
-{
-  // this is a static growth law
-  linmass_disp->Clear();
 }
 
 /*----------------------------------------------------------------------------*/

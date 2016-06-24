@@ -1,21 +1,18 @@
-/*-------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
- * \file growth_ip.H
- * \brief integration point based volumetric growth
- *
- * The growth factor \theta is given via a specific growth law.
- *
- * example input line
- * MAT 1 MAT_GrowthVolumetric GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.1 ENDTIME 100.0
- *
- * <pre>
- * Maintainer: Moritz Thon
- *             thon@lnm.mw.tum.de
- *             http://www.mhpc.mw.tum.de
- *             089 - 289-10364
- *             </pre>
-*/
-/*-------------------------------------------------------------------------*/
+ \file growth_ip.H
+
+ \brief This file contains routines for an integration point based isotropic volumetric growth law.
+
+\level 3
+
+ <pre>
+   \maintainer Moritz Thon
+               thon@lnm.mw.tum.de
+               http://www.mhpc.mw.tum.de
+               089 - 289-10364
+ </pre>
+ *----------------------------------------------------------------------*/
 #ifndef GROWTH_IP_H
 #define GROWTH_IP_H
 
@@ -150,10 +147,10 @@ class GrowthLaw;
     virtual void ResetAll(int numgp);
 
     /// Update
-    virtual void Update();
+    void Update();
 
     /// Reset time step
-    virtual void ResetStep();
+    void ResetStep();
 
     /// Store history/internal variables
     virtual void StoreHistory(int timestep);
@@ -233,7 +230,7 @@ class GrowthLaw;
      *  \author kehl
      * \date 06/2015
      */
-    virtual void EvaluateElastic(const LINALG::Matrix<3,3>* defgrd,
+    void EvaluateElastic(const LINALG::Matrix<3,3>* defgrd,
                                  const LINALG::Matrix<6,1>* glstrain,
                                  LINALG::Matrix<6,1>* stress,
                                  LINALG::Matrix<6,6>* cmat,
@@ -246,22 +243,23 @@ class GrowthLaw;
     //@{
 
     /// Return density
-    virtual double Density() const {dserror("growth material needs gauss point data for density!"); return -1.0;}
+    double Density() const {dserror("growth material needs gauss point data for density!"); return -1.0;}
+
     virtual double Density(int gp) const
     {
-      double density = matelastic_->Density();
-      double theta_gp = (*theta_)[gp];
+      const double density = matelastic_->Density();
+      const double theta_gp = (*theta_)[gp];
       return density * theta_gp * theta_gp * theta_gp;
     };
 
     /// Return whether material has a varying material density
-    virtual bool VaryingDensity() const { return true;}
+    bool VaryingDensity() const { return true;}
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Growth* Parameter() const { return params_; }
 
     /// access to the elastic material
-    const Teuchos::RCP<MAT::So3Material> Matelastic() {return matelastic_;}
+    const Teuchos::RCP<MAT::So3Material> Matelastic() const {return matelastic_;}
 
     // read access to thetaold_
     Teuchos::RCP<const std::vector<double> > ThetaOld() const {return thetaold_;}
@@ -377,21 +375,6 @@ class GrowthLaw;
 
     /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
     virtual void ResetAll(int numgp);
-
-    /*! \brief Reset internal variables such that the step can be repeated
-     *
-     * In this case it is necessary to reset thetaold_ since it refers to to last step
-     * and is updated upon calling Update at the end of the time step so if this step
-     * is repeated thetaold_ is already theta giving different results. This is necessary
-     * for inverse methods and i guess also time step adaptivity
-     *
-     * \author kehl
-     * \date 07/2015
-     */
-    virtual void ResetStep();
-
-    /// Update
-    virtual void Update();
 
     /// Return names of visualization data
     virtual void VisNames(std::map<std::string,int>& names);
