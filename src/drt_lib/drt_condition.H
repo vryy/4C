@@ -250,6 +250,7 @@ public:
     RedAirwayTissue,
     RedAirwayNodeTissue,
     ParticleInflow,
+    ParticleHeatSource,
     ParticleInitRadius,
     ParticleWall,
     ArtPrescribedScatraCond,

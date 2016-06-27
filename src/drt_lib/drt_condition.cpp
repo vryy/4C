@@ -242,6 +242,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==ParticleInitRadius)            os << "particle initial radius condition";
   else if (Type()==ParticlePeriodic)              os << "particle periodic boundary condition";
   else if (Type()==ParticleWall)                  os << "particle wall condition";
+  else if (Type()==ParticleHeatSource)            os << "particle heat source condition";
   else if (Type()==CrackMastersurface)            os << "Master crack surface";
   else if (Type()==CrackSlavesurface)             os << "Slave crack surface";
   else if (Type()==CrackBoundaryPoints)           os << "Crack boundary points";

@@ -4,12 +4,9 @@
 
 \brief testing of particle calculation results
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\level 2
+
+\maintainer Georg Hammerl
 */
 /*----------------------------------------------------------------------*/
 
@@ -55,7 +52,7 @@ public:
   //! Possible position flags are "dispx", "dispy", "dispz",
   //!                             "velx", "vely", "velz",
   //!                             "accx", "accy", "accz"
-  //!                             "radius"
+  //!                             "radius", "temperature"
   virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
 private:
@@ -71,6 +68,8 @@ private:
   Teuchos::RCP<const Epetra_Vector> acc_;
   //! global radius DOFs
   Teuchos::RCP<const Epetra_Vector> radius_;
+  //! global temperature DOFs
+  Teuchos::RCP<const Epetra_Vector> temperature_;
 };
 
 #endif /* #ifndef PARTICLERESULTTEST_H */

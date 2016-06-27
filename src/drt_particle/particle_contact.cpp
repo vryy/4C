@@ -20,6 +20,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_mat/particle_mat.H"
+#include "../drt_mat/particleAMmat.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_meshfree_discret/drt_meshfree_multibin.H"
@@ -56,12 +57,15 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
   ang_velncol_(Teuchos::null)
 {
   // make sure that a particle material is defined in the dat-file
-  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
-  if (id==-1)
-    dserror("Could not find particle material");
+  int id = -1;
+  bool trg_temperature = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRG_TEMPERATURE");
 
+  trg_temperature ? id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat) :
+                    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
+  if (id==-1) dserror("Could not find particle material or material type - trg_temperature do not match");
   const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
   const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
+
   // currently all particles have identical density and radius
   double density = actmat->density_;
   nue_ = actmat->poissonratio_;

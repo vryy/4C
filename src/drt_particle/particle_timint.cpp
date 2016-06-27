@@ -23,6 +23,7 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/particle_mat.H"
+#include "../drt_mat/particleAMmat.H"
 #include "../drt_mat/matpar_bundle.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -76,9 +77,12 @@ PARTICLE::TimInt::TimInt
   dis_(Teuchos::null),
   vel_(Teuchos::null),
   acc_(Teuchos::null),
+  temperature_(Teuchos::null),
   disn_(Teuchos::null),
   veln_(Teuchos::null),
   accn_(Teuchos::null),
+  temperaturen_(Teuchos::null),
+  SL_latent_heat_(Teuchos::null),
   radius_(Teuchos::null),
   radius0_(Teuchos::null),
   radiusdot_(Teuchos::null),
@@ -90,8 +94,13 @@ PARTICLE::TimInt::TimInt
   ang_accn_(Teuchos::null),
   orient_(Teuchos::null),
   density_(-1.0),
+  CPS_(-1.0),
+  CPL_(-1.0),
+  SL_latent_heat_max_(-1.0),
+  SL_transitionTemperature_(-1.0),
   fifc_(Teuchos::null),
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
+  trg_temperature_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRG_TEMPERATURE")),
   collhandler_(Teuchos::null)
 {
   // welcome user
@@ -126,44 +135,53 @@ void PARTICLE::TimInt::Init()
 {
   Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*DofRowMapView(), true);
 
-   // displacements D_{n}
-   dis_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-   // velocities V_{n}
-   vel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
-   // accelerations A_{n}
-   acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  // displacements D_{n}
+  dis_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  // velocities V_{n}
+  vel_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  // accelerations A_{n}
+  acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
+  // temperatures T_{n}
+  if (trg_temperature_)
+  {
+    temperature_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
+    SL_latent_heat_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+  }
 
-   // create empty interface force vector
-   fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
-   // radius of each particle
-   radius_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
-   if(variableradius_)
-   {
-     // initial radius of each particle for time dependent radius
-     radius0_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
-     // time derivative of radius of each particle for time dependent radius
-     radiusdot_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
-   }
-   // mass of each particle
-   mass_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+  // create empty interface force vector
+  fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
+  // radius of each particle
+  radius_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+  if(variableradius_)
+  {
+    // initial radius of each particle for time dependent radius
+    radius0_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+    // time derivative of radius of each particle for time dependent radius
+    radiusdot_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+  }
+  // mass of each particle
+  mass_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
 
-   // set initial fields
-   SetInitialFields();
+  // set initial fields
+  SetInitialFields();
 
-   // Apply Dirichlet BC and create dbc map extractor
-   {
-     dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
-     Teuchos::ParameterList p;
-     p.set("total time", (*time_)[0]);
-     discret_->EvaluateDirichlet(p, (*dis_)(0), (*vel_)(0), (*acc_)(0), Teuchos::null, dbcmaps_);
-   }
+  // Apply Dirichlet BC and create dbc map extractor
+  {
+    dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
+    Teuchos::ParameterList p;
+    p.set("total time", (*time_)[0]);
+    discret_->EvaluateDirichlet(p, (*dis_)(0), (*vel_)(0), (*acc_)(0), Teuchos::null, dbcmaps_);
+  }
 
-   // displacements D_{n+1} at t_{n+1}
-   disn_ = Teuchos::rcp(new Epetra_Vector(*(*dis_)(0)));
-   // velocities V_{n+1} at t_{n+1}
-   veln_ = Teuchos::rcp(new Epetra_Vector(*(*vel_)(0)));
-   // accelerations A_{n+1} at t_{n+1}
-   accn_ = Teuchos::rcp(new Epetra_Vector(*(*acc_)(0)));
+  // displacements D_{n+1} at t_{n+1}
+  disn_ = Teuchos::rcp(new Epetra_Vector(*(*dis_)(0)));
+  // velocities V_{n+1} at t_{n+1}
+  veln_ = Teuchos::rcp(new Epetra_Vector(*(*vel_)(0)));
+  // accelerations A_{n+1} at t_{n+1}
+  accn_ = Teuchos::rcp(new Epetra_Vector(*(*acc_)(0)));
+  // temperatures T_{n+1} at t_{n+1}
+  if (trg_temperature_)
+    temperaturen_ = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
 
   return;
 }
@@ -173,19 +191,23 @@ void PARTICLE::TimInt::Init()
 void PARTICLE::TimInt::SetInitialFields()
 {
   // make sure that a particle material is defined in the dat-file
-  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
-  if (id==-1)
-    dserror("Could not find particle material");
+  int id = -1;
+  if (trg_temperature_)
+    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
+  else
+    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
+  if (id==-1) dserror("Could not find particle material or material type - trg_temperature do not match");
 
   const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
   const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
-  // all particles have identical density and initially the same radius
+
+  // all particles have identical specific heats
   density_ = actmat->density_;
   double initial_radius = actmat->initialradius_;
-
   double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
+  radius_->PutScalar(initial_radius);
 
-  // initialize displacement field, radius and mass vector
+  // initialize displacement field, radius, and mass vector
   for(int n=0; n<discret_->NumMyRowNodes(); ++n)
   {
     DRT::Node* actnode = discret_->lRowNode(n);
@@ -204,10 +226,6 @@ void PARTICLE::TimInt::SetInitialFields()
         (*(*dis_)(0))[lid+dim] = actnode->X()[dim];
       }
     }
-
-    // initialize radii of particles
-    (*radius_)[n] = initial_radius;
-
     // mass-vector: m = rho * 4/3 * PI *r^3
     (*mass_)[n] = density_ * 4.0/3.0 * M_PI * initial_radius * initial_radius * initial_radius;
   }
@@ -274,6 +292,26 @@ void PARTICLE::TimInt::SetInitialFields()
       // recompute particle mass
       (*mass_)[lid] = density_*4.0/3.0*M_PI*random_radius*random_radius*random_radius;
     }
+  }
+
+  if (trg_temperature_)
+  {
+    const MAT::PAR::ParticleAMmat* actmat_derived = static_cast<const MAT::PAR::ParticleAMmat*>(mat);
+    // all particles have identical specific heats, specific latent heat - solid <-> liquid, and transition temperature - solid <-> liquid
+    CPS_ = actmat_derived->CPS_;
+    CPL_ = actmat_derived->CPL_;
+    SL_latent_heat_max_ = actmat_derived->SL_latent_heat_max_;
+    SL_transitionTemperature_ = actmat_derived->SL_transitionTemperature_;
+    // initialize temperature of particles
+    const double temperature0 = actmat_derived->temperature_;
+    (*temperature_)(0)->PutScalar(temperature0);
+
+    if (temperature0>SL_transitionTemperature_)
+      SL_latent_heat_->PutScalar(SL_latent_heat_max_);
+    else if (temperature0<SL_transitionTemperature_)
+      SL_latent_heat_->PutScalar(0);
+    else
+      dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
   }
 
   // set initial velocity field if existing
@@ -434,6 +472,13 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
     LINALG::Export(*old, *veln_);
   }
 
+  if (temperaturen_ != Teuchos::null)
+  {
+    old = temperaturen_;
+    temperaturen_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
+    LINALG::Export(*old, *temperaturen_);
+  }
+
   if (ang_veln_ != Teuchos::null)
   {
     old = ang_veln_;
@@ -483,18 +528,34 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
     LINALG::Export(*oldvec, *(*acc_)(0));
   }
 
+  if (temperature_ != Teuchos::null && (*temperature_)(0) != Teuchos::null)
+  {
+    const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
+    temperature_->ReplaceMaps(discret_->NodeRowMap());
+    LINALG::Export(*oldvec, *(*temperature_)(0));
+  }
+
   if (ang_acc_ != Teuchos::null and (*ang_acc_)(0) != Teuchos::null)
   {
     const Teuchos::RCP<Epetra_Vector> oldvec = Teuchos::rcp(new Epetra_Vector(*(*ang_acc_)(0)));
     ang_acc_->ReplaceMaps(discret_->DofRowMap());
     LINALG::Export(*oldvec, *(*ang_acc_)(0));
   }
+
   if (orient_ != Teuchos::null)
   {
     old = orient_;
     orient_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
     LINALG::Export(*old, *orient_);
   }
+
+  if (SL_latent_heat_ != Teuchos::null)
+  {
+    old = SL_latent_heat_;
+    SL_latent_heat_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
+    LINALG::Export(*old, *SL_latent_heat_);
+  }
+
   if (radius_ != Teuchos::null)
   {
     old = radius_;
@@ -580,6 +641,13 @@ void PARTICLE::TimInt::ReadRestartState()
     vel_->UpdateSteps(*veln_);
     reader.ReadVector(accn_, "acceleration");
     acc_->UpdateSteps(*accn_);
+
+    if(trg_temperature_)
+    {
+      reader.ReadVector(temperaturen_, "temperature");
+      temperature_->UpdateSteps(*temperaturen_);
+    }
+
     reader.ReadVector(mass_, "mass");
 
     // read in particle collision relevant data
@@ -669,6 +737,10 @@ void PARTICLE::TimInt::OutputRestart
   output_->WriteVector("displacement", (*dis_)(0));
   output_->WriteVector("velocity", (*vel_)(0));
   output_->WriteVector("acceleration", (*acc_)(0));
+
+  if (trg_temperature_)
+    output_->WriteVector("temperature", (*temperature_)(0));
+
   output_->WriteVector("radius", radius_, output_->nodevector);
   output_->WriteVector("mass", mass_, output_->nodevector);
   if(variableradius_)
@@ -711,7 +783,7 @@ void PARTICLE::TimInt::OutputRestart
 }
 
 /*----------------------------------------------------------------------*/
-/* output displacements, velocities and accelerations */
+/* output displacements, velocities, accelerations, and temperatures */
 void PARTICLE::TimInt::OutputState
 (
   bool& datawritten
@@ -731,6 +803,8 @@ void PARTICLE::TimInt::OutputState
   }
 
   output_->WriteVector("radius", radius_, output_->nodevector);
+  if (trg_temperature_)
+    output_->WriteVector("temperature", (*temperature_)(0), output_->nodevector);
   if(collhandler_ != Teuchos::null and writeorientation_)
   {
     output_->WriteVector("orientation", orient_);
@@ -810,7 +884,6 @@ void PARTICLE::TimInt::OutputEnergy()
                  << " " << collhandler_->GetMaxPenetration()
                  << std::endl;
   }
-
   return;
 }
 

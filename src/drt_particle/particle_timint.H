@@ -4,6 +4,8 @@
 
 \brief Time integration for particle dynamics
 
+\level 2
+
 \maintainer Georg Hammerl
 */
 
@@ -115,6 +117,8 @@ namespace PARTICLE
       Teuchos::RCP<Epetra_Vector> acc,
       Teuchos::RCP<Epetra_Vector> ang_acc
       );
+
+
 
     //! Prepare time step
     virtual void PrepareTimeStep();
@@ -252,11 +256,17 @@ namespace PARTICLE
     //! unknown accelerations \f$A_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accn() { return (*acc_)(0); }
 
+    //! unknown temperatures \f$T_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() { return (*temperature_)(0); }
+
     //! Return velocities \f$V_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() { return veln_; }
 
     //! Return accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accnp() { return accn_; }
+
+    //! Return temperatures \f$T_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() { return temperaturen_; }
 
     //! unknown angular velocities \f$V_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AngVeln() { return (*ang_vel_)(0); }
@@ -270,6 +280,9 @@ namespace PARTICLE
     //! Return radii of particles \f$R_{n}\f$ or \f$R_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius() { return radius_; }
 
+    //! Return latent heat of particles \f$L_{n}\f$ or \f$L_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> LatentHeat() { return SL_latent_heat_; }
+
     //! Return first time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> RadiusDot() { return radiusdot_; }
 
@@ -281,6 +294,18 @@ namespace PARTICLE
 
     //! Return density
     virtual double ParticleDensity() { return density_; }
+
+    //! extract heat source - constant pressure - solid state
+    virtual double CPS() { return CPS_; }
+
+    //! extract heat source - constant pressure - liquid state
+    virtual double CPL() { return CPL_; }
+
+    //! Return specific latent heat - solid <-> liquid
+    virtual double MaxSpecificLatentHeat() {return SL_latent_heat_max_; }
+
+    //! Return transition temperature - solid <-> liquid
+    virtual double SL_TransitionTemperature() {return SL_transitionTemperature_; }
 
     //! does collision handler exist?
     virtual bool HaveCollHandler() {return (collhandler_!=Teuchos::null); }
@@ -296,11 +321,17 @@ namespace PARTICLE
     //! extract velocities
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp(){ return veln_; }
 
+    //! extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp(){ return temperaturen_; }
+
     //! extract initial radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() { return radius0_; }
 
     //! extract radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius() { return radius_; }
+
+    //! extract radii
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessLatentHeat() { return SL_latent_heat_; }
 
     //! extract fist time derivative of radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusDot() { return radiusdot_; }
@@ -403,15 +434,21 @@ namespace PARTICLE
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > vel_;
     //! global accelerations \f${A}_{n}, A_{n-1}, ...\f$
     Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > acc_;
+    //! global temperatures \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<TIMINT::TimIntMStep<Epetra_Vector> > temperature_;
     //! global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> disn_;
     //! global velocities \f${V}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> veln_;
     //! global accelerations \f${A}_{n+1}\f$ at \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> accn_;
+    //! global temperatures \f${T}_{n+1}\f$ at \f$t_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector>  temperaturen_;
     //! radius of each particle at \f$t_{n}\f$ or \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> radius_;
+    Teuchos::RCP<Epetra_Vector> SL_latent_heat_;
     //! radius of each particle at \f$t_{0}\f$
+    Teuchos::RCP<Epetra_Vector> radius_;
+    //! latent heat of each particle at \f$t_{n}\f$ or \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> radius0_;
     //! first derivative of time of radius of each particle at \f$t_{n}\f$ or $\f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> radiusdot_;
@@ -431,8 +468,17 @@ namespace PARTICLE
     Teuchos::RCP<Epetra_Vector> orient_;
     //! density of each particle at \f$t_{n+1}\f$
     double density_;
+    //! specific heat - constant pressure - solid state
+    double CPS_;
+    //! specific heat - constant pressure - liquid state
+    double CPL_;
+    //! specific latent heat - solid <-> liquid
+    double SL_latent_heat_max_;
+    //! transition temperature - solid <-> liquid
+    double SL_transitionTemperature_;
     //! additional external forces
     Teuchos::RCP<Epetra_Vector> fifc_;
+
 
     //@}
 
@@ -440,6 +486,8 @@ namespace PARTICLE
     //@{
 
     const bool variableradius_;   //!< bool to control whether radius is constant or variable
+
+    const bool trg_temperature_;  //!< bool to control if temperature is necessary
 
     //@}
 

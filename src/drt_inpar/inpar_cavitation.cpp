@@ -4,6 +4,8 @@
 
 \brief Input parameters for particle and cavitation problems
 
+\level 1
+
 \maintainer Georg Hammerl
 *-----------------------------------------------------------------------*/
 
@@ -172,6 +174,7 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
                                  INPAR::PARTICLE::Tsuji
                                  ),
                                &particledyn);
+   BoolParameter("TRG_TEMPERATURE","no","switch on/off thermodynamics equations",&particledyn);
    DoubleParameter("MIN_RADIUS",-1.0,"smallest particle radius",&particledyn);
    DoubleParameter("MAX_RADIUS",-1.0,"largest particle radius",&particledyn);
    DoubleParameter("REL_PENETRATION",-1.0,"relative particle penetration",&particledyn);
@@ -259,7 +262,41 @@ void INPAR::PARTICLE::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Co
   }
 
   condlist.push_back(particlecond);
+  /*--------------------------------------------------------------------*/
+    // particle heat source condition
 
+    std::vector<Teuchos::RCP<ConditionComponent> > particleHSComponents;
+    // two vertices describing the bounding box for the Heat Source
+    particleHSComponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("vertex0")));
+    particleHSComponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("vertex0",3)));
+    particleHSComponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("vertex1")));
+    particleHSComponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("vertex1",3)));
+    // intake Q/s
+    particleHSComponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("HSQDot")));
+    particleHSComponents.push_back(Teuchos::rcp(new RealConditionComponent("HSQDot")));
+    // t start
+    particleHSComponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("HSTstart")));
+    particleHSComponents.push_back(Teuchos::rcp(new RealConditionComponent("HSTstart")));
+    // t end
+    particleHSComponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("HSTend")));
+    particleHSComponents.push_back(Teuchos::rcp(new RealConditionComponent("HSTend")));
+
+
+    Teuchos::RCP<ConditionDefinition> particleHScond =
+      Teuchos::rcp(new ConditionDefinition("DESIGN HEAT SOURCE CONDITION",
+                                           "ParticleHeatSource",
+                                           "Particle Heat Source Condition",
+                                           DRT::Condition::ParticleHeatSource,
+                                           false,
+                                           DRT::Condition::Particle));
+
+
+    for (unsigned i=0; i<particleHSComponents.size(); ++i)
+    {
+      particleHScond->AddComponent(particleHSComponents[i]);
+    }
+
+    condlist.push_back(particleHScond);
   /*--------------------------------------------------------------------*/
   // particle periodic boundary condition
 

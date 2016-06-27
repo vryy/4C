@@ -3,8 +3,10 @@
 \file particle_timint_expl.cpp
 \brief Particle time integration with explicit time integration
 
+\level 2
+
 <pre>
-Maintainer: Georg Hammerl
+\maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
@@ -99,6 +101,8 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   // new accelerations at t_{n+1} -> t_n
   //    A_{n} := A_{n+1}, A_{n-1} := A_{n}
   acc_->UpdateSteps(*accn_);
+  //    T_{n} := T_{n+1}, T_{n-1} := T_{n}
+  if (trg_temperature_) temperature_->UpdateSteps(*temperaturen_);
 
   if(collhandler_ != Teuchos::null)
   {

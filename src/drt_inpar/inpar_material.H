@@ -2,6 +2,10 @@
 /*!
 \file inpar_material.H
 
+\brief bla bla bla
+
+\level 1
+
 <pre>
 \maintainer Burkhard Bornemann
             bornemann@lnm.mw.tum.de
@@ -84,6 +88,7 @@ namespace INPAR
       m_newman,                                ///< properties of an ion species in an electrolyte solution
       m_opti_dens,                             ///< density field for topology optimization
       m_particlemat,                           ///< particle material
+      m_particleAMmat,                         ///< particle material, support for thermodynamics
       m_permeable_fluid,                       ///< permeable fluid
       m_plelasthyper,                          ///< general hyperelastic material for finite strain von-Mises plasticity using a semi-smooth Newton strategy (only in combination with such elements!)
       m_plelasthyperVCU,                       ///< general hyperelastic material for finite strain von-Mises plasticity using a variational constitutive update

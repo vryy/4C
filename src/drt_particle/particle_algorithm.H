@@ -58,6 +58,8 @@ namespace LINALG
 /// PARTICLE: Particle simulation
 namespace PARTICLE
 {
+  // forward declaration
+  class HeatSource;
 
   class Algorithm : public ADAPTER::AlgorithmBase, public BINSTRATEGY::BinningStrategy
   {
@@ -101,6 +103,8 @@ namespace PARTICLE
     /// particles are checked whether they have moved out of their current bin
     /// and transferred if necessary
     virtual void TransferParticles(const bool updatestates, const bool ghosting = true);
+
+    std::map<int,std::list<Teuchos::RCP<HeatSource> > > & GetBins2HeatSources() {return bins2heatSources_; }
 
   protected:
 
@@ -178,6 +182,14 @@ namespace PARTICLE
     /// assign wall elements to bins
     virtual void AssignWallElesToBins();
 
+    /// set up heat sources
+    virtual void SetUpHeatSources();
+
+    /// update of the map bins->heat Sources
+    virtual void UpdateHeatSourcesConnectivity(bool forceRestart);
+
+    /// update connectivity: mask to sort various connectivity updates
+    virtual void UpdateConnectivity();
 
     //! @name particle related stuff
     //@{
@@ -196,9 +208,38 @@ namespace PARTICLE
 
     const bool moving_walls_;   ///< flag whether walls are moving
 
+    std::map<int,Teuchos::RCP<HeatSource> > heatSources_; // heat source storing
+
+    std::map<int,std::list<Teuchos::RCP<HeatSource> > > bins2heatSources_;   ///< heat sources 2 bins map
+
     //@}
 
   }; // Algorithm
+
+  class HeatSource
+  {
+  public:
+
+  HeatSource(
+    bool HSactive,                            ///< flag that simplifies the connectivity algorithm
+    const int HSid,                           ///< unique id over all heat sources conditions
+    const std::vector<double> HSZone_minVer,  ///< heat zone, vertex 0
+    const std::vector<double> HSZone_maxVer,  ///< heat zone, vertex 1
+    const double HSQDot,                      ///< intake q/s
+    const double HSTstart,                    ///< t start
+    const double HSTend                       ///< t end
+  );
+
+  // internal variables
+  bool HSactive_;                             ///< flag that simplifies the connectivity algorithm
+  const int HSid_;                            ///< unique id over all heat sources conditions
+  const std::vector<double> HSZone_minVer_;   ///< heat zone, vertex 0
+  const std::vector<double> HSZone_maxVer_;   ///< heat zone, vertex 1
+  const double HSQDot_;                       ///< intake q/s
+  const double HSTstart_;                     ///< t start
+  const double HSTend_;                       ///< t end
+
+  }; // HeatSource
 
 } // namespace PARTICLE
 

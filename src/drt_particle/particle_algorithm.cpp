@@ -100,8 +100,8 @@ void PARTICLE::Algorithm::Timeloop()
   while (NotFinished())
   {
     // transfer particles into their correct bins
-    if(Step()%100 == 0 and Comm().NumProc() != 1)
-      DynamicLoadBalancing();
+    //if(Step()%100 == 0 and Comm().NumProc() != 1)
+    //  DynamicLoadBalancing();
 
     // counter and print header
     PrepareTimeStep();
@@ -112,8 +112,8 @@ void PARTICLE::Algorithm::Timeloop()
     // calculate stresses, strains, energies
     PrepareOutput();
 
-    // transfer particles into their correct bins
-    TransferParticles(true);
+    // transfer particles and heat sources into their correct bins
+    UpdateConnectivity();
 
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
@@ -124,7 +124,6 @@ void PARTICLE::Algorithm::Timeloop()
     Output();
 
   }  // NotFinished
-
 }
 
 
@@ -231,6 +230,9 @@ void PARTICLE::Algorithm::Init(bool restarted)
     // determine consistent initial acceleration for the particles
     CalculateAndApplyForcesToParticles();
     particles_->DetermineMassDampConsistAccel();
+
+    // set up Heat Sources in a map
+    SetUpHeatSources();
   }
   else
   {
@@ -245,6 +247,9 @@ void PARTICLE::Algorithm::Init(bool restarted)
   if (myrank_ == 0)
     IO::cout << "after ghosting of particles" << IO::endl;
   DRT::UTILS::PrintParallelDistribution(*particledis_);
+
+  // update connectivity
+  UpdateHeatSourcesConnectivity(true);
 
   return;
 }
@@ -348,6 +353,7 @@ void PARTICLE::Algorithm::CalculateAndApplyForcesToParticles(bool init)
 
   return;
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -539,6 +545,9 @@ void PARTICLE::Algorithm::DynamicLoadBalancing()
 
   // update of state vectors to the new maps
   particles_->UpdateStatesAfterParticleTransfer();
+
+  // restart heat source map
+  UpdateHeatSourcesConnectivity(true);
 
   return;
 }
@@ -953,18 +962,18 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
   {
     // gather bins of rowmap and all its neighbors (row + ghost)
     std::set<int> bins;
-    for (int lid=0;lid<binrowmap->NumMyElements();++lid)
+    for (int lid=0; lid<binrowmap->NumMyElements(); ++lid)
     {
       const int gid = binrowmap->GID(lid);
       int ijk[3] = {-1,-1,-1};
       ConvertGidToijk(gid, ijk);
 
       // get all neighboring cells, including the element itself: one layer ghosting
-      for(int i=-1;i<2;i++)
+      for(int i=-1; i<2; ++i)
       {
-        for(int j=-1;j<2;j++)
+        for(int j=-1; j<2; ++j)
         {
-          for(int k=-1;k<2;k++)
+          for(int k=-1; k<2; ++k)
           {
             int ijk_neighbor[3] = {ijk[0]+i, ijk[1]+j, ijk[2]+k};
 
@@ -984,7 +993,7 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
       // create copy of column bins
       std::set<int> ghostbins(bins);
       // find ghost bins and check for existence
-      for (int lid=0;lid<binrowmap->NumMyElements();++lid)
+      for (int lid=0; lid<binrowmap->NumMyElements(); ++lid)
       {
         const int gid = binrowmap->GID(lid);
         std::set<int>::iterator iter = ghostbins.find(gid);
@@ -1559,7 +1568,7 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcsBasedOnUnderl
     std::vector<int> mynumeles_per_bin(numbins,0);
 
     std::map<int, std::set<int> >::const_iterator iter;
-    for(iter=rowelesinbin.begin(); iter!=rowelesinbin.end(); ++ iter)
+    for(iter=rowelesinbin.begin(); iter!=rowelesinbin.end(); ++iter)
     {
       mynumeles_per_bin[iter->first] = iter->second.size();
     }
@@ -1735,4 +1744,144 @@ void PARTICLE::Algorithm::Output(bool forced_writerestart /*= false*/)
 //  gmshfilecontent.close();
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | set up heat sources                                      catta 06/16 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::SetUpHeatSources()
+{
+  // extract heat source conditions
+  std::vector<DRT::Condition*> conds;
+  particledis_->GetCondition("ParticleHeatSource", conds);
+
+  for (size_t iHS=0; iHS<conds.size(); iHS++)
+  {
+    // extract condition
+    std::vector<double> HSZone_minVer = *conds[iHS]->Get<std::vector<double> >("vertex0");
+    std::vector<double> HSZone_maxVer = *conds[iHS]->Get<std::vector<double> >("vertex1");
+    const double HSQDot = conds[iHS]->GetDouble("HSQDot");
+    const double HSTstart = conds[iHS]->GetDouble("HSTstart");
+    const double HSTend = conds[iHS]->GetDouble("HSTend");
+
+    // vertex sort
+    double buffer;
+    for (int idim=0; idim<3; idim++)
+    {
+      if (HSZone_maxVer[idim]<HSZone_minVer[idim])
+        {
+          buffer = HSZone_maxVer[idim];
+          HSZone_maxVer[idim] = HSZone_minVer[idim];
+          HSZone_minVer[idim] = buffer;
+        }
+    }
+
+    // create the heat source class
+    heatSources_.insert(std::make_pair(
+        iHS,Teuchos::rcp(new HeatSource(false,
+        iHS,
+        HSZone_minVer,
+        HSZone_maxVer,
+        HSQDot,
+        HSTstart,
+        HSTend))));
+  }
+}
+
+
+/*----------------------------------------------------------------------*
+ | update of the map bins->heat Sources                     catta 06/16 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::UpdateHeatSourcesConnectivity(bool trg_forceRestart)
+{
+  // clear the map
+  if (trg_forceRestart)
+    bins2heatSources_.clear();
+
+  // heat source activation
+  for (std::map<int,Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources_.begin(); iHS != heatSources_.end(); ++iHS)
+  {
+    // force restart heatSources status
+    if (trg_forceRestart)
+      iHS->second->HSactive_ = false;
+
+    // map assignment
+    if (iHS->second->HSTstart_<=Time() && iHS->second->HSTend_>=Time() && iHS->second->HSactive_ == false)
+    {
+      // find the bins
+      int HSZone_ijk_minVer[3];
+      int HSZone_ijk_maxVer[3];
+      ConvertPosToijk(&(iHS->second->HSZone_minVer_[0]), HSZone_ijk_minVer);
+      ConvertPosToijk(&(iHS->second->HSZone_maxVer_[0]), HSZone_ijk_maxVer);
+      const int ijk_range[] = {
+          HSZone_ijk_minVer[0],HSZone_ijk_maxVer[0],
+          HSZone_ijk_minVer[1],HSZone_ijk_maxVer[1],
+          HSZone_ijk_minVer[2],HSZone_ijk_maxVer[2]};
+      std::set<int>  binIds;
+      GidsInijkRange(&ijk_range[0], binIds, false);
+
+      if (binIds.empty()) dserror("Weird! Heat Source %i found but could not be assigned to bins. Is it outside of bins?",iHS->second->HSid_);
+
+      // create/update the map
+      for (std::set<int>::const_iterator iBin = binIds.begin(); iBin != binIds.end(); ++iBin)
+          if(particledis_->ElementRowMap()->LID(*iBin) >= 0)
+            bins2heatSources_[*iBin].push_back(iHS->second);
+
+      iHS->second->HSactive_ = true;
+    }
+  }
+
+  // heat source deactivation
+  for (std::map<int,Teuchos::RCP<HeatSource> >::const_iterator iHS = heatSources_.begin(); iHS != heatSources_.end(); ++iHS)
+  {
+    if ((iHS->second->HSTend_<Time() || iHS->second->HSTstart_>Time()) && iHS->second->HSactive_ == true)
+    {
+      // remove elements from the map
+      for (std::map<int,std::list<Teuchos::RCP<HeatSource> > >::iterator iBin = bins2heatSources_.begin(); iBin != bins2heatSources_.end(); ++iBin)
+      {
+        for (std::list<Teuchos::RCP<HeatSource> >::iterator iHSb=iBin->second.begin(); iHSb != iBin->second.end(); ++iHSb)
+        {
+          if (iHS->second == *iHSb)
+          {
+            iBin->second.erase(iHSb);
+            break;
+          }
+        }
+      }
+      iHS->second->HSactive_ = false;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | update connectivity                                     catta 06/16  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::UpdateConnectivity()
+{
+  // transfer particles into their correct bins
+  TransferParticles(true);
+  // update heat sources
+  UpdateHeatSourcesConnectivity(false);
+}
+
+/*----------------------------------------------------------------------*
+ | heat source                                             catta 06/16  |
+ *----------------------------------------------------------------------*/
+PARTICLE::HeatSource::HeatSource(
+  bool HSactive,
+  const int HSid,
+  const std::vector<double> HSZone_minVer,
+  const std::vector<double> HSZone_maxVer,
+  const double HSQDot,
+  const double HSTstart,
+  const double HSTend
+  ) :
+  HSactive_(HSactive),
+  HSid_(HSid),
+  HSZone_minVer_(HSZone_minVer),
+  HSZone_maxVer_(HSZone_maxVer),
+  HSQDot_(HSQDot),
+  HSTstart_(HSTstart),
+  HSTend_(HSTend)
+{
 }

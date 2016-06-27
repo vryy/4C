@@ -4,6 +4,8 @@
 
 \brief Particle field adapter
 
+\level 1
+
 \maintainer Georg Hammerl
 */
 
@@ -141,11 +143,17 @@ namespace ADAPTER
     //! unknown accelerations \f$A_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accn() = 0;
 
+    //! unknown temperatures \f$T_{n}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Temperaturen() = 0;
+
     //! Return velocities \f$V_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
 
     //! Return accelerations \f$A_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Accnp() = 0;
+
+    //! Return temperatures \f$T_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> Temperaturenp() = 0;
 
     //! unknown angular velocities \f$V_{n}\f$
     virtual Teuchos::RCP<const Epetra_Vector> AngVeln() = 0;
@@ -159,6 +167,9 @@ namespace ADAPTER
     //! Return radii of particles \f$R_{n}\f$ or \f$R_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> Radius() = 0;
 
+    //! Return latent heat of particles \f$L_{n}\f$ or \f$L_{n+1}\f$
+    virtual Teuchos::RCP<const Epetra_Vector> LatentHeat() = 0;
+
     //! Return first time derivative of radii \f$\dot{R}_{n}\f$ or \f$\dot{R}_{n+1}\f$
     virtual Teuchos::RCP<const Epetra_Vector> RadiusDot() = 0;
 
@@ -170,6 +181,15 @@ namespace ADAPTER
 
     //! Return density
     virtual double ParticleDensity() = 0;
+
+    //! Return specific heat -constant pressure - solid state of particles
+    virtual double CPS() = 0;
+
+    //! Return specific heat -constant pressure - liquid state of particles
+    virtual double CPL() = 0;
+
+    //! Return specific latent heat - solid <-> liquid
+    virtual double MaxSpecificLatentHeat() = 0;
 
     //! does collision handler exist?
     virtual bool HaveCollHandler() = 0;
@@ -185,11 +205,17 @@ namespace ADAPTER
     //! extract velocities
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() = 0;
 
+    //! extract temperatures
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp() = 0;
+
     //! extract initial radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() = 0;
 
     //! extract radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius() = 0;
+
+    //! extract latent heat
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessLatentHeat() = 0;
 
     //! wxtract first time derivative of radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadiusDot() = 0;

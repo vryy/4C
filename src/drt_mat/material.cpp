@@ -4,6 +4,8 @@
 
 \brief Interface class for complex materials at Gauss points
 
+\level 1
+
 <pre>
 \maintainer Lena Wiechert
             yoshihara@lnm.mw.tum.de
@@ -95,6 +97,7 @@
 #include "hemoglobin_0d_O2_saturation.H"
 #include "air_0d_O2_saturation.H"
 #include "particle_mat.H"
+#include "particleAMmat.H"
 #include "acoustic.H"
 #include "acoustic_sol.H"
 #include "activefiber.H"
@@ -696,6 +699,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ParticleMat(curmat));
     MAT::PAR::ParticleMat* params = static_cast<MAT::PAR::ParticleMat*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_particleAMmat:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ParticleAMmat(curmat));
+    MAT::PAR::ParticleAMmat* params = static_cast<MAT::PAR::ParticleAMmat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_growth_volumetric_scd:

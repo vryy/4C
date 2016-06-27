@@ -628,6 +628,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/hemoglobin_0d_O2_saturation.cpp
   src/drt_mat/air_0d_O2_saturation.cpp
   src/drt_mat/particle_mat.cpp
+  src/drt_mat/particleAMmat.cpp
   src/drt_mat/acoustic.cpp
   src/drt_mat/acoustic_sol.cpp
   src/drt_mat/activefiber.cpp
