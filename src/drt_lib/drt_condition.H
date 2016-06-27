@@ -4,7 +4,7 @@
 \brief A condition of any kind
 
 <pre>
-\level 0
+\level 1
 
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
