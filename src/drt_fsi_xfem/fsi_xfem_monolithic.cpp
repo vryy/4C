@@ -3,8 +3,10 @@
 \brief Control routine for monolithic FSI (XFSI) solved via a classical Newton scheme
        taking into account changing fluid dofsets
 
+\level 2
+
 <pre>
-Maintainer:  Benedikt Schott
+\maintainer  Benedikt Schott
              schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15241
@@ -13,8 +15,8 @@ Maintainer:  Benedikt Schott
 
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_fluid_xfsi.H"
 #include "../drt_adapter/ad_ale_fpsi.H"
+#include "../drt_fluid_xfluid/xfluid.H"
 
 #include "../drt_fsi/fsi_debugwriter.H"
 
@@ -29,6 +31,7 @@ Maintainer:  Benedikt Schott
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_colors.H"
 
 #include "../drt_structure/stru_aux.H"
 
@@ -42,7 +45,7 @@ Maintainer:  Benedikt Schott
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
 
-
+#include "XFScoupling_manager.H"
 /*----------------------------------------------------------------------*/
 // constructor
 /*----------------------------------------------------------------------*/
@@ -94,11 +97,6 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
 
 //  const Teuchos::ParameterList& xdyn       = DRT::Problem::Instance()->XFEMGeneralParams();
 //  const Teuchos::ParameterList& xfluiddyn  = DRT::Problem::Instance()->XFluidDynamicParams();
-
-
-  // storage of the resulting Robin-type structural forces from the old timestep
-  // Recovering of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(),true));
 
   //-------------------------------------------------------------------------
   // enable debugging
@@ -154,10 +152,27 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   //-------------------------------------------------------------------------
   ValidateParameters();
 
+  //-------------------------------------------------------------------------
+  // Setup Coupling Objects
+  //-------------------------------------------------------------------------
+  if (!HaveAle()) // --> Will be removed from here in one of the following commits (06/2016 ager)
+    SetupCouplingObjects();
 
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | SetupCouplingObjects                                      ager 06/16 |
+ *----------------------------------------------------------------------*/
+void FSI::MonolithicXFEM::SetupCouplingObjects()
+{
+  std::vector<int> idx;
+  idx.push_back(structp_block_);
+  idx.push_back(fluid_block_);
+  Solid_coupling_ = Teuchos::rcp( new XFEM::XFSCoupling_Manager(FluidField()->GetConditionManager(),
+      StructureField(), FluidField(),idx));
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | validate the input parameter combinations               schott 07/14 |
@@ -173,8 +188,6 @@ void FSI::MonolithicXFEM::ValidateParameters()
   //                                        and u^n+1 = 0    for first order disp_to_vel interface conversion
 
 }
-
-
 
 /*----------------------------------------------------------------------*
  | setup of the monolithic XFSI system,                    schott 08/14 |
@@ -278,11 +291,6 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   const double scaling_F   = FluidField()->ResidualScaling(); // 1/(theta * dt) = 1/weight^F_np
 
   /*----------------------------------------------------------------------*/
-  // scaling factor for displacement <-> velocity conversion (FSI)
-  // inverse of FSI (1st order, 2nd order) scaling
-  const double scaling_FSI = FluidField()->TimeScaling();     // 1/(theta_FSI * dt) =  1/weight^FSI_np
-
-  /*----------------------------------------------------------------------*/
   // this is the interpolation weight for quantities from last time step
   // alpha_f for genalpha and (1-theta) for OST (weighting of the old time step n for displacements)
   const double stiparam = StructureField()->TimIntParam();    // (1-theta) for OST and alpha_f for Genalpha
@@ -323,44 +331,6 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   // assign the structure sysmat diagonal block
   systemmatrix_->Assign(0,0,LINALG::View,*s);
 
-
-  /*----------------------------------------------------------------------*/
-  // Coupling blocks C_sf, C_fs and C_ss
-  /*----------------------------------------------------------------------*/
-
-  Teuchos::RCP<LINALG::SparseMatrix> C_ss = FluidField()->C_Struct_Struct_Matrix(); // based on the full structural dofrowmap (used for Add)
-  Teuchos::RCP<LINALG::SparseMatrix> C_sf = FluidField()->C_Struct_Fluid_Matrix();  // based on the full structural dofrowmap (used for Assign)
-  Teuchos::RCP<LINALG::SparseMatrix> C_fs = FluidField()->C_Fluid_Struct_Matrix();  // based on the full fluid dofrowmap (used for Assign)
-
-  // * all the coupling matrices are scaled with the weighting of the fluid w.r.t new time step np
-  //    -> Unscale the blocks with (1/(theta_f*dt) = 1/weight(t^f_np))
-  // * additionally the C_*s blocks (C_ss and C_fs) have to include the conversion from structural displacements to structural velocities
-  //    -> Scale these blocks with (1/(theta_FSI*dt) = 1/weight(t^FSI_np))
-  //
-  // REMARK that Scale() scales the original coupling matrix in xfluid
-
-  // C_ss_block scaled with 1/(theta_f*dt) * 1/(theta_FSI*dt) = 1/weight(t^f_np) * 1/weight(t^FSI_np)
-  LINALG::SparseMatrix& C_ss_block = (*systemmatrix_)(0,0);
-  // add the coupling block C_ss on the already existing diagonal block
-  C_ss_block.Add(*C_ss, false, scaling_F*scaling_FSI, 1.0);
-
-#if(1) // use assign for off diagonal blocks
-  // scale the off diagonal coupling blocks
-  C_sf->Scale(scaling_F);              //<   1/(theta_f*dt)                    = 1/weight(t^f_np)
-  C_fs->Scale(scaling_F*scaling_FSI);  //<   1/(theta_f*dt) * 1/(theta_FSI*dt) = 1/weight(t^f_np) * 1/weight(t^FSI_np)
-
-  systemmatrix_->Assign(0,1,LINALG::View,*C_sf);
-  systemmatrix_->Assign(1,0,LINALG::View,*C_fs);
-#else
-  LINALG::SparseMatrix& C_sf_block = (*systemmatrix_)(0,1);
-  LINALG::SparseMatrix& C_fs_block = (*systemmatrix_)(1,0);
-
-  C_sf_block.Add(*C_sf, false, scaling_F, 0.0);
-  C_fs_block.Add(*C_fs, false, scaling_F*scaling_FSI, 0.0);
-#endif
-
-
-
   /*----------------------------------------------------------------------*/
   // Fluid diagonal block
   /*----------------------------------------------------------------------*/
@@ -371,8 +341,11 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   // assign the fluid diagonal block
   systemmatrix_->Assign(1,1,LINALG::View,*f);
 
-  //Add Coupling Sysmat in case of FPSI_XFEM or FSI_XFEM_ALE (Ale Matrix)!
+  //Add Coupling Sysmat in case of FPSI_XFEM or FSI_XFEM_ALE (Ale Matrix)! --> Will be removed from here in one of the following commits (06/2016 ager)
   AddCouplingSysmat(systemmatrix_, s, f, scaling_S, scaling_F);
+
+  //Add FSI_Coupling here
+  Solid_coupling_->AddCouplingMatrix(*systemmatrix_,scaling_F);
 
   /*----------------------------------------------------------------------*/
   // Complete the global system matrix
@@ -380,7 +353,6 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
 
   // done. make sure all blocks are filled.
   systemmatrix_->Complete();
-
 }
 
 
@@ -398,12 +370,12 @@ void FSI::MonolithicXFEM::SetupRHS()
   // contributions of single field residuals
   SetupRHSResidual(*rhs_);
 
-  // contributions of Lagrange multiplier from last time step
-  // (ie forces onto the structure, Robin-type forces consisting of fluid forces and the Nitsche penalty term contribution)
-  SetupRHSLambda(*rhs_);
+  //Add FSI_Coupling here
+  const double scaling_F   = FluidField()->ResidualScaling();
+  Solid_coupling_->AddCouplingRHS(rhs_,Extractor(),scaling_F);
 
   //Add Coupling RHS in case of FPSI_XFEM or FSI_XFEM_ALE (Ale RHS)!
-  AddCouplingRHS(rhs_);
+  AddCouplingRHS(rhs_);  //--> Will be removed from here in one of the following commits (06/2016 ager)
 }
 
 /*----------------------------------------------------------------------*/
@@ -411,14 +383,9 @@ void FSI::MonolithicXFEM::SetupRHS()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::SetupRHSResidual(Epetra_Vector &f)
 {
-  Teuchos::RCP<ADAPTER::XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(FluidField(), true);
-
-  /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   // get time integration parameters of structure and fluid time integrators
-  // as well as of the FSI time-integration
   // to enable consistent time integration among the fields
-  /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
 
   /*----------------------------------------------------------------------*/
@@ -440,62 +407,18 @@ void FSI::MonolithicXFEM::SetupRHSResidual(Epetra_Vector &f)
   Teuchos::RCP<Epetra_Vector> sv = Teuchos::rcp(new Epetra_Vector(*StructureField()->RHS()));
   Teuchos::RCP<Epetra_Vector> fv = Teuchos::rcp(new Epetra_Vector(*FluidField()->RHS()));
 
-  // get the coupling rhs from the xfluid, this vector is based on the boundary dis which is part of the structure dis
-  Teuchos::RCP<const Epetra_Vector> rhs_C_s = xfluid->RHS_Struct_Vec();
-
-  // add fluid interface coupling values to structure vector
-  Teuchos::RCP<Epetra_Vector> modsv = StructureField()->Interface()->InsertFSICondVector(rhs_C_s);
-  modsv->Update(scaling_S, *sv, scaling_F);
-
-//  if (StructureField()->GetSTCAlgo() == INPAR::STR::stc_currsym)
-//  {
-//    Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField()->GetSTCMat();
-//    stcmat->Multiply(true,*modsv,*modsv);
-//  }
+  // scale the structural rhs
+  sv->Scale(scaling_S);
 
   // scale the fluid rhs
   fv->Scale(scaling_F); // scale with FluidField()->ResidualScaling()
 
   // put the single field residuals together
-  CombineFieldVectors(f,modsv,fv);
+  CombineFieldVectors(f,sv,fv);
 
+return;
 }
 
-
-/*----------------------------------------------------------------------*/
-// setup RHS contributions based on the Lagrange multiplier field
-/*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::SetupRHSLambda(Epetra_Vector& f)
-{
-  /// Lagrange multiplier \lambda_\Gamma^n at the interface (ie forces onto the structure, Robin-type forces
-  /// consisting of fluid forces and the Nitsche penalty term contribution)
-  if (lambda_ != Teuchos::null)
-  {
-    /*----------------------------------------------------------------------*/
-    /*----------------------------------------------------------------------*/
-    // get time integration parameters of structure and fluid time integrators
-    // to enable consistent time integration among the fields
-    /*----------------------------------------------------------------------*/
-    /*----------------------------------------------------------------------*/
-
-    /*----------------------------------------------------------------------*/
-    // this is the interpolation weight for quantities from last time step
-    // alpha_f for genalpha and (1-theta) for OST (weighting of the old time step n for displacements)
-    const double stiparam = StructureField()->TimIntParam();    // (1-theta) for OST and alpha_f for Genalpha
-
-    // scale factor for the structure system matrix w.r.t the new time step
-    const double scaling_S = 1.0/(1.0-stiparam);  // 1/(1-alpha_F) = 1/weight^S_np
-
-    // project Lagrange multiplier field onto the master interface DOFs and consider temporal scaling w.r.t structure field
-    Teuchos::RCP<Epetra_Vector> lambdafull = StructureField()->Interface()->InsertFSICondVector(lambda_);
-    lambdafull->Scale(stiparam * scaling_S);
-
-    // add Lagrange multiplier (structural forces from t^n)
-    Extractor().AddVector(*lambdafull,0,f);
-  }
-
-  return;
-}
 
 
 /*----------------------------------------------------------------------*/
@@ -646,7 +569,7 @@ void FSI::MonolithicXFEM::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> 
   // Extract vector of fluid unknowns from x
   fx = Extractor().ExtractVector(x,fluid_block_);
 
-  // Extract vector of fluid unknowns from x
+  // Extract vector of ale unknowns from x
   if (HaveAle())
     ax = Extractor().ExtractVector(x,ale_i_block_);
 }
@@ -777,9 +700,8 @@ void FSI::MonolithicXFEM::Update()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::Update");
 
-  // recover Lagrange multiplier \lambda_\Gamma at the interface at the end of each time step
-  // (i.e. condensed forces onto the structure) needed for structural rhs in next time step
-  RecoverLagrangeMultiplier();
+  const double scaling_F   = FluidField()->ResidualScaling(); // 1/(theta * dt) = 1/weight^F_np
+  Solid_coupling_->Update(scaling_F);
 
   // update the single fields
   StructureField()->Update();
@@ -803,15 +725,11 @@ void FSI::MonolithicXFEM::Output()
   // output for Lagrange multiplier field (ie forces onto the structure, Robin-type forces
   // consisting of fluid forces and the Nitsche penalty term contribution)
   //--------------------------------
-  {
-    Teuchos::RCP<Epetra_Vector> lambdafull = StructureField()->Interface()->InsertFSICondVector(lambda_);
-
-    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
-    const int uprestart = fsidyn.get<int>("RESTARTEVRY");
-    const int upres = fsidyn.get<int>("RESULTSEVRY");
-    if((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
-      StructureField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
-  }
+  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const int uprestart = fsidyn.get<int>("RESTARTEVRY");
+  const int upres = fsidyn.get<int>("RESULTSEVRY");
+  if((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
+    Solid_coupling_->Output(*StructureField()->DiscWriter());
 
   //--------------------------------
   // output for fluid field - writes the whole GMSH output if switched on
@@ -828,36 +746,6 @@ void FSI::MonolithicXFEM::Output()
       StructureField()->GetConstraintManager()->PrintMonitorValues();
   }
 }
-
-
-
-/*----------------------------------------------------------------------*/
-/* Recover the Lagrange multiplier at the interface
- * (ie forces onto the structure, Robin-type forces
- * consisting of fluid forces and the Nitsche penalty term contribution)
- *----------------------------------------------------------------------*/
- void FSI::MonolithicXFEM::RecoverLagrangeMultiplier()
- {
-   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::RecoverLagrangeMultiplier");
-
-   /*----------------------------------------------------------------------*/
-   // scaling factors for fluid terms/blocks
-   // inverse of the weighting of the quantities w.r.t the new time step
-   const double scaling_F   = FluidField()->ResidualScaling(); // 1/(theta * dt) = 1/weight^F_np
-
-   // we directly store the fluid-unscaled rhs_C_s residual contribution from the fluid solver which corresponds to the actual acting forces
-
-   // scaling for the structural residual is done when it is added to the global residual vector
-   // get the coupling rhs from the xfluid, this vector is based on the boundary dis which is part of the structure dis
-   Teuchos::RCP<const Epetra_Vector> rhs_C_s = FluidField()->RHS_Struct_Vec();
-
-   // store the resulting structural forces vector in the lambda vector
-   lambda_->Update(scaling_F,*rhs_C_s,0.0);
-
-   return;
-}
-
-
 
 /*----------------------------------------------------------------------*
  | inner iteration loop (Newton-Raphson scheme)            schott 08/14 |
@@ -1325,42 +1213,7 @@ bool FSI::MonolithicXFEM::Evaluate()
   // ------------------------------------------------------------------
   // set the current interface displacement to the fluid field to be used in the cut
   // ------------------------------------------------------------------
-  {
-    // extract the current structural interface displacement
-    // note: at the beginning of a time step, the structural displacements have been predicted via structural PrepareTimeStep-call
-    Teuchos::RCP<Epetra_Vector> idispnp = StructureField()->ExtractInterfaceDispnp();
-
-    // apply the current interface displacement to the boundary discretization of the fluid field
-    FluidField()->ApplyStructMeshDisplacement(idispnp);
-  }
-
-  //--------------------------------------------------------
-  // set current interface velocities to the fluid field
-  //--------------------------------------------------------
-  {
-    //--------------------------------------------------------
-    // convert interface displacement step-increment to interface velocity step-increment
-    //--------------------------------------------------------
-
-    // new vector for interface velocities
-    Teuchos::RCP<Epetra_Vector> ivelnp = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(),true);
-
-    // update ivelnp to contain the interface displacements step-increment Delta d = d^(n+1,i+1)-d^n
-    ivelnp->Update(1.0, *StructureField()->ExtractInterfaceDispnp(), -1.0, *StructureField()->ExtractInterfaceDispn(), 0.0 );
-
-    // convert displacement step-increment Delta d = d^(n+1,i+1)-d^n to velocity step-increment Delta u = u^(n+1,i+1)-u^n
-    // via first order or second order OST-discretization of d/dt d(t) = u(t)
-    FluidField()->DisplacementToVelocity( ivelnp );
-
-    // obtain current interface velocity u^(n+1,i+1) = Delta u + u^n = u^(n+1,i+1)-u^n + u^n
-    ivelnp->Update(1.0, *(FluidField()->ExtractStructInterfaceVeln()), 1.0);
-
-    //--------------------------------------------------------
-    // apply ivelnp = u^(n+1,i+1) in the Xfluid-object
-    //--------------------------------------------------------
-    FluidField()->ApplyStructInterfaceVelocities(ivelnp);
-  }
-
+    Solid_coupling_->SetCouplingStates();
 
   //--------------------------------------------------------
   // permute the fluid step-inc (ordered w.r.t. restart state) to current dofset-state
@@ -1427,17 +1280,15 @@ bool FSI::MonolithicXFEM::Evaluate()
   //       the first potentially valid permutation is set and available after the second fluid-evaluate call
   if(iter_ > 1)
   {
-    Teuchos::RCP<ADAPTER::XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(FluidField(), true);
-    UpdatePermutationMap(*xfluid->GetPermutationMap());
+    UpdatePermutationMap(*FluidField()->GetPermutationMap());
   }
 
   //-------------------
   // check for changing dofsets compared to the last Newton iteration to decide if the Newton has to get restarted or continued
   //-------------------
 
-  Teuchos::RCP<ADAPTER::XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(FluidField(), true);
 
-  if(xfluid->NewtonRestartMonolithic()) return true;
+  if(FluidField()->NewtonRestartMonolithic()) return true;
 
 
 
@@ -2572,15 +2423,9 @@ void FSI::MonolithicXFEM::ReadRestart(int step)
 
   // read Lagrange multiplier (ie forces onto the structure, Robin-type forces
   // consisting of fluid forces and the Nitsche penalty term contribution)
-  {
-    Teuchos::RCP<Epetra_Vector> lambdafull = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(),true));
-    IO::DiscretizationReader reader = IO::DiscretizationReader(StructureField()->Discretization(),step);
-    reader.ReadVector(lambdafull, "fsilambda");
-    lambda_ = StructureField()->Interface()->ExtractFSICondVector(lambdafull);
-  }
-
+  IO::DiscretizationReader reader = IO::DiscretizationReader(StructureField()->Discretization(),step);
+  Solid_coupling_->ReadRestart(reader);
   //
-
 
   SetTimeStep(FluidField()->Time(),FluidField()->Step());
 }

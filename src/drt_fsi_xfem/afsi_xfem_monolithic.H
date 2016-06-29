@@ -1,10 +1,12 @@
 /*!----------------------------------------------------------------------
-\file afsi_monolithic_xfem.H
+\file afsi_xfem_monolithic.H
 \brief  Control routine for monolithic AFSI (XAFSI) solved via a classical Newton scheme
         taking into account changing fluid dofsets
 
+\level 3
+
 <pre>
-Maintainer: Ager Christoph
+\maintainer Ager Christoph
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249
@@ -18,6 +20,11 @@ Maintainer: Ager Christoph
 namespace ADAPTER
 {
   class Coupling;
+}
+
+namespace XFEM
+{
+  class Coupling_Comm_Manager;
 }
 
 namespace FSI
@@ -120,6 +127,11 @@ namespace FSI
 
     // coupling of fluid and ale in the entire fluid volume
     Teuchos::RCP<ADAPTER::Coupling>                coupfa_;
+
+    Teuchos::RCP< XFEM::Coupling_Comm_Manager> Ale_Struct_coupling_;
+
+    /// ALE dof map
+    Teuchos::RCP<LINALG::MapExtractor>     meshmap_;
 
 
     //@}

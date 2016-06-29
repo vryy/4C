@@ -3,8 +3,10 @@
 \brief  Control routine for monolithic FSI (XFSI) solved via a classical Newton scheme
         taking into account changing fluid dofsets
 
+\level 2
+
 <pre>
-Maintainer:  Benedikt Schott
+\maintainer  Benedikt Schott
              schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15241
@@ -35,6 +37,11 @@ namespace FSI
   {
     class DebugWriter;
   }
+}
+
+namespace XFEM
+{
+  class Coupling_Manager;
 }
 
 namespace FSI
@@ -115,6 +122,9 @@ namespace FSI
     //--------------------------------------------------------------------------//
     //! @name Coupling methods
 
+    //! setup all coupling objects
+    void SetupCouplingObjects();
+
     //! add coupling on poro fluid interface! - Overloaded by MonolithicFPSI_XFEM
     virtual void AddCouplingSysmat(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& sysmat,
         Teuchos::RCP<LINALG::SparseMatrix>& s,
@@ -148,16 +158,6 @@ namespace FSI
   private:
 
     //--------------------------------------------------------------------------//
-    //! @name Recovery of the structural forces
-
-    //! recover the Lagrange multiplier at the interface
-    //! (ie forces onto the structure, Robin-type forces consisting of fluid forces
-    //! and the Nitsche penalty term contribution)
-    virtual void RecoverLagrangeMultiplier();
-
-    //@}
-
-    //--------------------------------------------------------------------------//
     //! @name Setup of SYSMAT and RHS vector
 
     //! setup composed system matrix from field solvers, complete the global system matrix
@@ -169,10 +169,6 @@ namespace FSI
     //! setup RHS contributions based on single field residuals
     //! \sa SetupRHS()
     void SetupRHSResidual(Epetra_Vector& f);
-
-    //! setup RHS contributions based on the Lagrange multiplier field
-    //! \sa SetupRHS()
-    void SetupRHSLambda(Epetra_Vector& f);
 
     //! Apply Dirichlet BCs to the whole system
     void ApplyDBC();
@@ -291,8 +287,6 @@ namespace FSI
 
     //@}
 
-
-
     //--------------------------------------------------------------------------//
     //! @name Parameter lists
 
@@ -300,8 +294,6 @@ namespace FSI
     const Teuchos::ParameterList& fsimono_; //!< FSI-monolithic sublist
 
     //@}
-
-
 
     //--------------------------------------------------------------------------//
     //! @name General solver parameters
@@ -349,18 +341,6 @@ namespace FSI
 
     //! block systemmatrix for structural and fluid dofs
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
-
-
-    //--------------------------------------------------------------------------//
-    //! @name Recovery of Lagrange multiplier at the end of each time step
-
-    //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie forces onto the structure, Robin-type forces
-    //! consisting of fluid forces and the Nitsche penalty term contribution)
-    //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> lambda_;
-
-    //@}
-
 
     //--------------------------------------------------------------------------//
     //! @name vectors used within the Newton scheme
@@ -490,7 +470,8 @@ namespace FSI
     const double TOL_VEL_INC_INF_;
     //@}
 
-
+    //Coupling Object from Porosolid to Porofluid
+    Teuchos::RCP<XFEM::Coupling_Manager> Solid_coupling_;
 
   };
 }

@@ -3,8 +3,10 @@
 \brief  Control routine for monolithic eXtendedAleFluidStructureInteraction (XAFSI) solved via a classical Newton scheme
         taking into account changing fluid dofsets
 
+\level 3
+
 <pre>
-Maintainer: Ager Christoph
+\maintainer Ager Christoph
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249
@@ -14,6 +16,7 @@ Maintainer: Ager Christoph
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid_xfsi.H"
+#include "../drt_adapter/ad_ale_fpsi.H"
 
 #include "../drt_fsi/fsi_debugwriter.H"
 
@@ -27,7 +30,7 @@ Maintainer: Ager Christoph
 #include "../drt_inpar/inpar_fsi.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_discret_xfem.H"
 
 #include "../drt_structure/stru_aux.H"
 
@@ -42,10 +45,7 @@ Maintainer: Ager Christoph
 #include <Epetra_Time.h>
 
 //poro ... & contact
-#include "../drt_poroelast/poroelast_monolithic.H"
 #include "../drt_adapter/ad_str_fpsiwrapper.H"
-#include "../drt_adapter/ad_fld_poro.H"
-#include "../drt_fpsi/fpsi_monolithic_plain.H"
 
 #include "../drt_contact/contact_poro_lagrange_strategy.H"
 #include "../drt_mortar/mortar_manager_base.H"
@@ -55,6 +55,8 @@ Maintainer: Ager Christoph
 
 
 #include "../drt_fsi_xfem/afsi_xfem_monolithic.H"
+
+#include "coupling_comm_manager.H"
 /*----------------------------------------------------------------------*/
 // constructor
 /*----------------------------------------------------------------------*/
@@ -64,26 +66,47 @@ FSI::MonolithicAFSI_XFEM::MonolithicAFSI_XFEM(const Epetra_Comm& comm,
 {
   if (!HaveAle()) dserror("MonolithicAFSI_XFEM: For AFSI always Ale Fluid is required!");
 
-    // fluid to ale for 3d case!
+  const int ndim = DRT::Problem::Instance()->NDim();
+
   coupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
   coupfa_->SetupCoupling(*FluidField()->Discretization(),
                        *AleField()->Discretization(),
                        *FluidField()->Discretization()->NodeRowMap(),
                        *AleField()->Discretization()->NodeRowMap(),
-                       3,
+                       ndim,
                        false);
 
-  //create interfaces (mapextractors which are required for the coupling objects in the FPSI Coupl()!!!)
-  //initialize xFluid now! - Coupling required filleddofset! -- Here first cut is done!!!
-  FluidField()->Init();
+   Ale_Struct_coupling_ = Teuchos::rcp(new XFEM::Coupling_Comm_Manager(*AleField()->Discretization(),*StructureField()->Discretization(),"StructAleCoupling"));
 
-  FluidField()->SetMeshMap(FluidAleCoupling().MasterDofMap()); //based on initial maps ...
-
-  //Build ale system matrix in splitted system
+  //build ale system matrix in splitted system
    AleField()->CreateSystemMatrix(AleField()->Interface());
 
-   FluidField()->MyFluid()->CreateInitialState();
+    //create interfaces (mapextractors which are required for the coupling objects in the FPSI Coupl()!!!)
+    //initialize xFluid now! - Coupling required filleddofset! -- Here first cut is done!!!
+    FluidField()->Init();
+    {
+      // set initial field by given function
+      // we do this here, since we have direct access to all necessary parameters
+      const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+      INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
+      if(initfield != INPAR::FLUID::initfield_zero_field)
+      {
+        int startfuncno = fdyn.get<int>("STARTFUNCNO");
+        if (initfield != INPAR::FLUID::initfield_field_by_function and
+            initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
+        {
+          startfuncno=-1;
+        }
+        FluidField()->SetInitialFlowField(initfield,startfuncno);
+      }
+    }
 
+    meshmap_   = Teuchos::rcp(new LINALG::MapExtractor());
+    meshmap_->Setup(*FluidField()->DiscretisationXFEM()->InitialDofRowMap(),FluidAleCoupling().MasterDofMap(),
+        LINALG::SplitMap(*FluidField()->DiscretisationXFEM()->InitialDofRowMap(),*FluidAleCoupling().MasterDofMap()));
+
+  //This has to be done after Init()!
+  SetupCouplingObjects();
   return;
 }
 
@@ -135,8 +158,14 @@ FSI::MonolithicAFSI_XFEM::MonolithicAFSI_XFEM(const Epetra_Comm& comm,
  //-------------------------------------------------------------------------
  void FSI::MonolithicAFSI_XFEM::SetAleInterfaceDisplacements()
  {
+     //Sets structural conditioned Dispnp onto Ale
+     Ale_Struct_coupling_->InsertVector(1,StructureField()->Dispnp(),0,AleField()->WriteAccessDispnp(),XFEM::Coupling_Comm_Manager::full_to_full);
      Teuchos::RCP<const Epetra_Vector> aledisplacements = AleToFluid(AleField()->Dispnp());
-     FluidField()->ApplyMeshDisplacement(aledisplacements);
+     //Set Fluid Dispnp
+     meshmap_->InsertCondVector(aledisplacements,FluidField()->WriteAccessDispnp());
+
+     // new grid velocity
+     FluidField()->UpdateGridv();
 
      return;
  }
@@ -186,6 +215,9 @@ FSI::MonolithicAFSI_XFEM::MonolithicAFSI_XFEM(const Epetra_Comm& comm,
    //--------------------------------
    // read ale field
    AleField()->ReadRestart(step);
+   FluidField()->CreateInitialState();
+   FluidField()->ReadRestart(step);
+
  }
 
  /*----------------------------------------------------------------------*

@@ -4,11 +4,13 @@
 
 \brief Fluid Base Algorithm
 
+\level 1
+
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
+\maintainer Martin Kronbichler
+            kronbichler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15235
 </pre>
  */
 /*----------------------------------------------------------------------*/
@@ -785,11 +787,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       // FSI input parameters
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
-      if (
-          coupling == fsi_iter_xfem_monolithic
-      )
+      if ( coupling == fsi_iter_xfem_monolithic )
       {
-        condition_name = "XFEMSurfFSIMono";
+        condition_name = "XFEMSurfFSIMono"; //not used anymore!
       }
       else if(
           coupling == fsi_iter_stagg_fixed_rel_param or
@@ -807,7 +807,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       else dserror("non supported COUPALGO for FSI");
 
       Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
-
       Teuchos::RCP<FLD::XFluid> tmpfluid;
       if (DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->XFluidDynamicParams().sublist("GENERAL"),"XFLUIDFLUID"))
       {
@@ -833,7 +832,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
       else
         tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output, isale));
 
-      fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, condition_name , solver, fluidtimeparams, output));
+      if (coupling == fsi_iter_xfem_monolithic )
+        fluid_ = tmpfluid;
+      else
+        fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, condition_name , solver, fluidtimeparams, output));
     }
     break;
     case prb_fsi_crack:

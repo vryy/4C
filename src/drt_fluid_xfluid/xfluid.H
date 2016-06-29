@@ -3,8 +3,10 @@
 \brief Control routine for fluid (in)stationary solvers with XFEM,
        including instationary solvers for fluid and fsi problems coupled with an internal embedded interface
 
+\level 2
+
 <pre>
-Maintainer:  Benedikt Schott
+\maintainer Benedikt Schott
              schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15241
@@ -205,9 +207,9 @@ namespace FLD
 
     virtual Teuchos::RCP<const Epetra_Vector> GridVel()     { return gridvnp_; } //full grid velocity (1st dofset)
 
-    Teuchos::RCP<const Epetra_Vector> Dispnp() { return dispnp_; }  //full Dispnp (1st dofset)
-    Teuchos::RCP<      Epetra_Vector> WriteAccessDispnp() {return dispnp_; }  //full Dispnp (1st dofset)
-    Teuchos::RCP<const Epetra_Vector> Dispn()  { return dispn_; }  //full Dispn(1st dofset)
+    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() { return dispnp_; }  //full Dispnp (1st dofset)
+    virtual Teuchos::RCP<      Epetra_Vector> WriteAccessDispnp() {return dispnp_; }  //full Dispnp (1st dofset)
+    virtual Teuchos::RCP<const Epetra_Vector> Dispn()  { return dispn_; }  //full Dispn(1st dofset)
     // @}
 
 
@@ -302,6 +304,11 @@ namespace FLD
     Teuchos::RCP<DRT::DiscretizationXFEM> DiscretisationXFEM()
     {
       return xdiscret_;
+    }
+
+    Teuchos::RCP<XFEM::ConditionManager> GetConditionManager()
+    {
+      return condition_manager_;
     }
 
   protected:

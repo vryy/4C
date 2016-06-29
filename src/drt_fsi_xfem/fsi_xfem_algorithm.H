@@ -5,8 +5,10 @@
 \brief Basis of monolithic XFSI algorithm that performs a coupling between the
        structural field equation and XFEM fluid field equations
 
+\level 2
+
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -32,8 +34,12 @@ namespace ADAPTER
 {
   class Structure;
   class FSIStructureWrapper;
-  class XFluidFSI;
   class AleFpsiWrapper;
+}
+
+namespace FLD
+{
+  class XFluid;
 }
 
 
@@ -78,7 +84,7 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
 
     //! access to fluid field
-    const Teuchos::RCP< ::ADAPTER::XFluidFSI>& FluidField(){return fluid_;}
+    const Teuchos::RCP< ::FLD::XFluid>& FluidField(){return fluid_;}
 
     //! access to ale field
     const Teuchos::RCP< ::ADAPTER::AleFpsiWrapper>& AleField(){return ale_;}
@@ -113,7 +119,7 @@ namespace FSI
     Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> structure_;
 
     //! underlying fluid of the FSI problem
-    Teuchos::RCP< ::ADAPTER::XFluidFSI> fluid_;
+    Teuchos::RCP< ::FLD::XFluid> fluid_;
 
     // underlying ale of the FSI problem
     Teuchos::RCP<ADAPTER::AleFpsiWrapper>     ale_;

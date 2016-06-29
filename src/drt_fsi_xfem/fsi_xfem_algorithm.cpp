@@ -5,8 +5,10 @@
 \brief Basis of monolithic XFSI algorithm that performs a coupling between the
        structural field equation and XFEM fluid field equations
 
+\level 2
+
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -16,7 +18,7 @@ Maintainer: Benedikt Schott
 
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_adapter/ad_fld_fluid_xfsi.H"
+#include "../drt_fluid_xfluid/xfluid.H"
 #include "../drt_adapter/ad_ale.H"
 #include "../drt_adapter/ad_ale_fpsi.H"
 
@@ -63,9 +65,9 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
   // ask base algorithm for the fluid time integrator
   //do not init in ale case!!! (will be done in MonolithicAFSI_XFEM::Setup System())
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,fdyn,"fluid",ale,!ale));
-  fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::XFluidFSI>(fluid->FluidField());
+  fluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid->FluidField());
   if (fluid_ == Teuchos::null)
-    dserror("Cast of Fluid to XFluidFSI failed! - Everything fine in SetupFluid()?");
+    dserror("Cast of Fluid to XFluid failed! - Everything fine in SetupFluid()?");
 
   if (ale)
   {
