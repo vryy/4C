@@ -331,7 +331,7 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   Teuchos::ParameterList pwindk;
   pwindk.set("scale_timint", (1.-alphaf_));
   pwindk.set("time_step_size", (*dt_)[0]);
-  ApplyForceStiffCardiovascular0D(timen_, (*dis_)(0), disn_, pwindk);
+  ApplyForceStiffCardiovascular0D(timen_, disn_, pwindk);
 
   // ************************** (1) EXTERNAL FORCES ***************************
 

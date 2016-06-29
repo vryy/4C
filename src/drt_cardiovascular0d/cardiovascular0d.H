@@ -139,9 +139,6 @@ namespace UTILS
       return cardiovascular0dtype_;
     }
 
-    ///Return vector with IDs of active conditions
-    std::vector<int> GetActiveCondID();
-
   protected:
 
     Teuchos::RCP<DRT::Discretization> actdisc_; ///< standard discretization

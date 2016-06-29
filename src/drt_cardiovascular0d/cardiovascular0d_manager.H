@@ -84,10 +84,9 @@ namespace UTILS
     /*!
       \brief Assemble cardiovascular0d stiffness and rhs contributions to full coupled problem
     */
-    void StiffnessAndInternalForces
+    void EvaluateForceStiff
     (
       const double time,  ///< time at end of time step
-      Teuchos::RCP<Epetra_Vector> displast,  ///< displacement at beginning of time step
       Teuchos::RCP<Epetra_Vector> disp,  ///< displacement at end of time step
       Teuchos::ParameterList scalelist
     );

@@ -20,7 +20,7 @@ with nonlinear valve resistances R_atv(p_v,p_at), R_arv(p_v,p_arp) - caution whe
 by the code author! - reproduce classical piecewise linear valves with k_p -> infinity
 
 C) a full closed-loop cardiovascular model with 0D elastance atria models and bi-resistive valve laws:
-(DESIGN SURF CARDIOVASCULAR 0D ARTERIAL VENOUS SYS PUL COUPLED CONDITIONS)
+(DESIGN SURF CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED CONDITIONS)
 (based on MA thesis of Marina Basilious and Kerckhoffs et. al. 2007, Coupling of a 3D Finite Element Model of Cardiac Ventricular
 Mechanics to Lumped Systems Models of the Systemic and Pulmonic Circulations, Annals of Biomedical Engineering, Vol. 35, No. 1)
       [d(p_at/E_at)/dt - q_ven_other + q_vin           ]   [ 0 ]
@@ -337,14 +337,6 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DWindkesselOnly(
       factor_ddQ[0] = -L*C;
       factor_1[0] = -p_ref/R_p;
     }
-
-
-    const std::string action = params.get<std::string>("action");
-    Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
-    actdisc_->SetState("displacement",displast);
-    Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
-    actdisc_->SetState("displacement",disp);
-    params.set("action",action);
 
     // global and local ID of this bc in the redundant vectors
     const int offsetID = params.get<int>("OffsetID");
@@ -673,17 +665,6 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialProxDist(
       factor_Q[3] = 0.;
       factor_1[3] = -p_ref/R_ard - y_arp_m;
 
-    }
-
-    // is condition already labeled as active?
-    if(activecons_.find(condID)->second==false)
-    {
-      const std::string action = params.get<std::string>("action");
-      Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
-      actdisc_->SetState("displacement",displast);
-      Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
-      actdisc_->SetState("displacement",disp);
-      params.set("action",action);
     }
 
     // global and local ID of this bc in the redundant vectors
@@ -1088,17 +1069,6 @@ void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCouple
 
     }
 
-    // is condition already labeled as active?
-    if(activecons_.find(condID)->second==false)
-    {
-      const std::string action = params.get<std::string>("action");
-      Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
-      actdisc_->SetState("displacement",displast);
-      Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
-      actdisc_->SetState("displacement",disp);
-      params.set("action",action);
-    }
-
     // global and local ID of this bc in the redundant vectors
     const int offsetID = params.get<int>("OffsetID");
     std::vector<int> gindex(numdof_per_cond);
@@ -1382,12 +1352,8 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
     int coupcondID=coupcond.GetInt("coupling_id");
     params.set("coupling_id",coupcondID);
 
-    const std::string action = params.get<std::string>("action");
-    Teuchos::RCP<Epetra_Vector> displast=params.get<Teuchos::RCP<Epetra_Vector> >("old disp");
-    actdisc_->SetState("displacement",displast);
     Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
     actdisc_->SetState("displacement",disp);
-    params.set("action",action);
 
     // global and local ID of this bc in the redundant vectors
     const int offsetID = params.get<int>("OffsetID");
@@ -1595,8 +1561,6 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DWindkesselOnly(
       cardiovascular0downer.push_back(curr->second->Owner());
       LINALG::Assemble(*sysvec1,elevector3,cardiovascular0dlm,cardiovascular0downer);
     }
-    // remember next time, that this condition is already initialized, i.e. active
-    activecons_.find(condID)->second=true;
 
     if (actdisc_->Comm().MyPID()==0)
     {
@@ -1701,8 +1665,6 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DArterialProxDist(
       cardiovascular0downer.push_back(curr->second->Owner());
       LINALG::Assemble(*sysvec1,elevector3,cardiovascular0dlm,cardiovascular0downer);
     }
-    // remember next time, that this condition is already initialized, i.e. active
-    activecons_.find(condID)->second=true;
 
     if (actdisc_->Comm().MyPID()==0)
     {
@@ -1844,8 +1806,6 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DArterialVenousSysPulCoup
       cardiovascular0downer.push_back(curr->second->Owner());
       LINALG::Assemble(*sysvec1,elevector3,cardiovascular0dlm,cardiovascular0downer);
     }
-    // remember next time, that this condition is already initialized, i.e. active
-    activecons_.find(condID)->second=true;
 
     if (actdisc_->Comm().MyPID()==0)
     {
@@ -1858,20 +1818,6 @@ void UTILS::Cardiovascular0D::InitializeCardiovascular0DArterialVenousSysPulCoup
 } // end of Initialize Cardiovascular0D
 
 
-
-/*-----------------------------------------------------------------------*
- *-----------------------------------------------------------------------*/
-std::vector<int> UTILS::Cardiovascular0D::GetActiveCondID()
-{
-  std::vector<int> condID;
-  std::map<int,bool>::const_iterator mapit;
-  for(mapit = activecons_.begin();mapit!=activecons_.end();mapit++)
-  {
-    if (mapit->second)
-      condID.push_back(mapit->first);
-  }
-  return condID;
-}
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/

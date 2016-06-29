@@ -266,9 +266,8 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
 |do all the time integration, evaluation and assembling of stiffnesses   |
 |and right-hand sides                                                    |
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DManager::StiffnessAndInternalForces(
+void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
     const double time,
-    Teuchos::RCP<Epetra_Vector> displast,
     Teuchos::RCP<Epetra_Vector> disp,
     Teuchos::ParameterList scalelist)
 {
@@ -279,7 +278,6 @@ void UTILS::Cardiovascular0DManager::StiffnessAndInternalForces(
 
   // create the parameters for the discretization
   Teuchos::ParameterList p;
-  std::vector<DRT::Condition*> cardiovascular0dcond(0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
 
   cardiovascular0dstiffness_->Zero();
@@ -290,7 +288,6 @@ void UTILS::Cardiovascular0DManager::StiffnessAndInternalForces(
   p.set("total time",time);
   p.set("OffsetID",offsetID_);
   p.set("NumberofID",numCardiovascular0DID_);
-  p.set("old disp",displast);
   p.set("new disp",disp);
   p.set("scale_timint",sc_strtimint);
   p.set("scale_theta",theta);
@@ -320,9 +317,8 @@ void UTILS::Cardiovascular0DManager::StiffnessAndInternalForces(
   // start of Cardiovascular0D time integration
   // the DOF vector "dof" for ONE Cardiovascular0D bc holds depending on case A, B or C (see description at top of this file):
   // A) dof = p
-  // B) dof = [p_v  p_ar]^T
-  // C) dof = [p_v  p_arp  y_arp  p_ard]^T
-  // D) dof = [p_at  q_vin  q_vout  p_v  p_ar  q_ar  p_ven  q_ven]^T
+  // B) dof = [p_v  p_arp  y_arp  p_ard]^T
+  // C) dof = [p_at  q_vin  q_vout  p_v  p_ar  q_ar  p_ven  q_ven]^T
 
   // evaluate current volume only
   cardvasc0d_windkesselonly_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,vnredundant,Teuchos::null,Teuchos::null);

@@ -267,7 +267,7 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(Teuchos::ParameterList&
   Teuchos::ParameterList pwindk;
   pwindk.set("scale_timint", theta_);
   pwindk.set("time_step_size", (*dt_)[0]);
-  ApplyForceStiffCardiovascular0D(timen_, (*dis_)(0), disn_, pwindk);
+  ApplyForceStiffCardiovascular0D(timen_, disn_, pwindk);
 
   // ************************** (1) EXTERNAL FORCES ***************************
 

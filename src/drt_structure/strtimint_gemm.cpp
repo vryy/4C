@@ -207,7 +207,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(Teuchos::ParameterList& params)
   Teuchos::ParameterList pwindk;
   pwindk.set("scale_timint", (1.-alphaf_));
   pwindk.set("time_step_size", (*dt_)[0]);
-  ApplyForceStiffCardiovascular0D(timen_, (*dis_)(0), disn_, pwindk);
+  ApplyForceStiffCardiovascular0D(timen_, disn_, pwindk);
 
   // initialise stiffness matrix to zero
   stiff_->Zero();

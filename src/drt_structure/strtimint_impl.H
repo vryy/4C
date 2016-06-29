@@ -282,7 +282,6 @@ namespace STR
     void ApplyForceStiffCardiovascular0D
     (
       const double time, //!< evaluation time
-      const Teuchos::RCP<Epetra_Vector> dis, //!< last evaluated displacements
       const Teuchos::RCP<Epetra_Vector> disn, //!< evaluation displacements
       Teuchos::ParameterList pcon //!< parameter list containing scale factors for matrix entries
     );

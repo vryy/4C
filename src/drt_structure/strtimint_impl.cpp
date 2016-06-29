@@ -1220,14 +1220,13 @@ void STR::TimIntImpl::ApplyForceStiffConstraint
 void STR::TimIntImpl::ApplyForceStiffCardiovascular0D
 (
   const double time,
-  const Teuchos::RCP<Epetra_Vector> dis,
   const Teuchos::RCP<Epetra_Vector> disn,
   Teuchos::ParameterList pwindk
 )
 {
   if (cardvasc0dman_->HaveCardiovascular0D())
   {
-    cardvasc0dman_->StiffnessAndInternalForces(time, dis, disn, pwindk);
+    cardvasc0dman_->EvaluateForceStiff(time, disn, pwindk);
   }
 
   return;

@@ -175,7 +175,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   // add forces and stiffness due to Cardiovascular0D bcs
   Teuchos::ParameterList pwindk;
   pwindk.set("time_step_size", (*dt_)[0]);
-  ApplyForceStiffCardiovascular0D(timen_, (*dis_)(0), disn_, pwindk);
+  ApplyForceStiffCardiovascular0D(timen_, disn_, pwindk);
 
   // ************************** (1) EXTERNAL FORCES ***************************
 
