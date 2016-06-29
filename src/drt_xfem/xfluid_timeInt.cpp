@@ -5,8 +5,10 @@
        maps vectors from old interface position to vectors at new interface position,
        determines the reconstruction method for missing and unreasonable ghost and standard values
 
+\level 2
+
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -1822,6 +1824,17 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
 
     std::copy(x_old.A(), x_old.A() + 3, &xyze_old(0, i));
     std::copy(x_new.A(), x_new.A() + 3, &xyze_new(0, i));
+  }
+
+  //------------------------------------------------------------------
+
+  for( int i=0; i<numnode_side; ++i )
+  {
+    for(int j=0; j< 3; j++)
+    {
+      xyze_st(j,i) = xyze_old(j,i);
+      xyze_st(j,i+numnode_side) = xyze_new(j,i);
+    }
   }
 
   // check the space time side volume
