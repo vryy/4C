@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
-\file windkessel.H
+\file cardiovascular0d.H
 
-\brief Monolithic coupling of 3D structure 0D Windkessel models
+\brief Monolithic coupling of 3D structure Cardiovascular0D models
 
 \level 2
 
@@ -14,8 +14,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef WINDKESSEL_H
-#define WINDKESSEL_H
+#ifndef CARDIOVASCULAR0D_H
+#define CARDIOVASCULAR0D_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -43,59 +43,59 @@ namespace LINALG
 namespace UTILS
 {
 
-  class Windkessel
+  class Cardiovascular0D
 
   {
   public:
 
-    //! Windkessel types
-    enum WindkesselType
+    //! 0D cardiovascular types
+    enum Cardiovascular0DType
     {
       none,
-      wk_std,
-      wk_heartvalvearterial_proxdist,
-      wk_heartvalvecardiovascular_full
+      cardvasc0d_windkesselonly,
+      cardvasc0d_arterialproxdist,
+      cardvasc0d_arterialvenoussyspulcoupled
     };
 
     /*!
-    \brief Constructor of a Windkessel based on conditions with a given name. It also
-    takes care of the Windkessel IDs.
+    \brief Constructor of a Cardiovascular0D based on conditions with a given name. It also
+    takes care of the Cardiovascular0D IDs.
     */
 
-    Windkessel
+    Cardiovascular0D
     (
-      Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization where Windkessel lives on
-      const std::string& CondName, ///< Name of condition to creat Windkessel from
-      int& minID,  ///< minimum Windkessel ID so far
-      int& maxID, ///< maximum Windkessel ID so far
+      Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization where Cardiovascular0D lives on
+      const std::string& CondName, ///< Name of condition to creat Cardiovascular0D from
+      int& minID,  ///< minimum Cardiovascular0D ID so far
+      int& maxID, ///< maximum Cardiovascular0D ID so far
       std::vector<int>& curID ///< current ID
     );
 
     /*!
-    \brief Constructor of a Windkessel based on a conditions with a given name.
+    \brief Constructor of a Cardiovascular0D based on a conditions with a given name.
     */
 
-    Windkessel
+    Cardiovascular0D
     (
-      Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization where Windkessel funtion lives on
-      const std::string& CondName ///< Name of condition to create Windkessel functions from
+      Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization where Cardiovascular0D funtion lives on
+      const std::string& CondName ///< Name of condition to create Cardiovascular0D functions from
     );
 
     /*!
         \brief Destructor
 
      */
-    ~Windkessel()
+    ~Cardiovascular0D()
     {
         return;
     };
 
     /*!
-     \brief Return if there are Windkessel functions
+     \brief Return if there are Cardiovascular0D functions
     */
-    bool HaveWindkessel()
+    bool HaveCardiovascular0D()
     {
-        return windkesseltype_!=none;
+        return cardiovascular0dtype_!=none;
     };
 
     /// Set state of the underlying discretization
@@ -115,13 +115,13 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec3  ///< distributed vector that may be filled by assembly of element contributions
     );
 
-    //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateWindkessel routine is called
+    //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateCardiovascular0D routine is called
     void Evaluate
     (
       Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Windkessel stiffness matrix
-      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Windkessel offdiagonal matrix dV/dd
-      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Windkessel offdiagonal matrix dfext/dp
+      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Cardiovascular0D stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Cardiovascular0D offdiagonal matrix dV/dd
+      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Cardiovascular0D offdiagonal matrix dfext/dp
       Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vectors that may be filled by assembly of element contributions
       Teuchos::RCP<Epetra_Vector> sysvec2,
       Teuchos::RCP<Epetra_Vector> sysvec3,
@@ -133,10 +133,10 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector> sysvec9
     );
 
-    ///Return type of Windkessel function
-    WindkesselType Type()
+    ///Return type of Cardiovascular0D function
+    Cardiovascular0DType Type()
     {
-      return windkesseltype_;
+      return cardiovascular0dtype_;
     }
 
     ///Return vector with IDs of active conditions
@@ -145,11 +145,11 @@ namespace UTILS
   protected:
 
     Teuchos::RCP<DRT::Discretization> actdisc_; ///< standard discretization
-    std::vector<DRT::Condition*> windkesselcond_; ///< windkessel conditions
-    std::vector<DRT::Condition*> windkesselstructcoupcond_; ///< windkessel structure coupling conditions
-    WindkesselType windkesseltype_; ///< Windkessel type
-    std::map<int,double>  inittimes_; ///< map with times at which Windkessel is supposed to become active
-    std::map<int,bool> activecons_; ///< map with indicator if Windkessels are active
+    std::vector<DRT::Condition*> cardiovascular0dcond_; ///< 0D cardiovascular conditions
+    std::vector<DRT::Condition*> cardiovascular0dstructcoupcond_; ///< 0D cardiovascular structure coupling conditions
+    Cardiovascular0DType cardiovascular0dtype_; ///< Cardiovascular0D type
+    std::map<int,double>  inittimes_; ///< map with times at which Cardiovascular0D is supposed to become active
+    std::map<int,bool> activecons_; ///< map with indicator if Cardiovascular0Ds are active
     //! gaussian integration to be used
     DRT::UTILS::GaussRule2D gaussrule_;
 
@@ -157,22 +157,22 @@ namespace UTILS
 
     // don't want = operator, cctor and destructor
 
-    Windkessel operator = (const Windkessel& old);
-    Windkessel(const Windkessel& old);
+    Cardiovascular0D operator = (const Cardiovascular0D& old);
+    Cardiovascular0D(const Cardiovascular0D& old);
 
-    //! Return the WindkesselType based on the condition name
-    WindkesselType GetWindkesselType
+    //! Return the Cardiovascular0DType based on the condition name
+    Cardiovascular0DType GetCardiovascular0DType
     (
       const std::string& Name///<condition name
     );
 
-    //! Evaluate Windkessel conditions and assemble the results
-    void EvaluateStdWindkessel
+    //! Evaluate Cardiovascular0D conditions and assemble the results
+    void EvaluateCardiovascular0DWindkesselOnly
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Windkessel stiffness matrix
-      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Windkessel offdiagonal matrix dV/dd
-      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Windkessel offdiagonal matrix dfext/dp
+      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Cardiovascular0D stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Cardiovascular0D offdiagonal matrix dV/dd
+      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Cardiovascular0D offdiagonal matrix dfext/dp
       Teuchos::RCP<Epetra_Vector>    sysvec1,  ///< distributed vectors that may be filled by aasembly of element contributions
       Teuchos::RCP<Epetra_Vector>    sysvec2,
       Teuchos::RCP<Epetra_Vector>    sysvec3,
@@ -182,13 +182,13 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec7
     );
 
-    //! Evaluate Windkessel conditions and assemble the results
-    void EvaluateHeartValveArterialProxDistWindkessel
+    //! Evaluate Cardiovascular0D conditions and assemble the results
+    void EvaluateCardiovascular0DArterialProxDist
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Windkessel stiffness matrix
-      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Windkessel offdiagonal matrix dV/dd
-      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Windkessel offdiagonal matrix dfext/dp
+      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Cardiovascular0D stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Cardiovascular0D offdiagonal matrix dV/dd
+      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Cardiovascular0D offdiagonal matrix dfext/dp
       Teuchos::RCP<Epetra_Vector>    sysvec1,  ///< distributed vectors that may be filled by aasembly of element contributions
       Teuchos::RCP<Epetra_Vector>    sysvec2,
       Teuchos::RCP<Epetra_Vector>    sysvec3,
@@ -199,20 +199,20 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec8
     );
 
-    //! Evaluate Windkessel conditions and assemble the results
+    //! Evaluate Cardiovascular0D conditions and assemble the results
     void EvaluateDStructDp
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<LINALG::SparseOperator> sysmat ///< Windkessel offdiagonal matrix dfext/dp
+      Teuchos::RCP<LINALG::SparseOperator> sysmat ///< Cardiovascular0D offdiagonal matrix dfext/dp
     );
 
-    //! Evaluate Windkessel conditions and assemble the results
-    void EvaluateHeartValveCardiovascularFullWindkessel
+    //! Evaluate Cardiovascular0D conditions and assemble the results
+    void EvaluateCardiovascular0DArterialVenousSysPulCoupled
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Windkessel stiffness matrix
-      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Windkessel offdiagonal matrix dV/dd
-      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Windkessel offdiagonal matrix dfext/dp
+      Teuchos::RCP<LINALG::SparseMatrix> sysmat1, ///< Cardiovascular0D stiffness matrix
+      Teuchos::RCP<LINALG::SparseOperator> sysmat2, ///< Cardiovascular0D offdiagonal matrix dV/dd
+      Teuchos::RCP<LINALG::SparseOperator> sysmat3, ///< Cardiovascular0D offdiagonal matrix dfext/dp
       Teuchos::RCP<Epetra_Vector>    sysvec1,  ///< distributed vectors that may be filled by aasembly of element contributions
       Teuchos::RCP<Epetra_Vector>    sysvec2,
       Teuchos::RCP<Epetra_Vector>    sysvec3,
@@ -224,32 +224,24 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector>    sysvec9
     );
 
-    //! Compute and assemble initial Windkessel values
-    void InitializeStdWindkessel
+    //! Compute and assemble initial values
+    void InitializeCardiovascular0DWindkesselOnly
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<Epetra_Vector>    sysvec1, ///< distributed vector that may be filled by assembly of element contributions
       Teuchos::RCP<Epetra_Vector>    sysvec2 ///< distributed vector that may be filled by assembly of element contributions
     );
 
-    //! Compute and assemble initial Windkessel values
-    void InitializeHeartValveArterialWindkessel
+    //! Compute and assemble initial values
+    void InitializeCardiovascular0DArterialProxDist
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<Epetra_Vector>    sysvec1, ///< distributed vector that may be filled by assembly of element contributions
       Teuchos::RCP<Epetra_Vector>    sysvec2 ///< distributed vector that may be filled by assembly of element contributions
     );
 
-    //! Compute and assemble initial Windkessel values
-    void InitializeHeartValveArterialProxDistWindkessel
-    (
-      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
-      Teuchos::RCP<Epetra_Vector>    sysvec1, ///< distributed vector that may be filled by assembly of element contributions
-      Teuchos::RCP<Epetra_Vector>    sysvec2 ///< distributed vector that may be filled by assembly of element contributions
-    );
-
-    //! Compute and assemble initial Windkessel values
-    void InitializeHeartValveCardiovascularFullWindkessel
+    //! Compute and assemble initial values
+    void InitializeCardiovascular0DArterialVenousSysPulCoupled
     (
       Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       Teuchos::RCP<Epetra_Vector>    sysvec1, ///< distributed vector that may be filled by assembly of element contributions
@@ -260,4 +252,4 @@ namespace UTILS
   }; //class
 } //namespace
 
-#endif /*WINDKESSEL_H*/
+#endif /*0DCARDIOVASCULAR_H*/

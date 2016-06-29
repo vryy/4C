@@ -21,6 +21,7 @@
 #include "Teuchos_TimeMonitor.hpp"
 
 #include "strtimint.H"
+
 #include "stru_resulttest.H"
 
 #include "../drt_io/io.H"
@@ -54,10 +55,10 @@
 #include "../drt_inpar/inpar_cell.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
-#include "../drt_constraint/windkessel_manager.H"
 #include "../drt_constraint/springdashpot_manager.H"
 #include "../drt_constraint/springdashpot.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
+#include "../drt_cardiovascular0d/cardiovascular0d_manager.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_immersed_problem/immersed_field_exchange_manager.H"
 #include "../drt_statmech/statmech_manager.H"
@@ -144,7 +145,7 @@ STR::TimInt::TimInt
   dampm_(sdynparams.get<double>("M_DAMP")),
   conman_(Teuchos::null),
   consolv_(Teuchos::null),
-  windkman_(Teuchos::null),
+  cardvasc0dman_(Teuchos::null),
   springman_(Teuchos::null),
   surfstressman_(Teuchos::null),
   potman_(Teuchos::null),
@@ -227,11 +228,11 @@ STR::TimInt::TimInt
                                                   sdynparams));
 
 
-  // initialize Windkessel manager
-  windkman_ = Teuchos::rcp(new UTILS::WindkesselManager(discret_,
+  // initialize 0D cardiovascular manager
+  cardvasc0dman_ = Teuchos::rcp(new UTILS::Cardiovascular0DManager(discret_,
                                                         (*dis_)(0),
                                                         sdynparams,
-                                                        DRT::Problem::Instance()->WindkesselStructuralParams(),
+                                                        DRT::Problem::Instance()->Cardiovascular0DStructuralParams(),
                                                         *solver_,
                                                         dbcmaps_));
 
@@ -1903,9 +1904,9 @@ void STR::TimInt::ResetStep()
     discret_->ClearState();
   }
 
-  // reset windkessel if we have monolithic windkessel-structure coupling (mhv 02/2015)
-  if (windkman_->HaveWindkessel())
-    windkman_->ResetStep();
+  // reset 0D cardiovascular model if we have monolithic 0D cardiovascular-structure coupling (mhv 02/2015)
+  if (cardvasc0dman_->HaveCardiovascular0D())
+    cardvasc0dman_->ResetStep();
 
   // I am gone
   return;
@@ -1930,7 +1931,7 @@ void STR::TimInt::ReadRestart
   ReadRestartState();
 
   ReadRestartConstraint();
-  ReadRestartWindkessel();
+  ReadRestartCardiovascular0D();
   ReadRestartContactMeshtying();
   ReadRestartBeamContact();
   ReadRestartStatMech();
@@ -1975,9 +1976,9 @@ void STR::TimInt::SetRestart
   if (conman_->HaveConstraint())
     dserror("Set restart not implemented for constraints");
 
-  // Windkessel
-  if (windkman_->HaveWindkessel())
-    dserror("Set restart not implemented for Windkessel");
+  // Cardiovascular0D
+  if (cardvasc0dman_->HaveCardiovascular0D())
+    dserror("Set restart not implemented for Cardiovascular0D");
 
   // contact / meshtying
   if (HaveContactMeshtying())
@@ -2075,13 +2076,13 @@ void STR::TimInt::ReadRestartConstraint()
 }
 
 /*----------------------------------------------------------------------*/
-/* Read and set restart values for windkessel */
-void STR::TimInt::ReadRestartWindkessel()
+/* Read and set restart values for 0D cardiovascular models */
+void STR::TimInt::ReadRestartCardiovascular0D()
 {
-  if (windkman_->HaveWindkessel())
+  if (cardvasc0dman_->HaveCardiovascular0D())
   {
     IO::DiscretizationReader reader(discret_, step_);
-    windkman_->ReadRestart(reader,(*time_)[0]);
+    cardvasc0dman_->ReadRestart(reader,(*time_)[0]);
   }
 }
 
@@ -2464,19 +2465,19 @@ void STR::TimInt::OutputRestart
                           conman_->GetRefBaseValues());
   }
 
-  // Windkessel
-  if (windkman_->HaveWindkessel())
+  // Cardiovascular0D
+  if (cardvasc0dman_->HaveCardiovascular0D())
   {
-    output_->WriteVector("wkdof",
-                          windkman_->GetWkDofVector());
+    output_->WriteVector("cvdof",
+                          cardvasc0dman_->Get0DDofVector());
     output_->WriteVector("refvolval",
-                          windkman_->GetRefVolValue());
+                          cardvasc0dman_->GetRefVolValue());
     output_->WriteVector("reffluxval",
-                          windkman_->GetRefFluxValue());
+                          cardvasc0dman_->GetRefFluxValue());
     output_->WriteVector("refdfluxval",
-                          windkman_->GetRefDFluxValue());
+                          cardvasc0dman_->GetRefDFluxValue());
     output_->WriteVector("refddfluxval",
-                          windkman_->GetRefDDFluxValue());
+                          cardvasc0dman_->GetRefDDFluxValue());
   }
 
   // contact and meshtying
@@ -2620,19 +2621,19 @@ void STR::TimInt::AddRestartToOutputState()
                           conman_->GetRefBaseValues());
   }
 
-  // Windkessel
-  if (windkman_->HaveWindkessel())
+  // 0D cardiovascular models
+  if (cardvasc0dman_->HaveCardiovascular0D())
   {
-    output_->WriteVector("wkdof",
-                          windkman_->GetWkDofVector());
+    output_->WriteVector("cvdof",
+                          cardvasc0dman_->Get0DDofVector());
     output_->WriteVector("refvolval",
-                          windkman_->GetRefVolValue());
+                          cardvasc0dman_->GetRefVolValue());
     output_->WriteVector("reffluxval",
-                          windkman_->GetRefFluxValue());
+                          cardvasc0dman_->GetRefFluxValue());
     output_->WriteVector("refdfluxval",
-                          windkman_->GetRefDFluxValue());
+                          cardvasc0dman_->GetRefDFluxValue());
     output_->WriteVector("refddfluxval",
-                          windkman_->GetRefDDFluxValue());
+                          cardvasc0dman_->GetRefDDFluxValue());
   }
 
   // springdashpot output

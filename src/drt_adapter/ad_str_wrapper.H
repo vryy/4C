@@ -4,8 +4,10 @@
 
 \brief Wrapper for the structural time integration
 
+\level 1
+
 <pre>
-Maintainer: Georg Hammerl
+\maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
@@ -119,9 +121,9 @@ namespace ADAPTER
     virtual bool HaveConstraint()
     { return structure_->HaveConstraint(); }
 
-    /// are there any Windkessel bcs?
-    virtual bool HaveWindkessel()
-    { return structure_->HaveWindkessel(); }
+    /// are there any 0D cardiovascular coupling bcs?
+    virtual bool HaveCardiovascular0D()
+    { return structure_->HaveCardiovascular0D(); }
 
     /// are there any spring dashpot BCs?
     virtual bool HaveSpringDashpot()
@@ -139,9 +141,9 @@ namespace ADAPTER
     virtual const Teuchos::RCP< UTILS::SpringDashpotManager> GetSpringDashpotManager()
     { return structure_->GetSpringDashpotManager(); }
 
-    /// get Windkessel manager defined in the structure
-    virtual const Teuchos::RCP< UTILS::WindkesselManager> GetWindkesselManager()
-    { return structure_->GetWindkesselManager(); }
+    /// get 0D cardiovascular manager defined in the structure
+    virtual const Teuchos::RCP< UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
+    { return structure_->GetCardiovascular0DManager(); }
 
     /// get plasticity manager defined in the structure
     virtual const Teuchos::RCP<DRT::UTILS::PlastSsnManager> GetPlasticityManager()
@@ -264,9 +266,9 @@ namespace ADAPTER
     virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr)
     { structure_->UpdateIterIncrConstr(lagrincr); }
 
-    /// update iteration; add residual increment to pressures stored in Windkessel manager
-    virtual void UpdateIterIncrWindkessel(Teuchos::RCP<Epetra_Vector> presincr)
-    { structure_->UpdateIterIncrWindkessel(presincr); }
+    /// update iteration; add residual increment to pressures stored in 0D cardiovascular manager
+    virtual void UpdateIterIncrCardiovascular0D(Teuchos::RCP<Epetra_Vector> presincr)
+    { structure_->UpdateIterIncrCardiovascular0D(presincr); }
 
     /// access to output object
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()

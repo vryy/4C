@@ -232,8 +232,8 @@ namespace ADAPTER {
     virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr) = 0;
 
     /// Update iteration
-    /// Add residual increment to pressures stored in Windkessel manager
-    virtual void UpdateIterIncrWindkessel(Teuchos::RCP<Epetra_Vector> presincr) = 0;
+    /// Add residual increment to pressures stored in Cardiovascular0D manager
+    virtual void UpdateIterIncrCardiovascular0D(Teuchos::RCP<Epetra_Vector> presincr) = 0;
 
     /// Access to output object
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
@@ -474,8 +474,8 @@ namespace ADAPTER {
     /// @name Currently unused functions, which will be deleted in the near future,
     /// if they stay unnecessary.
     ///@{
-    /// are there any Windkessel bcs?
-    virtual bool HaveWindkessel()
+    /// are there any Cardiovascular0D bcs?
+    virtual bool HaveCardiovascular0D()
     { dserror("This function seems to be unused!"); return false; }
 
     /// are there any spring dashpot bcs?
@@ -486,8 +486,8 @@ namespace ADAPTER {
     virtual const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager()
     { dserror("This function seems to be unused!"); return Teuchos::null; }
 
-    /// get Windkessel manager defined in the structure
-    virtual const Teuchos::RCP<UTILS::WindkesselManager> GetWindkesselManager()
+    /// get Cardiovascular0D manager defined in the structure
+    virtual const Teuchos::RCP<UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
     { dserror("This function seems to be unused!"); return Teuchos::null; }
 
     ///@}

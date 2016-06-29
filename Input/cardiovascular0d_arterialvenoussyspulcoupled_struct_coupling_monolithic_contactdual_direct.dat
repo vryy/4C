@@ -76,13 +76,13 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Superlu
---------------------------------------WINDKESSEL-STRUCTURE COUPLING
+-------------------------------CARDIOVASCULAR 0D-STRUCTURE COUPLING
 TIMINT_THETA                    0.5
-TOLWINDKESSEL                   1e-06
-TOLWINDKESSELDOFINCR            1e-06
+TOL_CARDVASC0D_RES              1e-06
+TOL_CARDVASC0D_DOFINCR          1e-06
 SOLALGORITHM                    direct
-RESTART_WITH_WINDKESSEL         No
-LINEAR_WINDK_STRUCT_SOLVER      1
+RESTART_WITH_CARDVASC0D         No
+LINEAR_COUPLED_SOLVER           1
 ENHANCED_OUTPUT                 No
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
@@ -205,11 +205,11 @@ E 16 - 3 Master Inactive FrCoeffOrBound 0.0
 E 17 - 3 Slave Inactive FrCoeffOrBound 0.0
 E 18 - 4 Master Inactive FrCoeffOrBound 0.0
 E 19 - 4 Slave Inactive FrCoeffOrBound 0.0
------------DESIGN SURF HEART VALVE CARDIOVASCULAR FULL WINDKESSEL CONDITIONS
+-----DESIGN SURF CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED CONDITIONS
 DSURF                           2
 E 6 - id 0 R_arvalve_max 1.0e3 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e3 R_atvalve_min 1.0e-6 E_at_max 0.0782e-3 E_at_min 0.0711e-3 at_act_curve 1 C_ar 7500.0 R_ar 0.000154578769242 L_ar 0.0 Z_ar 0.0 C_ven 7500.0 R_ven 0.000154578769242 L_ven 0.0 p_at_0 0.6 q_v_in_0 0.0 q_v_out_0 0.0 p_v_0 0.0 p_ar_0 9.49864821926 q_ar_0 0.0 p_ven_0 0.3 q_ven_0 0.0 V_at_0 5.0e3 V_ar_0 352.0e3 V_ven_0 1040.0e3
 E 7 - id 1 R_arvalve_max 1.0e3 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e3 R_atvalve_min 1.0e-6 E_at_max 0.0300e-3 E_at_min 0.0273e-3 at_act_curve 2 C_ar 22500.0 R_ar 5.15262564139e-05 L_ar 0.0 Z_ar 0.0 C_ven 22500.0 R_ven 5.15262564139e-05 L_ven 0.0 p_at_0 0.3 q_v_in_0 0.0 q_v_out_0 0.0 p_v_0 0.0 p_ar_0 1.89972964385 q_ar_0 0.0 p_ven_0 0.6 q_ven_0 0.0 V_at_0 4.0e3 V_ar_0 84.9e3 V_ven_0 93.0e3
-------------------------DESIGN SURF WINDKESSEL STRUCTURE COUPLING CONDITIONS
+-------DESIGN SURF CARDIOVASCULAR 0D-STRUCTURE COUPLING CONDITIONS
 DSURF                           2
 E 8 - coupling_id 0
 E 9 - coupling_id 1

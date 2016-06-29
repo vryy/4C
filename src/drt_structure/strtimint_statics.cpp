@@ -172,10 +172,10 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   // initialize stiffness matrix to zero
   stiff_->Zero();
 
-  // add forces and stiffness due to Windkessel bcs
+  // add forces and stiffness due to Cardiovascular0D bcs
   Teuchos::ParameterList pwindk;
   pwindk.set("time_step_size", (*dt_)[0]);
-  ApplyForceStiffWindkessel(timen_, (*dis_)(0), disn_, pwindk);
+  ApplyForceStiffCardiovascular0D(timen_, (*dis_)(0), disn_, pwindk);
 
   // ************************** (1) EXTERNAL FORCES ***************************
 
@@ -394,8 +394,8 @@ void STR::TimIntStatics::UpdateStepState()
   // update constraints
   UpdateStepConstraint();
 
-  // update Windkessel
-  UpdateStepWindkessel();
+  // update Cardiovascular0D
+  UpdateStepCardiovascular0D();
 
   // update constraints
   UpdateStepSpringDashpot();

@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file windkesseldofset.H
+\file cardiovascular0d_dofset.H
 
 \brief A set of degrees of freedom
 
@@ -13,8 +13,8 @@
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef WINDKESSELDOFSET_H
-#define WINDKESSELDOFSET_H
+#ifndef CARDIOVASCULAR0D_DOFSET_H
+#define CARDIOVASCULAR0D_DOFSET_H
 
 #include <vector>
 #include <list>
@@ -32,15 +32,15 @@ namespace UTILS
 /*!
 \brief A set of degrees of freedom
 
-\note This is an internal class of the Windkessel manager that one
+\note This is an internal class of the Cardiovascular0D manager that one
 should not need to touch on an ordinary day. It is here to support the
-Windkessel manager class. And does all the degree of freedom assignmets
-for the Windkessels.
+Cardiovascular0D manager class. And does all the degree of freedom assignmets
+for the Cardiovascular0Ds.
 
 <h3>Purpose</h3>
 
 This class represents one set of degrees of freedom for the
-Windkessels in the usual parallel fashion. That is there is a
+Cardiovascular0Ds in the usual parallel fashion. That is there is a
 DofRowMap() and a DofColMap() that return the maps of the global FE
 system of equation in row and column setting respectively. These maps
 are used by the algorithm's Epetra_Vector classes amoung others.
@@ -54,7 +54,7 @@ change back and forth use AssignDegreesOfFreedom() and Reset().
 
 \author tk
 */
-class WindkesselDofSet: public DRT::DofSetBase
+class Cardiovascular0DDofSet: public DRT::DofSetBase
 {
 public:
 
@@ -62,13 +62,13 @@ public:
   \brief Standard Constructor
 
   */
-  WindkesselDofSet();
+  Cardiovascular0DDofSet();
 
   /*!
   \brief Destructor
 
   */
-  virtual ~WindkesselDofSet();
+  virtual ~Cardiovascular0DDofSet();
 
 
   //! @name Access methods
@@ -97,12 +97,12 @@ public:
 
 protected:
 
-}; // class WindkesselDofSet
+}; // class Cardiovascular0DDofSet
 } // namespace UTILS
 
 
 // << operator
-std::ostream& operator << (std::ostream& os, const UTILS::WindkesselDofSet& dofset);
+std::ostream& operator << (std::ostream& os, const UTILS::Cardiovascular0DDofSet& dofset);
 
 
 #endif  // #ifndef DOFSET_H

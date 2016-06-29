@@ -278,8 +278,8 @@ namespace STR
       Teuchos::ParameterList pcon  //!< parameter list containing scale factors for matrix entries
     );
 
-    //! Evaluate forces due to Windkessel BCs
-    void ApplyForceStiffWindkessel
+    //! Evaluate forces due to Cardiovascular0D BCs
+    void ApplyForceStiffCardiovascular0D
     (
       const double time, //!< evaluation time
       const Teuchos::RCP<Epetra_Vector> dis, //!< last evaluated displacements
@@ -684,8 +684,8 @@ namespace STR
     //! Update step for constraints
     void UpdateStepConstraint();
 
-    //! Update step for Windkessel
-    void UpdateStepWindkessel();
+    //! Update step for Cardiovascular0D
+    void UpdateStepCardiovascular0D();
 
     //! Update step for SpringDashpot
     void UpdateStepSpringDashpot();
@@ -724,8 +724,8 @@ namespace STR
     //! Return bool indicating if constraints are defined
     bool HaveConstraint();
 
-    //! Return bool indicating if Windkessel bcs are defined
-    bool HaveWindkessel();
+    //! Return bool indicating if Cardiovascular0D bcs are defined
+    bool HaveCardiovascular0D();
 
     //! Return bool indicating if spring dashpot BCs are defined
     bool HaveSpringDashpot();
@@ -736,13 +736,13 @@ namespace STR
       return conman_;
     }
 
-    //! Return Teuchos::rcp to WindkesselManager windkman_
-    const Teuchos::RCP< ::UTILS::WindkesselManager> GetWindkesselManager()
+    //! Return Teuchos::rcp to Cardiovascular0DManager cardvasc0dman_
+    const Teuchos::RCP< ::UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
     {
-      return windkman_;
+      return cardvasc0dman_;
     }
 
-    //! Return Teuchos::rcp to SpringDashpotManager windkman_
+    //! Return Teuchos::rcp to SpringDashpotManager springman_
     const Teuchos::RCP< ::UTILS::SpringDashpotManager> GetSpringDashpotManager()
     {
       return springman_;
@@ -771,8 +771,8 @@ namespace STR
     );
 
     //! Update iteration
-    //! Add residual increment to pressures stored in Windkessel manager
-    virtual void UpdateIterIncrWindkessel
+    //! Add residual increment to pressures stored in Cardiovascular0D manager
+    virtual void UpdateIterIncrCardiovascular0D
     (
       Teuchos::RCP<Epetra_Vector> presincr ///< pressure increment
     );
@@ -1011,16 +1011,16 @@ namespace STR
                          //!< with Lagrange multipliers
     int uzawaitermax_;  //!< maximally permitted Uzawa iterations
     double tolcon_;  //!< tolerance constraint
-    double tolwindk_;  //!< tolerance Windkessel
-    double tolwindkdofincr_;  //!< tolerance windkessel dof increment
+    double tolcardvasc0d_;  //!< tolerance for 0D cardiovascular residual
+    double tolcardvasc0ddofincr_;  //!< tolerance for 0D cardiovascular dof increment
     int iter_;  //!< iteration step
     double normcharforce_;  //!< characteristic norm for residual force
     double normchardis_;  //!< characteristic norm for residual displacements
     double normfres_;  //!< norm of residual forces
     double normdisi_;  //!< norm of residual displacements
     double normcon_;  //!< norm of constraint
-    double normwindk_;  //!< norm of Windkessel
-    double normwindkdofincr_;  //!< norm of windkessel dof increment
+    double normcardvasc0d_;  //!< norm of 0D cardiovascular residual
+    double normcardvasc0ddofincr_;  //!< norm of 0D cardiovascular dof increment
     double normpfres_; //!< norm of residual pressure forces
     double normpres_; //!< norm of residual pressures
     double normcontconstr_;  //!< norm of contact/meshtying constraint rhs (contact/meshtying in saddlepoint formulation only)

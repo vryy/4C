@@ -2,6 +2,8 @@
 /*!
 \file str_solver_factory.cpp
 
+\brief str_solver_factory
+
 \maintainer Michael Hiermeier
 
 \date Sep 9, 2015
@@ -77,7 +79,7 @@ STR::SOLVER::Factory::BuildLinSolvers(
       (*linsolvers)[*mt_iter] =
           BuildLagPenConstraintLinSolver(sdyn,actdis);
       break;
-    case INPAR::STR::model_windkessel:
+    case INPAR::STR::model_cardiovascular0d:
       (*linsolvers)[*mt_iter] = BuildWindkesselLinSolver(sdyn,actdis);
       break;
     default:

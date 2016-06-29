@@ -44,18 +44,102 @@ RANDSEED                        -1
 RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          Superlu
------------------------------------------------WINDKESSEL-STRUCTURE COUPLING
+SOLVER                          Aztec_MSR
+AZOUTPUT                        100//0
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          CheapSIMPLE
+AZREUSE                         0
+AZDROP                          0.0                           // drop tolerance for ILUT
+IFPACKFILL                      1.0                           // fill-in for ILUT
+IFPACKGFILL                     0                             // graph fill for ILU
+AZTOL                           5.0e-5                        // tolerance in unscaled residual
+AZITER                          1200                          // max iterations
+AZSUB                           50                            // size of krylov space for gmres
+AZOMEGA                         1.0                           // unused
+AZGRAPH                         1                             // unused
+AZPOLY                          5                             // polynomial order for Neumann
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          infnorm                       // none sym infnorm scaling of the system
+AZCONV                          AZ_r0                         // AZ_r0 AZ_noscaled AZ_rhs
+SUB_SOLVER1                     2
+SUB_SOLVER2                     3
+--------------------------------------------------------------------SOLVER 2
+NAME                            CheapSIMPLEPredict
+SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        0                             // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ML                            // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE                         0                             // how often to recompute some preconditioners
+AZDROP                          0.0                           // drop tolerance for ILUT
+IFPACKFILL                      1.0                           // fill-in for ILUT
+IFPACKGFILL                     0                             // graph fill for ILU
+AZTOL                           1.0e-3                        // tolerance in unscaled residual
+AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                          // max iterations
+AZSUB                           50                            // size of krylov space for gmres
+AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH                         1                             // unused
+AZPOLY                          5                             // polynomial order for Neumann
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          infnorm                       // none sym infnorm scaling of the system
+ML_PRINT                        0                             // ML print-out level (0-10)
+ML_MAXCOARSESIZE                10000                         // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL                     5                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 Chebychev                     // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  Chebychev                     // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack                       // SGS GS DGS Jacobi Chebychev MLS KLU Superlu Umfpack
+ML_SMOTIMES                     12 12 12 12 1                 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     1.0                           // damping fine grid
+ML_DAMPMED                      1.0                           // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
+--------------------------------------------------------------------SOLVER 3
+NAME                            CheapSIMPLECorrect
+SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        0                             // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          LU                            // none ML MLFLUID MLFLUID2 MLAPI LU ILU ILUT LU ICC Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE                         10                            // how often to recompute some preconditioners
+AZDROP                          0.0                           // drop tolerance for ILUT
+IFPACKFILL                      1.0                           // fill-in for ILUT
+IFPACKGFILL                     6                             // graph fill for ILU
+AZTOL                           1.0e-3                        // tolerance in unscaled residual
+AZCONV                          AZ_r0                         // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER                          1000                          // max iterations
+AZSUB                           25                            // size of krylov space for gmres
+AZOMEGA                         1.0                           // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH                         1                             // unused
+AZPOLY                          5                             // polynomial order for Neumann
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          none                          // none sym infnorm scaling of the system
+ML_PRINT                        0                             // ML print-out level (0-10)
+ML_MAXCOARSESIZE                1                             // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL                     2                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  1.33                          // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 Chebychev                     // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  Chebychev                     // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               KLU                           // SGS GS DGS Jacobi Chebychev MLS KLU Superlu Umfpack
+ML_SMOTIMES                     3 1                           // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     1.0                           // damping fine grid
+ML_DAMPMED                      1.0                           // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
+----------------------------------------CARDIOVASCULAR 0D-STRUCTURE COUPLING
 TIMINT_THETA                    0.5
-TOLWINDKESSEL                   1e-06
-TOLWINDKESSELDOFINCR            1e-06
-SOLALGORITHM                    direct
-RESTART_WITH_WINDKESSEL         Yes
-LINEAR_WINDK_STRUCT_SOLVER      1
+TOL_CARDVASC0D_RES              1e-06
+TOL_CARDVASC0D_DOFINCR          1e-06
+SOLALGORITHM                    simple
+RESTART_WITH_CARDVASC0D         Yes
+LINEAR_COUPLED_SOLVER           1
 ENHANCED_OUTPUT                 No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       Yes
-ADAPTCONV_BETTER                0.1
+ADAPTCONV_BETTER                0.001
 CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         Rayleigh
@@ -63,7 +147,7 @@ DIVERCONT                       stop
 DYNAMICTYP                      GenAlpha
 ITERNORM                        L2
 K_DAMP                          0.0001
-LINEAR_SOLVER                   1
+LINEAR_SOLVER                   2
 LOADLIN                         yes
 LUMPMASS                        no
 MAXITER                         200
@@ -168,11 +252,11 @@ E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 DSURF                           2
 E 6 - 0
 E 7 - 1
------------DESIGN SURF HEART VALVE CARDIOVASCULAR FULL WINDKESSEL CONDITIONS
+----DESIGN SURF CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED CONDITIONS
 DSURF                           2
 E 6 - id 0 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 E_at_max 2.9e-05 E_at_min 9e-06 at_act_curve 3 C_ar 8592.86096617 R_ar 0.00012 L_ar 6.67e-07 Z_ar 0.0 C_ven 257785.828985 R_ven 2.4e-05 L_ven 0.0 p_at_0 0.599950804034 q_v_in_0 0.0 q_v_out_0 0.0 p_v_0 0.599950804034 p_ar_0 9.68378038166 q_ar_0 0.0 p_ven_0 2.13315841434 q_ven_0 0.0 V_at_0 5000.0 V_ar_0 352000.0 V_ven_0 1040000.0
 E 7 - id 1 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 E_at_max 1.8e-05 E_at_min 8e-06 at_act_curve 4 C_ar 20000.0 R_ar 1.5e-05 L_ar 0.0 Z_ar 0.0 C_ven 50000.0 R_ven 1.5e-05 L_ven 0.0 p_at_0 0.0933256806275 q_v_in_0 0.0 q_v_out_0 0.0 p_v_0 0.0933256806275 p_ar_0 3.22792679389 q_ar_0 0.0 p_ven_0 1.59986881076 q_ven_0 0.0 V_at_0 4000.0 V_ar_0 84900.0 V_ven_0 93000.0
-------------------------DESIGN SURF WINDKESSEL STRUCTURE COUPLING CONDITIONS
+-----------------DESIGN SURF CARDIOVASCULAR 0D-STRUCTURE COUPLING CONDITIONS
 DSURF                           2
 E 8 - coupling_id 0
 E 9 - coupling_id 1

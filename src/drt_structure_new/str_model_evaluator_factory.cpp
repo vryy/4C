@@ -57,7 +57,9 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::
         break;
       case INPAR::STR::model_meshtying:
       case INPAR::STR::model_lag_pen_constraint:
-      case INPAR::STR::model_windkessel:
+      case INPAR::STR::model_cardiovascular0d:
+//        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Windkessel());
+//        break;
       default:
         dserror("Not yet implemented!");
         break;

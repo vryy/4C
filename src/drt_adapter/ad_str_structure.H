@@ -4,8 +4,10 @@
 
 \brief Structure field adapter
 
+\level 1
+
 <pre>
-Maintainer: Georg Hammerl
+\maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
@@ -61,7 +63,7 @@ namespace UTILS
 {
   class ConstrManager;
   class SpringDashpotManager;
-  class WindkesselManager;
+  class Cardiovascular0DManager;
 }
 
 namespace STATMECH
@@ -196,8 +198,8 @@ namespace ADAPTER {
     /// are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;
 
-    /// are there any Windkessel bcs?
-    virtual bool HaveWindkessel() = 0;
+    /// are there any Cardiovascular0D bcs?
+    virtual bool HaveCardiovascular0D() = 0;
 
     /// are there any spring dashpot bcs?
     virtual bool HaveSpringDashpot() = 0;
@@ -211,8 +213,8 @@ namespace ADAPTER {
     /// get SpringDashpot manager defined in the structure
     virtual const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() = 0;
 
-    /// get Windkessel manager defined in the structure
-    virtual const Teuchos::RCP<UTILS::WindkesselManager> GetWindkesselManager() = 0;
+    /// get Cardiovascular0D manager defined in the structure
+    virtual const Teuchos::RCP<UTILS::Cardiovascular0DManager> GetCardiovascular0DManager() = 0;
 
     /// get plasticity manager defined in the structure
     virtual const Teuchos::RCP<DRT::UTILS::PlastSsnManager> GetPlasticityManager() = 0;
@@ -316,8 +318,8 @@ namespace ADAPTER {
     virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr) = 0;
 
     /// Update iteration
-    /// Add residual increment to pressures stored in Windkessel manager
-    virtual void UpdateIterIncrWindkessel(Teuchos::RCP<Epetra_Vector> presincr) = 0;
+    /// Add residual increment to pressures stored in Cardiovascular0D manager
+    virtual void UpdateIterIncrCardiovascular0D(Teuchos::RCP<Epetra_Vector> presincr) = 0;
 
     /// Access to output object
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;

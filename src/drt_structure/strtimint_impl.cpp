@@ -21,6 +21,7 @@
 
 #include "strtimint.H"
 #include "strtimint_impl.H"
+
 #include "stru_aux.H"
 
 #include "../drt_mortar/mortar_manager_base.H"
@@ -38,9 +39,9 @@
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_beamcontact/beam3contact_defines.H"
+#include "../drt_cardiovascular0d/cardiovascular0d_manager.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
-#include "../drt_constraint/windkessel_manager.H"
 #include "../drt_constraint/springdashpot_manager.H"
 #include "../drt_constraint/springdashpot.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
@@ -115,16 +116,16 @@ STR::TimIntImpl::TimIntImpl
   uzawaparam_(sdynparams.get<double>("UZAWAPARAM")),
   uzawaitermax_(sdynparams.get<int>("UZAWAMAXITER")),
   tolcon_(sdynparams.get<double>("TOLCONSTR")),
-  tolwindk_(DRT::Problem::Instance()->WindkesselStructuralParams().get<double>("TOLWINDKESSEL")),
-  tolwindkdofincr_(DRT::Problem::Instance()->WindkesselStructuralParams().get<double>("TOLWINDKESSELDOFINCR")),
+  tolcardvasc0d_(DRT::Problem::Instance()->Cardiovascular0DStructuralParams().get<double>("TOL_CARDVASC0D_RES")),
+  tolcardvasc0ddofincr_(DRT::Problem::Instance()->Cardiovascular0DStructuralParams().get<double>("TOL_CARDVASC0D_DOFINCR")),
   iter_(-1),
   normcharforce_(0.0),
   normchardis_(0.0),
   normfres_(0.0),
   normdisi_(0.0),
   normcon_(0.0),
-  normwindk_(0.0),
-  normwindkdofincr_(0.0),
+  normcardvasc0d_(0.0),
+  normcardvasc0ddofincr_(0.0),
   normpfres_(0.0),
   normpres_(0.0),
   normcontconstr_(0.0),  // < norm of contact constraints (saddlepoint formulation)
@@ -174,11 +175,11 @@ STR::TimIntImpl::TimIntImpl
   if (tolcon_ <= 0)
     dserror("TOLCONSTR has to be greater than zero. Fix your input file.");
 
-  if (tolwindk_ <= 0)
-    dserror("TOLWINDKESSEL has to be greater than zero. Fix your input file.");
+  if (tolcardvasc0d_ <= 0)
+    dserror("TOL_0D_RES has to be greater than zero. Fix your input file.");
 
-  if (tolwindkdofincr_ <= 0)
-    dserror("TOLWINDKESSELDOFINCR has to be greater than zero. Fix your input file.");
+  if (tolcardvasc0ddofincr_ <= 0)
+    dserror("TOL_0D_DOFINCR has to be greater than zero. Fix your input file.");
 
   if ((alpha_ls_ <= 0) or (alpha_ls_ >= 1))
     dserror("Valid interval for ALPHA_LS is (0,1). Fix your input file.");
@@ -202,17 +203,17 @@ STR::TimIntImpl::TimIntImpl
       dserror("Chosen solution technique %s does not work constrained.",
               INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
-  else if (windkman_->HaveWindkessel())
+  else if (cardvasc0dman_->HaveCardiovascular0D())
   {
     if (itertype_ != INPAR::STR::soltech_newtonuzawalin)
       if (myrank_ == 0)
-       dserror("Chosen solution technique %s does not work with Windkessel bc.",
+       dserror("Chosen solution technique %s does not work with Cardiovascular0D bc.",
                 INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
   else if ( (itertype_ == INPAR::STR::soltech_newtonuzawalin)
             or (itertype_ == INPAR::STR::soltech_newtonuzawanonlin) )
   {
-    dserror("Chosen solution technique %s does only work constrained or with Windkessel bc.",
+    dserror("Chosen solution technique %s does only work constrained or with Cardiovascular0D bc.",
             INPAR::STR::NonlinSolTechString(itertype_).c_str());
   }
 
@@ -1215,8 +1216,8 @@ void STR::TimIntImpl::ApplyForceStiffConstraint
 }
 
 /*----------------------------------------------------------------------*/
-/* evaluate forces due to Windkessel bcs */
-void STR::TimIntImpl::ApplyForceStiffWindkessel
+/* evaluate forces due to Cardiovascular0D bcs */
+void STR::TimIntImpl::ApplyForceStiffCardiovascular0D
 (
   const double time,
   const Teuchos::RCP<Epetra_Vector> dis,
@@ -1224,9 +1225,9 @@ void STR::TimIntImpl::ApplyForceStiffWindkessel
   Teuchos::ParameterList pwindk
 )
 {
-  if (windkman_->HaveWindkessel())
+  if (cardvasc0dman_->HaveCardiovascular0D())
   {
-    windkman_->StiffnessAndInternalForces(time, dis, disn, pwindk);
+    cardvasc0dman_->StiffnessAndInternalForces(time, dis, disn, pwindk);
   }
 
   return;
@@ -1498,13 +1499,13 @@ bool STR::TimIntImpl::Converged()
     cc = normcon_ < tolcon_;
   }
 
-  // check Windkessel
-  bool wk = true;
-  bool wkincr = true;
-  if (windkman_->HaveWindkessel())
+  // check 0D cardiovascular model
+  bool cv0d = true;
+  bool cv0dincr = true;
+  if (cardvasc0dman_->HaveCardiovascular0D())
   {
-    wk = normwindk_ < tolwindk_;
-    wkincr = normwindkdofincr_ < tolwindkdofincr_;
+    cv0d = normcardvasc0d_ < tolcardvasc0d_;
+    cv0dincr = normcardvasc0ddofincr_ < tolcardvasc0ddofincr_;
   }
 
   // check contact (active set)
@@ -1683,7 +1684,7 @@ bool STR::TimIntImpl::Converged()
 
 
   // return things
-  return (conv and cc and wk and wkincr and ccontact and cplast);
+  return (conv and cc and cv0d and cv0dincr and ccontact and cplast);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1697,8 +1698,8 @@ INPAR::STR::ConvergenceStatus STR::TimIntImpl::Solve()
   // special nonlinear iterations for contact / meshtying
   if (HaveContactMeshtying())
   {
-    // check additionally if we have contact AND a Windkessel or constraint bc
-    if (HaveWindkessel()) nonlin_error = CmtWindkConstrNonlinearSolve();
+    // check additionally if we have contact AND a Cardiovascular0D or constraint bc
+    if (HaveCardiovascular0D()) nonlin_error = CmtWindkConstrNonlinearSolve();
     else nonlin_error = CmtNonlinearSolve();
   }
 
@@ -2762,10 +2763,10 @@ void STR::TimIntImpl::UpdateStepConstraint()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::UpdateStepWindkessel()
+void STR::TimIntImpl::UpdateStepCardiovascular0D()
 {
-  if (windkman_ -> HaveWindkessel())
-    windkman_->UpdateTimeStep();
+  if (cardvasc0dman_ -> HaveCardiovascular0D())
+    cardvasc0dman_->UpdateTimeStep();
 }
 
 /*----------------------------------------------------------------------*/
@@ -2793,9 +2794,9 @@ bool STR::TimIntImpl::HaveConstraint()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool STR::TimIntImpl::HaveWindkessel()
+bool STR::TimIntImpl::HaveCardiovascular0D()
 {
-  return windkman_->HaveWindkessel();
+  return cardvasc0dman_->HaveCardiovascular0D();
 }
 
 /*----------------------------------------------------------------------*/
@@ -2817,12 +2818,12 @@ void STR::TimIntImpl::UpdateIterIncrConstr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::UpdateIterIncrWindkessel
+void STR::TimIntImpl::UpdateIterIncrCardiovascular0D
 (
-  Teuchos::RCP<Epetra_Vector> wkdofincr ///< wk dof increment
+  Teuchos::RCP<Epetra_Vector> cv0ddofincr ///< wk dof increment
 )
 {
-  windkman_->UpdateWkDof(wkdofincr);
+  cardvasc0dman_->UpdateCv0DDof(cv0ddofincr);
 }
 
 /*----------------------------------------------------------------------*/
@@ -2988,7 +2989,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     // correct iteration counter
     iter_ -= 1;
   }
-  else if (windkman_->HaveWindkessel())
+  else if (cardvasc0dman_->HaveCardiovascular0D())
   {
     // check whether we have a sanely filled stiffness matrix
     if (not stiff_->Filled())
@@ -3000,8 +3001,8 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
     iter_ = 1;
     normfres_ = CalcRefNormForce();
     // normdisi_ was already set in predictor; this is strictly >0
-    normwindk_ = windkman_->GetWindkesselRHSNorm();
-    normwindkdofincr_ = windkman_->GetWindkesselDofIncrNorm();
+    normcardvasc0d_ = cardvasc0dman_->GetCardiovascular0DRHSNorm();
+    normcardvasc0ddofincr_ = cardvasc0dman_->GetCardiovascular0DDofIncrNorm();
     timer_->ResetStartTime();
 
     // equilibrium iteration loop
@@ -3034,8 +3035,8 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
         CmtWindkConstrLinearSolve();
       else
       {
-        // Call Windkessel solver to solve system
-        linsolve_error = windkman_->Solve(SystemMatrix(),disi_,fres_);
+        // Call Cardiovascular0D solver to solve system
+        linsolve_error = cardvasc0dman_->Solve(SystemMatrix(),disi_,fres_);
       }
 
       // check for problems in linear solver
@@ -3061,7 +3062,7 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
       Teuchos::ParameterList params;
 
       // compute residual forces #fres_ and stiffness #stiff_
-      // which contain forces and stiffness of Windkessels
+      // which contain forces and stiffness of Cardiovascular0Ds
       EvaluateForceStiffResidual(params);
 
       // blank residual at (locally oriented) Dirichlet DOFs
@@ -3101,10 +3102,10 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
         normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fres_);
         // build residual displacement norm
         normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
-        // build residual windkessel norm
-        normwindk_ = windkman_->GetWindkesselRHSNorm();
-        // build residual windkessel dof increment norm
-        normwindkdofincr_ = windkman_->GetWindkesselDofIncrNorm();
+        // build residual 0D cardiovascular residual norm
+        normcardvasc0d_ = cardvasc0dman_->GetCardiovascular0DRHSNorm();
+        // build residual 0D cardiovascular residual dof increment norm
+        normcardvasc0ddofincr_ = cardvasc0dman_->GetCardiovascular0DDofIncrNorm();
       }
 
       // print stuff
@@ -3138,9 +3139,9 @@ int STR::TimIntImpl::UzawaLinearNewtonFullErrorCheck(int linerror)
     if (myrank_ == 0)
       conman_->PrintMonitorValues();
 
-    //print Windkessel output
-    if (windkman_->HaveWindkessel())
-      windkman_->PrintPresFlux(false);
+    //print Cardiovascular0D output
+    if (cardvasc0dman_->HaveCardiovascular0D())
+      cardvasc0dman_->PrintPresFlux(false);
 
     return 0;
   }
@@ -4097,8 +4098,8 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
     oss << std::setw(16)<< "abs-constr-norm";
   }
 
-  // add Windkessel norm
-  if (windkman_->HaveWindkessel())
+  // add Cardiovascular0D norm
+  if (cardvasc0dman_->HaveCardiovascular0D())
   {
     oss << std::setw(16)<< "abs-wkres-norm";
     oss << std::setw(16)<< "abs-wkinc-norm";
@@ -4263,11 +4264,11 @@ void STR::TimIntImpl::PrintNewtonIterText( FILE* ofile )
     oss << std::setw(16) << std::setprecision(5) << std::scientific << normcon_;
   }
 
-  // add Windkessel norm
-  if (windkman_->HaveWindkessel())
+  // add Cardiovascular0D norm
+  if (cardvasc0dman_->HaveCardiovascular0D())
   {
-    oss << std::setw(16) << std::setprecision(5) << std::scientific << normwindk_;
-    oss << std::setw(16) << std::setprecision(5) << std::scientific << normwindkdofincr_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normcardvasc0d_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normcardvasc0ddofincr_;
   }
 
   if (itertype_==INPAR::STR::soltech_ptc)
@@ -4732,7 +4733,7 @@ void STR::TimIntImpl::RecoverSTCSolution()
 
 
 /*----------------------------------------------------------------------*/
-/* solution with nonlinear iteration for contact / meshtying AND Windkessel bcs*/
+/* solution with nonlinear iteration for contact / meshtying AND Cardiovascular0D bcs*/
 int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
 {
   //********************************************************************
@@ -4873,7 +4874,7 @@ int STR::TimIntImpl::CmtWindkConstrNonlinearSolve()
 
 
 /*----------------------------------------------------------------------*/
-/* linear solver call for contact / meshtying AND Windkessel bcs*/
+/* linear solver call for contact / meshtying AND Cardiovascular0D bcs*/
 void STR::TimIntImpl::CmtWindkConstrLinearSolve()
 {
 
@@ -4888,10 +4889,10 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
   {
     // feed Aztec based solvers with contact information
     //if (contactsolver_->Params().isSublist("Aztec Parameters"))
-    if (windkman_->GetSolver()->Params().isSublist("Aztec Parameters"))
+    if (cardvasc0dman_->GetSolver()->Params().isSublist("Aztec Parameters"))
     {
       //Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Aztec Parameters");
-      Teuchos::ParameterList& mueluParams = windkman_->GetSolver()->Params().sublist("Aztec Parameters");
+      Teuchos::ParameterList& mueluParams = cardvasc0dman_->GetSolver()->Params().sublist("Aztec Parameters");
       Teuchos::RCP<Epetra_Map> masterDofMap;
       Teuchos::RCP<Epetra_Map> slaveDofMap;
       Teuchos::RCP<Epetra_Map> innerDofMap;
@@ -4911,10 +4912,10 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
     }
     // feed Belos based solvers with contact information
     //if (contactsolver_->Params().isSublist("Belos Parameters"))
-    if (windkman_->GetSolver()->Params().isSublist("Belos Parameters"))
+    if (cardvasc0dman_->GetSolver()->Params().isSublist("Belos Parameters"))
     {
       //Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("Belos Parameters");
-      Teuchos::ParameterList& mueluParams = windkman_->GetSolver()->Params().sublist("Belos Parameters");
+      Teuchos::ParameterList& mueluParams = cardvasc0dman_->GetSolver()->Params().sublist("Belos Parameters");
       Teuchos::RCP<Epetra_Map> masterDofMap;
       Teuchos::RCP<Epetra_Map> slaveDofMap;
       Teuchos::RCP<Epetra_Map> innerDofMap;
@@ -4953,14 +4954,14 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
 
   //**********************************************************************
   // Solving a saddle point system
-  // -> does not work together with constraints / Windkessel bcs
+  // -> does not work together with constraints / Cardiovascular0D bcs
   // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
   // (2) Standard / Dual Lagrange multipliers -> SaddlePointSimpler
   //**********************************************************************
   if (soltype==INPAR::CONTACT::solution_lagmult &&
       (systype!=INPAR::CONTACT::system_condensed && systype!=INPAR::CONTACT::system_condensed_lagmult))
   {
-    dserror("Constraints / Windkessel bcs together with saddle point contact system does not work (yet)!");
+    dserror("Constraints / Cardiovascular0D bcs together with saddle point contact system does not work (yet)!");
   }
 
   //**********************************************************************
@@ -4970,8 +4971,8 @@ void STR::TimIntImpl::CmtWindkConstrLinearSolve()
   //**********************************************************************
   else
   {
-    // solve with Windkessel solver
-    windkman_->Solve(SystemMatrix(),disi_,fres_);
+    // solve with Cardiovascular0D solver
+    cardvasc0dman_->Solve(SystemMatrix(),disi_,fres_);
   }
 
   return;

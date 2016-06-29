@@ -45,13 +45,13 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          Superlu
------------------------------------------------WINDKESSEL-STRUCTURE COUPLING
+----------------------------------------CARDIOVASCULAR 0D-STRUCTURE COUPLING
 TIMINT_THETA                    0.5
-TOLWINDKESSEL                   1e-06
-TOLWINDKESSELDOFINCR            1e-06
+TOL_CARDVASC0D_RES              1e-06
+TOL_CARDVASC0D_DOFINCR          1e-06
 SOLALGORITHM                    direct
-RESTART_WITH_WINDKESSEL         No
-LINEAR_WINDK_STRUCT_SOLVER      1
+RESTART_WITH_CARDVASC0D         No
+LINEAR_COUPLED_SOLVER           1
 ENHANCED_OUTPUT                 No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       Yes
@@ -160,11 +160,11 @@ E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 DSURF                           2
 E 6 - 0
 E 7 - 1
-----------------------DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS
+-----------------DESIGN SURF CARDIOVASCULAR 0D ARTERIAL PROX DIST CONDITIONS
 DSURF                           2
 E 6 - id 0 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 k_p 0.0001 L_arp 6.67e-07 C_arp 7500.0 R_arp 120.0e-6 C_ard 10000.0 R_ard 120.0e-6 p_ref 2.0 p_v_0 0.0 p_arp_0 9.68378038166 y_arp_0 0.0 p_ard_0 9.68378038166 P_AT fac 1.0 crv 1
 E 7 - id 1 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 k_p 0.0001 L_arp 0.0 C_arp 20000.0 R_arp 100.0e-6 C_ard 30000.0 R_ard 100.0e-6 p_ref 1.5 p_v_0 0.0 p_arp_0 3.22792679389 y_arp_0 0.0 p_ard_0 3.22792679389 P_AT fac 1.0 crv 2
-------------------------DESIGN SURF WINDKESSEL STRUCTURE COUPLING CONDITIONS
+-----------------DESIGN SURF CARDIOVASCULAR 0D-STRUCTURE COUPLING CONDITIONS
 DSURF                           2
 E 8 - coupling_id 0
 E 9 - coupling_id 1

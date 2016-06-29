@@ -152,10 +152,10 @@ void STR::NLN::SOLVER::ConvertModelType2QuantityType(
       qt.push_back(NOX::NLN::StatusTest::quantity_meshtying);
       break;
     }
-    // --- Windkessel case -----------------------------------------------------
-    case INPAR::STR::model_windkessel:
+    // --- 0D cardiovascular model case -----------------------------------------------------
+    case INPAR::STR::model_cardiovascular0d:
     {
-      qt.push_back(NOX::NLN::StatusTest::quantity_windkessel);
+      qt.push_back(NOX::NLN::StatusTest::quantity_cardiovascular0d);
       break;
     }
     // --- Lagrangian/penalty case ---------------------------------------------
@@ -227,8 +227,8 @@ void STR::NLN::SOLVER::SetStatusTestParams(
   // Combo test: AND
   //             combination of increment AND/OR residual
   //    AND      constraints
-  //    AND      windkessel
-  //    AND      windkessel increment
+  //    AND      0D cardiovascular model
+  //    AND      0D cardiovascular model increment
   //    AND      contact    (active set)
   //    AND      plasticity (active set)
   // ---------------------------------------------------------------------------
@@ -300,20 +300,20 @@ void STR::NLN::SOLVER::SetStatusTestParams(
 
   // ---------------------------------------------------------------------------
   // | lvl. 1: combo AND - Test OPTIONAL:
-  // | Tests the windkessel NormF
+  // | Tests the 0D cardiovascular model NormF
   // ---------------------------------------------------------------------------
-  if (qt.find(NOX::NLN::StatusTest::quantity_windkessel) != qt.end())
+  if (qt.find(NOX::NLN::StatusTest::quantity_cardiovascular0d) != qt.end())
   {
     SetQuantityTestParams(pcombo_incr_fres_constr,datasdyn,
-        NOX::NLN::StatusTest::quantity_windkessel,opt_count,"NormF");
+        NOX::NLN::StatusTest::quantity_cardiovascular0d,opt_count,"NormF");
     ++opt_count;
 
   // ---------------------------------------------------------------------------
   // | lvl. 1: combo AND - Test OPTIONAL:
-  // | Tests the windkessel NormUpdate
+  // | Tests the 0D cardiovascular model NormUpdate
   // ---------------------------------------------------------------------------
     SetQuantityTestParams(pcombo_incr_fres_constr,datasdyn,
-        NOX::NLN::StatusTest::quantity_windkessel,opt_count,"NormUpdate");
+        NOX::NLN::StatusTest::quantity_cardiovascular0d,opt_count,"NormUpdate");
     ++opt_count;
   }
 

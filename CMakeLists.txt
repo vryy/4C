@@ -750,6 +750,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/drt_validconditions.cpp
   src/drt_inpar/drt_validmaterials.cpp
   src/drt_inpar/drt_validparameters.cpp
+  src/drt_inpar/inpar_cardiovascular0d.cpp
   src/drt_inpar/inpar_acou.cpp
   src/drt_inpar/inpar_ale.cpp
   src/drt_inpar/inpar_beamcontact.cpp
@@ -793,7 +794,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_twophase.cpp
   src/drt_inpar/inpar_volmortar.cpp
   src/drt_inpar/inpar_wear.cpp
-  src/drt_inpar/inpar_windkessel.cpp
   src/drt_inpar/inpar_xfem.cpp
   src/drt_tutorial/inpar_tutorial.cpp
 )
@@ -1874,6 +1874,12 @@ set(OBJS_LOCA_CONTINUATION
   src/loca_continuation/loca_nln_statustest_factory.cpp
 )
 
+set(OBJS_DRT_CARDIOVASCULAR0D
+  src/drt_cardiovascular0d/cardiovascular0d.cpp
+  src/drt_cardiovascular0d/cardiovascular0d_manager.cpp
+  src/drt_cardiovascular0d/cardiovascular0d_dofset.cpp
+)
+
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp
   src/drt_constraint/constraint_manager.cpp
@@ -1885,13 +1891,11 @@ set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/multipointconstraint2.cpp
   src/drt_constraint/multipointconstraint3.cpp
   src/drt_constraint/multipointconstraint3penalty.cpp
-  src/drt_constraint/windkessel.cpp
-  src/drt_constraint/windkessel_manager.cpp
-  src/drt_constraint/windkesseldofset.cpp
   src/drt_constraint/springdashpot.cpp
   src/drt_constraint/springdashpot_manager.cpp
   src/drt_constraint/springdashpot_new.cpp
 )
+
 set(OBJS_DRT_IO_LIB
   src/drt_io/io.cpp
   src/drt_io/io_control.cpp
@@ -2520,6 +2524,7 @@ set(SINGLEFIELD_LIBRARIES
 # general framework
 add_library(drt_nurbs ${OBJS_DRT_NURBS_DISCRET})
 add_library(drt_constraint ${OBJS_DRT_CONSTRAINT})
+add_library(drt_cardiovascular0d ${OBJS_DRT_CARDIOVASCULAR0D})
 #add_library(drt_mortar SHARED ${OBJS_DRT_MORTAR})
 add_library(drt_mortar ${OBJS_DRT_MORTAR})
 add_library(drt_volmortar ${OBJS_DRT_VOLMORTAR})
@@ -2621,6 +2626,7 @@ target_link_libraries (${baciname}
   drt_mortar
   drt_volmortar
   drt_constraint
+  drt_cardiovascular0d
   drt_lib_register
   ${ELEMENT_LIBRARIES}
   ${SUPPORT_LIBRARIES}

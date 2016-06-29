@@ -236,7 +236,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--MORTAR COUPLING", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC/AUGMENTED", *list);
-  reader.ReadGidSection("--WINDKESSEL-STRUCTURE COUPLING", *list);
+  reader.ReadGidSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING", *list);
   reader.ReadGidSection("--INTERACTION POTENTIAL", *list);
   reader.ReadGidSection("--FLUCTUATING HYDRODYNAMICS", *list);
   reader.ReadGidSection("--STATISTICAL MECHANICS", *list);

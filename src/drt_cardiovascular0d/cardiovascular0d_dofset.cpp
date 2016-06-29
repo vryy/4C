@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file windkesseldofset.cpp
+\file cardiovascular0d_dofset.cpp
 
 \brief A set of degrees of freedom
 
@@ -14,16 +14,17 @@
 
 *----------------------------------------------------------------------*/
 
+#include "../drt_cardiovascular0d/cardiovascular0d_dofset.H"
+
 #include <iostream>
 #include <algorithm>
 #include <numeric>
 
-#include "windkesseldofset.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-UTILS::WindkesselDofSet::WindkesselDofSet()
+UTILS::Cardiovascular0DDofSet::Cardiovascular0DDofSet()
 : DRT::DofSetBase()
 {
   return;
@@ -33,7 +34,7 @@ UTILS::WindkesselDofSet::WindkesselDofSet()
 /*----------------------------------------------------------------------*
  |  dtor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-UTILS::WindkesselDofSet::~WindkesselDofSet()
+UTILS::Cardiovascular0DDofSet::~Cardiovascular0DDofSet()
 {
   return;
 }
@@ -42,7 +43,7 @@ UTILS::WindkesselDofSet::~WindkesselDofSet()
 /*----------------------------------------------------------------------*
  |  reset everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-void UTILS::WindkesselDofSet::Reset()
+void UTILS::Cardiovascular0DDofSet::Reset()
 {
   dofrowmap_ = Teuchos::null;
   dofcolmap_ = Teuchos::null;
@@ -52,7 +53,7 @@ void UTILS::WindkesselDofSet::Reset()
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int UTILS::WindkesselDofSet::AssignDegreesOfFreedom
+int UTILS::Cardiovascular0DDofSet::AssignDegreesOfFreedom
 (
     const Teuchos::RCP<DRT::Discretization> dis,
     const int ndofs,

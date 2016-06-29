@@ -3,8 +3,10 @@
 \file strtimint_expl.cpp
 \brief Explicit time integration for structural dynamics
 
+\level 1
+
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -19,9 +21,10 @@ Maintainer: Alexander Popp
 
 #include "strtimint.H"
 #include "strtimint_expl.H"
+
+#include "../drt_cardiovascular0d/cardiovascular0d_manager.H"
 #include "stru_aux.H"
 #include "../drt_constraint/constraint_manager.H"
-#include "../drt_constraint/windkessel_manager.H"
 #include "../drt_constraint/springdashpot_manager.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"

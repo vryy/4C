@@ -4,6 +4,8 @@
 
 \brief Setup of the list of valid conditions for input
 
+\level 1
+
 <pre>
 \maintainer Martin Kronbichler
             kronbichler@lnm.mw.tum.de
@@ -34,7 +36,7 @@
 #include "inpar_levelset.H"
 #include "inpar_potential.H"
 #include "inpar_bio.H"
-#include "inpar_windkessel.H"
+#include "inpar_cardiovascular0d.H"
 #include "inpar_ssi.H"
 #include "inpar_cavitation.H"
 #include "inpar_crack.H"
@@ -1651,7 +1653,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   INPAR::REDAIRWAYS::SetValidConditions(condlist);
 
-  INPAR::WINDKESSEL::SetValidConditions(condlist);
+  INPAR::CARDIOVASCULAR0D::SetValidConditions(condlist);
 
   INPAR::STR::SetValidConditions(condlist);
 

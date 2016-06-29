@@ -1,25 +1,26 @@
 /*!----------------------------------------------------------------------
-\file windkessel.cpp
+\file cardiovascular0d.cpp
 
-\brief Monolithic coupling of 3D structure 0D Windkessel models
+\brief Monolithic coupling of 3D structural dynamics and 0D cardiovascular flow models
 
 ************************************************************************************************************************************
-A) a four-element Windkessel (DESIGN SURF WINDKESSEL CONDITIONS):
+A) a four-element windkessel model only (no valves!) (DESIGN SURF CARDIOVASCULAR 0D WINDKESSEL ONLY CONDITIONS):
 Res = C * dp/dt + (p - p_ref)/R_p - (1 + Z_c/R_p) * q - (C Z_c  + L/R_p) * dq/dt - L C * d2q/dt2 = 0
-The classical 3- or 2-element Windkessel models are reproduced by setting L or L and Z_c to zero, respectively
+The classical 3- or 2-element Cardiovascular0D models are reproduced by setting L or L and Z_c to zero, respectively
 
-B) an arterial Windkessel model derived from physical considerations of mass and momentum balance in the proximal and distal
-arterial part (formulation proposed by Cristobal Bertoglio) (DESIGN SURF HEART VALVE ARTERIAL PROX DIST WINDKESSEL CONDITIONS):
+B) an arterial 0D flow model derived from physical considerations of mass and momentum balance in the proximal and distal
+arterial part, incl. valves (formulation proposed by Cristobal Bertoglio) (DESIGN SURF CARDIOVASCULAR 0D ARTERIAL PROX DIST CONDITIONS):
       [dV_v/dt + (p_v - p_at)/R_atv(p_v,p_at) + (p_v - p_arp)/R_arv(p_v,p_arp)]   [ 0 ]
       [C_arp * d(p_arp)/dt + y_arp - (p_v - p_arp)/R_arv                      ]   [ 0 ]
 Res = [(L_arp/R_arp) * d(y_arp)/dt + y_arp + (p_ard - p_arp)/R_arp            ] = [ 0 ]
       [C_ard * d(p_ard)/dt + y_ard - y_arp                                    ]   [ 0 ]
       [R_ard * y_ard - p_ard + p_ref                                          ]   [ 0 ]
 
-with nonlinear valve resistances R_atv(p_v,p_at), R_arv(p_v,p_arp) - caution when using this since its physical correctness is doubted by the code author!
+with nonlinear valve resistances R_atv(p_v,p_at), R_arv(p_v,p_arp) - caution when using this since its physical correctness is doubted
+by the code author! - reproduce classical piecewise linear valves with k_p -> infinity
 
 C) a full closed-loop cardiovascular model with 0D elastance atria models and bi-resistive valve laws:
-(DESIGN SURF HEART VALVE CARDIOVASCULAR FULL WINDKESSEL CONDITIONS)
+(DESIGN SURF CARDIOVASCULAR 0D ARTERIAL VENOUS SYS PUL COUPLED CONDITIONS)
 (based on MA thesis of Marina Basilious and Kerckhoffs et. al. 2007, Coupling of a 3D Finite Element Model of Cardiac Ventricular
 Mechanics to Lumped Systems Models of the Systemic and Pulmonic Circulations, Annals of Biomedical Engineering, Vol. 35, No. 1)
       [d(p_at/E_at)/dt - q_ven_other + q_vin           ]   [ 0 ]
@@ -44,7 +45,6 @@ Res = [(p_v - p_ar)/R_arv - q_vout                     ] = [ 0 ]
 
 #include <iostream>
 
-#include "windkessel.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -55,31 +55,32 @@ Res = [(p_v - p_ar)/R_arv - q_vout                     ] = [ 0 ]
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "cardiovascular0d.H"
 
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
-UTILS::Windkessel::Windkessel(Teuchos::RCP<DRT::Discretization> discr,
+UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> discr,
     const std::string& conditionname,
     int& offsetID,
     int& maxID,
     std::vector<int>& curID):
     actdisc_(discr)
 {
-  actdisc_->GetCondition(conditionname,windkesselcond_);
-  if (windkesselcond_.size())
+  actdisc_->GetCondition(conditionname,cardiovascular0dcond_);
+  if (cardiovascular0dcond_.size())
   {
-    windkesseltype_=GetWindkesselType(conditionname);
+    cardiovascular0dtype_=GetCardiovascular0DType(conditionname);
     std::vector<int> curcoupID;
-    for (unsigned int i=0; i<windkesselcond_.size();i++)
+    for (unsigned int i=0; i<cardiovascular0dcond_.size();i++)
     {
 
-      int condID=(*(windkesselcond_[i]->Get<std::vector<int> >("id")))[0];
+      int condID=(*(cardiovascular0dcond_[i]->Get<std::vector<int> >("id")))[0];
 
       //std::vector<int> curID(i);
-      curID.push_back(windkesselcond_[i]->GetInt("id"));
+      curID.push_back(cardiovascular0dcond_[i]->GetInt("id"));
 
       if (condID>maxID)
       {
@@ -106,52 +107,52 @@ UTILS::Windkessel::Windkessel(Teuchos::RCP<DRT::Discretization> discr,
     for (unsigned int k = 0; k < numneumcond; ++k)
     {
       DRT::Condition* actcond = surfneumcond[k];
-      if (actcond->Type() == DRT::Condition::WindkesselStructureCoupling)
-        windkesselstructcoupcond_.push_back(actcond);
+      if (actcond->Type() == DRT::Condition::Cardiovascular0DStructureCoupling)
+        cardiovascular0dstructcoupcond_.push_back(actcond);
     }
-    unsigned int numcond = windkesselstructcoupcond_.size();
+    unsigned int numcond = cardiovascular0dstructcoupcond_.size();
 
 
     if (numcond == 0) dserror("no coupling conditions found");
 
-    //if (windkesselcond_.size() != windkesselstructcoupcond_.size()) dserror("Coupling conditions do not match windkessel conditions!");
+    //if (cardiovascular0dcond_.size() != cardiovascular0dstructcoupcond_.size()) dserror("Coupling conditions do not match cardiovascular0d conditions!");
 
 
-    std::vector<int> wkID(windkesselcond_.size());
-    for (unsigned int i=0; i<windkesselcond_.size(); i++)
+    std::vector<int> wkID(cardiovascular0dcond_.size());
+    for (unsigned int i=0; i<cardiovascular0dcond_.size(); i++)
     {
-      wkID[i]=(windkesselcond_[i])->GetInt("id");
+      wkID[i]=(cardiovascular0dcond_[i])->GetInt("id");
     }
-    std::vector<int> coupcondID(windkesselstructcoupcond_.size());
+    std::vector<int> coupcondID(cardiovascular0dstructcoupcond_.size());
     //set Neumann line to condition
-    for (unsigned int i=0; i<windkesselstructcoupcond_.size(); i++)
+    for (unsigned int i=0; i<cardiovascular0dstructcoupcond_.size(); i++)
     {
 
-      coupcondID[i]=(windkesselstructcoupcond_[i])->GetInt("coupling_id");
+      coupcondID[i]=(cardiovascular0dstructcoupcond_[i])->GetInt("coupling_id");
 
-      windkesselstructcoupcond_[i]->Add("type","neum_orthopressure");
+      cardiovascular0dstructcoupcond_[i]->Add("type","neum_orthopressure");
       std::vector<int> onoff(6,0);
       onoff[0] = 1;
-      windkesselstructcoupcond_[i]->Add("onoff",onoff);
+      cardiovascular0dstructcoupcond_[i]->Add("onoff",onoff);
       std::vector<double> val(6,0.0);
-      windkesselstructcoupcond_[i]->Add("val",val);
+      cardiovascular0dstructcoupcond_[i]->Add("val",val);
 
     }
 
-    if (std::min(wkID[0],wkID[windkesselcond_.size()-1]) != 0)
+    if (std::min(wkID[0],wkID[cardiovascular0dcond_.size()-1]) != 0)
       dserror("Start your id numbering from 0 on!");
-    if (std::min(coupcondID[0],coupcondID[windkesselstructcoupcond_.size()-1]) != 0)
+    if (std::min(coupcondID[0],coupcondID[cardiovascular0dstructcoupcond_.size()-1]) != 0)
       dserror("Start your id numbering from 0 on!");
 
-    if (std::min(coupcondID[0],coupcondID[windkesselstructcoupcond_.size()-1]) != std::min(wkID[0],wkID[windkesselcond_.size()-1]))
-      dserror("Min windkessel id not equal to min windkessel structure coupling id!");
-    if (std::max(coupcondID[0],coupcondID[windkesselstructcoupcond_.size()-1]) != std::max(wkID[0],wkID[windkesselcond_.size()-1]))
-      dserror("Max windkessel id not equal to max windkessel structure coupling id!");
+    if (std::min(coupcondID[0],coupcondID[cardiovascular0dstructcoupcond_.size()-1]) != std::min(wkID[0],wkID[cardiovascular0dcond_.size()-1]))
+      dserror("Min cardiovascular0d id not equal to min cardiovascular0d structure coupling id!");
+    if (std::max(coupcondID[0],coupcondID[cardiovascular0dstructcoupcond_.size()-1]) != std::max(wkID[0],wkID[cardiovascular0dcond_.size()-1]))
+      dserror("Max cardiovascular0d id not equal to max cardiovascular0d structure coupling id!");
 
   }
   else
   {
-    windkesseltype_=none;
+    cardiovascular0dtype_=none;
   }
 }
 
@@ -159,14 +160,14 @@ UTILS::Windkessel::Windkessel(Teuchos::RCP<DRT::Discretization> discr,
 /*-----------------------------------------------------------------------*
 |(private)                                                      mhv 10/13|
  *-----------------------------------------------------------------------*/
-UTILS::Windkessel::WindkesselType UTILS::Windkessel::GetWindkesselType(const std::string& name)
+UTILS::Cardiovascular0D::Cardiovascular0DType UTILS::Cardiovascular0D::GetCardiovascular0DType(const std::string& name)
 {
-  if (name=="WindkesselStdStructureCond")
-    return wk_std;
-  else if (name=="WindkesselHeartValveArterialProxDistStructureCond")
-    return wk_heartvalvearterial_proxdist;
-  else if (name=="WindkesselHeartValveCardiovascularFullStructureCond")
-    return wk_heartvalvecardiovascular_full;
+  if (name=="Cardiovascular0DWindkesselOnlyStructureCond")
+    return cardvasc0d_windkesselonly;
+  else if (name=="Cardiovascular0DArterialProxDistStructureCond")
+    return cardvasc0d_arterialproxdist;
+  else if (name=="Cardiovascular0DArterialVenousSysPulCoupledStructureCond")
+    return cardvasc0d_arterialvenoussyspulcoupled;
   return none;
 }
 
@@ -174,7 +175,7 @@ UTILS::Windkessel::WindkesselType UTILS::Windkessel::GetWindkesselType(const std
 |(public)                                                      mhv 10/13  |
 |Initialization routine computes ref base values and activates conditions |
  *------------------------------------------------------------------------*/
-void UTILS::Windkessel::Initialize(
+void UTILS::Cardiovascular0D::Initialize(
     Teuchos::ParameterList&        params,
     Teuchos::RCP<Epetra_Vector>    sysvec1,
     Teuchos::RCP<Epetra_Vector>    sysvec2,
@@ -182,24 +183,24 @@ void UTILS::Windkessel::Initialize(
 {
 
   // choose action
-  switch (windkesseltype_)
+  switch (cardiovascular0dtype_)
   {
-  case wk_std:
+  case cardvasc0d_windkesselonly:
     params.set("action","calc_struct_constrvol");
-    InitializeStdWindkessel(params,sysvec1,sysvec2);
+    InitializeCardiovascular0DWindkesselOnly(params,sysvec1,sysvec2);
     break;
-  case wk_heartvalvearterial_proxdist:
+  case cardvasc0d_arterialproxdist:
     params.set("action","calc_struct_constrvol");
-    InitializeHeartValveArterialProxDistWindkessel(params,sysvec1,sysvec2);
+    InitializeCardiovascular0DArterialProxDist(params,sysvec1,sysvec2);
     break;
-  case wk_heartvalvecardiovascular_full:
+  case cardvasc0d_arterialvenoussyspulcoupled:
     params.set("action","calc_struct_constrvol");
-    InitializeHeartValveCardiovascularFullWindkessel(params,sysvec1,sysvec2,sysvec3);
+    InitializeCardiovascular0DArterialVenousSysPulCoupled(params,sysvec1,sysvec2,sysvec3);
     break;
   case none:
     return;
   default:
-    dserror("Unknown Windkessel type to be evaluated in Windkessel class!");
+    dserror("Unknown Cardiovascular0D type to be evaluated in Cardiovascular0D class!");
   }
 
   return;
@@ -208,9 +209,9 @@ void UTILS::Windkessel::Initialize(
 
 /*-----------------------------------------------------------------------*
 |(public)                                                       mhv 10/13|
-|Evaluate Windkessel functions, choose the right action based on type    |
+|Evaluate Cardiovascular0D functions, choose the right action based on type    |
  *-----------------------------------------------------------------------*/
-void UTILS::Windkessel::Evaluate(
+void UTILS::Cardiovascular0D::Evaluate(
     Teuchos::ParameterList&        params,
     Teuchos::RCP<LINALG::SparseMatrix> sysmat1,
     Teuchos::RCP<LINALG::SparseOperator> sysmat2,
@@ -228,24 +229,24 @@ void UTILS::Windkessel::Evaluate(
 {
 
   // choose action
-  switch (windkesseltype_)
+  switch (cardiovascular0dtype_)
   {
-  case wk_std:
+  case cardvasc0d_windkesselonly:
     params.set("action","calc_struct_volconstrstiff");
-    EvaluateStdWindkessel(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7);
+    EvaluateCardiovascular0DWindkesselOnly(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7);
     break;
-  case wk_heartvalvearterial_proxdist:
+  case cardvasc0d_arterialproxdist:
     params.set("action","calc_struct_volconstrstiff");
-    EvaluateHeartValveArterialProxDistWindkessel(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7,sysvec8);
+    EvaluateCardiovascular0DArterialProxDist(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7,sysvec8);
     break;
-  case wk_heartvalvecardiovascular_full:
+  case cardvasc0d_arterialvenoussyspulcoupled:
     params.set("action","calc_struct_volconstrstiff");
-    EvaluateHeartValveCardiovascularFullWindkessel(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7,sysvec8,sysvec9);
+    EvaluateCardiovascular0DArterialVenousSysPulCoupled(params,sysmat1,sysmat2,sysmat3,sysvec1,sysvec2,sysvec3,sysvec4,sysvec5,sysvec6,sysvec7,sysvec8,sysvec9);
     break;
   case none:
     return;
   default:
-    dserror("Unknown Windkessel type!");
+    dserror("Unknown Cardiovascular0D type!");
   }
 
 
@@ -254,11 +255,11 @@ void UTILS::Windkessel::Evaluate(
 
 /*-----------------------------------------------------------------------*
  |(private)                                                    mhv 03/14 |
- |Evaluate method for standard 4-element Windkessel,                     |
+ |Evaluate method for standard 4-element Cardiovascular0D,                     |
  |calling element evaluates of a condition and assembing results         |
  |based on this conditions                                               |
  *----------------------------------------------------------------------*/
-void UTILS::Windkessel::EvaluateStdWindkessel(
+void UTILS::Cardiovascular0D::EvaluateCardiovascular0DWindkesselOnly(
     Teuchos::ParameterList&        params,
     Teuchos::RCP<LINALG::SparseMatrix> sysmat1,
     Teuchos::RCP<LINALG::SparseOperator> sysmat2,
@@ -301,27 +302,27 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  // loop over windkessel conditions
-  for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
+  // loop over cardiovascular0d conditions
+  for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
   {
-    DRT::Condition& cond = *(windkesselcond_[i]);
+    DRT::Condition& cond = *(cardiovascular0dcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("id");
     params.set("id",condID);
 
-    double C = windkesselcond_[condID]->GetDouble("C");
-    double R_p = windkesselcond_[condID]->GetDouble("R_p");
-    double Z_c = windkesselcond_[condID]->GetDouble("Z_c");
-    double L = windkesselcond_[condID]->GetDouble("L");
-    double p_ref = windkesselcond_[condID]->GetDouble("p_ref");
+    double C = cardiovascular0dcond_[condID]->GetDouble("C");
+    double R_p = cardiovascular0dcond_[condID]->GetDouble("R_p");
+    double Z_c = cardiovascular0dcond_[condID]->GetDouble("Z_c");
+    double L = cardiovascular0dcond_[condID]->GetDouble("L");
+    double p_ref = cardiovascular0dcond_[condID]->GetDouble("p_ref");
 
-    // Windkessel stiffness
+    // Cardiovascular0D stiffness
     Epetra_SerialDenseMatrix wkstiff(numdof_per_cond,numdof_per_cond);
 
-    // Windkessel rhs contributions
-    std::vector<double> factor_wkdof(numdof_per_cond);
-    std::vector<double> factor_dwkdof(numdof_per_cond);
+    // Cardiovascular0D rhs contributions
+    std::vector<double> factor_cvdof(numdof_per_cond);
+    std::vector<double> factor_dcvdof(numdof_per_cond);
     std::vector<double> factor_Q(numdof_per_cond);
     std::vector<double> factor_dQ(numdof_per_cond);
     std::vector<double> factor_ddQ(numdof_per_cond);
@@ -329,8 +330,8 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
 
     if (assvec1 or assvec2 or assvec3 or assvec4 or assvec5 or assvec6)
     {
-      factor_wkdof[0] = 1./R_p;
-      factor_dwkdof[0] = C;
+      factor_cvdof[0] = 1./R_p;
+      factor_dcvdof[0] = C;
       factor_Q[0] = -(1. + Z_c/R_p);
       factor_dQ[0] = -(Z_c*C + L/R_p);
       factor_ddQ[0] = -L*C;
@@ -354,13 +355,13 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
     // elements might need condition
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
-    // assemble the Windkessel stiffness matrix and scale with time-integrator dependent value
+    // assemble the Cardiovascular0D stiffness matrix and scale with time-integrator dependent value
     if (assmat1)
     {
       sysmat1->UnComplete();
-      wkstiff(0,0) = theta * (factor_dwkdof[0]/(theta*ts_size) + factor_wkdof[0]);
+      wkstiff(0,0) = theta * (factor_dcvdof[0]/(theta*ts_size) + factor_cvdof[0]);
 
-      // assemble into windkessel system matrix - wkstiff contribution
+      // assemble into cardiovascular0d system matrix - wkstiff contribution
       for (int j = 0; j < numdof_per_cond; j++)
       {
         for (int k = 0; k < numdof_per_cond; k++)
@@ -370,21 +371,21 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
         }
       }
     }
-    // rhs part associated with wkdof
+    // rhs part associated with cvdof
     if (assvec1)
     {
       for (int j = 0; j < numdof_per_cond; j++)
       {
-        int err = sysvec1->SumIntoGlobalValues(1,&factor_wkdof[j],&gindex[j]);
+        int err = sysvec1->SumIntoGlobalValues(1,&factor_cvdof[j],&gindex[j]);
         if (err) dserror("SumIntoGlobalValues failed!");
       }
     }
-    // rhs part associated with dwkdof/dt
+    // rhs part associated with dcvdof/dt
     if (assvec2)
     {
       for (int j = 0; j < numdof_per_cond; j++)
       {
-        int err = sysvec2->SumIntoGlobalValues(1,&factor_dwkdof[j],&gindex[j]);
+        int err = sysvec2->SumIntoGlobalValues(1,&factor_dcvdof[j],&gindex[j]);
         if (err) dserror("SumIntoGlobalValues failed!");
       }
     }
@@ -466,7 +467,7 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
 
       if (assmat2)
       {
-        // assemble the offdiagonal stiffness block (1,0 block) arising from dR_windk/dd
+        // assemble the offdiagonal stiffness block (1,0 block) arising from dR_cardvasc0d/dd
         // -> this matrix is later on transposed when building the whole block matrix
         std::vector<int> colvec(1);
         colvec[0]=gindex[0];
@@ -475,12 +476,12 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
       }
       if (assvec7)
       {
-        // assemble the current volume of the enclosed surface of the windkessel condition
-        std::vector<int> windkessellm;
-        std::vector<int> windkesselowner;
-        windkessellm.push_back(gindex[0]);
-        windkesselowner.push_back(curr->second->Owner());
-        LINALG::Assemble(*sysvec7,elevector3,windkessellm,windkesselowner);
+        // assemble the current volume of the enclosed surface of the cardiovascular0d condition
+        std::vector<int> cardiovascular0dlm;
+        std::vector<int> cardiovascular0downer;
+        cardiovascular0dlm.push_back(gindex[0]);
+        cardiovascular0downer.push_back(curr->second->Owner());
+        LINALG::Assemble(*sysvec7,elevector3,cardiovascular0dlm,cardiovascular0downer);
       }
 
     }
@@ -501,13 +502,13 @@ void UTILS::Windkessel::EvaluateStdWindkessel(
 
 /*-----------------------------------------------------------------------*
  |(private)                                                    mhv 03/14 |
- |Evaluate method for a heart valve arterial Windkessel accounting for   |
+ |Evaluate method for a heart valve arterial Cardiovascular0D accounting for   |
  |proximal and distal arterial branches separately (formulation proposed |
  |by Cristobal Bertoglio),                                               |
  |calling element evaluates of a condition and assembing results         |
  |based on this conditions                                               |
  *----------------------------------------------------------------------*/
-void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
+void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialProxDist(
     Teuchos::ParameterList&        params,
     Teuchos::RCP<LINALG::SparseMatrix> sysmat1,
     Teuchos::RCP<LINALG::SparseOperator> sysmat2,
@@ -556,32 +557,32 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
+  for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
   {
-    DRT::Condition& cond = *(windkesselcond_[i]);
+    DRT::Condition& cond = *(cardiovascular0dcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("id");
     params.set("id",condID);
 
-    double R_arvalve_max = windkesselcond_[condID]->GetDouble("R_arvalve_max");
-    double R_arvalve_min = windkesselcond_[condID]->GetDouble("R_arvalve_min");
-    double R_atvalve_max = windkesselcond_[condID]->GetDouble("R_atvalve_max");
-    double R_atvalve_min = windkesselcond_[condID]->GetDouble("R_atvalve_min");
-    double k_p = windkesselcond_[condID]->GetDouble("k_p");
+    double R_arvalve_max = cardiovascular0dcond_[condID]->GetDouble("R_arvalve_max");
+    double R_arvalve_min = cardiovascular0dcond_[condID]->GetDouble("R_arvalve_min");
+    double R_atvalve_max = cardiovascular0dcond_[condID]->GetDouble("R_atvalve_max");
+    double R_atvalve_min = cardiovascular0dcond_[condID]->GetDouble("R_atvalve_min");
+    double k_p = cardiovascular0dcond_[condID]->GetDouble("k_p");
 
-    double L_arp = windkesselcond_[condID]->GetDouble("L_arp");
-    double C_arp = windkesselcond_[condID]->GetDouble("C_arp");
-    double R_arp = windkesselcond_[condID]->GetDouble("R_arp");
-    double C_ard = windkesselcond_[condID]->GetDouble("C_ard");
-    double R_ard = windkesselcond_[condID]->GetDouble("R_ard");
+    double L_arp = cardiovascular0dcond_[condID]->GetDouble("L_arp");
+    double C_arp = cardiovascular0dcond_[condID]->GetDouble("C_arp");
+    double R_arp = cardiovascular0dcond_[condID]->GetDouble("R_arp");
+    double C_ard = cardiovascular0dcond_[condID]->GetDouble("C_ard");
+    double R_ard = cardiovascular0dcond_[condID]->GetDouble("R_ard");
 
-    double p_ref = windkesselcond_[condID]->GetDouble("p_ref");
+    double p_ref = cardiovascular0dcond_[condID]->GetDouble("p_ref");
 
-    double p_at_fac = windkesselcond_[condID]->GetDouble("fac");
+    double p_at_fac = cardiovascular0dcond_[condID]->GetDouble("fac");
 
     // find out whether we will use a time curve and get the factor
-    const std::vector<int>* curve  = windkesselcond_[condID]->Get<std::vector<int> >("curve");
+    const std::vector<int>* curve  = cardiovascular0dcond_[condID]->Get<std::vector<int> >("curve");
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
     double curvefac_ = 1.0;
@@ -592,12 +593,12 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
       curvefac_n = DRT::Problem::Instance()->Curve(curvenum).f(tim);
     }
 
-    // Windkessel stiffness
+    // Cardiovascular0D stiffness
     Epetra_SerialDenseMatrix wkstiff(numdof_per_cond,numdof_per_cond);
 
-    // Windkessel rhs contributions
-    std::vector<double> factor_wkdof(numdof_per_cond);
-    std::vector<double> factor_dwkdof(numdof_per_cond);
+    // Cardiovascular0D rhs contributions
+    std::vector<double> factor_cvdof(numdof_per_cond);
+    std::vector<double> factor_dcvdof(numdof_per_cond);
     std::vector<double> factor_Q(numdof_per_cond);
     std::vector<double> factor_1(numdof_per_cond);
 
@@ -625,14 +626,14 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
 
     if (assvec1 or assvec2 or assvec3 or assvec4 or assvec6 or assvec7 or assvec8)
     {
-      //extract values of dof vector wkdofm
+      //extract values of dof vector cvdofm
       p_arp_m = (*sysvec6)[numdof_per_cond*condID+1];
       y_arp_m = (*sysvec6)[numdof_per_cond*condID+2];
       p_ard_m = (*sysvec6)[numdof_per_cond*condID+3];
-      //extract values of dof vector wkdofn
+      //extract values of dof vector cvdofn
       p_v_n = (*sysvec7)[numdof_per_cond*condID];
       p_arp_n = (*sysvec7)[numdof_per_cond*condID+1];
-      //extract values of dof vector wkdof
+      //extract values of dof vector cvdof
       p_v_ = (*sysvec8)[numdof_per_cond*condID];
       p_arp_ = (*sysvec8)[numdof_per_cond*condID+1];
 
@@ -652,23 +653,23 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
       dRarvlvdparp = (R_arvalve_max - R_arvalve_min)*(1.-tanh((p_arp_n-p_v_n)/k_p)*tanh((p_arp_n-p_v_n)/k_p)) / (2.*k_p);
 
       // fill multipliers for rhs vector
-      factor_wkdof[0] = 0.;
-      factor_dwkdof[0] = 0.;
+      factor_cvdof[0] = 0.;
+      factor_dcvdof[0] = 0.;
       factor_Q[0] = -1.;
       factor_1[0] = theta * ((p_v_n-p_at_n)/Ratvlv_n + (p_v_n-p_arp_n)/Rarvlv_n) + (1.-theta) * ((p_v_-p_at_)/Ratvlv_ + (p_v_-p_arp_)/Rarvlv_);
 
-      factor_wkdof[1] = 0.;
-      factor_dwkdof[1] = C_arp;
+      factor_cvdof[1] = 0.;
+      factor_dcvdof[1] = C_arp;
       factor_Q[1] = 0.;
       factor_1[1] = theta * (p_arp_n-p_v_n)/Rarvlv_n + (1.-theta) * (p_arp_-p_v_)/Rarvlv_ + y_arp_m;
 
-      factor_wkdof[2] = 1.;
-      factor_dwkdof[2] = L_arp/R_arp;
+      factor_cvdof[2] = 1.;
+      factor_dcvdof[2] = L_arp/R_arp;
       factor_Q[2] = 0.;
       factor_1[2] = (-p_arp_m + p_ard_m)/R_arp;
 
-      factor_wkdof[3] = 1./R_ard;
-      factor_dwkdof[3] = C_ard;
+      factor_cvdof[3] = 1./R_ard;
+      factor_dcvdof[3] = C_ard;
       factor_Q[3] = 0.;
       factor_1[3] = -p_ref/R_ard - y_arp_m;
 
@@ -694,7 +695,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
     // elements might need condition
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
-    // assemble of Windkessel stiffness matrix, scale with time-integrator dependent value
+    // assemble of Cardiovascular0D stiffness matrix, scale with time-integrator dependent value
     if (assmat1)
     {
 
@@ -720,7 +721,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
 
       sysmat1->UnComplete();
 
-      // assemble into windkessel system matrix - wkstiff contribution
+      // assemble into cardiovascular0d system matrix - wkstiff contribution
       for (int j = 0; j < numdof_per_cond; j++)
       {
         for (int k = 0; k < numdof_per_cond; k++)
@@ -731,21 +732,21 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
       }
 
     }
-    // rhs part associated with wkdof
+    // rhs part associated with cvdof
     if (assvec1)
     {
       for (int j = 0; j < numdof_per_cond; j++)
       {
-        int err = sysvec1->SumIntoGlobalValues(1,&factor_wkdof[j],&gindex[j]);
+        int err = sysvec1->SumIntoGlobalValues(1,&factor_cvdof[j],&gindex[j]);
         if (err) dserror("SumIntoGlobalValues failed!");
       }
     }
-    // rhs part associated with dwkdof/dt
+    // rhs part associated with dcvdof/dt
     if (assvec2)
     {
       for (int j = 0; j < numdof_per_cond; j++)
       {
-        int err = sysvec2->SumIntoGlobalValues(1,&factor_dwkdof[j],&gindex[j]);
+        int err = sysvec2->SumIntoGlobalValues(1,&factor_dcvdof[j],&gindex[j]);
         if (err) dserror("SumIntoGlobalValues failed!");
       }
     }
@@ -811,7 +812,7 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
 
       if (assmat2)
       {
-        // assemble the offdiagonal stiffness block (1,0 block) arising from dR_windk/dd
+        // assemble the offdiagonal stiffness block (1,0 block) arising from dR_cardvasc0d/dd
         // -> this matrix is later on transposed when building the whole block matrix
         std::vector<int> colvec(1);
         colvec[0]=gindex[0];
@@ -822,21 +823,21 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
 
       if (assvec5)
       {
-        // assemble the current volume of the enclosed surface of the windkessel condition
+        // assemble the current volume of the enclosed surface of the cardiovascular0d condition
         elevector3[1]=elevector3[0];
         elevector3[2]=elevector3[0];
         elevector3[3]=elevector3[0];
-        std::vector<int> windkessellm;
-        std::vector<int> windkesselowner;
-        windkessellm.push_back(gindex[0]);
-        windkessellm.push_back(gindex[1]);
-        windkessellm.push_back(gindex[2]);
-        windkessellm.push_back(gindex[3]);
-        windkesselowner.push_back(curr->second->Owner());
-        windkesselowner.push_back(curr->second->Owner());
-        windkesselowner.push_back(curr->second->Owner());
-        windkesselowner.push_back(curr->second->Owner());
-        LINALG::Assemble(*sysvec5,elevector3,windkessellm,windkesselowner);
+        std::vector<int> cardiovascular0dlm;
+        std::vector<int> cardiovascular0downer;
+        cardiovascular0dlm.push_back(gindex[0]);
+        cardiovascular0dlm.push_back(gindex[1]);
+        cardiovascular0dlm.push_back(gindex[2]);
+        cardiovascular0dlm.push_back(gindex[3]);
+        cardiovascular0downer.push_back(curr->second->Owner());
+        cardiovascular0downer.push_back(curr->second->Owner());
+        cardiovascular0downer.push_back(curr->second->Owner());
+        cardiovascular0downer.push_back(curr->second->Owner());
+        LINALG::Assemble(*sysvec5,elevector3,cardiovascular0dlm,cardiovascular0downer);
       }
 
     }
@@ -856,13 +857,13 @@ void UTILS::Windkessel::EvaluateHeartValveArterialProxDistWindkessel(
 
 /*-----------------------------------------------------------------------*
  |(private)                                                    mhv 02/15 |
- |Evaluate method for a heart valve cardiovascular full windkessel       |
+ |Evaluate method for a heart valve cardiovascular full cardiovascular0d       |
  |(based on MA thesis of Marina Bassilious and Kerckhoffs et. al. 2007,  |
  |Coupling of a 3D Finite Element Model of Cardiac Ventricular Mechanics |
  |to Lumped Systems Models of the Systemic and Pulmonic Circulations,    |
  |Annals of Biomedical Engineering, Vol. 35, No. 1)                      |
  *-----------------------------------------------------------------------*/
-void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
+void UTILS::Cardiovascular0D::EvaluateCardiovascular0DArterialVenousSysPulCoupled(
     Teuchos::ParameterList&        params,
     Teuchos::RCP<LINALG::SparseMatrix> sysmat1,
     Teuchos::RCP<LINALG::SparseOperator> sysmat2,
@@ -913,16 +914,16 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
+  for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
   {
-    DRT::Condition& cond = *(windkesselcond_[i]);
+    DRT::Condition& cond = *(cardiovascular0dcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("id");
     params.set("id",condID);
 
     // find out whether we will use a time curve and get the factor
-    const std::vector<int>* curve  = windkesselcond_[i]->Get<std::vector<int> >("curve");
+    const std::vector<int>* curve  = cardiovascular0dcond_[i]->Get<std::vector<int> >("curve");
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
     double y_at_ = 0.0;
@@ -933,37 +934,37 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       y_at_n = DRT::Problem::Instance()->Curve(curvenum).f(tim);
     }
 
-    double R_arvalve_max = windkesselcond_[condID]->GetDouble("R_arvalve_max");
-    double R_arvalve_min = windkesselcond_[condID]->GetDouble("R_arvalve_min");
-    double R_atvalve_max = windkesselcond_[condID]->GetDouble("R_atvalve_max");
-    double R_atvalve_min = windkesselcond_[condID]->GetDouble("R_atvalve_min");
+    double R_arvalve_max = cardiovascular0dcond_[condID]->GetDouble("R_arvalve_max");
+    double R_arvalve_min = cardiovascular0dcond_[condID]->GetDouble("R_arvalve_min");
+    double R_atvalve_max = cardiovascular0dcond_[condID]->GetDouble("R_atvalve_max");
+    double R_atvalve_min = cardiovascular0dcond_[condID]->GetDouble("R_atvalve_min");
 
-    double E_at_max = windkesselcond_[condID]->GetDouble("E_at_max");
-    double E_at_min = windkesselcond_[condID]->GetDouble("E_at_min");
+    double E_at_max = cardiovascular0dcond_[condID]->GetDouble("E_at_max");
+    double E_at_min = cardiovascular0dcond_[condID]->GetDouble("E_at_min");
 
     double E_at_ = (E_at_max-E_at_min)*y_at_ + E_at_min;
     double E_at_n = (E_at_max-E_at_min)*y_at_n + E_at_min;
 
-    double C_ar = windkesselcond_[condID]->GetDouble("C_ar");
-    double R_ar = windkesselcond_[condID]->GetDouble("R_ar");
-    double L_ar = windkesselcond_[condID]->GetDouble("L_ar");
-    double Z_ar = windkesselcond_[condID]->GetDouble("Z_ar");
-    double C_ven = windkesselcond_[condID]->GetDouble("C_ven");
-    double R_ven = windkesselcond_[condID]->GetDouble("R_ven");
-    double L_ven = windkesselcond_[condID]->GetDouble("L_ven");
+    double C_ar = cardiovascular0dcond_[condID]->GetDouble("C_ar");
+    double R_ar = cardiovascular0dcond_[condID]->GetDouble("R_ar");
+    double L_ar = cardiovascular0dcond_[condID]->GetDouble("L_ar");
+    double Z_ar = cardiovascular0dcond_[condID]->GetDouble("Z_ar");
+    double C_ven = cardiovascular0dcond_[condID]->GetDouble("C_ven");
+    double R_ven = cardiovascular0dcond_[condID]->GetDouble("R_ven");
+    double L_ven = cardiovascular0dcond_[condID]->GetDouble("L_ven");
 
     // initial compartment volumes - do not physically contribute to model
-    double V_at_0 = windkesselcond_[condID]->GetDouble("V_at_0");
-    double V_ar_0 = windkesselcond_[condID]->GetDouble("V_ar_0");
-    double V_ven_0 = windkesselcond_[condID]->GetDouble("V_ven_0");
+    double V_at_0 = cardiovascular0dcond_[condID]->GetDouble("V_at_0");
+    double V_ar_0 = cardiovascular0dcond_[condID]->GetDouble("V_ar_0");
+    double V_ven_0 = cardiovascular0dcond_[condID]->GetDouble("V_ven_0");
 
-    // Windkessel stiffness
+    // Cardiovascular0D stiffness
     Epetra_SerialDenseMatrix wkstiff(numdof_per_cond,numdof_per_cond);
     Epetra_SerialDenseMatrix wkstiff_other(numdof_per_cond,numdof_per_cond);
 
-    // Windkessel rhs contributions
-    std::vector<double> factor_wkdof(numdof_per_cond);
-    std::vector<double> factor_dwkdof(numdof_per_cond);
+    // Cardiovascular0D rhs contributions
+    std::vector<double> factor_cvdof(numdof_per_cond);
+    std::vector<double> factor_dcvdof(numdof_per_cond);
     std::vector<double> factor_Q(numdof_per_cond);
     std::vector<double> factor_1(numdof_per_cond);
 
@@ -996,17 +997,17 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
     if (assvec1 or assvec2 or assvec3 or assvec4 or assvec6 or assvec7 or assvec8)
     {
 
-      //extract values of dof vector wkdofn
+      //extract values of dof vector cvdofn
       p_at_n = (*sysvec7)[numdof_per_cond*condID+0];
       q_vout_n = (*sysvec7)[numdof_per_cond*condID+2];
       p_v_n = (*sysvec7)[numdof_per_cond*condID+3];
       p_ar_n = (*sysvec7)[numdof_per_cond*condID+4];
-      //extract values of dof vector wkdof
+      //extract values of dof vector cvdof
       p_at_ = (*sysvec8)[numdof_per_cond*condID+0];
       q_vout_ = (*sysvec8)[numdof_per_cond*condID+2];
       p_v_ = (*sysvec8)[numdof_per_cond*condID+3];
       p_ar_ = (*sysvec8)[numdof_per_cond*condID+4];
-      //extract values of dof vector wkdofm
+      //extract values of dof vector cvdofm
       q_vin_m = (*sysvec6)[numdof_per_cond*condID+1];
       q_vout_m = (*sysvec6)[numdof_per_cond*condID+2];
       p_ar_m = (*sysvec6)[numdof_per_cond*condID+4];
@@ -1028,15 +1029,15 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
 
       // fill multipliers for rhs vector
       // atrium
-      factor_wkdof[0] = 0.;
-      factor_dwkdof[0] = 0.;
+      factor_cvdof[0] = 0.;
+      factor_dcvdof[0] = 0.;
       factor_Q[0] = 0.;
       factor_1[0] = (p_at_n/E_at_n - p_at_/E_at_)/ts_size - q_ven_other_m + q_vin_m;
 
       //atrioventricular valve
       // theta * valve-law evaluated at t_{n+1} + (1.-theta) * valve-law evaluated at t_{n} <--- One-Step-Theta consistent way to do it
-      factor_wkdof[1] = -1.;
-      factor_dwkdof[1] = 0.;
+      factor_cvdof[1] = -1.;
+      factor_dcvdof[1] = 0.;
       factor_Q[1] = 0.;
       if (p_v_n < p_at_n) atv_n = (p_at_n-p_v_n)/R_atvalve_min;
       if (p_v_n >= p_at_n) atv_n = (p_at_n-p_v_n)/R_atvalve_max;
@@ -1045,15 +1046,15 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       factor_1[1] = theta * atv_n + (1.-theta)*atv_;
 
       //ventricular mass balance
-      factor_wkdof[2] = 1.;
-      factor_dwkdof[2] = 0.;
+      factor_cvdof[2] = 1.;
+      factor_dcvdof[2] = 0.;
       factor_Q[2] = -1.;
       factor_1[2] = -q_vin_m;
 
       //semilunar valve
       // theta * valve-law evaluated at t_{n+1} + (1.-theta) * valve-law evaluated at t_{n} <--- One-Step-Theta consistent way to do it
-      factor_wkdof[3] = 0.;
-      factor_dwkdof[3] = 0.;
+      factor_cvdof[3] = 0.;
+      factor_dcvdof[3] = 0.;
       factor_Q[3] = 0.;
       if (p_v_n < p_ar_n) arv_n = (p_v_n-p_ar_n)/R_arvalve_max;
       if (p_v_n >= p_ar_n) arv_n = (p_v_n-p_ar_n)/R_arvalve_min;
@@ -1062,26 +1063,26 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       factor_1[3] = theta * arv_n + (1.-theta)*arv_ - q_vout_m;
 
       //arterial mass balance
-      factor_wkdof[4] = 0.;
-      factor_dwkdof[4] = C_ar;
+      factor_cvdof[4] = 0.;
+      factor_dcvdof[4] = C_ar;
       factor_Q[4] = 0.;
       factor_1[4] = -q_vout_m + q_ar_m - C_ar*Z_ar * (q_vout_n - q_vout_)/ts_size;
 
       //arterial linear momentum balance
-      factor_wkdof[5] = 1.;
-      factor_dwkdof[5] = L_ar/R_ar;
+      factor_cvdof[5] = 1.;
+      factor_dcvdof[5] = L_ar/R_ar;
       factor_Q[5] = 0.;
       factor_1[5] = (p_ven_m-p_ar_m + Z_ar*q_vout_m)/R_ar;
 
       //venous mass balance
-      factor_wkdof[6] = 0.;
-      factor_dwkdof[6] = C_ven;
+      factor_cvdof[6] = 0.;
+      factor_dcvdof[6] = C_ven;
       factor_Q[6] = 0.;
       factor_1[6] = -q_ar_m + q_ven_m;
 
       //venous linear momentum balance
-      factor_wkdof[7] = 1.;
-      factor_dwkdof[7] = L_ven/R_ven;
+      factor_cvdof[7] = 1.;
+      factor_dcvdof[7] = L_ven/R_ven;
       factor_Q[7] = 0.;
       factor_1[7] = (p_at_other_m-p_ven_m)/R_ven;
 
@@ -1121,7 +1122,7 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
     // elements might need condition
     params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
-    // assemble of Windkessel stiffness matrix, scale with time-integrator dependent value
+    // assemble of Cardiovascular0D stiffness matrix, scale with time-integrator dependent value
     if (assmat1)
     {
       //atrium
@@ -1171,7 +1172,7 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
 
       sysmat1->UnComplete();
 
-      // assemble into windkessel system matrix - wkstiff contribution
+      // assemble into cardiovascular0d system matrix - wkstiff contribution
       for (int j = 0; j < numdof_per_cond; j++)
       {
         for (int k = 0; k < numdof_per_cond; k++)
@@ -1186,21 +1187,21 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
       }
 
     }
-    // rhs part associated with wkdof
+    // rhs part associated with cvdof
     if (assvec1)
     {
       for (int j = 0; j < numdof_per_cond; j++)
       {
-        int err = sysvec1->SumIntoGlobalValues(1,&factor_wkdof[j],&gindex[j]);
+        int err = sysvec1->SumIntoGlobalValues(1,&factor_cvdof[j],&gindex[j]);
         if (err) dserror("SumIntoGlobalValues failed!");
       }
     }
-    // rhs part associated with dwkdof/dt
+    // rhs part associated with dcvdof/dt
     if (assvec2)
     {
       for (int j = 0; j < numdof_per_cond; j++)
       {
-        int err = sysvec2->SumIntoGlobalValues(1,&factor_dwkdof[j],&gindex[j]);
+        int err = sysvec2->SumIntoGlobalValues(1,&factor_dcvdof[j],&gindex[j]);
         if (err) dserror("SumIntoGlobalValues failed!");
       }
     }
@@ -1284,7 +1285,7 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
 
       if (assmat2)
       {
-        // assemble the offdiagonal stiffness block (1,0 block) arising from dR_windk/dd
+        // assemble the offdiagonal stiffness block (1,0 block) arising from dR_cardvasc0d/dd
         // -> this matrix is later on transposed when building the whole block matrix
         std::vector<int> colvec(1);
         colvec[0]=gindex[2];
@@ -1294,7 +1295,7 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
 
       if (assvec5)
       {
-        // assemble the current volume of the enclosed surface of the windkessel condition
+        // assemble the current volume of the enclosed surface of the cardiovascular0d condition
         elevector3[1]=elevector3[0];
         elevector3[2]=elevector3[0];
         elevector3[3]=elevector3[0];
@@ -1302,25 +1303,25 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
         elevector3[5]=elevector3[0];
         elevector3[6]=elevector3[0];
         elevector3[7]=elevector3[0];
-        std::vector<int> windkessellm;
-        std::vector<int> windkesselowner;
-        windkessellm.push_back(gindex[0]);
-        windkessellm.push_back(gindex[1]);
-        windkessellm.push_back(gindex[2]);
-        windkessellm.push_back(gindex[3]);
-        windkessellm.push_back(gindex[4]);
-        windkessellm.push_back(gindex[5]);
-        windkessellm.push_back(gindex[6]);
-        windkessellm.push_back(gindex[7]);
-        windkesselowner.push_back(curr->second->Owner());
-        windkesselowner.push_back(curr->second->Owner());
-        windkesselowner.push_back(curr->second->Owner());
-        windkesselowner.push_back(curr->second->Owner());
-        windkesselowner.push_back(curr->second->Owner());
-        windkesselowner.push_back(curr->second->Owner());
-        windkesselowner.push_back(curr->second->Owner());
-        windkesselowner.push_back(curr->second->Owner());
-        LINALG::Assemble(*sysvec5,elevector3,windkessellm,windkesselowner);
+        std::vector<int> cardiovascular0dlm;
+        std::vector<int> cardiovascular0downer;
+        cardiovascular0dlm.push_back(gindex[0]);
+        cardiovascular0dlm.push_back(gindex[1]);
+        cardiovascular0dlm.push_back(gindex[2]);
+        cardiovascular0dlm.push_back(gindex[3]);
+        cardiovascular0dlm.push_back(gindex[4]);
+        cardiovascular0dlm.push_back(gindex[5]);
+        cardiovascular0dlm.push_back(gindex[6]);
+        cardiovascular0dlm.push_back(gindex[7]);
+        cardiovascular0downer.push_back(curr->second->Owner());
+        cardiovascular0downer.push_back(curr->second->Owner());
+        cardiovascular0downer.push_back(curr->second->Owner());
+        cardiovascular0downer.push_back(curr->second->Owner());
+        cardiovascular0downer.push_back(curr->second->Owner());
+        cardiovascular0downer.push_back(curr->second->Owner());
+        cardiovascular0downer.push_back(curr->second->Owner());
+        cardiovascular0downer.push_back(curr->second->Owner());
+        LINALG::Assemble(*sysvec5,elevector3,cardiovascular0dlm,cardiovascular0downer);
 
       }
 
@@ -1338,7 +1339,7 @@ void UTILS::Windkessel::EvaluateHeartValveCardiovascularFullWindkessel(
 } // end of EvaluateCondition
 
 
-void UTILS::Windkessel::EvaluateDStructDp(
+void UTILS::Cardiovascular0D::EvaluateDStructDp(
     Teuchos::ParameterList&        params,
     Teuchos::RCP<LINALG::SparseOperator> sysmat
     )
@@ -1351,32 +1352,32 @@ void UTILS::Windkessel::EvaluateDStructDp(
   int pres_coup_index = 0;
 
   // choose action
-  switch (windkesseltype_)
+  switch (cardiovascular0dtype_)
   {
-  case wk_std:
+  case cardvasc0d_windkesselonly:
     numdof_per_cond = 1;
     pres_coup_index = 0;
     break;
-  case wk_heartvalvearterial_proxdist:
+  case cardvasc0d_arterialproxdist:
     numdof_per_cond = 4;
     pres_coup_index = 0;
     break;
-  case wk_heartvalvecardiovascular_full:
+  case cardvasc0d_arterialvenoussyspulcoupled:
     numdof_per_cond = 8;
     pres_coup_index = 3;
     break;
   case none:
     return;
   default:
-    dserror("Unknown Windkessel type to be evaluated in Windkessel class!");
+    dserror("Unknown Cardiovascular0D type to be evaluated in Cardiovascular0D class!");
   }
 
-  // loop over windkessel structure coupling conditions
-  /* here we do tge loop to assemble the offdiagonal stiffness block dfext/dwkdof (0,1 block)
+  // loop over cardiovascular0d structure coupling conditions
+  /* here we do tge loop to assemble the offdiagonal stiffness block dfext/dcvdof (0,1 block)
   this is the derivative of the orthopressure Neumann load (external load vector fext) w.r.t. the pressure*/
-  for (unsigned int i = 0; i < windkesselstructcoupcond_.size(); ++i)
+  for (unsigned int i = 0; i < cardiovascular0dstructcoupcond_.size(); ++i)
   {
-    DRT::Condition& coupcond = *(windkesselstructcoupcond_[i]);
+    DRT::Condition& coupcond = *(cardiovascular0dstructcoupcond_[i]);
 
     int coupcondID=coupcond.GetInt("coupling_id");
     params.set("coupling_id",coupcondID);
@@ -1504,8 +1505,8 @@ void UTILS::Windkessel::EvaluateDStructDp(
 
       int eid = curr->second->Id();
 
-      // assemble the offdiagonal stiffness block (0,1 block) arising from dR_struct/dwkdof
-      // assemble to rectangular matrix. The col corresponds to the Windkessel ID.
+      // assemble the offdiagonal stiffness block (0,1 block) arising from dR_struct/dcvdof
+      // assemble to rectangular matrix. The col corresponds to the Cardiovascular0D ID.
       std::vector<int> colvec(1);
       colvec[0]=gindex[pres_coup_index];
       elevector.Scale(sc_strtimint);
@@ -1520,7 +1521,7 @@ void UTILS::Windkessel::EvaluateDStructDp(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Windkessel::InitializeStdWindkessel(
+void UTILS::Cardiovascular0D::InitializeCardiovascular0DWindkesselOnly(
     Teuchos::ParameterList&        params,
     Teuchos::RCP<Epetra_Vector>    sysvec1,
     Teuchos::RCP<Epetra_Vector>    sysvec2)
@@ -1535,9 +1536,9 @@ void UTILS::Windkessel::InitializeStdWindkessel(
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
+  for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
   {
-    DRT::Condition& cond = *(windkesselcond_[i]);
+    DRT::Condition& cond = *(cardiovascular0dcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("id");
@@ -1549,7 +1550,7 @@ void UTILS::Windkessel::InitializeStdWindkessel(
     gindex[0] = numdof_per_cond*condID-offsetID;
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0]+j;
 
-    double p_0=windkesselcond_[condID]->GetDouble("p_0");
+    double p_0=cardiovascular0dcond_[condID]->GetDouble("p_0");
 
     int err1 = sysvec2->SumIntoGlobalValues(1,&p_0,&gindex[0]);
     if (err1) dserror("SumIntoGlobalValues failed!");
@@ -1587,31 +1588,31 @@ void UTILS::Windkessel::InitializeStdWindkessel(
 
       // assembly
 
-      std::vector<int> windkessellm;
-      std::vector<int> windkesselowner;
+      std::vector<int> cardiovascular0dlm;
+      std::vector<int> cardiovascular0downer;
 
-      windkessellm.push_back(gindex[0]);
-      windkesselowner.push_back(curr->second->Owner());
-      LINALG::Assemble(*sysvec1,elevector3,windkessellm,windkesselowner);
+      cardiovascular0dlm.push_back(gindex[0]);
+      cardiovascular0downer.push_back(curr->second->Owner());
+      LINALG::Assemble(*sysvec1,elevector3,cardiovascular0dlm,cardiovascular0downer);
     }
     // remember next time, that this condition is already initialized, i.e. active
     activecons_.find(condID)->second=true;
 
     if (actdisc_->Comm().MyPID()==0)
     {
-      std::cout << "===== Welcome to monolithic 3D structure 0D Windkessel coupling (coupling id = " << condID << ") ====="<< std::endl;
+      std::cout << "===== Welcome to monolithic coupling of 3D structural dynamics to 0D cardiovascular flow models (coupling id = " << condID << ") ====="<< std::endl;
     }
 
 
   }
   return;
-} // end of Initialize Windkessel
+} // end of Initialize Cardiovascular0D
 
 
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Windkessel::InitializeHeartValveArterialProxDistWindkessel(
+void UTILS::Cardiovascular0D::InitializeCardiovascular0DArterialProxDist(
     Teuchos::ParameterList&        params,
     Teuchos::RCP<Epetra_Vector>    sysvec1,
     Teuchos::RCP<Epetra_Vector>    sysvec2)
@@ -1626,9 +1627,9 @@ void UTILS::Windkessel::InitializeHeartValveArterialProxDistWindkessel(
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
+  for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
   {
-    DRT::Condition& cond = *(windkesselcond_[i]);
+    DRT::Condition& cond = *(cardiovascular0dcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("id");
@@ -1640,10 +1641,10 @@ void UTILS::Windkessel::InitializeHeartValveArterialProxDistWindkessel(
     gindex[0] = numdof_per_cond*condID-offsetID;
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0]+j;
 
-    double p_v_0=windkesselcond_[condID]->GetDouble("p_v_0");
-    double p_arp_0=windkesselcond_[condID]->GetDouble("p_arp_0");
-    double y_arp_0=windkesselcond_[condID]->GetDouble("y_arp_0");
-    double p_ard_0=windkesselcond_[condID]->GetDouble("p_ard_0");
+    double p_v_0=cardiovascular0dcond_[condID]->GetDouble("p_v_0");
+    double p_arp_0=cardiovascular0dcond_[condID]->GetDouble("p_arp_0");
+    double y_arp_0=cardiovascular0dcond_[condID]->GetDouble("y_arp_0");
+    double p_ard_0=cardiovascular0dcond_[condID]->GetDouble("p_ard_0");
 
     int err1 = sysvec2->SumIntoGlobalValues(1,&p_v_0,&gindex[0]);
     int err2 = sysvec2->SumIntoGlobalValues(1,&p_arp_0,&gindex[1]);
@@ -1687,37 +1688,37 @@ void UTILS::Windkessel::InitializeHeartValveArterialProxDistWindkessel(
       elevector3[1]=elevector3[0];
       elevector3[2]=elevector3[0];
       elevector3[3]=elevector3[0];
-      std::vector<int> windkessellm;
-      std::vector<int> windkesselowner;
+      std::vector<int> cardiovascular0dlm;
+      std::vector<int> cardiovascular0downer;
 
-      windkessellm.push_back(gindex[0]);
-      windkessellm.push_back(gindex[1]);
-      windkessellm.push_back(gindex[2]);
-      windkessellm.push_back(gindex[3]);
-      windkesselowner.push_back(curr->second->Owner());
-      windkesselowner.push_back(curr->second->Owner());
-      windkesselowner.push_back(curr->second->Owner());
-      windkesselowner.push_back(curr->second->Owner());
-      LINALG::Assemble(*sysvec1,elevector3,windkessellm,windkesselowner);
+      cardiovascular0dlm.push_back(gindex[0]);
+      cardiovascular0dlm.push_back(gindex[1]);
+      cardiovascular0dlm.push_back(gindex[2]);
+      cardiovascular0dlm.push_back(gindex[3]);
+      cardiovascular0downer.push_back(curr->second->Owner());
+      cardiovascular0downer.push_back(curr->second->Owner());
+      cardiovascular0downer.push_back(curr->second->Owner());
+      cardiovascular0downer.push_back(curr->second->Owner());
+      LINALG::Assemble(*sysvec1,elevector3,cardiovascular0dlm,cardiovascular0downer);
     }
     // remember next time, that this condition is already initialized, i.e. active
     activecons_.find(condID)->second=true;
 
     if (actdisc_->Comm().MyPID()==0)
     {
-      std::cout << "===== Welcome to monolithic 3D structure 0D Windkessel coupling (coupling id = " << condID << ") ====="<< std::endl;
+      std::cout << "===== Welcome to monolithic coupling of 3D structural dynamics to 0D cardiovascular flow models (coupling id = " << condID << ") ====="<< std::endl;
     }
 
 
   }
   return;
-} // end of Initialize Windkessel
+} // end of Initialize Cardiovascular0D
 
 
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Windkessel::InitializeHeartValveCardiovascularFullWindkessel(
+void UTILS::Cardiovascular0D::InitializeCardiovascular0DArterialVenousSysPulCoupled(
     Teuchos::ParameterList&        params,
     Teuchos::RCP<Epetra_Vector>    sysvec1,
     Teuchos::RCP<Epetra_Vector>    sysvec2,
@@ -1733,9 +1734,9 @@ void UTILS::Windkessel::InitializeHeartValveCardiovascularFullWindkessel(
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion
   //----------------------------------------------------------------------
-  for (unsigned int i = 0; i < windkesselcond_.size(); ++i)
+  for (unsigned int i = 0; i < cardiovascular0dcond_.size(); ++i)
   {
-    DRT::Condition& cond = *(windkesselcond_[i]);
+    DRT::Condition& cond = *(cardiovascular0dcond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("id");
@@ -1748,22 +1749,22 @@ void UTILS::Windkessel::InitializeHeartValveCardiovascularFullWindkessel(
     for (int j = 1; j < numdof_per_cond; j++) gindex[j] = gindex[0]+j;
 
 
-    double p_at_0=windkesselcond_[condID]->GetDouble("p_at_0");
-    double q_v_in_0=windkesselcond_[condID]->GetDouble("q_v_in_0");
-    double q_v_out_0=windkesselcond_[condID]->GetDouble("q_v_out_0");
-    double p_v_0=windkesselcond_[condID]->GetDouble("p_v_0");
-    double p_ar_0=windkesselcond_[condID]->GetDouble("p_ar_0");
-    double q_ar_0=windkesselcond_[condID]->GetDouble("q_ar_0");
-    double p_ven_0=windkesselcond_[condID]->GetDouble("p_ven_0");
-    double q_ven_0=windkesselcond_[condID]->GetDouble("q_ven_0");
+    double p_at_0=cardiovascular0dcond_[condID]->GetDouble("p_at_0");
+    double q_v_in_0=cardiovascular0dcond_[condID]->GetDouble("q_v_in_0");
+    double q_v_out_0=cardiovascular0dcond_[condID]->GetDouble("q_v_out_0");
+    double p_v_0=cardiovascular0dcond_[condID]->GetDouble("p_v_0");
+    double p_ar_0=cardiovascular0dcond_[condID]->GetDouble("p_ar_0");
+    double q_ar_0=cardiovascular0dcond_[condID]->GetDouble("q_ar_0");
+    double p_ven_0=cardiovascular0dcond_[condID]->GetDouble("p_ven_0");
+    double q_ven_0=cardiovascular0dcond_[condID]->GetDouble("q_ven_0");
 
-    double V_at_0=windkesselcond_[condID]->GetDouble("V_at_0");
-    double V_ar_0=windkesselcond_[condID]->GetDouble("V_ar_0");
-    double V_ven_0=windkesselcond_[condID]->GetDouble("V_ven_0");
-    double E_at_min=windkesselcond_[condID]->GetDouble("E_at_min");
-    double C_ar=windkesselcond_[condID]->GetDouble("C_ar");
-    double C_ven=windkesselcond_[condID]->GetDouble("C_ven");
-    double Z_ar=windkesselcond_[condID]->GetDouble("Z_ar");
+    double V_at_0=cardiovascular0dcond_[condID]->GetDouble("V_at_0");
+    double V_ar_0=cardiovascular0dcond_[condID]->GetDouble("V_ar_0");
+    double V_ven_0=cardiovascular0dcond_[condID]->GetDouble("V_ven_0");
+    double E_at_min=cardiovascular0dcond_[condID]->GetDouble("E_at_min");
+    double C_ar=cardiovascular0dcond_[condID]->GetDouble("C_ar");
+    double C_ven=cardiovascular0dcond_[condID]->GetDouble("C_ven");
+    double Z_ar=cardiovascular0dcond_[condID]->GetDouble("Z_ar");
 
     int err1 = sysvec2->SumIntoGlobalValues(1,&p_at_0,&gindex[0]);
     int err2 = sysvec2->SumIntoGlobalValues(1,&q_v_in_0,&gindex[1]);
@@ -1822,45 +1823,45 @@ void UTILS::Windkessel::InitializeHeartValveCardiovascularFullWindkessel(
       elevector3[5]=elevector3[0];
       elevector3[6]=elevector3[0];
       elevector3[7]=elevector3[0];
-      std::vector<int> windkessellm;
-      std::vector<int> windkesselowner;
+      std::vector<int> cardiovascular0dlm;
+      std::vector<int> cardiovascular0downer;
 
-      windkessellm.push_back(gindex[0]);
-      windkessellm.push_back(gindex[1]);
-      windkessellm.push_back(gindex[2]);
-      windkessellm.push_back(gindex[3]);
-      windkessellm.push_back(gindex[4]);
-      windkessellm.push_back(gindex[5]);
-      windkessellm.push_back(gindex[6]);
-      windkessellm.push_back(gindex[7]);
-      windkesselowner.push_back(curr->second->Owner());
-      windkesselowner.push_back(curr->second->Owner());
-      windkesselowner.push_back(curr->second->Owner());
-      windkesselowner.push_back(curr->second->Owner());
-      windkesselowner.push_back(curr->second->Owner());
-      windkesselowner.push_back(curr->second->Owner());
-      windkesselowner.push_back(curr->second->Owner());
-      windkesselowner.push_back(curr->second->Owner());
-      LINALG::Assemble(*sysvec1,elevector3,windkessellm,windkesselowner);
+      cardiovascular0dlm.push_back(gindex[0]);
+      cardiovascular0dlm.push_back(gindex[1]);
+      cardiovascular0dlm.push_back(gindex[2]);
+      cardiovascular0dlm.push_back(gindex[3]);
+      cardiovascular0dlm.push_back(gindex[4]);
+      cardiovascular0dlm.push_back(gindex[5]);
+      cardiovascular0dlm.push_back(gindex[6]);
+      cardiovascular0dlm.push_back(gindex[7]);
+      cardiovascular0downer.push_back(curr->second->Owner());
+      cardiovascular0downer.push_back(curr->second->Owner());
+      cardiovascular0downer.push_back(curr->second->Owner());
+      cardiovascular0downer.push_back(curr->second->Owner());
+      cardiovascular0downer.push_back(curr->second->Owner());
+      cardiovascular0downer.push_back(curr->second->Owner());
+      cardiovascular0downer.push_back(curr->second->Owner());
+      cardiovascular0downer.push_back(curr->second->Owner());
+      LINALG::Assemble(*sysvec1,elevector3,cardiovascular0dlm,cardiovascular0downer);
     }
     // remember next time, that this condition is already initialized, i.e. active
     activecons_.find(condID)->second=true;
 
     if (actdisc_->Comm().MyPID()==0)
     {
-      std::cout << "===== Welcome to monolithic 3D structure 0D Windkessel coupling (coupling id = " << condID << ") ====="<< std::endl;
+      std::cout << "===== Welcome to monolithic coupling of 3D structural dynamics to 0D cardiovascular flow models (coupling id = " << condID << ") ====="<< std::endl;
     }
 
 
   }
   return;
-} // end of Initialize Windkessel
+} // end of Initialize Cardiovascular0D
 
 
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-std::vector<int> UTILS::Windkessel::GetActiveCondID()
+std::vector<int> UTILS::Cardiovascular0D::GetActiveCondID()
 {
   std::vector<int> condID;
   std::map<int,bool>::const_iterator mapit;
@@ -1874,7 +1875,7 @@ std::vector<int> UTILS::Windkessel::GetActiveCondID()
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Windkessel::SetState
+void UTILS::Cardiovascular0D::SetState
 (
     const std::string& state,  ///< name of state to set
     Teuchos::RCP<Epetra_Vector> V  ///< values to set

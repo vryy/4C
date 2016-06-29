@@ -2,6 +2,10 @@
 /*!
 \file inpar_structure.H
 
+\brief structural dynamics input parameters
+
+\level 1
+
 <pre>
 \maintainer Burkhard Bornemann
             bornemann@lnm.mw.tum.de
@@ -77,7 +81,7 @@ namespace INPAR
       model_structure,          ///< evaluate the structural model
       model_contact,            ///< evaluate the contact model
       model_meshtying,          ///< evaluate the meshtying model
-      model_windkessel,         ///< evaluate the windkessel model
+      model_cardiovascular0d,         ///< evaluate the windkessel model
       model_springdashpot,      ///< evaluate the springdashpot model
       model_lag_pen_constraint  ///< evaluate the Lagrange or/and penalty enforced constraint models
     };
@@ -99,8 +103,8 @@ namespace INPAR
       case model_meshtying :
         return "Meshtying";
         break;
-      case model_windkessel :
-        return "Windkessel";
+      case model_cardiovascular0d :
+        return "Cardiovascular0D";
         break;
       case model_springdashpot :
         return "SpringDashpot";

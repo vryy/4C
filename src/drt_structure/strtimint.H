@@ -4,6 +4,8 @@
 
 \maintainer Alexander Popp
 
+\level 1
+
 \brief Time integration for structural dynamics
 */
 
@@ -53,7 +55,7 @@ namespace UTILS
 {
   class ConstrManager;
   class ConstraintSolver;
-  class WindkesselManager;
+  class Cardiovascular0DManager;
   class SpringDashpotManager;
   class SurfStressManager;
 //  class GrowthDisplManager;
@@ -659,8 +661,8 @@ namespace STR
     //! Read and set restart values for constraints
     void ReadRestartConstraint();
 
-    //! Read and set restart values for Windkessel
-    void ReadRestartWindkessel();
+    //! Read and set restart values for Cardiovascular0D
+    void ReadRestartCardiovascular0D();
 
     //! Read and set restart values for Spring Dashpot
     void ReadRestartSpringDashpot();
@@ -784,8 +786,8 @@ namespace STR
     //! are there any algebraic constraints?
     virtual bool HaveConstraint() = 0;
 
-    //! are there any Windkessel BCs?
-    virtual bool HaveWindkessel() = 0;
+    //! are there any Cardiovascular0D BCs?
+    virtual bool HaveCardiovascular0D() = 0;
 
     //! are there any spring dashpot BCs?
     virtual bool HaveSpringDashpot() = 0;
@@ -796,8 +798,8 @@ namespace STR
     //! get spring dashpot manager defined in the structure
     virtual const Teuchos::RCP<UTILS::SpringDashpotManager> GetSpringDashpotManager() = 0;
 
-    //! get Windkessel manager defined in the structure
-    virtual const Teuchos::RCP<UTILS::WindkesselManager> GetWindkesselManager() = 0;
+    //! get Cardiovascular0D manager defined in the structure
+    virtual const Teuchos::RCP<UTILS::Cardiovascular0DManager> GetCardiovascular0DManager() = 0;
 
     //! get type of thickness scaling for thin shell structures
     virtual INPAR::STR::STC_Scale GetSTCAlgo() = 0;
@@ -1135,8 +1137,8 @@ namespace STR
     Teuchos::RCP<UTILS::ConstrManager> conman_;  //!< constraint manager
     Teuchos::RCP<UTILS::ConstraintSolver> consolv_;  //!< constraint solver
 
-    // for Windkessel bcs
-    Teuchos::RCP<UTILS::WindkesselManager> windkman_;  //!< Windkessel manager
+    // for 0D cardiovascular models
+    Teuchos::RCP<UTILS::Cardiovascular0DManager> cardvasc0dman_;  //!< Cardiovascular0D manager
 
     // spring dashpot
     Teuchos::RCP<UTILS::SpringDashpotManager> springman_;

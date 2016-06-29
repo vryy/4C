@@ -288,9 +288,9 @@ namespace TIMINT {
     virtual void UpdateIterIncrConstr(Teuchos::RCP<Epetra_Vector> lagrincr)
     { dserror("Not yet implemented!"); return; }
 
-    /// Add residual increment to pressures stored in Windkessel manager (derived)
+    /// Add residual increment to pressures stored in Cardiovascular0D manager (derived)
     /// FixMe Different behavior for the implicit and explicit case!!!
-    virtual void UpdateIterIncrWindkessel(Teuchos::RCP<Epetra_Vector> presincr)
+    virtual void UpdateIterIncrCardiovascular0D(Teuchos::RCP<Epetra_Vector> presincr)
     { dserror("Not yet implemented!"); return; }
     /// @}
 

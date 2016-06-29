@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
-\file windkessel_manager.H
+\file cardiovascular0d_manager.H
 
-\brief Monolithic coupling of 3D structure 0D Windkessel models
+\brief Monolithic coupling of 3D structure 0D cardiovascular flow models
 
 \level 2
 
@@ -14,8 +14,8 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef WINDKESSEL_MANAGER_H
-#define WINDKESSEL_MANAGER_H
+#ifndef CARDIOVASCULAR0D_MANAGER_H
+#define CARDIOVASCULAR0D_MANAGER_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -23,7 +23,7 @@
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 
-#include "../drt_inpar/inpar_windkessel.H"
+#include "../drt_inpar/inpar_cardiovascular0d.H"
 
 namespace IO
 {
@@ -53,22 +53,22 @@ namespace UTILS
 {
 
   //forward declarations
-  class Windkessel;
-  class WindkesselDofSet;
+  class Cardiovascular0D;
+  class Cardiovascular0DDofSet;
 
-  class WindkesselManager
+  class Cardiovascular0DManager
   {
   public:
 
     /*!
-      \brief Constructor of windkessel manager
+      \brief Constructor of cardiovascular0d manager
     */
-    WindkesselManager
+    Cardiovascular0DManager
     (
       Teuchos::RCP<DRT::Discretization> disc,  ///< standard discretization
       Teuchos::RCP<Epetra_Vector> disp,  ///< current displacement
       Teuchos::ParameterList strparams,  ///<  parameterlist from structural time integration algorithm
-      Teuchos::ParameterList wkparams,  ///<  parameterlist from windkessel
+      Teuchos::ParameterList cv0dparams,  ///<  parameterlist from cardiovascular0d
       LINALG::Solver& solver,  ///< Solver to solve linear subproblem in iteration
       Teuchos::RCP<LINALG::MapExtractor> dbcmaps  ///< Map extractor for Dirichlet DOFs
     );
@@ -76,13 +76,13 @@ namespace UTILS
         \brief Destructor
 
      */
-    ~WindkesselManager()
+    ~Cardiovascular0DManager()
     {
         return;
     };
 
     /*!
-      \brief Assemble windkessel stiffness and rhs contributions to full coupled problem
+      \brief Assemble cardiovascular0d stiffness and rhs contributions to full coupled problem
     */
     void StiffnessAndInternalForces
     (
@@ -93,111 +93,111 @@ namespace UTILS
     );
 
     /*!
-     \brief Return windkessel rhs norm at generalized midpoint $t_{n+\theta}$
+     \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
     */
-    double GetWindkesselRHSNorm() const
+    double GetCardiovascular0DRHSNorm() const
     {
       double foo;
-      windkesselrhsm_->Norm2(&foo);
+      cardiovascular0drhsm_->Norm2(&foo);
       return foo;
     };
 
     /*!
-     \brief Return windkessel rhs norm at generalized midpoint $t_{n+\theta}$
+     \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
     */
-    double GetWindkesselDofIncrNorm() const
+    double GetCardiovascular0DDofIncrNorm() const
     {
       double foo;
-      wkdofincrement_->Norm2(&foo);
+      cv0ddofincrement_->Norm2(&foo);
       return foo;
     };
 
     /*!
-     \brief Return windkessel rhs norm at generalized midpoint $t_{n+\theta}$
+     \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
     */
-    int GetWindkesselLinSolveError() const
+    int GetCardiovascular0DLinSolveError() const
     {
       return linsolveerror_;
     };
 
     /*!
-         \brief Update windkessel dofs
+         \brief Update cardiovascular0d dofs
     */
     void UpdateTimeStep();
 
     /*!
-         \brief Update windkessel dofs
+         \brief Update cardiovascular0d dofs
     */
     void ResetStep();
 
-    /// Add a vector as residual increment to the windkessel dof vector
-    void UpdateWkDof
+    /// Add a vector as residual increment to the cardiovascular0d dof vector
+    void UpdateCv0DDof
     (
-      Teuchos::RCP<Epetra_Vector> wkdofincrement  ///< vector to add
+      Teuchos::RCP<Epetra_Vector> cv0ddofincrement  ///< vector to add
     );
 
     ///
-    void EvaluateNeumannWindkesselCoupling
+    void EvaluateNeumannCardiovascular0DCoupling
     (
       Teuchos::RCP<Epetra_Vector> actpres
     );
 
     /*!
-         \brief Return windkessel rhs at generalized midpoint $t_{n+\theta}$
+         \brief Return cardiovascular0d rhs at generalized midpoint $t_{n+\theta}$
     */
-    Teuchos::RCP<Epetra_Vector> GetWindkesselRHS() const
+    Teuchos::RCP<Epetra_Vector> GetCardiovascular0DRHS() const
     {
-      return windkesselrhsm_;
+      return cardiovascular0drhsm_;
     }
 
     /*!
-     \brief Return EpetraMap that determined distribution of Windkessel functions and pressures over processors
+     \brief Return EpetraMap that determined distribution of Cardiovascular0D functions and pressures over processors
     */
-    Teuchos::RCP<Epetra_Map> GetWindkesselMap() const
+    Teuchos::RCP<Epetra_Map> GetCardiovascular0DMap() const
     {
-      return windkesselmap_;
+      return cardiovascular0dmap_;
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<LINALG::SparseOperator> GetMatDwindkDd() //const
+    Teuchos::RCP<LINALG::SparseOperator> GetMatDcardvasc0dDd() //const
     {
-      return mat_dwindk_dd_;
+      return mat_dcardvasc0d_dd_;
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<LINALG::SparseOperator> GetMatDstructDwkdof() //const
+    Teuchos::RCP<LINALG::SparseOperator> GetMatDstructDcv0ddof() //const
     {
-      return mat_dstruct_dwkdof_;
+      return mat_dstruct_dcv0ddof_;
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<LINALG::SparseMatrix> GetWindkesselStiffness() //const
+    Teuchos::RCP<LINALG::SparseMatrix> GetCardiovascular0DStiffness() //const
     {
-      return windkesselstiffness_;
+      return cardiovascular0dstiffness_;
     };
 
     /*!
       \brief Return dof vector
     */
-    Teuchos::RCP<Epetra_Vector> GetWkDofVector() const
+    Teuchos::RCP<Epetra_Vector> Get0DDofVector() const
     {
-      return wkdofn_;
+      return cv0ddofn_;
     };
 
     /*!
       \brief Return dof vector of last converged step
     */
-    Teuchos::RCP<Epetra_Vector> GetWkDofVectorOld() const
+    Teuchos::RCP<Epetra_Vector> Get0DDofVectorOld() const
     {
-      return wkdof_;
+      return cv0ddof_;
     };
 
     /*!
-     \brief Return if there are Windkessels
+     \brief Return if there are Cardiovascular0Ds
     */
-    bool HaveWindkessel() const
+    bool HaveCardiovascular0D() const
     {
-      return havewindkessel_;
+      return havecardiovascular0d_;
     };
 
     /*!
@@ -213,9 +213,9 @@ namespace UTILS
     Teuchos::ParameterList& StrParams() { return strparams_; }
 
     /*!
-     \brief Return windkessel input parameter list
+     \brief Return cardiovascular0d input parameter list
     */
-    Teuchos::ParameterList& WkParams() { return wkparams_; }
+    Teuchos::ParameterList& Cardvasc0DParams() { return cv0dparams_; }
 
     Teuchos::RCP<LINALG::Solver>& GetSolver() { return solver_; }
 
@@ -238,13 +238,13 @@ namespace UTILS
     );
 
     /// Reset dofs
-    void SetWkDofVector
+    void SetCv0DDofVector
     (
-      Teuchos::RCP<Epetra_Vector> newdof  ///< new Windkessel dofs
+      Teuchos::RCP<Epetra_Vector> newdof  ///< new Cardiovascular0D dofs
     )
     {
-      wkdofn_->Update(1.0,*newdof,0.0);
-      wkdof_->Update(1.0,*newdof,0.0);
+      cv0ddofn_->Update(1.0,*newdof,0.0);
+      cv0ddof_->Update(1.0,*newdof,0.0);
       return;
     }
 
@@ -268,7 +268,7 @@ namespace UTILS
       return ddQ_;
     }
 
-    //! switch Windkessel matrix to block matrix
+    //! switch Cardiovascular0D matrix to block matrix
     void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
                         Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
 
@@ -293,23 +293,23 @@ namespace UTILS
   private:
 
     // don't want = operator, cctor and destructor
-    WindkesselManager operator = (const WindkesselManager& old);
-    WindkesselManager(const WindkesselManager& old);
+    Cardiovascular0DManager operator = (const Cardiovascular0DManager& old);
+    Cardiovascular0DManager(const Cardiovascular0DManager& old);
 
 
-    Teuchos::RCP<DRT::Discretization> actdisc_; ///< discretization where elements of windkessel boundary live in
-    Teuchos::RCP<WindkesselDofSet> windkesseldofset_; ///< degrees of freedom of pressures
-    Teuchos::RCP<Epetra_Map> windkesselmap_;  ///< unique map of Windkessel values
-    Teuchos::RCP<Epetra_Map> redwindkesselmap_;   ///< fully redundant map of Windkessel values
-    Teuchos::RCP<Epetra_Export> windkimpo_;  ///< importer for fully redundant Windkessel vector into distributed one
+    Teuchos::RCP<DRT::Discretization> actdisc_; ///< discretization where elements of cardiovascular0d boundary live in
+    Teuchos::RCP<Cardiovascular0DDofSet> cardiovascular0ddofset_; ///< degrees of freedom of pressures
+    Teuchos::RCP<Epetra_Map> cardiovascular0dmap_;  ///< unique map of Cardiovascular0D values
+    Teuchos::RCP<Epetra_Map> redcardiovascular0dmap_;   ///< fully redundant map of Cardiovascular0D values
+    Teuchos::RCP<Epetra_Export> cardvasc0dimpo_;  ///< importer for fully redundant Cardiovascular0D vector into distributed one
     Teuchos::RCP<Epetra_Vector> actpres_;
-    Teuchos::RCP<Epetra_Vector> wkdof_; ///< wkdof vector at t_{n}
-    Teuchos::RCP<Epetra_Vector> wkdofn_; ///< wkdof vector at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> wkdofm_; ///< wkdof vector at mid-point
-    Teuchos::RCP<Epetra_Vector> dwkdof_; ///< wkdof rate vector at t_{n}
-    Teuchos::RCP<Epetra_Vector> dwkdofn_; ///< wkdof rate vector at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> dwkdofm_; ///< wkdof rate vector at mid-point
-    Teuchos::RCP<Epetra_Vector> wkdofincrement_; ///< increment of wkdof
+    Teuchos::RCP<Epetra_Vector> cv0ddof_; ///< cvdof vector at t_{n}
+    Teuchos::RCP<Epetra_Vector> cv0ddofn_; ///< cvdof vector at t_{n+1}
+    Teuchos::RCP<Epetra_Vector> cv0ddofm_; ///< cvdof vector at mid-point
+    Teuchos::RCP<Epetra_Vector> dcv0ddof_; ///< cvdof rate vector at t_{n}
+    Teuchos::RCP<Epetra_Vector> dcv0ddofn_; ///< cvdof rate vector at t_{n+1}
+    Teuchos::RCP<Epetra_Vector> dcv0ddofm_; ///< cvdof rate vector at mid-point
+    Teuchos::RCP<Epetra_Vector> cv0ddofincrement_; ///< increment of cvdof
     Teuchos::RCP<Epetra_Vector> v_; ///< vol vector at t_{n}
     Teuchos::RCP<Epetra_Vector> vn_; ///< vol vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> vm_; ///< vol vector at mid-point
@@ -322,45 +322,44 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> ddQ_; ///< time deriv of flux rate vector at t_{n}
     Teuchos::RCP<Epetra_Vector> ddQn_; ///< time deriv of flux rate vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> ddQm_; ///< time deriv of flux rate vector at mid-point
-    Teuchos::RCP<Epetra_Vector> windkesselrhsm_; ///< Windkessel rhs vector at mid-point
-    Teuchos::RCP<Epetra_Vector> windk_rhs_wkdof_; ///< Windkessel rhs associated with p
-    Teuchos::RCP<Epetra_Vector> windk_rhs_dwkdof_; ///< Windkessel rhs associated with pressure rate dp/dt
-    Teuchos::RCP<Epetra_Vector> windk_rhs_Q_; ///< Windkessel rhs associated with q
-    Teuchos::RCP<Epetra_Vector> windk_rhs_dQ_; ///< Windkessel rhs associated with s
-    Teuchos::RCP<Epetra_Vector> windk_rhs_ddQ_; ///< Windkessel rhs associated with ds/dt
-    Teuchos::RCP<Epetra_Vector> windk_rhs_1_; ///< Windkessel rhs associated with 1
+    Teuchos::RCP<Epetra_Vector> cardiovascular0drhsm_; ///< Cardiovascular0D rhs vector at mid-point
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_rhs_cv0ddof_; ///< Cardiovascular0D rhs associated with p
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_rhs_dcv0ddof_; ///< Cardiovascular0D rhs associated with pressure rate dp/dt
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_rhs_Q_; ///< Cardiovascular0D rhs associated with q
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_rhs_dQ_; ///< Cardiovascular0D rhs associated with s
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_rhs_ddQ_; ///< Cardiovascular0D rhs associated with ds/dt
+    Teuchos::RCP<Epetra_Vector> cardvasc0d_rhs_1_; ///< Cardiovascular0D rhs associated with 1
     Teuchos::RCP<Epetra_Vector> compvolm_; ///< compartment volume vector (V_at, V_ar, V_ven) at mid-point
     Teuchos::RCP<Epetra_Vector> compvol_; ///< compartment volume vector (V_at, V_ar, V_ven) at t_n
-    int WindkesselID_;  ///< smallest Windkessel bc id
-    int offsetID_;  ///< smallest Windkessel bc id
-    int numWindkesselID_;  ///< number of Windkessel bcs
+    int Cardiovascular0DID_;  ///< smallest Cardiovascular0D bc id
+    int offsetID_;  ///< smallest Cardiovascular0D bc id
+    int numCardiovascular0DID_;  ///< number of Cardiovascular0D bcs
     std::vector<int> currentID;
-    Teuchos::RCP<LINALG::SparseOperator> mat_dwindk_dd_;  ///< additional rectangular matrix
-    Teuchos::RCP<LINALG::SparseOperator> mat_dstruct_dwkdof_;  ///< additional rectangular matrix
-    Teuchos::RCP<LINALG::SparseMatrix> windkesselstiffness_;  ///< additional rectangular matrix
-    bool havewindkessel_;  ///< are there Windkessel bcs at all?
-    Teuchos::RCP<Windkessel> wk_std_;
-    Teuchos::RCP<Windkessel> wk_heartvalvearterial_proxdist_;
-    Teuchos::RCP<Windkessel> wk_heartvalvecardiovascular_full_;
+    Teuchos::RCP<LINALG::SparseOperator> mat_dcardvasc0d_dd_;  ///< additional rectangular matrix
+    Teuchos::RCP<LINALG::SparseOperator> mat_dstruct_dcv0ddof_;  ///< additional rectangular matrix
+    Teuchos::RCP<LINALG::SparseMatrix> cardiovascular0dstiffness_;  ///< additional rectangular matrix
+    bool havecardiovascular0d_;  ///< are there Cardiovascular0D bcs at all?
+    Teuchos::RCP<Cardiovascular0D> cardvasc0d_windkesselonly_;
+    Teuchos::RCP<Cardiovascular0D> cardvasc0d_arterialproxdist_;
+    Teuchos::RCP<Cardiovascular0D> cardvasc0d_arterialvenoussyspulcoupled_;
     int myrank_;
     Teuchos::RCP<LINALG::Solver> solver_; ///< solver for linear standard linear system
     int counter_;  ///< counts how often #Solve is called
     bool isadapttol_;  ///< adaptive tolerance for solver?
     double adaptolbetter_; ///< adaptive tolerance for solver useful?
     double tolres_struct_; ///< tolerace for structural residual
-    double tolres_windk_; ///< tolerace for windkessel residual
-    INPAR::WINDKESSEL::WindkSolveAlgo algochoice_;
+    double tolres_cardvasc0d_; ///< tolerace for cardiovascular0d residual
+    INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice_;
     Teuchos::RCP<Epetra_Vector> dirichtoggle_;  ///< \b only for compatability: dirichlet toggle -- monitor its target change!
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
     double theta_;
     bool enhanced_output_;
-    INPAR::STR::PreStress pstype_;
     double pstime_;
     double totaltime_;
     int linsolveerror_;
     Teuchos::ParameterList strparams_; ///< structure input parameters
-    Teuchos::ParameterList wkparams_; ///< windkessel input parameters
+    Teuchos::ParameterList cv0dparams_; ///< 0D cardiovascular input parameters
   }; //class
 }
-#endif /*WINDKESSELMANAGER_H*/
+#endif /*0DCARDIOVASCULAR_MANAGER_H*/

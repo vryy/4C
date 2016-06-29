@@ -45,13 +45,13 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          Superlu
------------------------------------------------WINDKESSEL-STRUCTURE COUPLING
+----------------------------------------CARDIOVASCULAR 0D-STRUCTURE COUPLING
 TIMINT_THETA                    0.5
-TOLWINDKESSEL                   1e-06
-TOLWINDKESSELDOFINCR            1e-06
+TOL_CARDVASC0D_RES              1e-06
+TOL_CARDVASC0D_DOFINCR          1e-06
 SOLALGORITHM                    direct
-RESTART_WITH_WINDKESSEL         No
-LINEAR_WINDK_STRUCT_SOLVER      1
+RESTART_WITH_CARDVASC0D         Yes
+LINEAR_COUPLED_SOLVER           1
 ENHANCED_OUTPUT                 No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       Yes
@@ -60,18 +60,18 @@ CONTROLNODE                     -1 -1 -1
 CONTROLTYPE                     load
 DAMPING                         Rayleigh
 DIVERCONT                       stop
-DYNAMICTYP                      Statics
+DYNAMICTYP                      GenAlpha
 ITERNORM                        L2
 K_DAMP                          0.0001
 LINEAR_SOLVER                   1
 LOADLIN                         yes
 LUMPMASS                        no
 MAXITER                         200
-MAXTIME                         1.0
+MAXTIME                         1.9
 MINITER                         0
 MODIFIEDEXPLEULER               Yes
 M_DAMP                          0.0
-NLNSOL                          ptc
+NLNSOL                          newtonlinuzawa
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
 NORMCOMBI_RESFINCO              And
@@ -81,14 +81,14 @@ NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         9999999
 PREDICT                         ConstDis
-PRESTRESS                       Mulf
+PRESTRESS                       None
 PRESTRESSTIME                   1.001
 PTCDT                           0.3
 RESEVRYERGY                     0
-RESTARTEVRY                     10
+RESTARTEVRY                     110
 RESULTSEVRY                     10
 STC_LAYER                       1
-TIMESTEP                        0.1
+TIMESTEP                        0.009
 TOLCONSTR                       1e-08
 TOLDISP                         1e-08
 TOLINCO                         1e-08
@@ -149,7 +149,7 @@ FUNCT1 COMPONENT 0 EXPR 0.0 0.0 0.0 FUNCTION (5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE -8.72791672497327586e-01 TOLERANCE 1e-5
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -168,6 +168,14 @@ E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 DSURF                           2
 E 6 - 0
 E 7 - 1
+----DESIGN SURF CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED CONDITIONS
+DSURF                           2
+E 6 - id 0 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 E_at_max 2.9e-05 E_at_min 9e-06 at_act_curve 3 C_ar 8592.86096617 R_ar 0.00012 L_ar 6.67e-07 Z_ar 0.0 C_ven 257785.828985 R_ven 2.4e-05 L_ven 0.0 p_at_0 0.599950804034 q_v_in_0 0.0 q_v_out_0 0.0 p_v_0 0.599950804034 p_ar_0 9.68378038166 q_ar_0 0.0 p_ven_0 2.13315841434 q_ven_0 0.0 V_at_0 5000.0 V_ar_0 352000.0 V_ven_0 1040000.0
+E 7 - id 1 R_arvalve_max 1.0e1 R_arvalve_min 1.0e-6 R_atvalve_max 1.0e1 R_atvalve_min 1.0e-6 E_at_max 1.8e-05 E_at_min 8e-06 at_act_curve 4 C_ar 20000.0 R_ar 1.5e-05 L_ar 0.0 Z_ar 0.0 C_ven 50000.0 R_ven 1.5e-05 L_ven 0.0 p_at_0 0.0933256806275 q_v_in_0 0.0 q_v_out_0 0.0 p_v_0 0.0933256806275 p_ar_0 3.22792679389 q_ar_0 0.0 p_ven_0 1.59986881076 q_ven_0 0.0 V_at_0 4000.0 V_ar_0 84900.0 V_ven_0 93000.0
+-----------------DESIGN SURF CARDIOVASCULAR 0D-STRUCTURE COUPLING CONDITIONS
+DSURF                           2
+E 8 - coupling_id 0
+E 9 - coupling_id 1
 ---------------------------------------DESIGN SURF SPRING DASHPOT CONDITIONS
 DSURF                           4
 E 4 - SPRING_STIFF_TENS 0.1 SPRING_STIFF_COMP 0.0 SPRING_OFFSET 0.0 DASHPOT_VISCOSITY 0.005 DIRECTION refsurfnormal COUPLING none

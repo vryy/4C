@@ -412,8 +412,8 @@ enum NOX::NLN::SolutionType NOX::NLN::AUX::ConvertQuantityType2SolutionType(
     case NOX::NLN::StatusTest::quantity_meshtying:
       soltype = NOX::NLN::sol_meshtying;
       break;
-    case NOX::NLN::StatusTest::quantity_windkessel:
-      soltype = NOX::NLN::sol_windkessel;
+    case NOX::NLN::StatusTest::quantity_cardiovascular0d:
+      soltype = NOX::NLN::sol_cardiovascular0d;
       break;
     case NOX::NLN::StatusTest::quantity_plasticity:
     case NOX::NLN::StatusTest::quantity_unknown:

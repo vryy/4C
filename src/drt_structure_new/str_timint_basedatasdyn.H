@@ -706,17 +706,17 @@ namespace TIMINT {
     /// tolerance constraint residual
     double tol_constr_res_;
 
-    /// tolerance type for the convergence check of the windkessel residual
-    enum INPAR::STR::ConvNorm toltype_windk_res_;
+    /// tolerance type for the convergence check of the 0D cardiovascular residual
+    enum INPAR::STR::ConvNorm toltype_cardvasc0d_res_;
 
-    /// tolerance windkessel residual
-    double tol_windk_res_;
+    /// tolerance 0D cardiovascular residual
+    double tol_cardvasc0d_res_;
 
-    /// tolerance type for the convergence check of the windkessel increment
-    enum INPAR::STR::ConvNorm toltype_windk_incr_;
+    /// tolerance type for the convergence check of the 0D cardiovascular dof increment
+    enum INPAR::STR::ConvNorm toltype_cardvasc0d_incr_;
 
-    /// tolerance windkessel increment
-    double tol_windk_incr_;
+    /// tolerance 0D cardiovascular dof increment
+    double tol_cardvasc0d_incr_;
 
     /// tolerance type for the convergence check of the contact residual
     enum INPAR::STR::ConvNorm toltype_contact_res_;

@@ -156,10 +156,10 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==VolumeMonitor_3D)              os << "Volume monitor condition: ";
   else if (Type()==AreaMonitor_3D)                os << "Area monitor condition: ";
   else if (Type()==AreaMonitor_2D)                os << "Area monitor condition: ";
-  else if (Type()==WindkesselStructure)           os << "Surface Windkessel condition: ";
-  else if (Type()==WindkesselHeartValveArterialProxDistStructure) os << "Surface heart valve arterial prox dist Windkessel condition: ";
-  else if (Type()==WindkesselHeartValveCardiovascularFullStructure) os << "Surface heart valve cardiovascular full Windkessel condition: ";
-  else if (Type()==WindkesselStructureCoupling)   os << "Surface Windkessel structure coupling condition: ";
+  else if (Type()==Cardiovascular0DWindkesselOnly_Structure) os << "Surface 0D cardiovascular windkessel condition: ";
+  else if (Type()==Cardiovascular0DArterialProxDist_Structure) os << "Surface 0D cardiovascular arterial prox dist condition: ";
+  else if (Type()==Cardiovascular0DArterialVenousSysPulCoupled_Structure) os << "Surface 0D cardiovascular arterial venous sys pul coupled condition: ";
+  else if (Type()==Cardiovascular0DStructureCoupling)   os << "Surface 0D cardiovascular-structure coupling condition: ";
   else if (Type()==ImpedanceCond)                 os << "Impedance boundary condition: ";
   else if (Type()==Impedance_Calb_Cond)           os << "Impedance calibration boundary condition: ";
   else if (Type()==MPC_NodeOnPlane_3D)            os << "Multipoint constraint on a plane: ";

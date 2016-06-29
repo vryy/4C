@@ -3,8 +3,10 @@
 \file strtimint_expl.H
 \brief Explicit time integration for structural dynamics
 
+\level 1
+
 <pre>
-Maintainer: Alexander Popp
+\maintainer Alexander Popp
             popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15238
@@ -267,10 +269,10 @@ namespace STR
       return false;
     };
 
-    /// are there any Windkessel bcs?
-    virtual bool HaveWindkessel()
+    /// are there any Cardiovascular0D bcs?
+    virtual bool HaveCardiovascular0D()
     {
-      dserror("HaveWindkessel() has not been tested for explicit time integrators");
+      dserror("HaveCardiovascular0D() has not been tested for explicit time integrators");
       return false;
     };
 
@@ -288,10 +290,10 @@ namespace STR
       return Teuchos::null;
     };
 
-    //! Return Teuchos::rcp to WindkesselManager windkman_
-    virtual const Teuchos::RCP< ::UTILS::WindkesselManager> GetWindkesselManager()
+    //! Return Teuchos::rcp to Cardiovascular0DManager windkman_
+    virtual const Teuchos::RCP< ::UTILS::Cardiovascular0DManager> GetCardiovascular0DManager()
     {
-      dserror("GetWindkesselManager() has not been tested for explicit time integrators");
+      dserror("GetCardiovascular0DManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
@@ -325,12 +327,12 @@ namespace STR
       return;
     }
 
-    virtual void UpdateIterIncrWindkessel
+    virtual void UpdateIterIncrCardiovascular0D
     (
       Teuchos::RCP<Epetra_Vector> presincr ///< pressure increment
     )
     {
-      dserror("UpdateIterIncrWindkessel() has not been tested for explicit time integrators");
+      dserror("UpdateIterIncrCardiovascular0D() has not been tested for explicit time integrators");
       return;
     }
 

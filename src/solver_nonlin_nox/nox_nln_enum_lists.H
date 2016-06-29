@@ -33,7 +33,7 @@ namespace NLN {
     // meshtying quantities
     sol_meshtying,
     // windkessel quantities
-    sol_windkessel,
+    sol_cardiovascular0d,
     // spring dashpot quantities
     sol_springdashpot,
     // Lagrange or/and penalty enforced constraint quantities
@@ -54,8 +54,8 @@ namespace NLN {
     case sol_meshtying :
       return "Meshtying";
       break;
-    case sol_windkessel:
-      return "Windkessel";
+    case sol_cardiovascular0d:
+      return "Cardiovascular0D";
       break;
     case sol_springdashpot:
       return "SpringDashpot";
@@ -81,8 +81,8 @@ namespace NLN {
       type = sol_contact;
     else if (boost::iequals(name,"meshtying"))
       type = sol_meshtying;
-    else if (boost::iequals(name,"windkessel"))
-      type = sol_windkessel;
+    else if (boost::iequals(name,"cardiovascular0d"))
+      type = sol_cardiovascular0d;
     else if (boost::iequals(name,"springdashpot"))
       type = sol_springdashpot;
     else if (boost::iequals(name,"constraint"))
@@ -176,8 +176,8 @@ namespace StatusTest {
     quantity_contact_friction,
     // check meshtying quantities
     quantity_meshtying,
-    // check windkessel quantities
-    quantity_windkessel,
+    // check 0d cardiovascular quantities
+    quantity_cardiovascular0d,
     // check Lagrange/penalty enforced constraint quantites
     quantity_lag_pen_constraint,
     // check semi-smooth contact
@@ -205,8 +205,8 @@ namespace StatusTest {
     case quantity_meshtying:
       return "MESHTYING";
       break;
-    case quantity_windkessel:
-      return "WINDKESSEL";
+    case quantity_cardiovascular0d:
+      return "CARDIOVASCULAR0D";
       break;
     case quantity_lag_pen_constraint:
       return "CONSTRAINT";
@@ -241,8 +241,8 @@ namespace StatusTest {
       type = quantity_contact_friction;
     else if (boost::iequals(name,"meshtying"))
       type = quantity_meshtying;
-    else if (boost::iequals(name,"windkessel"))
-      type = quantity_windkessel;
+    else if (boost::iequals(name,"cardiovascular0d"))
+      type = quantity_cardiovascular0d;
     else if (boost::iequals(name,"constraint"))
       type = quantity_lag_pen_constraint;
     else if (boost::iequals(name,"plasticity"))

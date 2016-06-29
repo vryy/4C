@@ -128,7 +128,7 @@ enum NOX::NLN::OptimizationProblemType STR::NLN::OptimizationType(
       // -----------------------------------
       case NOX::NLN::sol_meshtying:
       case NOX::NLN::sol_lag_pen_constraint:
-      case NOX::NLN::sol_windkessel:
+      case NOX::NLN::sol_cardiovascular0d:
         opttype = NOX::NLN::opt_equality_constrained;
         break;
       // -----------------------------------
@@ -171,11 +171,11 @@ void STR::NLN::CreateConstraintInterfaces(
             contact_model.StrategyPtr()->NoxInterfacePtr();
         break;
       }
-      case NOX::NLN::sol_windkessel:
-//        iconstr[NOX::NLN::sol_windkessel] = itimint.GetWindkesselManager();
+      case NOX::NLN::sol_cardiovascular0d:
+//        iconstr[NOX::NLN::sol_cardiovascular0d] = itimint.GetCardiovascular0DManager();
 //        break;
       case NOX::NLN::sol_lag_pen_constraint:
-//        iconstr[NOX::NLN::sol_windkessel] = itimint.GetLagPenConstrManager();
+//        iconstr[NOX::NLN::sol_cardiovascular0d] = itimint.GetLagPenConstrManager();
 //        break;
       default:
         break;
@@ -212,7 +212,7 @@ void STR::NLN::CreateConstraintPreconditioner(
         iconstr_prec[NOX::NLN::sol_contact] = contact_model.StrategyPtr();
         break;
       }
-      case NOX::NLN::sol_windkessel:
+      case NOX::NLN::sol_cardiovascular0d:
       {
         // FixMe add something, if necessary
         break;

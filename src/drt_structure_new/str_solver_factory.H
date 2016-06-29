@@ -2,6 +2,8 @@
 /*!
 \file str_solver_factory.H
 
+\brief str_solver_factory
+
 \maintainer Michael Hiermeier
 
 \date Sep 9, 2015
@@ -62,12 +64,12 @@ namespace SOLVER {
         const Teuchos::ParameterList& sdyn,
         DRT::Discretization& actdis) const;
 
-    //! create the Windkessel linear solver
+    //! create the Lagrange/penalty enforced constraint linear solver
     Teuchos::RCP<LINALG::Solver> BuildLagPenConstraintLinSolver(
         const Teuchos::ParameterList& sdyn,
         DRT::Discretization& actdis) const;
 
-    //! create the Lagrange/penalty enforced constraint linear solver
+    //! create the Windkessel linear solver
     Teuchos::RCP<LINALG::Solver> BuildWindkesselLinSolver(
         const Teuchos::ParameterList& sdyn,
         DRT::Discretization& actdis) const;

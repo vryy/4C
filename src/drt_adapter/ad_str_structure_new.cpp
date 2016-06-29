@@ -315,24 +315,20 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
   if (mtcond.size())
     modeltypes.insert(INPAR::STR::model_meshtying);
   // ---------------------------------------------------------------------------
-  // check for windkessel conditions
+  // check for 0D cardiovascular conditions
   // ---------------------------------------------------------------------------
-  std::vector<DRT::Condition*> wkcond_std(0);
-  std::vector<DRT::Condition*> wkcond_heartvalvearterial(0);
-  std::vector<DRT::Condition*> wkcond_heartvalvearterial_proxdist(0);
-  std::vector<DRT::Condition*> wkcond_heartvalvecardiovascular_full(0);
-  actdis_->GetCondition("WindkesselStdStructureCond",wkcond_std);
-  actdis_->GetCondition("WindkesselHeartValveArterialStructureCond",
-      wkcond_heartvalvearterial);
-  actdis_->GetCondition("WindkesselHeartValveArterialProxDistStructureCond",
-      wkcond_heartvalvearterial_proxdist);
-  actdis_->GetCondition("WindkesselHeartValveCardiovascularFullStructureCond",
-      wkcond_heartvalvecardiovascular_full);
-  if (wkcond_std.size() or
-      wkcond_heartvalvearterial.size() or
-      wkcond_heartvalvearterial_proxdist.size() or
-      wkcond_heartvalvecardiovascular_full.size())
-    modeltypes.insert(INPAR::STR::model_windkessel);
+  std::vector<DRT::Condition*> cardiovasc0dcond_windkesselonly(0);
+  std::vector<DRT::Condition*> cardiovasc0dcond_arterialproxdist(0);
+  std::vector<DRT::Condition*> cardiovasc0dcond_arterialvenoussyspulcoupled(0);
+  actdis_->GetCondition("Cardiovascular0DWindkesselOnlyStructureCond",cardiovasc0dcond_windkesselonly);
+  actdis_->GetCondition("Cardiovascular0DArterialProxDistStructureCond",
+      cardiovasc0dcond_arterialproxdist);
+  actdis_->GetCondition("Cardiovascular0DArterialVenousSysPulCoupledStructureCond",
+      cardiovasc0dcond_arterialvenoussyspulcoupled);
+  if (cardiovasc0dcond_windkesselonly.size() or
+      cardiovasc0dcond_arterialproxdist.size() or
+      cardiovasc0dcond_arterialvenoussyspulcoupled.size())
+    modeltypes.insert(INPAR::STR::model_cardiovascular0d);
   // ---------------------------------------------------------------------------
   // check for constraint conditions
   // ---------------------------------------------------------------------------

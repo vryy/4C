@@ -5,6 +5,8 @@
 
 \brief Setup of the list of valid input parameters
 
+\level 1
+
 <pre>
 Maintainer: Martin Kronbichler
             kronbichler@lnm.mw.tum.de
@@ -67,9 +69,9 @@ Maintainer: Martin Kronbichler
 #include "inpar_acou.H"
 #include "inpar_bio.H"
 #include "inpar_volmortar.H"
-#include "inpar_windkessel.H"
 #include "inpar_loca_continuation.H"
 #include "../drt_tutorial/inpar_tutorial.H"
+#include "inpar_cardiovascular0d.H"
 #include "inpar_plasticity.H"
 
 
@@ -638,7 +640,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::BIOFILM::SetValidParameters(list);
   INPAR::PATSPEC::SetValidParameters(list);
   INPAR::REDAIRWAYS::SetValidParameters(list);
-  INPAR::WINDKESSEL::SetValidParameters(list);
+  INPAR::CARDIOVASCULAR0D::SetValidParameters(list);
   INPAR::IMMERSED::SetValidParameters(list);
   INPAR::CELL::SetValidParameters(list);
   INPAR::FPSI::SetValidParameters(list);
