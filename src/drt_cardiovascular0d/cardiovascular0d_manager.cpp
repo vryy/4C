@@ -4,22 +4,23 @@
 \brief Monolithic coupling of 3D structure and 0D cardiovascular flow models
 
 ************************************************************************************************************************************
-A) a four-element Cardiovascular0D (DESIGN SURF 0DCARDIOVASCULAR CONDITIONS):
+A) a four-element windkessel model only (no valves!) (DESIGN SURF CARDIOVASCULAR 0D WINDKESSEL ONLY CONDITIONS):
 Res = C * dp/dt + (p - p_ref)/R_p - (1 + Z_c/R_p) * q - (C Z_c  + L/R_p) * dq/dt - L C * d2q/dt2 = 0
 The classical 3- or 2-element Cardiovascular0D models are reproduced by setting L or L and Z_c to zero, respectively
 
-B) an arterial Cardiovascular0D model derived from physical considerations of mass and momentum balance in the proximal and distal
-arterial part (formulation proposed by Cristobal Bertoglio) (DESIGN SURF HEART VALVE ARTERIAL PROX DIST 0DCARDIOVASCULAR CONDITIONS):
+B) an arterial 0D flow model derived from physical considerations of mass and momentum balance in the proximal and distal
+arterial part, incl. valves (formulation proposed by Cristobal Bertoglio) (DESIGN SURF CARDIOVASCULAR 0D ARTERIAL PROX DIST CONDITIONS):
       [dV_v/dt + (p_v - p_at)/R_atv(p_v,p_at) + (p_v - p_arp)/R_arv(p_v,p_arp)]   [ 0 ]
       [C_arp * d(p_arp)/dt + y_arp - (p_v - p_arp)/R_arv                      ]   [ 0 ]
 Res = [(L_arp/R_arp) * d(y_arp)/dt + y_arp + (p_ard - p_arp)/R_arp            ] = [ 0 ]
       [C_ard * d(p_ard)/dt + y_ard - y_arp                                    ]   [ 0 ]
       [R_ard * y_ard - p_ard + p_ref                                          ]   [ 0 ]
 
-with nonlinear valve resistances R_atv(p_v,p_at), R_arv(p_v,p_arp) - caution when using this since its physical correctness is doubted by the code author!
+with nonlinear valve resistances R_atv(p_v,p_at), R_arv(p_v,p_arp) - caution when using this since its physical correctness is doubted
+by the code author! - reproduce classical piecewise linear valves with k_p -> infinity
 
 C) a full closed-loop cardiovascular model with 0D elastance atria models and bi-resistive valve laws:
-(DESIGN SURF HEART VALVE CARDIOVASCULAR FULL 0DCARDIOVASCULAR CONDITIONS)
+(DESIGN SURF CARDIOVASCULAR 0D ARTERIAL VENOUS SYS-PUL COUPLED CONDITIONS)
 (based on MA thesis of Marina Basilious and Kerckhoffs et. al. 2007, Coupling of a 3D Finite Element Model of Cardiac Ventricular
 Mechanics to Lumped Systems Models of the Systemic and Pulmonic Circulations, Annals of Biomedical Engineering, Vol. 35, No. 1)
       [d(p_at/E_at)/dt - q_ven_other + q_vin           ]   [ 0 ]
