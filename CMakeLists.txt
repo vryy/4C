@@ -1125,6 +1125,14 @@ set(OBJS_DRT_S8_LIB
   src/drt_s8/shell8/s8_mattransform.c
   src/drt_s8/shell8/s8_tmat.c
 )
+set(OBJS_DRT_MEMBRANE_LIB
+  src/drt_membrane/membrane_eletypes.cpp
+  src/drt_membrane/membrane.cpp
+  src/drt_membrane/membrane_evaluate.cpp
+  src/drt_membrane/membrane_input.cpp
+  src/drt_membrane/membrane_line.cpp
+  src/drt_membrane/membrane_line_evaluate.cpp
+)
 set(OBJS_DRT_FSI
   src/drt_fsi/fs_monolithic.cpp
   src/drt_fsi/fsi_algorithm.cpp
@@ -2385,6 +2393,7 @@ add_library(ele_bele3 ${OBJS_DRT_BELE3_LIB})
 add_library(ele_combust3 ${OBJS_DRT_COMBUST3_LIB})
 add_library(ele_opti ${OBJS_DRT_TOPOPT_LIB})
 add_library(ele_s8 ${OBJS_DRT_S8_LIB})
+add_library(ele_membrane ${OBJS_DRT_MEMBRANE_LIB})
 add_library(ele_lubrication ${OBJS_DRT_LUBRICATION_LIB})
 add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
 add_library(ele_discsh3 ${OBJS_DRT_DISCSH3_LIB})
@@ -2411,6 +2420,7 @@ set(ELEMENT_LIBRARIES
   ele_meshfree_fluid
   ele_opti
   ele_s8
+  ele_membrane
   ele_lubrication
   ele_scatra
   ele_sp3
