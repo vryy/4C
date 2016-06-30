@@ -125,23 +125,6 @@ namespace FSI
     //! setup all coupling objects
     void SetupCouplingObjects();
 
-    //! add coupling on poro fluid interface! - Overloaded by MonolithicFPSI_XFEM
-    virtual void AddCouplingSysmat(Teuchos::RCP<LINALG::BlockSparseMatrixBase>& sysmat,
-        Teuchos::RCP<LINALG::SparseMatrix>& s,
-        Teuchos::RCP<LINALG::SparseMatrix>& f,
-        const double scaling_S,
-        const double scaling_F)
-    {return;}
-
-    //! add coupling on poro fluid interface! - Overloaded by MonolithicFPSI_XFEM
-    virtual void AddCouplingRHS(Teuchos::RCP<Epetra_Vector>& rhs)
-    {return;}
-
-    //!Set Ale InterfaceDisplacements -- overloaded!
-    virtual void SetAleInterfaceDisplacements() {return;}
-
-    //!Evaluate Ale Field -- overloaded!
-    virtual void EvaluateAle(Teuchos::RCP<const Epetra_Vector> ax) {return;}
     //@}
 
     //--------------------------------------------------------------------------//
@@ -470,9 +453,8 @@ namespace FSI
     const double TOL_VEL_INC_INF_;
     //@}
 
-    //Coupling Object from Porosolid to Porofluid
-    Teuchos::RCP<XFEM::Coupling_Manager> Solid_coupling_;
-
+    //Map of Coupling Object for FS, FP, FA coupling, ...(Fluid, Structure, Poro, Ale)
+    std::map<int, Teuchos::RCP<XFEM::Coupling_Manager> > coup_man_;
   };
 }
 

@@ -124,9 +124,15 @@ namespace XFEM
 
     private:
 
+    void Setup(std::map<int,const DRT::Discretization& > dis);
+
     void SetupMultiMapExtractors(std::map<int,const DRT::Discretization& > dis);
 
+    void SetupFullMapExtractors(std::map<int,const DRT::Discretization& > dis);
+
     void SetupCouplings(std::map<int,const DRT::Discretization& > dis);
+
+    void SetupFullCouplings(std::map<int,const DRT::Discretization& > dis);
 
     void SetupFullExtractor(std::map<int,const DRT::Discretization& > dis);
 

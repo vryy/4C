@@ -105,7 +105,8 @@ namespace FLD
     static void SetupFluidDiscretization();
 
     /// initialization
-    virtual void Init();
+    virtual void Init(){Init(true);}
+    void Init(bool createinitialstate);
 
     /// print information about current time step to screen
     void PrintTimeStepInfo();

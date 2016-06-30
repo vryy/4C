@@ -64,10 +64,11 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm,
   //--------------------------------------------
   // ask base algorithm for the fluid time integrator
   //do not init in ale case!!! (will be done in MonolithicAFSI_XFEM::Setup System())
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,fdyn,"fluid",ale,!ale));
+  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,fdyn,"fluid",ale,false));
   fluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid->FluidField());
   if (fluid_ == Teuchos::null)
     dserror("Cast of Fluid to XFluid failed! - Everything fine in SetupFluid()?");
+  fluid_->Init(false);
 
   if (ale)
   {

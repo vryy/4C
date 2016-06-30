@@ -2,6 +2,8 @@
 /*!
 \file fsi_dyn.cpp
 
+\level 1
+
 \maintainer Matthias Mayr
 
 \brief Entry routines for FSI problems and some other problem types as well
@@ -42,7 +44,6 @@
 
 #include "../drt_fsi_xfem/fsi_xfem_fluid.H"
 #include "../drt_fsi_xfem/fsi_xfem_monolithic.H"
-#include "../drt_fsi_xfem/afsi_xfem_monolithic.H"
 
 #include "fs_monolithic.H"
 
@@ -712,12 +713,8 @@ void xfsi_drt()
     if (linearsolverstrategy!=INPAR::FSI::PreconditionedKrylov)
       dserror("Only Newton-Krylov scheme with XFEM fluid");
 
-    // create the MonolithicXFEM or MonolithicAFSI_XFEM object that does the whole work
-    Teuchos::RCP<FSI::AlgorithmXFEM> fsi;
-    if (!ale)
-      fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn));
-    else
-      fsi = Teuchos::rcp(new FSI::MonolithicAFSI_XFEM(comm, fsidyn));
+    // create the MonolithicXFEM object that does the whole work
+    Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn));
 
     // setup the system (block-DOF-row maps, systemmatrix etc.) for the monolithic XFEM system
     fsi->SetupSystem();

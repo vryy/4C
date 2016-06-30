@@ -3,8 +3,10 @@
 \brief Control routine for fluid (in)stationary solvers with XFEM,
        including instationary solvers for fluid and fsi problems coupled with an internal embedded interface
 
+\level 2
+
 <pre>
-Maintainer:  Benedikt Schott
+\maintainer Benedikt Schott
              schott@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15241
@@ -98,7 +100,7 @@ FLD::XFluid::XFluid(
 /*----------------------------------------------------------------------*
  |  initialize algorithm                                   schott 11/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::Init()
+void FLD::XFluid::Init(bool createinitialstate)
 {
 
   FluidImplicitTimeInt::Init();
@@ -218,8 +220,8 @@ void FLD::XFluid::Init()
   // -------------------------------------------------------------------
   // note that all vectors w.r.t np have to be set properly
 
-  CreateInitialState();
-
+  if (createinitialstate)
+    CreateInitialState();
 
   return;
 }// Init()

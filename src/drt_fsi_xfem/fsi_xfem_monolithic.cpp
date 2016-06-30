@@ -46,6 +46,7 @@
 #include <Epetra_Time.h>
 
 #include "XFScoupling_manager.H"
+#include "XFAcoupling_manager.H"
 /*----------------------------------------------------------------------*/
 // constructor
 /*----------------------------------------------------------------------*/
@@ -155,8 +156,37 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   //-------------------------------------------------------------------------
   // Setup Coupling Objects
   //-------------------------------------------------------------------------
-  if (!HaveAle()) // --> Will be removed from here in one of the following commits (06/2016 ager)
-    SetupCouplingObjects();
+  SetupCouplingObjects();
+
+  //build ale system matrix in splitted system
+  if (HaveAle())
+    AleField()->CreateSystemMatrix(AleField()->Interface());
+
+
+  //-------------------------------------------------------------------------
+  // Finish standard FluidField()->Init()!
+  // REMARK: We don't want to do this at the beginning, to be able to use std ADAPTER::Coupling for FA-Coupling
+  //-------------------------------------------------------------------------
+  FluidField()->CreateInitialState();
+
+  //create interfaces (mapextractors which are required for the coupling objects in the FPSI Coupl()!!!)
+  //initialize xFluid now! - Coupling required filleddofset! -- Here first cut is done!!!
+  {
+    // set initial field by given function
+    // we do this here, since we have direct access to all necessary parameters
+    const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+    INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
+    if(initfield != INPAR::FLUID::initfield_zero_field)
+    {
+      int startfuncno = fdyn.get<int>("STARTFUNCNO");
+      if (initfield != INPAR::FLUID::initfield_field_by_function and
+          initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
+      {
+        startfuncno=-1;
+      }
+      FluidField()->SetInitialFlowField(initfield,startfuncno);
+    }
+  }
 
   return;
 }
@@ -169,8 +199,16 @@ void FSI::MonolithicXFEM::SetupCouplingObjects()
   std::vector<int> idx;
   idx.push_back(structp_block_);
   idx.push_back(fluid_block_);
-  Solid_coupling_ = Teuchos::rcp( new XFEM::XFSCoupling_Manager(FluidField()->GetConditionManager(),
+  coup_man_[0] = Teuchos::rcp( new XFEM::XFSCoupling_Manager(FluidField()->GetConditionManager(),
       StructureField(), FluidField(),idx));
+
+  if (HaveAle())
+  {
+    idx.clear();
+    idx.push_back(fluid_block_);
+    idx.push_back(ale_i_block_);
+    coup_man_[1] = Teuchos::rcp (new XFEM::XFACoupling_Manager(FluidField(),AleField(), idx));
+  }
   return;
 }
 
@@ -341,11 +379,9 @@ void FSI::MonolithicXFEM::SetupSystemMatrix()
   // assign the fluid diagonal block
   systemmatrix_->Assign(1,1,LINALG::View,*f);
 
-  //Add Coupling Sysmat in case of FPSI_XFEM or FSI_XFEM_ALE (Ale Matrix)! --> Will be removed from here in one of the following commits (06/2016 ager)
-  AddCouplingSysmat(systemmatrix_, s, f, scaling_S, scaling_F);
-
-  //Add FSI_Coupling here
-  Solid_coupling_->AddCouplingMatrix(*systemmatrix_,scaling_F);
+  //Add Coupling Sysmat
+  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager> >::iterator coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)
+    coupit->second->AddCouplingMatrix(*systemmatrix_,scaling_F);
 
   /*----------------------------------------------------------------------*/
   // Complete the global system matrix
@@ -370,12 +406,10 @@ void FSI::MonolithicXFEM::SetupRHS()
   // contributions of single field residuals
   SetupRHSResidual(*rhs_);
 
-  //Add FSI_Coupling here
+  //Add Coupling RHS
   const double scaling_F   = FluidField()->ResidualScaling();
-  Solid_coupling_->AddCouplingRHS(rhs_,Extractor(),scaling_F);
-
-  //Add Coupling RHS in case of FPSI_XFEM or FSI_XFEM_ALE (Ale RHS)!
-  AddCouplingRHS(rhs_);  //--> Will be removed from here in one of the following commits (06/2016 ager)
+  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager> >::iterator coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)
+    coupit->second->AddCouplingRHS(rhs_,Extractor(),scaling_F);
 }
 
 /*----------------------------------------------------------------------*/
@@ -637,6 +671,9 @@ void FSI::MonolithicXFEM::PrepareTimeStep()
   //   as the CUT is performed for each increment and therefore the DBCs have to be set again
   FluidField()->PrepareTimeStep();
 
+  if (HaveAle())
+    AleField()->PrepareTimeStep();
+
 }
 
 
@@ -701,12 +738,13 @@ void FSI::MonolithicXFEM::Update()
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::Update");
 
   const double scaling_F   = FluidField()->ResidualScaling(); // 1/(theta * dt) = 1/weight^F_np
-  Solid_coupling_->Update(scaling_F);
+  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager> >::iterator coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)
+    coupit->second->Update(scaling_F);
 
   // update the single fields
   StructureField()->Update();
   FluidField()->Update();
-
+  if (HaveAle()) AleField()->Update();
 }
 
 
@@ -728,8 +766,11 @@ void FSI::MonolithicXFEM::Output()
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   const int uprestart = fsidyn.get<int>("RESTARTEVRY");
   const int upres = fsidyn.get<int>("RESULTSEVRY");
-  if((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0)
-    Solid_coupling_->Output(*StructureField()->DiscWriter());
+  if((uprestart != 0 && FluidField()->Step() % uprestart == 0) || FluidField()->Step() % upres == 0) //Fluid desides about restart, write output
+  {
+    for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager> >::iterator coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)
+      coupit->second->Output(*StructureField()->DiscWriter());
+  }
 
   //--------------------------------
   // output for fluid field - writes the whole GMSH output if switched on
@@ -745,6 +786,9 @@ void FSI::MonolithicXFEM::Output()
     if(Comm().MyPID() == 0)
       StructureField()->GetConstraintManager()->PrintMonitorValues();
   }
+
+  if (HaveAle())
+    AleField()->Output();
 }
 
 /*----------------------------------------------------------------------*
@@ -1201,19 +1245,35 @@ bool FSI::MonolithicXFEM::Evaluate()
     // structural field
     Epetra_Time ts(Comm());
 
+    // ------------------------------------------------------------------
+    // ------------------------------------------------------------------
+    // Set Field State Section, here we should set the state with the step increments in all fields (atm this is just done for ALE)
+    // ------------------------------------------------------------------
+    // ------------------------------------------------------------------
+    if (HaveAle() && ax != Teuchos::null) //we should move this into the ALE Field!
+    {
+      Teuchos::RCP<Epetra_Vector> DispnpAle = Teuchos::rcp(new Epetra_Vector(*AleField()->DofRowMap()),true);
+      DispnpAle->Update(1.0,*AleField()->Interface()->InsertOtherVector(ax),1.0,*AleField()->Dispn(),0.0); //update ale disp here...
+      AleField()->GetDBCMapExtractor()->InsertOtherVector(AleField()->GetDBCMapExtractor()->ExtractOtherVector(DispnpAle),AleField()->WriteAccessDispnp()); //just update displacements which are not on dbc condition
+    }
+
+
     // call the structure evaluate with the current step increment  Delta d = d^(n+1,i+1) - d^n
     StructureField()->Evaluate(sx);
 
     if(Comm().MyPID() == 0) IO::cout  << "structure time: " << ts.ElapsedTime() << IO::endl;
 
-    if (HaveAle())
-      EvaluateAle(ax);
-  }
-
   // ------------------------------------------------------------------
   // set the current interface displacement to the fluid field to be used in the cut
   // ------------------------------------------------------------------
-    Solid_coupling_->SetCouplingStates();
+    for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager> >::iterator coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)
+      coupit->second->SetCouplingStates();
+
+    if (HaveAle())
+      AleField()->Evaluate();
+      //EvaluateAle(ax);
+  }
+
 
   //--------------------------------------------------------
   // permute the fluid step-inc (ordered w.r.t. restart state) to current dofset-state
@@ -2424,8 +2484,16 @@ void FSI::MonolithicXFEM::ReadRestart(int step)
   // read Lagrange multiplier (ie forces onto the structure, Robin-type forces
   // consisting of fluid forces and the Nitsche penalty term contribution)
   IO::DiscretizationReader reader = IO::DiscretizationReader(StructureField()->Discretization(),step);
-  Solid_coupling_->ReadRestart(reader);
+  for (std::map<int, Teuchos::RCP<XFEM::Coupling_Manager> >::iterator coupit = coup_man_.begin(); coupit != coup_man_.end(); ++coupit)
+    coupit->second->ReadRestart(reader);
   //
 
   SetTimeStep(FluidField()->Time(),FluidField()->Step());
+
+  if (HaveAle())
+  {
+    AleField()->ReadRestart(step);
+    //FluidField()->CreateInitialState();
+    //FluidField()->ReadRestart(step);
+  }
 }
