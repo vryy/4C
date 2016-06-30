@@ -2,8 +2,10 @@
 \file xfluidfluid.cpp
 \brief Control routine for fluid-fluid (in)stationary solvers with XFEM
 
+\level 2
+
 <pre>
-Maintainer:  Raffaela Kruse
+\maintainer  Raffaela Kruse
              kruse@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -95,16 +97,28 @@ FLD::XFluidFluid::~XFluidFluid()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluidFluid::Init()
+void FLD::XFluidFluid::Init(bool createinitialstate)
 {
   // initialize embedded fluid
   embedded_fluid_->Init();
 
   // base class init
-  XFluid::Init();
+  XFluid::Init(false);
 
   // set parameters specific for fluid-fluid coupling
   SetXFluidFluidParams();
+
+
+  if (createinitialstate)
+    CreateInitialState();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FLD::XFluidFluid::CreateInitialState()
+{
+  // base class CreateInitialState
+  XFluid::CreateInitialState();
 
   if (DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error") != INPAR::FLUID::no_error_calculation)
   {
@@ -144,6 +158,8 @@ void FLD::XFluidFluid::Init()
 
   if (ale_embfluid_)
     dispnpoldstate_ = Teuchos::rcp(new Epetra_Vector(*embedded_fluid_->Dispnp()));
+
+  return;
 }
 
 void FLD::XFluidFluid::UseBlockMatrix(bool splitmatrix)

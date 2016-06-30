@@ -2,8 +2,10 @@
 \file xfluidfluid.H
 \brief Control routine for fluid-fluid (in)stationary solvers with XFEM
 
+\level 2
+
 <pre>
-Maintainer:  Raffaela Kruse
+\maintainer  Raffaela Kruse
              kruse@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289-15249
@@ -68,7 +70,10 @@ public:
   virtual ~XFluidFluid();
 
   /// initialization
-  virtual void Init();
+  virtual void Init(){Init(true);}
+  virtual void Init(bool createinitialstate);
+
+  virtual void CreateInitialState();
 
   /// don't keep a sparse matrix underneath
   void UseBlockMatrix(bool splitmatrix = true);

@@ -106,7 +106,7 @@ namespace FLD
 
     /// initialization
     virtual void Init(){Init(true);}
-    void Init(bool createinitialstate);
+    virtual void Init(bool createinitialstate);
 
     /// print information about current time step to screen
     void PrintTimeStepInfo();
@@ -287,7 +287,7 @@ namespace FLD
     }
 
 
-    void CreateInitialState();
+    virtual void CreateInitialState();
 
     void SetLevelSetField(
        Teuchos::RCP<const Epetra_Vector> scalaraf,
