@@ -241,3 +241,8 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Membrane<distype>::Surfa
   surfaces[0]= Teuchos::rcp(this, false);
   return surfaces;
 }
+
+template class DRT::ELEMENTS::Membrane<DRT::Element::tri3>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::tri6>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::quad4>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::quad9>;

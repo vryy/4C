@@ -29,10 +29,8 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_so3/so_base.H"
-
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_linedefinition.H"
-
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 #include "membrane_eletypes.H"
@@ -47,7 +45,6 @@ namespace ELEMENTS
 // forward declarations
 template<DRT::Element::DiscretizationType distype2>
 class MembraneLine;
-class MembranePreStress;
 
 /*!
 \brief A C++ wrapper for the membrane element
@@ -782,15 +779,5 @@ private:
 
 } // namespace ELEMENTS
 } // namespace DRT
-
-template class DRT::ELEMENTS::Membrane<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::tri6>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::quad9>;
-
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::tri3>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::tri6>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::quad4>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::quad9>;
 
 #endif

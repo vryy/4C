@@ -1567,3 +1567,8 @@ void DRT::ELEMENTS::Membrane<distype>::mem_defgrd_global(const LINALG::Matrix<no
   return;
 
 } // DRT::ELEMENTS::Membrane::mem_defgrd_global
+
+template class DRT::ELEMENTS::Membrane<DRT::Element::tri3>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::tri6>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::quad4>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::quad9>;

@@ -146,3 +146,8 @@ void DRT::ELEMENTS::MembraneLine<distype>::Print(std::ostream& os) const
   Element::Print(os);
   return;
 }
+
+template class DRT::ELEMENTS::MembraneLine<DRT::Element::tri3>;
+template class DRT::ELEMENTS::MembraneLine<DRT::Element::tri6>;
+template class DRT::ELEMENTS::MembraneLine<DRT::Element::quad4>;
+template class DRT::ELEMENTS::MembraneLine<DRT::Element::quad9>;

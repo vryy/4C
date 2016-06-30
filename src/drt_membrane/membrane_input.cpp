@@ -63,3 +63,8 @@ bool DRT::ELEMENTS::Membrane<distype>::ReadElement(const std::string& eletype,
 
   return true;
 }
+
+template class DRT::ELEMENTS::Membrane<DRT::Element::tri3>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::tri6>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::quad4>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::quad9>;
