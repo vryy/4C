@@ -4,8 +4,10 @@
 
 \brief Input parameters for XFEM
 
+\level 2
+
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -715,7 +717,7 @@ void INPAR::XFEM::SetValidConditions(const std::vector<Teuchos::RCP<DRT::INPUT::
           DRT::Condition::Surface));
 
   xfem_surf_neumann->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
-  xfem_surf_neumann->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("couplingID", 1, false, false, false)));
+  xfem_surf_neumann->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
 
   for (unsigned i=0; i<neumanncomponents.size(); ++i)
   {
