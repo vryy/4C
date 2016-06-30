@@ -25,7 +25,7 @@
 *-----------------------------------------------------------------------------------------*/
 XFEM::XFSCoupling_Manager::XFSCoupling_Manager(Teuchos::RCP<ConditionManager> condmanager,
     Teuchos::RCP<ADAPTER::Structure> structure, Teuchos::RCP<FLD::XFluid> xfluid, std::vector<int> idx)
-:Coupling_Comm_Manager(*structure->Discretization(),"XFEMSurfFSIMono",0,3),
+:Coupling_Comm_Manager(structure->Discretization(),"XFEMSurfFSIMono",0,3),
  struct_(structure),
  xfluid_(xfluid),
  cond_name_("XFEMSurfFSIMono"),

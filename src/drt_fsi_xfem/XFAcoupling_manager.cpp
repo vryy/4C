@@ -26,7 +26,7 @@
 | Constructor                                                                 ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
 XFEM::XFACoupling_Manager::XFACoupling_Manager(Teuchos::RCP<FLD::XFluid> xfluid,Teuchos::RCP<ADAPTER::AleFpsiWrapper> ale, std::vector<int> idx)
-:Coupling_Comm_Manager(*xfluid->Discretization(),*ale->Discretization(),"",0,3),
+:Coupling_Comm_Manager(xfluid->Discretization(),ale->Discretization(),"",0,3),
  ale_(ale),
  xfluid_(xfluid),
  idx_(idx)

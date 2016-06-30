@@ -74,15 +74,15 @@ namespace XFEM
     };
 
     //! constructor
-    explicit Coupling_Comm_Manager(std::map<int,const DRT::Discretization& > dis,
+    explicit Coupling_Comm_Manager(std::map<int,Teuchos::RCP<const DRT::Discretization> > dis,
                         std::string cond_name,int startdim = 0,int enddim = 3);
 
     //! constructor
-    explicit Coupling_Comm_Manager(const DRT::Discretization&  dis0,
+    explicit Coupling_Comm_Manager(Teuchos::RCP<const DRT::Discretization>  dis0,
         std::string cond_name,int startdim = 0,int enddim = 3);
 
     //! constructor
-    explicit Coupling_Comm_Manager(const DRT::Discretization&  dis0, const DRT::Discretization&  dis1,
+    explicit Coupling_Comm_Manager(Teuchos::RCP<const DRT::Discretization>  dis0, Teuchos::RCP<const DRT::Discretization>  dis1,
         std::string cond_name,int startdim = 0,int enddim = 3);
 
     //! virtual destructor to support polymorph destruction
@@ -124,17 +124,17 @@ namespace XFEM
 
     private:
 
-    void Setup(std::map<int,const DRT::Discretization& > dis);
+    void Setup( std::map<int,Teuchos::RCP<const DRT::Discretization> > dis);
 
-    void SetupMultiMapExtractors(std::map<int,const DRT::Discretization& > dis);
+    void SetupMultiMapExtractors( std::map<int,Teuchos::RCP<const DRT::Discretization> > dis);
 
-    void SetupFullMapExtractors(std::map<int,const DRT::Discretization& > dis);
+    void SetupFullMapExtractors( std::map<int,Teuchos::RCP<const DRT::Discretization> > dis);
 
-    void SetupCouplings(std::map<int,const DRT::Discretization& > dis);
+    void SetupCouplings( std::map<int,Teuchos::RCP<const DRT::Discretization> > dis);
 
-    void SetupFullCouplings(std::map<int,const DRT::Discretization& > dis);
+    void SetupFullCouplings( std::map<int,Teuchos::RCP<const DRT::Discretization> >dis);
 
-    void SetupFullExtractor(std::map<int,const DRT::Discretization& > dis);
+    void SetupFullExtractor( std::map<int,Teuchos::RCP<const DRT::Discretization> > dis);
 
     std::string cond_name_;
     int startdim_;

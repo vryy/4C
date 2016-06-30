@@ -1271,7 +1271,6 @@ bool FSI::MonolithicXFEM::Evaluate()
 
     if (HaveAle())
       AleField()->Evaluate();
-      //EvaluateAle(ax);
   }
 
 
