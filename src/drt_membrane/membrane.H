@@ -35,6 +35,11 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 
 #include "membrane_eletypes.H"
 
+// include header because number of Gauss points are determined
+// dependent on distype
+#include "../drt_fem_general/drt_utils_gausspoints.H"
+#include "../drt_thermo/thermo_ele_impl_utils.H"
+
 namespace DRT
 {
 // forward declarations
@@ -57,7 +62,7 @@ public:
 
   //! @name Friends
   friend class Membrane_tri3Type;
-  friend class Membrane_tri9Type;
+  friend class Membrane_tri6Type;
   friend class Membrane_quad4Type;
   friend class Membrane_quad9Type;
   template<DRT::Element::DiscretizationType distype2> friend class MembraneLine;
@@ -92,7 +97,9 @@ public:
 
   //! number of element nodes
   static const int numnod_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-
+  // include header because number of Gauss points are determined
+  // dependent on distype
+  #include "../drt_fem_general/drt_utils_gausspoints.H"
   //! number of space dimensions
   static const int numdim_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
@@ -102,8 +109,9 @@ public:
   //! total dofs per element
   static const int numdof_ = noddof_ * numnod_;
 
-  //!total gauss points per element
-  static const int numgpt_ = numnod_;
+  //! static const is required for fixedsizematrices
+  //! TODO maybe more beauty is possible
+  static const int numgpt_post_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
   /*!
   \brief Get shape type of element
@@ -120,7 +128,7 @@ public:
   */
   virtual int NumSurface() const {return 1;}
 
-  /*!
+  /*!numgpt_
   \brief Get vector of Teuchos::RCPs to the lines of this element
 
   */
@@ -406,20 +414,15 @@ private:
   double                                          thickness_;
 
   //! current membrane thickness at gauss point
-  LINALG::Matrix<numgpt_,1>                       curr_thickness_;
+  std::vector<double>                             curr_thickness_;
 
   //! container containing all kind of membrane thisandthat
   DRT::Container                                  data_;
 
-  //! gaussian integration to be used
-  DRT::UTILS::GaussRule2D                         gaussrule_;
-
   //! membrane stress/strain state
   DimensionalReduction                            planetype_;
 
-  //! current time
-  double                                          time_;
-
+  DRT::UTILS::IntegrationPoints2D                 intpoints_;
 
   // internal calculation methods
 
@@ -432,8 +435,8 @@ private:
                         LINALG::Matrix<numdof_,numdof_>*       stiffmatrix,           // element stiffness matrix
                         LINALG::Matrix<numdof_,numdof_>*       massmatrix,            // element mass matrix
                         LINALG::Matrix<numdof_,1>*             force,                 // element internal force vector
-                        LINALG::Matrix<numgpt_,6>*             elestress,             // stresses at GP
-                        LINALG::Matrix<numgpt_,6>*             elestrain,             // strains at GP
+                        LINALG::Matrix<numgpt_post_,6>*        elestress,             // stresses at GP
+                        LINALG::Matrix<numgpt_post_,6>*        elestrain,             // strains at GP
                         Teuchos::ParameterList&                params,                // algorithmic parameters e.g. time
                         const INPAR::STR::StressType           iostress,              // stress output option
                         const INPAR::STR::StrainType           iostrain);             // strain output option
@@ -609,8 +612,6 @@ public:
 
   //! number of nodes per line
   static const int numnod_line_ = DRT::UTILS::DisTypeToNumNodePerEle<DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape>::numNodePerElement;
-  //! total gauss points per line
-  static const int numgpt_line_ = numnod_line_;
 
   static const int noddof_ = 3;
 
@@ -772,8 +773,7 @@ private:
   // don't want = operator
   MembraneLine<distype2>& operator = (const MembraneLine<distype2>& old);
 
-  //! gaussian integration to be used
-  DRT::UTILS::GaussRule1D                         gaussrule_;
+  DRT::UTILS::IntegrationPoints1D   intpointsline_;
 
 }; // class MembraneLine
 

@@ -50,7 +50,8 @@ DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner,
                                                    DRT::Node** nodes,
                                                    DRT::ELEMENTS::Membrane<distype>* parent,
                                                    const int lline) :
-DRT::FaceElement(id,owner)
+DRT::FaceElement(id,owner),
+intpointsline_(DRT::UTILS::intrule_line_2point)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -58,10 +59,19 @@ DRT::FaceElement(id,owner)
   switch(DRT::UTILS::DisTypeToFaceShapeType<distype>::shape)
   {
   case line2:
-    gaussrule_ = DRT::UTILS::intrule_line_2point;
-  break;
+  {
+    DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_2point;
+    // get gauss integration points
+    intpointsline_ = DRT::UTILS::IntegrationPoints1D(gaussrule);
+    break;
+  }
   case line3:
-    gaussrule_ = DRT::UTILS::intrule_line_3point;
+  {
+    DRT::UTILS::GaussRule1D gaussrule = DRT::UTILS::intrule_line_3point;
+    // get gauss integration points
+    intpointsline_ = DRT::UTILS::IntegrationPoints1D(gaussrule);
+    break;
+  }
   break;
   default:
       dserror("shape type unknown!\n");
@@ -76,7 +86,7 @@ DRT::FaceElement(id,owner)
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(const DRT::ELEMENTS::MembraneLine<distype>& old) :
 DRT::FaceElement(old),
-gaussrule_(old.gaussrule_)
+intpointsline_(old.intpointsline_)
 {
   return;
 }

@@ -33,7 +33,7 @@ bool DRT::ELEMENTS::Membrane<distype>::ReadElement(const std::string& eletype,
   SetMaterial(material);
 
   // set up of materials with GP data (e.g., history variables)
-  SolidMaterial()->Setup(numgpt_,linedef);
+  SolidMaterial()->Setup(intpoints_.nquad,linedef);
 
 
   // read element thickness
@@ -41,8 +41,8 @@ bool DRT::ELEMENTS::Membrane<distype>::ReadElement(const std::string& eletype,
   if  (thickness_<=0) dserror("Membrane element thickness needs to be > 0");
 
   // initialize current thickness at all gp
-  for(int i=0;i<numgpt_;++i)
-    curr_thickness_(i) = thickness_;
+  for(int i=0;i<intpoints_.nquad;++i)
+    curr_thickness_[i] = thickness_;
 
 
   // temporary variable for read-in

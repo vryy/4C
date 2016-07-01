@@ -99,17 +99,14 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
   LINALG::Matrix<numnod_line_,1> shapefcts(true);
   LINALG::Matrix<1,numnod_line_> derivs(true);
 
-  // get gauss integration points
-  const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
-
   // integration
-  for (int gp=0; gp<numgpt_line_; ++gp)
+  for (int gp=0; gp<intpointsline_.nquad; ++gp)
   {
     // get gausspoints from integration rule
-    double xi_gp = intpoints.qxg[gp][0];
+    double xi_gp = intpointsline_.qxg[gp][0];
 
     // get gauss weight at current gp
-    double gpweight = intpoints.qwgt[gp];
+    double gpweight = intpointsline_.qwgt[gp];
 
     // get shape functions and derivatives in the plane of the element
     DRT::UTILS::shape_function_1D(shapefcts,xi_gp,Shape());

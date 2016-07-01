@@ -141,8 +141,8 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
         if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
 
-        LINALG::Matrix<numgpt_,6> stress;
-        LINALG::Matrix<numgpt_,6> strain;
+        LINALG::Matrix<numgpt_post_,6> stress;
+        LINALG::Matrix<numgpt_post_,6> strain;
 
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
@@ -183,7 +183,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
       std::string stresstype = params.get<std::string>("stresstype","ndxyz");
 
       int gid = Id();
-      LINALG::Matrix<numgpt_,6> gpstress(((*gpstressmap)[gid])->A(),true);
+      LINALG::Matrix<numgpt_post_,6> gpstress(((*gpstressmap)[gid])->A(),true);
 
       Teuchos::RCP<Epetra_MultiVector> poststress=params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
       if (poststress==Teuchos::null)
@@ -192,40 +192,38 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
       if (stresstype=="ndxyz")
       {
         // extrapolation matrix, static because equal for all elements of the same discretizations type
-        static LINALG::Matrix<numnod_,numgpt_> extrapol;
+        static LINALG::Matrix<numnod_,numgpt_post_> extrapol;
 
         // fill extrapolation matrix just once, equal for all elements
         static bool isfilled;
 
         if (isfilled==false)
         {
-          // get gauss integration points
-          const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
-
           // check for correct gaussrule
-          if (intpoints.nquad!=numgpt_)
-            dserror("number of gauss points of gaussrule_ does not match numgpt_");
+          if (intpoints_.nquad!=numgpt_post_)
+            dserror("number of gauss points of gaussrule_ does not match numgpt_post_ used for postprocessing");
 
           // allocate vector for shape functions and matrix for derivatives at gp
           LINALG::Matrix<numnod_,1> shapefcts(true);
 
           // loop over the nodes and gauss points
+          // interpolation matrix, inverted later to be the extrapolation matrix
           for (int nd=0;nd<numnod_;++nd)
           {
             // gaussian coordinates
-            const double e1 = intpoints.qxg[nd][0];
-            const double e2 = intpoints.qxg[nd][1];
+            const double e1 = intpoints_.qxg[nd][0];
+            const double e2 = intpoints_.qxg[nd][1];
 
             // shape functions for the extrapolated coordinates
-            LINALG::Matrix<numgpt_,1> funct;
+            LINALG::Matrix<numgpt_post_,1> funct;
             DRT::UTILS::shape_function_2D(funct,e1,e2,Shape());
 
-            // interpolation matrix, inverted later to be the extrapolation matrix
-            for (int i=0;i<numgpt_;++i) extrapol(nd,i) = funct(i);
+            for (int i=0;i<numgpt_post_;++i)
+              extrapol(nd,i) = funct(i);
           }
 
           // fixedsizesolver for inverting extrapol
-          LINALG::FixedSizeSerialDenseSolver<numnod_,numgpt_,1> solver;
+          LINALG::FixedSizeSerialDenseSolver<numnod_,numgpt_post_,1> solver;
           solver.SetMatrix(extrapol);
           int err = solver.Invert();
           if (err != 0.)
@@ -263,11 +261,11 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList&   params,
           {
             double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
             s = 0.;
-            for (int j = 0; j < numgpt_; ++j)
+            for (int j = 0; j < numgpt_post_; ++j)
             {
               s += gpstress(j,i);
             }
-            s *= 1.0/numgpt_;
+            s *= 1.0/numgpt_post_;
           }
         }
       }
@@ -413,21 +411,14 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList&   
   LINALG::Matrix<numnod_,1> shapefcts(true);
   LINALG::Matrix<numdim_, numnod_> derivs(true);
 
-  // get gauss integration points
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
-
-  // check for correct gaussrule
-  if (intpoints.nquad!=numgpt_)
-    dserror("number of gauss points of gaussrule_ does not match numgpt_");
-
-  for (int gp=0; gp<numgpt_; ++gp)
+  for (int gp=0; gp<intpoints_.nquad; ++gp)
   {
     // get gauss points from integration rule
-    double xi_gp = intpoints.qxg[gp][0];
-    double eta_gp = intpoints.qxg[gp][1];
+    double xi_gp = intpoints_.qxg[gp][0];
+    double eta_gp = intpoints_.qxg[gp][1];
 
     // get gauss weight at current gp
-    double gpweight = intpoints.qwgt[gp];
+    double gpweight = intpoints_.qwgt[gp];
 
     // get shape functions and derivatives in the plane of the element
     DRT::UTILS::shape_function_2D(shapefcts,xi_gp,eta_gp,Shape());
@@ -507,8 +498,8 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     LINALG::Matrix<numdof_,numdof_>*       stiffmatrix,           // element stiffness matrix
     LINALG::Matrix<numdof_,numdof_>*       massmatrix,            // element mass matrix
     LINALG::Matrix<numdof_,1>*             force,                 // element internal force vector
-    LINALG::Matrix<numgpt_,6>*             elestress,             // stresses at GP
-    LINALG::Matrix<numgpt_,6>*             elestrain,             // strains at GP
+    LINALG::Matrix<numgpt_post_,6>*             elestress,             // stresses at GP
+    LINALG::Matrix<numgpt_post_,6>*             elestrain,             // strains at GP
     Teuchos::ParameterList&                params,                // algorithmic parameters e.g. time
     const INPAR::STR::StressType           iostress,              // stress output option
     const INPAR::STR::StrainType           iostrain)              // strain output option
@@ -527,24 +518,17 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
   LINALG::Matrix<numnod_,1> shapefcts(true);
   LINALG::Matrix<numdim_, numnod_> derivs(true);
 
-  // get gauss integration points
-  const DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
-
-  // check for correct gaussrule
-  if (intpoints.nquad!=numgpt_)
-    dserror("number of gauss points of gaussrule_ does not match numgpt_");
-
-  for (int gp=0; gp<numgpt_; ++gp)
+  for (int gp=0; gp<intpoints_.nquad; ++gp)
   {
     // set current gauss point
     params.set<int>("gp",gp);
 
     // get gauss points from integration rule
-    double xi_gp = intpoints.qxg[gp][0];
-    double eta_gp = intpoints.qxg[gp][1];
+    double xi_gp = intpoints_.qxg[gp][0];
+    double eta_gp = intpoints_.qxg[gp][1];
 
     // get gauss weight at current gp
-    double gpweight = intpoints.qwgt[gp];
+    double gpweight = intpoints_.qwgt[gp];
 
     // get shape functions and derivatives in the plane of the element
     DRT::UTILS::shape_function_2D(shapefcts,xi_gp,eta_gp,Shape());
@@ -626,7 +610,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     /*===============================================================================*
      | update current thickness at gp                                                |
      *===============================================================================*/
-    curr_thickness_(gp) = lambda3*thickness_;
+    curr_thickness_[gp] = lambda3*thickness_;
 
     /*===============================================================================*
      | calculate force, stiffness matrix and mass matrix                             |
@@ -975,16 +959,16 @@ bool DRT::ELEMENTS::Membrane<distype>::VisData(const std::string& name, std::vec
  if (name == "thickness")
  {
    if (data.size()!= 1) dserror("size mismatch");
-   for(unsigned gp=0; gp<numgpt_; gp++)
+   for(int gp=0; gp<intpoints_.nquad; gp++)
    {
-     data[0] += curr_thickness_(gp);
+     data[0] += curr_thickness_[gp];
    }
-   data[0] = data[0]/numgpt_;
+   data[0] = data[0]/intpoints_.nquad;
 
    return true;
  }
 
- return SolidMaterial()->VisData(name, data, numgpt_, this->Id());
+ return SolidMaterial()->VisData(name, data, intpoints_.nquad, this->Id());
 
 } // DRT::ELEMENTS::Membrane::VisData
 

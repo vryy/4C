@@ -47,33 +47,46 @@ template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner) :
 So_base(id,owner),
 thickness_(0.0),
-curr_thickness_(0.0),
+curr_thickness_(0),
 data_(),
 planetype_(plane_stress),
-time_(0.0)
+intpoints_(DRT::UTILS::intrule_tri_3point)
 {
-  // set gauss integration rule
-  // gaussrule_ = DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
-
   switch(distype)
   {
   case tri3:
-    gaussrule_ = DRT::UTILS::intrule_tri_3point;
-  break;
-  case tri6:
-    gaussrule_ = DRT::UTILS::intrule_tri_6point;
-  break;
-  case quad4:
-    gaussrule_ = DRT::UTILS::intrule_quad_4point;
-  break;
-  case quad9:
-    gaussrule_ = DRT::UTILS::intrule_quad_9point;
-  break;
-  default:
-      dserror("shape type unknown!\n");
-  break;
+  {
+    DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule_tri_3point;
+    // get gauss integration points
+    intpoints_ = DRT::UTILS::IntegrationPoints2D(gaussrule);
+    break;
   }
-
+  case tri6:
+  {
+    DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule_tri_6point;
+    // get gauss integration points
+    intpoints_ = DRT::UTILS::IntegrationPoints2D(gaussrule);
+    break;
+  }
+  case quad4:
+  {
+    DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule_quad_4point;
+    // get gauss integration points
+    intpoints_ = DRT::UTILS::IntegrationPoints2D(gaussrule);
+    break;
+  }
+  case quad9:
+  {
+    DRT::UTILS::GaussRule2D gaussrule = DRT::UTILS::intrule_quad_9point;
+    // get gauss integration points
+    intpoints_ = DRT::UTILS::IntegrationPoints2D(gaussrule);
+    break;
+  }
+  default:
+    dserror("shape type unknown!\n");
+    break;
+  }
+  curr_thickness_.resize(intpoints_.nquad, thickness_);
   return;
 }
 
@@ -87,10 +100,10 @@ So_base(old),
 thickness_(old.thickness_),
 curr_thickness_(old.curr_thickness_),
 data_(old.data_),
-gaussrule_(old.gaussrule_),
 planetype_(old.planetype_),
-time_(old.time_)
+intpoints_(old.intpoints_)
 {
+  curr_thickness_.resize(intpoints_.nquad, thickness_);
   return;
 }
 
@@ -151,8 +164,6 @@ void DRT::ELEMENTS::Membrane<distype>::Pack(DRT::PackBuffer& data) const
   // data_
   AddtoPack(data,data_);
 
-  //time_
-  AddtoPack(data,time_);
 
   return;
 }
@@ -181,9 +192,6 @@ void DRT::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
-
-  // time_
-  ExtractfromPack(position,data,time_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
