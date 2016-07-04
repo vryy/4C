@@ -90,6 +90,8 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       tol_contact_lm_incr_(-1.0),
       normcombo_fres_contact_res_(INPAR::STR::bop_and),
       normcombo_disp_contact_lm_incr_(INPAR::STR::bop_and),
+      normcombo_fres_cardvasc0d_res_(INPAR::STR::bop_and),
+      normcombo_disp_cardvasc0d_incr_(INPAR::STR::bop_and),
       sdynparams_ptr_(Teuchos::null)
 {
   // empty constructor

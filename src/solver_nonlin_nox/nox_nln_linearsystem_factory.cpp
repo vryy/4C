@@ -95,10 +95,16 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::
     // structural/cardiovascular0d case
     case NOX::NLN::LinSystem::linear_system_structure_cardiovascular0d:
     {
-      linSys = Teuchos::rcp(new NOX::NLN::STR::LinearSystem(
-          printParams,lsParams,linSolvers,iReq,iJac,jac,iPrec,precMat,
-          *cloneVector,scalingObject));
-      break;
+      dserror("Sorry dude, 0D cardiovascular-structure coupling not yet enabled!");
+//      const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr =
+//          noxNlnGlobalData.GetConstraintInterfaces();
+//      const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec =
+//          noxNlnGlobalData.GetConstraintPrecInterfaces();
+//
+//      linSys = Teuchos::rcp(new NOX::NLN::CONTACT::LinearSystem(
+//          printParams,lsParams,linSolvers,iReq,iJac,iConstr,jac,iPrec,
+//          iConstrPrec,precMat,*cloneVector,scalingObject));
+//      break;
     }
     // default case
     default:

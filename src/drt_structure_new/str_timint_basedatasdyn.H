@@ -733,11 +733,11 @@ namespace TIMINT {
     /// type of combination of the force and the contact residual
     enum INPAR::STR::BinaryOp normcombo_fres_contact_res_;
 
-    /// type of combination of the force and the 0D cardiovascular model residual
-    enum INPAR::STR::BinaryOp normcombo_fres_cardvasc0d_res_;
-
     /// type of combination of the displacement and the contact lagrange multiplier increment test
     enum INPAR::STR::BinaryOp normcombo_disp_contact_lm_incr_;
+
+    /// type of combination of the force and the 0D cardiovascular model residual
+    enum INPAR::STR::BinaryOp normcombo_fres_cardvasc0d_res_;
 
     /// type of combination of the displacement and the 0D cardiovascular model dof increment test
     enum INPAR::STR::BinaryOp normcombo_disp_cardvasc0d_incr_;
