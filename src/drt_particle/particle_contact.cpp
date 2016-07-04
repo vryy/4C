@@ -1075,7 +1075,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalcNeighboringWallsContact(
     tangentcontactforce.PutScalar(0.0);
 
     // normal contact force between particle and wall (note: owner_j = -1)
-    CalculateNormalContactForce(g, v_rel_normal, mass_i, normalcontactforce, owner_i, -1);
+    CalculateNormalContactForce(g, v_rel_normal, m_eff, normalcontactforce, owner_i, -1);
 
     if(contact_strategy_ == INPAR::PARTICLE::NormalAndTang_DEM)
     {
@@ -1201,7 +1201,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
   {
     if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
     {
-      d = 2.0 * std::abs(log(e_wall_)) * sqrt(k_normal_ * m_eff / (pow(log(e_wall_),2.0) + M_PI*M_PI));
+      const double lnewall = log(e_wall_);
+      d = 2.0 * std::abs(lnewall) * sqrt(k_normal_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
     }
     else
     {
@@ -1212,7 +1213,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
   {
     if(normal_contact_==INPAR::PARTICLE::LinSpringDamp)
     {
-      d = 2.0 * std::abs(log(e_)) * sqrt(k_normal_ * m_eff / (pow(log(e_),2.0) + M_PI*M_PI));
+      const double lne = log(e_);
+      d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne*lne + M_PI*M_PI));
     }
     else
     {
@@ -1230,7 +1232,7 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
     if(writeenergyevery_)
     {
       //monitor E N E R G Y: here: calculate energy of elastic contact
-      contact_energy_ += EnergyAssemble(owner_i,owner_j)* 1.0/2.0 * k_normal_ * g * g;
+      contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k_normal_ * g * g;
     }
   }
   break;
@@ -1250,18 +1252,15 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
     normalcontactforce = k_normal_ * g - d * v_rel_normal;
 
     // tension-cutoff
-    if(tension_cutoff_)
+    if(tension_cutoff_ && normalcontactforce > 0.0)
     {
-      if(normalcontactforce>0.0)
-      {
-        normalcontactforce = 0.0;
-      }
+      normalcontactforce = 0.0;
     }
 
     if(writeenergyevery_)
     {
       //monitor E N E R G Y: here: calculate energy of elastic contact
-      contact_energy_ += EnergyAssemble(owner_i,owner_j)* 1.0/2.0 * k_normal_ * g * g;
+      contact_energy_ += EnergyAssemble(owner_i,owner_j)* 0.5 * k_normal_ * g * g;
     }
   }
   break;
@@ -1272,12 +1271,9 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
     normalcontactforce = - k_normal_ * pow(-g,1.5) - m_eff * d * v_rel_normal;
 
     // tension-cutoff
-    if(tension_cutoff_)
+    if(tension_cutoff_ && normalcontactforce > 0.0)
     {
-      if(normalcontactforce>0.0)
-      {
-        normalcontactforce = 0.0;
-      }
+      normalcontactforce = 0.0;
     }
 
     if(writeenergyevery_)
@@ -1292,12 +1288,9 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
     normalcontactforce = - k_normal_ * pow(-g,1.5) - d * v_rel_normal * pow(-g,0.5);
 
     // tension-cutoff
-    if(tension_cutoff_)
+    if(tension_cutoff_ && normalcontactforce > 0.0)
     {
-      if(normalcontactforce>0.0)
-      {
-        normalcontactforce = 0.0;
-      }
+      normalcontactforce = 0.0;
     }
 
     if(writeenergyevery_)
@@ -1312,12 +1305,9 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateNormalContactForce(
     normalcontactforce = - k_normal_ * pow(-g,1.5) - d * v_rel_normal * pow(-g,0.25);
 
     // tension-cutoff
-    if(tension_cutoff_)
+    if(tension_cutoff_ && normalcontactforce > 0.0)
     {
-      if(normalcontactforce>0.0)
-      {
-        normalcontactforce = 0.0;
-      }
+      normalcontactforce = 0.0;
     }
 
     if(writeenergyevery_)
@@ -1368,7 +1358,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
     // damping
     if(d_tang_wall_ < 0.0)
     {
-      d = 2.0 * std::abs(log(e_wall_)) * sqrt(k_normal_ * m_eff / (pow(log(e_wall_),2.0) + M_PI*M_PI));
+      const double lnewall = log(e_wall_);
+      d = 2.0 * std::abs(lnewall) * sqrt(k_normal_ * m_eff / (lnewall*lnewall + M_PI*M_PI));
     }
     else
     {
@@ -1384,7 +1375,8 @@ void PARTICLE::ParticleCollisionHandlerDEM::CalculateTangentialContactForce(
     // damping
     if(d_tang_ < 0.0)
     {
-      d = 2.0 * std::abs(log(e_)) * sqrt(k_normal_ * m_eff / (pow(log(e_),2.0) + M_PI*M_PI));
+      const double lne = log(e_);
+      d = 2.0 * std::abs(lne) * sqrt(k_normal_ * m_eff / (lne*lne + M_PI*M_PI));
     }
     else
     {
