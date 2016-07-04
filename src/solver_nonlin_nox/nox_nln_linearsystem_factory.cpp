@@ -92,6 +92,14 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::
           iConstrPrec,precMat,*cloneVector,scalingObject));
       break;
     }
+    // structural/cardiovascular0d case
+    case NOX::NLN::LinSystem::linear_system_structure_cardiovascular0d:
+    {
+      linSys = Teuchos::rcp(new NOX::NLN::STR::LinearSystem(
+          printParams,lsParams,linSolvers,iReq,iJac,jac,iPrec,precMat,
+          *cloneVector,scalingObject));
+      break;
+    }
     // default case
     default:
     {

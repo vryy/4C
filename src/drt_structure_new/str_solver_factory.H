@@ -70,7 +70,7 @@ namespace SOLVER {
         DRT::Discretization& actdis) const;
 
     //! create the Windkessel linear solver
-    Teuchos::RCP<LINALG::Solver> BuildWindkesselLinSolver(
+    Teuchos::RCP<LINALG::Solver> BuildCardiovascular0DLinSolver(
         const Teuchos::ParameterList& sdyn,
         DRT::Discretization& actdis) const;
 

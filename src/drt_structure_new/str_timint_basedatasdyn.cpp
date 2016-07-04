@@ -483,6 +483,12 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetResComboType(
        (qtype_1==NOX::NLN::StatusTest::quantity_contact_normal and
         qtype_2==NOX::NLN::StatusTest::quantity_structure))
     return normcombo_fres_contact_res_;
+  // combination: STRUCTURE <--> CARDIOVASCULAR0D
+  else if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
+        qtype_2==NOX::NLN::StatusTest::quantity_cardiovascular0d) or
+       (qtype_1==NOX::NLN::StatusTest::quantity_cardiovascular0d and
+        qtype_2==NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_fres_cardvasc0d_res_;
   // no combination was found
   else
     dserror("There is no combination type for the given quantity types! "
@@ -534,6 +540,12 @@ enum INPAR::STR::BinaryOp STR::TIMINT::BaseDataSDyn::GetIncrComboType(
        (qtype_1==NOX::NLN::StatusTest::quantity_contact_normal and
         qtype_2==NOX::NLN::StatusTest::quantity_structure))
     return normcombo_disp_contact_lm_incr_;
+  // combination: STRUCTURE <--> CARDIOVASCULAR0D
+  else if ((qtype_1==NOX::NLN::StatusTest::quantity_structure and
+        qtype_2==NOX::NLN::StatusTest::quantity_cardiovascular0d) or
+       (qtype_1==NOX::NLN::StatusTest::quantity_cardiovascular0d and
+        qtype_2==NOX::NLN::StatusTest::quantity_structure))
+    return normcombo_disp_cardvasc0d_incr_;
   // no combination was found
   else
     dserror("There is no combination type for the given quantity types! "

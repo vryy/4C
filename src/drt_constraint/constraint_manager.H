@@ -3,12 +3,9 @@
 
 \brief Class controlling constraints and containing the necessary data
 
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15257
-</pre>
+\maintainer Marc Hirschvogel
+
+\level 2
 
 *----------------------------------------------------------------------*/
 
@@ -45,7 +42,7 @@ namespace UTILS
   class MPConstraint2;
   class Monitor;
   class ConstraintDofSet;
-  
+
   /*!
   \brief Class controlling constraints and containing the necessary data
 
@@ -78,7 +75,7 @@ namespace UTILS
       Values of lagrange multiplier are taken from intern variable.
       Difference between current and prescribed values is calculated and stored as well.
     */
-    void StiffnessAndInternalForces
+    void EvaluateForceStiff
     (
       const double time,  ///< time at end of time step
       Teuchos::RCP<Epetra_Vector> displast,  ///< displacement at beginning of time step
@@ -142,7 +139,7 @@ namespace UTILS
     (
       Teuchos::RCP<Epetra_Vector> vect  ///< vector to add
     );
-    
+
     /*!
          \brief Compute difference between current and prescribed values at a given time and a given displacement
     */
@@ -218,7 +215,7 @@ namespace UTILS
     {
         return haveconstraint_;
     };
-    
+
     /*!
      \brief Return if there are constraints
     */
@@ -226,7 +223,7 @@ namespace UTILS
     {
         return havelagrconstr_;
     };
-    
+
     /*!
      \brief Return if there are constraints
     */
@@ -266,7 +263,7 @@ namespace UTILS
     (
       Teuchos::RCP<Epetra_Vector> disp ///< current displacement
     );
-    
+
     /*!
        \brief Compute values described by a monitor boundary condition
     */
@@ -298,7 +295,7 @@ namespace UTILS
     {
       return refbasevalues_;
     }
-    
+
     //! switch constraint matrix to block matrix
     void UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtractor> domainmaps,
                         Teuchos::RCP<const LINALG::MultiMapExtractor> rangemaps);
@@ -351,7 +348,7 @@ namespace UTILS
     Teuchos::RCP<MPConstraint3> mpcnormcomp3d_;  ///< 3d multipoint constraint prescribing the motion of a node to a plane masternode
     Teuchos::RCP<MPConstraint2> mpconline2d_; ///< 2d multipoint constraint prescribing the motion of a node relatively to a straight line
     Teuchos::RCP<MPConstraint3Penalty> mpcnormcomp3dpen_;
-    
+
 
     Teuchos::RCP<Monitor> volmonitor3d_; ///< 3d volume monitors defined on surfaces
     Teuchos::RCP<Monitor> areamonitor3d_;  ///< 3d area monitors defined on surfaces

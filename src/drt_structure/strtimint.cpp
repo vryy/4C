@@ -233,8 +233,7 @@ STR::TimInt::TimInt
                                                         (*dis_)(0),
                                                         sdynparams,
                                                         DRT::Problem::Instance()->Cardiovascular0DStructuralParams(),
-                                                        *solver_,
-                                                        dbcmaps_));
+                                                        *solver_));
 
   // initialize spring dashpot manager
   springman_ = Teuchos::rcp(new UTILS::SpringDashpotManager(discret_));

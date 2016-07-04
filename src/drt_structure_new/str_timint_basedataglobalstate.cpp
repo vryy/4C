@@ -236,6 +236,20 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
         model_block_id_[mt] = 0;
       break;
     }
+    case INPAR::STR::model_cardiovascular0d:
+    {
+      // --- 2x2 block system
+      model_block_id_[mt] = max_block_num_;
+      ++max_block_num_;
+      break;
+    }
+    case INPAR::STR::model_lag_pen_constraint:
+    {
+      // --- 2x2 block system (saddle-point structure)
+      model_block_id_[mt] = max_block_num_;
+      ++max_block_num_;
+      break;
+    }
     case INPAR::STR::model_springdashpot:
     {
       // structural block
@@ -484,9 +498,9 @@ Teuchos::RCP<LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::
   {
     LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* blockmat =
         dynamic_cast<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>* >(&jac);
+
     if (blockmat == NULL)
       dserror("The jacobian has the wrong type! (no LINALG::BlockSparseMatrix)");
-
     const int& b_id = model_block_id_.at(mt);
     switch (bt)
     {

@@ -69,19 +69,31 @@ Res = [(p_v - p_ar)/R_arv - q_vout                     ] = [ 0 ]
 UTILS::Cardiovascular0DManager::Cardiovascular0DManager
 (
   Teuchos::RCP<DRT::Discretization> discr,
-  Teuchos::RCP<Epetra_Vector> disp,
+  Teuchos::RCP<const Epetra_Vector> disp,
   Teuchos::ParameterList strparams,
   Teuchos::ParameterList cv0dparams,
-  LINALG::Solver& solver,
-  Teuchos::RCP<LINALG::MapExtractor> dbcmaps
+  LINALG::Solver& solver
 )
 : actdisc_(discr),
   myrank_(actdisc_->Comm().MyPID()),
   dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
 {
 
-  //setup solver
-  SolverSetup(discr,solver,dbcmaps,strparams);
+  const enum INPAR::STR::IntegrationStrategy intstrat =
+        DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(strparams,"INT_STRATEGY");
+
+  switch (intstrat)
+  {
+    case INPAR::STR::int_standard:
+      break;
+    case INPAR::STR::int_old:
+      //setup solver
+      SolverSetup(solver,strparams);
+      break;
+    default:
+      dserror("Unknown integration strategy!");
+      break;
+  }
 
   // solution algorithm - direct or simple
   algochoice_ = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo>(cv0dparams,"SOLALGORITHM");
@@ -102,7 +114,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   }
 
   //----------------------------------------------------------------------------
-  //-----------------------------------0D cardiovascular structure coupling conditions!
+  //-----------------------------------0D cardiovascular-structure coupling conditions!
 
   // constructors of Cardiovascular0D increment number of Cardiovascular0Ds defined and the minimum
   // ConditionID read so far.
@@ -268,7 +280,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
  *-----------------------------------------------------------------------*/
 void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
     const double time,
-    Teuchos::RCP<Epetra_Vector> disp,
+    Teuchos::RCP<const Epetra_Vector> disp,
     Teuchos::ParameterList scalelist)
 {
 
@@ -294,7 +306,6 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   p.set("time_step_size",ts_size);
 
   totaltime_ = time;
-
   Teuchos::RCP<Epetra_Vector> voldummy = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
   Teuchos::RCP<Epetra_Vector> vnredundant = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
   Teuchos::RCP<Epetra_Vector> cv0ddofredundant = Teuchos::rcp(new Epetra_Vector(*redcardiovascular0dmap_));
@@ -676,9 +687,7 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
  *----------------------------------------------------------------------*/
 void UTILS::Cardiovascular0DManager::SolverSetup
 (
-    Teuchos::RCP<DRT::Discretization> discr,
     LINALG::Solver& solver,
-    Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
     Teuchos::ParameterList params
 )
 {

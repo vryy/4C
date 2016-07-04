@@ -106,6 +106,7 @@ namespace LinSystem {
   enum LinearSystemType {
     linear_system_structure,
     linear_system_structure_contact,
+    linear_system_structure_cardiovascular0d,
     linear_system_undefined
   };
 
@@ -119,6 +120,9 @@ namespace LinSystem {
       break;
     case linear_system_structure_contact:
       return "linear_system_structure_contact";
+      break;
+    case linear_system_structure_cardiovascular0d:
+      return "linear_system_structure_cardiovascular0d";
       break;
     case linear_system_undefined:
       return "linear_system_undefined";

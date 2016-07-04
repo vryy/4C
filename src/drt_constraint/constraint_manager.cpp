@@ -2,12 +2,11 @@
 \file constraint_manager.cpp
 
 \brief Class controlling constraints and containing the necessary data
-<pre>
-Maintainer: Thomas Kloeppel
-            kloeppel@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de/Members/kloeppel
-            089 - 289-15257
-</pre>
+
+\maintainer Marc Hirschvogel
+
+\level 2
+
 
 *----------------------------------------------------------------------*/
 
@@ -172,7 +171,7 @@ actdisc_(discr)
 |Compute difference between current and prescribed values.              |
 |Change Stiffnessmatrix and internal force vector                       |
 *-----------------------------------------------------------------------*/
-void UTILS::ConstrManager::StiffnessAndInternalForces(
+void UTILS::ConstrManager::EvaluateForceStiff(
         const double time,
         Teuchos::RCP<Epetra_Vector> displast,
         Teuchos::RCP<Epetra_Vector> disp,

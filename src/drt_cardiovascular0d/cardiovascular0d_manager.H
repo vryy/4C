@@ -66,11 +66,10 @@ namespace UTILS
     Cardiovascular0DManager
     (
       Teuchos::RCP<DRT::Discretization> disc,  ///< standard discretization
-      Teuchos::RCP<Epetra_Vector> disp,  ///< current displacement
+      Teuchos::RCP<const Epetra_Vector> disp,  ///< current displacement
       Teuchos::ParameterList strparams,  ///<  parameterlist from structural time integration algorithm
       Teuchos::ParameterList cv0dparams,  ///<  parameterlist from cardiovascular0d
-      LINALG::Solver& solver,  ///< Solver to solve linear subproblem in iteration
-      Teuchos::RCP<LINALG::MapExtractor> dbcmaps  ///< Map extractor for Dirichlet DOFs
+      LINALG::Solver& solver  ///< Solver to solve linear subproblem in iteration
     );
     /*!
         \brief Destructor
@@ -87,7 +86,7 @@ namespace UTILS
     void EvaluateForceStiff
     (
       const double time,  ///< time at end of time step
-      Teuchos::RCP<Epetra_Vector> disp,  ///< displacement at end of time step
+      Teuchos::RCP<const Epetra_Vector> disp,  ///< displacement at end of time step
       Teuchos::ParameterList scalelist
     );
 
@@ -158,13 +157,19 @@ namespace UTILS
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<LINALG::SparseOperator> GetMatDcardvasc0dDd() //const
+    Teuchos::RCP<LINALG::SparseMatrix> GetMatDcardvasc0dDd() //const
     {
       return mat_dcardvasc0d_dd_;
     };
 
+//    //! Return the transpose of the additional rectangular matrix, constructed for pressure evaluation
+//    Teuchos::RCP<LINALG::SparseMatrix> GetMatDcardvasc0dDdTrans() //const
+//    {
+//      return mat_dcardvasc0d_dd_->Transpose();
+//    };
+
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<LINALG::SparseOperator> GetMatDstructDcv0ddof() //const
+    Teuchos::RCP<LINALG::SparseMatrix> GetMatDstructDcv0ddof() //const
     {
       return mat_dstruct_dcv0ddof_;
     };
@@ -274,9 +279,7 @@ namespace UTILS
 
     void SolverSetup
     (
-      Teuchos::RCP<DRT::Discretization> discr,
       LINALG::Solver& solver,
-      Teuchos::RCP<LINALG::MapExtractor> dbcmaps,
       Teuchos::ParameterList params
     );
 
@@ -334,8 +337,8 @@ namespace UTILS
     int offsetID_;  ///< smallest Cardiovascular0D bc id
     int numCardiovascular0DID_;  ///< number of Cardiovascular0D bcs
     std::vector<int> currentID;
-    Teuchos::RCP<LINALG::SparseOperator> mat_dcardvasc0d_dd_;  ///< additional rectangular matrix
-    Teuchos::RCP<LINALG::SparseOperator> mat_dstruct_dcv0ddof_;  ///< additional rectangular matrix
+    Teuchos::RCP<LINALG::SparseMatrix> mat_dcardvasc0d_dd_;  ///< additional rectangular matrix
+    Teuchos::RCP<LINALG::SparseMatrix> mat_dstruct_dcv0ddof_;  ///< additional rectangular matrix
     Teuchos::RCP<LINALG::SparseMatrix> cardiovascular0dstiffness_;  ///< additional rectangular matrix
     bool havecardiovascular0d_;  ///< are there Cardiovascular0D bcs at all?
     Teuchos::RCP<Cardiovascular0D> cardvasc0d_windkesselonly_;

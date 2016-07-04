@@ -26,6 +26,7 @@
 
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_inpar/inpar_cardiovascular0d.H"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -80,7 +81,7 @@ STR::SOLVER::Factory::BuildLinSolvers(
           BuildLagPenConstraintLinSolver(sdyn,actdis);
       break;
     case INPAR::STR::model_cardiovascular0d:
-      (*linsolvers)[*mt_iter] = BuildWindkesselLinSolver(sdyn,actdis);
+      (*linsolvers)[*mt_iter] = BuildCardiovascular0DLinSolver(sdyn,actdis);
       break;
     default:
       dserror("No idea which solver to use for the given model type %s",
@@ -313,13 +314,63 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolve
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildWindkesselLinSolver(
+Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLinSolver(
         const Teuchos::ParameterList& sdyn,
         DRT::Discretization& actdis) const
 {
+
   Teuchos::RCP<LINALG::Solver> linsolver = Teuchos::null;
 
-  dserror("Not yet implemented!");
+
+  const Teuchos::ParameterList& cardvasc0dstructparams = DRT::Problem::Instance()->Cardiovascular0DStructuralParams();
+  const int linsolvernumber = cardvasc0dstructparams.get<int>("LINEAR_COUPLED_SOLVER");
+
+  // build 0D cardiovascular-structural linear solver
+  linsolver =
+  Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+                         actdis.Comm(),
+                         DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+  linsolver->Params() = LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(linsolvernumber));
+
+
+  // solution algorithm - direct or simple
+  INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo algochoice = DRT::INPUT::IntegralValue<INPAR::CARDIOVASCULAR0D::Cardvasc0DSolveAlgo>(cardvasc0dstructparams,"SOLALGORITHM");
+
+  switch (algochoice)
+  {
+    case INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_direct:
+    break;
+    case INPAR::CARDIOVASCULAR0D::cardvasc0dsolve_simple:
+    {
+      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC");
+      switch (prec) {
+      case INPAR::SOLVER::azprec_CheapSIMPLE:
+      case INPAR::SOLVER::azprec_TekoSIMPLE:
+      {
+
+        // add Inverse1 block for velocity dofs
+        // tell Inverse1 block about NodalBlockInformation
+        Teuchos::ParameterList& inv1 = linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
+        inv1.sublist("NodalBlockInformation") = linsolver->Params().sublist("NodalBlockInformation");
+
+        // calculate null space information
+        actdis.ComputeNullSpaceIfNecessary(linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"),true);
+        actdis.ComputeNullSpaceIfNecessary(linsolver->Params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"),true);
+
+        linsolver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
+        linsolver->Params().set("CONSTRAINT",true);
+      }
+      break;
+      default:
+        // do nothing
+        break;
+      }
+    }
+    break;
+    default :
+      dserror("Unknown 0D cardiovascular-structural solution technique!");
+  }
 
   return linsolver;
 }

@@ -1352,7 +1352,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
     int coupcondID=coupcond.GetInt("coupling_id");
     params.set("coupling_id",coupcondID);
 
-    Teuchos::RCP<Epetra_Vector> disp=params.get<Teuchos::RCP<Epetra_Vector> >("new disp");
+    Teuchos::RCP<const Epetra_Vector> disp = params.get<Teuchos::RCP<const Epetra_Vector> >("new disp");
     actdisc_->SetState("displacement",disp);
 
     // global and local ID of this bc in the redundant vectors

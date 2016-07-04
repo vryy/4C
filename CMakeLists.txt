@@ -1686,6 +1686,8 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure_new/str_model_evaluator_factory.cpp
   src/drt_structure_new/str_model_evaluator_generic.cpp
   src/drt_structure_new/str_model_evaluator_structure.cpp
+  src/drt_structure_new/str_model_evaluator_cardiovascular0d.cpp
+  src/drt_structure_new/str_model_evaluator_constraint.cpp
   src/drt_structure_new/str_model_evaluator_springdashpot.cpp
   src/drt_structure_new/str_model_evaluator_contact.cpp
   src/drt_structure_new/str_nln_solver_factory.cpp

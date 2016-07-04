@@ -1209,7 +1209,7 @@ void STR::TimIntImpl::ApplyForceStiffConstraint
 {
   if (conman_->HaveConstraint())
   {
-    conman_->StiffnessAndInternalForces(time, dis, disn, fint, stiff, pcon);
+    conman_->EvaluateForceStiff(time, dis, disn, fint, stiff, pcon);
   }
 
   return;
