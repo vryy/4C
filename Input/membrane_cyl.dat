@@ -218,7 +218,7 @@ AMGNXN_TYPE                     AMG(BGS)
 AMGNXN_XML_FILE                 none
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 1.0
-MAT 2 ELAST_CoupNeoHookeYOUNG 100.0 NUE 0.49
+MAT 2 ELAST_CoupNeoHooke YOUNG 100.0 NUE 0.49
 MAT 3 ELAST_CoupAnisoExpo K1 100.0 K2 2.0 K1COMP 1.0 K2COMP 1.0 GAMMA 0.0 INIT 1
 -----------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------CURVE1
