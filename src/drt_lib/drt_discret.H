@@ -492,9 +492,9 @@ public:
   virtual int AddDofSet(Teuchos::RCP<DofSet> newdofset);
 
   /*!
-  \brief Get proxy to main dof set.
+  \brief Get proxy to dof set.
   */
-  virtual Teuchos::RCP<DofSet> GetDofSetProxy();
+  virtual Teuchos::RCP<DofSet> GetDofSetProxy(int nds=0);
 
   /*!
   \brief Builds an auxiliary dof set with the given number of dofs on the respective entities
@@ -507,9 +507,9 @@ public:
   virtual int BuildDofSetAuxProxy(int numdofpernode, std::vector<int> numdofperelement, int numdofperface, bool indenpendentdofnumbers);
 
   /*!
-  \brief Get proxy to main dof set for special case of partial dof sets.
+  \brief Get proxy to dof set for special case of partial dof sets.
   */
-  virtual Teuchos::RCP<DofSet> GetDofSetSubProxy();
+  virtual Teuchos::RCP<DofSet> GetDofSetSubProxy(int nds=0);
 
   /*!
   \brief Get degree of freedom row map (Filled()==true prerequisite)

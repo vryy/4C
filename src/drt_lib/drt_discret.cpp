@@ -547,9 +547,10 @@ int DRT::Discretization::AddDofSet(Teuchos::RCP<DofSet> newdofset)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy()
+Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy(int nds)
 {
-  return Teuchos::rcp(new DofSetProxy(&*dofsets_[0]));
+  dsassert(nds<(int)dofsets_.size(),"undefined dof set");
+  return Teuchos::rcp(new DofSetProxy(&*dofsets_[nds]));
 }
 
 /*----------------------------------------------------------------------*
@@ -574,9 +575,10 @@ int DRT::Discretization::BuildDofSetAuxProxy(int numdofpernode, std::vector<int>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetSubProxy()
+Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetSubProxy(int nds)
 {
-  return Teuchos::rcp(new DofSetSubProxy(&*dofsets_[0],nodecolmap_,elecolmap_));
+  dsassert(nds<(int)dofsets_.size(),"undefined dof set");
+  return Teuchos::rcp(new DofSetSubProxy(&*dofsets_[nds],nodecolmap_,elecolmap_));
 }
 
 
