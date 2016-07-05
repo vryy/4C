@@ -5,7 +5,7 @@
 \brief Implementation of general result test framework
 
 <pre>
-\level 0
+\level 1
 
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de
@@ -272,6 +272,17 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
     .AddOptionalNamedString("NAME")
     ;
 
+  DRT::INPUT::LineDefinition xfluid_node;
+  xfluid_node
+    .AddTag("XFLUID")
+    .AddNamedString("DIS")
+    .AddNamedInt("NODE")
+    .AddNamedString("QUANTITY")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    .AddOptionalNamedString("NAME")
+    ;
+
   DRT::INPUT::LineDefinition ale;
   ale
     .AddTag("ALE")
@@ -471,6 +482,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(structure);
   lines->Add(fluid_node);
   lines->Add(fluid_ele);
+  lines->Add(xfluid_node);
   lines->Add(ale);
   lines->Add(thermal);
   lines->Add(lubrication);

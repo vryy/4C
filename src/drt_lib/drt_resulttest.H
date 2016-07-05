@@ -5,7 +5,7 @@
 \brief general result test framework
 
 <pre>
-\level 0
+\level 1
 
 \maintainer Martin Kronbichler
             http://www.lnm.mw.tum.de/Members/kuettler
