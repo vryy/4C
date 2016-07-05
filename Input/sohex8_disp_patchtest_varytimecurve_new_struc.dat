@@ -33,7 +33,7 @@ FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-INT_STRATEGY                    Old // Standard Old
+INT_STRATEGY                    Standard // Standard Old
 LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta // OneStepTheta
 RESULTSEVRY                     1
