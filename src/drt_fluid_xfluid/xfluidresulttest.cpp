@@ -4,8 +4,10 @@
 
 \brief testing of fluid calculation results
 
+\level 2
+
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -26,7 +28,7 @@ Maintainer: Benedikt Schott
 
 
 FLD::XFluidResultTest::XFluidResultTest( const FLD::XFluid& xfluid )
-  : DRT::ResultTest("FLUID"),
+  : DRT::ResultTest("XFLUID"),
     discret_( xfluid.discret_ ),
     velnp_( xfluid.state_->velnp_ ),
     node_from_zero_(true)
@@ -34,7 +36,7 @@ FLD::XFluidResultTest::XFluidResultTest( const FLD::XFluid& xfluid )
 }
 
 FLD::XFluidResultTest::XFluidResultTest( const FLD::XFluidFluid& xfluid )
-  : DRT::ResultTest("FLUID"),
+  : DRT::ResultTest("XFLUID"),
     discret_( xfluid.discret_ ),
     velnp_( xfluid.state_->velnp_ ),
     coupl_discret_(xfluid.embedded_fluid_->Discretization()),

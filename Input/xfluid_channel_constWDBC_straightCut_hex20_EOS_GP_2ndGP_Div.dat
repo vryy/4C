@@ -704,9 +704,9 @@ NODE 101 COORD 1.7500000000000000e+00 0.0000000000000000e+00 7.5000000000000000e
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 7 QUANTITY velx VALUE 5.0e00 TOLERANCE 1e-13
-FLUID DIS fluid NODE 7 QUANTITY vely VALUE 0.0e00 TOLERANCE 1e-13
-FLUID DIS fluid NODE 7 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-13
-FLUID DIS fluid NODE 7 QUANTITY pressure VALUE 3.0e00 TOLERANCE 1e-12
+XFLUID DIS fluid NODE 7 QUANTITY velx VALUE 5.0e00 TOLERANCE 1e-13
+XFLUID DIS fluid NODE 7 QUANTITY vely VALUE 0.0e00 TOLERANCE 1e-13
+XFLUID DIS fluid NODE 7 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-13
+XFLUID DIS fluid NODE 7 QUANTITY pressure VALUE 3.0e00 TOLERANCE 1e-12
 -------------------------------------------------------------------------END
 //                              END

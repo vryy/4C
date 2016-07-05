@@ -16724,7 +16724,7 @@ NODE 6336 COORD 1.36494889432 1.49156612093 -0.03
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS xfluid NODE 8 QUANTITY velx VALUE -3.08459399564079917e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 8 QUANTITY pressure VALUE -4.08731907412382744e-01 TOLERANCE 1e-6
+XFLUID DIS xfluid NODE 8 QUANTITY velx VALUE -3.08459399564079917e-01 TOLERANCE 1e-6
+XFLUID DIS xfluid NODE 8 QUANTITY pressure VALUE -4.08731907412382744e-01 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END
