@@ -78,6 +78,8 @@ void DRT::DofSetProxy::NotifyAssigned()
     shiftcolnodes_    = dofset_->shiftcolnodes_;
   }
 
+  DofSet::NotifyAssigned();
+
   return;
 }
 
@@ -88,6 +90,8 @@ void DRT::DofSetProxy::NotifyReset()
 {
   // clear my Teuchos::rcps.
   Reset();
+
+  DofSet::NotifyReset();
 }
 
 
