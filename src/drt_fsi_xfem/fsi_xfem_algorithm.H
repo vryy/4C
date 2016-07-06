@@ -22,8 +22,7 @@
 
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include <Epetra_Vector.h>
-
-
+#include "../drt_adapter/ad_field_wrapper.H"
 
 namespace DRT
 {
@@ -32,8 +31,7 @@ namespace DRT
 
 namespace ADAPTER
 {
-  class Structure;
-  class FSIStructureWrapper;
+  class StructurePoroWrapper;
   class AleFpsiWrapper;
 }
 
@@ -41,7 +39,6 @@ namespace FLD
 {
   class XFluid;
 }
-
 
 /*----------------------------------------------------------------------*
  |                                                         schott 08/14 |
@@ -61,7 +58,8 @@ namespace FSI
   public:
 
     //! create using a Epetra_Comm
-    explicit AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
+    explicit AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
+        const ADAPTER::FieldWrapper::Fieldtype type);
 
     //! virtual destructor to support polymorph destruction
     virtual ~AlgorithmXFEM();
@@ -80,8 +78,8 @@ namespace FSI
     //--------------------------------------------------------------------------//
     //! @name Access to single fields
 
-    //! access to structural field
-    const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
+    //! access to structural & poro field
+    const Teuchos::RCP<ADAPTER::StructurePoroWrapper>& StructurePoro(){return structureporo_;}
 
     //! access to fluid field
     const Teuchos::RCP< ::FLD::XFluid>& FluidField(){return fluid_;}
@@ -115,8 +113,8 @@ namespace FSI
     //--------------------------------------------------------------------------//
     //! @name Underlying fields
 
-    //! underlying structure of the FSI problem
-    Teuchos::RCP< ::ADAPTER::FSIStructureWrapper> structure_;
+    //! underlying structure / poro of the FSI/FPSI problem
+    Teuchos::RCP< ::ADAPTER::StructurePoroWrapper> structureporo_;
 
     //! underlying fluid of the FSI problem
     Teuchos::RCP< ::FLD::XFluid> fluid_;

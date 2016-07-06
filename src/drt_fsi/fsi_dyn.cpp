@@ -67,6 +67,7 @@
 
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/ad_str_fpsiwrapper.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_adapter/ad_fld_fluid_fsi.H"
@@ -77,6 +78,9 @@
 #include "../drt_lib/drt_discret_combust.H"
 #include "../drt_lib/drt_discret_xfem.H"
 
+#include "../drt_poroelast/poro_utils_clonestrategy.H"
+#include "../drt_poroelast/poroelast_utils_setup.H"
+#include "../drt_adapter/ad_str_poro_wrapper.H"
 /*----------------------------------------------------------------------*/
 // entry point for Fluid on Ale in DRT
 /*----------------------------------------------------------------------*/
@@ -731,7 +735,7 @@ void xfsi_drt()
     fsi->Timeloop();
 
     DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+    fsi->StructurePoro()->TestResults(DRT::Problem::Instance());
 
 //    // create FSI specific result test
 //    Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
@@ -793,5 +797,114 @@ void xfsi_drt()
 /*----------------------------------------------------------------------*/
 void xfpsi_drt()
 {
-  dserror("FPSI_XFEM: xfpsi_drt() not commited yet, will be done soon! - 11/14 Ager");
+  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
+
+  if (comm.MyPID() == 0)
+  {
+    std::cout << std::endl;
+    std::cout << "       @..@    " << std::endl;
+    std::cout << "      (----)      " << std::endl;
+    std::cout << "     ( >__< )   " << std::endl;
+    std::cout << "     ^^ ~~ ^^  " << std::endl;
+    std::cout << "     _     _ _______  ______  _______ _____" << std::endl;
+    std::cout << "      \\\\__/  |______ ||____|  |______   |  " << std::endl;
+    std::cout << "     _/  \\\\_ |       ||       ______| __|__" << std::endl;
+    std::cout <<  std::endl << std::endl;
+  }
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  //1.-Initialization.
+   // setup of the discretizations, including clone strategy
+   POROELAST::UTILS::SetupPoro<POROELAST::UTILS::PoroelastCloneStrategy>();
+
+   // setup of discretization for xfluid
+   FLD::XFluid::SetupFluidDiscretization();
+   Teuchos::RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->GetDis("fluid"); //at the moment, 'fluid'-discretization is used for ale!!!
+
+  Teuchos::RCP<DRT::Discretization> aledis;
+  const Teuchos::ParameterList& xfdyn = problem->XFluidDynamicParams();
+  bool ale = DRT::INPUT::IntegralValue<bool>((xfdyn.sublist("GENERAL")),"ALE_XFluid");
+  if (ale)
+  {
+    aledis        = problem->GetDis("ale");
+    if(aledis == Teuchos::null) dserror("Ale Discretization empty!");
+
+    aledis->FillComplete(true,true,true);
+
+    //3.- Create ALE elements if the ale discretization is empty
+    if (aledis->NumGlobalNodes()==0) // ALE discretization still empty
+    {
+
+      DRT::UTILS::CloneDiscretization<ALE::UTILS::AleCloneStrategy>(fluiddis,aledis);
+      // setup material in every ALE element
+      Teuchos::ParameterList params;
+      params.set<std::string>("action", "setup_material");
+      aledis->Evaluate(params);
+    }
+    else  // ALE discretization already filled
+    {
+      if (!FSI::UTILS::FluidAleNodesDisjoint(fluiddis,aledis))
+        dserror("Fluid and ALE nodes have the same node numbers. "
+                "This it not allowed since it causes problems with Dirichlet BCs. "
+                "Use the ALE cloning functionality or ensure non-overlapping node numbering!"
+               );
+    }
+  }
+
+  // print all dofsets
+  fluiddis->GetDofSetProxy()->PrintAllDofsets(fluiddis->Comm());
+
+  //2.- Parameter reading
+  const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
+  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
+
+  switch (coupling)
+  {
+  case fsi_iter_xfem_monolithic:
+  {
+    // monolithic solver settings
+    const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy
+      = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
+
+    if (linearsolverstrategy!=INPAR::FSI::PreconditionedKrylov)
+      dserror("Only Newton-Krylov scheme with XFEM fluid");
+
+    Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn,ADAPTER::FieldWrapper::type_PoroField));;
+
+    fsi->SetupSystem();
+    // read the restart information, set vectors and variables ---
+
+    // be careful, dofmaps might be changed here in a Redistribute call
+    const int restart = DRT::Problem::Instance()->Restart(); //not adapated at the moment .... Todo check it .. ChrAg
+    if (restart)
+    {
+      fsi->ReadRestart(restart);
+    }
+
+    //3.2.- redistribute the FPSI interface
+    //Todo .... fsi->RedistributeInterface(); // this is required for paralles fpi-condition (not included in this commit)
+
+    // here we go...
+    fsi->Timeloop();
+
+    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField()->CreateFieldTest());
+    fsi->StructurePoro()->TestResults(DRT::Problem::Instance());
+
+    // do the actual testing
+    DRT::Problem::Instance()->TestAll(comm);
+    break;
+  }
+  case fsi_pseudo_structureale:
+  case fsi_iter_monolithicfluidsplit:
+  case fsi_iter_monolithicstructuresplit:
+    dserror("Unreasonable choice");
+    break;
+  default:
+  {
+    dserror("FPSI_XFEM: No Partitioned Algorithms implemented !!!");
+    break;
+  }
+  }
+  Teuchos::TimeMonitor::summarize();
 }

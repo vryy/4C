@@ -138,7 +138,10 @@ void XFEM::Coupling_Comm_Manager::InsertVector(const int idxA, Teuchos::RCP<cons
     else
     {
       if (!add)
-        *vecB = *vecA; //we don't do any transformation!
+      {
+       // *vecB = *vecA; //we don't do any transformation!
+        vecB->Update(1.0,*vecA,0.0);
+      }
       else
         vecB->Update(scale,*vecA,1.0);
     }
@@ -395,7 +398,7 @@ Teuchos::RCP<ADAPTER::Coupling> XFEM::Coupling_Comm_Manager::GetCoupling(int idx
 Teuchos::RCP< FSI::UTILS::MatrixLogicalSplitAndTransform> XFEM::Coupling_Comm_Manager::GetTransform(int transform_id)
 {
   std::map<int, Teuchos::RCP< FSI::UTILS::MatrixLogicalSplitAndTransform> >::iterator tit = transform_.find(transform_id);
-  if (tit != transform_.end())
+  if (tit != transform_.end() && transform_id != -1)
   {
     return tit->second;
   }

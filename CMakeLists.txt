@@ -664,6 +664,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_coupling_nonlin_mortar.cpp
   src/drt_adapter/adapter_coupling_poro_mortar.cpp
   src/drt_adapter/adapter_coupling_volmortar.cpp
+    src/drt_adapter/ad_field_wrapper.cpp
   src/drt_adapter/ad_fld_fluid.cpp
   src/drt_adapter/ad_fld_fluid_ale.cpp
   src/drt_adapter/ad_fld_fluid_ale_immersed.cpp
@@ -705,6 +706,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_fsiwrapper_immersed.cpp
   src/drt_adapter/ad_str_fsi_timint_adaptive.cpp
   src/drt_adapter/ad_str_fsi_crack.cpp
+  src/drt_adapter/ad_str_poro_wrapper.cpp
   src/drt_adapter/ad_str_timeloop.cpp
   src/drt_adapter/ad_str_statmech.cpp
   src/drt_adapter/ad_str_invana.cpp
@@ -718,7 +720,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_ale_wear.cpp
   src/drt_adapter/ad_ale_wrapper.cpp
   src/drt_adapter/ad_ale_xffsi.cpp
-  src/drt_adapter/ad_field_wrapper.cpp
 )
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_analytical.cpp

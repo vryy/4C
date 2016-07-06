@@ -108,13 +108,13 @@ namespace XFEM
                       const Coupling_Comm_Manager::matrix_transfer_type mttype,
                       double scale = 1.0, bool exactmatch = true, bool addmatrix = false);
 
+    Teuchos::RCP<LINALG::MultiMapExtractor> GetMapExtractor(int idx);
+
     protected:
 
     Teuchos::RCP<ADAPTER::CouplingConverter> GetCouplingConverter(int idxA, int idxB);
 
     Teuchos::RCP<ADAPTER::Coupling> GetCoupling(int idxA, int idxB);
-
-    Teuchos::RCP<LINALG::MultiMapExtractor> GetMapExtractor(int idx);
 
     Teuchos::RCP<LINALG::MultiMapExtractor> GetFullMapExtractor(){return fullextractor_;}
 

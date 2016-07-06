@@ -2,8 +2,12 @@
 /*!
  \file ad_ale.cpp
 
+ \brief ALE field adapter
+
+ \level 1
+
  <pre>
-Maintainer: Matthias Mayr
+\maintainer Matthias Mayr
             mayr@mhpc.mw.tum.de
             089 - 289-10362
  </pre>
@@ -127,8 +131,8 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn,
   adyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
   adyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
 
-  if (probtype == prb_fpsi or
-      probtype == prb_fpsi_xfem) {
+  if (probtype == prb_fpsi)
+  {
     // FPSI input parameters
     const Teuchos::ParameterList& fpsidyn =
         DRT::Problem::Instance()->FPSIDynamicParams();

@@ -19,6 +19,7 @@
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
+#include "../linalg/linalg_utils.H"
 
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |
@@ -74,7 +75,6 @@ void XFEM::XFSCoupling_Manager::SetCouplingStates()
 
   //3 Set Structural Velocity onto ps mesh coupling
   InsertVector(0,velnp,0,mcfsi_->IVelnp(),Coupling_Comm_Manager::partial_to_partial);
-  std::cout << std::setprecision(30) << std::endl;
 }
 
 /*-----------------------------------------------------------------------------------------*
@@ -102,20 +102,29 @@ void XFEM::XFSCoupling_Manager::AddCouplingMatrix(LINALG::BlockSparseMatrixBase&
    // add the coupling block C_ss on the already existing diagonal block
    C_ss_block.Add(*xfluid_->C_ss_Matrix(cond_name_), false, scaling*scaling_FSI, 1.0);
 
- #if(1) // use assign for off diagonal blocks
-   // scale the off diagonal coupling blocks
-   xfluid_->C_sx_Matrix(cond_name_)->Scale(scaling);              //<   1/(theta_f*dt)                    = 1/weight(t^f_np)
-   xfluid_->C_xs_Matrix(cond_name_)->Scale(scaling*scaling_FSI);  //<   1/(theta_f*dt) * 1/(theta_FSI*dt) = 1/weight(t^f_np) * 1/weight(t^FSI_np)
 
-   systemmatrix.Assign(idx_[0],idx_[1],LINALG::View,*xfluid_->C_sx_Matrix(cond_name_));
-   systemmatrix.Assign(idx_[1],idx_[0],LINALG::View, *xfluid_->C_xs_Matrix(cond_name_));
- #else
-   LINALG::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1],idx_[0]);
-   LINALG::SparseMatrix& C_sf_block = (systemmatrix)(idx_[0],idx_[1]);
+   PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+   if (probtype == prb_fsi_xfem)// use assign for off diagonal blocks
+   {
+     // scale the off diagonal coupling blocks
+     xfluid_->C_sx_Matrix(cond_name_)->Scale(scaling);              //<   1/(theta_f*dt)                    = 1/weight(t^f_np)
+     xfluid_->C_xs_Matrix(cond_name_)->Scale(scaling*scaling_FSI);  //<   1/(theta_f*dt) * 1/(theta_FSI*dt) = 1/weight(t^f_np) * 1/weight(t^FSI_np)
 
-   C_sf_block.Add(*xfluid_->C_sx_Matrix(cond_name_), false, scaling, 1.0);
-   C_fs_block.Add(*xfluid_->C_xs_Matrix(cond_name_), false, scaling*scaling_FSI, 1.0);
- #endif
+     systemmatrix.Assign(idx_[0],idx_[1],LINALG::View,*xfluid_->C_sx_Matrix(cond_name_));
+     systemmatrix.Assign(idx_[1],idx_[0],LINALG::View, *xfluid_->C_xs_Matrix(cond_name_));
+   }
+   else if (probtype == prb_fpsi_xfem)
+   {
+     LINALG::SparseMatrix& C_fs_block = (systemmatrix)(idx_[1],idx_[0]);
+     LINALG::SparseMatrix& C_sf_block = (systemmatrix)(idx_[0],idx_[1]);
+
+     C_sf_block.Add(*xfluid_->C_sx_Matrix(cond_name_), false, scaling, 1.0);
+     C_fs_block.Add(*xfluid_->C_xs_Matrix(cond_name_), false, scaling*scaling_FSI, 1.0);
+   }
+   else
+   {
+     dserror("XFSCoupling_Manager: Want to use me for other problemtype --> check and add me!");
+   }
 }
 
 /*-----------------------------------------------------------------------------------------*
@@ -150,7 +159,8 @@ void XFEM::XFSCoupling_Manager::AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs,
   }
 
   Teuchos::RCP<Epetra_Vector> coup_rhs = Teuchos::rcp(new Epetra_Vector(*me.Map(idx_[0]),true));
-  InsertVector(0,coup_rhs_sum,0,coup_rhs,Coupling_Comm_Manager::partial_to_full);
+  LINALG::Export(*coup_rhs_sum,*coup_rhs); //use this command as long as poro ist not split into two bocks in the monolithic algorithm!
+  //InsertVector(0,coup_rhs_sum,0,coup_rhs,Coupling_Comm_Manager::partial_to_full);
   me.AddVector(coup_rhs,idx_[0],rhs);
 }
 

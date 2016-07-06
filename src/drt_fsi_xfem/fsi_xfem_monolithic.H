@@ -70,7 +70,8 @@ namespace FSI
 
     //! constructor
     explicit MonolithicXFEM(const Epetra_Comm& comm,
-                            const Teuchos::ParameterList& timeparams);
+                            const Teuchos::ParameterList& timeparams,
+                            const ADAPTER::FieldWrapper::Fieldtype type = ADAPTER::FieldWrapper::type_StructureField);
 
     //--------------------------------------------------------------------------//
     //! @name Setup routine

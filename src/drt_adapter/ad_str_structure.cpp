@@ -4,8 +4,10 @@
 
 \brief Structure field adapter
 
+\level 1
+
 <pre>
-Maintainer: Georg Hammerl
+\maintainer Georg Hammerl
             hammerl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
@@ -443,7 +445,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     case prb_ac_fsi:
     case prb_biofilm_fsi:
     case prb_thermo_fsi:
-    case prb_fsi_xfem:
     {
       const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
@@ -490,6 +491,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     case prb_fpsi:
     case prb_fps3i:
     case prb_fpsi_xfem:
+    case prb_fsi_xfem:
     {
       const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =

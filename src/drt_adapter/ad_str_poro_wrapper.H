@@ -4,8 +4,10 @@
 
 \brief Wrapper for structure or poro time integration
 
+\level 2
+
 <pre>
-Maintainer: Ager Christoph
+\maintainer Ager Christoph
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249
@@ -17,44 +19,30 @@ Maintainer: Ager Christoph
 #define ADAPTER_STRUCTPORO_WRAPPER_H
 
 #include "ad_field_wrapper.H"
-
-#include "ad_str_fpsiwrapper.H"
-#include "../drt_poroelast/poroelast_monolithic.H"
-#include "ad_fld_poro.H"
-#include "../drt_lib/drt_globalproblem.H"
+#include "ad_str_fsiwrapper.H"
 #include "../drt_structure/stru_aux.H"
 
+namespace DRT
+{
+  class Problem;
+}
+
+namespace POROELAST
+{
+  class Monolithic;
+}
 
 namespace ADAPTER
 {
+  class FluidPoro;
+
   /// Just wrap, do nothing new, provides methods which are not available for Base Class ADAPTER::Field!
   class StructurePoroWrapper : public FieldWrapper
   {
   public:
 
     /// constructor
-    explicit StructurePoroWrapper(Teuchos::RCP<Field> field, FieldWrapper::Fieldtype type, bool NOXCorrection = false)
-    :FieldWrapper(field,type,NOXCorrection)
-    {
-      switch (type_)
-      {
-        case FieldWrapper::type_StructureField:
-          structure_ = Teuchos::rcp_dynamic_cast<FSIStructureWrapper>(field_);
-          if (structure_ == Teuchos::null)
-            dserror("StructurePoroWrapper: Cast from Field to FSIStructureWrapper failed!");
-          poro_ = Teuchos::null;
-        break;
-        case FieldWrapper::type_PoroField:
-          poro_ = Teuchos::rcp_dynamic_cast<POROELAST::Monolithic>(field_);
-          if (poro_ == Teuchos::null)
-                      dserror("StructurePoroWrapper: Cast from Field to PoroBase failed!");
-          structure_ = poro_->StructureField();
-        break;
-        default:
-          dserror("StructurePoroWrapper - FieldWrapper::Fieldtype not available for this wrapper!");
-        break;
-      }
-    }
+    explicit StructurePoroWrapper(Teuchos::RCP<Field> field, FieldWrapper::Fieldtype type, bool NOXCorrection = false);
 
     /// communication object at the interface
     virtual Teuchos::RCP<const STR::AUX::MapExtractor> Interface() const
@@ -76,6 +64,10 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const
     { return structure_->Dispnp(); }
 
+    /// unknown displacements at \f$t_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const
+    { return structure_->WriteAccessDispnp(); }
+
     /// get constraint manager defined in the structure
     virtual const Teuchos::RCP< UTILS::ConstrManager> GetConstraintManager()
     { return structure_->GetConstraintManager(); }
@@ -92,87 +84,36 @@ namespace ADAPTER
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceDispnp()
     { return structure_->ExtractInterfaceDispnp();}
 
+    /// extract interface displacements at \f$t_{n}\f$
+    virtual Teuchos::RCP<Epetra_Vector> ExtractFPSIInterfaceDispn()
+    { return structure_->Interface()->ExtractFPSICondVector(structure_->Dispn());}
+
+    /// extract interface displacements at \f$t_{n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> ExtractFPSIInterfaceDispnp()
+    { return structure_->Interface()->ExtractFPSICondVector(structure_->Dispnp());}
+
     //! unique map of all dofs that should be constrained with DBC
-    virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap()
-    {
-     switch(type_)
-     {
-     case FieldWrapper::type_StructureField:
-       return structure_->GetDBCMapExtractor()->CondMap();
-       break;
-     case FieldWrapper::type_PoroField:
-       return poro_->CombinedDBCMap();
-       break;
-     default:
-       dserror("StructurePoroWrapper: type for this wrapper not considered!");
-       return Teuchos::null;
-       break;
-     }
-   }
+    virtual Teuchos::RCP<const Epetra_Map> CombinedDBCMap();
 
-//   //! perform result test
-   void TestResults(DRT::Problem* problem)
-   {
-     problem->AddFieldTest(structure_->CreateFieldTest());
+   //! perform result test
+   void TestResults(DRT::Problem* problem);
 
-     if (type_ == FieldWrapper::type_PoroField)
-       problem->AddFieldTest(poro_->FluidField()->CreateFieldTest());
-   }
+   //! return poro PoroField
+   const Teuchos::RCP<POROELAST::Monolithic>& PoroField();
 
-   const Teuchos::RCP<POROELAST::Monolithic>& PoroField()
-    {
-     if (type_ == FieldWrapper::type_PoroField)
-       return poro_;
-     else
-       dserror("StructurePoroWrapper - Field not PoroField!");
-     return poro_; //do not remove dserror!!! - return just to make complier happy :-)
-    }
-
-   const Teuchos::RCP<FSIStructureWrapper>& StructureField()
-    {
-     if (type_ == FieldWrapper::type_PoroField || type_ == FieldWrapper::type_StructureField)
-       return structure_;
-     else
-       dserror("StructurePoroWrapper - Field not Structural- or Poro-Field!");
-     return structure_; //do not remove dserror!!! - return just to make complier happy :-)
-    }
+   //! return poro StructureField
+   const Teuchos::RCP<FSIStructureWrapper>& StructureField();
 
    //! return poro FluidField
-   const Teuchos::RCP<ADAPTER::FluidPoro>& FluidField()
-    {
-     if (type_ == FieldWrapper::type_PoroField)
-       return poro_->FluidField();
-     else
-       dserror("StructurePoroWrapper - Field not PoroField (no poro fluid field!");
-     return poro_->FluidField(); //do not remove dserror!!! - return just to make complier happy :-)
-    }
+   const Teuchos::RCP<ADAPTER::FluidPoro>& FluidField();
 
    //!Insert FSI Condition Vector
-   Teuchos::RCP<Epetra_Vector> InsertFSICondVector(Teuchos::RCP<const Epetra_Vector> cond)
-    {
-       Teuchos::RCP<Epetra_Vector> tmpcond;
-       switch(type_)
-       {
-       case FieldWrapper::type_StructureField:
-         return Interface()->InsertFSICondVector(cond);
-         break;
-       case FieldWrapper::type_PoroField:
-         tmpcond = Interface()->InsertFSICondVector(cond);
-         return poro_->Extractor()->InsertVector(tmpcond,0); //into structural part = 0
-         break;
-       default:
-         dserror("StructurePoroWrapper: type for this wrapper not considered!");
-         return Teuchos::null;
-         break;
-       }
-    }
+   Teuchos::RCP<Epetra_Vector> InsertFSICondVector(Teuchos::RCP<const Epetra_Vector> cond);
 
    //!Recover Lagrange Multiplier during iteration (does nothing for structure)
-   void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<Epetra_Vector> iterinc)
-   {
-     if (type_ == FieldWrapper::type_PoroField)
-       poro_->RecoverLagrangeMultiplierAfterNewtonStep(iterinc);
-   }
+   void RecoverLagrangeMultiplierAfterNewtonStep(Teuchos::RCP<Epetra_Vector> iterinc);
+
+   bool isPoro() { return (type_ == FieldWrapper::type_PoroField);}
 
   protected:
 

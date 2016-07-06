@@ -984,10 +984,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(
         }
         else if (probtype == prb_fpsi_xfem)
         {
-          std::string condition_name = "XFEMSurfFSIMono";
           Teuchos::RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
-          Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output,isale));
-          fluid_ = Teuchos::rcp(new XFluidFSI(tmpfluid, condition_name, solver, fluidtimeparams, output));
+          fluid_= Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output,isale));
         }
       }
     }

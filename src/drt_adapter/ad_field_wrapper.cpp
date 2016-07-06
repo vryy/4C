@@ -4,8 +4,10 @@
 
 \brief Wrapper for the field time integration
 
+\level 2
+
 <pre>
-Maintainer: Ager Christoph
+\maintainer Ager Christoph
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249
@@ -29,10 +31,8 @@ void ADAPTER::FieldWrapper::PrepareTimeStep()
 /-----------------------------------------------------------------------*/
 void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
-  if (!NOXCorrection_)
-    field_->Evaluate(disiterinc);
-  else
-    field_->Evaluate(GetIterinc(disiterinc));
+  if (NOXCorrection_) GetIterinc(disiterinc);
+  field_->Evaluate(disiterinc);
 }
 
 /*-----------------------------------------------------------------------/
@@ -40,10 +40,8 @@ void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
 /-----------------------------------------------------------------------*/
 void ADAPTER::FieldWrapper::Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter)
 {
-  if (!NOXCorrection_)
-    field_->Evaluate(disiterinc,firstiter);
-  else
-    field_->Evaluate(GetIterinc(disiterinc),firstiter);
+  if (NOXCorrection_) GetIterinc(disiterinc);
+  field_->Evaluate(disiterinc,firstiter);
 }
 
 /*-----------------------------------------------------------------------/
@@ -58,7 +56,7 @@ void ADAPTER::FieldWrapper::ResetStepinc()
 /*-----------------------------------------------------------------------/
 | Get Iteration Increment from Step Increment                            |
 /-----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector>  ADAPTER::FieldWrapper::GetIterinc(Teuchos::RCP<const Epetra_Vector> stepinc)
+void  ADAPTER::FieldWrapper::GetIterinc(Teuchos::RCP<const Epetra_Vector>& stepinc)
 {
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
@@ -69,7 +67,6 @@ Teuchos::RCP<Epetra_Vector>  ADAPTER::FieldWrapper::GetIterinc(Teuchos::RCP<cons
   // x^n+1_i+1 = x^n+1_i + iterinc  (sometimes referred to as residual increment), and
   //
   // x^n+1_i+1 = x^n     + stepinc
-
   if (stepinc!=Teuchos::null)
   {
     // iteration increments
@@ -86,10 +83,7 @@ Teuchos::RCP<Epetra_Vector>  ADAPTER::FieldWrapper::GetIterinc(Teuchos::RCP<cons
     {
       stepinc_ = Teuchos::rcp(new Epetra_Vector(*stepinc));
     }
-
-    // do field update with provided residual dofs - iteration increment
-    return iterinc;
+    //output is iterinc!
+    stepinc = Teuchos::rcp(new const Epetra_Vector(*iterinc));
   }
-  else
-    return Teuchos::null;
 }

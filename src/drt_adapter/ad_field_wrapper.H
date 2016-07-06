@@ -2,11 +2,13 @@
 /*!
 \file ad_field_wrapper.H
 
-\brief Wrapper for the field time integration - This Wrapper already implements the functionality to us StepIncrements, therefore set
+\brief Wrapper for the field time integration - This Wrapper already implements the functionality to use StepIncrements, therefore set
 NOXCorrection == true!!!
 
+\level 2
+
 <pre>
-Maintainer: Ager Christoph
+\maintainer Ager Christoph
             ager@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 15249
@@ -108,7 +110,7 @@ namespace ADAPTER
   protected:
 
     Teuchos::RCP<Field> field_;   ///< underlying field time integration
-    FieldWrapper::Fieldtype type_; ///< type of underlying field
+    ADAPTER::FieldWrapper::Fieldtype type_; ///< type of underlying field
 
   private:
 
@@ -116,7 +118,7 @@ namespace ADAPTER
     virtual void ResetStepinc();
 
     ///Get Iteration Increment from Step Increment
-    virtual Teuchos::RCP<Epetra_Vector> GetIterinc(Teuchos::RCP<const Epetra_Vector> stepinc);
+    virtual void GetIterinc(Teuchos::RCP<const Epetra_Vector>& stepinc);
 
     const bool NOXCorrection_; ///< if (true) adapter gets stepincrements!
 
