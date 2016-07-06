@@ -2499,6 +2499,11 @@ void FSI::MonolithicXFEM::PrintNewtonIter()
    FluidField()->ReadRestart(step);
 
    //--------------------------------
+   // read ale field
+   if (HaveAle())
+     AleField()->ReadRestart(step);
+
+   //--------------------------------
    // setup a new system as dofrowmaps could have been changed!
    SetupSystem();
 
@@ -2514,11 +2519,5 @@ void FSI::MonolithicXFEM::PrintNewtonIter()
    //
 
    SetTimeStep(FluidField()->Time(),FluidField()->Step());
-
-  if (HaveAle())
-  {
-    AleField()->ReadRestart(step);
-    //FluidField()->CreateInitialState();
-    //FluidField()->ReadRestart(step);
-  }
+   return;
  }

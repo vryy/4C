@@ -4658,11 +4658,9 @@ void FLD::XFluid::ReadRestart(int step)
 
   if(myrank_ == 0) IO::cout << "ReadRestart for fluid dis (time="<<time_<<" ; step="<<step_<<")" << IO::endl;
 
-  reader.ReadVector(state_->velnp_,"velnp_res");
-  reader.ReadVector(state_->velnm_,"velnm_res");
-  reader.ReadVector(state_->veln_, "veln_res" );
-  reader.ReadVector(state_->accnp_,"accnp_res");
-  reader.ReadVector(state_->accn_ ,"accn_res" );
+  if(myrank_ == 0) {IO::cout << RED << "Warning: For Restart we Cut the configuration of the last time step with the final (in best case converged)" <<
+      " solution, without restart the configuration used would be one newton step ealier! --> This might lead to problems if the solution is no " <<
+      " converged an therefore the dofset coming from restart and during simulation differ!" << END_COLOR << IO::endl;}
 
   if (alefluid_)
   {
@@ -4670,10 +4668,14 @@ void FLD::XFluid::ReadRestart(int step)
     reader.ReadVector(dispn_,"full_dispnp_res"); //as update() was called anyway before output...
     reader.ReadVector(gridvnp_,"full_gridvnp_res");
     reader.ReadVector(gridvn_,"full_gridvnp_res"); //as update() was called anyway before output...
-
     //state-vectors in state will be set in the creation of a new state
+    CreateInitialState(); //Create an State with the deformed Fluid Mesh (otherwise state vectors wouldn't fit)
   }
-
+  reader.ReadVector(state_->velnp_,"velnp_res");
+  reader.ReadVector(state_->velnm_,"velnm_res");
+  reader.ReadVector(state_->veln_, "veln_res" );
+  reader.ReadVector(state_->accnp_,"accnp_res");
+  reader.ReadVector(state_->accn_ ,"accn_res" );
 
 #if(0)
   std::cout << "velnp_ " << *(state_->velnp_) << std::endl;
