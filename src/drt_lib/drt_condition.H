@@ -281,6 +281,8 @@ public:
     TransportRobin,
     ThermoRobin,
     ScatraMultiScaleCoupling,
+    ScatraHeteroReactionCondMaster,
+    ScatraHeteroReactionCondSlave,
     CellFocalAdhesion
   };
 
@@ -437,6 +439,7 @@ public:
 
   */
   virtual std::map<int,Teuchos::RCP<DRT::Element> >& Geometry() { return *geometry_; }
+  virtual const std::map<int,Teuchos::RCP<DRT::Element> >& Geometry() const { return *geometry_; }
 
   /*!
   \brief Adjust IDs of associated elements in order to obtain global

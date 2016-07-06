@@ -102,10 +102,16 @@ namespace DRT
                               std::map<int, DRT::Node*>& nodes);
 
     /// find all local nodes from discretization marked with condition and
-    /// put them into a vector indexed by Id of the condition
+    /// put them into a map indexed by Id of the condition
     void FindConditionedNodes(const DRT::Discretization& dis,
                               const std::vector<DRT::Condition*>& conds,
                               std::map<int, std::map<int, DRT::Node*> >& nodes);
+
+    /// find all local nodes from discretization marked with condition and
+    /// put them into a vector indexed by Id of the condition
+    void FindConditionedNodes(const DRT::Discretization& dis,
+                              const std::vector<DRT::Condition*>& conds,
+                              std::map<int, Teuchos::RCP<std::vector<int> > >& nodes);
 
     /// find all local nodes from discretization marked with condition
     void FindConditionedNodes(const DRT::Discretization& dis,
@@ -138,7 +144,15 @@ namespace DRT
                               std::map<int, DRT::Node*>& nodes,
                               std::map<int, DRT::Node*>& ghostnodes,
                               std::map< int, Teuchos::RCP<DRT::Element> >& elements,
-                              std::vector<DRT::Condition*>& conds);
+                              const std::vector<DRT::Condition*>& conds);
+
+    /// collect all elements in a condition including ghosts
+    /*!
+      \param elements overlapping map of elements
+      \param vector containing condition pointers
+     */
+    void FindConditionObjects(std::map<int, Teuchos::RCP<DRT::Element> >& elements,
+                              const std::vector<DRT::Condition*>& conds);
 
     /// collect all nodes (in- and excluding 'ghosts') and
     /// elements (including ghosts) in a condition
@@ -231,6 +245,24 @@ namespace DRT
       const std::vector<std::string>&   conditions_to_copy,  ///< list of conditions that will be copied to the new discretization
       const int                         label = -1     ///< consider only conditions with specified label
       );
+
+    //! create discretization from a given condition
+    Teuchos::RCP<DRT::Discretization> CreateDiscretizationFromCondition(
+        const DRT::Discretization&      sourcedis,         ///< discretization with condition
+        const DRT::Condition&           cond,              ///< condition, from which the derived discretization is derived
+        const std::string&              discret_name,      ///< name of the new discretization
+        const std::string&              element_name,      ///< name/type of the elements to be created
+        const std::vector<std::string>& conditions_to_copy ///< list of conditions that will be copied to the new discretization
+        );
+
+    //! create discretization from a given condition
+    Teuchos::RCP<DRT::Discretization> CreateDiscretizationFromCondition(
+        const DRT::Discretization&                         sourcedis,         ///< discretization with condition
+        const std::map<int, Teuchos::RCP<DRT::Element> >&  sourceelements,    ///< element map/geometry of the condition
+        const std::string&                                 discret_name,      ///< name of the new discretization
+        const std::string&                                 element_name,      ///< name/type of the elements to be created
+        const std::vector<std::string>&                    conditions_to_copy ///< list of conditions that will be copied to the new discretization
+        );
 
 
     //!collects elements by labels (have to be implemented in the corresponding condition

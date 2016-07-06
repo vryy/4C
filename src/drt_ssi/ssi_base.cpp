@@ -263,7 +263,7 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm, const std::str
     SCATRA::ScatraFluidCloneStrategy clonestrategy;
     conditions_to_copy = clonestrategy.ConditionsToCopy();
     DRT::UTILS::DiscretizationCreatorBase creator;
-    creator.CopyConditions(scatradis,scatradis,conditions_to_copy);
+    creator.CopyConditions(*scatradis,*scatradis,conditions_to_copy);
   }
 
   if(fieldcoupling_==INPAR::SSI::coupling_match)

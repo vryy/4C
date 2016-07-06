@@ -128,6 +128,36 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
+                                      const std::vector<DRT::Condition*>& conds,
+                                      std::map<int, Teuchos::RCP<std::vector<int> > >& nodes)
+{
+  std::map<int,std::set<int> > nodeset;
+  const int myrank = dis.Comm().MyPID();
+  for (unsigned i=0; i<conds.size(); ++i)
+  {
+    int id = conds[i]->GetInt("coupling id");
+    const std::vector<int>* n = conds[i]->Nodes();
+    for (unsigned j=0; j<n->size(); ++j)
+    {
+      const int gid = (*n)[j];
+      if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner()==myrank)
+      {
+        nodeset[id].insert(gid);
+      }
+    }
+  }
+
+  std::map<int,std::set<int> >::iterator iter;
+  for (iter = nodeset.begin(); iter != nodeset.end(); ++iter)
+  {
+    nodes[iter->first] = Teuchos::rcp(new std::vector<int>((iter->second).size()));
+    nodes[iter->first]->assign((iter->second).begin(),(iter->second).end());
+  }
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -183,10 +213,10 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
-                                      std::map<int, DRT::Node*>& nodes,
-                                      std::map<int, DRT::Node*>& gnodes,
-                                      std::map<int, Teuchos::RCP<DRT::Element> >& elements,
-                                      std::vector<DRT::Condition*>& conds)
+    std::map<int, DRT::Node*>& nodes,
+    std::map<int, DRT::Node*>& gnodes,
+    std::map<int, Teuchos::RCP<DRT::Element> >& elements,
+    const std::vector<DRT::Condition*>& conds)
 {
   FindConditionedNodes(dis, conds, nodes);
 
@@ -211,6 +241,26 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
         else
           dserror("All nodes of known elements must be known. Panic.");
       }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::FindConditionObjects(
+    std::map<int, Teuchos::RCP<DRT::Element> >& elements,
+    const std::vector<DRT::Condition*>& conds)
+{
+  for (size_t i = 0; i < conds.size(); ++i)
+  {
+    // get this condition's elements
+    std::map< int, Teuchos::RCP< DRT::Element > >& geo = conds[i]->Geometry();
+    std::map< int, Teuchos::RCP< DRT::Element > >::iterator iter, pos;
+    pos = elements.begin();
+    for (iter = geo.begin(); iter != geo.end(); ++iter)
+    {
+      // get all elements locally known, including ghost elements
+      pos = elements.insert(pos, *iter);
     }
   }
 }
@@ -505,33 +555,76 @@ Teuchos::RCP<std::set<int> > DRT::UTILS::ConditionedElementMap(const DRT::Discre
   return condelementmap;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
+    const DRT::Discretization&      sourcedis,
+    const DRT::Condition&           cond,
+    const std::string&              discret_name,
+    const std::string&              element_name,
+    const std::vector<std::string>& conditions_to_copy
+    )
+{
+  if (cond.Nodes()==NULL or cond.Nodes()->size()==0)
+    dserror("The condition has no nodes!");
+
+  // make sure connectivity is all set
+  // we don't care, whether dofs exist or not
+  if (!sourcedis.Filled())
+    dserror("sourcedis is not filled");
+
+  // get this condition's elements
+  std::map<int, Teuchos::RCP<DRT::Element> >  sourceelements;
+  const std::map< int, Teuchos::RCP< DRT::Element > >& geo = cond.Geometry();
+  sourceelements.insert(geo.begin(),geo.end());
+
+  return CreateDiscretizationFromCondition(sourcedis,sourceelements,
+      discret_name,element_name,conditions_to_copy);
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
     Teuchos::RCP<DRT::Discretization>  sourcedis,
-        const std::string&                  condname,
-        const std::string&                  discret_name,
-        const std::string&                  element_name,
-        const std::vector<std::string>&     conditions_to_copy,
-        const int                           label
-        )
+    const std::string&                 condname,
+    const std::string&                 discret_name,
+    const std::string&                 element_name,
+    const std::vector<std::string>&    conditions_to_copy,
+    const int                          label
+    )
 {
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(sourcedis->Comm().Clone());
-  Teuchos::RCP<DRT::Discretization> conditiondis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
-
   // make sure connectivity is all set
   // we don't care, whether dofs exist or not
   if (!sourcedis->Filled())
     dserror("sourcedis is not filled");
 
-  const int myrank = conditiondis->Comm().MyPID();
-  const Epetra_Map* sourcenoderowmap = sourcedis->NodeRowMap();
-
   // We need to test for all elements (including ghosted ones) to
   // catch all nodes
   std::map<int, Teuchos::RCP<DRT::Element> >  sourceelements;
   DRT::UTILS::FindConditionObjects(*sourcedis, sourceelements, condname, label);
+
+  return CreateDiscretizationFromCondition(*sourcedis,sourceelements,
+      discret_name,element_name,conditions_to_copy);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
+    const DRT::Discretization&                         sourcedis,
+    const std::map<int, Teuchos::RCP<DRT::Element> >&  sourceelements,
+    const std::string&                                 discret_name,
+    const std::string&                                 element_name,
+    const std::vector<std::string>&                    conditions_to_copy
+    )
+{
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(sourcedis.Comm().Clone());
+  const int myrank = com->MyPID();
+  const Epetra_Map* sourcenoderowmap = sourcedis.NodeRowMap();
+
+  Teuchos::RCP<DRT::Discretization> conditiondis =
+      Teuchos::rcp(new DRT::Discretization(discret_name,com));
 
   std::set<int> rownodeset;
   std::set<int> colnodeset;
@@ -555,7 +648,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
     }
 
     if (std::count_if(nids.begin(), nids.end(),
-                      DRT::UTILS::MyGID(sourcedis->NodeColMap())) < static_cast<int>(nids.size()))
+                      DRT::UTILS::MyGID(sourcedis.NodeColMap())) < static_cast<int>(nids.size()))
     {
       dserror("element %d has remote non-ghost nodes",sourceele->Id());
     }
@@ -590,7 +683,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
     const int gid = sourcenoderowmap->GID(i);
     if (rownodeset.find(gid)!=rownodeset.end())
     {
-      const DRT::Node* sourcenode = sourcedis->lRowNode(i);
+      const DRT::Node* sourcenode = sourcedis.lRowNode(i);
       conditiondis->AddNode(Teuchos::rcp(new DRT::Node(gid, sourcenode->X(), myrank)));
     }
   }
@@ -598,20 +691,17 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
   // we get the node maps almost for free
   std::vector<int> condnoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
-  Teuchos::RCP<Epetra_Map> condnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
-                                                      condnoderowvec.size(),
-                                                      &condnoderowvec[0],
-                                                      0,
-                                                      conditiondis->Comm()));
+  Teuchos::RCP<Epetra_Map> condnoderowmap =
+      Teuchos::rcp(new Epetra_Map(-1,condnoderowvec.size(),&condnoderowvec[0],
+          0,conditiondis->Comm()));
   condnoderowvec.clear();
 
   std::vector<int> condnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  Teuchos::RCP<Epetra_Map> condnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
-                                                      condnodecolvec.size(),
-                                                      &condnodecolvec[0],
-                                                      0,
-                                                      conditiondis->Comm()));
+  Teuchos::RCP<Epetra_Map> condnodecolmap =
+      Teuchos::rcp(new Epetra_Map(-1,condnodecolvec.size(),&condnodecolvec[0],
+          0,conditiondis->Comm()));
+
   condnodecolvec.clear();
 
   // copy selected conditions to the new discretization
@@ -620,7 +710,7 @@ Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
        ++conditername)
   {
     std::vector<DRT::Condition*> conds;
-    sourcedis->GetCondition(*conditername, conds);
+    sourcedis.GetCondition(*conditername, conds);
     for (unsigned i=0; i<conds.size(); ++i)
     {
       // We use the same nodal ids and therefore we can just copy the conditions.

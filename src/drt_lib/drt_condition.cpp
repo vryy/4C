@@ -263,6 +263,9 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==RedAirwayEvalLungVolCond)      os <<"Reduced D airways evaluate lung volume condition";
   else if (Type()==TransportRobin)                os << "Scalar transport Robin boundary condition";
   else if (Type()==ScatraMultiScaleCoupling)      os << "Scalar transport multi-scale coupling condition";
+  else if (Type()==ScatraHeteroReactionCondMaster) os << "Scalar transport reaction coupling condition (Master)";
+  else if (Type()==ScatraHeteroReactionCondSlave) os << "Scalar transport reaction coupling condition (Slave)";
+  else if (Type()==SSICoupling)                   os << "Scalar-Structure coupling condition";
   else if (Type()==CellFocalAdhesion)             os << "Scalar transport boundary condition depending on structural surface stress";
   else dserror("no output std::string for condition defined in DRT::Condition::Print");
 

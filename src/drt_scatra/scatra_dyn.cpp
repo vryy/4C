@@ -160,7 +160,7 @@ void scatra_dyn(int restart)
         SCATRA::ScatraFluidCloneStrategy clonestrategy;
         conditions_to_copy = clonestrategy.ConditionsToCopy();
         DRT::UTILS::DiscretizationCreatorBase creator;
-        creator.CopyConditions(scatradis,scatradis,conditions_to_copy);
+        creator.CopyConditions(*scatradis,*scatradis,conditions_to_copy);
 
         //first call FillComplete for single discretizations.
         //This way the physical dofs are numbered successively
