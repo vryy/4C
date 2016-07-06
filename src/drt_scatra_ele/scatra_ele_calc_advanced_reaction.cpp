@@ -6,7 +6,9 @@
 
 
  <pre>
-   Maintainer: Moritz Thon
+ \level 2
+
+   \maintainer Moritz Thon
                thon@mhpc.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-10364
@@ -138,17 +140,23 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim> * DRT::ELEMENTS::ScaTraEleC
   const std::string& disname,
   const ScaTraEleCalcAdvReac *delete_me )
 {
-  static std::map<std::string,ScaTraEleCalcAdvReac<distype,probdim>* >  instances;
+  static std::map<std::pair<std::string,int>,ScaTraEleCalcAdvReac<distype,probdim>* > instances;
+
+  std::pair<std::string,int> key(disname,numdofpernode);
 
   if(delete_me == NULL)
   {
-    if(instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleCalcAdvReac<distype,probdim>(numdofpernode,numscal,disname);
+    if(instances.find(key) == instances.end())
+      instances[key] = new ScaTraEleCalcAdvReac<distype,probdim>(numdofpernode,numscal,disname);
   }
 
   else
   {
-    for( typename std::map<std::string,ScaTraEleCalcAdvReac<distype,probdim>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
+    // since we keep several instances around in the general case, we need to
+    // find which of the instances to delete with this call. This is done by
+    // letting the object to be deleted hand over the 'this' pointer, which is
+    // located in the map and deleted
+    for( typename std::map<std::pair<std::string,int>,ScaTraEleCalcAdvReac<distype,probdim>* >::iterator i=instances.begin(); i!=instances.end(); ++i )
       if ( i->second == delete_me )
       {
         delete i->second;
@@ -158,7 +166,7 @@ DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype,probdim> * DRT::ELEMENTS::ScaTraEleC
     dserror("Could not locate the desired instance. Internal error.");
   }
 
-  return instances[disname];
+  return instances[key];
 }
 
 

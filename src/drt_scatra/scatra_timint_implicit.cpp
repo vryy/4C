@@ -25,6 +25,7 @@
 /*----------------------------------------------------------------------*/
 #include "scatra_timint_implicit.H"
 
+#include "scatra_timint_heterogeneous_reaction_strategy.H"
 #include "scatra_timint_meshtying_strategy_fluid.H"
 #include "scatra_timint_meshtying_strategy_s2i.H"
 #include "scatra_timint_meshtying_strategy_std.H"
@@ -108,6 +109,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   fssgd_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
   turbmodel_(INPAR::FLUID::no_model),
   s2icoupling_(actdis->GetCondition("S2ICoupling") != NULL),
+  heteroreaccoupling_(actdis->GetCondition("ScatraHeteroReactionSlave") != NULL),
   macro_scale_(problem_->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) != -1),
   micro_scale_(probnum != 0),
   writeflux_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(*params,"WRITEFLUX")),
@@ -247,6 +249,18 @@ void SCATRA::ScaTraTimIntImpl::Init()
   CreateScalarHandler();
   scalarhandler_->Init(this);
 
+  // -------------------------------------------------------------------
+  // check compatibility of boundary conditions
+  // -------------------------------------------------------------------
+  if (neumanninflow_ and convheatrans_)
+    dserror("Neumann inflow and convective heat transfer boundary conditions must not appear simultaneously for the same problem!");
+
+  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
+
+  // ensure that degrees of freedom in the discretization have been set
+  if ((not discret_->Filled()) or (not discret_->HaveDofs()))
+    discret_->FillComplete();
+
   // -----------------------------------------------------------------------------
   // initialize meshtying strategy (including standard strategy without meshtying)
   // -----------------------------------------------------------------------------
@@ -261,18 +275,6 @@ void SCATRA::ScaTraTimIntImpl::Init()
 
   // initialize strategy
   strategy_->InitMeshtying();
-
-  // -------------------------------------------------------------------
-  // check compatibility of boundary conditions
-  // -------------------------------------------------------------------
-  if (neumanninflow_ and convheatrans_)
-    dserror("Neumann inflow and convective heat transfer boundary conditions must not appear simultaneously for the same problem!");
-
-  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
-
-  // ensure that degrees of freedom in the discretization have been set
-  if ((not discret_->Filled()) or (not discret_->HaveDofs()))
-    discret_->FillComplete();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -372,7 +374,6 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // -------------------------------------------------------------------
   // set parameters associated to potential statistical flux evaluations
   // -------------------------------------------------------------------
-
   // initialize vector for statistics (assume a maximum of 10 conditions)
   sumnormfluxintegral_ = Teuchos::rcp(new Epetra_SerialDenseVector(10));
 
@@ -2191,6 +2192,10 @@ void SCATRA::ScaTraTimIntImpl::CreateMeshtyingStrategy()
   // scatra-scatra interface coupling
   else if(s2icoupling_)
     strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this,params_->sublist("S2I COUPLING")));
+
+  // scatra-scatra interface coupling
+  else if(heteroreaccoupling_)
+    strategy_ = Teuchos::rcp(new HeterogeneousReactionStrategy(this));
 
   // standard case without meshtying
   else

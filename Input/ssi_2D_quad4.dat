@@ -67,7 +67,7 @@ MAXTIME                         1.0
 TIMESTEP                        1.0
 COUPALGO                        ssi_OneWay_SolidToScatra
 ITEMAX                          10
-FIELDCOUPLING                   matching
+FIELDCOUPLING                   volume_matching
 SCATRA_FROM_RESTART_FILE        No
 SCATRATYPE                      ConvectionDiffusion
 --------------------------------------------------------------------SOLVER 1

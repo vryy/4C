@@ -28,18 +28,14 @@ namespace ADAPTER
   class ScaTraBaseAlgorithm;
   class Structure;
   class ScaTraTimIntImpl;
-  class CouplingMortar;
-  class MortarVolCoupl;
-}
-
-namespace LINALG
-{
-  class MapExtractor;
 }
 
 namespace SSI
 {
+  // forward declaration
+  class SSICouplingBase;
 
+  //! Base class of all solid-scatra algorithms
   class SSI_Base : public ADAPTER::AlgorithmBase
   {
   public:
@@ -76,9 +72,6 @@ namespace SSI
     //! access to scatra field
     const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>&  ScaTraField() const {return scatra_;};
 
-    //! access to scatra field
-    //const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>&  ScaTraField(){return scatra_;}
-
     /// set structure solution on scatra field
     void SetStructSolution( Teuchos::RCP<const Epetra_Vector> disp,
                             Teuchos::RCP<const Epetra_Vector> vel ) ;
@@ -114,28 +107,30 @@ namespace SSI
     /// a zero vector of full length
     Teuchos::RCP<Epetra_Vector> zeros_;
 
-    //! adapter to mortar framework
-    Teuchos::RCP<ADAPTER::CouplingMortar> adapter_meshtying_;
-
-    Teuchos::RCP<LINALG::MapExtractor> extractor_meshtying_;
-
-    //! volume coupling (using mortar) adapter
-    Teuchos::RCP< ::ADAPTER::MortarVolCoupl> volcoupl_structurescatra_;
-
     //! Type of coupling strategy between the two fields of the SSI problems
     const INPAR::SSI::FieldCoupling fieldcoupling_;
 
+    /// setup discretizations and dofsets
+    void SetupDiscretizationsAndFieldCoupling(
+        const Epetra_Comm& comm,
+        const std::string& struct_disname,
+        const std::string& scatra_disname);
+
+  private:
 
     /// set structure mesh displacement on scatra field
     void SetMeshDisp( Teuchos::RCP<const Epetra_Vector> disp ) ;
 
-    /// set structure velocity fields on scatra field
-    void SetVelocityField( Teuchos::RCP<const Epetra_Vector> vel ) ;
+    /// set structure velocity field on scatra field
+    void SetVelocityFields( Teuchos::RCP<const Epetra_Vector> vel ) ;
 
-    /// Function for checking that the different time steps are a
-    /// multiplicative of each other
-    //void CheckTimeStepping(double dt1, double dt2);
-  };
+    /// helper class for applying SSI couplings
+    Teuchos::RCP< SSICouplingBase> ssicoupling_;
+
+
+  }; //SSI_Base
+
+
 }
 
 #endif /* SSI_BASE_H_ */

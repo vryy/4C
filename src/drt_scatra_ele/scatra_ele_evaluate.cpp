@@ -1,8 +1,11 @@
 /*!
 \file scatra_ele_evaluate.cpp
-\brief
+
+\brief evaluation methods of scatra element
 
 <pre>
+\level 1
+
 \maintainer Anh-Tu Vuong
             vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
@@ -296,6 +299,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::micro_scale_output:
     case SCATRA::micro_scale_read_restart:
     case SCATRA::calc_cell_mechanotransduction:
+    case SCATRA::calc_heteroreac_mat_and_rhs:
     {
       return ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateService(
                this,

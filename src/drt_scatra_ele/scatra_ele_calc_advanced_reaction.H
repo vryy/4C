@@ -6,7 +6,9 @@
 
 
  <pre>
-   Maintainer: Moritz Thon
+  \level 2
+
+   \maintainer Moritz Thon
                thon@mhpc.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-10364

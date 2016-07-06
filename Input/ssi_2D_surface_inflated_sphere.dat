@@ -71,7 +71,7 @@ COUPALGO                        ssi_OneWay_SolidToScatra
 ITEMAX                          10
 SCATRA_FROM_RESTART_FILE        No
 SCATRATYPE                      ConvectionDiffusion
-FIELDCOUPLING                   matching
+FIELDCOUPLING                   volume_matching
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

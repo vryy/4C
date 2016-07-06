@@ -854,7 +854,10 @@ protected:
   INPAR::FLUID::TurbModelAction turbmodel_;
 
   //! flag for scatra-scatra interface coupling
-  bool s2icoupling_;
+  const bool s2icoupling_;
+
+  //! flag for scatra-scatra heterogeneous reaction coupling
+  const bool heteroreaccoupling_;
 
   //! flag for macro scale in multi-scale simulations
   const bool macro_scale_;

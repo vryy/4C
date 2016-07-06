@@ -5,7 +5,9 @@
 \brief mesh clone strategy for scalar transport problems
 
 <pre>
-Maintainer: Andreas Ehrl
+\level 1
+
+\maintainer Andreas Ehrl
             ehrl@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15252
@@ -141,3 +143,88 @@ bool SCATRA::ScatraFluidCloneStrategy::DetermineEleType(
   return true; // yes, we copy EVERY element (no submeshes)
 }
 
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::map<std::string,std::string> SCATRA::ScatraReactionCloneStrategy::ConditionsToCopy()
+{
+  std::map<std::string,std::string> conditions_to_copy;
+
+  conditions_to_copy.insert(std::pair<std::string,std::string>("TransportDirichlet","Dirichlet"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("TransportPointNeumann","PointNeumann"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("TransportLineNeumann","LineNeumann"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("TransportSurfaceNeumann","SurfaceNeumann"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("TransportVolumeNeumann","VolumeNeumann"));
+
+  conditions_to_copy.insert(std::pair<std::string,std::string>("KrylovSpaceProjection","KrylovSpaceProjection"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("ScaTraFluxCalc","ScaTraFluxCalc"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("Initfield","Initfield"));
+
+  // for coupled scalar transport fields
+  conditions_to_copy.insert(std::pair<std::string,std::string>("ScaTraCoupling","ScaTraCoupling"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("ScatraHeteroReactionMaster","ScatraHeteroReactionMaster"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("ScatraHeteroReactionSlave","ScatraHeteroReactionSlave"));
+
+
+  return conditions_to_copy;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SCATRA::ScatraReactionCloneStrategy::CheckMaterialType(const int matid)
+{
+// We take the material with the ID specified by the user
+// Here we check first, whether this material is of admissible type
+INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
+if (
+    (mtype != INPAR::MAT::m_scatra) &&
+    (mtype != INPAR::MAT::m_matlist) &&
+    (mtype != INPAR::MAT::m_matlist_reactions)
+   )
+  dserror("Material with ID %d is not admissible for scalar transport elements",matid);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SCATRA::ScatraReactionCloneStrategy::SetElementData(
+    Teuchos::RCP<DRT::Element> newele,
+    DRT::Element* oldele,
+    const int matid,
+    const bool isnurbsdis)
+{
+  // We need to set material and possibly other things to complete element setup.
+  // This is again really ugly as we have to extract the actual
+  // element type in order to access the material property
+
+  // note: SetMaterial() was reimplemented by the transport element!
+    DRT::ELEMENTS::Transport* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
+    if (trans!=NULL)
+    {
+      trans->SetMaterial(matid,oldele);
+      trans->SetDisType(oldele->Shape()); // set distype as well!
+    }
+    else
+    {
+      dserror("unsupported element type '%s'", typeid(*newele).name());
+    }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool SCATRA::ScatraReactionCloneStrategy::DetermineEleType(
+    DRT::Element* actele,
+    const bool ismyele,
+    std::vector<std::string>& eletype)
+{
+  // note: ismyele, actele remain unused here! Used only for ALE creation
+
+  // we only support transport elements here
+  eletype.push_back("TRANSP");
+
+  return true; // yes, we copy EVERY element (no submeshes)
+}

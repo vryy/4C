@@ -1,10 +1,12 @@
 /*!------------------------------------------------------------------------------------------------*
 \file inpar_ssi.H
 
-\brief
+\brief input parameters for solid-scatra-interaction
 
 <pre>
-Maintainer: Anh-Tu Vuong
+\level 2
+
+\maintainer Anh-Tu Vuong
             vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15251
@@ -49,9 +51,10 @@ namespace SSI
   /// Type of coupling strategy between the two fields of the SSI problems
   enum FieldCoupling
   {
-    coupling_match,
-    coupling_meshtying,
-    coupling_volmortar
+    coupling_volume_match,
+    coupling_volume_nonmatch,
+    coupling_boundary_nonmatch,
+    coupling_volumeboundary_match
   };
 
 

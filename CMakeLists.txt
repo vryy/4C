@@ -473,6 +473,8 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_dofset_base.cpp
   src/drt_lib/drt_dofset_proxy.cpp
   src/drt_lib/drt_dofset_subproxy.cpp
+  src/drt_lib/drt_dofset_merged_proxy.cpp
+  src/drt_lib/drt_dofset_mapped_proxy.cpp
   src/drt_lib/drt_dofset_transparent.cpp
   src/drt_lib/drt_dofset_transparent_independent.cpp
   src/drt_lib/drt_dofset_pbc.cpp
@@ -1089,6 +1091,7 @@ set(OBJS_DRT_SCATRA
   src/drt_scatra/scatra_timint_loma_ost.cpp
   #src/drt_scatra/scatra_timint_loma_bdf2.cpp
   src/drt_scatra/scatra_timint_meshtying_strategy_fluid.cpp
+  src/drt_scatra/scatra_timint_heterogeneous_reaction_strategy.cpp
   src/drt_scatra/scatra_timint_meshtying_strategy_fluid_elch.cpp
   src/drt_scatra/scatra_timint_meshtying_strategy_s2i.cpp
   src/drt_scatra/scatra_timint_meshtying_strategy_s2i_elch.cpp
@@ -2279,6 +2282,7 @@ set(OBJS_DRT_FPSI
 set(OBJS_DRT_SSI
 src/drt_ssi/ssi_dyn.cpp
 src/drt_ssi/ssi_base.cpp
+src/drt_ssi/ssi_coupling.cpp
 src/drt_ssi/ssi_partitioned.cpp
 src/drt_ssi/ssi_partitioned_1wc.cpp
 src/drt_ssi/ssi_partitioned_2wc.cpp

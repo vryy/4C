@@ -123,7 +123,7 @@ COUPALGO                        ssi_OneWay_ScatraToSolid
 ITEMAX                          10
 SCATRA_FROM_RESTART_FILE        No
 SCATRATYPE                      Cardiac_Monodomain
-FIELDCOUPLING                   volmortar
+FIELDCOUPLING                   volume_nonmatching
 ----------------------------------------------------------VOLMORTAR COUPLING
 COUPLINGTYPE                    consint
 MESH_INIT                       no

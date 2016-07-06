@@ -69,7 +69,7 @@ COUPALGO                        ssi_OneWay_SolidToScatra
 ITEMAX                          10
 SCATRA_FROM_RESTART_FILE        No
 SCATRATYPE                      ConvectionDiffusion
-FIELDCOUPLING                   meshtying
+FIELDCOUPLING                   boundary_nonmatching
 -------------------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     dual
 SEARCH_ALGORITHM                Binarytree
@@ -120,9 +120,9 @@ E 5 - NUMDOF 3  ONOFF 1 1 1 VAL 0.0  0.0 0.0 CURVE none none none FUNCT 0  0 0
 -------------------------------DESIGN SSI COUPLING SURF CONDITIONS
 DSURF  2
 // surface_scatra
-E 1 -
+E 1 - 1
 // surface_structure
-E 2 -
+E 2 - 1
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY

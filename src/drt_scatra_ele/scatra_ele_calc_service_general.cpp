@@ -5,6 +5,8 @@
 \brief Internal implementation of ScaTra element
 
 <pre>
+\level 1
+
 \maintainer Anh-Tu Vuong
             vuong@lnm.mw.tum.de
             http://www.lnm.mw.tum.de/
@@ -786,6 +788,29 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::EvaluateAction(
 
     break;
   }
+
+  case SCATRA::calc_heteroreac_mat_and_rhs:
+  {
+    //--------------------------------------------------------------------------------
+    // extract element based or nodal values
+    //--------------------------------------------------------------------------------
+    ExtractElementAndNodeValues(ele,params,discretization,la);
+
+    for(int idof=0;idof<numdofpernode_;idof++)
+    {
+      // no bodyforce
+      bodyforce_[idof].Clear();
+    }
+
+    CalcHeteroReacMatAndRHS(
+        ele,
+        elemat1_epetra,
+        elevec1_epetra);
+
+    //dserror("calc_heteroreac_mat_and_rhs");
+    break;
+  }
+
   default:
   {
     dserror("Not acting on this action. Forgot implementation?");
@@ -1951,7 +1976,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolu
               gradphi_exact(dim)=gradphi_exact_vec[0][dim];
           else
           {
-            std::cout<<"Warning: Gradient of analytical solution cannot be evaluated correctly for transport on curved surfaces!"<<std::endl;
+            //std::cout<<"Warning: Gradient of analytical solution cannot be evaluated correctly for transport on curved surfaces!"<<std::endl;
             gradphi_exact.Clear();
           }
         }
@@ -2061,6 +2086,166 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolu
 
   return;
 } // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolution
+
+
+/*----------------------------------------------------------------------*
+|  calculate system matrix and rhs (public)                 g.bau 08/08|
+*----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcHeteroReacMatAndRHS(
+  DRT::Element*                         ele,        ///< the element whose matrix is calculated
+  Epetra_SerialDenseMatrix&             emat,       ///< element matrix to calculate
+  Epetra_SerialDenseVector&             erhs        ///< element rhs to calculate
+  )
+{
+  //----------------------------------------------------------------------
+  // calculation of element volume both for tau at ele. cent. and int. pt.
+  //----------------------------------------------------------------------
+  const double vol=EvalShapeFuncAndDerivsAtEleCenter();
+
+  //----------------------------------------------------------------------
+  // get material and stabilization parameters (evaluation at element center)
+  //----------------------------------------------------------------------
+  // density at t_(n)
+  double densn(1.0);
+  // density at t_(n+1) or t_(n+alpha_F)
+  double densnp(1.0);
+  // density at t_(n+alpha_M)
+  double densam(1.0);
+
+  // fluid viscosity
+  double visc(0.0);
+
+  // the stabilization parameters (one per transported scalar)
+  std::vector<double> tau(numscal_,0.0);
+
+  if (not scatrapara_->TauGP())
+  {
+    // get velocity at element center
+    LINALG::Matrix<nsd_,1> convelint = scatravarmanager_->ConVel();
+
+    for (int k = 0;k<numscal_;++k) // loop of each transported scalar
+    {
+      // calculation of stabilization parameter at element center
+      CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,convelint,vol);
+    }
+  }
+
+  // material parameter at the element center are also necessary
+  // even if the stabilization parameter is evaluated at the element center
+  if (not scatrapara_->MatGP())
+  {
+    //set gauss point variables needed for evaluation of mat and rhs
+    SetInternalVariablesForMatAndRHS();
+
+    GetMaterialParams(ele,densn,densnp,densam,visc);
+  }
+
+  //----------------------------------------------------------------------
+  // integration loop for one element
+  //----------------------------------------------------------------------
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad);
+
+    //set gauss point variables needed for evaluation of mat and rhs
+    SetInternalVariablesForMatAndRHS();
+
+    //----------------------------------------------------------------------
+    // get material parameters (evaluation at integration point)
+    //----------------------------------------------------------------------
+    if (scatrapara_->MatGP())
+      GetMaterialParams(ele,densn,densnp,densam,visc,iquad);
+
+    // loop all scalars
+    for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
+    {
+      // reactive part of the form: (reaction coefficient)*phi
+      double rea_phi(0.0);
+      rea_phi = densnp*scatravarmanager_->Phinp(k)*reamanager_->GetReaCoeff(k);
+
+      // compute rhs containing bodyforce (divided by specific heat capacity) and,
+      // for temperature equation, the time derivative of thermodynamic pressure,
+      // if not constant, and for temperature equation of a reactive
+      // equation system, the reaction-rate term
+      double rhsint(0.0);
+      GetRhsInt(rhsint,densnp,k);
+
+      double scatrares(0.0);
+      //calculate strong residual
+      CalcStrongResidual(k,scatrares,densam,densnp,rea_phi,rhsint,tau[k]);
+
+      if (scatrapara_->TauGP())
+      {
+        // (re)compute stabilization parameter at integration point, since diffusion may have changed
+        CalcTau(tau[k],diffmanager_->GetIsotropicDiff(k),reamanager_->GetReaCoeff(k),densnp,scatravarmanager_->ConVel(),vol); //TODO:(Thon) do we really have to do this??
+      }
+
+      //----------------------------------------------------------------
+      // standard Galerkin terms
+      //----------------------------------------------------------------
+
+      // stabilization parameter and integration factors
+      const double taufac     = tau[k]*fac;
+      const double timefacfac = scatraparatimint_->TimeFac()*fac;
+      const double timetaufac = scatraparatimint_->TimeFac()*taufac;
+
+      //----------------------------------------------------------------
+      // 3) element matrix: reactive term
+      //----------------------------------------------------------------
+
+      LINALG::Matrix<nen_,1>      sgconv(true);
+      LINALG::Matrix<nen_,1>      diff(true);
+      // diffusive term using current scalar value for higher-order elements
+      if (use2ndderiv_)
+      {
+        // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
+        GetLaplacianStrongForm(diff);
+        diff.Scale(diffmanager_->GetIsotropicDiff(k));
+      }
+
+      // including stabilization
+      if (reamanager_->Active())
+      {
+        CalcMatReact(emat,k,timefacfac,timetaufac,taufac,densnp,sgconv,diff);
+      }
+
+      //----------------------------------------------------------------
+      // 5) element right hand side
+      //----------------------------------------------------------------
+      //----------------------------------------------------------------
+      // computation of bodyforce (and potentially history) term,
+      // residual, integration factors and standard Galerkin transient
+      // term (if required) on right hand side depending on respective
+      // (non-)incremental stationary or time-integration scheme
+      //----------------------------------------------------------------
+      double rhsfac    = scatraparatimint_->TimeFacRhs() * fac;
+      double rhstaufac = scatraparatimint_->TimeFacRhsTau() * taufac;
+
+      ComputeRhsInt(rhsint,densam,densnp,0.0);
+
+      RecomputeScatraResForRhs(scatrares,k,diff,densn,densnp,rea_phi,rhsint);
+
+      //----------------------------------------------------------------
+      // standard Galerkin transient, old part of rhs and bodyforce term
+      //----------------------------------------------------------------
+      CalcRHSHistAndSource(erhs,k,fac,rhsint);
+
+      //----------------------------------------------------------------
+      // reactive terms (standard Galerkin and stabilization) on rhs
+      //----------------------------------------------------------------
+
+      if (reamanager_->Active())
+        CalcRHSReact(erhs,k,rhsfac,rhstaufac,rea_phi,densnp,scatrares);
+
+    }// end loop all scalars
+  }// end loop Gauss points
+
+  return;
+}
 
 
 // template classes

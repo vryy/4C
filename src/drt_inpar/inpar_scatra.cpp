@@ -770,5 +770,47 @@ void INPAR::SCATRA::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Cond
     condlist.push_back(multiscalecouplingpoint);
   }
 
+  /*--------------------------------------------------------------------*/
+  // conditions for calculation of calculation of heterogeneous reactions
+  Teuchos::RCP<ConditionDefinition> scatraheteroreactionmasterline =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA HETEROGENEOUS REACTION LINE CONDITIONS / MASTER",
+                                           "ScatraHeteroReactionMaster",
+                                           "calculation of heterogeneous reactions",
+                                           DRT::Condition::ScatraHeteroReactionCondMaster,
+                                           true,
+                                           DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> scatraheteroreactionmastersurf =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA HETEROGENEOUS REACTION SURF CONDITIONS / MASTER",
+                                           "ScatraHeteroReactionMaster",
+                                           "calculation of heterogeneous reactions",
+                                           DRT::Condition::ScatraHeteroReactionCondMaster,
+                                           true,
+                                           DRT::Condition::Surface));
+
+  // insert condition definitions into global list of valid condition definitions
+  condlist.push_back(scatraheteroreactionmasterline);
+  condlist.push_back(scatraheteroreactionmastersurf);
+
+  /*--------------------------------------------------------------------*/
+  // conditions for calculation of calculation of heterogeneous reactions
+  Teuchos::RCP<ConditionDefinition> scatraheteroreactionslaveline =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA HETEROGENEOUS REACTION LINE CONDITIONS / SLAVE",
+                                           "ScatraHeteroReactionSlave",
+                                           "calculation of heterogeneous reactions",
+                                           DRT::Condition::ScatraHeteroReactionCondSlave,
+                                           true,
+                                           DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> scatraheteroreactionslavesurf =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA HETEROGENEOUS REACTION SURF CONDITIONS / SLAVE",
+                                           "ScatraHeteroReactionSlave",
+                                           "calculation of heterogeneous reactions",
+                                           DRT::Condition::ScatraHeteroReactionCondSlave,
+                                           true,
+                                           DRT::Condition::Surface));
+
+  // insert condition definitions into global list of valid condition definitions
+  condlist.push_back(scatraheteroreactionslaveline);
+  condlist.push_back(scatraheteroreactionslavesurf);
+
   return;
 }

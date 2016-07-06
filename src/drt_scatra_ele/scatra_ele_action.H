@@ -61,6 +61,7 @@ namespace SCATRA
     calc_TG_mat_and_rhs,                         // levelset_TaylorGalerkin,
     calc_turbulent_prandtl_number,               // calc_turbulent_prandtl_number
     calc_vreman_scatra,                          // calc_vreman_scatra,
+    calc_heteroreac_mat_and_rhs,                 // calculate RHS and linearizations of heterogeneous reaction terms
     check_scatra_element_parameter,              // set parameter defined in every single element
     get_material_internal_state,                 // get material internal state (for postprocessing for example),
     get_material_ionic_currents,                 // get material ionic currents (for postprocessing for example),

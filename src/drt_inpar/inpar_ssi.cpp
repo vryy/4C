@@ -2,8 +2,12 @@
 /*!
 \file inpar_ssi.cpp
 
+\brief input parameters for solid-scatra-interaction
+
 <pre>
-Maintainer: Moritz Thon
+\level 2
+
+\maintainer Moritz Thon
             thon@mhpc.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
@@ -47,17 +51,19 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   // Type of coupling strategy between the two fields
   setStringToIntegralParameter<int>(
-                              "FIELDCOUPLING","matching",
+                              "FIELDCOUPLING","volume_matching",
                               "Type of coupling strategy between fields",
                               tuple<std::string>(
-                                "matching",
-                                "meshtying",
-                                "volmortar"
+                                "volume_matching",
+                                "volume_nonmatching",
+                                "boundary_nonmatching",
+                                "volumeboundary_matching"
                                 ),
                               tuple<int>(
-                                  coupling_match,
-                                  coupling_meshtying,
-                                  coupling_volmortar
+                                  coupling_volume_match,
+                                  coupling_volume_nonmatch,
+                                  coupling_boundary_nonmatch,
+                                  coupling_volumeboundary_match
                                 ),
                               &ssidyn);
 
@@ -152,9 +158,29 @@ void INPAR::SSI::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Conditi
           DRT::Condition::SSICoupling,
           true,
           DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volssi =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING VOL CONDITIONS",
+          "SSICoupling",
+          "SSI Coupling",
+          DRT::Condition::SSICoupling,
+          true,
+          DRT::Condition::Volume));
+
+  // equip condition definitions with input file line components
+  std::vector<Teuchos::RCP<ConditionComponent> > ssicoupcomponents;
+  ssicoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  // insert input file line components into condition definitions
+  for (unsigned i=0; i<ssicoupcomponents.size(); ++i)
+  {
+    linessi->AddComponent(ssicoupcomponents[i]);
+    surfssi->AddComponent(ssicoupcomponents[i]);
+    volssi->AddComponent(ssicoupcomponents[i]);
+  }
 
   condlist.push_back(linessi);
   condlist.push_back(surfssi);
+  condlist.push_back(volssi);
 
 }
 

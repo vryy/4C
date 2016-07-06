@@ -4,10 +4,12 @@
 \brief main file containing routines for calculation of scatra element
 
 <pre>
-\maintainer Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+\level 1
+
+\maintainer Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de/
+            089 - 289-15251
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -377,6 +379,13 @@ namespace ELEMENTS
       const DRT::Element*                   ele,        //!< the element we are dealing with
       Teuchos::ParameterList&               params,     //!< parameter list
       Epetra_SerialDenseVector&             errors      //!< vector containing L2-error norm
+    );
+
+    //! calculate matrix and rhs. Here the whole thing is hidden.
+    virtual void CalcHeteroReacMatAndRHS(
+      DRT::Element*                         ele,       //!< the element we are dealing with
+      Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
+      Epetra_SerialDenseVector&             erhs      //!< element rhs to calculate
     );
 
 
