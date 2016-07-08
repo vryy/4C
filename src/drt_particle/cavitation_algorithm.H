@@ -369,6 +369,17 @@ namespace CAVITATION
       const double                  influence
       );
 
+    /// evaluate line integral for analytic integration (quartic polynomial)
+    virtual void EvaluateTwoPointsQuarticPoly(
+      const LINALG::Matrix<3,1>& n,
+      const LINALG::Matrix<3,1>& centerringintgral,
+      LINALG::Matrix<3,1>& point1,
+      LINALG::Matrix<3,1>& point2,
+      const LINALG::Matrix<3,1>& particleposition,
+      double& vol_ele,
+      const double influence
+      );
+
     //@}
 
     /// test for overlap of the XAABB of bubble and element
@@ -440,6 +451,8 @@ namespace CAVITATION
     int blendingsteps_;   ///< number of steps that is used to blend bubble radius from initially small to final size
 
     bool initbubblevelfromfluid_;   ///< bool whether initial bubble velocity is computed from the underlying fluid element
+
+    const double influencescaling_;   ///< scaling factor for influence of bubble in void frac computation
 
     //@}
 

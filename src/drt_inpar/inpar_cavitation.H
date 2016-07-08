@@ -4,6 +4,8 @@
 
 \brief Input parameters for particle and cavitation problems
 
+\level 3
+
 \maintainer Georg Hammerl
 *-----------------------------------------------------------------------*/
 #ifndef INPAR_CAVITATION_H
@@ -95,6 +97,7 @@ namespace INPAR
     {
       analytical_constpoly,
       analytical_quadraticpoly,
+      analytical_quarticpoly,
       gaussian_integration
     };
 

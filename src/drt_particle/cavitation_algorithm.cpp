@@ -64,6 +64,7 @@ CAVITATION::Algorithm::Algorithm(
   inflowradiusblending_((bool)DRT::INPUT::IntegralValue<int>(params,"INFLOW_RADIUS_BLENDING")),
   blendingsteps_(0),
   initbubblevelfromfluid_((bool)DRT::INPUT::IntegralValue<int>(params,"INIT_BUBBLEVEL_FROM_FLUID")),
+  influencescaling_(params.get<double>("INFLUENCE_SCALING")),
   fluiddis_(Teuchos::null),
   fluid_(Teuchos::null),
   ele_volume_(Teuchos::null),

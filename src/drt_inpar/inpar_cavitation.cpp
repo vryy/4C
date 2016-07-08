@@ -60,11 +60,13 @@ void INPAR::CAVITATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
                               tuple<std::string>(
                                 "analytical_constpoly",
                                 "analytical_quadraticpoly",
+                                "analytical_quarticpoly",
                                 "gaussian_integration"
                                 ),
                               tuple<int>(
                                 analytical_constpoly,
                                 analytical_quadraticpoly,
+                                analytical_quarticpoly,
                                 gaussian_integration
                                 ),
                               &cavitationdyn);
@@ -97,6 +99,8 @@ void INPAR::CAVITATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
   BoolParameter("COMPUTE_RADIUS_RP_BASED","no","switch on/off radius calculation based on Ralyeigh-Plesset equation",&cavitationdyn);
 
   BoolParameter("INIT_BUBBLEVEL_FROM_FLUID","no","interpolate initial velocity for particles from fluid field",&cavitationdyn);
+
+  DoubleParameter("INFLUENCE_SCALING",1.2,"Scale for bubble radius to obtain influence radius for void frac computation",&cavitationdyn);
 
   BoolParameter("SPARSE_BIN_DISTRIBUTION","no","decide whether empty bins are removed",&cavitationdyn);
 }
