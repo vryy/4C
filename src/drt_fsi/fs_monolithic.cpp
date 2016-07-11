@@ -1,4 +1,16 @@
+/*----------------------------------------------------------------------------*/
+/*!
+\file fs_monolithic.cpp
 
+\maintainer Matthias Mayr
+
+\level 2
+
+\brief Monolithic solver for free-surface flow
+*/
+/*----------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------------*/
 #include "fs_monolithic.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_ale_fluid.H"
@@ -1244,6 +1256,7 @@ FSI::OverlappingBlockMatrixFS::OverlappingBlockMatrixFS(const LINALG::MultiMapEx
                                  fomega,
                                  fiterations,
                                  err),
+    structuresplit_(structuresplit),
     fluid_(fluid),
     ale_(ale)
 {
