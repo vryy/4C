@@ -4,11 +4,9 @@
 
 \brief General framework for monolithic fsi solution schemes
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\maintainer Matthias Mayr
+
+\level 1
 */
 
 /*----------------------------------------------------------------------------*/
@@ -26,7 +24,6 @@ Maintainer: Matthias Mayr
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_condition_utils.H" // ToDo (mayr) remove?
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_utils.H"
 
@@ -42,7 +39,6 @@ Maintainer: Matthias Mayr
 
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
-#include "../drt_io/io.H" // ToDo (mayr) remove?
 
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
