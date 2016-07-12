@@ -1,10 +1,13 @@
 /*!-----------------------------------------------------------------------------------------------*
 \file xfem_coupling_mesh.H
 
-\brief
+\brief manages the different types of mesh based coupling conditions and thereby builds the bridge between the
+xfluid class and the cut-library
+
+\level 2
 
 <pre>
-Maintainer: Benedikt Schott
+\maintainer Benedikt Schott
             schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
@@ -148,7 +151,7 @@ private:
     if(ndim != 3 ) dserror("only three-dimensional XFEM applications supported!");
 
     if(dis->NumMyColNodes() == 0) dserror("discretization does not have col nodes?!");
-    const int numdof = dis->NumDof(dis->lColNode(0));
+    const int numdof = dis->NumDof(0,dis->lColNode(0));
 
     switch(numdof)
     {
