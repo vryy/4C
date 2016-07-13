@@ -126,9 +126,12 @@ void STR::TIMINT::Base::Reset()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::ResetStep()
 {
-  dserror("ResetStep of all \"n+1\" class variables is not yet implemented for "
-      "the modelevaluator!");
-  // ModelEvaluator().ResetStep();
+  CheckInitSetup();
+
+  int_ptr_->ResetStepState();
+
+  // I am gone
+   return;
 }
 
 /*----------------------------------------------------------------------------*

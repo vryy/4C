@@ -107,6 +107,12 @@ namespace TIMINT {
       return nlnsolver_ptr_;
     };
 
+    //! do something in case nonlinear solution does not converge for some reason
+     INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv);
+
+    //! check, if according to divercont flag time step size can be increased
+    void CheckForTimeStepIncrease(INPAR::STR::ConvergenceStatus& status);
+
   protected:
     // returns the current solution group
     virtual const NOX::Abstract::Group& GetSolutionGroup() const;

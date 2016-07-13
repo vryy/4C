@@ -835,6 +835,31 @@ void STR::MODELEVALUATOR::Structure::OutputStepState(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Structure::ResetStepState()
+{
+  CheckInitSetup();
+
+  // reset disp, vel, acc state vector
+  GStatePtr()->GetMutableDisNp()->Update(1.0, (*GStatePtr()->GetDisN()), 0.0);
+  GStatePtr()->GetMutableVelNp()->Update(1.0, (*GStatePtr()->GetVelN()), 0.0);
+  GStatePtr()->GetMutableAccNp()->Update(1.0, (*GStatePtr()->GetAccN()), 0.0);
+
+  // reset anything that needs to be reset at the element level
+  {
+    // create the parameters for the discretization
+    Teuchos::ParameterList p;
+    p.set("action", "calc_struct_reset_istep");
+    // go to elements
+    DiscretPtr()->Evaluate(p, Teuchos::null, Teuchos::null,
+                       Teuchos::null, Teuchos::null, Teuchos::null);
+    DiscretPtr()->ClearState();
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Structure::
     GetBlockDofRowMapPtr() const
 {

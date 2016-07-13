@@ -129,6 +129,9 @@ namespace MODELEVALUATOR {
     //! output routine for model evlaluator
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const = 0;
 
+    //! reset routine for model evlaluator
+    virtual void ResetStepState() = 0;
+
     //! @name Accessors to model specific things
     //! @{
 

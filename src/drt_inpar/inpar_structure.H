@@ -380,10 +380,11 @@ namespace INPAR
     /// Handling of non-converged nonlinear solver
     enum ConvergenceStatus
     {
-      conv_success = 0,        ///< converged successfully
-      conv_nonlin_fail = 1,    ///< nonlinear solution procedure failed
+      conv_success = 0,         ///< converged successfully
+      conv_nonlin_fail = 1,     ///< nonlinear solution procedure failed
       conv_lin_fail = 2,        ///< linear system failed
-      conv_ele_fail = 3        ///< failure in element in form of negative Jac. det.
+      conv_ele_fail = 3,        ///< failure in element in form of negative Jac. det.
+      conv_fail_repeat = 4      ///< nonlinear solver failed, repeat step according to divercont action set in input file
     };
 
 

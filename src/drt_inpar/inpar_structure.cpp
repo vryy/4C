@@ -4,11 +4,9 @@
 
 \brief Input parameters for combustion
 
-<pre>
 \maintainer Alexander Seitz
-            seitz@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-</pre>
+
+\level 1
 */
 
 /*----------------------------------------------------------------------*/
@@ -324,6 +322,10 @@ namespace INPAR
                                     divcont_repeat_simulation,
                                     divcont_adapt_penaltycontact),
                                   &sdyn);
+
+    IntParameter("MAXDIVCONREFINEMENTLEVEL",10,
+                 "number of times timestep is halved in case nonlinear solver diverges",
+                 &sdyn);
 
     setStringToIntegralParameter<int>("NLNSOL","fullnewton","Nonlinear solution technique",
                                  tuple<std::string>(

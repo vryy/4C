@@ -823,6 +823,17 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Contact::ResetStepState()
+{
+  CheckInitSetup();
+
+  dserror("Not yet implemented");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 STR::MODELEVALUATOR::ContactData& STR::MODELEVALUATOR::Contact::EvalContact()
 {
   CheckInitSetup();

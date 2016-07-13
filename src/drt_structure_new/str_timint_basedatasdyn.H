@@ -175,6 +175,13 @@ namespace TIMINT {
       return divergenceaction_;
     };
 
+    /// Returns number of times you want to halve your timestep in case nonlinear solver diverges
+    const int& GetMaxDivConRefineLevel() const
+    {
+      CheckInitSetup();
+      return maxdivconrefinementlevel_;
+    };
+
     /// Returns nox parameters
     const Teuchos::ParameterList& GetNoxParams() const
     {
@@ -279,6 +286,29 @@ namespace TIMINT {
     {
       CheckInitSetup();
       return nox_normtype_;
+    }
+
+    /// Return random factor for timestep in case nonlinear solver diverges
+    const double& GetRandomTimeStepFactor() const
+    {
+      CheckInitSetup();
+      return rand_tsfac_;
+    }
+
+
+    /// Return level of refinement in case of divercontype_ == adapt_step
+    const int& GetDivConRefineLevel() const
+    {
+      CheckInitSetup();
+      return divconrefinementlevel_;
+    }
+
+
+    /// Return number of fine steps in case of in case of divercontype_ == adapt_step
+    const int& GetDivConNumFineStep() const
+    {
+      CheckInitSetup();
+      return divconnumfinestep_;
     }
 
     /// @name Get residual and increment related parameters
@@ -421,6 +451,27 @@ namespace TIMINT {
     {
       CheckInitSetup();
       return *locaparams_;
+    }
+
+    /// Return random factor for time step in case nonlinear solver diverges
+    double& GetMutableRandomTimeStepFactor()
+    {
+      CheckInitSetup();
+      return rand_tsfac_;
+    }
+
+    /// Return level of refinement in case of divercontype_ == adapt_step
+    int& GetMutableDivConRefineLevel()
+    {
+      CheckInitSetup();
+      return divconrefinementlevel_;
+    }
+
+    /// Return number of fine steps in case of in case of divercontype_ == adapt_step
+    int& GetMutableDivConNumFineStep()
+    {
+      CheckInitSetup();
+      return divconnumfinestep_;
     }
 
     ///@}
@@ -600,6 +651,9 @@ namespace TIMINT {
     /// action to be performed when the non-linear solver diverges
     enum INPAR::STR::DivContAct divergenceaction_;
 
+    /// how often you want to half your timestep until you give up
+    int maxdivconrefinementlevel_;
+
     /// nox parameters list
     Teuchos::RCP<Teuchos::ParameterList> noxparams_;
 
@@ -741,6 +795,15 @@ namespace TIMINT {
 
     /// type of combination of the displacement and the 0D cardiovascular model dof increment test
     enum INPAR::STR::BinaryOp normcombo_disp_cardvasc0d_incr_;
+
+    /// random factor for modifying time-step size in case this way of continuing non-linear iteration was chosen
+    double rand_tsfac_;
+
+    /// number of refinement level in case of divercontype_ == adapt_step
+    int divconrefinementlevel_;
+
+    /// number of converged time steps on current refinement level in case of divercontype_ == adapt_step
+    int divconnumfinestep_;
 
     ///@}
     ///@}

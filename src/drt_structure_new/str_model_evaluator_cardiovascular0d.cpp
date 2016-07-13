@@ -292,6 +292,17 @@ void STR::MODELEVALUATOR::Cardiovascular0D::OutputStepState(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Cardiovascular0D::ResetStepState()
+{
+  CheckInitSetup();
+
+  dserror("Not yet implemented");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Cardiovascular0D::Reset(
     const Epetra_Vector& x,
     LINALG::SparseOperator& jac)

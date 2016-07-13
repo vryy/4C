@@ -5,17 +5,16 @@
 \brief Wrapper for the structural time integration which gives fine grained
        access in the time loop
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\maintainer Georg Hammerl
+
+\level 1
+
 */
 /*----------------------------------------------------------------------*/
 
 #include "ad_str_timeloop.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -27,7 +26,7 @@ int ADAPTER::StructureTimeLoop::Integrate()
 
   // target time #timen_ and step #stepn_ already set
   // time loop
-  while ( NotFinished() and (convergencestatus == INPAR::STR::conv_success) )
+  while ( NotFinished() and (convergencestatus == INPAR::STR::conv_success or convergencestatus == INPAR::STR::conv_fail_repeat) )
   {
 
     // call the predictor
@@ -65,9 +64,10 @@ int ADAPTER::StructureTimeLoop::Integrate()
       // print info about finished time step
       PrintStep();
     }
-    else // something went wrong update error code according to chosen divcont action
+    // todo: remove this as soon as old structure time integration is gone
+    else if (DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(DRT::Problem::Instance()->StructuralDynamicParams(),"INT_STRATEGY") == INPAR::STR::int_old)
     {
-      convergencestatus = PerformErrorAction(convergencestatus);
+      convergencestatus = PerformErrorAction(convergencestatus); // something went wrong update error code according to chosen divcont action
     }
   }
 

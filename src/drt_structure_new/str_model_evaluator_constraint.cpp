@@ -235,6 +235,17 @@ void STR::MODELEVALUATOR::Constraint::OutputStepState(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void STR::MODELEVALUATOR::Constraint::ResetStepState()
+{
+  CheckInitSetup();
+
+  dserror("Not yet implemented");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Constraint::Reset(
     const Epetra_Vector& x,
     LINALG::SparseOperator& jac)

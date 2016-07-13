@@ -275,6 +275,14 @@ void STR::Integrator::OutputStepState(IO::DiscretizationWriter& iowriter) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::Integrator::ResetStepState()
+{
+  CheckInitSetup();
+  ModelEval().ResetStepState();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 double STR::Integrator::GetCondensedUpdateNorm(
     const enum NOX::NLN::StatusTest::QuantityType& qtype) const
 {

@@ -125,6 +125,11 @@ namespace TIMINT {
 
     /// things that should be done after updating
     virtual void PostUpdate() = 0;
+
+    /*  This function is supposed to reset all variables which are directly related
+     *  to the current new step n+1. To be more precise all variables ending with "Np"
+     *  have to be reseted. */
+    virtual void ResetStepState();
     //!@}
 
     //! @name Accessors

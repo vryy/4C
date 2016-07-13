@@ -92,6 +92,9 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       normcombo_disp_contact_lm_incr_(INPAR::STR::bop_and),
       normcombo_fres_cardvasc0d_res_(INPAR::STR::bop_and),
       normcombo_disp_cardvasc0d_incr_(INPAR::STR::bop_and),
+      rand_tsfac_(1.0),
+      divconrefinementlevel_(0),
+      divconnumfinestep_(0),
       sdynparams_ptr_(Teuchos::null)
 {
   // empty constructor
@@ -164,6 +167,7 @@ void STR::TIMINT::BaseDataSDyn::Init(
         DRT::INPUT::IntegralValue<INPAR::STR::NonlinSolTech>(sdynparams,"NLNSOL");
     divergenceaction_ =
         DRT::INPUT::IntegralValue<INPAR::STR::DivContAct>(sdynparams,"DIVERCONT");
+    maxdivconrefinementlevel_ = sdynparams.get<int>("MAXDIVCONREFINEMENTLEVEL");
     noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(xparams.sublist("NOX")));
     if (xparams.isSublist("LOCA"))
     {

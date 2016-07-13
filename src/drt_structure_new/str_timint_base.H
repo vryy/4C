@@ -395,6 +395,69 @@ namespace TIMINT {
       CheckInitSetup();
       return datasdyn_->GetStepMax();
     }
+
+    /// Sets number of time steps
+    virtual void SetStepEnd(int step_end)
+    {
+      CheckInitSetup();
+      datasdyn_->GetMutableStepMax()=step_end;
+    }
+
+    //! Get divcont type
+    virtual enum INPAR::STR::DivContAct GetDivergenceAction() const
+    {
+      CheckInitSetup();
+      return datasdyn_->GetDivergenceAction();
+    }
+
+    //! Get number of times you want to halve your timestep in case nonlinear solver diverges
+    virtual int GetMaxDivConRefineLevel() const
+    {
+      CheckInitSetup();
+      return datasdyn_->GetMaxDivConRefineLevel();
+    }
+
+    //! Get random factor for time step adaption
+    virtual double GetRandomTimeStepFactor() const
+    {
+      CheckInitSetup();
+      return datasdyn_->GetRandomTimeStepFactor();
+    }
+
+    //! Set random factor for time step adaption
+    virtual double SetRandomTimeStepFactor(double rand_tsfac)
+    {
+      CheckInitSetup();
+      return datasdyn_->GetMutableRandomTimeStepFactor()=rand_tsfac;
+    }
+
+    //! Get random factor for time step adaption
+    virtual int GetDivConRefineLevel() const
+    {
+      CheckInitSetup();
+      return datasdyn_->GetDivConRefineLevel();
+    }
+
+    //! Set random factor for time step adaption
+    virtual int SetDivConRefineLevel(int divconrefinementlevel)
+    {
+      CheckInitSetup();
+      return datasdyn_->GetMutableDivConRefineLevel()=divconrefinementlevel;
+    }
+
+    //! Get random factor for time step adaption
+    virtual int GetDivConNumFineStep() const
+    {
+      CheckInitSetup();
+      return datasdyn_->GetDivConNumFineStep();
+    }
+
+    //! Set random factor for time step adaption
+    virtual int SetDivConNumFineStep(int divconnumfinestep)
+    {
+      CheckInitSetup();
+      return datasdyn_->GetMutableDivConNumFineStep()=divconnumfinestep;
+    }
     ///@}
 
     /// @name Structure with ale specific methods
@@ -418,11 +481,6 @@ namespace TIMINT {
     /// Resize MStep Object due to time adaptivity in FSI (derived)
     virtual void ResizeMStepTimAda();
 
-    /// do something in case nonlinear solution does not converge for some reason
-    /// FixMe Should be implemented in the STR::TIMINT::Implicit class.
-    /// All other derived branches are satisfied with a short error message!
-    virtual INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv)
-    { dserror("Not yet implemented!"); return INPAR::STR::conv_success; }
     /// @}
 
     /// Output writer related routines (file and screen output)

@@ -334,8 +334,14 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
+    case ELEMENTS::struct_calc_recover:
+    {
+      // do nothing here
+      break;
+    }
+
     case ELEMENTS::struct_calc_stress:
-      dserror("No stress output implemented for beam3r elements");
+//      dserror("No stress output implemented for beam3r elements");
     break;
 
     default:

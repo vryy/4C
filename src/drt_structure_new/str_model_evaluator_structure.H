@@ -89,6 +89,9 @@ namespace MODELEVALUATOR{
     virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
     //! derived
+    virtual void ResetStepState();
+
+    //! derived
     virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
 
     //! derived

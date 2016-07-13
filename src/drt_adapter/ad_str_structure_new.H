@@ -193,8 +193,10 @@ namespace ADAPTER {
     /// \date 11/08
     virtual int Integrate() = 0;
 
-    //! do something in case nonlinear solution does not converge for some reason
-    virtual INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv) = 0;
+    /// do something in case nonlinear solution does not converge for some reason
+    /// fixme: this can go when the old structure time integration is gone and PerformErrorAction is only called in STR::TIMINT::Implicit::Solve()
+    /// and not on the structure in the adapter time loop
+    INPAR::STR::ConvergenceStatus PerformErrorAction(INPAR::STR::ConvergenceStatus nonlinsoldiv) {dserror("You should not be here"); return nonlinsoldiv;};
 
     /// tests if there are more time steps to do
     virtual bool NotFinished() const = 0;

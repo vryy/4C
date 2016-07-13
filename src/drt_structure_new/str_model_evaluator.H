@@ -114,6 +114,9 @@ namespace MODELEVALUATOR {
     //! Write the current step state
     void OutputStepState(IO::DiscretizationWriter& iowriter) const;
 
+    //! reset all variables which are directly related to the current new step n+1.
+    void ResetStepState();
+
     /*! \brief Recover the current state
      *
      * Necessary for condensed systems, e.g. EAS, dual mortar, etc.*/
