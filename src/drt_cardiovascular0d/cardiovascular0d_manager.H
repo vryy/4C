@@ -87,6 +87,8 @@ namespace UTILS
     (
       const double time,  ///< time at end of time step
       Teuchos::RCP<const Epetra_Vector> disp,  ///< displacement at end of time step
+      Teuchos::RCP<Epetra_Vector> fint,  ///< vector of internal structural forces
+      Teuchos::RCP<LINALG::SparseOperator> stiff,  ///< structural stiffness matrix
       Teuchos::ParameterList scalelist
     );
 
@@ -137,7 +139,10 @@ namespace UTILS
     ///
     void EvaluateNeumannCardiovascular0DCoupling
     (
-      Teuchos::RCP<Epetra_Vector> actpres
+      Teuchos::ParameterList params,
+      Teuchos::RCP<Epetra_Vector> actpres,
+      Teuchos::RCP<Epetra_Vector> systemvector, ///< structural rhs
+      Teuchos::RCP<LINALG::SparseOperator> systemmatrix ///< structural stiffness matrix
     );
 
     /*!
@@ -161,12 +166,6 @@ namespace UTILS
     {
       return mat_dcardvasc0d_dd_;
     };
-
-//    //! Return the transpose of the additional rectangular matrix, constructed for pressure evaluation
-//    Teuchos::RCP<LINALG::SparseMatrix> GetMatDcardvasc0dDdTrans() //const
-//    {
-//      return mat_dcardvasc0d_dd_->Transpose();
-//    };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
     Teuchos::RCP<LINALG::SparseMatrix> GetMatDstructDcv0ddof() //const

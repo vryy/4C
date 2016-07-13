@@ -281,6 +281,8 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
 void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
     const double time,
     Teuchos::RCP<const Epetra_Vector> disp,
+    Teuchos::RCP<Epetra_Vector> fint,
+    Teuchos::RCP<LINALG::SparseOperator> stiff,
     Teuchos::ParameterList scalelist)
 {
 
@@ -414,7 +416,7 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   // ATTENTION: We necessarily need the end-point and NOT the generalized mid-point pressure here
   // since the external load vector will be set to the generalized mid-point by the respective time integrator!
   LINALG::Export(*cv0ddofn_,*cv0ddofnredundant);
-  EvaluateNeumannCardiovascular0DCoupling(cv0ddofnredundant);
+  EvaluateNeumannCardiovascular0DCoupling(p,cv0ddofnredundant,fint,stiff);
 
   return;
 }
@@ -525,8 +527,19 @@ void UTILS::Cardiovascular0DManager::SetRefDDFluxValue(Teuchos::RCP<Epetra_Vecto
   return;
 }
 
+
+
+
+
+
+
 /*----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(Teuchos::RCP<Epetra_Vector> actpres)
+void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
+    Teuchos::ParameterList params,
+    Teuchos::RCP<Epetra_Vector> actpres,
+    Teuchos::RCP<Epetra_Vector> systemvector,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix
+    )
 {
 
   std::vector<DRT::Condition*> surfneumcond;
@@ -537,7 +550,7 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(Teu
     dserror("No structure discretization available!");
 
   // get all Neumann conditions on structure
-  structdis->GetCondition("SurfaceNeumann",surfneumcond);
+  structdis->GetCondition("SurfaceNeumannCardiovascular0D",surfneumcond);
   unsigned int numneumcond = surfneumcond.size();
   if (numneumcond == 0) dserror("No Neumann conditions on structure!");
   // now filter those Neumann conditions that are due to the cardiovascular0d structure coupling
@@ -558,12 +571,47 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(Teu
 
     int id_strcoupcond = (cardvasc0dstructcoupcond[i])->GetInt("coupling_id");
 
-    DRT::Condition* cond = cardvasc0dstructcoupcond[i];
+    DRT::Condition* coupcond = cardvasc0dstructcoupcond[i];
     std::vector<double> newval(6,0.0);
     if (cardvasc0d_windkesselonly_->HaveCardiovascular0D()) newval[0] = -(*actpres)[id_strcoupcond];
     if (cardvasc0d_arterialproxdist_->HaveCardiovascular0D()) newval[0] = -(*actpres)[4*id_strcoupcond];
     if (cardvasc0d_arterialvenoussyspulcoupled_->HaveCardiovascular0D()) newval[0] = -(*actpres)[8*id_strcoupcond+3];
-    cond->Add("val",newval);
+    coupcond->Add("val",newval);
+
+
+    Teuchos::RCP<const Epetra_Vector> disp = params.get<Teuchos::RCP<const Epetra_Vector> >("new disp");
+    actdisc_->SetState("displacement new",disp);
+
+    Epetra_SerialDenseVector elevector;
+    Epetra_SerialDenseMatrix elematrix;
+    std::map<int,Teuchos::RCP<DRT::Element> >& geom = coupcond->Geometry();
+
+    std::map<int,Teuchos::RCP<DRT::Element> >::iterator curr;
+    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    {
+      // get element location vector, dirichlet flags and ownerships
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
+      elevector.Size((int)lm.size());
+
+      const int size = (int)lm.size();
+      if (elematrix.M() != size) elematrix.Shape(size,size);
+      else memset(elematrix.A(),0,size*size*sizeof(double));
+      curr->second->EvaluateNeumann(params,*actdisc_,*coupcond,lm,elevector,&elematrix);
+      // minus sign here since we sum into fint_ !!
+      elevector.Scale(-1.0);
+      LINALG::Assemble(*systemvector,elevector,lm,lmowner);
+      // plus sign here since EvaluateNeumann already assumes that an fext vector enters, and thus puts a minus infront of the load linearization matrix !!
+      elematrix.Scale(1.0);
+      systemmatrix->Assemble(curr->second->Id(),lmstride,elematrix,lm,lmowner);
+
+
+    }
+
+
+
   }
 
   return;

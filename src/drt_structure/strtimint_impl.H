@@ -283,6 +283,8 @@ namespace STR
     (
       const double time, //!< evaluation time
       const Teuchos::RCP<Epetra_Vector> disn, //!< evaluation displacements
+      Teuchos::RCP<Epetra_Vector>& fint, //!< forces are added onto
+      Teuchos::RCP<LINALG::SparseOperator>& stiff, //!< stiffness is added onto
       Teuchos::ParameterList pcon //!< parameter list containing scale factors for matrix entries
     );
 

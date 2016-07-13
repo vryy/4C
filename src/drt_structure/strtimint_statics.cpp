@@ -172,11 +172,6 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   // initialize stiffness matrix to zero
   stiff_->Zero();
 
-  // add forces and stiffness due to Cardiovascular0D bcs
-  Teuchos::ParameterList pwindk;
-  pwindk.set("time_step_size", (*dt_)[0]);
-  ApplyForceStiffCardiovascular0D(timen_, disn_, pwindk);
-
   // ************************** (1) EXTERNAL FORCES ***************************
 
   // build new external forces
@@ -207,6 +202,11 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(Teuchos::ParameterList& para
   // apply forces and stiffness due to constraints
   Teuchos::ParameterList pcon; //apply empty parameterlist, no scaling necessary
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
+
+  // add forces and stiffness due to Cardiovascular0D bcs
+  Teuchos::ParameterList pwindk;
+  pwindk.set("time_step_size", (*dt_)[0]);
+  ApplyForceStiffCardiovascular0D(timen_, disn_, fintn_, stiff_, pwindk);
 
   // potential forces
   ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);

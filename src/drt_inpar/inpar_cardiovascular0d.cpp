@@ -168,7 +168,7 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(std::vector<Teuchos::RCP<DRT::I
 
   Teuchos::RCP<ConditionDefinition> cardiovascular0dstructurecouplingcond =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF CARDIOVASCULAR 0D-STRUCTURE COUPLING CONDITIONS",
-                                         "SurfaceNeumann",
+                                         "SurfaceNeumannCardiovascular0D",
                                          "structure 0d cardiovascular coupling surface condition",
                                          DRT::Condition::Cardiovascular0DStructureCoupling,
                                          true,

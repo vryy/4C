@@ -98,7 +98,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<DRT::Discretization> disc
     if (structdis == Teuchos::null) dserror("no structure discretization available");
 
     // first get all Neumann conditions on structure
-    structdis->GetCondition("SurfaceNeumann",surfneumcond);
+    structdis->GetCondition("SurfaceNeumannCardiovascular0D",surfneumcond);
     unsigned int numneumcond = surfneumcond.size();
     if (numneumcond == 0) dserror("no Neumann conditions on structure");
 
@@ -1483,6 +1483,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
 
   return;
 }
+
 
 
 /*-----------------------------------------------------------------------*

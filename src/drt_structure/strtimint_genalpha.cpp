@@ -325,13 +325,6 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   // build predicted mid-state by last converged state and predicted target state
   EvaluateMidState();
 
-  // add forces and stiffness due to Cardiovascular0D bcs
-  // necessarily has to be done BEFORE fextm_ is built, since the Cardiovascular0D manager calls an EvaluateNeumann
-  // function and thus the correct application and linearization of the follower load is needed !!! (mhv 11/2013)
-  Teuchos::ParameterList pwindk;
-  pwindk.set("scale_timint", (1.-alphaf_));
-  pwindk.set("time_step_size", (*dt_)[0]);
-  ApplyForceStiffCardiovascular0D(timen_, disn_, pwindk);
 
   // ************************** (1) EXTERNAL FORCES ***************************
 
@@ -395,6 +388,12 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(Teuchos::ParameterList& par
   Teuchos::ParameterList pcon;
   pcon.set("scaleConstrMat", (1.0-alphaf_));
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
+
+  // add forces and stiffness due to 0D cardiovascular coupling conditions
+  Teuchos::ParameterList pwindk;
+  pwindk.set("scale_timint", (1.-alphaf_));
+  pwindk.set("time_step_size", (*dt_)[0]);
+  ApplyForceStiffCardiovascular0D(timen_, disn_, fintn_, stiff_, pwindk);
 
   // add surface stress force
   ApplyForceStiffSurfstress(timen_, (*dt_)[0], disn_, fintn_, stiff_);
