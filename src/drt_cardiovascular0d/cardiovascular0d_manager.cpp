@@ -79,10 +79,9 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
   dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor()))
 {
 
-  const enum INPAR::STR::IntegrationStrategy intstrat =
-        DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(strparams,"INT_STRATEGY");
+  intstrat_ = DRT::INPUT::IntegralValue<INPAR::STR::IntegrationStrategy>(strparams,"INT_STRATEGY");
 
-  switch (intstrat)
+  switch (intstrat_)
   {
     case INPAR::STR::int_standard:
       break;
@@ -186,6 +185,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
     actdisc_->ClearState();
     cv0ddof_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     cv0ddofincrement_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
+    strdisplincrement_=Teuchos::rcp(new Epetra_Vector(*dofrowmap));
     cv0ddofn_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     cv0ddofm_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
     dcv0ddof_=Teuchos::rcp(new Epetra_Vector(*cardiovascular0dmap_));
@@ -215,6 +215,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager
 
     cv0ddof_->PutScalar(0.0);
     cv0ddofincrement_->PutScalar(0.0);
+    strdisplincrement_->PutScalar(0.0);
     cv0ddofn_->PutScalar(0.0);
     cv0ddofm_->PutScalar(0.0);
     dcv0ddof_->PutScalar(0.0);
@@ -413,13 +414,44 @@ void UTILS::Cardiovascular0DManager::EvaluateForceStiff(
   mat_dcardvasc0d_dd_->Complete(*cardiovascular0dmap_,*dofrowmap);
   mat_dstruct_dcv0ddof_->Complete(*cardiovascular0dmap_,*dofrowmap);
 
+  stiff->UnComplete(); // sparsity pattern might change
+
   // ATTENTION: We necessarily need the end-point and NOT the generalized mid-point pressure here
   // since the external load vector will be set to the generalized mid-point by the respective time integrator!
   LINALG::Export(*cv0ddofn_,*cv0ddofnredundant);
   EvaluateNeumannCardiovascular0DCoupling(p,cv0ddofnredundant,fint,stiff);
 
+  stiff->Complete(); // sparsity pattern might have changed
+
+
+//  std::cout << *fint << std::endl;
+//  std::cout << *cardiovascular0drhsm_ << std::endl;
+
+//  LINALG::SparseMatrix* lalala = dynamic_cast<LINALG::SparseMatrix*>(&(*stiff));
+//  std::cout << *lalala << std::endl;
+
+//  std::cout << *mat_dstruct_dcv0ddof_ << std::endl;
+//  std::cout << *mat_dcardvasc0d_dd_->Transpose() << std::endl;
+//  std::cout << *cardiovascular0dstiffness_ << std::endl;
+
+  // print Newton norm output for structure and 0D model separately and neatly arranged (no f***ing NOX output)
+  switch (intstrat_)
+  {
+    case INPAR::STR::int_standard:
+      PrintNewton(fint);
+      break;
+    case INPAR::STR::int_old:
+      break;
+    default:
+      dserror("Unknown integration strategy!");
+      break;
+  }
+
   return;
 }
+
+
+
 
 
 void UTILS::Cardiovascular0DManager::UpdateTimeStep()
@@ -610,12 +642,16 @@ void UTILS::Cardiovascular0DManager::EvaluateNeumannCardiovascular0DCoupling(
 
     }
 
-
-
   }
 
   return;
 }
+
+
+
+
+
+
 
 void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
 {
@@ -728,7 +764,55 @@ void UTILS::Cardiovascular0DManager::PrintPresFlux(bool init) const
   return;
 }
 
+/*----------------------------------------------------------------------*/
+void UTILS::Cardiovascular0DManager::PrintNewton(
+    Teuchos::RCP<Epetra_Vector> strfintvector
+    )
+{
 
+  std::ostringstream oss;
+
+  double norm_fres_struct;
+  strfintvector->Norm2(&norm_fres_struct);
+
+  oss << std::setw(16) << std::setprecision(5) << std::scientific << norm_fres_struct;
+  oss << std::setw(16) << std::setprecision(5) << std::scientific << GetStructuralDisplIncrNorm();
+
+  oss << std::setw(16) << std::setprecision(5) << std::scientific << GetCardiovascular0DRHSNorm();
+  oss << std::setw(16) << std::setprecision(5) << std::scientific << GetCardiovascular0DDofIncrNorm();
+
+
+  // finish oss
+  oss << std::ends;
+
+  fprintf(stdout, "%s\n", oss.str().c_str());
+  fflush(stdout);
+
+  return;
+
+}
+
+/*----------------------------------------------------------------------*/
+void UTILS::Cardiovascular0DManager::PrintNewtonHeader()
+{
+
+  std::ostringstream oss;
+
+  oss << std::setw(16)<< "abs-res-norm";
+  oss << std::setw(16)<< "abs-dis-norm";
+
+  oss << std::setw(16)<< "abs-0Dres-norm";
+  oss << std::setw(16)<< "abs-0Dinc-norm";
+
+  // finish oss
+  oss << std::ends;
+
+  fprintf(stdout, "%s\n", oss.str().c_str());
+  fflush(stdout);
+
+  return;
+
+}
 
 /*----------------------------------------------------------------------*
  |  set-up (public)                                            mhv 11/13|

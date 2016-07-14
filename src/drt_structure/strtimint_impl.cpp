@@ -4102,8 +4102,8 @@ void STR::TimIntImpl::PrintNewtonIterHeader( FILE* ofile )
   // add Cardiovascular0D norm
   if (cardvasc0dman_->HaveCardiovascular0D())
   {
-    oss << std::setw(16)<< "abs-wkres-norm";
-    oss << std::setw(16)<< "abs-wkinc-norm";
+    oss << std::setw(16)<< "abs-0Dres-norm";
+    oss << std::setw(16)<< "abs-0Dinc-norm";
   }
 
   if (itertype_==INPAR::STR::soltech_ptc)

@@ -24,6 +24,7 @@
 #include <Teuchos_ParameterList.hpp>
 
 #include "../drt_inpar/inpar_cardiovascular0d.H"
+#include "../drt_inpar/inpar_structure.H"
 
 namespace IO
 {
@@ -92,6 +93,15 @@ namespace UTILS
       Teuchos::ParameterList scalelist
     );
 
+    void EvaluateForceStiff2
+    (
+      const double time,  ///< time at end of time step
+      const Teuchos::RCP<const Epetra_Vector> disp,  ///< displacement at end of time step
+      Epetra_Vector& fint,  ///< vector of internal structural forces
+      LINALG::SparseMatrix& stiff,  ///< structural stiffness matrix
+      Teuchos::ParameterList scalelist
+    );
+
     /*!
      \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
     */
@@ -103,7 +113,7 @@ namespace UTILS
     };
 
     /*!
-     \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
+     \brief Return cardiovascular0d dof inbcr norm
     */
     double GetCardiovascular0DDofIncrNorm() const
     {
@@ -115,10 +125,36 @@ namespace UTILS
     /*!
      \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
     */
+    double GetStructuralDisplIncrNorm() const
+    {
+      double foo;
+      strdisplincrement_->Norm2(&foo);
+      return foo;
+    };
+
+    /*!
+     \brief Store structural displ incr
+    */
+    void StoreStructuralDisplIncrement(Teuchos::RCP<Epetra_Vector> displincr) const
+    {
+      strdisplincrement_->Update(1.,*displincr,0.);
+      return;
+    };
+
+    /*!
+     \brief Return cardiovascular0d rhs norm at generalized midpoint $t_{n+\theta}$
+    */
     int GetCardiovascular0DLinSolveError() const
     {
       return linsolveerror_;
     };
+
+    void StoreCv0dDofIncrement(Teuchos::RCP<Epetra_Vector> cv0ddofincr) const
+    {
+      cv0ddofincrement_->Update(1.,*cv0ddofincr,0.);
+      return;
+    };
+
 
     /*!
          \brief Update cardiovascular0d dofs
@@ -143,6 +179,15 @@ namespace UTILS
       Teuchos::RCP<Epetra_Vector> actpres,
       Teuchos::RCP<Epetra_Vector> systemvector, ///< structural rhs
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix ///< structural stiffness matrix
+    );
+
+    ///
+    void EvaluateNeumannCardiovascular0DCoupling2
+    (
+      Teuchos::ParameterList params,
+      Teuchos::RCP<Epetra_Vector> actpres,
+      Epetra_Vector& systemvector, ///< structural rhs
+      LINALG::SparseMatrix& systemmatrix ///< structural stiffness matrix
     );
 
     /*!
@@ -194,6 +239,13 @@ namespace UTILS
     {
       return cv0ddof_;
     };
+
+    void PrintNewton
+    (
+      Teuchos::RCP<Epetra_Vector> strfintvector
+    );
+
+    void PrintNewtonHeader();
 
     /*!
      \brief Return if there are Cardiovascular0Ds
@@ -311,6 +363,7 @@ namespace UTILS
     Teuchos::RCP<Epetra_Vector> dcv0ddofn_; ///< cvdof rate vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> dcv0ddofm_; ///< cvdof rate vector at mid-point
     Teuchos::RCP<Epetra_Vector> cv0ddofincrement_; ///< increment of cvdof
+    Teuchos::RCP<Epetra_Vector> strdisplincrement_; ///< increment of struct displacements
     Teuchos::RCP<Epetra_Vector> v_; ///< vol vector at t_{n}
     Teuchos::RCP<Epetra_Vector> vn_; ///< vol vector at t_{n+1}
     Teuchos::RCP<Epetra_Vector> vm_; ///< vol vector at mid-point
@@ -361,6 +414,7 @@ namespace UTILS
     int linsolveerror_;
     Teuchos::ParameterList strparams_; ///< structure input parameters
     Teuchos::ParameterList cv0dparams_; ///< 0D cardiovascular input parameters
+    INPAR::STR::IntegrationStrategy intstrat_; ///< structural time-integration strategy (old vs. standard)
   }; //class
 }
 #endif /*0DCARDIOVASCULAR_MANAGER_H*/
