@@ -844,16 +844,20 @@ void STR::MODELEVALUATOR::Structure::ResetStepState()
   GStatePtr()->GetMutableVelNp()->Update(1.0, (*GStatePtr()->GetVelN()), 0.0);
   GStatePtr()->GetMutableAccNp()->Update(1.0, (*GStatePtr()->GetAccN()), 0.0);
 
-  // reset anything that needs to be reset at the element level
-  {
-    // create the parameters for the discretization
-    Teuchos::ParameterList p;
-    p.set("action", "calc_struct_reset_istep");
-    // go to elements
-    DiscretPtr()->Evaluate(p, Teuchos::null, Teuchos::null,
-                       Teuchos::null, Teuchos::null, Teuchos::null);
-    DiscretPtr()->ClearState();
-  }
+  // other parameters that might be needed by the elements
+  EvalData().SetTotalTime(GState().GetTimeNp());
+  EvalData().SetDeltaTime((*GState().GetDeltaTime())[0]);
+  // action for elements
+  EvalData().SetActionType(DRT::ELEMENTS::struct_calc_reset_istep);
+
+  // set dummy evaluation vectors and matrices
+  Teuchos::RCP<Epetra_Vector> eval_vec [3] =
+      {Teuchos::null,Teuchos::null,Teuchos::null};
+  Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] =
+      {Teuchos::null,Teuchos::null};
+  EvaluateInternal(eval_mat,eval_vec);
+
+  DiscretPtr()->ClearState();
 
   return;
 }
