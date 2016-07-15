@@ -32,7 +32,7 @@ namespace NLN {
     sol_contact,
     // meshtying quantities
     sol_meshtying,
-    // windkessel quantities
+    // 0D cardiovascular quantities
     sol_cardiovascular0d,
     // spring dashpot quantities
     sol_springdashpot,

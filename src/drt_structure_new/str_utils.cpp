@@ -128,7 +128,7 @@ enum NOX::NLN::OptimizationProblemType STR::NLN::OptimizationType(
       // -----------------------------------
       case NOX::NLN::sol_meshtying:
       case NOX::NLN::sol_lag_pen_constraint:
-      case NOX::NLN::sol_cardiovascular0d:
+      //case NOX::NLN::sol_cardiovascular0d:
         opttype = NOX::NLN::opt_equality_constrained;
         break;
       // -----------------------------------
@@ -138,6 +138,7 @@ enum NOX::NLN::OptimizationProblemType STR::NLN::OptimizationType(
       // -----------------------------------
       case NOX::NLN::sol_structure:
       case NOX::NLN::sol_springdashpot:
+      case NOX::NLN::sol_cardiovascular0d:
       default:
         break;
     }
@@ -172,8 +173,11 @@ void STR::NLN::CreateConstraintInterfaces(
         break;
       }
       case NOX::NLN::sol_cardiovascular0d:
-//        iconstr[NOX::NLN::sol_cardiovascular0d] = itimint.GetCardiovascular0DManager();
+      {
+//        iconstr[NOX::NLN::sol_cardiovascular0d] = itimint.GetLagPenConstrManager();
 //        break;
+        break;
+      }
       case NOX::NLN::sol_lag_pen_constraint:
 //        iconstr[NOX::NLN::sol_cardiovascular0d] = itimint.GetLagPenConstrManager();
 //        break;

@@ -203,6 +203,19 @@ double STR::TIMINT::NoxInterface::GetPrimaryRHSNorms(
         rhsnorm /= static_cast<double>(rhs_nox_ptr->length());
       break;
     }
+    case NOX::NLN::StatusTest::quantity_cardiovascular0d:
+    {
+      // export the solution if necessary
+      Teuchos::RCP<Epetra_Vector> rhs0d_ptr =
+          gstate_ptr_->ExportModelEntries(INPAR::STR::model_cardiovascular0d,F);
+
+      // transform to a NOX::Epetra::Vector
+      Teuchos::RCP<const NOX::Epetra::Vector> rhs0d_nox_ptr =
+          Teuchos::rcp(new NOX::Epetra::Vector(rhs0d_ptr,
+              NOX::Epetra::Vector::CreateView));
+      rhsnorm = rhs0d_nox_ptr->norm(type);
+      break;
+    }
     default:
     {
       /* Nothing to do. Functionality is supposed to be extended. */
@@ -288,6 +301,22 @@ double STR::TIMINT::NoxInterface::GetPrimarySolutionUpdateNorms(
 
       break;
     }
+    case NOX::NLN::StatusTest::quantity_cardiovascular0d:
+    {
+      // export the solution if necessary
+      Teuchos::RCP<Epetra_Vector> cv0dincr_ptr =
+          gstate_ptr_->ExportModelEntries(INPAR::STR::model_cardiovascular0d,xold);
+      Teuchos::RCP<const Epetra_Vector> cv0dnew_ptr =
+          gstate_ptr_->ExportModelEntries(INPAR::STR::model_cardiovascular0d,xnew);
+
+      cv0dincr_ptr->Update(1.0,*cv0dnew_ptr,-1.0);
+      Teuchos::RCP<const NOX::Epetra::Vector> cv0dincr_nox_ptr =
+          Teuchos::rcp(new NOX::Epetra::Vector(cv0dincr_ptr,NOX::Epetra::Vector::CreateView));
+
+      updatenorm = cv0dincr_nox_ptr->norm(type);
+
+      break;
+    }
     case NOX::NLN::StatusTest::quantity_eas:
     {
       // get the update norm of the condensed quantities
@@ -338,6 +367,19 @@ double STR::TIMINT::NoxInterface::GetPreviousPrimarySolutionNorms(
       // do the scaling if desired
       if (isscaled)
         xoldnorm /= static_cast<double>(disold_nox_ptr->length());
+
+      break;
+    }
+    case NOX::NLN::StatusTest::quantity_cardiovascular0d:
+    {
+      // export the solution if necessary
+      Teuchos::RCP<Epetra_Vector> cv0dold_ptr =
+          gstate_ptr_->ExportModelEntries(INPAR::STR::model_cardiovascular0d,xold);
+
+      Teuchos::RCP<const NOX::Epetra::Vector> cv0dold_nox_ptr =
+          Teuchos::rcp(new NOX::Epetra::Vector(cv0dold_ptr,NOX::Epetra::Vector::CreateView));
+
+      xoldnorm = cv0dold_nox_ptr->norm(type);
 
       break;
     }

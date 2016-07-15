@@ -1881,6 +1881,7 @@ set(OBJS_SOLVER_NONLIN_NOX
   src/solver_nonlin_nox/nox_nln_inner_statustest_armijo.cpp
   src/drt_structure_new/nox_nln_str_linearsystem.cpp
   src/drt_contact_aug/nox_nln_contact_linearsystem.cpp
+  src/drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.cpp
 )
 
 set(OBJS_LOCA_CONTINUATION

@@ -30,6 +30,7 @@
 
 //// header files for different linearSystems
 #include "../drt_contact_aug/nox_nln_contact_linearsystem.H"
+#include "../drt_cardiovascular0d/nox_nln_cardiovascular0d_linearsystem.H"
 #include "../drt_structure_new/nox_nln_str_linearsystem.H"
 
 /*----------------------------------------------------------------------------*
@@ -95,16 +96,20 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> NOX::NLN::LinSystem::Factory::
     // structural/cardiovascular0d case
     case NOX::NLN::LinSystem::linear_system_structure_cardiovascular0d:
     {
-      dserror("Sorry dude, 0D cardiovascular-structure coupling not yet enabled!");
+//      dserror("Sorry dude, 0D cardiovascular-structure coupling not yet enabled!");
 //      const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iConstr =
 //          noxNlnGlobalData.GetConstraintInterfaces();
 //      const NOX::NLN::CONSTRAINT::PrecInterfaceMap& iConstrPrec =
 //          noxNlnGlobalData.GetConstraintPrecInterfaces();
 //
-//      linSys = Teuchos::rcp(new NOX::NLN::CONTACT::LinearSystem(
+//      linSys = Teuchos::rcp(new NOX::NLN::CARDIOVASCULAR0D::LinearSystem(
 //          printParams,lsParams,linSolvers,iReq,iJac,iConstr,jac,iPrec,
 //          iConstrPrec,precMat,*cloneVector,scalingObject));
-//      break;
+
+      linSys = Teuchos::rcp(new NOX::NLN::CARDIOVASCULAR0D::LinearSystem(
+          printParams,lsParams,linSolvers,iReq,iJac,jac,iPrec,precMat,
+          *cloneVector,scalingObject));
+      break;
     }
     // default case
     default:

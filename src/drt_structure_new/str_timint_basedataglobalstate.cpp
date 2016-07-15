@@ -425,13 +425,32 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExportDisplEntries
   Teuchos::RCP<Epetra_Vector> displ_ptr = Teuchos::null;
   if (not source.Map().PointSameAs(*DofRowMapView()))
   {
-      displ_ptr = Teuchos::rcp(new Epetra_Vector(*DofRowMapView()));
-      LINALG::Export(source,*displ_ptr);
+    displ_ptr = Teuchos::rcp(new Epetra_Vector(*DofRowMapView()));
+    LINALG::Export(source,*displ_ptr);
   }
   else
     displ_ptr = Teuchos::rcp(new Epetra_Vector(source));
 
   return displ_ptr;
+}
+
+/*----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------mh 07/2016 */
+Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExportModelEntries(
+    const INPAR::STR::ModelType& mt,
+    const Epetra_Vector& source) const
+{
+
+  Teuchos::RCP<Epetra_Vector> model_ptr = Teuchos::null;
+  if (not source.Map().PointSameAs(*model_maps_.at(mt)))
+  {
+    model_ptr = Teuchos::rcp(new Epetra_Vector(*model_maps_.at(mt)));
+    LINALG::Export(source,*model_ptr);
+  }
+  else
+    model_ptr = Teuchos::rcp(new Epetra_Vector(source));
+
+  return model_ptr;
 }
 
 /*----------------------------------------------------------------------------*

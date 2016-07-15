@@ -91,6 +91,12 @@ namespace TIMINT {
     Teuchos::RCP<Epetra_Vector> ExportDisplEntries(
         const Epetra_Vector& source) const;
 
+    /// Get the part of a vector which belongs to the model dofs. If
+    /// it is a pure structural problem a pointer to a copy of the input vector is returned.
+    Teuchos::RCP<Epetra_Vector> ExportModelEntries(
+        const INPAR::STR::ModelType& mt,
+        const Epetra_Vector& source) const;
+
     Teuchos::RCP<LINALG::SparseMatrix> ExtractModelBlock(
         LINALG::SparseOperator& jac,
         const INPAR::STR::ModelType& mt) const;
