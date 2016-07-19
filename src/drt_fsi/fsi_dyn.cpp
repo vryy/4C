@@ -523,7 +523,7 @@ void fsi_ale_drt()
           // do setup again after redistribution (do this again here in between because the P matrix changed!)
           fsi->SetupSystem();
           fsi->RedistributeDomainDecomposition(INPAR::FSI::Redistribute_fluid,
-              coupling, weight1, weight2, comm, numproc/2 -1);
+              coupling, weight1, weight2, comm, numproc/2);
 
           // do setup again after redistribution
           fsi->SetupSystem();
