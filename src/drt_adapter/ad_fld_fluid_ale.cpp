@@ -5,8 +5,8 @@
 \brief Solver for fluid field on a moving ALE mesh
 
 \maintainer Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289 10362
+
+\level 1
 */
 /*----------------------------------------------------------------------------*/
 #include "../drt_lib/drt_globalproblem.H"
@@ -34,10 +34,10 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
   fluid_ = fluid->FluidField();
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale =
       Teuchos::rcp(new ADAPTER::AleBaseAlgorithm(prbdyn,DRT::Problem::Instance()->GetDis("ale")));
-  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField());
+  ale_ = Teuchos::rcp_dynamic_cast<ADAPTER::AleFluidWrapper>(ale->AleField(), true);
 
-//  if (ale_ == Teuchos::null)
-//    dserror("Failed to cast to problem-specific ALE-wrapper");
+  if (ale_ == Teuchos::null)
+    dserror("Failed to cast to problem-specific ALE-wrapper");
 
   const int ndim = DRT::Problem::Instance()->NDim();
 
@@ -48,15 +48,18 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
     const Epetra_Map* fluidnodemap = FluidField()->Discretization()->NodeRowMap();
     const Epetra_Map* alenodemap   = AleField()->Discretization()->NodeRowMap();
 
-    //setup coupling adapter
+    /* Setup coupling adapter
+     *
+     * Since ALE has been cloned form fluid discretization, nodes reside at the
+     * exact same location. Thus, we specify a very tight tolerance for the
+     * octree search.
+     */
     Teuchos::RCP<ADAPTER::Coupling> coupfa_matching = Teuchos::rcp(new Coupling());
     coupfa_matching->SetupCoupling(*FluidField()->Discretization(),
-                                   *AleField()->Discretization(),
-                                   *fluidnodemap,
-                                   *alenodemap,
-                                   ndim,
-                                   DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->FSIDynamicParams(),"MATCHALL"));
-   coupfa_ = coupfa_matching;
+        *AleField()->Discretization(), *fluidnodemap, *alenodemap, ndim,
+        DRT::INPUT::IntegralValue<bool>(
+            DRT::Problem::Instance()->FSIDynamicParams(), "MATCHALL"));
+    coupfa_ = coupfa_matching;
   }
   else
   {
