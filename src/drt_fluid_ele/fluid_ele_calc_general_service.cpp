@@ -5,10 +5,8 @@
 \brief general service routines for calculation of fluid element
 
 \maintainer Volker Gravemeier
-            vgravem@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15236/-245
 
+\level 1
 */
 /*----------------------------------------------------------------------*/
 
@@ -1530,44 +1528,73 @@ void DRT::ELEMENTS::FluidEleCalc<distype,enrtype>::EvaluateAnalyticSolutionPoint
   break;
   case INPAR::FLUID::fsi_fluid_pusher:
   {
+    /* Since the fluid pusher solution depends only on time, but not on spatial
+     * cooordinates x,y,z, we only compute the L2-error and no H1-error.
+     */
+
     // get pointer to material in order to access density
     if (mat->MaterialType() == INPAR::MAT::m_fluid)
     {
       const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
 
-      // compute analytical velocities and pressure for
+      // available solution types
+      enum SOLUTIONTYPE
+      {
+        quadratic, // d(t) = -t^2
+        cubic, // d(t) = -t^3
+        quartic, // d(t) = -t^4
+        quintic // d(t) = -t^5
+      };
+
+      // choose solution type
+      SOLUTIONTYPE solutiontype = quintic;
+
+      // compute analytical velocities and pressure for different prescribed time curves
       // Note: consider offset of coordinate system
-      // d(t) = -t^2
+      switch (solutiontype)
+      {
+      case quadratic:
       {
         u(0) = -2.0 * t;
         u(1) = 0.0;
         u(2) = 0.0;
         p = actmat->Density() * 2.0 * (xyzint(0) + 1.5);
+
+        break;
       }
+      case cubic:
+      {
+        u(0) = -3.0 * t * t;
+        u(1) = 0.0;
+        u(2) = 0.0;
+        p = actmat->Density() * 6.0 * t * (xyzint(0) + 1.5);
 
-//        // d(t) = -t^3
-//        {
-//          u(0) = -3.0 * t * t;
-//          u(1) = 0.0;
-//          u(2) = 0.0;
-//          p = actmat->Density() * 6.0 * t * (xyzint(0) + 1.5);
-//        }
+        break;
+      }
+      case quartic:
+      {
+        u(0) = -4.0 * t * t * t;
+        u(1) = 0.0;
+        u(2) = 0.0;
+        p = actmat->Density() * 12.0 * t * t * (xyzint(0) + 1.5);
 
-//        // d(t) = -t^4
-//        {
-//          u(0) = -4.0 * t * t * t;
-//          u(1) = 0.0;
-//          u(2) = 0.0;
-//          p = actmat->Density() * 12.0 * t * t * (xyzint(0) + 1.5);
-//        }
+        break;
+      }
+      case quintic:
+      {
+        u(0) = -5.0 * t * t * t * t;
+        u(1) = 0.0;
+        u(2) = 0.0;
+        p = actmat->Density() * 20.0 * t * t * t * (xyzint(0) + 1.5);
 
-//        // d(t) = -t^5
-//        {
-//          u(0) = -5.0 * t * t * t *t;
-//          u(1) = 0.0;
-//          u(2) = 0.0;
-//          p = actmat->Density() * 20.0 * t * t * t * (xyzint(0) + 1.5);
-//        }
+        break;
+      }
+      default:
+      {
+        dserror("Unknown solution type.");
+        break;
+      }
+      }
     }
     else dserror("Material is not a Newtonian Fluid");
   }
