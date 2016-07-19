@@ -2,10 +2,12 @@
 /*!
 \file inpar_ale.cpp
 
-<pre>
- Maintainer: Matthias Mayr
-             mayr@mhpc.mw.tum.de
-             089 - 289-10362
+\maintainer Matthias Mayr
+
+\brief Input parameters for ALE mesh motion
+
+\level 2
+
 </pre>
 */
 
@@ -47,6 +49,10 @@ void INPAR::ALE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           springs_material,
           springs_spatial
           ),
+      &adyn);
+
+  BoolParameter("ASSESSMESHQUALITY", "no",
+      "Evaluate element quality measure according to [Oddy et al. 1988]",
       &adyn);
 
   BoolParameter("UPDATEMATRIX", "no",

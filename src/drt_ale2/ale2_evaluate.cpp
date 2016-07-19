@@ -2,11 +2,11 @@
 /*!
 \file ale2_evaluate.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289 15362
-</pre>
+\brief Evaluate routines of ALE element for 2D case
+
+\maintainer Matthias Mayr
+
+\level 1
 */
 /*----------------------------------------------------------------------------*/
 
@@ -52,6 +52,8 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
     act = Ale2::calc_ale_springs_spatial;
   else if (action == "setup_material")
     act = Ale2::setup_material;
+  else if (action == "calc_jacobian_determinant")
+    act = Ale2::calc_det_jac;
   else
     dserror("%s is an unknown type of action for Ale2",action.c_str());
 
@@ -144,6 +146,16 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList& params,
         so3mat->Setup(0, NULL);
       }
       break; // no setup for St-Venant / classic_lin required
+    }
+    case calc_det_jac:
+    {
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      std::vector<double> my_dispnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+
+      compute_det_jac(elevec1, lm, my_dispnp);
+
+      break;
     }
     default:
     {
@@ -967,7 +979,7 @@ void DRT::ELEMENTS::Ale2::JacobianMatrix(
 /*------------------------------------------ determinant of jacobian ---*/
   *det = xjm[0][0]* xjm[1][1] - xjm[1][0]* xjm[0][1];
 
-  if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n",*det,Id());
+//  if (*det<0.0) dserror("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n",*det,Id());
 /*----------------------------------------------------------------------*/
 
   return;
@@ -1287,4 +1299,127 @@ void DRT::ELEMENTS::Ale2::BOpLinCure(
     /*----------------------------------------------------------------*/
 
   return;
+}
+
+/*-----------------------------------------------------------------------------*
+*-----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::compute_det_jac(Epetra_SerialDenseVector& elevec1,
+    const std::vector<int> & lm, const std::vector<double> & disp)
+{
+  const int numnode = NumNode();
+  const int numdf = 2;
+  const int nd = numnode * numdf;
+
+  // general arrays
+  Epetra_SerialDenseVector funct(numnode);
+  Epetra_SerialDenseMatrix deriv;
+  deriv.Shape(2,numnode);
+  Epetra_SerialDenseMatrix xjm;
+  xjm.Shape(2,2);
+  double det;
+  double qm = 0.0;
+  Epetra_SerialDenseMatrix xrefe(2,numnode);
+  Epetra_SerialDenseMatrix xcure(2,numnode);
+
+  Epetra_SerialDenseVector detjac(4);
+  Epetra_SerialDenseVector quality(4);
+
+  /*------- get integration data ---------------------------------------- */
+  const DiscretizationType distype = Shape();
+  if (distype != quad4)
+    dserror("Quality metric is currently implemented for Quad4 elements, only.");
+
+  /*----------------------------------------------------- geometry update */
+  for (int k=0; k<numnode; ++k)
+  {
+    xrefe(0,k) = Nodes()[k]->X()[0];
+    xrefe(1,k) = Nodes()[k]->X()[1];
+
+    // We always evaluate the current configuration
+    xcure(0,k) = xrefe(0,k) += disp[k*numdf+0];
+    xcure(1,k) = xrefe(1,k) += disp[k*numdf+1];
+  }
+
+  // array with x- and y-coordinates of nodes in parameter space
+  double nodepos[4][2];
+  nodepos[0][0] = -1.0;
+  nodepos[0][1] = -1.0;
+  nodepos[1][0] =  1.0;
+  nodepos[1][1] = -1.0;
+  nodepos[2][0] =  1.0;
+  nodepos[2][1] =  1.0;
+  nodepos[3][0] = -1.0;
+  nodepos[3][1] =  1.0;
+
+  /*------------- Loop over all nodes -----------------------------------*/
+  for (int node = 0; node < 4; ++node)
+  {
+    /*================================== gaussian point and weight at it */
+    const double e1 = nodepos[node][0];
+    const double e2 = nodepos[node][1];
+
+    // get values of shape functions and derivatives in the gausspoint
+    // shape functions and their derivatives for polynomials
+    DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
+    DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+
+    /*--------------------------------------- compute jacobian Matrix */
+    JacobianMatrix(xrefe,deriv,xjm,&det,numnode);
+
+    /*---------------------------- Evaluate quality measure */
+    EvaluateOddy(xjm,det,qm);
+
+
+    detjac[node] = det;
+    quality[node] = qm;
+  } // loop over nodes
+
+  // assign results
+  double mindetjac = detjac[0];
+  double minqm = quality[0];
+  for (int i = 1; i < 4; ++i)
+  {
+    if (detjac[i] < mindetjac)
+      mindetjac = detjac[i];
+    if (quality[i] < minqm)
+      minqm = quality[i];
+  }
+
+  elevec1[0] = mindetjac;
+  elevec1[1] = minqm;
+
+  return;
+}
+
+/*-----------------------------------------------------------------------------*
+*-----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Ale2::EvaluateOddy(const Epetra_SerialDenseMatrix& xjm,
+    double det, double& qm)
+{
+  // compute C
+  Epetra_SerialDenseMatrix c(2,2,true);
+  for (int i = 0; i < 2; ++i)
+  {
+    for (int j = 0; j < 2; ++j)
+    {
+      for (int k = 0; k < 2; ++k)
+        c(i,j) += xjm[k][i] * xjm[k][j];
+      c(i,j) /= det;
+    }
+  }
+
+  // compute D
+  double d = 0.0;
+  for (int i = 0; i < 2; ++i)
+  {
+    for (int j = 0; j < 2; ++j)
+    {
+      d += c(i,j)*c(i,j);
+    }
+  }
+
+  for (int k = 0; k < 2; ++k)
+    d -= 0.5 * c(k,k);
+
+  qm = d;
 }

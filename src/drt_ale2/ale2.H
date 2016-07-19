@@ -2,11 +2,11 @@
 /*!
 \file ale2.H
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289 15362
-</pre>
+\brief ALE element for 2D case
+
+\maintainer Matthias Mayr
+
+\level 1
 */
 /*----------------------------------------------------------------------------*/
 
@@ -337,6 +337,34 @@ private:
       const bool pseudolinear ///< compute residual as stiffness * displacements (pseudo-linear approach)
       );
 
+  /*! \brief Calculate determinant of Jacobian mapping and check for validity
+   *
+   *  Use current displacement state, i.e. current/spatial configuration.
+   *  Check for invalid mappings (detJ <= 0)
+   *
+   *  \author mayr.mt \date 01/2016
+   */
+  void compute_det_jac(
+      Epetra_SerialDenseVector& elevec1, ///< vector with element result data
+      const std::vector<int> & lm, ///< node owning procs
+      const std::vector<double> & disp ///< nodal displacements
+      );
+
+  /*! \brief Element quality measure according to [Oddy et al. 1988a]
+    *
+    *  Distortion metric for quadrilaterals and hexahedrals. Value is zero for
+    *  squares/cubes and increases to large values for distorted elements.
+    *
+    *  Reference: Oddy A, Goldak J, McDill M, Bibby M (1988): A distortion metric
+    *  for isoparametric finite elements, Trans. Can. Soc. Mech. Engrg.,
+    *  Vol. 12 (4), pp. 213-217
+    */
+  void EvaluateOddy(
+      const Epetra_SerialDenseMatrix& xjm,
+      double det,
+      double& qm
+      );
+
   void CallMatGeoNonl(
       const Epetra_SerialDenseVector& strain, ///< Green-Lagrange strain vector
       Epetra_SerialDenseMatrix& stress,///< stress vector
@@ -447,6 +475,7 @@ private:
     calc_ale_laplace_material,///< compute stiffness based on laplacian smoothing based on material configuration
     calc_ale_laplace_spatial,///< compute stiffness based on laplacian smoothing based on spatial configuration
     setup_material, ///< Setup material in case of ElastHyper Tool Box
+    calc_det_jac ///< calculate Jacobian determinant and mesh quality measure according to [Oddy et al. 1988]
   };
 
   //! don't want = operator

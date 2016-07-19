@@ -27,6 +27,7 @@ WRITE_TO_FILE                   No
 PREFIX_GROUP_ID                 No
 LIMIT_OUTP_TO_PROC              -1
 --------------------------------------------------------ALE DYNAMIC
+ASSESSMESHQUALITY               Yes
 ALE_TYPE                        solid
 LINEAR_SOLVER                   1
 NUMSTEP                         2

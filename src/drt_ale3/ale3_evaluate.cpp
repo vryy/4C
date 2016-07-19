@@ -2,11 +2,11 @@
 /*!
 \file ale3_evaluate.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289 10362
-</pre>
+\brief Evaluate routines of ALE element for 3D case
+
+\maintainer Matthias Mayr
+
+\level 1
 */
 /*----------------------------------------------------------------------------*/
 
@@ -138,6 +138,8 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     act = Ale3::calc_ale_node_normal;
   else if (action == "setup_material")
     act = Ale3::setup_material;
+  else if (action == "calc_jacobian_determinant")
+    act = Ale3::calc_det_jac;
   else
     dserror("Unknown type of action for Ale3");
 
@@ -245,7 +247,11 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
     }
     break; // no setup for St-Venant
   }
-
+  case calc_det_jac:
+  {
+    dserror("Not implement for 3D, yet.");
+    break;
+  }
   default:
     dserror("Unknown type of action for Ale3");
     break;

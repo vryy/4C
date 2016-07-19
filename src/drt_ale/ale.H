@@ -1,14 +1,12 @@
 /*----------------------------------------------------------------------------*/
 /*!
- \file ale.H
+\file ale.H
 
- \brief ALE time integration
+\brief ALE time integration
 
- <pre>
- Maintainer: Matthias Mayr
-             mayr@mhpc.mw.tum.de
-             089 - 289-10362
- </pre>
+\maintainer Matthias Mayr
+
+\level 1
  */
 /*----------------------------------------------------------------------------*/
 
@@ -162,7 +160,7 @@ public:
   }
 
   //! update displacement with iterative increment
-  virtual void UpdateIter(); // TODO (Biehler) make private later
+  virtual void UpdateIter();
 
   /// take the current solution to be the final one for this time step
   virtual void Update();
@@ -454,6 +452,32 @@ private:
   std::map<int, Teuchos::RCP<LINALG::MapExtractor> > dbcmaps_;
 
   //@}
+
+  //! @name Assess mesh regularity and element quality
+  //@!{
+
+  //! Loop all elements to compute quality measure according to [Oddy et al. 1988a]
+  virtual bool EvaluateElementQuality();
+
+  //! det of element jacobian
+  Teuchos::RCP<Epetra_Vector> eledetjac_;
+
+  /*! \brief Element quality measure according to [Oddy et al. 1988a]
+   *
+   *  Distortion metric for quadrilaterals and hexahedrals. Value is zero for
+   *  squares/cubes and increases to large values for distorted elements.
+   *
+   *  Reference: Oddy A, Goldak J, McDill M, Bibby M (1988): A distortion metric
+   *  for isoparametric finite elements, Trans. Can. Soc. Mech. Engrg.,
+   *  Vol. 12 (4), pp. 213-217
+   */
+  Teuchos::RCP<Epetra_Vector> elequality_;
+
+  //! Flag to activate (true) and deactivate (false) assessment of mesh quality
+  bool elequalityyesno_;
+
+  //@}
+
 
   /// print info about current time step to screen
   virtual void PrintTimeStepHeader() const;

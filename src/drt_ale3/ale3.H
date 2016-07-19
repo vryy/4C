@@ -2,11 +2,11 @@
 /*!
 \file ale3.H
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289 10362
-</pre>
+\brief ALE element for 3D case
+
+\maintainer Matthias Mayr
+
+\level 1
 */
 /*----------------------------------------------------------------------------*/
 
@@ -338,6 +338,7 @@ public:
     calc_ale_node_normal,///< Calculate boundary node normal
     ba_calc_ale_node_normal, ///< Calculate boundary node normal TODO (@ HAHN unused action please fix me!)
     setup_material, ///< Setup material in case of ElastHyper Tool Box
+    calc_det_jac ///< calculate Jacobian determinant and mesh quality measure according to [Oddy et al. 1988]
   };
 
 private:
@@ -438,10 +439,16 @@ public:
       const bool spatialconfiguration ///< use spatial configuration (true), material configuration (false)
       );
 
-  void ElementNodeNormal(Ale3*                      ele,
-                              Epetra_SerialDenseVector&  elevec1,
-                              std::vector<double>&       my_dispnp
-    );
+  void ElementNodeNormal(Ale3* ele, ///< pointer to element
+      Epetra_SerialDenseVector& elevec1, ///< normal vector (to be filled)
+      std::vector<double>& my_dispnp ///< nodal displacements
+      );
+
+  //! Calculate Jacobian matrix and its determinant
+  void CalcJacobian(Ale3* ele, ///< pointer to element
+      double& detJ ///< determinant of Jacobian matrix
+      );
+
 private:
   static const int iel = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   static const int numcnd = DisTypeToNumCornerNodes<distype>::numCornerNodes;

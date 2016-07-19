@@ -272,6 +272,8 @@ void InterfaceFilter::WriteAllResults(PostField* field)
 void AleFilter::WriteAllResults(PostField* field)
 {
   writer_->WriteResult("dispnp", "displacement", dofbased, field->problem()->num_dim());
+  writer_->WriteResult("det_j", "det_j", elementbased, 1);
+  writer_->WriteResult("element_quality", "element_quality", elementbased, 1);
   WriteElementResults(field);
 }
 

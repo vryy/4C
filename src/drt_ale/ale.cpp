@@ -2,17 +2,16 @@
 /*!
 \file ale.cpp
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\brief ALE time integration
+
+\maintainer Matthias Mayr
+
+\level 1
 */
 /*----------------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------------*/
 #include "ale.H"
-#include "ale_meshsliding.H"
 #include "ale_resulttest.H"
 #include "ale_utils_mapextractor.H"
 
@@ -64,13 +63,16 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
     dispn_(Teuchos::null),
     disi_(Teuchos::null),
     zeros_(Teuchos::null),
+    eledetjac_(Teuchos::null),
+    elequality_(Teuchos::null),
+    elequalityyesno_(DRT::INPUT::IntegralValue<bool>(*params,"ASSESSMESHQUALITY")),
     precond_(Teuchos::null),
     aletype_ (DRT::INPUT::IntegralValue<INPAR::ALE::AleDynamic>(*params,"ALE_TYPE")),
     maxiter_(params->get<int>("MAXITER")),
     tolres_(params->get<double>("TOLRES")),
     toldisp_(params->get<double>("TOLDISP")),
-    divercont_ (DRT::INPUT::IntegralValue<INPAR::ALE::DivContAct>(*params,"DIVERCONT")),
-    msht_ (DRT::INPUT::IntegralValue<INPAR::ALE::MeshTying>(*params,"MESHTYING"))
+    divercont_(DRT::INPUT::IntegralValue<INPAR::ALE::DivContAct>(*params,"DIVERCONT")),
+    msht_(DRT::INPUT::IntegralValue<INPAR::ALE::MeshTying>(*params,"MESHTYING"))
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
@@ -81,21 +83,15 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
   rhs_ = LINALG::CreateVector(*dofrowmap,true);
   zeros_ = LINALG::CreateVector(*dofrowmap,true);
 
+  eledetjac_ = LINALG::CreateVector(*Discretization()->ElementRowMap(), true);
+  elequality_ = LINALG::CreateVector(*Discretization()->ElementRowMap(), true);
+
   SetupDBCMapEx();
 
   // ensure that the ALE string was removed from conditions
   {
     DRT::Condition* cond = discret_->GetCondition("ALEDirichlet");
     if (cond) dserror("Found a ALE Dirichlet condition. Remove ALE string!");
-  }
-
-  if (msht_ == INPAR::ALE::meshsliding)
-  {
-    meshtying_ = Teuchos::rcp(new Meshsliding(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim(), NULL));
-  }
-  else if (msht_ == INPAR::ALE::meshtying)
-  {
-    meshtying_ = Teuchos::rcp(new Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim(), NULL));
   }
 
   // ---------------------------------------------------------------------
@@ -119,18 +115,7 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis,
 void ALE::Ale::CreateSystemMatrix(
     Teuchos::RCP<const ALE::UTILS::MapExtractor> interface)
 {
-  if (msht_ != INPAR::ALE::no_meshtying )
-  {
-    std::vector<int> coupleddof(DRT::Problem::Instance()->NDim(),1);
-    sysmat_ = meshtying_->Setup(coupleddof, dispnp_);
-    meshtying_->DirichletOnMaster(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->CondMap());
-
-    if (interface != Teuchos::null)
-    {
-      meshtying_->IsMultifield(*interface, true);
-    }
-  }
-  else if (interface == Teuchos::null)
+  if (interface == Teuchos::null)
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,81,false,true));
@@ -162,19 +147,8 @@ void ALE::Ale::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc,
     dispnp_->Update(1.0, *stepinc, 1.0, *dispn_, 0.0);
   }
 
-  if (msht_ != INPAR::ALE::no_meshtying)
-  {
-    meshtying_->MshtSplit(sysmat_);
-  }
-
   EvaluateElements();
-
-  // prepare meshtying system
-  if (msht_ != INPAR::ALE::no_meshtying)
-  {
-    meshtying_->PrepareMeshtyingSystem(sysmat_,residual_,dispnp_);
-    meshtying_->MultifieldSplit(sysmat_);
-  }
+  EvaluateElementQuality();
 
   // dispnp_ has zeros at the Dirichlet-entries, so we maintain zeros there.
   if (LocsysManager() != Teuchos::null)
@@ -210,11 +184,8 @@ int ALE::Ale::Solve()
   rhs->Scale(-1.0);
 
   // ToDo (mayr) Why can't we use rhs_ instead of local variable rhs???
-  int errorcode = 0;
-  if (msht_== INPAR::ALE::no_meshtying)
-    errorcode = solver_->Solve(sysmat_->EpetraOperator(), disi_, rhs, true);
-  else
-    errorcode = meshtying_->SolveMeshtying(*solver_, sysmat_, disi_, rhs, dispnp_);
+  int errorcode = solver_->Solve(sysmat_->EpetraOperator(), disi_, rhs, true);
+
   // calc norm
   disi_->Norm2(&normdisi_);
   normdisi_ /= sqrt(disi_->GlobalLength());
@@ -441,6 +412,8 @@ void ALE::Ale::OutputState(bool& datawritten)
   // write output data
   output_->NewStep(step_,time_);
   output_->WriteVector("dispnp", dispnp_);
+  output_->WriteVector("det_j", eledetjac_, IO::DiscretizationWriter::elementvector);
+  output_->WriteVector("element_quality", elequality_, IO::DiscretizationWriter::elementvector);
 
   return;
 }
@@ -463,7 +436,7 @@ void ALE::Ale::OutputRestart(bool& datawritten)
   if (DRT::Problem::Instance()->ProblemType() == prb_ale)
   {
     if (discret_->Comm().MyPID() == 0)
-      IO::cout << "====== Restart for field 'ALE' written in step " << step_ << IO::endl;
+      IO::cout << "====== Restart written in step " << step_ << IO::endl;
   }
 
   return;
@@ -754,6 +727,66 @@ void ALE::Ale::UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a)
     meshtying_->Recover(a);
   }
 
+}
+
+/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
+bool ALE::Ale::EvaluateElementQuality()
+{
+  if (elequalityyesno_)
+  {
+    // create the parameters for the discretization
+    Teuchos::ParameterList eleparams;
+
+    discret_->ClearState();
+    discret_->SetState("dispnp", dispnp_);
+
+    for (int i = 0; i < Discretization()->NumMyRowElements(); ++i)
+    {
+      DRT::Element* actele;
+      actele = Discretization()->lRowElement(i);
+
+      // list to define routines at elementlevel
+      Teuchos::ParameterList eleparams;
+      eleparams.set("action", "calc_jacobian_determinant");
+
+      //initialize element vectors
+      DRT::Element::LocationArray la(Discretization()->NumDofSets());
+      actele->LocationVector(*Discretization(),la,false);
+
+      // only two entries per element necessary (detJ and quality measure)
+      Epetra_SerialDenseMatrix elematrix1;
+      Epetra_SerialDenseMatrix elematrix2;
+      Epetra_SerialDenseVector elevector1(2);
+      Epetra_SerialDenseVector elevector2;
+      Epetra_SerialDenseVector elevector3;
+
+      actele->Evaluate(eleparams,*discret_,la,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+
+      eledetjac_->ReplaceMyValue(i,0,elevector1[0]);
+      elequality_->ReplaceMyValue(i,0,elevector1[1]);
+
+    }//loop elements
+
+    discret_->ClearState();
+
+    // check for non-valid elements
+    bool validshapes = true;
+    double negdetjac = 0.0;
+    eledetjac_->MinValue(&negdetjac);
+    if (negdetjac <= 0)
+    {
+      validshapes = false;
+      dserror("Negative determinant %e in time step %i", negdetjac, step_);
+    }
+
+    return validshapes;
+  }
+  else
+  {
+    // no assesment of mesh quality. Return true to assume that everything is fine.
+    return true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
