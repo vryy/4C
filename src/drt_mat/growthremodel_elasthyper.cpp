@@ -683,7 +683,7 @@ void MAT::GrowthRemodel_ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
     // residual vector of assembled system of equation
     LINALG::SerialDenseMatrix R(2*nr_f_tot,1);
-    for(int i=0;i<2*nr_f_tot;++i)
+    for(unsigned i=0;i<2*nr_f_tot;++i)
       R(i,0) = 1.0;
 
     // solution vector of assembled system of equation
@@ -756,22 +756,22 @@ void MAT::GrowthRemodel_ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
       // Assembly
       // R
-      for(int i=0;i<nr_f_tot;++i)
+      for(unsigned i=0;i<nr_f_tot;++i)
       {
         R(i,0) = -E[i];
         R(nr_f_tot+i,0) = -W[i];
       }
 
       // K_T
-      for(int i=0;i<nr_f_tot;++i)
-        for(int j=0;j<nr_f_tot;++j)
+      for(unsigned i=0;i<nr_f_tot;++i)
+        for(unsigned j=0;j<nr_f_tot;++j)
         {
           K_T(i,j) = dEdlamb[i][j];
           K_T(nr_f_tot+i,j) = dWdlamb[i][j];
         }
 
-      for(int i=0;i<nr_f_tot;++i)
-        for(int j=0;j<nr_f_tot;++j)
+      for(unsigned i=0;i<nr_f_tot;++i)
+        for(unsigned j=0;j<nr_f_tot;++j)
         {
           K_T(i,nr_f_tot+j) = dEdrho[i][j];
           K_T(nr_f_tot+i,nr_f_tot+j) = dWdrho[i][j];
@@ -794,7 +794,7 @@ void MAT::GrowthRemodel_ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     // Assembly
     // Rcmat
     LINALG::SerialDenseMatrix Rcmat(2*nr_f_tot,6);
-    for(int i=0;i<nr_f_tot;++i)
+    for(unsigned i=0;i<nr_f_tot;++i)
       for(unsigned j=0;j<6;++j)
       {
         Rcmat(i,j) = -dEdC[i](0,j);
@@ -816,7 +816,7 @@ void MAT::GrowthRemodel_ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     std::vector<LINALG::Matrix<1,6> > drhodC(nr_f_tot,LINALG::Matrix<1,6>(true));
     std::vector<LINALG::Matrix<1,6> > dlambdC(nr_f_tot,LINALG::Matrix<1,6>(true));
     sum_drhodC.Clear();
-    for(int i=0;i<nr_f_tot;++i)
+    for(unsigned i=0;i<nr_f_tot;++i)
     {
       for(unsigned j=0;j<6;++j)
       {
