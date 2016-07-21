@@ -1308,7 +1308,6 @@ void DRT::ELEMENTS::Ale2::compute_det_jac(Epetra_SerialDenseVector& elevec1,
 {
   const int numnode = NumNode();
   const int numdf = 2;
-  const int nd = numnode * numdf;
 
   // general arrays
   Epetra_SerialDenseVector funct(numnode);
