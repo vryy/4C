@@ -6,13 +6,16 @@
 with condensed structure interface displacements
 
 \maintainer Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
+
+\level 1
 */
 
 /*----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <NOX_Epetra_LinearSystem.H>
+#include <NOX_Epetra_LinearSystem_AztecOO.H>
 
 #include "fsi_monolithicstructuresplit.H"
 #include "fsi_matrixtransform.H"

@@ -1,7 +1,22 @@
+/*----------------------------------------------------------------------------*/
+/*!
+\file fsi_constrmonolithic.cpp
+
+\maintainer Matthias Mayr
+
+\brief Solve FSI problem with volume constraints
+
+\level 2
+*/
+
+/*----------------------------------------------------------------------------*/
+
+#include <NOX_Epetra_LinearSystem.H>
+#include <NOX_Epetra_LinearSystem_AztecOO.H>
+
 #include "fsi_constrmonolithic.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
-#include "fsi_monolithic_linearsystem.H"
 
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid_fsi.H"
@@ -349,16 +364,10 @@ FSI::ConstrMonolithic::CreateLinearSystem(Teuchos::ParameterList& nlParams,
   switch (linearsolverstrategy_)
   {
   case INPAR::FSI::PreconditionedKrylov:
-    linSys =
-      Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(
-                     //FSI::MonolithicLinearSystem::MonolithicLinearSystem(
-                                                               printParams,
-                                                               *lsParams,
-                                                               Teuchos::rcp(iJac,false),
-                                                               J,
-                                                               Teuchos::rcp(iPrec,false),
-                                                               M,
-                                                               noxSoln));
+    linSys = Teuchos::rcp(
+        new NOX::Epetra::LinearSystemAztecOO(printParams, *lsParams,
+            Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M,
+            noxSoln));
     break;
   case INPAR::FSI::FSIAMG:
   default:

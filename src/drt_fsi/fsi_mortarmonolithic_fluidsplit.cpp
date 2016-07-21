@@ -6,6 +6,8 @@
 
 \brief Solve FSI problem with non-matching grids using a monolithic scheme
 with condensed fluid interface velocities
+
+\level 1
 */
 
 /*----------------------------------------------------------------------------*/
@@ -1186,7 +1188,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::MortarMonolithicFluidSplit::CreateL
   {
   case INPAR::FSI::PreconditionedKrylov:
   case INPAR::FSI::FSIAMG:
-  case INPAR::FSI::HybridSchwarz: // ToDo (noll) Do we need a separate case for HybridSchwarz?
+  case INPAR::FSI::HybridSchwarz:
     linSys = Teuchos::rcp(
         new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
             Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M,

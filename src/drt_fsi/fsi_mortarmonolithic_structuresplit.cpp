@@ -6,11 +6,16 @@
 
 \brief Solve FSI problem with non-matching grids using a monolithic scheme
 with condensed structure interface displacements
+
+\level 1
 */
 
 /*----------------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <NOX_Epetra_LinearSystem.H>
+#include <NOX_Epetra_LinearSystem_AztecOO.H>
 
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_adapter/adapter_coupling.H"
@@ -22,7 +27,6 @@ with condensed structure interface displacements
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
-#include "fsi_monolithic_linearsystem.H"
 #include "fsi_matrixtransform.H"
 #include "fsi_utils.H"
 

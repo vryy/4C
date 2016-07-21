@@ -5,16 +5,17 @@
 \brief Solve FSI problem with matching grids using a monolithic scheme
 with condensed fluid interface velocities
 
-<pre>
-Maintainer: Matthias Mayr
-            mayr@mhpc.mw.tum.de
-            089 - 289-10362
-</pre>
+\maintainer Matthias Mayr
+
+\level 1
 */
 
 /*----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <NOX_Epetra_LinearSystem.H>
+#include <NOX_Epetra_LinearSystem_AztecOO.H>
 
 #include "fsi_monolithicfluidsplit.H"
 #include "fsi_matrixtransform.H"
