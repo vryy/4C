@@ -3,12 +3,13 @@
 
 \brief partitioned immersed fsi algorithm for dirichlet-neumann coupling combined with ALE
 
-<pre>
-Maintainers: Andreas Rauch
+\level 2
+
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_PARTITIONED_FSI_DIRICHLETNEUMANN_ALE_H
 #define IMMERSED_PARTITIONED_FSI_DIRICHLETNEUMANN_ALE_H
@@ -82,11 +83,14 @@ public:
   /// setup list with default parameters
   virtual void SetDefaultParameters(const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
-
+  /// Immersed + FSI interface vector
   Teuchos::RCP<Epetra_Vector> combined_newstate_;
 
+  //! @name Various interface states
+  //@{
   Teuchos::RCP<Epetra_Vector> idispnp_;
   Teuchos::RCP<Epetra_Vector> ivelnp_;
+  //@}
 
 };// class ImmersedFSI
 } // namspace IMMERSED

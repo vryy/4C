@@ -3,12 +3,13 @@
 
 \brief partitioned immersed cell - interstitial flow interaction algorithm
 
-<pre>
-Maintainers: Andreas Rauch
+\level 2
+
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_PARTITIONED_FLOW_CELL_INTERACTION_H
 #define IMMERSED_PARTITIONED_FLOW_CELL_INTERACTION_H
@@ -211,7 +212,6 @@ protected:
 
   //! @name Maps for Dirichlet BCs
   //@{
-  Teuchos::RCP<const Epetra_Map> dbcmap_ordinary_;       //!< dirichlet bc map before consideration of immersed values
   Teuchos::RCP<Epetra_Map> dbcmap_immersed_;             //!< dirichlet bc map of immersed values
   Teuchos::RCP<Epetra_Map> dbcmap_immersed_scatra_;      //!< dirichlet bc map of immersed scatra values
   //@}

@@ -114,14 +114,10 @@ protected:
 
   //! @name Various global forces
   //@{
-  Teuchos::RCP<Epetra_Vector> fintn_;                    //!< internal structural force at time n+1
   Teuchos::RCP<Epetra_Vector> struct_bdry_traction_;     //!< bdry traction rhs on struct FSI surface
-  Teuchos::RCP<Epetra_Vector> struct_bdry_traction_old_; //!< bdry traction rhs on struct FSI surface
   Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_;//!< background velocity interpolated from immersed dis
   Teuchos::RCP<Epetra_Vector> fluid_artificial_velocity_old_;//!< background velocity interpolated from immersed dis
-  Teuchos::RCP<const Epetra_Map> dbcmap_ordinary_;       //!< dirichlet bc map before consideration of immersed values
   Teuchos::RCP<Epetra_Map> dbcmap_immersed_;             //!< dirichlet bc map of immersed values
-  Teuchos::RCP<Epetra_Vector> ffsi_;                     //!< body force vector being applied to fluid field
   Teuchos::RCP<GEO::SearchTree> fluid_SearchTree_;       //!< search tree for fluid domain
   Teuchos::RCP<GEO::SearchTree> structure_SearchTree_;   //!< search tree for structure domain
   std::map<int,std::set<int> > curr_subset_of_fluiddis_;    //!< fluid elements to evaluate the dirichlet interpolation
@@ -129,29 +125,31 @@ protected:
   std::map<int,LINALG::Matrix<3,1> > currpositions_fluid_;  //!< map of vectors for search tree containing current fluid positions
   //@}
 
-  /// basic information for parallelism
+  //! @name  basic information for parallelism
   int myrank_;
   int numproc_;
+  //@}
 
   /// pointer to global problem
   DRT::Problem* globalproblem_;
 
+  //! @name various bools and switches
+  //@{
   bool displacementcoupling_;
   bool multibodysimulation_;
-  double forcerelax_;
-  double velrelax_;
-  bool relaxforceglobally_;
-  bool relaxvelglobally_;
+  bool output_evry_nlniter_;
   int coupalgo_;
   int correct_boundary_velocities_;
   int degree_gp_fluid_bound_;
-  bool output_evry_nlniter_;
+  //@}
 
-
-  Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpltimeint_;
+  //! @name pointer to discretizations
+  //@{
   Teuchos::RCP<DRT::Discretization> fluiddis_;
   Teuchos::RCP<DRT::Discretization> structdis_;
+  //@}
 
+  /// pointer to immersed structure adapter
   Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> immersedstructure_;
 
 };// class ImmersedFSI

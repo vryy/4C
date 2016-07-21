@@ -16,21 +16,15 @@
 #include "fsi_partitioned_immersed.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_assemblestrategy.H"
 
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
 #include "../drt_adapter/ad_fld_fluid_immersed.H"
 #include "../drt_adapter/ad_fld_fluid_ale_immersed.H"
-#include "../drt_adapter/ad_fld_fluid_fsi.H"
 
 #include "../drt_fluid_ele/fluid_ele_action.H"
-#include "../drt_so3/so_surface.H"
-#include "../drt_fluid/fluidimplicitintegration.H"
 
 #include "../drt_structure/stru_aux.H"
 
-#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_immersed.H"
 
 #include "../linalg/linalg_utils.H"
@@ -59,30 +53,11 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
 
   immersedstructure_=Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(StructureField());
 
-//  double fsirelax = globalproblem_->FSIDynamicParams().sublist("PARTITIONED SOLVER").get<double>("RELAX");
-//  if (fsirelax != 1.0 and myrank_==0)
-//  {
-//    std::cout<<"!!!! WARNING !!! \n"
-//               "Relaxation parameter set in FSI DYNAMIC/PARTITIONED SOLVER section is not equal 1.0.\n"
-//               "This is not possible in Immersed FSI. Adapt the relaxation parameters in IMMERSED METHOD section, instead.\n"
-//               "NOX relaxes only the interface increment which is not used in Immersed FSI, since the whole artificial fluid \n"
-//               "volume gets dirichlet values."<<std::endl;
-//    dserror("Invalid parameter");
-//  }
-
-  // initialize some relaxation related member variables
-  relaxforceglobally_ = globalproblem_->ImmersedMethodParams().get<std::string>("APPLY_FORCE_RELAX") == "globally";
-  relaxvelglobally_   = globalproblem_->ImmersedMethodParams().get<std::string>("APPLY_VEL_RELAX")   == "globally";
-  forcerelax_ = globalproblem_->ImmersedMethodParams().get<double>("FORCE_RELAX");
-  velrelax_ = globalproblem_->ImmersedMethodParams().get<double>("VEL_RELAX");
-
   if(globalproblem_->FSIDynamicParams().get<std::string>("COUPALGO") == "iter_stagg_fixed_rel_param")
   {
     coupalgo_= INPAR::IMMERSED::fixed;
     if(myrank_==0)
-      std::cout<<"\n"
-               " Relax Force globally = "<<relaxforceglobally_<<" with relaxation parameter = "<<forcerelax_<<"\n"
-               " Relax Vel   globally = "<<relaxvelglobally_  <<" with relaxation parameter = "<<velrelax_<<"\n"<<std::endl;
+      std::cout<<"\n Using FIXED relaxation parameter. "<<std::endl;
   }
   else if(globalproblem_->FSIDynamicParams().get<std::string>("COUPALGO") == "iter_stagg_AITKEN_rel_param")
   {

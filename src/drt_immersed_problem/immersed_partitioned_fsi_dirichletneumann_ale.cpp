@@ -3,21 +3,17 @@
 
 \brief partitioned immersed fsi algorithm for neumann-neumann like coupling (volume force coupling)
 
-<pre>
-Maintainers: Andreas Rauch
+\level 2
+
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_fsi_dirichletneumann_ale.H"
 
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
-#include "../drt_adapter/ad_field_wrapper.H"
-#include "../drt_adapter/ad_ale_fluid.H"
-#include "../drt_adapter/ad_fld_wrapper.H"
-#include "../drt_adapter/ad_ale_wrapper.H"
-
 #include "../drt_adapter/ad_fld_fluid_ale_immersed.H"
 
 #include "../drt_structure/stru_aux.H"
@@ -30,8 +26,6 @@ Maintainers: Andreas Rauch
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
 #include "immersed_field_exchange_manager.H"
-
-
 
 
 IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::ImmersedPartitionedFSIDirichletNeumannALE(const Epetra_Comm& comm)
@@ -116,8 +110,6 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumannALE::InitialGuess()
     return immersedstructure_->PredictFullInterfaceDispnp();
   else
   {
-
-    //struct_bdry_traction_old_ = Teuchos::rcp(new Epetra_Vector(*(immersedstructure_->DofRowMap()),true));
     Teuchos::RCP<Epetra_Vector> combined_traction = Teuchos::rcp(new Epetra_Vector(*(immersedstructure_->CombinedInterface()->FullMap()),true));
 
     // insert Immersed and FSI vector to combined vector (vector of whole interface)
