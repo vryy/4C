@@ -1,12 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isoyeoh.H
-\brief
-This file contains the routines required to calculate the isochoric contribution
+\brief This file contains the routines required to calculate the isochoric contribution
 of a Yeoh-type material.
 
+\level 1
+
 <pre>
-Maintainer: Sophie Rausch & Thomas Kloeppel
+\maintainer Sophie Rausch & Thomas Kloeppel
             rausch,kloeppel@lnm.mw.tum.de
             089/289 15255
 </pre>
@@ -115,6 +116,7 @@ namespace ELASTIC
         double& psi,                      ///< strain energy function
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
         const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
         const int eleGID                   ///< element GID
         );
 

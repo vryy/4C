@@ -1,16 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isotestmaterial.cpp
-\brief
-
-This file contains the routines required to calculate the isochoric contribution
+\brief This file contains the routines required to calculate the isochoric contribution
 of a Material, which is not realistic, but contains all possible Derivatives of invariants.
 With this material in combination with volsussmannbathe, it is possible to test all
 isochoric parts of the Elasthyper-Toolbox.
 
+\level 1
 
 <pre>
-Maintainer: Anna Birzle
+\maintainer Anna Birzle
             birzle@lnm.mw.tum.de
             089/289 15255
 </pre>
@@ -50,6 +49,7 @@ void MAT::ELASTIC::IsoTestMaterial::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
     const LINALG::Matrix<3,1>& modinv,
+    const LINALG::Matrix<6,1> glstrain,
     const int eleGID)
 {
   const double c1 = params_ -> c1_;

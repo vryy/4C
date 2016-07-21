@@ -1,9 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_hex27_evaluate.cpp
-\brief
+\brief bla bla bla
+
+\level 1
 
 <pre>
-Maintainer: Thomas Kloeppel
+\maintainer Thomas Kloeppel
             kloeppel@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -993,6 +995,16 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(
       dserror("requested strain type not available");
     }
 
+    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture || Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+    {
+      // gp reference coordinates
+      LINALG::Matrix<NUMNOD_SOH27,1> funct(true);
+      funct = shapefcts[gp];
+      LINALG::Matrix<1,NUMDIM_SOH27> point(true);
+      point.MultiplyTN(funct,xrefe);
+      params.set("gprefecoord",point);
+    }
+
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
     LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
@@ -1350,6 +1362,16 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(
       bop(5,NODDOF_SOH27*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
       bop(5,NODDOF_SOH27*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
       bop(5,NODDOF_SOH27*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
+    }
+
+    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture || Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+    {
+      // gp reference coordinates
+      LINALG::Matrix<NUMNOD_SOH27,1> funct(true);
+      funct = shapefcts[gp];
+      LINALG::Matrix<1,NUMDIM_SOH27> point(true);
+      point.MultiplyTN(funct,xrefe);
+      params.set("gprefecoord",point);
     }
 
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc

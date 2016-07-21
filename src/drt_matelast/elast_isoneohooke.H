@@ -1,13 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isoneohooke.H
-\brief
-This file contains the routines required for logarithmic neo-Hooke material
+\brief This file contains the routines required for logarithmic neo-Hooke material
 according to Bonet and Wood, "Nonlinear continuum mechanics for finite
 element analysis", Cambridge, 1997.
 
+\level 1
+
 <pre>
-Maintainer: Sophie Rausch & Thomas Kloeppel
+\maintainer Sophie Rausch & Thomas Kloeppel
             rausch,kloeppel@lnm.mw.tum.de
             089/289 15255
 </pre>
@@ -117,6 +118,7 @@ namespace ELASTIC
         double& psi,                      ///< strain energy function
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
         const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
         const int eleGID                   ///< element GID
         );
 
@@ -147,6 +149,20 @@ namespace ELASTIC
       isomod = true;
       return;
     };
+
+
+    // Add third derivatives with respect to modified invariants.
+    // REMARK: Only the ones' which are used in remodeling
+    //         are implemented (dddPIII_0,1,3,5)
+    virtual void AddThirdDerivativesModified(LINALG::Matrix<10,1>& dddPmodIII,   ///< third derivative with respect to modified invariants
+                                             const LINALG::Matrix<3,1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
+                                             const int eleGID)                   ///< global ID of element
+    {
+      return; //nothing
+    }
+
+
+
 
   private:
 

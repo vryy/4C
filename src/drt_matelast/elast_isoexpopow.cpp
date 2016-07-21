@@ -1,15 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isoexpopow.cpp
-\brief
-
-This file contains the routines required to calculate the isochoric contribution
+\brief This file contains the routines required to calculate the isochoric contribution
 of an exponential  material
 MAT 1 ELAST_IsoExpoPow K1 5000. K2 5. C 1.
 C = Exponent D
 
+\level 1
+
 <pre>
-Maintainer: Sophie Rausch
+\maintainer Sophie Rausch
             rausch@lnm.mw.tum.de
             089/289 15255
 </pre>
@@ -48,6 +48,7 @@ void MAT::ELASTIC::IsoExpoPow::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
     const LINALG::Matrix<3,1>& modinv,
+    const LINALG::Matrix<6,1> glstrain,
     const int eleGID)
 {
   const double   k1 = params_ -> k1_;

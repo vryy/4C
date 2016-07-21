@@ -1,11 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupSaintVenantKirchhoff.H
-\brief
-This file contains the routines required for Saint-Venant-Kirchhoff material
+\brief This file contains the routines required for Saint-Venant-Kirchhoff material
+
+\level 1
 
 <pre>
-Maintainer: Alexander Seitz
+\maintainer Alexander Seitz
             seitz@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15271
@@ -91,6 +92,7 @@ namespace ELASTIC
         double& psi,                      ///< strain energy function
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
         const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
         const int eleGID                   ///< element GID
         );
 

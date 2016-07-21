@@ -1,14 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_vologden.H
-\brief
-This file contains the routines required for the volumetic function
+\brief This file contains the routines required for the volumetic function
 suggested by Ogden, see Doll, S. and Schweizerhof, K.
 On the Development of Volumetric Strain Energy Functions
 Journal of Applied Mechanics, 2000
 
+\level 1
+
 <pre>
-Maintainer: Sophie Rausch
+\maintainer Sophie Rausch
             rausch@lnm.mw.tum.de
             089/289 15255
 </pre>
@@ -113,6 +114,7 @@ namespace ELASTIC
         double& psi,                      ///< strain energy function
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
         const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
         const int eleGID                   ///< element GID
         );
 

@@ -10,6 +10,9 @@ strain energy function.
 
 The input line should read
 MAT 0   MAT_ElastHyper   NUMMAT 0 MATIDS  DENS 0 GAMMA 0 INIT_MODE -1
+
+\level 1
+
 */
 /*----------------------------------------------------------------------*/
 
@@ -465,7 +468,7 @@ void MAT::ElastHyper::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
   // loop map of associated potential summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
   {
-    potsum_[p]->AddStrainEnergy(psi,prinv,modinv, eleGID);
+    potsum_[p]->AddStrainEnergy(psi,prinv,modinv,glstrain, eleGID);
   }
 
   return;
@@ -672,6 +675,7 @@ void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 
   return ;
 }
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3,3>& b,
@@ -739,7 +743,6 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3,3>& b,
 
   return;
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

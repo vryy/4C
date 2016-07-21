@@ -1,14 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupexppol.H
-\brief
-This file contains the routines required for a strain energy function,
+\brief This file contains the routines required for a strain energy function,
 which is exponential according to Weickenmeier_2014 and contains a linear
 (in I_1 and J) polynom in the exponent. This SEF is able to describe the
 compressible lung parenchyma.
 
+\level 1
+
 <pre>
-Maintainer: Anna Birzle
+\maintainer Anna Birzle
             birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15255
@@ -117,6 +118,7 @@ namespace ELASTIC
         double& psi,                      ///< strain energy function
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
         const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
         const int eleGID                   ///< element GID
         );
 

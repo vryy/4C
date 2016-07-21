@@ -2,6 +2,10 @@
 /*!
 \file elast_coupneohooke.H
 
+\brief bla bla bla
+
+\level 1
+
 \maintainer Sophie Rausch
 
 \brief This file contains the routines required to calculate the isochoric
@@ -134,6 +138,7 @@ namespace ELASTIC
         double& psi,                      ///< strain energy function
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
         const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
         const int eleGID                   ///< element GID
         );
 

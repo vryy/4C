@@ -1,16 +1,15 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_couplogneohooke.cpp
-\brief
-
-
-the input line should read either
+\brief the input line should read either
   MAT 1 ELAST_CoupLogNeoHooke YOUNG 1.044E7 NUE 0.3
 or
   MAT 1 ELAST_CoupLogNeoHooke MUE 1. LAMBDA 1.
 
+\level 1
+
 <pre>
-Maintainer: Burkhard Bornemann
+\maintainer Burkhard Bornemann
             bornemann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
@@ -84,6 +83,7 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
     const LINALG::Matrix<3,1>& modinv,
+    const LINALG::Matrix<6,1> glstrain,
     const int eleGID)
 {
 

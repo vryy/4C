@@ -1,14 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupexppol.cpp
-\brief
-
-
-the input line should read
+\brief the input line should read
   MAT 1 ELAST_CoupExpPol A 600. B 2. C 5.
 
+\level 1
+
 <pre>
-Maintainer: Anna Birzle
+\maintainer Anna Birzle
             birzle@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15255
@@ -53,6 +52,7 @@ void MAT::ELASTIC::CoupExpPol::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
     const LINALG::Matrix<3,1>& modinv,
+    const LINALG::Matrix<6,1> glstrain,
     const int eleGID)
 {
   // routine runs when calculation is done during the inverse analysis

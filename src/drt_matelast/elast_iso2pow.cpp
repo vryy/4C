@@ -1,14 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_iso2pow.cpp
-\brief
-
-
-the input line should read
+\brief the input line should read
   MAT 1 ELAST_Iso2Pow C 1 D 1
 
+\level 1
+
 <pre>
-Maintainer: Sophie Rausch
+\maintainer Sophie Rausch
             rausch@lnm.mw.tum.de
             089/289 15255
 </pre>
@@ -47,6 +46,7 @@ void MAT::ELASTIC::Iso2Pow::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
     const LINALG::Matrix<3,1>& modinv,
+    const LINALG::Matrix<6,1> glstrain,
     const int eleGID)
 {
   // material Constants c and d

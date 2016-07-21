@@ -1,13 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_volpow.H
-\brief
-This file contains the routines for a volumetric power law.
+\brief This file contains the routines for a volumetric power law.
 The resultant pressure depends on the prefactor and pressure.
 Should be combined with non-stiff volumetric law (eg. Ogden).
 
+\level 1
+
 <pre>
-Maintainer: Anna Birzle
+\maintainer Anna Birzle
             birzle@lnm.mw.tum.de
             089/289 15255
 </pre>
@@ -113,6 +114,7 @@ namespace ELASTIC
         double& psi,                      ///< strain energy function
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
         const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
         const int eleGID                   ///< element GID
         );
 

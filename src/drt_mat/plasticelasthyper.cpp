@@ -2,8 +2,7 @@
 /*!
 \file plasticelasthyper.cpp
 \maintainer Alexander Seitz
-\brief
-This file contains the hyperelastic toolbox with application to finite
+\brief This file contains the hyperelastic toolbox with application to finite
 strain plasticity using a semi-smooth Newton method. It allows summing up
 several summands of isotropic non-splitted type to build
 a hyperelastic strain energy function.
@@ -12,6 +11,8 @@ The input line should read
 MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 0.45 ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
                             CTE 1.0e-5 INITTEMP 293 YIELDSOFT 0.002 HARDSOFT 0.002 VISC 1e-4 VISC_TEMP 0.003
                             PL_SPIN_CHI -50 rY_11 1.0 rY_22 0.9 rY_33 0.9 rY_12 0.7 rY_23 0.57385 rY_13 0.7
+
+\level 2
 
 <pre>
 Maintainer: Alexander Seitz
@@ -619,8 +620,14 @@ double MAT::PlasticElastHyper::StrainEnergy(const LINALG::Matrix<3,3>& defgrd,co
   InvariantsModified(modinv,prinv);
 
   // loop map of associated potential summands
+  LINALG::Matrix<6,1> glstrain(true);
+  LINALG::Matrix<6,1> idv(true);
+  for(int i=0;i<3;++i)
+    idv(i) = 1.0;
+  glstrain.Update(0.5,elRCGv,0.0);
+  glstrain.Update(-0.5,idv,1.0);
   for (unsigned int p=0; p<potsum_.size(); ++p)
-    potsum_[p]->AddStrainEnergy(psi,prinv,modinv, eleGID);
+    potsum_[p]->AddStrainEnergy(psi,prinv,modinv,glstrain, eleGID);
 
   return psi;
 }

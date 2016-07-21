@@ -1,12 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_coupblatzko.H
-\brief
-This file contains the routines required for Blatz and Ko material model
+\brief This file contains the routines required for Blatz and Ko material model
 according to Holzapfel, "Nonlinear solid mechanics", 2001.
 
+\level 1
+
 <pre>
-Maintainer: Sophie Rausch
+\maintainer Sophie Rausch
             bornemann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
@@ -118,6 +119,7 @@ namespace ELASTIC
         double& psi,                      ///< strain energy function
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
         const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
         const int eleGID                   ///< element GID
         );
 

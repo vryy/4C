@@ -2,8 +2,12 @@
 /*!
 \file growthremodel_elasthyper.H
 
+\brief This file is used to manage the homogenized constraint mixture during growth and remodeling
+
+\level 3
+
 <pre>
-Maintainer: Fabian Braeu
+\maintainer Fabian Braeu
             braeu@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
@@ -27,7 +31,6 @@ namespace MAT
   {
     class Summand;
     class RemodelFiber;
-    class VolGrowthPenalty;
   }
 
   // forward declaration
@@ -62,34 +65,40 @@ namespace MAT
       /// length of elastin matrix material list
       const int nummat_elastin_;
 
-      /// length of ground matrix material list
-      const int nummat_ground_;
-
       /// the list of remodelfiber material IDs
       const std::vector<int>* matids_remodelfiber_;
 
       /// the list of elastin matrix material IDs
       const std::vector<int>* matids_elastin_;
 
-      /// the list of ground matrix material IDs
-      const std::vector<int>* matids_ground_;
-
       /// material ID of growth penalty material
       const int matid_penalty_;
 
-      /// current mass fraction of elastin in constraint mixture
-      const std::vector<double>* cur_w_elastin_;
-
-      /// current mass fraction of ground matrix in constraint mixture
-      const std::vector<double>* cur_w_ground_;
+      /// initial mass fraction of elastin in constraint mixture
+      const std::vector<double>* init_w_el_;
 
       /// material mass density
       const double density_;
 
-      /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      /// time of prestressing
+      const double t_prestress_;
+
+      /// circumferential prestretch of elastin matrix
+      const double lamb_prestretch_cir_;
+
+      /// axial prestretch of elastin matrix
+      const double lamb_prestretch_ax_;
+
+      /// flag for turning elastin damage on or off: 1: damage on; 2: damage off
+      const int damage_;
+
+      /// flag to decide what type of collagen growth is used: 1: anisotropic growth; 2: isotropic growth
+      const int growthtype_;
 
       //@}
+
+      /// create material instance of matching type with my parameters
+      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
     };  // class GrowthRemodel_ElastHyper
 
@@ -163,7 +172,8 @@ private:
        dserror("element and material kinematics are not compatible");}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growthremodel_elasthyper; }
+    virtual INPAR::MAT::/// axial direction of the cylinder (cylidner axis)
+    MaterialType MaterialType() const { return INPAR::MAT::m_growthremodel_elasthyper; }
 
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new GrowthRemodel_ElastHyper( *this ) ); }
@@ -197,16 +207,38 @@ private:
 
   protected:
 
+    /// Setup circumferential, radial and axial structural tensor
+    void SetupAxiCirRadStructuralTensor(DRT::INPUT::LineDefinition* linedef);
+
+    /// Read AXI CIR RAD direction
+    void ReadDir(
+        DRT::INPUT::LineDefinition* linedef,
+        std::string specifier,
+        LINALG::Matrix<3,1>& dir);
+
     /// calculates the kinematic quantities and tensors used afterwards
     virtual void EvaluateKinQuant(
       const LINALG::Matrix<6,1>& glstrain,
-      LINALG::Matrix<6,1>& id2,                   ///< Cartesian identity 2-tensor I_{AB}
+      LINALG::Matrix<6,1>& id,                    ///< Cartesian identity 2-tensor I_{AB}
       LINALG::Matrix<6,1>& C_stress,              ///< right Cauchy green in stress-like 6-Voigt Voigt notation
       LINALG::Matrix<6,1>& C_strain,              ///< right Cauchy green in strain-like 6-Voigt Voigt notation
       LINALG::Matrix<6,1>& iC_stress,             ///< inverse right Cauchy-Green tensor stress-like 6-Voigt Voigt notation
-      LINALG::Matrix<6,6>& id4,                   ///< Cartesian identity 4-tensor in 6-Voigt matrix notation
-      LINALG::Matrix<6,6>& id4sharp,              ///< Cartesian identity 4-tensor in 6x6-matrix notation (stress-like)
+      LINALG::Matrix<6,6>& id4sharp,              ///< Cartesian identity 4-tensor in 6-Voigt matrix notation
       LINALG::Matrix<3,1>& prinv);                ///< principal invariants of right Cauchy-Green tensor
+
+    virtual void EvaluateKinQuantElast(
+        const LINALG::Matrix<3,3>* defgrd,
+        LINALG::Matrix<3,3> iFgM,
+        const int gp,
+        LINALG::Matrix<6,1>& iCg,
+        LINALG::Matrix<6,1>& iCgCiCg,
+        LINALG::Matrix<6,1>& iC,
+        LINALG::Matrix<3,3>& iCgC,
+        LINALG::Matrix<3,3>& iFgCe,
+        LINALG::Matrix<9,1>& CiFg,
+        LINALG::Matrix<9,1>& CiFgCe,
+        LINALG::Matrix<9,1>& CiFgiCe,
+        LINALG::Matrix<3,1>& prinv);
 
     /// calculate principal invariants
     virtual void InvariantsPrincipal(
@@ -223,9 +255,9 @@ private:
     /// calculates the derivatives of the hyperelastic laws with respect to the (modified) invariants
     virtual void EvaluateInvariantDerivatives(
         const LINALG::Matrix<3,1>& prinv,               ///< principal invariants of right Cauchy-Green tensor
-        LINALG::Matrix<3,1>& dPI,                       ///< first derivative with respect to invariants
-        LINALG::Matrix<6,1>& ddPII,                     ///< second derivative with respect to invariants
-        Teuchos::ParameterList& params,                 ///< Container for additional information
+        const int& gp,                                  ///< current Gauß-point
+        LINALG::Matrix<3,1>& dPIw,                      ///< first derivative with respect to invariants weighted with the corresponding volume fraction
+        LINALG::Matrix<6,1>& ddPIIw,                    ///< second derivative with respect to invariants weighted with the corresponding volume fraction
         int eleGID                                      ///< Element ID
         );
 
@@ -240,7 +272,6 @@ private:
     ///\f[
     ///  J = \sqrt{III_{\boldsymbol{C}}}
     ///\f]
-
     virtual void ConvertModToPrinc(
         const LINALG::Matrix<3,1>& prinv,         ///< principal invariants of right Cauchy-Green tensor
         const LINALG::Matrix<3,1>& dPmodI,        ///< first derivative with respect to modified invariants
@@ -254,13 +285,45 @@ private:
         LINALG::Matrix<6,1>& stress,              ///< 2nd Piola Kirchhoff stress
         LINALG::Matrix<6,6>& cmat,                ///< elasticity tensor
         LINALG::Matrix<6,1> C_strain,             ///< right Cauchy green in strain-like 6-Voigt Voigt notation
-        LINALG::Matrix<6,1> id2,                  ///< Cartesian identity 2-tensor I_{AB}
+        LINALG::Matrix<6,1> id,                   ///< Cartesian identity 2-tensor I_{AB}
         LINALG::Matrix<6,1> iC_stress,            ///< inverse right Cauchy-Green tensor stress-like 6-Voigt Voigt notation
         LINALG::Matrix<6,6> id4sharp,             ///< Cartesian identity 4-tensor in 6x6-matrix notation (stress-like)
         LINALG::Matrix<3,1> prinv,                ///< principal invariants of right Cauchy-Green tensor
         LINALG::Matrix<3,1> dPI,                  ///< first derivative with respect to invariants
         LINALG::Matrix<6,1> ddPII                 ///< second derivative with respect to invariants
         );
+
+    /// calculates the isotropic stress and elasticity tensor for coupled configuration
+    virtual void EvaluateIsotropicPrincElast(
+        LINALG::Matrix<6,1>& stressisoprinc,
+        LINALG::Matrix<6,6>& cmatisoprinc,
+        LINALG::Matrix<6,1> iCg,
+        LINALG::Matrix<6,1> iCgCiCg,
+        LINALG::Matrix<6,1> iC,
+        LINALG::Matrix<3,1> gamma,
+        LINALG::Matrix<8,1> delta
+        );
+
+    /// Evaluate additional terms for for the elasticity tensor
+    /// Additional terms are caused by implicit implementation of the evolution equation
+    virtual void EvaluateAdditionalTermsCmat(
+        LINALG::Matrix<6,6>& cmatadd,                   ///< additional elasticity tensor
+        LINALG::Matrix<3,1> gamma,                      ///< factors for stress calculation
+        LINALG::Matrix<8,1> delta,                      ///< factors for elasticity tensor calculation
+        double v,                                       ///< current volume change
+        int gp,                                         ///< current gp
+        LINALG::Matrix<3,3> AgM,                        ///< structural tensor of growth direction
+        LINALG::Matrix<1,6> sum_drhoC,                  ///< sum over all fiber families of the derivatives of the individual mass density w.r.t. right Cauchy Green tensor weighted with the corresponding initial mass fraction,k_sig,dt and 1/sig_pre
+        LINALG::Matrix<3,3> iFg,
+        LINALG::Matrix<3,3> iCgC,
+        LINALG::Matrix<3,3> iFgCe,
+        LINALG::Matrix<6,1> iCg,
+        LINALG::Matrix<9,1> CiFg,
+        LINALG::Matrix<9,1> CiFgCe,
+        LINALG::Matrix<6,1> iCgCiCg,
+        LINALG::Matrix<9,1> CiFgiCe,
+        LINALG::Matrix<6,1> iC
+    );
 
     /// calculate coefficients gamma and delta from partial derivatives w.r.t. invariants.
     /// The coefficients \f$\gamma_i\f$ and \f$\delta_j\f$ are based
@@ -336,12 +399,42 @@ private:
         const LINALG::Matrix<6,1>& ddPII        ///< second derivative with respect to invariants
         );
 
-    /// @name Voigt index arrays
-    //@{
-    static const int VOIGT3X3_[3][3];
-    static const int VOIGT3X3NONSYM_[3][3];
+    /// Evaluate current individual volume of elastin
+    virtual void EvaluateElastinDamage();
 
-    //@}
+    /// add a contribution to the derivative of the second Piola Kirchhoff stress with respect to the growth deformation gradient
+    /// in index notation this method does:
+    /// dPK2dFginv_IJKL += fac*( A_IK * B_JL + A_JK * B_IL )
+    /// Note that the result is symmetric within the first two indices
+    /// Thus the first two indices are stored in stress-like Voigt notation.
+    /// The 2nd index pair has no symmetries and is therefore stored as 9-vector
+    /// Be aware that this is NOT symmetric w.r.t. A and B !!!
+    void AddtodPK2diFinel(LINALG::Matrix<6,9>& dPK2diFinel,
+        LINALG::Matrix<3,3> A,
+        LINALG::Matrix<3,3> B,
+        double fac);
+
+    /// This function adds the following contribution to the matrix X_ABCD (9x9)
+    /// in index notation this method does:
+    /// X_ABCD = fac*( A_AC * B_BD )
+    /// There are no symmetries and the matrix is therefore stored in a 9x9 matrix
+    /// A and B are not required to be symmetric!!!
+    virtual void AddtoMatrixCrossProduct(const double& fac,                    ///< scalar factor
+                                         const LINALG::Matrix<3,3>& A,         ///< Matrix in the above mentioned equation
+                                         const LINALG::Matrix<3,3>& B,         ///< Matrix in the above mentioned equation
+                                         LINALG::Matrix<9,9>& X_ABCD);         ///< Output (see EvaluateInelasticDefGrad)
+
+    /// convert non-symmetric 2-tensor to 9x1 vector
+    void Matrix3x3to9x1(LINALG::Matrix<3,3> A, LINALG::Matrix<9,1>& Out);
+
+
+    /// evaluates stress and cmat during prestressing
+    void EvaluateStressCmat(const LINALG::Matrix<3,3>* defgrd,
+                            const int gp,
+                            LINALG::Matrix<6,1>& stressiso,
+                            LINALG::Matrix<6,6>& cmatiso,
+                            const int eleGID
+                            );
 
     /// my material parameters
     MAT::PAR::GrowthRemodel_ElastHyper* params_;
@@ -353,16 +446,49 @@ private:
     std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsumel_;
 
     /// map to ground matrix material summands
-    std::vector<Teuchos::RCP<MAT::ELASTIC::Summand> > potsumgr_;
+    Teuchos::RCP<MAT::ELASTIC::Summand> potsumpenalty_;
 
-    /// map to ground matrix material summands
-    Teuchos::RCP<MAT::ELASTIC::VolGrowthPenalty> potsumpenalty_;
+    /// current individual mass density of elastin (initially 1)
+    std::vector<std::vector<double> > cur_rho_el_;
 
-    /// current mass fractions of elastin in constraint mixture
-    std::vector<std::vector<double> > current_w_elastin_;
+    /// initial individual mass density of elastin (initially 1)
+    std::vector<double> init_rho_el_;
 
-    /// current mass fractions of ground matrix in constraint mixture
-    std::vector<std::vector<double> > current_w_ground_;
+    /// current volume change induced by growth
+    std::vector<double> v_;
+
+    /// circumferential structural tensor
+    LINALG::Matrix<3,3> AcirM_;
+
+    /// axial structural tensor
+    LINALG::Matrix<3,3> AaxM_;
+
+    /// radial structural tensor
+    LINALG::Matrix<3,3> AradM_;
+
+    /// radial structural tensor in "stress-like" Voigt notation
+    LINALG::Matrix<6,1> Aradv_;
+
+    /// prestretch of elastin matrix in axial, circumferential and radial direction (used for prestressing)
+    std::vector<LINALG::Matrix<3,3> > GM_;
+
+    /// total simulation time
+    double t_tot_;
+
+    /// cylinder coordinates (axi, circ, rad)
+    std::vector<LINALG::Matrix<1,3> > cylcoords_;
+
+    /// axial coordinate of each Gauß-Point
+    std::vector<double> gp_ax_;
+
+    /// radial coordinate of each Gauß-Point
+    std::vector<double> gp_rad_;
+
+    /// wall thickness in reference configuration
+    double t_ref_;
+
+    /// mean blood pressure
+    double p_mean_;
 
   };
 

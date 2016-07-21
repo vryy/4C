@@ -1,14 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isoanisoexpo.H
-\brief
-
-
-the input line should read
+\brief the input line should read
   MAT 1 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0
 
+\level 1
+
 <pre>
-Maintainer: Susanna Tinkl
+\maintainer Susanna Tinkl
             tinkl@lnm.mw.tum.de
             089/289 15265
 </pre>
@@ -143,6 +142,14 @@ namespace ELASTIC
         double I3,   ///< third principal invariant
         const int eleGID    ///< element GID
         );
+
+    /// retrieve coefficients of first, second and third derivative
+    /// of summand with respect to anisotropic invariants
+    virtual void GetDerivativesAniso(LINALG::Matrix<2,1>& dPI_aniso,               ///< first derivative with respect to invariants
+                                     LINALG::Matrix<3,1>& ddPII_aniso,             ///< second derivative with respect to invariants
+                                     LINALG::Matrix<4,1>& dddPIII_aniso,           ///< third derivative with respect to invariants
+                                     const double I4,                              ///< fourth invariant
+                                     const int eleGID);                            ///< element GID
 
     /// @name Access methods
     //@{

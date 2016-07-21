@@ -580,6 +580,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/viscoelasthyper.cpp
   src/drt_mat/visconeohooke.cpp
   src/drt_mat/yoghurt.cpp
+  src/drt_matelast/elast_coupanisoexpoactive.cpp
   src/drt_matelast/elast_coupanisoexpo.cpp
   src/drt_matelast/elast_coupanisoexpotwocoup.cpp
   src/drt_matelast/elast_coupanisoneohooke.cpp
@@ -610,7 +611,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_isoyeoh.cpp
   src/drt_matelast/elast_remodelfiber.cpp
   src/drt_matelast/elast_summand.cpp
-  src/drt_matelast/elast_volgrowthpenalty.cpp
   src/drt_matelast/elast_vologden.cpp
   src/drt_matelast/elast_volpenalty.cpp
   src/drt_matelast/elast_volsussmanbathe.cpp

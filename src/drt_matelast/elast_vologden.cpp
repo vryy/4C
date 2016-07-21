@@ -1,14 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_vologden.cpp
-\brief
-
-
-the input line should read
+\brief the input line should read
   MAT 1 ELAST_VolOgden KAPPA 100 BETA -2
 
+\level 1
+
 <pre>
-Maintainer: Sophie Rausch
+\maintainer Sophie Rausch
             rausch,kloeppel@lnm.mw.tum.de
             089/289 15255
 </pre>
@@ -47,6 +46,7 @@ void MAT::ELASTIC::VolOgden::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
     const LINALG::Matrix<3,1>& modinv,
+    const LINALG::Matrix<6,1> glstrain,
     const int eleGID)
 {
   const double kappa = params_ -> kappa_;

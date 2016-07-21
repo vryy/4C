@@ -2,8 +2,12 @@
 /*!
 \file elast_summand.H
 
+\brief Interface class for complex materials at Gauss points
+
+\level 1
+
 <pre>
-Maintainer: Burkhard Bornemann
+\maintainer Burkhard Bornemann
             bornemann@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15237
@@ -107,6 +111,7 @@ namespace MAT
         double& psi,                      ///< strain energy functions
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
         const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
         const int eleGID                   ///< element GID
         )
       { dserror("Summand does not support calculation of strain energy"); };
@@ -278,10 +283,10 @@ namespace MAT
       virtual void GetDerivativesAniso(LINALG::Matrix<2,1>& dPI_aniso,               ///< first derivative with respect to invariants
                                        LINALG::Matrix<3,1>& ddPII_aniso,             ///< second derivative with respect to invariants
                                        LINALG::Matrix<4,1>& dddPIII_aniso,           ///< third derivative with respect to invariants
-                                       const LINALG::Matrix<2,1>& prinv_aniso,       ///< principal anisotropic invariants
+                                       LINALG::Matrix<3,3> rcg,                      ///< right Cauchy-Green tensor
                                        const int eleGID)                             ///< element GID
       {
-        dserror("Not implemented for this material. Use elast_coupanisoexpo!");
+        dserror("Not implemented for this material. Use Elast_CoupAnisoExpo/Active or implement for desired material!");
         return;
       };
 
@@ -572,8 +577,6 @@ namespace MAT
       { /* do nothing for simple material models */ return false; };
 
       //@}
-
-
 
     };  // class Summand
 

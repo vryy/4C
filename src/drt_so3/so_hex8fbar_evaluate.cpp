@@ -2,6 +2,10 @@
 /*!
 \file so_hex8fbar_evaluate.cpp
 
+\brief bla bla bla
+
+\level 1
+
 \maintainer Alexander Popp
 */
 /*----------------------------------------------------------------------*/
@@ -383,8 +387,9 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       // push-forward invJ for every gaussian point
       UpdateJacobianMapping(mydisp,*prestress_);
 
-      // Update constraintmixture material
-      if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+      // Update constraintmixture material and GrowthRemodel_Elasthyper
+      if ((Material()->MaterialType() == INPAR::MAT::m_constraintmixture) ||
+          (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper))
       {
         SolidMaterial()->Update();
       }
@@ -879,7 +884,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
     prestress_->StoragetoMatrix(NUMGPT_SOH8,invJdef_0,prestress_->JHistory());
     // get derivatives wrt to last spatial configuration
     LINALG::Matrix<3,8> N_xyz_0;
-    N_xyz_0.Multiply(invJdef_0,N_rst_0); //if (!Id()) std::cout << invJdef_0;
+    N_xyz_0.Multiply(invJdef_0,N_rst_0);
 
     // build multiplicative incremental defgrd
     LINALG::Matrix<3,3> defgrd_0(false);
@@ -1217,7 +1222,7 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(
       GetTemperatureForStructuralMaterial(shapefcts[gp],params);
     }
 
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture || Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
     {
       // gp reference coordinates
       LINALG::Matrix<NUMNOD_SOH8,1> funct(true);

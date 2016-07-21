@@ -127,6 +127,7 @@ namespace INPAR
       m_yoghurt,                               ///< "yoghurt-type" fluid with nonlinear viscosity according to a power law and extended by an Arrhenius-type term to account for temperature dependence
       mes_coup1pow,                            ///< general power hyperelastic potential summand for invariant I
       mes_coup2pow,                            ///< general power hyperelastic potential summand for invariant II
+      mes_coupanisoexpoactive,                ///< anisotropic active fiber contribution
       mes_coupanisoexpo,                       ///< anisotropic exponential single fiber summand
       mes_coupanisoexpotwocoup,                ///< anisotropic two fiber summand with coupling between the fibers
       mes_coupanisoneohooke,                   ///< anisotropic Neo-Hooke single fiber summand
@@ -160,7 +161,6 @@ namespace INPAR
       mes_isovolHUdependentneohooke,           ///< isochoric and volumetric summands for HU dependent material
       mes_isoyeoh,                             ///< isochoric Yeoh hyperelastic potential summand
       mes_remodelfiber,                        ///< general fiber material for remodeling
-      mes_volgrowthpenalty,                    ///< Growth penalty volumetric part of the  hyperelastic potential summand
       mes_vologden,                            ///< Ogden volumetric part of the  hyperelastic potential summand
       mes_volpenalty,                          ///< Penalty volumetric part of the  hyperelastic potential summand
       mes_volsussmanbathe,                     ///< volumetric SussmanBathe hyperelastic potential summand

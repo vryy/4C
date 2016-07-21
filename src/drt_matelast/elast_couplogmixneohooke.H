@@ -1,13 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_couplogmixneohooke.H
-\brief
-This file contains the routines required for mixed-logarithmic neo-Hooke material
+\brief This file contains the routines required for mixed-logarithmic neo-Hooke material
 according to example 1 in Stupkiewicz "An ALE formulation for implicit time integration of quasi-
 steady state wear problems" Comput. Methods Appl. Mech. Engrg. 260, 2013.
 
+\level 1
+
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -139,6 +140,7 @@ namespace ELASTIC
         double& psi,                      ///< strain energy function
         const LINALG::Matrix<3,1>& prinv, ///< principal invariants of right Cauchy-Green tensor
         const LINALG::Matrix<3,1>& modinv, ///< modified invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<6,1> glstrain,///< Green-Lagrange strain
         const int eleGID                   ///< element GID
         );
 

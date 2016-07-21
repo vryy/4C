@@ -1,20 +1,20 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file elast_coupanisoexpo.H
+\file elast_coupanisoexpoactive.H
 \brief the input line should read
-  MAT 1 ELAST_CoupAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0
+  MAT 1 ELAST_CoupAnisoExpoActive K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0 S 54000 LAMBDAMAX 1.4 LAMBDA0 0.8 DENS 1050
 
-\level 1
+\level 3
 
 <pre>
-\maintainer Susanna Tinkl
-            tinkl@lnm.mw.tum.de
-            089/289 15265
+\maintainer Fabian Braeu
+            braeu@lnm.mw.tum.de
+            089/289 15236
 </pre>
 
 *----------------------------------------------------------------------*/
-#ifndef ELAST_COUPANISOEXPO_H_
-#define ELAST_COUPANISOEXPO_H_
+#ifndef ELAST_COUPANISOEXPOACTIVE_H_
+#define ELAST_COUPANISOEXPOACTIVE_H_
 
 #include "elast_summand.H"
 #include "../drt_mat/matpar_parameter.H"
@@ -28,21 +28,21 @@ namespace ELASTIC
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for coupled contribution of a anisotropic exponential fiber material
+    /// material parameters for coupled contribution of an anisotropic active fiber material
     ///
     /// <h3>Input line</h3>
-    /// MAT 1 ELAST_CoupAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0
-    class CoupAnisoExpo : public MAT::PAR::Parameter
+    /// MAT 1 ELAST_CoupAnisoExpoActive K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0 S 54000 LAMBDAM 1.4 LAMBDA0 0.8 DENS 1050
+    class CoupAnisoExpoActive : public MAT::PAR::Parameter
     {
     public:
 
       /// standard constructor
-      CoupAnisoExpo(
+      CoupAnisoExpoActive(
         Teuchos::RCP<MAT::PAR::Material> matdata
         );
 
       /// destructor
-      virtual ~CoupAnisoExpo() { ; }
+      virtual ~CoupAnisoExpoActive() { ; }
 
       /// @name material parameters
       //@{
@@ -59,6 +59,14 @@ namespace ELASTIC
       int init_;
       /// adapt angle during remodeling
       int adapt_angle_;
+      /// maximum contractile stress
+      double s_;
+      /// stretch at maximum active force generation
+      double lambdamax_;
+      /// stretch at zero active force generation
+      double lambda0_;
+      /// total reference mass density at the beginning of the simulation
+      double dens_;
 
       //@}
 
@@ -80,38 +88,39 @@ namespace ELASTIC
       void SetK2COMP(const double k2comp) { k2comp_ = k2comp; }
       //@}
 
-    };  // class CoupAnisoExpo
+    };  // class CoupAnisoExpoActive
 
   }  // namespace PAR
 
   /*----------------------------------------------------------------------*/
-  /// Coupled anisotropic exponential fiber function, implemented for one possible fiber family
-  /// [1]
-  /// This is a hyperelastic, anisotropic material
+  /// Coupled anisotropic active fiber function, implemented for one possible fiber family
+  ///
+  /// This is an active anisotropic material
   /// of the most simple kind.
   ///
   /// Strain energy function is given by
   ///\f[
-  ///   \Psi = \frac {k_1}{2 k_2} \left(e^{k_2 (IV_{\boldsymbol C}-1)^2 }-1 \right).
+  ///   \Psi = \frac {s}{\rho} \left(1.0 + \frac{1}{3} \frac{\left(\lambda_m - 1.0 \right)^3}{\left(\lambda_m - \lambda_0 \right)^2} \right).
   ///\f]
+  /// [1]
   ///
   ///
   /// <h3>References</h3>
   /// <ul>
-  /// <li> [1] G.A. Holzapfel, T.C. Gasser, R.W. Ogden: A new constitutive framework for arterial wall mechanics
-  ///          and a comparative study of material models, J. of Elasticity 61 (2000) 1-48.
+  /// <li> [1] Wilson, J.S., S. Baek, and J.D. Humphrey, Parametric study of effects of collagen turnover on the natural history of
+  ///          abdominal aortic aneurysms. Proc. R. Soc. A, 2013. 469(2150): p. 20120556.
   /// </ul>
   ///
-  /// \author st
-  /// \date 03/12
+  /// \author braeu
+  /// \date 07/16
 
-  class CoupAnisoExpo : public Summand
+  class CoupAnisoExpoActive : public Summand
   {
 
   public:
 
     /// constructor with given material parameters
-    CoupAnisoExpo(MAT::ELASTIC::PAR::CoupAnisoExpo* params);
+    CoupAnisoExpoActive(MAT::ELASTIC::PAR::CoupAnisoExpoActive* params);
 
     ///@name Packing and Unpacking
     //@{
@@ -126,15 +135,16 @@ namespace ELASTIC
     //@{
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupanisoexpo; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupanisoexpoactive; }
 
     //@}
 
-    /// Setup of summand
-    virtual void Setup(DRT::INPUT::LineDefinition* linedef);
+    /// Setup of active summand
+    void Setup(DRT::INPUT::LineDefinition* linedef);
 
     /// retrieve coefficients of first, second and third derivative
     /// of summand with respect to anisotropic invariants
+    /// ATTENTION: this is only the passive contribution of the fiber!
     virtual void GetDerivativesAniso(LINALG::Matrix<2,1>& dPI_aniso,               ///< first derivative with respect to invariants
                                      LINALG::Matrix<3,1>& ddPII_aniso,             ///< second derivative with respect to invariants
                                      LINALG::Matrix<4,1>& dddPIII_aniso,           ///< third derivative with respect to invariants
@@ -142,12 +152,22 @@ namespace ELASTIC
                                      const int eleGID);                            ///< element GID
 
     /// Add anisotropic principal stresses
+    /// ATTENTION: this is only the passive contribution of the fiber!
     virtual void AddStressAnisoPrincipal(
-        const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green Tensor
+        const LINALG::Matrix<6,1> rcg,  ///<right Cauchy Green in "strain-like" Voigt notation
         LINALG::Matrix<6,6>& cmat,  ///< material stiffness matrix
         LINALG::Matrix<6,1>& stress,  ///< 2nd PK-stress
         Teuchos::ParameterList& params, ///< additional parameters for computation of material properties
         const int eleGID                ///< element GID
+        );
+
+    /// evaluate stress and cmat
+    /// ATTENTION: this is only the active contribution of the fiber!
+    virtual void EvaluateActiveStressCmatAniso(
+        const LINALG::Matrix<3,3> defgrd,    ///< deformation gradient
+        LINALG::Matrix<6,6>& cmat,           ///< material stiffness matrix
+        LINALG::Matrix<6,1>& stress,         ///< 2nd PK-stress
+        const int eleGID                     ///< element GID
         );
 
     // add strain energy
@@ -196,16 +216,22 @@ namespace ELASTIC
   private:
 
     /// my material parameters
-    MAT::ELASTIC::PAR::CoupAnisoExpo* params_;
+    MAT::ELASTIC::PAR::CoupAnisoExpoActive* params_;
 
     /// fiber direction
     LINALG::Matrix<3,1>  a_;
+
     /// structural tensors in voigt notation for anisotropy
     LINALG::Matrix<6,1>  A_;
 
+    /// first derivative of active fiber potential w.r.t. the active fiber stretch
+    double dPIact_;
+
+    /// active fiber stretch for a given muscle tone
+    double lambdaact_;
   };
 
 }  // namespace ELAST
 }  // namespace MAT
 
-#endif  // ELAST_COUPANISOEXPO_H_
+#endif  // ELAST_COUPANISOACTIVEFIBER_H_

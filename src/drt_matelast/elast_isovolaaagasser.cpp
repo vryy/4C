@@ -1,15 +1,15 @@
 /*----------------------------------------------------------------------------*/
 /*!
 \file elast_isovolaaagasser.cpp
-\brief
-
-This file contains the routines required to calculate the isochoric contribution
+\brief This file contains the routines required to calculate the isochoric contribution
 of the aaagasser material and the corresponding volumetric contribution.
 
 MAT 20 ELAST_isovolaaagasser CLUM 2.62E3 CMED 1.98E3 CABLUM 1.73E3 NUE 0.49 BETA -2.0
 
+\level 1
+
 <pre>
-Maintainer: Jonas Biehler
+\maintainer Jonas Biehler
             biehler@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15276
@@ -198,6 +198,7 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(
   double& psi,
   const LINALG::Matrix<3,1>& prinv,
   const LINALG::Matrix<3,1>& modinv,
+  const LINALG::Matrix<6,1> glstrain,
   const int eleGID)
 {
   // get element lID incase we have element specific material parameters

@@ -4,6 +4,8 @@
 
 \brief Interface class for complex materials at Gauss points
 
+\level 1
+
 <pre>
 \maintainer Burkhard Bornemann
             bornemann@lnm.mw.tum.de
@@ -34,7 +36,6 @@
 #include "elast_coupSaintVenantKirchhoff.H"
 #include "elast_coupsimopister.H"
 #include "elast_remodelfiber.H"
-#include "elast_volgrowthpenalty.H"
 #include "elast_volsussmanbathe.H"
 #include "elast_volpenalty.H"
 #include "elast_vologden.H"
@@ -241,13 +242,6 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     MAT::ELASTIC::PAR::RemodelFiber* params = static_cast<MAT::ELASTIC::PAR::RemodelFiber*>(curmat->Parameter());
     return Teuchos::rcp(new RemodelFiber(params));
   }
-  case INPAR::MAT::mes_volgrowthpenalty:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::ELASTIC::PAR::VolGrowthPenalty(curmat));
-    MAT::ELASTIC::PAR::VolGrowthPenalty* params = static_cast<MAT::ELASTIC::PAR::VolGrowthPenalty*>(curmat->Parameter());
-    return Teuchos::rcp(new VolGrowthPenalty(params));
-  }
   case INPAR::MAT::mes_volpenalty:
   {
     if (curmat->Parameter() == NULL)
@@ -268,6 +262,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::VolPow(curmat));
     MAT::ELASTIC::PAR::VolPow* params = static_cast<MAT::ELASTIC::PAR::VolPow*>(curmat->Parameter());
     return Teuchos::rcp(new VolPow(params));
+  }
+  case INPAR::MAT::mes_coupanisoexpoactive:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoExpoActive(curmat));
+    MAT::ELASTIC::PAR::CoupAnisoExpoActive* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoExpoActive*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupAnisoExpoActive(params));
   }
   case INPAR::MAT::mes_coupanisoexpo:
   {

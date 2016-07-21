@@ -1,13 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isomooneyrivlin.cpp
-\brief
-
-This file contains the routines required to calculate the isochoric contribution
+\brief This file contains the routines required to calculate the isochoric contribution
 of a Mooney-Rivlin-type material
 
+\level 1
+
 <pre>
-Maintainer: Sophie Rausch & Thomas Kloeppel
+\maintainer Sophie Rausch & Thomas Kloeppel
             rausch,kloeppel@lnm.mw.tum.de
             089/289 15255
 </pre>
@@ -47,6 +47,7 @@ void MAT::ELASTIC::IsoMooneyRivlin::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
     const LINALG::Matrix<3,1>& modinv,
+    const LINALG::Matrix<6,1> glstrain,
     const int eleGID)
 {
   const double c1 = params_ -> c1_;

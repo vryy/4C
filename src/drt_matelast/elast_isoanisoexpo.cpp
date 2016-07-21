@@ -1,14 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isoanisoexpo.cpp
-\brief
-
-
-the input line should read
+\brief the input line should read
   MAT 1 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0  K1COMP 0.0 K2COMP 1.0 [INIT 1] [ADAPT_ANGLE No]
 
+\level 1
+
 <pre>
-Maintainer: Susanna Tinkl
+\maintainer Susanna Tinkl
             tinkl@lnm.mw.tum.de
             089/289 15265
 </pre>
@@ -171,6 +170,35 @@ void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(
   stress.Update(1.0,Saniso,1.0);
   cmat.Update(1.0,cmataniso,1.0);
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::IsoAnisoExpo::GetDerivativesAniso(LINALG::Matrix<2,1>& dPI_aniso,
+                                                     LINALG::Matrix<3,1>& ddPII_aniso,
+                                                     LINALG::Matrix<4,1>& dddPIII_aniso,
+                                                     const double I4,
+                                                     const int eleGID)
+{
+  double k1 = params_->k1_;
+  double k2 = params_->k2_;
+
+  if (I4 < 1.0)
+  {
+    k1 = params_->k1comp_;
+    k2 = params_->k2comp_;
+  }
+
+
+  dPI_aniso(0) = k1*(I4-1.0)*exp(k2*(I4-1.0)*(I4-1.0));
+
+  ddPII_aniso(0) = (1.0+2.0*k2*(I4-1.0)*(I4-1.0))*k1*exp(k2*(I4-1.0)*(I4-1.0));
+
+  dddPIII_aniso(0) = (3.0 + 2.0*k2*(I4-1.0)*(I4-1.0))*2.0*k1*k2*(I4-1.0)*exp(k2*(I4-1.0)*(I4-1.0));
+
+  return;
+};
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

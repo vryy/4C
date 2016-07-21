@@ -1,14 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_isoneohooke.cpp
-\brief
-
-
-the input line should read
+\brief the input line should read
   MAT 1 ELAST_IsoNeoHooke MUE 100
 
+\level 1
+
 <pre>
-Maintainer: Sophie Rausch & Thomas Kloeppel
+\maintainer Sophie Rausch & Thomas Kloeppel
             rausch,kloeppel@lnm.mw.tum.de
             089/289 15255
 </pre>
@@ -62,6 +61,7 @@ void MAT::ELASTIC::IsoNeoHooke::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
     const LINALG::Matrix<3,1>& modinv,
+    const LINALG::Matrix<6,1> glstrain,
     const int eleGID)
 {
   const double mue = params_ -> mue_;

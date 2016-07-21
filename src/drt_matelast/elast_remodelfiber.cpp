@@ -1,14 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_remodelfiber.cpp
-\brief
+\brief the input line should read
+  MAT 1 ELAST_RemodelFiber NUMMAT 1 MATIDS 100 TDECAY 1.0
 
-
-the input line should read
-  MAT 1 ELAST_RemodelFiber NUMMAT 1 MATIDS 100 TDECAY 1.0 SIGMAPRE 1.0
+\level 3
 
 <pre>
-Maintainer: Fabian Bräu
+\maintainer Fabian Bräu
             braeu@lnm.mw.tum.de
 </pre>
 */
@@ -20,6 +19,10 @@ Maintainer: Fabian Bräu
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_mat/material_service.H"
+#include "../linalg/linalg_utils.H"
+#include "Epetra_SerialDenseSolver.h"
+
+
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -31,9 +34,9 @@ MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(
   nummat_(matdata->GetInt("NUMMAT")),
   matids_(matdata->Get<std::vector<int> >("MATIDS")),
   tdecay_(matdata->GetDouble("TDECAY")),
-  sigmapre_(matdata->GetDouble("SIGMAPRE")),
   k_growth_(matdata->GetDouble("GROWTHFAC")),
-  cur_w_collagen_(matdata->GetMutable<std::vector<double> >("COLMASSFRAC"))
+  init_w_col_(matdata->GetMutable<std::vector<double> >("COLMASSFRAC")),
+  G_(matdata->GetDouble("DEPOSITIONSTRETCH"))
 {
   // check if sizes fit
   if (nummat_ != (int)matids_->size())
@@ -50,7 +53,8 @@ MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::RemodelFiber::RemodelFiber(MAT::ELASTIC::PAR::RemodelFiber* params)
   : params_(params),
-    potsumfiber_(0)
+    potsumfiberpas_(0),
+    potsumfiberact_(0)
 {
   // make sure the referenced materials in material list have quick access parameters
   std::vector<int>::const_iterator m;
@@ -58,8 +62,13 @@ MAT::ELASTIC::RemodelFiber::RemodelFiber(MAT::ELASTIC::PAR::RemodelFiber* params
   {
     const int matid = *m;
     Teuchos::RCP<MAT::ELASTIC::Summand> sum = MAT::ELASTIC::Summand::Factory(matid);
-    if (sum == Teuchos::null) dserror("Failed to allocate");
-    potsumfiber_.push_back(sum);
+    if (sum == Teuchos::null)
+      dserror("Failed to allocate");
+
+    if (sum->MaterialType() == INPAR::MAT::mes_coupanisoexpoactive)
+      potsumfiberact_.push_back(Teuchos::rcp_static_cast<MAT::ELASTIC::CoupAnisoExpoActive>(sum));
+    else
+      potsumfiberpas_.push_back(sum);
   }
 }
 
@@ -68,22 +77,36 @@ MAT::ELASTIC::RemodelFiber::RemodelFiber(MAT::ELASTIC::PAR::RemodelFiber* params
 void MAT::ELASTIC::RemodelFiber::PackSummand(DRT::PackBuffer& data) const
 {
   int num_fiber = 0;
-  num_fiber = last_ilambda_r_.size();
+  num_fiber = last_lambda_r_.size();
 
   AddtoPack(data,num_fiber);
 
   for(int i=0;i<num_fiber;++i)
   {
-    AddtoPack(data,last_ilambda_r_[i]);
-    AddtoPack(data,current_ilambda_r_[i]);
-    AddtoPack(data,current_w_collagen_[i]);
+    AddtoPack(data,last_lambda_r_[i]);
+    AddtoPack(data,cur_lambda_r_[i]);
+    AddtoPack(data,cur_rho_col_[i]);
+    AddtoPack(data,last_rho_col_[i]);
+    AddtoPack(data,init_rho_col_[i]);
     AddtoPack(data,stress_[i]);
+    AddtoPack(data,sigmapre_[i]);
   }
 
+  AddtoPack(data,Av_);
+  AddtoPack(data,A_strain_);
+  AddtoPack(data,AM_);
+  AddtoPack(data,AM_orth_);
+  AddtoPack(data,A9x1_);
+
   if (params_ != NULL) // summands are not accessible in postprocessing mode
+  {
     // loop map of associated potential summands
-    for (unsigned int p=0; p<potsumfiber_.size(); ++p)
-     potsumfiber_[p]->PackSummand(data);
+    for (unsigned int k=0; k<potsumfiberpas_.size(); ++k)
+      potsumfiberpas_[k]->PackSummand(data);
+
+    for (unsigned int k=0; k<potsumfiberact_.size(); ++k)
+      potsumfiberact_[k]->PackSummand(data);
+  }
 
   return;
 }
@@ -97,306 +120,2002 @@ void MAT::ELASTIC::RemodelFiber::UnpackSummand(const std::vector<char>& data,
   int num_fiber=0;
   ExtractfromPack(position,data,num_fiber);
 
-  last_ilambda_r_.resize(num_fiber);
-  current_ilambda_r_.resize(num_fiber);
-  current_w_collagen_.resize(num_fiber);
+  last_lambda_r_.resize(num_fiber);
+  cur_lambda_r_.resize(num_fiber);
+  cur_rho_col_.resize(num_fiber);
+  last_rho_col_.resize(num_fiber);
+  init_rho_col_.resize(num_fiber);
   stress_.resize(num_fiber);
+  sigmapre_.resize(num_fiber);
 
   for(int i=0;i<num_fiber;++i)
   {
-    ExtractfromPack(position,data,last_ilambda_r_[i]);
-    ExtractfromPack(position,data,current_ilambda_r_[i]);
-    ExtractfromPack(position,data,current_w_collagen_[i]);
+    ExtractfromPack(position,data,last_lambda_r_[i]);
+    ExtractfromPack(position,data,cur_lambda_r_[i]);
+    ExtractfromPack(position,data,cur_rho_col_[i]);
+    ExtractfromPack(position,data,last_rho_col_[i]);
+    ExtractfromPack(position,data,init_rho_col_[i]);
     ExtractfromPack(position,data,stress_[i]);
+    ExtractfromPack(position,data,sigmapre_[i]);
   }
+
+  ExtractfromPack(position,data,Av_);
+  ExtractfromPack(position,data,A_strain_);
+  ExtractfromPack(position,data,AM_);
+  ExtractfromPack(position,data,AM_orth_);
+  ExtractfromPack(position,data,A9x1_);
 
   // loop map of associated potential summands
-  for (unsigned int p=0; p<potsumfiber_.size(); ++p)
-    potsumfiber_[p]->UnpackSummand(data,position);
+  for (unsigned int k=0; k<potsumfiberpas_.size(); ++k)
+    potsumfiberpas_[k]->UnpackSummand(data,position);
+
+  for (unsigned int k=0; k<potsumfiberact_.size(); ++k)
+    potsumfiberact_[k]->UnpackSummand(data,position);
 
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::RemodelFiber::Setup(int numgp,DRT::INPUT::LineDefinition* linedef)
+void MAT::ELASTIC::RemodelFiber::Setup(int numgp,double rho_tot,DRT::INPUT::LineDefinition* linedef)
 {
   // setup fiber and inelastic history variable
-  last_ilambda_r_.resize(potsumfiber_.size());
-  current_ilambda_r_.resize(potsumfiber_.size());
-  current_w_collagen_.resize(potsumfiber_.size());
-  stress_.resize(potsumfiber_.size());
+  last_lambda_r_.resize(potsumfiberpas_.size()+potsumfiberact_.size());
+  cur_lambda_r_.resize(potsumfiberpas_.size()+potsumfiberact_.size());
+  cur_rho_col_.resize(potsumfiberpas_.size()+potsumfiberact_.size());
+  last_rho_col_.resize(potsumfiberpas_.size()+potsumfiberact_.size());
+  stress_.resize(potsumfiberpas_.size()+potsumfiberact_.size());
+  init_rho_col_.resize(potsumfiberpas_.size()+potsumfiberact_.size());
+  sigmapre_.resize(potsumfiberpas_.size()+potsumfiberact_.size());
 
-  for(unsigned p=0;p<potsumfiber_.size();++p)
+
+  // some variables
+  LINALG::Matrix<2,1> dPI(true);
+  LINALG::Matrix<3,1> ddPII(true);
+  LINALG::Matrix<4,1> dddPIII(true);
+  LINALG::Matrix<6,1> stressactive(true);
+  LINALG::Matrix<6,6> cmatactive(true);
+  double stress_f_act = 0.0;
+
+  for(unsigned k=0;k<potsumfiberpas_.size();++k)
   {
-    last_ilambda_r_[p].resize(numgp,1.0);
-    current_ilambda_r_[p].resize(numgp,1.0);
-    current_w_collagen_[p].resize(numgp,1.0);
-    stress_[p].resize(numgp,1.0);
+    init_rho_col_[k] = rho_tot * params_->init_w_col_->at(k);
+    last_lambda_r_[k].resize(numgp,1.0);
+    cur_lambda_r_[k].resize(numgp,1.0);
+    cur_rho_col_[k].resize(numgp,init_rho_col_[k]);
+    last_rho_col_[k].resize(numgp,init_rho_col_[k]);
+    stress_[k].resize(numgp,1.0);
 
-    potsumfiber_[p]->Setup(linedef);
+    potsumfiberpas_[k]->Setup(linedef);
+  }
+  for(unsigned k=potsumfiberpas_.size();k<(potsumfiberpas_.size()+potsumfiberact_.size());++k)
+  {
+    init_rho_col_[k] = rho_tot * params_->init_w_col_->at(k);
+    last_lambda_r_[k].resize(numgp,1.0);
+    cur_lambda_r_[k].resize(numgp,1.0);
+    cur_rho_col_[k].resize(numgp,init_rho_col_[k]);
+    last_rho_col_[k].resize(numgp,init_rho_col_[k]);
+    stress_[k].resize(numgp,1.0);
+
+    potsumfiberact_[k-potsumfiberpas_.size()]->Setup(linedef);
   }
 
 
+  SetupStructuralTensorsGR();
+
+  // quadratic prestretch in tensor notation
+  LINALG::Matrix<3,3> GM(true);
+
+  // identity tenosr
+  LINALG::Matrix<3,3> id(true);
+  for(int i=0;i<3;++i) id(i,i) = 1.0;
+
+  for(unsigned k=0;k<potsumfiberpas_.size();++k)
+  {
+    GM.Update(params_->G_*params_->G_,AM_[k],0.0);
+
+    // Cauchy prestress of new mass which is deposited during G&R (assumption: det(F_pre)=1)
+    potsumfiberpas_[k]->GetDerivativesAniso(dPI,ddPII,dddPIII,GM,0);
+    sigmapre_[k] = 2.0*dPI(0)*params_->G_*params_->G_;
+  }
+  for(unsigned k=potsumfiberpas_.size();k<(potsumfiberpas_.size()+potsumfiberact_.size());++k)
+  {
+    GM.Update(params_->G_*params_->G_,AM_[k],0.0);
+
+    // Cauchy prestress of new mass which is deposited during G&R (assumption: det(F_pre)=1)
+    potsumfiberact_[k-potsumfiberpas_.size()]->GetDerivativesAniso(dPI,ddPII,dddPIII,GM,0);
+    sigmapre_[k] = 2.0*dPI(0)*params_->G_*params_->G_;
+
+    // active fiber contribution
+    potsumfiberact_[k-potsumfiberpas_.size()]->EvaluateActiveStressCmatAniso(id,cmatactive,stressactive,0);
+    stress_f_act = stressactive.Dot(A_strain_[k]);
+    sigmapre_[k] += stress_f_act;
+  }
+
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::RemodelFiber::SetupStructuralTensorsGR()
+{
+  // identity tensor
+  LINALG::Matrix<3,3> id(true);
+  for(int i=0;i<3;++i)
+    id(i,i) = 1.0;
+
+  // fiber directions
+  std::vector<LINALG::Matrix<3,1> > fibervecs;
+
+  Av_.resize(potsumfiberpas_.size()+potsumfiberact_.size(),LINALG::Matrix<6,1>(true));
+  A_strain_.resize(potsumfiberpas_.size()+potsumfiberact_.size(),LINALG::Matrix<6,1>(true));
+  AM_.resize(potsumfiberpas_.size()+potsumfiberact_.size(),LINALG::Matrix<3,3>(true));
+  AM_orth_.resize(potsumfiberpas_.size()+potsumfiberact_.size(),LINALG::Matrix<3,3>(true));
+  A9x1_.resize(potsumfiberpas_.size()+potsumfiberact_.size(),LINALG::Matrix<9,1>(true));
+
+  for(unsigned k=0;k<potsumfiberpas_.size();++k)
+  {
+    // Get fiberdirection
+    potsumfiberpas_[k]->GetFiberVecs(fibervecs);
+
+    for (int i = 0; i < 3; ++i)
+      A_strain_[k](i) = Av_[k](i) = fibervecs[k](i)*fibervecs[k](i);
+    Av_[k](3) = fibervecs[k](0)*fibervecs[k](1);
+    Av_[k](4) = fibervecs[k](1)*fibervecs[k](2);
+    Av_[k](5) = fibervecs[k](0)*fibervecs[k](2);
+
+    A_strain_[k](3) = 2.0*Av_[k](3);
+    A_strain_[k](4) = 2.0*Av_[k](4);
+    A_strain_[k](5) = 2.0*Av_[k](5);
+
+    // build structural tensor in matrix notation
+    for(int i=0;i<3;++i)
+      AM_[k](i,i) = Av_[k](i);
+    AM_[k](0,1) = Av_[k](3);
+    AM_[k](1,2) = Av_[k](4);
+    AM_[k](0,2) = Av_[k](5);
+    AM_[k](1,0) = Av_[k](3);
+    AM_[k](2,1) = Av_[k](4);
+    AM_[k](2,0) = Av_[k](5);
+
+    // orthogonal structural tensor ( 1_{ij} - A_{ij} )
+    AM_orth_[k].Update(1.0,AM_[k],0.0);
+    AM_orth_[k].Update(1.0,id,-1.0);
+
+    // build structural tensor in 9x1 vector-like notation
+    for(int i=0;i<3;++i)
+      A9x1_[k](i) = A_strain_[k](i);
+    A9x1_[k](3)=0.5*A_strain_[k](3);
+    A9x1_[k](4)=0.5*A_strain_[k](4);
+    A9x1_[k](5)=0.5*A_strain_[k](5);
+    A9x1_[k](6)=0.5*A_strain_[k](3);
+    A9x1_[k](7)=0.5*A_strain_[k](4);
+    A9x1_[k](8)=0.5*A_strain_[k](5);
+  }
+  for(unsigned k=potsumfiberpas_.size();k<(potsumfiberpas_.size()+potsumfiberact_.size());++k)
+  {
+    // Get fiberdirection
+    potsumfiberact_[k-potsumfiberpas_.size()]->GetFiberVecs(fibervecs);
+
+    for (int i = 0; i < 3; ++i)
+      A_strain_[k](i) = Av_[k](i) = fibervecs[k](i)*fibervecs[k](i);
+    Av_[k](3) = fibervecs[k](0)*fibervecs[k](1);
+    Av_[k](4) = fibervecs[k](1)*fibervecs[k](2);
+    Av_[k](5) = fibervecs[k](0)*fibervecs[k](2);
+
+    A_strain_[k](3) = 2.0*Av_[k](3);
+    A_strain_[k](4) = 2.0*Av_[k](4);
+    A_strain_[k](5) = 2.0*Av_[k](5);
+
+    // build structural tensor in matrix notation
+    for(int i=0;i<3;++i)
+      AM_[k](i,i) = Av_[k](i);
+    AM_[k](0,1) = Av_[k](3);
+    AM_[k](1,2) = Av_[k](4);
+    AM_[k](0,2) = Av_[k](5);
+    AM_[k](1,0) = Av_[k](3);
+    AM_[k](2,1) = Av_[k](4);
+    AM_[k](2,0) = Av_[k](5);
+
+    // orthogonal structural tensor ( 1_{ij} - A_{ij} )
+    AM_orth_[k].Update(1.0,AM_[k],0.0);
+    AM_orth_[k].Update(1.0,id,-1.0);
+
+    // build structural tensor in 9x1 vector-like notation
+    for(int i=0;i<3;++i)
+      A9x1_[k](i) = A_strain_[k](i);
+    A9x1_[k](3)=0.5*A_strain_[k](3);
+    A9x1_[k](4)=0.5*A_strain_[k](4);
+    A9x1_[k](5)=0.5*A_strain_[k](5);
+    A9x1_[k](6)=0.5*A_strain_[k](3);
+    A9x1_[k](7)=0.5*A_strain_[k](4);
+    A9x1_[k](8)=0.5*A_strain_[k](5);
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::Update()
 {
   // update history variable
-  for(unsigned p=0;p<potsumfiber_.size();++p)
-    for(unsigned gp=0;gp<current_ilambda_r_[p].size();++gp)
-      last_ilambda_r_[p][gp] = current_ilambda_r_[p][gp];
+  for(unsigned k=0;k<(potsumfiberpas_.size()+potsumfiberact_.size());++k)
+    for(unsigned gp=0;gp<cur_rho_col_[k].size();++gp)
+    {
+      last_lambda_r_[k][gp] = cur_lambda_r_[k][gp];
+      last_rho_col_[k][gp] = cur_rho_col_[k][gp];
+    }
 
   return;
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::RemodelFiber::AddStressCmatRemodel(
-  const LINALG::Matrix<3,3>* defgrd,
-  Teuchos::ParameterList& params,
-  LINALG::Matrix<6,6>& cmat,
-  LINALG::Matrix<6,1>& stress,
-  const int eleGID
-  )
+void MAT::ELASTIC::RemodelFiber::EvaluatePrestressing(const LINALG::Matrix<3,3>* defgrd,
+                                                      LINALG::Matrix<6,6>& cmat,
+                                                      LINALG::Matrix<6,1>& stress,
+                                                      const int gp,
+                                                      const int eleGID)
 {
-  // Clear variables
+  // clear some variables
   stress.Clear();
   cmat.Clear();
 
-  // current Gauß-Point
-  int gp = params.get<int>("gp");
+  // some variables
+  LINALG::Matrix<2,1> dPIe(true);
+  LINALG::Matrix<3,1> ddPIIe(true);
+  LINALG::Matrix<4,1> dddPIIIe(true);
+  LINALG::Matrix<6,6> dCedC(true);
+  LINALG::Matrix<6,6> dCedC_strain(true);
+  LINALG::Matrix<6,1> pk2ev(true);
+  LINALG::Matrix<6,6> cmatelastic(true);
 
-  // time step
-  double dt = params.get<double>("delta time");
 
-  // Calculate the inelastic stretch in fiberdirection
-  // by using Eq. A13 in "A homogenized constrained mixture (and mechanical analog) model
-  // for grwoth and remodeling of soft tissue
-  //
-  // Implicit time integration scheme is used
-  //
-  // REMARK: 1D formulation is used for fiber material
-
-  // fiberdirection
-  std::vector<LINALG::Matrix<3,1> > fibervecs;
-
-  // Structural Tensor in "stress-like" Voigt notation
-  LINALG::Matrix<6,1> A(true);
-
-  // right Cauchy-Green
-  LINALG::Matrix<3,3> C(true);
-
-  // some kinematic quantities
-  // stretch in fiberdirection
-  double lambda = 0.0;
-
-  // elastic stretch in fiberdirection
-  double lambda_e = 0.0;
-
-  // last inelastic stretch in fiberdirection
-  double lambda_r_last = 1.0;
-
-  // current inverse inelastic stretch in fiberdirection
-  double ilambda_r_cur = 1.0;
-
-  // current mass fraction of collagen
-  double cur_w_col = 0.0;
-
-  // principal invariants (I4,I5)
-  LINALG::Matrix<2,1> prinv(true);
-
-  // first derivatives of strain energy function w.r.t. I4
-  LINALG::Matrix<2,1> dPI(true);
-
-  // second derivatives of strain energy function w.r.t. I4
-  LINALG::Matrix<3,1> ddPII(true);
-
-  // third derivatives of strain energy function w.r.t. I4
-  LINALG::Matrix<4,1> dddPIII(true);
-
-  // Derivative of the evolution eq. for the inelastic stretch w.r.t. the inelastic stretch in fiberdirection
-  double dRdlambda_r = 0.0;
-
-  // Derivative of the inelastic stretch rate w.r.t. the quadratic stretch in fiberdirection
-  LINALG::Matrix<1,6> dlambda_rdC(true);
-
-  // Derivative of the 2nd Piola Kirchhoff stress w.r.t. the inelastic stretch in fiberdirection
-  double dSdlambda_r = 0.0;
-
-  // Residual
-  double R = 0.0;
-
-  // Cauchy stress
-  double sig = 0.0;
-
-  // determinant of deformation gradient
-  double J = defgrd->Determinant();
-
-  // lambda_r increment
-  double delta_lambda_r = 0.0;
+  // right elastic Cauchy Green tensor
+  LINALG::Matrix<3,3> CeM(true);
+  LINALG::Matrix<6,1> Cev(true);
+  LINALG::Matrix<3,3> FeM(true);
 
   // temporary variables
-  LINALG::Matrix<3,1> tmp_vec(true);
-  LINALG::Matrix<1,1> tmp_scal(true);
+  std::vector<LINALG::Matrix<3,1> > fibervecs;
+  LINALG::Matrix<3,1> Fa(true);
+  LINALG::Matrix<6,6> tmp6x6(true);
 
-  for(unsigned p=0;p<potsumfiber_.size();++p)
+  // converts stress-like to strain-like Voigt notation// build structural tensor in matrix notation
+  LINALG::Matrix<6,6> strainconv(true);
+  for(int i=0;i<3;++i)
+    strainconv(i,i) = 1.0;
+  for(int j=3;j<6;++j)
+    strainconv(j,j) = 2.0;
+
+  LINALG::Matrix<3,3> iFrM(true);
+
+  // additional variables for active fiber contribution (smooth muscle)
+  double stress_f_act = 0.0;
+  LINALG::Matrix<6,1> stressactive(true);
+  LINALG::Matrix<6,6> cmatactive(true);
+
+  // there is no growth and remodeling during prestressing
+  for(unsigned k=0;k<potsumfiberpas_.size();++k)
   {
-    // last inelastic stretch in fiberdirection
-    lambda_r_last = 1.0/last_ilambda_r_[p][gp];
+    iFrM.Update(params_->G_,AM_[k],0.0);
+    iFrM.Update(1.0,AM_orth_[k],1.0);
 
-    // number of loops
-    int nr_loop = 0;
+    FeM.MultiplyNN(1.0,*defgrd,iFrM,0.0);
+    CeM.MultiplyTN(1.0,FeM,FeM,0.0);
 
-    // start newton with initialized parameter
-    ilambda_r_cur = current_ilambda_r_[p][gp];
+    // get derivatives of strain energy function w.r.t. I4
+    potsumfiberpas_[k]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
 
-    // get fiberdirection
-    potsumfiber_[p]->GetFiberVecs(fibervecs);
+    // Update stress
+    stress.Update(2.*cur_rho_col_[k][gp]*dPIe(0)*params_->G_*params_->G_,Av_[k],1.0);
 
-    // stretch in fiberdirection
-    C.MultiplyTN(1.0,*defgrd,*defgrd,0.0);
-    tmp_vec.MultiplyNN(1.0,C,fibervecs[p],0.0);
-    tmp_scal.MultiplyTN(1.0,fibervecs[p],tmp_vec,0.0);
-    lambda = sqrt(tmp_scal(0));
-
-    // initialize mass fraction collagen
-    cur_w_col = current_w_collagen_[p][gp];
-
-    do
-    {
-      if(nr_loop != 0)
-      {
-        // lambda_r increment
-        delta_lambda_r = -R/dRdlambda_r;
-
-        // Update lambda_r_cur
-        ilambda_r_cur = 1.0/(delta_lambda_r + (1.0/ilambda_r_cur));
-      }
-      // Clear some variables
-      prinv.Clear();
-      dPI.Clear();
-      ddPII.Clear();
-      dddPIII.Clear();
-
-      // elastic stretch in fiberdirection
-      lambda_e = lambda * ilambda_r_cur;
-
-      // principal invariant (I4)
-      prinv(0) = lambda_e * lambda_e;
-
-      // get first,second and third derivative of starin energy function
-      potsumfiber_[p]->GetDerivativesAniso(dPI,ddPII,dddPIII,prinv,eleGID);
-
-      // Cauchy stress
-      sig = (2.0/J)*prinv(0)*cur_w_col*dPI(0);
+    // update elasticity tensor
+    cmat.MultiplyNT(4.*cur_rho_col_[k][gp]*ddPIIe(0)*params_->G_*params_->G_*params_->G_*params_->G_,Av_[k],Av_[k],1.0);
 
 
-      /*-----------------d((sig-sig_pre)/T)/dlambda_r-----------------*/
-      dRdlambda_r = -(4.0/J)*cur_w_col*ilambda_r_cur*prinv(0)*(dPI(0)+prinv(0)*ddPII(0))*(1.0/params_->tdecay_);
+    // fiber stress for output
+    potsumfiberpas_[k]->GetFiberVecs(fibervecs);
+    Fa.MultiplyNN(1.0,*defgrd,fibervecs[k],0.0);
+    stress_[k][gp] = 1./defgrd->Determinant()*Fa.Norm2()*Fa.Norm2()*2.0*dPIe(0)*params_->G_*params_->G_;
+  }
+  for(unsigned k=potsumfiberpas_.size();k<(potsumfiberpas_.size()+potsumfiberact_.size());++k)
+  {
+    iFrM.Update(params_->G_,AM_[k],0.0);
+    iFrM.Update(1.0,AM_orth_[k],1.0);
 
-      /*------------------(-2.0)*(dsig/dlambda_e^2)/dlambda_r*(lambda_e^2*(1-last_lambda_r*ilambda_r)/dt)-----------------*/
-      dRdlambda_r += (8.0/J)*cur_w_col*ilambda_r_cur*prinv(0)*(2.0*ddPII(0)+prinv(0)*dddPIII(0))*(prinv(0)/dt)*(1.0-lambda_r_last*ilambda_r_cur);
+    FeM.MultiplyNN(1.0,*defgrd,iFrM,0.0);
+    CeM.MultiplyTN(1.0,FeM,FeM,0.0);
 
-      /*-----------------(-2.0)*(dsig/dlambda_e^2)*d(lambda_e^2*(1-last_lambda_r*ilambda_r)/dt)/dlambda_r-----------------*/
-      dRdlambda_r += -(4.0/J)*cur_w_col*(dPI(0)+prinv(0)*ddPII(0))*ilambda_r_cur*prinv(0)*(1.0/dt)*(3.0*lambda_r_last*ilambda_r_cur-2.0);
+    // get derivatives of strain energy function w.r.t. I4
+    potsumfiberact_[k-potsumfiberpas_.size()]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
 
-      /*-----------------Residual-----------------*/
-      R = (sig-params_->sigmapre_)/params_->tdecay_ - (4.0/J)*cur_w_col*(dPI(0)+prinv(0)*ddPII(0))*prinv(0)*(1.0/dt)*(1.0-lambda_r_last*ilambda_r_cur);
+    // Update stress
+    stress.Update(2.*cur_rho_col_[k][gp]*dPIe(0)*params_->G_*params_->G_,Av_[k],1.0);
 
-      nr_loop++;
-      if(nr_loop > 50)
-        dserror("no convergence!!!");
-    }
-    while(fabs(R) > 1.0e-8);
+    // update elasticity tensor
+    cmat.MultiplyNT(4.*cur_rho_col_[k][gp]*ddPIIe(0)*params_->G_*params_->G_*params_->G_*params_->G_,Av_[k],Av_[k],1.0);
 
-    // update inelastic stretch in fiber direction
-    current_ilambda_r_[p][gp] = ilambda_r_cur;
+    // update active stress and elasticity tensor contribution
+    potsumfiberact_[k-potsumfiberpas_.size()]->EvaluateActiveStressCmatAniso(*defgrd,cmatactive,stressactive,eleGID);
 
-    // update current Cauchy stress
-    stress_[p][gp] = sig;
-
-    /*-----------------------Update 2nd Piola-Kirchhoff Stress and Elasticity tensor-----------------------*/
-    // Update stress and (one part!) of elasticity tensor
-    // structural tensor (stress-like Voigt notation)
-    for (int i = 0; i < 3; ++i)
-      A(i) = fibervecs[p](i)*fibervecs[p](i);
-    A(3) = fibervecs[p](0)*fibervecs[p](1);
-    A(4) = fibervecs[p](1)*fibervecs[p](2);
-    A(5) = fibervecs[p](0)*fibervecs[p](2);
+    stress.Update(cur_rho_col_[k][gp],stressactive,1.0);
+    cmat.Update(cur_rho_col_[k][gp],cmatactive,1.0);
 
 
-    stress.Update(2.0*cur_w_col*ilambda_r_cur*ilambda_r_cur*dPI(0),A,1.0);
+    // fiber stress for output
+    potsumfiberact_[k-potsumfiberpas_.size()]->GetFiberVecs(fibervecs);
+    Fa.MultiplyNN(1.0,*defgrd,fibervecs[k],0.0);
+    stress_[k][gp] = 1./defgrd->Determinant()*Fa.Norm2()*Fa.Norm2()*2.0*dPIe(0)*params_->G_*params_->G_;
 
-    cmat.MultiplyNT(4.0*cur_w_col*ilambda_r_cur*ilambda_r_cur*ilambda_r_cur*ilambda_r_cur*ddPII(0),A,A,1.0);
-
-
-    /*-----------------------Update (extra part!) of Elasticity tensor-----------------------*/
-    // derivative of the residual R w.r.t. C
-    LINALG::Matrix<1,6> dRdC(true);
-
-    //d((sig-sig_pre)/T)/dC
-    LINALG::Matrix<6,1> iC_voigt(true);
-    LINALG::Matrix<3,3> tmp3x3(true);
-
-    tmp3x3.Invert(C);
-    for (int i = 0; i < 3; i++)
-      iC_voigt(i) = tmp3x3(i,i);
-    iC_voigt(3) = 0.5*(tmp3x3(0,1)+tmp3x3(1,0));
-    iC_voigt(4) = 0.5*(tmp3x3(1,2)+tmp3x3(2,1));
-    iC_voigt(5) = 0.5*(tmp3x3(0,2)+tmp3x3(2,0));
-
-
-
-    // update dRdC
-    // d((sig-sig_pre)/T)dC
-    dRdC.UpdateT(-cur_w_col*(1.0/J)*prinv(0)*dPI(0)*(1.0/params_->tdecay_),iC_voigt,0.0);
-    dRdC.UpdateT(2.0*cur_w_col*(1.0/J)*(1.0/params_->tdecay_)*ilambda_r_cur*ilambda_r_cur*(dPI(0)+prinv(0)*ddPII(0)),A,1.0);
-
-
-    // (-2.0)*d(dsig/dlambda_e^2)/dC*(lambda_e^2*(1-last_lambda_r*ilambda_r)/dt)
-    dRdC.UpdateT(2.0*cur_w_col*(1.0/J)*(dPI(0)+prinv(0)*ddPII(0))*prinv(0)*(1.0/dt)*(1.0-lambda_r_last*ilambda_r_cur),iC_voigt,1.0);
-    dRdC.UpdateT(-4.0*cur_w_col*(1.0/J)*ilambda_r_cur*ilambda_r_cur*(2.0*ddPII(0)+prinv(0)*dddPIII(0))*(1.0/dt)*(1.0-lambda_r_last*ilambda_r_cur)*ilambda_r_cur*ilambda_r_cur,A,1.0);
-
-
-    // (-2.0)*(dsig/dlambda_e^2)*d(lambda_e^2*(1-last_lambda_r*ilambda_r)/dt)/dC
-    dRdC.UpdateT(-(4.0/J)*cur_w_col*(dPI(0)+prinv(0)*ddPII(0))*(1.0/dt)*(1.0-lambda_r_last*ilambda_r_cur)*ilambda_r_cur*ilambda_r_cur,A,1.0);
-
-
-
-    // evaluate derivative of inelastic stretch w.r.t. right Cauchy Green tensor
-    dlambda_rdC.Update(-1.0/dRdlambda_r,dRdC,0.0);
-
-    // evaluate derivative of 2nd Piola Kirchhoff stress w.r.t. inelastic stretch
-    dSdlambda_r = -4.0*cur_w_col*ilambda_r_cur*ilambda_r_cur*ilambda_r_cur*(dPI(0)+prinv(0)*ddPII(0));
-
-
-    // Update elasticity tensor
-    cmat.MultiplyNN(2.0*dSdlambda_r,A,dlambda_rdC,1.0);
+    // active contribution
+    stress_f_act = stressactive.Dot(A_strain_[k]);
+    stress_[k][gp] += 1./defgrd->Determinant()*Fa.Norm2()*Fa.Norm2()*stress_f_act;
   }
 
   return;
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
+  const LINALG::Matrix<3,3>* defgrd,
+  const LINALG::Matrix<3,3> id,
+  const int nr_grf_proc,
+  const double density,
+  const int gp,
+  const double dt,
+  const double v,
+  LINALG::Matrix<3,3> FgM,
+  LINALG::Matrix<3,3> iFgM,
+  LINALG::Matrix<3,3> AgM,
+  LINALG::Matrix<3,3> AcirM,
+  LINALG::Matrix<3,3> AradM,
+  LINALG::Matrix<3,3> AaxM,
+  std::vector<std::vector<double> >& dWdrho,
+  std::vector<std::vector<double> >& dWdlamb,
+  std::vector<double>& W,
+  std::vector<std::vector<double> >& dEdrho,
+  std::vector<std::vector<double> >& dEdlamb,
+  std::vector<double>& E,
+  const int eleGID,
+  const int growthtype
+  )
+{
+  // constant factor
+  double fac = 1.0;
+
+  // converts stress-like to strain-like Voigt notation// build structural tensor in matrix notation
+  LINALG::Matrix<6,6> strainconv(true);
+  for(int i=0;i<3;++i)
+    strainconv(i,i) = 1.0;
+  for(int j=3;j<6;++j)
+    strainconv(j,j) = 2.0;
+
+  // fiber directions
+  std::vector<LINALG::Matrix<3,1> > fibervecs;
+
+  // some variables
+  double Je = 0.0;
+  double Fea_norm = 0.0;
+  double sigf = 0.0;
+  double diJedrho = 0.0;
+  double dsigfdrho = 0.0;
+  double ddPIedrho = 0.0;
+  double dddPIIedrho = 0.0;
+  LINALG::Matrix<1,1> tmp_scal(true);
+  LINALG::Matrix<1,6> tmp1x6(true);
+  LINALG::Matrix<3,3> tmp3x3_1(true);
+  LINALG::Matrix<3,3> tmp3x3_2(true);
+  LINALG::Matrix<3,3> FrM(true);
+  LINALG::Matrix<3,3> iFrM(true);
+  LINALG::Matrix<3,3> iFgiFrM(true);
+  LINALG::Matrix<3,3> FeM(true);
+  LINALG::Matrix<3,3> CeM(true);
+  LINALG::Matrix<3,3> iCeM(true);
+  LINALG::Matrix<6,1> iCev(true);
+  LINALG::Matrix<2,1> dPIe(true);
+  LINALG::Matrix<3,1> ddPIIe(true);
+  LINALG::Matrix<4,1> dddPIIIe(true);
+  LINALG::Matrix<3,1> Fea(true);
+  LINALG::Matrix<3,3> diFgdrhoM(true);
+  LINALG::Matrix<3,3> dFgdrhoM(true);
+  LINALG::Matrix<3,3> dFedrhoM(true);
+  LINALG::Matrix<3,3> diFgdrhoiFrM(true);
+  LINALG::Matrix<3,3> dCedrhoM(true);
+  LINALG::Matrix<6,1> dCedrhov(true);
+  LINALG::Matrix<1,1> dI4edrho(true);
+  LINALG::Matrix<1,1> dFeanorm_sqdrho(true);
+  LINALG::Matrix<1,6> dsigfdCe(true);
+  LINALG::Matrix<3,3> diFrdlambM(true);
+  LINALG::Matrix<3,3> dFrdlambM(true);
+  LINALG::Matrix<3,3> dCedlambM(true);
+  LINALG::Matrix<6,1> dCedlambv(true);
+  LINALG::Matrix<6,1> dCedlamb_strain(true);
+  LINALG::Matrix<1,1> dsigfdlamb(true);
+  LINALG::Matrix<1,1> ddPIedlamb(true);
+  LINALG::Matrix<1,1> dddPIIedlamb(true);
+  LINALG::Matrix<1,1> dFeanorm_sqdlamb(true);
+  LINALG::Matrix<3,3> FrFgM(true);
+  LINALG::Matrix<3,3> dFrdlambFgM(true);
+  LINALG::Matrix<3,3> diCedlambM(true);
+  LINALG::Matrix<6,1> diCedlambv(true);
+  LINALG::Matrix<1,6> dsigfdCedlamb(true);
+  LINALG::Matrix<3,3> FrnM(true);
+  LINALG::Matrix<3,3> FrniFrM(true);
+  LINALG::Matrix<3,3> FrdotiFrM(true);
+  LINALG::Matrix<3,3> YM(true);
+  LINALG::Matrix<6,1> Y_strain(true);
+  LINALG::Matrix<3,3> dYdlambM(true);
+  LINALG::Matrix<6,1> dYdlambv(true);
+  LINALG::Matrix<3,3> dYdrhoM(true);
+  LINALG::Matrix<6,1> dYdrhov(true);
+  LINALG::Matrix<1,6> dsigfdCedrho(true);
+  LINALG::Matrix<3,3> diCedrhoM(true);
+  LINALG::Matrix<6,1> diCedrhov(true);
+
+  // additional variables for active fiber contribution (smooth muscle)
+  double stress_f_act = 0.0;
+  LINALG::Matrix<6,1> stressactive(true);
+  LINALG::Matrix<6,6> cmatactive(true);
+  LINALG::Matrix<3,1> Fa(true);
+
+  // right Cauchy Green tensor
+  LINALG::Matrix<3,3> CM(true);
+  LINALG::Matrix<3,3> iCM(true);
+  CM.MultiplyTN(1.0,*defgrd,*defgrd,0.0);
+  iCM.Invert(CM);
+
+  // determinant of deformation gradient
+  double J = defgrd->Determinant();
+
+
+  // passive fiber evaluation
+  for(unsigned k=0;k<potsumfiberpas_.size();++k)
+  {
+    // Get fiberdirection
+    potsumfiberpas_[k]->GetFiberVecs(fibervecs);
+
+    fac = dt*params_->k_growth_/sigmapre_[k];
+
+    // build remodel deformation gradient
+    FrM.Update(cur_lambda_r_[k][gp]*(1./params_->G_),AM_[k],0.0);
+    FrM.Update(1./std::sqrt(cur_lambda_r_[k][gp]*1./params_->G_),AM_orth_[k],1.0);
+
+    // inverse remodel deformation gradient
+    iFrM.Invert(FrM);
+
+    // Fg^-1 * Fr^-1
+    iFgiFrM.MultiplyNN(1.0,iFgM,iFrM,0.0);
+
+    // elastic right Cauchy Green tensor
+    FeM.MultiplyNN(1.0,*defgrd,iFgiFrM,0.0);
+    Je = FeM.Determinant();
+    CeM.MultiplyTN(1.0,FeM,FeM,0.0);
+    iCeM.Invert(CeM);
+    MatrixtoStressVoigtNotationVector(iCeM,iCev);
+
+    // get derivatives of strain energy function w.r.t. the isochoric fourth invariant
+    potsumfiberpas_[k]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
+
+    // Evaluate fiber Cauchy stress in updated fiber direction
+    Fea.MultiplyNN(1.0,FeM,fibervecs[k],0.0);
+    Fea_norm = Fea.Norm2();
+
+    sigf = 2.*(1./Je)*Fea_norm*Fea_norm*dPIe(0);
+
+
+    switch(growthtype)
+    {
+    case 1:
+      // dFg^-1/drho
+      diFgdrhoM.Update(-(1./(v*v))*(1./density),AgM,0.0);
+      // dFg/drho
+      dFgdrhoM.Update(1./density,AgM,0.0);
+      break;
+    case 0:
+      // dFg^-1/drho
+      diFgdrhoM.Update(-1./3.*std::pow(v,-4./3.)*(1./density),AcirM,0.0);
+      diFgdrhoM.Update(-1./3.*std::pow(v,-4./3.)*(1./density),AradM,1.0);
+      diFgdrhoM.Update(-1./3.*std::pow(v,-4./3.)*(1./density),AaxM,1.0);
+      // dFg/drho (isotropic growth)
+      dFgdrhoM.Update(1./3.*std::pow(v,-2./3.)*(1./density),AcirM,0.0);
+      dFgdrhoM.Update(1./3.*std::pow(v,-2./3.)*(1./density),AradM,1.0);
+      dFgdrhoM.Update(1./3.*std::pow(v,-2./3.)*(1./density),AaxM,1.0);
+     break;
+    default:
+      dserror("growthtype has to be either 1: anisotropic growth or 0: isotropic growth");
+      break;
+    }
+
+    // dFe/drho = F * dFg^-1/drho * Fr^-1 (lambda_r const)
+    tmp3x3_1.MultiplyNN(1.0,*defgrd,diFgdrhoM,0.0);
+    dFedrhoM.MultiplyNN(1.0,tmp3x3_1,iFrM,0.0);
+
+    // dCedrho (lambda_r const)
+    diFgdrhoiFrM.MultiplyNN(1.0,diFgdrhoM,iFrM,0.0);
+    tmp3x3_1.MultiplyTN(1.0,diFgdrhoiFrM,CM,0.0);
+    dCedrhoM.MultiplyNN(1.0,tmp3x3_1,iFgiFrM,0.0);
+    tmp3x3_1.MultiplyNN(1.0,CM,diFgdrhoiFrM,0.0);
+    dCedrhoM.MultiplyTN(1.0,iFgiFrM,tmp3x3_1,1.0);
+    MatrixtoStressVoigtNotationVector(dCedrhoM,dCedrhov);
+
+    // d(dPIe)/drho = ddPII * dI4e/drho (lambda_r const)
+    dI4edrho.MultiplyTN(1.0,A_strain_[k],dCedrhov,0.0);
+    ddPIedrho = ddPIIe(0) * dI4edrho(0);
+
+    //dsigf/drho (lambda_r const)
+    diJedrho = 1./(J*density);
+    dsigfdrho = 2.*diJedrho*Fea_norm*Fea_norm*dPIe(0);
+
+    dFeanorm_sqdrho.MultiplyTN(1.0,A_strain_[k],dCedrhov,0.0);
+    dsigfdrho += 2.*(1./Je)*dPIe(0)*dFeanorm_sqdrho(0);
+
+    dsigfdrho += 2.*(1./Je)*Fea_norm*Fea_norm*ddPIedrho;
+
+
+
+    // dWdrho
+    dWdrho[nr_grf_proc+k][nr_grf_proc+k] = 1. - fac*(sigf-sigmapre_[k]);
+    dWdrho[nr_grf_proc+k][nr_grf_proc+k] += -fac*cur_rho_col_[k][gp]*dsigfdrho;
+
+    for(unsigned m=0;m<dWdrho[nr_grf_proc+k].size();++m)
+      if((int)m != nr_grf_proc+(int)k)
+        dWdrho[nr_grf_proc+k][m] = -cur_rho_col_[k][gp]*fac*dsigfdrho;
+
+
+
+    // dsigfdCe
+    dsigfdCe.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),iCev,0.0);
+
+    dsigfdCe.UpdateT(2.*(1./Je)*dPIe(0),Av_[k],1.0);
+
+    dsigfdCe.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],1.0);
+
+
+    // dFr^-1/dlambda_r
+    diFrdlambM.Update(-std::pow(cur_lambda_r_[k][gp],-2.)*params_->G_,AM_[k],0.0);
+    diFrdlambM.Update(0.5*std::pow(cur_lambda_r_[k][gp],-0.5)*std::sqrt(1./params_->G_),AM_orth_[k],1.0);
+
+
+    // dFr/dlambda_r
+    dFrdlambM.Update(1./params_->G_,AM_[k],0.0);
+    dFrdlambM.Update(-0.5*std::pow(cur_lambda_r_[k][gp],-1.5)*1./std::sqrt(1./params_->G_),AM_orth_[k],1.0);
+
+
+    // dCe/dlambda_r
+    tmp3x3_1.MultiplyNN(1.0,iFgM,diFrdlambM,0.0);
+    tmp3x3_2.MultiplyTN(1.0,tmp3x3_1,CM,0.0);
+    dCedlambM.MultiplyNN(1.0,tmp3x3_2,iFgiFrM,0.0);
+
+    tmp3x3_2.MultiplyTN(1.0,iFgiFrM,CM,0.0);
+    dCedlambM.MultiplyNN(1.0,tmp3x3_2,tmp3x3_1,1.0);
+    MatrixtoStressVoigtNotationVector(dCedlambM,dCedlambv);
+
+
+    // dsigf/dlambda_r
+    dCedlamb_strain.Update(1.0,dCedlambv,0.0);
+    for(int i=3;i<6;++i)
+      dCedlamb_strain(i) = 2.*dCedlambv(i);
+
+    dsigfdlamb.MultiplyNN(1.0,dsigfdCe,dCedlamb_strain,0.0);
+
+
+    // dPI/dlambda_r
+    ddPIedlamb.MultiplyTN(ddPIIe(0),A_strain_[k],dCedlambv,0.0);
+
+
+    // ddPII/dlambda_r
+    dddPIIedlamb.MultiplyTN(dddPIIIe(0),A_strain_[k],dCedlambv,0.0);
+
+
+    // d(Fea_norm)^2/dlambda_r
+    dFeanorm_sqdlamb.MultiplyTN(1.0,Av_[k],dCedlamb_strain,0.0);
+
+
+    // Fr * Fg
+    FrFgM.MultiplyNN(1.0,FrM,FgM,0.0);
+
+    // dCe^-1/dlambda_r
+    dFrdlambFgM.MultiplyNN(1.0,dFrdlambM,FgM,0.0);
+    tmp3x3_1.MultiplyNN(1.0,dFrdlambFgM,iCM,0.0);
+    diCedlambM.MultiplyNT(1.0,tmp3x3_1,FrFgM,0.0);
+    tmp3x3_1.MultiplyNT(1.0,iCM,dFrdlambFgM,0.0);
+    diCedlambM.MultiplyNN(1.0,FrFgM,tmp3x3_1,1.0);
+    MatrixtoStressVoigtNotationVector(diCedlambM,diCedlambv);
+
+
+    // (dsigf/dCe)/dlambda_r
+    dsigfdCedlamb.UpdateT(-(1./Je)*Fea_norm*Fea_norm*ddPIedlamb(0),iCev,0.0);
+
+    dsigfdCedlamb.UpdateT(2.*(1./Je)*ddPIedlamb(0),Av_[k],1.0);
+
+    dsigfdCedlamb.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*dddPIIedlamb(0),Av_[k],1.0);
+
+    dsigfdCedlamb.UpdateT(-(1./Je)*dPIe(0)*dFeanorm_sqdlamb(0),iCev,1.0);
+
+    dsigfdCedlamb.UpdateT(2.*(1./Je)*ddPIIe(0)*dFeanorm_sqdlamb(0),Av_[k],1.0);
+
+    dsigfdCedlamb.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),diCedlambv,1.0);
+
+
+
+    // dY/dlambda_r with Y = (Ce*Frdot*Fr^-1 + Fr^-T*Frdot^T*Ce)
+    FrnM.Update(last_lambda_r_[k][gp]*(1./params_->G_),AM_[k],0.0);
+    FrnM.Update(1./std::sqrt(last_lambda_r_[k][gp]*1./params_->G_),AM_orth_[k],1.0);
+    FrniFrM.MultiplyNN(1.0,FrnM,iFrM,0.0);
+
+    FrdotiFrM.Update(1./dt,id,0.0);
+    FrdotiFrM.Update(-1./dt,FrniFrM,1.0);
+    YM.MultiplyNN(1.0,CeM,FrdotiFrM,0.0);
+    YM.MultiplyTN(1.0,FrdotiFrM,CeM,1.0);
+    dYdlambM.MultiplyNN(1.0,dCedlambM,FrdotiFrM,0.0);
+    dYdlambM.MultiplyTN(1.0,FrdotiFrM,dCedlambM,1.0);
+
+    tmp3x3_1.MultiplyNN(-1./dt,FrnM,diFrdlambM,0.0);
+    dYdlambM.MultiplyNN(1.0,CeM,tmp3x3_1,1.0);
+    dYdlambM.MultiplyTN(1.0,tmp3x3_1,CeM,1.0);
+    MatrixtoStressVoigtNotationVector(dYdlambM,dYdlambv);
+
+
+    // dE/dlambda_r
+    dEdlamb[nr_grf_proc+k][nr_grf_proc+k] = 2.*(params_->k_growth_/sigmapre_[k])*(sigf-sigmapre_[k])*dsigfdlamb(0);
+
+    dEdlamb[nr_grf_proc+k][nr_grf_proc+k] += dsigfdlamb(0)/params_->tdecay_;
+
+    for(int i=0;i<3;++i)
+      Y_strain(i) = YM(i,i);
+    Y_strain(3) = YM(0,1) + YM(1,0);
+    Y_strain(4) = YM(1,2) + YM(2,1);
+    Y_strain(5) = YM(0,2) + YM(2,0);
+    tmp_scal.MultiplyNN(1.0,dsigfdCedlamb,Y_strain,0.0);
+    dEdlamb[nr_grf_proc+k][nr_grf_proc+k] -= tmp_scal(0);
+
+    tmp1x6.MultiplyNN(1.0,dsigfdCe,strainconv,0.0);
+    tmp_scal.MultiplyNN(1.0,tmp1x6,dYdlambv,0.0);
+    dEdlamb[nr_grf_proc+k][nr_grf_proc+k] -= tmp_scal(0);
+
+
+
+    // dW/dlambda_r
+    dWdlamb[nr_grf_proc+k][nr_grf_proc+k] = -cur_rho_col_[k][gp]*fac*dsigfdlamb(0);
+
+
+
+    // dY/drho
+    dYdrhoM.MultiplyNN(1.0,dCedrhoM,FrdotiFrM,0.0);
+    dYdrhoM.MultiplyTN(1.0,FrdotiFrM,dCedrhoM,1.0);
+    MatrixtoStressVoigtNotationVector(dYdrhoM,dYdrhov);
+
+
+    // d(ddPIIe)/drho
+    dddPIIedrho = dddPIIIe(0) * dI4edrho(0);
+
+
+    // dCe^-1/drho
+    tmp3x3_1.MultiplyNN(1.0,FrM,dFgdrhoM,0.0);
+    tmp3x3_2.MultiplyNN(1.0,tmp3x3_1,iCM,0.0);
+    diCedrhoM.MultiplyNT(1.0,tmp3x3_2,FrFgM,0.0);
+    diCedrhoM.MultiplyNT(1.0,FrFgM,tmp3x3_2,1.0);
+    MatrixtoStressVoigtNotationVector(diCedrhoM,diCedrhov);
+
+
+    // (dsigf/dCe)/drho
+    dsigfdCedrho.UpdateT(-1.*diJedrho*Fea_norm*Fea_norm*dPIe(0),iCev,0.0);
+    dsigfdCedrho.UpdateT(2.*diJedrho*dPIe(0),Av_[k],1.0);
+    dsigfdCedrho.UpdateT(2.*diJedrho*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],1.0);
+
+    dsigfdCedrho.UpdateT(-(1./Je)*dPIe(0)*dFeanorm_sqdrho(0),iCev,1.0);
+    dsigfdCedrho.UpdateT(2.*(1./Je)*ddPIIe(0)*dFeanorm_sqdrho(0),Av_[k],1.0);
+
+    dsigfdCedrho.UpdateT(-(1./Je)*Fea_norm*Fea_norm*ddPIedrho,iCev,1.0);
+    dsigfdCedrho.UpdateT(2.*(1./Je)*ddPIedrho,Av_[k],1.0);
+
+    dsigfdCedrho.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*dddPIIedrho,Av_[k],1.0);
+
+    dsigfdCedrho.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),diCedrhov,1.0);
+
+
+    // dE/drho
+    dEdrho[nr_grf_proc+k][nr_grf_proc+k] = 2.*(params_->k_growth_/sigmapre_[k])*(sigf-sigmapre_[k])*dsigfdrho;
+
+    dEdrho[nr_grf_proc+k][nr_grf_proc+k] += dsigfdrho/params_->tdecay_;
+
+    tmp_scal.MultiplyNN(1.0,dsigfdCedrho,Y_strain,0.0);
+    dEdrho[nr_grf_proc+k][nr_grf_proc+k] -= tmp_scal(0);
+
+    tmp1x6.MultiplyNN(1.0,dsigfdCe,strainconv,0.0);
+    tmp_scal.MultiplyNN(1.0,tmp1x6,dYdrhov,0.0);
+    dEdrho[nr_grf_proc+k][nr_grf_proc+k] -= tmp_scal(0);
+
+    for(unsigned m=0;m<dEdrho[nr_grf_proc+k].size();++m)
+      if((int)m != nr_grf_proc+(int)k)
+        dEdrho[nr_grf_proc+k][m] = dEdrho[nr_grf_proc+k][nr_grf_proc+k];
+
+
+
+    // single residuals
+    tmp_scal.MultiplyNN(1.0,dsigfdCe,Y_strain,0.0);
+    E[nr_grf_proc+k] = ((params_->k_growth_/sigmapre_[k])*(sigf-sigmapre_[k]) + 1./params_->tdecay_)*(sigf-sigmapre_[k])-tmp_scal(0);
+
+    W[nr_grf_proc+k] = cur_rho_col_[k][gp]*(1. - fac*(sigf-sigmapre_[k])) - last_rho_col_[k][gp];
+  }
+  // active fiber evaluation
+  for(unsigned k=potsumfiberpas_.size();k<(potsumfiberpas_.size()+potsumfiberact_.size());++k)
+  {
+    // Get fiberdirection
+    potsumfiberact_[k-potsumfiberpas_.size()]->GetFiberVecs(fibervecs);
+
+    fac = dt*params_->k_growth_/sigmapre_[k];
+
+    // build remodel deformation gradient
+    FrM.Update(cur_lambda_r_[k][gp]*(1./params_->G_),AM_[k],0.0);
+    FrM.Update(1./std::sqrt(cur_lambda_r_[k][gp]*1./params_->G_),AM_orth_[k],1.0);
+
+    // inverse remodel deformation gradient
+    iFrM.Invert(FrM);
+
+    // Fg^-1 * Fr^-1
+    iFgiFrM.MultiplyNN(1.0,iFgM,iFrM,0.0);
+
+    // elastic right Cauchy Green tensor
+    FeM.MultiplyNN(1.0,*defgrd,iFgiFrM,0.0);
+    Je = FeM.Determinant();
+    CeM.MultiplyTN(1.0,FeM,FeM,0.0);
+    iCeM.Invert(CeM);
+    MatrixtoStressVoigtNotationVector(iCeM,iCev);
+
+    // get derivatives of strain energy function w.r.t. the isochoric fourth invariant
+    potsumfiberact_[k-potsumfiberpas_.size()]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
+
+    // Evaluate fiber Cauchy stress in updated fiber direction
+    Fea.MultiplyNN(1.0,FeM,fibervecs[k],0.0);
+    Fea_norm = Fea.Norm2();
+
+    sigf = 2.*(1./Je)*Fea_norm*Fea_norm*dPIe(0);
+
+    // Evaluate fiber Cauchy stress in updated fiber direction (active contribution)
+    potsumfiberact_[k-potsumfiberpas_.size()]->EvaluateActiveStressCmatAniso(*defgrd,cmatactive,stressactive,eleGID);
+    stress_f_act = stressactive.Dot(A_strain_[k]);
+    Fa.MultiplyNN(1.0,*defgrd,fibervecs[k],0.0);
+
+    sigf += 1./defgrd->Determinant()*Fa.Norm2()*Fa.Norm2()*stress_f_act;
+
+    switch(growthtype)
+    {
+    case 1:
+      // dFg^-1/drho
+      diFgdrhoM.Update(-(1./(v*v))*(1./density),AgM,0.0);
+      // dFg/drho
+      dFgdrhoM.Update(1./density,AgM,0.0);
+      break;
+    case 0:
+      // dFg^-1/drho
+      diFgdrhoM.Update(-1./3.*std::pow(v,-4./3.)*(1./density),AcirM,0.0);
+      diFgdrhoM.Update(-1./3.*std::pow(v,-4./3.)*(1./density),AradM,1.0);
+      diFgdrhoM.Update(-1./3.*std::pow(v,-4./3.)*(1./density),AaxM,1.0);
+      // dFg/drho (isotropic growth)
+      dFgdrhoM.Update(1./3.*std::pow(v,-2./3.)*(1./density),AcirM,0.0);
+      dFgdrhoM.Update(1./3.*std::pow(v,-2./3.)*(1./density),AradM,1.0);
+      dFgdrhoM.Update(1./3.*std::pow(v,-2./3.)*(1./density),AaxM,1.0);
+     break;
+    default:
+      dserror("growthtype has to be either 1: anisotropic growth or 0: isotropic growth");
+      break;
+    }
+
+    // dFe/drho = F * dFg^-1/drho * Fr^-1 (lambda_r const)
+    tmp3x3_1.MultiplyNN(1.0,*defgrd,diFgdrhoM,0.0);
+    dFedrhoM.MultiplyNN(1.0,tmp3x3_1,iFrM,0.0);
+
+    // dCedrho (lambda_r const)
+    diFgdrhoiFrM.MultiplyNN(1.0,diFgdrhoM,iFrM,0.0);
+    tmp3x3_1.MultiplyTN(1.0,diFgdrhoiFrM,CM,0.0);
+    dCedrhoM.MultiplyNN(1.0,tmp3x3_1,iFgiFrM,0.0);
+    tmp3x3_1.MultiplyNN(1.0,CM,diFgdrhoiFrM,0.0);
+    dCedrhoM.MultiplyTN(1.0,iFgiFrM,tmp3x3_1,1.0);
+    MatrixtoStressVoigtNotationVector(dCedrhoM,dCedrhov);
+
+    // d(dPIe)/drho = ddPII * dI4e/drho (lambda_r const)
+    dI4edrho.MultiplyTN(1.0,A_strain_[k],dCedrhov,0.0);
+    ddPIedrho = ddPIIe(0) * dI4edrho(0);
+
+    //dsigf/drho (lambda_r const)
+    diJedrho = 1./(J*density);
+    dsigfdrho = 2.*diJedrho*Fea_norm*Fea_norm*dPIe(0);
+
+    dFeanorm_sqdrho.MultiplyTN(1.0,A_strain_[k],dCedrhov,0.0);
+    dsigfdrho += 2.*(1./Je)*dPIe(0)*dFeanorm_sqdrho(0);
+
+    dsigfdrho += 2.*(1./Je)*Fea_norm*Fea_norm*ddPIedrho;
+
+
+
+    // dWdrho
+    dWdrho[nr_grf_proc+k][nr_grf_proc+k] = 1. - fac*(sigf-sigmapre_[k]);
+    dWdrho[nr_grf_proc+k][nr_grf_proc+k] += -fac*cur_rho_col_[k][gp]*dsigfdrho;
+
+    for(unsigned m=0;m<dWdrho[nr_grf_proc+k].size();++m)
+      if((int)m != nr_grf_proc+(int)k)
+        dWdrho[nr_grf_proc+k][m] = -cur_rho_col_[k][gp]*fac*dsigfdrho;
+
+
+
+    // dsigfdCe
+    dsigfdCe.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),iCev,0.0);
+
+    dsigfdCe.UpdateT(2.*(1./Je)*dPIe(0),Av_[k],1.0);
+
+    dsigfdCe.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],1.0);
+
+
+    // dFr^-1/dlambda_r
+    diFrdlambM.Update(-std::pow(cur_lambda_r_[k][gp],-2.)*params_->G_,AM_[k],0.0);
+    diFrdlambM.Update(0.5*std::pow(cur_lambda_r_[k][gp],-0.5)*std::sqrt(1./params_->G_),AM_orth_[k],1.0);
+
+
+    // dFr/dlambda_r
+    dFrdlambM.Update(1./params_->G_,AM_[k],0.0);
+    dFrdlambM.Update(-0.5*std::pow(cur_lambda_r_[k][gp],-1.5)*1./std::sqrt(1./params_->G_),AM_orth_[k],1.0);
+
+
+    // dCe/dlambda_r
+    tmp3x3_1.MultiplyNN(1.0,iFgM,diFrdlambM,0.0);
+    tmp3x3_2.MultiplyTN(1.0,tmp3x3_1,CM,0.0);
+    dCedlambM.MultiplyNN(1.0,tmp3x3_2,iFgiFrM,0.0);
+
+    tmp3x3_2.MultiplyTN(1.0,iFgiFrM,CM,0.0);
+    dCedlambM.MultiplyNN(1.0,tmp3x3_2,tmp3x3_1,1.0);
+    MatrixtoStressVoigtNotationVector(dCedlambM,dCedlambv);
+
+
+    // dsigf/dlambda_r
+    dCedlamb_strain.Update(1.0,dCedlambv,0.0);
+    for(int i=3;i<6;++i)
+      dCedlamb_strain(i) = 2.*dCedlambv(i);
+
+    dsigfdlamb.MultiplyNN(1.0,dsigfdCe,dCedlamb_strain,0.0);
+
+
+    // dPI/dlambda_r
+    ddPIedlamb.MultiplyTN(ddPIIe(0),A_strain_[k],dCedlambv,0.0);
+
+
+    // ddPII/dlambda_r
+    dddPIIedlamb.MultiplyTN(dddPIIIe(0),A_strain_[k],dCedlambv,0.0);
+
+
+    // d(Fea_norm)^2/dlambda_r
+    dFeanorm_sqdlamb.MultiplyTN(1.0,Av_[k],dCedlamb_strain,0.0);
+
+
+    // Fr * Fg
+    FrFgM.MultiplyNN(1.0,FrM,FgM,0.0);
+
+    // dCe^-1/dlambda_r
+    dFrdlambFgM.MultiplyNN(1.0,dFrdlambM,FgM,0.0);
+    tmp3x3_1.MultiplyNN(1.0,dFrdlambFgM,iCM,0.0);
+    diCedlambM.MultiplyNT(1.0,tmp3x3_1,FrFgM,0.0);
+    tmp3x3_1.MultiplyNT(1.0,iCM,dFrdlambFgM,0.0);
+    diCedlambM.MultiplyNN(1.0,FrFgM,tmp3x3_1,1.0);
+    MatrixtoStressVoigtNotationVector(diCedlambM,diCedlambv);
+
+
+    // (dsigf/dCe)/dlambda_r
+    dsigfdCedlamb.UpdateT(-(1./Je)*Fea_norm*Fea_norm*ddPIedlamb(0),iCev,0.0);
+
+    dsigfdCedlamb.UpdateT(2.*(1./Je)*ddPIedlamb(0),Av_[k],1.0);
+
+    dsigfdCedlamb.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*dddPIIedlamb(0),Av_[k],1.0);
+
+    dsigfdCedlamb.UpdateT(-(1./Je)*dPIe(0)*dFeanorm_sqdlamb(0),iCev,1.0);
+
+    dsigfdCedlamb.UpdateT(2.*(1./Je)*ddPIIe(0)*dFeanorm_sqdlamb(0),Av_[k],1.0);
+
+    dsigfdCedlamb.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),diCedlambv,1.0);
+
+
+
+    // dY/dlambda_r with Y = (Ce*Frdot*Fr^-1 + Fr^-T*Frdot^T*Ce)
+    FrnM.Update(last_lambda_r_[k][gp]*(1./params_->G_),AM_[k],0.0);
+    FrnM.Update(1./std::sqrt(last_lambda_r_[k][gp]*1./params_->G_),AM_orth_[k],1.0);
+    FrniFrM.MultiplyNN(1.0,FrnM,iFrM,0.0);
+
+    FrdotiFrM.Update(1./dt,id,0.0);
+    FrdotiFrM.Update(-1./dt,FrniFrM,1.0);
+    YM.MultiplyNN(1.0,CeM,FrdotiFrM,0.0);
+    YM.MultiplyTN(1.0,FrdotiFrM,CeM,1.0);
+    dYdlambM.MultiplyNN(1.0,dCedlambM,FrdotiFrM,0.0);
+    dYdlambM.MultiplyTN(1.0,FrdotiFrM,dCedlambM,1.0);
+
+    tmp3x3_1.MultiplyNN(-1./dt,FrnM,diFrdlambM,0.0);
+    dYdlambM.MultiplyNN(1.0,CeM,tmp3x3_1,1.0);
+    dYdlambM.MultiplyTN(1.0,tmp3x3_1,CeM,1.0);
+    MatrixtoStressVoigtNotationVector(dYdlambM,dYdlambv);
+
+
+    // dE/dlambda_r
+    dEdlamb[nr_grf_proc+k][nr_grf_proc+k] = 2.*(params_->k_growth_/sigmapre_[k])*(sigf-sigmapre_[k])*dsigfdlamb(0);
+
+    dEdlamb[nr_grf_proc+k][nr_grf_proc+k] += dsigfdlamb(0)/params_->tdecay_;
+
+    for(int i=0;i<3;++i)
+      Y_strain(i) = YM(i,i);
+    Y_strain(3) = YM(0,1) + YM(1,0);
+    Y_strain(4) = YM(1,2) + YM(2,1);
+    Y_strain(5) = YM(0,2) + YM(2,0);
+    tmp_scal.MultiplyNN(1.0,dsigfdCedlamb,Y_strain,0.0);
+    dEdlamb[nr_grf_proc+k][nr_grf_proc+k] -= tmp_scal(0);
+
+    tmp1x6.MultiplyNN(1.0,dsigfdCe,strainconv,0.0);
+    tmp_scal.MultiplyNN(1.0,tmp1x6,dYdlambv,0.0);
+    dEdlamb[nr_grf_proc+k][nr_grf_proc+k] -= tmp_scal(0);
+
+
+
+    // dW/dlambda_r
+    dWdlamb[nr_grf_proc+k][nr_grf_proc+k] = -cur_rho_col_[k][gp]*fac*dsigfdlamb(0);
+
+
+
+    // dY/drho
+    dYdrhoM.MultiplyNN(1.0,dCedrhoM,FrdotiFrM,0.0);
+    dYdrhoM.MultiplyTN(1.0,FrdotiFrM,dCedrhoM,1.0);
+    MatrixtoStressVoigtNotationVector(dYdrhoM,dYdrhov);
+
+
+    // d(ddPIIe)/drho
+    dddPIIedrho = dddPIIIe(0) * dI4edrho(0);
+
+
+    // dCe^-1/drho
+    tmp3x3_1.MultiplyNN(1.0,FrM,dFgdrhoM,0.0);
+    tmp3x3_2.MultiplyNN(1.0,tmp3x3_1,iCM,0.0);
+    diCedrhoM.MultiplyNT(1.0,tmp3x3_2,FrFgM,0.0);
+    diCedrhoM.MultiplyNT(1.0,FrFgM,tmp3x3_2,1.0);
+    MatrixtoStressVoigtNotationVector(diCedrhoM,diCedrhov);
+
+
+    // (dsigf/dCe)/drho
+    dsigfdCedrho.UpdateT(-1.*diJedrho*Fea_norm*Fea_norm*dPIe(0),iCev,0.0);
+    dsigfdCedrho.UpdateT(2.*diJedrho*dPIe(0),Av_[k],1.0);
+    dsigfdCedrho.UpdateT(2.*diJedrho*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],1.0);
+
+    dsigfdCedrho.UpdateT(-(1./Je)*dPIe(0)*dFeanorm_sqdrho(0),iCev,1.0);
+    dsigfdCedrho.UpdateT(2.*(1./Je)*ddPIIe(0)*dFeanorm_sqdrho(0),Av_[k],1.0);
+
+    dsigfdCedrho.UpdateT(-(1./Je)*Fea_norm*Fea_norm*ddPIedrho,iCev,1.0);
+    dsigfdCedrho.UpdateT(2.*(1./Je)*ddPIedrho,Av_[k],1.0);
+
+    dsigfdCedrho.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*dddPIIedrho,Av_[k],1.0);
+
+    dsigfdCedrho.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),diCedrhov,1.0);
+
+
+    // dE/drho
+    dEdrho[nr_grf_proc+k][nr_grf_proc+k] = 2.*(params_->k_growth_/sigmapre_[k])*(sigf-sigmapre_[k])*dsigfdrho;
+
+    dEdrho[nr_grf_proc+k][nr_grf_proc+k] += dsigfdrho/params_->tdecay_;
+
+    tmp_scal.MultiplyNN(1.0,dsigfdCedrho,Y_strain,0.0);
+    dEdrho[nr_grf_proc+k][nr_grf_proc+k] -= tmp_scal(0);
+
+    tmp1x6.MultiplyNN(1.0,dsigfdCe,strainconv,0.0);
+    tmp_scal.MultiplyNN(1.0,tmp1x6,dYdrhov,0.0);
+    dEdrho[nr_grf_proc+k][nr_grf_proc+k] -= tmp_scal(0);
+
+    for(unsigned m=0;m<dEdrho[nr_grf_proc+k].size();++m)
+      if((int)m != nr_grf_proc+(int)k)
+        dEdrho[nr_grf_proc+k][m] = dEdrho[nr_grf_proc+k][nr_grf_proc+k];
+
+
+
+    // single residuals
+    tmp_scal.MultiplyNN(1.0,dsigfdCe,Y_strain,0.0);
+    E[nr_grf_proc+k] = ((params_->k_growth_/sigmapre_[k])*(sigf-sigmapre_[k]) + 1./params_->tdecay_)*(sigf-sigmapre_[k])-tmp_scal(0);
+
+    W[nr_grf_proc+k] = cur_rho_col_[k][gp]*(1. - fac*(sigf-sigmapre_[k])) - last_rho_col_[k][gp];
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGreen(
+  const LINALG::Matrix<3,3>* defgrd,
+  const LINALG::Matrix<3,3> id,
+  const int nr_grf_proc,
+  const int gp,
+  const double dt,
+  LINALG::Matrix<3,3> FgM,
+  LINALG::Matrix<3,3> iFgM,
+  std::vector<LINALG::Matrix<1,6> >& dWdC,
+  std::vector<LINALG::Matrix<1,6> >& dEdC,
+  const int eleGID
+  )
+{
+  // some variables
+  LINALG::Matrix<1,6> dsigfdC(true);
+  LINALG::Matrix<1,6> dI4edC(true);
+
+  LINALG::Matrix<6,6> dsigfdCedC(true);
+
+  double Je = 0.0;
+  double Fea_norm = 0.0;
+  double sigf = 0.0;
+  LINALG::Matrix<3,3> tmp3x3(true);
+  LINALG::Matrix<6,6> tmp6x6(true);
+  LINALG::Matrix<3,3> FeM(true);
+  LINALG::Matrix<3,3> CeM(true);
+  LINALG::Matrix<3,3> iCeM(true);
+  LINALG::Matrix<6,1> iCev(true);
+  LINALG::Matrix<2,1> dPIe(true);
+  LINALG::Matrix<3,1> ddPIIe(true);
+  LINALG::Matrix<4,1> dddPIIIe(true);
+  LINALG::Matrix<3,1> Fea(true);
+  std::vector<LINALG::Matrix<3,1> > fibervecs;
+  LINALG::Matrix<3,3> FrM(true);
+  LINALG::Matrix<3,3> iFrM(true);
+  LINALG::Matrix<3,3> iFgiFrM(true);
+  LINALG::Matrix<6,6> dYdC(true);
+  LINALG::Matrix<1,6> diJedCv(true);
+  LINALG::Matrix<1,6> dFeanorm_sqdCv(true);
+  LINALG::Matrix<1,6> ddPIedCv(true);
+  LINALG::Matrix<1,6> dddPIIedCv(true);
+  LINALG::Matrix<6,6> diCedC(true);
+  LINALG::Matrix<9,6> dCedCdlamb(true);
+  LINALG::Matrix<9,6> dCedCdrho(true);
+  LINALG::Matrix<6,6> dCedC(true);
+  LINALG::Matrix<6,6> dCedC_strain(true);
+  LINALG::Matrix<3,3> FrdotiFrM(true);
+  LINALG::Matrix<3,3> FrnM(true);
+  LINALG::Matrix<3,3> FrniFrM(true);
+  LINALG::Matrix<3,3> FrFgM(true);
+  LINALG::Matrix<1,6> dsigfdCe(true);
+  LINALG::Matrix<3,3> YM(true);
+  LINALG::Matrix<6,1> Y_strain(true);
+
+  // additional variables for active fiber contribution (smooth muscle)
+  double stress_f_act = 0.0;
+  LINALG::Matrix<6,1> stressactive(true);
+  LINALG::Matrix<6,6> cmatactive(true);
+  LINALG::Matrix<3,1> Fa(true);
+
+  // converts stress-like to strain-like Voigt notation// build structural tensor in matrix notation
+  LINALG::Matrix<6,6> strainconv(true);
+  for(int i=0;i<3;++i)
+    strainconv(i,i) = 1.0;
+  for(int j=3;j<6;++j)
+    strainconv(j,j) = 2.0;
+
+  // constant factor
+  double fac = 1.0;
+
+  // right Cauchy Green tensor
+  LINALG::Matrix<3,3> CM(true);
+  LINALG::Matrix<3,3> iCM(true);
+  LINALG::Matrix<6,1> iCv(true);
+  CM.MultiplyTN(1.0,*defgrd,*defgrd,0.0);
+  iCM.Invert(CM);
+  MatrixtoStressVoigtNotationVector(iCM,iCv);
+
+
+  // passive fiber evaluation
+  for(unsigned k=0;k<potsumfiberpas_.size();++k)
+  {
+    // Get fiberdirection
+    potsumfiberpas_[k]->GetFiberVecs(fibervecs);
+
+    fac = dt*params_->k_growth_/sigmapre_[k];
+
+    // build remodel deformation gradient
+    FrM.Update(cur_lambda_r_[k][gp]*(1./params_->G_),AM_[k],0.0);
+    FrM.Update(1./std::sqrt(cur_lambda_r_[k][gp]*1./params_->G_),AM_orth_[k],1.0);
+
+    // inverse remodel deformation gradient
+    iFrM.Invert(FrM);
+
+    // Fg^-1 * Fr^-1
+    iFgiFrM.MultiplyNN(1.0,iFgM,iFrM,0.0);
+
+    // dCedC
+    EvaldCedC(dCedC,iFgiFrM,0.5);
+    dCedC_strain.MultiplyNN(1.0,strainconv,dCedC,0.0);
+
+    // elastic right Cauchy Green tensor
+    FeM.MultiplyNN(1.0,*defgrd,iFgiFrM,0.0);
+    Je = FeM.Determinant();
+    CeM.MultiplyTN(1.0,FeM,FeM,0.0);
+    iCeM.Invert(CeM);
+    MatrixtoStressVoigtNotationVector(iCeM,iCev);
+
+    // get derivatives of strain energy function w.r.t. the isochoric fourth invariant
+    potsumfiberpas_[k]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
+
+    // Evaluate fiber Cauchy stress in updated fiber direction
+    Fea.MultiplyNN(1.0,FeM,fibervecs[k],0.0);
+    Fea_norm = Fea.Norm2();
+
+
+    // dsigf/dC (passive contribution)
+    dsigfdC.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),iCv,0.0);
+
+    dsigfdC.MultiplyTN(2.*(1./Je)*dPIe(0),Av_[k],dCedC_strain,1.0);
+
+    dI4edC.MultiplyTN(1.0,A_strain_[k],dCedC,0.0);
+    dsigfdC.Update(2.*(1./Je)*Fea_norm*Fea_norm*ddPIIe(0),dI4edC,1.0);
+
+
+    // derivation of the growth evolution eq. w.r.t. right Cauchy Green
+    dWdC[nr_grf_proc+k].Update(-fac*cur_rho_col_[k][gp],dsigfdC,0.0);
+
+
+
+    // dY/dC
+    FrnM.Update(last_lambda_r_[k][gp]*(1./params_->G_),AM_[k],0.0);
+    FrnM.Update(1./std::sqrt(last_lambda_r_[k][gp]*1./params_->G_),AM_orth_[k],1.0);
+    FrniFrM.MultiplyNN(1.0,FrnM,iFrM,0.0);
+    FrdotiFrM.Update(1./dt,id,0.0);
+    FrdotiFrM.Update(-1./dt,FrniFrM,1.0);
+
+    tmp3x3.MultiplyNN(1.0,iFgiFrM,FrdotiFrM,0.0);
+    EvaldYdC(dYdC,tmp3x3,iFgiFrM,0.5);
+
+
+    // dJe^-1/dC
+    diJedCv.UpdateT(-0.5*(1./Je),iCv,0.0);
+
+
+    // d(Norm(Fe*a))^2/dC
+    dFeanorm_sqdCv.MultiplyTN(1.0,Av_[k],dCedC_strain,0.0);
+
+
+    // d(dPIe)/dC
+    ddPIedCv.Update(ddPIIe(0),dI4edC,0.0);
+
+
+    // d(ddPIIe)/dC
+    dddPIIedCv.Update(dddPIIIe(0),dI4edC,0.0);
+
+
+    // dCe^-1/dC
+    FrFgM.MultiplyNN(1.0,FrM,FgM,0.0);
+    tmp3x3.MultiplyTT(1.0,iCM,FrFgM,0.0);
+    EvaldCedC(diCedC,tmp3x3,-0.5);
+
+
+    // d(sigf/dCe)/dC
+    dsigfdCedC.MultiplyNN(-Fea_norm*Fea_norm*dPIe(0),iCev,diJedCv,0.0);
+    dsigfdCedC.MultiplyNN(2.*dPIe(0),Av_[k],diJedCv,1.0);
+    dsigfdCedC.MultiplyNN(2.*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],diJedCv,1.0);
+
+    dsigfdCedC.MultiplyNN(-(1./Je)*dPIe(0),iCev,dFeanorm_sqdCv,1.0);
+    dsigfdCedC.MultiplyNN(2.*(1./Je)*ddPIIe(0),Av_[k],dFeanorm_sqdCv,1.0);
+
+    dsigfdCedC.MultiplyNN(-(1./Je)*Fea_norm*Fea_norm,iCev,ddPIedCv,1.0);
+    dsigfdCedC.MultiplyNN(2.*(1./Je),Av_[k],ddPIedCv,1.0);
+
+    dsigfdCedC.MultiplyNN(2.*(1./Je)*Fea_norm*Fea_norm,Av_[k],dddPIIedCv,1.0);
+
+    dsigfdCedC.Update(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),diCedC,1.0);
+
+
+    // dsigfdCe
+    dsigfdCe.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),iCev,0.0);
+
+    dsigfdCe.UpdateT(2.*(1./Je)*dPIe(0),Av_[k],1.0);
+
+    dsigfdCe.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],1.0);
+
+
+    // fiber Cauchy stress (passive contribution)
+    sigf = 2.*(1./Je)*Fea_norm*Fea_norm*dPIe(0);
+
+    // fiber Cauchy stress (active contribution)
+    sigf += 1./defgrd->Determinant()*Fa.Norm2()*Fa.Norm2()*stress_f_act;
+
+
+    // Y = (Ce*Frdot*Fr^-1 + Fr^-T*Frdot^T*Ce)
+    YM.MultiplyNN(1.0,CeM,FrdotiFrM,0.0);
+    YM.MultiplyTN(1.0,FrdotiFrM,CeM,1.0);
+
+    for(int i=0;i<3;++i)
+      Y_strain(i) = YM(i,i);
+    Y_strain(3) = YM(0,1)+YM(1,0);
+    Y_strain(4) = YM(1,2)+YM(2,1);
+    Y_strain(5) = YM(0,2)+YM(2,0);
+
+
+
+    // dE/dC
+    dEdC[nr_grf_proc+k].Update(2.*(params_->k_growth_/sigmapre_[k])*(sigf-sigmapre_[k]),dsigfdC,0.0);
+
+    dEdC[nr_grf_proc+k].Update(1./params_->tdecay_,dsigfdC,1.0);
+
+    dEdC[nr_grf_proc+k].MultiplyTN(-1.0,Y_strain,dsigfdCedC,1.0);
+
+    tmp6x6.MultiplyNN(1.0,strainconv,dYdC,0.0);
+    dEdC[nr_grf_proc+k].MultiplyNN(-1.0,dsigfdCe,tmp6x6,1.0);
+
+    // fiber stress for output
+    stress_[k][gp] = sigf;
+  }
+  // active fiber evaluation
+  for(unsigned k=potsumfiberpas_.size();k<(potsumfiberpas_.size()+potsumfiberact_.size());++k)
+  {
+    // Get fiberdirection
+    potsumfiberact_[k-potsumfiberpas_.size()]->GetFiberVecs(fibervecs);
+
+    fac = dt*params_->k_growth_/sigmapre_[k];
+
+    // build remodel deformation gradient
+    FrM.Update(cur_lambda_r_[k][gp]*(1./params_->G_),AM_[k],0.0);
+    FrM.Update(1./std::sqrt(cur_lambda_r_[k][gp]*1./params_->G_),AM_orth_[k],1.0);
+
+    // inverse remodel deformation gradient
+    iFrM.Invert(FrM);
+
+    // Fg^-1 * Fr^-1
+    iFgiFrM.MultiplyNN(1.0,iFgM,iFrM,0.0);
+
+    // dCedC
+    EvaldCedC(dCedC,iFgiFrM,0.5);
+    dCedC_strain.MultiplyNN(1.0,strainconv,dCedC,0.0);
+
+    // elastic right Cauchy Green tensor
+    FeM.MultiplyNN(1.0,*defgrd,iFgiFrM,0.0);
+    Je = FeM.Determinant();
+    CeM.MultiplyTN(1.0,FeM,FeM,0.0);
+    iCeM.Invert(CeM);
+    MatrixtoStressVoigtNotationVector(iCeM,iCev);
+
+    // get derivatives of strain energy function w.r.t. the isochoric fourth invariant
+    potsumfiberact_[k-potsumfiberpas_.size()]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
+
+    // Evaluate fiber Cauchy stress in updated fiber direction
+    Fea.MultiplyNN(1.0,FeM,fibervecs[k],0.0);
+    Fea_norm = Fea.Norm2();
+
+
+    // dsigf/dC (passive contribution)
+    dsigfdC.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),iCv,0.0);
+
+    dsigfdC.MultiplyTN(2.*(1./Je)*dPIe(0),Av_[k],dCedC_strain,1.0);
+
+    dI4edC.MultiplyTN(1.0,A_strain_[k],dCedC,0.0);
+    dsigfdC.Update(2.*(1./Je)*Fea_norm*Fea_norm*ddPIIe(0),dI4edC,1.0);
+
+    // dsigf/dC (active contribution)
+    potsumfiberact_[k-potsumfiberpas_.size()]->EvaluateActiveStressCmatAniso(*defgrd,cmatactive,stressactive,eleGID);
+    stress_f_act = stressactive.Dot(A_strain_[k]);
+    Fa.MultiplyNN(1.0,*defgrd,fibervecs[k],0.0);
+
+    dsigfdC.MultiplyTN(1./defgrd->Determinant()*Fa.Norm2()*Fa.Norm2(),A_strain_[k],cmatactive,1.0);
+    dsigfdC.UpdateT(-0.5/defgrd->Determinant()*Fa.Norm2()*Fa.Norm2()*stress_f_act,iCv,1.0);
+    dsigfdC.UpdateT(1./defgrd->Determinant()*stress_f_act,Av_[k],1.0);
+
+
+    // derivation of the growth evolution eq. w.r.t. right Cauchy Green
+    dWdC[nr_grf_proc+k].Update(-fac*cur_rho_col_[k][gp],dsigfdC,0.0);
+
+
+
+    // dY/dC
+    FrnM.Update(last_lambda_r_[k][gp]*(1./params_->G_),AM_[k],0.0);
+    FrnM.Update(1./std::sqrt(last_lambda_r_[k][gp]*1./params_->G_),AM_orth_[k],1.0);
+    FrniFrM.MultiplyNN(1.0,FrnM,iFrM,0.0);
+    FrdotiFrM.Update(1./dt,id,0.0);
+    FrdotiFrM.Update(-1./dt,FrniFrM,1.0);
+
+    tmp3x3.MultiplyNN(1.0,iFgiFrM,FrdotiFrM,0.0);
+    EvaldYdC(dYdC,tmp3x3,iFgiFrM,0.5);
+
+
+    // dJe^-1/dC
+    diJedCv.UpdateT(-0.5*(1./Je),iCv,0.0);
+
+
+    // d(Norm(Fe*a))^2/dC
+    dFeanorm_sqdCv.MultiplyTN(1.0,Av_[k],dCedC_strain,0.0);
+
+
+    // d(dPIe)/dC
+    ddPIedCv.Update(ddPIIe(0),dI4edC,0.0);
+
+
+    // d(ddPIIe)/dC
+    dddPIIedCv.Update(dddPIIIe(0),dI4edC,0.0);
+
+
+    // dCe^-1/dC
+    FrFgM.MultiplyNN(1.0,FrM,FgM,0.0);
+    tmp3x3.MultiplyTT(1.0,iCM,FrFgM,0.0);
+    EvaldCedC(diCedC,tmp3x3,-0.5);
+
+
+    // d(sigf/dCe)/dC
+    dsigfdCedC.MultiplyNN(-Fea_norm*Fea_norm*dPIe(0),iCev,diJedCv,0.0);
+    dsigfdCedC.MultiplyNN(2.*dPIe(0),Av_[k],diJedCv,1.0);
+    dsigfdCedC.MultiplyNN(2.*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],diJedCv,1.0);
+
+    dsigfdCedC.MultiplyNN(-(1./Je)*dPIe(0),iCev,dFeanorm_sqdCv,1.0);
+    dsigfdCedC.MultiplyNN(2.*(1./Je)*ddPIIe(0),Av_[k],dFeanorm_sqdCv,1.0);
+
+    dsigfdCedC.MultiplyNN(-(1./Je)*Fea_norm*Fea_norm,iCev,ddPIedCv,1.0);
+    dsigfdCedC.MultiplyNN(2.*(1./Je),Av_[k],ddPIedCv,1.0);
+
+    dsigfdCedC.MultiplyNN(2.*(1./Je)*Fea_norm*Fea_norm,Av_[k],dddPIIedCv,1.0);
+
+    dsigfdCedC.Update(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),diCedC,1.0);
+
+
+    // dsigfdCe
+    dsigfdCe.UpdateT(-(1./Je)*Fea_norm*Fea_norm*dPIe(0),iCev,0.0);
+
+    dsigfdCe.UpdateT(2.*(1./Je)*dPIe(0),Av_[k],1.0);
+
+    dsigfdCe.UpdateT(2.*(1./Je)*Fea_norm*Fea_norm*ddPIIe(0),Av_[k],1.0);
+
+
+    // fiber Cauchy stress (passive contribution)
+    sigf = 2.*(1./Je)*Fea_norm*Fea_norm*dPIe(0);
+
+    // fiber Cauchy stress (active contribution)
+    sigf += 1./defgrd->Determinant()*Fa.Norm2()*Fa.Norm2()*stress_f_act;
+
+
+    // Y = (Ce*Frdot*Fr^-1 + Fr^-T*Frdot^T*Ce)
+    YM.MultiplyNN(1.0,CeM,FrdotiFrM,0.0);
+    YM.MultiplyTN(1.0,FrdotiFrM,CeM,1.0);
+
+    for(int i=0;i<3;++i)
+      Y_strain(i) = YM(i,i);
+    Y_strain(3) = YM(0,1)+YM(1,0);
+    Y_strain(4) = YM(1,2)+YM(2,1);
+    Y_strain(5) = YM(0,2)+YM(2,0);
+
+
+
+    // dE/dC
+    dEdC[nr_grf_proc+k].Update(2.*(params_->k_growth_/sigmapre_[k])*(sigf-sigmapre_[k]),dsigfdC,0.0);
+
+    dEdC[nr_grf_proc+k].Update(1./params_->tdecay_,dsigfdC,1.0);
+
+    dEdC[nr_grf_proc+k].MultiplyTN(-1.0,Y_strain,dsigfdCedC,1.0);
+
+    tmp6x6.MultiplyNN(1.0,strainconv,dYdC,0.0);
+    dEdC[nr_grf_proc+k].MultiplyNN(-1.0,dsigfdCe,tmp6x6,1.0);
+
+    // fiber stress for output
+    stress_[k][gp] = sigf;
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::RemodelFiber::AddStressCmatGrowthRemodel(
+    const LINALG::Matrix<3,3>* defgrd,
+    const LINALG::Matrix<3,3> id,
+    const int nr_grf_tot,
+    const int nr_grf_proc,
+    const int gp,
+    const double v,
+    const double density,
+    LINALG::Matrix<3,3> iFgM,
+    LINALG::Matrix<3,3> AgM,
+    LINALG::Matrix<3,3> AcirM,
+    LINALG::Matrix<3,3> AradM,
+    LINALG::Matrix<3,3> AaxM,
+    std::vector<LINALG::Matrix<1,6> > drhodC,
+    std::vector<LINALG::Matrix<1,6> > dlambdC,
+    LINALG::Matrix<6,1>& stress,
+    LINALG::Matrix<6,6>& cmat,
+    const int eleGID,
+    const int growthtype
+)
+{
+  // clear variables
+  stress.Clear();
+  cmat.Clear();
+
+  // some variables
+  double ddPIedrho = 0.0;
+  LINALG::Matrix<3,3> tmp3x3_1(true);
+  LINALG::Matrix<3,3> tmp3x3_2(true);
+  LINALG::Matrix<6,6> tmp6x6(true);
+  LINALG::Matrix<3,3> FeM(true);
+  LINALG::Matrix<3,3> CeM(true);
+  LINALG::Matrix<2,1> dPIe(true);
+  LINALG::Matrix<3,1> ddPIIe(true);
+  LINALG::Matrix<4,1> dddPIIIe(true);
+  LINALG::Matrix<3,3> FrM(true);
+  LINALG::Matrix<3,3> iFrM(true);
+  LINALG::Matrix<3,3> iFgiFrM(true);
+  LINALG::Matrix<9,6> dCedCdrho(true);
+  LINALG::Matrix<6,6> dCedC(true);
+  LINALG::Matrix<6,6> dCedC_strain(true);
+  LINALG::Matrix<1,6> stressuw(true);
+  LINALG::Matrix<6,1> pk2ev(true);
+  LINALG::Matrix<1,1> dI4edrho(true);
+  LINALG::Matrix<3,3> diFgdrhoiFrM(true);
+  LINALG::Matrix<3,3> dCedrhoM(true);
+  LINALG::Matrix<6,1> dCedrhov(true);
+  LINALG::Matrix<3,3> diFgdrhoM(true);
+  LINALG::Matrix<6,6> cmatelastic(true);
+  LINALG::Matrix<3,3> diFrdlambM(true);
+  LINALG::Matrix<3,3> dCedlambM(true);
+  LINALG::Matrix<6,1> dCedlambv(true);
+  LINALG::Matrix<1,1> ddPIedlamb(true);
+  LINALG::Matrix<9,6> dCedCdlamb(true);
+
+  // additional variables for active fiber contribution (smooth muscle)
+  LINALG::Matrix<6,1> stressactive(true);
+  LINALG::Matrix<6,6> cmatactive(true);
+
+  // converts stress-like to strain-like Voigt notation// build structural tensor in matrix notation
+  LINALG::Matrix<6,6> strainconv(true);
+  for(int i=0;i<3;++i)
+    strainconv(i,i) = 1.0;
+  for(int j=3;j<6;++j)
+    strainconv(j,j) = 2.0;
+
+  // right Cauchy Green tensor
+  LINALG::Matrix<3,3> CM(true);
+  LINALG::Matrix<3,3> iCM(true);
+  CM.MultiplyTN(1.0,*defgrd,*defgrd,0.0);
+  iCM.Invert(CM);
+
+  std::vector<std::vector<LINALG::Matrix<1,6> > > dSdrho(nr_grf_tot,std::vector<LINALG::Matrix<1,6> >(nr_grf_tot,LINALG::Matrix<1,6>(true)));
+  std::vector<std::vector<LINALG::Matrix<1,6> > > dSdlamb(nr_grf_tot,std::vector<LINALG::Matrix<1,6> >(nr_grf_tot,LINALG::Matrix<1,6>(true)));
+
+
+  // passive fiber evaluation
+  for(unsigned k=0;k<potsumfiberpas_.size();++k)
+  {
+    // build remodel deformation gradient
+    FrM.Update(cur_lambda_r_[k][gp]*(1./params_->G_),AM_[k],0.0);
+    FrM.Update(1./std::sqrt(cur_lambda_r_[k][gp]*1./params_->G_),AM_orth_[k],1.0);
+
+    // inverse remodel deformation gradient
+    iFrM.Invert(FrM);
+
+    // Fg^-1 * Fr^-1
+    iFgiFrM.MultiplyNN(1.0,iFgM,iFrM,0.0);
+
+    // dCedC
+    EvaldCedC(dCedC,iFgiFrM,0.5);
+    dCedC_strain.MultiplyNN(1.0,strainconv,dCedC,0.0);
+
+    // elastic right Cauchy Green tensor
+    FeM.MultiplyNN(1.0,*defgrd,iFgiFrM,0.0);
+    CeM.MultiplyTN(1.0,FeM,FeM,0.0);
+
+    // get derivatives of strain energy function w.r.t. the isochoric fourth invariant
+    potsumfiberpas_[k]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
+
+    switch(growthtype)
+    {
+    case 1:
+      // dFg^-1/drho
+      diFgdrhoM.Update(-(1./(v*v))*(1./density),AgM,0.0);
+      break;
+    case 0:
+      // dFg^-1/drho
+      diFgdrhoM.Update(-1./3.*std::pow(v,-4./3.)*(1./density),AcirM,0.0);
+      diFgdrhoM.Update(-1./3.*std::pow(v,-4./3.)*(1./density),AradM,1.0);
+      diFgdrhoM.Update(-1./3.*std::pow(v,-4./3.)*(1./density),AaxM,1.0);
+     break;
+    default:
+      dserror("growthtype has to be either 1: anisotropic growth or 0: isotropic growth");
+      break;
+    }
+
+    // dCedrho (lambda_r const)
+    diFgdrhoiFrM.MultiplyNN(1.0,diFgdrhoM,iFrM,0.0);
+    tmp3x3_1.MultiplyTN(1.0,diFgdrhoiFrM,CM,0.0);
+    dCedrhoM.MultiplyNN(1.0,tmp3x3_1,iFgiFrM,0.0);
+    tmp3x3_1.MultiplyNN(1.0,CM,diFgdrhoiFrM,0.0);
+    dCedrhoM.MultiplyTN(1.0,iFgiFrM,tmp3x3_1,1.0);
+    MatrixtoStressVoigtNotationVector(dCedrhoM,dCedrhov);
+
+    // d(dPIe)/drho = ddPII * dI4e/drho (lambda_r const)
+    dI4edrho.MultiplyTN(1.0,A_strain_[k],dCedrhov,0.0);
+    ddPIedrho = ddPIIe(0) * dI4edrho(0);
+
+
+    // Update stress
+    pk2ev.Update(2.*dPIe(0),Av_[k],0.0);      // evaluate elastic second Piola Kirchhoff stress
+    stressuw.MultiplyTN(1.0,pk2ev,dCedC_strain,0.0);
+
+    stress.UpdateT(cur_rho_col_[k][gp],stressuw,1.0);
+
+
+    // Evaluate derivation of the second Piola Kirchhoff stress w.r.t. rho
+    dSdrho[nr_grf_proc+k][nr_grf_proc+k].Update(1.0,stressuw,0.0);
+
+    dSdrho[nr_grf_proc+k][nr_grf_proc+k].MultiplyTN(2.0*cur_rho_col_[k][gp]*ddPIedrho,A_strain_[k],dCedC,1.0);
+
+    tmp3x3_1.UpdateT(1.0,diFgdrhoiFrM,0.0);
+    tmp3x3_2.UpdateT(1.0,iFgiFrM,0.0);
+    dCedCdrho.Clear();
+    AddtoMatrixHalfSymProd(0.5,tmp3x3_1,tmp3x3_2,dCedCdrho);
+    AddtoMatrixHalfSymProd(0.5,tmp3x3_2,tmp3x3_1,dCedCdrho);
+    dSdrho[nr_grf_proc+k][nr_grf_proc+k].MultiplyTN(2.0*cur_rho_col_[k][gp]*dPIe(0),A9x1_[k],dCedCdrho,1.0);
+
+    for(int m=0;m<nr_grf_tot;++m)
+      if(m != nr_grf_proc+(int)k)
+      {
+        dSdrho[nr_grf_proc+k][m].Update(1.0,dSdrho[nr_grf_proc+k][nr_grf_proc+k],0.0);
+        dSdrho[nr_grf_proc+k][m].Update(-1.0,stressuw,1.0);
+      }
+
+
+
+    // dFr^-1/dlambda_r
+    diFrdlambM.Update(-std::pow(cur_lambda_r_[k][gp],-2.)*params_->G_,AM_[k],0.0);
+    diFrdlambM.Update(0.5*std::pow(cur_lambda_r_[k][gp],-0.5)*std::sqrt(1./params_->G_),AM_orth_[k],1.0);
+
+    // dCe/dlambda_r
+    tmp3x3_1.MultiplyNN(1.0,iFgM,diFrdlambM,0.0);
+    tmp3x3_2.MultiplyTN(1.0,tmp3x3_1,CM,0.0);
+    dCedlambM.MultiplyNN(1.0,tmp3x3_2,iFgiFrM,0.0);
+
+    tmp3x3_2.MultiplyTN(1.0,iFgiFrM,CM,0.0);
+    dCedlambM.MultiplyNN(1.0,tmp3x3_2,tmp3x3_1,1.0);
+    MatrixtoStressVoigtNotationVector(dCedlambM,dCedlambv);
+
+    // dPI/dlambda_r
+    ddPIedlamb.MultiplyTN(ddPIIe(0),A_strain_[k],dCedlambv,0.0);
+
+
+    // Evaluate derivation of the second Piola Kirchhoff stress w.r.t. lambda_r
+    dSdlamb[nr_grf_proc+k][nr_grf_proc+k].MultiplyTN(2.0*cur_rho_col_[k][gp]*ddPIedlamb(0),A_strain_[k],dCedC,0.0);
+
+    tmp3x3_1.MultiplyTT(1.0,diFrdlambM,iFgM,0.0);
+    tmp3x3_2.UpdateT(1.0,iFgiFrM,0.0);
+    dCedCdlamb.Clear();
+    AddtoMatrixHalfSymProd(0.5,tmp3x3_1,tmp3x3_2,dCedCdlamb);
+    AddtoMatrixHalfSymProd(0.5,tmp3x3_2,tmp3x3_1,dCedCdlamb);
+    dSdlamb[nr_grf_proc+k][nr_grf_proc+k].MultiplyTN(2.0*cur_rho_col_[k][gp]*dPIe(0),A9x1_[k],dCedCdlamb,1.0);
+
+
+
+    // update elasticity tensor
+    cmatelastic.MultiplyNT(4.*ddPIIe(0),Av_[k],Av_[k],0.0);
+    tmp6x6.MultiplyTN(1.0,dCedC_strain,cmatelastic,0.0);
+
+    cmat.MultiplyNN(cur_rho_col_[k][gp],tmp6x6,dCedC_strain,1.0);
+
+    // active fiber contribution
+    cmat.Update(cur_rho_col_[k][gp],cmatactive,1.0);
+
+    for(int m=0;m<nr_grf_tot;++m)
+    {
+      cmat.MultiplyTN(2.0,dSdrho[nr_grf_proc+k][m],drhodC[m],1.0);
+      cmat.MultiplyTN(2.0,dSdlamb[nr_grf_proc+k][m],dlambdC[m],1.0);
+    }
+  }
+  // active fiber evaluation
+  for(unsigned k=potsumfiberpas_.size();k<(potsumfiberpas_.size()+potsumfiberact_.size());++k)
+  {
+    // build remodel deformation gradient
+    FrM.Update(cur_lambda_r_[k][gp]*(1./params_->G_),AM_[k],0.0);
+    FrM.Update(1./std::sqrt(cur_lambda_r_[k][gp]*1./params_->G_),AM_orth_[k],1.0);
+
+    // inverse remodel deformation gradient
+    iFrM.Invert(FrM);
+
+    // Fg^-1 * Fr^-1
+    iFgiFrM.MultiplyNN(1.0,iFgM,iFrM,0.0);
+
+    // dCedC
+    EvaldCedC(dCedC,iFgiFrM,0.5);
+    dCedC_strain.MultiplyNN(1.0,strainconv,dCedC,0.0);
+
+    // elastic right Cauchy Green tensor
+    FeM.MultiplyNN(1.0,*defgrd,iFgiFrM,0.0);
+    CeM.MultiplyTN(1.0,FeM,FeM,0.0);
+
+    // get derivatives of strain energy function w.r.t. the isochoric fourth invariant
+    potsumfiberact_[k-potsumfiberpas_.size()]->GetDerivativesAniso(dPIe,ddPIIe,dddPIIIe,CeM,eleGID);
+
+    switch(growthtype)
+    {
+    case 1:
+      // dFg^-1/drho
+      diFgdrhoM.Update(-(1./(v*v))*(1./density),AgM,0.0);
+      break;
+    case 0:
+      // dFg^-1/drho
+      diFgdrhoM.Update(-1./3.*std::pow(v,-4./3.)*(1./density),AcirM,0.0);
+      diFgdrhoM.Update(-1./3.*std::pow(v,-4./3.)*(1./density),AradM,1.0);
+      diFgdrhoM.Update(-1./3.*std::pow(v,-4./3.)*(1./density),AaxM,1.0);
+     break;
+    default:
+      dserror("growthtype has to be either 1: anisotropic growth or 0: isotropic growth");
+      break;
+    }
+
+    // dCedrho (lambda_r const)
+    diFgdrhoiFrM.MultiplyNN(1.0,diFgdrhoM,iFrM,0.0);
+    tmp3x3_1.MultiplyTN(1.0,diFgdrhoiFrM,CM,0.0);
+    dCedrhoM.MultiplyNN(1.0,tmp3x3_1,iFgiFrM,0.0);
+    tmp3x3_1.MultiplyNN(1.0,CM,diFgdrhoiFrM,0.0);
+    dCedrhoM.MultiplyTN(1.0,iFgiFrM,tmp3x3_1,1.0);
+    MatrixtoStressVoigtNotationVector(dCedrhoM,dCedrhov);
+
+    // d(dPIe)/drho = ddPII * dI4e/drho (lambda_r const)
+    dI4edrho.MultiplyTN(1.0,A_strain_[k],dCedrhov,0.0);
+    ddPIedrho = ddPIIe(0) * dI4edrho(0);
+
+    // Evaluate active fiber stress (active contribution)
+    potsumfiberact_[k-potsumfiberpas_.size()]->EvaluateActiveStressCmatAniso(*defgrd,cmatactive,stressactive,eleGID);
+
+
+    // Update stress
+    pk2ev.Update(2.*dPIe(0),Av_[k],0.0);      // evaluate elastic second Piola Kirchhoff stress
+    stressuw.MultiplyTN(1.0,pk2ev,dCedC_strain,0.0);
+    stressuw.UpdateT(1.0,stressactive,1.0);
+
+    stress.UpdateT(cur_rho_col_[k][gp],stressuw,1.0);
+
+
+    // Evaluate derivation of the second Piola Kirchhoff stress w.r.t. rho
+    dSdrho[nr_grf_proc+k][nr_grf_proc+k].Update(1.0,stressuw,0.0);
+
+    dSdrho[nr_grf_proc+k][nr_grf_proc+k].MultiplyTN(2.0*cur_rho_col_[k][gp]*ddPIedrho,A_strain_[k],dCedC,1.0);
+
+    tmp3x3_1.UpdateT(1.0,diFgdrhoiFrM,0.0);
+    tmp3x3_2.UpdateT(1.0,iFgiFrM,0.0);
+    dCedCdrho.Clear();
+    AddtoMatrixHalfSymProd(0.5,tmp3x3_1,tmp3x3_2,dCedCdrho);
+    AddtoMatrixHalfSymProd(0.5,tmp3x3_2,tmp3x3_1,dCedCdrho);
+    dSdrho[nr_grf_proc+k][nr_grf_proc+k].MultiplyTN(2.0*cur_rho_col_[k][gp]*dPIe(0),A9x1_[k],dCedCdrho,1.0);
+
+    for(int m=0;m<nr_grf_tot;++m)
+      if(m != nr_grf_proc+(int)k)
+      {
+        dSdrho[nr_grf_proc+k][m].Update(1.0,dSdrho[nr_grf_proc+k][nr_grf_proc+k],0.0);
+        dSdrho[nr_grf_proc+k][m].Update(-1.0,stressuw,1.0);
+      }
+
+
+
+    // dFr^-1/dlambda_r
+    diFrdlambM.Update(-std::pow(cur_lambda_r_[k][gp],-2.)*params_->G_,AM_[k],0.0);
+    diFrdlambM.Update(0.5*std::pow(cur_lambda_r_[k][gp],-0.5)*std::sqrt(1./params_->G_),AM_orth_[k],1.0);
+
+    // dCe/dlambda_r
+    tmp3x3_1.MultiplyNN(1.0,iFgM,diFrdlambM,0.0);
+    tmp3x3_2.MultiplyTN(1.0,tmp3x3_1,CM,0.0);
+    dCedlambM.MultiplyNN(1.0,tmp3x3_2,iFgiFrM,0.0);
+
+    tmp3x3_2.MultiplyTN(1.0,iFgiFrM,CM,0.0);
+    dCedlambM.MultiplyNN(1.0,tmp3x3_2,tmp3x3_1,1.0);
+    MatrixtoStressVoigtNotationVector(dCedlambM,dCedlambv);
+
+    // dPI/dlambda_r
+    ddPIedlamb.MultiplyTN(ddPIIe(0),A_strain_[k],dCedlambv,0.0);
+
+
+    // Evaluate derivation of the second Piola Kirchhoff stress w.r.t. lambda_r
+    dSdlamb[nr_grf_proc+k][nr_grf_proc+k].MultiplyTN(2.0*cur_rho_col_[k][gp]*ddPIedlamb(0),A_strain_[k],dCedC,0.0);
+
+    tmp3x3_1.MultiplyTT(1.0,diFrdlambM,iFgM,0.0);
+    tmp3x3_2.UpdateT(1.0,iFgiFrM,0.0);
+    dCedCdlamb.Clear();
+    AddtoMatrixHalfSymProd(0.5,tmp3x3_1,tmp3x3_2,dCedCdlamb);
+    AddtoMatrixHalfSymProd(0.5,tmp3x3_2,tmp3x3_1,dCedCdlamb);
+    dSdlamb[nr_grf_proc+k][nr_grf_proc+k].MultiplyTN(2.0*cur_rho_col_[k][gp]*dPIe(0),A9x1_[k],dCedCdlamb,1.0);
+
+
+
+    // update elasticity tensor
+    cmatelastic.MultiplyNT(4.*ddPIIe(0),Av_[k],Av_[k],0.0);
+    tmp6x6.MultiplyTN(1.0,dCedC_strain,cmatelastic,0.0);
+
+    cmat.MultiplyNN(cur_rho_col_[k][gp],tmp6x6,dCedC_strain,1.0);
+
+    // active fiber contribution
+    cmat.Update(cur_rho_col_[k][gp],cmatactive,1.0);
+
+    for(int m=0;m<nr_grf_tot;++m)
+    {
+      cmat.MultiplyTN(2.0,dSdrho[nr_grf_proc+k][m],drhodC[m],1.0);
+      cmat.MultiplyTN(2.0,dSdlamb[nr_grf_proc+k][m],dlambdC[m],1.0);
+    }
+  }
+
+  return;
+
+
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::RemodelFiber::MatrixtoStressVoigtNotationVector(const LINALG::Matrix<3,3>& in,
+    LINALG::Matrix<6,1>& out)
+{
+  // "stress-like" Voigt notation
+  for (int i=0; i<3; i++) out(i) = in(i,i);
+  out(3) = 0.5*(in(0,1) + in(1,0));
+  out(4) = 0.5*(in(1,2) + in(2,1));
+  out(5) = 0.5*(in(0,2) + in(2,0));
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::RemodelFiber::EvaldCedC(LINALG::Matrix<6,6>& out,
+                                           const LINALG::Matrix<3,3>& in,
+                                           const double fac)
+{
+  out(0,0) = 2. * fac * in(0,0) * in(0,0);
+  out(0,3) = 2. * fac * in(0,0) * in(1,0);
+  out(0,5) = 2. * fac * in(0,0) * in(2,0);
+  out(0,1) = 2. * fac * in(1,0) * in(1,0);
+  out(0,4) = 2. * fac * in(1,0) * in(2,0);
+  out(0,2) = 2. * fac * in(2,0) * in(2,0);
+
+  out(3,0) = 2. * fac * in(0,0) * in(0,1);
+  out(3,3) = fac * (in(0,0) * in(1,1) + in(0,1) * in(1,0));
+  out(3,5) = fac * (in(0,0) * in(2,1) + in(0,1) * in(2,0));
+  out(3,1) = 2. * fac * in(1,0) * in(1,1);
+  out(3,4) = fac * (in(1,0) * in(2,1) + in(1,1) * in(2,0));
+  out(3,2) = 2. * fac * in(2,0) * in(2,1);
+
+  out(5,0) = 2. * fac * in(0,0) * in(0,2);
+  out(5,3) = fac * (in(0,0) * in(1,2) + in(0,2) * in(1,0));
+  out(5,5) = fac * (in(0,0) * in(2,2) + in(0,2) * in(2,0));
+  out(5,1) = 2. * fac * in(1,0) * in(1,2);
+  out(5,4) = fac * (in(1,0) * in(2,2) + in(1,2) * in(2,0));
+  out(5,2) = 2. * fac * in(2,0) * in(2,2);
+
+  out(1,0) = 2. * fac * in(0,1) * in(0,1);
+  out(1,3) = 2. * fac * in(0,1) * in(1,1);
+  out(1,5) = 2. * fac * in(0,1) * in(2,1);
+  out(1,1) = 2. * fac * in(1,1) * in(1,1);
+  out(1,4) = 2. * fac * in(1,1) * in(2,1);
+  out(1,2) = 2. * fac * in(2,1) * in(2,1);
+
+  out(4,0) = 2. * fac * in(0,1) * in(0,2);
+  out(4,3) = fac * (in(0,1) * in(1,2) + in(0,2) * in(1,1));
+  out(4,5) = fac * (in(0,1) * in(2,2) + in(0,2) * in(2,1));
+  out(4,1) = 2. * fac * in(1,1) * in(1,2);
+  out(4,4) = fac * (in(1,1) * in(2,2) + in(1,2) * in(2,1));
+  out(4,2) = 2. * fac * in(2,1) * in(2,2);
+
+  out(2,0) = 2. * fac * in(0,2) * in(0,2);
+  out(2,3) = 2. * fac * in(0,2) * in(1,2);
+  out(2,5) = 2. * fac * in(0,2) * in(2,2);
+  out(2,1) = 2. * fac * in(1,2) * in(1,2);
+  out(2,4) = 2. * fac * in(1,2) * in(2,2);
+  out(2,2) = 2. * fac * in(2,2) * in(2,2);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::RemodelFiber::AddtodPK2diFg(LINALG::Matrix<6,9>& out,
+                                               LINALG::Matrix<3,3> A,
+                                               LINALG::Matrix<3,3> B,
+                                               double fac)
+{
+  out(0,0) += 2 * fac * A(0,0) * B(0,0);
+  out(0,3) += 2 * fac * A(0,0) * B(0,1);
+  out(0,5) += 2 * fac * A(0,0) * B(0,2);
+  out(0,6) += 2 * fac * A(0,1) * B(0,0);
+  out(0,1) += 2 * fac * A(0,1) * B(0,1);
+  out(0,4) += 2 * fac * A(0,1) * B(0,2);
+  out(0,8) += 2 * fac * A(0,2) * B(0,0);
+  out(0,7) += 2 * fac * A(0,2) * B(0,1);
+  out(0,2) += 2 * fac * A(0,2) * B(0,2);
+
+  out(1,0) += 2 * fac * A(1,0) * B(1,0);
+  out(1,3) += 2 * fac * A(1,0) * B(1,1);
+  out(1,5) += 2 * fac * A(1,0) * B(1,2);
+  out(1,6) += 2 * fac * A(1,1) * B(1,0);
+  out(1,1) += 2 * fac * A(1,1) * B(1,1);
+  out(1,4) += 2 * fac * A(1,1) * B(1,2);
+  out(1,8) += 2 * fac * A(1,2) * B(1,0);
+  out(1,7) += 2 * fac * A(1,2) * B(1,1);
+  out(1,2) += 2 * fac * A(1,2) * B(1,2);
+
+  out(2,0) += 2 * fac * A(2,0) * B(2,0);
+  out(2,3) += 2 * fac * A(2,0) * B(2,1);
+  out(2,5) += 2 * fac * A(2,0) * B(2,2);
+  out(2,6) += 2 * fac * A(2,1) * B(2,0);
+  out(2,1) += 2 * fac * A(2,1) * B(2,1);
+  out(2,4) += 2 * fac * A(2,1) * B(2,2);
+  out(2,8) += 2 * fac * A(2,2) * B(2,0);
+  out(2,7) += 2 * fac * A(2,2) * B(2,1);
+  out(2,2) += 2 * fac * A(2,2) * B(2,2);
+
+  out(3,0) += fac * (A(0,0) * B(1,0) + A(1,0) * B(0,0));
+  out(3,3) += fac * (A(0,0) * B(1,1) + A(1,0) * B(0,1));
+  out(3,5) += fac * (A(0,0) * B(1,2) + A(1,0) * B(0,2));
+  out(3,6) += fac * (A(0,1) * B(1,0) + A(1,1) * B(0,0));
+  out(3,1) += fac * (A(0,1) * B(1,1) + A(1,1) * B(0,1));
+  out(3,4) += fac * (A(0,1) * B(1,2) + A(1,1) * B(0,2));
+  out(3,8) += fac * (A(0,2) * B(1,0) + A(1,2) * B(0,0));
+  out(3,7) += fac * (A(0,2) * B(1,1) + A(1,2) * B(0,1));
+  out(3,2) += fac * (A(0,2) * B(1,2) + A(1,2) * B(0,2));
+
+  out(4,0) += fac * (A(1,0) * B(2,0) + A(2,0) * B(1,0));
+  out(4,3) += fac * (A(1,0) * B(2,1) + A(2,0) * B(1,1));
+  out(4,5) += fac * (A(1,0) * B(2,2) + A(2,0) * B(1,2));
+  out(4,6) += fac * (A(1,1) * B(2,0) + A(2,1) * B(1,0));
+  out(4,1) += fac * (A(1,1) * B(2,1) + A(2,1) * B(1,1));
+  out(4,4) += fac * (A(1,1) * B(2,2) + A(2,1) * B(1,2));
+  out(4,8) += fac * (A(1,2) * B(2,0) + A(2,2) * B(1,0));
+  out(4,7) += fac * (A(1,2) * B(2,1) + A(2,2) * B(1,1));
+  out(4,2) += fac * (A(1,2) * B(2,2) + A(2,2) * B(1,2));
+
+  out(5,0) += fac * (A(0,0) * B(2,0) + A(2,0) * B(0,0));
+  out(5,3) += fac * (A(0,0) * B(2,1) + A(2,0) * B(0,1));
+  out(5,5) += fac * (A(0,0) * B(2,2) + A(2,0) * B(0,2));
+  out(5,6) += fac * (A(0,1) * B(2,0) + A(2,1) * B(0,0));
+  out(5,1) += fac * (A(0,1) * B(2,1) + A(2,1) * B(0,1));
+  out(5,4) += fac * (A(0,1) * B(2,2) + A(2,1) * B(0,2));
+  out(5,8) += fac * (A(0,2) * B(2,0) + A(2,2) * B(0,0));
+  out(5,7) += fac * (A(0,2) * B(2,1) + A(2,2) * B(0,1));
+  out(5,2) += fac * (A(0,2) * B(2,2) + A(2,2) * B(0,2));
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::RemodelFiber::AddtoMatrixHalfSymProd(const double& fac,
+                                                        const LINALG::Matrix<3,3>& A,
+                                                        const LINALG::Matrix<3,3>& B,
+                                                        LINALG::Matrix<9,6>& out)
+{
+  out(0,0) += 2. * fac * A(0,0) * B(0,0);
+  out(0,3) += fac * (A(0,0) * B(0,1) + A(0,1) * B(0,0));
+  out(0,5) += fac * (A(0,0) * B(0,2) + A(0,2) * B(0,0));
+  out(0,1) += 2. * fac * A(0,1) * B(0,1);
+  out(0,4) += fac * (A(0,1) * B(0,2) + A(0,2) * B(0,1));
+  out(0,2) += 2. * fac * A(0,2) * B(0,2);
+
+  out(3,0) += 2. * fac * A(0,0) * B(1,0);
+  out(3,3) += fac * (A(0,0) * B(1,1) + A(0,1) * B(1,0));
+  out(3,5) += fac * (A(0,0) * B(1,2) + A(0,2) * B(1,0));
+  out(3,1) += 2. * fac * A(0,1) * B(1,1);
+  out(3,4) += fac * (A(0,1) * B(1,2) + A(0,2) * B(1,1));
+  out(3,2) += 2. * fac * A(0,2) * B(1,2);
+
+  out(5,0) += 2. * fac * A(0,0) * B(2,0);
+  out(5,3) += fac * (A(0,0) * B(2,1) + A(0,1) * B(2,0));
+  out(5,5) += fac * (A(0,0) * B(2,2) + A(0,2) * B(2,0));
+  out(5,1) += 2. * fac * A(0,1) * B(2,1);
+  out(5,4) += fac * (A(0,1) * B(2,2) + A(0,2) * B(2,1));
+  out(5,2) += 2. * fac * A(0,2) * B(2,2);
+
+  out(6,0) += 2. * fac * A(1,0) * B(0,0);
+  out(6,3) += fac * (A(1,0) * B(0,1) + A(1,1) * B(0,0));
+  out(6,5) += fac * (A(1,0) * B(0,2) + A(1,2) * B(0,0));
+  out(6,1) += 2. * fac * A(1,1) * B(0,1);
+  out(6,4) += fac * (A(1,1) * B(0,2) + A(1,2) * B(0,1));
+  out(6,2) += 2. * fac * A(1,2) * B(0,2);
+
+  out(1,0) += 2. * fac * A(1,0) * B(1,0);
+  out(1,3) += fac * (A(1,0) * B(1,1) + A(1,1) * B(1,0));
+  out(1,5) += fac * (A(1,0) * B(1,2) + A(1,2) * B(1,0));
+  out(1,1) += 2. * fac * A(1,1) * B(1,1);
+  out(1,4) += fac * (A(1,1) * B(1,2) + A(1,2) * B(1,1));
+  out(1,2) += 2. * fac * A(1,2) * B(1,2);
+
+  out(4,0) += 2. * fac * A(1,0) * B(2,0);
+  out(4,3) += fac * (A(1,0) * B(2,1) + A(1,1) * B(2,0));
+  out(4,5) += fac * (A(1,0) * B(2,2) + A(1,2) * B(2,0));
+  out(4,1) += 2. * fac * A(1,1) * B(2,1);
+  out(4,4) += fac * (A(1,1) * B(2,2) + A(1,2) * B(2,1));
+  out(4,2) += 2. * fac * A(1,2) * B(2,2);
+
+  out(8,0) += 2. * fac * A(2,0) * B(0,0);
+  out(8,3) += fac * (A(2,0) * B(0,1) + A(2,1) * B(0,0));
+  out(8,5) += fac * (A(2,0) * B(0,2) + A(2,2) * B(0,0));
+  out(8,1) += 2. * fac * A(2,1) * B(0,1);
+  out(8,4) += fac * (A(2,1) * B(0,2) + A(2,2) * B(0,1));
+  out(8,2) += 2. * fac * A(2,2) * B(0,2);
+
+  out(7,0) += 2. * fac * A(2,0) * B(1,0);
+  out(7,3) += fac * (A(2,0) * B(1,1) + A(2,1) * B(1,0));
+  out(7,5) += fac * (A(2,0) * B(1,2) + A(2,2) * B(1,0));
+  out(7,1) += 2. * fac * A(2,1) * B(1,1);
+  out(7,4) += fac * (A(2,1) * B(1,2) + A(2,2) * B(1,1));
+  out(7,2) += 2. * fac * A(2,2) * B(1,2);
+
+  out(2,0) += 2. * fac * A(2,0) * B(2,0);
+  out(2,3) += fac * (A(2,0) * B(2,1) + A(2,1) * B(2,0));
+  out(2,5) += fac * (A(2,0) * B(2,2) + A(2,2) * B(2,0));
+  out(2,1) += 2. * fac * A(2,1) * B(2,1);
+  out(2,4) += fac * (A(2,1) * B(2,2) + A(2,2) * B(2,1));
+  out(2,2) += 2. * fac * A(2,2) * B(2,2);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ELASTIC::RemodelFiber::EvaldYdC(LINALG::Matrix<6,6>& out,
+                                          const LINALG::Matrix<3,3>& in1,
+                                          const LINALG::Matrix<3,3>& in2,
+                                          const double fac)
+{
+  out(0,0) = 4 * fac * in1(0,0) * in2(0,0);
+  out(0,3) = fac * (2 * in1(0,0) * in2(1,0) + 2 * in1(1,0) * in2(0,0));
+  out(0,5) = fac * (2 * in1(0,0) * in2(2,0) + 2 * in1(2,0) * in2(0,0));
+  out(0,1) = 4 * fac * in1(1,0) * in2(1,0);
+  out(0,4) = fac * (2 * in1(1,0) * in2(2,0) + 2 * in1(2,0) * in2(1,0));
+  out(0,2) = 4 * fac * in1(2,0) * in2(2,0);
+
+  out(3,0) = fac * (2 * in1(0,0) * in2(0,1) + 2 * in1(0,1) * in2(0,0));
+  out(3,3) = fac * (in1(0,0) * in2(1,1) + in1(0,1) * in2(1,0) + in1(1,0) * in2(0,1) + in1(1,1) * in2(0,0));
+  out(3,5) = fac * (in1(0,0) * in2(2,1) + in1(0,1) * in2(2,0) + in1(2,0) * in2(0,1) + in1(2,1) * in2(0,0));
+  out(3,1) = fac * (2 * in1(1,0) * in2(1,1) + 2 * in1(1,1) * in2(1,0));
+  out(3,4) = fac * (in1(1,0) * in2(2,1) + in1(1,1) * in2(2,0) + in1(2,0) * in2(1,1) + in1(2,1) * in2(1,0));
+  out(3,2) = fac * (2 * in1(2,0) * in2(2,1) + 2 * in1(2,1) * in2(2,0));
+
+  out(5,0) = fac * (2 * in1(0,0) * in2(0,2) + 2 * in1(0,2) * in2(0,0));
+  out(5,3) = fac * (in1(0,0) * in2(1,2) + in1(0,2) * in2(1,0) + in1(1,0) * in2(0,2) + in1(1,2) * in2(0,0));
+  out(5,5) = fac * (in1(0,0) * in2(2,2) + in1(0,2) * in2(2,0) + in1(2,0) * in2(0,2) + in1(2,2) * in2(0,0));
+  out(5,1) = fac * (2 * in1(1,0) * in2(1,2) + 2 * in1(1,2) * in2(1,0));
+  out(5,4) = fac * (in1(1,0) * in2(2,2) + in1(1,2) * in2(2,0) + in1(2,0) * in2(1,2) + in1(2,2) * in2(1,0));
+  out(5,2) = fac * (2 * in1(2,0) * in2(2,2) + 2 * in1(2,2) * in2(2,0));
+
+  out(1,0) = 4 * fac * in1(0,1) * in2(0,1);
+  out(1,3) = fac * (2 * in1(0,1) * in2(1,1) + 2 * in1(1,1) * in2(0,1));
+  out(1,5) = fac * (2 * in1(0,1) * in2(2,1) + 2 * in1(2,1) * in2(0,1));
+  out(1,1) = 4 * fac * in1(1,1) * in2(1,1);
+  out(1,4) = fac * (2 * in1(1,1) * in2(2,1) + 2 * in1(2,1) * in2(1,1));
+  out(1,2) = 4 * fac * in1(2,1) * in2(2,1);
+
+  out(4,0) = fac * (2 * in1(0,1) * in2(0,2) + 2 * in1(0,2) * in2(0,1));
+  out(4,3) = fac * (in1(0,1) * in2(1,2) + in1(0,2) * in2(1,1) + in1(1,1) * in2(0,2) + in1(1,2) * in2(0,1));
+  out(4,5) = fac * (in1(0,1) * in2(2,2) + in1(0,2) * in2(2,1) + in1(2,1) * in2(0,2) + in1(2,2) * in2(0,1));
+  out(4,1) = fac * (2 * in1(1,1) * in2(1,2) + 2 * in1(1,2) * in2(1,1));
+  out(4,4) = fac * (in1(1,1) * in2(2,2) + in1(1,2) * in2(2,1) + in1(2,1) * in2(1,2) + in1(2,2) * in2(1,1));
+  out(4,2) = fac * (2 * in1(2,1) * in2(2,2) + 2 * in1(2,2) * in2(2,1));
+
+  out(2,0) = 4 * fac * in1(0,2) * in2(0,2);
+  out(2,3) = fac * (2 * in1(0,2) * in2(1,2) + 2 * in1(1,2) * in2(0,2));
+  out(2,5) = fac * (2 * in1(0,2) * in2(2,2) + 2 * in1(2,2) * in2(0,2));
+  out(2,1) = 4 * fac * in1(1,2) * in2(1,2);
+  out(2,4) = fac * (2 * in1(1,2) * in2(2,2) + 2 * in1(2,2) * in2(1,2));
+  out(2,2) = 4 * fac * in1(2,2) * in2(2,2);
+
+  return;
+}
+
 
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |
  *---------------------------------------------------------------------*/
-void MAT::ELASTIC::RemodelFiber::VisNames(std::map<std::string,int>& names)
+void MAT::ELASTIC::RemodelFiber::VisNames(std::map<std::string,int>& names, unsigned int p)
 {
-  std::string inelastic_defgrd = "inelastic_defgrd_fiber";
+  std::string inelastic_defgrd = "lambda_r";
   std::string result_inelastic_defgrad;
 
-  for (unsigned int p=0; p<potsumfiber_.size(); ++p)
+  for (unsigned int k=0; k<(potsumfiberpas_.size()+potsumfiberact_.size()); ++k)
   {
     std::stringstream sstm;
-    sstm << inelastic_defgrd <<"_" << p;
+    sstm << inelastic_defgrd <<"_" << p <<"_" << k;
     result_inelastic_defgrad = sstm.str();
 
     names[result_inelastic_defgrad] = 1;
@@ -406,39 +2125,26 @@ void MAT::ELASTIC::RemodelFiber::VisNames(std::map<std::string,int>& names)
   std::string fiber_cauchy_stress = "fiber_cauchy_stress";
   std::string result_fiber_cauchy_stress;
 
-  for (unsigned int p=0; p<potsumfiber_.size(); ++p)
+  for (unsigned int k=0; k<(potsumfiberpas_.size()+potsumfiberact_.size()); ++k)
   {
     std::stringstream sstm;
-    sstm << fiber_cauchy_stress <<"_" << p;
+    sstm << fiber_cauchy_stress <<"_" << p <<"_" << k;
     result_fiber_cauchy_stress = sstm.str();
 
     names[result_fiber_cauchy_stress] = 1;
   }
 
 
-  std::string fiberdirection = "fiberdirection";
-  std::string result_fiber;
+  std::string cur_rho_col = "cur_rho_col";
+  std::string result_cur_rho_col;
 
-  for (unsigned int p=0; p<potsumfiber_.size(); ++p)
+  for (unsigned int k=0; k<(potsumfiberpas_.size()+potsumfiberact_.size()); ++k)
   {
     std::stringstream sstm;
-    sstm << fiberdirection <<"_" << p;
-    result_fiber = sstm.str();
+    sstm << cur_rho_col <<"_" << p <<"_" << k;
+    result_cur_rho_col = sstm.str();
 
-    names[result_fiber] = 3;
-  }
-
-
-  std::string mass_fraction_col = "mass_fraction_col";
-  std::string result_mass_fraction_col;
-
-  for (unsigned int p=0; p<potsumfiber_.size(); ++p)
-  {
-    std::stringstream sstm;
-    sstm << mass_fraction_col <<"_" << p;
-    result_mass_fraction_col = sstm.str();
-
-    names[result_mass_fraction_col] = 1;
+    names[result_cur_rho_col] = 1;
   }
 }  // VisNames()
 
@@ -453,46 +2159,57 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   int eleID
 )
 {
-  if (name == "inelastic_defgrd_fiber_0")
+  if ((name == "lambda_r_0_0") || (name == "lambda_r_1_0"))
   {
     if (data.size()!= 1) dserror("size mismatch");
-    for(unsigned gp=0; gp<last_ilambda_r_[0].size(); gp++)
+    for(unsigned gp=0; gp<last_lambda_r_[0].size(); ++gp)
     {
-      data[0] += 1.0/last_ilambda_r_[0][gp];
+      data[0] += last_lambda_r_[0][gp];
     }
-    data[0] = data[0]/last_ilambda_r_[0].size();
+    data[0] = data[0]/last_lambda_r_[0].size();
 
     return true;
   }
-  if (name == "inelastic_defgrd_fiber_1")
+  if ((name == "lambda_r_0_1") || (name == "lambda_r_1_1"))
   {
     if (data.size()!= 1) dserror("size mismatch");
-    for(unsigned gp=0; gp<last_ilambda_r_[1].size(); gp++)
+    for(unsigned gp=0; gp<last_lambda_r_[1].size(); ++gp)
     {
-      data[0] += 1.0/last_ilambda_r_[1][gp];
+      data[0] += last_lambda_r_[1][gp];
     }
-    data[0] = data[0]/last_ilambda_r_[1].size();
+    data[0] = data[0]/last_lambda_r_[1].size();
 
     return true;
   }
-  if (name == "inelastic_defgrd_fiber_2")
+  if ((name == "lambda_r_0_2") || (name == "lambda_r_1_2"))
   {
     if (data.size()!= 1) dserror("size mismatch");
-    for(unsigned gp=0; gp<last_ilambda_r_[2].size(); gp++)
+    for(unsigned gp=0; gp<last_lambda_r_[2].size(); ++gp)
     {
-      data[0] += 1.0/last_ilambda_r_[2][gp];
+      data[0] += last_lambda_r_[2][gp];
     }
-    data[0] = data[0]/last_ilambda_r_[2].size();
+    data[0] = data[0]/last_lambda_r_[2].size();
+
+    return true;
+  }
+  if ((name == "lambda_r_0_3") || (name == "lambda_r_1_3"))
+  {
+    if (data.size()!= 1) dserror("size mismatch");
+    for(unsigned gp=0; gp<last_lambda_r_[3].size(); ++gp)
+    {
+      data[0] += last_lambda_r_[3][gp];
+    }
+    data[0] = data[0]/last_lambda_r_[3].size();
 
     return true;
   }
 
 
 
-  if (name == "fiber_cauchy_stress_0")
+  if ((name == "fiber_cauchy_stress_0_0") || (name == "fiber_cauchy_stress_1_0"))
   {
     if (data.size()!= 1) dserror("size mismatch");
-    for(unsigned gp=0; gp<stress_[0].size(); gp++)
+    for(unsigned gp=0; gp<stress_[0].size(); ++gp)
     {
       data[0] += stress_[0][gp];
     }
@@ -500,10 +2217,10 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
 
     return true;
   }
-  if (name == "fiber_cauchy_stress_1")
+  if ((name == "fiber_cauchy_stress_0_1") || (name == "fiber_cauchy_stress_1_1"))
   {
     if (data.size()!= 1) dserror("size mismatch");
-    for(unsigned gp=0; gp<stress_[1].size(); gp++)
+    for(unsigned gp=0; gp<stress_[1].size(); ++gp)
     {
       data[0] += stress_[1][gp];
     }
@@ -511,10 +2228,10 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
 
     return true;
   }
-  if (name == "fiber_cauchy_stress_2")
+  if ((name == "fiber_cauchy_stress_0_2") || (name == "fiber_cauchy_stress_1_2"))
   {
     if (data.size()!= 1) dserror("size mismatch");
-    for(unsigned gp=0; gp<stress_[2].size(); gp++)
+    for(unsigned gp=0; gp<stress_[2].size(); ++gp)
     {
       data[0] += stress_[2][gp];
     }
@@ -522,85 +2239,70 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
 
     return true;
   }
+  if ((name == "fiber_cauchy_stress_0_3") || (name == "fiber_cauchy_stress_1_3"))
+  {
+    if (data.size()!= 1) dserror("size mismatch");
+    for(unsigned gp=0; gp<stress_[3].size(); ++gp)
+    {
+      data[0] += stress_[3][gp];
+    }
+    data[0] = data[0]/stress_[3].size();
+
+    return true;
+  }
 
 
 
-std::vector<LINALG::Matrix<3,1> > fiberdirection;
-if(name == "fiberdirection_0")
-{
-  if (data.size()!= 3) dserror("size mismatch");
-
-  potsumfiber_[0]->GetFiberVecs(fiberdirection);
-
-  for(unsigned i=0;i<data.size();i++)
-    data[i] = fiberdirection[0](i);
-
-  return true;
-}
-if(name == "fiberdirection_1")
-{
-  if (data.size()!= 3) dserror("size mismatch");
-
-  potsumfiber_[1]->GetFiberVecs(fiberdirection);
-
-  for(unsigned i=0;i<data.size();i++)
-    data[i] = fiberdirection[0](i);
-
-  return true;
-}
-if(name == "fiberdirection_2")
-{
-  if (data.size()!= 3) dserror("size mismatch");
-
-  potsumfiber_[2]->GetFiberVecs(fiberdirection);
-
-  for(unsigned i=0;i<data.size();i++)
-    data[i] = fiberdirection[0](i);
-
-  return true;
-}
-
-
-if(name == "mass_fraction_col_0")
+if((name == "cur_rho_col_0_0") || (name == "cur_rho_col_1_0"))
 {
   if (data.size()!= 1) dserror("size mismatch");
-  for(unsigned i=0;i<current_w_collagen_[0].size();++i)
+  for(unsigned i=0;i<cur_rho_col_[0].size();++i)
   {
-    data[0] += current_w_collagen_[0][i];
+    data[0] += cur_rho_col_[0][i];
   }
-  data[0] = data[0]/current_w_collagen_[0].size();
+  data[0] = data[0]/cur_rho_col_[0].size();
 
 
   return true;
 }
-if(name == "mass_fraction_col_1")
+if((name == "cur_rho_col_0_1") || (name == "cur_rho_col_1_1"))
 {
   if (data.size()!= 1) dserror("size mismatch");
-  for(unsigned i=0;i<current_w_collagen_[0].size();++i)
+  for(unsigned i=0;i<cur_rho_col_[0].size();++i)
   {
-    data[0] += current_w_collagen_[1][i];
+    data[0] += cur_rho_col_[1][i];
   }
-  data[0] = data[0]/current_w_collagen_[1].size();
+  data[0] = data[0]/cur_rho_col_[1].size();
 
 
   return true;
 }
-if(name == "mass_fraction_col_2")
+if((name == "cur_rho_col_0_2") || (name == "cur_rho_col_1_2"))
 {
   if (data.size()!= 1) dserror("size mismatch");
-  for(unsigned i=0;i<current_w_collagen_[0].size();++i)
+  for(unsigned i=0;i<cur_rho_col_[0].size();++i)
   {
-    data[0] += current_w_collagen_[2][i];
+    data[0] += cur_rho_col_[2][i];
   }
-  data[0] = data[0]/current_w_collagen_[2].size();
+  data[0] = data[0]/cur_rho_col_[2].size();
+
+
+  return true;
+}
+if((name == "cur_rho_col_0_3") || (name == "cur_rho_col_1_3"))
+{
+  if (data.size()!= 1) dserror("size mismatch");
+  for(unsigned i=0;i<cur_rho_col_[0].size();++i)
+  {
+    data[0] += cur_rho_col_[3][i];
+  }
+  data[0] = data[0]/cur_rho_col_[3].size();
 
 
   return true;
 }
 
-dserror("The output is only implemented for three different fiber directions!!!");
+
+dserror("The output is only implemented for four different fiber directions!!!");
 return false;
 }  // VisData()
-
-
-

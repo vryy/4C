@@ -1,16 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file elast_couplogmixneohooke.cpp
-\brief
-
-the input line should read either
+\brief the input line should read either
   MAT 1 ELAST_CoupLogMixNeoHooke MODE YN C1 1.044E7 C2 0.3
   ( C1 = Young, c2 = nue)
 or
   MAT 1 ELAST_CoupLogMixNeoHooke MODE Lame C1 1. C2 1.
 
+\level 1
+
 <pre>
-Maintainer: Philipp Farah
+\maintainer Philipp Farah
             farah@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15257
@@ -79,6 +79,7 @@ void MAT::ELASTIC::CoupLogMixNeoHooke::AddStrainEnergy(
     double& psi,
     const LINALG::Matrix<3,1>& prinv,
     const LINALG::Matrix<3,1>& modinv,
+    const LINALG::Matrix<6,1> glstrain,
     const int eleGID)
 {
   const double lambda=params_->lambda_;

@@ -1177,7 +1177,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
     UpdateJacobianMapping(mydisp,*prestress_);
 
     // Update constraintmixture material
-    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+    if ((Material()->MaterialType() == INPAR::MAT::m_constraintmixture) ||
+        (Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper))
     {
       SolidMaterial()->Update();
     }
@@ -2142,6 +2143,16 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     default:
       dserror("requested strain type not available");
       break;
+    }
+
+    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture || Material()->MaterialType() == INPAR::MAT::m_growthremodel_elasthyper)
+    {
+      // gp reference coordinates
+      LINALG::Matrix<NUMNOD_SOH8,1> funct(true);
+      funct = shapefcts[gp];
+      LINALG::Matrix<1,NUMDIM_SOH8> point(true);
+      point.MultiplyTN(funct,xrefe);
+      params.set("gprefecoord",point);
     }
 
 
