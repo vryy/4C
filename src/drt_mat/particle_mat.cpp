@@ -1,12 +1,11 @@
 /*!----------------------------------------------------------------------
 \file particle_mat.cpp
 
-<pre>
-Maintainer: Georg Hammerl
-            hammerl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15237
-</pre>
+\brief TODO Georg. I think that this file defines which are the material properties of the particles
+
+\level 2
+
+\maintainer Georg Hammerl
 *----------------------------------------------------------------------*/
 
 
@@ -36,7 +35,6 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ParticleMat::CreateMaterial()
 }
 
 MAT::ParticleMatType MAT::ParticleMatType::instance_;
-
 
 DRT::ParObject* MAT::ParticleMatType::Create( const std::vector<char> & data )
 {

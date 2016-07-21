@@ -293,7 +293,7 @@ namespace PARTICLE
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() { return inertia_; }
 
     //! Return density
-    virtual double ParticleDensity() { return density_; }
+    virtual Teuchos::RCP<const Epetra_Vector> Density() { return density_; }
 
     //! extract heat source - constant pressure - solid state
     virtual double CPS() { return CPS_; }
@@ -304,11 +304,11 @@ namespace PARTICLE
     //! Return specific latent heat - solid <-> liquid
     virtual double MaxSpecificLatentHeat() {return SL_latent_heat_max_; }
 
-    //! Return transition temperature - solid <-> liquid
-    virtual double SL_TransitionTemperature() {return SL_transitionTemperature_; }
-
     //! does collision handler exist?
     virtual bool HaveCollHandler() {return (collhandler_!=Teuchos::null); }
+
+    //! transition temperature - solid <-> liquid
+    virtual const double SL_TransitionTemperature() {return SL_transitionTemperature_; }
 
     //@}
 
@@ -321,8 +321,14 @@ namespace PARTICLE
     //! extract velocities
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp(){ return veln_; }
 
-    //! extract velocities
+    //! Return accelerations
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccnp() { return accn_; }
+
+    //! extract temperatures
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp(){ return temperaturen_; }
+
+    //! extract SL latent heat
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessSL_latentHeat(){ return SL_latent_heat_; }
 
     //! extract initial radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() { return radius0_; }
@@ -341,6 +347,9 @@ namespace PARTICLE
 
     //! extract inertia vector
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessInertia() { return inertia_; }
+
+    //! Return density
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensity() { return density_; }
 
     //@}
 
@@ -467,7 +476,7 @@ namespace PARTICLE
     //! global vector for visualization of particle orientation
     Teuchos::RCP<Epetra_Vector> orient_;
     //! density of each particle at \f$t_{n+1}\f$
-    double density_;
+    Teuchos::RCP<Epetra_Vector> density_;
     //! specific heat - constant pressure - solid state
     double CPS_;
     //! specific heat - constant pressure - liquid state
@@ -476,6 +485,13 @@ namespace PARTICLE
     double SL_latent_heat_max_;
     //! transition temperature - solid <-> liquid
     double SL_transitionTemperature_;
+    //! volumetric thermal expansion coefficient - solid state - usually 3 times the linear coefficient
+    double S_thermalExpansion_;
+    //! volumetric thermal expansion coefficient - liquid state
+    double L_thermalExpansion_;
+    //! volumetric thermal expansion coefficient - solid <-> liquid - Beware! It is linked to latent heat instead of temperature!
+    double SL_thermalExpansion_;
+
     //! additional external forces
     Teuchos::RCP<Epetra_Vector> fifc_;
 
@@ -486,8 +502,6 @@ namespace PARTICLE
     //@{
 
     const bool variableradius_;   //!< bool to control whether radius is constant or variable
-
-    const bool trg_temperature_;  //!< bool to control if temperature is necessary
 
     //@}
 

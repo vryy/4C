@@ -180,7 +180,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Inertia() = 0;
 
     //! Return density
-    virtual double ParticleDensity() = 0;
+    virtual Teuchos::RCP<const Epetra_Vector> Density() = 0;
 
     //! Return specific heat -constant pressure - solid state of particles
     virtual double CPS() = 0;
@@ -194,6 +194,9 @@ namespace ADAPTER
     //! does collision handler exist?
     virtual bool HaveCollHandler() = 0;
 
+    //! transition temperature - solid <-> liquid
+    virtual const double SL_TransitionTemperature() = 0;
+
     //@}
 
     //! @name Extract methods
@@ -205,8 +208,14 @@ namespace ADAPTER
     //! extract velocities
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() = 0;
 
+    //! extract accelerations
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessAccnp() = 0;
+
     //! extract temperatures
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessTemperaturenp() = 0;
+
+    //! extract SL latent heat
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessSL_latentHeat() = 0;
 
     //! extract initial radii
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessRadius0() = 0;
@@ -225,6 +234,9 @@ namespace ADAPTER
 
     //! extract inertia vector
     virtual Teuchos::RCP<Epetra_Vector> WriteAccessInertia() = 0;
+
+    //! Return density
+    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDensity() = 0;
 
     //@}
 

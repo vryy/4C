@@ -1,0 +1,82 @@
+//
+// maintainer: Alessandro Cattabiani
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-----------------------------------------------------------------------TITLE
+Test case for particle thermodinamics and particle dimemberer in particular:
+- box containing 3 particles at different high
+- gravitational acceleration in negative z-direction
+- a heat source melts the particles mid-air and the smaller particles (set with dismember-radius keeping constant the mass) roll all over the place
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Particle
+SHAPEFCT                        Meshfree
+RANDSEED                        1
+--------------------------------------------------------------------MESHFREE
+TYPE                            Particle
+CUTOFF_RADIUS                   0.08
+BOUNDINGBOX                     -0.050001 -0.050001 -0.080001 0.050001 0.050001 0.080001
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+------------------------------------------------------------PARTICLE DYNAMIC
+RESULTSEVRY                     100
+RESTARTEVRY                     500
+TIMESTEP                        5e-5
+NUMSTEP                         5000
+MAXTIME                         100
+GRAVITY_ACCELERATION            0 0 -9.81
+CONTACT_STRATEGY                NormalContact_DEM
+NORMAL_CONTACT_LAW              LinearSpringDamp
+TRG_TEMPERATURE                 yes
+DISMEMBER_RADIUS                0.003
+MIN_RADIUS                      0.003
+MAX_RADIUS                      0.05
+REL_PENETRATION                 0.05
+MAX_VELOCITY                    1.0
+COEFF_RESTITUTION               0.2
+COEFF_RESTITUTION_WALL          0.2
+RADIUS_DISTRIBUTION             no
+RADIUS_DISTRIBUTION_SIGMA       0.004
+------------------------------------------------DESIGN HEAT SOURCE CONDITION
+DPARTICLE                       1
+// heat source
+E 1 - vertex0 -0.050001 0.050001 -0.080001 vertex1 0.050001 -0.050001 0.080001 HSQDot 500000 HSTstart 0 HSTend 1000
+--------------------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+----------------------------------------------------------DESIGN DESCRIPTION
+NDSURF                          1
+------------------------------------------------DESIGN SURFACE PARTICLE WALL
+DSURF                           1
+E 1 - 1
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 210.0e9 NUE 0.3 DENS 1.0
+MAT 2 MAT_ParticleAM DENSITY 7.85e3 INITRADIUS 0.01 NUE 0.3 YOUNG 210.0e9 INITTEMPERATURE 299.5 CPS 1 CPL 1 SL_LATENT_HEAT 3 SL_TRANSITION_TEMPERATURE 300 S_THERMAL_EXPANSION 0.00001 L_THERMAL_EXPANSION 0.00003 SL_THERMAL_EXPANSION 0.00005
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 1 DSURFACE 1
+NODE 2 DSURFACE 1
+NODE 3 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 5 DSURFACE 1
+NODE 6 DSURFACE 1
+NODE 7 DSURFACE 1
+NODE 8 DSURFACE 1
+-----------------------------------------------------------------NODE COORDS
+PARTICLE 1 COORD 0 0 -0.06
+PARTICLE 2 COORD 0.015 0.01 -0.03
+PARTICLE 3 COORD 0.01 0.01 -0
+NODE 1 COORD -0.0500000000000001e+00 -0.0500000000000001e+00 0.0800000000000001e+00
+NODE 2 COORD -0.0500000000000001e+00 -0.0500000000000001e+00 -0.0800000000000001e+00
+NODE 3 COORD -0.0500000000000001e+00 0.0500000000000001e+00 -0.0800000000000001e+00
+NODE 4 COORD -0.0500000000000001e+00 0.0500000000000001e+00 0.0800000000000001e+00
+NODE 5 COORD 0.0500000000000001e+00 -0.0500000000000001e+00 0.0800000000000001e+00
+NODE 6 COORD 0.0500000000000001e+00 -0.0500000000000001e+00 -0.0800000000000001e+00
+NODE 7 COORD 0.0500000000000001e+00 0.0500000000000001e+00 -0.0800000000000001e+00
+NODE 8 COORD 0.0500000000000001e+00 0.0500000000000001e+00 0.0800000000000001e+00
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none
+----------------------------------------------------------RESULT DESCRIPTION
+PARTICLE DIS particle NODE 11 QUANTITY velx VALUE 6.55254051226343004e-02 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 11 QUANTITY vely VALUE 4.96222269736078074e-03 TOLERANCE 1.0e-12
+PARTICLE DIS particle NODE 11 QUANTITY velz VALUE 6.70817496861487078e-07 TOLERANCE 1.0e-12
+-------------------------------------------------------------------------END

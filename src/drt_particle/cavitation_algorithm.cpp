@@ -2688,8 +2688,7 @@ void CAVITATION::Algorithm::ParticleInflow()
   Teuchos::RCP<Epetra_Vector> inertian = particles_->WriteAccessInertia();
   Teuchos::RCP<Epetra_Vector> bubbleradius0 = particles_->WriteAccessRadius0();
   Teuchos::RCP<Epetra_Vector> bubbleradiusdot = particles_->WriteAccessRadiusDot();
-
-  const double density = particles_->ParticleDensity();
+  Teuchos::RCP<const Epetra_Vector> density = particles_->Density();
 
   double gamma = 0.0;
   double pvapor = 0.0;
@@ -2802,15 +2801,15 @@ void CAVITATION::Algorithm::ParticleInflow()
         inflow_radius = random_radius;
       }
 
-      // assumption of constant mass (-> no mass transfer)
-      const double mass = density * 4.0/3.0 * M_PI * inflow_radius * inflow_radius * inflow_radius;
-      (*massn)[lid] = mass;
+      // assumption of constant mass (-> no mass transfer) todo: verify modification on mass
+      // const double mass = density * 4.0/3.0 * M_PI * inflow_radius * inflow_radius * inflow_radius;
+      (*massn)[lid] = (*density)[lid] * 4.0/3.0 * M_PI * inflow_radius * inflow_radius * inflow_radius;
 
       // start with a small radius that is blended to the actual value
       inflow_radius *= invblendingsteps;
       (*radiusn)[lid] = inflow_radius;
       if(inertian != Teuchos::null)
-        (*inertian)[lid] = 0.4 * mass * inflow_radius * inflow_radius;
+        (*inertian)[lid] = 0.4 * (*massn)[lid] * inflow_radius * inflow_radius;
 
       if(computeradiusRPbased_)
       {
@@ -2834,7 +2833,6 @@ void CAVITATION::Algorithm::ParticleInflow()
       }
     }
   }
-
   return;
 }
 

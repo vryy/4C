@@ -17,6 +17,7 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "particle_timint_expl.H"
+#include "particle_algorithm.H"
 #include "particle_contact.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
@@ -102,7 +103,7 @@ void PARTICLE::TimIntExpl::UpdateStepState()
   //    A_{n} := A_{n+1}, A_{n-1} := A_{n}
   acc_->UpdateSteps(*accn_);
   //    T_{n} := T_{n+1}, T_{n-1} := T_{n}
-  if (trg_temperature_) temperature_->UpdateSteps(*temperaturen_);
+  if (particle_algorithm_->trg_Temperature()) temperature_->UpdateSteps(*temperaturen_);
 
   if(collhandler_ != Teuchos::null)
   {

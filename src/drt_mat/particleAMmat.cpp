@@ -26,7 +26,10 @@ MAT::PAR::ParticleAMmat::ParticleAMmat(
     CPS_(matdata->GetDouble("CPS")),
     CPL_(matdata->GetDouble("CPL")),
     SL_latent_heat_max_(matdata->GetDouble("SL_LATENT_HEAT")),
-    SL_transitionTemperature_(matdata->GetDouble("SL_TRANSITION_TEMPERATURE"))
+    SL_transitionTemperature_(matdata->GetDouble("SL_TRANSITION_TEMPERATURE")),
+    S_thermalExpansion_(matdata->GetDouble("S_THERMAL_EXPANSION")),
+    L_thermalExpansion_(matdata->GetDouble("L_THERMAL_EXPANSION")),
+    SL_thermalExpansion_(matdata->GetDouble("SL_THERMAL_EXPANSION"))
 {
   return;
 }

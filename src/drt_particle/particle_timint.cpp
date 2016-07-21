@@ -93,14 +93,16 @@ PARTICLE::TimInt::TimInt
   ang_veln_(Teuchos::null),
   ang_accn_(Teuchos::null),
   orient_(Teuchos::null),
-  density_(-1.0),
+  density_(Teuchos::null),
   CPS_(-1.0),
   CPL_(-1.0),
   SL_latent_heat_max_(-1.0),
   SL_transitionTemperature_(-1.0),
+  S_thermalExpansion_(-1.0),
+  L_thermalExpansion_(-1.0),
+  SL_thermalExpansion_(-1.0),
   fifc_(Teuchos::null),
   variableradius_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CavitationParams(),"COMPUTE_RADIUS_RP_BASED")),
-  trg_temperature_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRG_TEMPERATURE")),
   collhandler_(Teuchos::null)
 {
   // welcome user
@@ -133,6 +135,9 @@ PARTICLE::TimInt::TimInt
 /* initialization of time integration */
 void PARTICLE::TimInt::Init()
 {
+
+
+
   Teuchos::RCP<Epetra_Vector> zeros = LINALG::CreateVector(*DofRowMapView(), true);
 
   // displacements D_{n}
@@ -142,7 +147,7 @@ void PARTICLE::TimInt::Init()
   // accelerations A_{n}
   acc_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
   // temperatures T_{n}
-  if (trg_temperature_)
+  if (particle_algorithm_->trg_Temperature())
   {
     temperature_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, NodeRowMapView(), true));
     SL_latent_heat_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
@@ -150,8 +155,13 @@ void PARTICLE::TimInt::Init()
 
   // create empty interface force vector
   fifc_ = LINALG::CreateVector(*DofRowMapView(), true);
+
+
+
   // radius of each particle
   radius_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+  // density of each particle
+  density_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
   if(variableradius_)
   {
     // initial radius of each particle for time dependent radius
@@ -160,7 +170,7 @@ void PARTICLE::TimInt::Init()
     radiusdot_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
   }
   // mass of each particle
-  mass_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
+  mass_ = LINALG::CreateVector(*discret_->NodeRowMap(), true);
 
   // set initial fields
   SetInitialFields();
@@ -180,7 +190,7 @@ void PARTICLE::TimInt::Init()
   // accelerations A_{n+1} at t_{n+1}
   accn_ = Teuchos::rcp(new Epetra_Vector(*(*acc_)(0)));
   // temperatures T_{n+1} at t_{n+1}
-  if (trg_temperature_)
+  if (particle_algorithm_->trg_Temperature())
     temperaturen_ = Teuchos::rcp(new Epetra_Vector(*(*temperature_)(0)));
 
   return;
@@ -192,17 +202,28 @@ void PARTICLE::TimInt::SetInitialFields()
 {
   // make sure that a particle material is defined in the dat-file
   int id = -1;
-  if (trg_temperature_)
+
+  if (particle_algorithm_->trg_Temperature())
+  {
     id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
+  }
   else
+  {
     id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
-  if (id==-1) dserror("Could not find particle material or material type - trg_temperature do not match");
+  }
+
+  // check
+  if (id==-1)
+  {
+    dserror("Could not find particle material or material type - trg_temperature do not match");
+  }
 
   const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
   const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
 
   // all particles have identical specific heats
-  density_ = actmat->density_;
+  density_->PutScalar(actmat->density_);
+
   double initial_radius = actmat->initialradius_;
   double amplitude = DRT::Problem::Instance()->ParticleParams().get<double>("RANDOM_AMPLITUDE");
   radius_->PutScalar(initial_radius);
@@ -227,7 +248,7 @@ void PARTICLE::TimInt::SetInitialFields()
       }
     }
     // mass-vector: m = rho * 4/3 * PI *r^3
-    (*mass_)[n] = density_ * 4.0/3.0 * M_PI * initial_radius * initial_radius * initial_radius;
+    (*mass_)[n] = (*density_)[n] * 4.0/3.0 * M_PI * initial_radius * initial_radius * initial_radius;
   }
 
   // set initial radius condition if existing
@@ -256,7 +277,7 @@ void PARTICLE::TimInt::SetInitialFields()
           dserror("negative initial radius");
 
         // mass-vector: m = rho * 4/3 * PI * r^3
-        (*mass_)[lid] = density_ * 4.0/3.0 * M_PI * r_p * r_p * r_p;
+        (*mass_)[lid] = (*density_)[lid] * 4.0/3.0 * M_PI * r_p * r_p * r_p;
       }
     }
   }
@@ -282,19 +303,23 @@ void PARTICLE::TimInt::SetInitialFields()
 
       // check whether random value lies within allowed bounds, and adjust otherwise
       if(random_radius > max_radius)
+      {
         random_radius = max_radius;
+      }
       else if(random_radius < min_radius)
+      {
         random_radius = min_radius;
+      }
 
       // set particle radius to random value
       (*radius_)[lid] = random_radius;
 
       // recompute particle mass
-      (*mass_)[lid] = density_*4.0/3.0*M_PI*random_radius*random_radius*random_radius;
+      (*mass_)[lid] = (*density_)[lid]*4.0/3.0*M_PI*random_radius*random_radius*random_radius;
     }
   }
 
-  if (trg_temperature_)
+  if (particle_algorithm_->trg_Temperature())
   {
     const MAT::PAR::ParticleAMmat* actmat_derived = static_cast<const MAT::PAR::ParticleAMmat*>(mat);
     // all particles have identical specific heats, specific latent heat - solid <-> liquid, and transition temperature - solid <-> liquid
@@ -302,16 +327,26 @@ void PARTICLE::TimInt::SetInitialFields()
     CPL_ = actmat_derived->CPL_;
     SL_latent_heat_max_ = actmat_derived->SL_latent_heat_max_;
     SL_transitionTemperature_ = actmat_derived->SL_transitionTemperature_;
+    S_thermalExpansion_ = actmat_derived->S_thermalExpansion_;
+    L_thermalExpansion_ = actmat_derived->L_thermalExpansion_;
+    SL_thermalExpansion_ = actmat_derived->SL_thermalExpansion_;
+
     // initialize temperature of particles
     const double temperature0 = actmat_derived->temperature_;
     (*temperature_)(0)->PutScalar(temperature0);
 
     if (temperature0>SL_transitionTemperature_)
+    {
       SL_latent_heat_->PutScalar(SL_latent_heat_max_);
+    }
     else if (temperature0<SL_transitionTemperature_)
+    {
       SL_latent_heat_->PutScalar(0);
+    }
     else
+    {
       dserror("TODO: start in the transition point - solid <-> liquid - still not implemented");
+    }
   }
 
   // set initial velocity field if existing
@@ -584,6 +619,13 @@ void PARTICLE::TimInt::UpdateStatesAfterParticleTransfer()
     LINALG::Export(*old, *mass_);
   }
 
+  if (density_ != Teuchos::null)
+  {
+    old = density_;
+    density_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
+    LINALG::Export(*old, *density_);
+  }
+
   if (inertia_ != Teuchos::null)
   {
     old = inertia_;
@@ -642,7 +684,7 @@ void PARTICLE::TimInt::ReadRestartState()
     reader.ReadVector(accn_, "acceleration");
     acc_->UpdateSteps(*accn_);
 
-    if(trg_temperature_)
+    if(particle_algorithm_->trg_Temperature())
     {
       reader.ReadVector(temperaturen_, "temperature");
       temperature_->UpdateSteps(*temperaturen_);
@@ -738,7 +780,7 @@ void PARTICLE::TimInt::OutputRestart
   output_->WriteVector("velocity", (*vel_)(0));
   output_->WriteVector("acceleration", (*acc_)(0));
 
-  if (trg_temperature_)
+  if (particle_algorithm_->trg_Temperature())
     output_->WriteVector("temperature", (*temperature_)(0));
 
   output_->WriteVector("radius", radius_, output_->nodevector);
@@ -803,7 +845,7 @@ void PARTICLE::TimInt::OutputState
   }
 
   output_->WriteVector("radius", radius_, output_->nodevector);
-  if (trg_temperature_)
+  if (particle_algorithm_->trg_Temperature())
     output_->WriteVector("temperature", (*temperature_)(0), output_->nodevector);
   if(collhandler_ != Teuchos::null and writeorientation_)
   {

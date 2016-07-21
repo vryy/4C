@@ -106,6 +106,12 @@ namespace PARTICLE
 
     std::map<int,std::list<Teuchos::RCP<HeatSource> > > & GetBins2HeatSources() {return bins2heatSources_; }
 
+    /// thermodynamics is activated?
+    const bool trg_Temperature() {return trg_temperature_; }
+
+    /// list of heat sources
+    const std::map<int,Teuchos::RCP<HeatSource> > HeatSources() {return heatSources_; }
+
   protected:
 
     /// prepare time step
@@ -191,6 +197,21 @@ namespace PARTICLE
     /// update connectivity: mask to sort various connectivity updates
     virtual void UpdateConnectivity();
 
+    /// dismember particle using the dismembering radius (it shall be smaller than the oldParticleRadius)
+    virtual void ParticleDismemberer();
+
+    /// mass and density updater for particle dismemberer
+    void MassDensityUpdaterForParticleDismemberer(
+        Teuchos::RCP<Epetra_Vector> &mass,
+        Teuchos::RCP<Epetra_Vector> &density,
+        Teuchos::RCP<Epetra_Vector> &radius,
+        const int &lidNode_new,
+        const int &lidNode_old,
+        const int &nlist);
+
+    /// small function for the dismember
+    virtual int ComputeSemiLengthInParticlesForParticleDismemberer(const double &oldRadius,const double &semiStep);
+
     //! @name particle related stuff
     //@{
 
@@ -211,6 +232,10 @@ namespace PARTICLE
     std::map<int,Teuchos::RCP<HeatSource> > heatSources_; // heat source storing
 
     std::map<int,std::list<Teuchos::RCP<HeatSource> > > bins2heatSources_;   ///< heat sources 2 bins map
+
+    const double dismemberRadius_;
+
+    const bool trg_temperature_;
 
     //@}
 
@@ -235,11 +260,19 @@ namespace PARTICLE
   const int HSid_;                            ///< unique id over all heat sources conditions
   const std::vector<double> HSZone_minVer_;   ///< heat zone, vertex 0
   const std::vector<double> HSZone_maxVer_;   ///< heat zone, vertex 1
-  const double HSQDot_;                       ///< intake q/s
+  const double HSQDot_;                       ///< intake heat per second per unit volume ( q/(s * V) )
   const double HSTstart_;                     ///< t start
   const double HSTend_;                       ///< t end
 
   }; // HeatSource
+
+  struct homelessParticleTemp
+  {
+  public:
+  int lidNode_old;
+  int lidDof_old;
+  std::vector<double> pos;
+  };
 
 } // namespace PARTICLE
 

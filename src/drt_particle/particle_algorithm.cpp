@@ -40,6 +40,8 @@
 #include <Isorropia_EpetraPartitioner.hpp>
 #include <Isorropia_EpetraCostDescriber.hpp>
 
+#include "particle_node.H"
+
 /*----------------------------------------------------------------------*
  | Algorithm constructor                                    ghamm 09/12 |
  *----------------------------------------------------------------------*/
@@ -52,7 +54,9 @@ PARTICLE::Algorithm::Algorithm(
   bincolmap_(Teuchos::null),
   structure_(Teuchos::null),
   particlewalldis_(Teuchos::null),
-  moving_walls_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS"))
+  moving_walls_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"MOVING_WALLS")),
+  dismemberRadius_((double)DRT::Problem::Instance()->ParticleParams().get<double>("DISMEMBER_RADIUS")),
+  trg_temperature_((bool)DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRG_TEMPERATURE"))
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
   // safety check
@@ -100,14 +104,20 @@ void PARTICLE::Algorithm::Timeloop()
   while (NotFinished())
   {
     // transfer particles into their correct bins
-    //if(Step()%100 == 0 and Comm().NumProc() != 1)
-    //  DynamicLoadBalancing();
+    if(Step()%100 == 0 and Comm().NumProc() != 1)
+      DynamicLoadBalancing();
 
     // counter and print header
     PrepareTimeStep();
 
     // particle time step is solved
     Integrate();
+
+    // dismembering if necessary
+    if (trg_temperature_)
+    {
+      ParticleDismemberer();
+    }
 
     // calculate stresses, strains, energies
     PrepareOutput();
@@ -896,6 +906,8 @@ bool PARTICLE::Algorithm::PlaceNodeCorrectly
       {
         DRT::Node* existingnode = particledis_->gNode(node->Id());
         // existing node is a row node, this means that node is equal existingnode
+
+
         if(existingnode->Owner() == myrank_)
         {
 //          std::cout << "on proc: " << myrank_ << " existingnode row node " << existingnode->Id() << " (ID from outside node: " << node->Id() << ") is added to element: " << currbin->Id() << std::endl;
@@ -933,7 +945,6 @@ bool PARTICLE::Algorithm::PlaceNodeCorrectly
         // assign node to the correct bin
         currbin->AddNode(node.get());
       }
-
       return true;
     }
     else // ghost bin
@@ -1863,6 +1874,242 @@ void PARTICLE::Algorithm::UpdateConnectivity()
   // update heat sources
   UpdateHeatSourcesConnectivity(false);
 }
+
+/*----------------------------------------------------------------------*
+ | particleDismemberer                                     catta 07/16  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::ParticleDismemberer()
+{
+  if (dismemberRadius_<=0)
+  {
+    dserror("DISMEMBER_RADIUS is missing or set negative in PARTICLE DYNAMIC");
+  }
+
+  Teuchos::RCP<Epetra_Vector> dispnp = particles_->WriteAccessDispnp();
+  Teuchos::RCP<Epetra_Vector> density = particles_->WriteAccessDensity();
+  Teuchos::RCP<Epetra_Vector> mass = particles_->WriteAccessMass();
+  Teuchos::RCP<Epetra_Vector> radius = particles_->WriteAccessRadius();
+  Teuchos::RCP<Epetra_Vector> temperaturenp = particles_->WriteAccessTemperaturenp();
+  Teuchos::RCP<const Epetra_Vector> temperature0 = particles_->Temperaturen();
+  const double SL_transitionTemperature = particles_->SL_TransitionTemperature();
+
+  // with this snapshotting the addition of nodes does not affect the main loop
+  const int maxLidNode_old = particledis_->NodeRowMap()->NumMyElements();
+
+  std::vector<int> listOrganizer(maxLidNode_old);
+  std::list<homelessParticleTemp > newParticleList;
+
+  for (int lidNode_old = 0; lidNode_old < maxLidNode_old; ++lidNode_old)
+  {
+    DRT::Node* currParticle_old = particledis_->lRowNode(lidNode_old);
+    const int lidDof_old = particledis_->DofRowMap()->LID(particledis_->Dof(currParticle_old, 0));
+
+    // checks
+    if (lidNode_old == -1)
+      dserror("Invalid lidNode\n");
+    if (lidDof_old == -1)
+      dserror("Invalid lidDof\n");
+    if (dismemberRadius_ > (*radius)[lidNode_old])
+      dserror("DISMEMBER_RADIUS is too big!");
+
+    // check if in this time step we completed the transition. This check is based on the temperature history
+    if (Step() > 0 && (*temperature0)[lidNode_old] <= SL_transitionTemperature && (*temperaturenp)[lidNode_old]>SL_transitionTemperature)
+    {
+      // --------------------------------------------------------------------
+      // position of the new particles temporarily stocked to compute the gid
+      // --------------------------------------------------------------------
+      const double x_step = 2 * dismemberRadius_ ;
+      const int semiLengthInParticlesx = ComputeSemiLengthInParticlesForParticleDismemberer((*radius)[lidNode_old], x_step/2);
+      const double y_step = sqrt(3) * dismemberRadius_;
+      const int semiLengthInParticlesy = ComputeSemiLengthInParticlesForParticleDismemberer((*radius)[lidNode_old], y_step/2);
+      const double z_step = 2 * sqrt(2) * (1/(sqrt(3))) * dismemberRadius_;
+      const int semiLengthInParticlesz = ComputeSemiLengthInParticlesForParticleDismemberer((*radius)[lidNode_old], z_step/2);
+      LINALG::Matrix<3,1> newRelativeParticlePosition(true);
+      for (int ix=-semiLengthInParticlesx; ix<=semiLengthInParticlesx; ++ix)
+      {
+        for (int iy=-semiLengthInParticlesy; iy<=semiLengthInParticlesy; ++iy)
+        {
+          for (int iz=-semiLengthInParticlesz; iz<=semiLengthInParticlesz; ++iz)
+          {
+            // x position
+            newRelativeParticlePosition(0) = ix * x_step;
+            // line offset if it is odd in the y direction
+            if (std::abs(iy)%2 == 1)
+            {
+              newRelativeParticlePosition(0) += x_step/2;
+            }
+
+            // y position
+            newRelativeParticlePosition(1) = iy * y_step;
+            // plane offset if it is odd in the z direction
+            if (std::abs(iz)%2 == 1)
+            {
+              newRelativeParticlePosition(0) -= x_step/2;
+              newRelativeParticlePosition(1) += y_step/3;
+            }
+            // z position
+            newRelativeParticlePosition(2) = iz * z_step;
+            // is it inside the old radius?
+            if ((newRelativeParticlePosition.Norm2()+dismemberRadius_ <= (*radius)[lidNode_old]) && !(ix == 0 && iy == 0 && iz == 0))
+            {
+              homelessParticleTemp hpt;
+              std::vector<double> newParticlePosition(3);
+              for (int ii=0; ii<3; ++ii)
+              {
+                newParticlePosition.at(ii) = newRelativeParticlePosition(ii) + (*dispnp)[lidDof_old+ ii];
+              }
+              hpt.pos = newParticlePosition;
+              hpt.lidNode_old = lidNode_old;
+              hpt.lidDof_old = lidDof_old;
+              newParticleList.push_back(hpt);
+              ++listOrganizer[lidNode_old];
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // -----------------------------------------------
+  // communication: determination of the correct gid
+  // -----------------------------------------------
+  const int nextMaxNode_gid = particledis_->NodeRowMap()->MaxAllGID();
+  const int numproc = particledis_->Comm().NumProc();
+  std::vector<int> myentries(numproc,0);
+  std::vector<int> globentries(numproc,0);
+  const int MyNewParticleListSize0 = newParticleList.size();
+  myentries[particledis_->Comm().MyPID()] = MyNewParticleListSize0;
+  particledis_->Comm().SumAll(&myentries[0], &globentries[0], numproc);  // parallel communication
+  int MyOffset = 0;
+  for(int ii = 0; ii < particledis_->Comm().MyPID(); ++ii)
+  {
+   MyOffset += globentries[ii];
+  }
+  // finally the offset for the gid
+  const int finalOffset = nextMaxNode_gid + MyOffset;
+
+  // --------------------------------------------------
+  // place the node in the bins and update connectivity
+  // --------------------------------------------------
+  int newParticleIDcounter = finalOffset;
+  for (std::list<homelessParticleTemp >::const_iterator iNodeList = newParticleList.begin(); iNodeList != newParticleList.end(); ++iNodeList)
+  {
+    ++newParticleIDcounter;
+
+    std::set<Teuchos::RCP<DRT::Node>,BINSTRATEGY::Less> homelessparticles;
+    Teuchos::RCP<DRT::Node> newParticle = Teuchos::rcp(new PARTICLE::ParticleNode(
+        newParticleIDcounter, &((*iNodeList).pos[0]), myrank_));
+
+    PlaceNodeCorrectly(newParticle, newParticle->X(), homelessparticles);
+    // rare case when after dismembering some particles fall into another bin
+    if(homelessparticles.size() != 0)
+    {
+      particledis_->AddNode(newParticle);
+      // assign node to an arbitrary row bin -> correct placement will follow in the timeloop in TransferParticles
+      DRT::MESHFREE::MeshfreeMultiBin* firstbinindis = dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(particledis_->lRowElement(0));
+      firstbinindis->AddNode(newParticle.get());
+      homelessparticles.clear();
+    }
+  }
+
+  // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
+  particledis_->FillComplete(true, false, true);
+
+  // update of state vectors to the new maps
+  particles_->UpdateStatesAfterParticleTransfer();
+  UpdateStates();
+
+  // reset/set of the pointers after updatestestesafterparticletransfer
+  dispnp = particles_->WriteAccessDispnp();
+  density = particles_->WriteAccessDensity();
+  mass = particles_->WriteAccessMass();
+  radius = particles_->WriteAccessRadius();
+  temperaturenp = particles_->WriteAccessTemperaturenp();
+  Teuchos::RCP<Epetra_Vector> velnp = particles_->WriteAccessVelnp();
+  Teuchos::RCP<Epetra_Vector> accnp = particles_->WriteAccessAccnp();
+  Teuchos::RCP<Epetra_Vector> inertia = particles_->WriteAccessInertia();
+  Teuchos::RCP<Epetra_Vector> SL_latent_heat = particles_->WriteAccessSL_latentHeat();
+
+  int lidNodeCounter = 0;
+  for (std::list<homelessParticleTemp >::const_iterator iNodeList = newParticleList.begin(); iNodeList != newParticleList.end(); ++iNodeList)
+  {
+    // get node lids
+    const int lidNode_new = maxLidNode_old+lidNodeCounter;
+    DRT::Node* currParticle_new = particledis_->lRowNode(lidNode_new);
+    const int lidDof_new = particledis_->DofRowMap()->LID(particledis_->Dof(currParticle_new, 0));
+
+    const int lidNode_old = (*iNodeList).lidNode_old;
+    const int lidDof_old = (*iNodeList).lidDof_old;
+
+    // check
+    if (lidNode_new == -1)
+      dserror("invalid new node lid");
+    if (lidDof_new == -1)
+      dserror("invalid new dof lid");
+    if (lidNode_old == -1)
+      dserror("invalid old node lid");
+    if (lidDof_old == -1)
+      dserror("invalid old dof lid");
+
+    // new masses and densities (to conserve the overall mass)
+    MassDensityUpdaterForParticleDismemberer(mass, density, radius, lidNode_new, lidNode_old, listOrganizer[lidNode_old]);
+    (*radius)[lidNode_new] = dismemberRadius_;
+    (*temperaturenp)[lidNode_new] = (*temperaturenp)[lidNode_old];
+    (*SL_latent_heat)[lidNode_new] = (*SL_latent_heat)[lidNode_old];
+    // inertia-vector: sphere: I = 2/5 * m * r^2
+    (*inertia)[lidNode_new] = 0.4 * (*mass)[lidNode_new] * dismemberRadius_ * dismemberRadius_;
+    for(int d=0; d<3; ++d)
+    {
+      (*dispnp)[lidDof_new + d] = currParticle_new->X()[d];
+      (*velnp)[lidDof_new + d] = (*velnp)[lidDof_old + d];
+      (*accnp)[lidDof_new + d] = (*accnp)[lidDof_old + d];
+    }
+
+    ++lidNodeCounter;
+  }
+
+  // ------------------------------
+  // update of the central particle
+  // ------------------------------
+  for (int lidNode_old = 0; lidNode_old < maxLidNode_old; ++lidNode_old)
+  {
+    if (Step() > 0 && (*temperature0)[lidNode_old] <= SL_transitionTemperature && (*temperaturenp)[lidNode_old]>SL_transitionTemperature)
+    {
+      MassDensityUpdaterForParticleDismemberer(mass, density, radius, lidNode_old, lidNode_old, listOrganizer[lidNode_old]);
+      // radius MUST be updated after MassDensityUpdaterForParticleDismemberer
+      (*radius)[lidNode_old] = dismemberRadius_;
+      // inertia-vector: sphere: I = 2/5 * m * r^2
+      (*inertia)[lidNode_old] = 0.4 * (*mass)[lidNode_old] * dismemberRadius_ * dismemberRadius_;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | ComputeSemiLengthInParticlesForParticleDismemberer      catta 06/16  |
+ *----------------------------------------------------------------------*/
+
+void PARTICLE::Algorithm::MassDensityUpdaterForParticleDismemberer(
+    Teuchos::RCP<Epetra_Vector> &mass,
+    Teuchos::RCP<Epetra_Vector> &density,
+    Teuchos::RCP<Epetra_Vector> &radius,
+    const int &lidNode_new,
+    const int &lidNode_old,
+    const int &nlist)
+{
+  // new masses and densities (to conserve the overall mass)
+  (*mass)[lidNode_new] = ((*mass)[lidNode_old])/(nlist+1); // the +1 is due to the central node that is resized
+  (*density)[lidNode_new] = (*density)[lidNode_old] * std::pow((*radius)[lidNode_old],3)/((nlist + 1) * std::pow(dismemberRadius_,3));
+}
+
+/*----------------------------------------------------------------------*
+ | ComputeSemiLengthInParticlesForParticleDismemberer      catta 06/16  |
+ *----------------------------------------------------------------------*/
+
+int PARTICLE::Algorithm::ComputeSemiLengthInParticlesForParticleDismemberer(const double &oldRadius,const double &semiStep)
+{
+  return (oldRadius-semiStep)/(2 * semiStep) + 2; /// +2 is just to be sure that everything is included
+}
+
 
 /*----------------------------------------------------------------------*
  | heat source                                             catta 06/16  |

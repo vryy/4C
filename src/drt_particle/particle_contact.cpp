@@ -16,6 +16,7 @@
 /* headers */
 #include "particle_contact.H"
 #include "particle_algorithm.H"
+#include "particle_timint_centrdiff.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -58,11 +59,18 @@ PARTICLE::ParticleCollisionHandlerBase::ParticleCollisionHandlerBase(
 {
   // make sure that a particle material is defined in the dat-file
   int id = -1;
-  bool trg_temperature = DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ParticleParams(),"TRG_TEMPERATURE");
+  if (particle_algorithm_->trg_Temperature())
+  {
+    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
+  }
+  else
+  {
+    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
+  }
 
-  trg_temperature ? id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat) :
-                    id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
-  if (id==-1) dserror("Could not find particle material or material type - trg_temperature do not match");
+  if (id==-1)
+    dserror("Could not find particle material or material type - trg_temperature do not match");
+
   const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
   const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
 
@@ -191,6 +199,45 @@ void PARTICLE::ParticleCollisionHandlerBase::ReadContactParameters(double densit
 
     if(r_min_<0.0 or r_max_<0.0 or v_max_<0.0 or c_<0.0 or young_<0.0)
       dserror("Invalid input parameter (MIN_RADIUS,MAX_RADIUS,MAX_VELOCITY,REL_PENETRATION, YOUNG's modulus have to be larger than zero)");
+
+    if(r_min_>r_max_)
+      dserror("inversed radii (MIN_RADIUS > MAX_RADIUS)");
+
+    int id = -1;
+    if (particle_algorithm_->trg_Temperature())
+    {
+      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particleAMmat);
+    }
+    else
+    {
+      id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
+    }
+    // check
+    if (id==-1)
+    {
+      dserror("Could not find particle material or material type - trg_temperature do not match");
+    }
+    const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+    const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
+
+    if (actmat->initialradius_ < r_min_)
+      dserror("INITRADIUS too small (it should be >= MIN_RADIUS)");
+
+    if (actmat->initialradius_ > r_max_)
+      dserror("INITRADIUS too big (it should be <= MAX_RADIUS)");
+
+    if(particle_algorithm_->trg_Temperature())
+    {
+      r_dismember_ = particleparams.get<double>("DISMEMBER_RADIUS");
+      if (r_dismember_ < 0)
+        dserror("Invalid or unset input parameter (DISMEMBER_RADIUS must be larger than zero)");
+      if (r_dismember_ < r_min_)
+        dserror("DISMEMBER_RADIUS < MIN_RADIUS -> DISMEMBER_RADIUS is too small!");
+
+      if (r_dismember_ > r_max_)
+              dserror("DISMEMBER_RADIUS > MAX_RADIUS -> DISMEMBER_RADIUS is too big!");
+    }
+
 
     if(e_<0.0 and (normal_contact_ == INPAR::PARTICLE::LinSpringDamp or contact_strategy_==INPAR::PARTICLE::Normal_MD))
       dserror("Invalid input parameter COEFF_RESTITUTION for this kind of contact law!");

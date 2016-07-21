@@ -4,6 +4,8 @@
 
 \brief Particle collision handling
 
+\level 3
+
 \maintainer Georg Hammerl
 */
 
@@ -150,6 +152,8 @@ namespace PARTICLE
     double r_min_;
     /// maximum expected radius
     double r_max_;
+    /// dismember radius in case of thermodynamics
+    double r_dismember_;
     /// max expected particle velocity
     double v_max_;
 
