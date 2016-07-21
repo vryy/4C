@@ -14,6 +14,9 @@ with condensed fluid interface velocities
 
 #include <Teuchos_TimeMonitor.hpp>
 
+#include <NOX_Epetra_LinearSystem.H>
+#include <NOX_Epetra_LinearSystem_AztecOO.H>
+
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
@@ -23,7 +26,6 @@ with condensed fluid interface velocities
 #include "fsi_statustest.H"
 #include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
-#include "fsi_monolithic_linearsystem.H"
 #include "fsi_matrixtransform.H"
 #include "fsi_utils.H"
 
@@ -2186,7 +2188,6 @@ void FSI::MortarMonolithicFluidSplit::CreateInterfaceMapping(
       int saveNode = -2;
       int foundOwner;
       int sendOwner;
-      int saveOwner = -2;
       int dofid;
 
       for (int proc = 0; proc < numproc; ++proc){
@@ -2205,7 +2206,6 @@ void FSI::MortarMonolithicFluidSplit::CreateInterfaceMapping(
             comm_.Broadcast(&sendOwner, 1, j);
             if (sendNode != -2){ // check which processor found the node
               saveNode = sendNode;
-              saveOwner = sendOwner;
               break;
             }
           }
@@ -2322,12 +2322,6 @@ void FSI::MortarMonolithicFluidSplit::CreateInterfaceMapping(
   }
 
 }
-
-
-
-
-
-
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
