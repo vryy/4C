@@ -1244,7 +1244,7 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
       }
     }
 
-#ifdef DEBUG // rauch 07/14
+//#ifdef DEBUG // rauch 07/14
     // for debugging purposes of immersed method; recognized background elements and boundary elements
     // become visible in post processing
     if ((int)elerowmap->NumMyElements() >= 1)
@@ -1259,7 +1259,7 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
         }
       }
     }
-#endif
+//#endif
 
     for (int i=0; i<elerowmap->NumMyElements(); ++i)
     {

@@ -3,12 +3,13 @@
 
  \brief internal implementation of poro immersed fluid element (p1 poro fluid)
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
+\level 2
+
 *----------------------------------------------------------------------*/
 
 #include "fluid_ele_calc_poro_p1_immersed.H"
@@ -63,11 +64,14 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::FluidEleCalcPoroP1Immersed()
   : DRT::ELEMENTS::FluidEleCalcPoroP1<distype>::FluidEleCalcPoroP1()
 {
+  // initializations
   exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
+  gp_iquad_=-1234.0;
+  immersedele_=NULL;
 }
 
 /*----------------------------------------------------------------------*
- * Evaluate
+ * Evaluate                                                 rauch 08/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
@@ -176,7 +180,7 @@ int DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::Evaluate(DRT::ELEMENTS::
 } // Evaluate
 
 /*-----------------------------------------------------------------------*
- *   Computation of porosity                                 Rauch 08/15 |
+ *   Computation of porosity                                 rauch 08/15 |
  *-----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::ComputePorosity(
@@ -214,7 +218,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::ComputePorosity(
 }
 
 /*------------------------------------------------------------------------*
- *  Evaluate Pressure Equation                                 Rauch 08/15|
+ *  Evaluate Pressure Equation                                 rauch 08/15|
  *------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::EvaluatePressureEquation(
@@ -234,7 +238,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::EvaluatePressureEquatio
     LINALG::Matrix<my::nen_,1>&                   preforce
     )
 {
-  // todo try to remove my:: from EvaluatePressureEquationNonTransient in base class ??
+
   EvaluatePressureEquationNonTransient( params,
                                         timefacfacpre,
                                         rhsfac,
@@ -255,16 +259,14 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::EvaluatePressureEquatio
     if(eporositydot)
     {
       double porositydot =  my_p::funct_.Dot(*eporositydot);
-      //double porositydot =  my_p::funct_.Dot(*eporositydotn);
 
       for (int vi=0; vi<my_p::nen_; ++vi)
-      {//TODO : check genalpha case
+      {
         preforce(vi)-=  rhsfac * porositydot * my_p::funct_(vi) ;
       }
 
       //no need for adding RHS form previous time step, as it is already included in 'porositydot'
       //(for the one-step-theta case at least)
-      //ComputeContiTimeRHS(params,*eporositydotn,preforce,rhsfac,1.0);
 
       //just update internal variables, no contribution to rhs
       const double porositydotn = my_p::funct_.Dot(*eporositydotn);
@@ -286,7 +288,7 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::EvaluatePressureEquatio
 }
 
 /*-------------------------------------------------------------------------*
- *  evaluation of continuity equation (non transient part)     Rauch 08/15 |
+ *  evaluation of continuity equation (non transient part)     rauch 08/15 |
  *-------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::EvaluatePressureEquationNonTransient(
@@ -350,6 +352,10 @@ void DRT::ELEMENTS::FluidEleCalcPoroP1Immersed<distype>::EvaluatePressureEquatio
       {
         preforce(vi) +=   rhsfac_vdiv * my_p::porosity_ * my::funct_(vi);
       }
+    }
+    else // my_p::porofldpara_->PoroContiPartInt() == true
+    {
+      dserror("no adaption of interstitial flow to compressibility of immersed body implementd for partially integrated poro-p1 formulation!");
     }
   }
 

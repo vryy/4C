@@ -1,14 +1,15 @@
 /*!----------------------------------------------------------------------
 \file immersed_problem_dyn.H
 
-\brief global algorithm control class for all immersed algorithms
+\brief global algorithm control file for all immersed algorithms
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
+\level 2
+
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_PROBLEM_DYN_H
 #define IMMERSED_PROBLEM_DYN_H
@@ -16,7 +17,7 @@ Maintainers: Andreas Rauch
 #include <Teuchos_RCP.hpp>
 
 namespace DRT{
-  class Discretization;
+class Discretization;
 }
 
 
@@ -26,7 +27,14 @@ namespace DRT{
   //! global cell migration algorithm
   void CellMigrationControlAlgorithm();
 
-  //! Ghost the discretization handed in to this method on all procs
+  /*!
+    \brief Ghost the discretization handed in to this method on all procs
+
+    \param distobeghosted (in) : RCP to the discretisation which is ghosted after execution of this method
+
+    \return void
+
+   */
   void CreateGhosting(const Teuchos::RCP<DRT::Discretization> distobeghosted);
 
 /*----------------------------------------------------------------------*/

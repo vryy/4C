@@ -3,12 +3,13 @@
 
 \brief manage access to and provide data globally in immersed problems
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
+\level 3
+
 *----------------------------------------------------------------------*/
 #include "immersed_field_exchange_manager.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -56,6 +57,7 @@ void DRT::ImmersedFieldExchangeManager::Done()
 DRT::ImmersedFieldExchangeManager::ImmersedFieldExchangeManager()
 {
 
+  // initialize members
   check_counter_=0;
   num_isimmersedbry_=0;
   gap_max_=0.0;
@@ -78,7 +80,10 @@ DRT::ImmersedFieldExchangeManager::ImmersedFieldExchangeManager()
   isPureConfinementSimulation_ = false;
   isPureProtrusionFormationSimulation_ = false;
 
+  points_to_phin_=Teuchos::null;
   points_to_phinp_=Teuchos::null;
+  points_to_phidtn_=Teuchos::null;
+  points_to_phidtnp_=Teuchos::null;
   points_to_Rates_=Teuchos::null;
   points_to_Rates_Actin_=Teuchos::null;
 

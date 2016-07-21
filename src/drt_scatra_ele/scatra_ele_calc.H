@@ -363,7 +363,7 @@ namespace ELEMENTS
       const DRT::Element*                             ele,          //!< the element we are dealing with
       Epetra_SerialDenseMatrix&                       elemat1,      //!< element matrix, to be filled
       Epetra_SerialDenseVector&                       elevec1,      //!< element RHS vector (x-direction)
-      const std::vector<LINALG::Matrix<nen_,nsd_> >&   egradphinp    //!< the gradient of phi in the x-direction
+      const std::vector<LINALG::Matrix<nen_,nsd_> >&   egradphinp   //!< the gradient of phi in the x-direction
       );
 
     //! calculate filtered fields for turbulent Prandtl number

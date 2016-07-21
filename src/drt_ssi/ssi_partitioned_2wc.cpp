@@ -3,12 +3,14 @@
 
  \brief two way coupled partitioned scalar structure interaction
 
- <pre>
-   Maintainer: Anh-Tu Vuong
+
+ \maintainer   Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15264
- </pre>
+
+ \level 2
+
  *------------------------------------------------------------------------------------------------*/
 
 #include "ssi_partitioned_2wc.H"
@@ -100,6 +102,9 @@ void SSI::SSI_Part2WC::DoStructStep()
 
   // Newton-Raphson iteration
   structure_-> Solve();
+
+  // set mesh displacement and velocity fields
+  return SetStructSolution(structure_->Dispnp(),structure_->Velnp());
 }
 
 /*----------------------------------------------------------------------*
@@ -118,6 +123,8 @@ void SSI::SSI_Part2WC::DoScatraStep()
   // -------------------------------------------------------------------
   scatra_->ScaTraField()->Solve();
 
+  // set structure-based scalar transport values
+  return SetScatraSolution(scatra_->ScaTraField()->Phinp());
 }
 
 /*----------------------------------------------------------------------*/
@@ -154,11 +161,26 @@ void SSI::SSI_Part2WC::UpdateAndOutput()
 
 
 /*----------------------------------------------------------------------*
+ | update the current states in every iteration             rauch 05/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC::IterUpdateStates()
+{
+  // store last solutions (current states).
+  // will be compared in ConvergenceCheck to the solutions,
+  // obtained from the next Struct and Scatra steps.
+  scaincnp_ ->Update(1.0,*scatra_->ScaTraField()->Phinp(),0.0);
+  dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);
+
+  return;
+}  // IterUpdateStates()
+
+
+/*----------------------------------------------------------------------*
  | Outer Timeloop for 2WC SSi without relaxation
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC::OuterLoop()
 {
-  int  itnum_ = 0;
+  int  itnum = 0;
   bool stopnonliniter = false;
 
   if (Comm().MyPID()==0)
@@ -168,36 +190,30 @@ void SSI::SSI_Part2WC::OuterLoop()
 
   while (stopnonliniter==false)
   {
-    itnum_++;
+    // increment number of iteration
+    itnum++;
 
-    // store scalar from first solution for convergence check (like in
-    // elch_algorithm: use current values)
-    scaincnp_->Update(1.0,*scatra_->ScaTraField()->Phinp(),0.0);
-    dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);
+    // update the states to the last solutions obtained
+    IterUpdateStates();
 
-    // set structure-based scalar transport values
-    SetScatraSolution(scatra_->ScaTraField()->Phinp());
-
-    if(itnum_!=1)
+    if(itnum!=1)
     {
-      //NOTE: the predictor is NOT called in here. Just the screen output is not correct.
+      // NOTE: the predictor is NOT called in here. Just the screen output is not correct.
       // we only get norm of the evaluation of the structure problem
       structure_->PreparePartitionStep();
     }
 
-    // solve structural system
+    // 1.) solve structural system
+    // 2.) set disp and vel states in scatra field
     DoStructStep();
 
-    // set mesh displacement and velocity fields
-    SetStructSolution(structure_->Dispnp(),structure_->Velnp());
-
-    // solve scalar transport equation
+    // 1.) solve scalar transport equation
+    // 2.) set phi state in structure field
     DoScatraStep();
-    //ScatraEvaluateSolveIterUpdate();
 
-    // check convergence for all fields and stop iteration loop if
-    // convergence is achieved overall
-    stopnonliniter = ConvergenceCheck(itnum_);
+    // check convergence for all fields
+    // stop iteration loop if converged
+    stopnonliniter = ConvergenceCheck(itnum);
   }
 
   return;
@@ -214,13 +230,16 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
 
   //    | scalar increment |_2
   //  -------------------------------- < Tolerance
-  //     | scalar+1 |_2
+  //    | scalar state n+1 |_2
   //
   // AND
   //
   //    | scalar increment |_2
-  //  -------------------------------- < Tolerance
-  //             dt * n
+  //  -------------------------------- < Tolerance , with n := global length of vector
+  //        dt * sqrt(n)
+  //
+  // The same is checked for the structural displacements.
+  //
 
   // variables to save different L2 - Norms
   // define L2-norm of incremental scalar and scalar
@@ -289,7 +308,7 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
 }
 
 /*----------------------------------------------------------------------*
- | calculate velocities by a FD approximation                 Thon 14/11 |
+ | calculate velocities by a FD approximation                Thon 14/11 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> SSI::SSI_Part2WC::CalcVelocity(
   Teuchos::RCP<const Epetra_Vector> dispnp

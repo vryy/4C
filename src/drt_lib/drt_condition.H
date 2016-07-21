@@ -281,9 +281,10 @@ public:
     TransportRobin,
     ThermoRobin,
     ScatraMultiScaleCoupling,
+    CellFocalAdhesion,
+    CellSurfVolCoupling,
     ScatraHeteroReactionCondMaster,
-    ScatraHeteroReactionCondSlave,
-    CellFocalAdhesion
+    ScatraHeteroReactionCondSlave
   };
 
   /*!

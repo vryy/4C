@@ -267,6 +267,7 @@ void DRT::Condition::Print(std::ostream& os) const
   else if (Type()==ScatraHeteroReactionCondSlave) os << "Scalar transport reaction coupling condition (Slave)";
   else if (Type()==SSICoupling)                   os << "Scalar-Structure coupling condition";
   else if (Type()==CellFocalAdhesion)             os << "Scalar transport boundary condition depending on structural surface stress";
+  else if (Type()==CellSurfVolCoupling)           os << "Couple cell surface nodes to cellscatra surface nodes";
   else dserror("no output std::string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);

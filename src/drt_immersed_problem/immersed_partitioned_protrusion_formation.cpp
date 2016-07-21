@@ -1,14 +1,15 @@
   /*!----------------------------------------------------------------------
 \file immersed_partitioned_protrusion_formation.cpp
 
-\brief partitioned immersed ECM -Cell interaction algorithm
+\brief partitioned immersed protrusion formation algorithm
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
+\level 3
+
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_protrusion_formation.H"
 
@@ -20,7 +21,6 @@ Maintainers: Andreas Rauch
 
 #include "../drt_adapter/ad_ale_fluid.H"
 #include "../drt_adapter/ad_str_fsiwrapper_immersed.H"
-
 
 IMMERSED::ImmersedPartitionedProtrusionFormation::ImmersedPartitionedProtrusionFormation(const Teuchos::ParameterList& params, const Epetra_Comm& comm)
   : ImmersedPartitioned(comm)
@@ -46,7 +46,7 @@ IMMERSED::ImmersedPartitionedProtrusionFormation::ImmersedPartitionedProtrusionF
   // get pointer structure-scatra interaction (ssi) subproblem
   cellscatra_subproblem_ = params.get<Teuchos::RCP<SSI::SSI_Part2WC_PROTRUSIONFORMATION> >("RCPToCellScatra");
 
-  // important variables for parallel simulations
+  // initialize important variables for parallel simulations
   myrank_  = comm.MyPID();
   numproc_ = comm.NumProc();
 
@@ -68,6 +68,8 @@ IMMERSED::ImmersedPartitionedProtrusionFormation::ImmersedPartitionedProtrusionF
 
   // construct immersed exchange manager. singleton class that makes immersed variables comfortably accessible from everywhere in the code
   exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
+
+  // inform the exchange manager on the simulation type
   exchange_manager_->SetIsProtrusionFormation(true);
 
 }
@@ -79,7 +81,7 @@ void IMMERSED::ImmersedPartitionedProtrusionFormation::ReadRestart(int step)
 {
   cellstructure_->ReadRestart(step);
   poroscatra_subproblem_->ReadRestart(step);
-  SetTimeStep(poroscatra_subproblem_->PoroField()->Time(),step);
+  //SetTimeStep(poroscatra_subproblem_->PoroField()->Time(),step);
 
   return;
 }
@@ -256,9 +258,8 @@ void IMMERSED::ImmersedPartitionedProtrusionFormation::PrepareOutput()
 void IMMERSED::ImmersedPartitionedProtrusionFormation::Output()
 {
   poroscatra_subproblem_->Output();
+  cellscatra_subproblem_->UpdateAndOutput();
   cellscatra_subproblem_->AleField()->Output();
-  cellscatra_subproblem_->StructureField()->Output();
-  cellscatra_subproblem_->ScaTraField()->ScaTraField()->Output();
 
   return;
 }
@@ -271,7 +272,6 @@ void IMMERSED::ImmersedPartitionedProtrusionFormation::Update()
   poroscatra_subproblem_->Update();
   cellscatra_subproblem_->StructureField()->Update();
   cellscatra_subproblem_->AleField()->Update();
-  cellscatra_subproblem_->ScaTraField()->ScaTraField()->Update();
 
   return;
 }

@@ -3,12 +3,13 @@
 
  \brief internal implementation of poro immersed fluid element (p1 poro fluid)
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
+\level 2
+
 *----------------------------------------------------------------------*/
 
 
@@ -55,7 +56,7 @@ public:
 protected:
 
   /*!
-    Evaluate
+    \brief Calls evaluate of base class with different number of integration points on elements which are IsBoundaryImmered() (ngp defined in input file)
 
     \param eid              (i) element id
     \param discretization   (i) fluid discretization the element belongs to
@@ -181,9 +182,10 @@ protected:
       LINALG::Matrix<my::nen_,1>&                   preforce);
 
 
-  // current immersed element
+  /// current immersed element
   DRT::ELEMENTS::FluidImmersedBase* immersedele_;
-  // number of current gp
+
+  /// id of current gp
   int gp_iquad_;
 
 }; // class FluidEleCalcPoroP1Immersed

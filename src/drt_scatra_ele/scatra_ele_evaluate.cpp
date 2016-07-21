@@ -299,6 +299,7 @@ int DRT::ELEMENTS::Transport::Evaluate(
     case SCATRA::micro_scale_output:
     case SCATRA::micro_scale_read_restart:
     case SCATRA::calc_cell_mechanotransduction:
+    case SCATRA::calc_cell_growth:
     case SCATRA::calc_heteroreac_mat_and_rhs:
     {
       return ScaTraFactory::ProvideImpl(Shape(),impltype_,numdofpernode,numscal,discretization.Name())->EvaluateService(
@@ -313,7 +314,6 @@ int DRT::ELEMENTS::Transport::Evaluate(
                elevec3);
       break;
     }
-
     case SCATRA::set_general_scatra_parameter:
     case SCATRA::set_turbulence_scatra_parameter:
     case SCATRA::set_time_parameter:

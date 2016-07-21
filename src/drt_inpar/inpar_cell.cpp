@@ -2,14 +2,15 @@
 /*!
 \file inpar_cell.cpp
 
-<pre>
+\brief input parameters and conditions for cell migration
+
 \maintainer Andreas Rauch
             rauch@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289 -15240
-</pre>
-*/
 
+\level 2
+*/
 /*----------------------------------------------------------------------*/
 
 
@@ -151,6 +152,7 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&celldyn);
   DoubleParameter("INITIAL_TIMESTEP",0.1,"Time increment dt for first time step (pre-simulation)",&celldyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&celldyn);
+  DoubleParameter("kBT",4.04530016e-6,"Thermal Energy (default [micrometer, mg, s] at 293K)",&celldyn);
 
 
 
@@ -251,6 +253,26 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
                                     couplabel,
                                     &protdyn);
 
+  setStringToIntegralParameter<int>("COUPVARIABLE","growth",
+                                    "Check growth or usual ssi criterion",
+                                    tuple<std::string>(
+                                                       "undefined",
+                                                       "growth",
+                                                       "ssi"),
+                                    tuple<int>(
+                                               coup_growth_undefined,
+                                               coup_growth_growth,
+                                               coup_growth_ssi),
+                                    &protdyn);
+
+  IntParameter("NUMDOF_ACTIN",-1,"Number of Scalar for Actin Monomer Concentration",&protdyn);
+  IntParameter("NUMDOF_PE",-1,"Number of Scalar for Pointed End Concentration at surface",&protdyn);
+  IntParameter("NUMDOF_BRANCHES",-1,"Number of Scalar for Branch Concentration",&protdyn);
+  IntParameter("NUM_FIL_ON_aBr",3,"Number of filament barbed ends on reference length(2D)/area(3D) aBr",&protdyn);
+
+  DoubleParameter("aBr",37.1677531,"Minimal length (2D)/area (3D) between actin filament barbed ends\n"
+                                   "above which branching can occur (default for simple 2D micro model).",&protdyn);
+  DoubleParameter("RELAX_GROWTH",1.0,"Fixed relaxation parameter for growth",&protdyn);
 
 
   /* CELL-FLOW INTERACTION PARAMETERS */
@@ -353,6 +375,28 @@ void INPAR::CELL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   IntParameter("INITFUNCNO",-1,"function number for scalar transport initial field",&cellscatradyn);
 
   BoolParameter("SPHERICALCOORDS","No","use of spherical coordinates",&cellscatradyn);
+
+  setStringToIntegralParameter<int>("CALCERROR","No",
+                               "compute error compared to analytical solution",
+                               tuple<std::string>(
+                                 "No",
+                                 "Kwok_Wu",
+                                 "ConcentricCylinders",
+                                 "Electroneutrality",
+                                 "error_by_function",
+                                 "SphereDiffusion"
+                                 ),
+                               tuple<int>(
+                                   calcerror_no,
+                                   calcerror_Kwok_Wu,
+                                   calcerror_cylinder,
+                                   calcerror_electroneutrality,
+                                   calcerror_byfunction,
+                                   calcerror_spherediffusion
+                                   ),
+                               &cellscatradyn);
+
+  IntParameter("CALCERRORNO",-1,"function number for scalar transport error computation",&cellscatradyn);
 
   setStringToIntegralParameter<int>("WRITEFLUX","No","output of diffusive/total flux vectors",
                                tuple<std::string>(
@@ -1102,7 +1146,7 @@ void INPAR::CELL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
   using namespace DRT::INPUT;
 
     /*--------------------------------------------------------------------*/
-      // FOCAL ADHESION
+    // FOCAL ADHESION
 
     std::vector<Teuchos::RCP<ConditionComponent> > facomponents;
 
@@ -1131,6 +1175,28 @@ void INPAR::CELL::SetValidConditions(std::vector<Teuchos::RCP<DRT::INPUT::Condit
 
     condlist.push_back(linefa);
     condlist.push_back(surffa);
+
+    /*--------------------------------------------------------------------*/
+    // SURFSCATRA - VOLSCATRA COUPLING
+
+    std::vector<Teuchos::RCP<ConditionComponent> > couplcomponents;
+
+    couplcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+    Teuchos::RCP<ConditionDefinition> surfcoup =
+      Teuchos::rcp(new ConditionDefinition("DESIGN CELL SURF VOL COUPLING",
+                                           "CellSurfVolCoupling",
+                                           "Cell Surf Vol Coupling",
+                                           DRT::Condition::CellSurfVolCoupling,
+                                           true,
+                                           DRT::Condition::Surface));
+
+    for (unsigned i=0; i<couplcomponents.size(); ++i)
+    {
+      surfcoup->AddComponent(couplcomponents[i]);
+    }
+
+    condlist.push_back(surfcoup);
 
 
 }

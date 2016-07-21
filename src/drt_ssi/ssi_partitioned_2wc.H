@@ -3,12 +3,13 @@
 
  \brief two way coupled partitioned scalar structure interaction
 
- <pre>
-   Maintainer: Anh-Tu Vuong
+\maintainer    Anh-Tu Vuong
                vuong@lnm.mw.tum.de
                http://www.lnm.mw.tum.de
                089 - 289-15264
- </pre>
+
+\level 2
+
  *------------------------------------------------------------------------------------------------*/
 
 #ifndef SSI_PARTITIONED2_WC_H_
@@ -47,16 +48,20 @@ namespace SSI
     // return current iteration step
     int Itnum(){return itnum_;};
 
-  protected:
-
-    //! perform iteration step of structure field
-    virtual void DoStructStep();
-
-    //! perform iteration step of scatra field
-    virtual void DoScatraStep();
-
     //! update time step and print to screen
     virtual void UpdateAndOutput();
+
+  protected:
+
+    //! perform iteration step of structure field and set the new disp and vel states in the scatra field
+    virtual void DoStructStep();
+
+    //! perform iteration step of scatra field and set the new phi state in the structure field
+    virtual void DoScatraStep();
+
+    //! update the current states in every iteration
+    //! states are set to the last solutions obtained
+    virtual void IterUpdateStates();
 
     //! convergence check of outer loop
     virtual bool ConvergenceCheck(int itnum);

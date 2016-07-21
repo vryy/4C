@@ -3,22 +3,24 @@
 
 \brief manage access to and provide data globally in immersed problems
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
+\level 3
+
 *----------------------------------------------------------------------*/
 
 #ifndef IMMERSED_FIELD_EXCHANGE_MANAGER_H
 #define IMMERSED_FIELD_EXCHANGE_MANAGER_H
 
-#include "../drt_lib/drt_singletondestruction.H"
 #include <map>
+#include <cstdlib>
 #include "Teuchos_RCP.hpp"
 #include "Epetra_MultiVector.h"
-#include <cstdlib>
+
+#include "../drt_lib/drt_singletondestruction.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 namespace GEO
@@ -39,57 +41,106 @@ class ImmersedFieldExchangeManager : public DRT::SingletonDestruction
 
 public:
 
+  /// virtual empty destructor (dtor)
   virtual ~ImmersedFieldExchangeManager() {}
 
-  /// Singleton access method
+  /// singleton access method
   static ImmersedFieldExchangeManager* Instance( bool create=true );
 
   /// called upon destruction
   virtual void Done();
 
-  bool isinitialized_;
+  //! @name Initialization Flag
+  //@{
+  bool isinitialized_; //!< true if this data manager has been properly initialized
+  //@}
+
+  //! @name Simulation Type Flags
+  //@{
   bool isfluidinteraction_;
   bool isprotrusionformation;
   bool isPureAdhesionSimulation_;
   bool isPureConfinementSimulation_;
   bool isPureProtrusionFormationSimulation_;
+  //@}
 
+  //! @name Misc. Counters
+  //@{
   int check_counter_;
   int num_isimmersedbry_;
   int numnlniter_;
+  //@}
 
+  //! @name Confinement Simulation Variables
+  //@{
   double gap_max_;
   double gap_min_;
   double void_min_;
   double void_max_;
   double delta_porosity_max_;
   double simple_ecm_interaction_constant;
+  //@}
 
+  //! @name Misc. std maps
+  //@{
   std::map<int,std::vector<double> > porosity_at_gp_;
   std::map<int,std::vector<double> > porosity_at_gp_old_timestep_;
   std::map<int,std::vector<double> > porositiy_old_;
   std::map<int,LINALG::Matrix<3,1> >* currpositions_immerseddis_;
   std::map<int,std::vector<LINALG::Matrix<3,1> > > penalty_traction_at_gp_;
   std::map<int,std::set<int> >* points_to_curr_subset_of_backgrounddis_;
+  //@}
 
+  //! @name Misc. epetra vectors
+  //@{
   Teuchos::RCP<Epetra_Vector> points_to_ecm_penalty_traction_;
   Teuchos::RCP<Epetra_Vector> points_to_ecm_penalty_gap_;
   Teuchos::RCP<Epetra_Vector> cell_current_nodal_normals_;
   Teuchos::RCP<Epetra_Vector> points_to_ecm_adhesion_force_;
+  //@}
 
+  //! @name Misc. epetra multivectors
+  //@{
+  Teuchos::RCP<Epetra_MultiVector> points_to_phin_;
   Teuchos::RCP<Epetra_MultiVector> points_to_phinp_;
+  Teuchos::RCP<Epetra_MultiVector> points_to_phidtn_;
+  Teuchos::RCP<Epetra_MultiVector> points_to_phidtnp_;
   Teuchos::RCP<Epetra_MultiVector> points_to_Rates_;
   Teuchos::RCP<Epetra_MultiVector> points_to_Rates_Actin_;
+  //@}
 
+  //! @name Misc. linalg matrices
+  //@{
   LINALG::Matrix<3,1> max_gap_searchdirection_;
   LINALG::Matrix<3,1> max_gap_spacepoint_;
   LINALG::Matrix<3,1> min_gap_searchdirection_;
   LINALG::Matrix<3,1> min_gap_spacepoint_;
+  //@}
 
+  /// pointer to adapter FSIStructureWrapperImmersed
   Teuchos::RCP<ADAPTER::FSIStructureWrapperImmersed> FSIStructureWrapperImmersed_;
 
+  /// pointer to immersed search tree
   Teuchos::RCP<GEO::SearchTree> immersed_SearchTree_;
 
+  /*!
+    \brief initialize the map containing the porosity at integration points (gauss points)
+
+    \note only needed during confinement simulation
+
+   */
+  void InitializePorosityAtGPMap();
+
+  /*!
+    \brief update the map containing the porosity at integration points (gauss points)
+
+    \note only needed during confinement simulation
+
+   */
+  void UpdatePorosityAtGPOldTimestep(){ porosity_at_gp_old_timestep_ = porosity_at_gp_; return;};
+
+  //! @name Set and get routines for all members
+  //@{
   void SetIsInitialized(bool trueorfalse){isinitialized_=trueorfalse; return;};
 
   bool IsInitialized(){return isinitialized_;};
@@ -162,10 +213,6 @@ public:
 
    std::map<int,std::vector<double> >* GetPointerToPorosityAtGPOldTimestep(){return &porosity_at_gp_old_timestep_;};
 
-   void UpdatePorosityAtGPOldTimestep(){ porosity_at_gp_old_timestep_ = porosity_at_gp_; return;};
-
-   void InitializePorosityAtGPMap();
-
    void SetPointerToECMPenaltyTraction(const Teuchos::RCP<Epetra_Vector> vector){points_to_ecm_penalty_traction_=vector; return;};
 
    Teuchos::RCP<Epetra_Vector> GetPointerToECMPenaltyTraction(){return points_to_ecm_penalty_traction_;};
@@ -224,9 +271,21 @@ public:
 
    bool IsPureProtrusionFormationSimulation(){return isPureProtrusionFormationSimulation_;};
 
+   void SetPointerToPhins(const Teuchos::RCP<Epetra_MultiVector> vector){points_to_phin_=vector; return;};
+
+   Teuchos::RCP<Epetra_MultiVector> GetPointerToPhins(){return points_to_phin_;};
+
    void SetPointerToPhinps(const Teuchos::RCP<Epetra_MultiVector> vector){points_to_phinp_=vector; return;};
 
    Teuchos::RCP<Epetra_MultiVector> GetPointerToPhinps(){return points_to_phinp_;};
+
+   void SetPointerToPhidtns(const Teuchos::RCP<Epetra_MultiVector> vector){points_to_phidtn_=vector; return;};
+
+   Teuchos::RCP<Epetra_MultiVector> GetPointerToPhidtns(){return points_to_phidtn_;};
+
+   void SetPointerToPhidtnps(const Teuchos::RCP<Epetra_MultiVector> vector){points_to_phidtnp_=vector; return;};
+
+   Teuchos::RCP<Epetra_MultiVector> GetPointerToPhidtnps(){return points_to_phidtnp_;};
 
    void SetPointerToRates(const Teuchos::RCP<Epetra_MultiVector> vector){points_to_Rates_=vector; return;};
 
@@ -235,16 +294,14 @@ public:
    void SetPointerToRatesActin(const Teuchos::RCP<Epetra_MultiVector> vector){points_to_Rates_Actin_=vector; return;};
 
    Teuchos::RCP<Epetra_MultiVector> GetPointerToRatesActin(){return points_to_Rates_Actin_;};
+   //@}
 
-private:
+protected:
 
-  // none
-
-private:
-
-  /// protected Constructor since we are a Singleton.
+  /// private Constructor since we are a Singleton.
   ImmersedFieldExchangeManager();
 
+  /// declaration of the static instance
   static DRT::ImmersedFieldExchangeManager* instance_;
 
 

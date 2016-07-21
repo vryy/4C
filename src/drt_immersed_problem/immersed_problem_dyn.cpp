@@ -3,13 +3,16 @@
 
 \brief global algorithm control class for all immersed and cell migration algorithms
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
+\level 2
+
 *----------------------------------------------------------------------*/
+#include <Teuchos_TimeMonitor.hpp>
+
 #include "immersed_problem_dyn.H"
 #include "immersed_base.H"
 #include "immersed_node.H"
@@ -40,9 +43,6 @@ Maintainers: Andreas Rauch
 #include "../drt_poroelast/poroelast_monolithic.H"
 #include "../drt_poroelast/poro_scatra_part_2wc.H"
 #include "../linalg/linalg_utils.H"
-
-#include <Teuchos_TimeMonitor.hpp>
-
 
 void immersed_problem_drt()
 {
@@ -225,6 +225,7 @@ void immersed_problem_drt()
 /*----------------------------------------------------------------------*/
 void CellMigrationControlAlgorithm()
 {
+
   // get pointer to global problem
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -239,6 +240,8 @@ void CellMigrationControlAlgorithm()
 
   // get parameterlist for cell migration
   const Teuchos::ParameterList& cellmigrationparams = problem->CellMigrationParams();
+
+  // extract the simulation type
   int simtype = DRT::INPUT::IntegralValue<int>(cellmigrationparams,"SIMTYPE");
 
   //use PoroelastImmersedCloneStrategy to build FluidPoroImmersed elements
@@ -259,6 +262,7 @@ void CellMigrationControlAlgorithm()
     }
   }
 
+  // assign degrees of freedom, initialize elements and do boundary conditions on cell
   problem->GetDis("cell")->FillComplete(true,true,true);
 
   // pointer to field cell structure
@@ -267,15 +271,17 @@ void CellMigrationControlAlgorithm()
   // pointer to cell subproblem (structure-scatra interaction)
   Teuchos::RCP<SSI::SSI_Part2WC_PROTRUSIONFORMATION> cellscatra_subproblem = Teuchos::null;
 
+  // check if cell is supposed to have intracellular biochchemical reaction capabilities
   bool ssi_cell = DRT::INPUT::IntegralValue<int>(problem->CellMigrationParams(),"SSI_CELL");
   if(ssi_cell and simtype==INPAR::CELL::sim_type_pureProtrusionFormation)
   {
+    // get coupling algorithm from ---SSI CONTROL section
     const INPAR::SSI::SolutionSchemeOverFields coupling
     = DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(problem->SSIControlParams(),"COUPALGO");
 
     switch(coupling)
     {
-    case INPAR::SSI::ssi_IterStagg:
+    case INPAR::SSI::ssi_IterStagg: // create SSI_Part2WC_PROTRUSIONFORMATION subproblem
       cellscatra_subproblem = Teuchos::rcp(new SSI::SSI_Part2WC_PROTRUSIONFORMATION(comm, problem->CellMigrationParams(), problem->CellMigrationParams().sublist("SCALAR TRANSPORT"), problem->CellMigrationParams().sublist("STRUCTURAL DYNAMIC"), "cell", "cellscatra"));
       break;
     default:
@@ -283,6 +289,7 @@ void CellMigrationControlAlgorithm()
       break;
     }
 
+    // set pointer to structure inside SSI subproblem
     cellstructure = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(cellscatra_subproblem->StructureField());
 
     if(cellstructure==Teuchos::null)
@@ -291,7 +298,7 @@ void CellMigrationControlAlgorithm()
     if(comm.MyPID()==0)
       std::cout<<"\nCreated Field Cell Structure with intracellular signaling capabilitiy...\n \n"<<std::endl;
   }
-  else if(not ssi_cell)
+  else if(not ssi_cell) // cell has no intracellular biochemistry -> just create usual fsi immersed structure
   {
     cellstructure = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapperImmersed>(Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(problem->CellMigrationParams(),
                                                                                                                                      (problem->CellMigrationParams()).sublist("STRUCTURAL DYNAMIC"),
@@ -521,6 +528,7 @@ void CellMigrationControlAlgorithm()
       CreateGhosting(problem->GetDis("cellscatra"));
     }
 
+    // handle restart
     const int restart = DRT::Problem::Instance()->Restart();
     if (restart)
     {
@@ -528,6 +536,7 @@ void CellMigrationControlAlgorithm()
       algo->ReadRestart(restart);
     }
 
+    // run the problem
     algo->Timeloop(algo);
 
     if(immersedmethodparams.get<std::string>("TIMESTATS")=="endofsim")
@@ -647,6 +656,7 @@ void CreateGhosting(const Teuchos::RCP<DRT::Discretization> distobeghosted)
   distobeghosted->ExportColumnNodes(*newnodecolmap);
   distobeghosted->ExportColumnElements(*newelecolmap);
 
+  // finalize the changes made to the discretisation
   distobeghosted->FillComplete();
 
 #ifdef DEBUG

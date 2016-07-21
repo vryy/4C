@@ -3,12 +3,13 @@
 
 \brief partitioned immersed fsi algorithm for neumann-(dirichlet-neumann) like coupling
 
-<pre>
-Maintainers: Andreas Rauch
+\level 2
+
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
 *----------------------------------------------------------------------*/
 #include "immersed_partitioned_fsi_dirichletneumann.H"
 #include "immersed_partitioned_fsi.H"

@@ -1,14 +1,15 @@
   /*!----------------------------------------------------------------------
 \file immersed_partitioned_protrusion_formation.H
 
-\brief partitioned immersed ECM -Cell interaction algorithm
+\brief partitioned immersed protrusion formation algorithm
 
-<pre>
-Maintainers: Andreas Rauch
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
+
+\level 3
+
 *----------------------------------------------------------------------*/
 #ifndef IMMERSED_PARTITIONED_PROTRUSIONFORMATION_H
 #define IMMERSED_PARTITIONED_PROTRUSIONFORMATION_H
@@ -33,13 +34,11 @@ namespace ADAPTER
 
 namespace SSI
 {
-  class SSI_Part2WC_PROTRUSIONFORMATION;
+class SSI_Part2WC_PROTRUSIONFORMATION;
 }
 
 /*----------------------------------------------------------------------*/
-
 namespace IMMERSED {
-
 class ImmersedPartitionedProtrusionFormation : public ImmersedPartitioned
 {
 
@@ -87,9 +86,9 @@ protected:
 
 private:
 
-  //! @name Manager for data exchange between fields
+  //! @name Data Management
   //@{
-  DRT::ImmersedFieldExchangeManager* exchange_manager_ ;
+  DRT::ImmersedFieldExchangeManager* exchange_manager_ ; //!< manager for data exchange between fields
   //@}
 
   //! @name Search Trees
@@ -114,11 +113,13 @@ private:
   Teuchos::RCP<POROELAST::PoroScatraBase> poroscatra_subproblem_;
 
   /// pointer to cellscatra subproblem (structure-scatra interaction)
-  Teuchos::RCP<SSI::SSI_Part2WC_PROTRUSIONFORMATION> cellscatra_subproblem_;
+  Teuchos::RCP<SSI::SSI_Part2WC_PROTRUSIONFORMATION > cellscatra_subproblem_;
 
-  /// basic information for parallelism
-  int myrank_;
-  int numproc_;
+  //! @name basic information for parallelism
+  //@{
+  int myrank_;  //!< processor id
+  int numproc_; //!< total number of processors
+  //@}
 
   /// pointer to global problem
   DRT::Problem* globalproblem_;
@@ -128,10 +129,10 @@ private:
 
   //! @name Pointers to Discretizations
   //@{
-  Teuchos::RCP<DRT::Discretization> backgroundstructuredis_;
-  Teuchos::RCP<DRT::Discretization> backgroundfluiddis_;
-  Teuchos::RCP<DRT::Discretization> immerseddis_;
-  Teuchos::RCP<DRT::Discretization> scatradis_;
+  Teuchos::RCP<DRT::Discretization> backgroundstructuredis_; //!< background ecm discretisation
+  Teuchos::RCP<DRT::Discretization> backgroundfluiddis_;     //!< background interstitial flow discretisation
+  Teuchos::RCP<DRT::Discretization> immerseddis_;            //!< immersed cell discretisation
+  Teuchos::RCP<DRT::Discretization> scatradis_;              //!< cell scatra discretisation
   //@}
 
 }; // class ImmersedPartitionedProtrusionFormation

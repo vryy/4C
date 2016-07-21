@@ -1,13 +1,11 @@
 /*!----------------------------------------------------------------------
 \file so_surface.H
 
-<pre>
-Maintainer: Michael Gee
-            gee@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15239
-</pre>
+\brief class for evaluation of equations on the structural surface
 
+\maintainer Michael Gee
+
+\level 1
 *----------------------------------------------------------------------*/
 #ifndef SO_SURFACE_H
 #define SO_SURFACE_H
@@ -252,7 +250,8 @@ public: // changed to public rauch 05/2014
     calc_fluid_traction,
     calc_ecm_traction,
     calc_cur_normal_at_point,
-    mark_immersed_elements
+    mark_immersed_elements,
+    calc_cell_growth
   };
 
 protected:

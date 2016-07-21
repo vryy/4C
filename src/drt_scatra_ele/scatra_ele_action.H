@@ -27,6 +27,7 @@ namespace SCATRA
   /*--------------------------------------------------------------------------*/
   enum Action {
     // domain action
+    calc_cell_growth,                            // calculate response of cell surface growth to growth biochemical stimulus
     calc_cell_mechanotransduction,               // calculate response of cell internal transport to mechanical stimulus
     calc_dissipation,                            // calculate dissipation introduced by stabilization and turbulence models
     calc_domain_and_bodyforce,                   // calc_domain_and_bodyforce,

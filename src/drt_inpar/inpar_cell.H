@@ -1,13 +1,18 @@
-/*!----------------------------------------------------------------------
+/*----------------------------------------------------------------------*/
+/*!
 \file inpar_cell.H
 
-<pre>
-Maintainers: Andreas Rauch
-             rauch@lnm.mw.tum.de
-             http://www.lnm.mw.tum.de
-             089 - 289 -15240
-</pre>
-*----------------------------------------------------------------------*/
+\brief input parameters and conditions for cell migration
+
+\maintainer Andreas Rauch
+            rauch@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289 -15240
+
+\level 2
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef INPAR_CELL_H
 #define INPAR_CELL_H
 
@@ -70,6 +75,13 @@ typedef enum _SEGREGATION_LAW_TYPE
   segregation_law_constant=1,
   segregation_law_forcedependent=2
 } SEGREGATION_LAW_TYPE;
+
+typedef enum _GROWTH_COUP_TYPE
+{
+  coup_growth_undefined=0,
+  coup_growth_growth=1,
+  coup_growth_ssi=2
+} GROWTH_COUP_TYPE;
 
 /// set the cell parameters
 void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);

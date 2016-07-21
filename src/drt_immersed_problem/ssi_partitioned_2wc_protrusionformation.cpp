@@ -1,29 +1,27 @@
 /*!----------------------------------------------------------------------
 \file ssi_partitioned_2wc_protrusionformation.cpp
 
-\brief specialization of ssi2wc, which includes "structale"-surface growth
+\brief specialization of ssi2wc, including "structale"-surface growth
 
-<pre>
-Maintainers: Andreas Rauch
+\level 3
+
+\maintainer  Andreas Rauch
              rauch@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
              089 - 289 -15240
-</pre>
-*----------------------------------------------------------------------*/
-#include "ssi_partitioned_2wc_protrusionformation.H"
 
-#include "../drt_lib/drt_globalproblem.H"
+ *----------------------------------------------------------------------*/
+#include "ssi_partitioned_2wc_protrusionformation.H"
+#include "../drt_immersed_problem/immersed_field_exchange_manager.H"
+#include "../drt_inpar/inpar_cell.H"
 
 #include "../drt_adapter/ad_ale_fluid.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
-#include "../drt_structure/stru_aux.H"
-#include "../drt_wear/wear_utils.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_ale/ale_utils_clonestrategy.H"
-
-#include "../drt_w1/wall1.H"
+#include "../drt_lib/drt_nodematchingoctree.H"
 
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so_hex20.H"
@@ -32,8 +30,18 @@ Maintainers: Andreas Rauch
 #include "../drt_so3/so_tet10.H"
 #include "../drt_so3/so3_scatra.H"
 
+#include "../drt_scatra_ele/scatra_ele_action.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
+
+#include "../drt_io/io_control.H"
+#include "../drt_wear/wear_utils.H"
+#include "../linalg/linalg_solver.H"
+#include "../drt_structure/stru_aux.H"
+#include "../drt_ale/ale_utils_clonestrategy.H"
+
+
 /*----------------------------------------------------------------------*
- | constructor                                               rauch 01/16 |
+ | constructor                                              rauch 01/16 |
  *----------------------------------------------------------------------*/
 SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams,
@@ -41,15 +49,19 @@ SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(const Epet
     const Teuchos::ParameterList& structparams,
     const std::string struct_disname,
     const std::string scatra_disname)
-  : SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname)
+: SSI_Part2WC(comm, globaltimeparams, scatraparams, structparams,struct_disname,scatra_disname)
 {
-
   // set communicator
   myrank_ = comm.MyPID();
+
+  // check if scatra in cell is set up with ale description
+  if(not ScaTraField()->ScaTraField()->IsALE())
+    dserror("We need an ALE description for the cell-scatra field!");
 
   // additional setup for ale
   SetupDiscretizations(comm,"cell","cellscatra");
 
+  // initialize pointer to structure
   specialized_structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::FSIStructureWrapper>(StructureField());
   if(specialized_structure_ == Teuchos::null)
     dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
@@ -66,33 +78,89 @@ SSI::SSI_Part2WC_PROTRUSIONFORMATION::SSI_Part2WC_PROTRUSIONFORMATION(const Epet
   const int ndim = DRT::Problem::Instance()->NDim();
 
   // create ale-struct coupling
-  const Epetra_Map* structdofmap =
+  const Epetra_Map* celldofmap =
       StructureField()->Discretization()->NodeRowMap();
   const Epetra_Map* aledofmap = AleField()->Discretization()->NodeRowMap();
 
   // if there are two identical nodes (i.e. for initial contact) the nodes matching creates an error !!!
   coupalestru_ = Teuchos::rcp(new ADAPTER::Coupling());
   coupalestru_->SetupCoupling(*AleField()->Discretization(),
-      *StructureField()->Discretization(), *aledofmap, *structdofmap, ndim, true, 1e-06);
+      *StructureField()->Discretization(), *aledofmap, *celldofmap, ndim, true, 1e-06);
 
-  //create interface coupling
-  coupstrualei_ = Teuchos::rcp(new ADAPTER::Coupling());
-  coupstrualei_->SetupConditionCoupling(
-      *SpecStructureField()->Discretization(),
-      SpecStructureField()->Interface()->FSICondMap(),
-      *AleField()->Discretization(),
-      AleField()->Interface()->Map(AleField()->Interface()->cond_fsi),
-      "FSICoupling", ndim);
+  // set-up aux FSI interface
+  Teuchos::RCP<STR::AUX::MapExtractor> interface = Teuchos::rcp(new STR::AUX::MapExtractor);
+  interface->Setup(*(scatra_->ScaTraField()->Discretization()), *(scatra_->ScaTraField()->Discretization()->DofRowMap()) );
 
-  // initialize growthvector
-  growth_=Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->Map(AleField()->Interface()->cond_fsi)), true),
+  // growth state
+  x_=Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->Map(AleField()->Interface()->cond_fsi)), true);
 
-  // initialize growthincrement vector
-  growthincrement_=Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->Map(AleField()->Interface()->cond_fsi)), true),
+  // growth from last time step
+  growth_n_=Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->Map(AleField()->Interface()->cond_fsi)), true);
+
+  // growth at new time step
+  growth_np_=Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->Map(AleField()->Interface()->cond_fsi)), true);
+
+  // growth step increment growth_{n+1} = growth_{n} + growth_{step}
+  growth_step_=Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->Map(AleField()->Interface()->cond_fsi)), true);
+
+  // initialize growth increment vector
+  growthinc_=Teuchos::rcp(new Epetra_Vector(*AleField()->Interface()->Map(AleField()->Interface()->cond_fsi)), true),
 
   // initialize delta_ale_ vector
   delta_ale_=Teuchos::rcp(new Epetra_Vector(AleField()->Dispnp()->Map(), true));
 
+  // source/sink vector to be added to scatra rhs
+  sources_ = LINALG::CreateVector(*(scatra_->ScaTraField()->Discretization()->DofRowMap()),true);
+
+  // numdof actin
+  numdof_actin_ = DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE").get<int>("NUMDOF_ACTIN");
+  if(myrank_==0)
+    std::cout<<"\n  Number of Actin Dof in Scalar Transport System: "<<numdof_actin_<<"\n"<<std::endl;
+
+  // get pointer to the ImmersedFieldExchangeManager
+  exchange_manager_ = DRT::ImmersedFieldExchangeManager::Instance();
+
+  // set pointer to the concentrations at n+1
+  exchange_manager_->SetPointerToPhinps(scatra_->ScaTraField()->Phinp());
+
+  // initialize pointer to phin at n
+  Teuchos::RCP<Epetra_MultiVector> phin = scatra_->ScaTraField()->Phin();
+  exchange_manager_->SetPointerToPhins(phin);
+
+  // set pointers to multivectors for the rates
+  exchange_manager_->SetPointerToRates(sources_); // rates of polymerized actin monomers, barbed ends, and branches
+
+  // mapping from struct bdry ele gids to scatra bdry ele gids
+  structscatraelemap_=Teuchos::rcp(new std::map<int,int> );
+
+  // relaxation
+  omega_ = DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE").get<double>("RELAX_GROWTH");
+  if(myrank_==0)
+    std::cout<<"\n  Use fixed relaxation parameter for protrusion formation omega="<<omega_<<"\n"<<std::endl;
+
+  // NODE MATCHING
+  // do the matching
+  MatchNodes(*(StructureField()->Discretization()),
+             *(scatra_->ScaTraField()->Discretization()),
+             structnodemap_,
+             scatranodemap_,
+             "CellSurfVolCoupling");
+
+  // build an element map associating matched elements of struct and scatra discretisations
+  BuildMasterGeometryToSlaveDisEleMap(*(StructureField()->Discretization()),
+                                      *(scatra_->ScaTraField()->Discretization()),
+                                      structnodemap_,
+                                      scatranodemap_,
+                                      structscatraelemap_,
+                                      "CellSurfVolCoupling");
+  // build map
+  BuildConditionDofRowMap((StructureField()->Discretization())->GetCondition("FSICoupling"),StructureField()->Discretization(),conditiondofrowmap_);
+  // print map
+  std::cout<<"MAPPING CELL 'CellSurfVolCoupling' GEOMETRY TO SCATRA 'CellSurfVolCoupling' ELEMENTS ... "<<std::endl;
+  std::cout<<structscatraelemap_->size()<<" MAPPED ELEMENTS.\n"<<std::endl;
+  std::cout<<"STRUCT ELE IDs --> SCATRA ELE IDs"<<std::endl;
+  for(std::map<int,int>::iterator it=structscatraelemap_->begin(); it!=structscatraelemap_->end();++it)
+    std::cout<<"    "<<it->first<<"               "<<it->second<<std::endl;
 }
 
 
@@ -104,36 +172,56 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::DoStructStep()
   if (Comm().MyPID() == 0)
   {
     std::cout
-        << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
+    << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
 
-  // Newton-Raphson iteration
-  //1. solution
-  EvaluateGrowth();
+  // -------------------------------------------------------------------
+  //                  do structure step
+  // -------------------------------------------------------------------
+  StructureField()->Solve();
 
-  // do ale step
-  DoAleStep(growth_);
+  // -------------------------------------------------------------------
+  //                  do growth (ale) step
+  // -------------------------------------------------------------------
+  DoAleStep(x_);
 
   // application of mesh displacements to structural field,
   // update material displacements
   UpdateMatConf();
 
-  // update dispnp
+  // update dispnp and velnp
   UpdateSpatConf();
+
+  // set mesh displacement and velocity fields
+  SetStructSolution(structure_->Dispnp(),structure_->Velnp());
+
+  // -------------------------------------------------------------------
+  //                  evaluate new sources
+  // -------------------------------------------------------------------
+  return EvaluateSources();
 }
 
 
 /*----------------------------------------------------------------------*
- | Solve ale field                                        rauch 01/16 |
+ | Solve ale field                                          rauch 01/16 |
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_PROTRUSIONFORMATION::DoAleStep(Teuchos::RCP<Epetra_Vector> growthincrement)
 {
+  // initialize norm
+  double normofgrowth=-1234.0;
+  // calc norm
+  growthincrement->Norm2(&normofgrowth);
+
   if(myrank_==0)
-    std::cout<<"==================  DoAleStep  ================== "<<std::endl;
+    std::cout<<"=======================================\n"
+               "DoAleStep\n"
+               "Norm of applied growth "<<std::setprecision(10)<<normofgrowth<<"\n"<<
+               "======================================="<<std::endl;
 
-  Teuchos::RCP<Epetra_Vector> dispnpstru = StructureToAle(
-      StructureField()->Dispnp());
+  // get lagrangian structure displacements
+  Teuchos::RCP<Epetra_Vector> dispnpstru = StructureToAle(StructureField()->Dispnp());
 
+  // update ale field with lagrangian structure displacements
   AleField()->WriteAccessDispnp()->Update(1.0, *dispnpstru, 0.0);
 
   // application of interface displacements as dirichlet conditions
@@ -144,6 +232,46 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::DoAleStep(Teuchos::RCP<Epetra_Vector>
 
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ | Solve Scatra field                                       rauch 01/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_PROTRUSIONFORMATION::DoScatraStep()
+{
+  if (Comm().MyPID() == 0)
+  {
+    std::cout
+        << "\n***********************\n  TRANSPORT SOLVER \n***********************\n";
+  }
+
+  // rate of change of actin monomer concentration, Arp2/3 (Branch) conc., and filament barbed end conc.
+  scatra_->ScaTraField()->AddContributionToRHS(sources_);
+
+  // -------------------------------------------------------------------
+  //                  solve nonlinear / linear equation
+  // -------------------------------------------------------------------
+  scatra_->ScaTraField()->Solve();
+
+  // remove sources from scatra rhs
+  // this needs to be done because otherwise, we would always add neumann loads in every iteration
+  sources_->Scale(-1.0);
+  scatra_->ScaTraField()->AddContributionToRHS(sources_);
+  sources_->Scale(-1.0);
+
+  // set scalar transport values expressed in structural dofs
+  SetScatraSolution(scatra_->ScaTraField()->Phinp());
+
+  // -------------------------------------------------------------------
+  //                  evaluate new growth
+  // -------------------------------------------------------------------
+  // set displacement state
+  StructureField()->Discretization()->SetState("displacement", StructureField()->Dispnp());
+
+  // evaluate
+  return EvaluateGrowth();
+}
+
 
 /*----------------------------------------------------------------------*
  |                                                          rauch 01/16 |
@@ -164,12 +292,11 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateMatConf()
   Teuchos::RCP<Epetra_Vector> dismat = Teuchos::rcp(
       new Epetra_Vector(dispnp->Map()), true);
 
-   // set state
-  (StructureField()->Discretization())->SetState(0, "displacement", dispnp);
+  // set state
+  StructureField()->Discretization()->SetState(0, "displacement", dispnp);
 
   // set state
-  (StructureField()->Discretization())->SetState(0, "material_displacement",
-      StructureField()->DispMat());
+  StructureField()->Discretization()->SetState(0, "material_displacement",StructureField()->DispMat());
 
   // calc difference between spatial structure deformation and ale deformation
   // disalenp = d_ale - d_struct
@@ -189,7 +316,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateMatConf()
     DRT::Element** ElementPtr = node->Elements();
     int numelement = node->NumElement();
 
-    const int numdof = StructureField()->Discretization()->NumDof(0,node);
+    const int numdof = StructureField()->Discretization()->NumDof(node);
 
     // create Xmat for 3D problems
     double XMat[numdof];
@@ -197,7 +324,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateMatConf()
 
     for(int dof = 0; dof < numdof; ++dof)
     {
-      int dofgid = StructureField()->Discretization()->Dof(0,node,dof);
+      int dofgid = StructureField()->Discretization()->Dof(node,dof);
       int doflid = (dispnp->Map()).LID(dofgid);
       XMesh[dof] = node->X()[dof] + (*dispnp)[doflid] + (*disalenp)[doflid];
     }
@@ -208,7 +335,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateMatConf()
     // store in dispmat
     for(int dof = 0; dof < numdof; ++dof)
     {
-      int dofgid = StructureField()->Discretization()->Dof(0,node,dof);
+      int dofgid = StructureField()->Discretization()->Dof(node,dof);
       int doflid = (dispnp->Map()).LID(dofgid);
       (*dismat)[doflid] = XMat[dof] - node->X()[dof];
     }
@@ -240,6 +367,20 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateSpatConf()
   // update per absolute vector
   dispnp->Update(1.0, *disalenp, 0.0);
 
+  // also update velocity to be consistent with new dispnp
+  // time step size
+  const double dt = Dt();
+  // OST Parameter
+  const double theta = DRT::Problem::Instance()->CellMigrationParams().sublist("STRUCTURAL DYNAMIC").sublist("ONESTEPTHETA").get<double>("THETA");
+  if(theta!=1.0)
+    dserror("algorithm has not been tested with theta != 1.0");
+
+  // new end-point velocities
+  StructureField()->WriteAccessVelnp()->Update(1.0/(theta*dt), *dispnp,
+                                              -1.0/(theta*dt), *((StructureField()->Dispn())),
+                                               0.0);
+  StructureField()->WriteAccessVelnp()->Update(-(1.0-theta)/theta, *((StructureField()->Veln())),
+                                               1.0);
   return;
 }
 
@@ -273,10 +414,8 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::AdvectionMap(
   }
 
   // get state
-  Teuchos::RCP<const Epetra_Vector> dispsource =
-      (StructureField()->Discretization())->GetState(sourceconf);
-  Teuchos::RCP<const Epetra_Vector> disptarget =
-      (StructureField()->Discretization())->GetState(targetconf);
+  Teuchos::RCP<const Epetra_Vector> dispsource = StructureField()->Discretization()->GetState(sourceconf);
+  Teuchos::RCP<const Epetra_Vector> disptarget = StructureField()->Discretization()->GetState(targetconf);
 
   // found element the spatial coordinate lies in
   bool found = false;
@@ -296,7 +435,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::AdvectionMap(
 
     // get element location vector, dirichlet flags and ownerships
     DRT::Element::LocationArray la(1);
-    actele->LocationVector(*(StructureField()->Discretization()), la, false);
+    actele->LocationVector(*StructureField()->Discretization(), la, false);
 
     if (ndim == 2)
     {
@@ -393,7 +532,7 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::AdvectionMap(
 
   // get element location vector, dirichlet flags and ownerships
   DRT::Element::LocationArray la(1);
-  actele->LocationVector(*(StructureField()->Discretization()), la, false);
+  actele->LocationVector(*StructureField()->Discretization(), la, false);
 
   if (ndim == 2)
   {
@@ -437,7 +576,6 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::AdvectionMap(
       dserror("ERROR: element type not supported!");
   }
 
-
   // bye
   return;
 }
@@ -460,9 +598,10 @@ Teuchos::RCP<Epetra_Vector> SSI::SSI_Part2WC_PROTRUSIONFORMATION::StructureToAle
     Teuchos::RCP<const Epetra_Vector> vec)
 {
   if (AleStruCoupling()==Teuchos::null)
-    dserror("'!!!!!!!!!!!!!");
+    dserror("RCP to Coupling object points to Teuchos::null");
   return AleStruCoupling()->SlaveToMaster(vec);
 }
+
 
 /*----------------------------------------------------------------------*
  | transform from ale to structure map                      rauch 01/16 |
@@ -522,45 +661,135 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::SetupDiscretizations(const Epetra_Com
 
 
 /*----------------------------------------------------------------------*
+ | Calculate source values                                  rauch 01/16 |
+ *----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateSources()
+{
+  // get parameter list
+  Teuchos::ParameterList params;
+
+  // get time step
+  int curr_step = scatra_->ScaTraField()->Step();
+
+  // add time step
+  params.set<int>("current step", curr_step);
+  // add scatra discretization
+  params.set<std::string>("scatradisname", "cellscatra");
+  // add number of disp dofset
+  params.set<int>("ndsdisp",1);
+  // add time step size
+  params.set<double>("dt",Dt());
+
+  // add action for growth evaluation
+  params.set<int>("action",SCATRA::calc_cell_growth);
+  // evaluate condition
+  scatra_->ScaTraField()->Discretization()->EvaluateCondition(params,
+                                                              Teuchos::null,
+                                                              Teuchos::null,
+                                                              sources_,
+                                                              Teuchos::null,
+                                                              Teuchos::null,
+                                                              "CellSurfVolCoupling",
+                                                              -1);
+
+  // initialize norm
+  double sourcenorm=-1234.0;
+  // calc norm
+  sources_->Norm2(&sourcenorm);
+  // print information
+  std::cout<<"\n   Norm of growth related source vector "<<std::setprecision(10)<<sourcenorm<<std::endl;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  | Calculate growth values                                  rauch 01/16 |
  *----------------------------------------------------------------------*/
 void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateGrowth()
 {
-  // Experimental: Prescribed growth value.
-  // Soon to come: Growth is determined in this function by evaluation
-  //               of chemical transport and reaction in cell cytosol
-  //               and at cell membrane. Via a micro-macro approach the
-  //               biochemical concentrations c_i will be mapped to a
-  //               surface growth vector.
+  //////////////////////////////////////////////////////////////////////////////////////
+  // Evaluate biochemical transport and reaction at growth surface.
+  // Evaluate Condition (FSICoupling).
+  // Evaluate polymerisation (change of monomer conc. and change of pointed end conc.
+  // at conditioned surface) and evaluate growth due to polymerisation.
+  //////////////////////////////////////////////////////////////////////////////////////
+  Teuchos::ParameterList params;
 
-  // vector management
-  double mylength= growth_->MyLength();
+  // add master (structure) nodemap to parameterlist
+  params.set<Teuchos::RCP<Epetra_Map> >("masternodemap",structnodemap_);
+  // add slave (scatra) nodemap to parameterlist
+  params.set<Teuchos::RCP<Epetra_Map> >("slavenodemap",scatranodemap_);
+  // add action for growth evaluation
+  params.set<std::string>("action","calc_cell_growth");
+  // add scatra discretization
+  params.set<std::string>("scatradisname", "cellscatra");
+  // add condition string
+  params.set<std::string>("condstring", "FSICoupling");
+  // add rcp to struct<->scatra brdy ele map to parameterlist
+  params.set<Teuchos::RCP<std::map<int,int> > >("structscatraelemap",structscatraelemap_);
+  // add timestep to parameterlit
+  params.set<double>("dt",Dt());
 
-  // current step
-  int step = StructureField()->Step();
+  // least squares system-matrix
+  Teuchos::RCP<LINALG::SparseOperator> leastsquares_matrix =
+      Teuchos::rcp(new LINALG::SparseMatrix(*conditiondofrowmap_,18,false,true));
+  // least squares right-hand side
+  Teuchos::RCP<Epetra_Vector> leastsquares_rhs = LINALG::CreateVector(*conditiondofrowmap_,true);
+  // least squares error optimal nodal growth vector
+  Teuchos::RCP<Epetra_Vector> leastsquares_growth = LINALG::CreateVector(*conditiondofrowmap_,true);
 
-  // value of growth
-  double growthinc =   0.05;
-  double growthvalue = growthinc * step;
+  // evaluate least squares growth
+  StructureField()->Discretization()->EvaluateCondition(params,
+      leastsquares_matrix,
+      Teuchos::null,
+      leastsquares_rhs,
+      Teuchos::null,
+      Teuchos::null,
+      "CellSurfVolCoupling",
+      -1);
 
-  if (Itnum()==0)
+  /////////////////////////////////////////////////////
+  // Calc nodal growth from gauss point growth with
+  // least squares method, i.e.:
+  // Minimize sum|N * d - d_gp|²
+  // And solve the resulting system of equations for
+  // the leastsquares_growth x :
+  // b = A * x --> x = A^1 * b
+  // with
+  // b = leastsquares_rhs from Evaluate Condition
+  // A = leastsquares_matrix from Evaluate Condition
+  ///////////////////////////////////////////////////
+  // SOLVE LEAST SQUARES SYSTEM
+  // solver setup
+  Teuchos::ParameterList param_solve = DRT::Problem::Instance()->UMFPACKSolverParams();
+  bool refactor = true;
+  bool reset = true;
+  Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(new LINALG::Solver(param_solve, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+  StructureField()->Discretization()->ComputeNullSpaceIfNecessary(solver->Params());
+
+  // complete matrix
+  leastsquares_matrix->Complete();
+
+  // solve for least squares optimal nodal values
+  solver->Solve(leastsquares_matrix->EpetraOperator(), leastsquares_growth, leastsquares_rhs, refactor, reset);
+
+  // find growth values on growth surface
+  int numdof = conditiondofrowmap_->NumGlobalElements();
+  int numdofgrowth = growth_step_->MyLength();
+  if (numdof != numdofgrowth)
+    dserror("size of growth surface not matching");
+
+  for (int i=0; i<numdofgrowth; i++)
   {
-    if(myrank_==0)
-      std::cout<<"\n  Growth in this time step = "<<growthvalue<<std::endl;
-
-    // apply growth to vector
-    for(int i=0; i<mylength;++i)
-    {
-      if( i%3==0 )                                                  //Growth in x
-        growth_->ReplaceMyValue(i,0,growthvalue);
-    }
-  }
-  else
-  {
-    if(myrank_==0)
-     std::cout<<"\n  Growth in this time step = "<<growthvalue<<std::endl;
+    // fill step increment (growth from t_n -> t_{n+1})
+    growth_step_->ReplaceMyValue(i, 0, leastsquares_growth->Values()[i]);
   }
 
+  // update new growth
+  int err = growth_np_->Update(1.0,*growth_n_,1.0,*growth_step_,0.0);
+  if(err!=0)
+    dserror("epetra update of  growth_np_ returned err=%d",err);
 
   return;
 }
@@ -571,32 +800,327 @@ void SSI::SSI_Part2WC_PROTRUSIONFORMATION::EvaluateGrowth()
  *----------------------------------------------------------------------*/
 bool SSI::SSI_Part2WC_PROTRUSIONFORMATION::ConvergenceCheck(int itnum)
 {
+  // initialize flags
   bool stopnonliniter = false;
   bool SSI_converged = false;
 
+  // norm of growth
+  double growthnorm_n = -1234.0;
   double growthincnorm = -1234.0;
+  double growthnorm = -1234.0;
 
+  // do the base class convergence check
   SSI_converged = SSI::SSI_Part2WC::ConvergenceCheck(itnum);
 
+  // set converged if base class check returned true
   if(SSI_converged)
-     stopnonliniter=true;
+    stopnonliniter=true;
 
-  growthincrement_->Norm2(&growthincnorm);
+  // get the new the growth increment
+//  growthinc_->Update(-1.0,*growth_n_,1.0);
+//  growthinc_->Update(-1.0,*growth_step_,1.0);
+  int err = growthinc_->Update(1.0,*growth_np_,-1.0,*x_,0.0);
+  if(err!=0)
+    dserror("epetra update returned err=%d",err);
 
+  // update state
+  err = x_->Update(omega_,*growthinc_,1.0);
+  if(err!=0)
+    dserror("epetra update returned err=%d",err);
+
+  // get L2-Norm of growth
+  growthinc_->Norm2(&growthincnorm);
+
+  // get L2-Norm of growth
+  growth_step_->Norm2(&growthnorm);
+
+  // get L2-Norm of growth at old time step
+  x_->Norm2(&growthnorm_n);
+
+  // proc 0 prints relative growth increment
   if(myrank_==0)
   {
-    printf("<><><><><><><><><><><><><><><><><><><><>\n");
-    printf("Growth increment =  %10.3E ", growthincnorm/growthincrement_->GlobalLength());
+    printf("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n");
+    printf("L2-Norm of state                  =   %10.6E \n", growthnorm_n);
+    printf("L2-Norm of growth from tn->tn+1   =   %10.6E \n", growthnorm);
+    printf("L2-Norm of growt increment i->i+1 =  %10.3E < %10.3E", growthincnorm/growthinc_->GlobalLength(), ittol_);
     printf("\n");
-    printf("<><><><><><><><><><><><><><><><><><><><>\n");
+    printf("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n");
   }
 
-  if(growthincnorm<ittol_)
+  // ignore base class check if growth is converged
+  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE"),"COUPVARIABLE") == INPAR::CELL::coup_growth_growth)
   {
-    if(myrank_==0)
-      std::cout<<"Growth is converged. Ignore convergence of SSI."<<std::endl;
-    stopnonliniter=true;
+    if((growthincnorm/growthinc_->GlobalLength())<=ittol_)
+    {
+      if(myrank_==0)
+        std::cout<<"Growth is converged. Ignore convergence of SSI."<<std::endl;
+
+      stopnonliniter=true;
+    }
+  }
+  else if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->CellMigrationParams().sublist("PROTRUSION MODULE"),"COUPVARIABLE") == INPAR::CELL::coup_growth_undefined)
+    dserror("set COUPVARIABLE in section ---CELL DYNAMIC/PROTRUSION MODULE to 'growth' or 'ssi'");
+
+  // tell if we converged
+  return stopnonliniter;
+}
+
+
+/*------------------------------------------------------------------------*
+ | matching nodes of master and slave field                   rauch 03/16 |
+ *------------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_PROTRUSIONFORMATION::MatchNodes(
+    DRT::Discretization& masterdis,
+    DRT::Discretization& slavedis,
+    Teuchos::RCP<Epetra_Map>& masternodemap_matched,
+    Teuchos::RCP<Epetra_Map>& slavenodemap_matched,
+    const std::string& condname)
+{
+  // get conditioned master nodes
+  const std::vector<int>* masternodes = masterdis.GetCondition(condname)->Nodes();
+
+  // get conditioned slave nodes
+  const std::vector<int>* slavenodes = slavedis.GetCondition(condname)->Nodes();
+
+  // sanity check
+  if(masternodes->size()!=slavenodes->size())
+    dserror("current algorithm relies on matching nodes of scatra surface discretization and cell boundary discretization!");
+
+  // node vector of matched nodes
+  std::vector<int> permslavenodes;
+
+  // match master and slave nodes using Peter's octtree
+  DRT::UTILS::NodeMatchingOctree tree(masterdis, *masternodes, 150, 1e-8);
+
+  // coupled nodes - find matching nodes between master and slave dis.
+  // coupled = nodes are at same location
+  std::map<int,std::pair<int,double> > coupling;
+  tree.FindMatch(slavedis, *slavenodes, coupling);
+
+  // extract permutation
+  std::vector<int> patchedmasternodes;
+  patchedmasternodes.reserve(coupling.size());
+  permslavenodes.reserve(slavenodes->size());
+
+  for (unsigned i=0; i<masternodes->size(); ++i)
+  {
+    // get master node gid
+    int gid = (*masternodes)[i];
+
+    // We allow to hand in master nodes that do not take part in the
+    // coupling. If this is undesired behaviour, the user has to make
+    // sure all nodes were used.
+    if (coupling.find(gid) != coupling.end())
+    {
+      std::pair<int,double>& coupled = coupling[gid];
+#if 0
+      if (coupled.second > 1e-7)
+        dserror("Coupled nodes (%d,%d) do not match. difference=%e", gid, coupled.first, coupled.second);
+#endif
+      patchedmasternodes.push_back(gid);       //< coupled masternodes
+      permslavenodes.push_back(coupled.first); //< coupled slavenodes
+    }
   }
 
-  return stopnonliniter;
+  // epetra maps in original distribution
+  // new masternode map (with coupled node IDs)
+  masternodemap_matched = Teuchos::rcp(new Epetra_Map(
+                     -1,
+                     masternodes->size(),
+                     &patchedmasternodes[0],
+                     0,
+                     masterdis.Comm()));
+
+  // new slavenode map (with coupled node IDs)
+  slavenodemap_matched = Teuchos::rcp(new Epetra_Map(
+                    -1, permslavenodes.size(),
+                    &permslavenodes[0],
+                    0,
+                    slavedis.Comm()));
+  // new slavenodes
+  std::vector<int> permslavenodes_new (slavenodemap_matched->MyGlobalElements(),
+      slavenodemap_matched->MyGlobalElements() + slavenodemap_matched->NumMyElements());
+
+} // MatchNodes
+
+
+/*------------------------------------------------------------------------*
+ | matching nodes of master and slave field                   rauch 03/16 |
+ *------------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_PROTRUSIONFORMATION::BuildMasterGeometryToSlaveDisEleMap(
+    const DRT::Discretization& masterdis,
+    const DRT::Discretization& slavedis,
+    const Teuchos::RCP<Epetra_Map>& masternodemap,
+    const Teuchos::RCP<Epetra_Map>& slavenodemap,
+    Teuchos::RCP<std::map<int,int> > maptofill,
+    const std::string& condname)
+{
+  if(maptofill==Teuchos::null)
+    dserror("RCP to map object needs to be provided to this method");
+
+  if(masternodemap->NumGlobalElements()==0)
+    dserror("masternodemap is empty");
+
+  if(slavenodemap->NumGlobalElements()==0)
+    dserror("slavenodemap is empty");
+
+  int structeleID=-1234; //< structure element ID to be matched -> key value
+  int scatraeleID=-1234; //< scatra element ID to be matched -> second value
+
+  // get geometry of condition 'condname' on 'masterdis'
+  std::map<int,Teuchos::RCP<DRT::Element> >& mastergeom = masterdis.GetCondition(condname)->Geometry();
+
+  // loop over master geometry elements
+  for (std::map<int,Teuchos::RCP<DRT::Element> >::iterator it=mastergeom.begin(); it!=mastergeom.end(); ++it)
+  {
+    // get current structure element ID
+    structeleID = it->second->Id();
+    // get number of nodes of current structure element
+    int numnode = it->second->NumNode();
+    if(numnode!=4)
+      dserror("in this context, we expect only geometry elements with 4 nodes");
+
+    // create vector
+    std::vector<int> adjacentslaveeleIds_gathered;
+    // prepare vector
+    if(adjacentslaveeleIds_gathered.size())
+      adjacentslaveeleIds_gathered.clear();
+
+    // loop over master geometry element nodes
+    for (int node=0; node<numnode; node++)
+    {
+      // find corresponding scatra node ID
+      // gid of current structure element node
+      int gid_master_node = (it->second->NodeIds())[node];
+      // lid of current master node in masternodemap
+      int lid_master_node = masternodemap->LID(gid_master_node);
+      // gid of corresponding scatra element node (slavenodemap == nodemap of conditioned nodes - corresponds to currscatra elements)
+      int gid_slave_node = slavenodemap->GID(lid_master_node);
+      // get scatra node corresponding to structure node (with gidscatra)
+      DRT::Node* node_slave = slavedis.gNode(gid_slave_node);
+
+      ///////////////////////////////////////////////////
+      // FIND SLAVE ELEMENT MATCHING MASTER ELEMENT
+      ///////////////////////////////////////////////////
+      // get pointer to adjacent elements of slave node
+      DRT::Element** ElementPtr = node_slave->Elements();
+      if (ElementPtr == NULL)
+        dserror("could not get element pointer");
+
+      // loop over all adjacent elements
+      for (int jele=0; jele<node_slave->NumElement(); jele++)
+      {
+        // write IDs of adjacent elements in vector
+        int adjacentslaveeleId = ElementPtr[jele]->Id();
+        // we can only match elements with equal number of nodes
+        if(ElementPtr[jele]->NumNode()==numnode)
+        {
+          adjacentslaveeleIds_gathered.push_back(adjacentslaveeleId);
+        }
+      }// end loop over all adjacent elements
+
+    }//end loop over master geometry element nodes
+
+    // FIND MATCHING ELEMENT ID OF ELEMENT ID VECTOR
+    // count variable
+    int count = 0;
+    // if a slave element is an adjacent element to every node of the master element,
+    // then it is the matching slave element (count should then be numnode-1)
+    const int check = numnode-1;
+
+    // loop over adjacent element ID vector
+    for (unsigned int i=0; i<adjacentslaveeleIds_gathered.size(); i++)
+    {
+
+      for (unsigned int j=i+1; j<adjacentslaveeleIds_gathered.size(); j++)
+      {
+        if (adjacentslaveeleIds_gathered[i] == adjacentslaveeleIds_gathered[j])
+        {
+          count ++;
+        }
+      }
+
+      if (count == check)
+      {
+        scatraeleID = adjacentslaveeleIds_gathered[i];
+        break;
+      }
+      count = 0;
+    }// end loop over element ID vector
+
+    // fill element map (first : ID of structure element, second: ID of corresponding scatra element
+    maptofill->insert( std::pair<int,int>(structeleID, scatraeleID) );
+
+  }// end loop over master geometry elements
+
+  return;
+}// end BuildStructToScatraEleMap
+
+
+/*------------------------------------------------------------------------*
+ | BuildConditionDofRowMap                                    rauch 03/16 |
+ *------------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_PROTRUSIONFORMATION::BuildConditionDofRowMap(const DRT::Condition* condition,
+                                                                   const Teuchos::RCP<const DRT::Discretization> dis,
+                                                                   Teuchos::RCP<Epetra_Map>& conddofmap)
+{
+  const std::vector<int>* conditionednodes = condition->Nodes();
+  std::vector<int> mydirichdofs(0);
+
+  for(int i=0; i<(int)conditionednodes->size(); ++i)
+  {
+    DRT::Node* currnode = dis->gNode(conditionednodes->at(i));
+    std::vector<int> dofs = dis->Dof(0,currnode);
+
+    for (int dim=0;dim<3;++dim)
+    {
+      mydirichdofs.push_back(dofs[dim]);
+    }
+  }
+
+  int nummydirichvals = mydirichdofs.size();
+  conddofmap = Teuchos::rcp( new Epetra_Map(-1,nummydirichvals,&(mydirichdofs[0]),0,dis->Comm()) );
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------*
+ | update the current states in every iteration               rauch 05/16 |
+ *------------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_PROTRUSIONFORMATION::IterUpdateStates()
+{
+  // perform the update from the base class
+  SSI::SSI_Part2WC::IterUpdateStates();
+
+  // clear sources vector
+  sources_->PutScalar(0.0);
+
+  // clear growth step vector
+  growth_step_->PutScalar(0.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Part2WC_PROTRUSIONFORMATION::UpdateAndOutput()
+{
+  // call update and output from base class
+  SSI::SSI_Part2WC::UpdateAndOutput();
+
+  // update growth_{n}
+  int err = growth_n_->Update(1.0,*x_,0.0);
+  if(err!=0)
+    dserror("update of growth_n_ returned err=%d",err);
+
+  // clear growth step increment
+  growth_step_->PutScalar(0.0);
+
+  // clear sources vector
+  sources_->PutScalar(0.0);
+
+  return;
 }
